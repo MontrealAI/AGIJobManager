@@ -1,4 +1,5 @@
 require('dotenv').config();
+const ganache = require('ganache');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 const pk = (process.env.PRIVATE_KEYS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -51,10 +52,20 @@ const timeoutBlocksSepolia = n(process.env.SEPOLIA_TIMEOUT_BLOCKS, 500);
 const solcVersion = (process.env.SOLC_VERSION || '0.8.33').trim();
 const solcRuns = Math.floor(n(process.env.SOLC_RUNS, 200));
 const solcViaIR = (process.env.SOLC_VIA_IR || '').toLowerCase() === 'true';
-const evmVersion = (process.env.SOLC_EVM_VERSION || 'prague').trim();
+const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();
 
 module.exports = {
   networks: {
+    test: {
+      provider: () => ganache.provider({
+        logging: { quiet: true },
+        chain: { chainId: 1337, networkId: 1337, hardfork: "london" },
+        miner: { blockGasLimit: 100_000_000 },
+      }),
+      network_id: 1337,
+      gas: 80_000_000,
+    },
+
     development: { host: "127.0.0.1", port: 8545, network_id: "*" },
 
     sepolia: {
@@ -96,4 +107,3 @@ module.exports = {
   api_keys: { etherscan: process.env.ETHERSCAN_API_KEY },
   etherscan: { apiKey: process.env.ETHERSCAN_API_KEY },
 };
-
