@@ -1,0 +1,21 @@
+{
+  "name": "agijobmanager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Single-contract AGIJobManager",
+  "scripts": {
+    "build": "truffle compile",
+    "lint": "solhint \"contracts/**/*.sol\"",
+    "test": "node test/AGIJobManager.test.js"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.5"
+  },
+  "devDependencies": {
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "dotenv": "^16.4.5",
+    "ganache": "^7.9.2",
+    "solhint": "^5.0.3",
+    "truffle": "^5.11.5"
+  }
+}
