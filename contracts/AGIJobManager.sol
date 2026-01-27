@@ -39,7 +39,7 @@ Changes to Terms: The issuer may revise these terms at any time, subject to regu
 THIS IS PART OF AN ASPIRATIONAL RESEARCH PROGRAM WITH AN AMBITIOUS RESEARCH AGENDA. ANY EXPECTATION OF PROFIT OR RETURN IS UNJUSTIFIED. POSSESSION OF $AGIALPHA DOES NOT SIGNIFY OR ESTABLISH ANY ENTITLEMENT OR INTEREST, SHARE OR EQUITY, BOND OR ANALOGOUS ENTITLEMENT, OR ANY RIGHT TO OBTAIN ANY FUTURE INCOME. MATERIALS PROVIDED IN THIS SYSTEM ARE WITHOUT WARRANTY OF ANY KIND AND DO NOT CONSTITUTE ENDORSEMENT AND CAN BE MODIFIED AT ANY TIME. BY USING THE PRESENT SYSTEM, YOU AGREE TO THE $AGIALPHA TERMS AND CONDITIONS. ANY USE OF THIS SYSTEM, OR ANY OF THE INFORMATION CONTAINED HEREIN, FOR OTHER THAN THE PURPOSE FOR WHICH IT WAS DEVELOPED, IS EXPRESSLY PROHIBITED, EXCEPT AS AGI.ETH MAY OTHERWISE AGREE TO IN WRITING OFFICIALLY.
 
 OVERRIDING AUTHORITY: AGI.ETH
-   
+
 */
 
 pragma solidity ^0.8.17;
@@ -49,7 +49,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 interface ENS {
@@ -65,8 +64,22 @@ interface NameWrapper {
 }
 
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
-    using ECDSA for bytes32;
     using MerkleProof for bytes32[];
+
+    // -----------------------
+    // Custom errors (smaller bytecode than revert strings)
+    // -----------------------
+    error NotModerator();
+    error NotAuthorized();
+    error Blacklisted();
+    error InvalidParameters();
+    error InvalidState();
+    error JobNotFound();
+    error TransferFailed();
+
+    // Pre-hashed resolution strings (smaller + cheaper than hashing literals each call)
+    bytes32 private constant RES_AGENT_WIN = keccak256("agent win");
+    bytes32 private constant RES_EMPLOYER_WIN = keccak256("employer win");
 
     IERC20 public agiToken;
     string private baseIpfsUrl;
@@ -176,20 +189,33 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     modifier onlyModerator() {
-        require(moderators[msg.sender], "Not a moderator");
+        if (!moderators[msg.sender]) revert NotModerator();
         _;
     }
 
-    function pause() external onlyOwner {
-        _pause();
+    // -----------------------
+    // Internal helpers (no new public/external functions/events)
+    // -----------------------
+    function _job(uint256 jobId) internal view returns (Job storage job) {
+        job = jobs[jobId];
+        if (job.employer == address(0)) revert JobNotFound();
     }
 
-    function unpause() external onlyOwner {
-        _unpause();
+    function _t(address to, uint256 amount) internal {
+        if (amount == 0) return;
+        if (!agiToken.transfer(to, amount)) revert TransferFailed();
     }
+
+    function _tFrom(address from, address to, uint256 amount) internal {
+        if (amount == 0) return;
+        if (!agiToken.transferFrom(from, to, amount)) revert TransferFailed();
+    }
+
+    function pause() external onlyOwner { _pause(); }
+    function unpause() external onlyOwner { _unpause(); }
 
     function createJob(string memory _ipfsHash, uint256 _payout, uint256 _duration, string memory _details) external whenNotPaused nonReentrant {
-        require(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit, "Invalid job parameters");
+        if (!(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit)) revert InvalidParameters();
         uint256 jobId = nextJobId++;
         Job storage job = jobs[jobId];
         job.id = jobId;
@@ -198,32 +224,38 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.payout = _payout;
         job.duration = _duration;
         job.details = _details;
-        require(agiToken.transferFrom(msg.sender, address(this), _payout), "Escrow payment failed");
+        _tFrom(msg.sender, address(this), _payout);
         emit JobCreated(jobId, _ipfsHash, _payout, _duration, _details);
     }
 
     function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
-        Job storage job = jobs[_jobId];
-        require(job.assignedAgent == address(0), "Job already assigned");
-        require((_verifyOwnership(msg.sender, subdomain, proof, agentRootNode) || additionalAgents[msg.sender]) && !blacklistedAgents[msg.sender], "Not authorized agent");
+        Job storage job = _job(_jobId);
+        if (job.assignedAgent != address(0)) revert InvalidState();
+        if (blacklistedAgents[msg.sender]) revert Blacklisted();
+        if (!(additionalAgents[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, agentRootNode))) revert NotAuthorized();
         job.assignedAgent = msg.sender;
         job.assignedAt = block.timestamp;
         emit JobApplied(_jobId, msg.sender);
     }
 
     function requestJobCompletion(uint256 _jobId, string calldata _ipfsHash) external whenNotPaused {
-        Job storage job = jobs[_jobId];
-        require(msg.sender == job.assignedAgent && block.timestamp <= job.assignedAt + job.duration, "Not authorized or expired");
+        Job storage job = _job(_jobId);
+        if (msg.sender != job.assignedAgent) revert NotAuthorized();
+        if (block.timestamp > job.assignedAt + job.duration) revert InvalidState();
         job.ipfsHash = _ipfsHash;
         job.completionRequested = true;
         emit JobCompletionRequested(_jobId, msg.sender);
     }
 
     function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
-        require(_verifyOwnership(msg.sender, subdomain, proof, clubRootNode) || additionalValidators[msg.sender], "Not authorized validator");
-        require(!blacklistedValidators[msg.sender], "Blacklisted validator");
-        Job storage job = jobs[_jobId];
-        require(!job.completed && !job.approvals[msg.sender], "Job completed or already approved");
+        Job storage job = _job(_jobId);
+        if (job.assignedAgent == address(0)) revert InvalidState();
+        if (job.completed) revert InvalidState();
+        if (blacklistedValidators[msg.sender]) revert Blacklisted();
+        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (job.approvals[msg.sender]) revert InvalidState();
+        if (job.disapprovals[msg.sender]) revert InvalidState();
+
         job.validatorApprovals++;
         job.approvals[msg.sender] = true;
         job.validators.push(msg.sender);
@@ -233,10 +265,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
-        require(_verifyOwnership(msg.sender, subdomain, proof, clubRootNode) || additionalValidators[msg.sender], "Not authorized validator");
-        require(!blacklistedValidators[msg.sender], "Blacklisted validator");
-        Job storage job = jobs[_jobId];
-        require(!job.completed && !job.disapprovals[msg.sender], "Job completed or already disapproved");
+        Job storage job = _job(_jobId);
+        if (job.assignedAgent == address(0)) revert InvalidState();
+        if (job.completed) revert InvalidState();
+        if (blacklistedValidators[msg.sender]) revert Blacklisted();
+        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (job.disapprovals[msg.sender]) revert InvalidState();
+        if (job.approvals[msg.sender]) revert InvalidState();
+
         job.validatorDisapprovals++;
         job.disapprovals[msg.sender] = true;
         job.validators.push(msg.sender);
@@ -249,95 +285,57 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function disputeJob(uint256 _jobId) external whenNotPaused nonReentrant {
-        Job storage job = jobs[_jobId];
-        require((msg.sender == job.assignedAgent || msg.sender == job.employer) && !job.disputed && !job.completed, "Not authorized or invalid state");
+        Job storage job = _job(_jobId);
+        if (job.disputed || job.completed) revert InvalidState();
+        if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
         job.disputed = true;
         emit JobDisputed(_jobId, msg.sender);
     }
 
     function resolveDispute(uint256 _jobId, string calldata resolution) external onlyModerator nonReentrant {
-        Job storage job = jobs[_jobId];
-        require(job.disputed, "Job not disputed");
-        if (keccak256(abi.encodePacked(resolution)) == keccak256(abi.encodePacked("agent win"))) {
+        Job storage job = _job(_jobId);
+        if (!job.disputed) revert InvalidState();
+
+        // Preserve original behavior: accept any resolution string.
+        // Trigger on-chain actions only for the two canonical strings.
+        bytes32 r = keccak256(bytes(resolution));
+        if (r == RES_AGENT_WIN) {
             _completeJob(_jobId);
-        } else if (keccak256(abi.encodePacked(resolution)) == keccak256(abi.encodePacked("employer win"))) {
-            agiToken.transfer(job.employer, job.payout);
+        } else if (r == RES_EMPLOYER_WIN) {
+            _t(job.employer, job.payout);
+            // Critical fix: close the job to prevent later completion/double payout.
+            job.completed = true;
         }
+
         job.disputed = false;
         emit DisputeResolved(_jobId, msg.sender, resolution);
     }
 
-    function blacklistAgent(address _agent, bool _status) external onlyOwner {
-        blacklistedAgents[_agent] = _status;
-    }
-
-    function blacklistValidator(address _validator, bool _status) external onlyOwner {
-        blacklistedValidators[_validator] = _status;
-    }
+    function blacklistAgent(address _agent, bool _status) external onlyOwner { blacklistedAgents[_agent] = _status; }
+    function blacklistValidator(address _validator, bool _status) external onlyOwner { blacklistedValidators[_validator] = _status; }
 
     function delistJob(uint256 _jobId) external onlyOwner {
-        Job storage job = jobs[_jobId];
-        require(!job.completed && job.assignedAgent == address(0), "Job already completed or assigned");
-        agiToken.transfer(job.employer, job.payout);
+        Job storage job = _job(_jobId);
+        if (job.completed || job.assignedAgent != address(0)) revert InvalidState();
+        _t(job.employer, job.payout);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
     }
 
-    function addModerator(address _moderator) external onlyOwner {
-        moderators[_moderator] = true;
-    }
-
-    function removeModerator(address _moderator) external onlyOwner {
-        moderators[_moderator] = false;
-    }
-
-    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner {
-        agiToken = IERC20(_newTokenAddress);
-    }
-
-    function setBaseIpfsUrl(string calldata _url) external onlyOwner {
-        baseIpfsUrl = _url;
-    }
-
-    function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
-        requiredValidatorApprovals = _approvals;
-    }
-
-    function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
-        requiredValidatorDisapprovals = _disapprovals;
-    }
-
-    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner {
-        premiumReputationThreshold = _threshold;
-    }
-
-    function setMaxJobPayout(uint256 _maxPayout) external onlyOwner {
-        maxJobPayout = _maxPayout;
-    }
-
-    function setJobDurationLimit(uint256 _limit) external onlyOwner {
-        jobDurationLimit = _limit;
-    }
-
-    function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner {
-        termsAndConditionsIpfsHash = _hash;
-    }
-
-    function updateContactEmail(string calldata _email) external onlyOwner {
-        contactEmail = _email;
-    }
-
-    function updateAdditionalText1(string calldata _text) external onlyOwner {
-        additionalText1 = _text;
-    }
-
-    function updateAdditionalText2(string calldata _text) external onlyOwner {
-        additionalText2 = _text;
-    }
-
-    function updateAdditionalText3(string calldata _text) external onlyOwner {
-        additionalText3 = _text;
-    }
+    function addModerator(address _moderator) external onlyOwner { moderators[_moderator] = true; }
+    function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
+    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner { agiToken = IERC20(_newTokenAddress); }
+    function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
+    function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner { requiredValidatorApprovals = _approvals; }
+    function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner { requiredValidatorDisapprovals = _disapprovals; }
+    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
+    function setMaxJobPayout(uint256 _maxPayout) external onlyOwner { maxJobPayout = _maxPayout; }
+    function setJobDurationLimit(uint256 _limit) external onlyOwner { jobDurationLimit = _limit; }
+    function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
+    function updateContactEmail(string calldata _email) external onlyOwner { contactEmail = _email; }
+    function updateAdditionalText1(string calldata _text) external onlyOwner { additionalText1 = _text; }
+    function updateAdditionalText2(string calldata _text) external onlyOwner { additionalText2 = _text; }
+    function updateAdditionalText3(string calldata _text) external onlyOwner { additionalText3 = _text; }
 
     function getJobStatus(uint256 _jobId) external view returns (bool, bool, string memory) {
         Job storage job = jobs[_jobId];
@@ -345,7 +343,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
-        require(_percentage > 0 && _percentage <= 100, "Invalid percentage");
+        if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         validationRewardPercentage = _percentage;
     }
 
@@ -361,7 +359,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function log2(uint x) internal pure returns (uint y) {
         assembly {
-            let arg := x
             x := sub(x, 1)
             x := or(x, div(x, 0x02))
             x := or(x, div(x, 0x04))
@@ -387,7 +384,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         uint256 currentReputation = reputation[_user];
         uint256 newReputation = currentReputation + _points;
 
-        // Apply diminishing return: soft at low, strong near max
         uint256 diminishingFactor = 1 + ((newReputation * newReputation) / (88888 * 88888));
         uint256 diminishedReputation = newReputation / diminishingFactor;
 
@@ -400,33 +396,41 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function cancelJob(uint256 _jobId) external nonReentrant {
-        Job storage job = jobs[_jobId];
-        require(msg.sender == job.employer && !job.completed && job.assignedAgent == address(0), "Not authorized or already completed/assigned");
-        agiToken.transfer(job.employer, job.payout);
+        Job storage job = _job(_jobId);
+        if (msg.sender != job.employer) revert NotAuthorized();
+        if (job.completed || job.assignedAgent != address(0)) revert InvalidState();
+        _t(job.employer, job.payout);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
     }
 
     function _completeJob(uint256 _jobId) internal {
-        Job storage job = jobs[_jobId];
+        Job storage job = _job(_jobId);
+        if (job.completed) revert InvalidState();
+        if (job.assignedAgent == address(0)) revert InvalidState();
+
         job.completed = true;
+        job.disputed = false;
+
         uint256 completionTime = block.timestamp - job.assignedAt;
         uint256 reputationPoints = calculateReputationPoints(job.payout, completionTime);
         enforceReputationGrowth(job.assignedAgent, reputationPoints);
 
         uint256 agentPayoutPercentage = getHighestPayoutPercentage(job.assignedAgent);
         uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        _t(job.assignedAgent, agentPayout);
 
-        require(agiToken.transfer(job.assignedAgent, agentPayout), "Payment to agent failed");
+        uint256 vCount = job.validators.length;
+        if (vCount > 0) {
+            uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
+            uint256 validatorPayout = totalValidatorPayout / vCount;
+            uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
 
-        uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
-        uint256 validatorPayout = totalValidatorPayout / job.validators.length;
-        uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
-
-        for (uint256 i = 0; i < job.validators.length; i++) {
-            address validator = job.validators[i];
-            require(agiToken.transfer(validator, validatorPayout), "Payment to validator failed");
-            enforceReputationGrowth(validator, validatorReputationGain);
+            for (uint256 i = 0; i < vCount; i++) {
+                address validator = job.validators[i];
+                _t(validator, validatorPayout);
+                enforceReputationGrowth(validator, validatorReputationGain);
+            }
         }
 
         uint256 tokenId = nextTokenId++;
@@ -440,15 +444,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function listNFT(uint256 tokenId, uint256 price) external {
-        require(ownerOf(tokenId) == msg.sender && price > 0, "Not authorized or invalid price");
+        if (ownerOf(tokenId) != msg.sender) revert NotAuthorized();
+        if (price == 0) revert InvalidParameters();
         listings[tokenId] = Listing(tokenId, msg.sender, price, true);
         emit NFTListed(tokenId, msg.sender, price);
     }
 
     function purchaseNFT(uint256 tokenId) external {
         Listing storage listing = listings[tokenId];
-        require(listing.isActive, "Listing not active");
-        require(agiToken.transferFrom(msg.sender, listing.seller, listing.price), "Payment failed");
+        if (!listing.isActive) revert InvalidState();
+        _tFrom(msg.sender, listing.seller, listing.price);
         _transfer(listing.seller, msg.sender, tokenId);
         listing.isActive = false;
         emit NFTPurchased(tokenId, msg.sender, listing.price);
@@ -456,7 +461,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function delistNFT(uint256 tokenId) external {
         Listing storage listing = listings[tokenId];
-        require(listing.isActive && listing.seller == msg.sender, "Not authorized or listing not active");
+        if (!listing.isActive || listing.seller != msg.sender) revert NotAuthorized();
         listing.isActive = false;
         emit NFTDelisted(tokenId);
     }
@@ -477,7 +482,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         } catch Error(string memory reason) {
             emit RecoveryInitiated(reason);
         } catch {
-            emit RecoveryInitiated("NameWrapper call failed without a specified reason.");
+            emit RecoveryInitiated("NW_FAIL");
         }
 
         address resolverAddress = ens.resolver(subnode);
@@ -489,34 +494,24 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
                     return true;
                 }
             } catch {
-                emit RecoveryInitiated("Resolver call failed without a specified reason.");
+                emit RecoveryInitiated("RES_FAIL");
             }
         } else {
-            emit RecoveryInitiated("Resolver address not found for node.");
+            emit RecoveryInitiated("NO_RES");
         }
 
         return false;
     }
 
-    function addAdditionalValidator(address validator) external onlyOwner {
-        additionalValidators[validator] = true;
-    }
-
-    function removeAdditionalValidator(address validator) external onlyOwner {
-        additionalValidators[validator] = false;
-    }
-
-    function addAdditionalAgent(address agent) external onlyOwner {
-        additionalAgents[agent] = true;
-    }
-
-    function removeAdditionalAgent(address agent) external onlyOwner {
-        additionalAgents[agent] = false;
-    }
+    function addAdditionalValidator(address validator) external onlyOwner { additionalValidators[validator] = true; }
+    function removeAdditionalValidator(address validator) external onlyOwner { additionalValidators[validator] = false; }
+    function addAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = true; }
+    function removeAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = false; }
 
     function withdrawAGI(uint256 amount) external onlyOwner nonReentrant {
-        require(amount > 0 && amount <= agiToken.balanceOf(address(this)), "Invalid amount");
-        agiToken.transfer(msg.sender, amount);
+        uint256 bal = agiToken.balanceOf(address(this));
+        if (amount == 0 || amount > bal) revert InvalidParameters();
+        _t(msg.sender, amount);
     }
 
     function canAccessPremiumFeature(address user) public view returns (bool) {
@@ -524,13 +519,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function contributeToRewardPool(uint256 amount) external whenNotPaused nonReentrant {
-        require(amount > 0, "Invalid amount");
-        agiToken.transferFrom(msg.sender, address(this), amount);
+        if (amount == 0) revert InvalidParameters();
+        _tFrom(msg.sender, address(this), amount);
         emit RewardPoolContribution(msg.sender, amount);
     }
 
     function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
-        require(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100, "Invalid parameters");
+        if (!(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100)) revert InvalidParameters();
 
         bool exists = false;
         for (uint256 i = 0; i < agiTypes.length; i++) {
@@ -557,3 +552,4 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         return highestPercentage;
     }
 }
+
