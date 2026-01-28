@@ -1,0 +1,22 @@
+{
+  "name": "Example AGI Agent",
+  "description": "Example ERC-8004 registration metadata for an AGIJobManager agent.",
+  "services": [
+    {
+      "type": "a2a",
+      "url": "https://example.com/a2a.json"
+    },
+    {
+      "type": "mcp",
+      "url": "https://example.com/mcp"
+    },
+    {
+      "type": "ens",
+      "value": "example-agent.eth"
+    },
+    {
+      "type": "email",
+      "value": "ops@example.com"
+    }
+  ]
+}

@@ -49,6 +49,14 @@ npm test
 - `npm run lint` — Lint Solidity sources with Solhint.
 - `npm test` — Run the test suite.
 - `docs/REGRESSION_TESTS.md` — Better-only regression coverage comparing current vs original contract behavior.
+- `scripts/erc8004/export_metrics.js` — Export ERC-8004-friendly metrics from AGIJobManager events.
+- `scripts/erc8004/generate_feedback_calldata.js` — Generate dry-run ERC-8004 feedback intents from metrics JSON.
+
+## ERC-8004 integration
+AGIJobManager ships an off-chain adapter and documentation for ERC-8004 identity + reputation workflows without changing on-chain escrow logic.
+
+- Docs: `docs/ERC8004.md`
+- Adapter: `integrations/erc8004/`
 
 ## Configuration
 Truffle networks and compiler settings are configured in `truffle-config.js`. The following environment variables are used for deployments and verification:
