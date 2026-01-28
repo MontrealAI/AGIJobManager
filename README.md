@@ -13,6 +13,7 @@ AGIJobManager is a single-contract system for managing employer/agent jobs, vali
 - [Scripts](#scripts)
 - [Configuration](#configuration)
 - [Deployment](#deployment)
+- [Contract documentation](#contract-documentation)
 - [Security](#security)
 - [License](#license)
 
@@ -87,6 +88,12 @@ npx truffle migrate --network sepolia
 ```
 
 Replace `sepolia` with `mainnet` or `development` as needed. Ensure the environment variables above are set for the selected network.
+
+## Contract documentation
+- `docs/AGIJobManager.md` — Primary contract overview, lifecycle, roles, and usage.
+- `docs/AGIJobManager_Interface.md` — ABI-accurate interface reference (functions, events, errors).
+- `docs/AGIJobManager_Operator_Guide.md` — Deployment and admin runbook.
+- `docs/AGIJobManager_Security.md` — Security considerations and known fixes vs v0.
 
 ## Security
 This repository is experimental. Review the contract code and run your own audits before deploying to production networks. Never commit private keys or secrets to version control.
