@@ -5,13 +5,13 @@ This guide documents the deployment and verification workflow defined in `truffl
 ## Prerequisites
 - Node.js and npm (CI uses Node 20).
 - Truffle (installed via `npm install`).
-- RPC access for Sepolia or Mainnet.
+- RPC access for Sepolia or Mainnet (or a local Ganache instance).
 
 ## Environment variables
 
 | Variable | Purpose | Notes |
 | --- | --- | --- |
-| `PRIVATE_KEYS` | Deployer keys | Comma-separated, no spaces. |
+| `PRIVATE_KEYS` | Deployer keys | Comma-separated, no spaces. Required for Sepolia/Mainnet deployments. |
 | `SEPOLIA_RPC_URL` | Sepolia RPC URL | Optional if using Alchemy or Infura. |
 | `MAINNET_RPC_URL` | Mainnet RPC URL | Optional if using Alchemy or Infura. |
 | `ALCHEMY_KEY` | Alchemy key for Sepolia | Used if `SEPOLIA_RPC_URL` is empty. |
@@ -23,10 +23,16 @@ This guide documents the deployment and verification workflow defined in `truffl
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Must match deployed bytecode for verification. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Default `SOLC_VERSION` is 0.8.33; keep these consistent for verification. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
+
+## Networks configured
+- **test**: in-process Ganache provider for `truffle test`.
+- **development**: local RPC at `127.0.0.1:8545` (Ganache).
+- **sepolia**: remote deployment via RPC (HDWalletProvider).
+- **mainnet**: remote deployment via RPC (HDWalletProvider).
 
 ## Migration script notes
 
@@ -70,5 +76,5 @@ npx truffle run verify AGIJobManager --network sepolia
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.
 - **Missing private keys**: ensure `PRIVATE_KEYS` is set and comma-separated.
-- **Verification failures**: confirm your compiler version and optimizer settings match the deployed bytecode.
+- **Verification failures**: confirm compiler version, optimizer runs, and `viaIR` settings match the deployed bytecode.
 - **Nonce conflicts**: avoid running multiple deployment processes with the same keys.

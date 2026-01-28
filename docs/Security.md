@@ -2,9 +2,17 @@
 
 This document summarizes security considerations specific to the current `AGIJobManager` contract. It should be read alongside the test suite and interface reference.
 
-## Trust model
-- **Owner powers**: pause or unpause job flows, update token address, thresholds, allowlists and blacklists, add AGI types, update metadata fields, and withdraw ERC‑20 escrow.
+## Threat model overview
+
+**Assets at risk**
+- Escrowed ERC‑20 funds held by the contract.
+- Job NFTs minted on completion.
+- Reputation mappings used for premium access gating.
+
+**Primary trust assumptions**
+- **Owner powers**: can pause flows, update token address, thresholds, allowlists/blacklists, metadata fields, add AGI types, and withdraw ERC‑20 escrow.
 - **Moderator powers**: resolve disputes with arbitrary strings. Only the canonical strings `agent win` and `employer win` trigger on-chain payout or refund.
+- **Validator set**: validators are allowlisted or ENS/Merkle-gated; the contract does not enforce decentralization.
 
 ## Hardened improvements (vs. historical v0)
 The regression suite documents the following safer behaviors in the current contract:
@@ -30,6 +38,7 @@ Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, `pur
 - **ERC‑20 compatibility**: tokens must return a boolean for `transfer` and `transferFrom`.
 - **Agent payout can be zero**: if no AGI type applies, the agent payout percentage is zero and residual funds remain in the contract.
 - **Validator payout sharing**: all validators who voted share equally; there is no weighting or slashing.
+- **Owner-controlled parameters**: thresholds and limits can be changed post-deployment by the owner.
 
 ## Disclosure
 Report security issues privately via [`SECURITY.md`](../SECURITY.md).
