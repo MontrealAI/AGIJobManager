@@ -21,41 +21,43 @@ Custom errors are emitted as error selectors (not revert strings). Integrators s
 | `TransferFailed()` | ERC-20 transfer or transferFrom returned `false`. |
 
 ## Events
-> Indexing information is taken from the ABI.
+Indexing information is taken from the compiled ABI.
 
 ### AGIJobManager events
-- `JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details)`
-- `JobApplied(uint256 jobId, address agent)`
-- `JobCompletionRequested(uint256 jobId, address agent)`
-- `JobValidated(uint256 jobId, address validator)`
-- `JobDisapproved(uint256 jobId, address validator)`
-- `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)`
-- `ReputationUpdated(address user, uint256 newReputation)`
-- `JobCancelled(uint256 jobId)`
-- `DisputeResolved(uint256 jobId, address resolver, string resolution)`
-- `JobDisputed(uint256 jobId, address disputant)`
-- `RootNodeUpdated(bytes32 indexed newRootNode)`
-- `MerkleRootUpdated(bytes32 indexed newMerkleRoot)`
-- `OwnershipVerified(address claimant, string subdomain)`
-- `RecoveryInitiated(string reason)`
-- `AGITypeUpdated(address indexed nftAddress, uint256 payoutPercentage)`
-- `NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI)`
-- `NFTListed(uint256 indexed tokenId, address indexed seller, uint256 price)`
-- `NFTPurchased(uint256 indexed tokenId, address indexed buyer, uint256 price)`
-- `NFTDelisted(uint256 indexed tokenId)`
-- `RewardPoolContribution(address indexed contributor, uint256 amount)`
-
-> Note: `RootNodeUpdated` and `MerkleRootUpdated` exist but are **never emitted** in the current contract because there are no setter functions for root nodes or Merkle roots after deployment.
+| Event | Indexed fields | Emitted when | Consumer notes |
+| --- | --- | --- | --- |
+| `JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details)` | None | `createJob` succeeds. | Use as the canonical job creation signal. |
+| `JobApplied(uint256 jobId, address agent)` | None | Agent assignment in `applyForJob`. | Indicates job is now assigned. |
+| `JobCompletionRequested(uint256 jobId, address agent)` | None | Assigned agent calls `requestJobCompletion`. | `ipfsHash` is updated before this event. |
+| `JobValidated(uint256 jobId, address validator)` | None | Validator approves in `validateJob`. | Emits once per validator. |
+| `JobDisapproved(uint256 jobId, address validator)` | None | Validator disapproves in `disapproveJob`. | Emits once per validator. |
+| `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)` | None | `_completeJob` finishes. | Indicates payouts + reputation updates occurred. |
+| `ReputationUpdated(address user, uint256 newReputation)` | None | `enforceReputationGrowth` runs. | Emitted for agents and validators. |
+| `JobCancelled(uint256 jobId)` | None | `cancelJob` or `delistJob` succeeds. | Job storage is deleted after refund. |
+| `DisputeResolved(uint256 jobId, address resolver, string resolution)` | None | `resolveDispute` succeeds. | Only canonical resolutions trigger payout/refund. |
+| `JobDisputed(uint256 jobId, address disputant)` | None | `disputeJob` or disapproval threshold hit. | Dispute may be resolved later by moderator. |
+| `RootNodeUpdated(bytes32 newRootNode)` | `newRootNode` | **Never emitted** (no setters). | Present in ABI only. |
+| `MerkleRootUpdated(bytes32 newMerkleRoot)` | `newMerkleRoot` | **Never emitted** (no setters). | Present in ABI only. |
+| `OwnershipVerified(address claimant, string subdomain)` | None | `_verifyOwnership` succeeds. | Informational signal for allowlist/ENS checks. |
+| `RecoveryInitiated(string reason)` | None | `_verifyOwnership` encounters ENS/NameWrapper failure paths. | Informational only; authorization may still fail. |
+| `AGITypeUpdated(address nftAddress, uint256 payoutPercentage)` | `nftAddress` | `addAGIType` adds or updates. | Track AGI payout multipliers. |
+| `NFTIssued(uint256 tokenId, address employer, string tokenURI)` | `tokenId`, `employer` | `_completeJob` mints a job NFT. | Track token URIs for finished jobs. |
+| `NFTListed(uint256 tokenId, address seller, uint256 price)` | `tokenId`, `seller` | `listNFT` succeeds. | Listing is not escrowed. |
+| `NFTPurchased(uint256 tokenId, address buyer, uint256 price)` | `tokenId`, `buyer` | `purchaseNFT` succeeds. | Listing is cleared. |
+| `NFTDelisted(uint256 tokenId)` | `tokenId` | `delistNFT` succeeds. | Listing is cleared without transfer. |
+| `RewardPoolContribution(address contributor, uint256 amount)` | `contributor` | `contributeToRewardPool` succeeds. | No automated distribution logic. |
 
 ### ERC-721 / Ownable / Pausable events
-- `Transfer(address indexed from, address indexed to, uint256 indexed tokenId)`
-- `Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)`
-- `ApprovalForAll(address indexed owner, address indexed operator, bool approved)`
-- `MetadataUpdate(uint256 _tokenId)` (ERC-4906)
-- `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)` (ERC-4906)
-- `OwnershipTransferred(address indexed previousOwner, address indexed newOwner)`
-- `Paused(address account)`
-- `Unpaused(address account)`
+| Event | Indexed fields | Emitted when |
+| --- | --- | --- |
+| `Transfer(address from, address to, uint256 tokenId)` | `from`, `to`, `tokenId` | ERC-721 transfers and mints/burns. |
+| `Approval(address owner, address approved, uint256 tokenId)` | `owner`, `approved`, `tokenId` | ERC-721 approvals. |
+| `ApprovalForAll(address owner, address operator, bool approved)` | `owner`, `operator` | Operator approvals. |
+| `MetadataUpdate(uint256 _tokenId)` | None | ERC-4906 metadata updates (emitted by `_setTokenURI`). |
+| `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)` | None | ERC-4906 batch metadata updates. |
+| `OwnershipTransferred(address previousOwner, address newOwner)` | `previousOwner`, `newOwner` | `transferOwnership` or `renounceOwnership`. |
+| `Paused(address account)` | None | `pause` succeeds. |
+| `Unpaused(address account)` | None | `unpause` succeeds. |
 
 ## Public state variables
 The following public getters are generated by Solidity for state variables:
@@ -108,26 +110,26 @@ The following public getters are generated by Solidity for state variables:
 This table maps **every function** in the ABI to its caller role, key preconditions, and primary effects.
 
 ### Views & pure functions (any caller)
-| Function | Who can call | Preconditions | Effects |
+| Function | Who can call | Preconditions / reverts | Effects |
 | --- | --- | --- | --- |
 | `agiToken()` | Anyone | None | Returns ERC-20 address. |
 | `additionalAgents(address)` | Anyone | None | Returns allowlist flag. |
 | `additionalValidators(address)` | Anyone | None | Returns allowlist flag. |
 | `agentMerkleRoot()` | Anyone | None | Returns agent Merkle root. |
 | `agentRootNode()` | Anyone | None | Returns agent root node. |
-| `agiTypes(uint256)` | Anyone | Index in range | Returns AGI type by index. |
-| `balanceOf(address)` | Anyone | Standard ERC-721 | Returns NFT balance. |
+| `agiTypes(uint256)` | Anyone | Reverts on out-of-range index. | Returns AGI type by index. |
+| `balanceOf(address)` | Anyone | Standard ERC-721 (reverts on zero address). | Returns NFT balance. |
 | `blacklistedAgents(address)` | Anyone | None | Returns blacklist flag. |
 | `blacklistedValidators(address)` | Anyone | None | Returns blacklist flag. |
 | `clubRootNode()` | Anyone | None | Returns validator root node. |
 | `contactEmail()` | Anyone | None | Returns contact email. |
 | `ens()` | Anyone | None | Returns ENS registry address. |
-| `getApproved(uint256)` | Anyone | Token must exist | Returns approved address. |
-| `getJobStatus(uint256)` | Anyone | None | Returns `(completed, completionRequested, ipfsHash)`. |
+| `getApproved(uint256)` | Anyone | Token must exist (ERC-721 revert). | Returns approved address. |
+| `getJobStatus(uint256)` | Anyone | None (missing job returns default values). | Returns `(completed, completionRequested, ipfsHash)`. |
 | `getHighestPayoutPercentage(address)` | Anyone | None | Returns highest AGI-type payout percentage. |
 | `isApprovedForAll(address,address)` | Anyone | None | Returns operator approval. |
 | `jobDurationLimit()` | Anyone | None | Returns max job duration. |
-| `jobs(uint256)` | Anyone | None (zero-address employer means missing) | Returns public job fields. |
+| `jobs(uint256)` | Anyone | None (zero-address employer means missing). | Returns public job fields. |
 | `listings(uint256)` | Anyone | None | Returns listing state. |
 | `maxJobPayout()` | Anyone | None | Returns max payout. |
 | `moderators(address)` | Anyone | None | Returns moderator flag. |
@@ -136,7 +138,7 @@ This table maps **every function** in the ABI to its caller role, key preconditi
 | `nextJobId()` | Anyone | None | Returns next job ID. |
 | `nextTokenId()` | Anyone | None | Returns next token ID. |
 | `owner()` | Anyone | None | Returns contract owner. |
-| `ownerOf(uint256)` | Anyone | Token must exist | Returns token owner. |
+| `ownerOf(uint256)` | Anyone | Token must exist (ERC-721 revert). | Returns token owner. |
 | `paused()` | Anyone | None | Returns pause state. |
 | `premiumReputationThreshold()` | Anyone | None | Returns premium threshold. |
 | `reputation(address)` | Anyone | None | Returns reputation. |
@@ -145,36 +147,36 @@ This table maps **every function** in the ABI to its caller role, key preconditi
 | `supportsInterface(bytes4)` | Anyone | None | ERC-165 support. |
 | `symbol()` | Anyone | None | ERC-721 symbol. |
 | `termsAndConditionsIpfsHash()` | Anyone | None | Returns terms hash. |
-| `tokenURI(uint256)` | Anyone | Token must exist | Returns token URI. |
+| `tokenURI(uint256)` | Anyone | Token must exist (ERC-721 revert). | Returns token URI. |
 | `validationRewardPercentage()` | Anyone | None | Returns validator reward percentage. |
-| `validatorApprovedJobs(address,uint256)` | Anyone | Index in range | Returns job ID at index. |
+| `validatorApprovedJobs(address,uint256)` | Anyone | Reverts on out-of-range index. | Returns job ID at index. |
 | `validatorMerkleRoot()` | Anyone | None | Returns validator Merkle root. |
 | `canAccessPremiumFeature(address)` | Anyone | None | Returns whether reputation meets threshold. |
 
 ### Job creation and lifecycle
-| Function | Who can call | Preconditions | Effects |
+| Function | Who can call | Preconditions / reverts | Effects |
 | --- | --- | --- | --- |
-| `createJob(string,uint256,uint256,string)` | Employer | `payout > 0`, `duration > 0`, `payout <= maxJobPayout`, `duration <= jobDurationLimit`, `whenNotPaused` | Transfers ERC-20 into escrow, initializes job, emits `JobCreated`. |
-| `applyForJob(uint256,string,bytes32[])` | Agent | Job exists and unassigned, not blacklisted, eligible via allowlist or ownership check, `whenNotPaused` | Assigns agent, sets `assignedAt`, emits `JobApplied`. |
-| `requestJobCompletion(uint256,string)` | Assigned agent | Before `assignedAt + duration`, `whenNotPaused` | Updates job IPFS hash, sets `completionRequested`, emits `JobCompletionRequested`. |
-| `validateJob(uint256,string,bytes32[])` | Validator | Job assigned & not completed, not blacklisted, eligible via allowlist or ownership check, no prior vote, `whenNotPaused` | Increments approvals, records validator, emits `JobValidated`; if approvals reach threshold, completes job. |
-| `disapproveJob(uint256,string,bytes32[])` | Validator | Job assigned & not completed, not blacklisted, eligible via allowlist or ownership check, no prior vote, `whenNotPaused` | Increments disapprovals, records validator, emits `JobDisapproved`; if disapprovals reach threshold, marks disputed & emits `JobDisputed`. |
-| `disputeJob(uint256)` | Employer or assigned agent | Job not completed or already disputed, `whenNotPaused` | Sets `disputed`, emits `JobDisputed`. |
-| `resolveDispute(uint256,string)` | Moderator | Job is disputed | If resolution is `"agent win"`, completes job; if `"employer win"`, refunds employer and marks completed; otherwise just clears dispute. Emits `DisputeResolved`. |
-| `cancelJob(uint256)` | Employer | Job not completed and unassigned | Refunds employer, deletes job, emits `JobCancelled`. |
-| `delistJob(uint256)` | Owner | Job not completed and unassigned | Refunds employer, deletes job, emits `JobCancelled`. |
+| `createJob(string,uint256,uint256,string)` | Employer | `whenNotPaused`, `payout > 0`, `duration > 0`, `payout <= maxJobPayout`, `duration <= jobDurationLimit`, `transferFrom` succeeds (`TransferFailed`) | Transfers ERC-20 into escrow, initializes job, emits `JobCreated`. |
+| `applyForJob(uint256,string,bytes32[])` | Agent | `whenNotPaused`, job exists (`JobNotFound`), unassigned (`InvalidState`), not blacklisted (`Blacklisted`), eligible via allowlist or ownership check (`NotAuthorized`) | Assigns agent, sets `assignedAt`, emits `JobApplied`. |
+| `requestJobCompletion(uint256,string)` | Assigned agent | `whenNotPaused`, job exists (`JobNotFound`), caller is assigned agent (`NotAuthorized`), before `assignedAt + duration` (`InvalidState`) | Updates job IPFS hash, sets `completionRequested`, emits `JobCompletionRequested`. |
+| `validateJob(uint256,string,bytes32[])` | Validator | `whenNotPaused`, job exists (`JobNotFound`), assigned & not completed (`InvalidState`), not blacklisted (`Blacklisted`), eligible (`NotAuthorized`), no prior vote (`InvalidState`) | Records approval + validator list, emits `JobValidated`; if threshold met, completes job. |
+| `disapproveJob(uint256,string,bytes32[])` | Validator | `whenNotPaused`, job exists (`JobNotFound`), assigned & not completed (`InvalidState`), not blacklisted (`Blacklisted`), eligible (`NotAuthorized`), no prior vote (`InvalidState`) | Records disapproval + validator list, emits `JobDisapproved`; if threshold met, marks disputed + emits `JobDisputed`. |
+| `disputeJob(uint256)` | Employer or assigned agent | `whenNotPaused`, job exists (`JobNotFound`), not completed or already disputed (`InvalidState`), caller is employer or agent (`NotAuthorized`) | Sets `disputed`, emits `JobDisputed`. |
+| `resolveDispute(uint256,string)` | Moderator | Job exists (`JobNotFound`), caller is moderator (`NotModerator`), job disputed (`InvalidState`) | Canonical resolutions trigger completion or refund; dispute flag cleared; emits `DisputeResolved`. |
+| `cancelJob(uint256)` | Employer | Job exists (`JobNotFound`), caller is employer (`NotAuthorized`), job unassigned & not completed (`InvalidState`) | Refunds employer, deletes job, emits `JobCancelled`. |
+| `delistJob(uint256)` | Owner | Job exists (`JobNotFound`), job unassigned & not completed (`InvalidState`) | Refunds employer, deletes job, emits `JobCancelled`. |
 
 ### Reputation & incentives
-| Function | Who can call | Preconditions | Effects |
+| Function | Who can call | Preconditions / reverts | Effects |
 | --- | --- | --- | --- |
 | `setPremiumReputationThreshold(uint256)` | Owner | None | Updates premium threshold. |
-| `setValidationRewardPercentage(uint256)` | Owner | `percentage > 0 && percentage <= 100` | Updates validator reward percentage. |
-| `addAGIType(address,uint256)` | Owner | `nftAddress != 0` and `payoutPercentage` 1–100 | Adds or updates AGI type; emits `AGITypeUpdated`. |
+| `setValidationRewardPercentage(uint256)` | Owner | `percentage > 0 && percentage <= 100` (`InvalidParameters`) | Updates validator reward percentage. |
+| `addAGIType(address,uint256)` | Owner | `nftAddress != 0` and `payoutPercentage` 1–100 (`InvalidParameters`) | Adds or updates AGI type; emits `AGITypeUpdated`. |
 | `getHighestPayoutPercentage(address)` | Anyone | None | Returns highest payout percentage based on AGI-type NFT balances. |
-| `contributeToRewardPool(uint256)` | Anyone | `amount > 0`, `whenNotPaused` | Transfers ERC-20 into contract, emits `RewardPoolContribution`. |
+| `contributeToRewardPool(uint256)` | Anyone | `whenNotPaused`, `amount > 0` (`InvalidParameters`), `transferFrom` succeeds (`TransferFailed`) | Transfers ERC-20 into contract, emits `RewardPoolContribution`. |
 
 ### Admin & access control
-| Function | Who can call | Preconditions | Effects |
+| Function | Who can call | Preconditions / reverts | Effects |
 | --- | --- | --- | --- |
 | `pause()` | Owner | None | Pauses whenNotPaused functions, emits `Paused`. |
 | `unpause()` | Owner | None | Unpauses, emits `Unpaused`. |
@@ -197,16 +199,16 @@ This table maps **every function** in the ABI to its caller role, key preconditi
 | `updateAdditionalText1(string)` | Owner | None | Updates public text field 1. |
 | `updateAdditionalText2(string)` | Owner | None | Updates public text field 2. |
 | `updateAdditionalText3(string)` | Owner | None | Updates public text field 3. |
-| `withdrawAGI(uint256)` | Owner | `amount > 0` and `amount <= token balance` | Transfers ERC-20 out of contract. |
+| `withdrawAGI(uint256)` | Owner | `amount > 0` and `amount <= token balance` (`InvalidParameters`) | Transfers ERC-20 out of contract; reverts on `TransferFailed`. |
 | `transferOwnership(address)` | Owner | New owner not zero | Transfers ownership. |
 | `renounceOwnership()` | Owner | None | Renounces ownership. |
 
 ### NFT marketplace
-| Function | Who can call | Preconditions | Effects |
+| Function | Who can call | Preconditions / reverts | Effects |
 | --- | --- | --- | --- |
-| `listNFT(uint256,uint256)` | Token owner | Owns token; `price > 0` | Creates listing, emits `NFTListed`. |
-| `purchaseNFT(uint256)` | Buyer | Listing is active | Transfers ERC-20 from buyer to seller and transfers NFT to buyer; deactivates listing; emits `NFTPurchased`. |
-| `delistNFT(uint256)` | Seller | Listing active and caller is seller | Deactivates listing; emits `NFTDelisted`. |
+| `listNFT(uint256,uint256)` | Token owner | Owns token (`NotAuthorized`), `price > 0` (`InvalidParameters`) | Creates listing, emits `NFTListed`. |
+| `purchaseNFT(uint256)` | Buyer | Listing active (`InvalidState`), `transferFrom` succeeds (`TransferFailed`) | Transfers ERC-20 from buyer to seller and transfers NFT to buyer; deactivates listing; emits `NFTPurchased`. |
+| `delistNFT(uint256)` | Seller | Listing active and caller is seller (`NotAuthorized`) | Deactivates listing; emits `NFTDelisted`. |
 
 ### ERC-721 standard functions
 | Function | Who can call | Preconditions | Effects |
@@ -225,4 +227,4 @@ This table maps **every function** in the ABI to its caller role, key preconditi
   - `"employer win"` refunds and marks `completed = true`.
   - Other strings just close the dispute.
 - **Event indexing**: Most job events are **not indexed**. NFT events include indexed `tokenId` and participants.
-
+- **Validator arrays**: both approvals and disapprovals append to `validators` and `validatorApprovedJobs`, and payouts are split across this combined list.
