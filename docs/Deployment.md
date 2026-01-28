@@ -9,6 +9,8 @@ This guide documents the deployment and verification workflow defined in `truffl
 
 ## Environment variables
 
+The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS` is required for Sepolia/Mainnet deployments.
+
 | Variable | Purpose | Notes |
 | --- | --- | --- |
 | `PRIVATE_KEYS` | Deployer keys | Comma-separated, no spaces. Required for Sepolia/Mainnet deployments. |
@@ -36,7 +38,7 @@ A template lives in [`.env.example`](../.env.example).
 
 ## Migration script notes
 
-The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token address, ENS addresses, root nodes, Merkle roots). **Edit these values** before deploying to any production network.
+The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Edit these values** before deploying to any production network.
 
 ## Local deployment (Ganache)
 
@@ -72,6 +74,11 @@ When `ETHERSCAN_API_KEY` is set:
 ```bash
 npx truffle run verify AGIJobManager --network sepolia
 ```
+
+### Verification tips
+- Keep the compiler settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`) identical to the original deployment.
+- Ensure your migration constructor parameters match the deployed contract.
+- If the Etherscan plugin fails, re-run with `--debug` to capture full output.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.

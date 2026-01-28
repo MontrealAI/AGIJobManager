@@ -12,7 +12,7 @@ This document summarizes security considerations specific to the current `AGIJob
 **Primary trust assumptions**
 - **Owner powers**: can pause flows, update token address, thresholds, allowlists/blacklists, metadata fields, add AGI types, and withdraw ERC‑20 escrow.
 - **Moderator powers**: resolve disputes with arbitrary strings. Only the canonical strings `agent win` and `employer win` trigger on-chain payout or refund.
-- **Validator set**: validators are allowlisted or ENS/Merkle-gated; the contract does not enforce decentralization.
+- **Validator set**: validators are allowlisted or ENS/Merkle‑gated; the contract does not enforce decentralization.
 
 ## Hardened improvements (vs. historical v0)
 The regression suite documents the following safer behaviors in the current contract:

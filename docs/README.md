@@ -1,6 +1,6 @@
 # Documentation index
 
-This documentation set targets engineers, integrators, operators, and auditors. Each document has a focused scope with cross-references for faster navigation.
+This documentation set targets engineers, integrators, operators, and auditors. Each document has a focused scope with cross-references for faster navigation and auditability.
 
 ## Core documentation
 - **Contract specification**: [`AGIJobManager.md`](AGIJobManager.md)
@@ -21,5 +21,6 @@ This documentation set targets engineers, integrators, operators, and auditors. 
 The interface reference is generated from the compiled ABI. After running a compile, regenerate it with:
 
 ```bash
+npm run build
 node scripts/generate-interface-doc.js
 ```
