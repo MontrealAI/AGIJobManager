@@ -104,6 +104,8 @@ module.exports = async function exportMetrics(callback) {
     const agents = new Map();
     const validators = new Map();
     const warnings = [];
+    const disputedJobs = new Set();
+    const pendingDisputes = new Set();
 
     for (const event of events) {
       const values = event.returnValues || {};
@@ -124,6 +126,11 @@ module.exports = async function exportMetrics(callback) {
           agentMetrics.totals.jobsAssigned += 1;
           const existing = jobState.get(jobId) || { payout: web3.utils.toBN(0) };
           jobState.set(jobId, { ...existing, assignedAgent: agent });
+          if (pendingDisputes.has(jobId) && !disputedJobs.has(jobId)) {
+            agentMetrics.totals.jobsDisputed += 1;
+            disputedJobs.add(jobId);
+            pendingDisputes.delete(jobId);
+          }
           break;
         }
         case "JobCompleted": {
@@ -142,12 +149,15 @@ module.exports = async function exportMetrics(callback) {
         }
         case "JobDisputed": {
           const jobId = String(values.jobId);
+          if (disputedJobs.has(jobId)) break;
           const job = jobState.get(jobId);
           if (job && job.assignedAgent) {
             const agentMetrics = ensureAgent(agents, job.assignedAgent, web3);
             agentMetrics.totals.jobsDisputed += 1;
+            disputedJobs.add(jobId);
           } else {
-            warnings.push(`Missing assigned agent for disputed job ${jobId}.`);
+            pendingDisputes.add(jobId);
+            warnings.push(`Missing assigned agent for disputed job ${jobId}; will count if assignment appears later.`);
           }
           break;
         }

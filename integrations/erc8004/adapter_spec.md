@@ -7,7 +7,7 @@ This adapter consumes AGIJobManager events and computes per-agent (and optional 
 | --- | --- | --- |
 | `JobApplied(jobId, agent)` | `jobsApplied`, `jobsAssigned` | In this contract, applying assigns the agent. |
 | `JobCompleted(jobId, agent, reputationPoints)` | `jobsCompleted`, `revenues` | Revenue is **proxy** sum of job payouts from `JobCreated` events. |
-| `JobDisputed(jobId, disputant)` | `jobsDisputed` | Counted against the assigned agent for the jobId. |
+| `JobDisputed(jobId, disputant)` | `jobsDisputed` | Counted once per jobId (deduped) against the assigned agent. |
 | `DisputeResolved(jobId, resolver, resolution)` | `agentWins`, `employerWins`, `unknownResolutions` | Resolution string normalized to `agent win` / `employer win`. |
 | `JobValidated(jobId, validator)` | `validatorApprovals` | Only computed if `INCLUDE_VALIDATORS=true`. |
 | `JobDisapproved(jobId, validator)` | `validatorDisapprovals` | Only computed if `INCLUDE_VALIDATORS=true`. |
