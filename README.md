@@ -88,6 +88,7 @@ stateDiagram-v2
 - **Validated**: `validatorApprovals >= requiredValidatorApprovals` (triggers `_completeJob`).
 - **Disputed**: `disputed=true` set by disapprove threshold or manual dispute.
 - **Completed**: `completed=true` (set by `_completeJob` or employer-win resolution).
+- **Convenience helper**: `getJobStatus(jobId)` returns `(completed, completionRequested, ipfsHash)` for lightweight polling.
 
 ---
 

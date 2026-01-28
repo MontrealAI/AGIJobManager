@@ -59,6 +59,10 @@ Job state is encoded in the following fields:
 
 These flags are observable via the public `jobs(jobId)` getter and lifecycle events.
 
+### Read-only helpers
+- `getJobStatus(jobId)` returns `(completed, completionRequested, ipfsHash)` for lightweight polling.
+- `jobs(jobId)` returns the fixed fields of the `Job` struct (it omits the internal validator list and approval mappings).
+
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` pulls the payout from the employer via `transferFrom`.
 - **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPercentage / 100`, where `agentPayoutPercentage` is the highest AGI type percentage owned by the agent. If no AGI types apply, this can be zero.
