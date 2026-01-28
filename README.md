@@ -11,6 +11,7 @@ AGIJobManager is a single-contract system for managing employer/agent jobs, vali
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
 - [Scripts](#scripts)
+- [Contract documentation](#contract-documentation)
 - [Configuration](#configuration)
 - [Deployment](#deployment)
 - [Security](#security)
@@ -51,6 +52,12 @@ npm test
 - `docs/REGRESSION_TESTS.md` — Better-only regression coverage comparing current vs original contract behavior.
 - `scripts/erc8004/export_metrics.js` — Export ERC-8004-friendly metrics from AGIJobManager events.
 - `scripts/erc8004/generate_feedback_calldata.js` — Generate dry-run ERC-8004 feedback intents from metrics JSON.
+
+## Contract documentation
+- [AGIJobManager overview](docs/AGIJobManager.md)
+- [Interface reference (full ABI)](docs/AGIJobManager_Interface.md)
+- [Operator guide](docs/AGIJobManager_Operator_Guide.md)
+- [Security considerations](docs/AGIJobManager_Security.md)
 
 ## ERC-8004 integration
 AGIJobManager ships an off-chain adapter and documentation for ERC-8004 identity + reputation workflows without changing on-chain escrow logic.
