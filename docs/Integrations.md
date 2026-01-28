@@ -11,10 +11,10 @@ Events to watch:
 - `OwnershipVerified` indicates a successful ownership check.
 - `RecoveryInitiated` indicates an ENS or NameWrapper failure path.
 
-## ERC‑8004 off-chain adapter
+## ERC‑8004 signaling (off-chain)
 AGIJobManager keeps escrow settlement fully on-chain and does **not** depend on any ERC‑8004 contract. The repository provides an off-chain adapter that maps job events into ERC‑8004 reputation signals.
 
-- Adapter documentation: [`docs/ERC8004.md`](ERC8004.md)
+- Integration pattern: [`docs/ERC8004.md`](ERC8004.md)
 - Adapter implementation: [`integrations/erc8004/`](../integrations/erc8004/)
 
 ## Indexing guidance
