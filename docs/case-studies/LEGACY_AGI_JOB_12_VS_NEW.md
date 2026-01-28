@@ -1,218 +1,228 @@
-# Legacy AGI Job #12 (TokenID 12) vs. New AGIJobManager — Case Study
+# Legacy AGI Job #12 (TokenID 12) vs. New AGIJobManager — Institutional Case Study
 
-## At a glance
+> **Purpose**: provide an auditable, side‑by‑side comparison between the legacy mainnet job completion (AGI Jobs TokenID 12) and how the **new** `contracts/AGIJobManager.sol` would execute the same lifecycle — with explicit safeguards (takeover prevention, double‑complete prevention, no div‑by‑zero, vote rules, safer ERC‑20 transfers, and dispute closure on employer win).
 
-> **Legacy contract (mainnet, v0)**: [`0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`](https://etherscan.io/address/0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477)  
-> **Legacy completion tx**: [`0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac`](https://etherscan.io/tx/0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac)  
-> **Legacy ERC‑721 minted**: AGIJobs TokenID **12**  
-> **Legacy ERC‑20 used**: AGIALPHA `0x2E8F3ED88BcBB469bEc54a9A8D1a2f980E09070B`  
-> **When**: Aug‑03‑2025 12:59:23 AM +UTC (per Etherscan)  
-> **Function invoked**: `validateJob(uint256 _jobId,string subdomain,bytes32[] proof)`  
-> &nbsp;&nbsp;• `_jobId = 13`  
-> &nbsp;&nbsp;• `subdomain = "bluebutterfli"`  
-> &nbsp;&nbsp;• `proof = []` (empty array)
+---
 
-**Participants**
+## A. At‑a‑glance (legacy mainnet facts)
+
+**Etherscan source of truth**
+- **Legacy AGIJobManager contract**: `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`  
+  <https://etherscan.io/address/0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477>
+- **Legacy completion transaction**: `0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac`  
+  <https://etherscan.io/tx/0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac>
+- **Block time (UTC)**: Aug‑03‑2025 05:09:59 AM UTC (Etherscan tx timestamp)
+
+**Function called (from Etherscan input)**
+```
+validateJob(uint256 _jobId,string subdomain,bytes32[] proof)
+  _jobId    = 13
+  subdomain = "bluebutterfli"
+  proof     = []
+```
+
+**Participants (as shown on Etherscan)**
 - **Validator / tx sender**: `0x9DbBBC1E49dA102dC6c667a238E7EedEA9b0E290`
 - **Agent paid (888.node.agi.eth)**: `0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A`
 - **Employer / NFT receiver (asi.eth)**: `0xd76AD27E9C819c345A14825797ca8AFc0C15A491`
 
-**Outputs observed on the legacy tx**
-- **ERC‑20 transfers (from legacy contract)**
-  - `71,110.4` AGIALPHA → `0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A` (agent)
-  - `888.88` AGIALPHA → each validator address:
-    - `0x21301d901db04724597d1b6012ac49878157580d`
-    - `0xa9ed0539c2fbc5c6bc15a2e168bd9bcd07c01201`
-    - `0xecb97519efd7d9d9d279e7c284b286bbe10afaa9`
-    - `0x5e5f40346387874922e17b177f55a8880dd432cb`
-    - `0x2fdc910574113dfe6a4db5971e166e286813c79f`
-    - `0x88692de2a896c6534e544976defd41064904c730`
-    - `0xa46cea0a1871b875ee8a1798848c0089a321e588`
-    - `0x9DbBBC1E49dA102dC6c667a238E7EedEA9b0E290`
-- **ERC‑721 mint**: TokenID `12` minted from `0x0000000000000000000000000000000000000000` to `0xd76AD27E9C819c345A14825797ca8AFc0C15A491`
-- **`NFTIssued` event tokenURI**:  
+**Observed outputs (from Etherscan logs + token transfer list)**
+- **ERC‑20 paid to agent**: `71,110.4` AGIALPHA → `0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A`
+- **ERC‑20 paid to validators**: `888.88` AGIALPHA each →
+  - `0x21301d901db04724597d1b6012ac49878157580d`
+  - `0xa9ed0539c2fbc5c6bc15a2e168bd9bcd07c01201`
+  - `0xecb97519efd7d9d9d279e7c284b286bbe10afaa9`
+  - `0x5e5f40346387874922e17b177f55a8880dd432cb`
+  - `0x2fdc910574113dfe6a4db5971e166e286813c79f`
+  - `0x88692de2a896c6534e544976defd41064904c730`
+  - `0xa46cea0a1871b875ee8a1798848c0089a321e588`
+  - `0x9DbBBC1E49dA102dC6c667a238E7EedEA9b0E290`
+- **ERC‑721 mint**: AGIJobs TokenID **12** minted to `0xd76AD27E9C819c345A14825797ca8AFc0C15A491`
+- **`NFTIssued` tokenURI**:  
   `https://ipfs.io/ipfs//bafkreibq3jcpanwlzubcvhdwstbfrwc43wrq2nqjh5kgrvflau3gxgoum4`
 - **`JobCompleted` event**:  
   `jobId = 13`, `agent = 0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A`, `reputationPoints = 0`
 
 ---
 
-## A. Legacy flow walkthrough (v0 mainnet)
+## B. Legacy lifecycle (what this tx proves, and what it doesn’t)
 
-This transaction captures the **job completion path** for an existing job (`jobId = 13`). The steps below match the on-chain lifecycle that this single transaction represents.
+### What **is** directly observable from the transaction
+1. **A validator finalizes the job** by calling `validateJob(13, "bluebutterfli", [])`.
+2. **Completion occurs inside the same transaction**: the contract emits `JobCompleted` and `NFTIssued`, and issues ERC‑20 payouts.
+3. **Agent payout and validator rewards are paid from the contract** in the same call (9 ERC‑20 transfer events in the tx). 
+4. **ERC‑721 TokenID 12 is minted** to the employer, with the tokenURI shown above.
 
-1) **Job exists with escrowed funds**
-   - The job (`jobId = 13`) must already exist with AGIALPHA escrowed in the legacy contract.  
-   - *Not observable from this tx alone*: the original `createJob(...)` parameters and escrow deposit details.
+### What **cannot** be inferred from this tx alone
+- The original `createJob(...)` parameters (payout, duration, details).
+- The earlier assignment of the agent.
+- The prior validator approvals (this tx is the last approval that crossed the threshold).
 
-2) **Agent was assigned previously**
-   - The agent (`0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A`) had already been assigned to the job.  
-   - *Not observable from this tx alone*: which transaction performed the assignment or the exact assignment time.
-
-3) **Completion request and validator approvals accumulated**
-   - By the time this tx executes, the job had accumulated enough progress to be one approval away from completion.  
-   - *Not observable from this tx alone*: the full approval set before this call.
-
-4) **Validator calls `validateJob(...)`**
-   - The validator (`0x9DbBBC1E49dA102dC6c667a238E7EedEA9b0E290`) calls `validateJob(13, "bluebutterfli", [])`.  
-   - This increments `validatorApprovals` and **triggers `_completeJob(...)`**.
-
-5) **`_completeJob(...)` executes**
-   - **Calculates reputation** (shown as `0` in the `JobCompleted` event).  
-   - **Pays agent** (`71,110.4` AGIALPHA).  
-   - **Pays validators** by splitting `totalValidatorPayout / validators.length` (each `888.88` AGIALPHA).  
-   - **Mints ERC‑721** to the employer (TokenID `12`).  
-   - **Emits events**: `NFTIssued`, `JobCompleted`, ERC‑20 `Transfer` events, and ERC‑721 `Transfer`.
-
-> ✅ **Key takeaway**: The legacy transaction combines the *final validation* with *completion*, *payouts*, and *NFT mint* in one call.
+> **Evidence trail**: all observable details above are directly visible in the Etherscan transaction input and log sections for the tx hash.
 
 ---
 
-## B. New contract flow (this repo’s `AGIJobManager.sol`)
+## C. New contract lifecycle (same job, same actors, safer rules)
 
-**New contract file**: [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol) (also on GitHub: https://github.com/MontrealAI/AGIJobManager/blob/main/contracts/AGIJobManager.sol)
+**New contract**: `contracts/AGIJobManager.sol` (this repository)
 
-The **new contract** preserves the **same user‑visible lifecycle** and public function names for this case study, while tightening safety checks and dispute handling. The same actors and steps apply:
+The new contract preserves the **user‑visible lifecycle** (create → apply → request completion → validate → complete) while tightening safety and dispute handling. The local replay mirrors the same subdomains and event flow; addresses are role‑mapped to deterministic Ganache accounts due to test‑network signing limitations (see Section G).
 
-1) **Employer creates the job (same lifecycle)**
-   - `createJob(...)` escrows AGIALPHA in the contract.  
-   - The job is created with a new `jobId` from `nextJobId`.【F:contracts/AGIJobManager.sol†L221-L238】
+1. **Employer creates the job** with escrowed AGI tokens.  
+   - `createJob(ipfsHash, payout, duration, details)`
+2. **Agent applies** (e.g., `applyForJob(jobId, "888.node.agi.eth", [])`).  
+   - **New**: `_job(...)` existence guard blocks pre‑claiming non‑existent jobs.
+3. **Agent requests completion** with final IPFS hash.  
+   - `requestJobCompletion(jobId, ipfsHash)`
+4. **Validators validate** using their subdomain (e.g., `"bluebutterfli"`).  
+   - **New**: one‑vote‑per‑validator and no approve+disapprove.
+5. **Completion executes** with safeguards:  
+   - **No double‑complete**.  
+   - **No div‑by‑zero** in validator payout when `validators.length == 0`.  
+   - **ERC‑20 transfer checks** revert on failure.  
+   - **Employer‑win dispute** closes the job to prevent later completion.
 
-2) **Agent applies and is assigned (same lifecycle)**
-   - `applyForJob(...)` assigns the agent if none is assigned and authorization passes.  
-   - The job cannot be pre‑claimed before it exists due to `_job(...)` existence guard.【F:contracts/AGIJobManager.sol†L195-L206】【F:contracts/AGIJobManager.sol†L240-L248】
-
-3) **Agent requests completion (same lifecycle)**
-   - `requestJobCompletion(...)` records completion request and updated IPFS hash.【F:contracts/AGIJobManager.sol†L250-L257】
-
-4) **Validator calls `validateJob(...)`**
-   - Same external call as legacy: increments approvals and can trigger `_completeJob(...)`.  
-   - **New rule**: validator cannot both approve and disapprove (double‑vote protection).【F:contracts/AGIJobManager.sol†L259-L267】
-
-5) **`_completeJob(...)` executes with new guards**
-   - Prevents **double‑complete**: reverts if job already completed or missing assigned agent.【F:contracts/AGIJobManager.sol†L407-L413】
-   - Clears `disputed` and completes in one path.【F:contracts/AGIJobManager.sol†L414-L416】
-   - **Safe transfers** (`_t`/`_tFrom`) revert on ERC‑20 failure rather than silently succeeding.【F:contracts/AGIJobManager.sol†L204-L212】【F:contracts/AGIJobManager.sol†L421-L438】
-   - **Validator payout** checks `vCount > 0` to prevent division‑by‑zero if no validators are recorded.【F:contracts/AGIJobManager.sol†L427-L438】
-   - **NFT minted** to employer with tokenURI as `baseIpfsUrl + "/" + ipfsHash`.【F:contracts/AGIJobManager.sol†L440-L446】
-
-> ✅ **What stays the same**: the **public functions**, **events**, **role actors**, and **overall lifecycle** remain recognizable and compatible with the legacy flow.
+> ✅ **Outcome**: same lifecycle and event shapes as legacy, with deterministic safety checks that block known legacy hazards.
 
 ---
 
-## C. Side‑by‑side: legacy vs new (risk & fix table)
+## D. Side‑by‑side comparison (legacy vs. new)
 
-| Topic | Legacy behavior / risk | New behavior / fix | Why it matters |
+| Risk / behavior | Legacy (v0 mainnet) | New `AGIJobManager.sol` | Practical impact |
 |---|---|---|---|
-| Job takeover via pre‑claiming future IDs | A malicious agent could try to apply to job IDs that don’t exist yet, effectively pre‑claiming. | `_job(...)` requires `employer != address(0)` before job access, preventing pre‑claim on missing jobs.【F:contracts/AGIJobManager.sol†L195-L206】 | Stops “front‑running” future jobs and protects employers’ listings. |
-| Double‑complete / double payout risk | Completion paths could be re‑entered or called twice if the state isn’t locked. | `_completeJob(...)` reverts when `job.completed` is already true, making it idempotent‑safe.【F:contracts/AGIJobManager.sol†L407-L413】 | Prevents duplicate payouts and duplicate NFT mints. |
-| Division‑by‑zero in validator payout | If `validators.length` is 0, splitting can revert or misbehave. | `vCount > 0` check guards division before paying validators.【F:contracts/AGIJobManager.sol†L427-L438】 | Prevents accidental failure or undefined behavior when no validators exist. |
-| Double‑vote / approve+disapprove by same validator | A validator could vote twice or in both directions. | `validateJob` and `disapproveJob` forbid double‑voting across approvals and disapprovals.【F:contracts/AGIJobManager.sol†L259-L267】【F:contracts/AGIJobManager.sol†L270-L279】 | Keeps approvals honest and prevents vote manipulation. |
-| Unchecked ERC‑20 transfers (silent failures) | Token transfers could fail silently if `transfer` returns false. | `_t` / `_tFrom` revert on failed transfers (`TransferFailed`).【F:contracts/AGIJobManager.sol†L204-L212】 | Ensures payouts and refunds actually happen or the tx reverts. |
-| Dispute “employer win” closure & post‑resolution completion | If employer wins a dispute, legacy behavior can allow later completion and double payout. | `resolveDispute` sets `completed = true` on “employer win,” closing the job.【F:contracts/AGIJobManager.sol†L297-L309】 | Prevents later completion from paying out after a resolved employer‑win dispute. |
+| **Job takeover via non‑existent jobId** | Agent can pre‑claim a future job ID. | `_job(...)` requires `employer != address(0)` before any action. | Prevents front‑running / phantom job capture. |
+| **Double‑complete / double payout** | Possible in disputed flows; legacy can mint/pay twice. | `_completeJob(...)` reverts once `completed = true`. | Eliminates duplicate payouts and double mint risk. |
+| **Division‑by‑zero** | Validator payout uses `validators.length`; can revert if zero. | `vCount > 0` guard before splitting payout. | Avoids runtime failure and locked funds. |
+| **Double‑vote** | A validator can approve and disapprove the same job. | `validateJob` + `disapproveJob` enforce one‑way vote. | Prevents manipulation of validator thresholds. |
+| **Unchecked ERC‑20 transfers** | ERC‑20 `transfer` failure can silently succeed. | `_t` / `_tFrom` revert on failure (`TransferFailed`). | Ensures funds move or the tx fails. |
+| **Employer‑win dispute closure** | Employer‑win dispute does not close job; later completion can still happen. | `resolveDispute(..., "employer win")` refunds employer and sets `completed = true`. | Prevents payout after employer‑win resolution. |
 
 ---
 
-## D. Where the new contract is strictly better (code‑anchored)
+## E. Code‑anchored behavior in the new contract (no contract edits)
 
-✅ **Existence guard** — `_job(...)` checks that a job exists (`employer != address(0)`) before any workflow step, preventing pre‑claim/takeover on future job IDs.【F:contracts/AGIJobManager.sol†L195-L206】
+**Key improvements mapped to concrete functions**
+- **Job existence guard** — `_job(...)` reverts if `employer == address(0)` (pre‑claim/takeover fix).
+- **Completion guard** — `_completeJob(...)` reverts when `job.completed` is already true.
+- **Vote‑rule enforcement** — `validateJob(...)` and `disapproveJob(...)` block duplicate votes.
+- **Safe ERC‑20 transfers** — `_t(...)` and `_tFrom(...)` revert on failed token transfers.
+- **Dispute closure** — `resolveDispute(..., "employer win")` refunds and marks the job completed, blocking later completion.
 
-✅ **Double‑complete prevention** — `_completeJob(...)` reverts if `job.completed` is already true, blocking re‑entry or double payout attempts.【F:contracts/AGIJobManager.sol†L407-L413】
-
-✅ **Validator payout safety** — `vCount > 0` guard prevents division‑by‑zero when splitting validator rewards.【F:contracts/AGIJobManager.sol†L427-L438】
-
-✅ **Vote rules tightened** — a validator cannot approve and disapprove the same job; each direction is one‑time only.【F:contracts/AGIJobManager.sol†L259-L267】【F:contracts/AGIJobManager.sol†L270-L279】
-
-✅ **ERC‑20 transfer checks** — `_t(...)` and `_tFrom(...)` revert if token transfers fail, avoiding silent payout failures.【F:contracts/AGIJobManager.sol†L204-L212】
-
-✅ **Dispute‑resolution closure** — on “employer win,” `resolveDispute(...)` refunds and marks the job completed so no future completion is possible while still emitting `DisputeResolved` for any string resolution value.【F:contracts/AGIJobManager.sol†L297-L309】
+**Behavior intentionally preserved from legacy**
+- Same external function names and core lifecycle steps.
+- Same event names (`JobCompleted`, `NFTIssued`, etc.).
+- Same `tokenURI = baseIpfsUrl + "/" + ipfsHash` construction.
 
 ---
 
-## E. Legacy vs new: Mermaid sequence diagrams
+## F. Illustrations (GitHub‑renderable)
 
-### Legacy (v0 mainnet)
+### Legacy sequence (mainnet tx)
 
 ```mermaid
 sequenceDiagram
     participant Employer
     participant Agent
     participant Validator
-    participant LegacyContract as Legacy AGIJobManager
+    participant Legacy as Legacy AGIJobManager
 
-    Employer->>LegacyContract: createJob(...) (escrow)
-    Agent->>LegacyContract: applyForJob(...)
-    Agent->>LegacyContract: requestJobCompletion(...)
-    Validator->>LegacyContract: validateJob(13, "bluebutterfli", [])
-    LegacyContract->>LegacyContract: _completeJob(13)
-    LegacyContract-->>Agent: AGIALPHA payout (71,110.4)
-    LegacyContract-->>Validator: AGIALPHA split (888.88 each)
-    LegacyContract-->>Employer: Mint AGIJobs TokenID 12
-    LegacyContract-->>All: Emit JobCompleted + NFTIssued
+    Employer->>Legacy: createJob(...)
+    Agent->>Legacy: applyForJob(...)
+    Agent->>Legacy: requestJobCompletion(...)
+    Validator->>Legacy: validateJob(13, "bluebutterfli", [])
+    Legacy->>Legacy: _completeJob(13)
+    Legacy-->>Agent: AGIALPHA payout (71,110.4)
+    Legacy-->>Validator: AGIALPHA split (888.88 each)
+    Legacy-->>Employer: Mint AGIJobs TokenID 12
+    Legacy-->>All: Emit JobCompleted + NFTIssued
 ```
 
-### New contract (this repo)
+### New contract sequence (same lifecycle + guards)
 
 ```mermaid
 sequenceDiagram
     participant Employer
     participant Agent
     participant Validator
-    participant NewContract as New AGIJobManager
+    participant New as New AGIJobManager
 
-    Employer->>NewContract: createJob(...) (escrow)
-    Agent->>NewContract: applyForJob(...)
-    NewContract-->>Agent: Revert if jobId missing (_job guard)
-    Agent->>NewContract: requestJobCompletion(...)
-    Validator->>NewContract: validateJob(13, "bluebutterfli", [])
-    NewContract-->>Validator: Revert if double‑vote
-    NewContract->>NewContract: _completeJob(13)
-    NewContract-->>NewContract: Revert if already completed
-    NewContract-->>Agent: AGIALPHA payout (checked transfer)
-    NewContract-->>Validator: AGIALPHA split (vCount>0)
-    NewContract-->>Employer: Mint AGIJobs TokenID 12
-    NewContract-->>All: Emit JobCompleted + NFTIssued
+    Employer->>New: createJob(...)
+    Agent->>New: applyForJob(...)
+    New-->>Agent: Revert if jobId missing (_job guard)
+    Agent->>New: requestJobCompletion(...)
+    Validator->>New: validateJob(13, "bluebutterfli", [])
+    New-->>Validator: Revert if double‑vote
+    New->>New: _completeJob(13)
+    New-->>New: Revert if already completed
+    New-->>Agent: AGIALPHA payout (checked transfer)
+    New-->>Validator: AGIALPHA split (vCount > 0)
+    New-->>Employer: Mint AGIJobs TokenID 12
+    New-->>All: Emit JobCompleted + NFTIssued
 ```
+
+### Payouts (legacy tx)
+
+- **Agent**: `71,110.4` AGIALPHA → `0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A`
+- **Validators (8)**: `888.88` AGIALPHA each to the addresses listed in Section A
+- **Employer**: receives ERC‑721 TokenID **12** with tokenURI shown above
 
 ---
 
-## F. Payouts summary (legacy case)
+## G. Local “perfect replay” (Truffle + deterministic mocks)
 
-**Why each party is paid**
-- **Agent**: receives the primary payout for completing the job (71,110.4 AGIALPHA).
-- **Validators**: receive equal split of the validator reward pool (888.88 AGIALPHA each).
-- **Employer**: receives the AGIJobs ERC‑721 token representing the completed job deliverable (TokenID 12).
+> This replay is *as close as possible* to mainnet given a local chain. It uses mock ENS + resolver + namewrapper, and **reuses the exact legacy subdomain strings** from the tx. Mainnet addresses are documented here, but the test uses deterministic Ganache accounts mapped to those roles. Token **amounts are approximated** to keep the test deterministic and small.
+
+### Test file
+- **`test/caseStudies.job12.replay.test.js`**
+
+### What the test asserts
+- End‑to‑end lifecycle: create → apply → request completion → validate (8 validators) → complete.
+- `NFTIssued` and `JobCompleted` events emitted.
+- NFT minted to the employer with `tokenURI = baseIpfsUrl + "/" + ipfsHash`.
+- ERC‑20 payouts split between agent and validators (92% / 8% in the test).
+- **Better‑only checks**:
+  - Apply on non‑existent `jobId` reverts (takeover prevention).
+  - Same validator cannot validate twice.
+  - Approve then disapprove reverts.
+  - Completed job cannot be completed again.
+  - Agent‑win dispute resolves even with zero validators (no div‑by‑zero).
+
+### How ENS is mocked
+- **Subnode computation (in Solidity)**:  
+  `subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))))`
+- **Test root nodes**:
+  - `clubRootNode = keccak256("club.agi.eth")`
+  - `agentRootNode = keccak256("agent.agi.eth")`
+- **Mock behaviors**:
+  - `ENS.resolver(subnode)` → mock resolver address
+  - `Resolver.addr(subnode)` → claimant address (per validator call)
+  - `NameWrapper.ownerOf(uint256(subnode))` → claimant address (agent ownership)
+
+### Running the replay locally
+```bash
+npm install
+truffle compile
+truffle test
+```
+
+> Note: the **lifecycle and identities are matched** (subdomains, events), but **Ganache does not support arbitrary mainnet‑address signing** in this repo’s default test network. The replay therefore uses deterministic local accounts that are *role‑mapped* to the mainnet identities, while keeping the same subdomain strings and event flow. Token **amounts are approximated** to keep the fixture deterministic and small.
 
 ---
 
-## G. Practical reproduction guidance (local Truffle tests)
+## H. What is matched exactly vs. approximated
 
-> ⚠️ This is a *local replay* of the lifecycle, not a perfect mainnet replay. ENS ownership checks won’t resolve on a local chain unless you add mocks. The contract exposes `additionalAgents` / `additionalValidators` mappings that test harnesses can set (e.g., via a derived test contract or direct storage helpers) to bypass ENS/Merkle gating in local tests.【F:contracts/AGIJobManager.sol†L156-L160】
-
-**Pseudo‑script (local test flow)**
-```solidity
-// 1) Employer creates job
-createJob(ipfsHash, payout, duration, details)
-
-// 2) Owner/Moderator marks local test addresses as allowed
-additionalAgents[agent] = true
-additionalValidators[validator] = true
-
-// 3) Agent applies and requests completion
-applyForJob(jobId, "bluebutterfli", [])
-requestJobCompletion(jobId, finalIpfsHash)
-
-// 4) Validator validates and completes
-validateJob(jobId, "bluebutterfli", [])
-
-// 5) New‑contract reverts on legacy exploits
-validateJob(jobId, "bluebutterfli", []) // ❌ double‑vote revert
-_completeJob(jobId) // ❌ double‑complete revert
-```
+| Dimension | Matched exactly | Approximated | Rationale |
+|---|---|---|---|
+| **Addresses** | Mainnet addresses listed in the case study | Local test uses deterministic Ganache accounts | Ganache does not impersonate arbitrary mainnet addresses in this config |
+| **Subdomains** | `"bluebutterfli"`, `"888.node.agi.eth"` | — | Matches tx input & agent label |
+| **Function call** | `validateJob(13, "bluebutterfli", [])` | — | From Etherscan input |
+| **Events** | `JobCompleted`, `NFTIssued` | — | Same event semantics |
+| **ERC‑20 amounts** | — | Yes | Local test uses smaller numbers for determinism |
+| **JobId / TokenId** | TokenID 12 in legacy | Local jobId/tokenId start at 0 | Fresh local chain |
 
 ---
 
 ## References
-- **Legacy contract (Etherscan)**: https://etherscan.io/address/0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477
-- **Legacy completion tx (Etherscan)**: https://etherscan.io/tx/0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac
-- **New contract source**: [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol) (GitHub: https://github.com/MontrealAI/AGIJobManager/blob/main/contracts/AGIJobManager.sol)
+- **Legacy contract (Etherscan)**: <https://etherscan.io/address/0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477>
+- **Legacy completion tx (Etherscan)**: <https://etherscan.io/tx/0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac>
+- **New contract source**: `contracts/AGIJobManager.sol`
