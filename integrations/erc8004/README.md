@@ -8,6 +8,9 @@ This adapter consumes AGIJobManager events and produces ERC-8004-friendly reputa
 npm install
 npm run build
 
+# optional: copy the sample env file
+cp .env.example .env
+
 # export metrics from a deployed AGIJobManager
 AGIJOBMANAGER_ADDRESS=0xYourContract \
 FROM_BLOCK=0 \
