@@ -16,6 +16,9 @@ This documentation set targets engineers, integrators, operators, and auditors. 
 - **Regression tests summary**: [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md)
 - **FAQ**: [`FAQ.md`](FAQ.md)
 
+## Case studies
+- **Legacy AGI Job 12 vs New AGIJobManager**: [`case-studies/LEGACY_AGI_JOB_12_VS_NEW.md`](case-studies/LEGACY_AGI_JOB_12_VS_NEW.md)
+
 ## Regenerating interface docs
 
 The interface reference is generated from the compiled ABI. After running a compile, regenerate it with:
