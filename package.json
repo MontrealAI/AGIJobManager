@@ -13,9 +13,12 @@
     "@openzeppelin/contracts": "^4.9.5"
   },
   "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.16",
     "@truffle/hdwallet-provider": "^2.1.15",
     "dotenv": "^16.4.5",
     "ganache": "^7.9.2",
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.6.0",
     "solhint": "^5.0.3",
     "truffle": "^5.11.5"
   }
