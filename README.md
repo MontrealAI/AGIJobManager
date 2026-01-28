@@ -11,6 +11,7 @@ AGIJobManager is a single-contract system for managing employer/agent jobs, vali
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
 - [Scripts](#scripts)
+- [ERC-8004 integration](#erc-8004-integration)
 - [Configuration](#configuration)
 - [Deployment](#deployment)
 - [Security](#security)
@@ -49,6 +50,12 @@ npm test
 - `npm run lint` — Lint Solidity sources with Solhint.
 - `npm test` — Run the test suite.
 - `docs/REGRESSION_TESTS.md` — Better-only regression coverage comparing current vs original contract behavior.
+
+## ERC-8004 integration
+This repo provides an **off-chain** ERC-8004 adapter that consumes AGIJobManager events and emits reputation artifacts without changing on-chain escrow logic. See:
+- `docs/ERC8004.md` for the integration overview.
+- `integrations/erc8004/README.md` for adapter usage and scripts.
+- `integrations/erc8004/adapter_spec.md` for the event-to-metric mapping.
 
 ## Configuration
 Truffle networks and compiler settings are configured in `truffle-config.js`. The following environment variables are used for deployments and verification:
