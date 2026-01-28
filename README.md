@@ -48,6 +48,7 @@ npm test
 - `npm run build` — Compile the contracts with Truffle.
 - `npm run lint` — Lint Solidity sources with Solhint.
 - `npm test` — Run the test suite.
+- `docs/REGRESSION_TESTS.md` — Better-only regression coverage comparing current vs original contract behavior.
 
 ## Configuration
 Truffle networks and compiler settings are configured in `truffle-config.js`. The following environment variables are used for deployments and verification:
