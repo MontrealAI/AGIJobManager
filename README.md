@@ -104,6 +104,7 @@ job NFT issuance]
 - **Security model**: [`docs/Security.md`](docs/Security.md)
 - **ERC‑8004 integration**: [`docs/ERC8004.md`](docs/ERC8004.md)
 - **ABI & interface reference**: [`docs/Interface.md`](docs/Interface.md)
+- **Testing guide**: [`docs/Testing.md`](docs/Testing.md)
 
 ## Quickstart
 
