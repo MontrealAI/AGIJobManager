@@ -1,0 +1,27 @@
+{
+  "name": "Example AGIJobManager Agent",
+  "description": "Sample ERC-8004 registration file for an AGIJobManager-compatible agent.",
+  "version": "1.0",
+  "services": [
+    {
+      "type": "a2a-card",
+      "url": "https://example.com/agent-card.json"
+    },
+    {
+      "type": "mcp",
+      "url": "https://mcp.example.com"
+    },
+    {
+      "type": "ens",
+      "value": "agent.eth"
+    },
+    {
+      "type": "email",
+      "value": "agent@example.com"
+    }
+  ],
+  "metadata": {
+    "website": "https://example.com",
+    "notes": "Host this file on HTTPS or IPFS and set the ERC-8004 identity tokenURI to the URL."
+  }
+}
