@@ -27,6 +27,11 @@ The test suite includes minimal mock contracts under `contracts/test/`:
 - **MockERC721**: ERC‑721 mock used for AGIType payout boosts.
 - **MockENS**, **MockResolver**, **MockNameWrapper**: deterministic ENS/NameWrapper mocks for access gating tests.
 
+## Suite layout
+
+- **`test/AGIJobManager.full.test.js`**: comprehensive unit/integration coverage for lifecycle, dispute resolution, vote rules, ERC‑20 transfer checks, and NFT marketplace behavior.
+- **`test/regressions.better-only.js`**: regression coverage for the better‑only hardening fixes.
+
 ## Extending tests
 
 - Add new scenarios under `test/` and reuse the helper utilities in `test/AGIJobManager.full.test.js`.
