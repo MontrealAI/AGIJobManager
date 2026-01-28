@@ -1,0 +1,26 @@
+{
+  "name": "Example AGI Agent",
+  "description": "Demonstration registration for an AGIJobManager agent identity.",
+  "services": [
+    {
+      "type": "a2a",
+      "uri": "https://example.com/agent-card.json",
+      "name": "A2A card"
+    },
+    {
+      "type": "mcp",
+      "uri": "https://mcp.example.com/agent",
+      "name": "MCP endpoint"
+    },
+    {
+      "type": "ens",
+      "uri": "ens:example-agent.eth",
+      "name": "ENS"
+    },
+    {
+      "type": "email",
+      "uri": "mailto:agent@example.com",
+      "name": "Contact"
+    }
+  ]
+}

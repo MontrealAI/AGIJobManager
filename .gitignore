@@ -71,6 +71,9 @@ web_modules/
 .env.*
 !.env.example
 
+# ERC-8004 adapter outputs
+integrations/erc8004/out/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

@@ -50,6 +50,12 @@ npm test
 - `npm test` — Run the test suite.
 - `docs/REGRESSION_TESTS.md` — Better-only regression coverage comparing current vs original contract behavior.
 
+## ERC-8004 integration (off-chain)
+AGIJobManager can interoperate with the ERC-8004 identity + reputation ecosystem via a lightweight off-chain adapter. See:
+
+- [`docs/ERC8004.md`](docs/ERC8004.md) — integration overview and guidance.
+- [`integrations/erc8004/`](integrations/erc8004/) — adapter spec, scripts, and examples.
+
 ## Configuration
 Truffle networks and compiler settings are configured in `truffle-config.js`. The following environment variables are used for deployments and verification:
 
