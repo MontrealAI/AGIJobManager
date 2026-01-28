@@ -19,10 +19,12 @@ Functions **without** `nonReentrant` include `requestJobCompletion`, `listNFT`, 
 ## Fixed issues vs. historical behavior
 The repository test suite documents several behavior improvements over a prior version. The following improvements are baked into the current code:
 - **Pre-apply takeover blocked**: a job cannot be reassigned once an agent is set.
+- **Phantom job IDs blocked**: functions using `_job` revert if the job does not exist instead of acting on default data.
 - **Disputed double-complete blocked**: disputes resolved with employer win close the job to prevent later completion.
 - **Division-by-zero avoided**: agent-win dispute completion handles zero-validator cases safely.
 - **Validator double-votes blocked**: validators cannot approve and disapprove the same job (or double vote).
 - **Employer-win dispute properly closes** the job and refunds escrow.
+- **Unchecked transfers fixed**: ERC-20 `transfer`/`transferFrom` return values are checked and revert on failure.
 - **Failed refunds revert** instead of silently deleting jobs when token transfers fail.
 
 ## Remaining risks & assumptions
@@ -39,4 +41,3 @@ The repository test suite documents several behavior improvements over a prior v
 - **Dispute strings** must match exactly: `"agent win"` or `"employer win"` (case-sensitive, ASCII). Otherwise no payout/refund occurs.
 - **Handle custom errors**: integrators should decode custom errors (e.g., `InvalidState`, `NotAuthorized`, `TransferFailed`) when calls revert.
 - **Monitor events**: state changes are best tracked via events (`JobCreated`, `JobCompleted`, `JobDisputed`, `DisputeResolved`, NFT events, etc.).
-

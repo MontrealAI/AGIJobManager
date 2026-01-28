@@ -25,6 +25,16 @@ The contract’s initial values are:
 - `maxJobPayout = 4888e18`
 - `jobDurationLimit = 10000000`
 
+### Parameter meanings (operator notes)
+| Parameter | Meaning | Operational notes |
+| --- | --- | --- |
+| `requiredValidatorApprovals` | Number of validator approvals required for completion. | Higher values increase validation confidence but slow completion. |
+| `requiredValidatorDisapprovals` | Number of validator disapprovals required to auto-dispute. | Setting too low can trigger frequent disputes. |
+| `validationRewardPercentage` | Percentage of payout allocated to validators. | Split equally across all validators who voted. |
+| `premiumReputationThreshold` | Minimum reputation for `canAccessPremiumFeature`. | Affects only off-chain integrations. |
+| `maxJobPayout` | Hard cap on job payouts in `createJob`. | Must align with escrow risk tolerance. |
+| `jobDurationLimit` | Maximum job duration in seconds. | Enforcement occurs during `createJob`. |
+
 ## Operational configuration
 ### Admin controls (owner-only)
 - **Pause/unpause**
@@ -46,6 +56,7 @@ The contract’s initial values are:
   - Moderators: `addModerator` / `removeModerator`.
   - Explicit allowlists: `addAdditionalAgent`, `removeAdditionalAgent`, `addAdditionalValidator`, `removeAdditionalValidator`.
   - Blacklists: `blacklistAgent`, `blacklistValidator`.
+  - **Blacklist usage**: blacklisted agents cannot apply, and blacklisted validators cannot approve/disapprove. Existing assignments are not auto-cleared.
 
 - **AGI types**
   - `addAGIType(nftAddress, payoutPercentage)` adds or updates a payout multiplier tied to owning an ERC-721.
@@ -58,6 +69,11 @@ The contract’s initial values are:
 - **Withdrawals**
   - `withdrawAGI(amount)` allows the owner to move ERC-20 balance out of the contract.
   - It reverts on `amount == 0` or `amount > balance`.
+  - **Caveat**: withdrawals reduce escrow safety for open jobs; monitor outstanding `job.payout` values.
+
+- **Reward pool contributions**
+  - `contributeToRewardPool` allows anyone to send ERC-20 to the contract.
+  - There is **no automatic distribution** of contributed funds.
 
 ### Job controls
 - Employers can `cancelJob` before assignment (refunds escrow, deletes job).
@@ -78,4 +94,3 @@ The contract’s initial values are:
 - **Token rotation mismatch**: escrowed balance remains in old ERC-20.
 - **Zero validator count**: no validator rewards are distributed on completion.
 - **Agent with no AGI type**: agent payout percentage can be zero.
-

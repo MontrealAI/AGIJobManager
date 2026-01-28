@@ -37,7 +37,7 @@ What it **is not**:
 - **NFT issuance & listing**: Job completion mints an ERC-721 to the employer, with tokenURI built from a base IPFS URL + job IPFS hash.
 
 ## Roles & permissions
-> Full function-by-function access rules, preconditions, and effects are in the [Interface reference](AGIJobManager_Interface.md).
+> Full function-by-function access rules, preconditions, and effects (including custom errors) are in the [Interface reference](AGIJobManager_Interface.md).
 
 - **Owner (contract owner)**
   - Can pause/unpause job flows.
@@ -65,7 +65,7 @@ What it **is not**:
   - Their approvals/disapprovals contribute to dispute/completion thresholds.
 
 ## Job lifecycle & state machine
-AGIJobManager tracks job progress through explicit state variables on each job: `assignedAgent`, `assignedAt`, `completionRequested`, `validatorApprovals`, `validatorDisapprovals`, `disputed`, and `completed`.
+AGIJobManager tracks job progress through explicit state variables on each job: `assignedAgent`, `assignedAt`, `completionRequested`, `validatorApprovals`, `validatorDisapprovals`, `disputed`, and `completed`. The `validators` array grows for **both** approvals and disapprovals (used for validator payouts).
 
 ```mermaid
 stateDiagram-v2
@@ -91,7 +91,7 @@ stateDiagram-v2
 ```
 
 Key state transitions and flags:
-- **Create**: `assignedAgent` is `address(0)`, `completed=false`, `disputed=false`.
+- **Create**: `assignedAgent` is `address(0)`, `completed=false`, `disputed=false`, and creation enforces `payout > 0`, `duration > 0`, and `payout/duration` within configured limits.
 - **Assign**: `assignedAgent` set, `assignedAt` captured.
 - **Completion request**: `completionRequested=true`, updates `ipfsHash`.
 - **Validate**: increments `validatorApprovals`; once approvals reach `requiredValidatorApprovals`, `_completeJob` runs.
@@ -105,7 +105,7 @@ Key state transitions and flags:
 ## Token and accounting semantics
 - **Escrow on creation**: `createJob` pulls `_payout` from the employer using `transferFrom` and holds it in the contract.
 - **Agent payout**: On completion, the agent receives `job.payout * agentPayoutPercentage / 100`, where `agentPayoutPercentage` is the highest percentage among AGI types (ERC-721s) held by the agent. If no AGI types exist or the agent holds none, this value is `0` and the agent receives **no payout**.
-- **Validator payout**: If there are validators, `validationRewardPercentage` of the payout is split equally across the validators who voted (approval or disapproval). If there are **zero validators**, validator payouts are skipped entirely.
+- **Validator payout**: If there are validators, `validationRewardPercentage` of the payout is split equally across the validators who voted (approval **or** disapproval). If there are **zero validators**, validator payouts are skipped entirely.
 - **Residual funds**: Any unassigned portion of the payout remains in the contract balance (e.g., agent payout is 0 and there are no validators).
 - **Refund paths**:
   - `cancelJob` (employer) and `delistJob` (owner) refund the employer and delete the job (only allowed before assignment).
@@ -137,7 +137,7 @@ The contract uses `_verifyOwnership` to gate agents and validators.
 ## NFT issuance & marketplace
 - **Minting**: On job completion, the contract mints an ERC-721 to the employer.
 - **Token URI**: `tokenURI = baseIpfsUrl + "/" + job.ipfsHash`.
-- **Listing**: Owner can call `listNFT(tokenId, price)` to list. The listing is stored in `listings` and does **not** escrow the NFT.
+- **Listing**: Token owners can call `listNFT(tokenId, price)` to list. The listing is stored in `listings` and does **not** escrow the NFT.
 - **Purchase**: `purchaseNFT` pulls ERC-20 from the buyer and calls `_transfer` to transfer the NFT. The listing is then deactivated.
 - **Delist**: Seller can deactivate a listing via `delistNFT`.
 
