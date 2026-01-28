@@ -40,9 +40,9 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
   const [owner, employer, agent, validator1, validator2, validator3, moderator, other] = accounts;
 
   const mainnetIdentities = {
-    validator: "0x9DbBBC1E49dA102dC6c667a238E7EedEA9b0E290",
+    validator: "0x9DbBBCc3c603903702BC323C4A4A8a597280a89B",
     agent: "0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A",
-    employer: "0xd76AD27E9C819c345A14825797ca8AFc0C15A491",
+    employer: "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
   };
 
   const subdomains = {
@@ -50,6 +50,8 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     validatorPrimary: "bluebutterfli",
     validator2: "validator-two",
     validator3: "validator-three",
+    validator4: "validator-four",
+    validator5: "validator-five",
   };
 
   let token;
@@ -230,6 +232,12 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       from: owner,
     });
 
+    await manager.disapproveJob(jobId, subdomains.validator2, EMPTY_PROOF, { from: validator2 });
+
+    await expectRevert.unspecified(
+      manager.validateJob(jobId, subdomains.validator2, EMPTY_PROOF, { from: validator2 })
+    );
+
     await configureEnsOwnership({
       ens,
       resolver,
@@ -240,12 +248,36 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       from: owner,
     });
 
+    await configureEnsOwnership({
+      ens,
+      resolver,
+      nameWrapper,
+      rootNode: clubRootNode,
+      subdomain: subdomains.validator4,
+      claimant: other,
+      from: owner,
+    });
+
     await manager.setRequiredValidatorApprovals(3, { from: owner });
-    await manager.validateJob(jobId, subdomains.validator2, EMPTY_PROOF, { from: validator2 });
     await manager.validateJob(jobId, subdomains.validator3, EMPTY_PROOF, { from: validator3 });
+    await manager.validateJob(jobId, subdomains.validator4, EMPTY_PROOF, { from: other });
 
     await expectRevert.unspecified(
       manager.validateJob(jobId, subdomains.validatorPrimary, EMPTY_PROOF, { from: validator1 })
+    );
+
+    await configureEnsOwnership({
+      ens,
+      resolver,
+      nameWrapper,
+      rootNode: clubRootNode,
+      subdomain: subdomains.validator5,
+      claimant: moderator,
+      from: owner,
+    });
+
+    await expectRevert.unspecified(
+      manager.validateJob(jobId, subdomains.validator5, EMPTY_PROOF, { from: moderator })
     );
   });
 
