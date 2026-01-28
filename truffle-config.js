@@ -54,14 +54,19 @@ const solcRuns = Math.floor(n(process.env.SOLC_RUNS, 200));
 const solcViaIR = (process.env.SOLC_VIA_IR || '').toLowerCase() === 'true';
 const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();
 
+const testProvider = ganache.provider({
+  wallet: {
+    mnemonic: process.env.GANACHE_MNEMONIC || "test test test test test test test test test test test junk",
+  },
+  logging: { quiet: true },
+  chain: { chainId: 1337, networkId: 1337, hardfork: "london" },
+  miner: { blockGasLimit: 100_000_000 },
+});
+
 module.exports = {
   networks: {
     test: {
-      provider: () => ganache.provider({
-        logging: { quiet: true },
-        chain: { chainId: 1337, networkId: 1337, hardfork: "london" },
-        miner: { blockGasLimit: 100_000_000 },
-      }),
+      provider: () => testProvider,
       network_id: 1337,
       gas: 80_000_000,
     },
