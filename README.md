@@ -2,51 +2,57 @@
 
 AGIJobManager is a single-contract escrow and workflow engine for employer–agent jobs, validation, dispute resolution, reputation, and job NFT issuance on Ethereum-compatible networks.
 
-> **Warning**: This is an experimental/research system. Use caution and conduct your own review before production deployment.
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Solidity](https://img.shields.io/badge/solidity-%5E0.8.17-363636.svg)](contracts/AGIJobManager.sol)
+[![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
+[![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
+
+> **Status / Caution**
+> This repository is **research/experimental**. Use caution, review the contract and tests, and do not deploy to production without independent security review.
 
 ## Quick links
-- Contract source: [`contracts/AGIJobManager.sol`](contracts/AGIJobManager.sol)
-- How to Deploy: [Deployment](#deployment-truffle)
-- How to Test: [Testing](#testing)
-- Security: [Security considerations](#security-considerations)
-- Deployed v0 (historical): [Etherscan 0x0178b6bad606aaf908f72135b8ec32fc1d5ba477](https://etherscan.io/address/0x0178b6bad606aaf908f72135b8ec32fc1d5ba477)
-- Docs: [`docs/`](docs/)
+
+| Resource | Link |
+| --- | --- |
+| Contract source | [`contracts/AGIJobManager.sol`](contracts/AGIJobManager.sol) |
+| Docs index | [`docs/README.md`](docs/README.md) |
+| Deployment guide | [`docs/Deployment.md`](docs/Deployment.md) |
+| Security notes | [`docs/Security.md`](docs/Security.md) |
+| Interface reference (ABI-derived) | [`docs/Interface.md`](docs/Interface.md) |
+| Original mainnet contract (historical v0) | [0x0178b6bad606aaf908f72135b8ec32fc1d5ba477](https://etherscan.io/address/0x0178b6bad606aaf908f72135b8ec32fc1d5ba477) |
 
 ---
 
-## What it is / what it isn’t
+## What it is / what it is not
 
 **What it is**
-- **Job escrow + workflow**: employers lock ERC-20 funds into jobs, agents are assigned, validators review outcomes, and disputes are resolved on-chain.
-- **Reputation tracking**: on-chain reputation for agents and validators, derived from payout amounts and completion time.
-- **NFT issuance + marketplace**: a job completion mints an ERC-721 to the employer, which can be listed and purchased via a simple on-chain listing flow.
-- **Eligibility gating**: validator/agent access is gated by Merkle roots and/or ENS NameWrapper + Resolver ownership checks.
+- **Job escrow + workflow**: employers lock ERC‑20 funds into jobs, agents are assigned, validators review outcomes, and disputes are resolved on-chain.
+- **Reputation tracking**: on-chain reputation updates for agents and validators based on payout and completion time.
+- **Job NFT issuance + marketplace**: successful completion mints an ERC‑721 to the employer, which can be listed and purchased via a simple listing flow.
+- **Eligibility gating**: agents and validators are gated by Merkle roots and ENS NameWrapper + Resolver ownership checks.
 
 **What it is not**
-- **Not a generalized identity registry**: it does not implement an on-chain identity standard (e.g., ERC-8004 lives off-chain in this repo).
+- **Not a generalized identity registry**: no on-chain ERC‑8004 registry is implemented here.
 - **Not a full-featured marketplace**: listings apply only to job NFTs minted by this contract.
-- **Not a permissionless validator marketplace**: validators are explicitly gated (Merkle/ENS/allowlists).
+- **Not a permissionless validator network**: validators are gated by allowlists and ownership checks.
 
 ---
 
-## Key concepts
+## Concepts and roles
 
 **Roles**
-- **Owner**: contract admin; can pause flows, tune parameters, update allowlists/blacklists, withdraw funds, and manage AGI types.
+- **Owner**: contract administrator (pausing, parameters, allowlists/blacklists, AGI types, withdrawals).
 - **Moderator**: resolves disputes.
-- **Employer**: creates jobs and funds escrow.
-- **Agent**: applies to and completes jobs (if eligible).
-- **Validator**: validates or disapproves jobs (if eligible).
+- **Employer**: creates and funds jobs.
+- **Agent**: applies for and completes jobs.
+- **Validator**: approves or disapproves jobs.
 
-**Assets & primitives**
-- **AGI ERC-20 token**: escrowed for payouts and transfers.
-- **Job NFTs (ERC-721)**: minted to the employer on completion, tokenURI = `baseIpfsUrl + "/" + job.ipfsHash`.
-- **AGIType NFTs**: optional NFTs that increase agent payout percentage.
-- **Listings marketplace**: a simple listing/purchase mechanism for job NFTs (no escrowed NFTs).
-
-**Authorization sources**
-- **Merkle roots**: agent and validator allowlists.
-- **ENS + NameWrapper + Resolver**: ENS-based ownership checks for subdomains; resolver fallback is used when NameWrapper does not confirm ownership.
+**Core primitives**
+- **Job**: escrowed payout + metadata + lifecycle state.
+- **Reputation mapping**: on-chain reputation points stored per address.
+- **AGI types**: optional ERC‑721 NFTs that raise the agent payout percentage.
+- **Job NFTs**: ERC‑721 tokens minted to employers when a job completes.
+- **Marketplace listing**: non-escrow listing/purchase for job NFTs.
 
 ---
 
@@ -67,170 +73,125 @@ stateDiagram-v2
     Assigned --> Disputed: disapproveJob (threshold)
     CompletionRequested --> Disputed: disapproveJob (threshold)
 
-    Disputed --> Completed: resolveDispute("agent win")
-    Disputed --> Resolved: resolveDispute("employer win")
+    Disputed --> Completed: resolveDispute('agent win')
+    Disputed --> Resolved: resolveDispute('employer win')
     Disputed --> Resolved: resolveDispute(other)
 
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
 
-**State fields that change across the lifecycle**
-- `assignedAgent`, `assignedAt`
-- `completionRequested`
-- `validatorApprovals`, `validatorDisapprovals`
-- `disputed`, `completed`
+**State variables and flags that encode stages**
+- **Created**: `assignedAgent == address(0)`, `completed=false`, `disputed=false`.
+- **Assigned**: `assignedAgent != address(0)`, `assignedAt > 0`.
+- **CompletionRequested**: `completionRequested=true` (and `ipfsHash` updated).
+- **Validated**: `validatorApprovals >= requiredValidatorApprovals` (triggers `_completeJob`).
+- **Disputed**: `disputed=true` set by disapprove threshold or manual dispute.
+- **Completed**: `completed=true` (set by `_completeJob` or employer-win resolution).
 
 ---
 
-## Contract interface summary (high-level)
-
-| Function | Who calls | Purpose | Preconditions (high level) | Major side effects |
-| --- | --- | --- | --- | --- |
-| `createJob` | Employer | Create a job and escrow funds | payout/duration within limits | Transfers ERC-20 to contract; emits `JobCreated` |
-| `applyForJob` | Agent | Assign self to job | job unassigned; agent eligible | Sets `assignedAgent/assignedAt`; emits `JobApplied` |
-| `requestJobCompletion` | Agent | Submit completion | caller is assigned; before duration limit | Sets `completionRequested`; updates job IPFS hash; emits `JobCompletionRequested` |
-| `validateJob` | Validator | Approve completion | eligible validator; not voted | Increments approvals; emits `JobValidated`; may complete job |
-| `disapproveJob` | Validator | Disapprove completion | eligible validator; not voted | Increments disapprovals; emits `JobDisapproved`; may dispute job |
-| `disputeJob` | Employer/Agent | Open dispute | not already disputed/completed | Sets `disputed`; emits `JobDisputed` |
-| `resolveDispute` | Moderator | Resolve dispute | job is disputed | If "agent win" → complete; if "employer win" → refund + close; emits `DisputeResolved` |
-| `cancelJob` | Employer | Cancel before assignment | unassigned & not completed | Refunds escrow; deletes job; emits `JobCancelled` |
-| `delistJob` | Owner | Admin cancel | unassigned & not completed | Refunds escrow; deletes job; emits `JobCancelled` |
-| `listNFT` | NFT owner | List job NFT | owns token; price > 0 | Creates listing; emits `NFTListed` |
-| `purchaseNFT` | Buyer | Buy listed NFT | listing active | Transfers ERC-20; transfers NFT; emits `NFTPurchased` |
-| `delistNFT` | Seller | Remove listing | listing active and seller | Deactivates listing; emits `NFTDelisted` |
-
-### Critical events (indexing guide)
-- **Job creation/flow**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`, `JobCompleted`, `JobCancelled`.
-- **Reputation**: `ReputationUpdated` (emitted for agents and validators during completion).
-- **NFTs & marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
-- **Access signals**: `OwnershipVerified`, `RecoveryInitiated`.
-
----
-
-## Installation & local development
-
-> This repo is Truffle-based. Use the scripts in `package.json`.
-
-```bash
-npm install
-```
-
-Compile:
-```bash
-npm run build
-```
-
-### Testing
-```bash
-npm test
-```
-
-If you only need a compile sanity check, `npm run build` is sufficient.
-
----
-
-## Environment configuration
-
-Truffle loads environment variables via `dotenv` (`.env` locally). The following variables are used in `truffle-config.js`:
-
-### Required for deployments
-- `PRIVATE_KEYS`: comma-separated private keys (no spaces).
-- **RPC configuration** (choose one per network):
-  - `SEPOLIA_RPC_URL` / `MAINNET_RPC_URL`, or
-  - `ALCHEMY_KEY` (Sepolia), `ALCHEMY_KEY_MAIN` (Mainnet), or
-  - `INFURA_KEY` (fallback for both).
-
-### Optional deployment tuning
-- `SEPOLIA_GAS`, `MAINNET_GAS`
-- `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`
-- `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`
-- `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`
-- `RPC_POLLING_INTERVAL_MS`
-
-### Compiler settings
-- `SOLC_VERSION` (default `0.8.33`)
-- `SOLC_RUNS` (default `200`)
-- `SOLC_VIA_IR` (`true`/`false`)
-- `SOLC_EVM_VERSION` (default `london`)
-
-### Verification
-- `ETHERSCAN_API_KEY`
-
-### Local test chain (optional)
-- `GANACHE_MNEMONIC` (defaults to the standard Ganache test mnemonic if unset)
-
-A minimal example is provided in [`.env.example`](.env.example).
-
----
-
-## Deployment (Truffle)
-
-### Local development (Ganache)
-1. Start a local chain (Ganache) on `127.0.0.1:8545`.
-2. Deploy:
-   ```bash
-   npx truffle migrate --network development
-   ```
-
-### Sepolia
-1. Set env vars for Sepolia (see [Environment configuration](#environment-configuration)).
-2. Deploy:
-   ```bash
-   npx truffle migrate --network sepolia
-   ```
-
-### Mainnet (use caution)
-1. Set env vars for Mainnet (see [Environment configuration](#environment-configuration)).
-2. Deploy:
-   ```bash
-   npx truffle migrate --network mainnet
-   ```
-
-### Verification (Etherscan)
-If `truffle-plugin-verify` is configured with `ETHERSCAN_API_KEY`:
-```bash
-npx truffle run verify AGIJobManager --network sepolia
-```
-
-#### Troubleshooting
-- **Missing RPC URL**: ensure `SEPOLIA_RPC_URL`/`MAINNET_RPC_URL` or provider keys are set.
-- **Insufficient funds / gas**: confirm deployer account balance and gas settings.
-- **Nonce conflicts**: ensure only one deployer process is running; consider clearing pending txs.
-- **Verification failures**: confirm compiler settings (`SOLC_VERSION`, optimizer runs) match deployment.
-
----
-
-## Security considerations
-
-**Trust model**
-- **Owner powers**: pause/unpause flows, change token address, update thresholds/limits, manage allowlists/blacklists, set metadata fields, add AGI types, withdraw escrowed funds.
-- **Moderator powers**: resolve disputes. Only canonical resolution strings trigger on-chain payouts/refunds.
-
-**Key hardenings vs. historical v0** (current contract behavior)
-- Prevents phantom job ID access via `_job` checks.
-- Prevents reassignment after an agent is set.
-- Prevents double-completion paths when disputes resolve to employer win.
-- Avoids division-by-zero when validator count is zero.
-- Enforces one vote per validator (no approve+disapprove).
-- Checks ERC-20 transfer return values and reverts on failure.
-
-**Responsible disclosure**
-- Please report security issues privately. See [SECURITY.md](SECURITY.md).
-
----
-
-## Architecture (illustration)
+## Architecture overview
 
 ```mermaid
 flowchart LR
     Employer -->|ERC-20 escrow| AGIJobManager
-    Agent -->|apply/complete| AGIJobManager
-    Validator -->|approve/disapprove| AGIJobManager
+    Agent -->|apply and complete| AGIJobManager
+    Validator -->|approve and disapprove| AGIJobManager
     Moderator -->|resolve disputes| AGIJobManager
     AGIJobManager -->|mint job NFT| JobNFT[ERC-721 Job NFT]
-    AGIJobManager <-->|ENS + NameWrapper + Resolver| ENS[ENS Contracts]
+    AGIJobManager <-->|ENS + NameWrapper + Resolver| ENS[ENS contracts]
+    AGIJobManager <-->|Merkle allowlists| Merkle[Validator and Agent roots]
 ```
+
+---
+
+## Quickstart
+
+### Install
+```bash
+npm install
+```
+
+### Compile
+```bash
+npm run build
+```
+
+### Test
+```bash
+npm test
+```
+
+### Local chain (Ganache)
+```bash
+npx ganache -p 8545
+npx truffle migrate --network development
+```
+
+---
+
+## Deployment and verification (Truffle)
+
+> Full details: [`docs/Deployment.md`](docs/Deployment.md)
+
+**Environment variables (from `truffle-config.js`)**
+- **RPC + keys**: `PRIVATE_KEYS` (comma-separated), `SEPOLIA_RPC_URL`, `MAINNET_RPC_URL`, `ALCHEMY_KEY`, `ALCHEMY_KEY_MAIN`, `INFURA_KEY`.
+- **Verification**: `ETHERSCAN_API_KEY`.
+- **Optional tuning**: `SEPOLIA_GAS`, `MAINNET_GAS`, `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`, `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`, `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`, `RPC_POLLING_INTERVAL_MS`.
+- **Compiler**: `SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`.
+
+**Deploy**
+```bash
+npx truffle migrate --network sepolia
+npx truffle migrate --network mainnet
+```
+
+**Verify (Etherscan)**
+```bash
+npx truffle run verify AGIJobManager --network sepolia
+```
+
+> ⚠️ The migration script (`migrations/2_deploy_contracts.js`) hardcodes constructor parameters. Edit before deploying to production networks.
+
+---
+
+## Security model (high-signal)
+
+**Trust assumptions**
+- **Owner powers**: can pause flows, update token address, thresholds, allowlists/blacklists, metadata fields, add AGI types, and withdraw ERC‑20 from escrow.
+- **Moderator powers**: can resolve disputes. Only the canonical strings `agent win` and `employer win` trigger on-chain payout or refund.
+
+**Hardened evolution vs. historical v0** (see `docs/REGRESSION_TESTS.md`)
+- Prevents phantom job ID access via `_job` checks.
+- Prevents reassignment after an agent is set.
+- Prevents double completion after employer-win dispute resolution.
+- Avoids division-by-zero when no validators voted.
+- Enforces one vote per validator (approve or disapprove).
+- Checks ERC‑20 transfer return values and reverts on failure.
+
+**Responsible disclosure**
+- Report security issues privately. See [`SECURITY.md`](SECURITY.md).
+
+---
+
+## ABI and events (indexer notes)
+
+**High-value events**
+- **Job lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`, `JobCompleted`, `JobCancelled`.
+- **Reputation**: `ReputationUpdated` (agents and validators).
+- **NFT and marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
+- **Access signals**: `OwnershipVerified`, `RecoveryInitiated`.
+
+Most job events are not indexed, so indexers should scan by block range and build their own derived indices. See the ABI-derived event list in [`docs/Interface.md`](docs/Interface.md).
+
+---
+
+## Ecosystem and related projects
+
+- **Legacy v0 contract**: historical deployment at `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477` (for comparison and regression tests).
+- **ERC‑8004 adapter**: off-chain adapter and docs in [`integrations/erc8004/`](integrations/erc8004/).
+- **ERC‑8004 overview**: [`docs/Integrations.md`](docs/Integrations.md).
 
 ---
 
@@ -239,35 +200,17 @@ flowchart LR
 ```
 contracts/      # Solidity contracts (AGIJobManager.sol)
 migrations/     # Truffle deployment scripts
-scripts/        # Utilities (e.g., ERC-8004 tools)
+scripts/        # Utilities
+integrations/   # Off-chain adapters (ERC-8004)
 test/           # Truffle + regression tests
-integrations/   # ERC-8004 off-chain adapter
 /docs/          # Extended documentation
 ```
 
-Artifacts/ABIs are written to `build/contracts/` after compilation.
+Artifacts and ABIs are written to `build/contracts/` after compilation.
 
 ---
 
-## Versioning & compatibility
+## Contributing and license
 
-- Solidity pragma in `AGIJobManager.sol`: `^0.8.17`.
-- Truffle compiler default: `0.8.33` with optimizer enabled and `runs=200` (configurable via env vars).
-- Bytecode size and optimizer settings can impact mainnet deployment; ensure verification settings match your deployed compiler configuration.
-
----
-
-## Additional documentation
-
-- Contract overview: [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
-- Interface reference: [`docs/AGIJobManager_Interface.md`](docs/AGIJobManager_Interface.md)
-- Operator guide: [`docs/AGIJobManager_Operator_Guide.md`](docs/AGIJobManager_Operator_Guide.md)
-- Security notes: [`docs/AGIJobManager_Security.md`](docs/AGIJobManager_Security.md)
-- ERC-8004 integration: [`docs/ERC8004.md`](docs/ERC8004.md)
-
----
-
-## Contributing & license
-
-- Contributing: no `CONTRIBUTING.md` is present; please open an issue to discuss changes.
+- Security: see [`SECURITY.md`](SECURITY.md)
 - License: [MIT](LICENSE)
