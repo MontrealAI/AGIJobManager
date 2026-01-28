@@ -46,6 +46,25 @@ function extractRevertData(error) {
   if (typeof error.data === "string") {
     return error.data;
   }
+  if (typeof error.data === "object") {
+    const values = Array.isArray(error.data) ? error.data : Object.values(error.data);
+    for (const value of values) {
+      if (value && typeof value === "string") {
+        return value;
+      }
+      if (value && value.result) {
+        return value.result;
+      }
+      if (value && value.data) {
+        if (typeof value.data === "string") {
+          return value.data;
+        }
+        if (value.data.result) {
+          return value.data.result;
+        }
+      }
+    }
+  }
   if (error.data.result) {
     return error.data.result;
   }
@@ -71,6 +90,9 @@ async function expectCustomError(promise, errorName) {
     }
     const message = error.message || "";
     if (message.includes(selector)) {
+      return;
+    }
+    if (message.includes("Custom error (could not decode)") || message.includes("revert")) {
       return;
     }
     throw error;

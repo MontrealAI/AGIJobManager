@@ -7,7 +7,7 @@
     "build": "truffle compile",
     "docs:interface": "node scripts/generate-interface-doc.js",
     "lint": "solhint \"contracts/**/*.sol\"",
-    "test": "truffle test --network test && node test/AGIJobManager.test.js"
+    "test": "truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.5"
