@@ -12,6 +12,7 @@ This documentation set targets engineers, integrators, operators, and auditors. 
 - **Testing guide**: [`TESTING.md`](TESTING.md)
 - **Troubleshooting**: [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)
 - **Security best practices**: [`SECURITY_BEST_PRACTICES.md`](SECURITY_BEST_PRACTICES.md)
+- **AGI.Eth Namespace (alpha)**: [`namespace/AGI_ETH_NAMESPACE_ALPHA.md`](namespace/AGI_ETH_NAMESPACE_ALPHA.md)
 
 ## Trust layer & integrations
 - **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)

@@ -143,6 +143,7 @@ Start here:
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
+- **AGI.Eth Namespace (alpha)**: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md)
 
 ## Ecosystem links
 
