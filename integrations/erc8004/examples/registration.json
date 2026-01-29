@@ -1,22 +1,29 @@
 {
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Example AGI Agent",
-  "description": "Example ERC-8004 registration metadata for an AGIJobManager agent.",
+  "description": "Example ERC-8004 registration metadata for an AGIJobManager agent (AGI.Eth alpha namespace).",
+  "image": "https://example.com/agent.png",
   "services": [
     {
-      "type": "a2a",
-      "url": "https://example.com/a2a.json"
+      "name": "A2A",
+      "endpoint": "https://example.com/.well-known/agent-card.json",
+      "version": "0.3.0",
+      "a2aSkills": ["task_execution/job_validation"]
     },
     {
-      "type": "mcp",
-      "url": "https://example.com/mcp"
+      "name": "MCP",
+      "endpoint": "https://example.com/mcp",
+      "version": "2025-06-18",
+      "mcpTools": ["job_summary", "job_execution"]
     },
     {
-      "type": "ens",
-      "value": "example-agent.eth"
+      "name": "ENS",
+      "endpoint": "alpha.agent.agi.eth",
+      "version": "v1"
     },
     {
-      "type": "email",
-      "value": "ops@example.com"
+      "name": "agentWallet",
+      "endpoint": "eip155:1:0x1111111111111111111111111111111111111111"
     }
   ]
 }

@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AGIJobManager ERC-8004 Metrics Export",
+  "type": "object",
+  "required": ["version", "metadata", "trustedClientSet", "agents"],
+  "properties": {
+    "version": {"type": "string"},
+    "metadata": {
+      "type": "object",
+      "required": ["chainId", "network", "contractAddress", "fromBlock", "toBlock", "generatedAt", "toolVersion"],
+      "properties": {
+        "chainId": {"type": "integer"},
+        "network": {"type": "string"},
+        "contractAddress": {"type": "string"},
+        "fromBlock": {"type": "integer"},
+        "toBlock": {"type": "integer"},
+        "generatedAt": {"type": "string"},
+        "toolVersion": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "trustedClientSet": {
+      "type": "object",
+      "required": ["criteria", "addresses", "evidence"],
+      "properties": {
+        "criteria": {"type": "string"},
+        "addresses": {"type": "array", "items": {"type": "string"}},
+        "evidence": {
+          "type": "object",
+          "required": ["anchors"],
+          "properties": {
+            "anchors": {"type": "array", "items": {"$ref": "#/definitions/anchor"}}
+          }
+        }
+      }
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/definitions/agentMetrics"}
+    },
+    "validators": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/definitions/validatorMetrics"}
+    }
+  },
+  "definitions": {
+    "anchor": {
+      "type": "object",
+      "required": ["txHash", "logIndex", "blockNumber", "event", "chainId", "contractAddress"],
+      "properties": {
+        "txHash": {"type": "string"},
+        "logIndex": {"type": "integer"},
+        "blockNumber": {"type": "integer"},
+        "event": {"type": "string"},
+        "jobId": {"type": ["string", "null"]},
+        "chainId": {"type": "integer"},
+        "contractAddress": {"type": "string"}
+      }
+    },
+    "rate": {
+      "type": "object",
+      "required": ["value", "valueDecimals"],
+      "properties": {
+        "value": {"type": "integer"},
+        "valueDecimals": {"type": "integer"}
+      }
+    },
+    "agentMetrics": {
+      "type": "object",
+      "required": [
+        "jobsApplied",
+        "jobsAssigned",
+        "jobsCompletionRequested",
+        "jobsCompleted",
+        "jobsDisputed",
+        "employerWins",
+        "agentWins",
+        "unknownResolutions",
+        "revenuesProxy",
+        "rates",
+        "evidence"
+      ],
+      "properties": {
+        "jobsApplied": {"type": "integer"},
+        "jobsAssigned": {"type": "integer"},
+        "jobsCompletionRequested": {"type": "integer"},
+        "jobsCompleted": {"type": "integer"},
+        "jobsDisputed": {"type": "integer"},
+        "employerWins": {"type": "integer"},
+        "agentWins": {"type": "integer"},
+        "unknownResolutions": {"type": "integer"},
+        "revenuesProxy": {"type": "string"},
+        "rates": {
+          "type": "object",
+          "properties": {
+            "successRate": {"$ref": "#/definitions/rate"},
+            "disputeRate": {"$ref": "#/definitions/rate"}
+          },
+          "additionalProperties": false
+        },
+        "evidence": {
+          "type": "object",
+          "required": ["anchors"],
+          "properties": {
+            "anchors": {"type": "array", "items": {"$ref": "#/definitions/anchor"}}
+          }
+        }
+      }
+    },
+    "validatorMetrics": {
+      "type": "object",
+      "required": [
+        "approvals",
+        "disapprovals",
+        "disputesTriggered",
+        "reputationUpdates",
+        "reputationGain",
+        "latestReputation",
+        "evidence"
+      ],
+      "properties": {
+        "approvals": {"type": "integer"},
+        "disapprovals": {"type": "integer"},
+        "disputesTriggered": {"type": "integer"},
+        "reputationUpdates": {"type": "integer"},
+        "reputationGain": {"type": "string"},
+        "latestReputation": {"type": ["string", "null"]},
+        "evidence": {
+          "type": "object",
+          "required": ["anchors"],
+          "properties": {
+            "anchors": {"type": "array", "items": {"$ref": "#/definitions/anchor"}}
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

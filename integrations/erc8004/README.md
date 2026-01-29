@@ -26,16 +26,16 @@ truffle exec scripts/erc8004/export_metrics.js --network sepolia
 ```
 
 ## Output
-The export script writes a JSON file containing per-agent metrics, computed rates, and metadata. See `adapter_spec.md` for field definitions.
+The export script writes a JSON file containing per-agent metrics, computed rates, evidence anchors, and metadata. See `adapter_spec.md` for field definitions and `schemas/metrics.schema.json` for a JSON Schema snapshot.
 
-## Next step: feedback intent generation
+## Next step: feedback action plan (dry-run)
 ```bash
 METRICS_JSON=integrations/erc8004/out/erc8004_metrics.json \
 OUT_DIR=integrations/erc8004/out \
-node scripts/erc8004/generate_feedback_calldata.js
+node scripts/erc8004/generate_feedback_actions.js
 ```
 
-This generates a dry-run list of intended ERC-8004 feedback signals (no transactions are sent). For on-chain submission, use the official ERC-8004 tooling (e.g., Agent0 SDK) and the JSON output as input.
+This generates a dry-run list of intended ERC-8004 feedback signals (no transactions are sent). For on-chain submission, use the official ERC-8004 tooling (for example, the SDKs linked from the best-practices repo) and the JSON output as input.
 
 ## Example registration file
 See `integrations/erc8004/examples/registration.json` for a sample ERC-8004 registration JSON with a `services` array.
