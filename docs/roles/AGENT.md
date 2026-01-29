@@ -9,6 +9,7 @@ You must satisfy **one** of these:
 3. **additionalAgents** allowlist (owner‑managed).
 
 ## Step‑by‑step (non‑technical)
+> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `applyForJob` inputs filled in.
 ### 1) Confirm your identity method
 - If using ENS/NameWrapper: ensure the contract’s root node and your subdomain are correct.
 - If using a Merkle allowlist: get your proof from the operator.

@@ -9,6 +9,7 @@ You must satisfy **one** of these:
 3. **additionalValidators** allowlist (owner‑managed).
 
 ## Step‑by‑step (non‑technical)
+> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `validateJob` inputs filled in.
 ### 1) Validate a job
 Call `validateJob(jobId, subdomain, proof)`.
 

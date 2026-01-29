@@ -1,6 +1,6 @@
 # Testing Guide
 
-This repository uses Truffle with an in‑process Ganache provider (see `truffle-config.js`). The default test run spins up a local chain automatically.
+This repository uses Truffle with an in‑process Ganache provider (see `truffle-config.js`). Use the `test` network to run against the in‑process chain, or run Ganache locally for the `development` network.
 
 ## Install dependencies
 ```bash
@@ -12,15 +12,20 @@ npm install
 npx truffle compile
 ```
 
-## Run all tests
+## Run all tests (in‑process provider)
 ```bash
-npx truffle test
+npx truffle test --network test
 ```
 
 ## Run against a local Ganache instance
 ```bash
 npx ganache -p 8545
 npx truffle test --network development
+```
+
+## Run all tests (development default)
+```bash
+npx truffle test
 ```
 
 ## ENS / NameWrapper mocks
