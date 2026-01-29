@@ -223,6 +223,8 @@ async function runExportMetrics(overrides = {}) {
         agentWins: 0,
         unknownResolutions: 0,
         revenuesProxy: toBN(0),
+        grossEscrow: toBN(0),
+        netAgentPaidProxy: null,
         responseTimeBlocksTotal: toBN(0),
         responseTimeSamples: 0,
         responseTimeBlocksAvg: null,
@@ -244,6 +246,7 @@ async function runExportMetrics(overrides = {}) {
         reputationGain: toBN(0),
         latestReputation: null,
         lastActivityBlock: null,
+        rates: {},
       });
     }
     return validators.get(key);
@@ -323,6 +326,7 @@ async function runExportMetrics(overrides = {}) {
     metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
     const job = await getJob(jobId);
     metrics.revenuesProxy = metrics.revenuesProxy.add(job.payout);
+    metrics.grossEscrow = metrics.grossEscrow.add(job.payout);
     if (!jobCompletionRequestedBlock.has(String(jobId))) {
       const assignedBlock = jobAssignedBlock.get(String(jobId));
       if (assignedBlock !== undefined) {
@@ -417,12 +421,30 @@ async function runExportMetrics(overrides = {}) {
   }
 
   for (const [addressKey, metrics] of agents.entries()) {
+    let payoutPercentage = null;
+    try {
+      payoutPercentage = await contract.getHighestPayoutPercentage(addressKey);
+    } catch (error) {
+      payoutPercentage = null;
+    }
+    if (payoutPercentage !== null && payoutPercentage !== undefined) {
+      const percentage = toBN(payoutPercentage);
+      metrics.netAgentPaidProxy = metrics.grossEscrow.mul(percentage).div(toBN(100)).toString();
+      metrics.agentPayoutPercentage = percentage.toString();
+    }
     const jobsAssigned = toBN(metrics.jobsAssigned);
     const successRate = formatRate(toBN(metrics.jobsCompleted), jobsAssigned);
     const disputeRate = formatRate(toBN(metrics.jobsDisputed), jobsAssigned);
     if (successRate) metrics.rates.successRate = successRate;
     if (disputeRate) metrics.rates.disputeRate = disputeRate;
     metrics.revenuesProxy = metrics.revenuesProxy.toString();
+    metrics.grossEscrow = metrics.grossEscrow.toString();
+    metrics.assignedCount = metrics.jobsAssigned;
+    metrics.completedCount = metrics.jobsCompleted;
+    metrics.disputedCount = metrics.jobsDisputed;
+    metrics.agentWinCount = metrics.agentWins;
+    metrics.employerWinCount = metrics.employerWins;
+    metrics.unknownResolutionCount = metrics.unknownResolutions;
     if (metrics.responseTimeSamples > 0) {
       metrics.responseTimeBlocksAvg = metrics.responseTimeBlocksTotal
         .div(toBN(metrics.responseTimeSamples))
@@ -437,6 +459,11 @@ async function runExportMetrics(overrides = {}) {
 
   if (includeValidators) {
     for (const [addressKey, metrics] of validators.entries()) {
+      const totalDecisions = toBN(metrics.approvals).add(toBN(metrics.disapprovals));
+      const approvalRate = formatRate(toBN(metrics.approvals), totalDecisions);
+      if (approvalRate) metrics.rates.approvalRate = approvalRate;
+      metrics.approvalsCount = metrics.approvals;
+      metrics.disapprovalsCount = metrics.disapprovals;
       metrics.reputationGain = metrics.reputationGain.toString();
       metrics.evidence = {
         anchors: anchorsToList(validatorAnchors.get(addressKey) || new Map()),
