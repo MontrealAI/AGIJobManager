@@ -78,7 +78,10 @@ async function main() {
 
   const outDir = process.env.OUT_DIR || getArgValue('out-dir') || path.join(process.cwd(), 'integrations/erc8004/out');
   const sendTx = String(process.env.SEND_TX || '').toLowerCase() === 'true';
-  const dryRun = String(process.env.DRY_RUN || 'true').toLowerCase() !== 'false';
+  const dryRunEnv = process.env.DRY_RUN;
+  const dryRun = dryRunEnv === undefined || dryRunEnv === null
+    ? !sendTx
+    : String(dryRunEnv).toLowerCase() !== 'false';
   const confirm = String(process.env.I_UNDERSTAND || '').toLowerCase() === 'true';
 
   const reputationRegistryAddress = process.env.ERC8004_REPUTATION_REGISTRY || getArgValue('reputation-registry');
@@ -142,7 +145,11 @@ async function main() {
   console.log(`Submit actions written to ${outPath}`);
 
   if (!sendTx || dryRun) {
-    console.log('DRY-RUN only (no transactions sent).');
+    if (sendTx && dryRun) {
+      console.log('SEND_TX=true but DRY_RUN=true; no transactions sent.');
+    } else {
+      console.log('DRY-RUN only (no transactions sent).');
+    }
     return;
   }
   if (!confirm) {

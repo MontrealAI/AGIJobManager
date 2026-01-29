@@ -57,7 +57,7 @@ ERC8004_REPUTATION_REGISTRY=0xYourReputationRegistry \
 node scripts/erc8004/generate_submit_actions.js
 ```
 
-This generates a **dry-run** list of intended ERC-8004 `giveFeedback(...)` calls. To send transactions, set `SEND_TX=true` and `I_UNDERSTAND=true` with a funded signer in your Truffle provider. The script enforces the ERC-8004 rule that the submitter **must not** be the agent owner or approved operator.
+This generates a **dry-run** list of intended ERC-8004 `giveFeedback(...)` calls. To send transactions, set `SEND_TX=true` and `I_UNDERSTAND=true` with a funded signer in your Truffle provider. `DRY_RUN` defaults to **false** when `SEND_TX=true`; you can force a dry run with `DRY_RUN=true`. The script enforces the ERC-8004 rule that the submitter **must not** be the agent owner or approved operator.
 
 ABIs used by the scripts are vendored from the official ERC-8004 contracts repo in `integrations/erc8004/abis/`.
 
