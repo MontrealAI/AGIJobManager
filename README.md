@@ -60,6 +60,7 @@ stateDiagram-v2
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
+*Note:* `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested).
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid
