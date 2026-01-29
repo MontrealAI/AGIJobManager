@@ -25,5 +25,14 @@
       "name": "agentWallet",
       "endpoint": "eip155:1:0x1111111111111111111111111111111111111111"
     }
-  ]
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 1,
+      "agentRegistry": "eip155:1:0x0000000000000000000000000000000000000000"
+    }
+  ],
+  "supportedTrust": ["reputation", "validation"]
 }

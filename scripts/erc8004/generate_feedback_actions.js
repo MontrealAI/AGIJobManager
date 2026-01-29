@@ -22,24 +22,36 @@ function buildSignals(metrics) {
   if (metrics.rates?.successRate) {
     signals.push({
       tag1: 'successRate',
+      tag2: null,
       value: metrics.rates.successRate.value,
       valueDecimals: metrics.rates.successRate.valueDecimals,
+      endpoint: null,
+      feedbackURI: null,
+      feedbackHash: null,
     });
   }
 
   if (metrics.rates?.disputeRate) {
     signals.push({
       tag1: 'disputeRate',
+      tag2: null,
       value: metrics.rates.disputeRate.value,
       valueDecimals: metrics.rates.disputeRate.valueDecimals,
+      endpoint: null,
+      feedbackURI: null,
+      feedbackHash: null,
     });
   }
 
   if (metrics.revenuesProxy) {
     signals.push({
       tag1: 'revenues',
+      tag2: null,
       value: metrics.revenuesProxy,
       valueDecimals: 0,
+      endpoint: null,
+      feedbackURI: null,
+      feedbackHash: null,
       note: 'Proxy: sum of job payout values for completed jobs (raw token units).',
     });
   }
@@ -57,12 +69,14 @@ function buildFeedbackActions(address, metrics) {
       ens: metrics.ens || null,
     },
     tag1: signal.tag1,
+    tag2: signal.tag2,
     value: signal.value,
     valueDecimals: signal.valueDecimals,
+    endpoint: signal.endpoint,
+    feedbackURI: signal.feedbackURI,
+    feedbackHash: signal.feedbackHash,
     evidence: {
       anchors: evidenceAnchors,
-      feedbackURI: null,
-      feedbackHash: null,
     },
     notes: {
       tagNote: signal.note || null,

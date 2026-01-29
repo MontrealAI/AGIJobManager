@@ -99,6 +99,17 @@ npm run build
 npm test
 ```
 
+## ERC-8004 integration (control plane ↔ execution plane)
+See [`docs/erc8004/README.md`](docs/erc8004/README.md) for the mapping spec, threat model, and adapter notes. Quick export example:
+
+```bash
+AGIJOBMANAGER_ADDRESS=0xYourContract \
+FROM_BLOCK=0 \
+TO_BLOCK=latest \
+OUT_DIR=integrations/erc8004/out \
+truffle exec scripts/erc8004/export_metrics.js --network sepolia
+```
+
 Local dev chain (Ganache):
 ```bash
 npx ganache -p 8545
