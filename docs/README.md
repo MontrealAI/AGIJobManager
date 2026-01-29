@@ -13,6 +13,10 @@ This documentation set targets engineers, integrators, operators, and auditors. 
 - **Troubleshooting**: [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)
 - **Security best practices**: [`SECURITY_BEST_PRACTICES.md`](SECURITY_BEST_PRACTICES.md)
 
+## Trust layer & integrations
+- **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)
+- **Integrations overview**: [`Integrations.md`](Integrations.md)
+
 ## Role guides
 - **Employer**: [`roles/EMPLOYER.md`](roles/EMPLOYER.md)
 - **Agent**: [`roles/AGENT.md`](roles/AGENT.md)
@@ -20,10 +24,6 @@ This documentation set targets engineers, integrators, operators, and auditors. 
 - **Moderator**: [`roles/MODERATOR.md`](roles/MODERATOR.md)
 - **Owner/Operator**: [`roles/OWNER_OPERATOR.md`](roles/OWNER_OPERATOR.md)
 - **NFT Marketplace**: [`roles/NFT_MARKETPLACE.md`](roles/NFT_MARKETPLACE.md)
-
-## Trust layer & integrations
-- **ERC‑8004 integration (signaling → enforcement)**: [`ERC8004.md`](ERC8004.md)
-- **Integrations overview**: [`Integrations.md`](Integrations.md)
 
 ## Operations and validation
 - **Regression tests summary**: [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md)

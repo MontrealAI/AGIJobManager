@@ -40,5 +40,9 @@ Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, `pur
 - **Validator payout sharing**: all validators who voted share equally; there is no weighting or slashing.
 - **Owner-controlled parameters**: thresholds and limits can be changed post-deployment by the owner.
 
+## Operational monitoring
+- Index and alert on `JobDisputed`, `DisputeResolved`, `JobCompleted`, and `ReputationUpdated` events.
+- Track `OwnershipVerified` and `RecoveryInitiated` to monitor ENS/Merkle ownership checks and fallbacks.
+
 ## Disclosure
 Report security issues privately via [`SECURITY.md`](../SECURITY.md).

@@ -19,7 +19,7 @@ This document describes the on-chain behavior of `AGIJobManager` as implemented 
 - [References](#references)
 
 ## Overview
-AGIJobManager coordinates employer-funded jobs, agent assignment, validator review, dispute resolution, reputation updates, and job NFT issuance. It escrows ERC‑20 payouts and mints an ERC‑721 to the employer when a job completes successfully.
+AGIJobManager coordinates employer-funded jobs, agent assignment, validator review, dispute resolution, reputation updates, and job NFT issuance. It escrows ERC‑20 payouts and mints an ERC‑721 to the employer when a job completes successfully. This specification describes the *on-chain enforcement layer* only; ERC‑8004 trust signals are consumed off‑chain and are not part of the on-chain interface.
 
 ## Roles and permissions
 | Role | Capabilities |

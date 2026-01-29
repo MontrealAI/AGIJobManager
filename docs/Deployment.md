@@ -48,6 +48,7 @@ The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructo
    ```
 2. Deploy:
    ```bash
+   npm run build
    npx truffle migrate --network development
    ```
 
@@ -56,6 +57,7 @@ The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructo
 1. Set environment variables (`PRIVATE_KEYS` plus RPC configuration).
 2. Deploy:
    ```bash
+   npm run build
    npx truffle migrate --network sepolia
    ```
 
@@ -64,6 +66,7 @@ The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructo
 1. Set environment variables (`PRIVATE_KEYS` plus RPC configuration).
 2. Deploy:
    ```bash
+   npm run build
    npx truffle migrate --network mainnet
    ```
 
@@ -73,6 +76,10 @@ When `ETHERSCAN_API_KEY` is set:
 
 ```bash
 npx truffle run verify AGIJobManager --network sepolia
+```
+
+```bash
+npx truffle run verify AGIJobManager --network mainnet
 ```
 
 ### Verification tips
