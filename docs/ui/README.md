@@ -17,7 +17,8 @@ Then open:
 http://localhost:8000/ui/agijobmanager.html
 ```
 
-You can also run the server from `docs/ui/` and open `http://localhost:8000/agijobmanager.html`.
+Serve from `docs/` so the UI can read `docs/deployments/mainnet.json`. Running a server from
+`docs/ui/` will not expose the deployments file.
 
 ## Set the contract address
 
