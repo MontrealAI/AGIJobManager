@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AGIJobManager — On‑chain Job Escrow & NFT Marketplace</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="icon" href="data:," />
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #0b0f14;
+      --panel: #111826;
+      --panel-2: #0f1522;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --border: #1f2937;
+      --link: #7dd3fc;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 32px 24px 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(120deg, rgba(56, 189, 248, 0.15), transparent 50%);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 0;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 0;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    a {
+      color: var(--link);
+    }
+
+    main {
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+
+    .banner {
+      background: rgba(248, 113, 113, 0.16);
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      padding: 14px 16px;
+      border-radius: 10px;
+      color: #fecaca;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel-row {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      align-items: start;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid transparent;
+    }
+
+    .pill.ok {
+      background: rgba(34, 197, 94, 0.15);
+      color: #bbf7d0;
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    .pill.warn {
+      background: rgba(251, 191, 36, 0.16);
+      color: #fde68a;
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    .pill.danger {
+      background: rgba(248, 113, 113, 0.2);
+      color: #fecaca;
+      border-color: rgba(248, 113, 113, 0.45);
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    input, textarea, select, button {
+      font: inherit;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 88px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button.secondary {
+      border-color: rgba(148, 163, 184, 0.4);
+      background: rgba(148, 163, 184, 0.12);
+    }
+
+    button.danger {
+      border-color: rgba(248, 113, 113, 0.5);
+      background: rgba(248, 113, 113, 0.2);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    code {
+      background: rgba(148, 163, 184, 0.2);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .log {
+      background: #0a0f1a;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 280px;
+      overflow: auto;
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .inline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .right {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AGIJobManager — On‑chain Job Escrow & NFT Marketplace</h1>
+    <p class="muted">Non-custodial interface for employers, agents, validators, moderators, and NFT marketplace users.</p>
+    <div class="banner">
+      Experimental research software. Verify addresses and contract code; do not use with real funds unless you know what you are doing.
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="panel-row">
+        <div>
+          <h2>Connection</h2>
+          <p class="muted">This page never auto-connects. Use the buttons below when you are ready.</p>
+          <div class="inline">
+            <button id="connectButton">Connect Wallet</button>
+            <button id="disconnectButton" class="secondary">Disconnect</button>
+            <span id="networkPill" class="pill warn">Not connected</span>
+          </div>
+        </div>
+        <div>
+          <h2>Contract address</h2>
+          <label for="contractAddress">Contract address (Mainnet)</label>
+          <input id="contractAddress" placeholder="0x..." autocomplete="off" />
+          <div class="inline">
+            <button id="saveContract">Save address</button>
+            <button id="clearContract" class="secondary">Clear</button>
+            <button id="legacyContract" class="secondary">Use legacy v0 (not the new deployment)</button>
+          </div>
+          <p class="muted">
+            Known mainnet deployment: <span id="mainnetDeployment">TBD</span>. Legacy v0:
+            <code id="legacyAddress">0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477</code> (opt-in only).
+          </p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, or manual input.</p>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div>
+          <h3>Wallet</h3>
+          <p><strong>Account:</strong> <span id="walletAddress">Not connected</span></p>
+          <p><strong>Chain:</strong> <span id="walletChain">—</span></p>
+        </div>
+        <div>
+          <h3>Network actions</h3>
+          <button id="switchMainnet">Switch to Mainnet</button>
+          <p class="muted">If you are not on Ethereum Mainnet, interactions may revert.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Contract snapshot</h2>
+      <div class="panel-row">
+        <div>
+          <p><strong>Name:</strong> <span id="contractName">—</span></p>
+          <p><strong>Symbol:</strong> <span id="contractSymbol">—</span></p>
+          <p><strong>Owner:</strong> <span id="contractOwner">—</span></p>
+          <p><strong>Paused:</strong> <span id="contractPaused">—</span></p>
+          <p><strong>Next Job ID:</strong> <span id="contractNextJob">—</span></p>
+          <p><strong>Next Token ID:</strong> <span id="contractNextToken">—</span></p>
+        </div>
+        <div>
+          <p><strong>AGI Token:</strong> <span id="agiToken">—</span></p>
+          <p><strong>Token Decimals:</strong> <span id="agiTokenDecimals">—</span></p>
+          <p><strong>Token Symbol:</strong> <span id="agiTokenSymbol">—</span></p>
+          <p><strong>Validation approvals:</strong> <span id="requiredApprovals">—</span></p>
+          <p><strong>Validation disapprovals:</strong> <span id="requiredDisapprovals">—</span></p>
+          <p><strong>Validation reward %:</strong> <span id="validationReward">—</span></p>
+        </div>
+        <div>
+          <p><strong>Max Job Payout:</strong> <span id="maxJobPayout">—</span></p>
+          <p><strong>Job Duration Limit:</strong> <span id="jobDurationLimit">—</span></p>
+          <p><strong>Premium Reputation Threshold:</strong> <span id="premiumThreshold">—</span></p>
+          <p><strong>Agent Root Node:</strong> <span id="agentRootNode">—</span></p>
+          <p><strong>Club Root Node:</strong> <span id="clubRootNode">—</span></p>
+          <p><strong>Agent Merkle Root:</strong> <span id="agentMerkleRoot">—</span></p>
+          <p><strong>Validator Merkle Root:</strong> <span id="validatorMerkleRoot">—</span></p>
+        </div>
+      </div>
+      <button id="refreshSnapshot">Refresh snapshot</button>
+    </section>
+
+    <section class="panel">
+      <h2>Your role flags</h2>
+      <div class="panel-row">
+        <div>
+          <p><strong>Moderator:</strong> <span id="isModerator">—</span></p>
+          <p><strong>Additional agent:</strong> <span id="isAdditionalAgent">—</span></p>
+          <p><strong>Additional validator:</strong> <span id="isAdditionalValidator">—</span></p>
+          <p><strong>Blacklisted agent:</strong> <span id="isBlacklistedAgent">—</span></p>
+          <p><strong>Blacklisted validator:</strong> <span id="isBlacklistedValidator">—</span></p>
+        </div>
+        <div>
+          <p><strong>Reputation:</strong> <span id="reputation">—</span></p>
+          <p><strong>Premium access:</strong> <span id="premiumAccess">—</span></p>
+          <p><strong>AGI Token balance:</strong> <span id="agiBalance">—</span></p>
+          <p><strong>AGI allowance:</strong> <span id="agiAllowance">—</span></p>
+        </div>
+      </div>
+      <button id="refreshRoles">Refresh role flags</button>
+    </section>
+
+    <section class="panel">
+      <h2>Identity checks (preflight only)</h2>
+      <p class="muted">The contract will verify authorization on-chain. These checks mirror its fallback order: Merkle proof → NameWrapper ownerOf → ENS resolver addr.</p>
+      <div class="panel-row">
+        <div>
+          <label for="identityType">Identity type</label>
+          <select id="identityType">
+            <option value="agent">Agent (agentRootNode)</option>
+            <option value="validator">Validator / Club (clubRootNode)</option>
+          </select>
+          <label for="identityLabel">Label only (e.g., “helper”)</label>
+          <input id="identityLabel" placeholder="label" />
+          <label for="identityProof">Merkle proof (comma-separated 0x…32-byte hashes)</label>
+          <textarea id="identityProof" placeholder="0xabc...,0xdef..."></textarea>
+          <button id="runIdentityCheck">Run identity check</button>
+        </div>
+        <div>
+          <p><strong>Computed subnode:</strong> <span id="identitySubnode">—</span></p>
+          <p><strong>Merkle proof valid:</strong> <span id="identityMerkle">—</span></p>
+          <p><strong>NameWrapper ownerOf:</strong> <span id="identityNameWrapper">—</span></p>
+          <p><strong>ENS resolver addr:</strong> <span id="identityResolver">—</span></p>
+          <p class="muted">These are best-effort checks. The contract is authoritative.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Employer actions</h2>
+      <div class="two-col">
+        <div>
+          <h3>Approve AGI token</h3>
+          <label for="approveAmount">Amount (token units)</label>
+          <input id="approveAmount" placeholder="0.0" />
+          <button id="approveToken">Approve token</button>
+        </div>
+        <div>
+          <h3>Create job</h3>
+          <label for="jobIpfs">IPFS hash</label>
+          <input id="jobIpfs" placeholder="Qm..." />
+          <label for="jobPayout">Payout (token units)</label>
+          <input id="jobPayout" placeholder="0.0" />
+          <label for="jobDuration">Duration (seconds)</label>
+          <input id="jobDuration" placeholder="0" />
+          <label for="jobDetails">Details</label>
+          <textarea id="jobDetails" placeholder="Optional description"></textarea>
+          <button id="createJob">Create job</button>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div>
+          <h3>Cancel job</h3>
+          <label for="cancelJobId">Job ID</label>
+          <input id="cancelJobId" placeholder="0" />
+          <button id="cancelJob" class="danger">Cancel job</button>
+          <p class="muted">Only works if the job is unassigned and not completed.</p>
+        </div>
+        <div>
+          <h3>Dispute job (employer)</h3>
+          <label for="employerDisputeJobId">Job ID</label>
+          <input id="employerDisputeJobId" placeholder="0" />
+          <button id="employerDisputeJob">Dispute job</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Agent actions</h2>
+      <div class="two-col">
+        <div>
+          <h3>Apply for job</h3>
+          <label for="applyJobId">Job ID</label>
+          <input id="applyJobId" placeholder="0" />
+          <label for="applySubdomain">Agent label (subdomain only)</label>
+          <input id="applySubdomain" placeholder="helper" />
+          <label for="applyProof">Merkle proof</label>
+          <textarea id="applyProof" placeholder="0xabc...,0xdef..."></textarea>
+          <button id="applyForJob">Apply</button>
+        </div>
+        <div>
+          <h3>Request completion</h3>
+          <label for="completionJobId">Job ID</label>
+          <input id="completionJobId" placeholder="0" />
+          <label for="completionIpfs">Completion IPFS hash</label>
+          <input id="completionIpfs" placeholder="Qm..." />
+          <button id="requestCompletion">Request completion</button>
+        </div>
+      </div>
+      <div>
+        <h3>Dispute job (agent)</h3>
+        <label for="agentDisputeJobId">Job ID</label>
+        <input id="agentDisputeJobId" placeholder="0" />
+        <button id="agentDisputeJob">Dispute job</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Validator actions</h2>
+      <div class="two-col">
+        <div>
+          <h3>Validate job</h3>
+          <label for="validateJobId">Job ID</label>
+          <input id="validateJobId" placeholder="0" />
+          <label for="validateSubdomain">Validator label (subdomain only)</label>
+          <input id="validateSubdomain" placeholder="validator" />
+          <label for="validateProof">Merkle proof</label>
+          <textarea id="validateProof" placeholder="0xabc...,0xdef..."></textarea>
+          <button id="validateJob">Validate</button>
+        </div>
+        <div>
+          <h3>Disapprove job</h3>
+          <label for="disapproveJobId">Job ID</label>
+          <input id="disapproveJobId" placeholder="0" />
+          <label for="disapproveSubdomain">Validator label (subdomain only)</label>
+          <input id="disapproveSubdomain" placeholder="validator" />
+          <label for="disapproveProof">Merkle proof</label>
+          <textarea id="disapproveProof" placeholder="0xabc...,0xdef..."></textarea>
+          <button id="disapproveJob">Disapprove</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Moderator actions</h2>
+      <label for="resolveJobId">Job ID</label>
+      <input id="resolveJobId" placeholder="0" />
+      <label for="resolveText">Resolution string</label>
+      <input id="resolveText" placeholder="agent win / employer win / other" />
+      <div class="inline">
+        <button id="resolutionAgent" class="secondary">Use “agent win”</button>
+        <button id="resolutionEmployer" class="secondary">Use “employer win”</button>
+      </div>
+      <button id="resolveDispute">Resolve dispute</button>
+      <p class="muted">Canonical strings “agent win” and “employer win” trigger settlement. Any other string only clears the dispute flag.</p>
+    </section>
+
+    <section class="panel">
+      <h2>NFT marketplace</h2>
+      <div class="two-col">
+        <div>
+          <h3>Approve AGI token (buyer)</h3>
+          <label for="purchaseApproveAmount">Amount (token units)</label>
+          <input id="purchaseApproveAmount" placeholder="0.0" />
+          <button id="approvePurchase">Approve token</button>
+        </div>
+        <div>
+          <h3>List NFT</h3>
+          <label for="listTokenId">Token ID</label>
+          <input id="listTokenId" placeholder="0" />
+          <label for="listPrice">Price (token units)</label>
+          <input id="listPrice" placeholder="0.0" />
+          <button id="listNft">List NFT</button>
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Delist NFT</h3>
+          <label for="delistTokenId">Token ID</label>
+          <input id="delistTokenId" placeholder="0" />
+          <button id="delistNft" class="secondary">Delist NFT</button>
+        </div>
+        <div>
+          <h3>Purchase NFT</h3>
+          <label for="purchaseTokenId">Token ID</label>
+          <input id="purchaseTokenId" placeholder="0" />
+          <button id="purchaseNft">Purchase NFT</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Jobs table</h2>
+      <button id="loadJobs">Load jobs</button>
+      <div class="muted">Large datasets may take time. Cancelled jobs are shown as deleted.</div>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Status</th>
+              <th>Employer</th>
+              <th>Agent</th>
+              <th>Payout</th>
+              <th>Duration</th>
+              <th>Approvals/Disapprovals</th>
+              <th>Completion Requested</th>
+              <th>Disputed</th>
+              <th>IPFS</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="jobsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>NFTs table</h2>
+      <button id="loadNfts">Load NFTs</button>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Token ID</th>
+              <th>Owner</th>
+              <th>Token URI</th>
+              <th>Listing</th>
+            </tr>
+          </thead>
+          <tbody id="nftsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Activity log</h2>
+      <div class="panel-row">
+        <div>
+          <label for="fromBlock">From block</label>
+          <input id="fromBlock" placeholder="latest-20000" />
+        </div>
+        <div>
+          <label for="toBlock">To block</label>
+          <input id="toBlock" placeholder="latest" />
+        </div>
+        <div class="inline">
+          <button id="loadEvents">Load recent events</button>
+          <button id="subscribeEvents" class="secondary">Start live updates</button>
+          <button id="clearLog" class="secondary">Clear log</button>
+        </div>
+      </div>
+      <div class="log" id="activityLog"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js" integrity="sha384-7x3tVmE2MSjFk3rjql7YVSE2LEAFloT+1B5Nj0b3V5/hWRUsStlHHY2mySsRkmmF" crossorigin="anonymous"></script>
+  <script>
+    const { ethers } = window;
+
+    const state = {
+      provider: null,
+      signer: null,
+      walletAddress: null,
+      chainId: null,
+      contractAddress: null,
+      legacyAddress: null,
+      agiTokenAddress: null,
+      agiTokenDecimals: 18,
+      agiTokenSymbol: "",
+      contract: null,
+      readContract: null,
+      eventSubscribed: false,
+    };
+
+    const legacyAddress = "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477";
+    const storageKey = "agijobmanager_contract";
+
+    const abi = [
+      "function name() view returns (string)",
+      "function symbol() view returns (string)",
+      "function owner() view returns (address)",
+      "function paused() view returns (bool)",
+      "function agiToken() view returns (address)",
+      "function agentRootNode() view returns (bytes32)",
+      "function clubRootNode() view returns (bytes32)",
+      "function agentMerkleRoot() view returns (bytes32)",
+      "function validatorMerkleRoot() view returns (bytes32)",
+      "function ens() view returns (address)",
+      "function nameWrapper() view returns (address)",
+      "function requiredValidatorApprovals() view returns (uint256)",
+      "function requiredValidatorDisapprovals() view returns (uint256)",
+      "function validationRewardPercentage() view returns (uint256)",
+      "function maxJobPayout() view returns (uint256)",
+      "function jobDurationLimit() view returns (uint256)",
+      "function premiumReputationThreshold() view returns (uint256)",
+      "function nextJobId() view returns (uint256)",
+      "function nextTokenId() view returns (uint256)",
+      "function reputation(address) view returns (uint256)",
+      "function canAccessPremiumFeature(address) view returns (bool)",
+      "function moderators(address) view returns (bool)",
+      "function additionalAgents(address) view returns (bool)",
+      "function additionalValidators(address) view returns (bool)",
+      "function blacklistedAgents(address) view returns (bool)",
+      "function blacklistedValidators(address) view returns (bool)",
+      "function jobs(uint256) view returns (uint256,address,string,uint256,uint256,address,uint256,bool,bool,uint256,uint256,bool,string)",
+      "function listings(uint256) view returns (uint256,address,uint256,bool)",
+      "function ownerOf(uint256) view returns (address)",
+      "function tokenURI(uint256) view returns (string)",
+      "function getJobStatus(uint256) view returns (bool,bool,string)",
+      "function createJob(string,uint256,uint256,string)",
+      "function cancelJob(uint256)",
+      "function applyForJob(uint256,string,bytes32[])",
+      "function requestJobCompletion(uint256,string)",
+      "function validateJob(uint256,string,bytes32[])",
+      "function disapproveJob(uint256,string,bytes32[])",
+      "function disputeJob(uint256)",
+      "function resolveDispute(uint256,string)",
+      "function listNFT(uint256,uint256)",
+      "function purchaseNFT(uint256)",
+      "function delistNFT(uint256)",
+      "event JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details)",
+      "event JobApplied(uint256 jobId, address agent)",
+      "event JobCompletionRequested(uint256 jobId, address agent)",
+      "event JobValidated(uint256 jobId, address validator)",
+      "event JobDisapproved(uint256 jobId, address validator)",
+      "event JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)",
+      "event JobCancelled(uint256 jobId)",
+      "event JobDisputed(uint256 jobId, address disputant)",
+      "event DisputeResolved(uint256 jobId, address resolver, string resolution)",
+      "event NFTIssued(uint256 tokenId, address employer, string tokenURI)",
+      "event NFTListed(uint256 tokenId, address seller, uint256 price)",
+      "event NFTPurchased(uint256 tokenId, address buyer, uint256 price)",
+      "event NFTDelisted(uint256 tokenId)",
+    ];
+
+    const erc20Abi = [
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)",
+      "function balanceOf(address) view returns (uint256)",
+      "function allowance(address,address) view returns (uint256)",
+      "function approve(address,uint256) returns (bool)",
+    ];
+
+    const ensAbi = ["function resolver(bytes32) view returns (address)"];
+    const resolverAbi = ["function addr(bytes32) view returns (address)"];
+    const nameWrapperAbi = ["function ownerOf(uint256) view returns (address)"];
+
+    const ids = (id) => document.getElementById(id);
+
+    function setText(id, value) {
+      ids(id).textContent = value;
+    }
+
+    function setDeploymentHints(mainnetAddress) {
+      setText("legacyAddress", legacyAddress);
+      setText("mainnetDeployment", mainnetAddress || "TBD");
+    }
+
+    function setLegacyAddress(value) {
+      const parsed = parseAddress(value, "Legacy contract address");
+      state.legacyAddress = parsed;
+      setText("legacyAddress", parsed);
+      return parsed;
+    }
+
+    function showAlert(message) {
+      window.alert(message);
+    }
+
+    function resetSnapshot() {
+      const snapshotFields = [
+        "contractName",
+        "contractSymbol",
+        "contractOwner",
+        "contractPaused",
+        "contractNextJob",
+        "contractNextToken",
+        "agiToken",
+        "agiTokenDecimals",
+        "agiTokenSymbol",
+        "requiredApprovals",
+        "requiredDisapprovals",
+        "validationReward",
+        "maxJobPayout",
+        "jobDurationLimit",
+        "premiumThreshold",
+        "agentRootNode",
+        "clubRootNode",
+        "agentMerkleRoot",
+        "validatorMerkleRoot",
+      ];
+      snapshotFields.forEach((field) => setText(field, "—"));
+    }
+
+    function resetRoleFlags() {
+      const roleFields = [
+        "isModerator",
+        "isAdditionalAgent",
+        "isAdditionalValidator",
+        "isBlacklistedAgent",
+        "isBlacklistedValidator",
+        "reputation",
+        "premiumAccess",
+        "agiBalance",
+        "agiAllowance",
+      ];
+      roleFields.forEach((field) => setText(field, "—"));
+    }
+
+    function updateNetworkPill() {
+      const pill = ids("networkPill");
+      if (!state.chainId) {
+        pill.textContent = "Not connected";
+        pill.className = "pill warn";
+        return;
+      }
+      const connectionLabel = state.walletAddress ? "" : "Network detected: ";
+      if (state.chainId === 1n) {
+        pill.textContent = `${connectionLabel}Mainnet`;
+        pill.className = "pill ok";
+      } else {
+        pill.textContent = `${connectionLabel}Wrong network (chain ${state.chainId})`;
+        pill.className = "pill danger";
+      }
+    }
+
+    function parseAddress(value, fieldLabel) {
+      try {
+        return ethers.getAddress(value);
+      } catch (error) {
+        throw new Error(`${fieldLabel} is not a valid address.`);
+      }
+    }
+
+    function parseUint(value, fieldLabel) {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        throw new Error(`${fieldLabel} is required.`);
+      }
+      if (!/^\\d+$/.test(trimmed)) {
+        throw new Error(`${fieldLabel} must be an integer.`);
+      }
+      return BigInt(trimmed);
+    }
+
+    function parseTokenAmount(value, fieldLabel) {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        throw new Error(`${fieldLabel} is required.`);
+      }
+      try {
+        return ethers.parseUnits(trimmed, state.agiTokenDecimals);
+      } catch (error) {
+        throw new Error(`${fieldLabel} must be a valid number.`);
+      }
+    }
+
+    function parseProof(input) {
+      if (!input.trim()) return [];
+      const parts = input.split(",").map((p) => p.trim()).filter(Boolean);
+      for (const part of parts) {
+        if (!/^0x[0-9a-fA-F]{64}$/.test(part)) {
+          throw new Error(`Invalid proof element: ${part}`);
+        }
+      }
+      return parts;
+    }
+
+    function maybeInitProvider() {
+      if (state.provider) return state.provider;
+      if (!window.ethereum) return null;
+      state.provider = new ethers.BrowserProvider(window.ethereum);
+      return state.provider;
+    }
+
+    async function initNetwork() {
+      if (!window.ethereum) return;
+      try {
+        maybeInitProvider();
+        await refreshNetwork();
+      } catch (error) {
+        // Ignore network detection errors until the user connects.
+      }
+    }
+
+    function getProvider() {
+      if (!window.ethereum) {
+        throw new Error("No wallet detected. Install a browser wallet like MetaMask.");
+      }
+      if (!state.provider) {
+        state.provider = new ethers.BrowserProvider(window.ethereum);
+      }
+      return state.provider;
+    }
+
+    function setContracts() {
+      if (!state.contractAddress) {
+        if (state.contract) {
+          state.contract.removeAllListeners();
+        }
+        if (state.readContract) {
+          state.readContract.removeAllListeners();
+        }
+        state.contract = null;
+        state.readContract = null;
+        state.eventSubscribed = false;
+        return;
+      }
+      if (!state.provider) return;
+      if (state.contract) {
+        state.contract.removeAllListeners();
+      }
+      if (state.readContract) {
+        state.readContract.removeAllListeners();
+      }
+      state.eventSubscribed = false;
+      state.readContract = new ethers.Contract(state.contractAddress, abi, state.provider);
+      if (state.signer) {
+        state.contract = new ethers.Contract(state.contractAddress, abi, state.signer);
+      } else {
+        state.contract = null;
+      }
+    }
+
+    function requireContract() {
+      if (!state.contractAddress) {
+        throw new Error("Set a contract address before interacting.");
+      }
+      if (!state.readContract) {
+        throw new Error("Provider not ready.");
+      }
+    }
+
+    async function refreshNetwork() {
+      const provider = getProvider();
+      const network = await provider.getNetwork();
+      state.chainId = network.chainId;
+      setText("walletChain", `${network.name} (${network.chainId})`);
+      updateNetworkPill();
+    }
+
+    async function connectWallet() {
+      const provider = getProvider();
+      const accounts = await provider.send("eth_requestAccounts", []);
+      if (!accounts || !accounts.length) {
+        throw new Error("No accounts returned from wallet.");
+      }
+      state.walletAddress = ethers.getAddress(accounts[0]);
+      state.signer = await provider.getSigner();
+      setText("walletAddress", state.walletAddress);
+      await refreshNetwork();
+      setContracts();
+    }
+
+    function disconnectWallet() {
+      state.signer = null;
+      state.walletAddress = null;
+      state.chainId = null;
+      setText("walletAddress", "Not connected");
+      setText("walletChain", "—");
+      updateNetworkPill();
+      setContracts();
+      resetRoleFlags();
+    }
+
+    async function ensureToken() {
+      requireContract();
+      const tokenAddress = await state.readContract.agiToken();
+      state.agiTokenAddress = tokenAddress;
+      const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
+      state.agiTokenDecimals = Number(await token.decimals());
+      state.agiTokenSymbol = await token.symbol();
+      return token;
+    }
+
+    async function updateSnapshot() {
+      requireContract();
+      const [name, symbol, owner, paused, approvals, disapprovals, reward, maxPayout, durationLimit, premium, nextJobId, nextTokenId, agentRoot, clubRoot, agentMerkleRoot, validatorMerkleRoot] = await Promise.all([
+        state.readContract.name(),
+        state.readContract.symbol(),
+        state.readContract.owner(),
+        state.readContract.paused(),
+        state.readContract.requiredValidatorApprovals(),
+        state.readContract.requiredValidatorDisapprovals(),
+        state.readContract.validationRewardPercentage(),
+        state.readContract.maxJobPayout(),
+        state.readContract.jobDurationLimit(),
+        state.readContract.premiumReputationThreshold(),
+        state.readContract.nextJobId(),
+        state.readContract.nextTokenId(),
+        state.readContract.agentRootNode(),
+        state.readContract.clubRootNode(),
+        state.readContract.agentMerkleRoot(),
+        state.readContract.validatorMerkleRoot(),
+      ]);
+
+      setText("contractName", name);
+      setText("contractSymbol", symbol);
+      setText("contractOwner", owner);
+      setText("contractPaused", paused ? "Yes" : "No");
+      setText("requiredApprovals", approvals.toString());
+      setText("requiredDisapprovals", disapprovals.toString());
+      setText("validationReward", `${reward.toString()}%`);
+      setText("maxJobPayout", formatToken(maxPayout));
+      setText("jobDurationLimit", durationLimit.toString());
+      setText("premiumThreshold", premium.toString());
+      setText("contractNextJob", nextJobId.toString());
+      setText("contractNextToken", nextTokenId.toString());
+      setText("agentRootNode", agentRoot);
+      setText("clubRootNode", clubRoot);
+      setText("agentMerkleRoot", agentMerkleRoot);
+      setText("validatorMerkleRoot", validatorMerkleRoot);
+
+      const token = await ensureToken();
+      setText("agiToken", state.agiTokenAddress);
+      setText("agiTokenDecimals", state.agiTokenDecimals.toString());
+      setText("agiTokenSymbol", state.agiTokenSymbol);
+    }
+
+    function formatToken(amount) {
+      try {
+        return `${ethers.formatUnits(amount, state.agiTokenDecimals)} ${state.agiTokenSymbol || ""}`.trim();
+      } catch (error) {
+        return amount.toString();
+      }
+    }
+
+    async function updateRoleFlags() {
+      requireContract();
+      if (!state.walletAddress) {
+        throw new Error("Connect a wallet to load role flags.");
+      }
+      const token = await ensureToken();
+      const [isModerator, isAgent, isValidator, isBlacklistedAgent, isBlacklistedValidator, reputation, premiumAccess, balance, allowance] = await Promise.all([
+        state.readContract.moderators(state.walletAddress),
+        state.readContract.additionalAgents(state.walletAddress),
+        state.readContract.additionalValidators(state.walletAddress),
+        state.readContract.blacklistedAgents(state.walletAddress),
+        state.readContract.blacklistedValidators(state.walletAddress),
+        state.readContract.reputation(state.walletAddress),
+        state.readContract.canAccessPremiumFeature(state.walletAddress),
+        token.balanceOf(state.walletAddress),
+        token.allowance(state.walletAddress, state.contractAddress),
+      ]);
+
+      setText("isModerator", isModerator ? "Yes" : "No");
+      setText("isAdditionalAgent", isAgent ? "Yes" : "No");
+      setText("isAdditionalValidator", isValidator ? "Yes" : "No");
+      setText("isBlacklistedAgent", isBlacklistedAgent ? "Yes" : "No");
+      setText("isBlacklistedValidator", isBlacklistedValidator ? "Yes" : "No");
+      setText("reputation", reputation.toString());
+      setText("premiumAccess", premiumAccess ? "Yes" : "No");
+      setText("agiBalance", formatToken(balance));
+      setText("agiAllowance", formatToken(allowance));
+    }
+
+    function computeSubnode(rootNode, label) {
+      const labelHash = ethers.keccak256(ethers.toUtf8Bytes(label));
+      return ethers.solidityPackedKeccak256(["bytes32", "bytes32"], [rootNode, labelHash]);
+    }
+
+    function hashPair(a, b) {
+      return ethers.keccak256(
+        ethers.concat([
+          BigInt(a) < BigInt(b) ? a : b,
+          BigInt(a) < BigInt(b) ? b : a,
+        ])
+      );
+    }
+
+    function verifyMerkleProof(root, leaf, proof) {
+      return proof.reduce((hash, p) => hashPair(hash, p), leaf) === root;
+    }
+
+    async function runIdentityCheck() {
+      requireContract();
+      if (!state.walletAddress) {
+        throw new Error("Connect a wallet to run identity checks.");
+      }
+      const label = ids("identityLabel").value.trim();
+      if (!label) {
+        throw new Error("Label is required.");
+      }
+      const proof = parseProof(ids("identityProof").value);
+      const identityType = ids("identityType").value;
+      const rootNode = identityType === "agent" ? await state.readContract.agentRootNode() : await state.readContract.clubRootNode();
+      const merkleRoot = identityType === "agent" ? await state.readContract.agentMerkleRoot() : await state.readContract.validatorMerkleRoot();
+
+      const leaf = ethers.keccak256(ethers.solidityPacked(["address"], [state.walletAddress]));
+      const subnode = computeSubnode(rootNode, label);
+      setText("identitySubnode", subnode);
+      const merkleValid = proof.length ? verifyMerkleProof(merkleRoot, leaf, proof) : false;
+      setText("identityMerkle", proof.length ? (merkleValid ? "Yes" : "No") : "No proof provided");
+
+      const ensAddress = await state.readContract.ens();
+      const nameWrapperAddress = await state.readContract.nameWrapper();
+      const nameWrapper = new ethers.Contract(nameWrapperAddress, nameWrapperAbi, state.provider);
+      const ens = new ethers.Contract(ensAddress, ensAbi, state.provider);
+
+      let nameWrapperOwner = "—";
+      try {
+        const owner = await nameWrapper.ownerOf(BigInt(subnode));
+        nameWrapperOwner = owner === state.walletAddress ? `${owner} (match)` : owner;
+      } catch (error) {
+        nameWrapperOwner = "NameWrapper lookup failed";
+      }
+      setText("identityNameWrapper", nameWrapperOwner);
+
+      let resolverText = "—";
+      try {
+        const resolverAddress = await ens.resolver(subnode);
+        if (resolverAddress === ethers.ZeroAddress) {
+          resolverText = "No resolver";
+        } else {
+          const resolver = new ethers.Contract(resolverAddress, resolverAbi, state.provider);
+          const resolved = await resolver.addr(subnode);
+          resolverText = resolved === state.walletAddress ? `${resolved} (match)` : resolved;
+        }
+      } catch (error) {
+        resolverText = "Resolver lookup failed";
+      }
+      setText("identityResolver", resolverText);
+    }
+
+    async function preflight(contract, method, args) {
+      try {
+        await contract.getFunction(method).staticCall(...args);
+      } catch (error) {
+        const message = error.shortMessage || error.message || "Transaction would revert.";
+        throw new Error(message);
+      }
+    }
+
+    async function sendTx(method, args, description) {
+      if (!state.contract) {
+        throw new Error("Connect a wallet to send transactions.");
+      }
+      await preflight(state.contract, method, args);
+      const tx = await state.contract.getFunction(method)(...args);
+      logEvent(`⏳ ${description} — ${tx.hash}`);
+      await tx.wait();
+      logEvent(`✅ ${description} confirmed`);
+    }
+
+    function logEvent(message) {
+      const log = ids("activityLog");
+      const line = document.createElement("div");
+      line.textContent = `[${new Date().toISOString()}] ${message}`;
+      log.prepend(line);
+    }
+
+    async function approveToken(amount, context) {
+      if (!state.walletAddress) {
+        throw new Error("Connect a wallet to approve tokens.");
+      }
+      const token = await ensureToken();
+      if (!state.contractAddress) {
+        throw new Error("Set a contract address first.");
+      }
+      try {
+        await token.getFunction("approve").staticCall(state.contractAddress, amount);
+      } catch (error) {
+        const message = error.shortMessage || error.message || "Approve would revert.";
+        throw new Error(message);
+      }
+      const tx = await token.connect(state.signer).approve(state.contractAddress, amount);
+      logEvent(`⏳ ${context} approve — ${tx.hash}`);
+      await tx.wait();
+      logEvent(`✅ ${context} approve confirmed`);
+    }
+
+    async function loadJobs() {
+      requireContract();
+      await ensureToken();
+      const tbody = ids("jobsTable");
+      tbody.innerHTML = "";
+      const nextJobId = await state.readContract.nextJobId();
+      const total = Number(nextJobId);
+      for (let i = 0; i < total; i += 1) {
+        const job = await state.readContract.jobs(i);
+        const employer = job[1];
+        const assignedAgent = job[5];
+        const completed = job[7];
+        const completionRequested = job[8];
+        const approvals = job[9];
+        const disapprovals = job[10];
+        const disputed = job[11];
+        const status = employer === ethers.ZeroAddress
+          ? "Deleted"
+          : completed
+            ? "Completed"
+            : disputed
+              ? "Disputed"
+              : completionRequested
+                ? "CompletionRequested"
+                : assignedAgent !== ethers.ZeroAddress
+                  ? "Assigned"
+                  : "Created";
+
+        const row = document.createElement("tr");
+        const cells = [
+          i.toString(),
+          status,
+          employer,
+          assignedAgent,
+          formatToken(job[3]),
+          job[4].toString(),
+          `${approvals.toString()} / ${disapprovals.toString()}`,
+          completionRequested ? "Yes" : "No",
+          disputed ? "Yes" : "No",
+          job[2],
+          job[12],
+        ];
+        for (const cell of cells) {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          row.appendChild(td);
+        }
+        tbody.appendChild(row);
+      }
+    }
+
+    async function loadNfts() {
+      requireContract();
+      await ensureToken();
+      const tbody = ids("nftsTable");
+      tbody.innerHTML = "";
+      const nextTokenId = await state.readContract.nextTokenId();
+      const total = Number(nextTokenId);
+      for (let i = 0; i < total; i += 1) {
+        let owner = "—";
+        let tokenUri = "—";
+        try {
+          owner = await state.readContract.ownerOf(i);
+          tokenUri = await state.readContract.tokenURI(i);
+        } catch (error) {
+          owner = "Unknown";
+          tokenUri = "—";
+        }
+        const listing = await state.readContract.listings(i);
+        const listingText = listing[3]
+          ? `Listed by ${listing[1]} for ${formatToken(listing[2])}`
+          : "Not listed";
+
+        const row = document.createElement("tr");
+        const cells = [i.toString(), owner, tokenUri, listingText];
+        for (const cell of cells) {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          row.appendChild(td);
+        }
+        tbody.appendChild(row);
+      }
+    }
+
+    async function loadEvents() {
+      requireContract();
+      const fromBlockInput = ids("fromBlock").value.trim();
+      const toBlockInput = ids("toBlock").value.trim();
+      const latest = await state.provider.getBlockNumber();
+      let fromBlock = Math.max(0, latest - 20000);
+      let toBlock = latest;
+      if (fromBlockInput) {
+        if (fromBlockInput.includes("latest")) {
+          const parts = fromBlockInput.split("-");
+          if (parts.length === 2) {
+            const offset = Number(parts[1]);
+            fromBlock = latest - (Number.isFinite(offset) ? offset : 0);
+          } else {
+            fromBlock = latest;
+          }
+        } else {
+          fromBlock = Number(fromBlockInput);
+        }
+      }
+      if (toBlockInput) {
+        if (toBlockInput === "latest") {
+          toBlock = latest;
+        } else {
+          toBlock = Number(toBlockInput);
+        }
+      }
+      if (!Number.isFinite(fromBlock) || fromBlock < 0 || !Number.isFinite(toBlock) || toBlock < 0) {
+        throw new Error("Block range must be valid numbers.");
+      }
+      if (fromBlock > toBlock) {
+        throw new Error("From block must be less than or equal to to block.");
+      }
+
+      const filters = [
+        state.readContract.filters.JobCreated(),
+        state.readContract.filters.JobApplied(),
+        state.readContract.filters.JobCompletionRequested(),
+        state.readContract.filters.JobValidated(),
+        state.readContract.filters.JobDisapproved(),
+        state.readContract.filters.JobCompleted(),
+        state.readContract.filters.JobCancelled(),
+        state.readContract.filters.JobDisputed(),
+        state.readContract.filters.DisputeResolved(),
+        state.readContract.filters.NFTIssued(),
+        state.readContract.filters.NFTListed(),
+        state.readContract.filters.NFTPurchased(),
+        state.readContract.filters.NFTDelisted(),
+      ];
+
+      for (const filter of filters) {
+        const events = await state.readContract.queryFilter(filter, fromBlock, toBlock);
+        for (const evt of events) {
+          logEvent(`${evt.eventName} — block ${evt.blockNumber}`);
+        }
+      }
+    }
+
+    function subscribeEvents() {
+      requireContract();
+      if (state.eventSubscribed) return;
+      const contract = state.contract || state.readContract;
+      if (!contract) throw new Error("Contract not ready.");
+      state.eventSubscribed = true;
+      contract.on("JobCreated", (jobId) => logEvent(`JobCreated #${jobId}`));
+      contract.on("JobApplied", (jobId, agent) => logEvent(`JobApplied #${jobId} by ${agent}`));
+      contract.on("JobCompletionRequested", (jobId, agent) => logEvent(`JobCompletionRequested #${jobId} by ${agent}`));
+      contract.on("JobValidated", (jobId, validator) => logEvent(`JobValidated #${jobId} by ${validator}`));
+      contract.on("JobDisapproved", (jobId, validator) => logEvent(`JobDisapproved #${jobId} by ${validator}`));
+      contract.on("JobCompleted", (jobId) => logEvent(`JobCompleted #${jobId}`));
+      contract.on("JobCancelled", (jobId) => logEvent(`JobCancelled #${jobId}`));
+      contract.on("JobDisputed", (jobId) => logEvent(`JobDisputed #${jobId}`));
+      contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
+      contract.on("NFTIssued", (tokenId) => logEvent(`NFTIssued #${tokenId}`));
+      contract.on("NFTListed", (tokenId) => logEvent(`NFTListed #${tokenId}`));
+      contract.on("NFTPurchased", (tokenId) => logEvent(`NFTPurchased #${tokenId}`));
+      contract.on("NFTDelisted", (tokenId) => logEvent(`NFTDelisted #${tokenId}`));
+    }
+
+    function loadContractFromQuery() {
+      const url = new URL(window.location.href);
+      const contract = url.searchParams.get("contract");
+      if (contract) {
+        try {
+          const parsed = ethers.getAddress(contract);
+          ids("contractAddress").value = parsed;
+          state.contractAddress = parsed;
+          localStorage.setItem(storageKey, parsed);
+          maybeInitProvider();
+          setContracts();
+        } catch (error) {
+          showAlert("Invalid contract address in query string.");
+        }
+      } else {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          try {
+            const parsed = ethers.getAddress(stored);
+            ids("contractAddress").value = parsed;
+            state.contractAddress = parsed;
+            maybeInitProvider();
+            setContracts();
+          } catch (error) {
+            localStorage.removeItem(storageKey);
+          }
+        }
+      }
+    }
+
+    async function loadKnownDeployment() {
+      try {
+        const response = await fetch("../deployments/mainnet.json", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        const legacy = typeof data.legacyV0 === "string" ? data.legacyV0 : "";
+        const mainnet = typeof data.agiJobManager === "string" ? data.agiJobManager : "";
+        if (legacy) {
+          try {
+            setLegacyAddress(legacy);
+          } catch (error) {
+            state.legacyAddress = null;
+            setText("legacyAddress", legacyAddress);
+          }
+        }
+        if (mainnet) {
+          try {
+            const parsed = ethers.getAddress(mainnet);
+            setText("mainnetDeployment", parsed);
+            if (!state.contractAddress && !ids("contractAddress").value.trim()) {
+              ids("contractAddress").value = parsed;
+              state.contractAddress = parsed;
+              maybeInitProvider();
+              setContracts();
+            }
+          } catch (error) {
+            setText("mainnetDeployment", "TBD");
+          }
+        } else {
+          setText("mainnetDeployment", "TBD");
+        }
+      } catch (error) {
+        // best-effort only
+      }
+    }
+
+    async function handleSaveContract() {
+      const value = ids("contractAddress").value.trim();
+      if (!value) {
+        throw new Error("Contract address cannot be empty.");
+      }
+      state.contractAddress = parseAddress(value, "Contract address");
+      localStorage.setItem(storageKey, state.contractAddress);
+      const provider = maybeInitProvider();
+      if (provider) {
+        setContracts();
+        await updateSnapshot();
+      } else {
+        resetSnapshot();
+      }
+    }
+
+    async function handleSwitchMainnet() {
+      if (!window.ethereum) {
+        throw new Error("Wallet not available.");
+      }
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x1" }],
+      });
+    }
+
+    function attachWalletListeners() {
+      if (!window.ethereum) return;
+      window.ethereum.on("accountsChanged", () => {
+        disconnectWallet();
+        connectWallet()
+          .then(async () => {
+            if (state.contractAddress) {
+              await updateSnapshot();
+              await updateRoleFlags();
+            }
+          })
+          .catch((error) => showAlert(error.message));
+      });
+      window.ethereum.on("chainChanged", () => {
+        state.provider = null;
+        disconnectWallet();
+        connectWallet()
+          .then(async () => {
+            if (state.contractAddress) {
+              await updateSnapshot();
+              await updateRoleFlags();
+            }
+          })
+          .catch((error) => showAlert(error.message));
+      });
+    }
+
+    ids("connectButton").addEventListener("click", async () => {
+      try {
+        await connectWallet();
+        if (state.contractAddress) {
+          await updateSnapshot();
+          await updateRoleFlags();
+        } else {
+          resetSnapshot();
+          resetRoleFlags();
+        }
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("disconnectButton").addEventListener("click", () => {
+      disconnectWallet();
+    });
+
+    ids("saveContract").addEventListener("click", async () => {
+      try {
+        await handleSaveContract();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("clearContract").addEventListener("click", () => {
+      ids("contractAddress").value = "";
+      state.contractAddress = null;
+      localStorage.removeItem(storageKey);
+      setContracts();
+      resetSnapshot();
+      resetRoleFlags();
+    });
+
+    ids("legacyContract").addEventListener("click", () => {
+      const legacyValue = state.legacyAddress || legacyAddress;
+      ids("contractAddress").value = legacyValue;
+      state.contractAddress = legacyValue;
+      localStorage.setItem(storageKey, legacyValue);
+      maybeInitProvider();
+      setContracts();
+    });
+
+    ids("switchMainnet").addEventListener("click", async () => {
+      try {
+        await handleSwitchMainnet();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("refreshSnapshot").addEventListener("click", async () => {
+      try {
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("refreshRoles").addEventListener("click", async () => {
+      try {
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("runIdentityCheck").addEventListener("click", async () => {
+      try {
+        await runIdentityCheck();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("approveToken").addEventListener("click", async () => {
+      try {
+        await ensureToken();
+        const amount = parseTokenAmount(ids("approveAmount").value, "Approve amount");
+        await approveToken(amount, "Employer");
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("createJob").addEventListener("click", async () => {
+      try {
+        const ipfs = ids("jobIpfs").value.trim();
+        if (!ipfs) throw new Error("IPFS hash is required.");
+        await ensureToken();
+        const payout = parseTokenAmount(ids("jobPayout").value, "Payout");
+        const duration = parseUint(ids("jobDuration").value, "Duration");
+        const details = ids("jobDetails").value.trim();
+        await sendTx("createJob", [ipfs, payout, duration, details], "Create job");
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("cancelJob").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("cancelJobId").value, "Job ID");
+        await sendTx("cancelJob", [jobId], "Cancel job");
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("employerDisputeJob").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("employerDisputeJobId").value, "Job ID");
+        await sendTx("disputeJob", [jobId], "Dispute job");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("applyForJob").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("applyJobId").value, "Job ID");
+        const label = ids("applySubdomain").value.trim();
+        if (!label) throw new Error("Label is required.");
+        const proof = parseProof(ids("applyProof").value);
+        await sendTx("applyForJob", [jobId, label, proof], "Apply for job");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("requestCompletion").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("completionJobId").value, "Job ID");
+        const ipfs = ids("completionIpfs").value.trim();
+        if (!ipfs) throw new Error("Completion IPFS hash is required.");
+        await sendTx("requestJobCompletion", [jobId, ipfs], "Request completion");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("agentDisputeJob").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("agentDisputeJobId").value, "Job ID");
+        await sendTx("disputeJob", [jobId], "Dispute job");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("validateJob").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("validateJobId").value, "Job ID");
+        const label = ids("validateSubdomain").value.trim();
+        if (!label) throw new Error("Label is required.");
+        const proof = parseProof(ids("validateProof").value);
+        await sendTx("validateJob", [jobId, label, proof], "Validate job");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("disapproveJob").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("disapproveJobId").value, "Job ID");
+        const label = ids("disapproveSubdomain").value.trim();
+        if (!label) throw new Error("Label is required.");
+        const proof = parseProof(ids("disapproveProof").value);
+        await sendTx("disapproveJob", [jobId, label, proof], "Disapprove job");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("resolutionAgent").addEventListener("click", () => {
+      ids("resolveText").value = "agent win";
+    });
+
+    ids("resolutionEmployer").addEventListener("click", () => {
+      ids("resolveText").value = "employer win";
+    });
+
+    ids("resolveDispute").addEventListener("click", async () => {
+      try {
+        const jobId = parseUint(ids("resolveJobId").value, "Job ID");
+        const resolution = ids("resolveText").value.trim();
+        if (!resolution) throw new Error("Resolution string is required.");
+        await sendTx("resolveDispute", [jobId, resolution], "Resolve dispute");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("approvePurchase").addEventListener("click", async () => {
+      try {
+        await ensureToken();
+        const amount = parseTokenAmount(ids("purchaseApproveAmount").value, "Approve amount");
+        await approveToken(amount, "Purchase");
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("listNft").addEventListener("click", async () => {
+      try {
+        const tokenId = parseUint(ids("listTokenId").value, "Token ID");
+        await ensureToken();
+        const price = parseTokenAmount(ids("listPrice").value, "Price");
+        await sendTx("listNFT", [tokenId, price], "List NFT");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("delistNft").addEventListener("click", async () => {
+      try {
+        const tokenId = parseUint(ids("delistTokenId").value, "Token ID");
+        await sendTx("delistNFT", [tokenId], "Delist NFT");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("purchaseNft").addEventListener("click", async () => {
+      try {
+        const tokenId = parseUint(ids("purchaseTokenId").value, "Token ID");
+        await sendTx("purchaseNFT", [tokenId], "Purchase NFT");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("loadJobs").addEventListener("click", async () => {
+      try {
+        await loadJobs();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("loadNfts").addEventListener("click", async () => {
+      try {
+        await loadNfts();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("loadEvents").addEventListener("click", async () => {
+      try {
+        await loadEvents();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("subscribeEvents").addEventListener("click", () => {
+      try {
+        subscribeEvents();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("clearLog").addEventListener("click", () => {
+      ids("activityLog").innerHTML = "";
+    });
+
+    setDeploymentHints();
+    loadContractFromQuery();
+    loadKnownDeployment();
+    initNetwork();
+    attachWalletListeners();
+    updateNetworkPill();
+  </script>
+</body>
+</html>
