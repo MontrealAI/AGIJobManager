@@ -15,7 +15,7 @@ This threat model focuses on the **off-chain adapter** and the **signaling vs en
 ## Core safety principle
 **No payout without validated proof; no settlement without validation.**
 
-The adapter reads events after settlement is finalized; it never influences on-chain control flow.
+The adapter reads events after settlement is finalized; it never influences on-chain control flow or introduces liveness dependencies on ERC-8004 registries.
 
 ## Attack surfaces & mitigations
 ### 1) Sybil feedback
@@ -29,7 +29,7 @@ The adapter reads events after settlement is finalized; it never influences on-c
 
 ### 3) Off-chain data tampering
 - **Risk**: metrics file altered.
-- **Mitigation**: anchor evidence to on-chain logs (txHash/logIndex), optionally publish a content hash (e.g., IPFS CID or keccak256) in ERC-8004 feedback.
+- **Mitigation**: anchor evidence to on-chain logs (txHash/logIndex), optionally publish a content hash (e.g., IPFS CID or keccak256) in ERC-8004 feedback (`feedbackURI` + `feedbackHash`).
 
 ### 4) Metric ambiguity
 - **Risk**: different observers compute metrics differently.

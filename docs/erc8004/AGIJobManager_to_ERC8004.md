@@ -15,7 +15,12 @@ Where `role ∈ {club, agent, node}` and `env` is optional (e.g., `alpha`). Exam
 - `node.agi.eth`
 
 ### ERC-8004 registration “services”
-Per EIP-8004 and the best-practices Registration guide, agent registration files include a top-level `services` array. Each entry is a flexible **endpoint descriptor** with a `name`, `endpoint`, and optional `version`.
+Per EIP-8004 and the best-practices Registration guide, agent registration files include a top-level `services` array. Each entry is a flexible **endpoint descriptor** with a `name`, `endpoint`, and optional `version` (the spec calls these endpoint objects “services”).
+
+**Registration file skeleton (selected fields)**:
+- `type`, `name`, `description`, `image` (ERC-721 compatible metadata)
+- `services[]` (`name`, `endpoint`, `version`)
+- Optional fields from the spec: `x402Support`, `active`, `registrations[]`, `supportedTrust[]`
 
 **Recommended representation** (AGI.Eth identity):
 | AGI.Eth role | Example name | ERC-8004 service entry (`services[]`) | Notes |
@@ -42,7 +47,7 @@ The adapter aggregates the following from AGIJobManager events:
 - `revenuesProxy` — sum of `job.payout` for completed jobs (proxy only)
 
 ### Rate definitions
-Rates are exported in ERC-8004’s fixed-point format (`value`, `valueDecimals`):
+Rates are exported in ERC-8004’s fixed-point format (`value`, `valueDecimals`, with `valueDecimals` ∈ [0,18] per the spec):
 - `successRate` = `jobsCompleted / jobsAssigned * 100`
 - `disputeRate` = `jobsDisputed / jobsAssigned * 100`
 
@@ -60,9 +65,13 @@ Recommended `tag1` values when publishing feedback:
 - `revenues`
 - `ownerVerified`
 
+Optional `tag2` values (when needed) can encode sub-dimensions such as time windows (e.g., `day`, `week`, `month`, `year`) as suggested by the ERC-8004 reputation best practices.
+
+When publishing feedback, include `feedbackURI` + `feedbackHash` if you want to bind a richer off-chain report (e.g., a JSON file containing the metric bundle and anchor list). For IPFS or other content-addressed URIs, `feedbackHash` can be omitted as permitted by the spec.
+
 ## 3) Validation export rules (validator outcomes → validation signals)
 
-ERC-8004 includes a validation registry (requests + responses). We map AGIJobManager validator outcomes **off-chain** to validation-like artifacts:
+ERC-8004 includes a validation registry (requests + responses). We map AGIJobManager validator outcomes **off-chain** to validation-like artifacts that can be submitted later:
 - `JobValidated` → validation response with `response=100` (passed)
 - `JobDisapproved` → validation response with `response=0` (failed)
 - `DisputeResolved` → optional validation tag (e.g., `jobDisputeResolution`) tied to the same request hash
@@ -93,4 +102,4 @@ Heavy data (full job details, external proofs, or explanation text) stays **off-
 This mapping preserves liveness by preventing any ERC-8004 dependency from gating escrow finalization.
 
 ## Version alignment
-Aligned to EIP-8004 and the ERC-8004 best-practices Registration/Reputation guides as of **2026-01-29**.
+Aligned to EIP-8004 (ERCs repo + canonical mirror) and the ERC-8004 best-practices Registration/Reputation guides as of **2026-01-29**.

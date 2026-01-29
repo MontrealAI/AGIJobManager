@@ -10,8 +10,10 @@ The architectural intent in this repo aligns with the internal decks:
 These sources emphasize **signaling vs enforcement** and the invariant mindset: **no payout without validated proof; no settlement without validation**.
 
 ## External references (verified)
-Aligned to the latest public sources as of **2026-01-29**:
-- **EIP-8004 spec** (registration uses a `services` array with `name`/`endpoint`/`version`, feedback uses `value` + `valueDecimals`, optional `tag1`/`tag2`, `endpoint`, `feedbackURI`, `feedbackHash`): https://eips.ethereum.org/EIPS/eip-8004
+Aligned to the latest public sources as of **2026-01-29** (field names confirmed against the ERCs repo):
+- **EIP-8004 spec** (registration uses a `services` array with `name`/`endpoint`/`version`; feedback uses `value` + `valueDecimals`, optional `tag1`/`tag2`, `endpoint`, `feedbackURI`, `feedbackHash`):
+  - https://eips.ethereum.org/EIPS/eip-8004 (canonical mirror)
+  - https://github.com/ethereum/ERCs/blob/master/ERCS/erc-8004.md (source of truth)
 - **ERC-8004 best practices** (Registration + Reputation guides):
   - https://github.com/erc-8004/best-practices/blob/main/Registration.md
   - https://github.com/erc-8004/best-practices/blob/main/Reputation.md

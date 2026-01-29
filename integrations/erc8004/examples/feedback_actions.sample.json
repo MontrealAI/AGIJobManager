@@ -16,12 +16,14 @@
         "ens": null
       },
       "tag1": "disputeRate",
+      "tag2": null,
       "value": 5000,
       "valueDecimals": 2,
+      "endpoint": null,
+      "feedbackURI": null,
+      "feedbackHash": null,
       "evidence": {
-        "anchors": [],
-        "feedbackURI": null,
-        "feedbackHash": null
+        "anchors": []
       },
       "notes": {
         "tagNote": null,
@@ -36,12 +38,14 @@
         "ens": null
       },
       "tag1": "revenues",
+      "tag2": null,
       "value": "1000000000000000000",
       "valueDecimals": 0,
+      "endpoint": null,
+      "feedbackURI": null,
+      "feedbackHash": null,
       "evidence": {
-        "anchors": [],
-        "feedbackURI": null,
-        "feedbackHash": null
+        "anchors": []
       },
       "notes": {
         "tagNote": "Proxy: sum of job payout values for completed jobs (raw token units).",
@@ -56,12 +60,14 @@
         "ens": null
       },
       "tag1": "successRate",
+      "tag2": null,
       "value": 5000,
       "valueDecimals": 2,
+      "endpoint": null,
+      "feedbackURI": null,
+      "feedbackHash": null,
       "evidence": {
-        "anchors": [],
-        "feedbackURI": null,
-        "feedbackHash": null
+        "anchors": []
       },
       "notes": {
         "tagNote": null,

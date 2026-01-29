@@ -31,6 +31,8 @@ Rates are expressed as percentages with `valueDecimals=2` (basis points of perce
 
 If `jobsAssigned` is 0, rates are omitted.
 
+Rates are rounded deterministically using integer math (half-up) to preserve repeatability.
+
 ## Evidence anchors
 Every metric bundle includes `evidence.anchors[]` with:
 - `txHash`, `logIndex`, `blockNumber`
