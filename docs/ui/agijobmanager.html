@@ -1286,7 +1286,7 @@
             setLegacyAddress(legacy);
           } catch (error) {
             state.legacyAddress = null;
-            setText("legacyAddress", legacyAddress);
+            setText("legacyAddress", "Unavailable");
           }
         }
         if (mainnet) {
@@ -1400,7 +1400,11 @@
     });
 
     ids("legacyContract").addEventListener("click", () => {
-      const legacyValue = state.legacyAddress || legacyAddress;
+      const legacyValue = state.legacyAddress;
+      if (!legacyValue) {
+        showAlert("Legacy v0 address is not available. Update docs/deployments/mainnet.json.");
+        return;
+      }
       ids("contractAddress").value = legacyValue;
       state.contractAddress = legacyValue;
       localStorage.setItem(storageKey, legacyValue);
