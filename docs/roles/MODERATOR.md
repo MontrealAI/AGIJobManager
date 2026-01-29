@@ -10,6 +10,7 @@ The contract only triggers actions for **exactly** these strings:
 Any other string will **only** emit a `DisputeResolved` event and close the dispute without payouts.
 
 ## Step‑by‑step (non‑technical)
+> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `resolveDispute` inputs filled in.
 1. Confirm the job is disputed (look for the `JobDisputed` event).
 2. Call `resolveDispute(jobId, resolution)` with the exact string above.
 3. Verify the `DisputeResolved` event.

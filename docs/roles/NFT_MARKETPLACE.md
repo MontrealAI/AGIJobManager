@@ -3,6 +3,7 @@
 AGIJobManager mints an NFT receipt to the employer when a job completes. This NFT can be listed and sold using the built‑in marketplace.
 
 ## Step‑by‑step (non‑technical)
+> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `listNFT` inputs filled in.
 ### 1) List an NFT
 Call `listNFT(tokenId, price)` from the wallet that owns the NFT.
 - `price` is in AGI token wei.

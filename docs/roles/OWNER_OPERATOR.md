@@ -10,6 +10,7 @@ This guide covers administrative operations and safety controls.
 - Withdraw escrowed AGI funds when appropriate.
 
 ## Administrative actions
+> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `pause`/`unpause` actions.
 ### Pause / unpause
 - `pause()` stops most user actions.
 - `unpause()` restores normal operations.

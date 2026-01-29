@@ -8,6 +8,7 @@ This guide is for job posters (employers). It shows how to safely create and man
 - Confidence that the AGI token address is correct.
 
 ## Step‑by‑step (non‑technical)
+> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `createJob` inputs filled in.
 ### 1) Approve escrow amount
 Use your wallet or Etherscan to approve **only the exact payout amount**.
 
