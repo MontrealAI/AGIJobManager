@@ -12,7 +12,11 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-function buildFeedbackEntry(address, metrics) {
+function sortByTag(a, b) {
+  return a.tag1.localeCompare(b.tag1);
+}
+
+function buildSignals(metrics) {
   const signals = [];
 
   if (metrics.rates?.successRate) {
@@ -40,20 +44,33 @@ function buildFeedbackEntry(address, metrics) {
     });
   }
 
-  return {
-    subject: address,
-    signals,
-    evidence: 'TODO: add evidence hash or IPFS CID',
+  return signals.sort(sortByTag);
+}
+
+function buildFeedbackActions(address, metrics) {
+  const signals = buildSignals(metrics);
+  const evidenceAnchors = metrics.evidence?.anchors || [];
+
+  return signals.map((signal) => ({
+    subject: {
+      address,
+      ens: metrics.ens || null,
+    },
+    tag1: signal.tag1,
+    value: signal.value,
+    valueDecimals: signal.valueDecimals,
+    evidence: {
+      anchors: evidenceAnchors,
+      feedbackURI: null,
+      feedbackHash: null,
+    },
     notes: {
-      jobsApplied: metrics.jobsApplied,
+      tagNote: signal.note || null,
       jobsAssigned: metrics.jobsAssigned,
       jobsCompleted: metrics.jobsCompleted,
       jobsDisputed: metrics.jobsDisputed,
-      employerWins: metrics.employerWins,
-      agentWins: metrics.agentWins,
-      unknownResolutions: metrics.unknownResolutions,
     },
-  };
+  }));
 }
 
 function main() {
@@ -64,20 +81,22 @@ function main() {
 
   const outDir = process.env.OUT_DIR || getArgValue('out-dir') || path.dirname(metricsPath);
   const metrics = readJson(metricsPath);
+  const agents = metrics.agents || {};
 
-  const entries = Object.entries(metrics.agents || {}).map(([address, data]) => buildFeedbackEntry(address, data));
+  const addresses = Object.keys(agents).sort();
+  const actions = addresses.flatMap((address) => buildFeedbackActions(address, agents[address]));
 
   const output = {
     source: metrics.metadata || {},
     generatedAt: new Date().toISOString(),
-    feedback: entries,
-    notes: 'Dry-run output only. Use official ERC-8004 tooling (e.g., Agent0 SDK) for on-chain submission.',
+    actions,
+    notes: 'Dry-run output only. Use official ERC-8004 tooling for on-chain submission.',
   };
 
   fs.mkdirSync(outDir, { recursive: true });
-  const outPath = path.join(outDir, 'erc8004_feedback_intents.json');
+  const outPath = path.join(outDir, 'erc8004_feedback_actions.json');
   fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
-  console.log(`Feedback intents written to ${outPath}`);
+  console.log(`Feedback actions written to ${outPath}`);
 }
 
 if (require.main === module) {

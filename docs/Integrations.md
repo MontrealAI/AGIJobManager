@@ -16,6 +16,7 @@ Events to watch:
 AGIJobManager keeps escrow settlement fully on‑chain and does **not** depend on any ERC‑8004 contract. The repository provides an off‑chain adapter that maps job events into ERC‑8004 reputation signals.
 
 - Integration pattern: [`docs/ERC8004.md`](ERC8004.md)
+- Mapping spec & threat model: [`docs/erc8004/README.md`](erc8004/README.md)
 - Adapter implementation: [`integrations/erc8004/`](../integrations/erc8004/)
 
 ## Indexing guidance

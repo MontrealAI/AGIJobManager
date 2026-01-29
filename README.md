@@ -143,6 +143,7 @@ Start here:
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
+- **ERC‑8004 integration (control plane ↔ execution plane)**: [`docs/erc8004/README.md`](docs/erc8004/README.md)
 - **AGI.Eth Namespace (alpha)**:
   - User guide: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md)
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)

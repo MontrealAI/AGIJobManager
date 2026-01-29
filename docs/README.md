@@ -16,6 +16,7 @@ This documentation set targets engineers, integrators, operators, and auditors. 
 
 ## Trust layer & integrations
 - **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)
+- **ERC‑8004 integration (control plane ↔ execution plane)**: [`erc8004/README.md`](erc8004/README.md)
 - **Integrations overview**: [`Integrations.md`](Integrations.md)
 
 ## Role guides

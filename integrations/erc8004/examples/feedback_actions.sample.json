@@ -1,0 +1,75 @@
+{
+  "source": {
+    "chainId": 1337,
+    "network": "development",
+    "contractAddress": "0x0000000000000000000000000000000000000001",
+    "fromBlock": 0,
+    "toBlock": 42,
+    "generatedAt": "2026-01-29T00:00:00.000Z",
+    "toolVersion": "agijobmanager-erc8004-adapter@0.1.0"
+  },
+  "generatedAt": "2026-01-29T00:00:10.000Z",
+  "actions": [
+    {
+      "subject": {
+        "address": "0x00000000000000000000000000000000000000bb",
+        "ens": null
+      },
+      "tag1": "disputeRate",
+      "value": 5000,
+      "valueDecimals": 2,
+      "evidence": {
+        "anchors": [],
+        "feedbackURI": null,
+        "feedbackHash": null
+      },
+      "notes": {
+        "tagNote": null,
+        "jobsAssigned": 2,
+        "jobsCompleted": 1,
+        "jobsDisputed": 1
+      }
+    },
+    {
+      "subject": {
+        "address": "0x00000000000000000000000000000000000000bb",
+        "ens": null
+      },
+      "tag1": "revenues",
+      "value": "1000000000000000000",
+      "valueDecimals": 0,
+      "evidence": {
+        "anchors": [],
+        "feedbackURI": null,
+        "feedbackHash": null
+      },
+      "notes": {
+        "tagNote": "Proxy: sum of job payout values for completed jobs (raw token units).",
+        "jobsAssigned": 2,
+        "jobsCompleted": 1,
+        "jobsDisputed": 1
+      }
+    },
+    {
+      "subject": {
+        "address": "0x00000000000000000000000000000000000000bb",
+        "ens": null
+      },
+      "tag1": "successRate",
+      "value": 5000,
+      "valueDecimals": 2,
+      "evidence": {
+        "anchors": [],
+        "feedbackURI": null,
+        "feedbackHash": null
+      },
+      "notes": {
+        "tagNote": null,
+        "jobsAssigned": 2,
+        "jobsCompleted": 1,
+        "jobsDisputed": 1
+      }
+    }
+  ],
+  "notes": "Dry-run output only. Use official ERC-8004 tooling for on-chain submission."
+}

@@ -1,0 +1,72 @@
+{
+  "version": "0.2",
+  "metadata": {
+    "chainId": 1337,
+    "network": "development",
+    "contractAddress": "0x0000000000000000000000000000000000000001",
+    "fromBlock": 0,
+    "toBlock": 42,
+    "generatedAt": "2026-01-29T00:00:00.000Z",
+    "toolVersion": "agijobmanager-erc8004-adapter@0.1.0"
+  },
+  "trustedClientSet": {
+    "criteria": "addresses that created paid jobs in range",
+    "addresses": ["0x00000000000000000000000000000000000000aa"],
+    "evidence": {
+      "anchors": [
+        {
+          "txHash": "0xabc",
+          "logIndex": 1,
+          "blockNumber": 10,
+          "event": "JobCreated",
+          "jobId": "1",
+          "chainId": 1337,
+          "contractAddress": "0x0000000000000000000000000000000000000001"
+        }
+      ]
+    }
+  },
+  "agents": {
+    "0x00000000000000000000000000000000000000bb": {
+      "jobsApplied": 2,
+      "jobsAssigned": 2,
+      "jobsCompletionRequested": 1,
+      "jobsCompleted": 1,
+      "jobsDisputed": 1,
+      "employerWins": 1,
+      "agentWins": 0,
+      "unknownResolutions": 0,
+      "revenuesProxy": "1000000000000000000",
+      "rates": {
+        "successRate": {"value": 5000, "valueDecimals": 2},
+        "disputeRate": {"value": 5000, "valueDecimals": 2}
+      },
+      "evidence": {
+        "anchors": [
+          {
+            "txHash": "0xdef",
+            "logIndex": 2,
+            "blockNumber": 12,
+            "event": "JobCompleted",
+            "jobId": "1",
+            "chainId": 1337,
+            "contractAddress": "0x0000000000000000000000000000000000000001"
+          }
+        ]
+      }
+    }
+  },
+  "validators": {
+    "0x00000000000000000000000000000000000000cc": {
+      "approvals": 1,
+      "disapprovals": 1,
+      "disputesTriggered": 1,
+      "reputationUpdates": 1,
+      "reputationGain": "5",
+      "latestReputation": "42",
+      "evidence": {
+        "anchors": []
+      }
+    }
+  }
+}
