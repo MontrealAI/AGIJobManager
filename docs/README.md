@@ -7,6 +7,19 @@ This documentation set targets engineers, integrators, operators, and auditors. 
 - **ABI and interface reference (generated)**: [`Interface.md`](Interface.md)
 - **Deployment guide (Truffle)**: [`Deployment.md`](Deployment.md)
 - **Security model and limitations**: [`Security.md`](Security.md)
+- **User start‑here guide**: [`USERS.md`](USERS.md)
+- **Function reference**: [`REFERENCE.md`](REFERENCE.md)
+- **Testing guide**: [`TESTING.md`](TESTING.md)
+- **Troubleshooting**: [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)
+- **Security best practices**: [`SECURITY_BEST_PRACTICES.md`](SECURITY_BEST_PRACTICES.md)
+
+## Role guides
+- **Employer**: [`roles/EMPLOYER.md`](roles/EMPLOYER.md)
+- **Agent**: [`roles/AGENT.md`](roles/AGENT.md)
+- **Validator**: [`roles/VALIDATOR.md`](roles/VALIDATOR.md)
+- **Moderator**: [`roles/MODERATOR.md`](roles/MODERATOR.md)
+- **Owner/Operator**: [`roles/OWNER_OPERATOR.md`](roles/OWNER_OPERATOR.md)
+- **NFT Marketplace**: [`roles/NFT_MARKETPLACE.md`](roles/NFT_MARKETPLACE.md)
 
 ## Trust layer & integrations
 - **ERC‑8004 integration (signaling → enforcement)**: [`ERC8004.md`](ERC8004.md)
