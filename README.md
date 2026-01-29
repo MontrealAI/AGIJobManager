@@ -100,6 +100,13 @@ npm run build
 npm test
 ```
 
+## Web UI (GitHub Pages)
+
+- Canonical UI path in-repo: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)
+- Expected Pages URL pattern: `https://<org>.github.io/<repo>/ui/agijobmanager.html`
+- GitHub Pages setup: Settings → Pages → Source “Deploy from branch” → Branch `main` → Folder `/docs`.
+- The contract address is user-configurable and must be provided until the new mainnet deployment is finalized.
+
 ## ERC-8004 integration (control plane ↔ execution plane)
 See [`docs/ERC8004.md`](docs/ERC8004.md) and [`docs/erc8004/README.md`](docs/erc8004/README.md) for the mapping spec, threat model, and adapter notes. Quick export example:
 
@@ -167,15 +174,15 @@ Start here:
 
 ## Web UI
 
-- Static page: [`docs/agijobmanager.html`](docs/agijobmanager.html)
-- Usage guide: [`docs/agijobmanager_ui.md`](docs/agijobmanager_ui.md)
+- Static page: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)
+- Usage guide: [`docs/ui/README.md`](docs/ui/README.md)
 - Local preview:
   ```bash
   python -m http.server docs
   ```
 - Open with a contract address:
   ```
-  http://localhost:8000/agijobmanager.html?contract=0xYourContract
+  http://localhost:8000/ui/agijobmanager.html?contract=0xYourContract
   ```
 
 ## Ecosystem links
