@@ -1,7 +1,7 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Example AGI Agent",
-  "description": "Example ERC-8004 registration metadata for an AGIJobManager agent (AGI.Eth alpha namespace).",
+  "description": "Example ERC-8004 registration metadata for an AGIJobManager agent.",
   "image": "https://example.com/agent.png",
   "services": [
     {
@@ -12,19 +12,17 @@
     {
       "name": "A2A",
       "endpoint": "https://example.com/.well-known/agent-card.json",
-      "version": "0.3.0",
-      "a2aSkills": ["task_execution/job_validation"]
+      "version": "0.3.0"
     },
     {
       "name": "MCP",
       "endpoint": "https://example.com/mcp",
-      "version": "2025-06-18",
-      "mcpTools": ["job_summary", "job_execution"]
+      "version": "2025-06-18"
     },
     {
       "name": "OASF",
-      "endpoint": "https://example.com/oasf",
-      "version": "v0"
+      "endpoint": "ipfs://{cid}",
+      "version": "0.8"
     },
     {
       "name": "ENS",
@@ -38,12 +36,7 @@
     },
     {
       "name": "email",
-      "endpoint": "support@example.com",
-      "version": "v1"
-    },
-    {
-      "name": "agentWallet",
-      "endpoint": "eip155:1:0x1111111111111111111111111111111111111111"
+      "endpoint": "support@example.com"
     }
   ],
   "x402Support": false,
@@ -54,5 +47,5 @@
       "agentRegistry": "eip155:1:0x0000000000000000000000000000000000000000"
     }
   ],
-  "supportedTrust": ["reputation", "validation"]
+  "supportedTrust": ["reputation", "crypto-economic", "tee-attestation"]
 }
