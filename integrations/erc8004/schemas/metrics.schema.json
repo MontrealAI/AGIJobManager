@@ -77,6 +77,8 @@
         "agentWins",
         "unknownResolutions",
         "revenuesProxy",
+        "responseTimeBlocksTotal",
+        "responseTimeSamples",
         "rates",
         "evidence"
       ],
@@ -90,6 +92,10 @@
         "agentWins": {"type": "integer"},
         "unknownResolutions": {"type": "integer"},
         "revenuesProxy": {"type": "string"},
+        "responseTimeBlocksTotal": {"type": "string"},
+        "responseTimeSamples": {"type": "integer"},
+        "responseTimeBlocksAvg": {"type": ["integer", "null"]},
+        "lastActivityBlock": {"type": ["integer", "null"]},
         "rates": {
           "type": "object",
           "properties": {
@@ -116,6 +122,7 @@
         "reputationUpdates",
         "reputationGain",
         "latestReputation",
+        "lastActivityBlock",
         "evidence"
       ],
       "properties": {
@@ -125,6 +132,7 @@
         "reputationUpdates": {"type": "integer"},
         "reputationGain": {"type": "string"},
         "latestReputation": {"type": ["string", "null"]},
+        "lastActivityBlock": {"type": ["integer", "null"]},
         "evidence": {
           "type": "object",
           "required": ["anchors"],

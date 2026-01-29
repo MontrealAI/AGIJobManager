@@ -1,0 +1,9 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "registrations": [
+    {
+      "agentId": 1,
+      "agentRegistry": "eip155:1:0x0000000000000000000000000000000000000000"
+    }
+  ]
+}

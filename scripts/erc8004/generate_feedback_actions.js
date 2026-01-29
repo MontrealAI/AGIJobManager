@@ -16,7 +16,33 @@ function sortByTag(a, b) {
   return a.tag1.localeCompare(b.tag1);
 }
 
-function buildSignals(metrics) {
+function listJsonFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => path.join(dir, file));
+}
+
+function buildActionsFromFeedback(feedbackFile, registryAddress, chainId) {
+  const data = readJson(feedbackFile);
+  const { agentRegistry, agentId, feedback } = data;
+  if (!Array.isArray(feedback)) return [];
+
+  return feedback.map((entry) => ({
+    contractAddress: registryAddress || null,
+    functionName: null,
+    args: {
+      agentRegistry,
+      agentId,
+      feedback: entry,
+    },
+    calldata: null,
+    chainId,
+    summary: `Feedback ${entry.tag1} for agentId ${agentId}`,
+  }));
+}
+
+function buildActionsFromMetrics(metrics) {
   const signals = [];
 
   if (metrics.rates?.successRate) {
@@ -25,9 +51,6 @@ function buildSignals(metrics) {
       tag2: null,
       value: metrics.rates.successRate.value,
       valueDecimals: metrics.rates.successRate.valueDecimals,
-      endpoint: null,
-      feedbackURI: null,
-      feedbackHash: null,
     });
   }
 
@@ -37,9 +60,6 @@ function buildSignals(metrics) {
       tag2: null,
       value: metrics.rates.disputeRate.value,
       valueDecimals: metrics.rates.disputeRate.valueDecimals,
-      endpoint: null,
-      feedbackURI: null,
-      feedbackHash: null,
     });
   }
 
@@ -49,9 +69,6 @@ function buildSignals(metrics) {
       tag2: null,
       value: metrics.revenuesProxy,
       valueDecimals: 0,
-      endpoint: null,
-      feedbackURI: null,
-      feedbackHash: null,
       note: 'Proxy: sum of job payout values for completed jobs (raw token units).',
     });
   }
@@ -59,52 +76,49 @@ function buildSignals(metrics) {
   return signals.sort(sortByTag);
 }
 
-function buildFeedbackActions(address, metrics) {
-  const signals = buildSignals(metrics);
-  const evidenceAnchors = metrics.evidence?.anchors || [];
-
-  return signals.map((signal) => ({
-    subject: {
-      address,
-      ens: metrics.ens || null,
-    },
-    tag1: signal.tag1,
-    tag2: signal.tag2,
-    value: signal.value,
-    valueDecimals: signal.valueDecimals,
-    endpoint: signal.endpoint,
-    feedbackURI: signal.feedbackURI,
-    feedbackHash: signal.feedbackHash,
-    evidence: {
-      anchors: evidenceAnchors,
-    },
-    notes: {
-      tagNote: signal.note || null,
-      jobsAssigned: metrics.jobsAssigned,
-      jobsCompleted: metrics.jobsCompleted,
-      jobsDisputed: metrics.jobsDisputed,
-    },
-  }));
-}
-
 function main() {
   const metricsPath = process.env.METRICS_JSON || getArgValue('metrics-json');
-  if (!metricsPath) {
-    throw new Error('Missing METRICS_JSON or --metrics-json');
+  const feedbackDir = process.env.FEEDBACK_DIR || getArgValue('feedback-dir');
+  const outDir = process.env.OUT_DIR || getArgValue('out-dir') || (metricsPath ? path.dirname(metricsPath) : process.cwd());
+  const registryAddress = process.env.ERC8004_REPUTATION_REGISTRY || getArgValue('registry');
+  const chainId = process.env.CHAIN_ID ? Number(process.env.CHAIN_ID) : null;
+
+  let actions = [];
+  let source = {};
+
+  if (metricsPath) {
+    const metrics = readJson(metricsPath);
+    const agents = metrics.agents || {};
+    const addresses = Object.keys(agents).sort();
+    actions = addresses.flatMap((address) => {
+      const signals = buildActionsFromMetrics(agents[address]);
+      return signals.map((signal) => ({
+        contractAddress: registryAddress || null,
+        functionName: null,
+        args: {
+          subjectAddress: address,
+          signal,
+        },
+        calldata: null,
+        chainId,
+        summary: `Feedback ${signal.tag1} for wallet ${address}`,
+        note: signal.note || null,
+      }));
+    });
+    source = metrics.metadata || {};
+  } else if (feedbackDir) {
+    const files = listJsonFiles(feedbackDir);
+    actions = files.flatMap((file) => buildActionsFromFeedback(file, registryAddress, chainId));
+    source = { feedbackDir };
+  } else {
+    throw new Error('Missing METRICS_JSON/--metrics-json or FEEDBACK_DIR/--feedback-dir');
   }
 
-  const outDir = process.env.OUT_DIR || getArgValue('out-dir') || path.dirname(metricsPath);
-  const metrics = readJson(metricsPath);
-  const agents = metrics.agents || {};
-
-  const addresses = Object.keys(agents).sort();
-  const actions = addresses.flatMap((address) => buildFeedbackActions(address, agents[address]));
-
   const output = {
-    source: metrics.metadata || {},
+    source,
     generatedAt: new Date().toISOString(),
     actions,
-    notes: 'Dry-run output only. Use official ERC-8004 tooling for on-chain submission.',
+    notes: 'Dry-run output only. Provide registry ABI + function name from 8004.org/build for submission.',
   };
 
   fs.mkdirSync(outDir, { recursive: true });

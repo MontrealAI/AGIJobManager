@@ -11,71 +11,25 @@
   "generatedAt": "2026-01-29T00:00:10.000Z",
   "actions": [
     {
-      "subject": {
-        "address": "0x00000000000000000000000000000000000000bb",
-        "ens": null
+      "contractAddress": "0x0000000000000000000000000000000000000002",
+      "functionName": null,
+      "args": {
+        "agentRegistry": "eip155:1337:0x0000000000000000000000000000000000000003",
+        "agentId": 1,
+        "feedback": {
+          "clientAddress": "0x0000000000000000000000000000000000000001",
+          "tag1": "successRate",
+          "tag2": null,
+          "value": 5000,
+          "valueDecimals": 2,
+          "reason": "Completed jobs / assigned jobs",
+          "timestamp": 1700000000
+        }
       },
-      "tag1": "disputeRate",
-      "tag2": null,
-      "value": 5000,
-      "valueDecimals": 2,
-      "endpoint": null,
-      "feedbackURI": null,
-      "feedbackHash": null,
-      "evidence": {
-        "anchors": []
-      },
-      "notes": {
-        "tagNote": null,
-        "jobsAssigned": 2,
-        "jobsCompleted": 1,
-        "jobsDisputed": 1
-      }
-    },
-    {
-      "subject": {
-        "address": "0x00000000000000000000000000000000000000bb",
-        "ens": null
-      },
-      "tag1": "revenues",
-      "tag2": null,
-      "value": "1000000000000000000",
-      "valueDecimals": 0,
-      "endpoint": null,
-      "feedbackURI": null,
-      "feedbackHash": null,
-      "evidence": {
-        "anchors": []
-      },
-      "notes": {
-        "tagNote": "Proxy: sum of job payout values for completed jobs (raw token units).",
-        "jobsAssigned": 2,
-        "jobsCompleted": 1,
-        "jobsDisputed": 1
-      }
-    },
-    {
-      "subject": {
-        "address": "0x00000000000000000000000000000000000000bb",
-        "ens": null
-      },
-      "tag1": "successRate",
-      "tag2": null,
-      "value": 5000,
-      "valueDecimals": 2,
-      "endpoint": null,
-      "feedbackURI": null,
-      "feedbackHash": null,
-      "evidence": {
-        "anchors": []
-      },
-      "notes": {
-        "tagNote": null,
-        "jobsAssigned": 2,
-        "jobsCompleted": 1,
-        "jobsDisputed": 1
-      }
+      "calldata": null,
+      "chainId": 1337,
+      "summary": "Feedback successRate for agentId 1"
     }
   ],
-  "notes": "Dry-run output only. Use official ERC-8004 tooling for on-chain submission."
+  "notes": "Dry-run output only. Provide registry ABI + function name from 8004.org/build for submission."
 }

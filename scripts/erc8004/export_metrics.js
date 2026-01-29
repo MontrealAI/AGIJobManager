@@ -2,10 +2,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const AGIJobManager = artifacts.require('AGIJobManager');
-
 const ARG_PREFIX = '--';
 const DEFAULT_BATCH_SIZE = 2000;
+
+function ensureWeb3() {
+  if (typeof web3 !== 'undefined') return web3;
+  const Web3 = require('web3');
+  const providerUrl = process.env.WEB3_PROVIDER || 'http://127.0.0.1:8545';
+  const web3Instance = new Web3(providerUrl);
+  global.web3 = web3Instance;
+  return web3Instance;
+}
 
 function getArgValue(name) {
   const idx = process.argv.indexOf(`${ARG_PREFIX}${name}`);
@@ -112,7 +119,22 @@ function sortObjectByKeys(entries) {
   return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
 }
 
+function getAGIJobManagerContract() {
+  const web3Instance = ensureWeb3();
+  if (typeof artifacts !== 'undefined') {
+    return artifacts.require('AGIJobManager');
+  }
+  const contract = require('@truffle/contract');
+  const artifactPath = path.join(__dirname, '../../build/contracts/AGIJobManager.json');
+  const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
+  const AGIJobManager = contract(artifact);
+  AGIJobManager.setProvider(web3Instance.currentProvider);
+  return AGIJobManager;
+}
+
 async function runExportMetrics(overrides = {}) {
+  ensureWeb3();
+  const AGIJobManager = getAGIJobManagerContract();
   const address = overrides.address || process.env.AGIJOBMANAGER_ADDRESS || getArgValue('address');
   const fromBlockRaw = overrides.fromBlock ?? process.env.FROM_BLOCK ?? getArgValue('from-block');
   const toBlockRaw = overrides.toBlock ?? process.env.TO_BLOCK ?? getArgValue('to-block');
@@ -185,6 +207,8 @@ async function runExportMetrics(overrides = {}) {
   const validatorAnchors = new Map();
   const employerAnchors = new Map();
   const validatorAddressSet = new Set();
+  const jobAssignedBlock = new Map();
+  const jobCompletionRequestedBlock = new Map();
 
   const getAgent = (addressKey) => {
     const key = normalizeAddress(addressKey);
@@ -199,6 +223,10 @@ async function runExportMetrics(overrides = {}) {
         agentWins: 0,
         unknownResolutions: 0,
         revenuesProxy: toBN(0),
+        responseTimeBlocksTotal: toBN(0),
+        responseTimeSamples: 0,
+        responseTimeBlocksAvg: null,
+        lastActivityBlock: null,
         rates: {},
       });
     }
@@ -215,6 +243,7 @@ async function runExportMetrics(overrides = {}) {
         reputationUpdates: 0,
         reputationGain: toBN(0),
         latestReputation: null,
+        lastActivityBlock: null,
       });
     }
     return validators.get(key);
@@ -259,6 +288,8 @@ async function runExportMetrics(overrides = {}) {
     const metrics = getAgent(agent);
     metrics.jobsApplied += 1;
     metrics.jobsAssigned += 1;
+    metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
+    jobAssignedBlock.set(String(jobId), ev.blockNumber);
     const job = await getJob(jobId);
     if (job.assignedAgent && job.assignedAgent !== normalizeAddress(agent)) {
       job.assignedAgent = normalizeAddress(agent);
@@ -272,6 +303,15 @@ async function runExportMetrics(overrides = {}) {
     const agent = ev.returnValues.agent || ev.returnValues[1];
     const metrics = getAgent(agent);
     metrics.jobsCompletionRequested += 1;
+    metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
+    jobCompletionRequestedBlock.set(String(jobId), ev.blockNumber);
+    const assignedBlock = jobAssignedBlock.get(String(jobId));
+    if (assignedBlock !== undefined) {
+      metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal.add(
+        toBN(ev.blockNumber - assignedBlock),
+      );
+      metrics.responseTimeSamples += 1;
+    }
     addAnchor(agentAnchors, agent, buildAnchor(ev, jobId, chainId, contractAddress));
   }
 
@@ -280,8 +320,18 @@ async function runExportMetrics(overrides = {}) {
     const agent = ev.returnValues.agent || ev.returnValues[1];
     const metrics = getAgent(agent);
     metrics.jobsCompleted += 1;
+    metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
     const job = await getJob(jobId);
     metrics.revenuesProxy = metrics.revenuesProxy.add(job.payout);
+    if (!jobCompletionRequestedBlock.has(String(jobId))) {
+      const assignedBlock = jobAssignedBlock.get(String(jobId));
+      if (assignedBlock !== undefined) {
+        metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal.add(
+          toBN(ev.blockNumber - assignedBlock),
+        );
+        metrics.responseTimeSamples += 1;
+      }
+    }
     addAnchor(agentAnchors, agent, buildAnchor(ev, jobId, chainId, contractAddress));
   }
 
@@ -291,12 +341,17 @@ async function runExportMetrics(overrides = {}) {
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
     metrics.jobsDisputed += 1;
+    metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
     addAnchor(agentAnchors, job.assignedAgent, buildAnchor(ev, jobId, chainId, contractAddress));
     if (includeValidators) {
       const disputant = ev.returnValues.disputant || ev.returnValues[1];
       const disputantKey = normalizeAddress(disputant);
       if (validatorAddressSet.has(disputantKey)) {
         getValidator(disputant).disputesTriggered += 1;
+        getValidator(disputant).lastActivityBlock = Math.max(
+          getValidator(disputant).lastActivityBlock ?? 0,
+          ev.blockNumber,
+        );
         addAnchor(validatorAnchors, disputant, buildAnchor(ev, jobId, chainId, contractAddress));
       }
     }
@@ -316,6 +371,7 @@ async function runExportMetrics(overrides = {}) {
     } else {
       metrics.unknownResolutions += 1;
     }
+    metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
     addAnchor(agentAnchors, job.assignedAgent, buildAnchor(ev, jobId, chainId, contractAddress));
   }
 
@@ -324,12 +380,20 @@ async function runExportMetrics(overrides = {}) {
       const jobId = ev.returnValues.jobId || ev.returnValues[0];
       const validator = ev.returnValues.validator || ev.returnValues[1];
       getValidator(validator).approvals += 1;
+      getValidator(validator).lastActivityBlock = Math.max(
+        getValidator(validator).lastActivityBlock ?? 0,
+        ev.blockNumber,
+      );
       addAnchor(validatorAnchors, validator, buildAnchor(ev, jobId, chainId, contractAddress));
     }
     for (const ev of jobDisapproved) {
       const jobId = ev.returnValues.jobId || ev.returnValues[0];
       const validator = ev.returnValues.validator || ev.returnValues[1];
       getValidator(validator).disapprovals += 1;
+      getValidator(validator).lastActivityBlock = Math.max(
+        getValidator(validator).lastActivityBlock ?? 0,
+        ev.blockNumber,
+      );
       addAnchor(validatorAnchors, validator, buildAnchor(ev, jobId, chainId, contractAddress));
     }
 
@@ -347,6 +411,7 @@ async function runExportMetrics(overrides = {}) {
       }
       metrics.latestReputation = newRep.toString();
       metrics.reputationUpdates += 1;
+      metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
       addAnchor(validatorAnchors, user, buildAnchor(ev, null, chainId, contractAddress));
     }
   }
@@ -358,6 +423,12 @@ async function runExportMetrics(overrides = {}) {
     if (successRate) metrics.rates.successRate = successRate;
     if (disputeRate) metrics.rates.disputeRate = disputeRate;
     metrics.revenuesProxy = metrics.revenuesProxy.toString();
+    if (metrics.responseTimeSamples > 0) {
+      metrics.responseTimeBlocksAvg = metrics.responseTimeBlocksTotal
+        .div(toBN(metrics.responseTimeSamples))
+        .toNumber();
+    }
+    metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal.toString();
     metrics.evidence = {
       anchors: anchorsToList(agentAnchors.get(addressKey) || new Map()),
     };
