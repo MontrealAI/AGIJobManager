@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AGIJobManager — On‑chain Job Escrow & NFT Marketplace</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="icon" href="data:," />
   <style>
     :root {
       color-scheme: light;
@@ -708,11 +709,12 @@
         pill.className = "pill warn";
         return;
       }
+      const connectionLabel = state.walletAddress ? "" : "Network detected: ";
       if (state.chainId === 1n) {
-        pill.textContent = "Mainnet";
+        pill.textContent = `${connectionLabel}Mainnet`;
         pill.className = "pill ok";
       } else {
-        pill.textContent = `Wrong network (chain ${state.chainId})`;
+        pill.textContent = `${connectionLabel}Wrong network (chain ${state.chainId})`;
         pill.className = "pill danger";
       }
     }
@@ -764,6 +766,16 @@
       if (!window.ethereum) return null;
       state.provider = new ethers.BrowserProvider(window.ethereum);
       return state.provider;
+    }
+
+    async function initNetwork() {
+      if (!window.ethereum) return;
+      try {
+        maybeInitProvider();
+        await refreshNetwork();
+      } catch (error) {
+        // Ignore network detection errors until the user connects.
+      }
     }
 
     function getProvider() {
@@ -838,6 +850,7 @@
     function disconnectWallet() {
       state.signer = null;
       state.walletAddress = null;
+      state.chainId = null;
       setText("walletAddress", "Not connected");
       setText("walletChain", "—");
       updateNetworkPill();
@@ -1570,6 +1583,7 @@
     });
 
     loadContractFromQuery();
+    initNetwork();
     attachWalletListeners();
     updateNetworkPill();
   </script>
