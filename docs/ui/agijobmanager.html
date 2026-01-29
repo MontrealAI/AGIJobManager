@@ -1277,7 +1277,12 @@
     async function loadKnownDeployment() {
       try {
         const response = await fetch("../deployments/mainnet.json", { cache: "no-store" });
-        if (!response.ok) return;
+        if (!response.ok) {
+          state.legacyAddress = null;
+          setText("legacyAddress", "Unavailable");
+          setText("mainnetDeployment", "TBD");
+          return;
+        }
         const data = await response.json();
         const legacy = typeof data.legacyV0 === "string" ? data.legacyV0 : "";
         const mainnet = typeof data.agiJobManager === "string" ? data.agiJobManager : "";
@@ -1309,7 +1314,9 @@
           setText("mainnetDeployment", "TBD");
         }
       } catch (error) {
-        // best-effort only
+        state.legacyAddress = null;
+        setText("legacyAddress", "Unavailable");
+        setText("mainnetDeployment", "TBD");
       }
     }
 
