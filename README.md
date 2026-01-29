@@ -168,6 +168,7 @@ Start here:
 ## Web UI
 
 - Static page: [`docs/agijobmanager.html`](docs/agijobmanager.html)
+- Usage guide: [`docs/agijobmanager_ui.md`](docs/agijobmanager_ui.md)
 - Local preview:
   ```bash
   python -m http.server docs
