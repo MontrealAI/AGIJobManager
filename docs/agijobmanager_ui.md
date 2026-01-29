@@ -60,6 +60,7 @@ Use the “Contract address” input and click **Save address**.
 
 ### Wrong network
 - The UI is for **Ethereum Mainnet**. Use the “Switch to Mainnet” button.
+- The network pill updates based on your wallet’s current chain; you still need to connect before sending transactions.
 
 ### “Would revert” messages
 - Every state-changing action runs a **static call preflight**. If it would revert, the UI shows the revert reason.
