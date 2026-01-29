@@ -106,6 +106,7 @@ See [`docs/ERC8004.md`](docs/ERC8004.md) and [`docs/erc8004/README.md`](docs/erc
 ```bash
 AGIJOBMANAGER_ADDRESS=0xYourContract \
 ERC8004_IDENTITY_REGISTRY=0xIdentityRegistry \
+ERC8004_REPUTATION_REGISTRY=0xReputationRegistry \
 FROM_BLOCK=0 \
 TO_BLOCK=latest \
 OUT_DIR=integrations/erc8004/out \
