@@ -661,6 +661,46 @@
       window.alert(message);
     }
 
+    function resetSnapshot() {
+      const snapshotFields = [
+        "contractName",
+        "contractSymbol",
+        "contractOwner",
+        "contractPaused",
+        "contractNextJob",
+        "contractNextToken",
+        "agiToken",
+        "agiTokenDecimals",
+        "agiTokenSymbol",
+        "requiredApprovals",
+        "requiredDisapprovals",
+        "validationReward",
+        "maxJobPayout",
+        "jobDurationLimit",
+        "premiumThreshold",
+        "agentRootNode",
+        "clubRootNode",
+        "agentMerkleRoot",
+        "validatorMerkleRoot",
+      ];
+      snapshotFields.forEach((field) => setText(field, "—"));
+    }
+
+    function resetRoleFlags() {
+      const roleFields = [
+        "isModerator",
+        "isAdditionalAgent",
+        "isAdditionalValidator",
+        "isBlacklistedAgent",
+        "isBlacklistedValidator",
+        "reputation",
+        "premiumAccess",
+        "agiBalance",
+        "agiAllowance",
+      ];
+      roleFields.forEach((field) => setText(field, "—"));
+    }
+
     function updateNetworkPill() {
       const pill = ids("networkPill");
       if (!state.chainId) {
@@ -719,6 +759,13 @@
       return parts;
     }
 
+    function maybeInitProvider() {
+      if (state.provider) return state.provider;
+      if (!window.ethereum) return null;
+      state.provider = new ethers.BrowserProvider(window.ethereum);
+      return state.provider;
+    }
+
     function getProvider() {
       if (!window.ethereum) {
         throw new Error("No wallet detected. Install a browser wallet like MetaMask.");
@@ -731,8 +778,15 @@
 
     function setContracts() {
       if (!state.contractAddress) {
+        if (state.contract) {
+          state.contract.removeAllListeners();
+        }
+        if (state.readContract) {
+          state.readContract.removeAllListeners();
+        }
         state.contract = null;
         state.readContract = null;
+        state.eventSubscribed = false;
         return;
       }
       if (!state.provider) return;
@@ -788,6 +842,7 @@
       setText("walletChain", "—");
       updateNetworkPill();
       setContracts();
+      resetRoleFlags();
     }
 
     async function ensureToken() {
@@ -1168,14 +1223,23 @@
           ids("contractAddress").value = parsed;
           state.contractAddress = parsed;
           localStorage.setItem(storageKey, parsed);
+          maybeInitProvider();
+          setContracts();
         } catch (error) {
           showAlert("Invalid contract address in query string.");
         }
       } else {
         const stored = localStorage.getItem(storageKey);
         if (stored) {
-          ids("contractAddress").value = stored;
-          state.contractAddress = stored;
+          try {
+            const parsed = ethers.getAddress(stored);
+            ids("contractAddress").value = parsed;
+            state.contractAddress = parsed;
+            maybeInitProvider();
+            setContracts();
+          } catch (error) {
+            localStorage.removeItem(storageKey);
+          }
         }
       }
     }
@@ -1187,9 +1251,13 @@
       }
       state.contractAddress = parseAddress(value, "Contract address");
       localStorage.setItem(storageKey, state.contractAddress);
-      getProvider();
-      setContracts();
-      await updateSnapshot();
+      const provider = maybeInitProvider();
+      if (provider) {
+        setContracts();
+        await updateSnapshot();
+      } else {
+        resetSnapshot();
+      }
     }
 
     async function handleSwitchMainnet() {
@@ -1206,19 +1274,39 @@
       if (!window.ethereum) return;
       window.ethereum.on("accountsChanged", () => {
         disconnectWallet();
-        connectWallet().catch((error) => showAlert(error.message));
+        connectWallet()
+          .then(async () => {
+            if (state.contractAddress) {
+              await updateSnapshot();
+              await updateRoleFlags();
+            }
+          })
+          .catch((error) => showAlert(error.message));
       });
       window.ethereum.on("chainChanged", () => {
+        state.provider = null;
         disconnectWallet();
-        connectWallet().catch((error) => showAlert(error.message));
+        connectWallet()
+          .then(async () => {
+            if (state.contractAddress) {
+              await updateSnapshot();
+              await updateRoleFlags();
+            }
+          })
+          .catch((error) => showAlert(error.message));
       });
     }
 
     ids("connectButton").addEventListener("click", async () => {
       try {
         await connectWallet();
-        await updateSnapshot();
-        await updateRoleFlags();
+        if (state.contractAddress) {
+          await updateSnapshot();
+          await updateRoleFlags();
+        } else {
+          resetSnapshot();
+          resetRoleFlags();
+        }
       } catch (error) {
         showAlert(error.message);
       }
@@ -1241,12 +1329,15 @@
       state.contractAddress = null;
       localStorage.removeItem(storageKey);
       setContracts();
+      resetSnapshot();
+      resetRoleFlags();
     });
 
     ids("legacyContract").addEventListener("click", () => {
       ids("contractAddress").value = legacyAddress;
       state.contractAddress = legacyAddress;
       localStorage.setItem(storageKey, legacyAddress);
+      maybeInitProvider();
       setContracts();
     });
 

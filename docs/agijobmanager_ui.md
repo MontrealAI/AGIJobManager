@@ -25,6 +25,7 @@ You can set the contract address in three ways (the UI uses the first one it fin
 Use the “Contract address” input and click **Save address**.
 
 > The new AGIJobManager mainnet address is not yet known. This UI is designed to work with **any** valid deployment.
+> A helper button is available to prefill the **legacy v0** mainnet address, which is clearly labeled as legacy.
 
 ## Role flows
 
