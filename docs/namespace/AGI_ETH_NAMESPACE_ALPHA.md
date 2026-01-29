@@ -45,6 +45,15 @@ The namespace grammar follows one rule:
 
 > **Important:** The contract does **not** accept the full ENS name as `subdomain`. Use only the left‑most label.
 
+### What changes between alpha and non‑alpha (same label, different root)
+
+| Example | Non‑alpha name | Alpha name | What changes for the user |
+| --- | --- | --- | --- |
+| Validator | `alice.club.agi.eth` | `alice.alpha.club.agi.eth` | The **root node** changes (`club.agi.eth` vs `alpha.club.agi.eth`), but the **`subdomain` label stays** `"alice"`. |
+| Agent | `helper.agent.agi.eth` | `helper.alpha.agent.agi.eth` | The **root node** changes (`agent.agi.eth` vs `alpha.agent.agi.eth`); you still pass `"helper"`. |
+
+**Operational implication:** an alpha‑configured deployment only accepts **alpha** names because its root nodes are fixed at deploy time.
+
 ---
 
 ## 3) What AGIJobManager checks (in order)
@@ -96,7 +105,7 @@ These steps assume you are using a block explorer like Etherscan and have the co
 2. **Apply for the job**
    - Call `applyForJob(jobId, subdomain, proof)`
    - `subdomain`: the left‑most label only (e.g., `"helper"`)
-   - `proof`: Merkle proof array if allowlisted; otherwise `[]`
+   - `proof`: Merkle proof array if allowlisted; otherwise `[]` (empty array)
 3. **Request completion**
    - Call `requestJobCompletion(jobId, ipfsHash)`
    - Use a final IPFS hash that represents your deliverable.
@@ -156,6 +165,7 @@ Before doing anything on-chain:
 - ✅ Confirm the **contract address** from a trusted source.
 - ✅ Confirm the **token address** (ERC‑20 used for payout).
 - ✅ Verify your ENS ownership in the ENS app.
+- ✅ Confirm your ENS **resolver address** points to the wallet you will use.
 - ✅ Use **small test amounts** first.
 - ✅ Approve **only the amount you need**.
 - ✅ Revoke approvals after completion (set allowance to 0).
