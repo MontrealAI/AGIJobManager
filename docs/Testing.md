@@ -1,38 +1,42 @@
-# Testing
+# Testing AGIJobManager
 
-This repository uses Truffle with a local Ganache chain for testing. The default `truffle test` command runs against an in-process Ganache provider defined in `truffle-config.js`, so no environment variables are required for local unit tests.
+This repository uses Truffle + Ganache for local testing. The suite includes mock contracts for ENS/NameWrapper/Resolver, ERC-20 transfer failures, and AGIType ERC-721s so we can validate the safety fixes without touching production code.
 
-## Quickstart
+## Local setup
+
+Install dependencies:
 
 ```bash
 npm install
-npx truffle compile
-npx truffle test
 ```
 
-## Running against a local development chain (Ganache)
-
-If you prefer a persistent local chain, start Ganache and run Truffle against the `development` network:
+Start Ganache in a separate terminal (development network):
 
 ```bash
-npx ganache -p 8545
-npx truffle test --network development
+npx ganache -p 8545 --wallet.mnemonic "test test test test test test test test test test test junk"
 ```
 
-## Test-only mocks
+Compile and run tests against the local `development` network:
 
-The test suite includes minimal mock contracts under `contracts/test/`:
+```bash
+truffle compile
+truffle test --network development
+```
 
-- **MockERC20** / **FailTransferToken** / **FailingERC20**: ERC‑20 mocks to simulate successful transfers and `transfer`/`transferFrom` failures.
-- **MockERC721**: ERC‑721 mock used for AGIType payout boosts.
-- **MockENS**, **MockResolver**, **MockNameWrapper**: deterministic ENS/NameWrapper mocks for access gating tests.
+## Mocks used in tests
 
-## Suite layout
+The test suite uses the following test-only contracts under `contracts/test/`:
 
-- **`test/AGIJobManager.full.test.js`**: comprehensive unit/integration coverage for lifecycle, dispute resolution, vote rules, ERC‑20 transfer checks, and NFT marketplace behavior.
-- **`test/regressions.better-only.js`**: regression coverage for the better‑only hardening fixes.
+- `MockERC20`: basic ERC-20 for escrow and payouts.
+- `FailingERC20` / `FailTransferToken`: ERC-20s that return `false` for `transfer` / `transferFrom`.
+- `MockENS`, `MockResolver`, `MockNameWrapper`: ENS gating mocks.
+- `MockERC721`: AGIType NFT for payout boosts.
 
-## Extending tests
+## Extending the tests
 
-- Add new scenarios under `test/` and reuse the helper utilities in `test/AGIJobManager.full.test.js`.
-- Keep mocks deterministic and minimal, and avoid modifying `contracts/AGIJobManager.sol`.
+Most tests share helper utilities in `test/helpers/`:
+
+- `ens.js` for constructing namehash/root/subnode values and setting mock ownership.
+- `errors.js` for asserting custom error selectors.
+
+Add new scenarios by reusing these helpers and creating focused test cases for new behaviors. Keep job IDs and test data deterministic to ensure consistent results across runs.
