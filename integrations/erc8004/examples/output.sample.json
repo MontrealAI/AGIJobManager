@@ -37,6 +37,10 @@
       "agentWins": 0,
       "unknownResolutions": 0,
       "revenuesProxy": "1000000000000000000",
+      "responseTimeBlocksTotal": "12",
+      "responseTimeSamples": 1,
+      "responseTimeBlocksAvg": 12,
+      "lastActivityBlock": 12,
       "rates": {
         "successRate": {"value": 5000, "valueDecimals": 2},
         "disputeRate": {"value": 5000, "valueDecimals": 2}
@@ -64,6 +68,7 @@
       "reputationUpdates": 1,
       "reputationGain": "5",
       "latestReputation": "42",
+      "lastActivityBlock": 12,
       "evidence": {
         "anchors": []
       }
