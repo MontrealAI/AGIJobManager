@@ -40,5 +40,5 @@ The interface reference is generated from the compiled ABI. After running a comp
 
 ```bash
 npm run build
-node scripts/generate-interface-doc.js
+npm run docs:interface
 ```
