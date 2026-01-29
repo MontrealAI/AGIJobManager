@@ -1375,6 +1375,7 @@
 
     ids("approveToken").addEventListener("click", async () => {
       try {
+        await ensureToken();
         const amount = parseTokenAmount(ids("approveAmount").value, "Approve amount");
         await approveToken(amount, "Employer");
         await updateRoleFlags();
@@ -1387,6 +1388,7 @@
       try {
         const ipfs = ids("jobIpfs").value.trim();
         if (!ipfs) throw new Error("IPFS hash is required.");
+        await ensureToken();
         const payout = parseTokenAmount(ids("jobPayout").value, "Payout");
         const duration = parseUint(ids("jobDuration").value, "Duration");
         const details = ids("jobDetails").value.trim();
@@ -1493,6 +1495,7 @@
 
     ids("approvePurchase").addEventListener("click", async () => {
       try {
+        await ensureToken();
         const amount = parseTokenAmount(ids("purchaseApproveAmount").value, "Approve amount");
         await approveToken(amount, "Purchase");
         await updateRoleFlags();
@@ -1504,6 +1507,7 @@
     ids("listNft").addEventListener("click", async () => {
       try {
         const tokenId = parseUint(ids("listTokenId").value, "Token ID");
+        await ensureToken();
         const price = parseTokenAmount(ids("listPrice").value, "Price");
         await sendTx("listNFT", [tokenId, price], "List NFT");
       } catch (error) {
