@@ -165,6 +165,18 @@ Start here:
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
   - Local test coverage: [`docs/namespace/TESTING.md`](docs/namespace/TESTING.md)
 
+## Web UI
+
+- Static page: [`docs/agijobmanager.html`](docs/agijobmanager.html)
+- Local preview:
+  ```bash
+  python -m http.server docs
+  ```
+- Open with a contract address:
+  ```
+  http://localhost:8000/agijobmanager.html?contract=0xYourContract
+  ```
+
 ## Ecosystem links
 
 - **Historical v0 contract (mainnet)**: https://etherscan.io/address/0x0178b6bad606aaf908f72135b8ec32fc1d5ba477
