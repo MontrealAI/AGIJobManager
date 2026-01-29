@@ -101,14 +101,15 @@ npm test
 ```
 
 ## ERC-8004 integration (control plane ↔ execution plane)
-See [`docs/erc8004/README.md`](docs/erc8004/README.md) for the mapping spec, threat model, and adapter notes. Quick export example:
+See [`docs/ERC8004.md`](docs/ERC8004.md) and [`docs/erc8004/README.md`](docs/erc8004/README.md) for the mapping spec, threat model, and adapter notes. Quick export example:
 
 ```bash
 AGIJOBMANAGER_ADDRESS=0xYourContract \
+ERC8004_IDENTITY_REGISTRY=0xRegistryFrom8004Build \
 FROM_BLOCK=0 \
 TO_BLOCK=latest \
 OUT_DIR=integrations/erc8004/out \
-truffle exec scripts/erc8004/export_metrics.js --network sepolia
+truffle exec scripts/erc8004/export_feedback.js --network sepolia
 ```
 
 Local dev chain (Ganache):

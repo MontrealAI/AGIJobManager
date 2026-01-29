@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AGIJobManager ERC-8004 Export Summary",
+  "type": "object",
+  "required": ["version", "metadata", "agentRegistry", "trustedClientSet", "subjects"],
+  "properties": {
+    "version": {"type": "string"},
+    "metadata": {
+      "type": "object",
+      "required": ["chainId", "network", "contractAddress", "fromBlock", "toBlock", "generatedAt", "toolVersion"],
+      "properties": {
+        "chainId": {"type": "integer"},
+        "network": {"type": "string"},
+        "contractAddress": {"type": "string"},
+        "fromBlock": {"type": "integer"},
+        "toBlock": {"type": "integer"},
+        "generatedAt": {"type": "string"},
+        "toolVersion": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "agentRegistry": {"type": "string"},
+    "trustedClientSet": {
+      "type": "object",
+      "required": ["criteria", "addresses"],
+      "properties": {
+        "criteria": {"type": "string"},
+        "addresses": {"type": "array", "items": {"type": "string"}},
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "anchors": {"type": "array", "items": {"$ref": "#/definitions/anchor"}}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "subjects": {
+      "type": "object",
+      "required": ["agents"],
+      "properties": {
+        "agents": {"type": "object", "additionalProperties": {"$ref": "#/definitions/agentSummary"}},
+        "validators": {"type": "object", "additionalProperties": {"$ref": "#/definitions/validatorSummary"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "definitions": {
+    "anchor": {
+      "type": "object",
+      "required": ["txHash", "logIndex", "blockNumber", "event", "chainId", "contractAddress"],
+      "properties": {
+        "txHash": {"type": "string"},
+        "logIndex": {"type": "integer"},
+        "blockNumber": {"type": "integer"},
+        "event": {"type": "string"},
+        "jobId": {"type": ["string", "null"]},
+        "chainId": {"type": "integer"},
+        "contractAddress": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "rate": {
+      "type": "object",
+      "required": ["value", "valueDecimals"],
+      "properties": {
+        "value": {"type": "integer"},
+        "valueDecimals": {"type": "integer"}
+      },
+      "additionalProperties": false
+    },
+    "agentSummary": {
+      "type": "object",
+      "required": ["agentId", "assignedCount", "completedCount", "disputedCount", "file"],
+      "properties": {
+        "agentId": {"type": ["integer", "null"]},
+        "assignedCount": {"type": "integer"},
+        "completedCount": {"type": "integer"},
+        "completionRequestedCount": {"type": "integer"},
+        "disputedCount": {"type": "integer"},
+        "agentWinCount": {"type": "integer"},
+        "employerWinCount": {"type": "integer"},
+        "unknownResolutionCount": {"type": "integer"},
+        "revenuesProxy": {"type": "string"},
+        "responseTimeAvgSeconds": {"type": ["integer", "null"]},
+        "successRate": {"$ref": "#/definitions/rate"},
+        "disputeRate": {"$ref": "#/definitions/rate"},
+        "lastActivityBlock": {"type": ["integer", "null"]},
+        "file": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "validatorSummary": {
+      "type": "object",
+      "required": ["agentId", "validationsCount", "disapprovalsCount", "file"],
+      "properties": {
+        "agentId": {"type": ["integer", "null"]},
+        "validationsCount": {"type": "integer"},
+        "disapprovalsCount": {"type": "integer"},
+        "disputesTriggered": {"type": "integer"},
+        "approvalRate": {"$ref": "#/definitions/rate"},
+        "disapprovalRate": {"$ref": "#/definitions/rate"},
+        "lastActivityBlock": {"type": ["integer", "null"]},
+        "file": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

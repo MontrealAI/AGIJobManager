@@ -1,5 +1,5 @@
 {
-  "version": "0.2",
+  "version": "0.3",
   "metadata": {
     "chainId": 1337,
     "network": "development",
@@ -9,6 +9,7 @@
     "generatedAt": "2026-01-29T00:00:00.000Z",
     "toolVersion": "agijobmanager-erc8004-adapter@0.1.0"
   },
+  "agentRegistry": "eip155:1337:0x0000000000000000000000000000000000000002",
   "trustedClientSet": {
     "criteria": "addresses that created paid jobs in range",
     "addresses": ["0x00000000000000000000000000000000000000aa"],
@@ -26,46 +27,35 @@
       ]
     }
   },
-  "agents": {
-    "0x00000000000000000000000000000000000000bb": {
-      "jobsApplied": 2,
-      "jobsAssigned": 2,
-      "jobsCompletionRequested": 1,
-      "jobsCompleted": 1,
-      "jobsDisputed": 1,
-      "employerWins": 1,
-      "agentWins": 0,
-      "unknownResolutions": 0,
-      "revenuesProxy": "1000000000000000000",
-      "rates": {
+  "subjects": {
+    "agents": {
+      "0x00000000000000000000000000000000000000bb": {
+        "agentId": 1,
+        "assignedCount": 2,
+        "completedCount": 1,
+        "completionRequestedCount": 1,
+        "disputedCount": 1,
+        "agentWinCount": 0,
+        "employerWinCount": 1,
+        "unknownResolutionCount": 0,
+        "revenuesProxy": "1000000000000000000",
+        "responseTimeAvgSeconds": 120,
         "successRate": {"value": 5000, "valueDecimals": 2},
-        "disputeRate": {"value": 5000, "valueDecimals": 2}
-      },
-      "evidence": {
-        "anchors": [
-          {
-            "txHash": "0xdef",
-            "logIndex": 2,
-            "blockNumber": 12,
-            "event": "JobCompleted",
-            "jobId": "1",
-            "chainId": 1337,
-            "contractAddress": "0x0000000000000000000000000000000000000001"
-          }
-        ]
+        "disputeRate": {"value": 5000, "valueDecimals": 2},
+        "lastActivityBlock": 12,
+        "file": "agent_0x00000000000000000000000000000000000000bb.json"
       }
-    }
-  },
-  "validators": {
-    "0x00000000000000000000000000000000000000cc": {
-      "approvals": 1,
-      "disapprovals": 1,
-      "disputesTriggered": 1,
-      "reputationUpdates": 1,
-      "reputationGain": "5",
-      "latestReputation": "42",
-      "evidence": {
-        "anchors": []
+    },
+    "validators": {
+      "0x00000000000000000000000000000000000000cc": {
+        "agentId": 2,
+        "validationsCount": 1,
+        "disapprovalsCount": 1,
+        "disputesTriggered": 1,
+        "approvalRate": {"value": 5000, "valueDecimals": 2},
+        "disapprovalRate": {"value": 5000, "valueDecimals": 2},
+        "lastActivityBlock": 11,
+        "file": "validator_0x00000000000000000000000000000000000000cc.json"
       }
     }
   }

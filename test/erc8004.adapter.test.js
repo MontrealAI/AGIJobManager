@@ -9,7 +9,7 @@ const MockENS = artifacts.require('MockENS');
 const MockResolver = artifacts.require('MockResolver');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
-const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
+const { runExportFeedback } = require('../scripts/erc8004/export_feedback');
 
 const ZERO_ROOT = '0x' + '00'.repeat(32);
 const EMPTY_PROOF = [];
@@ -57,7 +57,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.addModerator(moderator, { from: owner });
   });
 
-  it('exports deterministic metrics and expected aggregates', async () => {
+  it('exports deterministic feedback artifacts and expected aggregates', async () => {
     const jobId1 = await createJob();
     await manager.applyForJob(jobId1, 'agent', EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId1, 'ipfs-complete', { from: agent });
@@ -71,7 +71,12 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     const toBlock = await web3.eth.getBlockNumber();
     const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'erc8004-'));
 
-    const first = await runExportMetrics({
+    const agentIdMap = {
+      [agent.toLowerCase()]: 1,
+      [validator.toLowerCase()]: 2,
+    };
+
+    const first = await runExportFeedback({
       address: manager.address,
       fromBlock: 0,
       toBlock,
@@ -80,9 +85,12 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
       generatedAt: '2026-01-29T00:00:00.000Z',
       toolVersion: 'test-runner',
       network: 'test',
+      identityRegistry: '0x0000000000000000000000000000000000000001',
+      namespace: 'eip155',
+      agentIdMap,
     });
 
-    const second = await runExportMetrics({
+    const second = await runExportFeedback({
       address: manager.address,
       fromBlock: 0,
       toBlock,
@@ -91,24 +99,33 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
       generatedAt: '2026-01-29T00:00:00.000Z',
       toolVersion: 'test-runner',
       network: 'test',
+      identityRegistry: '0x0000000000000000000000000000000000000001',
+      namespace: 'eip155',
+      agentIdMap,
     });
 
-    const metrics = JSON.parse(fs.readFileSync(first.outPath, 'utf8'));
-    assert.deepStrictEqual(first.output, second.output, 'output should be deterministic');
+    const summary = JSON.parse(fs.readFileSync(first.summaryPath, 'utf8'));
+    assert.deepStrictEqual(first.summary, second.summary, 'output should be deterministic');
 
     const agentKey = agent.toLowerCase();
-    assert.ok(metrics.agents[agentKey], 'agent metrics should exist');
-    assert.strictEqual(metrics.agents[agentKey].jobsAssigned, 2);
-    assert.strictEqual(metrics.agents[agentKey].jobsCompletionRequested, 1);
-    assert.strictEqual(metrics.agents[agentKey].jobsCompleted, 1);
-    assert.strictEqual(metrics.agents[agentKey].jobsDisputed, 1);
-    assert.strictEqual(metrics.agents[agentKey].employerWins, 1);
-    assert.strictEqual(metrics.agents[agentKey].agentWins, 0);
-    assert.strictEqual(metrics.agents[agentKey].unknownResolutions, 0);
+    assert.ok(summary.subjects.agents[agentKey], 'agent summary should exist');
+    assert.strictEqual(summary.subjects.agents[agentKey].assignedCount, 2);
+    assert.strictEqual(summary.subjects.agents[agentKey].completionRequestedCount, 1);
+    assert.strictEqual(summary.subjects.agents[agentKey].completedCount, 1);
+    assert.strictEqual(summary.subjects.agents[agentKey].disputedCount, 1);
+    assert.strictEqual(summary.subjects.agents[agentKey].employerWinCount, 1);
+    assert.strictEqual(summary.subjects.agents[agentKey].agentWinCount, 0);
+    assert.strictEqual(summary.subjects.agents[agentKey].unknownResolutionCount, 0);
 
     const validatorKey = validator.toLowerCase();
-    assert.ok(metrics.validators[validatorKey], 'validator metrics should exist');
-    assert.strictEqual(metrics.validators[validatorKey].approvals, 1);
-    assert.strictEqual(metrics.validators[validatorKey].disapprovals, 1);
+    assert.ok(summary.subjects.validators[validatorKey], 'validator summary should exist');
+    assert.strictEqual(summary.subjects.validators[validatorKey].validationsCount, 1);
+    assert.strictEqual(summary.subjects.validators[validatorKey].disapprovalsCount, 1);
+
+    const agentFile = path.join(outDir, summary.subjects.agents[agentKey].file);
+    const agentFeedback = JSON.parse(fs.readFileSync(agentFile, 'utf8'));
+    assert.strictEqual(agentFeedback.type, 'https://eips.ethereum.org/EIPS/eip-8004#reputation-v1');
+    assert.strictEqual(agentFeedback.agentId, 1);
+    assert.ok(Array.isArray(agentFeedback.feedback));
   });
 });

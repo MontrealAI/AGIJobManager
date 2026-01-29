@@ -5,6 +5,11 @@
   "image": "https://example.com/agent.png",
   "services": [
     {
+      "name": "web",
+      "endpoint": "https://example.com",
+      "version": "v1"
+    },
+    {
       "name": "A2A",
       "endpoint": "https://example.com/.well-known/agent-card.json",
       "version": "0.3.0",
@@ -17,8 +22,23 @@
       "mcpTools": ["job_summary", "job_execution"]
     },
     {
+      "name": "OASF",
+      "endpoint": "https://example.com/oasf",
+      "version": "0.1"
+    },
+    {
       "name": "ENS",
       "endpoint": "alpha.agent.agi.eth",
+      "version": "v1"
+    },
+    {
+      "name": "DID",
+      "endpoint": "did:pkh:eip155:1:0x1111111111111111111111111111111111111111",
+      "version": "v1"
+    },
+    {
+      "name": "email",
+      "endpoint": "mailto:agent@example.com",
       "version": "v1"
     },
     {
