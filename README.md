@@ -143,7 +143,12 @@ Start here:
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
-- **AGI.Eth Namespace (alpha)**: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md)
+- **AGI.Eth Namespace (alpha)**:
+  - User guide: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md)
+  - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
+  - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
+  - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+  - Local test coverage: [`docs/namespace/TESTING.md`](docs/namespace/TESTING.md)
 
 ## Ecosystem links
 

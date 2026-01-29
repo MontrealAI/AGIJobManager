@@ -21,6 +21,8 @@ Use this checklist if you already know your role and just need the **correct inp
 - **Merkle allowlist** proof, or
 - **Owner allowlist** via `additionalAgents` / `additionalValidators`.
 
+If you are not using a Merkle allowlist, pass `[]` for `proof`.
+
 ---
 
 ## 3) Common calls (Etherscan “Write Contract”)
