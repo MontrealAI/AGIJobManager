@@ -9,8 +9,21 @@ The architectural intent in this repo aligns with the internal decks:
 
 These sources emphasize **signaling vs enforcement** and the invariant mindset: **no payout without validated proof; no settlement without validation**.
 
+## What ERC-8004 provides (and what it does not)
+**ERC-8004 is a set of registries** for *identity (registration)*, *reputation (feedback)*, and *validation* signals. The registries intentionally store **minimal, verifiable data** (addresses, tags, fixed-point values, and URIs) and **do not** store heavy data, settlement logic, or escrow outcomes. This makes it a **signaling layer** that complements AGIJobManager’s enforcement plane.
+
+**What it stores**
+- **Registration**: agent metadata + a `services[]` array of endpoints (e.g., MCP, A2A, ENS).
+- **Reputation**: compact trust signals (`value` + `valueDecimals`) with optional `tag1`/`tag2`, `endpoint`, and evidence URIs/hashes.
+- **Validation**: requests and responses that can be anchored to on-chain outcomes.
+
+**What it intentionally does not store**
+- Escrow balances, payout logic, or dispute outcomes.
+- Large evidence payloads (these stay off-chain and are referenced by hash/URI).
+- Any liveness requirement that would gate AGIJobManager settlement.
+
 ## External references (verified)
-Aligned to the latest public sources as of **2026-01-29** (field names confirmed against the ERCs repo):
+Aligned to the latest public sources as of **2026-01-29** (field names confirmed against the ERCs repo and best-practices docs):
 - **EIP-8004 spec** (registration uses a `services` array with `name`/`endpoint`/`version`; feedback uses `value` + `valueDecimals`, optional `tag1`/`tag2`, `endpoint`, `feedbackURI`, `feedbackHash`):
   - https://eips.ethereum.org/EIPS/eip-8004 (canonical mirror)
   - https://github.com/ethereum/ERCs/blob/master/ERCS/erc-8004.md (source of truth)
@@ -30,3 +43,4 @@ Aligned to the latest public sources as of **2026-01-29** (field names confirmed
 - **No liveness dependency**: AGIJobManager does not wait for ERC-8004 registries, indexers, or feedback submissions.
 
 The adapter translates **execution outcomes** into portable ERC-8004-friendly signals without coupling settlement to external calls.
+Signals should remain **minimal and auditable**: keep heavy data off-chain and anchor it by `txHash`, `logIndex`, `blockNumber`, `contractAddress`, and `chainId` references in exported artifacts.
