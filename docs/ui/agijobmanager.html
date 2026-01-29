@@ -584,6 +584,7 @@
     };
 
     const legacyAddress = "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477";
+    let legacyOverride = null;
     const storageKey = "agijobmanager_contract";
 
     const abi = [
@@ -1275,7 +1276,9 @@
         const mainnet = typeof data.agiJobManager === "string" ? data.agiJobManager : "";
         if (legacy) {
           try {
-            setText("legacyAddress", ethers.getAddress(legacy));
+            const parsedLegacy = ethers.getAddress(legacy);
+            legacyOverride = parsedLegacy;
+            setText("legacyAddress", parsedLegacy);
           } catch (error) {
             setText("legacyAddress", legacyAddress);
           }
@@ -1391,9 +1394,10 @@
     });
 
     ids("legacyContract").addEventListener("click", () => {
-      ids("contractAddress").value = legacyAddress;
-      state.contractAddress = legacyAddress;
-      localStorage.setItem(storageKey, legacyAddress);
+      const selectedLegacy = legacyOverride || legacyAddress;
+      ids("contractAddress").value = selectedLegacy;
+      state.contractAddress = selectedLegacy;
+      localStorage.setItem(storageKey, selectedLegacy);
       maybeInitProvider();
       setContracts();
     });
