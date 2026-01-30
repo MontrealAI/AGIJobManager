@@ -98,7 +98,7 @@ function startStaticServer(rootDir, port) {
     }
     const decodedPath = decodeURIComponent(requestUrl.pathname);
     const safePath = decodedPath === "/" ? "/index.html" : decodedPath;
-    const filePath = path.normalize(path.join(rootDir, safePath));
+    const filePath = path.normalize(path.resolve(rootDir, `.${safePath}`));
 
     if (!filePath.startsWith(rootDir)) {
       res.writeHead(403);
