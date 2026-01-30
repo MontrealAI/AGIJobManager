@@ -74,6 +74,7 @@ The UI listens for EIP-1193 wallet events and rebinds in-place without a page re
 - **accountsChanged**: switches to the active account, rebuilds the provider/signer, refreshes snapshots/role flags, and re-subscribes contract events.
 - **chainChanged**: rebuilds the provider/signer, updates chain metadata, checks contract deployment, and disables writes if unsupported.
 - **disconnect**: clears signer state and disables all write actions.
+- Event handlers are bound once at startup; the UI clears prior bindings before attaching to avoid duplicate listeners.
 
 Default supported chainIds:
 
