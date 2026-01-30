@@ -160,6 +160,9 @@ npx truffle migrate --network development
 - `mainnet` needs `ALCHEMY_KEY_MAIN` (or `MAINNET_RPC_URL`) + `PRIVATE_KEYS`.
 - `PRIVATE_KEYS` format: comma-separated, no spaces, keep it local.
 
+**Troubleshooting**
+- Common deployment and verification errors are documented in [`docs/Deployment.md`](docs/Deployment.md#troubleshooting).
+
 > **Deployment caution**: `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token, ENS, NameWrapper, root nodes, Merkle roots). Update them before any production deployment.
 
 ## Security considerations
