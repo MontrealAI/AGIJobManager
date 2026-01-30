@@ -1239,7 +1239,7 @@
       return parsed;
     }
 
-    function describeCancelIneligibility({ employer, assignedAgent, completed, disputed }) {
+    function describeCancelIneligibility({ employer, assignedAgent, completed }) {
       if (employer === ethers.ZeroAddress) {
         return "Job not found or already cancelled.";
       }
@@ -1252,9 +1252,6 @@
       if (completed) {
         return "Job already completed; cancellation is no longer possible.";
       }
-      if (disputed) {
-        return "Job is disputed; resolve the dispute before attempting cancellation.";
-      }
       return null;
     }
 
@@ -1262,13 +1259,11 @@
       const employer = job[1];
       const assignedAgent = job[5];
       const completed = job[7];
-      const disputed = job[11];
       if (!state.walletAddress) return false;
       return employer !== ethers.ZeroAddress
         && employer === state.walletAddress
         && assignedAgent === ethers.ZeroAddress
-        && !completed
-        && !disputed;
+        && !completed;
     }
 
     function maybeInitProvider() {
@@ -1968,7 +1963,6 @@
         employer: job[1],
         assignedAgent: job[5],
         completed: job[7],
-        disputed: job[11],
       });
       if (eligibilityMessage) {
         throw new Error(eligibilityMessage);
