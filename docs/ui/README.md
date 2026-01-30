@@ -55,7 +55,8 @@ npm run ui:abi
 
 The UI attempts to load `./abi/AGIJobManager.json` at runtime. If it cannot fetch the file
 (for example when opened via `file://`), it falls back to the embedded ABI and logs the
-fallback in the Activity Log.
+fallback in the Activity Log. You should see “External ABI loaded” when served over HTTP
+and “Fallback ABI used” when opened via `file://`.
 
 If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit the updated ABI file.
 
