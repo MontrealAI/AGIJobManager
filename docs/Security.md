@@ -33,6 +33,8 @@ See [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md) for details.
 
 Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and `_transfer` (ERC‑721) rather than `safeTransferFrom`.
 
+The regression suite includes a reentrant ERC‑20 purchase attempt to assert that `purchaseNFT` rejects reentry while still completing the outer purchase.
+
 ## Known limitations and assumptions
 - **Root immutability**: there are no on-chain setters for root nodes or Merkle roots after deployment. Misconfiguration requires redeployment.
 - **ENS dependency**: ownership checks rely on ENS registry, NameWrapper, and resolver behavior.
