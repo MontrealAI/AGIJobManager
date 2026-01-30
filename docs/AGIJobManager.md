@@ -76,7 +76,7 @@ stateDiagram-v2
     Created --> Cancelled: delistJob (owner)
 ```
 
-**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDispute(other)` clears the dispute while preserving the in‑progress flags (for example, `completionRequested` remains set if it was set before the dispute).
+**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDispute(other)` clears the dispute while preserving the in‑progress flags (for example, `completionRequested` remains set if it was set before the dispute). Validators can call `validateJob`/`disapproveJob` without a prior `requestJobCompletion`.
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
@@ -86,7 +86,7 @@ stateDiagram-v2
 - **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDispute` with `employer win` refunds and finalizes the job.
 
 ## Validation and dispute flow
-- `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold.
+- `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold. It does **not** require `completionRequested`.
 - `disapproveJob` increments disapproval count, records participation, and flips `disputed` when disapprovals reach the required threshold.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
 - `resolveDispute` accepts any resolution string, but only two canonical strings trigger on-chain actions:
@@ -116,7 +116,7 @@ If ENS or NameWrapper calls fail, the contract emits `RecoveryInitiated` for obs
 ## Events
 High-signal events to index:
 - **Lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`, `JobCompleted`, `JobCancelled`.
-- **Reputation**: `ReputationUpdated` (agents and validators).
+- **Reputation**: `ReputationUpdated` (agents and validators). Note that agent completion emits `ReputationUpdated` once via `enforceReputationGrowth` and again at the end of `_completeJob`.
 - **NFT marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
 - **Access signals**: `OwnershipVerified`, `RecoveryInitiated`. (`RootNodeUpdated` and `MerkleRootUpdated` are defined but not emitted by current functions.)
 - **Other**: `AGITypeUpdated`, `RewardPoolContribution`.
@@ -139,6 +139,7 @@ Custom errors and their intent:
 - Completed jobs cannot be re-completed or re-disputed.
 - Validator approvals and disapprovals are mutually exclusive per validator per job.
 - `maxJobPayout` and `jobDurationLimit` cap job creation inputs.
+- Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline.
 - Root nodes and Merkle roots are immutable after deployment (no setters).
 
 ## References

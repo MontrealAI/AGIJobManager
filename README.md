@@ -12,7 +12,7 @@
 ## At a glance
 
 **What it is**
-- **Job escrow & settlement engine**: employer-funded jobs, agent assignment, validator approvals/disapprovals, moderator dispute resolution, payouts/refunds. 
+- **Job escrow & settlement engine**: employer-funded jobs, agent assignment, validator approvals/disapprovals (thresholded), moderator dispute resolution, payouts/refunds. 
 - **Reputation mapping**: on-chain reputation updates for agents and validators derived from job outcomes. 
 - **Job NFT issuance + listings**: mints an ERC‑721 “job NFT” on completion and supports a minimal listing/purchase flow for those NFTs.
 - **Trust gating**: role eligibility enforced via explicit allowlists, Merkle proofs, and ENS/NameWrapper/Resolver ownership checks.
@@ -21,7 +21,7 @@
 - **Not an on-chain ERC‑8004 implementation**: ERC‑8004 is consumed off-chain; this repo does not integrate it on-chain.
 - **Not a generalized identity or reputation registry**: only contract-local reputation mappings and ENS/Merkle gating are provided.
 - **Not a generalized NFT marketplace**: listings are only for job NFTs minted by this contract.
-- **Not a decentralized court**: moderators and the owner have significant authority.
+- **Not a decentralized court or DAO**: moderators and the owner have significant authority; there is no slashing or permissionless validator set.
 
 ## MONTREAL.AI × ERC‑8004: From signaling → enforcement
 
@@ -60,7 +60,7 @@ stateDiagram-v2
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
-*Note:* `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested).
+*Note:* `validateJob` does **not** require `completionRequested`; validators can approve/disapprove at any time while the job is assigned and not completed. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested).
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid
@@ -168,6 +168,7 @@ npx truffle migrate --network development
 - **Eligibility gating**: Merkle roots and ENS dependencies are immutable post-deploy; misconfiguration requires redeployment.
 - **Token compatibility**: ERC‑20 must return `true` for `transfer`/`transferFrom`.
 - **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
+- **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline unless off‑chain policies intervene.
 
 See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
 

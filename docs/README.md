@@ -2,6 +2,12 @@
 
 This documentation set targets engineers, integrators, operators, and auditors **and** now includes non‑technical user guides. Each document has a focused scope with cross-references for faster navigation and auditability.
 
+## Core entry points (engineers & auditors)
+- **Contract specification**: [`AGIJobManager.md`](AGIJobManager.md)
+- **Deployment guide (Truffle)**: [`Deployment.md`](Deployment.md)
+- **Security model and limitations**: [`Security.md`](Security.md)
+- **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)
+
 ## User guide (non‑technical)
 - **Landing page**: [`user-guide/README.md`](user-guide/README.md)
 - **Roles**: [`user-guide/roles.md`](user-guide/roles.md)
