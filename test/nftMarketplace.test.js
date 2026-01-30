@@ -7,6 +7,7 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 const FailingERC20 = artifacts.require("FailingERC20");
+const ReentrantERC20 = artifacts.require("ReentrantERC20");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
@@ -124,5 +125,67 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await failing.setFailTransferFroms(true, { from: owner });
     await failing.approve(managerFailing.address, toBN(toWei("4")), { from: buyer });
     await expectCustomError(managerFailing.purchaseNFT.call(0, { from: buyer }), "TransferFailed");
+  });
+
+  it("blocks reentrancy during NFT purchase", async () => {
+    const reentrant = await ReentrantERC20.new({ from: owner });
+    const managerReentrant = await AGIJobManager.new(
+      reentrant.address,
+      "ipfs://base",
+      ens.address,
+      nameWrapper.address,
+      clubRoot,
+      agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
+      { from: owner }
+    );
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
+    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await managerReentrant.addAGIType(agiType.address, 92, { from: owner });
+    await managerReentrant.setRequiredValidatorApprovals(1, { from: owner });
+
+    const mintJobNftWith = async () => {
+      const payout = toBN(toWei("40"));
+      await reentrant.mint(employer, payout, { from: owner });
+      await reentrant.approve(managerReentrant.address, payout, { from: employer });
+      const createTx = await managerReentrant.createJob("ipfs", payout, 1000, "details", { from: employer });
+      const jobId = createTx.logs[0].args.jobId.toNumber();
+      await managerReentrant.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+      await managerReentrant.requestJobCompletion(jobId, "ipfs-finished", { from: agent });
+      await managerReentrant.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+      const nextTokenId = await managerReentrant.nextTokenId();
+      return nextTokenId.toNumber() - 1;
+    };
+
+    const tokenIdA = await mintJobNftWith();
+    const tokenIdB = await mintJobNftWith();
+
+    const priceA = toBN(toWei("5"));
+    const priceB = toBN(toWei("7"));
+
+    await managerReentrant.listNFT(tokenIdA, priceA, { from: employer });
+    await managerReentrant.listNFT(tokenIdB, priceB, { from: employer });
+
+    await reentrant.mint(buyer, priceA, { from: owner });
+    await reentrant.approve(managerReentrant.address, priceA, { from: buyer });
+
+    await reentrant.mint(reentrant.address, priceB, { from: owner });
+    await reentrant.setReentry(managerReentrant.address, tokenIdB, true, { from: owner });
+    await reentrant.approveManager(priceB, { from: owner });
+
+    await managerReentrant.purchaseNFT(tokenIdA, { from: buyer });
+
+    const reentrancyBlocked = await reentrant.reentrancyBlocked();
+    assert.strictEqual(reentrancyBlocked, true, "reentrant call should be blocked");
+
+    const ownerB = await managerReentrant.ownerOf(tokenIdB);
+    assert.equal(ownerB, employer, "tokenIdB should remain with seller");
+
+    const listingB = await managerReentrant.listings(tokenIdB);
+    assert.strictEqual(listingB.isActive, true, "tokenIdB listing should remain active");
   });
 });

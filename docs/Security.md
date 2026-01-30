@@ -29,9 +29,9 @@ See [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md) for details.
 
 ## Reentrancy posture
 `ReentrancyGuard` is applied to:
-- `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `cancelJob`, `withdrawAGI`, `contributeToRewardPool`.
+- `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `cancelJob`, `withdrawAGI`, `contributeToRewardPool`, `purchaseNFT`.
 
-Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, `purchaseNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and `_transfer` (ERC‑721) rather than `safeTransferFrom`.
+Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and `_transfer` (ERC‑721) rather than `safeTransferFrom`.
 
 ## Known limitations and assumptions
 - **Root immutability**: there are no on-chain setters for root nodes or Merkle roots after deployment. Misconfiguration requires redeployment.

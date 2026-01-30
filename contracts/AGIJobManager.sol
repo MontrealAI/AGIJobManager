@@ -450,7 +450,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit NFTListed(tokenId, msg.sender, price);
     }
 
-    function purchaseNFT(uint256 tokenId) external {
+    function purchaseNFT(uint256 tokenId) external nonReentrant {
         Listing storage listing = listings[tokenId];
         if (!listing.isActive) revert InvalidState();
         _tFrom(msg.sender, listing.seller, listing.price);
@@ -552,4 +552,3 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         return highestPercentage;
     }
 }
-
