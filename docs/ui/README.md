@@ -96,6 +96,103 @@ If the contract address has no code on the active chain, the UI shows a warning 
 - The UI only talks to your wallet provider (e.g., MetaMask). No keys or secrets are collected.
 - Always verify the contract address and chainId before signing transactions.
 
+## Employer lifecycle completeness: cancel job
+
+Use **Employer actions → Cancel job** to return escrowed funds before a job is assigned.
+
+**Requirements (enforced on-chain):**
+- You must be the job’s employer.
+- The job must be **unassigned**.
+- The job must **not** be completed.
+
+**What happens on-chain:**
+- `cancelJob(jobId)` transfers the escrow back to the employer and deletes the job struct.
+- `JobCancelled(jobId)` is emitted, and the job will appear as cancelled/deleted in the UI.
+
+**UI flow:**
+1. Enter the Job ID (or click **Cancel** in the Jobs table row if eligible).
+2. The UI fetches `jobs(jobId)` and checks employer, assignment, and completion state.
+3. A `staticCall` preflight runs before sending.
+4. A confirmation dialog summarizes the contract address and job ID before signing.
+
+## Admin / owner operations
+
+The UI includes a **collapsed “Admin / Owner controls” panel**. It is disabled unless the
+connected wallet matches `owner()`. All admin actions:
+
+- display the target contract address,
+- `staticCall` preflight to predict reverts,
+- require confirmation before sending,
+- log the transaction hash with an explorer link (when available).
+
+**Owner-only UI actions:**
+- Pause / unpause the contract.
+- Add or remove moderators.
+- Blacklist agents or validators.
+- Update core parameters:
+  - `requiredValidatorApprovals`
+  - `requiredValidatorDisapprovals`
+  - `validationRewardPercentage`
+  - `maxJobPayout`
+  - `jobDurationLimit`
+  - `premiumReputationThreshold`
+
+### CLI / Truffle admin workflow
+
+If you prefer CLI (or want to script operations), use Truffle. Never commit secrets.
+
+1. **Configure env vars** (see `.env.example` for placeholders):
+   ```bash
+   cp .env.example .env
+   # Edit .env with PRIVATE_KEYS and RPC URLs (do not commit).
+   ```
+2. **Open a console** (examples):
+   ```bash
+   truffle console --network development
+   # or
+   truffle console --network sepolia
+   ```
+3. **Attach the contract**:
+   ```javascript
+   const jm = await AGIJobManager.at("0xYourContract");
+   const owner = await jm.owner();
+   ```
+4. **Read before write** (recommended):
+   ```javascript
+   await jm.paused();
+   await jm.requiredValidatorApprovals();
+   await jm.requiredValidatorDisapprovals();
+   await jm.validationRewardPercentage();
+   await jm.maxJobPayout();
+   await jm.jobDurationLimit();
+   await jm.premiumReputationThreshold();
+   ```
+5. **Preflight with `.call()`** (simulation):
+   ```javascript
+   await jm.pause.call({ from: owner });
+   await jm.setMaxJobPayout.call(web3.utils.toWei("5000"), { from: owner });
+   ```
+6. **Send transactions**:
+   ```javascript
+   await jm.pause({ from: owner });
+   await jm.unpause({ from: owner });
+   await jm.addModerator("0xModerator", { from: owner });
+   await jm.removeModerator("0xModerator", { from: owner });
+   await jm.blacklistAgent("0xAgent", true, { from: owner });
+   await jm.blacklistValidator("0xValidator", false, { from: owner });
+   await jm.setRequiredValidatorApprovals(2, { from: owner });
+   await jm.setRequiredValidatorDisapprovals(1, { from: owner });
+   await jm.setValidationRewardPercentage(10, { from: owner });
+   await jm.setMaxJobPayout(web3.utils.toWei("5000"), { from: owner });
+   await jm.setJobDurationLimit(604800, { from: owner });
+   await jm.setPremiumReputationThreshold(1000, { from: owner });
+   ```
+
+**Mainnet safety reminders:**
+- Double-check contract address and chainId.
+- Prefer hardware wallets for owner keys.
+- Use `.call()` (or the UI’s staticCall preflight) to detect reverts before spending gas.
+
 ## Eligibility evaluator mirrors on-chain OR-logic
 
 The **Eligibility Evaluator** in the Identity checks card answers “Would I pass on-chain authorization for this role right now?” and mirrors the contract’s OR-logic order:
