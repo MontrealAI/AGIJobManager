@@ -502,6 +502,56 @@
 
     <section class="panel">
       <h2>Jobs table</h2>
+      <div class="panel-row">
+        <div>
+          <label for="jobsFilter">Filter</label>
+          <select id="jobsFilter">
+            <option value="all">All</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In progress</option>
+            <option value="completion_requested">Completion requested</option>
+            <option value="disputed">Disputed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled/Deleted</option>
+          </select>
+        </div>
+        <div>
+          <label for="jobsPageSize">Page size</label>
+          <select id="jobsPageSize">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div>
+          <label>Page</label>
+          <div class="inline">
+            <button id="jobsPrev" class="secondary">Prev</button>
+            <button id="jobsNext" class="secondary">Next</button>
+          </div>
+          <div class="muted" id="jobsPageInfo">Page 1 of 1</div>
+          <div class="inline">
+            <input id="jobsPageJump" type="number" min="1" placeholder="1" style="max-width:120px;" />
+            <button id="jobsJump" class="secondary">Go</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div>
+          <label for="indexFromBlock">Index from block</label>
+          <input id="indexFromBlock" placeholder="latest-20000" />
+        </div>
+        <div>
+          <label for="indexToBlock">Index to block</label>
+          <input id="indexToBlock" placeholder="latest" />
+        </div>
+        <div class="inline">
+          <button id="syncIndex">Sync events</button>
+          <button id="clearCache" class="secondary">Clear cache</button>
+        </div>
+      </div>
+      <div class="muted" id="indexStatus">Indexer not synced yet.</div>
       <button id="loadJobs">Load jobs</button>
       <div class="muted">Large datasets may take time. Cancelled jobs are shown as deleted.</div>
       <div style="overflow:auto">
@@ -528,6 +578,36 @@
 
     <section class="panel">
       <h2>NFTs table</h2>
+      <div class="panel-row">
+        <div>
+          <label for="nftsFilter">Filter</label>
+          <select id="nftsFilter">
+            <option value="all">All</option>
+            <option value="listed">Listed only</option>
+          </select>
+        </div>
+        <div>
+          <label for="nftsPageSize">Page size</label>
+          <select id="nftsPageSize">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div>
+          <label>Page</label>
+          <div class="inline">
+            <button id="nftsPrev" class="secondary">Prev</button>
+            <button id="nftsNext" class="secondary">Next</button>
+          </div>
+          <div class="muted" id="nftsPageInfo">Page 1 of 1</div>
+          <div class="inline">
+            <input id="nftsPageJump" type="number" min="1" placeholder="1" style="max-width:120px;" />
+            <button id="nftsJump" class="secondary">Go</button>
+          </div>
+        </div>
+      </div>
       <button id="loadNfts">Load NFTs</button>
       <div style="overflow:auto">
         <table>
@@ -582,10 +662,33 @@
       contract: null,
       readContract: null,
       eventSubscribed: false,
+      ui: {
+        jobsPage: 0,
+        jobsPageSize: 50,
+        jobsFilter: "all",
+        jobsSort: "newest",
+        nftsPage: 0,
+        nftsPageSize: 50,
+        nftsFilter: "all",
+      },
+      index: {
+        jobs: {},
+        nfts: {},
+        meta: {
+          fromBlock: null,
+          toBlock: null,
+          lastIndexedBlock: null,
+          lastSyncTime: null,
+        },
+      },
     };
 
     const legacyAddress = "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477";
     const storageKey = "agijobmanager_contract";
+    const uiSettingsKey = "agijobmanager_ui_settings_v1";
+    const indexCacheKey = "agijobmanager_index_cache_v1";
+    const defaultPageSize = 50;
+    const defaultIndexLookback = 20000;
 
     const fallbackAbi = [
       "function name() view returns (string)",
@@ -837,6 +940,17 @@
         state.contract = null;
         state.readContract = null;
         state.eventSubscribed = false;
+        state.index = {
+          jobs: {},
+          nfts: {},
+          meta: {
+            fromBlock: null,
+            toBlock: null,
+            lastIndexedBlock: null,
+            lastSyncTime: null,
+          },
+        };
+        updateIndexStatus("Indexer not synced yet.");
         return;
       }
       if (!state.provider) return;
@@ -853,6 +967,8 @@
       } else {
         state.contract = null;
       }
+      loadIndexCache();
+      updateIndexStatus();
     }
 
     function requireContract() {
@@ -1082,6 +1198,404 @@
       log.prepend(line);
     }
 
+    function saveUiSettings() {
+      const payload = {
+        jobsPage: state.ui.jobsPage,
+        jobsPageSize: state.ui.jobsPageSize,
+        jobsFilter: state.ui.jobsFilter,
+        jobsSort: state.ui.jobsSort,
+        nftsPage: state.ui.nftsPage,
+        nftsPageSize: state.ui.nftsPageSize,
+        nftsFilter: state.ui.nftsFilter,
+      };
+      localStorage.setItem(uiSettingsKey, JSON.stringify(payload));
+    }
+
+    function loadUiSettings() {
+      const raw = localStorage.getItem(uiSettingsKey);
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        state.ui.jobsPage = Number(parsed.jobsPage) || 0;
+        state.ui.jobsPageSize = Number(parsed.jobsPageSize) || defaultPageSize;
+        state.ui.jobsFilter = parsed.jobsFilter || "all";
+        state.ui.jobsSort = parsed.jobsSort || "newest";
+        state.ui.nftsPage = Number(parsed.nftsPage) || 0;
+        state.ui.nftsPageSize = Number(parsed.nftsPageSize) || defaultPageSize;
+        state.ui.nftsFilter = parsed.nftsFilter || "all";
+      } catch (error) {
+        localStorage.removeItem(uiSettingsKey);
+      }
+    }
+
+    function hydrateUiControls() {
+      ids("jobsPageSize").value = state.ui.jobsPageSize.toString();
+      ids("jobsFilter").value = state.ui.jobsFilter;
+      ids("nftsPageSize").value = state.ui.nftsPageSize.toString();
+      ids("nftsFilter").value = state.ui.nftsFilter;
+    }
+
+    function saveIndexCache() {
+      if (!state.contractAddress) return;
+      const payload = {
+        contractAddress: state.contractAddress,
+        meta: state.index.meta,
+        jobs: state.index.jobs,
+        nfts: state.index.nfts,
+      };
+      localStorage.setItem(indexCacheKey, JSON.stringify(payload));
+    }
+
+    function loadIndexCache() {
+      const raw = localStorage.getItem(indexCacheKey);
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.contractAddress || parsed.contractAddress !== state.contractAddress) {
+          return;
+        }
+        state.index.meta = parsed.meta || state.index.meta;
+        state.index.jobs = parsed.jobs || {};
+        state.index.nfts = parsed.nfts || {};
+      } catch (error) {
+        localStorage.removeItem(indexCacheKey);
+      }
+    }
+
+    function clearIndexCache() {
+      localStorage.removeItem(indexCacheKey);
+      localStorage.removeItem(uiSettingsKey);
+      state.index = {
+        jobs: {},
+        nfts: {},
+        meta: {
+          fromBlock: null,
+          toBlock: null,
+          lastIndexedBlock: null,
+          lastSyncTime: null,
+        },
+      };
+      updateIndexStatus("Indexer cache cleared.");
+    }
+
+    function updateIndexStatus(message) {
+      const meta = state.index.meta || {};
+      const jobsCount = Object.keys(state.index.jobs || {}).length;
+      const nftsCount = Object.keys(state.index.nfts || {}).length;
+      const summary = [
+        `Indexed blocks: ${meta.fromBlock ?? "—"} → ${meta.toBlock ?? "—"}`,
+        `Jobs indexed: ${jobsCount}`,
+        `NFTs indexed: ${nftsCount}`,
+        `Last sync: ${meta.lastSyncTime ?? "—"}`,
+      ].join(" · ");
+      ids("indexStatus").textContent = message ? `${message} ${summary}` : summary;
+    }
+
+    function parseBlockInput(value, latest) {
+      if (!value) return null;
+      if (value.includes("latest")) {
+        const parts = value.split("-");
+        if (parts.length === 2) {
+          const offset = Number(parts[1]);
+          return Math.max(0, latest - (Number.isFinite(offset) ? offset : 0));
+        }
+        return latest;
+      }
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    }
+
+    async function asyncPool(limit, items, iteratorFn) {
+      const ret = [];
+      const executing = [];
+      for (const item of items) {
+        const p = Promise.resolve().then(() => iteratorFn(item));
+        ret.push(p);
+        if (limit <= items.length) {
+          const e = p.then(() => executing.splice(executing.indexOf(e), 1));
+          executing.push(e);
+          if (executing.length >= limit) {
+            await Promise.race(executing);
+          }
+        }
+      }
+      return Promise.all(ret);
+    }
+
+    async function fetchLogsInChunks({ filter, fromBlock, toBlock, initialChunkSize = 5000, minChunkSize = 500 }) {
+      let chunkSize = initialChunkSize;
+      let start = fromBlock;
+      const logs = [];
+      while (start <= toBlock) {
+        const end = Math.min(toBlock, start + chunkSize - 1);
+        try {
+          const chunkLogs = await state.readContract.queryFilter(filter, start, end);
+          logs.push(...chunkLogs);
+          start = end + 1;
+        } catch (error) {
+          if (chunkSize <= minChunkSize) {
+            const message = error.shortMessage || error.message || "Failed to fetch logs.";
+            throw new Error(`Log query failed for blocks ${start}-${end}: ${message}`);
+          }
+          chunkSize = Math.max(minChunkSize, Math.floor(chunkSize / 2));
+        }
+      }
+      return logs;
+    }
+
+    function sortLogs(logs) {
+      return logs.sort((a, b) => {
+        if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+        if (a.transactionIndex !== b.transactionIndex) return a.transactionIndex - b.transactionIndex;
+        return a.logIndex - b.logIndex;
+      });
+    }
+
+    function ensureJobEntry(jobId) {
+      if (!state.index.jobs[jobId]) {
+        state.index.jobs[jobId] = {
+          jobId,
+          created: false,
+          applied: false,
+          completionRequested: false,
+          disputed: false,
+          disputeResolved: false,
+          completed: false,
+          cancelled: false,
+          createdBlock: null,
+          lastActivityBlock: null,
+        };
+      }
+      return state.index.jobs[jobId];
+    }
+
+    function ensureNftEntry(tokenId) {
+      if (!state.index.nfts[tokenId]) {
+        state.index.nfts[tokenId] = {
+          tokenId,
+          issued: false,
+          listed: false,
+          purchased: false,
+          delisted: false,
+          activeListing: false,
+          lastListPrice: null,
+          lastListedBy: null,
+          issuedBlock: null,
+          lastActivityBlock: null,
+        };
+      }
+      return state.index.nfts[tokenId];
+    }
+
+    function toIdString(value) {
+      if (typeof value === "bigint") return value.toString();
+      if (value == null) return "0";
+      return value.toString();
+    }
+
+    function applyEventToIndex(event) {
+      const { eventName, blockNumber } = event;
+      if (!eventName) return;
+      if (eventName.startsWith("Job")) {
+        const jobId = toIdString(event.args?.jobId ?? event.args?.[0]);
+        const entry = ensureJobEntry(jobId);
+        if (eventName === "JobCreated") {
+          entry.created = true;
+          entry.createdBlock = entry.createdBlock ?? blockNumber;
+        } else if (eventName === "JobApplied") {
+          entry.applied = true;
+        } else if (eventName === "JobCompletionRequested") {
+          entry.completionRequested = true;
+        } else if (eventName === "JobDisputed") {
+          entry.disputed = true;
+        } else if (eventName === "JobCompleted") {
+          entry.completed = true;
+        } else if (eventName === "JobCancelled") {
+          entry.cancelled = true;
+        }
+        entry.lastActivityBlock = blockNumber;
+      } else if (eventName === "DisputeResolved") {
+        const jobId = toIdString(event.args?.jobId ?? event.args?.[0]);
+        const entry = ensureJobEntry(jobId);
+        entry.disputed = false;
+        entry.disputeResolved = true;
+        entry.lastActivityBlock = blockNumber;
+      } else if (eventName.startsWith("NFT")) {
+        const tokenId = toIdString(event.args?.tokenId ?? event.args?.[0]);
+        const entry = ensureNftEntry(tokenId);
+        if (eventName === "NFTIssued") {
+          entry.issued = true;
+          entry.issuedBlock = entry.issuedBlock ?? blockNumber;
+        } else if (eventName === "NFTListed") {
+          entry.listed = true;
+          entry.activeListing = true;
+          entry.lastListedBy = event.args?.seller ?? event.args?.[1] ?? null;
+          entry.lastListPrice = event.args?.price ?? event.args?.[2] ?? null;
+        } else if (eventName === "NFTPurchased") {
+          entry.purchased = true;
+          entry.activeListing = false;
+        } else if (eventName === "NFTDelisted") {
+          entry.delisted = true;
+          entry.activeListing = false;
+        }
+        entry.lastActivityBlock = blockNumber;
+      }
+    }
+
+    async function syncIndex() {
+      requireContract();
+      const latest = await state.provider.getBlockNumber();
+      const fromValue = ids("indexFromBlock").value.trim();
+      const toValue = ids("indexToBlock").value.trim();
+      let fromBlock = parseBlockInput(fromValue, latest);
+      let toBlock = parseBlockInput(toValue, latest);
+
+      if (toBlock == null) {
+        toBlock = latest;
+      }
+      if (fromBlock == null) {
+        if (state.index.meta.lastIndexedBlock != null) {
+          fromBlock = state.index.meta.lastIndexedBlock + 1;
+        } else {
+          fromBlock = Math.max(0, latest - defaultIndexLookback);
+        }
+      }
+
+      if (!Number.isFinite(fromBlock) || !Number.isFinite(toBlock)) {
+        throw new Error("Block range must be valid numbers.");
+      }
+      if (fromBlock > toBlock) {
+        throw new Error("From block must be less than or equal to to block.");
+      }
+      if (fromBlock > latest) {
+        updateIndexStatus("No new blocks to sync.");
+        return;
+      }
+
+      updateIndexStatus("Syncing...");
+      const filters = [
+        state.readContract.filters.JobCreated(),
+        state.readContract.filters.JobApplied(),
+        state.readContract.filters.JobCompletionRequested(),
+        state.readContract.filters.JobDisputed(),
+        state.readContract.filters.DisputeResolved(),
+        state.readContract.filters.JobCompleted(),
+        state.readContract.filters.JobCancelled(),
+        state.readContract.filters.NFTIssued(),
+        state.readContract.filters.NFTListed(),
+        state.readContract.filters.NFTPurchased(),
+        state.readContract.filters.NFTDelisted(),
+      ];
+
+      let allLogs = [];
+      for (const filter of filters) {
+        const logs = await fetchLogsInChunks({
+          filter,
+          fromBlock,
+          toBlock,
+        });
+        allLogs = allLogs.concat(logs);
+      }
+      const ordered = sortLogs(allLogs);
+      for (const evt of ordered) {
+        applyEventToIndex(evt);
+      }
+
+      const meta = state.index.meta;
+      meta.fromBlock = meta.fromBlock == null ? fromBlock : Math.min(meta.fromBlock, fromBlock);
+      meta.toBlock = toBlock;
+      meta.lastIndexedBlock = toBlock;
+      meta.lastSyncTime = new Date().toISOString();
+      saveIndexCache();
+      updateIndexStatus();
+      logEvent(`Indexed ${ordered.length} events from blocks ${fromBlock} to ${toBlock}.`);
+    }
+
+    function jobStatusFromIndex(entry) {
+      if (!entry) return "Unknown";
+      if (entry.cancelled) return "Cancelled";
+      if (entry.completed) return "Completed";
+      if (entry.disputed) return "Disputed";
+      if (entry.completionRequested) return "CompletionRequested";
+      if (entry.applied) return "InProgress";
+      if (entry.created) return "Open";
+      return "Unknown";
+    }
+
+    function nftStatusFromIndex(entry) {
+      if (!entry) return "Unknown";
+      return entry.activeListing ? "Listed" : "Unlisted";
+    }
+
+    function getSortedJobIds() {
+      const entries = Object.values(state.index.jobs || {});
+      return entries
+        .sort((a, b) => {
+          const blockA = a.createdBlock ?? a.lastActivityBlock ?? 0;
+          const blockB = b.createdBlock ?? b.lastActivityBlock ?? 0;
+          if (blockA !== blockB) return blockB - blockA;
+          const idA = BigInt(a.jobId);
+          const idB = BigInt(b.jobId);
+          return idA === idB ? 0 : idA > idB ? -1 : 1;
+        })
+        .map((entry) => entry.jobId);
+    }
+
+    function getSortedNftIds() {
+      const entries = Object.values(state.index.nfts || {});
+      return entries
+        .sort((a, b) => {
+          const blockA = a.issuedBlock ?? a.lastActivityBlock ?? 0;
+          const blockB = b.issuedBlock ?? b.lastActivityBlock ?? 0;
+          if (blockA !== blockB) return blockB - blockA;
+          const idA = BigInt(a.tokenId);
+          const idB = BigInt(b.tokenId);
+          return idA === idB ? 0 : idA > idB ? -1 : 1;
+        })
+        .map((entry) => entry.tokenId);
+    }
+
+    function getFilteredJobIds() {
+      const filter = state.ui.jobsFilter;
+      const jobIds = getSortedJobIds();
+      if (filter === "all") return jobIds;
+      return jobIds.filter((jobId) => {
+        const entry = state.index.jobs[jobId];
+        const status = jobStatusFromIndex(entry);
+        if (filter === "open") return status === "Open";
+        if (filter === "in_progress") return status === "InProgress";
+        if (filter === "completion_requested") return status === "CompletionRequested";
+        if (filter === "disputed") return status === "Disputed";
+        if (filter === "completed") return status === "Completed";
+        if (filter === "cancelled") return status === "Cancelled";
+        return true;
+      });
+    }
+
+    function getFilteredNftIds() {
+      const filter = state.ui.nftsFilter;
+      const nftIds = getSortedNftIds();
+      if (filter === "all") return nftIds;
+      return nftIds.filter((tokenId) => {
+        const entry = state.index.nfts[tokenId];
+        return filter === "listed" ? entry?.activeListing : true;
+      });
+    }
+
+    function paginateIds(idsList, page, pageSize) {
+      const total = idsList.length;
+      const maxPage = Math.max(1, Math.ceil(total / pageSize));
+      const safePage = Math.min(Math.max(page, 0), maxPage - 1);
+      const start = safePage * pageSize;
+      const end = start + pageSize;
+      return {
+        items: idsList.slice(start, end),
+        total,
+        page: safePage,
+        maxPage,
+      };
+    }
+
     async function approveToken(amount, context) {
       if (!state.walletAddress) {
         throw new Error("Connect a wallet to approve tokens.");
@@ -1107,10 +1621,40 @@
       await ensureToken();
       const tbody = ids("jobsTable");
       tbody.innerHTML = "";
-      const nextJobId = await state.readContract.nextJobId();
-      const total = Number(nextJobId);
-      for (let i = 0; i < total; i += 1) {
-        const job = await state.readContract.jobs(i);
+      let pageData = null;
+      let jobIds = [];
+      const hasIndex = Object.keys(state.index.jobs || {}).length > 0;
+
+      if (hasIndex) {
+        const filtered = getFilteredJobIds();
+        pageData = paginateIds(filtered, state.ui.jobsPage, state.ui.jobsPageSize);
+        state.ui.jobsPage = pageData.page;
+        jobIds = pageData.items;
+      } else {
+        if (state.ui.jobsFilter !== "all") {
+          state.ui.jobsFilter = "all";
+          ids("jobsFilter").value = "all";
+          logEvent("Indexer unavailable: job filters require indexed events.");
+        }
+        const nextJobId = await state.readContract.nextJobId();
+        const total = Number(nextJobId);
+        const maxPage = Math.max(1, Math.ceil(total / state.ui.jobsPageSize));
+        state.ui.jobsPage = Math.min(state.ui.jobsPage, maxPage - 1);
+        const startId = total - 1 - state.ui.jobsPage * state.ui.jobsPageSize;
+        const endId = Math.max(-1, startId - state.ui.jobsPageSize);
+        for (let i = startId; i > endId; i -= 1) {
+          if (i < 0) break;
+          jobIds.push(i.toString());
+        }
+        pageData = { total, maxPage, page: state.ui.jobsPage };
+      }
+
+      const jobs = await asyncPool(6, jobIds, async (jobId) => {
+        const job = await state.readContract.jobs(BigInt(jobId));
+        return { jobId, job };
+      });
+
+      for (const { jobId, job } of jobs) {
         const employer = job[1];
         const assignedAgent = job[5];
         const completed = job[7];
@@ -1118,21 +1662,23 @@
         const approvals = job[9];
         const disapprovals = job[10];
         const disputed = job[11];
-        const status = employer === ethers.ZeroAddress
-          ? "Deleted"
-          : completed
-            ? "Completed"
-            : disputed
-              ? "Disputed"
-              : completionRequested
-                ? "CompletionRequested"
-                : assignedAgent !== ethers.ZeroAddress
-                  ? "Assigned"
-                  : "Created";
+        const indexEntry = state.index.jobs[jobId];
+        let status = jobStatusFromIndex(indexEntry);
+        if (employer === ethers.ZeroAddress) {
+          status = "Deleted";
+        } else if (completed) {
+          status = "Completed";
+        } else if (disputed) {
+          status = "Disputed";
+        } else if (completionRequested) {
+          status = "CompletionRequested";
+        } else if (assignedAgent !== ethers.ZeroAddress) {
+          status = "Assigned";
+        }
 
         const row = document.createElement("tr");
         const cells = [
-          i.toString(),
+          jobId.toString(),
           status,
           employer,
           assignedAgent,
@@ -1151,6 +1697,14 @@
         }
         tbody.appendChild(row);
       }
+
+      if (pageData) {
+        ids("jobsPageInfo").textContent = `Page ${pageData.page + 1} of ${pageData.maxPage}`;
+        ids("jobsPrev").disabled = pageData.page <= 0;
+        ids("jobsNext").disabled = pageData.page >= pageData.maxPage - 1;
+      }
+      saveUiSettings();
+      logEvent(`Hydrated ${jobIds.length} jobs with bounded calls.`);
     }
 
     async function loadNfts() {
@@ -1158,25 +1712,56 @@
       await ensureToken();
       const tbody = ids("nftsTable");
       tbody.innerHTML = "";
-      const nextTokenId = await state.readContract.nextTokenId();
-      const total = Number(nextTokenId);
-      for (let i = 0; i < total; i += 1) {
+      let pageData = null;
+      let tokenIds = [];
+      const hasIndex = Object.keys(state.index.nfts || {}).length > 0;
+
+      if (hasIndex) {
+        const filtered = getFilteredNftIds();
+        pageData = paginateIds(filtered, state.ui.nftsPage, state.ui.nftsPageSize);
+        state.ui.nftsPage = pageData.page;
+        tokenIds = pageData.items;
+      } else {
+        if (state.ui.nftsFilter !== "all") {
+          state.ui.nftsFilter = "all";
+          ids("nftsFilter").value = "all";
+          logEvent("Indexer unavailable: NFT filters require indexed events.");
+        }
+        const nextTokenId = await state.readContract.nextTokenId();
+        const total = Number(nextTokenId);
+        const maxPage = Math.max(1, Math.ceil(total / state.ui.nftsPageSize));
+        state.ui.nftsPage = Math.min(state.ui.nftsPage, maxPage - 1);
+        const startId = total - 1 - state.ui.nftsPage * state.ui.nftsPageSize;
+        const endId = Math.max(-1, startId - state.ui.nftsPageSize);
+        for (let i = startId; i > endId; i -= 1) {
+          if (i < 0) break;
+          tokenIds.push(i.toString());
+        }
+        pageData = { total, maxPage, page: state.ui.nftsPage };
+      }
+
+      const nfts = await asyncPool(6, tokenIds, async (tokenId) => {
         let owner = "—";
         let tokenUri = "—";
+        let listing = null;
         try {
-          owner = await state.readContract.ownerOf(i);
-          tokenUri = await state.readContract.tokenURI(i);
+          owner = await state.readContract.ownerOf(BigInt(tokenId));
+          tokenUri = await state.readContract.tokenURI(BigInt(tokenId));
         } catch (error) {
           owner = "Unknown";
           tokenUri = "—";
         }
-        const listing = await state.readContract.listings(i);
-        const listingText = listing[3]
-          ? `Listed by ${listing[1]} for ${formatToken(listing[2])}`
+        listing = await state.readContract.listings(BigInt(tokenId));
+        return { tokenId, owner, tokenUri, listing };
+      });
+
+      for (const entry of nfts) {
+        const listingText = entry.listing[3]
+          ? `Listed by ${entry.listing[1]} for ${formatToken(entry.listing[2])}`
           : "Not listed";
 
         const row = document.createElement("tr");
-        const cells = [i.toString(), owner, tokenUri, listingText];
+        const cells = [entry.tokenId.toString(), entry.owner, entry.tokenUri, listingText];
         for (const cell of cells) {
           const td = document.createElement("td");
           td.textContent = cell;
@@ -1184,6 +1769,14 @@
         }
         tbody.appendChild(row);
       }
+
+      if (pageData) {
+        ids("nftsPageInfo").textContent = `Page ${pageData.page + 1} of ${pageData.maxPage}`;
+        ids("nftsPrev").disabled = pageData.page <= 0;
+        ids("nftsNext").disabled = pageData.page >= pageData.maxPage - 1;
+      }
+      saveUiSettings();
+      logEvent(`Hydrated ${tokenIds.length} NFTs with bounded calls.`);
     }
 
     async function loadEvents() {
@@ -1191,27 +1784,13 @@
       const fromBlockInput = ids("fromBlock").value.trim();
       const toBlockInput = ids("toBlock").value.trim();
       const latest = await state.provider.getBlockNumber();
-      let fromBlock = Math.max(0, latest - 20000);
-      let toBlock = latest;
-      if (fromBlockInput) {
-        if (fromBlockInput.includes("latest")) {
-          const parts = fromBlockInput.split("-");
-          if (parts.length === 2) {
-            const offset = Number(parts[1]);
-            fromBlock = latest - (Number.isFinite(offset) ? offset : 0);
-          } else {
-            fromBlock = latest;
-          }
-        } else {
-          fromBlock = Number(fromBlockInput);
-        }
+      let fromBlock = parseBlockInput(fromBlockInput, latest);
+      let toBlock = parseBlockInput(toBlockInput, latest);
+      if (fromBlock == null) {
+        fromBlock = Math.max(0, latest - 20000);
       }
-      if (toBlockInput) {
-        if (toBlockInput === "latest") {
-          toBlock = latest;
-        } else {
-          toBlock = Number(toBlockInput);
-        }
+      if (toBlock == null) {
+        toBlock = latest;
       }
       if (!Number.isFinite(fromBlock) || fromBlock < 0 || !Number.isFinite(toBlock) || toBlock < 0) {
         throw new Error("Block range must be valid numbers.");
@@ -1634,6 +2213,131 @@
       }
     });
 
+    ids("jobsFilter").addEventListener("change", async (event) => {
+      state.ui.jobsFilter = event.target.value;
+      state.ui.jobsPage = 0;
+      saveUiSettings();
+      try {
+        await loadJobs();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("jobsPageSize").addEventListener("change", async (event) => {
+      state.ui.jobsPageSize = Number(event.target.value) || defaultPageSize;
+      state.ui.jobsPage = 0;
+      saveUiSettings();
+      try {
+        await loadJobs();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("jobsPrev").addEventListener("click", async () => {
+      state.ui.jobsPage = Math.max(0, state.ui.jobsPage - 1);
+      saveUiSettings();
+      try {
+        await loadJobs();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("jobsNext").addEventListener("click", async () => {
+      state.ui.jobsPage += 1;
+      saveUiSettings();
+      try {
+        await loadJobs();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("jobsJump").addEventListener("click", async () => {
+      const page = Number(ids("jobsPageJump").value);
+      if (Number.isFinite(page) && page > 0) {
+        state.ui.jobsPage = page - 1;
+        saveUiSettings();
+        try {
+          await loadJobs();
+        } catch (error) {
+          showAlert(error.message);
+        }
+      }
+    });
+
+    ids("nftsFilter").addEventListener("change", async (event) => {
+      state.ui.nftsFilter = event.target.value;
+      state.ui.nftsPage = 0;
+      saveUiSettings();
+      try {
+        await loadNfts();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("nftsPageSize").addEventListener("change", async (event) => {
+      state.ui.nftsPageSize = Number(event.target.value) || defaultPageSize;
+      state.ui.nftsPage = 0;
+      saveUiSettings();
+      try {
+        await loadNfts();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("nftsPrev").addEventListener("click", async () => {
+      state.ui.nftsPage = Math.max(0, state.ui.nftsPage - 1);
+      saveUiSettings();
+      try {
+        await loadNfts();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("nftsNext").addEventListener("click", async () => {
+      state.ui.nftsPage += 1;
+      saveUiSettings();
+      try {
+        await loadNfts();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("nftsJump").addEventListener("click", async () => {
+      const page = Number(ids("nftsPageJump").value);
+      if (Number.isFinite(page) && page > 0) {
+        state.ui.nftsPage = page - 1;
+        saveUiSettings();
+        try {
+          await loadNfts();
+        } catch (error) {
+          showAlert(error.message);
+        }
+      }
+    });
+
+    ids("syncIndex").addEventListener("click", async () => {
+      try {
+        await syncIndex();
+        await loadJobs();
+        await loadNfts();
+      } catch (error) {
+        updateIndexStatus("Indexing failed.");
+        showAlert(error.message);
+      }
+    });
+
+    ids("clearCache").addEventListener("click", () => {
+      clearIndexCache();
+    });
+
     ids("loadJobs").addEventListener("click", async () => {
       try {
         await loadJobs();
@@ -1673,11 +2377,14 @@
     async function bootstrap() {
       await loadAbi();
       setDeploymentHints();
+      loadUiSettings();
+      hydrateUiControls();
       loadContractFromQuery();
       loadKnownDeployment();
       initNetwork();
       attachWalletListeners();
       updateNetworkPill();
+      updateIndexStatus("Indexer not synced yet.");
     }
 
     bootstrap();
