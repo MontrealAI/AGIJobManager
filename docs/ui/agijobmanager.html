@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AGIJobManager — On‑chain Job Escrow & NFT Marketplace</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="icon" href="data:," />
   <style>
     :root {
@@ -809,8 +808,9 @@
     </section>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js" integrity="sha384-7x3tVmE2MSjFk3rjql7YVSE2LEAFloT+1B5Nj0b3V5/hWRUsStlHHY2mySsRkmmF" crossorigin="anonymous"></script>
+  <script src="./lib/ethers.umd.min.js"></script>
   <script src="./lib/errorDecoder.js"></script>
+  <script src="./lib/indexer.js"></script>
   <script>
     const { ethers } = window;
 
@@ -865,6 +865,7 @@
     const defaultPageSize = 50;
     const defaultIndexLookback = 20000;
     const supportedChainIds = new Set([1n, 11155111n, 1337n]);
+    const { sortLogs, applyEventToIndex } = window.AGIJobManagerIndexer;
     const writeButtonIds = [
       "approveToken",
       "createJob",
@@ -2269,105 +2270,6 @@
       return logs;
     }
 
-    function sortLogs(logs) {
-      return logs.sort((a, b) => {
-        if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
-        if (a.transactionIndex !== b.transactionIndex) return a.transactionIndex - b.transactionIndex;
-        return a.logIndex - b.logIndex;
-      });
-    }
-
-    function ensureJobEntry(jobId) {
-      if (!state.index.jobs[jobId]) {
-        state.index.jobs[jobId] = {
-          jobId,
-          created: false,
-          applied: false,
-          completionRequested: false,
-          disputed: false,
-          disputeResolved: false,
-          completed: false,
-          cancelled: false,
-          createdBlock: null,
-          lastActivityBlock: null,
-        };
-      }
-      return state.index.jobs[jobId];
-    }
-
-    function ensureNftEntry(tokenId) {
-      if (!state.index.nfts[tokenId]) {
-        state.index.nfts[tokenId] = {
-          tokenId,
-          issued: false,
-          listed: false,
-          purchased: false,
-          delisted: false,
-          activeListing: false,
-          lastListPrice: null,
-          lastListedBy: null,
-          issuedBlock: null,
-          lastActivityBlock: null,
-        };
-      }
-      return state.index.nfts[tokenId];
-    }
-
-    function toIdString(value) {
-      if (typeof value === "bigint") return value.toString();
-      if (value == null) return "0";
-      return value.toString();
-    }
-
-    function applyEventToIndex(event) {
-      const { eventName, blockNumber } = event;
-      if (!eventName) return;
-      if (eventName.startsWith("Job")) {
-        const jobId = toIdString(event.args?.jobId ?? event.args?.[0]);
-        const entry = ensureJobEntry(jobId);
-        if (eventName === "JobCreated") {
-          entry.created = true;
-          entry.createdBlock = entry.createdBlock ?? blockNumber;
-        } else if (eventName === "JobApplied") {
-          entry.applied = true;
-        } else if (eventName === "JobCompletionRequested") {
-          entry.completionRequested = true;
-        } else if (eventName === "JobDisputed") {
-          entry.disputed = true;
-        } else if (eventName === "JobCompleted") {
-          entry.completed = true;
-        } else if (eventName === "JobCancelled") {
-          entry.cancelled = true;
-        }
-        entry.lastActivityBlock = blockNumber;
-      } else if (eventName === "DisputeResolved") {
-        const jobId = toIdString(event.args?.jobId ?? event.args?.[0]);
-        const entry = ensureJobEntry(jobId);
-        entry.disputed = false;
-        entry.disputeResolved = true;
-        entry.lastActivityBlock = blockNumber;
-      } else if (eventName.startsWith("NFT")) {
-        const tokenId = toIdString(event.args?.tokenId ?? event.args?.[0]);
-        const entry = ensureNftEntry(tokenId);
-        if (eventName === "NFTIssued") {
-          entry.issued = true;
-          entry.issuedBlock = entry.issuedBlock ?? blockNumber;
-        } else if (eventName === "NFTListed") {
-          entry.listed = true;
-          entry.activeListing = true;
-          entry.lastListedBy = event.args?.seller ?? event.args?.[1] ?? null;
-          entry.lastListPrice = event.args?.price ?? event.args?.[2] ?? null;
-        } else if (eventName === "NFTPurchased") {
-          entry.purchased = true;
-          entry.activeListing = false;
-        } else if (eventName === "NFTDelisted") {
-          entry.delisted = true;
-          entry.activeListing = false;
-        }
-        entry.lastActivityBlock = blockNumber;
-      }
-    }
-
     async function syncIndex() {
       requireContract();
       const latest = await state.provider.getBlockNumber();
@@ -2424,7 +2326,7 @@
       }
       const ordered = sortLogs(allLogs);
       for (const evt of ordered) {
-        applyEventToIndex(evt);
+        applyEventToIndex(state.index, evt);
       }
 
       const meta = state.index.meta;
