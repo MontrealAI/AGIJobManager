@@ -106,6 +106,7 @@ npm test
 - Expected Pages URL pattern: `https://<org>.github.io/<repo>/ui/agijobmanager.html`
 - GitHub Pages setup: Settings → Pages → Source “Deploy from branch” → Branch `main` → Folder `/docs`.
 - The contract address is user-configurable and must be provided until the new mainnet deployment is finalized.
+- Contract address override: query param `?contract=0x...` or the UI **Save address** button (stored in `localStorage`).
 
 ## ERC-8004 integration (control plane ↔ execution plane)
 See [`docs/ERC8004.md`](docs/ERC8004.md) and [`docs/erc8004/README.md`](docs/erc8004/README.md) for the mapping spec, threat model, and adapter notes. Quick export example:
@@ -161,6 +162,7 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 
 Start here:
 - [`docs/README.md`](docs/README.md)
+- **Non‑technical user guides**: [`docs/README.md`](docs/README.md) (roles, happy path, troubleshooting, identity & proofs)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
