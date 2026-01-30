@@ -38,7 +38,7 @@ async function rpcRequest(method, params = []) {
   return payload.result;
 }
 
-async function waitForRpc({ retries = 40, intervalMs = 250 } = {}) {
+async function waitForRpc({ retries = 120, intervalMs = 500 } = {}) {
   for (let i = 0; i < retries; i += 1) {
     try {
       await rpcRequest("net_version");

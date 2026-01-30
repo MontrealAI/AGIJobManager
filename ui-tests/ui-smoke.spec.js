@@ -134,6 +134,7 @@ test.describe("AGIJobManager UI smoke", () => {
       input.value = "3600";
       input.dispatchEvent(new Event("input", { bubbles: true }));
       input.dispatchEvent(new Event("change", { bubbles: true }));
+      document.getElementById("createJob").click();
     });
     await expect(page.locator("#jobDuration")).toHaveValue("3600");
     const durationDetails = await page.evaluate(() => {
@@ -143,7 +144,6 @@ test.describe("AGIJobManager UI smoke", () => {
     if (!/^\d+$/.test(durationDetails.value.trim())) {
       throw new Error(`Job duration input is not an integer before submit: "${durationDetails.value}" (${durationDetails.codes.join(",")})`);
     }
-    await page.click("#createJob");
     await page.waitForTimeout(500);
     if (errors.length) {
       const messages = errors.map((error) => error.message || String(error)).join("\n");
