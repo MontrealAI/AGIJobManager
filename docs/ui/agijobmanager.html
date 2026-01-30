@@ -434,7 +434,7 @@
           <label for="cancelJobId">Job ID</label>
           <input id="cancelJobId" placeholder="0" />
           <button id="cancelJob" class="danger">Cancel job</button>
-          <p class="muted">Employer-only; only before assignment; no cancel after completion.</p>
+          <p class="muted">Employer-only; only before assignment; no cancel after completion or during disputes.</p>
         </div>
         <div>
           <h3>Dispute job (employer)</h3>
@@ -1239,12 +1239,15 @@
       return parsed;
     }
 
-    function describeCancelIneligibility({ employer, assignedAgent, completed }) {
+    function describeCancelIneligibility({ employer, assignedAgent, completed, disputed }) {
       if (employer === ethers.ZeroAddress) {
         return "Job not found or already cancelled.";
       }
       if (employer !== state.walletAddress) {
         return "Only the employer who created the job can cancel it.";
+      }
+      if (disputed) {
+        return "Job is in dispute; cancellation is blocked until it is resolved.";
       }
       if (assignedAgent !== ethers.ZeroAddress) {
         return "Job already assigned; cancellation is only allowed before assignment.";
@@ -1259,9 +1262,11 @@
       const employer = job[1];
       const assignedAgent = job[5];
       const completed = job[7];
+      const disputed = job[11];
       if (!state.walletAddress) return false;
       return employer !== ethers.ZeroAddress
         && employer === state.walletAddress
+        && !disputed
         && assignedAgent === ethers.ZeroAddress
         && !completed;
     }
@@ -1963,6 +1968,7 @@
         employer: job[1],
         assignedAgent: job[5],
         completed: job[7],
+        disputed: job[11],
       });
       if (eligibilityMessage) {
         throw new Error(eligibilityMessage);
@@ -1973,7 +1979,7 @@
         `Cancel job ${jobId}`,
         `Contract: ${state.contractAddress}`,
         `Refund: ${payout}`,
-        "Employer-only; only before assignment; no cancel after completion.",
+        "Employer-only; only before assignment; no cancel after completion or during disputes.",
         "Proceed with cancellation?",
       ].join("\\n");
       if (!window.confirm(confirmMessage)) {
