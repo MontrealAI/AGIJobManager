@@ -226,6 +226,19 @@
     .right {
       text-align: right;
     }
+
+    .fix-list {
+      margin: 6px 0 0 18px;
+      padding: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .eligibility-note {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -333,7 +346,28 @@
 
     <section class="panel">
       <h2>Identity checks (preflight only)</h2>
-      <p class="muted">The contract will verify authorization on-chain. These checks mirror its fallback order: Merkle proof → NameWrapper ownerOf → ENS resolver addr.</p>
+      <p class="muted">The contract will verify authorization on-chain. These checks mirror the OR-logic order: blacklist → additional → Merkle proof → NameWrapper ownerOf → ENS resolver addr.</p>
+      <div class="panel-row">
+        <div>
+          <div class="inline">
+            <strong>Agent eligibility</strong>
+            <span id="agentEligibilityPill" class="pill warn">—</span>
+            <button id="evaluateAgentEligibility">Evaluate Agent Eligibility</button>
+          </div>
+          <p id="agentEligibilityMessage" class="muted">—</p>
+          <ul id="agentEligibilityFixes" class="fix-list"></ul>
+        </div>
+        <div>
+          <div class="inline">
+            <strong>Validator eligibility</strong>
+            <span id="validatorEligibilityPill" class="pill warn">—</span>
+            <button id="evaluateValidatorEligibility">Evaluate Validator Eligibility</button>
+          </div>
+          <p id="validatorEligibilityMessage" class="muted">—</p>
+          <ul id="validatorEligibilityFixes" class="fix-list"></ul>
+        </div>
+      </div>
+      <p class="eligibility-note">Eligibility only checks role gating; job-specific state (e.g., job status or timing) can still cause a revert.</p>
       <div class="panel-row">
         <div>
           <label for="identityType">Identity type</label>
@@ -343,8 +377,8 @@
           </select>
           <label for="identityLabel">Label only (e.g., “helper”)</label>
           <input id="identityLabel" placeholder="label" />
-          <label for="identityProof">Merkle proof (comma-separated 0x…32-byte hashes)</label>
-          <textarea id="identityProof" placeholder="0xabc...,0xdef..."></textarea>
+          <label for="proofJson">Merkle proof (JSON bytes32 array)</label>
+          <textarea id="proofJson" placeholder='["0xabc...","0xdef..."]'></textarea>
           <button id="runIdentityCheck">Run identity check</button>
         </div>
         <div>
@@ -986,6 +1020,25 @@
       return parts;
     }
 
+    function parseProofJson(input) {
+      if (!input.trim()) return [];
+      let parsed;
+      try {
+        parsed = JSON.parse(input);
+      } catch (error) {
+        throw new Error("Merkle proof must be valid JSON.");
+      }
+      if (!Array.isArray(parsed)) {
+        throw new Error("Merkle proof must be a JSON array of bytes32 strings.");
+      }
+      for (const item of parsed) {
+        if (typeof item !== "string" || !/^0x[0-9a-fA-F]{64}$/.test(item)) {
+          throw new Error(`Invalid proof element: ${item}`);
+        }
+      }
+      return parsed;
+    }
+
     function maybeInitProvider() {
       if (state.provider) return state.provider;
       if (!window.ethereum) return null;
@@ -1229,6 +1282,15 @@
       return proof.reduce((hash, p) => hashPair(hash, p), leaf) === root;
     }
 
+    function getPreferredLabel(role) {
+      if (role === "agent") {
+        return ids("applySubdomain").value.trim() || ids("identityLabel").value.trim();
+      }
+      return ids("validateSubdomain").value.trim()
+        || ids("disapproveSubdomain").value.trim()
+        || ids("identityLabel").value.trim();
+    }
+
     async function runIdentityCheck() {
       requireContract();
       if (!state.walletAddress) {
@@ -1238,7 +1300,7 @@
       if (!label) {
         throw new Error("Label is required.");
       }
-      const proof = parseProof(ids("identityProof").value);
+      const proof = parseProofJson(ids("proofJson").value);
       const identityType = ids("identityType").value;
       const rootNode = identityType === "agent" ? await state.readContract.agentRootNode() : await state.readContract.clubRootNode();
       const merkleRoot = identityType === "agent" ? await state.readContract.agentMerkleRoot() : await state.readContract.validatorMerkleRoot();
@@ -1246,8 +1308,9 @@
       const leaf = ethers.keccak256(ethers.solidityPacked(["address"], [state.walletAddress]));
       const subnode = computeSubnode(rootNode, label);
       setText("identitySubnode", subnode);
-      const merkleValid = proof.length ? verifyMerkleProof(merkleRoot, leaf, proof) : false;
-      setText("identityMerkle", proof.length ? (merkleValid ? "Yes" : "No") : "No proof provided");
+      const merkleValid = verifyMerkleProof(merkleRoot, leaf, proof);
+      const merkleStatus = merkleValid ? "Yes" : "No";
+      setText("identityMerkle", proof.length ? merkleStatus : `${merkleStatus} (empty proof)`);
 
       const ensAddress = await state.readContract.ens();
       const nameWrapperAddress = await state.readContract.nameWrapper();
@@ -1279,6 +1342,215 @@
         resolverText = "Resolver lookup failed";
       }
       setText("identityResolver", resolverText);
+    }
+
+    function buildEligibilityMessage(result) {
+      if (result.eligible) {
+        const methodLabel = result.method === "nameWrapper" ? "NameWrapper" : result.method;
+        return `Eligible via ${methodLabel}.`;
+      }
+      if (result.method === "blacklisted") {
+        return "You are blacklisted for this role; transactions will revert.";
+      }
+      if (result.method === "none" && !result.details.label) {
+        return "Enter a label to evaluate ENS/NameWrapper ownership.";
+      }
+      if (result.details.ensUnavailable) {
+        return "ENS/NameWrapper not available on this network.";
+      }
+      return "No matching allowlist, Merkle proof, or ENS ownership found.";
+    }
+
+    function renderEligibility(role, result) {
+      const pillId = role === "agent" ? "agentEligibilityPill" : "validatorEligibilityPill";
+      const messageId = role === "agent" ? "agentEligibilityMessage" : "validatorEligibilityMessage";
+      const fixesId = role === "agent" ? "agentEligibilityFixes" : "validatorEligibilityFixes";
+      const pill = ids(pillId);
+      const messageEl = ids(messageId);
+      const fixesEl = ids(fixesId);
+
+      const methodLabel = result.method === "nameWrapper" ? "nameWrapper" : result.method;
+      if (result.eligible) {
+        pill.className = "pill ok";
+        pill.textContent = `✅ Eligible — via ${methodLabel}`;
+      } else {
+        pill.className = "pill danger";
+        const reason = result.method === "blacklisted"
+          ? "blacklisted"
+          : (result.details.label ? "no match" : "missing label");
+        pill.textContent = `❌ Not eligible — ${reason}`;
+      }
+      messageEl.textContent = result.message;
+      fixesEl.innerHTML = "";
+      if (!result.eligible && result.howToFix.length) {
+        for (const item of result.howToFix) {
+          const li = document.createElement("li");
+          li.textContent = item;
+          fixesEl.appendChild(li);
+        }
+      }
+    }
+
+    async function evaluateEligibility(role) {
+      requireContract();
+      if (!state.walletAddress) {
+        throw new Error("Connect a wallet to evaluate eligibility.");
+      }
+      const label = getPreferredLabel(role);
+      const proof = parseProofJson(ids("proofJson").value);
+      const user = state.walletAddress;
+      const isAgent = role === "agent";
+      const roleLabel = isAgent ? "agent" : "validator";
+
+      const [blacklisted, additionalOk, merkleRoot, rootNode, ensAddress, nameWrapperAddress] = await Promise.all([
+        isAgent ? state.readContract.blacklistedAgents(user) : state.readContract.blacklistedValidators(user),
+        isAgent ? state.readContract.additionalAgents(user) : state.readContract.additionalValidators(user),
+        isAgent ? state.readContract.agentMerkleRoot() : state.readContract.validatorMerkleRoot(),
+        isAgent ? state.readContract.agentRootNode() : state.readContract.clubRootNode(),
+        state.readContract.ens(),
+        state.readContract.nameWrapper(),
+      ]);
+
+      const leaf = ethers.solidityPackedKeccak256(["address"], [user]);
+      const details = {
+        user,
+        label,
+        rootNode,
+        merkleRoot,
+        leaf,
+        subnode: null,
+        proofProvided: proof.length > 0,
+        proofOk: false,
+        additionalOk,
+        blacklisted,
+        nameWrapperOwner: null,
+        resolverAddress: null,
+        resolverAddrRecord: null,
+        ensUnavailable: false,
+      };
+
+      if (blacklisted) {
+        return {
+          eligible: false,
+          role: roleLabel,
+          method: "blacklisted",
+          details,
+          message: buildEligibilityMessage({ eligible: false, method: "blacklisted", details }),
+          howToFix: ["Ask the owner to remove the blacklist entry for this role."],
+        };
+      }
+
+      if (additionalOk) {
+        return {
+          eligible: true,
+          role: roleLabel,
+          method: "additional",
+          details,
+          message: buildEligibilityMessage({ eligible: true, method: "additional", details }),
+          howToFix: [],
+        };
+      }
+
+      details.proofOk = verifyMerkleProof(merkleRoot, leaf, proof);
+      if (details.proofOk) {
+        return {
+          eligible: true,
+          role: roleLabel,
+          method: "merkle",
+          details,
+          message: buildEligibilityMessage({ eligible: true, method: "merkle", details }),
+          howToFix: [],
+        };
+      }
+
+      if (!label) {
+        return {
+          eligible: false,
+          role: roleLabel,
+          method: "none",
+          details,
+          message: buildEligibilityMessage({ eligible: false, method: "none", details }),
+          howToFix: [
+            "Enter the subdomain label you would submit on-chain.",
+            "Double-check you are connected to the intended wallet address.",
+          ],
+        };
+      }
+
+      details.subnode = ethers.solidityPackedKeccak256(
+        ["bytes32", "bytes32"],
+        [rootNode, ethers.id(label)]
+      );
+
+      if (nameWrapperAddress === ethers.ZeroAddress || ensAddress === ethers.ZeroAddress) {
+        details.ensUnavailable = true;
+      }
+
+      if (nameWrapperAddress !== ethers.ZeroAddress) {
+        try {
+          const nameWrapper = new ethers.Contract(nameWrapperAddress, nameWrapperAbi, state.provider);
+          const owner = await nameWrapper.ownerOf(BigInt(details.subnode));
+          details.nameWrapperOwner = owner;
+          if (owner === user) {
+            return {
+              eligible: true,
+              role: roleLabel,
+              method: "nameWrapper",
+              details,
+              message: buildEligibilityMessage({ eligible: true, method: "nameWrapper", details }),
+              howToFix: [],
+            };
+          }
+        } catch (error) {
+          details.nameWrapperOwner = null;
+        }
+      }
+
+      if (ensAddress !== ethers.ZeroAddress) {
+        try {
+          const ens = new ethers.Contract(ensAddress, ensAbi, state.provider);
+          const resolverAddress = await ens.resolver(details.subnode);
+          details.resolverAddress = resolverAddress;
+          if (resolverAddress !== ethers.ZeroAddress) {
+            const resolver = new ethers.Contract(resolverAddress, resolverAbi, state.provider);
+            try {
+              details.resolverAddrRecord = await resolver.addr(details.subnode);
+            } catch (error) {
+              details.resolverAddrRecord = null;
+            }
+            if (details.resolverAddrRecord === user) {
+              return {
+                eligible: true,
+                role: roleLabel,
+                method: "resolver",
+                details,
+                message: buildEligibilityMessage({ eligible: true, method: "resolver", details }),
+                howToFix: [],
+              };
+            }
+          }
+        } catch (error) {
+          details.resolverAddress = null;
+        }
+      }
+
+      const howToFix = [
+        "If you’re allowlisted: ask the owner to add you as an additional agent/validator.",
+        "If you’re Merkle allowlisted: paste your Merkle proof (JSON bytes32 array).",
+        `If you use ENS: ensure you control “${label}” under the correct root and that NameWrapper owner or resolver.addr points to your wallet.`,
+        "Double-check you’re connected to the intended wallet address.",
+      ];
+      if (details.ensUnavailable) {
+        howToFix.unshift("ENS/NameWrapper not available on this network.");
+      }
+      return {
+        eligible: false,
+        role: roleLabel,
+        method: "none",
+        details,
+        message: buildEligibilityMessage({ eligible: false, method: "none", details }),
+        howToFix,
+      };
     }
 
     function buildErrorContext(action) {
@@ -2245,6 +2517,24 @@
     ids("runIdentityCheck").addEventListener("click", async () => {
       try {
         await runIdentityCheck();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("evaluateAgentEligibility").addEventListener("click", async () => {
+      try {
+        const result = await evaluateEligibility("agent");
+        renderEligibility("agent", result);
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("evaluateValidatorEligibility").addEventListener("click", async () => {
+      try {
+        const result = await evaluateEligibility("validator");
+        renderEligibility("validator", result);
       } catch (error) {
         showAlert(error.message);
       }

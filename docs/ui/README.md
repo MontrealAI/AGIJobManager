@@ -96,10 +96,24 @@ If the contract address has no code on the active chain, the UI shows a warning 
 - The UI only talks to your wallet provider (e.g., MetaMask). No keys or secrets are collected.
 - Always verify the contract address and chainId before signing transactions.
 
+## Eligibility evaluator mirrors on-chain OR-logic
+
+The **Eligibility Evaluator** in the Identity checks card answers “Would I pass on-chain authorization for this role right now?” and mirrors the contract’s OR-logic order:
+
+1. **Blacklist check** (fail fast)
+2. **Additional allowlist**
+3. **Merkle proof verification**
+4. **NameWrapper.ownerOf**
+5. **ENS resolver addr**
+
+Notes:
+- **Label input:** use the same *label only* (subdomain) you would submit on-chain. The evaluator reads the Agent/Validator action inputs first (apply/validate), then falls back to the generic Identity label field.
+- **Merkle proof format:** paste a JSON `bytes32[]` array (e.g., `["0xabc...", "0xdef..."]`). Blank means an empty proof (`[]`).
+
 ## Known limitations
 
-- Merkle proofs are user-supplied (`bytes32[]` via comma-separated 0x… hashes). The UI only
-  verifies membership off-chain; on-chain checks are authoritative.
+- Merkle proofs are user-supplied (`bytes32[]` via JSON array). The UI only verifies membership
+  off-chain; on-chain checks are authoritative.
 - ENS checks mirror the contract’s fallback logic: Merkle → NameWrapper.ownerOf → Resolver.addr.
 
 ## Common Reverts & Fixes
