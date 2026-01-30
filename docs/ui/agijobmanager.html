@@ -1482,11 +1482,17 @@
         [rootNode, ethers.id(label)]
       );
 
-      if (nameWrapperAddress === ethers.ZeroAddress || ensAddress === ethers.ZeroAddress) {
+      const [ensCode, nameWrapperCode] = await Promise.all([
+        ensAddress !== ethers.ZeroAddress ? state.provider.getCode(ensAddress) : "0x",
+        nameWrapperAddress !== ethers.ZeroAddress ? state.provider.getCode(nameWrapperAddress) : "0x",
+      ]);
+      const ensAvailable = ensAddress !== ethers.ZeroAddress && ensCode !== "0x";
+      const nameWrapperAvailable = nameWrapperAddress !== ethers.ZeroAddress && nameWrapperCode !== "0x";
+      if (!ensAvailable || !nameWrapperAvailable) {
         details.ensUnavailable = true;
       }
 
-      if (nameWrapperAddress !== ethers.ZeroAddress) {
+      if (nameWrapperAvailable) {
         try {
           const nameWrapper = new ethers.Contract(nameWrapperAddress, nameWrapperAbi, state.provider);
           const owner = await nameWrapper.ownerOf(BigInt(details.subnode));
@@ -1506,7 +1512,7 @@
         }
       }
 
-      if (ensAddress !== ethers.ZeroAddress) {
+      if (ensAvailable) {
         try {
           const ens = new ethers.Contract(ensAddress, ensAbi, state.provider);
           const resolverAddress = await ens.resolver(details.subnode);

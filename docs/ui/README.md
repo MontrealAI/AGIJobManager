@@ -107,7 +107,7 @@ The **Eligibility Evaluator** in the Identity checks card answers “Would I pas
 5. **ENS resolver addr**
 
 Notes:
-- **Label input:** use the same *label only* (subdomain) you would submit on-chain. The evaluator reads the Agent/Validator action inputs first (apply/validate), then falls back to the generic Identity label field.
+- **Label input:** use the same *label only* (subdomain) you would submit on-chain. The evaluator reads the Agent/Validator action inputs first (apply/validate/disapprove), then falls back to the generic Identity label field.
 - **Merkle proof format:** paste a JSON `bytes32[]` array (e.g., `["0xabc...", "0xdef..."]`). Blank means an empty proof (`[]`).
 
 ## Known limitations
