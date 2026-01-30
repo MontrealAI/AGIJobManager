@@ -2498,8 +2498,10 @@
       });
     }
 
-    async function ensureNftOwners(tokenIds) {
-      const missing = tokenIds.filter((tokenId) => !state.nftCache[tokenId]?.owner);
+    async function ensureNftOwners(tokenIds, { refresh = false } = {}) {
+      const missing = refresh
+        ? tokenIds
+        : tokenIds.filter((tokenId) => !state.nftCache[tokenId]?.owner);
       if (!missing.length) return;
       await asyncPool(6, missing, async (tokenId) => {
         const cached = state.nftCache[tokenId] || {};
@@ -2526,7 +2528,7 @@
           ids("nftsFilterStatus").textContent = "Connect a wallet to filter My NFTs.";
           return [];
         }
-        await ensureNftOwners(nftIds);
+        await ensureNftOwners(nftIds, { refresh: true });
         nftIds = nftIds.filter((tokenId) => isMe(state.nftCache[tokenId]?.owner));
       }
       return nftIds;
@@ -2950,17 +2952,17 @@
       const allowance = await getAllowance();
       const nfts = await asyncPool(6, tokenIds, async (tokenId) => {
         const cached = state.nftCache[tokenId] || {};
-        let owner = cached.owner;
+        let owner = null;
         let tokenUri = cached.tokenUri;
         let listing = null;
-        if (!owner || !tokenUri) {
-          try {
-            owner = owner || await state.readContract.ownerOf(BigInt(tokenId));
-            tokenUri = tokenUri || await state.readContract.tokenURI(BigInt(tokenId));
-          } catch (error) {
-            owner = owner || "Unknown";
-            tokenUri = tokenUri || "—";
+        try {
+          owner = await state.readContract.ownerOf(BigInt(tokenId));
+          if (!tokenUri) {
+            tokenUri = await state.readContract.tokenURI(BigInt(tokenId));
           }
+        } catch (error) {
+          owner = owner || "Unknown";
+          tokenUri = tokenUri || "—";
         }
         listing = await state.readContract.listings(BigInt(tokenId));
         state.nftCache[tokenId] = { ...cached, owner, tokenUri, listing };
