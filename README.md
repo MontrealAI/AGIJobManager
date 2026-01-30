@@ -176,6 +176,7 @@ Start here:
 
 - Static page: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)
 - Usage guide: [`docs/ui/README.md`](docs/ui/README.md)
+- Wallet event handling notes: see the UI README for account/network change behavior and manual test steps.
 - Local preview:
   ```bash
   python -m http.server docs
