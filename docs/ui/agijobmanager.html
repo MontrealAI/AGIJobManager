@@ -223,6 +223,17 @@
       align-items: center;
     }
 
+    .checkbox-label {
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .checkbox-label input {
+      margin-right: 6px;
+    }
+
     .right {
       text-align: right;
     }
@@ -600,10 +611,11 @@
       <h2>NFT marketplace</h2>
       <div class="two-col">
         <div>
-          <h3>Approve AGI token (buyer)</h3>
-          <label for="purchaseApproveAmount">Amount (token units)</label>
-          <input id="purchaseApproveAmount" placeholder="0.0" />
-          <button id="approvePurchase">Approve token</button>
+          <h3>Approve AGI token (listing price)</h3>
+          <label for="purchaseApproveAmount">Amount (listing price)</label>
+          <input id="purchaseApproveAmount" placeholder="0.0" readonly />
+          <p class="muted" id="purchaseApproveHint">Enter a token ID below to populate the listing price.</p>
+          <button id="approvePurchase">Approve token (listing price)</button>
         </div>
         <div>
           <h3>List NFT</h3>
@@ -611,6 +623,11 @@
           <input id="listTokenId" placeholder="0" />
           <label for="listPrice">Price (token units)</label>
           <input id="listPrice" placeholder="0.0" />
+          <div class="muted" id="listNftStatus">Enter a token ID to preview ownership and listing state.</div>
+          <p><strong>Owner:</strong> <span id="listOwner">—</span></p>
+          <p><strong>Listing:</strong> <span id="listListingStatus">—</span></p>
+          <p><strong>Seller:</strong> <span id="listListingSeller">—</span></p>
+          <p><strong>Price:</strong> <span id="listListingPrice">—</span></p>
           <button id="listNft">List NFT</button>
         </div>
       </div>
@@ -619,12 +636,24 @@
           <h3>Delist NFT</h3>
           <label for="delistTokenId">Token ID</label>
           <input id="delistTokenId" placeholder="0" />
+          <div class="muted" id="delistNftStatus">Enter a token ID to preview listing state.</div>
+          <p><strong>Listing:</strong> <span id="delistListingStatus">—</span></p>
+          <p><strong>Seller:</strong> <span id="delistListingSeller">—</span></p>
+          <p><strong>Price:</strong> <span id="delistListingPrice">—</span></p>
           <button id="delistNft" class="secondary">Delist NFT</button>
         </div>
         <div>
           <h3>Purchase NFT</h3>
           <label for="purchaseTokenId">Token ID</label>
           <input id="purchaseTokenId" placeholder="0" />
+          <div class="muted" id="purchaseNftStatus">Enter a token ID to preview the listing and allowance.</div>
+          <p><strong>Seller:</strong> <span id="purchaseSeller">—</span></p>
+          <p><strong>Price:</strong> <span id="purchasePrice">—</span></p>
+          <p><strong>Listing:</strong> <span id="purchaseListingState">—</span></p>
+          <p><strong>You are seller:</strong> <span id="purchaseIsSeller">—</span></p>
+          <p><strong>Allowance:</strong> <span id="purchaseAllowance">—</span></p>
+          <p><strong>Required price:</strong> <span id="purchaseRequiredPrice">—</span></p>
+          <p><strong>Approval status:</strong> <span id="purchaseApprovalStatus">—</span></p>
           <button id="purchaseNft">Purchase NFT</button>
         </div>
       </div>
@@ -711,11 +740,12 @@
       <h2>NFTs table</h2>
       <div class="panel-row">
         <div>
-          <label for="nftsFilter">Filter</label>
-          <select id="nftsFilter">
-            <option value="all">All</option>
-            <option value="listed">Listed only</option>
-          </select>
+          <label>Filters</label>
+          <div class="inline">
+            <label class="checkbox-label"><input type="checkbox" id="nftsMyOnly" /> My NFTs only</label>
+            <label class="checkbox-label"><input type="checkbox" id="nftsActiveOnly" /> Active listings only</label>
+          </div>
+          <div class="muted" id="nftsFilterStatus"></div>
         </div>
         <div>
           <label for="nftsPageSize">Page size</label>
@@ -747,7 +777,10 @@
               <th>Token ID</th>
               <th>Owner</th>
               <th>Token URI</th>
-              <th>Listing</th>
+              <th>Listing status</th>
+              <th>Seller</th>
+              <th>Price</th>
+              <th>Approval</th>
             </tr>
           </thead>
           <tbody id="nftsTable"></tbody>
@@ -801,6 +834,8 @@
       contractDeployed: null,
       contractOwner: null,
       contractPaused: null,
+      marketAllowance: null,
+      nftCache: {},
       ui: {
         jobsPage: 0,
         jobsPageSize: 50,
@@ -808,7 +843,8 @@
         jobsSort: "newest",
         nftsPage: 0,
         nftsPageSize: 50,
-        nftsFilter: "all",
+        nftsMyOnly: false,
+        nftsActiveOnly: false,
       },
       index: {
         jobs: {},
@@ -1069,6 +1105,61 @@
       return url ? `${txHash} (${url})` : txHash;
     }
 
+    function explorerBase() {
+      if (state.chainId === 1n) return "https://etherscan.io/address/";
+      if (state.chainId === 11155111n) return "https://sepolia.etherscan.io/address/";
+      return null;
+    }
+
+    function shortAddr(address) {
+      if (!address) return "—";
+      return `${address.slice(0, 6)}…${address.slice(-4)}`;
+    }
+
+    function isMe(address) {
+      if (!state.walletAddress || !address) return false;
+      return address.toLowerCase() === state.walletAddress.toLowerCase();
+    }
+
+    function createAddressNode(address) {
+      if (!address || address === "—") {
+        const span = document.createElement("span");
+        span.textContent = "—";
+        return span;
+      }
+      if (!address.startsWith("0x")) {
+        const span = document.createElement("span");
+        span.textContent = address;
+        return span;
+      }
+      const base = explorerBase();
+      if (!base) {
+        const span = document.createElement("span");
+        span.textContent = address;
+        return span;
+      }
+      const link = document.createElement("a");
+      link.href = `${base}${address}`;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      link.textContent = shortAddr(address);
+      link.title = address;
+      return link;
+    }
+
+    function setAddressValue(elementId, address) {
+      const el = ids(elementId);
+      el.innerHTML = "";
+      el.appendChild(createAddressNode(address));
+    }
+
+    function buildPill(text, tone) {
+      const pill = document.createElement("span");
+      pill.className = `pill ${tone}`;
+      pill.textContent = text;
+      return pill;
+    }
+
     function setWriteEnabled(enabled, reasonText) {
       writeButtonIds.forEach((id) => {
         const button = ids(id);
@@ -1176,6 +1267,7 @@
         return;
       }
       setWriteEnabled(true);
+      await refreshMarketplacePanels({ refreshAllowance: true });
     }
 
     function parseAddress(value, fieldLabel) {
@@ -1308,6 +1400,8 @@
         state.ens = null;
         state.nameWrapper = null;
         state.contractDeployed = null;
+        state.marketAllowance = null;
+        state.nftCache = {};
         state.index = {
           jobs: {},
           nfts: {},
@@ -1332,6 +1426,8 @@
       state.token = null;
       state.ens = null;
       state.nameWrapper = null;
+      state.marketAllowance = null;
+      state.nftCache = {};
       state.readContract = new ethers.Contract(state.contractAddress, abi, state.provider);
       if (state.signer) {
         state.contract = new ethers.Contract(state.contractAddress, abi, state.signer);
@@ -1387,6 +1483,7 @@
       state.ens = null;
       state.nameWrapper = null;
       state.contractDeployed = null;
+      state.marketAllowance = null;
       if (clearChain) {
         state.chainId = null;
         state.chainName = null;
@@ -1468,6 +1565,14 @@
       }
     }
 
+    function formatTokenInput(amount) {
+      try {
+        return ethers.formatUnits(amount, state.agiTokenDecimals);
+      } catch (error) {
+        return amount.toString();
+      }
+    }
+
     async function updateRoleFlags() {
       requireContract();
       if (!state.walletAddress) {
@@ -1495,6 +1600,22 @@
       setText("premiumAccess", premiumAccess ? "Yes" : "No");
       setText("agiBalance", formatToken(balance));
       setText("agiAllowance", formatToken(allowance));
+      state.marketAllowance = allowance;
+    }
+
+    async function getAllowance({ refresh = false } = {}) {
+      requireContract();
+      if (!state.walletAddress) {
+        state.marketAllowance = null;
+        return null;
+      }
+      if (state.marketAllowance != null && !refresh) {
+        return state.marketAllowance;
+      }
+      const token = await ensureToken();
+      const allowance = await token.allowance(state.walletAddress, state.contractAddress);
+      state.marketAllowance = allowance;
+      return allowance;
     }
 
     function computeSubnode(rootNode, label) {
@@ -1827,6 +1948,7 @@
       if (state.walletAddress) {
         await updateRoleFlags();
       }
+      await refreshMarketplacePanels({ refreshAllowance: true });
     }
 
     async function handleAccountsChanged(accounts) {
@@ -2003,7 +2125,8 @@
         jobsSort: state.ui.jobsSort,
         nftsPage: state.ui.nftsPage,
         nftsPageSize: state.ui.nftsPageSize,
-        nftsFilter: state.ui.nftsFilter,
+        nftsMyOnly: state.ui.nftsMyOnly,
+        nftsActiveOnly: state.ui.nftsActiveOnly,
       };
       localStorage.setItem(uiSettingsKey, JSON.stringify(payload));
     }
@@ -2019,7 +2142,8 @@
         state.ui.jobsSort = parsed.jobsSort || "newest";
         state.ui.nftsPage = Number(parsed.nftsPage) || 0;
         state.ui.nftsPageSize = Number(parsed.nftsPageSize) || defaultPageSize;
-        state.ui.nftsFilter = parsed.nftsFilter || "all";
+        state.ui.nftsMyOnly = Boolean(parsed.nftsMyOnly);
+        state.ui.nftsActiveOnly = Boolean(parsed.nftsActiveOnly);
       } catch (error) {
         localStorage.removeItem(uiSettingsKey);
       }
@@ -2029,7 +2153,8 @@
       ids("jobsPageSize").value = state.ui.jobsPageSize.toString();
       ids("jobsFilter").value = state.ui.jobsFilter;
       ids("nftsPageSize").value = state.ui.nftsPageSize.toString();
-      ids("nftsFilter").value = state.ui.nftsFilter;
+      ids("nftsMyOnly").checked = state.ui.nftsMyOnly;
+      ids("nftsActiveOnly").checked = state.ui.nftsActiveOnly;
     }
 
     function saveIndexCache() {
@@ -2075,6 +2200,7 @@
           lastSyncTime: null,
         },
       };
+      state.nftCache = {};
       updateIndexStatus("Indexer cache cleared.");
     }
 
@@ -2372,14 +2498,38 @@
       });
     }
 
-    function getFilteredNftIds() {
-      const filter = state.ui.nftsFilter;
-      const nftIds = getSortedNftIds();
-      if (filter === "all") return nftIds;
-      return nftIds.filter((tokenId) => {
-        const entry = state.index.nfts[tokenId];
-        return filter === "listed" ? entry?.activeListing : true;
+    async function ensureNftOwners(tokenIds) {
+      const missing = tokenIds.filter((tokenId) => !state.nftCache[tokenId]?.owner);
+      if (!missing.length) return;
+      await asyncPool(6, missing, async (tokenId) => {
+        const cached = state.nftCache[tokenId] || {};
+        try {
+          const owner = await state.readContract.ownerOf(BigInt(tokenId));
+          state.nftCache[tokenId] = { ...cached, owner };
+        } catch (error) {
+          state.nftCache[tokenId] = {
+            ...cached,
+            owner: null,
+            ownerError: error.shortMessage || error.message || "Owner lookup failed.",
+          };
+        }
       });
+    }
+
+    async function getFilteredNftIds() {
+      let nftIds = getSortedNftIds();
+      if (state.ui.nftsActiveOnly) {
+        nftIds = nftIds.filter((tokenId) => state.index.nfts[tokenId]?.activeListing);
+      }
+      if (state.ui.nftsMyOnly) {
+        if (!state.walletAddress) {
+          ids("nftsFilterStatus").textContent = "Connect a wallet to filter My NFTs.";
+          return [];
+        }
+        await ensureNftOwners(nftIds);
+        nftIds = nftIds.filter((tokenId) => isMe(state.nftCache[tokenId]?.owner));
+      }
+      return nftIds;
     }
 
     function paginateIds(idsList, page, pageSize) {
@@ -2416,6 +2566,236 @@
       logEvent(`⏳ ${context} approve — ${tx.hash}`);
       await tx.wait();
       logEvent(`✅ ${context} approve confirmed`);
+    }
+
+    function parseTokenIdInput(value) {
+      if (!value) return null;
+      if (!/^\d+$/.test(value)) return null;
+      return BigInt(value);
+    }
+
+    async function getListingSummary(tokenId) {
+      const listing = await state.readContract.listings(tokenId);
+      return {
+        tokenId,
+        listing,
+        seller: listing[1],
+        price: listing[2],
+        isActive: listing[3],
+      };
+    }
+
+    async function getOwnerSummary(tokenId) {
+      try {
+        const owner = await state.readContract.ownerOf(tokenId);
+        return { owner, error: null };
+      } catch (error) {
+        return { owner: null, error: error.shortMessage || error.message || "Owner lookup failed." };
+      }
+    }
+
+    function setPurchaseApprovalStatus(text, tone) {
+      const el = ids("purchaseApprovalStatus");
+      el.innerHTML = "";
+      el.appendChild(buildPill(text, tone));
+    }
+
+    async function updatePurchasePanel({ refreshAllowance = false } = {}) {
+      const tokenId = parseTokenIdInput(ids("purchaseTokenId").value.trim());
+      const status = ids("purchaseNftStatus");
+      if (!tokenId) {
+        status.textContent = "Enter a token ID to preview the listing and allowance.";
+        setText("purchaseSeller", "—");
+        setText("purchasePrice", "—");
+        setText("purchaseListingState", "—");
+        setText("purchaseIsSeller", "—");
+        setText("purchaseAllowance", "—");
+        setText("purchaseRequiredPrice", "—");
+        setText("purchaseApprovalStatus", "—");
+        ids("purchaseApproveAmount").value = "";
+        ids("purchaseApproveHint").textContent = "Enter a token ID below to populate the listing price.";
+        ids("approvePurchase").disabled = true;
+        ids("purchaseNft").disabled = true;
+        return;
+      }
+      if (!state.contractAddress || !state.readContract) {
+        status.textContent = "Set a contract address to preview listings.";
+        ids("approvePurchase").disabled = true;
+        ids("purchaseNft").disabled = true;
+        return;
+      }
+      requireContract();
+      let listingSummary;
+      try {
+        listingSummary = await getListingSummary(tokenId);
+      } catch (error) {
+        status.textContent = error.shortMessage || error.message || "Listing lookup failed.";
+        ids("approvePurchase").disabled = true;
+        ids("purchaseNft").disabled = true;
+        return;
+      }
+      const { seller, price, isActive } = listingSummary;
+      const sellerIsMe = isMe(seller);
+      status.textContent = isActive ? "Listing is active." : "Listing not active.";
+      const sellerDisplay = seller === ethers.ZeroAddress ? "—" : seller;
+      const priceDisplay = price > 0n ? formatToken(price) : "—";
+      setAddressValue("purchaseSeller", sellerDisplay);
+      setText("purchasePrice", priceDisplay);
+      setText("purchaseListingState", isActive ? "Active" : "Not listed");
+      if (!state.walletAddress) {
+        setText("purchaseIsSeller", "Connect wallet");
+      } else {
+        setText("purchaseIsSeller", sellerIsMe ? "Yes" : "No");
+      }
+      setText("purchaseRequiredPrice", isActive ? formatToken(price) : "—");
+
+      const allowance = await getAllowance({ refresh: refreshAllowance });
+      if (allowance == null) {
+        setText("purchaseAllowance", "Connect wallet");
+        setPurchaseApprovalStatus("Connect wallet", "warn");
+      } else if (!isActive) {
+        setText("purchaseAllowance", formatToken(allowance));
+        setPurchaseApprovalStatus("Listing inactive", "warn");
+      } else if (allowance >= price) {
+        setText("purchaseAllowance", formatToken(allowance));
+        setPurchaseApprovalStatus("Allowance OK", "ok");
+      } else {
+        setText("purchaseAllowance", formatToken(allowance));
+        setPurchaseApprovalStatus("Approve required", "warn");
+      }
+
+      if (isActive) {
+        ids("purchaseApproveAmount").value = formatTokenInput(price);
+        ids("purchaseApproveHint").textContent = `Approves exact listing price: ${formatToken(price)}.`;
+      } else {
+        ids("purchaseApproveAmount").value = "";
+        ids("purchaseApproveHint").textContent = "Listing not active yet.";
+      }
+
+      const canWrite = hasWriteAccess();
+      ids("approvePurchase").disabled = !(canWrite && isActive);
+      ids("purchaseNft").disabled = !(
+        canWrite
+        && isActive
+        && !sellerIsMe
+        && allowance != null
+        && allowance >= price
+      );
+    }
+
+    async function updateListPanel() {
+      const tokenId = parseTokenIdInput(ids("listTokenId").value.trim());
+      const status = ids("listNftStatus");
+      if (!tokenId) {
+        status.textContent = "Enter a token ID to preview ownership and listing state.";
+        setText("listOwner", "—");
+        setText("listListingStatus", "—");
+        setText("listListingSeller", "—");
+        setText("listListingPrice", "—");
+        ids("listNft").disabled = true;
+        return;
+      }
+      if (!state.contractAddress || !state.readContract) {
+        status.textContent = "Set a contract address to preview listings.";
+        ids("listNft").disabled = true;
+        return;
+      }
+      requireContract();
+      const { owner, error } = await getOwnerSummary(tokenId);
+      if (error) {
+        status.textContent = error;
+        setText("listOwner", "Unavailable");
+        setText("listListingStatus", "—");
+        setText("listListingSeller", "—");
+        setText("listListingPrice", "—");
+        ids("listNft").disabled = true;
+        return;
+      }
+      setAddressValue("listOwner", owner);
+      try {
+        const listingSummary = await getListingSummary(tokenId);
+        const { seller, price, isActive } = listingSummary;
+        const sellerDisplay = seller === ethers.ZeroAddress ? "—" : seller;
+        const priceDisplay = price > 0n ? formatToken(price) : "—";
+        setText("listListingStatus", isActive ? "Active" : "Not listed");
+        setAddressValue("listListingSeller", sellerDisplay);
+        setText("listListingPrice", priceDisplay);
+      } catch (error) {
+        setText("listListingStatus", "Unavailable");
+        setText("listListingSeller", "—");
+        setText("listListingPrice", "—");
+      }
+      const ownsToken = isMe(owner);
+      if (!state.walletAddress) {
+        status.textContent = "Connect a wallet to list this NFT.";
+      } else {
+        status.textContent = ownsToken ? "You own this NFT and can list it." : "You are not the owner of this NFT.";
+      }
+      ids("listNft").disabled = !(hasWriteAccess() && ownsToken);
+    }
+
+    async function updateDelistPanel() {
+      const tokenId = parseTokenIdInput(ids("delistTokenId").value.trim());
+      const status = ids("delistNftStatus");
+      if (!tokenId) {
+        status.textContent = "Enter a token ID to preview listing state.";
+        setText("delistListingStatus", "—");
+        setText("delistListingSeller", "—");
+        setText("delistListingPrice", "—");
+        ids("delistNft").disabled = true;
+        return;
+      }
+      if (!state.contractAddress || !state.readContract) {
+        status.textContent = "Set a contract address to preview listings.";
+        ids("delistNft").disabled = true;
+        return;
+      }
+      requireContract();
+      let listingSummary;
+      try {
+        listingSummary = await getListingSummary(tokenId);
+      } catch (error) {
+        status.textContent = error.shortMessage || error.message || "Listing lookup failed.";
+        setText("delistListingStatus", "Unavailable");
+        setText("delistListingSeller", "—");
+        setText("delistListingPrice", "—");
+        ids("delistNft").disabled = true;
+        return;
+      }
+      const { seller, price, isActive } = listingSummary;
+      const sellerDisplay = seller === ethers.ZeroAddress ? "—" : seller;
+      const priceDisplay = price > 0n ? formatToken(price) : "—";
+      setText("delistListingStatus", isActive ? "Active" : "Not listed");
+      setAddressValue("delistListingSeller", sellerDisplay);
+      setText("delistListingPrice", priceDisplay);
+      if (!isActive) {
+        status.textContent = "Listing is not active.";
+        ids("delistNft").disabled = true;
+        return;
+      }
+      if (!state.walletAddress) {
+        status.textContent = "Connect a wallet to delist this NFT.";
+        ids("delistNft").disabled = true;
+        return;
+      }
+      if (!isMe(seller)) {
+        status.textContent = "Only the seller can delist this NFT.";
+        ids("delistNft").disabled = true;
+        return;
+      }
+      status.textContent = "You can delist this NFT.";
+      ids("delistNft").disabled = !hasWriteAccess();
+    }
+
+    async function refreshMarketplacePanels({ refreshAllowance = false } = {}) {
+      if (!state.contractAddress || !state.readContract) {
+        return;
+      }
+      await Promise.all([
+        updatePurchasePanel({ refreshAllowance }),
+        updateListPanel(),
+        updateDelistPanel(),
+      ]);
     }
 
     async function loadJobs() {
@@ -2535,19 +2915,23 @@
       await ensureToken();
       const tbody = ids("nftsTable");
       tbody.innerHTML = "";
+      ids("nftsFilterStatus").textContent = "";
       let pageData = null;
       let tokenIds = [];
       const hasIndex = Object.keys(state.index.nfts || {}).length > 0;
 
       if (hasIndex) {
-        const filtered = getFilteredNftIds();
+        const filtered = await getFilteredNftIds();
         pageData = paginateIds(filtered, state.ui.nftsPage, state.ui.nftsPageSize);
         state.ui.nftsPage = pageData.page;
         tokenIds = pageData.items;
       } else {
-        if (state.ui.nftsFilter !== "all") {
-          state.ui.nftsFilter = "all";
-          ids("nftsFilter").value = "all";
+        if (state.ui.nftsMyOnly || state.ui.nftsActiveOnly) {
+          state.ui.nftsMyOnly = false;
+          state.ui.nftsActiveOnly = false;
+          ids("nftsMyOnly").checked = false;
+          ids("nftsActiveOnly").checked = false;
+          ids("nftsFilterStatus").textContent = "Indexer unavailable: NFT filters require indexed events.";
           logEvent("Indexer unavailable: NFT filters require indexed events.");
         }
         const nextTokenId = await state.readContract.nextTokenId();
@@ -2563,33 +2947,73 @@
         pageData = { total, maxPage, page: state.ui.nftsPage };
       }
 
+      const allowance = await getAllowance();
       const nfts = await asyncPool(6, tokenIds, async (tokenId) => {
-        let owner = "—";
-        let tokenUri = "—";
+        const cached = state.nftCache[tokenId] || {};
+        let owner = cached.owner;
+        let tokenUri = cached.tokenUri;
         let listing = null;
-        try {
-          owner = await state.readContract.ownerOf(BigInt(tokenId));
-          tokenUri = await state.readContract.tokenURI(BigInt(tokenId));
-        } catch (error) {
-          owner = "Unknown";
-          tokenUri = "—";
+        if (!owner || !tokenUri) {
+          try {
+            owner = owner || await state.readContract.ownerOf(BigInt(tokenId));
+            tokenUri = tokenUri || await state.readContract.tokenURI(BigInt(tokenId));
+          } catch (error) {
+            owner = owner || "Unknown";
+            tokenUri = tokenUri || "—";
+          }
         }
         listing = await state.readContract.listings(BigInt(tokenId));
+        state.nftCache[tokenId] = { ...cached, owner, tokenUri, listing };
         return { tokenId, owner, tokenUri, listing };
       });
 
       for (const entry of nfts) {
-        const listingText = entry.listing[3]
-          ? `Listed by ${entry.listing[1]} for ${formatToken(entry.listing[2])}`
-          : "Not listed";
-
         const row = document.createElement("tr");
-        const cells = [entry.tokenId.toString(), entry.owner, entry.tokenUri, listingText];
-        for (const cell of cells) {
-          const td = document.createElement("td");
-          td.textContent = cell;
-          row.appendChild(td);
+        const tokenCell = document.createElement("td");
+        tokenCell.textContent = entry.tokenId.toString();
+        row.appendChild(tokenCell);
+
+        const ownerCell = document.createElement("td");
+        ownerCell.appendChild(createAddressNode(entry.owner));
+        if (isMe(entry.owner)) {
+          ownerCell.appendChild(buildPill("You", "ok"));
         }
+        row.appendChild(ownerCell);
+
+        const uriCell = document.createElement("td");
+        uriCell.textContent = entry.tokenUri;
+        row.appendChild(uriCell);
+
+        const listingStatusCell = document.createElement("td");
+        listingStatusCell.textContent = entry.listing[3] ? "Active" : "Not listed";
+        row.appendChild(listingStatusCell);
+
+        const sellerCell = document.createElement("td");
+        if (entry.listing[3]) {
+          sellerCell.appendChild(createAddressNode(entry.listing[1]));
+          if (isMe(entry.listing[1])) {
+            sellerCell.appendChild(buildPill("You", "ok"));
+          }
+        } else {
+          sellerCell.textContent = "—";
+        }
+        row.appendChild(sellerCell);
+
+        const priceCell = document.createElement("td");
+        priceCell.textContent = entry.listing[3] ? formatToken(entry.listing[2]) : "—";
+        row.appendChild(priceCell);
+
+        const approvalCell = document.createElement("td");
+        if (!entry.listing[3]) {
+          approvalCell.textContent = "—";
+        } else if (allowance == null) {
+          approvalCell.appendChild(buildPill("Connect wallet", "warn"));
+        } else if (allowance >= entry.listing[2]) {
+          approvalCell.appendChild(buildPill("Allowance OK", "ok"));
+        } else {
+          approvalCell.appendChild(buildPill("Approve needed", "warn"));
+        }
+        row.appendChild(approvalCell);
         tbody.appendChild(row);
       }
 
@@ -3118,10 +3542,20 @@
 
     ids("approvePurchase").addEventListener("click", async () => {
       try {
+        const tokenId = parseTokenIdInput(ids("purchaseTokenId").value.trim());
+        if (!tokenId) {
+          throw new Error("Enter a token ID to approve for purchase.");
+        }
         await ensureToken();
-        const amount = parseTokenAmount(ids("purchaseApproveAmount").value, "Approve amount");
+        const listingSummary = await getListingSummary(tokenId);
+        if (!listingSummary.isActive) {
+          throw new Error("Listing is not active.");
+        }
+        const amount = listingSummary.price;
         await approveToken(amount, "Purchase");
         await updateRoleFlags();
+        await updatePurchasePanel({ refreshAllowance: true });
+        await loadNfts();
       } catch (error) {
         showAlert(error.message);
       }
@@ -3133,6 +3567,10 @@
         await ensureToken();
         const price = parseTokenAmount(ids("listPrice").value, "Price");
         await sendTx("listNFT", [tokenId, price], "List NFT");
+        await updateListPanel();
+        await updateDelistPanel();
+        await updatePurchasePanel();
+        await loadNfts();
       } catch (error) {
         showAlert(error.message);
       }
@@ -3142,6 +3580,10 @@
       try {
         const tokenId = parseUint(ids("delistTokenId").value, "Token ID");
         await sendTx("delistNFT", [tokenId], "Delist NFT");
+        await updateListPanel();
+        await updateDelistPanel();
+        await updatePurchasePanel();
+        await loadNfts();
       } catch (error) {
         showAlert(error.message);
       }
@@ -3151,9 +3593,27 @@
       try {
         const tokenId = parseUint(ids("purchaseTokenId").value, "Token ID");
         await sendTx("purchaseNFT", [tokenId], "Purchase NFT");
+        await getAllowance({ refresh: true });
+        await updateRoleFlags();
+        await updatePurchasePanel({ refreshAllowance: true });
+        await updateListPanel();
+        await updateDelistPanel();
+        await loadNfts();
       } catch (error) {
         showAlert(error.message);
       }
+    });
+
+    ids("listTokenId").addEventListener("input", () => {
+      updateListPanel().catch((error) => showAlert(error.message));
+    });
+
+    ids("delistTokenId").addEventListener("input", () => {
+      updateDelistPanel().catch((error) => showAlert(error.message));
+    });
+
+    ids("purchaseTokenId").addEventListener("input", () => {
+      updatePurchasePanel().catch((error) => showAlert(error.message));
     });
 
     ids("jobsFilter").addEventListener("change", async (event) => {
@@ -3211,16 +3671,16 @@
       }
     });
 
-    ids("nftsFilter").addEventListener("change", async (event) => {
-      state.ui.nftsFilter = event.target.value;
+    function handleNftFilterChange() {
+      state.ui.nftsMyOnly = ids("nftsMyOnly").checked;
+      state.ui.nftsActiveOnly = ids("nftsActiveOnly").checked;
       state.ui.nftsPage = 0;
       saveUiSettings();
-      try {
-        await loadNfts();
-      } catch (error) {
-        showAlert(error.message);
-      }
-    });
+      loadNfts().catch((error) => showAlert(error.message));
+    }
+
+    ids("nftsMyOnly").addEventListener("change", handleNftFilterChange);
+    ids("nftsActiveOnly").addEventListener("change", handleNftFilterChange);
 
     ids("nftsPageSize").addEventListener("change", async (event) => {
       state.ui.nftsPageSize = Number(event.target.value) || defaultPageSize;
@@ -3330,6 +3790,7 @@
       updateNetworkPill();
       setWriteEnabled(false);
       updateIndexStatus("Indexer not synced yet.");
+      await refreshMarketplacePanels();
     }
 
     bootstrap();
