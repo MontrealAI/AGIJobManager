@@ -14,6 +14,8 @@ You are authorized **if any** of the following are true:
 > **Label‑only rule (important):** enter the **label only**, not the full ENS name.
 > - ✅ `helper`
 > - ❌ `helper.agent.agi.eth`
+>
+> Why: the contract combines a **fixed root node** with your label to derive the ENS node. Full names will not match that calculation.
 
 ## Where proofs come from
 

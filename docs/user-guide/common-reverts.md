@@ -41,7 +41,8 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 | Add AGI type (owner) | `InvalidParameters` | Address is zero or payout percentage outside 1–100. | Provide a valid NFT address and percentage. | [Roles → Owner](roles.md#owner) |
 | Any token transfer | `TransferFailed` | Token transfer or transferFrom returned false. | Ensure you have enough AGI balance and **approved** the contract for the needed amount. | [Happy path](happy-path.md) |
 | Any job action | `JobNotFound` | The job ID does not exist. | Double‑check the job ID. | [Happy path](happy-path.md) |
-| Any action while paused | `Pausable: paused` | The contract is paused. | Wait for the owner to unpause. | [Roles → Owner](roles.md#owner) |
+| Set validation reward percentage (owner) | `InvalidParameters` | Percentage must be between 1 and 100. | Use a value from 1–100. | [Roles → Owner](roles.md#owner) |
+| Actions protected by pause | `Pausable: paused` | The contract is paused, so `whenNotPaused` actions are blocked. | Wait for the owner to unpause before retrying. | [Roles → Owner](roles.md#owner) |
 
 ## If you still can’t proceed
 
