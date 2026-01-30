@@ -3,7 +3,7 @@
 This static page provides a **non-custodial** interface to the AGIJobManager contract. It runs entirely in your browser, uses your wallet for signing, and does **not** require any backend or API keys. It is intended for careful, expert use and is **experimental research software**.
 
 ## What this page is
-- A single-file dApp (`docs/agijobmanager.html`) that lets you interact with the on-chain AGIJobManager contract.
+- A single-file dApp (`docs/ui/agijobmanager.html`) that lets you interact with the on-chain AGIJobManager contract.
 - Suitable for GitHub Pages or any static host.
 
 ## What this page is not
@@ -86,7 +86,7 @@ Use the “Contract address” input and click **Save address**.
 3) Select your default branch and **/docs** folder.
 4) The page will be served at:
 ```
-https://<org>.github.io/<repo>/agijobmanager.html
+https://<org>.github.io/<repo>/ui/agijobmanager.html
 ```
 
 ## Local usage
@@ -95,5 +95,5 @@ python -m http.server docs
 ```
 Then open:
 ```
-http://localhost:8000/agijobmanager.html?contract=0xYourContract
+http://localhost:8000/ui/agijobmanager.html?contract=0xYourContract
 ```
