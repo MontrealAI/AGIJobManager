@@ -2,7 +2,15 @@
 
 This documentation set targets engineers, integrators, operators, and auditors **and** now includes non‑technical user guides. Each document has a focused scope with cross-references for faster navigation and auditability.
 
-## Start here (non‑technical user guides)
+## User guide (non‑technical)
+- **Landing page**: [`user-guide/README.md`](user-guide/README.md)
+- **Roles**: [`user-guide/roles.md`](user-guide/roles.md)
+- **Happy path walkthrough**: [`user-guide/happy-path.md`](user-guide/happy-path.md)
+- **Common revert reasons**: [`user-guide/common-reverts.md`](user-guide/common-reverts.md)
+- **Merkle proofs**: [`user-guide/merkle-proofs.md`](user-guide/merkle-proofs.md)
+- **Glossary**: [`user-guide/glossary.md`](user-guide/glossary.md)
+
+## Start here (legacy non‑technical user guides)
 - **Roles overview**: [`guides/ROLES.md`](guides/ROLES.md)
 - **Happy path walkthrough**: [`guides/HAPPY_PATH.md`](guides/HAPPY_PATH.md)
 - **Troubleshooting (“execution reverted”)**: [`guides/TROUBLESHOOTING.md`](guides/TROUBLESHOOTING.md)
