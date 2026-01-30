@@ -174,6 +174,12 @@ Start here:
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
   - Local test coverage: [`docs/namespace/TESTING.md`](docs/namespace/TESTING.md)
 
+### User guide (non‑technical)
+- Roles: [`docs/guides/ROLES.md`](docs/guides/ROLES.md)
+- Happy path walkthrough: [`docs/guides/HAPPY_PATH.md`](docs/guides/HAPPY_PATH.md)
+- Common revert reasons: [`docs/guides/COMMON_REVERTS.md`](docs/guides/COMMON_REVERTS.md)
+- Merkle proofs: [`docs/guides/MERKLE_PROOFS.md`](docs/guides/MERKLE_PROOFS.md)
+
 ## Web UI
 
 - Static page: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)

@@ -2,6 +2,8 @@
 
 This system gates **agents** and **validators** using multiple identity checks. You only need **one** of them to pass.
 
+For step‑by‑step instructions on getting and validating Merkle proofs, see **Merkle Proofs**: [`MERKLE_PROOFS.md`](MERKLE_PROOFS.md).
+
 ## What “identity” means here
 
 - **Agent identity** = permission to apply for jobs.
