@@ -12,7 +12,6 @@ contract ReentrantERC20 is ERC20 {
     uint256 public reenterTokenId;
     bool public reenterEnabled;
     bool public reenterAttempted;
-    bool public reentrancyBlocked;
 
     constructor() ERC20("Reentrant AGI", "rAGI") {}
 
@@ -25,7 +24,6 @@ contract ReentrantERC20 is ERC20 {
         reenterTokenId = _tokenId;
         reenterEnabled = _enabled;
         reenterAttempted = false;
-        reentrancyBlocked = false;
     }
 
     function approveManager(uint256 amount) external {
@@ -36,11 +34,7 @@ contract ReentrantERC20 is ERC20 {
     function transferFrom(address from, address to, uint256 amount) public override returns (bool) {
         if (reenterEnabled && !reenterAttempted && manager != address(0)) {
             reenterAttempted = true;
-            try IAGIJobManager(manager).purchaseNFT(reenterTokenId) {
-                reentrancyBlocked = false;
-            } catch {
-                reentrancyBlocked = true;
-            }
+            IAGIJobManager(manager).purchaseNFT(reenterTokenId);
         }
         return super.transferFrom(from, to, amount);
     }

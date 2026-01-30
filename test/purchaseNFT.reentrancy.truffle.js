@@ -1,0 +1,97 @@
+const assert = require("assert");
+const { expectRevert } = require("@openzeppelin/test-helpers");
+
+const AGIJobManager = artifacts.require("AGIJobManager");
+const ReentrantERC20 = artifacts.require("ReentrantERC20");
+
+const ZERO_ROOT = "0x" + "00".repeat(32);
+const EMPTY_PROOF = [];
+const { toBN, toWei } = web3.utils;
+
+contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
+  const [owner, employer, agent, validator, buyer, ensPlaceholder, nameWrapperPlaceholder] = accounts;
+  let token;
+  let manager;
+
+  const createAndCompleteJob = async (payout) => {
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-finished", { from: agent });
+    const validateTx = await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    const issueEvent = validateTx.logs.find((log) => log.event === "NFTIssued");
+    return issueEvent.args.tokenId.toNumber();
+  };
+
+  beforeEach(async () => {
+    token = await ReentrantERC20.new({ from: owner });
+    manager = await AGIJobManager.new(
+      token.address,
+      "ipfs://base",
+      ensPlaceholder,
+      nameWrapperPlaceholder,
+      ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
+      { from: owner }
+    );
+
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+  });
+
+  it("allows purchases when reentrancy is disabled", async () => {
+    const payout = toBN(toWei("40"));
+    const tokenId = await createAndCompleteJob(payout);
+    const price = toBN(toWei("5"));
+
+    await manager.listNFT(tokenId, price, { from: employer });
+    await token.mint(buyer, price, { from: owner });
+    await token.approve(manager.address, price, { from: buyer });
+
+    await manager.purchaseNFT(tokenId, { from: buyer });
+
+    const newOwner = await manager.ownerOf(tokenId);
+    assert.equal(newOwner, buyer, "buyer should own NFT after purchase");
+
+    const listing = await manager.listings(tokenId);
+    assert.strictEqual(listing.isActive, false, "listing should be inactive after purchase");
+  });
+
+  it("reverts when a reentrant token attempts nested purchaseNFT", async () => {
+    const payout = toBN(toWei("40"));
+    const tokenIdA = await createAndCompleteJob(payout);
+    const tokenIdB = await createAndCompleteJob(payout);
+
+    const priceA = toBN(toWei("5"));
+    const priceB = toBN(toWei("7"));
+
+    await manager.listNFT(tokenIdA, priceA, { from: employer });
+    await manager.listNFT(tokenIdB, priceB, { from: employer });
+
+    await token.mint(buyer, priceA, { from: owner });
+    await token.approve(manager.address, priceA, { from: buyer });
+
+    await token.mint(token.address, priceB, { from: owner });
+    await token.setReentry(manager.address, tokenIdB, true, { from: owner });
+    await token.approveManager(priceB, { from: owner });
+
+    await expectRevert.unspecified(
+      manager.purchaseNFT(tokenIdA, { from: buyer })
+    );
+
+    const ownerA = await manager.ownerOf(tokenIdA);
+    assert.equal(ownerA, employer, "tokenIdA should remain with seller");
+    const ownerB = await manager.ownerOf(tokenIdB);
+    assert.equal(ownerB, employer, "tokenIdB should remain with seller");
+
+    const listingA = await manager.listings(tokenIdA);
+    assert.strictEqual(listingA.isActive, true, "tokenIdA listing should remain active");
+    const listingB = await manager.listings(tokenIdB);
+    assert.strictEqual(listingB.isActive, true, "tokenIdB listing should remain active");
+  });
+});
