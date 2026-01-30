@@ -77,3 +77,35 @@ If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit th
 - Merkle proofs are user-supplied (`bytes32[]` via comma-separated 0x… hashes). The UI only
   verifies membership off-chain; on-chain checks are authoritative.
 - ENS checks mirror the contract’s fallback logic: Merkle → NameWrapper.ownerOf → Resolver.addr.
+
+## Mainnet scalability: pagination + event indexing
+
+The UI no longer enumerates every job or token ID. Instead it:
+
+- Defaults to **latest 50** jobs/NFTs, with configurable page size and navigation.
+- Uses a chunked event indexer (`eth_getLogs`) to build a local cache of job/NFT state.
+- Hydrates **only the current page** with bounded `eth_call` reads (jobs, ownerOf/tokenURI/listings).
+
+### How event indexing works
+
+1. **Sync events** scans a block range (default: `latest-20000` → `latest`).
+2. Logs are fetched in chunks to avoid RPC limits. On errors the chunk size is reduced and retried.
+3. The UI builds a compact index in `localStorage` (per contract address) and only hydrates the
+   current page with small bounded calls.
+
+### Choosing a block range
+
+- Start with the default lookback (e.g., `latest-20000`) and increase if you need older history.
+- Large ranges can fail on some wallet RPCs; use smaller windows or a more capable RPC endpoint.
+
+### Fallback mode (no indexer)
+
+If event indexing fails (wallet provider limits, RPC errors, etc.), the UI falls back to
+**range-based pagination** by calling `jobs(jobId)` or `ownerOf/tokenURI/listings` only for the
+current page range (`latest` descending). Filters require the indexer and are disabled otherwise.
+
+### Known indexing limitations
+
+- `JobCreated` does not include the employer address, so job rows hydrate via `jobs(jobId)`.
+- `JobCompletionRequested` does not include the new IPFS hash; the UI hydrates to show it.
+- RPC providers often limit `eth_getLogs` ranges; smaller windows avoid failures.
