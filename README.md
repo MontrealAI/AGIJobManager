@@ -131,6 +131,12 @@ npx truffle migrate --network development
 
 `truffle-config.js` is the source of truth for networks and env vars. A full guide lives in [`docs/Deployment.md`](docs/Deployment.md).
 
+**Environment setup**
+- Copy `.env.example` → `.env` (keep it local):
+  ```bash
+  cp .env.example .env
+  ```
+
 **Required (Sepolia / Mainnet)**
 - `PRIVATE_KEYS`: comma-separated private keys.
 - RPC configuration, one of:
@@ -146,6 +152,12 @@ npx truffle migrate --network development
 - Provider polling: `RPC_POLLING_INTERVAL_MS`.
 - Compiler settings: `SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`.
 - Local chain: `GANACHE_MNEMONIC`.
+
+**Network notes**
+- `development`/Ganache typically needs no env vars.
+- `sepolia` needs `ALCHEMY_KEY` (or `SEPOLIA_RPC_URL`) + `PRIVATE_KEYS`.
+- `mainnet` needs `ALCHEMY_KEY_MAIN` (or `MAINNET_RPC_URL`) + `PRIVATE_KEYS`.
+- `PRIVATE_KEYS` format: comma-separated, no spaces, keep it local.
 
 > **Deployment caution**: `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token, ENS, NameWrapper, root nodes, Merkle roots). Update them before any production deployment.
 
