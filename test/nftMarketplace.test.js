@@ -179,6 +179,9 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
 
     await managerReentrant.purchaseNFT(tokenIdA, { from: buyer });
 
+    const reenterAttempted = await reentrant.reenterAttempted();
+    assert.strictEqual(reenterAttempted, true, "reentrant call should have been attempted");
+
     const reentrancyBlocked = await reentrant.reentrancyBlocked();
     assert.strictEqual(reentrancyBlocked, true, "reentrant call should be blocked");
 
