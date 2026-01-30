@@ -39,6 +39,7 @@ Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, `pur
 - **Agent payout can be zero**: if no AGI type applies, the agent payout percentage is zero and residual funds remain in the contract.
 - **Validator payout sharing**: all validators who voted share equally; there is no weighting or slashing.
 - **Owner-controlled parameters**: thresholds and limits can be changed post-deployment by the owner.
+- **Time enforcement gap**: only `requestJobCompletion` enforces job duration; validators can still approve/disapprove after the deadline unless off‑chain policy prevents it.
 
 ## Operational monitoring
 - Index and alert on `JobDisputed`, `DisputeResolved`, `JobCompleted`, and `ReputationUpdated` events.

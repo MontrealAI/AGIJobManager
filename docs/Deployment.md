@@ -36,6 +36,8 @@ A template lives in [`.env.example`](../.env.example).
 - **sepolia**: remote deployment via RPC (HDWalletProvider).
 - **mainnet**: remote deployment via RPC (HDWalletProvider).
 
+The default `npm test` script compiles with `--all`, runs `truffle test --network test`, and then executes an additional JavaScript test harness. Use the `test` network for deterministic local runs.
+
 ## Migration script notes
 
 The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Edit these values** before deploying to any production network.
