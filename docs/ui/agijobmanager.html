@@ -239,6 +239,21 @@
       font-size: 12px;
       color: var(--muted);
     }
+
+    details summary {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details summary .summary-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
   </style>
 </head>
 <body>
@@ -419,7 +434,7 @@
           <label for="cancelJobId">Job ID</label>
           <input id="cancelJobId" placeholder="0" />
           <button id="cancelJob" class="danger">Cancel job</button>
-          <p class="muted">Only works if the job is unassigned and not completed.</p>
+          <p class="muted">Employer-only; only before assignment; no cancel after completion.</p>
         </div>
         <div>
           <h3>Dispute job (employer)</h3>
@@ -499,6 +514,87 @@
       <button id="resolveDispute">Resolve dispute</button>
       <p class="muted">Canonical strings “agent win” and “employer win” trigger settlement. Any other string only clears the dispute flag.</p>
     </section>
+
+    <details class="panel" id="adminPanel">
+      <summary>
+        <div class="summary-title">
+          <h2>Admin / Owner</h2>
+          <p class="muted">Owner-only operational controls. Collapsed by default.</p>
+        </div>
+      </summary>
+      <div class="panel-row">
+        <div>
+          <p><strong>Contract:</strong> <span id="adminContractAddress">—</span></p>
+          <p><strong>Paused:</strong> <span id="adminPaused">—</span></p>
+          <p><strong>Owner status:</strong> <span id="adminOwnerStatus">—</span></p>
+        </div>
+        <div>
+          <p class="muted">All admin actions use staticCall preflight and require explicit confirmation.</p>
+          <p class="muted">Double-check chain and contract address before signing.</p>
+        </div>
+      </div>
+      <div id="adminNotice" class="muted">Connect as the contract owner to use admin controls.</div>
+      <div id="adminControls" hidden>
+        <div class="panel-row">
+          <div>
+            <h3>Pause control</h3>
+            <div class="inline">
+              <button id="pauseContract" class="danger">Pause</button>
+              <button id="unpauseContract">Unpause</button>
+            </div>
+            <p class="muted">Pausing blocks state-changing actions except owner-only admin calls.</p>
+          </div>
+          <div>
+            <h3>Moderator management (owner)</h3>
+            <label for="moderatorAddress">Moderator address</label>
+            <input id="moderatorAddress" placeholder="0x..." />
+            <div class="inline">
+              <button id="addModerator">Add moderator</button>
+              <button id="removeModerator" class="secondary">Remove moderator</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel-row">
+          <div>
+            <h3>Blacklist management (owner)</h3>
+            <label for="blacklistAddress">Target address</label>
+            <input id="blacklistAddress" placeholder="0x..." />
+            <label for="blacklistRole">Role</label>
+            <select id="blacklistRole">
+              <option value="agent">Agent</option>
+              <option value="validator">Validator</option>
+            </select>
+            <label for="blacklistStatus">Status</label>
+            <select id="blacklistStatus">
+              <option value="true">Blacklist</option>
+              <option value="false">Unblacklist</option>
+            </select>
+            <button id="updateBlacklist">Update blacklist</button>
+          </div>
+          <div>
+            <h3>Protocol parameters (owner)</h3>
+            <label for="paramApprovals">Required validator approvals</label>
+            <input id="paramApprovals" placeholder="0" />
+            <button id="setApprovals">Set approvals</button>
+            <label for="paramDisapprovals">Required validator disapprovals</label>
+            <input id="paramDisapprovals" placeholder="0" />
+            <button id="setDisapprovals">Set disapprovals</button>
+            <label for="paramRewardPct">Validation reward percentage</label>
+            <input id="paramRewardPct" placeholder="0" />
+            <button id="setRewardPct">Set reward percentage</button>
+            <label for="paramMaxPayout">Max job payout (token units)</label>
+            <input id="paramMaxPayout" placeholder="0.0" />
+            <button id="setMaxPayout">Set max payout</button>
+            <label for="paramDurationLimit">Job duration limit (seconds)</label>
+            <input id="paramDurationLimit" placeholder="0" />
+            <button id="setDurationLimit">Set duration limit</button>
+            <label for="paramPremiumThreshold">Premium reputation threshold</label>
+            <input id="paramPremiumThreshold" placeholder="0" />
+            <button id="setPremiumThreshold">Set premium threshold</button>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <section class="panel">
       <h2>NFT marketplace</h2>
@@ -603,6 +699,7 @@
               <th>Disputed</th>
               <th>IPFS</th>
               <th>Details</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="jobsTable"></tbody>
@@ -702,6 +799,8 @@
       readContract: null,
       eventSubscribed: false,
       contractDeployed: null,
+      contractOwner: null,
+      contractPaused: null,
       ui: {
         jobsPage: 0,
         jobsPageSize: 50,
@@ -733,6 +832,7 @@
     const writeButtonIds = [
       "approveToken",
       "createJob",
+      "cancelJob",
       "applyForJob",
       "requestCompletion",
       "employerDisputeJob",
@@ -740,6 +840,17 @@
       "validateJob",
       "disapproveJob",
       "resolveDispute",
+      "pauseContract",
+      "unpauseContract",
+      "addModerator",
+      "removeModerator",
+      "updateBlacklist",
+      "setApprovals",
+      "setDisapprovals",
+      "setRewardPct",
+      "setMaxPayout",
+      "setDurationLimit",
+      "setPremiumThreshold",
       "listNft",
       "delistNft",
       "approvePurchase",
@@ -783,6 +894,18 @@
       "function getJobStatus(uint256) view returns (bool,bool,string)",
       "function createJob(string,uint256,uint256,string)",
       "function cancelJob(uint256)",
+      "function pause()",
+      "function unpause()",
+      "function addModerator(address)",
+      "function removeModerator(address)",
+      "function blacklistAgent(address,bool)",
+      "function blacklistValidator(address,bool)",
+      "function setRequiredValidatorApprovals(uint256)",
+      "function setRequiredValidatorDisapprovals(uint256)",
+      "function setValidationRewardPercentage(uint256)",
+      "function setMaxJobPayout(uint256)",
+      "function setJobDurationLimit(uint256)",
+      "function setPremiumReputationThreshold(uint256)",
       "function applyForJob(uint256,string,bytes32[])",
       "function requestJobCompletion(uint256,string)",
       "function validateJob(uint256,string,bytes32[])",
@@ -885,6 +1008,12 @@
         "validatorMerkleRoot",
       ];
       snapshotFields.forEach((field) => setText(field, "—"));
+      setText("adminContractAddress", state.contractAddress || "—");
+      setText("adminPaused", "—");
+      setText("adminOwnerStatus", "—");
+      state.contractOwner = null;
+      state.contractPaused = null;
+      updateAdminPanel();
     }
 
     function resetRoleFlags() {
@@ -929,6 +1058,17 @@
       pill.className = "pill ok";
     }
 
+    function getExplorerTxUrl(txHash) {
+      if (state.chainId === 1n) return `https://etherscan.io/tx/${txHash}`;
+      if (state.chainId === 11155111n) return `https://sepolia.etherscan.io/tx/${txHash}`;
+      return null;
+    }
+
+    function formatTxLog(txHash) {
+      const url = getExplorerTxUrl(txHash);
+      return url ? `${txHash} (${url})` : txHash;
+    }
+
     function setWriteEnabled(enabled, reasonText) {
       writeButtonIds.forEach((id) => {
         const button = ids(id);
@@ -940,6 +1080,66 @@
         logEvent(`⚠️ ${reasonText}`);
       }
       updateNetworkPill();
+      updateCancelButtonState();
+      updateAdminPanel();
+    }
+
+    function hasWriteAccess() {
+      return Boolean(
+        state.walletAddress
+        && state.chainId
+        && supportedChainIds.has(state.chainId)
+        && state.contractAddress
+        && state.contractDeployed !== false
+      );
+    }
+
+    function updateCancelButtonState() {
+      const button = ids("cancelJob");
+      if (!button) return;
+      if (!hasWriteAccess()) {
+        button.disabled = true;
+        return;
+      }
+      const value = ids("cancelJobId").value.trim();
+      button.disabled = !/^\\d+$/.test(value);
+    }
+
+    function updateAdminPanel() {
+      const ownerStatus = ids("adminOwnerStatus");
+      const notice = ids("adminNotice");
+      const controls = ids("adminControls");
+      const isOwner = Boolean(state.walletAddress && state.contractOwner && state.walletAddress === state.contractOwner);
+
+      if (ownerStatus) {
+        ownerStatus.textContent = isOwner ? "Connected as owner" : "Not owner";
+      }
+      if (notice) {
+        notice.textContent = isOwner
+          ? "Owner controls unlocked."
+          : "Connect as the contract owner to use admin controls.";
+      }
+      if (controls) {
+        controls.hidden = !isOwner;
+      }
+      [
+        "pauseContract",
+        "unpauseContract",
+        "addModerator",
+        "removeModerator",
+        "updateBlacklist",
+        "setApprovals",
+        "setDisapprovals",
+        "setRewardPct",
+        "setMaxPayout",
+        "setDurationLimit",
+        "setPremiumThreshold",
+      ].forEach((id) => {
+        const button = ids(id);
+        if (button) {
+          button.disabled = !isOwner || !hasWriteAccess();
+        }
+      });
     }
 
     async function checkContractDeployment() {
@@ -1037,6 +1237,38 @@
         }
       }
       return parsed;
+    }
+
+    function describeCancelIneligibility({ employer, assignedAgent, completed, disputed }) {
+      if (employer === ethers.ZeroAddress) {
+        return "Job not found or already cancelled.";
+      }
+      if (employer !== state.walletAddress) {
+        return "Only the employer who created the job can cancel it.";
+      }
+      if (assignedAgent !== ethers.ZeroAddress) {
+        return "Job already assigned; cancellation is only allowed before assignment.";
+      }
+      if (completed) {
+        return "Job already completed; cancellation is no longer possible.";
+      }
+      if (disputed) {
+        return "Job is disputed; resolve the dispute before attempting cancellation.";
+      }
+      return null;
+    }
+
+    function isCancelEligible(job) {
+      const employer = job[1];
+      const assignedAgent = job[5];
+      const completed = job[7];
+      const disputed = job[11];
+      if (!state.walletAddress) return false;
+      return employer !== ethers.ZeroAddress
+        && employer === state.walletAddress
+        && assignedAgent === ethers.ZeroAddress
+        && !completed
+        && !disputed;
     }
 
     function maybeInitProvider() {
@@ -1170,6 +1402,7 @@
       resetRoleFlags();
       setWriteEnabled(false, "Wallet disconnected.");
       updateNetworkPill();
+      updateAdminPanel();
     }
 
     async function ensureToken() {
@@ -1208,6 +1441,10 @@
       setText("contractSymbol", symbol);
       setText("contractOwner", owner);
       setText("contractPaused", paused ? "Yes" : "No");
+      state.contractOwner = owner;
+      state.contractPaused = paused;
+      setText("adminContractAddress", state.contractAddress || "—");
+      setText("adminPaused", paused ? "Yes" : "No");
       setText("requiredApprovals", approvals.toString());
       setText("requiredDisapprovals", disapprovals.toString());
       setText("validationReward", `${reward.toString()}%`);
@@ -1225,6 +1462,7 @@
       setText("agiToken", state.agiTokenAddress);
       setText("agiTokenDecimals", state.agiTokenDecimals.toString());
       setText("agiTokenSymbol", state.agiTokenSymbol);
+      updateAdminPanel();
     }
 
     function formatToken(amount) {
@@ -1688,6 +1926,72 @@
           : (error.shortMessage || error.message || "Transaction failed.");
         throw new Error(friendly);
       }
+    }
+
+    async function sendAdminTx(method, args, description, confirmLines) {
+      if (!state.contract) {
+        throw new Error("Connect a wallet to send transactions.");
+      }
+      if (!state.contractOwner || state.walletAddress !== state.contractOwner) {
+        throw new Error("Connect as the contract owner to use admin controls.");
+      }
+      await preflight(state.contract, method, args);
+      const message = [
+        `Admin action: ${description}`,
+        `Contract: ${state.contractAddress}`,
+        ...(confirmLines || []),
+        "Proceed with caution (mainnet transactions are irreversible).",
+      ].join("\\n");
+      if (!window.confirm(message)) {
+        logEvent(`⚠️ ${description} cancelled by user.`);
+        return;
+      }
+      const tx = await state.contract.getFunction(method)(...args);
+      logEvent(`⏳ ${description} — ${formatTxLog(tx.hash)}`);
+      await tx.wait();
+      logEvent(`✅ ${description} confirmed`);
+    }
+
+    async function handleCancelJobFlow(jobId) {
+      requireContract();
+      if (!state.walletAddress) {
+        throw new Error("Connect a wallet to cancel a job.");
+      }
+      if (!hasWriteAccess()) {
+        throw new Error("Unsupported network or contract not available for cancellation.");
+      }
+      if (!state.contract) {
+        throw new Error("Wallet signer not available.");
+      }
+      const job = await state.readContract.jobs(jobId);
+      const eligibilityMessage = describeCancelIneligibility({
+        employer: job[1],
+        assignedAgent: job[5],
+        completed: job[7],
+        disputed: job[11],
+      });
+      if (eligibilityMessage) {
+        throw new Error(eligibilityMessage);
+      }
+      await preflight(state.contract, "cancelJob", [jobId]);
+      const payout = formatToken(job[3]);
+      const confirmMessage = [
+        `Cancel job ${jobId}`,
+        `Contract: ${state.contractAddress}`,
+        `Refund: ${payout}`,
+        "Employer-only; only before assignment; no cancel after completion.",
+        "Proceed with cancellation?",
+      ].join("\\n");
+      if (!window.confirm(confirmMessage)) {
+        logEvent(`⚠️ Cancel job #${jobId} aborted by user.`);
+        return;
+      }
+      const tx = await state.contract.getFunction("cancelJob")(jobId);
+      logEvent(`⏳ Cancel job #${jobId} — ${formatTxLog(tx.hash)}`);
+      await tx.wait();
+      logEvent(`✅ Cancel job #${jobId} confirmed`);
+      await refreshDashboard();
+      await loadJobs();
     }
 
     function logEvent(message) {
@@ -2201,6 +2505,25 @@
           td.textContent = cell;
           row.appendChild(td);
         }
+        const actionCell = document.createElement("td");
+        if (isCancelEligible(job)) {
+          const button = document.createElement("button");
+          button.textContent = "Cancel";
+          button.className = "danger";
+          button.addEventListener("click", async () => {
+            ids("cancelJobId").value = jobId.toString();
+            updateCancelButtonState();
+            try {
+              await handleCancelJobFlow(BigInt(jobId));
+            } catch (error) {
+              showAlert(error.message);
+            }
+          });
+          actionCell.appendChild(button);
+        } else {
+          actionCell.textContent = "—";
+        }
+        row.appendChild(actionCell);
         tbody.appendChild(row);
       }
 
@@ -2572,11 +2895,14 @@
       }
     });
 
+    ids("cancelJobId").addEventListener("input", () => {
+      updateCancelButtonState();
+    });
+
     ids("cancelJob").addEventListener("click", async () => {
       try {
         const jobId = parseUint(ids("cancelJobId").value, "Job ID");
-        await sendTx("cancelJob", [jobId], "Cancel job");
-        await updateSnapshot();
+        await handleCancelJobFlow(jobId);
       } catch (error) {
         showAlert(error.message);
       }
@@ -2661,6 +2987,136 @@
         const resolution = ids("resolveText").value.trim();
         if (!resolution) throw new Error("Resolution string is required.");
         await sendTx("resolveDispute", [jobId, resolution], "Resolve dispute");
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("pauseContract").addEventListener("click", async () => {
+      try {
+        await sendAdminTx("pause", [], "Pause contract", [`Paused: true`]);
+        await updateSnapshot();
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("unpauseContract").addEventListener("click", async () => {
+      try {
+        await sendAdminTx("unpause", [], "Unpause contract", [`Paused: false`]);
+        await updateSnapshot();
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("addModerator").addEventListener("click", async () => {
+      try {
+        const moderator = parseAddress(ids("moderatorAddress").value.trim(), "Moderator address");
+        await sendAdminTx("addModerator", [moderator], "Add moderator", [`Moderator: ${moderator}`]);
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("removeModerator").addEventListener("click", async () => {
+      try {
+        const moderator = parseAddress(ids("moderatorAddress").value.trim(), "Moderator address");
+        await sendAdminTx("removeModerator", [moderator], "Remove moderator", [`Moderator: ${moderator}`]);
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("updateBlacklist").addEventListener("click", async () => {
+      try {
+        const target = parseAddress(ids("blacklistAddress").value.trim(), "Target address");
+        const role = ids("blacklistRole").value;
+        const status = ids("blacklistStatus").value === "true";
+        const method = role === "agent" ? "blacklistAgent" : "blacklistValidator";
+        const label = role === "agent" ? "Agent" : "Validator";
+        await sendAdminTx(method, [target, status], `${label} blacklist`, [
+          `Target: ${target}`,
+          `Status: ${status ? "blacklisted" : "unblacklisted"}`,
+        ]);
+        await updateRoleFlags();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("setApprovals").addEventListener("click", async () => {
+      try {
+        const approvals = parseUint(ids("paramApprovals").value, "Required approvals");
+        await sendAdminTx("setRequiredValidatorApprovals", [approvals], "Set validator approvals", [
+          `New approvals: ${approvals.toString()}`,
+        ]);
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("setDisapprovals").addEventListener("click", async () => {
+      try {
+        const disapprovals = parseUint(ids("paramDisapprovals").value, "Required disapprovals");
+        await sendAdminTx("setRequiredValidatorDisapprovals", [disapprovals], "Set validator disapprovals", [
+          `New disapprovals: ${disapprovals.toString()}`,
+        ]);
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("setRewardPct").addEventListener("click", async () => {
+      try {
+        const rewardPct = parseUint(ids("paramRewardPct").value, "Validation reward percentage");
+        await sendAdminTx("setValidationRewardPercentage", [rewardPct], "Set validation reward percentage", [
+          `New percentage: ${rewardPct.toString()}%`,
+        ]);
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("setMaxPayout").addEventListener("click", async () => {
+      try {
+        await ensureToken();
+        const maxPayout = parseTokenAmount(ids("paramMaxPayout").value, "Max job payout");
+        await sendAdminTx("setMaxJobPayout", [maxPayout], "Set max job payout", [
+          `New max payout: ${formatToken(maxPayout)}`,
+        ]);
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("setDurationLimit").addEventListener("click", async () => {
+      try {
+        const duration = parseUint(ids("paramDurationLimit").value, "Job duration limit");
+        await sendAdminTx("setJobDurationLimit", [duration], "Set job duration limit", [
+          `New duration limit: ${duration.toString()} seconds`,
+        ]);
+        await updateSnapshot();
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("setPremiumThreshold").addEventListener("click", async () => {
+      try {
+        const threshold = parseUint(ids("paramPremiumThreshold").value, "Premium reputation threshold");
+        await sendAdminTx("setPremiumReputationThreshold", [threshold], "Set premium reputation threshold", [
+          `New threshold: ${threshold.toString()}`,
+        ]);
+        await updateSnapshot();
       } catch (error) {
         showAlert(error.message);
       }
