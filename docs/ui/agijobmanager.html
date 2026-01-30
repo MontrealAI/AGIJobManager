@@ -2967,7 +2967,7 @@
             tokenUri = await state.readContract.tokenURI(BigInt(tokenId));
           }
         } catch (error) {
-          owner = owner || "Unknown";
+          owner = null;
           if (!tokenUri) {
             tokenUri = null;
           }
