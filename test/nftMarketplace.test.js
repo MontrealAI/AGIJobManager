@@ -1,4 +1,5 @@
 const assert = require("assert");
+const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -177,13 +178,18 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await reentrant.setReentry(managerReentrant.address, tokenIdB, true, { from: owner });
     await reentrant.approveManager(priceB, { from: owner });
 
-    await managerReentrant.purchaseNFT(tokenIdA, { from: buyer });
+    await expectRevert.unspecified(
+      managerReentrant.purchaseNFT(tokenIdA, { from: buyer })
+    );
 
-    const reentrancyBlocked = await reentrant.reentrancyBlocked();
-    assert.strictEqual(reentrancyBlocked, true, "reentrant call should be blocked");
+    const ownerA = await managerReentrant.ownerOf(tokenIdA);
+    assert.equal(ownerA, employer, "tokenIdA should remain with seller");
 
     const ownerB = await managerReentrant.ownerOf(tokenIdB);
     assert.equal(ownerB, employer, "tokenIdB should remain with seller");
+
+    const listingA = await managerReentrant.listings(tokenIdA);
+    assert.strictEqual(listingA.isActive, true, "tokenIdA listing should remain active");
 
     const listingB = await managerReentrant.listings(tokenIdB);
     assert.strictEqual(listingB.isActive, true, "tokenIdB listing should remain active");
