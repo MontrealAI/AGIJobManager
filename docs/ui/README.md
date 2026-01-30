@@ -67,6 +67,19 @@ If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit th
 - On unsupported chains, the UI will show a warning (chainId mismatch) and interactions may revert.
   The UI does not generate chain-specific explorer links.
 
+## Marketplace filters + approval status
+
+- **My NFTs only** filters the NFTs table to tokens where `ownerOf(tokenId)` matches the connected wallet.
+- **Active listings only** filters to listings where `listing.isActive` is true.
+- Filters require the event indexer (see “Mainnet scalability”). When the indexer is unavailable, the
+  UI disables the filters and loads the current page without filtering.
+
+**Allowance / approvals**
+- The NFT table and purchase panel compare your AGI allowance against the listing price.
+  If allowance < price, the UI shows **Approve required**.
+- Allowance is fetched **once per refresh** and reused across the table. It refreshes after
+  `approve`, `purchase`, and whenever you reconnect or switch accounts.
+
 ## Wallet event handling
 
 The UI listens for EIP-1193 wallet events and rebinds in-place without a page reload:
