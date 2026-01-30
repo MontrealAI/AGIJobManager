@@ -136,6 +136,7 @@ npx truffle migrate --network development
   ```bash
   cp .env.example .env
   ```
+- `.env.example` lists every variable read by `truffle-config.js`, with optional defaults.
 
 **Required (Sepolia / Mainnet)**
 - `PRIVATE_KEYS`: comma-separated private keys.
