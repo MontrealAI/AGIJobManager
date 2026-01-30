@@ -95,6 +95,118 @@ If the contract address has no code on the active chain, the UI shows a warning 
 
 - The UI only talks to your wallet provider (e.g., MetaMask). No keys or secrets are collected.
 - Always verify the contract address and chainId before signing transactions.
+- The UI runs a **staticCall preflight** for every state-changing action (including cancel and admin). If a call would revert, it surfaces the reason before you sign.
+
+## Employer lifecycle completeness: cancel job
+
+The UI includes an employer-only **Cancel job** flow that mirrors the contract’s `cancelJob` semantics:
+
+- **Allowed only before assignment** (assigned agent must be `0x0`).
+- **Not allowed after completion**.
+- **Only the employer** who created the job can cancel it.
+- **Cancellation refunds the job payout** back to the employer.
+- **Disputed jobs can still be cancelled** as long as they remain unassigned and incomplete.
+
+The UI verifies the job struct (`jobs(jobId)`) before sending a transaction and then runs a static-call preflight
+before showing a confirmation dialog. If the job was already cancelled/deleted, the employer address will be `0x0`
+and the UI will refuse to proceed.
+
+## Admin / Owner panel (UI)
+
+The UI ships with a **collapsed** “Admin / Owner” panel. It is visible to all users but only **unlocks** when the
+connected wallet matches `owner()`. Every admin action:
+
+- Shows the target **contract address**.
+- Runs a **staticCall preflight**.
+- Requires a confirmation dialog.
+- Logs the tx hash with an explorer link (mainnet/sepolia).
+
+### Owner-only actions available in the UI
+- Pause / Unpause.
+- Add / remove moderators.
+- Blacklist / unblacklist agents or validators.
+- Update parameters:
+  - `requiredValidatorApprovals`
+  - `requiredValidatorDisapprovals`
+  - `validationRewardPercentage`
+  - `maxJobPayout` (token units)
+  - `jobDurationLimit` (seconds)
+  - `premiumReputationThreshold`
+
+> Moderators only have on-chain powers for `resolveDispute`. The UI does **not** expose moderator-only actions in the admin panel.
+
+## Admin operations (CLI / Truffle)
+
+For scripted operations or cold-wallet flows, use the Truffle console. **Never** commit secrets; keep them in `.env`.
+
+### Environment setup
+
+1) Copy the template and add your own RPC + keys (do not commit):
+```bash
+cp .env.example .env
+```
+
+2) Configure `.env` per [`truffle-config.js`](../../truffle-config.js) and [`docs/Deployment.md`](../Deployment.md).
+
+### Open a console
+
+```bash
+truffle console --network sepolia
+```
+
+```bash
+truffle console --network mainnet
+```
+
+```bash
+truffle console --network development
+```
+
+### Example admin actions
+
+```javascript
+const jm = await AGIJobManager.deployed();
+const accounts = await web3.eth.getAccounts();
+const owner = accounts[0];
+
+// Pause / unpause
+await jm.pause({ from: owner });
+await jm.unpause({ from: owner });
+
+// Moderator management
+await jm.addModerator("0xModeratorAddress", { from: owner });
+await jm.removeModerator("0xModeratorAddress", { from: owner });
+
+// Blacklist management
+await jm.blacklistAgent("0xAgent", true, { from: owner });
+await jm.blacklistAgent("0xAgent", false, { from: owner });
+await jm.blacklistValidator("0xValidator", true, { from: owner });
+await jm.blacklistValidator("0xValidator", false, { from: owner });
+
+// Parameter setters (read before write)
+await jm.requiredValidatorApprovals();
+await jm.setRequiredValidatorApprovals(3, { from: owner });
+
+await jm.requiredValidatorDisapprovals();
+await jm.setRequiredValidatorDisapprovals(2, { from: owner });
+
+await jm.validationRewardPercentage();
+await jm.setValidationRewardPercentage(15, { from: owner });
+
+await jm.maxJobPayout();
+await jm.setMaxJobPayout(web3.utils.toWei("100"), { from: owner });
+
+await jm.jobDurationLimit();
+await jm.setJobDurationLimit(86400, { from: owner }); // 1 day
+
+await jm.premiumReputationThreshold();
+await jm.setPremiumReputationThreshold(5000, { from: owner });
+```
+
+### Safety reminders
+- Always verify the **contract address** and **chainId** before signing.
+- Use a **hardware wallet** for mainnet admin operations.
+- For production updates, **read the current value first**, then apply a minimal change.
 
 ## Eligibility evaluator mirrors on-chain OR-logic
 
