@@ -86,6 +86,8 @@ If the contract address has no code on the active chain, the UI shows a warning 
 
 ### Manual test checklist (MetaMask)
 
+These steps require a browser wallet (e.g., MetaMask) and cannot be fully automated in headless CI environments.
+
 1. Serve the UI locally (see "Open locally" above) and connect your wallet.
 2. Switch accounts → UI should update the account address and rebind without a reload.
 3. Switch networks (mainnet ↔ sepolia ↔ local) → UI should update chain info and disable writes when unsupported.
@@ -109,6 +111,7 @@ The **Eligibility Evaluator** in the Identity checks card answers “Would I pas
 Notes:
 - **Label input:** use the same *label only* (subdomain) you would submit on-chain. The evaluator reads the Agent/Validator action inputs first (apply/validate), then falls back to the generic Identity label field.
 - **Merkle proof format:** paste a JSON `bytes32[]` array (e.g., `["0xabc...", "0xdef..."]`). Blank means an empty proof (`[]`).
+- **ENS availability:** if the NameWrapper/ENS contracts are unavailable on the active network, the evaluator will surface “ENS/NameWrapper not available on this network.”
 
 ## Known limitations
 
