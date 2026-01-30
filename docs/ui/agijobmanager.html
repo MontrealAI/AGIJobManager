@@ -587,7 +587,7 @@
     const legacyAddress = "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477";
     const storageKey = "agijobmanager_contract";
 
-    const abi = [
+    const fallbackAbi = [
       "function name() view returns (string)",
       "function symbol() view returns (string)",
       "function owner() view returns (address)",
@@ -644,6 +644,27 @@
       "event NFTPurchased(uint256 tokenId, address buyer, uint256 price)",
       "event NFTDelisted(uint256 tokenId)",
     ];
+
+    let abi = fallbackAbi;
+
+    async function loadAbi() {
+      try {
+        const response = await fetch("./abi/AGIJobManager.json", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`ABI fetch failed with status ${response.status}`);
+        }
+        const data = await response.json();
+        const fetchedAbi = Array.isArray(data) ? data : data.abi;
+        if (!Array.isArray(fetchedAbi)) {
+          throw new Error("ABI payload missing.");
+        }
+        abi = fetchedAbi;
+        logEvent("External ABI loaded.");
+      } catch (error) {
+        abi = fallbackAbi;
+        logEvent("Fallback ABI used.");
+      }
+    }
 
     const erc20Abi = [
       "function decimals() view returns (uint8)",
@@ -1649,12 +1670,17 @@
       ids("activityLog").innerHTML = "";
     });
 
-    setDeploymentHints();
-    loadContractFromQuery();
-    loadKnownDeployment();
-    initNetwork();
-    attachWalletListeners();
-    updateNetworkPill();
+    async function bootstrap() {
+      await loadAbi();
+      setDeploymentHints();
+      loadContractFromQuery();
+      loadKnownDeployment();
+      initNetwork();
+      attachWalletListeners();
+      updateNetworkPill();
+    }
+
+    bootstrap();
   </script>
 </body>
 </html>
