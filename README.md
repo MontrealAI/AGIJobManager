@@ -100,6 +100,8 @@ npm run build
 npm test
 ```
 
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.17`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
+
 ## Web UI (GitHub Pages)
 
 - Canonical UI path in-repo: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)

@@ -30,6 +30,8 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 
 A template lives in [`.env.example`](../.env.example).
 
+> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.17`, while the default Truffle compiler is `0.8.33`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
+
 ## Networks configured
 - **test**: in-process Ganache provider for `truffle test`.
 - **development**: local RPC at `127.0.0.1:8545` (Ganache).
