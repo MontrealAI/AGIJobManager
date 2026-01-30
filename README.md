@@ -160,7 +160,7 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 ## Documentation
 
 Start here:
-- [`docs/README.md`](docs/README.md)
+- **Non‑technical user guides**: [`docs/README.md`](docs/README.md)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
