@@ -88,7 +88,12 @@ npx truffle run verify AGIJobManager --network mainnet
 - If the Etherscan plugin fails, re-run with `--debug` to capture full output.
 
 ## Troubleshooting
-- **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.
-- **Missing private keys**: ensure `PRIVATE_KEYS` is set and comma-separated.
-- **Verification failures**: confirm compiler version, optimizer runs, and `viaIR` settings match the deployed bytecode.
-- **Nonce conflicts**: avoid running multiple deployment processes with the same keys.
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `Missing RPC URL for sepolia` or `mainnet` | No direct RPC URL or provider key found. | Set `SEPOLIA_RPC_URL` / `MAINNET_RPC_URL`, or `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN`, or `INFURA_KEY`. |
+| `Missing PRIVATE_KEYS (comma-separated).` | `PRIVATE_KEYS` unset or empty. | Add at least one deployer key to `PRIVATE_KEYS` (comma-separated). |
+| `Invalid number of parameters for "constructor"` | Constructor args in `migrations/2_deploy_contracts.js` don’t match the target deployment. | Update the migration parameters (token, ENS, NameWrapper, root nodes, Merkle roots) before deploying. |
+| `Returned error: insufficient funds` | Deployer account lacks ETH on target network. | Fund the deployer account and retry. |
+| Verification fails with mismatched bytecode | Compiler settings don’t match deployment. | Ensure `SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, and `SOLC_EVM_VERSION` match the deployment configuration. |
+| `nonce too low` or `replacement transaction underpriced` | Parallel deploys with the same key or stale nonce. | Run one deployment at a time or reset the nonce in your wallet/provider. |
