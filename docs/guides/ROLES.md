@@ -1,0 +1,130 @@
+# Roles (non‑technical overview)
+
+This guide explains each role in plain language. Use it as a quick “what can I do / what do I need” reference before you use the UI.
+
+## Employer
+
+**What you can do**
+- Create a job and fund it in escrow.
+- Monitor applications, validations, and disputes.
+- Cancel a job before it is assigned.
+- Dispute a job if something goes wrong.
+- Receive the job NFT after completion.
+
+**What you need**
+- A wallet with enough AGI tokens to fund the job payout.
+- The correct network (usually Ethereum mainnet).
+- The correct contract address (set in the UI).
+
+**What you should NOT do**
+- Do **not** try to cancel after an agent has been assigned.
+- Do **not** assume you can resolve disputes (only moderators can).
+- Do **not** create a job with payout or duration of `0`.
+
+**Happy path checklist**
+- [ ] Connect wallet and set the contract address.
+- [ ] Check **AGI Token balance** and **AGI allowance** in “Your role flags”.
+- [ ] Use **Approve AGI token** to set allowance (if needed).
+- [ ] Use **Create job** with IPFS hash, payout, duration, and details.
+- [ ] Wait for an agent to apply and validators to approve.
+- [ ] If needed, use **Dispute job (employer)**.
+
+---
+
+## Agent
+
+**What you can do**
+- Apply for an open job.
+- Request completion when work is done.
+- Dispute a job if necessary.
+- Earn payout and reputation on completion.
+
+**What you need**
+- A wallet that is **eligible** as an agent (allowlist, Merkle proof, or ENS name).
+- A **label only** (subdomain) for your identity (example: `helper`, not a full ENS name).
+- A Merkle proof **if** you are not in the additional allowlist and do not own the ENS subdomain.
+
+**What you should NOT do**
+- Do **not** apply for jobs if you are blacklisted.
+- Do **not** request completion unless you are the assigned agent.
+- Do **not** reuse the same job application from another wallet.
+
+**Happy path checklist**
+- [ ] Connect wallet and set the contract address.
+- [ ] Run **Identity checks (preflight only)** with your label and proof.
+- [ ] Use **Apply for job** with your label and proof.
+- [ ] Deliver work and upload the completion hash to IPFS.
+- [ ] Use **Request completion** with the completion IPFS hash.
+
+---
+
+## Validator (Club)
+
+**What you can do**
+- Validate (approve) a job.
+- Disapprove a job to trigger a dispute when enough disapprovals occur.
+- Earn reputation and a share of validation rewards.
+
+**What you need**
+- A wallet that is **eligible** as a validator (allowlist, Merkle proof, or ENS name).
+- A **label only** (subdomain) for your validator identity.
+- A Merkle proof **if** you are not in the additional allowlist and do not own the ENS subdomain.
+
+**What you should NOT do**
+- Do **not** validate and disapprove the **same job** from the same wallet.
+- Do **not** validate jobs that are already completed.
+- Do **not** attempt validation if you are blacklisted.
+
+**Happy path checklist**
+- [ ] Connect wallet and set the contract address.
+- [ ] Run **Identity checks (preflight only)** with your label and proof.
+- [ ] Use **Validate job** to approve an in‑progress job.
+- [ ] If the work is invalid, use **Disapprove job** instead.
+
+---
+
+## Moderator
+
+**What you can do**
+- Resolve disputes with a resolution string.
+- Trigger on‑chain settlement for “agent win” or “employer win”.
+
+**What you need**
+- A wallet that the contract owner has set as a **moderator**.
+- The correct canonical resolution strings.
+
+**What you should NOT do**
+- Do **not** resolve disputes with a non‑canonical string unless you intend to **only clear the dispute flag**.
+- Do **not** attempt dispute resolution if you are not a moderator.
+
+**Happy path checklist**
+- [ ] Connect wallet and confirm **Moderator: true** in “Your role flags”.
+- [ ] Enter the **Job ID** and the resolution string.
+- [ ] Use **Use “agent win”** or **Use “employer win”**.
+- [ ] Click **Resolve dispute** and confirm the transaction.
+
+---
+
+## Owner (Admin)
+
+**What you can do**
+- Pause/unpause the contract.
+- Add/remove moderators.
+- Manage allowlists/blacklists.
+- Update protocol parameters.
+- Withdraw escrowed AGI tokens.
+
+**What you need**
+- The wallet that is the contract **owner**.
+- Operational procedures for risk management and access control.
+
+**What you should NOT do**
+- Do **not** use owner actions on the wrong network.
+- Do **not** update parameters without reviewing impacts on users.
+- Do **not** expose owner keys in browser wallets used for day‑to‑day work.
+
+**Happy path checklist**
+- [ ] Connect with the owner wallet.
+- [ ] Open **Admin / Owner** and confirm **Owner status**.
+- [ ] Perform one action at a time (pause, moderators, blacklists, parameters).
+- [ ] Refresh **Contract snapshot** after changes.
