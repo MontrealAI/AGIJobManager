@@ -2611,7 +2611,7 @@
     async function updatePurchasePanel({ refreshAllowance = false } = {}) {
       const tokenId = parseTokenIdInput(ids("purchaseTokenId").value.trim());
       const status = ids("purchaseNftStatus");
-      if (!tokenId) {
+      if (tokenId == null) {
         status.textContent = "Enter a token ID to preview the listing and allowance.";
         setText("purchaseSeller", "—");
         setText("purchasePrice", "—");
@@ -2694,7 +2694,7 @@
     async function updateListPanel() {
       const tokenId = parseTokenIdInput(ids("listTokenId").value.trim());
       const status = ids("listNftStatus");
-      if (!tokenId) {
+      if (tokenId == null) {
         status.textContent = "Enter a token ID to preview ownership and listing state.";
         setText("listOwner", "—");
         setText("listListingStatus", "—");
@@ -2745,7 +2745,7 @@
     async function updateDelistPanel() {
       const tokenId = parseTokenIdInput(ids("delistTokenId").value.trim());
       const status = ids("delistNftStatus");
-      if (!tokenId) {
+      if (tokenId == null) {
         status.textContent = "Enter a token ID to preview listing state.";
         setText("delistListingStatus", "—");
         setText("delistListingSeller", "—");
