@@ -646,8 +646,10 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js" integrity="sha384-7x3tVmE2MSjFk3rjql7YVSE2LEAFloT+1B5Nj0b3V5/hWRUsStlHHY2mySsRkmmF" crossorigin="anonymous"></script>
+  <script src="./lib/errorDecoder.js"></script>
   <script>
     const { ethers } = window;
+    const errorDecoder = window.AGIJMErrorDecoder;
 
     const state = {
       provider: null,
@@ -659,6 +661,7 @@
       agiTokenAddress: null,
       agiTokenDecimals: 18,
       agiTokenSymbol: "",
+      token: null,
       contract: null,
       readContract: null,
       eventSubscribed: false,
@@ -801,6 +804,23 @@
 
     function showAlert(message) {
       window.alert(message);
+    }
+
+    function buildErrorContext(action) {
+      return {
+        jm: state.contract || state.readContract,
+        token: state.token || null,
+        chainId: state.chainId,
+        userAddress: state.walletAddress,
+        action,
+      };
+    }
+
+    function formatFriendlyError(error, context) {
+      if (errorDecoder?.friendlyError) {
+        return errorDecoder.friendlyError(error, context);
+      }
+      return error.shortMessage || error.message || "Transaction failed.";
     }
 
     function resetSnapshot() {
@@ -1017,6 +1037,7 @@
       const tokenAddress = await state.readContract.agiToken();
       state.agiTokenAddress = tokenAddress;
       const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
+      state.token = token;
       state.agiTokenDecimals = Number(await token.decimals());
       state.agiTokenSymbol = await token.symbol();
       return token;
@@ -1171,11 +1192,11 @@
       setText("identityResolver", resolverText);
     }
 
-    async function preflight(contract, method, args) {
+    async function preflight(contract, method, args, context) {
       try {
         await contract.getFunction(method).staticCall(...args);
       } catch (error) {
-        const message = error.shortMessage || error.message || "Transaction would revert.";
+        const message = formatFriendlyError(error, context);
         throw new Error(message);
       }
     }
@@ -1184,11 +1205,17 @@
       if (!state.contract) {
         throw new Error("Connect a wallet to send transactions.");
       }
-      await preflight(state.contract, method, args);
-      const tx = await state.contract.getFunction(method)(...args);
-      logEvent(`⏳ ${description} — ${tx.hash}`);
-      await tx.wait();
-      logEvent(`✅ ${description} confirmed`);
+      const context = buildErrorContext(description);
+      await preflight(state.contract, method, args, context);
+      try {
+        const tx = await state.contract.getFunction(method)(...args);
+        logEvent(`⏳ ${description} — ${tx.hash}`);
+        await tx.wait();
+        logEvent(`✅ ${description} confirmed`);
+      } catch (error) {
+        const message = formatFriendlyError(error, context);
+        throw new Error(message);
+      }
     }
 
     function logEvent(message) {
@@ -1607,16 +1634,22 @@
       if (!state.contractAddress) {
         throw new Error("Set a contract address first.");
       }
+      const errorContext = buildErrorContext(`${context} approve`);
       try {
         await token.getFunction("approve").staticCall(state.contractAddress, amount);
       } catch (error) {
-        const message = error.shortMessage || error.message || "Approve would revert.";
+        const message = formatFriendlyError(error, errorContext);
         throw new Error(message);
       }
-      const tx = await token.connect(state.signer).approve(state.contractAddress, amount);
-      logEvent(`⏳ ${context} approve — ${tx.hash}`);
-      await tx.wait();
-      logEvent(`✅ ${context} approve confirmed`);
+      try {
+        const tx = await token.connect(state.signer).approve(state.contractAddress, amount);
+        logEvent(`⏳ ${context} approve — ${tx.hash}`);
+        await tx.wait();
+        logEvent(`✅ ${context} approve confirmed`);
+      } catch (error) {
+        const message = formatFriendlyError(error, errorContext);
+        throw new Error(message);
+      }
     }
 
     async function loadJobs() {
