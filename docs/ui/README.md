@@ -20,6 +20,12 @@ http://localhost:8000/ui/agijobmanager.html
 You can also run the server from `docs/ui/` and open `http://localhost:8000/agijobmanager.html`,
 but the deployments hints will be unavailable because `docs/deployments/` is outside that server root.
 
+Alternatively, you can serve the UI directly:
+
+```bash
+npx http-server docs/ui
+```
+
 ## Set the contract address
 
 The UI does **not** assume a default deployment. Provide a contract address explicitly:
@@ -34,6 +40,24 @@ To reset:
 - Remove `localStorage` key `agijobmanager_contract` in your browser’s dev tools.
 
 The legacy v0 address is displayed as a reference and only used if you explicitly opt in.
+
+## ABI export + drift guardrails
+
+- Exported ABI location: `docs/ui/abi/AGIJobManager.json`
+- UI-required interface list: `docs/ui/abi/ui_required_interface.json`
+
+When the contract interface changes, regenerate the UI ABI from Truffle artifacts:
+
+```bash
+truffle compile
+npm run ui:abi
+```
+
+The UI attempts to load `./abi/AGIJobManager.json` at runtime. If it cannot fetch the file
+(for example when opened via `file://`), it falls back to the embedded ABI and logs the
+fallback in the Activity Log.
+
+If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit the updated ABI file.
 
 ## Supported networks
 
