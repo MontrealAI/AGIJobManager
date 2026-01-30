@@ -646,6 +646,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js" integrity="sha384-7x3tVmE2MSjFk3rjql7YVSE2LEAFloT+1B5Nj0b3V5/hWRUsStlHHY2mySsRkmmF" crossorigin="anonymous"></script>
+  <script src="./lib/errorDecoder.js"></script>
   <script>
     const { ethers } = window;
 
@@ -659,6 +660,7 @@
       agiTokenAddress: null,
       agiTokenDecimals: 18,
       agiTokenSymbol: "",
+      token: null,
       contract: null,
       readContract: null,
       eventSubscribed: false,
@@ -1019,6 +1021,7 @@
       const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
       state.agiTokenDecimals = Number(await token.decimals());
       state.agiTokenSymbol = await token.symbol();
+      state.token = token;
       return token;
     }
 
@@ -1171,12 +1174,24 @@
       setText("identityResolver", resolverText);
     }
 
+    function buildErrorContext(action) {
+      return {
+        jm: state.contract,
+        token: state.token,
+        chainId: state.chainId,
+        userAddress: state.walletAddress,
+        action,
+      };
+    }
+
     async function preflight(contract, method, args) {
       try {
         await contract.getFunction(method).staticCall(...args);
       } catch (error) {
-        const message = error.shortMessage || error.message || "Transaction would revert.";
-        throw new Error(message);
+        const friendly = AGIJMErrorDecoder?.friendlyError
+          ? AGIJMErrorDecoder.friendlyError(error, buildErrorContext({ type: "preflight", method }))
+          : (error.shortMessage || error.message || "Transaction would revert.");
+        throw new Error(friendly);
       }
     }
 
@@ -1184,11 +1199,18 @@
       if (!state.contract) {
         throw new Error("Connect a wallet to send transactions.");
       }
-      await preflight(state.contract, method, args);
-      const tx = await state.contract.getFunction(method)(...args);
-      logEvent(`⏳ ${description} — ${tx.hash}`);
-      await tx.wait();
-      logEvent(`✅ ${description} confirmed`);
+      try {
+        await preflight(state.contract, method, args);
+        const tx = await state.contract.getFunction(method)(...args);
+        logEvent(`⏳ ${description} — ${tx.hash}`);
+        await tx.wait();
+        logEvent(`✅ ${description} confirmed`);
+      } catch (error) {
+        const friendly = AGIJMErrorDecoder?.friendlyError
+          ? AGIJMErrorDecoder.friendlyError(error, buildErrorContext({ type: "transaction", method, description }))
+          : (error.shortMessage || error.message || "Transaction failed.");
+        throw new Error(friendly);
+      }
     }
 
     function logEvent(message) {
@@ -1610,8 +1632,10 @@
       try {
         await token.getFunction("approve").staticCall(state.contractAddress, amount);
       } catch (error) {
-        const message = error.shortMessage || error.message || "Approve would revert.";
-        throw new Error(message);
+        const friendly = AGIJMErrorDecoder?.friendlyError
+          ? AGIJMErrorDecoder.friendlyError(error, buildErrorContext({ type: "preflight", method: "approve", description: context }))
+          : (error.shortMessage || error.message || "Approve would revert.");
+        throw new Error(friendly);
       }
       const tx = await token.connect(state.signer).approve(state.contractAddress, amount);
       logEvent(`⏳ ${context} approve — ${tx.hash}`);

@@ -78,6 +78,23 @@ If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit th
   verifies membership off-chain; on-chain checks are authoritative.
 - ENS checks mirror the contract’s fallback logic: Merkle → NameWrapper.ownerOf → Resolver.addr.
 
+## Common Reverts & Fixes
+
+- **NotModerator** — Only a moderator can resolve disputes.
+  - Fix: Ask the contract owner to add your address via `addModerator()`.
+- **NotAuthorized** — Role/identity proof is missing or invalid.
+  - Fix: Ensure your wallet controls the ENS subdomain label entered (NameWrapper/Resolver), or provide a valid Merkle proof, or be explicitly allowlisted via `additionalAgents` / `additionalValidators`.
+- **Blacklisted** — Address is blocked for this role.
+  - Fix: Ask moderators/owner to remove the blacklist entry.
+- **InvalidParameters** — Payout/duration violate bounds.
+  - Fix: Keep payout/duration > 0 and within `maxJobPayout` / `jobDurationLimit`.
+- **InvalidState** — Action is not valid for the current job lifecycle state.
+  - Fix: Ensure the job is assigned/not completed, completion is within duration, validations are before completion, disputes are only when not completed, etc.
+- **JobNotFound** — Job ID does not exist or was delisted/cancelled.
+  - Fix: Verify the job ID is still active.
+- **TransferFailed** — ERC‑20 transfer returned false.
+  - Fix: Check token balance/allowance, approve AGIJobManager, and ensure the token is not paused/blocked.
+
 ## Mainnet scalability: pagination + event indexing
 
 The UI no longer enumerates every job or token ID. Instead it:
