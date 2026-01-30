@@ -2,6 +2,8 @@
 
 This guide helps you identify common failure causes and quick fixes.
 
+For a full map of contract error codes and fixes, see **Common Revert Reasons**: [`COMMON_REVERTS.md`](COMMON_REVERTS.md).
+
 ## Before you try again (quick checklist)
 
 - [ ] **Network**: You are on the correct chain (usually Ethereum Mainnet).

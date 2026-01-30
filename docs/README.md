@@ -13,6 +13,8 @@ This documentation set targets engineers, integrators, operators, and auditors *
 ## Start here (legacy non‑technical user guides)
 - **Roles overview**: [`guides/ROLES.md`](guides/ROLES.md)
 - **Happy path walkthrough**: [`guides/HAPPY_PATH.md`](guides/HAPPY_PATH.md)
+- **Common revert reasons**: [`guides/COMMON_REVERTS.md`](guides/COMMON_REVERTS.md)
+- **Merkle proofs**: [`guides/MERKLE_PROOFS.md`](guides/MERKLE_PROOFS.md)
 - **Troubleshooting (“execution reverted”)**: [`guides/TROUBLESHOOTING.md`](guides/TROUBLESHOOTING.md)
 - **Identity & proofs explained**: [`guides/IDENTITY_AND_PROOFS.md`](guides/IDENTITY_AND_PROOFS.md)
 - **Glossary**: [`GLOSSARY.md`](GLOSSARY.md)

@@ -1,29 +1,59 @@
 # Happy path walkthrough (non‑technical)
 
-This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field names you will see on screen.
+This walkthrough mirrors the **AGIJobManager Web UI** and uses the same field names. It is written so non‑technical users can complete a full job lifecycle without reading Solidity.
+
+## Before you start
+
+- **Confirm the chain/network** you are on (mainnet vs testnet).
+- **Get the contract address** from a trusted source (deployment output, official docs, or a signed announcement).
+- **Confirm the token address** by reading it from the contract (the UI shows this under **Contract snapshot → AGI Token**).
+- **Approve token spending** before you:
+  - create a job (employer), or
+  - purchase a job NFT (buyer).
+
+⚠️ **Warning**: On mainnet, transactions are irreversible and cost real funds. Double‑check the network and contract address before you click **Confirm**.
+
+## Job state overview (simplified)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: createJob
+    Created --> Assigned: applyForJob
+    Assigned --> CompletionRequested: requestJobCompletion
+    Assigned --> Completed: validateJob (approval threshold)
+    CompletionRequested --> Completed: validateJob (approval threshold)
+    Assigned --> Disputed: disapproveJob (disapproval threshold)
+    CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
+    Assigned --> Disputed: disputeJob
+    CompletionRequested --> Disputed: disputeJob
+    Disputed --> Completed: resolveDispute("agent win")
+    Disputed --> Completed: resolveDispute("employer win")
+    Disputed --> Assigned: resolveDispute(other)
+    Created --> Cancelled: cancelJob
+```
 
 ## 1) Connect wallet → choose network → set contract address
 
 1. Open the UI: `docs/ui/agijobmanager.html` (GitHub Pages or local server).
 2. Click **Connect Wallet**.
-3. Check **Chain** and **Network pill**. If you are not on Ethereum Mainnet, use **Switch to Mainnet**.
-4. In **Contract address (Mainnet)**, paste the deployment address and click **Save address**.
+3. Check **Chain** and the **Network** pill. If you are not on the intended network, use **Switch**.
+4. In **Contract address**, paste the deployment address and click **Save address**.
 5. Click **Refresh snapshot** and confirm:
    - **AGI Token** address
    - **Token Symbol** / **Token Decimals**
    - **Owner** / **Paused**
 
-**What you should see in the UI**
+**You should see**
 - A green or yellow network pill (not “Not connected”).
 - **Contract snapshot** fields populated (not “—”).
 
-## 2) Verify token balance and allowance
+## 2) Verify token balance and allowance (employer or buyer)
 
 1. In **Your role flags**, click **Refresh role flags**.
 2. Check **AGI Token balance** and **AGI allowance**.
 3. If allowance is too low, use **Approve AGI token** under **Employer actions**.
 
-**What you should see in the UI**
+**You should see**
 - **AGI Token balance** shows your token amount.
 - **AGI allowance** shows approved amount for the contract.
 
@@ -35,34 +65,35 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
    - **Payout (token units)**
    - **Duration (seconds)**
    - **Details** (optional)
-2. Click **Create job**.
+2. Click **Create job** and confirm the transaction.
 
 **Wait for application and validation**
 - An agent applies via **Apply for job**.
-- Validators approve via **Validate job**. When approvals reach the threshold, the job completes and the NFT is minted.
+- Validators approve via **Validate job**.
+- When approvals reach the threshold, the job completes and the NFT is minted.
 
 **Dispute (if needed)**
 - Use **Dispute job (employer)** with the **Job ID**.
-- Wait for a moderator to resolve using **Resolve dispute**.
+- A moderator resolves using **Resolve dispute**.
 
-**What you should see in the UI**
+**You should see**
 - The job appears in **Jobs table** with status `Assigned` after an agent applies.
 - After enough approvals, status becomes `Completed` and the **NFTs table** updates.
 
 ## 4) Agent flow (eligibility → apply → deliver → request completion)
 
-**Check eligibility**
+**Check eligibility (preflight)**
 1. In **Identity checks (preflight only)**:
    - **Identity type**: `Agent (agentRootNode)`
-   - **Label only (e.g., “helper”)**
+   - **Label only** (example: `helper`, **NOT** `helper.agent.agi.eth`)
    - **Merkle proof (JSON bytes32 array)** if required
 2. Click **Run identity check** or **Evaluate Agent Eligibility**.
 
 **Apply**
 1. In **Agent actions**, fill:
    - **Job ID**
-   - **Agent label (subdomain only)**
-   - **Merkle proof** (comma‑separated hex values)
+   - **Agent label (subdomain only)** → **label only**, not the full ENS name
+   - **Merkle proof** (JSON array of 32‑byte hex strings)
 2. Click **Apply**.
 
 **Request completion**
@@ -72,27 +103,27 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
    - **Completion IPFS hash**
 3. Click **Request completion**.
 
-**What you should see in the UI**
+**You should see**
 - **Agent eligibility** shows a green “Eligible” pill after preflight.
 - The job status changes to `Completion requested` after you submit the completion hash.
 
 ## 5) Validator flow (eligibility → validate or disapprove)
 
-**Check eligibility**
+**Check eligibility (preflight)**
 1. In **Identity checks (preflight only)**:
    - **Identity type**: `Validator / Club (clubRootNode)`
-   - **Label only (e.g., “validator”)**
+   - **Label only** (example: `validator`, **NOT** `validator.club.agi.eth`)
    - **Merkle proof (JSON bytes32 array)** if required
 2. Click **Run identity check** or **Evaluate Validator Eligibility**.
 
 **Validate or disapprove**
 1. In **Validator actions**, fill:
    - **Job ID**
-   - **Validator label (subdomain only)**
-   - **Merkle proof**
+   - **Validator label (subdomain only)** → **label only**, not the full ENS name
+   - **Merkle proof** (JSON array of 32‑byte hex strings)
 2. Click **Validate** *or* **Disapprove** (not both for the same job).
 
-**What you should see in the UI**
+**You should see**
 - The job’s **Approvals/Disapprovals** count increases in the **Jobs table**.
 
 ## 6) Moderator flow (resolve disputes)
@@ -120,62 +151,26 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 2. If **Approval status** shows “Approve required,” click **Approve token (listing price)**.
 3. Click **Purchase NFT**.
 
----
+## No UI? Use Etherscan or Truffle console
 
-# CLI alternative (Truffle console)
+If you cannot use the web UI, you can still interact via:
+- **Etherscan**: use the contract’s **Read** and **Write** tabs (wallet required for Write).
+- **Truffle console**: read‑only calls are safe; transactions still cost gas.
 
-> These snippets are optional. They are useful if you prefer a console instead of the UI.
+### Truffle console examples (read‑only first)
 
 Open a console:
 ```bash
 truffle console --network mainnet
 ```
 
-Load the contract:
+Read key contract values:
 ```javascript
 const AGIJobManager = artifacts.require("AGIJobManager");
-const IERC20 = artifacts.require("IERC20");
 const jm = await AGIJobManager.deployed();
+await jm.agiToken();
+await jm.agentMerkleRoot();
+await jm.validatorMerkleRoot();
 ```
 
-## Employer
-```javascript
-const token = await IERC20.at(await jm.agiToken());
-const payout = web3.utils.toWei("100");
-const duration = 86400; // 1 day
-await token.approve(jm.address, payout);
-await jm.createJob("Qm...", payout, duration, "Short description");
-```
-
-## Agent
-```javascript
-const jobId = 1;
-const label = "helper"; // label only
-const proof = []; // bytes32[] if required
-await jm.applyForJob(jobId, label, proof);
-await jm.requestJobCompletion(jobId, "QmCompletion...");
-```
-
-## Validator
-```javascript
-const jobId = 1;
-const label = "validator"; // label only
-const proof = []; // bytes32[] if required
-await jm.validateJob(jobId, label, proof); // or jm.disapproveJob(jobId, label, proof)
-```
-
-## Moderator
-```javascript
-const jobId = 1;
-await jm.resolveDispute(jobId, "agent win");
-```
-
-## Marketplace
-```javascript
-const tokenId = 1;
-const price = web3.utils.toWei("10");
-await jm.listNFT(tokenId, price);
-await jm.delistNFT(tokenId);
-await token.approve(jm.address, price);
-await jm.purchaseNFT(tokenId);
-```
+> For write transactions, follow the same flows as the UI and confirm you are on the correct network.
