@@ -120,7 +120,7 @@ This guide explains what each role can do, what you need before starting, and co
 
 ### What you can do
 - Pause/unpause contract (`pause`, `unpause`).
-- Manage moderators and allowlists (`addModerator`, `addAdditionalAgent/Validator`).
+- Manage moderators and allowlists (`addModerator`, `addAdditionalAgent`, `addAdditionalValidator`).
 - Blacklist/un‑blacklist agents or validators.
 - Update parameters (limits, reward percentage, metadata fields).
 - Withdraw escrowed AGI tokens (`withdrawAGI`).

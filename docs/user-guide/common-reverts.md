@@ -39,9 +39,12 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 | Withdraw AGI (owner) | `InvalidParameters` | Amount is zero or exceeds contract balance. | Withdraw an amount within the contract’s AGI balance. | [Roles → Owner](roles.md#owner) |
 | Contribute to reward pool | `InvalidParameters` | Amount is zero. | Enter a positive amount. | [Happy path](happy-path.md) |
 | Add AGI type (owner) | `InvalidParameters` | Address is zero or payout percentage outside 1–100. | Provide a valid NFT address and percentage. | [Roles → Owner](roles.md#owner) |
+| Update validator reward percentage (owner) | `InvalidParameters` | Percentage is zero or above 100. | Use a percentage between 1 and 100. | [Roles → Owner](roles.md#owner) |
 | Any token transfer | `TransferFailed` | Token transfer or transferFrom returned false. | Ensure you have enough AGI balance and **approved** the contract for the needed amount. | [Happy path](happy-path.md) |
 | Any job action | `JobNotFound` | The job ID does not exist. | Double‑check the job ID. | [Happy path](happy-path.md) |
 | Any action while paused | `Pausable: paused` | The contract is paused. | Wait for the owner to unpause. | [Roles → Owner](roles.md#owner) |
+| Owner‑only action (pause, allowlist, blacklist, etc.) | `Ownable: caller is not the owner` | The action requires the contract owner. | Switch to the owner wallet or ask the owner to perform the action. | [Roles → Owner](roles.md#owner) |
+| List an NFT | `ERC721: invalid token ID` | The token does not exist (job not completed/minted yet). | Verify the job completed and the NFT was issued before listing. | [Roles → Employer](roles.md#employer) |
 
 ## If you still can’t proceed
 
