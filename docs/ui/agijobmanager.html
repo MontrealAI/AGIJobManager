@@ -655,15 +655,19 @@
       signer: null,
       walletAddress: null,
       chainId: null,
+      chainName: null,
       contractAddress: null,
       legacyAddress: null,
       agiTokenAddress: null,
       agiTokenDecimals: 18,
       agiTokenSymbol: "",
       token: null,
+      ens: null,
+      nameWrapper: null,
       contract: null,
       readContract: null,
       eventSubscribed: false,
+      contractDeployed: null,
       ui: {
         jobsPage: 0,
         jobsPageSize: 50,
@@ -691,6 +695,25 @@
     const indexCacheKey = "agijobmanager_index_cache_v1";
     const defaultPageSize = 50;
     const defaultIndexLookback = 20000;
+    const supportedChainIds = new Set([1n, 11155111n, 1337n]);
+    const writeButtonIds = [
+      "approveToken",
+      "createJob",
+      "applyForJob",
+      "requestCompletion",
+      "employerDisputeJob",
+      "agentDisputeJob",
+      "validateJob",
+      "disapproveJob",
+      "resolveDispute",
+      "listNft",
+      "delistNft",
+      "approvePurchase",
+      "purchaseNft",
+    ];
+
+    let walletEventsBound = false;
+    const walletEventHandlers = {};
 
     const fallbackAbi = [
       "function name() view returns (string)",
@@ -847,19 +870,78 @@
 
     function updateNetworkPill() {
       const pill = ids("networkPill");
+      if (!state.walletAddress) {
+        pill.textContent = "Disconnected";
+        pill.className = "pill danger";
+        return;
+      }
       if (!state.chainId) {
-        pill.textContent = "Not connected";
+        pill.textContent = "Connected (unknown network)";
         pill.className = "pill warn";
         return;
       }
-      const connectionLabel = state.walletAddress ? "" : "Network detected: ";
-      if (state.chainId === 1n) {
-        pill.textContent = `${connectionLabel}Mainnet`;
-        pill.className = "pill ok";
-      } else {
-        pill.textContent = `${connectionLabel}Wrong network (chain ${state.chainId})`;
+      if (!supportedChainIds.has(state.chainId)) {
+        pill.textContent = `Unsupported chain (chain ${state.chainId})`;
         pill.className = "pill danger";
+        return;
       }
+      if (state.contractAddress && state.contractDeployed === false) {
+        pill.textContent = "Contract not found on this chain";
+        pill.className = "pill danger";
+        return;
+      }
+      const label = state.chainName ? state.chainName : `chain ${state.chainId}`;
+      pill.textContent = `Connected (${label})`;
+      pill.className = "pill ok";
+    }
+
+    function setWriteEnabled(enabled, reasonText) {
+      writeButtonIds.forEach((id) => {
+        const button = ids(id);
+        if (button) {
+          button.disabled = !enabled;
+        }
+      });
+      if (!enabled && reasonText) {
+        logEvent(`⚠️ ${reasonText}`);
+      }
+      updateNetworkPill();
+    }
+
+    async function checkContractDeployment() {
+      if (!state.contractAddress || !state.provider) {
+        state.contractDeployed = null;
+        return false;
+      }
+      const code = await state.provider.getCode(state.contractAddress);
+      const deployed = code && code !== "0x";
+      state.contractDeployed = deployed;
+      return deployed;
+    }
+
+    async function updateWriteAccess() {
+      if (!state.walletAddress) {
+        setWriteEnabled(false, "Wallet disconnected.");
+        return;
+      }
+      if (!state.chainId) {
+        setWriteEnabled(false, "Network not detected.");
+        return;
+      }
+      if (!supportedChainIds.has(state.chainId)) {
+        setWriteEnabled(false, `Unsupported chainId ${state.chainId}.`);
+        return;
+      }
+      if (!state.contractAddress) {
+        setWriteEnabled(false, "Contract address not set.");
+        return;
+      }
+      const deployed = await checkContractDeployment();
+      if (!deployed) {
+        setWriteEnabled(false, "Contract not found at the configured address.");
+        return;
+      }
+      setWriteEnabled(true);
     }
 
     function parseAddress(value, fieldLabel) {
@@ -942,6 +1024,10 @@
         state.contract = null;
         state.readContract = null;
         state.eventSubscribed = false;
+        state.token = null;
+        state.ens = null;
+        state.nameWrapper = null;
+        state.contractDeployed = null;
         state.index = {
           jobs: {},
           nfts: {},
@@ -963,6 +1049,9 @@
         state.readContract.removeAllListeners();
       }
       state.eventSubscribed = false;
+      state.token = null;
+      state.ens = null;
+      state.nameWrapper = null;
       state.readContract = new ethers.Contract(state.contractAddress, abi, state.provider);
       if (state.signer) {
         state.contract = new ethers.Contract(state.contractAddress, abi, state.signer);
@@ -986,8 +1075,20 @@
       const provider = getProvider();
       const network = await provider.getNetwork();
       state.chainId = network.chainId;
+      state.chainName = network.name;
       setText("walletChain", `${network.name} (${network.chainId})`);
       updateNetworkPill();
+    }
+
+    async function bindWalletAccount(account) {
+      state.provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = state.provider;
+      state.walletAddress = ethers.getAddress(account);
+      state.signer = await provider.getSigner();
+      setText("walletAddress", state.walletAddress);
+      await refreshNetwork();
+      setContracts();
+      await updateWriteAccess();
     }
 
     async function connectWallet() {
@@ -996,22 +1097,26 @@
       if (!accounts || !accounts.length) {
         throw new Error("No accounts returned from wallet.");
       }
-      state.walletAddress = ethers.getAddress(accounts[0]);
-      state.signer = await provider.getSigner();
-      setText("walletAddress", state.walletAddress);
-      await refreshNetwork();
-      setContracts();
+      await bindWalletAccount(accounts[0]);
     }
 
-    function disconnectWallet() {
+    function disconnectWallet({ clearChain = true } = {}) {
       state.signer = null;
       state.walletAddress = null;
-      state.chainId = null;
+      state.token = null;
+      state.ens = null;
+      state.nameWrapper = null;
+      state.contractDeployed = null;
+      if (clearChain) {
+        state.chainId = null;
+        state.chainName = null;
+        setText("walletChain", "—");
+      }
       setText("walletAddress", "Not connected");
-      setText("walletChain", "—");
-      updateNetworkPill();
       setContracts();
       resetRoleFlags();
+      setWriteEnabled(false, "Wallet disconnected.");
+      updateNetworkPill();
     }
 
     async function ensureToken() {
@@ -1148,6 +1253,8 @@
       const nameWrapperAddress = await state.readContract.nameWrapper();
       const nameWrapper = new ethers.Contract(nameWrapperAddress, nameWrapperAbi, state.provider);
       const ens = new ethers.Contract(ensAddress, ensAbi, state.provider);
+      state.ens = ens;
+      state.nameWrapper = nameWrapper;
 
       let nameWrapperOwner = "—";
       try {
@@ -1182,6 +1289,98 @@
         userAddress: state.walletAddress,
         action,
       };
+    }
+
+    function resetContractListeners() {
+      if (state.contract) {
+        state.contract.removeAllListeners();
+      }
+      if (state.readContract) {
+        state.readContract.removeAllListeners();
+      }
+      state.eventSubscribed = false;
+    }
+
+    async function refreshDashboard() {
+      if (!state.contractAddress) {
+        resetSnapshot();
+        resetRoleFlags();
+        return;
+      }
+      if (state.contractDeployed === false) {
+        resetSnapshot();
+        resetRoleFlags();
+        return;
+      }
+      await updateSnapshot();
+      if (state.walletAddress) {
+        await updateRoleFlags();
+      }
+    }
+
+    async function handleAccountsChanged(accounts) {
+      if (!accounts || !accounts.length) {
+        logEvent("Wallet disconnected");
+        disconnectWallet();
+        return;
+      }
+      logEvent(`Account changed to ${accounts[0]}`);
+      resetContractListeners();
+      await bindWalletAccount(accounts[0]);
+      await refreshDashboard();
+    }
+
+    async function handleChainChanged(chainIdHex) {
+      const chainId = BigInt(chainIdHex);
+      logEvent(`Network changed to chainId=${chainId}; rebinding...`);
+      state.provider = null;
+      state.chainId = chainId;
+      resetContractListeners();
+      const accounts = await window.ethereum.request({ method: "eth_accounts" });
+      if (!accounts || !accounts.length) {
+        disconnectWallet();
+        return;
+      }
+      await bindWalletAccount(accounts[0]);
+      await refreshDashboard();
+    }
+
+    function handleDisconnectEvent(error) {
+      logEvent("Wallet disconnected");
+      if (error?.message) {
+        logEvent(`⚠️ Disconnect reason: ${error.message}`);
+      }
+      disconnectWallet();
+    }
+
+    function bindWalletEvents() {
+      if (!window.ethereum || walletEventsBound) return;
+      walletEventHandlers.accountsChanged = (accounts) => {
+        handleAccountsChanged(accounts).catch((error) => showAlert(error.message));
+      };
+      walletEventHandlers.chainChanged = (chainIdHex) => {
+        handleChainChanged(chainIdHex).catch((error) => showAlert(error.message));
+      };
+      walletEventHandlers.disconnect = (error) => {
+        handleDisconnectEvent(error);
+      };
+      walletEventHandlers.connect = () => {
+        logEvent("Wallet connected");
+      };
+      window.ethereum.on("accountsChanged", walletEventHandlers.accountsChanged);
+      window.ethereum.on("chainChanged", walletEventHandlers.chainChanged);
+      window.ethereum.on("disconnect", walletEventHandlers.disconnect);
+      window.ethereum.on("connect", walletEventHandlers.connect);
+      walletEventsBound = true;
+    }
+
+    function unbindWalletEvents() {
+      if (!window.ethereum || !walletEventsBound) return;
+      window.ethereum.removeListener("accountsChanged", walletEventHandlers.accountsChanged);
+      window.ethereum.removeListener("chainChanged", walletEventHandlers.chainChanged);
+      window.ethereum.removeListener("disconnect", walletEventHandlers.disconnect);
+      window.ethereum.removeListener("connect", walletEventHandlers.connect);
+      walletEventsBound = false;
     }
 
     async function preflight(contract, method, args) {
@@ -1959,7 +2158,8 @@
       const provider = maybeInitProvider();
       if (provider) {
         setContracts();
-        await updateSnapshot();
+        await updateWriteAccess();
+        await refreshDashboard();
       } else {
         resetSnapshot();
       }
@@ -1975,43 +2175,10 @@
       });
     }
 
-    function attachWalletListeners() {
-      if (!window.ethereum) return;
-      window.ethereum.on("accountsChanged", () => {
-        disconnectWallet();
-        connectWallet()
-          .then(async () => {
-            if (state.contractAddress) {
-              await updateSnapshot();
-              await updateRoleFlags();
-            }
-          })
-          .catch((error) => showAlert(error.message));
-      });
-      window.ethereum.on("chainChanged", () => {
-        state.provider = null;
-        disconnectWallet();
-        connectWallet()
-          .then(async () => {
-            if (state.contractAddress) {
-              await updateSnapshot();
-              await updateRoleFlags();
-            }
-          })
-          .catch((error) => showAlert(error.message));
-      });
-    }
-
     ids("connectButton").addEventListener("click", async () => {
       try {
         await connectWallet();
-        if (state.contractAddress) {
-          await updateSnapshot();
-          await updateRoleFlags();
-        } else {
-          resetSnapshot();
-          resetRoleFlags();
-        }
+        await refreshDashboard();
       } catch (error) {
         showAlert(error.message);
       }
@@ -2034,6 +2201,7 @@
       state.contractAddress = null;
       localStorage.removeItem(storageKey);
       setContracts();
+      setWriteEnabled(false, "Contract address not set.");
       resetSnapshot();
       resetRoleFlags();
     });
@@ -2411,8 +2579,9 @@
       loadContractFromQuery();
       loadKnownDeployment();
       initNetwork();
-      attachWalletListeners();
+      bindWalletEvents();
       updateNetworkPill();
+      setWriteEnabled(false);
       updateIndexStatus("Indexer not synced yet.");
     }
 

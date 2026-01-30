@@ -67,6 +67,29 @@ If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit th
 - On unsupported chains, the UI will show a warning (chainId mismatch) and interactions may revert.
   The UI does not generate chain-specific explorer links.
 
+## Wallet event handling
+
+The UI listens for EIP-1193 wallet events and rebinds in-place without a page reload:
+
+- **accountsChanged**: switches to the active account, rebuilds the provider/signer, refreshes snapshots/role flags, and re-subscribes contract events.
+- **chainChanged**: rebuilds the provider/signer, updates chain metadata, checks contract deployment, and disables writes if unsupported.
+- **disconnect**: clears signer state and disables all write actions.
+
+Default supported chainIds:
+
+- Mainnet: `1`
+- Sepolia: `11155111`
+- Local dev (Ganache/Truffle): `1337`
+
+If the contract address has no code on the active chain, the UI shows a warning and disables all write actions.
+
+### Manual test checklist (MetaMask)
+
+1. Serve the UI locally (see "Open locally" above) and connect your wallet.
+2. Switch accounts → UI should update the account address and rebind without a reload.
+3. Switch networks (mainnet ↔ sepolia ↔ local) → UI should update chain info and disable writes when unsupported.
+4. Disconnect the site in MetaMask → UI should show “Disconnected” and disable write buttons.
+
 ## Safety notes
 
 - The UI only talks to your wallet provider (e.g., MetaMask). No keys or secrets are collected.
