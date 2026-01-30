@@ -105,7 +105,7 @@ The UI includes an employer-only **Cancel job** flow that mirrors the contractâ€
 - **Not allowed after completion**.
 - **Only the employer** who created the job can cancel it.
 - **Cancellation refunds the job payout** back to the employer.
-- **Disputed jobs can still be cancelled** as long as they remain unassigned and incomplete.
+- **Disputed jobs must be resolved** (disputes only arise once a job is assigned, so cancellation is no longer possible).
 
 The UI verifies the job struct (`jobs(jobId)`) before sending a transaction and then runs a static-call preflight
 before showing a confirmation dialog. If the job was already cancelled/deleted, the employer address will be `0x0`
