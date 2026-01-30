@@ -1235,6 +1235,10 @@
       ids("nftsFilter").value = state.ui.nftsFilter;
     }
 
+    function serializeIndexCache(payload) {
+      return JSON.stringify(payload, (_key, value) => (typeof value === "bigint" ? value.toString() : value));
+    }
+
     function saveIndexCache() {
       if (!state.contractAddress) return;
       const payload = {
@@ -1243,7 +1247,7 @@
         jobs: state.index.jobs,
         nfts: state.index.nfts,
       };
-      localStorage.setItem(indexCacheKey, JSON.stringify(payload));
+      localStorage.setItem(indexCacheKey, serializeIndexCache(payload));
     }
 
     function loadIndexCache() {
