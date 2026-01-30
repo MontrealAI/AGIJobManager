@@ -1674,6 +1674,8 @@
           status = "CompletionRequested";
         } else if (assignedAgent !== ethers.ZeroAddress) {
           status = "Assigned";
+        } else if (!indexEntry || status === "Unknown") {
+          status = "Open";
         }
 
         const row = document.createElement("tr");
