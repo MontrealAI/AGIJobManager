@@ -33,6 +33,9 @@ Use the “Contract address” input and click **Save address**.
 1) **Approve** the AGI token for the contract (`approve`).
 2) **Create job** (`createJob`) with payout + duration + IPFS hash.
 3) **Cancel job** (`cancelJob`) if it is unassigned and not completed.
+   - Employer-only; only before assignment; no cancel after completion.
+   - Cancelling refunds the payout to the employer.
+   - Disputed jobs are still cancellable if they remain unassigned and incomplete.
 4) Watch job status and events in the Jobs table and Activity log.
 
 ### Agent
@@ -55,6 +58,46 @@ Use the “Contract address” input and click **Save address**.
 1) Buyer **approves** AGI token for the contract (to cover the purchase).
 2) Owner **lists** (`listNFT`) or **delists** (`delistNFT`) the NFT.
 3) Buyer **purchases** (`purchaseNFT`) the NFT.
+
+## Admin / Owner panel
+
+The UI includes a collapsed **Admin / Owner** panel. It unlocks only when the connected wallet matches `owner()`.
+Every admin action runs a **staticCall preflight**, requires a confirmation dialog, and logs the tx hash with an explorer link.
+
+Owner-only actions exposed in the UI:
+- Pause / unpause.
+- Add / remove moderators.
+- Blacklist / unblacklist agents or validators.
+- Update key parameters: validator approvals/disapprovals, validation reward %, max job payout, duration limit, and premium threshold.
+
+## Admin operations (CLI / Truffle)
+
+You can also administer the contract via Truffle console. Never commit secrets; use `.env`.
+
+```bash
+truffle console --network sepolia
+```
+
+```javascript
+const jm = await AGIJobManager.deployed();
+const accounts = await web3.eth.getAccounts();
+const owner = accounts[0];
+
+await jm.pause({ from: owner });
+await jm.unpause({ from: owner });
+await jm.addModerator("0xModerator", { from: owner });
+await jm.removeModerator("0xModerator", { from: owner });
+await jm.blacklistAgent("0xAgent", true, { from: owner });
+await jm.blacklistValidator("0xValidator", false, { from: owner });
+
+await jm.requiredValidatorApprovals();
+await jm.setRequiredValidatorApprovals(3, { from: owner });
+```
+
+### Security notes
+- Verify **contract address** and **chainId** before signing.
+- Prefer a hardware wallet for mainnet admin actions.
+- Use `call`/`staticCall` where possible to preflight reverts (the UI does this automatically).
 
 ## Troubleshooting
 
