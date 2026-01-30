@@ -1,5 +1,12 @@
 # Documentation index
 
+## Non‑technical start here
+- **Start here (overview + role guidance)**: [`guides/ROLES.md`](guides/ROLES.md)
+- **Happy path walkthrough (UI + CLI)**: [`guides/HAPPY_PATH.md`](guides/HAPPY_PATH.md)
+- **Troubleshooting “execution reverted”**: [`guides/TROUBLESHOOTING.md`](guides/TROUBLESHOOTING.md)
+- **Identity & proofs (ENS + Merkle)**: [`guides/IDENTITY_AND_PROOFS.md`](guides/IDENTITY_AND_PROOFS.md)
+- **Glossary**: [`GLOSSARY.md`](GLOSSARY.md)
+
 This documentation set targets engineers, integrators, operators, and auditors. Each document has a focused scope with cross-references for faster navigation and auditability.
 
 ## Core documentation
