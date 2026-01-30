@@ -92,6 +92,7 @@ stateDiagram-v2
 - `resolveDispute` accepts any resolution string, but only two canonical strings trigger on-chain actions:
   - `agent win` → `_completeJob`
   - `employer win` → employer refund + `completed = true`
+  - The string match is case-sensitive; any other value only clears the dispute flag.
 
 ## Reputation mechanics
 - **Agent reputation**: derived from payout and completion time via `calculateReputationPoints`, then stored through `enforceReputationGrowth` (diminishing returns with a cap).

@@ -171,6 +171,7 @@ npx truffle migrate --network development
 - **Token compatibility**: ERC‑20 must return `true` for `transfer`/`transferFrom`.
 - **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
 - **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline unless off‑chain policies intervene.
+- **Dispute strings**: `resolveDispute` accepts any string, but only the exact `agent win` / `employer win` values trigger settlement; other strings just clear the dispute flag.
 
 See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
 
