@@ -162,7 +162,7 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 
 Start here:
 - [`docs/README.md`](docs/README.md)
-- **Non‑technical user guides**: [`docs/README.md`](docs/README.md) (roles, happy path, troubleshooting, identity & proofs)
+- **Non‑technical user guide (landing page)**: [`docs/user-guide/README.md`](docs/user-guide/README.md)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)

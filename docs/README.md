@@ -3,6 +3,7 @@
 This documentation set targets engineers, integrators, operators, and auditors **and** now includes non‑technical user guides. Each document has a focused scope with cross-references for faster navigation and auditability.
 
 ## Start here (non‑technical user guides)
+- **User guide (landing page)**: [`user-guide/README.md`](user-guide/README.md)
 - **Roles overview**: [`guides/ROLES.md`](guides/ROLES.md)
 - **Happy path walkthrough**: [`guides/HAPPY_PATH.md`](guides/HAPPY_PATH.md)
 - **Troubleshooting (“execution reverted”)**: [`guides/TROUBLESHOOTING.md`](guides/TROUBLESHOOTING.md)
