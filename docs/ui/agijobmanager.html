@@ -1193,7 +1193,7 @@
         return;
       }
       const value = ids("cancelJobId").value.trim();
-      button.disabled = !/^\\d+$/.test(value);
+      button.disabled = !/^\d+$/.test(value);
     }
 
     function updateAdminPanel() {
@@ -1283,7 +1283,7 @@
       if (!trimmed) {
         throw new Error(`${fieldLabel} is required.`);
       }
-      if (!/^\\d+$/.test(trimmed)) {
+      if (!/^\d+$/.test(trimmed)) {
         throw new Error(`${fieldLabel} must be an integer.`);
       }
       return BigInt(trimmed);

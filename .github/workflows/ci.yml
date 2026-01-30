@@ -31,3 +31,9 @@ jobs:
 
       - name: Test
         run: npm run test
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: UI smoke test
+        run: npm run test:ui
