@@ -1,7 +1,34 @@
 const AGIJobManager = artifacts.require("AGIJobManager");
+const MockERC20 = artifacts.require("MockERC20");
+const MockENS = artifacts.require("MockENS");
+const MockNameWrapper = artifacts.require("MockNameWrapper");
 
-module.exports = function (deployer) {
-  deployer.deploy(
+module.exports = async function (deployer, network, accounts) {
+  const isLocal = ["development", "test", "ui", "playwright"].includes(network);
+  if (isLocal) {
+    const zeroRoot = `0x${"0".repeat(64)}`;
+    await deployer.deploy(MockERC20);
+    const token = await MockERC20.deployed();
+    await token.mint(accounts[0], web3.utils.toWei("100000"));
+    await deployer.deploy(MockENS);
+    const ens = await MockENS.deployed();
+    await deployer.deploy(MockNameWrapper);
+    const nameWrapper = await MockNameWrapper.deployed();
+    await deployer.deploy(
+      AGIJobManager,
+      token.address,
+      "https://ipfs.io/ipfs/",
+      ens.address,
+      nameWrapper.address,
+      zeroRoot,
+      zeroRoot,
+      zeroRoot,
+      zeroRoot
+    );
+    return;
+  }
+
+  await deployer.deploy(
     AGIJobManager,
     "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA",
     "https://ipfs.io/ipfs/",
@@ -13,4 +40,3 @@ module.exports = function (deployer) {
     "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b"
   );
 };
-

@@ -810,9 +810,11 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js" integrity="sha384-7x3tVmE2MSjFk3rjql7YVSE2LEAFloT+1B5Nj0b3V5/hWRUsStlHHY2mySsRkmmF" crossorigin="anonymous"></script>
+  <script src="./lib/indexer.js"></script>
   <script src="./lib/errorDecoder.js"></script>
   <script>
     const { ethers } = window;
+    const { sortLogs } = window.AGIJMIndexer;
 
     const state = {
       provider: null,
@@ -1283,7 +1285,7 @@
       if (!trimmed) {
         throw new Error(`${fieldLabel} is required.`);
       }
-      if (!/^\\d+$/.test(trimmed)) {
+      if (!/^\d+$/.test(trimmed)) {
         throw new Error(`${fieldLabel} must be an integer.`);
       }
       return BigInt(trimmed);
@@ -2267,14 +2269,6 @@
         }
       }
       return logs;
-    }
-
-    function sortLogs(logs) {
-      return logs.sort((a, b) => {
-        if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
-        if (a.transactionIndex !== b.transactionIndex) return a.transactionIndex - b.transactionIndex;
-        return a.logIndex - b.logIndex;
-      });
     }
 
     function ensureJobEntry(jobId) {
