@@ -8,15 +8,18 @@
     "docs:interface": "node scripts/generate-interface-doc.js",
     "lint": "solhint \"contracts/**/*.sol\"",
     "test": "truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js",
+    "test:ui": "node scripts/ui/run_ui_smoke_test.js",
     "ui:abi": "node scripts/ui/export_abi.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@openzeppelin/test-helpers": "^0.5.16",
     "@truffle/hdwallet-provider": "^2.1.15",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
     "ganache": "^7.9.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.6.0",
