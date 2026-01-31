@@ -170,6 +170,28 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should be cleared");
   });
 
+  it("completes without an explicit completion request when validators approve", async () => {
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    const payout = toBN(toWei("18"));
+    await token.mint(employer, payout, { from: owner });
+
+    const { jobId } = await createJobWithApproval(payout, "ipfs-no-request");
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    const completionTx = await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
+    assert.ok(completionTx.logs.find((log) => log.event === "JobCompleted"), "JobCompleted should emit");
+
+    const job = await manager.jobs(jobId);
+    assert.strictEqual(job.completed, true, "job should complete with validator approvals");
+    assert.strictEqual(job.completionRequested, false, "completionRequested should remain false without request");
+
+    const tokenId = completionTx.logs.find((log) => log.event === "NFTIssued").args.tokenId.toNumber();
+    const tokenUri = await manager.tokenURI(tokenId);
+    assert.equal(tokenUri, "ipfs://base/ipfs-no-request", "token URI should use the job's ipfs hash");
+    assert.equal(await manager.ownerOf(tokenId), employer, "employer should receive the NFT");
+    assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear after completion");
+  });
+
   it("prevents cancellation after assignment or completion", async () => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
@@ -390,6 +412,19 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await expectCustomError(
       manager.disapproveJob.call(jobId, "validator-a", EMPTY_PROOF, { from: validatorA }),
+      "InvalidState"
+    );
+  });
+
+  it("prevents validators from approving after disapproving", async () => {
+    const payout = toBN(toWei("14"));
+    await token.mint(employer, payout, { from: owner });
+    const { jobId } = await createJobWithApproval(payout);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator-a", EMPTY_PROOF, { from: validatorA }),
       "InvalidState"
     );
   });
