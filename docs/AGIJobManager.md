@@ -89,6 +89,8 @@ stateDiagram-v2
 ## Validation and dispute flow
 - `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold. It does **not** require `completionRequested`.
 - `disapproveJob` increments disapproval count, records participation, and flips `disputed` when disapprovals reach the required threshold.
+- Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
+- Owner-set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
 - `resolveDispute` accepts any resolution string, but only two canonical strings trigger on-chain actions:
   - `agent win` → `_completeJob`
@@ -131,9 +133,12 @@ Custom errors and their intent:
 - `NotAuthorized`: caller lacks required role/ownership for the action.
 - `Blacklisted`: caller is explicitly blacklisted.
 - `InvalidParameters`: zero values, out-of-range percentages, or invalid constructor updates.
+- `InvalidValidatorThresholds`: validator thresholds exceed the per‑job cap or their sum exceeds the cap.
 - `InvalidState`: invalid lifecycle transition (e.g., reapply, double complete, dispute after completion).
 - `JobNotFound`: non-existent job ID.
 - `TransferFailed`: ERC‑20 `transfer`/`transferFrom` returned false.
+- `ValidatorLimitReached`: a validator action would exceed the per‑job cap.
+- `ValidatorSetTooLarge`: settlement loops would exceed the per‑job cap.
 
 ## Invariants and constraints
 - Job IDs must exist (`JobNotFound`) before use.
@@ -142,6 +147,7 @@ Custom errors and their intent:
 - Validator approvals and disapprovals are mutually exclusive per validator per job.
 - `maxJobPayout` and `jobDurationLimit` cap job creation inputs.
 - Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline.
+- The validator list for a job is capped at `MAX_VALIDATORS_PER_JOB`, and thresholds must fit within that cap.
 - Root nodes and Merkle roots are immutable after deployment (no setters).
 
 ## References

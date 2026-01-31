@@ -10,6 +10,7 @@
 ## Functions
 | Signature | State mutability | Returns |
 | --- | --- | --- |
+| `MAX_VALIDATORS_PER_JOB()` | view | uint256 |
 | `additionalAgents(address)` | view | bool |
 | `additionalText1()` | view | string |
 | `additionalText2()` | view | string |
@@ -137,7 +138,10 @@
 | `Blacklisted()` | — |
 | `InvalidParameters()` | — |
 | `InvalidState()` | — |
+| `InvalidValidatorThresholds()` | — |
 | `JobNotFound()` | — |
 | `NotAuthorized()` | — |
 | `NotModerator()` | — |
 | `TransferFailed()` | — |
+| `ValidatorLimitReached()` | — |
+| `ValidatorSetTooLarge()` | — |
