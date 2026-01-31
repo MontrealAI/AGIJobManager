@@ -6,6 +6,7 @@ This documentation set targets engineers, integrators, operators, and auditors *
 - **Contract specification**: [`AGIJobManager.md`](AGIJobManager.md)
 - **Deployment guide (Truffle)**: [`Deployment.md`](Deployment.md)
 - **Security model and limitations**: [`Security.md`](Security.md)
+- **Parameter safety & stuck-funds analysis**: [`ParameterSafety.md`](ParameterSafety.md)
 - **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)
 
 ## User guide (non‑technical)
@@ -28,6 +29,7 @@ This documentation set targets engineers, integrators, operators, and auditors *
 - **ABI and interface reference (generated)**: [`Interface.md`](Interface.md)
 - **Deployment guide (Truffle)**: [`Deployment.md`](Deployment.md)
 - **Security model and limitations**: [`Security.md`](Security.md)
+- **Parameter safety & stuck-funds analysis**: [`ParameterSafety.md`](ParameterSafety.md)
 - **User start‑here guide**: [`USERS.md`](USERS.md)
 - **Function reference**: [`REFERENCE.md`](REFERENCE.md)
 - **Testing guide**: [`TESTING.md`](TESTING.md)
