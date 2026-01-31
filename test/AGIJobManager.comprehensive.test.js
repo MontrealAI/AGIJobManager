@@ -127,6 +127,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         manager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer }),
         "Pausable: paused"
       );
+      const status = await manager.getJobStatus(0);
+      assert.equal(status[0], false);
+      assert.equal(status[1], false);
       await manager.unpause({ from: owner });
       await approveToken(employer);
       await manager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
@@ -336,6 +339,13 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectCustomError(
         manager.validateJob.call(0, "validator", [], { from: validatorTwo }),
         "InvalidState"
+      );
+    });
+
+    it("requires validator authorization", async () => {
+      await expectCustomError(
+        manager.validateJob.call(0, "validator", [], { from: validatorOne }),
+        "NotAuthorized"
       );
     });
 
@@ -616,6 +626,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       expectEvent(purchaseReceipt, "NFTPurchased", { tokenId, buyer, price: payout });
 
       assert.equal(await manager.ownerOf(tokenId), buyer);
+      const listing = await manager.listings(tokenId);
+      assert.equal(listing.isActive, false);
       await expectCustomError(manager.delistNFT.call(tokenId, { from: employer }), "NotAuthorized");
     });
 
@@ -624,6 +636,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.listNFT(tokenId, payout, { from: employer });
       const delistReceipt = await manager.delistNFT(tokenId, { from: employer });
       expectEvent(delistReceipt, "NFTDelisted", { tokenId });
+
+      const listing = await manager.listings(tokenId);
+      assert.equal(listing.isActive, false);
     });
   });
 
