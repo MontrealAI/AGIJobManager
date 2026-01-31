@@ -202,13 +202,40 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function _t(address to, uint256 amount) internal {
-        if (amount == 0) return;
-        if (!agiToken.transfer(to, amount)) revert TransferFailed();
+        _safeERC20Transfer(agiToken, to, amount);
     }
 
     function _tFrom(address from, address to, uint256 amount) internal {
+        _safeERC20TransferFrom(agiToken, from, to, amount);
+    }
+
+    function _safeERC20Transfer(IERC20 token, address to, uint256 amount) internal {
         if (amount == 0) return;
-        if (!agiToken.transferFrom(from, to, amount)) revert TransferFailed();
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, amount));
+    }
+
+    function _safeERC20TransferFrom(IERC20 token, address from, address to, uint256 amount) internal {
+        if (amount == 0) return;
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, amount));
+    }
+
+    function _safeERC20TransferFromExact(IERC20 token, address from, address to, uint256 amount) internal {
+        if (amount == 0) return;
+        uint256 balanceBefore = token.balanceOf(to);
+        _safeERC20TransferFrom(token, from, to, amount);
+        uint256 balanceAfter = token.balanceOf(to);
+        if (balanceAfter < balanceBefore || balanceAfter - balanceBefore != amount) revert TransferFailed();
+    }
+
+    function _callOptionalReturn(IERC20 token, bytes memory data) internal {
+        (bool success, bytes memory returndata) = address(token).call(data);
+        if (!success) revert TransferFailed();
+        if (returndata.length == 0) return;
+        if (returndata.length == 32) {
+            if (!abi.decode(returndata, (bool))) revert TransferFailed();
+            return;
+        }
+        revert TransferFailed();
     }
 
     function pause() external onlyOwner { _pause(); }
@@ -224,7 +251,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.payout = _payout;
         job.duration = _duration;
         job.details = _details;
-        _tFrom(msg.sender, address(this), _payout);
+        _safeERC20TransferFromExact(agiToken, msg.sender, address(this), _payout);
         emit JobCreated(jobId, _ipfsHash, _payout, _duration, _details);
     }
 
@@ -520,7 +547,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function contributeToRewardPool(uint256 amount) external whenNotPaused nonReentrant {
         if (amount == 0) revert InvalidParameters();
-        _tFrom(msg.sender, address(this), amount);
+        _safeERC20TransferFromExact(agiToken, msg.sender, address(this), amount);
         emit RewardPoolContribution(msg.sender, amount);
     }
 
