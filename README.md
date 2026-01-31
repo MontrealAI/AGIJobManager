@@ -182,6 +182,7 @@ Start here:
 - [`docs/README.md`](docs/README.md)
 - **Non‑technical user guides**: [`docs/user-guide/README.md`](docs/user-guide/README.md)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
+- [`docs/ParameterSafety.md`](docs/ParameterSafety.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/Testing.md`](docs/Testing.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
