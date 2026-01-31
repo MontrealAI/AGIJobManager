@@ -84,6 +84,7 @@ stateDiagram-v2
 - **Validator payout**: when validators voted, `validationRewardPercentage` of the payout is split equally across all validators who voted (approvals and disapprovals both append to the validator list).
 - **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner.
 - **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDispute` with `employer win` refunds and finalizes the job.
+- **ERC-20 compatibility**: token transfers accept ERC‑20s that return `bool` or return no data. Calls that revert, return `false`, or return malformed data revert with `TransferFailed`. Escrow deposits enforce exact amount received, so fee‑on‑transfer, rebasing, or other balance‑mutating tokens are not supported.
 
 ## Validation and dispute flow
 - `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold. It does **not** require `completionRequested`.

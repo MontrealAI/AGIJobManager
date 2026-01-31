@@ -11,7 +11,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const ZERO_ROOT = "0x" + "00".repeat(32);
 
 contract("AGIJobManager ERC20 compatibility", (accounts) => {
-  const [owner, employer] = accounts;
+  const [owner, employer, agent, validator, buyer] = accounts;
   let token;
   let manager;
 
@@ -45,6 +45,37 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
 
     const employerBalance = await token.balanceOf(employer);
     assert.equal(employerBalance.toString(), payout.toString(), "employer should be refunded");
+  });
+
+  it("supports NFT marketplace transfers when the token returns no data", async () => {
+    const payout = web3.utils.toWei("50");
+    const price = web3.utils.toWei("12");
+
+    await token.mint(employer, payout, { from: owner });
+    await token.mint(buyer, price, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await token.approve(manager.address, price, { from: buyer });
+
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+
+    const createTx = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "", [], { from: agent });
+    const validateTx = await manager.validateJob(jobId, "", [], { from: validator });
+    const nftIssued = validateTx.logs.find((log) => log.event === "NFTIssued");
+    const tokenId = nftIssued.args.tokenId.toNumber();
+
+    await manager.listNFT(tokenId, price, { from: employer });
+    await manager.purchaseNFT(tokenId, { from: buyer });
+
+    const newOwner = await manager.ownerOf(tokenId);
+    assert.equal(newOwner, buyer, "buyer should own the NFT");
+
+    const employerBalance = await token.balanceOf(employer);
+    assert.equal(employerBalance.toString(), price.toString(), "seller should receive payment");
   });
 
   it("reverts with TransferFailed when transferFrom cannot be completed", async () => {
