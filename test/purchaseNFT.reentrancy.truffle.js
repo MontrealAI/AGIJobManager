@@ -1,5 +1,6 @@
 const assert = require("assert");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { extractRevertData, selectorFor } = require("./helpers/errors");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const ReentrantERC20 = artifacts.require("ReentrantERC20");
@@ -12,6 +13,28 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
   const [owner, employer, agent, validator, buyer, ensPlaceholder, nameWrapperPlaceholder] = accounts;
   let token;
   let manager;
+  const reentrancySelector = selectorFor("ReentrancyGuardReentrantCall").toLowerCase();
+
+  const expectReentrancyGuardRevert = async (promise) => {
+    try {
+      await promise;
+    } catch (error) {
+      const data = extractRevertData(error);
+      if (data) {
+        assert.ok(
+          data.toLowerCase().startsWith(reentrancySelector),
+          `expected ReentrancyGuardReentrantCall, got ${data}`
+        );
+        return;
+      }
+      assert.ok(
+        error.message.includes("ReentrancyGuard: reentrant call"),
+        `expected ReentrancyGuard revert, got ${error.message}`
+      );
+      return;
+    }
+    assert.fail("expected reentrancy guard revert");
+  };
 
   const createAndCompleteJob = async (payout) => {
     await token.mint(employer, payout, { from: owner });
@@ -80,7 +103,7 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
     await token.setReentry(manager.address, tokenIdB, true, { from: owner });
     await token.approveManager(priceB, { from: owner });
 
-    await expectRevert.unspecified(
+    await expectReentrancyGuardRevert(
       manager.purchaseNFT(tokenIdA, { from: buyer })
     );
 
@@ -108,7 +131,7 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
     await token.setReentry(manager.address, tokenId, true, { from: owner });
     await token.approveManager(price, { from: owner });
 
-    await expectRevert.unspecified(
+    await expectReentrancyGuardRevert(
       manager.purchaseNFT(tokenId, { from: buyer })
     );
 
