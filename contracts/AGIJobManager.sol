@@ -80,14 +80,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     error InvalidValidatorThresholds();
     error ValidatorSetTooLarge();
 
-    // Stable job lifecycle status enum (do not reorder).
-    // 0 = Deleted (employer == address(0) or removed)
-    // 1 = Open (exists, employer set, no assigned agent)
-    // 2 = InProgress (assigned agent, not completed, not disputed, no completion request)
-    // 3 = CompletionRequested (agent requested completion)
-    // 4 = Disputed (disputed flag on)
-    // 5 = Completed (completed flag on)
-    // 6 = Expired (computed timeout; informational if expireJob not called)
+    /// @notice Canonical job lifecycle status enum (numeric ordering is stable; do not reorder).
+    /// @dev 0 = Deleted (employer == address(0) or removed)
+    /// @dev 1 = Open (exists, employer set, no assigned agent)
+    /// @dev 2 = InProgress (assigned agent, not completed, not disputed, no completion request)
+    /// @dev 3 = CompletionRequested (agent requested completion)
+    /// @dev 4 = Disputed (disputed flag on)
+    /// @dev 5 = Completed (completed flag on)
+    /// @dev 6 = Expired (computed timeout; informational if expireJob not called)
     enum JobStatus {
         Deleted,
         Open,
