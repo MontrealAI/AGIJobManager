@@ -45,4 +45,18 @@ This allows tests to pass `_verifyOwnership` without external dependencies.
 - `test/securityRegression.test.js` — takeover prevention, vote rules, dispute behavior, transfer checks
 - `test/nftMarketplace.test.js` — list/purchase/delist flows
 - `test/adminOps.test.js` — pause, allowlists, blacklists, withdrawals
+- `test/scenarioLifecycle.marketplace.test.js` — scenario coverage for lifecycle, disputes, pause behavior, and marketplace invariants
 - Existing regression suites remain in `test/` for backward coverage.
+
+## Scenario coverage (contract-level)
+The scenario suite (`test/scenarioLifecycle.marketplace.test.js`) exercises the contract in deterministic flows that map to the lifecycle diagram in the README:
+- **Create → apply → validate → complete** with escrow funding, payouts, reputation updates, and NFT issuance.
+- **Cancel** before assignment with escrow refunds and job deletion semantics.
+- **Dispute** paths (thresholded disapprovals, manual disputes, moderator resolutions) covering agent win, employer win, and neutral outcomes.
+- **Pause/unpause** behavior that blocks when-not-paused actions and resumes normal operation.
+- **Marketplace** listing/purchase flows, self-purchase behavior, and invariant checks (no double-purchase, invalid listings, insufficient allowance).
+
+Run it locally with the standard test command:
+```bash
+npx truffle test --network test test/scenarioLifecycle.marketplace.test.js
+```
