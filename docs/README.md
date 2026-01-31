@@ -51,6 +51,7 @@ This documentation set targets engineers, integrators, operators, and auditors *
 - **NFT Marketplace**: [`roles/NFT_MARKETPLACE.md`](roles/NFT_MARKETPLACE.md)
 
 ## Operations and validation
+- **Parameter safety & stuck-funds checklist (ops)**: [`ops/parameter-safety.md`](ops/parameter-safety.md)
 - **Regression tests summary**: [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md)
 - **FAQ**: [`FAQ.md`](FAQ.md)
 
