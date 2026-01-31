@@ -22,7 +22,7 @@ The table below lists configurable parameters and relevant caps, including who c
 | `MAX_VALIDATORS_PER_JOB` (constant) | Immutable | Caps validators per job and enforces `requiredValidatorApprovals + requiredValidatorDisapprovals <= 50`. | `50` | Keep validator thresholds well below 50 to ensure reachable consensus and reasonable gas. | If validator thresholds approach 50, a single unexpected disapproval can make approvals unreachable; disputes may become the only path. |
 | `AGIType.payoutPercentage` (per NFT) | Owner (`addAGIType`) | Determines agent payout percentage via `getHighestPayoutPercentage`. | `1..100` | Choose a **max agent payout %** so that `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If any agent holds an NFT with a payout percentage that, combined with `validationRewardPercentage`, exceeds 100, job completion will revert when validator payouts execute. |
 | `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot` | Immutable post‑deploy | Gate eligibility for validators/agents via ENS + Merkle proofs. | Set only in constructor (no setters). | Validate before deployment; keep canonical allowlists and ENS settings accurate. | Mis-set roots can prevent validators/agents from ever qualifying, blocking validation and making jobs uncompletable without manual additional allowlisting or redeploy. |
-| `additionalValidators`, `additionalAgents` | Owner (`addAdditionalValidator`, `addAdditionalAgent`) | Manual allowlist bypass for eligibility checks. | None. | Use as a recovery tool when allowlist/ENS config blocks participation. | Overuse weakens trust; underuse when root nodes are wrong can stall jobs. |
+| `additionalValidators`, `additionalAgents` | Owner (`addAdditionalValidator`, `addAdditionalAgent`) | Manual allowlist bypass for eligibility checks. | None. | Use as a recovery tool when allowlist/ENS config blocks participation. | Overuse weakens trust; underuse when root nodes are wrong can stall jobs. Additional agents without a payout tier will receive `additionalAgentPayoutPercentage` on assignment. |
 
 ## Settlement math safety
 
@@ -31,6 +31,7 @@ The table below lists configurable parameters and relevant caps, including who c
 On completion (`_completeJob`), the contract executes the following calculations:
 
 - **Agent payout**: `agentPayout = job.payout * agentPayoutPercentage / 100`
+  - `agentPayoutPercentage` is snapshotted at assignment (`applyForJob`) and stored in the job. Subsequent NFT transfers or new tier NFTs do **not** change the payout for that job.
 - **Validator pool**: `totalValidatorPayout = job.payout * validationRewardPercentage / 100`
 - **Per-validator payout**: `validatorPayout = totalValidatorPayout / vCount`
 
