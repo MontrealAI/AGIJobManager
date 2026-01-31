@@ -67,6 +67,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
   let agentMerkle;
   let validatorMerkle;
   let manager;
+  let agiType;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -87,6 +88,10 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       agentMerkleRoot: agentMerkle.root,
       owner,
     });
+
+    agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 92, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });

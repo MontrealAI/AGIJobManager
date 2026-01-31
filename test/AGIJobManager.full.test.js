@@ -170,6 +170,9 @@ contract("AGIJobManager comprehensive", (accounts) => {
       { from: owner }
     );
 
+    await nft.mint(agent, { from: owner });
+    await manager.addAGIType(nft.address, 92, { from: owner });
+
     await token.mint(employer, web3.utils.toWei("500"), { from: owner });
     await token.mint(buyer, web3.utils.toWei("500"), { from: owner });
     await token.mint(other, web3.utils.toWei("500"), { from: owner });

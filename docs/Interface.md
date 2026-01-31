@@ -12,6 +12,7 @@
 | --- | --- | --- |
 | `MAX_REVIEW_PERIOD()` | view | uint256 |
 | `MAX_VALIDATORS_PER_JOB()` | view | uint256 |
+| `additionalAgentPayoutPercentage()` | view | uint256 |
 | `additionalAgents(address)` | view | bool |
 | `additionalText1()` | view | string |
 | `additionalText2()` | view | string |
@@ -33,7 +34,7 @@
 | `getApproved(uint256 tokenId)` | view | address |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
-| `jobs(uint256)` | view | uint256, address, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool |
+| `jobs(uint256)` | view | uint256, address, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool, uint8 |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
 | `maxJobPayout()` | view | uint256 |
 | `moderators(address)` | view | bool |
@@ -85,12 +86,14 @@
 | `setJobDurationLimit(uint256 _limit)` | nonpayable | — |
 | `setCompletionReviewPeriod(uint256 _period)` | nonpayable | — |
 | `setDisputeReviewPeriod(uint256 _period)` | nonpayable | — |
+| `setAdditionalAgentPayoutPercentage(uint256 _percentage)` | nonpayable | — |
 | `updateTermsAndConditionsIpfsHash(string _hash)` | nonpayable | — |
 | `updateContactEmail(string _email)` | nonpayable | — |
 | `updateAdditionalText1(string _text)` | nonpayable | — |
 | `updateAdditionalText2(string _text)` | nonpayable | — |
 | `updateAdditionalText3(string _text)` | nonpayable | — |
 | `getJobStatus(uint256 _jobId)` | view | bool, bool, string |
+| `getJobAgentPayoutPct(uint256 _jobId)` | view | uint256 |
 | `jobStatus(uint256 jobId)` | view | uint8 |
 | `jobStatusString(uint256 jobId)` | view | string |
 | `setValidationRewardPercentage(uint256 _percentage)` | nonpayable | — |
@@ -114,6 +117,7 @@
 | Event | Indexed fields |
 | --- | --- |
 | `AGITypeUpdated(address nftAddress, uint256 payoutPercentage)` | indexed address nftAddress, uint256 payoutPercentage |
+| `AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage)` | uint256 newPercentage |
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |
 | `ApprovalForAll(address owner, address operator, bool approved)` | indexed address owner, indexed address operator, bool approved |
 | `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)` | uint256 _fromTokenId, uint256 _toTokenId |
@@ -151,6 +155,8 @@
 | Error | Inputs |
 | --- | --- |
 | `Blacklisted()` | — |
+| `IneligibleAgentPayout()` | — |
+| `InvalidAgentPayoutSnapshot()` | — |
 | `InvalidParameters()` | — |
 | `InvalidState()` | — |
 | `InvalidValidatorThresholds()` | — |
