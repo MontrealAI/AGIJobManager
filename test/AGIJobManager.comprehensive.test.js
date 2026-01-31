@@ -98,6 +98,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       agentTree.root
     );
 
+    await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+    await agiTypeNft.mint(agent);
+
     await token.mint(employer, payout.muln(5));
     await token.mint(agent, payout);
     await token.mint(buyer, payout);

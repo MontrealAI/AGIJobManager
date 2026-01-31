@@ -174,6 +174,7 @@ npx truffle migrate --network development
 - **Eligibility gating**: Merkle roots and ENS dependencies are immutable post-deploy; misconfiguration requires redeployment.
 - **Token compatibility**: ERC‑20 `transfer`/`transferFrom` may return `true`/`false` **or** return no data; calls that revert or return `false` are treated as failures. Fee‑on‑transfer, rebasing, and other balance‑mutating tokens are **not supported**; escrow deposits enforce exact amounts received.
 - **Marketplace reentrancy guard**: `purchaseNFT` is protected by `nonReentrant` because it crosses an external ERC‑20 `transferFrom` boundary; removing this protection requires a redeploy even though the ABI is unchanged.
+- **Agent payout snapshotting**: the agent payout tier is snapshotted at `applyForJob`; buying/selling/transferring AGI‑type NFTs after assignment does **not** change payout for that job. Agents with a 0% tier cannot accept jobs unless they are explicitly allowlisted as `additionalAgents` with a nonzero default payout.
 - **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
 - **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline unless off‑chain policies intervene.
 - **Dispute strings**: `resolveDispute` accepts any string, but only the exact `agent win` / `employer win` values trigger settlement; other strings just clear the dispute flag.

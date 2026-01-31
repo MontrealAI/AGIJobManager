@@ -8,6 +8,7 @@ const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const FailingERC20 = artifacts.require("FailingERC20");
+const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
@@ -25,6 +26,7 @@ contract("AGIJobManager admin ops", (accounts) => {
   let manager;
   let clubRoot;
   let agentRoot;
+  let agiType;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -46,6 +48,10 @@ contract("AGIJobManager admin ops", (accounts) => {
       ZERO_ROOT,
       { from: owner }
     );
+
+    agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 92, { from: owner });
 
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);

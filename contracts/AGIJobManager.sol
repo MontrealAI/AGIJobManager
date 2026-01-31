@@ -79,6 +79,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     error ValidatorLimitReached();
     error InvalidValidatorThresholds();
     error ValidatorSetTooLarge();
+    error IneligibleAgentPayout();
+    error InvalidAgentPayoutSnapshot();
 
     /// @notice Canonical job lifecycle status enum (numeric ordering is stable; do not reorder).
     /// @dev 0 = Deleted (employer == address(0) or removed)
@@ -115,6 +117,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     uint256 public completionReviewPeriod = 7 days;
     uint256 public disputeReviewPeriod = 14 days;
     uint256 public constant MAX_REVIEW_PERIOD = 365 days;
+    uint256 public additionalAgentPayoutPercentage = 50;
 
     string public termsAndConditionsIpfsHash;
     string public contactEmail;
@@ -149,6 +152,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         uint256 completionRequestedAt;
         uint256 disputedAt;
         bool expired;
+        uint8 agentPayoutPct;
     }
 
     struct AGIType {
@@ -201,6 +205,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     event RewardPoolContribution(address indexed contributor, uint256 amount);
     event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
+    event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
 
     constructor(
         address _agiTokenAddress,
@@ -310,6 +315,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
         if (!(additionalAgents[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, agentRootNode))) revert NotAuthorized();
+        uint256 livePct = getHighestPayoutPercentage(msg.sender);
+        uint256 snapshotPct;
+        if (livePct > 0) {
+            snapshotPct = livePct;
+        } else if (additionalAgents[msg.sender]) {
+            snapshotPct = additionalAgentPayoutPercentage;
+        } else {
+            revert IneligibleAgentPayout();
+        }
+        job.agentPayoutPct = uint8(snapshotPct);
         job.assignedAgent = msg.sender;
         job.assignedAt = block.timestamp;
         emit JobApplied(_jobId, msg.sender);
@@ -459,6 +474,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         disputeReviewPeriod = _period;
         emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
+    function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
+        if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
+        additionalAgentPayoutPercentage = _percentage;
+        emit AdditionalAgentPayoutPercentageUpdated(_percentage);
+    }
     function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
     function updateContactEmail(string calldata _email) external onlyOwner { contactEmail = _email; }
     function updateAdditionalText1(string calldata _text) external onlyOwner { additionalText1 = _text; }
@@ -468,6 +488,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function getJobStatus(uint256 _jobId) external view returns (bool, bool, string memory) {
         Job storage job = jobs[_jobId];
         return (job.completed, job.completionRequested, job.ipfsHash);
+    }
+
+    function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
+        Job storage job = _job(_jobId);
+        return job.agentPayoutPct;
     }
 
     /// @notice Returns the canonical job status for UI/indexing.
@@ -641,7 +666,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     function _payAgent(Job storage job) internal {
-        uint256 agentPayoutPercentage = getHighestPayoutPercentage(job.assignedAgent);
+        uint256 agentPayoutPercentage = uint256(job.agentPayoutPct);
+        if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
         uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
         _t(job.assignedAgent, agentPayout);
     }

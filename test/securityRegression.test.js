@@ -24,6 +24,7 @@ contract("AGIJobManager security regressions", (accounts) => {
   let manager;
   let clubRoot;
   let agentRoot;
+  let agiType;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -45,6 +46,10 @@ contract("AGIJobManager security regressions", (accounts) => {
       ZERO_ROOT,
       { from: owner }
     );
+
+    agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 92, { from: owner });
 
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);

@@ -114,7 +114,7 @@ stateDiagram-v2
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
-- **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPercentage / 100`, where `agentPayoutPercentage` is the highest AGI type percentage owned by the agent (may be zero).
+- **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPercentage / 100`, where `agentPayoutPercentage` is **snapshotted at `applyForJob` time** from the agent’s highest AGI type percentage. Post‑assignment transfers do not affect that job’s payout. Agents with a 0% tier cannot apply unless they are `additionalAgents`, in which case the configured default payout percentage is used.
 - **Validator payout**: when validators voted, `validationRewardPercentage` of the payout is split equally across all validators who voted (approvals and disapprovals both append to the validator list).
 - **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner.
 - **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDispute` with `employer win` refunds and finalizes the job.
