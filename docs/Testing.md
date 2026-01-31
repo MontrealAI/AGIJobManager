@@ -40,6 +40,10 @@ The test suite relies on minimal mocks under `contracts/test/`:
 
 These mocks are **test-only** and are not deployed in production.
 
+## Comprehensive coverage suite
+
+`test/AGIJobManager.exhaustive.test.js` exercises deployment defaults, lifecycle flows, dispute resolution, hardening regressions, and ENS/Merkle role gating. Use it as the starting point when extending coverage for new behaviors.
+
 ## Extending tests
 
 - Prefer reusing helper utilities in `test/helpers/`.
