@@ -55,6 +55,8 @@ The scenario suite (`test/scenarioLifecycle.marketplace.test.js`) exercises the 
 - **Dispute** paths (thresholded disapprovals, manual disputes, moderator resolutions) covering agent win, employer win, and neutral outcomes.
 - **Pause/unpause** behavior that blocks when-not-paused actions and resumes normal operation.
 - **Marketplace** listing/purchase flows, self-purchase behavior, and invariant checks (no double-purchase, invalid listings, insufficient allowance).
+- **Economic assertions** including escrow conservation, marketplace payout transfers, and zero remaining contract balance after expected payouts.
+- **Event assertions** for JobCreated/JobApplied/NFTPurchased to keep regressions visible at the log level.
 
 Run it locally with the standard test command:
 ```bash
