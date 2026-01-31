@@ -834,6 +834,10 @@
       contractDeployed: null,
       contractOwner: null,
       contractPaused: null,
+      capabilities: {
+        jobStatus: null,
+        jobStatusString: null,
+      },
       marketAllowance: null,
       nftCache: {},
       ui: {
@@ -929,6 +933,8 @@
       "function ownerOf(uint256) view returns (address)",
       "function tokenURI(uint256) view returns (string)",
       "function getJobStatus(uint256) view returns (bool,bool,string)",
+      "function jobStatus(uint256) view returns (uint8)",
+      "function jobStatusString(uint256) view returns (string)",
       "function createJob(string,uint256,uint256,string)",
       "function cancelJob(uint256)",
       "function pause()",
@@ -1403,6 +1409,10 @@
         state.contractDeployed = null;
         state.marketAllowance = null;
         state.nftCache = {};
+        state.capabilities = {
+          jobStatus: null,
+          jobStatusString: null,
+        };
         state.index = {
           jobs: {},
           nfts: {},
@@ -1429,6 +1439,10 @@
       state.nameWrapper = null;
       state.marketAllowance = null;
       state.nftCache = {};
+      state.capabilities = {
+        jobStatus: null,
+        jobStatusString: null,
+      };
       state.readContract = new ethers.Contract(state.contractAddress, abi, state.provider);
       if (state.signer) {
         state.contract = new ethers.Contract(state.contractAddress, abi, state.signer);
@@ -2339,15 +2353,77 @@
       logEvent(`Indexed ${ordered.length} events from blocks ${fromBlock} to ${toBlock}.`);
     }
 
+    const jobStatusLabels = {
+      0: "DeletedOrCancelled",
+      1: "Open",
+      2: "InProgress",
+      3: "CompletionRequested",
+      4: "Disputed",
+      5: "Completed",
+      6: "Expired",
+    };
+
     function jobStatusFromIndex(entry) {
       if (!entry) return "Unknown";
-      if (entry.cancelled) return "Cancelled";
+      if (entry.cancelled) return "DeletedOrCancelled";
       if (entry.completed) return "Completed";
       if (entry.disputed) return "Disputed";
       if (entry.completionRequested) return "CompletionRequested";
       if (entry.applied) return "InProgress";
       if (entry.created) return "Open";
       return "Unknown";
+    }
+
+    function deriveJobStatus(job, indexEntry) {
+      const employer = job[1];
+      const assignedAgent = job[5];
+      const completed = job[7];
+      const completionRequested = job[8];
+      const disputed = job[11];
+      let status = jobStatusFromIndex(indexEntry);
+      if (employer === ethers.ZeroAddress) {
+        status = "DeletedOrCancelled";
+      } else if (completed) {
+        status = "Completed";
+      } else if (disputed) {
+        status = "Disputed";
+      } else if (assignedAgent === ethers.ZeroAddress) {
+        status = "Open";
+      } else if (completionRequested) {
+        status = "CompletionRequested";
+      } else {
+        status = "InProgress";
+      }
+      return status;
+    }
+
+    async function resolveJobStatus(jobId, job, indexEntry) {
+      const derived = deriveJobStatus(job, indexEntry);
+      if (!state.readContract) return derived;
+      if (state.capabilities.jobStatusString !== false) {
+        try {
+          const status = await state.readContract.jobStatusString(BigInt(jobId));
+          state.capabilities.jobStatusString = true;
+          return status;
+        } catch (error) {
+          if (state.capabilities.jobStatusString == null) {
+            state.capabilities.jobStatusString = false;
+          }
+        }
+      }
+      if (state.capabilities.jobStatus !== false) {
+        try {
+          const statusValue = await state.readContract.jobStatus(BigInt(jobId));
+          state.capabilities.jobStatus = true;
+          const key = Number(statusValue);
+          return jobStatusLabels[key] || derived;
+        } catch (error) {
+          if (state.capabilities.jobStatus == null) {
+            state.capabilities.jobStatus = false;
+          }
+        }
+      }
+      return derived;
     }
 
     function nftStatusFromIndex(entry) {
@@ -2395,7 +2471,7 @@
         if (filter === "completion_requested") return status === "CompletionRequested";
         if (filter === "disputed") return status === "Disputed";
         if (filter === "completed") return status === "Completed";
-        if (filter === "cancelled") return status === "Cancelled";
+        if (filter === "cancelled") return status === "DeletedOrCancelled";
         return true;
       });
     }
@@ -2743,10 +2819,12 @@
 
       const jobs = await asyncPool(6, jobIds, async (jobId) => {
         const job = await state.readContract.jobs(BigInt(jobId));
-        return { jobId, job };
+        const indexEntry = state.index.jobs[jobId];
+        const status = await resolveJobStatus(jobId, job, indexEntry);
+        return { jobId, job, status };
       });
 
-      for (const { jobId, job } of jobs) {
+      for (const { jobId, job, status } of jobs) {
         const employer = job[1];
         const assignedAgent = job[5];
         const completed = job[7];
@@ -2754,21 +2832,6 @@
         const approvals = job[9];
         const disapprovals = job[10];
         const disputed = job[11];
-        const indexEntry = state.index.jobs[jobId];
-        let status = jobStatusFromIndex(indexEntry);
-        if (employer === ethers.ZeroAddress) {
-          status = "Deleted";
-        } else if (completed) {
-          status = "Completed";
-        } else if (disputed) {
-          status = "Disputed";
-        } else if (completionRequested) {
-          status = "CompletionRequested";
-        } else if (assignedAgent !== ethers.ZeroAddress) {
-          status = "Assigned";
-        } else if (!indexEntry) {
-          status = "Open";
-        }
 
         const row = document.createElement("tr");
         const cells = [

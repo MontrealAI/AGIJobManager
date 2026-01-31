@@ -60,6 +60,12 @@ and “Fallback ABI used” when opened via `file://`.
 
 If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit the updated ABI file.
 
+### Job status API support
+
+The UI prefers the on-chain `jobStatus(jobId)` / `jobStatusString(jobId)` helpers when available
+to display the canonical job lifecycle status. When connected to older deployments that do not
+expose these helpers, the UI falls back to its existing client-side derivation.
+
 ## Supported networks
 
 - **Ethereum mainnet** is the intended production network.
