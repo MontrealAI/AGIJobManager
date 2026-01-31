@@ -30,6 +30,8 @@
     "listings": 1,
     "ownerOf": 1,
     "tokenURI": 1,
+    "jobStatus": 1,
+    "jobStatusString": 1,
     "createJob": 4,
     "cancelJob": 1,
     "pause": 0,
