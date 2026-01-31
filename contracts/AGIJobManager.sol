@@ -304,9 +304,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (block.timestamp > job.assignedAt + job.duration) revert InvalidState();
         job.ipfsHash = _ipfsHash;
         job.completionRequested = true;
-        if (job.completionRequestedAt == 0) {
-            job.completionRequestedAt = block.timestamp;
-        }
+        job.completionRequestedAt = block.timestamp;
         emit JobCompletionRequested(_jobId, msg.sender);
     }
 

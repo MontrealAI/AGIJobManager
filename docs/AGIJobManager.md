@@ -97,7 +97,7 @@ stateDiagram-v2
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
 - Owner-set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
-- `finalizeJob` lets the assigned agent (or employer) complete after `completionReviewPeriod` **only if** no validator activity occurred (approvals and disapprovals are both zero).
+- `finalizeJob` lets the assigned agent (or employer) complete after `completionReviewPeriod` **only if** no validator activity occurred (approvals and disapprovals are both zero). Each `requestJobCompletion` resets `completionRequestedAt`, restarting the review window for updated submissions.
 - `resolveDispute` accepts any resolution string, but only two canonical strings trigger on-chain actions:
   - `agent win` → `_completeJob`
   - `employer win` → employer refund + `completed = true`
