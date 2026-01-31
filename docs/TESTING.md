@@ -51,6 +51,7 @@ This allows tests to pass `_verifyOwnership` without external dependencies.
 ## Scenario coverage (contract-level)
 The scenario suite (`test/scenarioLifecycle.marketplace.test.js`) exercises the contract in deterministic flows that map to the lifecycle diagram in the README:
 - **Create → apply → validate → complete** with escrow funding, payouts, reputation updates, and NFT issuance.
+- **Assigned → validate → complete** without a completion request to cover the direct validator approval path.
 - **Cancel** before assignment with escrow refunds and job deletion semantics.
 - **Dispute** paths (thresholded disapprovals, manual disputes, moderator resolutions) covering agent win, employer win, and neutral outcomes.
 - **Pause/unpause** behavior that blocks when-not-paused actions and resumes normal operation.
