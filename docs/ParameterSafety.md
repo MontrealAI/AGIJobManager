@@ -16,6 +16,8 @@ The table below lists configurable parameters and relevant caps, including who c
 | `validationRewardPercentage` | Owner (`setValidationRewardPercentage`) | Total % of payout distributed to validators on completion. | `1..100` | **Keep low enough so:** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. Commonly **1–10%**. | If `validationRewardPercentage + agent payout % > 100` and validators are present, settlement reverts due to insufficient escrow, making jobs uncompletable. |
 | `maxJobPayout` | Owner (`setMaxJobPayout`) | Caps `_payout` in `createJob`. | None. | Keep near realistic operational exposure (e.g., default `4888e18`). Avoid enormous values that stress reputation math and escrow solvency. | Too low → `createJob` reverts. Too high → giant payouts can make reputation math overflow or exceed escrow solvency in completion; settlement reverts. |
 | `jobDurationLimit` | Owner (`setJobDurationLimit`) | Caps `_duration` in `createJob` and controls when `requestJobCompletion` can be called. | None. | Pick a duration aligned with business SLAs (seconds). | Too low → `createJob` reverts or agents miss the completion request window. Too high → long‑running jobs remain open for extended periods. |
+| `completionReviewPeriod` | Owner (`setCompletionReviewPeriod`) | Review window after `requestJobCompletion` before `finalizeJob` can be used (only when validators are silent). | `1..365 days` | **Hours to days** (e.g., 24h–7d). Keep short enough to unblock payouts but long enough for employer/validators to act. | Too short → employers/validators may miss review and silent-finalization becomes common. Too long → agent payouts can remain locked unnecessarily. |
+| `disputeReviewPeriod` | Owner (`setDisputeReviewPeriod`) | Emergency window before `resolveStaleDispute` can be used (paused + owner only). | `1..365 days` | **Days to weeks** (e.g., 7d–30d). Keep long enough for moderators to act, but not so long that disputes deadlock. | Too short → owner can resolve disputes too quickly during incidents; too long → disputes can remain stuck if moderators vanish. |
 | `premiumReputationThreshold` | Owner (`setPremiumReputationThreshold`) | Gate for `canAccessPremiumFeature`. | None. | Set based on desired premium access policy; no settlement impact. | Mis-set only affects premium feature access (not escrow or payouts). |
 | `MAX_VALIDATORS_PER_JOB` (constant) | Immutable | Caps validators per job and enforces `requiredValidatorApprovals + requiredValidatorDisapprovals <= 50`. | `50` | Keep validator thresholds well below 50 to ensure reachable consensus and reasonable gas. | If validator thresholds approach 50, a single unexpected disapproval can make approvals unreachable; disputes may become the only path. |
 | `AGIType.payoutPercentage` (per NFT) | Owner (`addAGIType`) | Determines agent payout percentage via `getHighestPayoutPercentage`. | `1..100` | Choose a **max agent payout %** so that `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If any agent holds an NFT with a payout percentage that, combined with `validationRewardPercentage`, exceeds 100, job completion will revert when validator payouts execute. |
@@ -83,6 +85,27 @@ Below are plausible misconfiguration or operational failures that can trap funds
 - **Operational recovery:** Pause, correct thresholds, add validators, unpause, and have validators re‑validate.
 - **Outcome:** **Recoverable** if owner/moderator actions are available.
 
+### 3b) Employer/validator silence after completion request
+- **Symptom:** Agent requested completion, but no validators or employer act.
+- **Root cause:** Review/validation activity never occurs.
+- **On‑chain recovery:** After `completionReviewPeriod`, the assigned agent (or employer) can call `finalizeJob` **only if** no validator activity exists (approvals/disapprovals are both zero).
+- **Operational recovery:** Choose a review period long enough to permit normal review. Shorten or lengthen as needed via `setCompletionReviewPeriod`.
+- **Outcome:** **Recoverable** without owner intervention.
+
+### 3c) Agent disappearance after assignment
+- **Symptom:** Agent never requests completion; job is past its deadline.
+- **Root cause:** Assigned agent disappears or misses the duration window.
+- **On‑chain recovery:** Anyone can call `expireJob` after `assignedAt + duration` (only if completion was never requested) to refund the employer.
+- **Operational recovery:** Monitor overdue jobs and trigger expiration.
+- **Outcome:** **Recoverable** without owner intervention.
+
+### 3d) Disputed jobs with no moderator availability
+- **Symptom:** Job is disputed and no moderator action occurs.
+- **Root cause:** Moderator key loss, unavailability, or operational outage.
+- **On‑chain recovery:** Owner can pause the contract and call `resolveStaleDispute` after `disputeReviewPeriod` to complete or refund.
+- **Operational recovery:** Maintain moderator redundancy; reserve `resolveStaleDispute` for incident recovery.
+- **Outcome:** **Recoverable** with owner intervention.
+
 ### 4) Token transfer failures to specific recipients
 - **Symptom:** Settlement reverts when paying a validator or agent (or employer in disputes/cancels).
 - **Root cause:** ERC‑20 transfers fail (blacklisted address, paused token, or non‑standard behavior). `_safeERC20Transfer` treats any failure as a revert.
@@ -111,13 +134,14 @@ Below are plausible misconfiguration or operational failures that can trap funds
 2. **Eligibility roots:** verify `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, and `agentMerkleRoot` against your allowlists and ENS settings.
 3. **Validator thresholds:** choose `requiredValidatorApprovals` and `requiredValidatorDisapprovals` so that your known validator set can reach them quickly.
 4. **Payout economics:** define a maximum `AGIType.payoutPercentage` and choose `validationRewardPercentage` so their sum is **≤ 100**.
-5. **Exposure controls:** set `maxJobPayout` and `jobDurationLimit` aligned with operational SLAs and escrow risk.
+5. **Exposure controls:** set `maxJobPayout`, `jobDurationLimit`, and `completionReviewPeriod` aligned with operational SLAs and escrow risk.
+6. **Dispute safety:** set `disputeReviewPeriod` to a realistic incident-recovery window.
 
 ### Post‑deploy (before opening to users)
 1. **Read on‑chain values** (via `eth_call`):
    - `requiredValidatorApprovals`, `requiredValidatorDisapprovals`
    - `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`
-   - `premiumReputationThreshold`, `MAX_VALIDATORS_PER_JOB`
+   - `premiumReputationThreshold`, `completionReviewPeriod`, `disputeReviewPeriod`, `MAX_VALIDATORS_PER_JOB`
    - `agiToken`, `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot`
 2. **Verify add‑on configuration:** check `AGIType` entries to confirm max payout percentages.
 3. **Dry‑run acceptance:** have one agent and one validator prove eligibility (Merkle/ENS) and perform a small‑value job end‑to‑end.

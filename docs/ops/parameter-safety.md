@@ -35,6 +35,8 @@ This document is a production-grade **operator checklist** for preventing and re
 | `validationRewardPercentage` (`setValidationRewardPercentage`) | uint256 percentage | Validator payout pool in `_completeJob`. | `1..100` on-chain. **Must satisfy** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If sum exceeds 100, payouts can exceed escrow → completion reverts. | Reduce `validationRewardPercentage` or reduce any AGI type payout percentage. |
 | `maxJobPayout` (`setMaxJobPayout`) | token amount | `createJob` cap; affects reputation math. | > 0; keep to realistic exposure to avoid overflow in reputation math. | Too low → `createJob` reverts. Too high → reputation math overflow (Solidity 0.8 revert) or huge escrow risk. | Set to realistic cap; redeploy if overflow prevents completion. |
 | `jobDurationLimit` (`setJobDurationLimit`) | seconds | `createJob` cap; `requestJobCompletion` deadline. | > 0; align with SLA. | Too low → `createJob` reverts or `requestJobCompletion` fails; too high → long-running stuck jobs. | Update limit; use disputes if deadline already missed. |
+| `completionReviewPeriod` (`setCompletionReviewPeriod`) | seconds | Review window after `requestJobCompletion` before `finalizeJob` is allowed (validators must be silent). | `1..365 days` | Hours to days (24h–7d) to give employers/validators time to act. | Too short → agent can finalize before review; too long → payouts stay locked longer. | Adjust window; monitor completion requests. |
+| `disputeReviewPeriod` (`setDisputeReviewPeriod`) | seconds | Window before `resolveStaleDispute` is allowed (paused + owner only). | `1..365 days` | Days to weeks (7d–30d) to give moderators time to resolve. | Too short → owner can settle too early in incidents; too long → disputes can deadlock. | Adjust window; maintain moderator redundancy. |
 | `premiumReputationThreshold` (`setPremiumReputationThreshold`) | points | `canAccessPremiumFeature`. | Any non-negative uint. | Mis-set only affects premium access (no settlement impact). | Adjust threshold. |
 | `AGIType.payoutPercentage` (`addAGIType`) | uint256 percentage | Agent payout percentage in `_completeJob`. | `1..100`; **highest** payout across AGI types must satisfy `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If any agent holds a high-percentage NFT that pushes the sum > 100, completion can revert. | Lower AGI type percentage (or validation reward %); re-validate. |
 | `pause` / `unpause` | bool | Gates most job actions. | Use `pause` for incident response, not normal ops. | If paused, job lifecycle actions revert (creation, apply, validate, dispute, completion request). | Unpause after fixing parameters; no funds lost. |
@@ -93,13 +95,28 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Failure:** `purchaseNFT` reverts because seller is no longer owner; listing remains active.
    - **Escape hatch:** seller (current owner) delists and re-lists; buyers retry after listing is valid.
 
+9. **Silent completion request (no validator or employer action)**
+   - **Prerequisite:** agent called `requestJobCompletion`, but no validator activity occurs.
+   - **Failure:** job remains incomplete, escrow locked.
+   - **Escape hatch:** after `completionReviewPeriod`, agent (or employer) can call `finalizeJob` **only if** approvals and disapprovals are both zero.
+
+10. **Expired assignment (agent disappears)**
+   - **Prerequisite:** agent assigned but never requests completion.
+   - **Failure:** escrow locked beyond deadline.
+   - **Escape hatch:** anyone can call `expireJob` after `assignedAt + duration` (only if completion was never requested).
+
+11. **Dispute deadlock (no moderators)**
+   - **Prerequisite:** job remains disputed without moderator action.
+   - **Failure:** escrow locked indefinitely.
+   - **Escape hatch:** owner pauses and calls `resolveStaleDispute` after `disputeReviewPeriod` to settle.
+
 ## Recovery playbook (step-by-step)
 
 1. **Pause operations (owner, always available):**
    - Call `pause()` to stop new job actions while you diagnose.
 
 2. **Diagnose root cause:**
-   - Read current parameters (`requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`, `agiToken`, roots, ENS/NameWrapper addresses).
+   - Read current parameters (`requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, `disputeReviewPeriod`, `agiToken`, roots, ENS/NameWrapper addresses).
    - Check current escrow balance against total outstanding job payouts.
 
 3. **Apply fixes (owner/moderator, always available if owner keys are live):**
@@ -107,12 +124,15 @@ This document is a production-grade **operator checklist** for preventing and re
    - Reduce validation reward % or AGI type payout %.
    - Add emergency validators/agents with `addAdditionalValidator` / `addAdditionalAgent`.
    - Add a moderator if disputes are stuck.
+   - Adjust `completionReviewPeriod` or `disputeReviewPeriod` if timeouts are misaligned.
    - **Never** change `agiToken` if outstanding jobs exist.
 
 4. **Unstick jobs (path depends on job state; always available if the correct role exists):**
    - **Unassigned jobs:** employer uses `cancelJob`; owner uses `delistJob` for recovery.
-   - **Assigned but incomplete:** validators retry `validateJob` or `disapproveJob`.
+   - **Assigned but incomplete:** validators retry `validateJob` or `disapproveJob`; after the deadline, anyone may `expireJob` if no completion request was made.
+   - **Completion requested but silent:** after `completionReviewPeriod`, agent/employer may `finalizeJob` if no validator activity exists.
    - **Disputed jobs:** moderator calls `resolveDispute` with exact strings `"agent win"` or `"employer win"`.
+   - **Disputed + no moderators:** owner pauses and uses `resolveStaleDispute` after `disputeReviewPeriod`.
 
 5. **Verify recovery:**
    - Query `jobs(jobId)` and `getJobStatus(jobId)` to confirm `completed` and `disputed` flags.
@@ -141,14 +161,14 @@ This document is a production-grade **operator checklist** for preventing and re
 - `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot` match allowlist/ENS policy.
 - Decide `requiredValidatorApprovals` + `requiredValidatorDisapprovals` (both ≤ 50).
 - Set max agent payout percentage and ensure `maxAgentPayoutPercentage + validationRewardPercentage <= 100`.
-- Set realistic `maxJobPayout` and `jobDurationLimit`.
+- Set realistic `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, and `disputeReviewPeriod`.
 
 **Post-deploy (before enabling users):**
 - Read on-chain values:
   - `owner`, `paused`
   - `agiToken`, `ens`, `nameWrapper`
   - `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`
-  - `maxJobPayout`, `jobDurationLimit`, `premiumReputationThreshold`
+  - `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, `disputeReviewPeriod`, `premiumReputationThreshold`
   - `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot`
 - Confirm at least one moderator is set.
 - Dry-run: create a small job, validate, and confirm payout + NFT issuance.
@@ -157,6 +177,7 @@ This document is a production-grade **operator checklist** for preventing and re
 
 - **Validators**: Sufficient active validators exist to reach thresholds without exceeding `MAX_VALIDATORS_PER_JOB`.
 - **Moderators**: At least one moderator is always available to resolve disputes.
+- **Timeout operations**: Operators monitor overdue jobs and invoke `expireJob` / `finalizeJob` as needed.
 - **ERC‑20 behavior**: The token behaves like a standard ERC‑20 (`transfer`/`transferFrom` success, no fee-on-transfer or rebasing).
 - **ENS/NameWrapper availability**: ENS resolver and NameWrapper calls must succeed for on-chain eligibility checks; otherwise allowlists must compensate.
 - **Gas**: Validator loops are O(n); keep validator counts low to avoid gas exhaustion.
