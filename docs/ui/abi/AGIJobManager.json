@@ -58,6 +58,16 @@
     },
     {
       "inputs": [],
+      "name": "IneligibleAgentPayout",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAgentPayoutSnapshot",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "InvalidParameters",
       "type": "error"
     },
@@ -118,6 +128,19 @@
         }
       ],
       "name": "AGITypeUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newPercentage",
+          "type": "uint256"
+        }
+      ],
+      "name": "AdditionalAgentPayoutPercentageUpdated",
       "type": "event"
     },
     {
@@ -809,6 +832,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "additionalAgentPayoutPercentage",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -1233,6 +1269,11 @@
           "internalType": "bool",
           "name": "expired",
           "type": "bool"
+        },
+        {
+          "internalType": "uint8",
+          "name": "agentPayoutPct",
+          "type": "uint8"
         }
       ],
       "stateMutability": "view",
@@ -2058,6 +2099,19 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "_percentage",
+          "type": "uint256"
+        }
+      ],
+      "name": "setAdditionalAgentPayoutPercentage",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "string",
           "name": "_hash",
           "type": "string"
@@ -2144,6 +2198,25 @@
           "internalType": "string",
           "name": "",
           "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getJobAgentPayoutPct",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",

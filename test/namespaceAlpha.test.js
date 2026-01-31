@@ -5,6 +5,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const MockERC721 = artifacts.require("MockERC721");
 
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { expectRevert } = require("@openzeppelin/test-helpers");
@@ -22,6 +23,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
   let manager;
   let clubRoot;
   let agentRoot;
+  let agiTypeNft;
 
   const payout = toBN(toWei("10"));
 
@@ -54,6 +56,9 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     );
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    agiTypeNft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(agiTypeNft.address, 1, { from: owner });
+    await agiTypeNft.mint(agent, { from: owner });
   });
 
   it("authorizes an agent via NameWrapper ownership under alpha.agent", async () => {

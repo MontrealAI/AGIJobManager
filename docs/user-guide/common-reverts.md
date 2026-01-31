@@ -18,6 +18,7 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 | What you tried to do | What you saw | What it means | How to fix it | Where to learn more |
 | --- | --- | --- | --- | --- |
 | Apply for a job | `NotAuthorized` | Your wallet did not pass the agent eligibility checks. | Make sure **one** of the following is true: (1) you’re in `additionalAgents`, (2) you provided a valid Merkle proof, (3) you own the ENS NameWrapper subdomain, or (4) your ENS resolver.addr points to your wallet. Also **use the label only**. | [Roles → Agent](roles.md#agent), [Merkle proofs](merkle-proofs.md) |
+| Apply for a job | `IneligibleAgentPayout` | Your agent payout tier is 0%, so the job cannot be accepted. | Hold an eligible AGI‑type NFT **or** ask the owner to add you to `additionalAgents` and set a nonzero default payout. | [Roles → Agent](roles.md#agent) |
 | Apply for a job | `InvalidState` | Job already has an assigned agent. | Pick another open job. | [Happy path](happy-path.md) |
 | Apply for a job | `Blacklisted` | Your wallet is blacklisted as an agent. | Contact the operator/owner for remediation. | [Roles → Agent](roles.md#agent) |
 | Request job completion | `NotAuthorized` | Only the assigned agent can request completion. | Ensure you are the assigned agent for that job. | [Roles → Agent](roles.md#agent) |

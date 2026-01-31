@@ -51,6 +51,7 @@ Job entries are created in `createJob` and stored in `jobs(jobId)`.
 
 ### Read-only helpers
 - `getJobStatus(jobId)` returns `(completed, completionRequested, ipfsHash)` for lightweight polling.
+- `getJobAgentPayoutPct(jobId)` returns the snapshotted agent payout percentage.
 - `jobs(jobId)` returns the fixed fields of the `Job` struct (it omits the internal validator list and per-validator mappings).
 - `jobStatus(jobId)` returns the canonical `JobStatus` enum value for external consumers.
 - `jobStatusString(jobId)` returns the human-readable enum label.
@@ -114,7 +115,7 @@ stateDiagram-v2
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
-- **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPercentage / 100`, where `agentPayoutPercentage` is the highest AGI type percentage owned by the agent (may be zero).
+- **Agent payout**: on assignment, the agent’s payout percentage is snapshotted and stored on the job. On completion, the agent receives `job.payout * snapshottedAgentPayoutPercentage / 100`. If the agent has no AGI‑type NFTs, `applyForJob` reverts unless the agent is explicitly allowlisted in `additionalAgents`, in which case the job records the configurable `additionalAgentPayoutPercentage`.
 - **Validator payout**: when validators voted, `validationRewardPercentage` of the payout is split equally across all validators who voted (approvals and disapprovals both append to the validator list).
 - **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner.
 - **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDispute` with `employer win` refunds and finalizes the job.
@@ -173,6 +174,8 @@ Custom errors and their intent:
 - `InvalidParameters`: zero values, out-of-range percentages, or invalid constructor updates.
 - `InvalidValidatorThresholds`: validator thresholds exceed the per‑job cap or their sum exceeds the cap.
 - `InvalidState`: invalid lifecycle transition (e.g., reapply, double complete, dispute after completion).
+- `IneligibleAgentPayout`: agent has a 0% payout tier and is not allowlisted for a default payout.
+- `InvalidAgentPayoutSnapshot`: snapshotted agent payout percentage is zero (defensive invariant).
 - `JobNotFound`: non-existent job ID.
 - `TransferFailed`: ERC‑20 `transfer`/`transferFrom` returned false.
 - `ValidatorLimitReached`: a validator action would exceed the per‑job cap.

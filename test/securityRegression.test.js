@@ -24,6 +24,7 @@ contract("AGIJobManager security regressions", (accounts) => {
   let manager;
   let clubRoot;
   let agentRoot;
+  let agiTypeNft;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -49,6 +50,9 @@ contract("AGIJobManager security regressions", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await manager.addModerator(moderator, { from: owner });
+    agiTypeNft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(agiTypeNft.address, 1, { from: owner });
+    await agiTypeNft.mint(agent, { from: owner });
   });
 
   it("reverts on missing jobs for role actions", async () => {
@@ -214,6 +218,9 @@ contract("AGIJobManager security regressions", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await managerFailing.setRequiredValidatorApprovals(1, { from: owner });
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await managerFailing.addAGIType(agiType.address, 1, { from: owner });
 
     await failing.approve(managerFailing.address, toBN(toWei("10")), { from: employer });
     const createTx = await managerFailing.createJob("ipfs", toBN(toWei("10")), 1000, "details", { from: employer });
