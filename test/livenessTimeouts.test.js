@@ -117,6 +117,17 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     );
   });
 
+  it("rejects expiry before the job deadline", async () => {
+    const payout = toBN(toWei("3"));
+    await token.mint(employer, payout, { from: owner });
+
+    const jobId = await createJob(payout, 500);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    await advanceTime(100);
+    await expectCustomError(manager.expireJob.call(jobId, { from: other }), "InvalidState");
+  });
+
   it("finalizes completion after the review window when validators are silent", async () => {
     const payout = toBN(toWei("25"));
     await token.mint(employer, payout, { from: owner });
@@ -141,7 +152,19 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
   });
 
-  it("blocks finalize when validators have already acted", async () => {
+  it("rejects finalize before the review window elapses", async () => {
+    const payout = toBN(toWei("4"));
+    await token.mint(employer, payout, { from: owner });
+
+    const jobId = await createJob(payout, 1000);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await advanceTime(50);
+    await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
+  });
+
+  it("finalizes in favor of the agent when validators lean positive", async () => {
     const payout = toBN(toWei("5"));
     await token.mint(employer, payout, { from: owner });
 
@@ -152,7 +175,31 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await advanceTime(120);
 
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
+    const agentBefore = await token.balanceOf(agent);
+    await manager.finalizeJob(jobId, { from: other });
+    const agentAfter = await token.balanceOf(agent);
+    const expected = payout.muln(90).divn(100);
+    assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
+  });
+
+  it("finalizes in favor of the employer when validators lean negative", async () => {
+    const payout = toBN(toWei("6"));
+    await token.mint(employer, payout, { from: owner });
+
+    const jobId = await createJob(payout, 1000);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await advanceTime(120);
+
+    const employerBefore = await token.balanceOf(employer);
+    await manager.finalizeJob(jobId, { from: other });
+    const employerAfter = await token.balanceOf(employer);
+    assert.equal(employerAfter.sub(employerBefore).toString(), payout.toString(), "employer should be refunded");
+
+    const job = await manager.jobs(jobId);
+    assert.strictEqual(job.completed, true, "job should be completed after refund");
   });
 
   it("rejects expiry after completion was requested and blocks finalize when disputed", async () => {
