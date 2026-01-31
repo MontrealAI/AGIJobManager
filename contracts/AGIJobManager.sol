@@ -203,12 +203,36 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function _t(address to, uint256 amount) internal {
         if (amount == 0) return;
-        if (!agiToken.transfer(to, amount)) revert TransferFailed();
+        _safeERC20Transfer(agiToken, to, amount);
     }
 
     function _tFrom(address from, address to, uint256 amount) internal {
         if (amount == 0) return;
-        if (!agiToken.transferFrom(from, to, amount)) revert TransferFailed();
+        _safeERC20TransferFrom(agiToken, from, to, amount);
+    }
+
+    function _safeERC20Transfer(IERC20 token, address to, uint256 amount) internal {
+        (bool success, bytes memory data) = address(token).call(
+            abi.encodeWithSelector(token.transfer.selector, to, amount)
+        );
+        _handleTokenReturn(success, data);
+    }
+
+    function _safeERC20TransferFrom(IERC20 token, address from, address to, uint256 amount) internal {
+        (bool success, bytes memory data) = address(token).call(
+            abi.encodeWithSelector(token.transferFrom.selector, from, to, amount)
+        );
+        _handleTokenReturn(success, data);
+    }
+
+    function _handleTokenReturn(bool success, bytes memory data) internal pure {
+        if (!success) revert TransferFailed();
+        if (data.length == 0) return;
+        if (data.length == 32) {
+            if (!abi.decode(data, (bool))) revert TransferFailed();
+            return;
+        }
+        revert TransferFailed();
     }
 
     function pause() external onlyOwner { _pause(); }
@@ -224,7 +248,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.payout = _payout;
         job.duration = _duration;
         job.details = _details;
+        uint256 balanceBefore = agiToken.balanceOf(address(this));
         _tFrom(msg.sender, address(this), _payout);
+        uint256 balanceAfter = agiToken.balanceOf(address(this));
+        if (balanceAfter != balanceBefore + _payout) revert TransferFailed();
         emit JobCreated(jobId, _ipfsHash, _payout, _duration, _details);
     }
 
@@ -520,7 +547,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function contributeToRewardPool(uint256 amount) external whenNotPaused nonReentrant {
         if (amount == 0) revert InvalidParameters();
+        uint256 balanceBefore = agiToken.balanceOf(address(this));
         _tFrom(msg.sender, address(this), amount);
+        uint256 balanceAfter = agiToken.balanceOf(address(this));
+        if (balanceAfter != balanceBefore + amount) revert TransferFailed();
         emit RewardPoolContribution(msg.sender, amount);
     }
 

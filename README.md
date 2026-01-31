@@ -168,7 +168,7 @@ npx truffle migrate --network development
 
 - **Centralization risk**: the owner can change critical parameters and withdraw escrowed ERC‑20; moderators can resolve disputes.
 - **Eligibility gating**: Merkle roots and ENS dependencies are immutable post-deploy; misconfiguration requires redeployment.
-- **Token compatibility**: ERC‑20 must return `true` for `transfer`/`transferFrom`.
+- **Token compatibility**: ERC‑20 tokens may return `true`/`false` or return no data for `transfer`/`transferFrom`. Tokens that charge fees on transfer, rebase balances, or otherwise cause received amounts to differ from requested amounts are not supported (escrow and reward pool deposits require exact amounts).
 - **Marketplace reentrancy guard**: `purchaseNFT` is protected by `nonReentrant` because it crosses an external ERC‑20 `transferFrom` boundary; removing this protection requires a redeploy even though the ABI is unchanged.
 - **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
 - **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline unless off‑chain policies intervene.
