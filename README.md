@@ -47,6 +47,7 @@ stateDiagram-v2
 
     Assigned --> Completed: validateJob (approval threshold)
     CompletionRequested --> Completed: validateJob (approval threshold)
+    CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
 
     Assigned --> Disputed: disapproveJob (disapproval threshold)
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
@@ -56,6 +57,9 @@ stateDiagram-v2
     Disputed --> Completed: resolveDispute("agent win")
     Disputed --> Completed: resolveDispute("employer win")
     Disputed --> Assigned: resolveDispute(other)
+    Disputed --> Completed: resolveStaleDispute (owner, paused, timeout)
+
+    Assigned --> Expired: expireJob (timeout, no completion request)
 
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)

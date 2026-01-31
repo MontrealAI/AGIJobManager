@@ -24,6 +24,9 @@ npx ganache -p 8545
 npx truffle compile
 ```
 
+By default the Truffle config enables `viaIR` to avoid stack-depth limits in the contract bytecode generator.
+If you need to disable it for comparison, set `SOLC_VIA_IR=false` in your environment.
+
 ## Run the full test suite
 
 ```bash
