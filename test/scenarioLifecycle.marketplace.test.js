@@ -268,6 +268,10 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     assert.equal((await manager.nextTokenId()).toNumber(), 0, "no NFT should be minted");
     await expectRevert(manager.ownerOf(0), "ERC721: invalid token ID");
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator-a", EMPTY_PROOF, { from: validatorA }),
+      "InvalidState"
+    );
   });
 
   it("clears disputed flag on non-canonical resolution and returns to in-progress", async () => {
@@ -290,6 +294,53 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
     const finalJob = await manager.jobs(jobId);
     assert.strictEqual(finalJob.completed, true, "job should complete after follow-up validation");
+  });
+
+  it("preserves escrow on neutral dispute resolution until later completion", async () => {
+    const payout = toBN(toWei("25"));
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(1, { from: owner });
+
+    await token.mint(employer, payout, { from: owner });
+    const { jobId } = await createJobWithApproval(payout);
+    await assignAndRequest(jobId, "ipfs-neutral-escrow");
+
+    await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
+
+    const balancesBefore = {
+      employer: await token.balanceOf(employer),
+      agent: await token.balanceOf(agent),
+      validatorA: await token.balanceOf(validatorA),
+      validatorB: await token.balanceOf(validatorB),
+      contract: await token.balanceOf(manager.address),
+    };
+
+    await manager.resolveDispute(jobId, "needs revisions", { from: moderator });
+    const midJob = await manager.jobs(jobId);
+    assert.strictEqual(midJob.disputed, false, "disputed flag should clear");
+    assert.strictEqual(midJob.completed, false, "job should remain open after neutral resolution");
+
+    const balancesAfter = {
+      employer: await token.balanceOf(employer),
+      agent: await token.balanceOf(agent),
+      validatorA: await token.balanceOf(validatorA),
+      validatorB: await token.balanceOf(validatorB),
+      contract: await token.balanceOf(manager.address),
+    };
+
+    assert.equal(balancesAfter.employer.toString(), balancesBefore.employer.toString(), "employer balance unchanged");
+    assert.equal(balancesAfter.agent.toString(), balancesBefore.agent.toString(), "agent should not be paid yet");
+    assert.equal(balancesAfter.validatorA.toString(), balancesBefore.validatorA.toString(), "validator A should not be paid yet");
+    assert.equal(balancesAfter.validatorB.toString(), balancesBefore.validatorB.toString(), "validator B should not be paid yet");
+    assert.equal(balancesAfter.contract.toString(), payout.toString(), "escrow should remain locked");
+
+    await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
+    const balancesFinal = {
+      agent: await token.balanceOf(agent),
+      contract: await token.balanceOf(manager.address),
+    };
+    assert.ok(balancesFinal.agent.gt(balancesAfter.agent), "agent should be paid on final completion");
+    assert.equal(balancesFinal.contract.toString(), "0", "escrow should clear after completion");
   });
 
   it("pauses state-changing actions and resumes after unpause", async () => {
