@@ -80,9 +80,21 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
     await token.setReentry(manager.address, tokenIdB, true, { from: owner });
     await token.approveManager(priceB, { from: owner });
 
+    const buyerBalanceBefore = await token.balanceOf(buyer);
+    const sellerBalanceBefore = await token.balanceOf(employer);
     await expectRevert(
       manager.purchaseNFT(tokenIdA, { from: buyer }),
       "ReentrancyGuard: reentrant call"
+    );
+    const buyerBalanceAfter = await token.balanceOf(buyer);
+    const sellerBalanceAfter = await token.balanceOf(employer);
+    assert(
+      buyerBalanceAfter.eq(buyerBalanceBefore),
+      "buyer balance should be unchanged after revert"
+    );
+    assert(
+      sellerBalanceAfter.eq(sellerBalanceBefore),
+      "seller balance should be unchanged after revert"
     );
 
     const ownerA = await manager.ownerOf(tokenIdA);
