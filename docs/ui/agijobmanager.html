@@ -2397,6 +2397,12 @@
       return status;
     }
 
+    function isMissingMethodError(error) {
+      const message = `${error?.shortMessage || ""} ${error?.message || ""}`.toLowerCase();
+      if (message.includes("missing revert data") || message.includes("function selector")) return true;
+      return error?.data === "0x";
+    }
+
     async function resolveJobStatus(jobId, job, indexEntry) {
       const derived = deriveJobStatus(job, indexEntry);
       if (!state.readContract) return derived;
@@ -2406,7 +2412,7 @@
           state.capabilities.jobStatusString = true;
           return status;
         } catch (error) {
-          if (state.capabilities.jobStatusString == null) {
+          if (state.capabilities.jobStatusString == null && isMissingMethodError(error)) {
             state.capabilities.jobStatusString = false;
           }
         }
@@ -2418,7 +2424,7 @@
           const key = Number(statusValue);
           return jobStatusLabels[key] || derived;
         } catch (error) {
-          if (state.capabilities.jobStatus == null) {
+          if (state.capabilities.jobStatus == null && isMissingMethodError(error)) {
             state.capabilities.jobStatus = false;
           }
         }
