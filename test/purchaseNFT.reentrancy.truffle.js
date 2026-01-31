@@ -94,4 +94,28 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
     const listingB = await manager.listings(tokenIdB);
     assert.strictEqual(listingB.isActive, true, "tokenIdB listing should remain active");
   });
+
+  it("reverts when reentrancy targets the same listing", async () => {
+    const payout = toBN(toWei("40"));
+    const tokenId = await createAndCompleteJob(payout);
+    const price = toBN(toWei("5"));
+
+    await manager.listNFT(tokenId, price, { from: employer });
+    await token.mint(buyer, price, { from: owner });
+    await token.approve(manager.address, price, { from: buyer });
+
+    await token.mint(token.address, price, { from: owner });
+    await token.setReentry(manager.address, tokenId, true, { from: owner });
+    await token.approveManager(price, { from: owner });
+
+    await expectRevert.unspecified(
+      manager.purchaseNFT(tokenId, { from: buyer })
+    );
+
+    const currentOwner = await manager.ownerOf(tokenId);
+    assert.equal(currentOwner, employer, "tokenId should remain with seller");
+
+    const listing = await manager.listings(tokenId);
+    assert.strictEqual(listing.isActive, true, "listing should remain active");
+  });
 });
