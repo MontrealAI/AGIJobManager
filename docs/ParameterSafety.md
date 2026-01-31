@@ -16,7 +16,7 @@ The table below lists configurable parameters and relevant caps, including who c
 | `validationRewardPercentage` | Owner (`setValidationRewardPercentage`) | Total % of payout distributed to validators on completion. | `1..100` | **Keep low enough so:** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. Commonly **1–10%**. | If `validationRewardPercentage + agent payout % > 100` and validators are present, settlement reverts due to insufficient escrow, making jobs uncompletable. |
 | `maxJobPayout` | Owner (`setMaxJobPayout`) | Caps `_payout` in `createJob`. | None. | Keep near realistic operational exposure (e.g., default `4888e18`). Avoid enormous values that stress reputation math and escrow solvency. | Too low → `createJob` reverts. Too high → giant payouts can make reputation math overflow or exceed escrow solvency in completion; settlement reverts. |
 | `jobDurationLimit` | Owner (`setJobDurationLimit`) | Caps `_duration` in `createJob` and controls when `requestJobCompletion` can be called. | None. | Pick a duration aligned with business SLAs (seconds). | Too low → `createJob` reverts or agents miss the completion request window. Too high → long‑running jobs remain open for extended periods. |
-| `completionReviewPeriod` | Owner (`setCompletionReviewPeriod`) | Review window after `requestJobCompletion` before `finalizeJob` can be used (only when validators are silent). | `1..365 days` | **Hours to days** (e.g., 24h–7d). Keep short enough to unblock payouts but long enough for employer/validators to act. | Too short → employers/validators may miss review and silent-finalization becomes common. Too long → agent payouts can remain locked unnecessarily. |
+| `completionReviewPeriod` | Owner (`setCompletionReviewPeriod`) | Review window after `requestJobCompletion` before `finalizeJob` can settle with deterministic fallback rules. | `1..365 days` | **Hours to days** (e.g., 24h–7d). Keep short enough to unblock payouts but long enough for employer/validators to act. | Too short → low-vote finalizations may occur before review; too long → agent payouts can remain locked unnecessarily. |
 | `disputeReviewPeriod` | Owner (`setDisputeReviewPeriod`) | Emergency window before `resolveStaleDispute` can be used (paused + owner only). | `1..365 days` | **Days to weeks** (e.g., 7d–30d). Keep long enough for moderators to act, but not so long that disputes deadlock. | Too short → owner can resolve disputes too quickly during incidents; too long → disputes can remain stuck if moderators vanish. |
 | `premiumReputationThreshold` | Owner (`setPremiumReputationThreshold`) | Gate for `canAccessPremiumFeature`. | None. | Set based on desired premium access policy; no settlement impact. | Mis-set only affects premium feature access (not escrow or payouts). |
 | `MAX_VALIDATORS_PER_JOB` (constant) | Immutable | Caps validators per job and enforces `requiredValidatorApprovals + requiredValidatorDisapprovals <= 50`. | `50` | Keep validator thresholds well below 50 to ensure reachable consensus and reasonable gas. | If validator thresholds approach 50, a single unexpected disapproval can make approvals unreachable; disputes may become the only path. |
@@ -86,9 +86,9 @@ Below are plausible misconfiguration or operational failures that can trap funds
 - **Outcome:** **Recoverable** if owner/moderator actions are available.
 
 ### 3b) Employer/validator silence after completion request
-- **Symptom:** Agent requested completion, but no validators or employer act.
-- **Root cause:** Review/validation activity never occurs.
-- **On‑chain recovery:** After `completionReviewPeriod`, the assigned agent (or employer) can call `finalizeJob` **only if** no validator activity exists (approvals/disapprovals are both zero).
+- **Symptom:** Agent requested completion, but validator activity is insufficient to reach thresholds.
+- **Root cause:** Review/validation activity never reaches the configured thresholds.
+- **On‑chain recovery:** After `completionReviewPeriod`, anyone can call `finalizeJob`. Silence defaults to agent payout; otherwise approvals must exceed disapprovals for agent payout (ties refund the employer).
 - **Operational recovery:** Choose a review period long enough to permit normal review. Shorten or lengthen as needed via `setCompletionReviewPeriod`.
 - **Outcome:** **Recoverable** without owner intervention.
 
@@ -160,7 +160,8 @@ Below are plausible misconfiguration or operational failures that can trap funds
 3. **Unstick existing jobs:**
    - For unassigned jobs: employer can `cancelJob` (if no agent assigned). Owner can `delistJob` to refund.
    - For assigned jobs: instruct validators to retry `validateJob` or `disapproveJob` after parameters are fixed.
-   - If validators cannot reach thresholds, use `disputeJob` and resolve with `resolveDispute` (moderator only).
+   - If completion is requested but thresholds never form, use `finalizeJob` after `completionReviewPeriod` to settle deterministically.
+   - If validators cannot reach thresholds and a dispute is needed, use `disputeJob` and resolve with `resolveDispute` (moderator only).
 
 4. **Validate recovery:**
    - Use `getJobStatus` and the public `jobs(jobId)` getter to confirm `completed`/`disputed` status.
