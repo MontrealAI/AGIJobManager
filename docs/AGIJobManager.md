@@ -52,6 +52,35 @@ Job entries are created in `createJob` and stored in `jobs(jobId)`.
 ### Read-only helpers
 - `getJobStatus(jobId)` returns `(completed, completionRequested, ipfsHash)` for lightweight polling.
 - `jobs(jobId)` returns the fixed fields of the `Job` struct (it omits the internal validator list and per-validator mappings).
+- `jobStatus(jobId)` returns the canonical `JobStatus` enum value for external consumers.
+- `jobStatusString(jobId)` returns the human-readable enum label.
+
+### Canonical job status
+
+`jobStatus(jobId)` returns a stable enum so UIs and indexers do not need to re-derive lifecycle state.
+Enum values (stable, do not reorder):
+
+| Value | Status | Meaning |
+| --- | --- | --- |
+| 0 | `DeletedOrCancelled` | Job entry removed (`employer == address(0)`). |
+| 1 | `Open` | Job exists, employer set, no assigned agent. |
+| 2 | `InProgress` | Assigned agent, no completion request, not completed, not disputed. |
+| 3 | `CompletionRequested` | Assigned agent requested completion. |
+| 4 | `Disputed` | Dispute flag active. |
+| 5 | `Completed` | Job finalized (`completed == true`). |
+| 6 | `Expired` | Time-based expiry (informational when not explicitly expired on-chain). |
+
+Precedence rules (applied in order):
+1. If `jobId` is out of range (`jobId >= nextJobId`), revert `JobNotFound`.
+2. If `employer == address(0)`, return `DeletedOrCancelled`.
+3. If `completed`, return `Completed`.
+4. If `disputed`, return `Disputed`.
+5. If `assignedAgent == address(0)`, return `Open`.
+6. If `completionRequested`, return `CompletionRequested`.
+7. If `expired == true` **or** `block.timestamp > assignedAt + duration`, return `Expired` (informational for indexers/UI).
+8. Otherwise, return `InProgress`.
+
+Indexers and UIs should prefer `jobStatus()` over client-side derivations to avoid drift as additional flags are added.
 
 ## Lifecycle state machine
 
