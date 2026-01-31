@@ -1,42 +1,47 @@
-# Testing AGIJobManager
+# Testing
 
-This repository uses Truffle + Ganache for local testing. The suite includes mock contracts for ENS/NameWrapper/Resolver, ERC-20 transfer failures, and AGIType ERC-721s so we can validate the safety fixes without touching production code.
+## Local prerequisites
 
-## Local setup
+- Node.js + npm
+- Truffle (via `npx truffle`)
+- Ganache (for the `development` network)
 
-Install dependencies:
+## Install dependencies
 
 ```bash
 npm install
 ```
 
-Start Ganache in a separate terminal (development network):
+## Start a local chain (Ganache)
 
 ```bash
-npx ganache -p 8545 --wallet.mnemonic "test test test test test test test test test test test junk"
+npx ganache -p 8545
 ```
 
-Compile and run tests against the local `development` network:
+## Compile contracts
 
 ```bash
-truffle compile
-truffle test --network development
+npx truffle compile
 ```
 
-## Mocks used in tests
+## Run the full test suite
 
-The test suite uses the following test-only contracts under `contracts/test/`:
+```bash
+npx truffle test
+```
 
-- `MockERC20`: basic ERC-20 for escrow and payouts.
-- `FailingERC20` / `FailTransferToken`: ERC-20s that return `false` for `transfer` / `transferFrom`.
-- `MockENS`, `MockResolver`, `MockNameWrapper`: ENS gating mocks.
-- `MockERC721`: AGIType NFT for payout boosts.
+## Notes on test-only mocks
 
-## Extending the tests
+The test suite relies on minimal mocks under `contracts/test/`:
 
-Most tests share helper utilities in `test/helpers/`:
+- `MockERC20`, `FailingERC20`, `ERC20NoReturn`: exercise ERC-20 transfer edge cases.
+- `MockENS`, `MockResolver`, `MockNameWrapper`: deterministic ENS ownership gating in tests.
+- `MockERC721`: simulate AGIType NFT boosts.
 
-- `ens.js` for constructing namehash/root/subnode values and setting mock ownership.
-- `errors.js` for asserting custom error selectors.
+These mocks are **test-only** and are not deployed in production.
 
-Add new scenarios by reusing these helpers and creating focused test cases for new behaviors. Keep job IDs and test data deterministic to ensure consistent results across runs.
+## Extending tests
+
+- Prefer reusing helper utilities in `test/helpers/`.
+- Use deterministic Truffle accounts (`accounts[0..]`).
+- Keep the suite fast by avoiding large loops; the contract already enforces a 50-validator cap.
