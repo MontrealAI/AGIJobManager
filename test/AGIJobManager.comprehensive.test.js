@@ -265,6 +265,26 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
     });
 
+    it("blocks dispute resolution after validator-driven completion", async () => {
+      await manager.addAdditionalAgent(agent, { from: owner });
+      await manager.addAdditionalValidator(validatorOne, { from: owner });
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
+      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await agiTypeNft.mint(agent);
+
+      await createJob();
+      await manager.applyForJob(0, "agent", [], { from: agent });
+      await manager.validateJob(0, "validator", [], { from: validatorOne });
+
+      const tokenIdAfterCompletion = await manager.nextTokenId();
+      await expectCustomError(
+        manager.resolveDispute.call(0, "agent win", { from: moderator }),
+        "InvalidState"
+      );
+      await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
+      assert.equal((await manager.nextTokenId()).toString(), tokenIdAfterCompletion.toString());
+    });
+
     it("marks employer-win disputes as completed to block future payouts", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
@@ -368,6 +388,25 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       );
     });
 
+    it("rejects disapprovals when unassigned or already completed", async () => {
+      await manager.addAdditionalValidator(validatorOne, { from: owner });
+      await createJob(employer, payout, duration, "QmUnassigned");
+      await expectCustomError(
+        manager.disapproveJob.call(1, "validator", [], { from: validatorOne }),
+        "InvalidState"
+      );
+
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
+      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await agiTypeNft.mint(agent);
+      await manager.validateJob(0, "validator", [], { from: validatorOne });
+
+      await expectCustomError(
+        manager.disapproveJob.call(0, "validator", [], { from: validatorOne }),
+        "InvalidState"
+      );
+    });
+
     it("blocks blacklisted agents and validators", async () => {
       await manager.blacklistAgent(agent, true, { from: owner });
       await createJob(employer, payout, duration, "QmBlocked");
@@ -438,6 +477,16 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       assert.equal(neutralJob.completed, false);
       assert.equal(neutralJob.disputed, false);
     });
+
+    it("prevents disputes after completion", async () => {
+      await manager.addAdditionalValidator(validatorOne, { from: owner });
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
+      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await agiTypeNft.mint(agent);
+
+      await manager.validateJob(0, "validator", [], { from: validatorOne });
+      await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
+    });
   });
 
   describe("checked ERC20 transfers", () => {
@@ -494,6 +543,40 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         altManager.resolveDispute.call(0, "agent win", { from: moderator }),
         "TransferFailed"
       );
+    });
+
+    it("reverts validator-driven completion when transfer returns false", async () => {
+      const failingToken = await FailingERC20.new();
+      await failingToken.mint(employer, payout);
+      await failingToken.mint(owner, payout);
+
+      const altManager = await AGIJobManager.new(
+        failingToken.address,
+        baseIpfsUrl,
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        validatorTree.root,
+        agentTree.root
+      );
+      await altManager.addAdditionalAgent(agent, { from: owner });
+      await altManager.addAdditionalValidator(validatorOne, { from: owner });
+      await altManager.setRequiredValidatorApprovals(1, { from: owner });
+      await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await agiTypeNft.mint(agent);
+
+      await failingToken.approve(altManager.address, payout, { from: employer });
+      await altManager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
+      await altManager.applyForJob(0, "agent", [], { from: agent });
+
+      await failingToken.setFailTransfers(true);
+      await expectCustomError(
+        altManager.validateJob.call(0, "validator", [], { from: validatorOne }),
+        "TransferFailed"
+      );
+      const job = await altManager.jobs(0);
+      assert.equal(job.completed, false);
     });
 
     it("reverts NFT purchases when transferFrom fails", async () => {
@@ -598,6 +681,25 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         "Pausable: paused"
       );
     });
+
+    it("blocks state-changing job actions while paused", async () => {
+      await createJob();
+      await manager.pause({ from: owner });
+      await expectRevert(manager.applyForJob(0, "agent", [], { from: agent }), "Pausable: paused");
+      await expectRevert(
+        manager.requestJobCompletion(0, updatedIpfs, { from: agent }),
+        "Pausable: paused"
+      );
+      await expectRevert(
+        manager.validateJob(0, "validator", [], { from: validatorOne }),
+        "Pausable: paused"
+      );
+      await expectRevert(
+        manager.disapproveJob(0, "validator", [], { from: validatorOne }),
+        "Pausable: paused"
+      );
+      await expectRevert(manager.disputeJob(0, { from: employer }), "Pausable: paused");
+    });
   });
 
   describe("NFT marketplace", () => {
@@ -639,6 +741,13 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const listing = await manager.listings(tokenId);
       assert.equal(listing.isActive, false);
+    });
+
+    it("rejects delisting inactive listings", async () => {
+      const tokenId = (await manager.nextTokenId()).subn(1);
+      await manager.listNFT(tokenId, payout, { from: employer });
+      await manager.delistNFT(tokenId, { from: employer });
+      await expectCustomError(manager.delistNFT.call(tokenId, { from: employer }), "NotAuthorized");
     });
   });
 

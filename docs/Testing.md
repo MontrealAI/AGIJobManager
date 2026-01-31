@@ -38,6 +38,9 @@ The test suite relies on minimal mocks under `contracts/test/`:
 - `MockENS`, `MockResolver`, `MockNameWrapper`: deterministic ENS ownership gating in tests.
 - `MockERC721`: simulate AGIType NFT boosts.
 
+Local tests run entirely against the in-memory Truffle chain (or a Ganache `development` network)
+and do not require any `.env` configuration for the default setup.
+
 These mocks are **test-only** and are not deployed in production.
 
 ## Extending tests
