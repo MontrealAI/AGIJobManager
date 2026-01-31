@@ -35,7 +35,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `validationRewardPercentage` (`setValidationRewardPercentage`) | uint256 percentage | Validator payout pool in `_completeJob`. | `1..100` on-chain. **Must satisfy** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If sum exceeds 100, payouts can exceed escrow → completion reverts. | Reduce `validationRewardPercentage` or reduce any AGI type payout percentage. |
 | `maxJobPayout` (`setMaxJobPayout`) | token amount | `createJob` cap; affects reputation math. | > 0; keep to realistic exposure to avoid overflow in reputation math. | Too low → `createJob` reverts. Too high → reputation math overflow (Solidity 0.8 revert) or huge escrow risk. | Set to realistic cap; redeploy if overflow prevents completion. |
 | `jobDurationLimit` (`setJobDurationLimit`) | seconds | `createJob` cap; `requestJobCompletion` deadline. | > 0; align with SLA. | Too low → `createJob` reverts or `requestJobCompletion` fails; too high → long-running stuck jobs. | Update limit; use disputes if deadline already missed. |
-| `completionReviewPeriod` (`setCompletionReviewPeriod`) | seconds | Review window after `requestJobCompletion` before `finalizeJob` is allowed (validators must be silent). | `1..365 days` | Hours to days (24h–7d) to give employers/validators time to act. | Too short → agent can finalize before review; too long → payouts stay locked longer. | Adjust window; monitor completion requests. |
+| `completionReviewPeriod` (`setCompletionReviewPeriod`) | seconds | Review window after `requestJobCompletion` before `finalizeJob` can settle with deterministic fallback rules. | `1..365 days` | Hours to days (24h–7d) to give employers/validators time to act. | Too short → silent/low-vote finalization may occur before review; too long → payouts stay locked longer. | Adjust window; monitor completion requests. |
 | `disputeReviewPeriod` (`setDisputeReviewPeriod`) | seconds | Window before `resolveStaleDispute` is allowed (paused + owner only). | `1..365 days` | Days to weeks (7d–30d) to give moderators time to resolve. | Too short → owner can settle too early in incidents; too long → disputes can deadlock. | Adjust window; maintain moderator redundancy. |
 | `premiumReputationThreshold` (`setPremiumReputationThreshold`) | points | `canAccessPremiumFeature`. | Any non-negative uint. | Mis-set only affects premium access (no settlement impact). | Adjust threshold. |
 | `AGIType.payoutPercentage` (`addAGIType`) | uint256 percentage | Agent payout percentage in `_completeJob`. | `1..100`; **highest** payout across AGI types must satisfy `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If any agent holds a high-percentage NFT that pushes the sum > 100, completion can revert. | Lower AGI type percentage (or validation reward %); re-validate. |
@@ -95,10 +95,10 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Failure:** `purchaseNFT` reverts because seller is no longer owner; listing remains active.
    - **Escape hatch:** seller (current owner) delists and re-lists; buyers retry after listing is valid.
 
-9. **Silent completion request (no validator or employer action)**
-   - **Prerequisite:** agent called `requestJobCompletion`, but no validator activity occurs.
+9. **Silent or low-vote completion request**
+   - **Prerequisite:** agent called `requestJobCompletion`, but validators do not reach thresholds.
    - **Failure:** job remains incomplete, escrow locked.
-   - **Escape hatch:** after `completionReviewPeriod`, agent (or employer) can call `finalizeJob` **only if** approvals and disapprovals are both zero.
+   - **Escape hatch:** after `completionReviewPeriod`, anyone can call `finalizeJob`. Silence defaults to agent payout; otherwise approvals must exceed disapprovals for agent payout (ties refund the employer).
 
 10. **Expired assignment (agent disappears)**
    - **Prerequisite:** agent assigned but never requests completion.
@@ -130,7 +130,7 @@ This document is a production-grade **operator checklist** for preventing and re
 4. **Unstick jobs (path depends on job state; always available if the correct role exists):**
    - **Unassigned jobs:** employer uses `cancelJob`; owner uses `delistJob` for recovery.
    - **Assigned but incomplete:** validators retry `validateJob` or `disapproveJob`; after the deadline, anyone may `expireJob` if no completion request was made.
-   - **Completion requested but silent:** after `completionReviewPeriod`, agent/employer may `finalizeJob` if no validator activity exists.
+   - **Completion requested but stalled:** after `completionReviewPeriod`, anyone may `finalizeJob` to settle deterministically (silence → agent; approvals must exceed disapprovals, ties refund).
    - **Disputed jobs:** moderator calls `resolveDispute` with exact strings `"agent win"` or `"employer win"`.
    - **Disputed + no moderators:** owner pauses and uses `resolveStaleDispute` after `disputeReviewPeriod`.
 
