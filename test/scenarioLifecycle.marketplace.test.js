@@ -57,12 +57,14 @@ contract("AGIJobManager scenario coverage", (accounts) => {
   async function createJobWithApproval(payout, ipfsHash = "ipfs-job") {
     await token.approve(manager.address, payout, { from: employer });
     const createTx = await manager.createJob(ipfsHash, payout, 3600, "details", { from: employer });
-    return createTx.logs.find((log) => log.event === "JobCreated").args.jobId.toNumber();
+    const jobId = createTx.logs.find((log) => log.event === "JobCreated").args.jobId.toNumber();
+    return { jobId, createTx };
   }
 
   async function assignAndRequest(jobId, completionHash) {
-    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    await manager.requestJobCompletion(jobId, completionHash, { from: agent });
+    const applyTx = await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    const requestTx = await manager.requestJobCompletion(jobId, completionHash, { from: agent });
+    return { applyTx, requestTx };
   }
 
   it("completes the happy path with payouts, state updates, and NFT issuance", async () => {
@@ -76,8 +78,17 @@ contract("AGIJobManager scenario coverage", (accounts) => {
       contract: await token.balanceOf(manager.address),
     };
 
-    const jobId = await createJobWithApproval(payout);
-    await assignAndRequest(jobId, "ipfs-complete");
+    const { jobId, createTx } = await createJobWithApproval(payout);
+    const { applyTx } = await assignAndRequest(jobId, "ipfs-complete");
+
+    const createdEvent = createTx.logs.find((log) => log.event === "JobCreated");
+    assert.ok(createdEvent, "JobCreated event should be emitted");
+    assert.equal(createdEvent.args.payout.toString(), payout.toString(), "JobCreated payout mismatch");
+    assert.equal(createdEvent.args.ipfsHash, "ipfs-job", "JobCreated ipfs hash mismatch");
+
+    const appliedEvent = applyTx.logs.find((log) => log.event === "JobApplied");
+    assert.ok(appliedEvent, "JobApplied event should be emitted");
+    assert.equal(appliedEvent.args.agent, agent, "JobApplied agent mismatch");
 
     const applyJob = await manager.jobs(jobId);
     assert.equal(applyJob.assignedAgent, agent, "assigned agent should be set");
@@ -89,6 +100,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const finalJob = await manager.jobs(jobId);
     assert.strictEqual(finalJob.completed, true, "job should be completed");
     assert.strictEqual(finalJob.completionRequested, true, "completionRequested should be true");
+    assert.strictEqual(finalJob.disputed, false, "disputed should remain false in happy path");
 
     const jobCompleted = finalTx.logs.find((log) => log.event === "JobCompleted");
     const nftIssued = finalTx.logs.find((log) => log.event === "NFTIssued");
@@ -127,6 +139,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     const totalDelta = employerDelta.add(agentDelta).add(validatorADelta).add(validatorBDelta).add(contractDelta);
     assert.equal(totalDelta.toString(), "0", "token deltas should conserve payout accounting");
+    assert.equal(balancesAfter.contract.toString(), "0", "contract should not retain escrow after completion");
 
     const agentReputation = await manager.reputation(agent);
     const validatorReputation = await manager.reputation(validatorA);
@@ -142,7 +155,9 @@ contract("AGIJobManager scenario coverage", (accounts) => {
   it("allows employer to cancel before assignment and refunds escrow", async () => {
     const payout = toBN(toWei("12"));
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
+    const escrowBalance = await token.balanceOf(manager.address);
+    assert.equal(escrowBalance.toString(), payout.toString(), "escrow should hold payout before cancellation");
 
     const cancelTx = await manager.cancelJob(jobId, { from: employer });
     assert.ok(cancelTx.logs.find((log) => log.event === "JobCancelled"), "JobCancelled event should emit");
@@ -152,12 +167,13 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     const employerBalance = await token.balanceOf(employer);
     assert.equal(employerBalance.toString(), payout.toString(), "employer should be refunded escrow");
+    assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should be cleared");
   });
 
   it("prevents cancellation after assignment or completion", async () => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await expectCustomError(manager.cancelJob.call(jobId, { from: employer }), "InvalidState");
@@ -172,8 +188,15 @@ contract("AGIJobManager scenario coverage", (accounts) => {
   it("disputes via disapprovals and resolves agent win with payouts", async () => {
     const payout = toBN(toWei("50"));
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
     await assignAndRequest(jobId, "ipfs-disputed");
+
+    const balancesBefore = {
+      agent: await token.balanceOf(agent),
+      validatorA: await token.balanceOf(validatorA),
+      validatorB: await token.balanceOf(validatorB),
+      contract: await token.balanceOf(manager.address),
+    };
 
     await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     const disputeTx = await manager.disapproveJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
@@ -188,12 +211,23 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const tokenId = (await manager.nextTokenId()).toNumber() - 1;
     const ownerOfToken = await manager.ownerOf(tokenId);
     assert.equal(ownerOfToken, employer, "employer should receive the NFT on agent win");
+
+    const balancesAfter = {
+      agent: await token.balanceOf(agent),
+      validatorA: await token.balanceOf(validatorA),
+      validatorB: await token.balanceOf(validatorB),
+      contract: await token.balanceOf(manager.address),
+    };
+    assert.ok(balancesAfter.agent.gt(balancesBefore.agent), "agent should be paid on agent-win dispute");
+    assert.ok(balancesAfter.validatorA.gt(balancesBefore.validatorA), "validator A should be rewarded");
+    assert.ok(balancesAfter.validatorB.gt(balancesBefore.validatorB), "validator B should be rewarded");
+    assert.equal(balancesAfter.contract.toString(), "0", "escrow should clear after dispute resolution");
   });
 
   it("resolves employer-win disputes with refund and no NFT issuance", async () => {
     const payout = toBN(toWei("30"));
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await manager.disputeJob(jobId, { from: employer });
@@ -205,6 +239,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     const employerBalance = await token.balanceOf(employer);
     assert.equal(employerBalance.toString(), payout.toString(), "employer should be refunded");
+    assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear on employer win");
 
     assert.equal((await manager.nextTokenId()).toNumber(), 0, "no NFT should be minted");
     await expectRevert(manager.ownerOf(0), "ERC721: invalid token ID");
@@ -216,7 +251,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
 
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
     await assignAndRequest(jobId, "ipfs-neutral");
 
     await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
@@ -243,7 +278,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     );
 
     await manager.unpause({ from: owner });
-    const jobId = await createJobWithApproval(payout, "ipfs-job");
+    const { jobId } = await createJobWithApproval(payout, "ipfs-job");
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await manager.pause({ from: owner });
@@ -276,7 +311,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
 
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
     await assignAndRequest(jobId, "ipfs-market");
     const mintTx = await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     const tokenId = mintTx.logs.find((log) => log.event === "NFTIssued").args.tokenId.toNumber();
@@ -290,7 +325,13 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     await token.mint(buyer, price, { from: owner });
     await token.approve(manager.address, price, { from: buyer });
-    await manager.purchaseNFT(tokenId, { from: buyer });
+    const balancesBefore = {
+      buyer: await token.balanceOf(buyer),
+      seller: await token.balanceOf(employer),
+      contract: await token.balanceOf(manager.address),
+    };
+    const purchaseTx = await manager.purchaseNFT(tokenId, { from: buyer });
+    assert.ok(purchaseTx.logs.find((log) => log.event === "NFTPurchased"), "NFTPurchased should emit");
 
     const newOwner = await manager.ownerOf(tokenId);
     assert.equal(newOwner, buyer, "buyer should own NFT after purchase");
@@ -299,6 +340,15 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.strictEqual(postListing.isActive, false, "listing should be inactive after purchase");
 
     await expectCustomError(manager.purchaseNFT.call(tokenId, { from: buyer }), "InvalidState");
+
+    const balancesAfter = {
+      buyer: await token.balanceOf(buyer),
+      seller: await token.balanceOf(employer),
+      contract: await token.balanceOf(manager.address),
+    };
+    assert.equal(balancesAfter.buyer.toString(), balancesBefore.buyer.sub(price).toString(), "buyer balance should decrease by price");
+    assert.equal(balancesAfter.seller.toString(), balancesBefore.seller.add(price).toString(), "seller should receive price");
+    assert.equal(balancesAfter.contract.toString(), balancesBefore.contract.toString(), "contract should not retain marketplace funds");
   });
 
   it("blocks invalid marketplace actions and documents self-purchase behavior", async () => {
@@ -306,7 +356,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const payout = toBN(toWei("20"));
 
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
     await assignAndRequest(jobId, "ipfs-market-2");
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
 
@@ -334,7 +384,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
   it("prevents validators from approving and disapproving the same job", async () => {
     const payout = toBN(toWei("15"));
     await token.mint(employer, payout, { from: owner });
-    const jobId = await createJobWithApproval(payout);
+    const { jobId } = await createJobWithApproval(payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
