@@ -80,7 +80,7 @@ contract("AGIJobManager jobStatus", (accounts) => {
 
     await manager.cancelJob(jobId, { from: employer });
     const status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "0", "cancelled job should be DeletedOrCancelled");
+    assert.strictEqual(status.toString(), "0", "cancelled job should be Deleted");
 
     await expectCustomError(manager.jobStatus.call(999), "JobNotFound");
   });

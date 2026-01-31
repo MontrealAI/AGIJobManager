@@ -2354,22 +2354,31 @@
     }
 
     const jobStatusLabels = {
-      0: "DeletedOrCancelled",
+      0: "Deleted",
       1: "Open",
-      2: "InProgress",
-      3: "CompletionRequested",
+      2: "In Progress",
+      3: "Completion Requested",
       4: "Disputed",
       5: "Completed",
       6: "Expired",
     };
 
+    function normalizeJobStatusLabel(status) {
+      if (!status) return status;
+      const normalized = status.toString();
+      if (normalized === "DeletedOrCancelled") return "Deleted";
+      if (normalized === "InProgress") return "In Progress";
+      if (normalized === "CompletionRequested") return "Completion Requested";
+      return normalized;
+    }
+
     function jobStatusFromIndex(entry) {
       if (!entry) return "Unknown";
-      if (entry.cancelled) return "DeletedOrCancelled";
+      if (entry.cancelled) return "Deleted";
       if (entry.completed) return "Completed";
       if (entry.disputed) return "Disputed";
-      if (entry.completionRequested) return "CompletionRequested";
-      if (entry.applied) return "InProgress";
+      if (entry.completionRequested) return "Completion Requested";
+      if (entry.applied) return "In Progress";
       if (entry.created) return "Open";
       return "Unknown";
     }
@@ -2382,7 +2391,7 @@
       const disputed = job[11];
       let status = jobStatusFromIndex(indexEntry);
       if (employer === ethers.ZeroAddress) {
-        status = "DeletedOrCancelled";
+        status = "Deleted";
       } else if (completed) {
         status = "Completed";
       } else if (disputed) {
@@ -2390,9 +2399,9 @@
       } else if (assignedAgent === ethers.ZeroAddress) {
         status = "Open";
       } else if (completionRequested) {
-        status = "CompletionRequested";
+        status = "Completion Requested";
       } else if (assignedAgent !== ethers.ZeroAddress) {
-        status = "InProgress";
+        status = "In Progress";
       }
       return status;
     }
@@ -2409,17 +2418,6 @@
         if (error.code === "CALL_EXCEPTION" && error.data === "0x") return true;
         return false;
       };
-      if (state.capabilities.jobStatusString !== false) {
-        try {
-          const status = await state.readContract.jobStatusString(BigInt(jobId));
-          state.capabilities.jobStatusString = true;
-          return status;
-        } catch (error) {
-          if (state.capabilities.jobStatusString == null && shouldDisableCapability(error)) {
-            state.capabilities.jobStatusString = false;
-          }
-        }
-      }
       if (state.capabilities.jobStatus !== false) {
         try {
           const statusValue = await state.readContract.jobStatus(BigInt(jobId));
@@ -2429,6 +2427,17 @@
         } catch (error) {
           if (state.capabilities.jobStatus == null && shouldDisableCapability(error)) {
             state.capabilities.jobStatus = false;
+          }
+        }
+      }
+      if (state.capabilities.jobStatusString !== false) {
+        try {
+          const status = await state.readContract.jobStatusString(BigInt(jobId));
+          state.capabilities.jobStatusString = true;
+          return normalizeJobStatusLabel(status) || derived;
+        } catch (error) {
+          if (state.capabilities.jobStatusString == null && shouldDisableCapability(error)) {
+            state.capabilities.jobStatusString = false;
           }
         }
       }
@@ -2476,11 +2485,11 @@
         const entry = state.index.jobs[jobId];
         const status = jobStatusFromIndex(entry);
         if (filter === "open") return status === "Open";
-        if (filter === "in_progress") return status === "InProgress";
-        if (filter === "completion_requested") return status === "CompletionRequested";
+        if (filter === "in_progress") return status === "In Progress";
+        if (filter === "completion_requested") return status === "Completion Requested";
         if (filter === "disputed") return status === "Disputed";
         if (filter === "completed") return status === "Completed";
-        if (filter === "cancelled") return status === "DeletedOrCancelled";
+        if (filter === "cancelled") return status === "Deleted";
         return true;
       });
     }

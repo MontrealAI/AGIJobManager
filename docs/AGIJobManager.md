@@ -62,7 +62,7 @@ Enum values (stable, do not reorder):
 
 | Value | Status | Meaning |
 | --- | --- | --- |
-| 0 | `DeletedOrCancelled` | Job entry removed (`employer == address(0)`). |
+| 0 | `Deleted` | Job entry removed (`employer == address(0)`). |
 | 1 | `Open` | Job exists, employer set, no assigned agent. |
 | 2 | `InProgress` | Assigned agent, no completion request, not completed, not disputed. |
 | 3 | `CompletionRequested` | Assigned agent requested completion. |
@@ -72,8 +72,8 @@ Enum values (stable, do not reorder):
 
 Precedence rules (applied in order):
 1. If `jobId` is out of range (`jobId >= nextJobId`), revert `JobNotFound`.
-2. If `employer == address(0)`, return `DeletedOrCancelled`.
-3. If `completed`, return `Completed`.
+2. If `completed`, return `Completed`.
+3. If `employer == address(0)`, return `Deleted`.
 4. If `disputed`, return `Disputed`.
 5. If `assignedAgent == address(0)`, return `Open`.
 6. If `completionRequested`, return `CompletionRequested`.

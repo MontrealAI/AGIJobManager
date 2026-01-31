@@ -81,7 +81,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     error ValidatorSetTooLarge();
 
     // Stable job lifecycle status enum (do not reorder).
-    // 0 = DeletedOrCancelled (employer == address(0) or removed)
+    // 0 = Deleted (employer == address(0) or removed)
     // 1 = Open (exists, employer set, no assigned agent)
     // 2 = InProgress (assigned agent, not completed, not disputed, no completion request)
     // 3 = CompletionRequested (agent requested completion)
@@ -89,7 +89,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     // 5 = Completed (completed flag on)
     // 6 = Expired (computed timeout; informational if expireJob not called)
     enum JobStatus {
-        DeletedOrCancelled,
+        Deleted,
         Open,
         InProgress,
         CompletionRequested,
@@ -470,13 +470,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         return (job.completed, job.completionRequested, job.ipfsHash);
     }
 
+    /// @notice Returns the canonical job status for UI/indexing.
+    /// @dev Precedence order: Completed, Deleted, Disputed, Open, CompletionRequested, Expired, InProgress.
+    /// @dev "Expired" is time-derived and does not imply settlement unless expireJob is called.
+    /// @dev "Deleted" corresponds to the internal cancel/delete representation (employer == address(0)).
     function jobStatus(uint256 jobId) external view returns (JobStatus) {
         return _jobStatus(jobId);
     }
 
     function jobStatusString(uint256 jobId) external view returns (string memory) {
         JobStatus status = _jobStatus(jobId);
-        if (status == JobStatus.DeletedOrCancelled) return "DeletedOrCancelled";
+        if (status == JobStatus.Deleted) return "Deleted";
         if (status == JobStatus.Open) return "Open";
         if (status == JobStatus.InProgress) return "InProgress";
         if (status == JobStatus.CompletionRequested) return "CompletionRequested";
@@ -488,14 +492,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function _jobStatus(uint256 jobId) internal view returns (JobStatus) {
         if (jobId >= nextJobId) revert JobNotFound();
         Job storage job = jobs[jobId];
-        if (job.employer == address(0)) return JobStatus.DeletedOrCancelled;
         if (job.completed) return JobStatus.Completed;
+        if (job.employer == address(0)) return JobStatus.Deleted;
         if (job.disputed) return JobStatus.Disputed;
         if (job.assignedAgent == address(0)) return JobStatus.Open;
         if (job.completionRequested) return JobStatus.CompletionRequested;
         if (
             job.expired ||
-            (job.assignedAt != 0 && job.duration != 0 && block.timestamp > job.assignedAt + job.duration)
+            (job.assignedAgent != address(0) &&
+                job.assignedAt != 0 &&
+                job.duration != 0 &&
+                block.timestamp > job.assignedAt + job.duration)
         ) {
             return JobStatus.Expired;
         }
