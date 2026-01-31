@@ -104,6 +104,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     await token.mint(owner, payout);
 
     await manager.addModerator(moderator, { from: owner });
+    await manager.addAGIType(agiTypeNft.address, 1, { from: owner });
+    await agiTypeNft.mint(agent);
   });
 
   describe("deployment & initialization", () => {
@@ -428,10 +430,10 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     beforeEach(async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
       await createJob();
-      await manager.applyForJob(0, "agent", [], { from: agent });
     });
 
     it("allows only employer or agent to dispute", async () => {
+      await manager.applyForJob(0, "agent", [], { from: agent });
       await expectCustomError(manager.disputeJob.call(0, { from: outsider }), "NotAuthorized");
       await manager.disputeJob(0, { from: agent });
       await expectCustomError(manager.disputeJob.call(0, { from: agent }), "InvalidState");
@@ -442,6 +444,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.addAdditionalValidator(validatorTwo, { from: owner });
       await manager.setRequiredValidatorDisapprovals(2, { from: owner });
 
+      await manager.applyForJob(0, "agent", [], { from: agent });
       await manager.disapproveJob(0, "validator", [], { from: validatorOne });
       const receipt = await manager.disapproveJob(0, "validator", [], { from: validatorTwo });
       expectEvent(receipt, "JobDisputed", { jobId: new BN(0), disputant: validatorTwo });
@@ -455,6 +458,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.addAGIType(agiTypeNft.address, 100, { from: owner });
       await agiTypeNft.mint(agent);
 
+      await manager.applyForJob(0, "agent", [], { from: agent });
       await manager.disputeJob(0, { from: employer });
       await expectCustomError(
         manager.resolveDispute.call(0, "agent win", { from: outsider }),
@@ -484,6 +488,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
+      await manager.applyForJob(0, "agent", [], { from: agent });
       await manager.validateJob(0, "validator", [], { from: validatorOne });
       await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
     });

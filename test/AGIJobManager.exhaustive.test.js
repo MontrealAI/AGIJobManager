@@ -67,6 +67,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
   let agentMerkle;
   let validatorMerkle;
   let manager;
+  let defaultAgiType;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -93,6 +94,9 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
     await token.mint(employer, web3.utils.toWei("1000"), { from: owner });
     await token.mint(buyer, web3.utils.toWei("1000"), { from: owner });
+    defaultAgiType = await MockERC721.new({ from: owner });
+    await manager.addAGIType(defaultAgiType.address, 1, { from: owner });
+    await defaultAgiType.mint(agent, { from: owner });
   });
 
   describe("Deployment & initialization", () => {

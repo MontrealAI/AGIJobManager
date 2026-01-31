@@ -163,6 +163,9 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     assert.equal(disapproveThenApproveJob.validatorDisapprovals.toNumber(), 1, "original should track disapprovals");
 
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
+    const nft = await MockERC721.new({ from: owner });
+    await nft.mint(agent, { from: owner });
+    await current.addAGIType(nft.address, 92, { from: owner });
     const currentApproveThenDisapproveId = await createAssignedJob(current, token, employer, agent, payout);
     await current.validateJob(currentApproveThenDisapproveId, "validator", EMPTY_PROOF, { from: validator });
     await expectRevert(
