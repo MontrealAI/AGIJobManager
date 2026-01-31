@@ -41,6 +41,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `addAdditionalAgent` / `addAdditionalValidator` | allowlist | Eligibility bypass. | Only use for emergency recovery or vetted identities. | Overuse weakens gating; underuse when Merkle/ENS config is wrong can stall jobs. | Add temporary allowlist entries; remove later. |
 | `blacklistedAgents` / `blacklistedValidators` | bool | Eligibility gating. | Use sparingly with documented reasons. | If critical participants are blacklisted, jobs cannot progress (validate/apply revert). | Un-blacklist or resolve by moderator. |
 | `addModerator` / `removeModerator` | address | Dispute resolution authority. | Ensure ≥1 active moderator. | If no moderator exists, disputes can’t resolve → funds stuck. | Add a moderator (owner action). |
+| `resolveDispute` string | string | Dispute settlement path. | Must be exactly `"agent win"` or `"employer win"` to settle. | Any other string clears dispute without settlement, leaving job in-progress. | Moderator re-calls with exact string. |
 | `clubRootNode`, `agentRootNode` (constructor) | ENS namehash | Eligibility gating. | Must match intended ENS hierarchy. | Wrong root nodes → `_verifyOwnership` fails → validators/agents cannot qualify. | Use `additional*` allowlist; redeploy if pervasive. |
 | `validatorMerkleRoot`, `agentMerkleRoot` (constructor) | Merkle root | Eligibility gating. | Must match allowlists; immutable after deploy. | Bad root means Merkle proofs always fail; gating relies solely on ENS or allowlist. | Use `additional*` allowlist or redeploy. |
 | `ens`, `nameWrapper` (constructor) | contract address | ENS/NameWrapper ownership checks. | Must be correct chain-specific addresses. | Wrong addresses → ownership checks fail; `_verifyOwnership` emits recovery events and returns false. | Use `additional*` allowlist or redeploy. |
@@ -82,28 +83,33 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Failure:** disputes cannot resolve; jobs stuck in `disputed` state.
    - **Escape hatch:** owner adds a moderator.
 
-7. **Stale NFT listings**
+7. **Dispute resolved with a non-settlement string**
+   - **Prerequisite:** moderator calls `resolveDispute` with any string other than `"agent win"` or `"employer win"`.
+   - **Failure:** dispute clears without settlement; job returns to in‑progress state with no payout/refund.
+   - **Escape hatch:** moderator re‑resolves with an exact settlement string.
+
+8. **Stale NFT listings**
    - **Prerequisite:** seller transfers NFT away after listing.
    - **Failure:** `purchaseNFT` reverts because seller is no longer owner; listing remains active.
    - **Escape hatch:** seller (current owner) delists and re-lists; buyers retry after listing is valid.
 
 ## Recovery playbook (step-by-step)
 
-1. **Pause operations (owner):**
+1. **Pause operations (owner, always available):**
    - Call `pause()` to stop new job actions while you diagnose.
 
 2. **Diagnose root cause:**
    - Read current parameters (`requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`, `agiToken`, roots, ENS/NameWrapper addresses).
    - Check current escrow balance against total outstanding job payouts.
 
-3. **Apply fixes (owner/moderator):**
+3. **Apply fixes (owner/moderator, always available if owner keys are live):**
    - Adjust validator thresholds.
    - Reduce validation reward % or AGI type payout %.
    - Add emergency validators/agents with `addAdditionalValidator` / `addAdditionalAgent`.
    - Add a moderator if disputes are stuck.
    - **Never** change `agiToken` if outstanding jobs exist.
 
-4. **Unstick jobs:**
+4. **Unstick jobs (path depends on job state; always available if the correct role exists):**
    - **Unassigned jobs:** employer uses `cancelJob`; owner uses `delistJob` for recovery.
    - **Assigned but incomplete:** validators retry `validateJob` or `disapproveJob`.
    - **Disputed jobs:** moderator calls `resolveDispute` with exact strings `"agent win"` or `"employer win"`.
@@ -116,9 +122,11 @@ This document is a production-grade **operator checklist** for preventing and re
 
 | Error / condition | Where it occurs | Explanation | Suggested fix |
 | --- | --- | --- | --- |
+| `Pausable: paused` | Most lifecycle actions | Contract is paused by owner. | Unpause once parameters are safe. |
 | `InvalidParameters` | `createJob`, `setValidationRewardPercentage`, `addAGIType`, `withdrawAGI`, `listNFT`, `contributeToRewardPool` | Input out of allowed bounds (e.g., zero payout, duration > limit, invalid percentage, zero price). | Provide valid values; check `maxJobPayout` and `jobDurationLimit`. |
 | `InvalidState` | Job actions, disputes, listings | Job not in expected lifecycle state (e.g., already completed, already assigned, listing inactive). | Read `jobs(jobId)` to confirm state; retry appropriate action. |
 | `NotAuthorized` | Role-gated paths | Caller lacks role/ownership (agent not assigned, validator not allowlisted, seller not NFT owner). | Verify role gating, allowlists, and ownership; add via owner if needed. |
+| `NotModerator` | `resolveDispute` | Caller is not a moderator. | Owner must add moderator; then re-resolve. |
 | `Blacklisted` | `applyForJob`, `validateJob`, `disapproveJob` | Agent/validator is blocked. | Remove blacklist entry or use another participant. |
 | `TransferFailed` | Any ERC‑20 transfer | Token transfer/transferFrom failed (token paused, blacklisted, or incompatible). | Use a compatible ERC‑20; ensure approvals and balances. |
 | `ValidatorLimitReached` / `ValidatorSetTooLarge` | `validateJob`, `disapproveJob`, `_completeJob` | More than `MAX_VALIDATORS_PER_JOB` (50) validators attempted. | Keep validators per job ≤ 50; set thresholds well below 50. |
