@@ -2153,6 +2153,44 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "jobStatus",
+      "outputs": [
+        {
+          "internalType": "enum AGIJobManager.JobStatus",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "jobStatusString",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "_percentage",
           "type": "uint256"
         }
