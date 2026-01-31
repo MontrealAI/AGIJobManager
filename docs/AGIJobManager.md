@@ -63,7 +63,7 @@ stateDiagram-v2
 
     Assigned --> Finalized: validateJob (threshold)
     CompletionRequested --> Finalized: validateJob (threshold)
-    CompletionRequested --> Finalized: finalizeJob (timeout, no validator activity)
+    CompletionRequested --> Finalized: finalizeJob (timeout, deterministic fallback)
 
     Assigned --> Disputed: disputeJob
     CompletionRequested --> Disputed: disputeJob
@@ -97,7 +97,7 @@ stateDiagram-v2
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
 - Owner-set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
-- `finalizeJob` lets the assigned agent (or employer) complete after `completionReviewPeriod` **only if** no validator activity occurred (approvals and disapprovals are both zero).
+- `finalizeJob` lets anyone finalize after `completionReviewPeriod` if the job is not disputed. The outcome is deterministic: validator thresholds are honored, silence defaults to agent completion, and otherwise approvals must strictly exceed disapprovals for agent payout (ties refund the employer).
 - `resolveDispute` accepts any resolution string, but only two canonical strings trigger on-chain actions:
   - `agent win` → `_completeJob`
   - `employer win` → employer refund + `completed = true`
@@ -156,6 +156,7 @@ Custom errors and their intent:
 - Validator approvals and disapprovals are mutually exclusive per validator per job.
 - `maxJobPayout` and `jobDurationLimit` cap job creation inputs.
 - Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline, and `expireJob` can refund employers when no completion request was made.
+- After `completionReviewPeriod`, `finalizeJob` deterministically settles any non-disputed job to avoid indefinite escrow.
 - The validator list for a job is capped at `MAX_VALIDATORS_PER_JOB`, and thresholds must fit within that cap.
 - Root nodes and Merkle roots are immutable after deployment (no setters).
 

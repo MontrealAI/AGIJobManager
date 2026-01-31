@@ -169,7 +169,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     event DisputeResolved(uint256 jobId, address resolver, string resolution);
     event JobDisputed(uint256 jobId, address disputant);
     event JobExpired(uint256 jobId, address employer, address agent, uint256 payout);
-    event JobFinalized(uint256 jobId, address agent, uint256 payout);
+    event JobFinalized(uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout);
     event DisputeTimeoutResolved(uint256 jobId, address resolver, bool employerWins);
     event RootNodeUpdated(bytes32 indexed newRootNode);
     event MerkleRootUpdated(bytes32 indexed newMerkleRoot);
@@ -527,14 +527,33 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
-        if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
         if (job.completed || job.expired || job.disputed) revert InvalidState();
         if (!job.completionRequested || job.completionRequestedAt == 0) revert InvalidState();
         if (block.timestamp <= job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
-        if (job.validatorApprovals > 0 || job.validatorDisapprovals > 0) revert InvalidState();
+        if (requiredValidatorDisapprovals > 0 && job.validatorDisapprovals >= requiredValidatorDisapprovals) {
+            revert InvalidState();
+        }
 
-        _completeJob(_jobId);
-        emit JobFinalized(_jobId, job.assignedAgent, job.payout);
+        if (requiredValidatorApprovals > 0 && job.validatorApprovals >= requiredValidatorApprovals) {
+            _completeJob(_jobId);
+            emit JobFinalized(_jobId, job.assignedAgent, job.employer, true, job.payout);
+            return;
+        }
+
+        bool agentWins;
+        if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
+            agentWins = true;
+        } else {
+            agentWins = job.validatorApprovals > job.validatorDisapprovals;
+        }
+
+        if (agentWins) {
+            _completeJob(_jobId);
+        } else {
+            _refundEmployer(job);
+        }
+
+        emit JobFinalized(_jobId, job.assignedAgent, job.employer, agentWins, job.payout);
     }
 
     function _completeJob(uint256 _jobId) internal {
@@ -555,6 +574,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
         emit ReputationUpdated(job.assignedAgent, reputation[job.assignedAgent]);
+    }
+
+    function _refundEmployer(Job storage job) internal {
+        job.completed = true;
+        job.disputed = false;
+        job.disputedAt = 0;
+        _t(job.employer, job.payout);
     }
 
     function _payAgent(Job storage job) internal {
