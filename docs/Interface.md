@@ -10,6 +10,7 @@
 ## Functions
 | Signature | State mutability | Returns |
 | --- | --- | --- |
+| `MAX_REVIEW_PERIOD()` | view | uint256 |
 | `MAX_VALIDATORS_PER_JOB()` | view | uint256 |
 | `additionalAgents(address)` | view | bool |
 | `additionalText1()` | view | string |
@@ -25,12 +26,14 @@
 | `blacklistedAgents(address)` | view | bool |
 | `blacklistedValidators(address)` | view | bool |
 | `clubRootNode()` | view | bytes32 |
+| `completionReviewPeriod()` | view | uint256 |
 | `contactEmail()` | view | string |
+| `disputeReviewPeriod()` | view | uint256 |
 | `ens()` | view | address |
 | `getApproved(uint256 tokenId)` | view | address |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
-| `jobs(uint256)` | view | uint256, address, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string |
+| `jobs(uint256)` | view | uint256, address, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
 | `maxJobPayout()` | view | uint256 |
 | `moderators(address)` | view | bool |
@@ -67,6 +70,7 @@
 | `disapproveJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `disputeJob(uint256 _jobId)` | nonpayable | — |
 | `resolveDispute(uint256 _jobId, string resolution)` | nonpayable | — |
+| `resolveStaleDispute(uint256 _jobId, bool employerWins)` | nonpayable | — |
 | `blacklistAgent(address _agent, bool _status)` | nonpayable | — |
 | `blacklistValidator(address _validator, bool _status)` | nonpayable | — |
 | `delistJob(uint256 _jobId)` | nonpayable | — |
@@ -79,14 +83,20 @@
 | `setPremiumReputationThreshold(uint256 _threshold)` | nonpayable | — |
 | `setMaxJobPayout(uint256 _maxPayout)` | nonpayable | — |
 | `setJobDurationLimit(uint256 _limit)` | nonpayable | — |
+| `setCompletionReviewPeriod(uint256 _period)` | nonpayable | — |
+| `setDisputeReviewPeriod(uint256 _period)` | nonpayable | — |
 | `updateTermsAndConditionsIpfsHash(string _hash)` | nonpayable | — |
 | `updateContactEmail(string _email)` | nonpayable | — |
 | `updateAdditionalText1(string _text)` | nonpayable | — |
 | `updateAdditionalText2(string _text)` | nonpayable | — |
 | `updateAdditionalText3(string _text)` | nonpayable | — |
 | `getJobStatus(uint256 _jobId)` | view | bool, bool, string |
+| `jobStatus(uint256 jobId)` | view | uint8 |
+| `jobStatusString(uint256 jobId)` | view | string |
 | `setValidationRewardPercentage(uint256 _percentage)` | nonpayable | — |
 | `cancelJob(uint256 _jobId)` | nonpayable | — |
+| `expireJob(uint256 _jobId)` | nonpayable | — |
+| `finalizeJob(uint256 _jobId)` | nonpayable | — |
 | `listNFT(uint256 tokenId, uint256 price)` | nonpayable | — |
 | `purchaseNFT(uint256 tokenId)` | nonpayable | — |
 | `delistNFT(uint256 tokenId)` | nonpayable | — |
@@ -107,7 +117,10 @@
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |
 | `ApprovalForAll(address owner, address operator, bool approved)` | indexed address owner, indexed address operator, bool approved |
 | `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)` | uint256 _fromTokenId, uint256 _toTokenId |
+| `CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
 | `DisputeResolved(uint256 jobId, address resolver, string resolution)` | uint256 jobId, address resolver, string resolution |
+| `DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
+| `DisputeTimeoutResolved(uint256 jobId, address resolver, bool employerWins)` | uint256 jobId, address resolver, bool employerWins |
 | `JobApplied(uint256 jobId, address agent)` | uint256 jobId, address agent |
 | `JobCancelled(uint256 jobId)` | uint256 jobId |
 | `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)` | uint256 jobId, address agent, uint256 reputationPoints |
@@ -115,6 +128,8 @@
 | `JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details)` | uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details |
 | `JobDisapproved(uint256 jobId, address validator)` | uint256 jobId, address validator |
 | `JobDisputed(uint256 jobId, address disputant)` | uint256 jobId, address disputant |
+| `JobExpired(uint256 jobId, address employer, address agent, uint256 payout)` | uint256 jobId, address employer, address agent, uint256 payout |
+| `JobFinalized(uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout)` | uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout |
 | `JobValidated(uint256 jobId, address validator)` | uint256 jobId, address validator |
 | `MerkleRootUpdated(bytes32 newMerkleRoot)` | indexed bytes32 newMerkleRoot |
 | `MetadataUpdate(uint256 _tokenId)` | uint256 _tokenId |
