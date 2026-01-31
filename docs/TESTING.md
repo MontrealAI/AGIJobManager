@@ -58,6 +58,7 @@ The scenario suite (`test/scenarioLifecycle.marketplace.test.js`) exercises the 
 - **Marketplace** listing/purchase flows, self-purchase behavior, and invariant checks (no double-purchase, invalid listings, insufficient allowance).
 - **Economic assertions** including escrow conservation, marketplace payout transfers, and zero remaining contract balance after expected payouts.
 - **Event assertions** for JobCreated/JobApplied/NFTPurchased to keep regressions visible at the log level.
+- **Custom error selector checks** for InvalidState/NotAuthorized to catch regression in revert surfaces.
 
 Run it locally with the standard test command:
 ```bash
