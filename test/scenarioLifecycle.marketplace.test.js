@@ -252,7 +252,10 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const { jobId } = await createJobWithApproval(payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
-    await manager.disputeJob(jobId, { from: employer });
+    const disputeTx = await manager.disputeJob(jobId, { from: employer });
+    assert.ok(disputeTx.logs.find((log) => log.event === "JobDisputed"), "JobDisputed should emit");
+    const disputedJob = await manager.jobs(jobId);
+    assert.strictEqual(disputedJob.disputed, true, "job should be flagged as disputed");
     await manager.resolveDispute(jobId, "employer win", { from: moderator });
 
     const job = await manager.jobs(jobId);
@@ -282,6 +285,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const midJob = await manager.jobs(jobId);
     assert.strictEqual(midJob.disputed, false, "disputed flag should clear");
     assert.strictEqual(midJob.completed, false, "job should remain in progress");
+    assert.strictEqual(midJob.completionRequested, true, "completion request should be preserved");
 
     await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
     const finalJob = await manager.jobs(jobId);
