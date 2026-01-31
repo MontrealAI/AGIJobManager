@@ -183,6 +183,7 @@ Start here:
 - **Non‑technical user guides**: [`docs/user-guide/README.md`](docs/user-guide/README.md)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
+- [`docs/Testing.md`](docs/Testing.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
 - **ERC‑8004 integration (control plane ↔ execution plane)**: [`docs/erc8004/README.md`](docs/erc8004/README.md)
 - **AGI.Eth Namespace (alpha)**:

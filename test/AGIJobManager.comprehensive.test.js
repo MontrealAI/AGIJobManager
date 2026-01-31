@@ -561,6 +561,33 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const ownerBalanceAfter = await token.balanceOf(owner);
       assert.equal(ownerBalanceAfter.sub(ownerBalanceBefore).toString(), payout.toString());
     });
+
+    it("enforces validator thresholds and validation reward bounds", async () => {
+      await expectCustomError(manager.setRequiredValidatorApprovals.call(60, { from: owner }), "InvalidValidatorThresholds");
+      await expectCustomError(
+        manager.setRequiredValidatorDisapprovals.call(60, { from: owner }),
+        "InvalidValidatorThresholds"
+      );
+      await expectCustomError(manager.setRequiredValidatorApprovals.call(49, { from: owner }), "InvalidValidatorThresholds");
+
+      await expectCustomError(manager.setValidationRewardPercentage.call(0, { from: owner }), "InvalidParameters");
+      await expectCustomError(manager.setValidationRewardPercentage.call(101, { from: owner }), "InvalidParameters");
+    });
+
+    it("handles reward pool contributions and pause protections", async () => {
+      await token.mint(employer, payout);
+      await token.approve(manager.address, payout, { from: employer });
+      const receipt = await manager.contributeToRewardPool(payout, { from: employer });
+      expectEvent(receipt, "RewardPoolContribution", { contributor: employer, amount: payout });
+
+      await expectCustomError(manager.contributeToRewardPool.call(0, { from: employer }), "InvalidParameters");
+
+      await manager.pause({ from: owner });
+      await expectRevert(
+        manager.contributeToRewardPool(payout, { from: employer }),
+        "Pausable: paused"
+      );
+    });
   });
 
   describe("NFT marketplace", () => {
@@ -597,6 +624,30 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.listNFT(tokenId, payout, { from: employer });
       const delistReceipt = await manager.delistNFT(tokenId, { from: employer });
       expectEvent(delistReceipt, "NFTDelisted", { tokenId });
+    });
+  });
+
+  describe("job cancellation and delisting", () => {
+    it("allows employer to cancel unassigned jobs and refunds escrow", async () => {
+      await createJob();
+      const balanceBefore = await token.balanceOf(employer);
+      const receipt = await manager.cancelJob(0, { from: employer });
+      expectEvent(receipt, "JobCancelled", { jobId: new BN(0) });
+
+      const balanceAfter = await token.balanceOf(employer);
+      assert.equal(balanceAfter.sub(balanceBefore).toString(), payout.toString());
+
+      const job = await manager.jobs(0);
+      assert.equal(job.employer, "0x0000000000000000000000000000000000000000");
+    });
+
+    it("prevents cancel/delist after assignment and restricts delist to owner", async () => {
+      await createJob();
+      await assignAgentWithProof(0);
+
+      await expectCustomError(manager.cancelJob.call(0, { from: employer }), "InvalidState");
+      await expectRevert(manager.delistJob(0, { from: outsider }), "Ownable: caller is not the owner");
+      await expectCustomError(manager.delistJob.call(0, { from: owner }), "InvalidState");
     });
   });
 
