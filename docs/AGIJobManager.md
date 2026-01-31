@@ -37,7 +37,8 @@ Refer to the ABI-derived access map in [`Interface.md`](Interface.md).
 ### Job
 Each job is a struct containing:
 - `id`, `employer`, `ipfsHash`, `payout`, `duration`, `assignedAgent`, `assignedAt`, `details`.
-- State flags: `completed`, `completionRequested`, `disputed`.
+- State flags: `completed`, `completionRequested`, `disputed`, `expired`.
+- Timestamps: `completionRequestedAt`, `disputedAt`.
 - Validation: `validatorApprovals`, `validatorDisapprovals`, per-validator `approvals` and `disapprovals`, plus the `validators` list.
 
 Job entries are created in `createJob` and stored in `jobs(jobId)`.
@@ -62,6 +63,7 @@ stateDiagram-v2
 
     Assigned --> Finalized: validateJob (threshold)
     CompletionRequested --> Finalized: validateJob (threshold)
+    CompletionRequested --> Finalized: finalizeJob (timeout, no validator activity)
 
     Assigned --> Disputed: disputeJob
     CompletionRequested --> Disputed: disputeJob
@@ -71,12 +73,15 @@ stateDiagram-v2
     Disputed --> Finalized: resolveDispute("agent win")
     Disputed --> Finalized: resolveDispute("employer win")
     Disputed --> Assigned: resolveDispute(other)
+    Disputed --> Finalized: resolveStaleDispute (owner, paused, timeout)
+
+    Assigned --> Expired: expireJob (timeout, no completion request)
 
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
 
-**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDispute(other)` clears the dispute while preserving the in‑progress flags (for example, `completionRequested` remains set if it was set before the dispute). Validators can call `validateJob`/`disapproveJob` without a prior `requestJobCompletion`.
+**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDispute(other)` clears the dispute while preserving the in‑progress flags (for example, `completionRequested` remains set if it was set before the dispute). Validators can call `validateJob`/`disapproveJob` without a prior `requestJobCompletion`. **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
@@ -92,10 +97,12 @@ stateDiagram-v2
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
 - Owner-set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
+- `finalizeJob` lets the assigned agent (or employer) complete after `completionReviewPeriod` **only if** no validator activity occurred (approvals and disapprovals are both zero).
 - `resolveDispute` accepts any resolution string, but only two canonical strings trigger on-chain actions:
   - `agent win` → `_completeJob`
   - `employer win` → employer refund + `completed = true`
   - The string match is case-sensitive; any other value only clears the dispute flag.
+- `resolveStaleDispute` is an owner-only, paused-only escape hatch that allows settlement after `disputeReviewPeriod` if disputes would otherwise deadlock.
 
 ## Reputation mechanics
 - **Agent reputation**: derived from payout and completion time via `calculateReputationPoints`, then stored through `enforceReputationGrowth` (diminishing returns with a cap).
@@ -120,10 +127,12 @@ If ENS or NameWrapper calls fail, the contract emits `RecoveryInitiated` for obs
 ## Events
 High-signal events to index:
 - **Lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`, `JobCompleted`, `JobCancelled`.
+- **Timeouts**: `JobExpired`, `JobFinalized`, `DisputeTimeoutResolved`.
 - **Reputation**: `ReputationUpdated` (agents and validators). Note that agent completion emits `ReputationUpdated` once via `enforceReputationGrowth` and again at the end of `_completeJob`.
 - **NFT marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
 - **Access signals**: `OwnershipVerified`, `RecoveryInitiated`. (`RootNodeUpdated` and `MerkleRootUpdated` are defined but not emitted by current functions.)
 - **Other**: `AGITypeUpdated`, `RewardPoolContribution`.
+- **Parameter updates**: `CompletionReviewPeriodUpdated`, `DisputeReviewPeriodUpdated`.
 
 See [`Interface.md`](Interface.md) for the complete ABI-derived list.
 
@@ -143,10 +152,10 @@ Custom errors and their intent:
 ## Invariants and constraints
 - Job IDs must exist (`JobNotFound`) before use.
 - Jobs cannot be reassigned after `assignedAgent` is set.
-- Completed jobs cannot be re-completed or re-disputed.
+- Completed or expired jobs cannot be re-completed or re-disputed.
 - Validator approvals and disapprovals are mutually exclusive per validator per job.
 - `maxJobPayout` and `jobDurationLimit` cap job creation inputs.
-- Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline.
+- Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline, and `expireJob` can refund employers when no completion request was made.
 - The validator list for a job is capped at `MAX_VALIDATORS_PER_JOB`, and thresholds must fit within that cap.
 - Root nodes and Merkle roots are immutable after deployment (no setters).
 

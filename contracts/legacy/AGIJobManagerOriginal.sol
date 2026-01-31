@@ -474,11 +474,22 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
         uint256 reputationPoints = calculateReputationPoints(job.payout, completionTime);
         enforceReputationGrowth(job.assignedAgent, reputationPoints);
 
+        _payAgent(job);
+        _payValidators(job, reputationPoints);
+        _mintJobNft(job);
+
+        emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
+        emit ReputationUpdated(job.assignedAgent, reputation[job.assignedAgent]);
+    }
+
+    function _payAgent(Job storage job) internal {
         uint256 agentPayoutPercentage = getHighestPayoutPercentage(job.assignedAgent);
         uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
 
         require(agiToken.transfer(job.assignedAgent, agentPayout), "Payment to agent failed");
+    }
 
+    function _payValidators(Job storage job, uint256 reputationPoints) internal {
         uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
         uint256 validatorPayout = totalValidatorPayout / job.validators.length;
         uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
@@ -488,15 +499,14 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
             require(agiToken.transfer(validator, validatorPayout), "Payment to validator failed");
             enforceReputationGrowth(validator, validatorReputationGain);
         }
+    }
 
+    function _mintJobNft(Job storage job) internal {
         uint256 tokenId = nextTokenId++;
         string memory tokenURI = string(abi.encodePacked(baseIpfsUrl, "/", job.ipfsHash));
         _mint(job.employer, tokenId);
         _setTokenURI(tokenId, tokenURI);
         emit NFTIssued(tokenId, job.employer, tokenURI);
-
-        emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
-        emit ReputationUpdated(job.assignedAgent, reputation[job.assignedAgent]);
     }
 
     function listNFT(uint256 tokenId, uint256 price) external {
