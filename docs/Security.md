@@ -40,6 +40,7 @@ Marketplace purchases are guarded because `purchaseNFT` crosses an external ERC�
 - **ERC‑20 compatibility**: tokens must return a boolean for `transfer` and `transferFrom`.
 - **Agent payout can be zero**: if no AGI type applies, the agent payout percentage is zero and residual funds remain in the contract.
 - **Validator payout sharing**: all validators who voted share equally; there is no weighting or slashing.
+- **Validator cap**: each job records at most `MAX_VALIDATORS_PER_JOB` unique validators to bound settlement gas. Owner-set thresholds must fit within this cap (each ≤ cap and approvals + disapprovals ≤ cap) to keep completion/dispute reachable without exceeding the loop bound.
 - **Owner-controlled parameters**: thresholds and limits can be changed post-deployment by the owner.
 - **Time enforcement gap**: only `requestJobCompletion` enforces job duration; validators can still approve/disapprove after the deadline unless off‑chain policy prevents it.
 

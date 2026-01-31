@@ -76,6 +76,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     error InvalidState();
     error JobNotFound();
     error TransferFailed();
+    error ValidatorLimitReached();
+    error InvalidValidatorThresholds();
+    error ValidatorSetTooLarge();
 
     // Pre-hashed resolution strings (smaller + cheaper than hashing literals each call)
     bytes32 private constant RES_AGENT_WIN = keccak256("agent win");
@@ -83,6 +86,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     IERC20 public agiToken;
     string private baseIpfsUrl;
+    // Conservative hard cap to bound settlement loops on mainnet.
+    uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
     uint256 public premiumReputationThreshold = 10000;
@@ -186,6 +191,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         agentRootNode = _agentRootNode;
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
+
+        _validateValidatorThresholds(requiredValidatorApprovals, requiredValidatorDisapprovals);
     }
 
     modifier onlyModerator() {
@@ -225,6 +232,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         _safeERC20TransferFrom(token, from, to, amount);
         uint256 balanceAfter = token.balanceOf(to);
         if (balanceAfter < balanceBefore || balanceAfter - balanceBefore != amount) revert TransferFailed();
+    }
+
+    function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
+        if (
+            approvals > MAX_VALIDATORS_PER_JOB ||
+            disapprovals > MAX_VALIDATORS_PER_JOB ||
+            approvals + disapprovals > MAX_VALIDATORS_PER_JOB
+        ) {
+            revert InvalidValidatorThresholds();
+        }
+    }
+
+    function _enforceValidatorCapacity(uint256 currentCount) internal pure {
+        if (currentCount >= MAX_VALIDATORS_PER_JOB) revert ValidatorLimitReached();
     }
 
     function _callOptionalReturn(IERC20 token, bytes memory data) internal {
@@ -283,6 +304,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (job.approvals[msg.sender]) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
 
+        _enforceValidatorCapacity(job.validators.length);
         job.validatorApprovals++;
         job.approvals[msg.sender] = true;
         job.validators.push(msg.sender);
@@ -300,6 +322,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (job.disapprovals[msg.sender]) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
 
+        _enforceValidatorCapacity(job.validators.length);
         job.validatorDisapprovals++;
         job.disapprovals[msg.sender] = true;
         job.validators.push(msg.sender);
@@ -353,8 +376,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner { agiToken = IERC20(_newTokenAddress); }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
-    function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner { requiredValidatorApprovals = _approvals; }
-    function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner { requiredValidatorDisapprovals = _disapprovals; }
+    function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
+        _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
+        requiredValidatorApprovals = _approvals;
+    }
+    function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
+        _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
+        requiredValidatorDisapprovals = _disapprovals;
+    }
     function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner { maxJobPayout = _maxPayout; }
     function setJobDurationLimit(uint256 _limit) external onlyOwner { jobDurationLimit = _limit; }
@@ -448,6 +477,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         _t(job.assignedAgent, agentPayout);
 
         uint256 vCount = job.validators.length;
+        if (vCount > MAX_VALIDATORS_PER_JOB) revert ValidatorSetTooLarge();
         if (vCount > 0) {
             uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
             uint256 validatorPayout = totalValidatorPayout / vCount;

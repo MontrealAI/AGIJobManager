@@ -68,6 +68,11 @@
     },
     {
       "inputs": [],
+      "name": "InvalidValidatorThresholds",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "JobNotFound",
       "type": "error"
     },
@@ -84,6 +89,16 @@
     {
       "inputs": [],
       "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ValidatorLimitReached",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ValidatorSetTooLarge",
       "type": "error"
     },
     {
@@ -635,6 +650,19 @@
       ],
       "name": "Unpaused",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_VALIDATORS_PER_JOB",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [
