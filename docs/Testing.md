@@ -30,6 +30,24 @@ npx truffle compile
 npx truffle test
 ```
 
+## Scenario/state-machine tests (escrow + NFT marketplace economics)
+
+Run the deterministic economic lifecycle scenarios:
+
+```bash
+npx truffle test test/scenarioEconomicStateMachine.test.js
+```
+
+Coverage highlights:
+- Happy path lifecycle (escrow funding → apply → completion → validator approvals → settlement → NFT issuance → listing → purchase).
+- Negative paths (pause behavior, blacklist/role gating failures, invalid state transitions, dispute branches).
+- Invariants (no double payout, no payout in non-terminal states, no stuck escrow, listings can’t be purchased twice or after delist).
+
+Troubleshooting tips:
+- **NotAuthorized / Blacklisted**: ensure the test fixture addrs are allowlisted via `addAdditionalAgent` / `addAdditionalValidator` and not blacklisted.
+- **Pausable: paused**: confirm pause/unpause sequencing in local edits to the tests.
+- **InvalidState**: check that job assignment, completion, and dispute phases match the contract state machine.
+
 ## Notes on test-only mocks
 
 The test suite relies on minimal mocks under `contracts/test/`:
