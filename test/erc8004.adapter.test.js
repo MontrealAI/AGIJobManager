@@ -70,6 +70,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
 
     const jobId2 = await createJob();
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId2, 'ipfs-dispute', { from: agent });
     await manager.disapproveJob(jobId2, 'club', EMPTY_PROOF, { from: validator });
     await manager.resolveDispute(jobId2, 'employer win', { from: moderator });
 
@@ -104,7 +105,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     const agentKey = agent.toLowerCase();
     assert.ok(metrics.agents[agentKey], 'agent metrics should exist');
     assert.strictEqual(metrics.agents[agentKey].jobsAssigned, 2);
-    assert.strictEqual(metrics.agents[agentKey].jobsCompletionRequested, 1);
+    assert.strictEqual(metrics.agents[agentKey].jobsCompletionRequested, 2);
     assert.strictEqual(metrics.agents[agentKey].jobsCompleted, 1);
     assert.strictEqual(metrics.agents[agentKey].jobsDisputed, 1);
     assert.strictEqual(metrics.agents[agentKey].employerWins, 1);
