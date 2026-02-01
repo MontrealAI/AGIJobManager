@@ -159,8 +159,12 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     const agentBalance = await token.balanceOf(agent);
     const validatorBalance = await token.balanceOf(validator);
+    const contractBalance = await token.balanceOf(manager.address);
+    const expectedAgentPayout = payout.muln(80).divn(100);
+    const expectedValidatorPayout = payout.muln(10).divn(100);
 
-    assert.equal(agentBalance.toString(), payout.muln(80).divn(100).toString());
-    assert.equal(validatorBalance.toString(), payout.muln(10).divn(100).toString());
+    assert.equal(agentBalance.toString(), expectedAgentPayout.toString());
+    assert.equal(validatorBalance.toString(), expectedValidatorPayout.toString());
+    assert.equal(contractBalance.toString(), payout.sub(expectedAgentPayout).sub(expectedValidatorPayout).toString());
   });
 });

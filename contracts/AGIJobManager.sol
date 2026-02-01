@@ -293,6 +293,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         return maxPercentage;
     }
 
+    function _maxConfiguredAgentPayoutPercentage() internal view returns (uint256) {
+        uint256 maxPercentage = _maxAGITypePayoutPercentage();
+        if (additionalAgentPayoutPercentage > maxPercentage) {
+            maxPercentage = additionalAgentPayoutPercentage;
+        }
+        return maxPercentage;
+    }
+
     function _callOptionalReturn(IERC20 token, bytes memory data) internal {
         (bool success, bytes memory returndata) = address(token).call(data);
         if (!success) revert TransferFailed();
@@ -548,9 +556,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
-        uint256 maxPct = _maxAGITypePayoutPercentage();
+        uint256 maxPct = _maxConfiguredAgentPayoutPercentage();
         if (maxPct > 100 - _percentage) revert InvalidParameters();
-        if (additionalAgentPayoutPercentage > 100 - _percentage) revert InvalidParameters();
         validationRewardPercentage = _percentage;
     }
 
@@ -660,6 +667,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
+        uint256 validatorPayoutPercentage = job.validators.length > 0 ? validationRewardPercentage : 0;
+        if (agentPayoutPercentage + validatorPayoutPercentage > 100) revert InvalidParameters();
         uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
         uint256 totalValidatorPayout = 0;
         if (job.validators.length > 0) {

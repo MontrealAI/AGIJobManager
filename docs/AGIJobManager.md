@@ -186,6 +186,7 @@ Custom errors and their intent:
 - Jobs cannot be reassigned after `assignedAgent` is set.
 - Completed or expired jobs cannot be re-completed or re-disputed.
 - Validator approvals and disapprovals are mutually exclusive per validator per job.
+- **Escrow solvency:** the maximum configured agent payout percentage (highest `AGIType.payoutPercentage` or `additionalAgentPayoutPercentage`) plus `validationRewardPercentage` must be ≤ 100. `addAGIType`, `setAdditionalAgentPayoutPercentage`, and `setValidationRewardPercentage` enforce this to prevent settlement from exceeding escrow.
 - `maxJobPayout` and `jobDurationLimit` cap job creation inputs.
 - Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline, and `expireJob` can refund employers when no completion request was made.
 - After `completionReviewPeriod`, `finalizeJob` deterministically settles any non-disputed job to avoid indefinite escrow.

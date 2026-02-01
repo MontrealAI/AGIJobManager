@@ -49,8 +49,8 @@ On completion (`_completeJob`), the contract executes the following calculations
      job.payout * (agentPayoutPercentage + validationRewardPercentage) / 100
      ```
    - If this sum exceeds `job.payout`, the contract will attempt to transfer more than it has; `_safeERC20Transfer` will revert, leaving the job uncompleted.
-   - **Operational rule:** ensure `maxAgentPayoutPercentage + validationRewardPercentage <= 100`.
-   - **On-chain enforcement:** `addAGIType` and `setValidationRewardPercentage` enforce this constraint, and `_completeJob` re-checks it to prevent misconfigured settlements.
+   - **Operational rule:** ensure `maxConfiguredAgentPayoutPercentage + validationRewardPercentage <= 100`, where `maxConfiguredAgentPayoutPercentage` is the maximum of all `AGIType.payoutPercentage` values and `additionalAgentPayoutPercentage`.
+   - **On-chain enforcement:** `addAGIType`, `setAdditionalAgentPayoutPercentage`, and `setValidationRewardPercentage` enforce this constraint, and `_completeJob` re-checks it to prevent misconfigured settlements.
 
 2. **Validator count drives payout and gas.**
    - The loop runs once per validator, capped at `MAX_VALIDATORS_PER_JOB` (50). Gas cost scales linearly. Keep typical validator counts small.
