@@ -1619,6 +1619,17 @@
       const image = imageUrl || (animationUrl ? "" : generateDefaultImage(title || "AGI Job"));
       const jobId = state.readContract ? await state.readContract.nextJobId() : null;
       const externalUrl = ids("jobExternalUrl").value.trim() || buildExternalUrl(jobId);
+      let validatorRewardPct = null;
+      let additionalAgentPayoutPct = null;
+      if (state.readContract) {
+        try {
+          validatorRewardPct = (await state.readContract.validationRewardPercentage()).toString();
+          additionalAgentPayoutPct = (await state.readContract.additionalAgentPayoutPercentage()).toString();
+        } catch (error) {
+          validatorRewardPct = null;
+          additionalAgentPayoutPct = null;
+        }
+      }
 
       const attributes = [
         { trait_type: "Type", value: "Job Spec" },
@@ -1648,9 +1659,16 @@
             duration_seconds: duration.toString(),
             summary,
             description,
-            links,
-            attachments,
           },
+          payouts: {
+            escrow_amount: formatToken(payout),
+            escrow_raw: payout.toString(),
+            agent_payout_pct: null,
+            validator_reward_pct: validatorRewardPct,
+            additional_agent_payout_pct: additionalAgentPayoutPct,
+          },
+          links,
+          attachments,
         },
       };
       return metadata;
@@ -1685,6 +1703,17 @@
           onchain = {};
         }
       }
+      let validatorRewardPct = null;
+      let additionalAgentPayoutPct = null;
+      if (state.readContract) {
+        try {
+          validatorRewardPct = (await state.readContract.validationRewardPercentage()).toString();
+          additionalAgentPayoutPct = (await state.readContract.additionalAgentPayoutPercentage()).toString();
+        } catch (error) {
+          validatorRewardPct = null;
+          additionalAgentPayoutPct = null;
+        }
+      }
 
       const attributes = [
         { trait_type: "Type", value: "Job Completion" },
@@ -1708,13 +1737,21 @@
             job_id: jobId.toString(),
             chain_id: state.chainId ? state.chainId.toString() : null,
             contract_address: state.contractAddress || null,
+            token_id: null,
             job_spec_uri: jobSpecUri || null,
             job_spec_sha256: state.metadata?.jobSpec?.hash || null,
+            tx_hash: null,
+          },
+          payouts: {
+            escrow_amount: onchain.payout || null,
+            escrow_raw: onchain.payout_raw || null,
+            agent_payout_pct: onchain.agent_payout_pct || null,
+            validator_reward_pct: validatorRewardPct,
+            additional_agent_payout_pct: additionalAgentPayoutPct,
           },
           deliverables,
           links,
           attachments,
-          onchain,
         },
       };
       return metadata;
