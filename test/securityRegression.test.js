@@ -116,6 +116,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.disputeJob(jobId, { from: employer });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
@@ -123,6 +124,52 @@ contract("AGIJobManager security regressions", (accounts) => {
     const agentBalance = await token.balanceOf(agent);
     const expectedPayout = payout.muln(92).divn(100);
     assert.equal(agentBalance.toString(), expectedPayout.toString(), "agent payout should succeed without validators");
+  });
+
+  it("rejects validator approvals before completion is requested", async () => {
+    const payout = toBN(toWei("12"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
+      "InvalidState"
+    );
+  });
+
+  it("rejects validator disapprovals before completion is requested", async () => {
+    const payout = toBN(toWei("12"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    await expectCustomError(
+      manager.disapproveJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
+      "InvalidState"
+    );
+  });
+
+  it("allows completion requests during disputes so agent-win can settle", async () => {
+    const payout = toBN(toWei("18"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.disputeJob(jobId, { from: employer });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+
+    const job = await manager.jobs(jobId);
+    assert.strictEqual(job.completed, true, "agent-win should complete after disputed completion request");
   });
 
   it("enforces vote rules and dispute thresholds", async () => {
