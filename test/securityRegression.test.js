@@ -156,6 +156,23 @@ contract("AGIJobManager security regressions", (accounts) => {
     );
   });
 
+  it("allows completion request while disputed to enable agent-win settlement", async () => {
+    const payout = toBN(toWei("14"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.disputeJob(jobId, { from: employer });
+
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+
+    const job = await manager.jobs(jobId);
+    assert.strictEqual(job.completed, true, "agent-win dispute should complete after completion request");
+  });
+
   it("enforces vote rules and dispute thresholds", async () => {
     const payout = toBN(toWei("30"));
     await token.mint(employer, payout.muln(2), { from: owner });
