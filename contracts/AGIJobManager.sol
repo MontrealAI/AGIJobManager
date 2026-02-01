@@ -460,15 +460,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.disputed = false;
         job.disputedAt = 0;
 
+        string memory legacyResolution;
         if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
+            legacyResolution = "agent win";
             _completeJob(_jobId);
         } else if (resolutionCode == uint8(DisputeResolutionCode.EMPLOYER_WIN)) {
+            legacyResolution = "employer win";
             _refundEmployer(job);
         } else {
             revert InvalidParameters();
         }
 
-        emit DisputeResolved(_jobId, msg.sender, reason);
+        emit DisputeResolved(_jobId, msg.sender, legacyResolution);
         emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
     }
 

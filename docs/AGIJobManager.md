@@ -134,6 +134,7 @@ stateDiagram-v2
   - `AGENT_WIN (1)` → `_completeJob`.
   - `EMPLOYER_WIN (2)` → employer refund + `completed = true`.
 - `resolveDispute` (string) is deprecated. It maps exact `agent win` / `employer win` strings to the corresponding action codes; any other string maps to `NO_ACTION`.
+- `DisputeResolved` remains for legacy consumers; on typed settlements it emits the canonical string (`agent win` / `employer win`) regardless of the freeform reason.
 - `resolveStaleDispute` is an owner‑only, paused‑only escape hatch that allows settlement after `disputeReviewPeriod` if disputes would otherwise deadlock.
 
 ## Reputation mechanics
