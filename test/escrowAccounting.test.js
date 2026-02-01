@@ -6,6 +6,7 @@ const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const MockERC721 = artifacts.require("MockERC721");
 
 const { expectCustomError } = require("./helpers/errors");
 
@@ -41,6 +42,9 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    const agiType = await MockERC721.new({ from: owner });
+    await manager.addAGIType(agiType.address, 1, { from: owner });
+    await agiType.mint(agent, { from: owner });
   });
 
   const createJob = async (payout, duration = 1000) => {

@@ -8,6 +8,7 @@ const MockERC20 = artifacts.require('MockERC20');
 const MockENS = artifacts.require('MockENS');
 const MockResolver = artifacts.require('MockResolver');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
+const MockERC721 = artifacts.require('MockERC721');
 
 const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
 
@@ -55,6 +56,9 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addModerator(moderator, { from: owner });
+    const agiType = await MockERC721.new({ from: owner });
+    await manager.addAGIType(agiType.address, 1, { from: owner });
+    await agiType.mint(agent, { from: owner });
   });
 
   it('exports deterministic metrics and expected aggregates', async () => {

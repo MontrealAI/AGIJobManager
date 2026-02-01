@@ -3,6 +3,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const ReentrantERC20 = artifacts.require("ReentrantERC20");
+const MockERC721 = artifacts.require("MockERC721");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -42,6 +43,9 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    const agiType = await MockERC721.new({ from: owner });
+    await manager.addAGIType(agiType.address, 1, { from: owner });
+    await agiType.mint(agent, { from: owner });
   });
 
   it("allows purchases when reentrancy is disabled", async () => {

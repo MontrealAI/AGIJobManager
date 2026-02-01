@@ -26,7 +26,7 @@ The following `public` state variables have auto‑generated getter functions:
 Escrows `payout` tokens and creates a job. Emits `JobCreated`.
 
 ### `applyForJob(uint256 jobId, string subdomain, bytes32[] proof)`
-Assigns the agent if identity checks pass. The agent payout tier is **snapshotted at assignment time** and stored on the job. Agents without a payout tier (0%) cannot apply unless they are explicitly allowlisted via `additionalAgents`, in which case the snapshot uses `additionalAgentPayoutPercentage`. Emits `JobApplied`.
+Assigns the agent if identity checks pass. The agent payout tier is **snapshotted at assignment time** and stored on the job. Agents without a payout tier (0%) cannot apply, even if allowlisted via `additionalAgents`. Emits `JobApplied`.
 
 ### `requestJobCompletion(uint256 jobId, string ipfsHash)`
 Marks completion requested and updates the job’s `ipfsHash`. Emits `JobCompletionRequested`.
