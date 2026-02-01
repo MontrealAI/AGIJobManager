@@ -156,6 +156,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
 
     const agentBalance = await token.balanceOf(agent);

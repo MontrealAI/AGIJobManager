@@ -4138,6 +4138,11 @@
         const label = ids("validateSubdomain").value.trim();
         if (!label) throw new Error("Label is required.");
         const proof = parseProof(ids("validateProof").value);
+        const job = await state.readContract.jobs(BigInt(jobId));
+        if (!job[10]) {
+          showAlert("Awaiting completion submission from agent.");
+          return;
+        }
         await sendTx("validateJob", [jobId, label, proof], "Validate job");
       } catch (error) {
         showAlert(error.message);
@@ -4150,6 +4155,11 @@
         const label = ids("disapproveSubdomain").value.trim();
         if (!label) throw new Error("Label is required.");
         const proof = parseProof(ids("disapproveProof").value);
+        const job = await state.readContract.jobs(BigInt(jobId));
+        if (!job[10]) {
+          showAlert("Awaiting completion submission from agent.");
+          return;
+        }
         await sendTx("disapproveJob", [jobId, label, proof], "Disapprove job");
       } catch (error) {
         showAlert(error.message);

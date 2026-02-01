@@ -64,7 +64,7 @@ stateDiagram-v2
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
-*Note:* `validateJob` does **not** require `completionRequested`; validators can approve/disapprove at any time while the job is assigned and not completed. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested).
+*Note:* Validators can only call `validateJob`/`disapproveJob` after the assigned agent has submitted `requestJobCompletion` (i.e., `completionRequested` must be true). `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested).
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid
