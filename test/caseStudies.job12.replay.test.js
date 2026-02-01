@@ -300,6 +300,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     await manager.createJob("ipfs-dispute", payout, 1000, "details", { from: employer });
 
     await manager.applyForJob(jobId, subdomains.agent, EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-dispute-complete", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
     const beforeTokenId = await manager.nextTokenId();

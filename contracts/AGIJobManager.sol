@@ -425,6 +425,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function disputeJob(uint256 _jobId) external whenNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         if (job.disputed || job.completed || job.expired) revert InvalidState();
+        if (!job.completionRequested) revert InvalidState();
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
         job.disputed = true;
         if (job.disputedAt == 0) {
@@ -716,7 +717,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         Job storage job = _job(_jobId);
         if (job.completed || job.expired) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
-        if (!job.completionRequested && !allowMissingCompletionRequest) revert InvalidState();
+        if (!job.completionRequested) revert InvalidState();
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();

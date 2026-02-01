@@ -96,6 +96,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTxTwo = await manager.createJob("ipfs", payoutTwo, 1000, "details", { from: employer });
     const jobIdTwo = createTxTwo.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobIdTwo, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobIdTwo, "ipfs-complete", { from: agent });
     await manager.disputeJob(jobIdTwo, { from: employer });
     await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
     await expectCustomError(
@@ -116,6 +117,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.disputeJob(jobId, { from: employer });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
@@ -165,6 +167,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-dispute", { from: agent });
 
     await expectCustomError(manager.disputeJob.call(jobId, { from: other }), "NotAuthorized");
     await manager.disputeJob(jobId, { from: employer });

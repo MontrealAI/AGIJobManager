@@ -14,7 +14,7 @@ const EMPTY_PROOF = [];
 const { toWei } = web3.utils;
 
 contract("AGIJobManager jobStatus", (accounts) => {
-  const [owner, employer, agent, moderator] = accounts;
+  const [owner, employer, agent, validator, moderator] = accounts;
   let token;
   let ens;
   let nameWrapper;
@@ -42,6 +42,7 @@ contract("AGIJobManager jobStatus", (accounts) => {
     await manager.addAGIType(agiType.address, 25, { from: owner });
 
     await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addModerator(moderator, { from: owner });
   });
 
@@ -88,6 +89,26 @@ contract("AGIJobManager jobStatus", (accounts) => {
     assert.strictEqual(status.toString(), "0", "cancelled job should be Deleted");
 
     await expectCustomError(manager.jobStatus.call(999), "JobNotFound");
+  });
+
+  it("blocks validator actions before completion is requested", async () => {
+    const payout = toWei("3");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    const createTx = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    await expectCustomError(
+      manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator }),
+      "InvalidState"
+    );
+    await expectCustomError(
+      manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator }),
+      "InvalidState"
+    );
   });
 
   it("computes Expired when assigned jobs pass their duration", async () => {

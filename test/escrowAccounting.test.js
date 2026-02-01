@@ -112,6 +112,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     const disputeJobId = await createJob(payout);
     await manager.applyForJob(disputeJobId, "", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(disputeJobId, "ipfs-complete", { from: agent });
     await manager.disputeJob(disputeJobId, { from: employer });
     await manager.resolveDispute(disputeJobId, "employer win", { from: moderator });
     assert.equal((await manager.lockedEscrow()).toString(), "0");
