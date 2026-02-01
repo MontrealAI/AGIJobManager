@@ -109,7 +109,7 @@ stateDiagram-v2
     Created --> Cancelled: delistJob (owner)
 ```
 
-**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` only after `requestJobCompletion`. Agent‑win dispute resolution now requires a prior completion request so settlement always carries completion metadata, and agents may submit completion even if a dispute is already open (including after the nominal duration). **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
+**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` only after `requestJobCompletion`. Agent‑win dispute resolution now requires a prior completion request so settlement always carries completion metadata, and agents may submit completion even if a dispute is already open (including after the nominal duration). While paused, agents can still submit completion metadata for disputed jobs via `requestJobCompletionWhilePaused` to support stale-dispute recovery. **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.

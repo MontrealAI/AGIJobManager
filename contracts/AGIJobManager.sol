@@ -376,6 +376,19 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit JobCompletionRequested(_jobId, msg.sender, _jobCompletionURI);
     }
 
+    function requestJobCompletionWhilePaused(uint256 _jobId, string calldata _jobCompletionURI) external whenPaused {
+        Job storage job = _job(_jobId);
+        if (msg.sender != job.assignedAgent) revert NotAuthorized();
+        if (job.completed || job.expired) revert InvalidState();
+        if (!job.disputed) revert InvalidState();
+        if (job.completionRequested) revert InvalidState();
+        _requireValidUri(_jobCompletionURI);
+        job.jobCompletionURI = _jobCompletionURI;
+        job.completionRequested = true;
+        job.completionRequestedAt = block.timestamp;
+        emit JobCompletionRequested(_jobId, msg.sender, _jobCompletionURI);
+    }
+
     function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         if (job.assignedAgent == address(0)) revert InvalidState();

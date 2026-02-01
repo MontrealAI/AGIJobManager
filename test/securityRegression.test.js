@@ -194,6 +194,28 @@ contract("AGIJobManager security regressions", (accounts) => {
     assert.strictEqual(job.completionRequested, true, "late completion request should be recorded");
   });
 
+  it("allows completion requests while paused to resolve stale disputes", async () => {
+    const payout = toBN(toWei("21"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.disputeJob(jobId, { from: employer });
+    await manager.setDisputeReviewPeriod(1, { from: owner });
+
+    await manager.pause({ from: owner });
+    await manager.requestJobCompletionWhilePaused(jobId, "ipfs-paused-complete", { from: agent });
+
+    await time.increase(2);
+    await manager.resolveStaleDispute(jobId, false, { from: owner });
+
+    const job = await manager.jobs(jobId);
+    assert.strictEqual(job.completed, true, "stale dispute should resolve to agent win");
+    assert.strictEqual(job.completionRequested, true, "completion request should be recorded while paused");
+  });
+
   it("enforces vote rules and dispute thresholds", async () => {
     const payout = toBN(toWei("30"));
     await token.mint(employer, payout.muln(2), { from: owner });
