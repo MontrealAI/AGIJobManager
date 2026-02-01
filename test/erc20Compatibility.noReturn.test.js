@@ -69,6 +69,7 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "", [], { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     const validateTx = await manager.validateJob(jobId, "", [], { from: validator });
     const nftIssued = validateTx.logs.find((log) => log.event === "NFTIssued");
     const tokenId = nftIssued.args.tokenId.toNumber();

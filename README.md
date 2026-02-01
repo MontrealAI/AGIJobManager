@@ -45,11 +45,9 @@ stateDiagram-v2
     Created --> Assigned: applyForJob
     Assigned --> CompletionRequested: requestJobCompletion
 
-    Assigned --> Completed: validateJob (approval threshold)
     CompletionRequested --> Completed: validateJob (approval threshold)
     CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
 
-    Assigned --> Disputed: disapproveJob (disapproval threshold)
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
     Assigned --> Disputed: disputeJob (manual)
     CompletionRequested --> Disputed: disputeJob (manual)
@@ -64,7 +62,7 @@ stateDiagram-v2
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
-*Note:* `validateJob` does **not** require `completionRequested`; validators can approve/disapprove at any time while the job is assigned and not completed. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested).
+*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested).
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid
@@ -177,7 +175,7 @@ npx truffle migrate --network development
 - **Marketplace reentrancy guard**: `purchaseNFT` is protected by `nonReentrant` because it crosses an external ERC‑20 `transferFrom` boundary; removing this protection requires a redeploy even though the ABI is unchanged.
 - **Marketplace safe transfer**: `purchaseNFT` uses ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received` or the purchase will revert.
 - **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
-- **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline unless off‑chain policies intervene.
+- **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline **once completion is requested** unless off‑chain policies intervene.
 - **Dispute resolution codes**: moderators should use `resolveDisputeWithCode(jobId, code, reason)` with `code = 0 (NO_ACTION)`, `1 (AGENT_WIN)`, or `2 (EMPLOYER_WIN)`. The `reason` is freeform and does not control settlement. The legacy string-based `resolveDispute` is deprecated; non‑canonical strings map to `NO_ACTION` and keep the dispute active.
 - **Agent payout snapshot**: the agent payout percentage is snapshotted at `applyForJob` and used at completion; later NFT transfers do **not** change payout for that job. Agents must have a nonzero AGI‑type payout tier at apply time (0% tiers cannot accept jobs), and `additionalAgents` only bypass identity checks (not payout eligibility).
 
