@@ -31,7 +31,9 @@ Use the “Contract address” input and click **Save address**.
 
 ### Employer
 1) **Approve** the AGI token for the contract (`approve`).
-2) **Create job** (`createJob`) with payout + duration + IPFS hash.
+2) **Create job** (`createJob`) with payout + duration + a **job spec metadata URI** (ERC‑721 JSON).
+   - Use the form-driven metadata generator to build `jobSpec.v1.json`.
+   - Upload it manually (or via optional Pinata/NFT.Storage) and paste the resulting URI.
 3) **Cancel job** (`cancelJob`) if it is unassigned and not completed.
    - Employer-only; only before assignment; no cancel after completion.
    - Cancelling refunds the payout to the employer.
@@ -41,7 +43,8 @@ Use the “Contract address” input and click **Save address**.
 ### Agent
 1) Run **Identity Checks** (Merkle → NameWrapper → Resolver) using your **label only** (e.g., `helper`).
 2) **Apply for job** (`applyForJob`).
-3) **Request completion** (`requestJobCompletion`) with the completion IPFS hash.
+3) **Request completion** (`requestJobCompletion`) with the **completion metadata URI** (ERC‑721 JSON).
+   - Generate `jobCompletion.v1.json`, upload, and paste the resulting URI.
 4) Optionally **Dispute job** (`disputeJob`).
 
 ### Validator

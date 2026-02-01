@@ -147,7 +147,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const creation = await createJob();
       expectEvent(creation, "JobCreated", {
         jobId: new BN(0),
-        ipfsHash: jobIpfs,
+        jobSpecURI: jobIpfs,
         payout,
         duration,
         details: jobDetails,
@@ -162,10 +162,11 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       assert.isTrue(new BN(job.assignedAt).gt(new BN(0)));
 
       const completion = await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
-      expectEvent(completion, "JobCompletionRequested", { jobId: new BN(0), agent });
+      expectEvent(completion, "JobCompletionRequested", { jobId: new BN(0), agent, jobCompletionURI: updatedIpfs });
       const status = await manager.getJobStatus(0);
       assert.equal(status[1], true);
-      assert.equal(status[2], updatedIpfs);
+      const completionJob = await manager.jobs(0);
+      assert.equal(completionJob.jobCompletionURI, updatedIpfs);
 
       const validatorOneBalanceBefore = await token.balanceOf(validatorOne);
       const validatorTwoBalanceBefore = await token.balanceOf(validatorTwo);

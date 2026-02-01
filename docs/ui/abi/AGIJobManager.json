@@ -437,6 +437,12 @@
           "internalType": "address",
           "name": "agent",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "jobCompletionURI",
+          "type": "string"
         }
       ],
       "name": "JobCompletionRequested",
@@ -454,7 +460,7 @@
         {
           "indexed": false,
           "internalType": "string",
-          "name": "ipfsHash",
+          "name": "jobSpecURI",
           "type": "string"
         },
         {
@@ -1268,6 +1274,16 @@
         },
         {
           "internalType": "string",
+          "name": "jobSpecURI",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "jobCompletionURI",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
           "name": "ipfsHash",
           "type": "string"
         },
@@ -1828,7 +1844,7 @@
       "inputs": [
         {
           "internalType": "string",
-          "name": "_ipfsHash",
+          "name": "_jobSpecURI",
           "type": "string"
         },
         {
@@ -1884,7 +1900,7 @@
         },
         {
           "internalType": "string",
-          "name": "_ipfsHash",
+          "name": "_jobCompletionURI",
           "type": "string"
         }
       ],

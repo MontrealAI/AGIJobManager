@@ -1,0 +1,42 @@
+{
+  "schema_version": "agijobmanager.job.v1",
+  "name": "Job #42: Build a streaming data pipeline",
+  "description": "Create a fault-tolerant pipeline that ingests data every 5 minutes and publishes a daily summary.\n\nDeliverables: code, deployment notes, and a short validation report.",
+  "image": "ipfs://bafybeibf3r6exampleimagecid",
+  "external_url": "https://agijobmanager.example/ui/agijobmanager.html?contract=0x1234567890abcdef1234567890abcdef12345678&chainId=1&jobId=42",
+  "attributes": [
+    { "trait_type": "Type", "value": "Job Spec" },
+    { "trait_type": "Chain ID", "value": "1" },
+    { "trait_type": "Contract", "value": "0x1234567890abcdef1234567890abcdef12345678" },
+    { "trait_type": "Job ID", "value": "42" },
+    { "trait_type": "Payout", "value": "2500 AGI" },
+    { "trait_type": "Duration (seconds)", "value": "604800" }
+  ],
+  "properties": {
+    "type": "job_spec",
+    "job": {
+      "job_id": "42",
+      "chain_id": "1",
+      "contract_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "payout_raw": "2500000000000000000000",
+      "payout": "2500 AGI",
+      "duration_seconds": "604800",
+      "summary": "Build and validate a streaming data pipeline.",
+      "description": "Create a fault-tolerant pipeline that ingests data every 5 minutes and publishes a daily summary."
+    },
+    "payouts": {
+      "escrow_amount": "2500 AGI",
+      "agent_payout_pct": "92",
+      "validator_reward_pct": "8",
+      "additional_agent_payout_pct": "50"
+    },
+    "links": [
+      { "label": "Repo", "url": "https://github.com/example/pipeline" },
+      { "label": "Spec", "url": "https://docs.example.com/spec" },
+      { "label": "Dataset", "url": "ipfs://bafybeidatasetcid" }
+    ],
+    "attachments": [
+      "https://example.com/requirements.pdf"
+    ]
+  }
+}

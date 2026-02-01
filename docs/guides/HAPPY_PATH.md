@@ -31,7 +31,8 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 
 **Create job**
 1. In **Employer actions**, fill:
-   - **IPFS hash** (job description)
+   - **Job spec metadata** (use the form to generate `jobSpec.v1.json`)
+   - Upload the JSON to IPFS and paste the resulting **job spec URI** (advanced users can paste an existing URI)
    - **Payout (token units)**
    - **Duration (seconds)**
    - **Details** (optional)
@@ -66,15 +67,16 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 2. Click **Apply**.
 
 **Request completion**
-1. Upload your completion output to IPFS.
-2. In **Request completion**, fill:
+1. Generate `jobCompletion.v1.json` with your deliverables and links.
+2. Upload the JSON to IPFS.
+3. In **Request completion**, fill:
    - **Job ID**
-   - **Completion IPFS hash**
-3. Click **Request completion**.
+   - **Completion metadata URI**
+4. Click **Request completion**.
 
 **What you should see in the UI**
 - **Agent eligibility** shows a green “Eligible” pill after preflight.
-- The job status changes to `Completion requested` after you submit the completion hash.
+- The job status changes to `Completion requested` after you submit the completion metadata URI.
 
 ## 5) Validator flow (eligibility → validate or disapprove)
 

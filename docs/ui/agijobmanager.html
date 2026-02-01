@@ -215,6 +215,24 @@
       font-size: 12px;
     }
 
+    .metadata-preview,
+    .markdown-preview {
+      background: #0a0f1a;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 120px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    .markdown-preview h1,
+    .markdown-preview h2,
+    .markdown-preview h3 {
+      margin-top: 0;
+    }
+
     .inline {
       display: flex;
       gap: 8px;
@@ -417,6 +435,33 @@
     </section>
 
     <section class="panel">
+      <h2>Metadata upload credentials (local only)</h2>
+      <p class="muted">Optional: store Pinata or NFT.Storage credentials in <code>localStorage</code>. These are never sent anywhere except directly to the provider APIs during upload.</p>
+      <div class="panel-row">
+        <div>
+          <h3>Pinata (JWT)</h3>
+          <label for="pinataJwt">Pinata JWT</label>
+          <input id="pinataJwt" type="password" placeholder="eyJ..." />
+          <div class="inline">
+            <button id="savePinataJwt" class="secondary">Save</button>
+            <button id="clearPinataJwt" class="danger">Clear</button>
+          </div>
+          <p class="muted" id="pinataStatus">Not set.</p>
+        </div>
+        <div>
+          <h3>NFT.Storage</h3>
+          <label for="nftStorageKey">NFT.Storage API key</label>
+          <input id="nftStorageKey" type="password" placeholder="nft..." />
+          <div class="inline">
+            <button id="saveNftStorageKey" class="secondary">Save</button>
+            <button id="clearNftStorageKey" class="danger">Clear</button>
+          </div>
+          <p class="muted" id="nftStorageStatus">Not set.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>Employer actions</h2>
       <div class="two-col">
         <div>
@@ -427,14 +472,66 @@
         </div>
         <div>
           <h3>Create job</h3>
-          <label for="jobIpfs">IPFS hash</label>
-          <input id="jobIpfs" placeholder="Qm..." />
+          <label for="jobMetaSource">Metadata source</label>
+          <select id="jobMetaSource">
+            <option value="generated" selected>Generate job spec metadata</option>
+            <option value="existing">Use existing job spec URI (advanced)</option>
+          </select>
+          <div id="jobMetaForm">
+            <label for="jobTitle">Title</label>
+            <input id="jobTitle" placeholder="e.g., Build a data pipeline" />
+            <label for="jobSummary">Short summary</label>
+            <input id="jobSummary" placeholder="One-sentence summary for marketplaces" />
+            <label for="jobDescription">Full description (Markdown)</label>
+            <textarea id="jobDescription" placeholder="Describe the job requirements, scope, and success criteria."></textarea>
+            <label>Markdown preview</label>
+            <div id="jobDescriptionPreview" class="markdown-preview"></div>
+            <label for="jobLinks">Links (one per line: label | url)</label>
+            <textarea id="jobLinks" placeholder="Repo | https://github.com/...&#10;Spec | https://..."></textarea>
+            <label for="jobAttachments">Attachments (one URL per line)</label>
+            <textarea id="jobAttachments" placeholder="https://..."></textarea>
+            <label for="jobImage">Image URL (optional)</label>
+            <input id="jobImage" placeholder="ipfs://... or https://..." />
+            <label for="jobAnimation">Animation URL (optional)</label>
+            <input id="jobAnimation" placeholder="ipfs://... or https://..." />
+            <label for="jobExternalUrl">External URL override (optional)</label>
+            <input id="jobExternalUrl" placeholder="https://... (defaults to the job page)" />
+          </div>
+          <details class="panel-row" id="jobMetaAdvanced">
+            <summary class="muted">Advanced: use an existing job spec URI</summary>
+            <div>
+              <label for="jobSpecUriExisting">Job spec URI</label>
+              <input id="jobSpecUriExisting" placeholder="ipfs://... or https://..." />
+            </div>
+          </details>
           <label for="jobPayout">Payout (token units)</label>
           <input id="jobPayout" placeholder="0.0" />
           <label for="jobDuration">Duration (seconds)</label>
           <input id="jobDuration" placeholder="0" />
           <label for="jobDetails">Details</label>
           <textarea id="jobDetails" placeholder="Optional description"></textarea>
+          <div class="panel-row">
+            <div>
+              <label>Job spec metadata JSON</label>
+              <textarea id="jobSpecPreview" class="metadata-preview" readonly></textarea>
+              <div class="inline">
+                <button id="jobSpecValidate" class="secondary">Validate required fields</button>
+                <span id="jobSpecStatus" class="pill warn">Not validated</span>
+              </div>
+            </div>
+            <div>
+              <h3>Upload job spec metadata</h3>
+              <p class="muted">Manual upload: download the JSON, upload to your preferred IPFS pinning service, and paste the resulting URI.</p>
+              <button id="jobSpecDownload" class="secondary">Download JSON</button>
+              <label for="jobSpecUri">Job spec URI</label>
+              <input id="jobSpecUri" placeholder="ipfs://... or https://..." />
+              <div class="inline">
+                <button id="uploadJobSpecPinata" class="secondary">Upload via Pinata</button>
+                <button id="uploadJobSpecNftStorage" class="secondary">Upload via NFT.Storage</button>
+              </div>
+              <p class="muted" id="jobSpecUploadStatus">No upload attempted.</p>
+            </div>
+          </div>
           <button id="createJob">Create job</button>
         </div>
       </div>
@@ -472,8 +569,71 @@
           <h3>Request completion</h3>
           <label for="completionJobId">Job ID</label>
           <input id="completionJobId" placeholder="0" />
-          <label for="completionIpfs">Completion IPFS hash</label>
-          <input id="completionIpfs" placeholder="Qm..." />
+          <label for="completionMetaSource">Metadata source</label>
+          <select id="completionMetaSource">
+            <option value="generated" selected>Generate completion metadata</option>
+            <option value="existing">Use existing completion URI (advanced)</option>
+          </select>
+          <div id="completionMetaForm">
+            <label for="completionTitle">Completion title</label>
+            <input id="completionTitle" placeholder="e.g., Job #12 completion" />
+            <label for="completionSummary">Completion summary</label>
+            <input id="completionSummary" placeholder="Short summary of the delivered work" />
+            <label for="completionDescription">Completion notes (Markdown)</label>
+            <textarea id="completionDescription" placeholder="Describe deliverables, testing, and any important notes."></textarea>
+            <label>Markdown preview</label>
+            <div id="completionDescriptionPreview" class="markdown-preview"></div>
+            <label for="completionSpecUri">Job spec URI reference</label>
+            <input id="completionSpecUri" placeholder="ipfs://... or https://..." />
+            <label for="completionDeliverables">Deliverables (one URL per line)</label>
+            <textarea id="completionDeliverables" placeholder="https://..."></textarea>
+            <label for="completionLinks">Links (one per line: label | url)</label>
+            <textarea id="completionLinks" placeholder="Submission | https://...&#10;Repo | https://..."></textarea>
+            <label for="completionAttachments">Attachments (one URL per line)</label>
+            <textarea id="completionAttachments" placeholder="https://..."></textarea>
+            <label for="completionImage">Image URL (optional)</label>
+            <input id="completionImage" placeholder="ipfs://... or https://..." />
+            <label for="completionAnimation">Animation URL (optional)</label>
+            <input id="completionAnimation" placeholder="ipfs://... or https://..." />
+            <label for="completionExternalUrl">External URL override (optional)</label>
+            <input id="completionExternalUrl" placeholder="https://... (defaults to the job page)" />
+          </div>
+          <details class="panel-row" id="completionMetaAdvanced">
+            <summary class="muted">Advanced: use an existing completion URI</summary>
+            <div>
+              <label for="completionUriExisting">Completion URI</label>
+              <input id="completionUriExisting" placeholder="ipfs://... or https://..." />
+            </div>
+          </details>
+          <div class="panel-row">
+            <div>
+              <label>Completion metadata JSON</label>
+              <textarea id="completionPreview" class="metadata-preview" readonly></textarea>
+              <div class="inline">
+                <button id="completionValidate" class="secondary">Validate required fields</button>
+                <span id="completionStatus" class="pill warn">Not validated</span>
+              </div>
+              <div class="muted">
+                <strong>Mint preview:</strong>
+                <div>Name: <span id="completionMintName">—</span></div>
+                <div>Description: <span id="completionMintDescription">—</span></div>
+                <div>Image/Animation: <span id="completionMintImage">—</span></div>
+                <div>External URL: <span id="completionMintExternalUrl">—</span></div>
+              </div>
+            </div>
+            <div>
+              <h3>Upload completion metadata</h3>
+              <p class="muted">Manual upload: download the JSON, upload to your preferred IPFS pinning service, and paste the resulting URI.</p>
+              <button id="completionDownload" class="secondary">Download JSON</button>
+              <label for="completionUri">Completion URI</label>
+              <input id="completionUri" placeholder="ipfs://... or https://..." />
+              <div class="inline">
+                <button id="uploadCompletionPinata" class="secondary">Upload via Pinata</button>
+                <button id="uploadCompletionNftStorage" class="secondary">Upload via NFT.Storage</button>
+              </div>
+              <p class="muted" id="completionUploadStatus">No upload attempted.</p>
+            </div>
+          </div>
           <button id="requestCompletion">Request completion</button>
         </div>
       </div>
@@ -727,7 +887,8 @@
               <th>Approvals/Disapprovals</th>
               <th>Completion Requested</th>
               <th>Disputed</th>
-              <th>IPFS</th>
+              <th>Job spec URI</th>
+              <th>Completion URI</th>
               <th>Details</th>
               <th>Actions</th>
             </tr>
@@ -842,6 +1003,10 @@
       },
       marketAllowance: null,
       nftCache: {},
+      metadata: {
+        jobSpec: { json: null, hash: null },
+        completion: { json: null },
+      },
       ui: {
         jobsPage: 0,
         jobsPageSize: 50,
@@ -930,7 +1095,7 @@
       "function additionalValidators(address) view returns (bool)",
       "function blacklistedAgents(address) view returns (bool)",
       "function blacklistedValidators(address) view returns (bool)",
-      "function jobs(uint256) view returns (uint256,address,string,uint256,uint256,address,uint256,bool,bool,uint256,uint256,bool,string)",
+      "function jobs(uint256) view returns (uint256,address,string,string,string,uint256,uint256,address,uint256,bool,bool,uint256,uint256,bool,string,uint256,uint256,bool,uint8,bool)",
       "function listings(uint256) view returns (uint256,address,uint256,bool)",
       "function ownerOf(uint256) view returns (address)",
       "function tokenURI(uint256) view returns (string)",
@@ -961,9 +1126,9 @@
       "function listNFT(uint256,uint256)",
       "function purchaseNFT(uint256)",
       "function delistNFT(uint256)",
-      "event JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details)",
+      "event JobCreated(uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details)",
       "event JobApplied(uint256 jobId, address agent)",
-      "event JobCompletionRequested(uint256 jobId, address agent)",
+      "event JobCompletionRequested(uint256 jobId, address agent, string jobCompletionURI)",
       "event JobValidated(uint256 jobId, address validator)",
       "event JobDisapproved(uint256 jobId, address validator)",
       "event JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)",
@@ -1342,6 +1507,360 @@
       return parsed;
     }
 
+    const metadataStorageKeys = {
+      pinataJwt: "agijobmanager_pinata_jwt",
+      nftStorageKey: "agijobmanager_nft_storage_key",
+    };
+
+    function updatePill(id, text, tone = "warn") {
+      const pill = ids(id);
+      pill.textContent = text;
+      pill.className = `pill ${tone}`;
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderMarkdown(markdown) {
+      const safe = escapeHtml(markdown || "");
+      const lines = safe.split("\n");
+      const rendered = lines.map((line) => {
+        if (line.startsWith("### ")) return `<h3>${line.slice(4)}</h3>`;
+        if (line.startsWith("## ")) return `<h2>${line.slice(3)}</h2>`;
+        if (line.startsWith("# ")) return `<h1>${line.slice(2)}</h1>`;
+        let htmlLine = line
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*(.+?)\*/g, "<em>$1</em>")
+          .replace(/`(.+?)`/g, "<code>$1</code>")
+          .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+        return `<div>${htmlLine}</div>`;
+      });
+      return rendered.join("");
+    }
+
+    function parseLinkLines(input) {
+      return input
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const [label, url] = line.split("|").map((part) => part.trim());
+          if (url) {
+            return { label, url };
+          }
+          return { label: "Link", url: label };
+        })
+        .filter((entry) => entry.url);
+    }
+
+    function parseUrlLines(input) {
+      return input
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+    }
+
+    function generateDefaultImage(title) {
+      const safeTitle = escapeHtml(title || "AGI Job");
+      const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">
+  <rect width="100%" height="100%" fill="#0b0f14"/>
+  <rect x="80" y="80" width="864" height="864" rx="48" fill="#111826" stroke="#38bdf8" stroke-width="6"/>
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#e5e7eb" font-size="42" font-family="Inter, system-ui, sans-serif">${safeTitle}</text>
+  <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle" fill="#94a3b8" font-size="22" font-family="Inter, system-ui, sans-serif">AGIJobManager</text>
+</svg>`;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+
+    function buildExternalUrl(jobId) {
+      const baseUrl = `${window.location.origin}${window.location.pathname}`;
+      const params = new URLSearchParams();
+      if (state.contractAddress) params.set("contract", state.contractAddress);
+      if (state.chainId) params.set("chainId", state.chainId.toString());
+      if (jobId != null) params.set("jobId", jobId.toString());
+      const query = params.toString();
+      return query ? `${baseUrl}?${query}` : baseUrl;
+    }
+
+    function validateUri(value, fieldLabel) {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        throw new Error(`${fieldLabel} is required.`);
+      }
+      if (/\s/.test(trimmed)) {
+        throw new Error(`${fieldLabel} cannot contain whitespace.`);
+      }
+      return trimmed;
+    }
+
+    async function sha256Hex(message) {
+      const data = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    async function buildJobSpecMetadata() {
+      const title = ids("jobTitle").value.trim();
+      const summary = ids("jobSummary").value.trim();
+      const description = ids("jobDescription").value.trim();
+      const payout = parseTokenAmount(ids("jobPayout").value, "Payout");
+      const duration = parseUint(ids("jobDuration").value, "Duration");
+      const links = parseLinkLines(ids("jobLinks").value);
+      const attachments = parseUrlLines(ids("jobAttachments").value);
+      const animationUrl = ids("jobAnimation").value.trim();
+      const imageUrl = ids("jobImage").value.trim();
+      const image = imageUrl || (animationUrl ? "" : generateDefaultImage(title || "AGI Job"));
+      const jobId = state.readContract ? await state.readContract.nextJobId() : null;
+      const externalUrl = ids("jobExternalUrl").value.trim() || buildExternalUrl(jobId);
+
+      const attributes = [
+        { trait_type: "Type", value: "Job Spec" },
+        { trait_type: "Chain ID", value: state.chainId ? state.chainId.toString() : "unknown" },
+        { trait_type: "Contract", value: state.contractAddress || "unknown" },
+        { trait_type: "Job ID", value: jobId != null ? jobId.toString() : "pending" },
+        { trait_type: "Payout", value: formatToken(payout) },
+        { trait_type: "Duration (seconds)", value: duration.toString() },
+      ];
+
+      const metadata = {
+        schema_version: "agijobmanager.job.v1",
+        name: title || `Job #${jobId != null ? jobId.toString() : "pending"}`,
+        description: summary ? `${summary}\n\n${description}`.trim() : description,
+        image: image || undefined,
+        animation_url: animationUrl || undefined,
+        external_url: externalUrl,
+        attributes,
+        properties: {
+          type: "job_spec",
+          job: {
+            job_id: jobId != null ? jobId.toString() : null,
+            chain_id: state.chainId ? state.chainId.toString() : null,
+            contract_address: state.contractAddress || null,
+            payout: formatToken(payout),
+            payout_raw: payout.toString(),
+            duration_seconds: duration.toString(),
+            summary,
+            description,
+            links,
+            attachments,
+          },
+        },
+      };
+      return metadata;
+    }
+
+    async function buildCompletionMetadata() {
+      const jobId = parseUint(ids("completionJobId").value, "Job ID");
+      const title = ids("completionTitle").value.trim();
+      const summary = ids("completionSummary").value.trim();
+      const description = ids("completionDescription").value.trim();
+      const deliverables = parseUrlLines(ids("completionDeliverables").value);
+      const links = parseLinkLines(ids("completionLinks").value);
+      const attachments = parseUrlLines(ids("completionAttachments").value);
+      const animationUrl = ids("completionAnimation").value.trim();
+      const imageUrl = ids("completionImage").value.trim();
+      const image = imageUrl || (animationUrl ? "" : generateDefaultImage(title || `Job #${jobId} completion`));
+      const externalUrl = ids("completionExternalUrl").value.trim() || buildExternalUrl(jobId);
+      const jobSpecUri = ids("completionSpecUri").value.trim();
+
+      let onchain = {};
+      if (state.readContract) {
+        try {
+          const job = await state.readContract.jobs(jobId);
+          onchain = {
+            payout_raw: job[5].toString(),
+            payout: formatToken(job[5]),
+            agent_payout_pct: job[18]?.toString?.() ?? null,
+            completion_requested: job[10],
+            disputed: job[13],
+          };
+        } catch (error) {
+          onchain = {};
+        }
+      }
+
+      const attributes = [
+        { trait_type: "Type", value: "Job Completion" },
+        { trait_type: "Chain ID", value: state.chainId ? state.chainId.toString() : "unknown" },
+        { trait_type: "Contract", value: state.contractAddress || "unknown" },
+        { trait_type: "Job ID", value: jobId.toString() },
+        { trait_type: "Status", value: "Completed" },
+      ];
+
+      const metadata = {
+        schema_version: "agijobmanager.job.v1",
+        name: title || `Job #${jobId} completion`,
+        description: summary ? `${summary}\n\n${description}`.trim() : description,
+        image: image || undefined,
+        animation_url: animationUrl || undefined,
+        external_url: externalUrl,
+        attributes,
+        properties: {
+          type: "job_completion",
+          job: {
+            job_id: jobId.toString(),
+            chain_id: state.chainId ? state.chainId.toString() : null,
+            contract_address: state.contractAddress || null,
+            job_spec_uri: jobSpecUri || null,
+            job_spec_sha256: state.metadata?.jobSpec?.hash || null,
+          },
+          deliverables,
+          links,
+          attachments,
+          onchain,
+        },
+      };
+      return metadata;
+    }
+
+    function validateMetadata(metadata) {
+      const missing = [];
+      if (!metadata.name) missing.push("name");
+      if (!metadata.description) missing.push("description");
+      if (!metadata.external_url) missing.push("external_url");
+      if (!metadata.image && !metadata.animation_url) missing.push("image or animation_url");
+      if (!Array.isArray(metadata.attributes) || metadata.attributes.length === 0) missing.push("attributes");
+      return missing;
+    }
+
+    async function refreshJobSpecPreview() {
+      const formVisible = ids("jobMetaSource").value === "generated";
+      if (!formVisible) {
+        ids("jobSpecPreview").value = "Using existing job spec URI.";
+        return;
+      }
+      if (!ids("jobPayout").value.trim() || !ids("jobDuration").value.trim()) {
+        ids("jobSpecPreview").value = "Enter payout and duration to generate preview.";
+        return;
+      }
+      try {
+        const metadata = await buildJobSpecMetadata();
+        const json = JSON.stringify(metadata, null, 2);
+        ids("jobSpecPreview").value = json;
+        state.metadata = state.metadata || {};
+        state.metadata.jobSpec = state.metadata.jobSpec || {};
+        state.metadata.jobSpec.json = metadata;
+        state.metadata.jobSpec.hash = await sha256Hex(json);
+      } catch (error) {
+        ids("jobSpecPreview").value = `Error: ${error.message}`;
+      }
+    }
+
+    async function refreshCompletionPreview() {
+      const formVisible = ids("completionMetaSource").value === "generated";
+      if (!formVisible) {
+        ids("completionPreview").value = "Using existing completion URI.";
+        return;
+      }
+      if (!ids("completionJobId").value.trim()) {
+        ids("completionPreview").value = "Enter a Job ID to generate preview.";
+        return;
+      }
+      try {
+        const metadata = await buildCompletionMetadata();
+        const json = JSON.stringify(metadata, null, 2);
+        ids("completionPreview").value = json;
+        state.metadata = state.metadata || {};
+        state.metadata.completion = state.metadata.completion || {};
+        state.metadata.completion.json = metadata;
+        const image = metadata.animation_url || metadata.image || "—";
+        setText("completionMintName", metadata.name || "—");
+        setText("completionMintDescription", metadata.description ? metadata.description.slice(0, 120) : "—");
+        setText("completionMintImage", image);
+        setText("completionMintExternalUrl", metadata.external_url || "—");
+      } catch (error) {
+        ids("completionPreview").value = `Error: ${error.message}`;
+      }
+    }
+
+    function downloadJson(filename, json) {
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function setStoredCredential(key, value) {
+      if (!value) {
+        localStorage.removeItem(key);
+      } else {
+        localStorage.setItem(key, value);
+      }
+    }
+
+    function getStoredCredential(key) {
+      return localStorage.getItem(key) || "";
+    }
+
+    function refreshCredentialStatus() {
+      setText("pinataStatus", getStoredCredential(metadataStorageKeys.pinataJwt) ? "Saved locally." : "Not set.");
+      setText("nftStorageStatus", getStoredCredential(metadataStorageKeys.nftStorageKey) ? "Saved locally." : "Not set.");
+    }
+
+    async function uploadToPinata(json, filename) {
+      const jwt = getStoredCredential(metadataStorageKeys.pinataJwt);
+      if (!jwt) throw new Error("Pinata JWT not set.");
+      const response = await fetch("https://api.pinata.cloud/pinning/pinJSONToIPFS", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({ pinataContent: json, pinataMetadata: { name: filename } }),
+      });
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(`Pinata upload failed (${response.status}): ${message}`);
+      }
+      const payload = await response.json();
+      if (!payload.IpfsHash) throw new Error("Pinata response missing IpfsHash.");
+      return `ipfs://${payload.IpfsHash}`;
+    }
+
+    async function uploadToNftStorage(json) {
+      const apiKey = getStoredCredential(metadataStorageKeys.nftStorageKey);
+      if (!apiKey) throw new Error("NFT.Storage API key not set.");
+      const response = await fetch("https://api.nft.storage/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(json),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error?.message || `NFT.Storage upload failed (${response.status})`);
+      }
+      const cid = payload.value?.cid || payload.value?.ipnft || payload.value?.ipfs?.cid;
+      if (!cid) throw new Error("NFT.Storage response missing CID.");
+      return `ipfs://${cid}`;
+    }
+
+    function syncMarkdownPreview() {
+      ids("jobDescriptionPreview").innerHTML = renderMarkdown(ids("jobDescription").value);
+      ids("completionDescriptionPreview").innerHTML = renderMarkdown(ids("completionDescription").value);
+    }
+
+    function applyMetadataSourceVisibility() {
+      const jobGenerated = ids("jobMetaSource").value === "generated";
+      ids("jobMetaForm").style.display = jobGenerated ? "block" : "none";
+      ids("jobMetaAdvanced").open = !jobGenerated;
+      const completionGenerated = ids("completionMetaSource").value === "generated";
+      ids("completionMetaForm").style.display = completionGenerated ? "block" : "none";
+      ids("completionMetaAdvanced").open = !completionGenerated;
+    }
+
     function describeCancelIneligibility({ employer, assignedAgent, completed }) {
       if (employer === ethers.ZeroAddress) {
         return "Job not found or already cancelled.";
@@ -1360,8 +1879,8 @@
 
     function isCancelEligible(job) {
       const employer = job[1];
-      const assignedAgent = job[5];
-      const completed = job[7];
+      const assignedAgent = job[7];
+      const completed = job[9];
       if (!state.walletAddress) return false;
       return employer !== ethers.ZeroAddress
         && employer === state.walletAddress
@@ -2102,14 +2621,14 @@
       const job = await state.readContract.jobs(jobId);
       const eligibilityMessage = describeCancelIneligibility({
         employer: job[1],
-        assignedAgent: job[5],
-        completed: job[7],
+        assignedAgent: job[7],
+        completed: job[9],
       });
       if (eligibilityMessage) {
         throw new Error(eligibilityMessage);
       }
       await preflight(state.contract, "cancelJob", [jobId]);
-      const payout = formatToken(job[3]);
+      const payout = formatToken(job[5]);
       const confirmMessage = [
         `Cancel job ${jobId}`,
         `Contract: ${state.contractAddress}`,
@@ -2401,10 +2920,10 @@
 
     function deriveJobStatus(job, indexEntry) {
       const employer = job[1];
-      const assignedAgent = job[5];
-      const completed = job[7];
-      const completionRequested = job[8];
-      const disputed = job[11];
+      const assignedAgent = job[7];
+      const completed = job[9];
+      const completionRequested = job[10];
+      const disputed = job[13];
       let status = jobStatusFromIndex(indexEntry);
       if (employer === ethers.ZeroAddress) {
         status = "Deleted";
@@ -2860,12 +3379,12 @@
 
       for (const { jobId, job, status } of jobs) {
         const employer = job[1];
-        const assignedAgent = job[5];
-        const completed = job[7];
-        const completionRequested = job[8];
-        const approvals = job[9];
-        const disapprovals = job[10];
-        const disputed = job[11];
+        const assignedAgent = job[7];
+        const completed = job[9];
+        const completionRequested = job[10];
+        const approvals = job[11];
+        const disapprovals = job[12];
+        const disputed = job[13];
 
         const row = document.createElement("tr");
         const cells = [
@@ -2873,13 +3392,14 @@
           status,
           employer,
           assignedAgent,
-          formatToken(job[3]),
-          job[4].toString(),
+          formatToken(job[5]),
+          job[6].toString(),
           `${approvals.toString()} / ${disapprovals.toString()}`,
           completionRequested ? "Yes" : "No",
           disputed ? "Yes" : "No",
           job[2],
-          job[12],
+          job[3],
+          job[14],
         ];
         for (const cell of cells) {
           const td = document.createElement("td");
@@ -3086,9 +3606,9 @@
       const contract = state.contract || state.readContract;
       if (!contract) throw new Error("Contract not ready.");
       state.eventSubscribed = true;
-      contract.on("JobCreated", (jobId) => logEvent(`JobCreated #${jobId}`));
+      contract.on("JobCreated", (jobId, jobSpecURI) => logEvent(`JobCreated #${jobId} (${jobSpecURI})`));
       contract.on("JobApplied", (jobId, agent) => logEvent(`JobApplied #${jobId} by ${agent}`));
-      contract.on("JobCompletionRequested", (jobId, agent) => logEvent(`JobCompletionRequested #${jobId} by ${agent}`));
+      contract.on("JobCompletionRequested", (jobId, agent, jobCompletionURI) => logEvent(`JobCompletionRequested #${jobId} by ${agent} (${jobCompletionURI})`));
       contract.on("JobValidated", (jobId, validator) => logEvent(`JobValidated #${jobId} by ${validator}`));
       contract.on("JobDisapproved", (jobId, validator) => logEvent(`JobDisapproved #${jobId} by ${validator}`));
       contract.on("JobCompleted", (jobId) => logEvent(`JobCompleted #${jobId}`));
@@ -3313,15 +3833,198 @@
       }
     });
 
+    ids("savePinataJwt").addEventListener("click", () => {
+      setStoredCredential(metadataStorageKeys.pinataJwt, ids("pinataJwt").value.trim());
+      ids("pinataJwt").value = "";
+      refreshCredentialStatus();
+    });
+
+    ids("clearPinataJwt").addEventListener("click", () => {
+      setStoredCredential(metadataStorageKeys.pinataJwt, "");
+      refreshCredentialStatus();
+    });
+
+    ids("saveNftStorageKey").addEventListener("click", () => {
+      setStoredCredential(metadataStorageKeys.nftStorageKey, ids("nftStorageKey").value.trim());
+      ids("nftStorageKey").value = "";
+      refreshCredentialStatus();
+    });
+
+    ids("clearNftStorageKey").addEventListener("click", () => {
+      setStoredCredential(metadataStorageKeys.nftStorageKey, "");
+      refreshCredentialStatus();
+    });
+
+    ids("jobMetaSource").addEventListener("change", () => {
+      applyMetadataSourceVisibility();
+      refreshJobSpecPreview();
+    });
+
+    ids("completionMetaSource").addEventListener("change", () => {
+      applyMetadataSourceVisibility();
+      refreshCompletionPreview();
+    });
+
+    [
+      "jobTitle",
+      "jobSummary",
+      "jobDescription",
+      "jobLinks",
+      "jobAttachments",
+      "jobImage",
+      "jobAnimation",
+      "jobExternalUrl",
+      "jobPayout",
+      "jobDuration",
+    ].forEach((id) => {
+      ids(id).addEventListener("input", () => {
+        syncMarkdownPreview();
+        refreshJobSpecPreview();
+      });
+    });
+
+    [
+      "completionJobId",
+      "completionTitle",
+      "completionSummary",
+      "completionDescription",
+      "completionSpecUri",
+      "completionDeliverables",
+      "completionLinks",
+      "completionAttachments",
+      "completionImage",
+      "completionAnimation",
+      "completionExternalUrl",
+    ].forEach((id) => {
+      ids(id).addEventListener("input", () => {
+        syncMarkdownPreview();
+        refreshCompletionPreview();
+      });
+    });
+
+    ["jobSpecUri", "jobSpecUriExisting"].forEach((id) => {
+      ids(id).addEventListener("input", () => {
+        if (!ids("completionSpecUri").value.trim()) {
+          ids("completionSpecUri").value = ids(id).value.trim();
+        }
+      });
+    });
+
+    ids("jobSpecValidate").addEventListener("click", async () => {
+      try {
+        const metadata = await buildJobSpecMetadata();
+        const missing = validateMetadata(metadata);
+        if (missing.length) {
+          updatePill("jobSpecStatus", `Missing: ${missing.join(", ")}`, "danger");
+        } else {
+          updatePill("jobSpecStatus", "Valid", "ok");
+        }
+        await refreshJobSpecPreview();
+      } catch (error) {
+        updatePill("jobSpecStatus", error.message, "danger");
+      }
+    });
+
+    ids("completionValidate").addEventListener("click", async () => {
+      try {
+        const metadata = await buildCompletionMetadata();
+        const missing = validateMetadata(metadata);
+        if (missing.length) {
+          updatePill("completionStatus", `Missing: ${missing.join(", ")}`, "danger");
+        } else {
+          updatePill("completionStatus", "Valid", "ok");
+        }
+        await refreshCompletionPreview();
+      } catch (error) {
+        updatePill("completionStatus", error.message, "danger");
+      }
+    });
+
+    ids("jobSpecDownload").addEventListener("click", async () => {
+      try {
+        const metadata = await buildJobSpecMetadata();
+        const json = JSON.stringify(metadata, null, 2);
+        downloadJson("jobSpec.v1.json", json);
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("completionDownload").addEventListener("click", async () => {
+      try {
+        const metadata = await buildCompletionMetadata();
+        const json = JSON.stringify(metadata, null, 2);
+        downloadJson("jobCompletion.v1.json", json);
+      } catch (error) {
+        showAlert(error.message);
+      }
+    });
+
+    ids("uploadJobSpecPinata").addEventListener("click", async () => {
+      try {
+        const metadata = await buildJobSpecMetadata();
+        const uri = await uploadToPinata(metadata, "jobSpec.v1.json");
+        ids("jobSpecUri").value = uri;
+        setText("jobSpecUploadStatus", `Uploaded via Pinata: ${uri}`);
+      } catch (error) {
+        setText("jobSpecUploadStatus", error.message);
+      }
+    });
+
+    ids("uploadJobSpecNftStorage").addEventListener("click", async () => {
+      try {
+        const metadata = await buildJobSpecMetadata();
+        const uri = await uploadToNftStorage(metadata);
+        ids("jobSpecUri").value = uri;
+        setText("jobSpecUploadStatus", `Uploaded via NFT.Storage: ${uri}`);
+      } catch (error) {
+        setText("jobSpecUploadStatus", error.message);
+      }
+    });
+
+    ids("uploadCompletionPinata").addEventListener("click", async () => {
+      try {
+        const metadata = await buildCompletionMetadata();
+        const uri = await uploadToPinata(metadata, "jobCompletion.v1.json");
+        ids("completionUri").value = uri;
+        setText("completionUploadStatus", `Uploaded via Pinata: ${uri}`);
+      } catch (error) {
+        setText("completionUploadStatus", error.message);
+      }
+    });
+
+    ids("uploadCompletionNftStorage").addEventListener("click", async () => {
+      try {
+        const metadata = await buildCompletionMetadata();
+        const uri = await uploadToNftStorage(metadata);
+        ids("completionUri").value = uri;
+        setText("completionUploadStatus", `Uploaded via NFT.Storage: ${uri}`);
+      } catch (error) {
+        setText("completionUploadStatus", error.message);
+      }
+    });
+
     ids("createJob").addEventListener("click", async () => {
       try {
-        const ipfs = ids("jobIpfs").value.trim();
-        if (!ipfs) throw new Error("IPFS hash is required.");
+        const metaSource = ids("jobMetaSource").value;
+        let jobSpecUri = "";
+        if (metaSource === "existing") {
+          jobSpecUri = validateUri(ids("jobSpecUriExisting").value, "Job spec URI");
+        } else {
+          const metadata = await buildJobSpecMetadata();
+          const missing = validateMetadata(metadata);
+          if (missing.length) {
+            throw new Error(`Job spec metadata missing required fields: ${missing.join(", ")}`);
+          }
+          jobSpecUri = validateUri(ids("jobSpecUri").value, "Job spec URI");
+        }
         await ensureToken();
         const payout = parseTokenAmount(ids("jobPayout").value, "Payout");
         const duration = parseUint(ids("jobDuration").value, "Duration");
-        const details = ids("jobDetails").value.trim();
-        await sendTx("createJob", [ipfs, payout, duration, details], "Create job");
+        const summary = ids("jobSummary").value.trim();
+        const title = ids("jobTitle").value.trim();
+        const details = ids("jobDetails").value.trim() || summary || title;
+        await sendTx("createJob", [jobSpecUri, payout, duration, details], "Create job");
         await updateSnapshot();
       } catch (error) {
         showAlert(error.message);
@@ -3365,9 +4068,19 @@
     ids("requestCompletion").addEventListener("click", async () => {
       try {
         const jobId = parseUint(ids("completionJobId").value, "Job ID");
-        const ipfs = ids("completionIpfs").value.trim();
-        if (!ipfs) throw new Error("Completion IPFS hash is required.");
-        await sendTx("requestJobCompletion", [jobId, ipfs], "Request completion");
+        const metaSource = ids("completionMetaSource").value;
+        let completionUri = "";
+        if (metaSource === "existing") {
+          completionUri = validateUri(ids("completionUriExisting").value, "Completion URI");
+        } else {
+          const metadata = await buildCompletionMetadata();
+          const missing = validateMetadata(metadata);
+          if (missing.length) {
+            throw new Error(`Completion metadata missing required fields: ${missing.join(", ")}`);
+          }
+          completionUri = validateUri(ids("completionUri").value, "Completion URI");
+        }
+        await sendTx("requestJobCompletion", [jobId, completionUri], "Request completion");
       } catch (error) {
         showAlert(error.message);
       }
@@ -3805,6 +4518,11 @@
       setDeploymentHints();
       loadUiSettings();
       hydrateUiControls();
+      refreshCredentialStatus();
+      applyMetadataSourceVisibility();
+      syncMarkdownPreview();
+      await refreshJobSpecPreview();
+      await refreshCompletionPreview();
       loadContractFromQuery();
       loadKnownDeployment();
       initNetwork();
