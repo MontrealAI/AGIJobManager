@@ -10,6 +10,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -172,6 +173,24 @@ contract("AGIJobManager security regressions", (accounts) => {
     const job = await manager.jobs(jobId);
     assert.strictEqual(job.completed, true, "agent-win dispute should complete after completion request");
     assert.strictEqual(job.completionRequested, true, "completion request should be recorded");
+  });
+
+  it("allows completion request after duration when disputed for agent-win resolution", async () => {
+    const payout = toBN(toWei("21"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 5, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.disputeJob(jobId, { from: employer });
+    await time.increase(6);
+
+    await manager.requestJobCompletion(jobId, "ipfs-late-complete", { from: agent });
+    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+
+    const job = await manager.jobs(jobId);
+    assert.strictEqual(job.completed, true, "agent-win dispute should complete after late request");
   });
 
   it("enforces vote rules and dispute thresholds", async () => {

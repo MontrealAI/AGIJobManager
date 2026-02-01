@@ -367,7 +367,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         Job storage job = _job(_jobId);
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
         if (job.completed || job.expired) revert InvalidState();
-        if (block.timestamp > job.assignedAt + job.duration) revert InvalidState();
+        if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
         if (job.completionRequested) revert InvalidState();
         _requireValidUri(_jobCompletionURI);
         job.jobCompletionURI = _jobCompletionURI;
