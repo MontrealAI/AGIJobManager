@@ -89,6 +89,11 @@ contract("AGIJobManager escrow accounting", (accounts) => {
   it("releases escrow on terminal transitions", async () => {
     const payout = toBN(toWei("3"));
 
+    const delistJobId = await createJob(payout);
+    assert.equal((await manager.lockedEscrow()).toString(), payout.toString());
+    await manager.delistJob(delistJobId, { from: owner });
+    assert.equal((await manager.lockedEscrow()).toString(), "0");
+
     const cancelJobId = await createJob(payout);
     assert.equal((await manager.lockedEscrow()).toString(), payout.toString());
     await manager.cancelJob(cancelJobId, { from: employer });
