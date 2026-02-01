@@ -34,7 +34,7 @@
 | `getApproved(uint256 tokenId)` | view | address |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
-| `jobs(uint256)` | view | uint256, address, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool, uint8, bool |
+| `jobs(uint256)` | view | uint256, address, string, string, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool, uint8, bool |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
 | `lockedEscrow()` | view | uint256 |
 | `maxJobPayout()` | view | uint256 |
@@ -65,9 +65,9 @@
 | `validatorMerkleRoot()` | view | bytes32 |
 | `pause()` | nonpayable | — |
 | `unpause()` | nonpayable | — |
-| `createJob(string _ipfsHash, uint256 _payout, uint256 _duration, string _details)` | nonpayable | — |
+| `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)` | nonpayable | — |
 | `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
-| `requestJobCompletion(uint256 _jobId, string _ipfsHash)` | nonpayable | — |
+| `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)` | nonpayable | — |
 | `validateJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `disapproveJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `disputeJob(uint256 _jobId)` | nonpayable | — |
@@ -133,8 +133,8 @@
 | `JobApplied(uint256 jobId, address agent)` | uint256 jobId, address agent |
 | `JobCancelled(uint256 jobId)` | uint256 jobId |
 | `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)` | uint256 jobId, address agent, uint256 reputationPoints |
-| `JobCompletionRequested(uint256 jobId, address agent)` | uint256 jobId, address agent |
-| `JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details)` | uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details |
+| `JobCompletionRequested(uint256 jobId, address agent, string jobCompletionURI)` | uint256 jobId, address agent, string jobCompletionURI |
+| `JobCreated(uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details)` | uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details |
 | `JobDisapproved(uint256 jobId, address validator)` | uint256 jobId, address validator |
 | `JobDisputed(uint256 jobId, address disputant)` | uint256 jobId, address disputant |
 | `JobExpired(uint256 jobId, address employer, address agent, uint256 payout)` | uint256 jobId, address employer, address agent, uint256 payout |

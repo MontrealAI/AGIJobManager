@@ -83,8 +83,8 @@ These steps assume you are using a block explorer like Etherscan and have the co
    - Go to the ERC‑20 contract → **Write Contract** → `approve(spender, amount)`
    - Use a **small, exact amount** (avoid unlimited approvals).
 3. **Create a job**
-   - Call `createJob(ipfsHash, payout, duration, details)`
-   - `ipfsHash`: just the hash/CID (no `ipfs://` prefix)
+   - Call `createJob(jobSpecURI, payout, duration, details)`
+   - `jobSpecURI`: ERC‑721 metadata URI (full `ipfs://...` or `https://...` recommended)
    - `payout`: token amount in **wei** (18 decimals)
    - `duration`: seconds
 4. **Track your jobId** from the `JobCreated` event.
@@ -213,7 +213,7 @@ sequenceDiagram
 
   Employer->>Contract: createJob(...)
   Agent->>Contract: applyForJob(jobId, subdomain, proof)
-  Agent->>Contract: requestJobCompletion(jobId, ipfsHash)
+  Agent->>Contract: requestJobCompletion(jobId, jobCompletionURI)
   Validator->>Contract: validateJob(jobId, subdomain, proof)
   Contract-->>Agent: payout
   Contract-->>Employer: NFT receipt
