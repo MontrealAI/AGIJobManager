@@ -80,6 +80,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
     assert.strictEqual(snapshotPct.toNumber(), 75);
 
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await agiType.transferFrom(agent, other, tokenId, { from: agent });
     const agentBalanceBefore = await token.balanceOf(agent);
 
@@ -105,6 +106,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
     assert.strictEqual(snapshotPct.toNumber(), 25);
 
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await agiType75.mint(agent, { from: owner });
     const agentBalanceBefore = await token.balanceOf(agent);
 
@@ -141,6 +143,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
     assert.strictEqual(snapshotPct.toNumber(), 60);
 
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await agiType.transferFrom(agent, other, tokenId, { from: agent });
     const agentBalanceBefore = await token.balanceOf(agent);
 

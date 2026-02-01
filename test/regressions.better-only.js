@@ -57,6 +57,7 @@ async function createJob(manager, token, employer, payout) {
 async function createAssignedJob(manager, token, employer, agent, payout) {
   const jobId = await createJob(manager, token, employer, payout);
   await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+  await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
   return jobId;
 }
 

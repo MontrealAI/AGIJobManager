@@ -11,14 +11,14 @@ You must satisfy **one** of these:
 ## Step‑by‑step (non‑technical)
 > **Screenshot placeholder:** Etherscan “Write Contract” tab showing `validateJob` inputs filled in.
 ### 1) Validate a job
-Call `validateJob(jobId, subdomain, proof)`.
+Call `validateJob(jobId, subdomain, proof)` **after** the agent has requested completion.
 
 **On‑chain results**
 - Event: `JobValidated`
 - State: validator approval count increments
 
 ### 2) Disapprove a job (if needed)
-Call `disapproveJob(jobId, subdomain, proof)`.
+Call `disapproveJob(jobId, subdomain, proof)` **after** the agent has requested completion.
 
 **On‑chain results**
 - Event: `JobDisapproved`
@@ -35,6 +35,7 @@ When a job completes:
 - Validators gain reputation points.
 
 ## Common mistakes
+- Voting before completion is requested → `InvalidState`
 - Voting twice → `InvalidState`
 - Not authorized (identity gate) → `NotAuthorized`
 - Blacklisted → `Blacklisted`

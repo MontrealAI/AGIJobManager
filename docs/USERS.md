@@ -51,6 +51,7 @@ sequenceDiagram
 
   Employer->>Contract: createJob(...)
   Agent->>Contract: applyForJob(...)
+  Agent->>Contract: requestJobCompletion(jobId, jobCompletionURI)
   Validator->>Contract: disapproveJob(...)
   Contract-->>Contract: job.disputed = true
   Employer->>Contract: disputeJob(jobId)
@@ -172,8 +173,8 @@ This path uses the Etherscan **Write Contract** UI. You will need the contract a
 2. `requestJobCompletion(jobId, jobCompletionURI)` after work is done.
 
 **Validator**
-1. `validateJob(jobId, subdomain, proof)` to approve.
-2. `disapproveJob(jobId, subdomain, proof)` to reject (may trigger dispute).
+1. `validateJob(jobId, subdomain, proof)` to approve (only after completion is requested).
+2. `disapproveJob(jobId, subdomain, proof)` to reject (only after completion is requested; may trigger dispute).
 
 **Moderator**
 1. `resolveDisputeWithCode(jobId, resolutionCode, reason)`
@@ -192,8 +193,8 @@ Every step emits events and changes state/balances.
 | `createJob` | `JobCreated` | employer → contract escrow | new job stored |
 | `applyForJob` | `JobApplied` | none | `assignedAgent`, `assignedAt` |
 | `requestJobCompletion` | `JobCompletionRequested` | none | `completionRequested`, `jobCompletionURI` |
-| `validateJob` | `JobValidated` | none (until threshold) | `validatorApprovals`, validator maps |
-| `disapproveJob` | `JobDisapproved`, maybe `JobDisputed` | none | `validatorDisapprovals`, `disputed` |
+| `validateJob` | `JobValidated` | none (until threshold) | `validatorApprovals`, validator maps (requires completion request) |
+| `disapproveJob` | `JobDisapproved`, maybe `JobDisputed` | none | `validatorDisapprovals`, `disputed` (requires completion request) |
 | `resolveDisputeWithCode(AGENT_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, `NFTIssued` | contract → agent/validators | `completed`, reputation updates |
 | `resolveDisputeWithCode(EMPLOYER_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved` | contract → employer refund | `completed` |
 | `listNFT` | `NFTListed` | none | listing active |
