@@ -190,6 +190,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.blacklistAgent(agent, false, { from: owner });
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.blacklistValidator(validatorA, true, { from: owner });
     await expectCustomError(

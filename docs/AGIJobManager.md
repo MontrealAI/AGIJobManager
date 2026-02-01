@@ -91,13 +91,11 @@ stateDiagram-v2
     Created --> Assigned: applyForJob
     Assigned --> CompletionRequested: requestJobCompletion
 
-    Assigned --> Finalized: validateJob (threshold)
     CompletionRequested --> Finalized: validateJob (threshold)
     CompletionRequested --> Finalized: finalizeJob (timeout, deterministic fallback)
 
     Assigned --> Disputed: disputeJob
     CompletionRequested --> Disputed: disputeJob
-    Assigned --> Disputed: disapproveJob (threshold)
     CompletionRequested --> Disputed: disapproveJob (threshold)
 
     Disputed --> Finalized: resolveDisputeWithCode(AGENT_WIN)
@@ -111,7 +109,7 @@ stateDiagram-v2
     Created --> Cancelled: delistJob (owner)
 ```
 
-**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` without a prior `requestJobCompletion`. **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
+**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` only after `requestJobCompletion`. Agent‑win dispute resolution can still complete a job even if completion was never requested. **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
@@ -123,8 +121,8 @@ stateDiagram-v2
 - **ERC‑20 compatibility**: token transfers accept ERC‑20s that return `bool` or return no data. Calls that revert, return `false`, or return malformed data revert with `TransferFailed`. Escrow deposits enforce exact amount received, so fee‑on‑transfer, rebasing, or other balance‑mutating tokens are not supported.
 
 ## Validation and dispute flow
-- `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold. It does **not** require `completionRequested`.
-- `disapproveJob` increments disapproval count, records participation, and flips `disputed` when disapprovals reach the required threshold.
+- `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold. It requires `completionRequested`.
+- `disapproveJob` increments disapproval count, records participation, and flips `disputed` when disapprovals reach the required threshold; it requires `completionRequested`.
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
 - Owner‑set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).

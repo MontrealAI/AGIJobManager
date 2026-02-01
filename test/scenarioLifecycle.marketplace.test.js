@@ -170,24 +170,25 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should be cleared");
   });
 
-  it("completes without an explicit completion request when validators approve", async () => {
+  it("completes after a completion request when validators approve", async () => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     const payout = toBN(toWei("18"));
     await token.mint(employer, payout, { from: owner });
 
     const { jobId } = await createJobWithApproval(payout, "ipfs-no-request");
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const completionTx = await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     assert.ok(completionTx.logs.find((log) => log.event === "JobCompleted"), "JobCompleted should emit");
 
     const job = await manager.jobs(jobId);
     assert.strictEqual(job.completed, true, "job should complete with validator approvals");
-    assert.strictEqual(job.completionRequested, false, "completionRequested should remain false without request");
+    assert.strictEqual(job.completionRequested, true, "completionRequested should remain true after request");
 
     const tokenId = completionTx.logs.find((log) => log.event === "NFTIssued").args.tokenId.toNumber();
     const tokenUri = await manager.tokenURI(tokenId);
-    assert.equal(tokenUri, "ipfs://base/ipfs-no-request", "token URI should use the job spec URI fallback");
+    assert.equal(tokenUri, "ipfs://base/ipfs-complete", "token URI should use the completion URI");
     assert.equal(await manager.ownerOf(tokenId), employer, "employer should receive the NFT");
     assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear after completion");
   });
@@ -463,6 +464,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await token.mint(employer, payout, { from: owner });
     const { jobId } = await createJobWithApproval(payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await expectCustomError(
@@ -476,6 +478,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await token.mint(employer, payout, { from: owner });
     const { jobId } = await createJobWithApproval(payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await expectCustomError(
