@@ -41,9 +41,9 @@
 ### Job lifecycle (state machine)
 ```mermaid
 stateDiagram-v2
-    [*] --> Created: createJob
-    Created --> Assigned: applyForJob
-    Assigned --> CompletionRequested: requestJobCompletion
+    [*] --> Open: createJob
+    Open --> InProgress: applyForJob
+    InProgress --> CompletionRequested: requestJobCompletion
 
     CompletionRequested --> Completed: validateJob (approval threshold)
     CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
@@ -51,16 +51,16 @@ stateDiagram-v2
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
     CompletionRequested --> Disputed: disputeJob (manual)
 
-    Disputed --> Completed: resolveDispute("agent win")
-    Disputed --> Completed: resolveDispute("employer win")
+    Disputed --> Completed: resolveDisputeWithCode(AGENT_WIN)
+    Disputed --> Completed: resolveDisputeWithCode(EMPLOYER_WIN)
     Disputed --> Completed: resolveStaleDispute (owner, paused, timeout)
 
-    Assigned --> Expired: expireJob (timeout, no completion request)
+    InProgress --> Expired: expireJob (timeout, no completion request)
 
-    Created --> Cancelled: cancelJob (employer)
-    Created --> Cancelled: delistJob (owner)
+    Open --> Deleted: cancelJob (employer)
+    Open --> Deleted: delistJob (owner)
 ```
-*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string maps to `NO_ACTION` and leaves the dispute active. Agent‑win dispute resolution requires a prior completion request so settlement always has completion metadata; agents may submit completion even if a dispute is already open, including after the nominal duration has elapsed or while paused for dispute recovery.
+*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string maps to `NO_ACTION` and leaves the dispute active. Agent‑win dispute resolution requires a prior completion request so settlement always has completion metadata; agents may submit completion even if a dispute is already open, including after the nominal duration has elapsed or while paused for dispute recovery. `Deleted` corresponds to cancelled/delisted jobs where the job struct is cleared (`employer == address(0)`).
 
 **Settlement invariant (payout + NFT)**: the agent can only be paid and the completion NFT can only be minted after a completion request is recorded on-chain **and** a non-empty, valid completion metadata URI is stored. Moderators/owners cannot award an agent win without that completion request, and the job NFT always points to the completion metadata (not the job spec).
 
