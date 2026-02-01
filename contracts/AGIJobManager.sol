@@ -380,6 +380,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
         Job storage job = _job(_jobId);
+        if (job.disputed) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
         if (job.completed) revert InvalidState();
         if (job.expired) revert InvalidState();
@@ -400,6 +401,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
         Job storage job = _job(_jobId);
+        if (job.disputed) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
         if (job.completed) revert InvalidState();
         if (job.expired) revert InvalidState();
@@ -428,6 +430,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         Job storage job = _job(_jobId);
         if (job.disputed || job.completed || job.expired) revert InvalidState();
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
+        if (!job.completionRequested) revert InvalidState();
         job.disputed = true;
         if (job.disputedAt == 0) {
             job.disputedAt = block.timestamp;
@@ -494,11 +497,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (employerWins) {
             _refundEmployer(job);
         } else {
+            job.disputed = false;
+            job.disputedAt = 0;
             _completeJob(_jobId);
         }
-
-        job.disputed = false;
-        job.disputedAt = 0;
         emit DisputeTimeoutResolved(_jobId, msg.sender, employerWins);
     }
 
@@ -717,6 +719,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function _completeJob(uint256 _jobId) internal {
         Job storage job = _job(_jobId);
         if (job.completed || job.expired) revert InvalidState();
+        if (job.disputed) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
 
