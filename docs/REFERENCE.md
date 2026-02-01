@@ -40,8 +40,11 @@ Validator disapproval. Emits `JobDisapproved`. When disapprovals reach threshold
 ### `disputeJob(uint256 jobId)`
 Marks a job disputed (employer or assigned agent only). Emits `JobDisputed`.
 
-### `resolveDispute(uint256 jobId, string resolution)`
-Moderator only. If `resolution` is exactly `"agent win"`, job completes and payouts occur. If `"employer win"`, payout is refunded to employer and job closes. Emits `DisputeResolved`.
+### `resolveDisputeWithCode(uint256 jobId, uint8 resolutionCode, string reason)`
+Moderator only. `resolutionCode` controls settlement: `0 (NO_ACTION)` logs a reason and leaves the dispute active; `1 (AGENT_WIN)` completes the job and pays the agent; `2 (EMPLOYER_WIN)` refunds the employer and closes the job. Emits `DisputeResolvedWithCode` (and `DisputeResolved` for settlement actions).
+
+### `resolveDispute(uint256 jobId, string resolution)` (deprecated)
+Legacy string-based interface. Exact `"agent win"` / `"employer win"` strings map to the corresponding action codes; any other string maps to `NO_ACTION`.
 
 ### `cancelJob(uint256 jobId)`
 Employer only. Cancels if no agent assigned and not completed. Emits `JobCancelled`.
@@ -126,7 +129,7 @@ Returns the highest payout percentage from AGIType NFTs owned by the agent.
 ## Events
 Key events to index:
 - `JobCreated`, `JobApplied`, `JobCompletionRequested`
-- `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`
+- `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
 - `JobCompleted`, `NFTIssued`, `JobCancelled`
 - `ReputationUpdated`, `OwnershipVerified`, `RecoveryInitiated`
 - `NFTListed`, `NFTPurchased`, `NFTDelisted`

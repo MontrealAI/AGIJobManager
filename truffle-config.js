@@ -59,7 +59,7 @@ const testProvider = ganache.provider({
     mnemonic: process.env.GANACHE_MNEMONIC || "test test test test test test test test test test test junk",
   },
   logging: { quiet: true },
-  chain: { chainId: 1337, networkId: 1337, hardfork: "london" },
+  chain: { chainId: 1337, networkId: 1337, hardfork: "london", allowUnlimitedContractSize: true },
   miner: { blockGasLimit: 100_000_000 },
 });
 

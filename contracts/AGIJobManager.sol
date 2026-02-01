@@ -102,6 +102,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         Expired
     }
 
+    /// @notice Canonical dispute resolution codes (numeric ordering is stable; do not reorder).
+    /// @dev 0 = NO_ACTION (log only; dispute remains active)
+    /// @dev 1 = AGENT_WIN (settle in favor of agent)
+    /// @dev 2 = EMPLOYER_WIN (settle in favor of employer)
+    enum DisputeResolutionCode {
+        NO_ACTION,
+        AGENT_WIN,
+        EMPLOYER_WIN
+    }
+
     // Pre-hashed resolution strings (smaller + cheaper than hashing literals each call)
     bytes32 private constant RES_AGENT_WIN = keccak256("agent win");
     bytes32 private constant RES_EMPLOYER_WIN = keccak256("employer win");
@@ -195,6 +205,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     event ReputationUpdated(address user, uint256 newReputation);
     event JobCancelled(uint256 jobId);
     event DisputeResolved(uint256 jobId, address resolver, string resolution);
+    event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason);
     event JobDisputed(uint256 jobId, address disputant);
     event JobExpired(uint256 jobId, address employer, address agent, uint256 payout);
     event JobFinalized(uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout);
@@ -415,22 +426,50 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit JobDisputed(_jobId, msg.sender);
     }
 
+    /// @notice Deprecated: use resolveDisputeWithCode for typed settlement.
+    /// @dev Non-canonical strings map to NO_ACTION (dispute remains active).
     function resolveDispute(uint256 _jobId, string calldata resolution) external onlyModerator nonReentrant {
+        uint8 resolutionCode = uint8(DisputeResolutionCode.NO_ACTION);
+        bytes32 r = keccak256(bytes(resolution));
+        if (r == RES_AGENT_WIN) {
+            resolutionCode = uint8(DisputeResolutionCode.AGENT_WIN);
+        } else if (r == RES_EMPLOYER_WIN) {
+            resolutionCode = uint8(DisputeResolutionCode.EMPLOYER_WIN);
+        }
+        _resolveDispute(_jobId, resolutionCode, resolution);
+    }
+
+    /// @notice Resolve a dispute with a typed action code and freeform reason.
+    function resolveDisputeWithCode(
+        uint256 _jobId,
+        uint8 resolutionCode,
+        string calldata reason
+    ) external onlyModerator nonReentrant {
+        _resolveDispute(_jobId, resolutionCode, reason);
+    }
+
+    function _resolveDispute(uint256 _jobId, uint8 resolutionCode, string memory reason) internal {
         Job storage job = _job(_jobId);
         if (!job.disputed || job.expired) revert InvalidState();
 
-        // Preserve original behavior: accept any resolution string.
-        // Trigger on-chain actions only for the two canonical strings.
-        bytes32 r = keccak256(bytes(resolution));
-        if (r == RES_AGENT_WIN) {
-            _completeJob(_jobId);
-        } else if (r == RES_EMPLOYER_WIN) {
-            _refundEmployer(job);
+        if (resolutionCode == uint8(DisputeResolutionCode.NO_ACTION)) {
+            emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
+            return;
         }
 
         job.disputed = false;
         job.disputedAt = 0;
-        emit DisputeResolved(_jobId, msg.sender, resolution);
+
+        if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
+            _completeJob(_jobId);
+        } else if (resolutionCode == uint8(DisputeResolutionCode.EMPLOYER_WIN)) {
+            _refundEmployer(job);
+        } else {
+            revert InvalidParameters();
+        }
+
+        emit DisputeResolved(_jobId, msg.sender, reason);
+        emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
     }
 
     function resolveStaleDispute(uint256 _jobId, bool employerWins) external onlyOwner whenPaused nonReentrant {

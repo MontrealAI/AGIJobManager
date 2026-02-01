@@ -64,9 +64,9 @@ stateDiagram-v2
     Assigned --> Disputed: disputeJob (manual)
     CompletionRequested --> Disputed: disputeJob (manual)
 
-    Disputed --> Completed: resolveDispute("agent win")
-    Disputed --> Completed: resolveDispute("employer win")
-    Disputed --> Assigned: resolveDispute(other)
+    Disputed --> Completed: resolveDisputeWithCode(AGENT_WIN)
+    Disputed --> Completed: resolveDisputeWithCode(EMPLOYER_WIN)
+    Disputed --> Disputed: resolveDisputeWithCode(NO_ACTION)
 
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)

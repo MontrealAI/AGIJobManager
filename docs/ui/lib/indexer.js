@@ -72,6 +72,15 @@
         entry.cancelled = true;
       }
       entry.lastActivityBlock = blockNumber;
+    } else if (eventName === "DisputeResolvedWithCode") {
+      const jobId = toIdString(event.args?.jobId ?? event.args?.[0]);
+      const resolutionCode = Number(event.args?.resolutionCode ?? event.args?.[2] ?? 0);
+      const entry = ensureJobEntry(index, jobId);
+      if (resolutionCode !== 0) {
+        entry.disputed = false;
+        entry.disputeResolved = true;
+      }
+      entry.lastActivityBlock = blockNumber;
     } else if (eventName === "DisputeResolved") {
       const jobId = toIdString(event.args?.jobId ?? event.args?.[0]);
       const entry = ensureJobEntry(index, jobId);

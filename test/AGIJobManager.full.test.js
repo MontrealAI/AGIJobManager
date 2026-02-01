@@ -579,12 +579,17 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.disputeJob(jobId, { from: agent });
 
       const receipt = await manager.resolveDispute(jobId, "needs-more-info", { from: moderator });
-      expectEvent(receipt, "DisputeResolved", { jobId: new BN(jobId), resolver: moderator });
+      expectEvent(receipt, "DisputeResolvedWithCode", {
+        jobId: new BN(jobId),
+        resolver: moderator,
+        resolutionCode: new BN(0),
+      });
 
-      const status = await manager.getJobStatus(jobId);
-      assert.equal(status[0], false);
-      assert.equal(status[1], true);
-      assert.equal(status[2], "ipfs-final");
+      const job = await manager.jobs(jobId);
+      assert.equal(job.disputed, true);
+      assert.equal(job.completed, false);
+      assert.equal(job.completionRequested, true);
+      assert.equal(job.ipfsHash, "ipfs-final");
     });
 
     it("restricts dispute resolution to moderators", async () => {

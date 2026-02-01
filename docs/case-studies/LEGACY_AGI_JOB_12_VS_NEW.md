@@ -123,7 +123,7 @@ The **user‑visible lifecycle is preserved** — same role flow, same function 
 | **Division‑by‑zero when validators list is empty** | Validator split can revert if `validators.length == 0`. | `vCount > 0` guard before splitting payouts. | Prevents runtime failures during dispute completions. |
 | **Double‑vote / approve+disapprove by same validator** | Validators can vote twice or contradict themselves. | `validateJob` + `disapproveJob` block double and cross‑voting. | Prevents vote manipulation and inconsistent tallies. |
 | **Unchecked ERC‑20 transfers** | Transfers can silently fail. | `_t` / `_tFrom` revert on failure. | Payouts are atomic or revert. |
-| **Dispute “employer win” closure** | Legacy can refund employer yet still allow later completion. | `resolveDispute` closes job on employer win. | Prevents double payout after dispute resolution. |
+| **Dispute “employer win” closure** | Legacy can refund employer yet still allow later completion. | `resolveDisputeWithCode(EMPLOYER_WIN)` closes job on employer win (legacy `resolveDispute` still maps the canonical string). | Prevents double payout after dispute resolution. |
 
 ---
 
@@ -136,13 +136,13 @@ Each improvement below maps directly to behavior in `AGIJobManager.sol` (no cont
 - **No div‑by‑zero** — validator payout split only runs when `vCount > 0`.
 - **Vote rules** — `validateJob` and `disapproveJob` block double voting and cross‑voting.
 - **Safe ERC‑20 transfers** — `_t` and `_tFrom` enforce transfer success.
-- **Dispute closure** — `resolveDispute(...)` marks job completed on employer win.
+- **Dispute closure** — `resolveDisputeWithCode(EMPLOYER_WIN)` marks job completed on employer win.
 
 **Intentionally preserved from legacy**
-- **Public interface**: same external function names for compatibility.
+- **Public interface**: legacy function names remain for compatibility; `resolveDisputeWithCode` adds typed dispute resolution.
 - **Event names**: `JobValidated`, `JobCompleted`, `NFTIssued`, etc. are preserved for observability.
 - **Economic shape**: same agent‑plus‑validator split driven by the AGI type configuration.
-- **Resolution strings**: any string accepted; on‑chain actions only for canonical strings.
+- **Resolution strings**: legacy string interface remains but is deprecated; canonical strings map to typed actions.
 
 ---
 

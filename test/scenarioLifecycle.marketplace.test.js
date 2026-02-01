@@ -274,7 +274,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     );
   });
 
-  it("clears disputed flag on non-canonical resolution and returns to in-progress", async () => {
+  it("keeps disputes active on NO_ACTION and allows later completion", async () => {
     const payout = toBN(toWei("20"));
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
@@ -284,10 +284,10 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await assignAndRequest(jobId, "ipfs-neutral");
 
     await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
-    await manager.resolveDispute(jobId, "needs more work", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 0, "needs more work", { from: moderator });
 
     const midJob = await manager.jobs(jobId);
-    assert.strictEqual(midJob.disputed, false, "disputed flag should clear");
+    assert.strictEqual(midJob.disputed, true, "disputed flag should remain set");
     assert.strictEqual(midJob.completed, false, "job should remain in progress");
     assert.strictEqual(midJob.completionRequested, true, "completion request should be preserved");
 
@@ -296,7 +296,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.strictEqual(finalJob.completed, true, "job should complete after follow-up validation");
   });
 
-  it("preserves escrow on neutral dispute resolution until later completion", async () => {
+  it("preserves escrow on NO_ACTION dispute resolution until later completion", async () => {
     const payout = toBN(toWei("25"));
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
@@ -315,9 +315,9 @@ contract("AGIJobManager scenario coverage", (accounts) => {
       contract: await token.balanceOf(manager.address),
     };
 
-    await manager.resolveDispute(jobId, "needs revisions", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 0, "needs revisions", { from: moderator });
     const midJob = await manager.jobs(jobId);
-    assert.strictEqual(midJob.disputed, false, "disputed flag should clear");
+    assert.strictEqual(midJob.disputed, true, "disputed flag should remain set");
     assert.strictEqual(midJob.completed, false, "job should remain open after neutral resolution");
 
     const balancesAfter = {

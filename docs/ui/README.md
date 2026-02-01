@@ -157,7 +157,7 @@ connected wallet matches `owner()`. Every admin action:
 - `expireJob` (anyone) and `finalizeJob` (anyone, deterministic fallback) are **not** exposed in the UI; use Truffle console or scripts.
 - `resolveStaleDispute` (owner-only, paused) is **not** exposed in the UI; use a controlled admin workflow.
 
-> Moderators only have on-chain powers for `resolveDispute`. The UI does **not** expose moderator-only actions in the admin panel.
+> Moderators only have on-chain powers for `resolveDisputeWithCode`. The UI does **not** expose moderator-only actions in the admin panel.
 
 ## Admin operations (CLI / Truffle)
 

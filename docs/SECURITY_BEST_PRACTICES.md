@@ -6,7 +6,7 @@ Use this checklist to minimize risk when operating or interacting with AGIJobMan
 - ✅ **Verify contract addresses** from an official source.
 - ✅ **Use small test transactions first**.
 - ✅ **Double‑check token decimals** (AGI uses 18 decimals).
-- ✅ **Monitor events** (JobCreated, JobCompleted, DisputeResolved).
+- ✅ **Monitor events** (JobCreated, JobCompleted, DisputeResolvedWithCode, DisputeResolved).
 
 ## ERC‑20 approvals
 - **Never grant unlimited approvals** unless absolutely required.

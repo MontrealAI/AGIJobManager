@@ -37,16 +37,20 @@ describe("UI indexer helpers", () => {
 
     applyEventToIndex(index, { eventName: "JobCreated", blockNumber: 5, args: { jobId: 1n } });
     applyEventToIndex(index, { eventName: "JobDisputed", blockNumber: 6, args: { jobId: 1n } });
-    applyEventToIndex(index, { eventName: "DisputeResolved", blockNumber: 7, args: { jobId: 1n } });
-    applyEventToIndex(index, { eventName: "JobCompleted", blockNumber: 8, args: { jobId: 1n } });
+    applyEventToIndex(index, { eventName: "DisputeResolvedWithCode", blockNumber: 7, args: { jobId: 1n, resolutionCode: 0 } });
+    let job = index.jobs["1"];
+    assert.ok(job.disputed, "job should remain disputed after NO_ACTION");
+    assert.ok(job.disputeResolved === false, "NO_ACTION should not mark dispute resolved");
+    applyEventToIndex(index, { eventName: "DisputeResolvedWithCode", blockNumber: 8, args: { jobId: 1n, resolutionCode: 1 } });
+    applyEventToIndex(index, { eventName: "JobCompleted", blockNumber: 9, args: { jobId: 1n } });
 
-    const job = index.jobs["1"];
+    job = index.jobs["1"];
     assert.ok(job.created);
     assert.ok(job.disputed === false);
     assert.ok(job.disputeResolved);
     assert.ok(job.completed);
     assert.strictEqual(job.createdBlock, 5);
-    assert.strictEqual(job.lastActivityBlock, 8);
+    assert.strictEqual(job.lastActivityBlock, 9);
 
     applyEventToIndex(index, { eventName: "NFTIssued", blockNumber: 9, args: { tokenId: 3n } });
     applyEventToIndex(index, { eventName: "NFTListed", blockNumber: 10, args: { tokenId: 3n, seller: "0xabc", price: 25n } });
