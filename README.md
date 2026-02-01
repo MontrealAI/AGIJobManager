@@ -49,12 +49,11 @@ stateDiagram-v2
     CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
 
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
-    Assigned --> Disputed: disputeJob (manual)
     CompletionRequested --> Disputed: disputeJob (manual)
 
     Disputed --> Completed: resolveDispute("agent win")
     Disputed --> Completed: resolveDispute("employer win")
-    Disputed --> Assigned: resolveDispute(other)
+    Disputed --> Disputed: resolveDispute(other)
     Disputed --> Completed: resolveStaleDispute (owner, paused, timeout)
 
     Assigned --> Expired: expireJob (timeout, no completion request)
@@ -62,7 +61,7 @@ stateDiagram-v2
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
-*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested). Agent‑win dispute resolution can still complete a job even if completion was never requested.
+*Note:* `validateJob`/`disapproveJob`/`disputeJob` require `completionRequested` to be true; validators and disputants can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string logs a `NO_ACTION` outcome and leaves the dispute active. Settlement paths (`validateJob`, `finalizeJob`, agent‑win disputes) require a completion request so the NFT tokenURI always points to completion metadata.
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid

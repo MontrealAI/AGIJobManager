@@ -38,7 +38,7 @@ Validator approval (requires `completionRequested`). Emits `JobValidated`. When 
 Validator disapproval (requires `completionRequested`). Emits `JobDisapproved`. When disapprovals reach threshold, marks disputed and emits `JobDisputed`.
 
 ### `disputeJob(uint256 jobId)`
-Marks a job disputed (employer or assigned agent only). Emits `JobDisputed`.
+Marks a job disputed (employer or assigned agent only, requires `completionRequested`). Emits `JobDisputed`.
 
 ### `resolveDisputeWithCode(uint256 jobId, uint8 resolutionCode, string reason)`
 Moderator only. `resolutionCode` controls settlement: `0 (NO_ACTION)` logs a reason and leaves the dispute active; `1 (AGENT_WIN)` completes the job and pays the agent; `2 (EMPLOYER_WIN)` refunds the employer and closes the job. Emits `DisputeResolvedWithCode` (and `DisputeResolved` for settlement actions).

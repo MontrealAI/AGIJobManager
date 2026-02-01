@@ -251,7 +251,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const payout = toBN(toWei("30"));
     await token.mint(employer, payout, { from: owner });
     const { jobId } = await createJobWithApproval(payout);
-    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await assignAndRequest(jobId, "ipfs-employer-win");
 
     const disputeTx = await manager.disputeJob(jobId, { from: employer });
     assert.ok(disputeTx.logs.find((log) => log.event === "JobDisputed"), "JobDisputed should emit");
