@@ -722,6 +722,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (job.disputed) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
+        _requireValidUri(job.jobCompletionURI);
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
@@ -783,9 +784,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function _mintJobNft(Job storage job) internal {
         uint256 tokenId = nextTokenId++;
-        if (bytes(job.ipfsHash).length == 0) revert InvalidParameters();
-        string memory metadataURI = bytes(job.jobCompletionURI).length > 0 ? job.jobCompletionURI : job.ipfsHash;
-        if (bytes(metadataURI).length == 0) revert InvalidParameters();
+        _requireValidUri(job.jobCompletionURI);
+        string memory metadataURI = job.jobCompletionURI;
         string memory tokenURI = _formatTokenURI(metadataURI);
         _mint(job.employer, tokenId);
         _setTokenURI(tokenId, tokenURI);
