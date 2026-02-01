@@ -63,6 +63,16 @@
     },
     {
       "inputs": [],
+      "name": "InsolventEscrowBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientWithdrawableBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "InvalidAgentPayoutSnapshot",
       "type": "error"
     },
@@ -128,6 +138,31 @@
         }
       ],
       "name": "AGITypeUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "remainingWithdrawable",
+          "type": "uint256"
+        }
+      ],
+      "name": "AGIWithdrawn",
       "type": "event"
     },
     {
@@ -1274,6 +1309,11 @@
           "internalType": "uint8",
           "name": "agentPayoutPct",
           "type": "uint8"
+        },
+        {
+          "internalType": "bool",
+          "name": "escrowReleased",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -1308,6 +1348,19 @@
           "internalType": "bool",
           "name": "isActive",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lockedEscrow",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -2406,6 +2459,19 @@
       "name": "removeAdditionalAgent",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdrawableAGI",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {

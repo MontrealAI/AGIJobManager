@@ -24,7 +24,7 @@ AGIJobManager coordinates employer-funded jobs, agent assignment, validator revi
 ## Roles and permissions
 | Role | Capabilities |
 | --- | --- |
-| **Owner** | Pause/unpause flows, update parameters, change ERC‑20 address, manage allowlists/blacklists, assign moderators, add AGI types, withdraw escrowed ERC‑20. |
+| **Owner** | Pause/unpause flows, update parameters, change ERC‑20 address, manage allowlists/blacklists, assign moderators, add AGI types, withdraw surplus ERC‑20. |
 | **Moderator** | Resolve disputes via `resolveDispute`. |
 | **Employer** | Create jobs, cancel before assignment, dispute jobs, receive job NFTs. |
 | **Agent** | Apply to eligible jobs, request completion, earn payouts and reputation. |
@@ -117,7 +117,8 @@ stateDiagram-v2
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
 - **Agent payout**: on assignment, the agent’s payout percentage is snapshotted and stored on the job. On completion, the agent receives `job.payout * snapshottedAgentPayoutPercentage / 100`. If the agent has no AGI‑type NFTs, `applyForJob` reverts unless the agent is explicitly allowlisted in `additionalAgents`, in which case the job records the configurable `additionalAgentPayoutPercentage`.
 - **Validator payout**: when validators voted, `validationRewardPercentage` of the payout is split equally across all validators who voted (approvals and disapprovals both append to the validator list).
-- **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner.
+- **Locked escrow accounting**: `lockedEscrow` tracks total job payout escrow for unsettled jobs (currently job payouts only).
+- **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner via `withdrawAGI`, which is restricted to `withdrawableAGI()` (balance minus `lockedEscrow`).
 - **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDispute` with `employer win` refunds and finalizes the job.
 - **ERC-20 compatibility**: token transfers accept ERC‑20s that return `bool` or return no data. Calls that revert, return `false`, or return malformed data revert with `TransferFailed`. Escrow deposits enforce exact amount received, so fee‑on‑transfer, rebasing, or other balance‑mutating tokens are not supported.
 
@@ -176,6 +177,8 @@ Custom errors and their intent:
 - `InvalidState`: invalid lifecycle transition (e.g., reapply, double complete, dispute after completion).
 - `IneligibleAgentPayout`: agent has a 0% payout tier and is not allowlisted for a default payout.
 - `InvalidAgentPayoutSnapshot`: snapshotted agent payout percentage is zero (defensive invariant).
+- `InsufficientWithdrawableBalance`: withdrawal exceeds `withdrawableAGI()`.
+- `InsolventEscrowBalance`: contract balance is below `lockedEscrow` (insolvency signal).
 - `JobNotFound`: non-existent job ID.
 - `TransferFailed`: ERC‑20 `transfer`/`transferFrom` returned false.
 - `ValidatorLimitReached`: a validator action would exceed the per‑job cap.

@@ -39,7 +39,7 @@ On completion (`_completeJob`), the contract executes the following calculations
 **Rounding behavior:** all divisions are integer divisions; any remainder stays in the contract. Specifically:
 - Any fractional remainder from `agentPayout` is retained by the contract.
 - Any remainder from `totalValidatorPayout / vCount` stays in the contract.
-- There is no “dust” redistribution. Remaining tokens are only recoverable by the owner via `withdrawAGI`.
+- There is no “dust” redistribution. Remaining tokens are only recoverable by the owner via `withdrawAGI`, which is limited to `withdrawableAGI()` (balance minus `lockedEscrow`).
 
 ### Safety constraints derived from settlement
 
@@ -116,12 +116,12 @@ Below are plausible misconfiguration or operational failures that can trap funds
 - **Operational recovery:** Prefer `disputeJob` and resolve in favor of the counterparty **only if that address can receive tokens**. If the token itself is frozen, jobs cannot be settled.
 - **Outcome:** Potentially **stuck** until token behavior changes or you redeploy.
 
-### 5) Owner withdraws escrowed funds (`withdrawAGI`)
-- **Symptom:** Validations revert due to insufficient escrow; jobs cannot complete.
-- **Root cause:** Owner removed escrow backing existing jobs.
-- **On‑chain recovery:** Owner must re‑fund the contract so payouts succeed.
-- **Operational recovery:** Pause, restore contract balance, unpause, and re‑validate.
-- **Outcome:** **Recoverable** if owner replenishes funds.
+### 5) Owner attempts to withdraw escrowed funds (`withdrawAGI`)
+- **Symptom:** Withdrawal reverts with `InsufficientWithdrawableBalance`.
+- **Root cause:** Owner attempted to withdraw funds reserved in `lockedEscrow`.
+- **On‑chain recovery:** None needed; withdrawal is blocked. If `lockedEscrow` is mis-accounted and insolvency occurs, fix the underlying accounting via a redeploy or off-chain remediation.
+- **Operational recovery:** Verify `withdrawableAGI()` before withdrawing.
+- **Outcome:** **Prevented** when accounting is correct.
 
 ### 6) Misuse of `resolveDispute` resolution strings
 - **Symptom:** Dispute is cleared but no payout occurs; job remains incomplete.

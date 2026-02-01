@@ -756,7 +756,10 @@ contract("AGIJobManager comprehensive", (accounts) => {
     it("withdraws AGI within bounds and respects pause", async () => {
       await token.mint(manager.address, web3.utils.toWei("50"), { from: owner });
       await expectCustomError(manager.withdrawAGI(0, { from: owner }), "InvalidParameters");
-      await expectCustomError(manager.withdrawAGI(web3.utils.toWei("100"), { from: owner }), "InvalidParameters");
+      await expectCustomError(
+        manager.withdrawAGI(web3.utils.toWei("100"), { from: owner }),
+        "InsufficientWithdrawableBalance"
+      );
 
       const ownerBalanceBefore = new BN(await token.balanceOf(owner));
       await manager.withdrawAGI(web3.utils.toWei("10"), { from: owner });

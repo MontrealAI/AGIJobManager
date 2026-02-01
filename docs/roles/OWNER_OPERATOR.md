@@ -7,7 +7,7 @@ This guide covers administrative operations and safety controls.
 - Adjust risk parameters (payout limits, duration limits, validation rewards).
 - Manage moderators.
 - Pause/unpause the contract in emergencies.
-- Withdraw escrowed AGI funds when appropriate.
+- Withdraw surplus AGI funds when appropriate.
 
 ## Administrative actions
 > **Screenshot placeholder:** Etherscan “Write Contract” tab showing `pause`/`unpause` actions.
@@ -40,7 +40,7 @@ This guide covers administrative operations and safety controls.
 - `updateAdditionalText1/2/3(string)`
 
 ### Financial operations
-- `withdrawAGI(amount)` withdraws ERC‑20 tokens held by the contract.
+- `withdrawAGI(amount)` withdraws surplus ERC‑20 and reverts if `amount > withdrawableAGI()`.
 
 ## Safety checklist
 - Use a multisig or hardware wallet for the owner address.
