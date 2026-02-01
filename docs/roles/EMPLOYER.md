@@ -13,8 +13,8 @@ This guide is for job posters (employers). It shows how to safely create and man
 Use your wallet or Etherscan to approve **only the exact payout amount**.
 
 ### 2) Create a job
-Call `createJob(ipfsHash, payout, duration, details)`.
-- **ipfsHash**: CID/hash only (no `ipfs://`)
+Call `createJob(jobSpecURI, payout, duration, details)`.
+- **jobSpecURI**: CID or full URI (`ipfs://...` or `https://...`)
 - **payout**: token amount (18 decimals)
 - **duration**: seconds (max `jobDurationLimit`)
 - **details**: short plain text
@@ -37,7 +37,7 @@ Call `disputeJob(jobId)` if you disagree with the completion or validation direc
 ### 6) Receive NFT receipt
 When a job completes, an NFT is minted to your wallet.
 - Event: `NFTIssued`
-- Token URI: `baseIpfsUrl + "/" + ipfsHash`
+- Token URI: `jobCompletionURI` (resolved via `baseIpfsUrl` if it is a CID)
 
 ## Common mistakes
 - **Insufficient allowance** → `TransferFailed`
