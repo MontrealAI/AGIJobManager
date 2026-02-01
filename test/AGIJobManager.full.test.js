@@ -839,7 +839,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
 
       const tokenId = (await manager.nextTokenId()).subn(1);
-      assert.equal(await manager.tokenURI(tokenId), "ipfs://new/ipfs-6");
+      assert.equal(await manager.tokenURI(tokenId), "ipfs://new/ipfs-complete");
     });
 
     it("tracks premium access based on reputation", async () => {
