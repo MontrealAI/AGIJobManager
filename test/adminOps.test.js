@@ -52,7 +52,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     agiTypeNft = await MockERC721.new({ from: owner });
-    await manager.addAGIType(agiTypeNft.address, 100, { from: owner });
+    await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
     await agiTypeNft.mint(agent, { from: owner });
   });
 
@@ -99,7 +99,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
   it("updates parameters and withdraws funds", async () => {
     await expectCustomError(manager.setValidationRewardPercentage.call(0, { from: owner }), "InvalidParameters");
-    await manager.setValidationRewardPercentage(10, { from: owner });
+    await manager.setValidationRewardPercentage(8, { from: owner });
     await manager.setMaxJobPayout(toBN(toWei("5000")), { from: owner });
 
     const payout = toBN(toWei("8"));

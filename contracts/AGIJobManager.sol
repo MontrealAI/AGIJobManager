@@ -282,6 +282,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (currentCount >= MAX_VALIDATORS_PER_JOB) revert ValidatorLimitReached();
     }
 
+    function _maxAGITypePayoutPercentage() internal view returns (uint256) {
+        uint256 maxPercentage = 0;
+        for (uint256 i = 0; i < agiTypes.length; i++) {
+            uint256 pct = agiTypes[i].payoutPercentage;
+            if (pct > maxPercentage) {
+                maxPercentage = pct;
+            }
+        }
+        return maxPercentage;
+    }
+
     function _callOptionalReturn(IERC20 token, bytes memory data) internal {
         (bool success, bytes memory returndata) = address(token).call(data);
         if (!success) revert TransferFailed();
@@ -476,6 +487,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
     function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
+        uint256 maxPct = _maxAGITypePayoutPercentage();
+        uint256 combinedMax = maxPct;
+        if (_percentage > combinedMax) {
+            combinedMax = _percentage;
+        }
+        if (combinedMax > 100 - validationRewardPercentage) revert InvalidParameters();
         additionalAgentPayoutPercentage = _percentage;
         emit AdditionalAgentPayoutPercentageUpdated(_percentage);
     }
@@ -536,6 +553,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
+        uint256 maxPct = _maxAGITypePayoutPercentage();
+        if (additionalAgentPayoutPercentage > maxPct) {
+            maxPct = additionalAgentPayoutPercentage;
+        }
+        if (maxPct > 100 - _percentage) revert InvalidParameters();
         validationRewardPercentage = _percentage;
     }
 
@@ -642,6 +664,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         Job storage job = _job(_jobId);
         if (job.completed || job.expired) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
+
+        uint256 agentPayoutPercentage = job.agentPayoutPct;
+        if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
+        uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
+        if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
 
         job.completed = true;
         job.disputed = false;
@@ -792,16 +820,28 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
         if (!(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100)) revert InvalidParameters();
 
+        uint256 maxPct = payoutPercentage;
         bool exists = false;
         for (uint256 i = 0; i < agiTypes.length; i++) {
+            uint256 pct = agiTypes[i].payoutPercentage;
             if (agiTypes[i].nftAddress == nftAddress) {
-                agiTypes[i].payoutPercentage = payoutPercentage;
+                pct = payoutPercentage;
                 exists = true;
-                break;
+            }
+            if (pct > maxPct) {
+                maxPct = pct;
             }
         }
+        if (maxPct > 100 - validationRewardPercentage) revert InvalidParameters();
         if (!exists) {
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
+        } else {
+            for (uint256 i = 0; i < agiTypes.length; i++) {
+                if (agiTypes[i].nftAddress == nftAddress) {
+                    agiTypes[i].payoutPercentage = payoutPercentage;
+                    break;
+                }
+            }
         }
 
         emit AGITypeUpdated(nftAddress, payoutPercentage);
