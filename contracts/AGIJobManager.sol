@@ -551,7 +551,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function getJobStatus(uint256 _jobId) external view returns (bool, bool, string memory) {
         Job storage job = jobs[_jobId];
-        return (job.completed, job.completionRequested, job.ipfsHash);
+        string memory uri = bytes(job.jobCompletionURI).length > 0 ? job.jobCompletionURI : job.ipfsHash;
+        return (job.completed, job.completionRequested, uri);
     }
 
     function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
