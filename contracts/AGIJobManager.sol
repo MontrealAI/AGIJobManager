@@ -150,6 +150,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     struct Job {
         uint256 id;
         address employer;
+        string jobSpecURI;
+        string jobCompletionURI;
         string ipfsHash;
         uint256 payout;
         uint256 duration;
@@ -196,9 +198,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     mapping(address => bool) public blacklistedValidators;
     AGIType[] public agiTypes;
 
-    event JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details);
+    event JobCreated(uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details);
     event JobApplied(uint256 jobId, address agent);
-    event JobCompletionRequested(uint256 jobId, address agent);
+    event JobCompletionRequested(uint256 jobId, address agent, string jobCompletionURI);
     event JobValidated(uint256 jobId, address validator);
     event JobDisapproved(uint256 jobId, address validator);
     event JobCompleted(uint256 jobId, address agent, uint256 reputationPoints);
@@ -331,19 +333,21 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
 
-    function createJob(string memory _ipfsHash, uint256 _payout, uint256 _duration, string memory _details) external whenNotPaused nonReentrant {
+    function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details) external whenNotPaused nonReentrant {
         if (!(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit)) revert InvalidParameters();
+        _requireValidUri(_jobSpecURI);
         uint256 jobId = nextJobId++;
         Job storage job = jobs[jobId];
         job.id = jobId;
         job.employer = msg.sender;
-        job.ipfsHash = _ipfsHash;
+        job.jobSpecURI = _jobSpecURI;
+        job.ipfsHash = _jobSpecURI;
         job.payout = _payout;
         job.duration = _duration;
         job.details = _details;
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), _payout);
         lockedEscrow += _payout;
-        emit JobCreated(jobId, _ipfsHash, _payout, _duration, _details);
+        emit JobCreated(jobId, _jobSpecURI, _payout, _duration, _details);
     }
 
     function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
@@ -359,16 +363,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit JobApplied(_jobId, msg.sender);
     }
 
-    function requestJobCompletion(uint256 _jobId, string calldata _ipfsHash) external whenNotPaused {
+    function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external whenNotPaused {
         Job storage job = _job(_jobId);
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
         if (job.completed || job.disputed || job.expired) revert InvalidState();
         if (block.timestamp > job.assignedAt + job.duration) revert InvalidState();
         if (job.completionRequested) revert InvalidState();
-        job.ipfsHash = _ipfsHash;
+        _requireValidUri(_jobCompletionURI);
+        job.jobCompletionURI = _jobCompletionURI;
         job.completionRequested = true;
         job.completionRequestedAt = block.timestamp;
-        emit JobCompletionRequested(_jobId, msg.sender);
+        emit JobCompletionRequested(_jobId, msg.sender, _jobCompletionURI);
     }
 
     function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
@@ -766,10 +771,42 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function _mintJobNft(Job storage job) internal {
         uint256 tokenId = nextTokenId++;
-        string memory tokenURI = string(abi.encodePacked(baseIpfsUrl, "/", job.ipfsHash));
+        string memory metadataURI = bytes(job.jobCompletionURI).length > 0 ? job.jobCompletionURI : job.ipfsHash;
+        if (bytes(metadataURI).length == 0) revert InvalidParameters();
+        string memory tokenURI = _formatTokenURI(metadataURI);
         _mint(job.employer, tokenId);
         _setTokenURI(tokenId, tokenURI);
         emit NFTIssued(tokenId, job.employer, tokenURI);
+    }
+
+    function _formatTokenURI(string memory uri) internal view returns (string memory) {
+        if (_isFullUri(uri)) {
+            return uri;
+        }
+        if (bytes(baseIpfsUrl).length == 0) {
+            return uri;
+        }
+        return string(abi.encodePacked(baseIpfsUrl, "/", uri));
+    }
+
+    function _isFullUri(string memory uri) internal pure returns (bool) {
+        bytes memory data = bytes(uri);
+        if (data.length < 3) return false;
+        for (uint256 i = 0; i + 2 < data.length; i++) {
+            if (data[i] == ":" && data[i + 1] == "/" && data[i + 2] == "/") {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function _requireValidUri(string memory uri) internal pure {
+        bytes memory data = bytes(uri);
+        if (data.length == 0) revert InvalidParameters();
+        for (uint256 i = 0; i < data.length; i++) {
+            bytes1 c = data[i];
+            if (c == 0x20 || c == 0x09 || c == 0x0a || c == 0x0d) revert InvalidParameters();
+        }
     }
 
     function listNFT(uint256 tokenId, uint256 price) external whenNotPaused {

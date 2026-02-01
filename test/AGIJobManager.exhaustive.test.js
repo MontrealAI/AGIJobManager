@@ -160,7 +160,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.requestJobCompletion(jobId, "ipfs2", { from: agent });
       const status = await manager.getJobStatus(jobId);
       assert.equal(status[1], true);
-      assert.equal(status[2], "ipfs2");
+      const completionJob = await manager.jobs(jobId);
+      assert.equal(completionJob.jobCompletionURI, "ipfs2");
 
       const employerBalanceBefore = await token.balanceOf(employer);
       const agentBalanceBefore = await token.balanceOf(agent);

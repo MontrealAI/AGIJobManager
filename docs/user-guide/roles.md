@@ -28,7 +28,7 @@ This guide explains what each role can do, what you need before starting, and co
 
 ### Typical workflow
 1. Approve token spend.
-2. Create a job (IPFS hash, payout, duration).
+2. Create a job (job spec metadata URI, payout, duration).
 3. Wait for an agent to apply.
 4. If needed, dispute the job.
 5. Receive the job NFT on completion.
@@ -61,7 +61,7 @@ This guide explains what each role can do, what you need before starting, and co
 1. Confirm eligibility (allowlist/Merkle/ENS).
 2. Apply for an open job.
 3. Deliver work off‑chain.
-4. Request completion with the updated IPFS hash.
+4. Request completion with the completion metadata URI.
 
 ---
 

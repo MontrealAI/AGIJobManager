@@ -299,5 +299,5 @@ current page range (`latest` descending). Filters require the indexer and are di
 ### Known indexing limitations
 
 - `JobCreated` does not include the employer address, so job rows hydrate via `jobs(jobId)`.
-- `JobCompletionRequested` does not include the new IPFS hash; the UI hydrates to show it.
+- `JobCompletionRequested` now includes the completion metadata URI; the UI still hydrates job rows for the rest of the struct.
 - RPC providers often limit `eth_getLogs` ranges; smaller windows avoid failures.
