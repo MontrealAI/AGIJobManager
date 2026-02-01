@@ -367,8 +367,10 @@ contract("AGIJobManager comprehensive", (accounts) => {
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
     });
 
-    it("allows additional agents to apply with the configured fallback payout", async () => {
+    it("allows additional agents with a payout tier to apply", async () => {
       await manager.addAdditionalAgent(other, { from: owner });
+      await manager.addAGIType(nft.address, 50, { from: owner });
+      await nft.mint(other, { from: owner });
 
       const payout = new BN(web3.utils.toWei("20"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
@@ -934,6 +936,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       await manager.addAdditionalAgent(other, { from: owner });
       await manager.addAdditionalValidator(other, { from: owner });
+      await nft.mint(other, { from: owner });
 
       await manager.applyForJob(jobId, "ignored", [], { from: other });
       await manager.setRequiredValidatorApprovals(1, { from: owner });

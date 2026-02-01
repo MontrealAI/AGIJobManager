@@ -115,7 +115,7 @@ stateDiagram-v2
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
-- **Agent payout**: on assignment, the agent’s payout percentage is snapshotted and stored on the job. On completion, the agent receives `job.payout * snapshottedAgentPayoutPercentage / 100`. If the agent has no AGI‑type NFTs, `applyForJob` reverts unless the agent is explicitly allowlisted in `additionalAgents`, in which case the job records the configurable `additionalAgentPayoutPercentage`.
+- **Agent payout**: on assignment, the agent’s payout percentage is snapshotted and stored on the job. On completion, the agent receives `job.payout * snapshottedAgentPayoutPercentage / 100`. Agents without a nonzero AGI‑type payout tier cannot apply, even if allowlisted via `additionalAgents`.
 - **Validator payout**: when validators voted, `validationRewardPercentage` of the payout is split equally across all validators who voted (approvals and disapprovals both append to the validator list).
 - **Locked escrow accounting**: `lockedEscrow` tracks total job payout escrow for unsettled jobs (currently job payouts only).
 - **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner via `withdrawAGI` while paused, which is restricted to `withdrawableAGI()` (balance minus `lockedEscrow`).
@@ -178,7 +178,7 @@ Custom errors and their intent:
 - `InvalidParameters`: zero values, out‑of‑range percentages, or invalid constructor updates.
 - `InvalidValidatorThresholds`: validator thresholds exceed the per‑job cap or their sum exceeds the cap.
 - `InvalidState`: invalid lifecycle transition (e.g., reapply, double complete, dispute after completion).
-- `IneligibleAgentPayout`: agent has a 0% payout tier and is not allowlisted for a default payout.
+- `IneligibleAgentPayout`: agent has a 0% payout tier and cannot apply.
 - `InvalidAgentPayoutSnapshot`: snapshotted agent payout percentage is zero (defensive invariant).
 - `InsufficientWithdrawableBalance`: withdrawal exceeds `withdrawableAGI()`.
 - `InsolventEscrowBalance`: contract balance is below `lockedEscrow` (insolvency signal).
@@ -192,7 +192,7 @@ Custom errors and their intent:
 - Jobs cannot be reassigned after `assignedAgent` is set.
 - Completed or expired jobs cannot be re‑completed or re‑disputed.
 - Validator approvals and disapprovals are mutually exclusive per validator per job.
-- **Escrow solvency:** the maximum configured agent payout percentage (highest `AGIType.payoutPercentage` or `additionalAgentPayoutPercentage`) plus `validationRewardPercentage` must be ≤ 100. `addAGIType`, `setAdditionalAgentPayoutPercentage`, and `setValidationRewardPercentage` enforce this to prevent settlement from exceeding escrow.
+- **Escrow solvency:** the maximum configured agent payout percentage (highest `AGIType.payoutPercentage`) plus `validationRewardPercentage` must be ≤ 100. `addAGIType` and `setValidationRewardPercentage` enforce this to prevent settlement from exceeding escrow.
 - `maxJobPayout` and `jobDurationLimit` cap job creation inputs.
 - Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline, and `expireJob` can refund employers when no completion request was made.
 - After `completionReviewPeriod`, `finalizeJob` deterministically settles any non‑disputed job to avoid indefinite escrow.

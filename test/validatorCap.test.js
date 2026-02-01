@@ -4,6 +4,7 @@ const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const MockERC721 = artifacts.require("MockERC721");
 
 const { expectCustomError } = require("./helpers/errors");
 
@@ -59,6 +60,9 @@ contract("AGIJobManager validator cap", (accounts) => {
     );
 
     await manager.addAdditionalAgent(agent, { from: owner });
+    const agiType = await MockERC721.new({ from: owner });
+    await manager.addAGIType(agiType.address, 1, { from: owner });
+    await agiType.mint(agent, { from: owner });
   });
 
   it("rejects validator thresholds that exceed the cap", async () => {

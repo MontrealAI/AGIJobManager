@@ -179,7 +179,7 @@ npx truffle migrate --network development
 - **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
 - **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline unless off‑chain policies intervene.
 - **Dispute strings**: `resolveDispute` accepts any string, but only the exact `agent win` / `employer win` values trigger settlement; other strings just clear the dispute flag.
-- **Agent payout snapshot**: the agent payout percentage is snapshotted at `applyForJob`; later NFT transfers do **not** change payout for that job, and agents with a 0% tier cannot accept jobs unless explicitly allowlisted via `additionalAgents` and assigned a nonzero default payout percentage.
+- **Agent payout snapshot**: the agent payout percentage is snapshotted at `applyForJob`; later NFT transfers do **not** change payout for that job. `additionalAgents` bypass identity checks only, and every agent must have a nonzero AGIType payout tier at apply time.
 
 See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
 

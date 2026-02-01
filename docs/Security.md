@@ -36,7 +36,7 @@ Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and 
 - **Root immutability**: there are no on‑chain setters for root nodes or Merkle roots after deployment. Misconfiguration requires redeployment.
 - **ENS dependency**: ownership checks rely on ENS registry, NameWrapper, and resolver behavior.
 - **ERC‑20 compatibility**: transfers must either return `true` or return no data; calls that revert, return `false`, or return malformed data revert.
-- **Agent payout can be zero**: if no AGI type applies, the agent payout percentage is zero and residual funds remain in the contract.
+- **Agent payout gating (resolved)**: `applyForJob` requires a nonzero AGIType payout tier for all agents (including `additionalAgents`), and the payout tier is snapshotted at apply time and used at completion.
 - **Validator payout sharing**: all validators who voted share equally; there is no weighting or slashing.
 - **Validator cap**: each job records at most `MAX_VALIDATORS_PER_JOB` unique validators to bound settlement gas. Owner‑set thresholds must fit within this cap (each ≤ cap and approvals + disapprovals ≤ cap) to keep completion/dispute reachable without exceeding the loop bound.
 - **Owner‑controlled parameters**: thresholds and limits can be changed post‑deployment by the owner.
