@@ -251,6 +251,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await token.mint(employer, payoutTwo, { from: owner });
     const jobIdTwo = await createJob(payoutTwo, "ipfs-employer-win");
     await manager.applyForJob(jobIdTwo, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobIdTwo, "ipfs-employer-complete", { from: agent });
 
     await manager.disputeJob(jobIdTwo, { from: employer });
     await expectCustomError(manager.resolveDispute.call(jobIdTwo, "agent win", { from: other }), "NotModerator");

@@ -113,9 +113,9 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await current.addModerator(moderator, { from: owner });
     await current.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(current.address, payout, { from: owner });
-    await current.validateJob(currentJobId, "validator", EMPTY_PROOF, { from: validator });
-    assert.equal((await current.nextTokenId()).toNumber(), 1, "current should mint once after validation");
-    await expectRevert(current.resolveDispute(currentJobId, "agent win", { from: moderator }));
+    await expectRevert(current.validateJob(currentJobId, "validator", EMPTY_PROOF, { from: validator }));
+    await current.resolveDispute(currentJobId, "agent win", { from: moderator });
+    assert.equal((await current.nextTokenId()).toNumber(), 1, "current should mint once after dispute resolution");
     assert.equal((await current.nextTokenId()).toNumber(), 1, "current should not mint twice");
   });
 
@@ -196,6 +196,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
     await original.addAGIType(nft.address, 92, { from: owner });
     const originalJobId = await createAssignedJob(original, token, employer, agent, payout);
+    await original.requestJobCompletion(originalJobId, "ipfs-complete", { from: agent });
     await original.disputeJob(originalJobId, { from: employer });
     await original.addModerator(moderator, { from: owner });
     await original.setRequiredValidatorApprovals(1, { from: owner });
@@ -207,6 +208,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
+    await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
     await current.setRequiredValidatorApprovals(1, { from: owner });

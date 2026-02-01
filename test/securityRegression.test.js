@@ -97,6 +97,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTxTwo = await manager.createJob("ipfs", payoutTwo, 1000, "details", { from: employer });
     const jobIdTwo = createTxTwo.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobIdTwo, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobIdTwo, "ipfs-complete", { from: agent });
     await manager.disputeJob(jobIdTwo, { from: employer });
     await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
     await expectCustomError(
@@ -157,7 +158,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     );
   });
 
-  it("allows completion request during disputes so agent-win can resolve", async () => {
+  it("allows disputes after completion request so agent-win can resolve", async () => {
     const payout = toBN(toWei("18"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -165,9 +166,8 @@ contract("AGIJobManager security regressions", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    await manager.disputeJob(jobId, { from: employer });
-
     await manager.requestJobCompletion(jobId, "ipfs-disputed-complete", { from: agent });
+    await manager.disputeJob(jobId, { from: employer });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const job = await manager.jobs(jobId);
@@ -175,7 +175,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     assert.strictEqual(job.completionRequested, true, "completion request should be recorded");
   });
 
-  it("allows disputed completion requests after duration expiry for agent-win resolution", async () => {
+  it("allows disputes after completion request even after duration expiry", async () => {
     const payout = toBN(toWei("19"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -183,10 +183,10 @@ contract("AGIJobManager security regressions", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    await manager.disputeJob(jobId, { from: employer });
+    await manager.requestJobCompletion(jobId, "ipfs-disputed-late", { from: agent });
 
     await time.increase(2);
-    await manager.requestJobCompletion(jobId, "ipfs-disputed-late", { from: agent });
+    await manager.disputeJob(jobId, { from: employer });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const job = await manager.jobs(jobId);
@@ -194,7 +194,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     assert.strictEqual(job.completionRequested, true, "late completion request should be recorded");
   });
 
-  it("allows disputed completion requests while paused for agent-win recovery", async () => {
+  it("allows dispute resolution while paused after completion request", async () => {
     const payout = toBN(toWei("21"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -202,10 +202,10 @@ contract("AGIJobManager security regressions", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-paused-dispute", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
     await manager.pause({ from: owner });
-    await manager.requestJobCompletion(jobId, "ipfs-paused-dispute", { from: agent });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const job = await manager.jobs(jobId);
@@ -253,6 +253,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-dispute", { from: agent });
 
     await expectCustomError(manager.disputeJob.call(jobId, { from: other }), "NotAuthorized");
     await manager.disputeJob(jobId, { from: employer });

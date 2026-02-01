@@ -224,6 +224,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
 
     const jobId = await createJob(payout, 1000);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-stale", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
     await manager.pause({ from: owner });
