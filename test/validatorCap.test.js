@@ -3,6 +3,7 @@ const assert = require("assert");
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
+const MockERC721 = artifacts.require("MockERC721");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
@@ -57,6 +58,10 @@ contract("AGIJobManager validator cap", (accounts) => {
       ZERO_ROOT,
       { from: owner }
     );
+
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 40, { from: owner });
 
     await manager.addAdditionalAgent(agent, { from: owner });
   });

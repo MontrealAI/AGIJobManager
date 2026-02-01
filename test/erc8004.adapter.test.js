@@ -7,6 +7,7 @@ const AGIJobManager = artifacts.require('AGIJobManager');
 const MockERC20 = artifacts.require('MockERC20');
 const MockENS = artifacts.require('MockENS');
 const MockResolver = artifacts.require('MockResolver');
+const MockERC721 = artifacts.require('MockERC721');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
 const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
@@ -49,6 +50,10 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
       ZERO_ROOT,
       { from: owner }
     );
+
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 80, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
