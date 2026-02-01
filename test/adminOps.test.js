@@ -88,6 +88,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.blacklistAgent(agent, false, { from: owner });
 
     await manager.addAdditionalAgent(other, { from: owner });
+    await agiTypeNft.mint(other, { from: owner });
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: other });
 
     await manager.blacklistValidator(validator, true, { from: owner });

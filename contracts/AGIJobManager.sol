@@ -306,14 +306,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         return maxPercentage;
     }
 
-    function _maxConfiguredAgentPayoutPercentage() internal view returns (uint256) {
-        uint256 maxPercentage = _maxAGITypePayoutPercentage();
-        if (additionalAgentPayoutPercentage > maxPercentage) {
-            maxPercentage = additionalAgentPayoutPercentage;
-        }
-        return maxPercentage;
-    }
-
     function _callOptionalReturn(IERC20 token, bytes memory data) internal {
         (bool success, bytes memory returndata) = address(token).call(data);
         if (!success) revert TransferFailed();
@@ -348,15 +340,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
         if (!(additionalAgents[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, agentRootNode))) revert NotAuthorized();
-        uint256 livePct = getHighestPayoutPercentage(msg.sender);
-        uint256 snapshotPct = livePct;
-        if (snapshotPct == 0) {
-            if (additionalAgents[msg.sender]) {
-                snapshotPct = additionalAgentPayoutPercentage;
-            } else {
-                revert IneligibleAgentPayout();
-            }
-        }
+        uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
+        if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
         job.assignedAgent = msg.sender;
         job.assignedAt = block.timestamp;
@@ -568,7 +553,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
-        uint256 maxPct = _maxConfiguredAgentPayoutPercentage();
+        uint256 maxPct = _maxAGITypePayoutPercentage();
         if (maxPct > 100 - _percentage) revert InvalidParameters();
         validationRewardPercentage = _percentage;
     }

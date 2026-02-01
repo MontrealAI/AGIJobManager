@@ -3,6 +3,7 @@ const assert = require("assert");
 const AGIJobManager = artifacts.require("AGIJobManager");
 const ERC20NoReturn = artifacts.require("ERC20NoReturn");
 const MockENS = artifacts.require("MockENS");
+const MockERC721 = artifacts.require("MockERC721");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { rootNode } = require("./helpers/ens");
@@ -31,6 +32,10 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
       ZERO_ROOT,
       { from: owner }
     );
+
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 60, { from: owner });
   });
 
   it("accepts ERC20 tokens that return no data on transfer/transferFrom", async () => {

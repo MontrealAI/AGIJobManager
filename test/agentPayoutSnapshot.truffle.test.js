@@ -115,21 +115,15 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
 
-  it("assigns a nonzero payout tier for additional agents", async () => {
+  it("rejects additional agents without a payout tier", async () => {
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
 
-    await manager.setAdditionalAgentPayoutPercentage(50, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
 
-    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
-    assert.strictEqual(snapshotPct.toNumber(), 50);
-
-    const agentBalanceBefore = await token.balanceOf(agent);
-    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
-    const agentBalanceAfter = await token.balanceOf(agent);
-    const expected = payout.muln(50).divn(100);
-    assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
+    await expectCustomError(
+      manager.applyForJob.call(jobId, "agent", EMPTY_PROOF, { from: agent }),
+      "IneligibleAgentPayout"
+    );
   });
 });
