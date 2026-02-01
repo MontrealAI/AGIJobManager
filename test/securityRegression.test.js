@@ -133,6 +133,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await expectCustomError(
@@ -148,6 +149,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTxTwo = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobIdTwo = createTxTwo.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobIdTwo, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobIdTwo, "ipfs-dispute", { from: agent });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     await manager.disapproveJob(jobIdTwo, "validator", EMPTY_PROOF, { from: validator });
 
@@ -227,6 +229,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const createTx = await managerFailing.createJob("ipfs", toBN(toWei("10")), 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
     await managerFailing.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await managerFailing.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await failing.setFailTransfers(true, { from: owner });
     await expectCustomError(
