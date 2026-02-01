@@ -64,8 +64,7 @@ If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit th
 
 The UI prefers the on-chain `jobStatus(jobId)` helper when available to display the canonical
 job lifecycle status. When connected to older deployments that do not expose it, the UI falls
-back to its existing client-side derivation (and will attempt `jobStatusString(jobId)` only if
-the numeric helper is unavailable).
+back to its existing client-side derivation.
 
 ## Supported networks
 

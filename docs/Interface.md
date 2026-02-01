@@ -10,7 +10,6 @@
 ## Functions
 | Signature | State mutability | Returns |
 | --- | --- | --- |
-| `MAX_REVIEW_PERIOD()` | view | uint256 |
 | `MAX_VALIDATORS_PER_JOB()` | view | uint256 |
 | `additionalAgentPayoutPercentage()` | view | uint256 |
 | `additionalAgents(address)` | view | bool |
@@ -97,7 +96,6 @@
 | `getJobStatus(uint256 _jobId)` | view | bool, bool, string |
 | `getJobAgentPayoutPct(uint256 _jobId)` | view | uint256 |
 | `jobStatus(uint256 jobId)` | view | uint8 |
-| `jobStatusString(uint256 jobId)` | view | string |
 | `setValidationRewardPercentage(uint256 _percentage)` | nonpayable | — |
 | `cancelJob(uint256 _jobId)` | nonpayable | — |
 | `expireJob(uint256 _jobId)` | nonpayable | — |

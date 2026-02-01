@@ -54,7 +54,7 @@ Job entries are created in `createJob` and stored in `jobs(jobId)`.
 - `getJobAgentPayoutPct(jobId)` returns the snapshotted agent payout percentage.
 - `jobs(jobId)` returns the fixed fields of the `Job` struct (it omits the internal validator list and per‑validator mappings).
 - `jobStatus(jobId)` returns the canonical `JobStatus` enum value for external consumers.
-- `jobStatusString(jobId)` returns the human‑readable enum label.
+  - Map enum values to human‑readable labels off‑chain (see the table below).
 
 ### Canonical job status
 

@@ -1001,7 +1001,6 @@
       contractPaused: null,
       capabilities: {
         jobStatus: null,
-        jobStatusString: null,
       },
       marketAllowance: null,
       nftCache: {},
@@ -1103,7 +1102,6 @@
       "function tokenURI(uint256) view returns (string)",
       "function getJobStatus(uint256) view returns (bool,bool,string)",
       "function jobStatus(uint256) view returns (uint8)",
-      "function jobStatusString(uint256) view returns (string)",
       "function createJob(string,uint256,uint256,string)",
       "function cancelJob(uint256)",
       "function pause()",
@@ -1973,7 +1971,6 @@
         state.nftCache = {};
         state.capabilities = {
           jobStatus: null,
-          jobStatusString: null,
         };
         state.index = {
           jobs: {},
@@ -2003,7 +2000,6 @@
       state.nftCache = {};
       state.capabilities = {
         jobStatus: null,
-        jobStatusString: null,
       };
       state.readContract = new ethers.Contract(state.contractAddress, abi, state.provider);
       if (state.signer) {
@@ -3001,17 +2997,6 @@
         } catch (error) {
           if (state.capabilities.jobStatus == null && shouldDisableCapability(error)) {
             state.capabilities.jobStatus = false;
-          }
-        }
-      }
-      if (state.capabilities.jobStatusString !== false) {
-        try {
-          const status = await state.readContract.jobStatusString(BigInt(jobId));
-          state.capabilities.jobStatusString = true;
-          return normalizeJobStatusLabel(status) || derived;
-        } catch (error) {
-          if (state.capabilities.jobStatusString == null && shouldDisableCapability(error)) {
-            state.capabilities.jobStatusString = false;
           }
         }
       }
