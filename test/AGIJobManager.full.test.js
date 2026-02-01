@@ -138,6 +138,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
   let baseIpfsUrl;
   let clubRootNode;
   let agentRootNode;
+  let agentTokenId;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -174,7 +175,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
     await token.mint(buyer, web3.utils.toWei("500"), { from: owner });
     await token.mint(other, web3.utils.toWei("500"), { from: owner });
     await manager.addAGIType(nft.address, 1, { from: owner });
-    await nft.mint(agent, { from: owner });
+    const mintReceipt = await nft.mint(agent, { from: owner });
+    agentTokenId = mintReceipt.logs[0].args.tokenId.toNumber();
   });
 
   describe("deployment & initialization", () => {
@@ -330,6 +332,57 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const job = await manager.jobs(jobId);
       assert.equal(job.employer, employer);
       assert.equal(job.payout.toString(), payout.toString());
+    });
+  });
+
+  describe("agent payout snapshots", () => {
+    it("rejects ineligible agents without a payout tier", async () => {
+      const payout = new BN(web3.utils.toWei("2"));
+      const { jobId } = await createJob(manager, token, employer, payout, 1000);
+
+      await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
+      await expectCustomError(
+        assignJob(manager, jobId, agent, buildProof(agentTree, agent)),
+        "IneligibleAgentPayout"
+      );
+    });
+
+    it("snapshots agent payout percentage at apply time", async () => {
+      await manager.addAGIType(nft.address, 90, { from: owner });
+
+      const payout = new BN(web3.utils.toWei("12"));
+      const { jobId } = await createJob(manager, token, employer, payout, 1000);
+
+      await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
+      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "90");
+
+      await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
+
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
+      const agentBalanceBefore = new BN(await token.balanceOf(agent));
+      await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      const agentBalanceAfter = new BN(await token.balanceOf(agent));
+
+      const expectedPayout = payout.muln(90).divn(100);
+      assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
+    });
+
+    it("allows additional agents to apply with the configured fallback payout", async () => {
+      await manager.addAdditionalAgent(other, { from: owner });
+
+      const payout = new BN(web3.utils.toWei("20"));
+      const { jobId } = await createJob(manager, token, employer, payout, 1000);
+
+      await assignJob(manager, jobId, other, []);
+      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "50");
+
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
+      const agentBalanceBefore = new BN(await token.balanceOf(other));
+      await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      const agentBalanceAfter = new BN(await token.balanceOf(other));
+
+      const expectedPayout = payout.muln(50).divn(100);
+      assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
     });
   });
 
