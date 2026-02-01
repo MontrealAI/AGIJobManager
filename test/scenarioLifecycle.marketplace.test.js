@@ -450,12 +450,12 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     await token.mint(employer, price, { from: owner });
     await token.approve(manager.address, price, { from: employer });
-    await manager.purchaseNFT(tokenId, { from: employer });
+    await expectCustomError(manager.purchaseNFT.call(tokenId, { from: employer }), "NotAuthorized");
 
     const listing = await manager.listings(tokenId);
-    assert.strictEqual(listing.isActive, false, "listing should clear after self-purchase");
+    assert.strictEqual(listing.isActive, true, "listing should remain active after self-purchase attempt");
     const ownerOfToken = await manager.ownerOf(tokenId);
-    assert.equal(ownerOfToken, employer, "self-purchase keeps NFT ownership unchanged");
+    assert.equal(ownerOfToken, employer, "self-purchase attempt keeps NFT ownership unchanged");
   });
 
   it("prevents validators from approving and disapproving the same job", async () => {
