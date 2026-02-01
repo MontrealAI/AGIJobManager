@@ -76,7 +76,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const createdJob = await manager.jobs(jobId);
     assert.equal(createdJob.employer, employer, "job should record employer");
     assert.equal(createdJob.payout.toString(), payout.toString(), "payout should be recorded");
-    assert.equal(createdJob.ipfsHash, "ipfs-job", "ipfs hash should be recorded");
+    assert.equal(createdJob.jobSpecURI, "ipfs-job", "job spec URI should be recorded");
     assert.equal((await token.balanceOf(manager.address)).toString(), payout.toString(), "escrow should hold payout");
 
     await assignAndRequest(jobId, "ipfs-complete");
@@ -93,7 +93,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const nftEvent = finalTx.logs.find((log) => log.event === "NFTIssued");
     const tokenId = nftEvent.args.tokenId.toNumber();
     const tokenUri = await manager.tokenURI(tokenId);
-    assert.equal(tokenUri, "ipfs://base/ipfs-complete", "tokenURI should match completion hash");
+    assert.equal(tokenUri, "ipfs://base/ipfs-complete", "tokenURI should match completion URI");
     assert.equal(await manager.ownerOf(tokenId), employer, "employer should receive job NFT");
 
     const agentExpected = payout.muln(92).divn(100);

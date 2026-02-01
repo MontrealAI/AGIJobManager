@@ -84,7 +84,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const createdEvent = createTx.logs.find((log) => log.event === "JobCreated");
     assert.ok(createdEvent, "JobCreated event should be emitted");
     assert.equal(createdEvent.args.payout.toString(), payout.toString(), "JobCreated payout mismatch");
-    assert.equal(createdEvent.args.ipfsHash, "ipfs-job", "JobCreated ipfs hash mismatch");
+    assert.equal(createdEvent.args.jobSpecURI, "ipfs-job", "JobCreated job spec URI mismatch");
 
     const appliedEvent = applyTx.logs.find((log) => log.event === "JobApplied");
     assert.ok(appliedEvent, "JobApplied event should be emitted");
@@ -109,7 +109,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     const tokenId = nftIssued.args.tokenId.toNumber();
     const tokenUri = await manager.tokenURI(tokenId);
-    assert.equal(tokenUri, "ipfs://base/ipfs-complete", "token URI should match base + ipfs hash");
+    assert.equal(tokenUri, "ipfs://base/ipfs-complete", "token URI should match base + completion URI");
 
     const nftOwner = await manager.ownerOf(tokenId);
     assert.equal(nftOwner, employer, "employer should own the job NFT");
@@ -187,7 +187,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     const tokenId = completionTx.logs.find((log) => log.event === "NFTIssued").args.tokenId.toNumber();
     const tokenUri = await manager.tokenURI(tokenId);
-    assert.equal(tokenUri, "ipfs://base/ipfs-no-request", "token URI should use the job's ipfs hash");
+    assert.equal(tokenUri, "ipfs://base/ipfs-no-request", "token URI should use the job spec URI fallback");
     assert.equal(await manager.ownerOf(tokenId), employer, "employer should receive the NFT");
     assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear after completion");
   });

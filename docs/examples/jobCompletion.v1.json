@@ -1,0 +1,43 @@
+{
+  "schema_version": "agijobmanager.job.v1",
+  "name": "Job #42 completion: Streaming pipeline delivered",
+  "description": "Delivered the pipeline with a daily summary job and validation harness.\n\nTests: unit + integration; see repo for details.",
+  "image": "ipfs://bafybeicompletionimagecid",
+  "external_url": "https://agijobmanager.example/ui/agijobmanager.html?contract=0x1234567890abcdef1234567890abcdef12345678&chainId=1&jobId=42",
+  "attributes": [
+    { "trait_type": "Type", "value": "Job Completion" },
+    { "trait_type": "Chain ID", "value": "1" },
+    { "trait_type": "Contract", "value": "0x1234567890abcdef1234567890abcdef12345678" },
+    { "trait_type": "Job ID", "value": "42" },
+    { "trait_type": "Status", "value": "Completed" }
+  ],
+  "properties": {
+    "type": "job_completion",
+    "job": {
+      "job_id": "42",
+      "chain_id": "1",
+      "contract_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "token_id": "7",
+      "job_spec_uri": "ipfs://bafybeijobspeccid",
+      "job_spec_sha256": "b239aa1d24f9a7c9ad0f665d7d317cf7e6d8a2f7e38eaa28d7a3e5a7aef1b9be",
+      "tx_hash": "0xabc123..."
+    },
+    "payouts": {
+      "escrow_amount": "2500 AGI",
+      "agent_payout_pct": "92",
+      "validator_reward_pct": "8",
+      "additional_agent_payout_pct": "50"
+    },
+    "deliverables": [
+      "https://github.com/example/pipeline/releases/tag/v1.0.0",
+      "ipfs://bafybeideliverablecid"
+    ],
+    "links": [
+      { "label": "Repo", "url": "https://github.com/example/pipeline" },
+      { "label": "Submission", "url": "https://example.com/submission" }
+    ],
+    "attachments": [
+      "https://example.com/validation-report.pdf"
+    ]
+  }
+}
