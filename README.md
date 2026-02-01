@@ -7,7 +7,7 @@
 
 **AGIJobManager** is MONTREAL.AI’s on-chain enforcement layer for agent–employer workflows: validator-gated job escrow, payouts, dispute resolution, and reputation tracking, with ENS/Merkle role gating and an ERC‑721 job NFT marketplace. It is the *enforcement* half of a “Full‑Stack Trust Layer for AI Agents.”
 
-> **Status / Caution**: Experimental research software. Treat deployments as high-risk until you have performed independent security review, validated parameters, and ensured operational readiness.
+> **Status / Caution**: Experimental research software. Treat deployments as high-risk until you have performed independent security review, validated parameters, and ensured operational readiness. No public audit report is included in this repository.
 
 ## At a glance
 
@@ -193,6 +193,8 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 ## Ecosystem links
 
 - **Repository**: https://github.com/MontrealAI/AGIJobManager
+- **Etherscan (deployment-specific)**: https://etherscan.io/address/<contract-address>
+- **OpenSea (job NFTs, deployment-specific)**: https://opensea.io/assets/ethereum/<contract-address>
 - **ERC‑8004 specification**: https://eips.ethereum.org/EIPS/eip-8004
 - **ERC‑8004 deck (framing)**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0/blob/main/docs/presentation/MONTREALAI_x_ERC8004_v0.pdf
 - **ERC‑8004 deck (repo copy)**: [`presentations/MONTREALAI_x_ERC8004_v0.pdf`](presentations/MONTREALAI_x_ERC8004_v0.pdf)
@@ -202,8 +204,6 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 - **ENS NameWrapper**: https://docs.ens.domains/ens-improvement-proposals/ensip-10-namewrapper
 - **OpenZeppelin Contracts**: https://docs.openzeppelin.com/contracts/4.x/
 - **Truffle**: https://trufflesuite.com/docs/truffle/
-- **Etherscan (deployments)**: https://etherscan.io/address/<your-contract-address>
-- **OpenSea (job NFTs)**: https://opensea.io/assets/ethereum/<your-contract-address>/<token-id>
 
 ## Documentation
 
@@ -214,8 +214,10 @@ Start here:
 - [`docs/ParameterSafety.md`](docs/ParameterSafety.md)
 - [`docs/ops/parameter-safety.md`](docs/ops/parameter-safety.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
+- [`docs/Security.md`](docs/Security.md)
 - [`docs/Testing.md`](docs/Testing.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
+- [`docs/Interface.md`](docs/Interface.md)
 - **ERC‑8004 integration (control plane ↔ execution plane)**: [`docs/erc8004/README.md`](docs/erc8004/README.md)
 - **AGI.Eth Namespace (alpha)**:
   - User guide: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md)

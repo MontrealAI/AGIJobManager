@@ -9,6 +9,9 @@ This document summarizes security considerations specific to the current `AGIJob
 - Job NFTs minted on completion.
 - Reputation mappings used for premium access gating.
 
+**Audit status**
+- No public audit report is included in this repository. Treat deployments as experimental until independently reviewed.
+
 **Primary trust assumptions (centralization risks)**
 - **Owner powers**: can pause flows, update token address and parameters, manage allowlists/blacklists, add AGI types, and withdraw ERC‑20 while paused (limited to `withdrawableAGI()`).
 - **Moderator powers**: resolve disputes with typed action codes via `resolveDisputeWithCode`. Code `0` (NO_ACTION) logs a reason and keeps the dispute active; `1` (AGENT_WIN) pays the agent; `2` (EMPLOYER_WIN) refunds the employer. The legacy string-based `resolveDispute` is deprecated and maps exact `agent win` / `employer win` strings to the corresponding codes.
