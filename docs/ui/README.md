@@ -116,6 +116,7 @@ If the contract address has no code on the active chain, the UI shows a warning 
 - The UI only talks to your wallet provider (e.g., MetaMask). No keys or secrets are collected.
 - Always verify the contract address and chainId before signing transactions.
 - The UI runs a **staticCall preflight** for every state-changing action (including cancel and admin). If a call would revert, it surfaces the reason before you sign.
+- If the UI shows the contract is paused, wait for an unpause or switch to a different deployment before attempting marketplace or job actions.
 
 ## Employer lifecycle completeness: cancel job
 
