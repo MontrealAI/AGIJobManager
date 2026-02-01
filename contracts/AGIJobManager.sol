@@ -772,14 +772,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit NFTIssued(tokenId, job.employer, tokenURI);
     }
 
-    function listNFT(uint256 tokenId, uint256 price) external {
+    function listNFT(uint256 tokenId, uint256 price) external whenNotPaused {
         if (ownerOf(tokenId) != msg.sender) revert NotAuthorized();
         if (price == 0) revert InvalidParameters();
         listings[tokenId] = Listing(tokenId, msg.sender, price, true);
         emit NFTListed(tokenId, msg.sender, price);
     }
 
-    function purchaseNFT(uint256 tokenId) external nonReentrant {
+    function purchaseNFT(uint256 tokenId) external whenNotPaused nonReentrant {
         Listing storage listing = listings[tokenId];
         if (!listing.isActive) revert InvalidState();
         address seller = listing.seller;
@@ -794,7 +794,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit NFTPurchased(tokenId, msg.sender, price);
     }
 
-    function delistNFT(uint256 tokenId) external {
+    function delistNFT(uint256 tokenId) external whenNotPaused {
         Listing storage listing = listings[tokenId];
         if (!listing.isActive || listing.seller != msg.sender) revert NotAuthorized();
         listing.isActive = false;

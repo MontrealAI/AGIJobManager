@@ -181,6 +181,10 @@ npx truffle migrate --network development
 - **Dispute resolution codes**: moderators should use `resolveDisputeWithCode(jobId, code, reason)` with `code = 0 (NO_ACTION)`, `1 (AGENT_WIN)`, or `2 (EMPLOYER_WIN)`. The `reason` is freeform and does not control settlement. The legacy string-based `resolveDispute` is deprecated; non‑canonical strings map to `NO_ACTION` and keep the dispute active.
 - **Agent payout snapshot**: the agent payout percentage is snapshotted at `applyForJob` and used at completion; later NFT transfers do **not** change payout for that job. Agents must have a nonzero AGI‑type payout tier at apply time (0% tiers cannot accept jobs), and `additionalAgents` only bypass identity checks (not payout eligibility).
 
+## Pause behavior
+
+Pause is an incident-response safety control. When paused, all job lifecycle actions **and** marketplace actions (listNFT, delistNFT, purchaseNFT) are disabled; read-only/view functions continue to work. Resume operations by unpausing once the issue is resolved.
+
 See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
 
 ## Documentation

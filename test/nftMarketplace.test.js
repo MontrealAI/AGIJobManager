@@ -13,7 +13,7 @@ const NonReceiverBuyer = artifacts.require("NonReceiverBuyer");
 const ERC721ReceiverBuyer = artifacts.require("ERC721ReceiverBuyer");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
-const { expectCustomError } = require("./helpers/errors");
+const { expectCustomError, extractRevertData, selectorFor } = require("./helpers/errors");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -59,6 +59,25 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
   });
 
+  async function expectPausedRevert(promise) {
+    try {
+      await promise;
+    } catch (error) {
+      if (error.message && error.message.includes("Pausable: paused")) {
+        return;
+      }
+      const data = extractRevertData(error);
+      if (data) {
+        const selector = selectorFor("EnforcedPause").toLowerCase();
+        if (data.toLowerCase().startsWith(selector)) {
+          return;
+        }
+      }
+      throw error;
+    }
+    throw new Error("Expected pause revert, but the call succeeded.");
+  }
+
   async function mintJobNft() {
     const payout = toBN(toWei("40"));
     await token.mint(employer, payout, { from: owner });
@@ -96,6 +115,30 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
 
     const listing = await manager.listings(tokenId);
     assert.strictEqual(listing.isActive, false, "listing should be inactive after purchase");
+  });
+
+  it("blocks marketplace actions while paused and resumes after unpause", async () => {
+    const tokenId = await mintJobNft();
+    const price = toBN(toWei("5"));
+
+    await manager.pause({ from: owner });
+    await expectPausedRevert(manager.listNFT(tokenId, price, { from: employer }));
+
+    await manager.unpause({ from: owner });
+    await manager.listNFT(tokenId, price, { from: employer });
+
+    await manager.pause({ from: owner });
+    await expectPausedRevert(manager.delistNFT(tokenId, { from: employer }));
+
+    await token.mint(buyer, price, { from: owner });
+    await token.approve(manager.address, price, { from: buyer });
+    await expectPausedRevert(manager.purchaseNFT(tokenId, { from: buyer }));
+
+    await manager.unpause({ from: owner });
+    await manager.purchaseNFT(tokenId, { from: buyer });
+
+    const newOwner = await manager.ownerOf(tokenId);
+    assert.equal(newOwner, buyer, "buyer should own NFT after unpause");
   });
 
   it("reverts when buyer contract lacks ERC721 receiver hooks", async () => {
