@@ -121,6 +121,7 @@ stateDiagram-v2
 - **ERC‑20 compatibility**: token transfers accept ERC‑20s that return `bool` or return no data. Calls that revert, return `false`, or return malformed data revert with `TransferFailed`. Escrow deposits enforce exact amount received, so fee‑on‑transfer, rebasing, or other balance‑mutating tokens are not supported.
 
 ## Validation and dispute flow
+- `requestJobCompletion` requires a **non‑empty completion metadata URI** that becomes the job NFT `tokenURI` on settlement. Pass a full URI (`ipfs://<cid>` or `https://...`) or a CID that will be combined with `baseIpfsUrl` (e.g., `bafy...`). The URI should resolve to ERC‑721 metadata JSON for the completion artifact.
 - `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold. It requires `completionRequested`.
 - `disapproveJob` increments disapproval count, records participation, and flips `disputed` when disapprovals reach the required threshold; it requires `completionRequested`.
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.

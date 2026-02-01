@@ -29,4 +29,15 @@ contract TestableAGIJobManager is AGIJobManager {
     function setValidationRewardPercentageUnsafe(uint256 _percentage) external onlyOwner {
         validationRewardPercentage = _percentage;
     }
+
+    function setJobMetadata(uint256 jobId, string calldata completionURI, string calldata ipfsHash) external onlyOwner {
+        Job storage job = jobs[jobId];
+        job.jobCompletionURI = completionURI;
+        job.ipfsHash = ipfsHash;
+    }
+
+    function mintJobNftUnsafe(uint256 jobId) external {
+        Job storage job = jobs[jobId];
+        _mintJobNft(job);
+    }
 }

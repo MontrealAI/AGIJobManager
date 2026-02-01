@@ -365,6 +365,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
         Job storage job = _job(_jobId);
+        if (bytes(_jobCompletionURI).length == 0) revert InvalidParameters();
         require(!paused() || job.disputed, "Pausable: paused");
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
         if (job.completed || job.expired) revert InvalidState();
@@ -779,6 +780,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
     function _mintJobNft(Job storage job) internal {
         uint256 tokenId = nextTokenId++;
+        if (bytes(job.ipfsHash).length == 0) revert InvalidParameters();
         string memory metadataURI = bytes(job.jobCompletionURI).length > 0 ? job.jobCompletionURI : job.ipfsHash;
         if (bytes(metadataURI).length == 0) revert InvalidParameters();
         string memory tokenURI = _formatTokenURI(metadataURI);
