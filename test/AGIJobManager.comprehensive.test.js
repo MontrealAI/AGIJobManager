@@ -466,6 +466,17 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectCustomError(manager.disputeJob.call(0, { from: agent }), "InvalidState");
     });
 
+    it("allows completion requests while disputed", async () => {
+      await manager.applyForJob(0, "agent", [], { from: agent });
+      await manager.disputeJob(0, { from: employer });
+
+      const completion = await requestCompletion(0);
+      expectEvent(completion, "JobCompletionRequested", { jobId: new BN(0), agent });
+      const job = await manager.jobs(0);
+      assert.equal(job.completionRequested, true);
+      assert.equal(job.jobCompletionURI, updatedIpfs);
+    });
+
     it("marks job disputed once disapproval threshold reached", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.addAdditionalValidator(validatorTwo, { from: owner });

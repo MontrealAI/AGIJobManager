@@ -126,6 +126,7 @@ stateDiagram-v2
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
 - Owner‑set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
+- `requestJobCompletion` is still allowed while disputed so agents can attach completion metadata before an agent‑win resolution.
 - `finalizeJob` lets anyone finalize after `completionReviewPeriod` if the job is not disputed. The outcome is deterministic: validator thresholds are honored, silence defaults to agent completion, and otherwise approvals must strictly exceed disapprovals for agent payout (ties refund the employer).
 - `resolveDisputeWithCode` accepts a typed action code and a freeform reason:
   - `NO_ACTION (0)` → log only; dispute remains active.
