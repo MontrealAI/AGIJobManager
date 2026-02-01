@@ -1,6 +1,6 @@
 # AGIJobManager contract specification
 
-This document describes the on-chain behavior of `AGIJobManager` as implemented in `contracts/AGIJobManager.sol`. It is descriptive only and should be read alongside the ABI-derived interface reference.
+This document describes the on-chain behavior of `AGIJobManager` as implemented in `contracts/AGIJobManager.sol`. It is descriptive only and should be read alongside the ABI‑derived interface reference.
 
 ## Contents
 - [Overview](#overview)
@@ -19,18 +19,18 @@ This document describes the on-chain behavior of `AGIJobManager` as implemented 
 - [References](#references)
 
 ## Overview
-AGIJobManager coordinates employer-funded jobs, agent assignment, validator review, dispute resolution, reputation updates, and job NFT issuance. It escrows ERC‑20 payouts and mints an ERC‑721 to the employer when a job completes successfully. This specification describes the *on-chain enforcement layer* only; ERC‑8004 trust signals are consumed off‑chain and are not part of the on-chain interface.
+AGIJobManager coordinates employer‑funded jobs, agent assignment, validator review, dispute resolution, reputation updates, and job NFT issuance. It escrows ERC‑20 payouts and mints an ERC‑721 to the employer when a job completes successfully. This specification describes the *on‑chain enforcement layer* only; ERC‑8004 trust signals are consumed off‑chain and are not part of the on-chain interface.
 
 ## Roles and permissions
 | Role | Capabilities |
 | --- | --- |
-| **Owner** | Pause/unpause flows, update parameters, change ERC‑20 address, manage allowlists/blacklists, assign moderators, add AGI types, withdraw surplus ERC‑20. |
+| **Owner** | Pause/unpause flows, update parameters, change ERC‑20 address, manage allowlists/blacklists, assign moderators, add AGI types, withdraw surplus ERC‑20 (balance minus `lockedEscrow`). |
 | **Moderator** | Resolve disputes via `resolveDispute`. |
 | **Employer** | Create jobs, cancel before assignment, dispute jobs, receive job NFTs. |
 | **Agent** | Apply to eligible jobs, request completion, earn payouts and reputation. |
 | **Validator** | Validate or disapprove jobs, earn payouts and reputation when voting. |
 
-Refer to the ABI-derived access map in [`Interface.md`](Interface.md).
+Refer to the ABI‑derived access map in [`Interface.md`](Interface.md).
 
 ## Core data structures
 
@@ -39,7 +39,7 @@ Each job is a struct containing:
 - `id`, `employer`, `ipfsHash`, `payout`, `duration`, `assignedAgent`, `assignedAt`, `details`.
 - State flags: `completed`, `completionRequested`, `disputed`, `expired`.
 - Timestamps: `completionRequestedAt`, `disputedAt`.
-- Validation: `validatorApprovals`, `validatorDisapprovals`, per-validator `approvals` and `disapprovals`, plus the `validators` list.
+- Validation: `validatorApprovals`, `validatorDisapprovals`, per‑validator `approvals` and `disapprovals`, plus the `validators` list.
 
 Job entries are created in `createJob` and stored in `jobs(jobId)`.
 
@@ -47,18 +47,18 @@ Job entries are created in `createJob` and stored in `jobs(jobId)`.
 `AGIType` entries map ERC‑721 collections to a payout percentage used for agent rewards. The agent’s **highest** applicable percentage is used to compute payouts.
 
 ### Listings
-`Listing` entries represent non-escrowed job NFT listings (tokenId, seller, price, isActive). The NFT remains in the seller’s wallet until purchase.
+`Listing` entries represent non‑escrowed job NFT listings (tokenId, seller, price, isActive). The NFT remains in the seller’s wallet until purchase.
 
-### Read-only helpers
+### Read‑only helpers
 - `getJobStatus(jobId)` returns `(completed, completionRequested, ipfsHash)` for lightweight polling.
 - `getJobAgentPayoutPct(jobId)` returns the snapshotted agent payout percentage.
-- `jobs(jobId)` returns the fixed fields of the `Job` struct (it omits the internal validator list and per-validator mappings).
+- `jobs(jobId)` returns the fixed fields of the `Job` struct (it omits the internal validator list and per‑validator mappings).
 - `jobStatus(jobId)` returns the canonical `JobStatus` enum value for external consumers.
-- `jobStatusString(jobId)` returns the human-readable enum label.
+- `jobStatusString(jobId)` returns the human‑readable enum label.
 
 ### Canonical job status
 
-`jobStatus(jobId)` returns a stable enum so UIs and indexers do not need to re-derive lifecycle state.
+`jobStatus(jobId)` returns a stable enum so UIs and indexers do not need to re‑derive lifecycle state.
 Enum values (stable, do not reorder):
 
 | Value | Status | Meaning |
@@ -69,7 +69,7 @@ Enum values (stable, do not reorder):
 | 3 | `CompletionRequested` | Assigned agent requested completion. |
 | 4 | `Disputed` | Dispute flag active. |
 | 5 | `Completed` | Job finalized (`completed == true`). |
-| 6 | `Expired` | Time-based expiry (informational when not explicitly expired on-chain). |
+| 6 | `Expired` | Time‑based expiry (informational when not explicitly expired on‑chain). |
 
 Precedence rules (applied in order):
 1. If `jobId` is out of range (`jobId >= nextJobId`), revert `JobNotFound`.
@@ -81,7 +81,7 @@ Precedence rules (applied in order):
 7. If `expired == true` **or** `block.timestamp > assignedAt + duration`, return `Expired` (informational for indexers/UI).
 8. Otherwise, return `InProgress`.
 
-Indexers and UIs should prefer `jobStatus()` over client-side derivations to avoid drift as additional flags are added.
+Indexers and UIs should prefer `jobStatus()` over client‑side derivations to avoid drift as additional flags are added.
 
 ## Lifecycle state machine
 
@@ -120,20 +120,20 @@ stateDiagram-v2
 - **Locked escrow accounting**: `lockedEscrow` tracks total job payout escrow for unsettled jobs (currently job payouts only).
 - **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner via `withdrawAGI` while paused, which is restricted to `withdrawableAGI()` (balance minus `lockedEscrow`).
 - **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDispute` with `employer win` refunds and finalizes the job.
-- **ERC-20 compatibility**: token transfers accept ERC‑20s that return `bool` or return no data. Calls that revert, return `false`, or return malformed data revert with `TransferFailed`. Escrow deposits enforce exact amount received, so fee‑on‑transfer, rebasing, or other balance‑mutating tokens are not supported.
+- **ERC‑20 compatibility**: token transfers accept ERC‑20s that return `bool` or return no data. Calls that revert, return `false`, or return malformed data revert with `TransferFailed`. Escrow deposits enforce exact amount received, so fee‑on‑transfer, rebasing, or other balance‑mutating tokens are not supported.
 
 ## Validation and dispute flow
 - `validateJob` increments approval count, records validator participation, and auto‑completes when approvals reach the required threshold. It does **not** require `completionRequested`.
 - `disapproveJob` increments disapproval count, records participation, and flips `disputed` when disapprovals reach the required threshold.
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
-- Owner-set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
+- Owner‑set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
 - `finalizeJob` lets anyone finalize after `completionReviewPeriod` if the job is not disputed. The outcome is deterministic: validator thresholds are honored, silence defaults to agent completion, and otherwise approvals must strictly exceed disapprovals for agent payout (ties refund the employer).
-- `resolveDispute` accepts any resolution string, but only two canonical strings trigger on-chain actions:
+- `resolveDispute` accepts any resolution string, but only two canonical strings trigger on‑chain actions:
   - `agent win` → `_completeJob`
   - `employer win` → employer refund + `completed = true`
-  - The string match is case-sensitive; any other value only clears the dispute flag.
-- `resolveStaleDispute` is an owner-only, paused-only escape hatch that allows settlement after `disputeReviewPeriod` if disputes would otherwise deadlock.
+  - The string match is case‑sensitive; any other value only clears the dispute flag.
+- `resolveStaleDispute` is an owner‑only, paused‑only escape hatch that allows settlement after `disputeReviewPeriod` if disputes would otherwise deadlock.
 
 ## Reputation mechanics
 - **Agent reputation**: derived from payout and completion time via `calculateReputationPoints`, then stored through `enforceReputationGrowth` (diminishing returns with a cap).
@@ -156,48 +156,45 @@ If ENS or NameWrapper calls fail, the contract emits `RecoveryInitiated` for obs
 `contributeToRewardPool` allows any address to transfer ERC‑20 into the contract. These funds increase the contract’s balance and are withdrawable by the owner via `withdrawAGI` while paused.
 
 ## Events
-High-signal events to index:
+High‑signal events to index:
 - **Lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`, `JobCompleted`, `JobCancelled`.
 - **Timeouts**: `JobExpired`, `JobFinalized`, `DisputeTimeoutResolved`.
 - **Reputation**: `ReputationUpdated` (agents and validators). Note that agent completion emits `ReputationUpdated` once via `enforceReputationGrowth` and again at the end of `_completeJob`.
 - **NFT marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
 - **Access signals**: `OwnershipVerified`, `RecoveryInitiated`. (`RootNodeUpdated` and `MerkleRootUpdated` are defined but not emitted by current functions.)
-- **Other**: `AGITypeUpdated`, `RewardPoolContribution`.
-- **Parameter updates**: `CompletionReviewPeriodUpdated`, `DisputeReviewPeriodUpdated`.
+- **Other**: `AGITypeUpdated`, `RewardPoolContribution`, `AGIWithdrawn`.
+- **Parameter updates**: `CompletionReviewPeriodUpdated`, `DisputeReviewPeriodUpdated`, `AdditionalAgentPayoutPercentageUpdated`.
 
-See [`Interface.md`](Interface.md) for the complete ABI-derived list.
+See [`Interface.md`](Interface.md) for the complete ABI‑derived list.
 
 ## Error handling
 Custom errors and their intent:
 - `NotModerator`: caller is not a moderator.
 - `NotAuthorized`: caller lacks required role/ownership for the action.
 - `Blacklisted`: caller is explicitly blacklisted.
-- `InvalidParameters`: zero values, out-of-range percentages, or invalid constructor updates.
+- `InvalidParameters`: zero values, out‑of‑range percentages, or invalid constructor updates.
 - `InvalidValidatorThresholds`: validator thresholds exceed the per‑job cap or their sum exceeds the cap.
 - `InvalidState`: invalid lifecycle transition (e.g., reapply, double complete, dispute after completion).
 - `IneligibleAgentPayout`: agent has a 0% payout tier and is not allowlisted for a default payout.
 - `InvalidAgentPayoutSnapshot`: snapshotted agent payout percentage is zero (defensive invariant).
 - `InsufficientWithdrawableBalance`: withdrawal exceeds `withdrawableAGI()`.
 - `InsolventEscrowBalance`: contract balance is below `lockedEscrow` (insolvency signal).
-- `JobNotFound`: non-existent job ID.
-- `TransferFailed`: ERC‑20 `transfer`/`transferFrom` returned false.
+- `JobNotFound`: non‑existent job ID.
+- `TransferFailed`: ERC‑20 `transfer`/`transferFrom` returned false or malformed data.
 - `ValidatorLimitReached`: a validator action would exceed the per‑job cap.
 - `ValidatorSetTooLarge`: settlement loops would exceed the per‑job cap.
 
 ## Invariants and constraints
 - Job IDs must exist (`JobNotFound`) before use.
 - Jobs cannot be reassigned after `assignedAgent` is set.
-- Completed or expired jobs cannot be re-completed or re-disputed.
+- Completed or expired jobs cannot be re‑completed or re‑disputed.
 - Validator approvals and disapprovals are mutually exclusive per validator per job.
 - **Escrow solvency:** the maximum configured agent payout percentage (highest `AGIType.payoutPercentage` or `additionalAgentPayoutPercentage`) plus `validationRewardPercentage` must be ≤ 100. `addAGIType`, `setAdditionalAgentPayoutPercentage`, and `setValidationRewardPercentage` enforce this to prevent settlement from exceeding escrow.
 - `maxJobPayout` and `jobDurationLimit` cap job creation inputs.
 - Job duration is enforced only when the agent calls `requestJobCompletion`; validators may still approve or disapprove after the nominal deadline, and `expireJob` can refund employers when no completion request was made.
-- After `completionReviewPeriod`, `finalizeJob` deterministically settles any non-disputed job to avoid indefinite escrow.
+- After `completionReviewPeriod`, `finalizeJob` deterministically settles any non‑disputed job to avoid indefinite escrow.
 - The validator list for a job is capped at `MAX_VALIDATORS_PER_JOB`, and thresholds must fit within that cap.
 - Root nodes and Merkle roots are immutable after deployment (no setters).
 
 ## References
-- **Interface reference (ABI-derived)**: [`Interface.md`](Interface.md)
-- **Deployment guide**: [`Deployment.md`](Deployment.md)
-- **Security model**: [`Security.md`](Security.md)
-- **Integrations overview**: [`Integrations.md`](Integrations.md)
+- **Interface reference (ABI‑derived)**: [`Interface.md`](Interface.md)

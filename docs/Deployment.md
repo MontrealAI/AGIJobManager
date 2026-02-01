@@ -13,7 +13,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 
 | Variable | Purpose | Notes |
 | --- | --- | --- |
-| `PRIVATE_KEYS` | Deployer keys | Comma-separated, no spaces. Required for Sepolia/Mainnet deployments. |
+| `PRIVATE_KEYS` | Deployer keys | Comma‑separated, no spaces. Required for Sepolia/Mainnet deployments. |
 | `SEPOLIA_RPC_URL` | Sepolia RPC URL | Optional if using Alchemy or Infura. |
 | `MAINNET_RPC_URL` | Mainnet RPC URL | Optional if using Alchemy or Infura. |
 | `ALCHEMY_KEY` | Alchemy key for Sepolia | Used if `SEPOLIA_RPC_URL` is empty. |
@@ -25,7 +25,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Default `SOLC_VERSION` is 0.8.33; keep these consistent for verification. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
@@ -33,7 +33,7 @@ A template lives in [`.env.example`](../.env.example).
 > **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.17`, while the default Truffle compiler is `0.8.33`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
 
 ## Networks configured
-- **test**: in-process Ganache provider for `truffle test`.
+- **test**: in‑process Ganache provider for `truffle test`.
 - **development**: local RPC at `127.0.0.1:8545` (Ganache).
 - **sepolia**: remote deployment via RPC (HDWalletProvider).
 - **mainnet**: remote deployment via RPC (HDWalletProvider).
@@ -89,10 +89,10 @@ npx truffle run verify AGIJobManager --network mainnet
 ### Verification tips
 - Keep the compiler settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`) identical to the original deployment.
 - Ensure your migration constructor parameters match the deployed contract.
-- If the Etherscan plugin fails, re-run with `--debug` to capture full output.
+- If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.
-- **Missing private keys**: ensure `PRIVATE_KEYS` is set and comma-separated.
+- **Missing private keys**: ensure `PRIVATE_KEYS` is set and comma‑separated.
 - **Verification failures**: confirm compiler version, optimizer runs, and `viaIR` settings match the deployed bytecode.
 - **Nonce conflicts**: avoid running multiple deployment processes with the same keys.
