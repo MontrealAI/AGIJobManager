@@ -12,8 +12,8 @@
 ## At a glance
 
 **What it is**
-- **Job escrow & settlement engine**: employer-funded jobs, agent assignment, validator approvals/disapprovals (thresholded), moderator dispute resolution, payouts/refunds. 
-- **Reputation mapping**: on-chain reputation updates for agents and validators derived from job outcomes. 
+- **Job escrow & settlement engine**: employer-funded jobs, agent assignment, validator approvals/disapprovals (thresholded), moderator dispute resolution, payouts/refunds.
+- **Reputation mapping**: on-chain reputation updates for agents and validators derived from job outcomes.
 - **Job NFT issuance + listings**: mints an ERC‑721 “job NFT” on completion and supports a minimal listing/purchase flow for those NFTs.
 - **Trust gating**: role eligibility enforced via explicit allowlists, Merkle proofs, and ENS/NameWrapper/Resolver ownership checks.
 
@@ -33,8 +33,8 @@
 3. **Translate policy into allowlists** (Merkle roots at deployment, explicit allowlists/blacklists during operation).
 4. **Use AGIJobManager** as the enforcement/settlement anchor.
 
-**Implemented here**: validator-gated escrow, dispute resolution, reputation mapping, ENS/Merkle role gating, and job NFT issuance. 
-**Not implemented here**: any on-chain ERC‑8004 registry or trust-signal processing.
+**Implemented here**: validator-gated escrow, dispute resolution, reputation mapping, ENS/Merkle role gating, and job NFT issuance.
+**Not implemented here**: any on-chain ERC‑8004 registry or trust‑signal processing.
 
 ## Architecture + illustrations
 
@@ -114,7 +114,7 @@ npm test
 - The contract address is user-configurable and must be provided until the new mainnet deployment is finalized.
 - Contract address override: query param `?contract=0x...` or the UI **Save address** button (stored in `localStorage`).
 
-## ERC-8004 integration (control plane ↔ execution plane)
+## ERC‑8004 integration (control plane ↔ execution plane)
 See [`docs/ERC8004.md`](docs/ERC8004.md) and [`docs/erc8004/README.md`](docs/erc8004/README.md) for the mapping spec, threat model, and adapter notes. Quick export example:
 
 ```bash
@@ -161,6 +161,7 @@ npx truffle migrate --network development
 - Local chain: `GANACHE_MNEMONIC`.
 
 **Network notes**
+- `test` uses an in-process Ganache provider for deterministic `truffle test` runs.
 - `development`/Ganache typically needs no env vars.
 - `sepolia` needs `ALCHEMY_KEY` (or `SEPOLIA_RPC_URL`) + `PRIVATE_KEYS`.
 - `mainnet` needs `ALCHEMY_KEY_MAIN` (or `MAINNET_RPC_URL`) + `PRIVATE_KEYS`.
@@ -198,32 +199,12 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
-  - Local test coverage: [`docs/namespace/TESTING.md`](docs/namespace/TESTING.md)
-
-## Web UI
-
-- Static page: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)
-- Usage guide: [`docs/ui/README.md`](docs/ui/README.md)
-- Wallet event handling notes: see the UI README for account/network change behavior and manual test steps.
-- Local preview:
-  ```bash
-  python -m http.server docs
-  ```
-- Open with a contract address:
-  ```
-  http://localhost:8000/ui/agijobmanager.html?contract=0xYourContract
-  ```
 
 ## Ecosystem links
 
-- **Historical v0 contract (mainnet)**: https://etherscan.io/address/0x0178b6bad606aaf908f72135b8ec32fc1d5ba477
-- **OpenSea search (contract address)**: https://opensea.io/assets?search[query]=0x0178b6bad606aaf908f72135b8ec32fc1d5ba477
+- **Contract repo**: https://github.com/MontrealAI/AGIJobManager
 - **ERC‑8004 spec**: https://eips.ethereum.org/EIPS/eip-8004
-- **ERC‑8004 repo**: https://github.com/ethereum/ERCs/blob/master/ERCS/erc-8004.md
-- **ERC‑8004 reference contracts**: https://github.com/erc-8004/erc-8004-contracts
-- **ERC‑8004 deck (PDF)**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0/blob/main/docs/presentation/MONTREALAI_x_ERC8004_v0.pdf
-- **Related repos**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+- **ERC‑8004 framing deck (PDF)**: [`presentations/MONTREALAI_x_ERC8004_v0.pdf`](presentations/MONTREALAI_x_ERC8004_v0.pdf)
+- **Institutional overview (PDF)**: [`presentations/AGI_Eth_Institutional_v0.pdf`](presentations/AGI_Eth_Institutional_v0.pdf)
+- **Etherscan explorers**: https://etherscan.io / https://sepolia.etherscan.io
+- **OpenSea (NFT marketplace)**: https://opensea.io
