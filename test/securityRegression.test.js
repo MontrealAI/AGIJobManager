@@ -110,7 +110,7 @@ contract("AGIJobManager security regressions", (accounts) => {
 
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
-    await manager.addAGIType(agiType.address, 100, { from: owner });
+    await manager.addAGIType(agiType.address, 92, { from: owner });
 
     await token.approve(manager.address, payout, { from: employer });
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
@@ -121,7 +121,8 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const agentBalance = await token.balanceOf(agent);
-    assert.equal(agentBalance.toString(), payout.toString(), "agent payout should succeed without validators");
+    const expectedPayout = payout.muln(92).divn(100);
+    assert.equal(agentBalance.toString(), expectedPayout.toString(), "agent payout should succeed without validators");
   });
 
   it("enforces vote rules and dispute thresholds", async () => {

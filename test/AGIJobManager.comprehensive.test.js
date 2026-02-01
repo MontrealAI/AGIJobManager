@@ -316,7 +316,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("completes without validators (no division by zero)", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
-      await manager.addAGIType(agiTypeNft.address, 100, { from: owner });
+      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
       await createJob();
@@ -327,7 +327,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.resolveDispute(0, "agent win", { from: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
 
-      assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), payout.toString());
+      const expectedPayout = payout.muln(92).divn(100);
+      assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
       const job = await manager.jobs(0);
       assert.equal(job.completed, true);
     });
@@ -455,7 +456,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("resolves disputes with agent win, employer win, and neutral outcomes", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.setRequiredValidatorApprovals(1, { from: owner });
-      await manager.addAGIType(agiTypeNft.address, 100, { from: owner });
+      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
       await manager.applyForJob(0, "agent", [], { from: agent });
@@ -469,7 +470,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const resolutionReceipt = await manager.resolveDispute(0, "agent win", { from: moderator });
       expectEvent(resolutionReceipt, "DisputeResolved", { jobId: new BN(0), resolver: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
-      assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), payout.toString());
+      const expectedPayout = payout.muln(92).divn(100);
+      assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
 
       const newJobId = await manager.nextJobId();
       await createJob();
@@ -534,7 +536,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         agentTree.root
       );
       await altManager.addAdditionalAgent(agent, { from: owner });
-      await altManager.addAGIType(agiTypeNft.address, 100, { from: owner });
+      await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
       await failingToken.approve(altManager.address, payout, { from: employer });
