@@ -39,7 +39,7 @@ The adapter aggregates the following from AGIJobManager events:
 - `assignedCount` — number of `JobApplied` events (assignment on apply)
 - `completedCount` — number of `JobCompleted` events
 - `disputedCount` — number of `JobDisputed` events
-- `agentWinCount` / `employerWinCount` / `unknownResolutionCount` — derived from `DisputeResolved` resolution strings
+- `agentWinCount` / `employerWinCount` / `unknownResolutionCount` — derived from `DisputeResolvedWithCode` resolution codes (fallback to legacy `DisputeResolved` strings if needed)
 - `grossEscrow` — sum of `job.payout` for completed jobs (raw token units)
 - `netAgentPaidProxy` — proxy computed from `grossEscrow * current payoutPercentage / 100`
 

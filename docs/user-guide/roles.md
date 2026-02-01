@@ -95,18 +95,19 @@ This guide explains what each role can do, what you need before starting, and co
 ## Moderator
 
 ### What you can do
-- Resolve disputes (`resolveDispute`).
-  - **Canonical resolution strings**:
-    - `"agent win"` → pays agent and completes job.
-    - `"employer win"` → refunds employer and closes job.
-  - Any **other** string ends the dispute but returns the job to its prior in‑progress state.
+- Resolve disputes (`resolveDisputeWithCode`).
+  - **Resolution codes**:
+    - `NO_ACTION (0)` → log only; dispute remains active.
+    - `AGENT_WIN (1)` → pays agent and completes job.
+    - `EMPLOYER_WIN (2)` → refunds employer and closes job.
+  - The reason string is freeform and does not control settlement.
 
 ### What you need first
 - A wallet that is listed as a moderator (`addModerator` by the owner).
 - Correct contract address and network.
 
 ### Common mistakes
-- Using a non‑canonical resolution string when you intend a payout/refund.
+- Using the deprecated `resolveDispute` with a non‑canonical string instead of selecting a typed action code.
 - Trying to resolve a dispute that is not actually marked as disputed.
 
 ### Typical workflow

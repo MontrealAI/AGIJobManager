@@ -167,7 +167,7 @@ await jm.validateJob(jobId, label, proof); // or jm.disapproveJob(jobId, label, 
 ## Moderator
 ```javascript
 const jobId = 1;
-await jm.resolveDispute(jobId, "agent win");
+await jm.resolveDisputeWithCode(jobId, 1, "agent win");
 ```
 
 ## Marketplace

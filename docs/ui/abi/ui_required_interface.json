@@ -52,6 +52,7 @@
     "disapproveJob": 3,
     "disputeJob": 1,
     "resolveDispute": 2,
+    "resolveDisputeWithCode": 3,
     "listNFT": 2,
     "purchaseNFT": 1,
     "delistNFT": 1
@@ -66,6 +67,7 @@
     "JobCancelled",
     "JobDisputed",
     "DisputeResolved",
+    "DisputeResolvedWithCode",
     "NFTIssued",
     "NFTListed",
     "NFTPurchased",

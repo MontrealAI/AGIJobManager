@@ -11,7 +11,7 @@ This document summarizes security considerations specific to the current `AGIJob
 
 **Primary trust assumptions (centralization risks)**
 - **Owner powers**: can pause flows, update token address and parameters, manage allowlists/blacklists, add AGI types, and withdraw ERC‑20 while paused (limited to `withdrawableAGI()`).
-- **Moderator powers**: resolve disputes with arbitrary strings. Only the canonical strings `agent win` and `employer win` trigger on‑chain payout or refund. These strings are case‑sensitive; any other resolution clears the dispute flag without settlement actions.
+- **Moderator powers**: resolve disputes with typed action codes via `resolveDisputeWithCode`. Code `0` (NO_ACTION) logs a reason and keeps the dispute active; `1` (AGENT_WIN) pays the agent; `2` (EMPLOYER_WIN) refunds the employer. The legacy string-based `resolveDispute` is deprecated and maps exact `agent win` / `employer win` strings to the corresponding codes.
 - **Validator set**: validators are allowlisted or ENS/Merkle‑gated; the contract does not enforce decentralization or slashing.
 
 ## Hardened improvements (vs. historical v0)
@@ -28,7 +28,7 @@ See [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md) for details.
 
 ## Reentrancy posture
 `ReentrancyGuard` is applied to:
-- `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `cancelJob`, `withdrawAGI`, `contributeToRewardPool`, `purchaseNFT`.
+- `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `resolveDisputeWithCode`, `cancelJob`, `withdrawAGI`, `contributeToRewardPool`, `purchaseNFT`.
 
 Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and ERC‑721 safe transfer semantics, so contract buyers must implement `onERC721Received`. Marketplace purchases are guarded because `purchaseNFT` crosses an external ERC‑20 `transferFrom` boundary before transferring the ERC‑721.
 
@@ -43,7 +43,7 @@ Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and 
 - **Time enforcement gap**: only `requestJobCompletion` enforces job duration; validators can still approve/disapprove after the deadline unless off‑chain policy prevents it.
 
 ## Operational monitoring
-- Index and alert on `JobDisputed`, `DisputeResolved`, `JobCompleted`, and `ReputationUpdated` events.
+- Index and alert on `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, and `ReputationUpdated` events.
 - Track `OwnershipVerified` and `RecoveryInitiated` to monitor ENS/Merkle ownership checks and fallbacks.
 
 ## Disclosure

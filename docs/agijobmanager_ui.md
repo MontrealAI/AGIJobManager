@@ -49,10 +49,11 @@ Use the “Contract address” input and click **Save address**.
 2) **Validate job** (`validateJob`) or **Disapprove job** (`disapproveJob`).
 
 ### Moderator
-1) **Resolve dispute** (`resolveDispute`) with the canonical string:
-   - `agent win`
-   - `employer win`
-2) Any other string only clears the dispute flag (does **not** settle).
+1) **Resolve dispute** (`resolveDisputeWithCode`) with the typed action code:
+   - `0 (NO_ACTION)` → log only; dispute remains active.
+   - `1 (AGENT_WIN)` → settle in favor of the agent.
+   - `2 (EMPLOYER_WIN)` → settle in favor of the employer.
+2) Add an optional freeform reason (logs/UI only).
 
 ### NFT marketplace user
 1) Buyer **approves** AGI token for the contract (to cover the purchase).

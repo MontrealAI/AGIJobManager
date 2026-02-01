@@ -86,21 +86,20 @@ This guide explains each role in plain language. Use it as a quick “what can I
 ## Moderator
 
 **What you can do**
-- Resolve disputes with a resolution string.
-- Trigger on‑chain settlement for “agent win” or “employer win”.
+- Resolve disputes with a typed action code and freeform reason.
+- Trigger on-chain settlement for `AGENT_WIN` or `EMPLOYER_WIN`.
 
 **What you need**
 - A wallet that the contract owner has set as a **moderator**.
-- The correct canonical resolution strings.
+- The correct resolution action code.
 
 **What you should NOT do**
-- Do **not** resolve disputes with a non‑canonical string unless you intend to **only clear the dispute flag**.
+- Do **not** use the deprecated `resolveDispute` string interface for settlement.
 - Do **not** attempt dispute resolution if you are not a moderator.
 
 **Happy path checklist**
 - [ ] Connect wallet and confirm **Moderator: true** in “Your role flags”.
-- [ ] Enter the **Job ID** and the resolution string.
-- [ ] Use **Use “agent win”** or **Use “employer win”**.
+- [ ] Enter the **Job ID**, select a resolution action, and add an optional reason.
 - [ ] Click **Resolve dispute** and confirm the transaction.
 
 ---
