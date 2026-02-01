@@ -150,7 +150,7 @@ If ENS or NameWrapper calls fail, the contract emits `RecoveryInitiated` for obs
 ## NFT issuance and marketplace
 - **Minting**: completion mints a job NFT to the employer, with `tokenURI = baseIpfsUrl + '/' + job.ipfsHash`.
 - **Listings**: NFT owners can list tokens without escrow; listings live in the `listings` mapping.
-- **Purchases**: `purchaseNFT` transfers ERC‑20 from buyer to seller and transfers the NFT.
+- **Purchases**: `purchaseNFT` transfers ERC‑20 from buyer to seller and transfers the NFT using ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received`.
 
 ## Reward pool contributions
 `contributeToRewardPool` allows any address to transfer ERC‑20 into the contract. These funds increase the contract’s balance and are withdrawable by the owner via `withdrawAGI` while paused.

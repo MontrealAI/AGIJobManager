@@ -30,7 +30,7 @@ See [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md) for details.
 `ReentrancyGuard` is applied to:
 - `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `cancelJob`, `withdrawAGI`, `contributeToRewardPool`, `purchaseNFT`.
 
-Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and `_transfer` (ERC‑721) rather than `safeTransferFrom`. Marketplace purchases are guarded because `purchaseNFT` crosses an external ERC‑20 `transferFrom` boundary before transferring the ERC‑721.
+Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and ERC‑721 safe transfer semantics, so contract buyers must implement `onERC721Received`. Marketplace purchases are guarded because `purchaseNFT` crosses an external ERC‑20 `transferFrom` boundary before transferring the ERC‑721.
 
 ## Known limitations and assumptions
 - **Root immutability**: there are no on‑chain setters for root nodes or Merkle roots after deployment. Misconfiguration requires redeployment.

@@ -9,6 +9,8 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 const FailingERC20 = artifacts.require("FailingERC20");
 const ReentrantERC20 = artifacts.require("ReentrantERC20");
+const NonReceiverBuyer = artifacts.require("NonReceiverBuyer");
+const ERC721ReceiverBuyer = artifacts.require("ERC721ReceiverBuyer");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
@@ -85,6 +87,44 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     assert.equal(newOwner, buyer, "buyer should own NFT after purchase");
 
     await expectCustomError(manager.delistNFT.call(tokenId, { from: buyer }), "NotAuthorized");
+
+    const listing = await manager.listings(tokenId);
+    assert.strictEqual(listing.isActive, false, "listing should be inactive after purchase");
+  });
+
+  it("reverts when buyer contract lacks ERC721 receiver hooks", async () => {
+    const tokenId = await mintJobNft();
+    const price = toBN(toWei("5"));
+    const nonReceiver = await NonReceiverBuyer.new({ from: owner });
+
+    await manager.listNFT(tokenId, price, { from: employer });
+    await token.mint(nonReceiver.address, price, { from: owner });
+    await nonReceiver.approveToken(token.address, manager.address, price, { from: owner });
+
+    await expectRevert.unspecified(
+      nonReceiver.purchase(manager.address, tokenId, { from: owner })
+    );
+
+    const listing = await manager.listings(tokenId);
+    assert.strictEqual(listing.isActive, true, "listing should remain active on revert");
+
+    const currentOwner = await manager.ownerOf(tokenId);
+    assert.equal(currentOwner, employer, "NFT owner should remain the seller");
+  });
+
+  it("allows purchase by ERC721 receiver contract", async () => {
+    const tokenId = await mintJobNft();
+    const price = toBN(toWei("5"));
+    const receiver = await ERC721ReceiverBuyer.new({ from: owner });
+
+    await manager.listNFT(tokenId, price, { from: employer });
+    await token.mint(receiver.address, price, { from: owner });
+    await receiver.approveToken(token.address, manager.address, price, { from: owner });
+
+    await receiver.purchase(manager.address, tokenId, { from: owner });
+
+    const currentOwner = await manager.ownerOf(tokenId);
+    assert.equal(currentOwner, receiver.address, "NFT owner should be the receiver contract");
 
     const listing = await manager.listings(tokenId);
     assert.strictEqual(listing.isActive, false, "listing should be inactive after purchase");
