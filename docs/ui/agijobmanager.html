@@ -657,6 +657,7 @@
           <label for="validateProof">Merkle proof</label>
           <textarea id="validateProof" placeholder="0xabc...,0xdef..."></textarea>
           <button id="validateJob">Validate</button>
+          <p id="validateJobNotice" class="muted" hidden>Awaiting completion submission from agent.</p>
         </div>
         <div>
           <h3>Disapprove job</h3>
@@ -667,6 +668,7 @@
           <label for="disapproveProof">Merkle proof</label>
           <textarea id="disapproveProof" placeholder="0xabc...,0xdef..."></textarea>
           <button id="disapproveJob">Disapprove</button>
+          <p id="disapproveJobNotice" class="muted" hidden>Awaiting completion submission from agent.</p>
         </div>
       </div>
     </section>
@@ -4102,6 +4104,59 @@
       }
     });
 
+    async function updateValidatorActionState(jobIdInputId, buttonId, noticeId) {
+      const button = ids(buttonId);
+      const notice = ids(noticeId);
+      if (!state.readContract) {
+        button.disabled = true;
+        if (notice) {
+          notice.textContent = "Connect a wallet to check completion status.";
+          notice.hidden = false;
+        }
+        return;
+      }
+      const rawJobId = ids(jobIdInputId).value.trim();
+      if (!rawJobId) {
+        button.disabled = true;
+        if (notice) {
+          notice.textContent = "Enter a job ID to check completion status.";
+          notice.hidden = false;
+        }
+        return;
+      }
+      let jobId;
+      try {
+        jobId = parseUint(rawJobId, "Job ID");
+      } catch (error) {
+        button.disabled = true;
+        if (notice) {
+          notice.textContent = error.message;
+          notice.hidden = false;
+        }
+        return;
+      }
+      try {
+        const job = await state.readContract.jobs(BigInt(jobId));
+        const completionRequested = job[10];
+        if (completionRequested) {
+          button.disabled = false;
+          if (notice) notice.hidden = true;
+        } else {
+          button.disabled = true;
+          if (notice) {
+            notice.textContent = "Awaiting completion submission from agent.";
+            notice.hidden = false;
+          }
+        }
+      } catch (error) {
+        button.disabled = true;
+        if (notice) {
+          notice.textContent = "Unable to load job status.";
+          notice.hidden = false;
+        }
+      }
+    }
+
     ids("requestCompletion").addEventListener("click", async () => {
       try {
         const jobId = parseUint(ids("completionJobId").value, "Job ID");
@@ -4135,6 +4190,10 @@
     ids("validateJob").addEventListener("click", async () => {
       try {
         const jobId = parseUint(ids("validateJobId").value, "Job ID");
+        await updateValidatorActionState("validateJobId", "validateJob", "validateJobNotice");
+        if (ids("validateJob").disabled) {
+          return;
+        }
         const label = ids("validateSubdomain").value.trim();
         if (!label) throw new Error("Label is required.");
         const proof = parseProof(ids("validateProof").value);
@@ -4147,6 +4206,10 @@
     ids("disapproveJob").addEventListener("click", async () => {
       try {
         const jobId = parseUint(ids("disapproveJobId").value, "Job ID");
+        await updateValidatorActionState("disapproveJobId", "disapproveJob", "disapproveJobNotice");
+        if (ids("disapproveJob").disabled) {
+          return;
+        }
         const label = ids("disapproveSubdomain").value.trim();
         if (!label) throw new Error("Label is required.");
         const proof = parseProof(ids("disapproveProof").value);
@@ -4181,6 +4244,17 @@
         showAlert(error.message);
       }
     });
+
+    ids("validateJobId").addEventListener("input", () => {
+      updateValidatorActionState("validateJobId", "validateJob", "validateJobNotice");
+    });
+
+    ids("disapproveJobId").addEventListener("input", () => {
+      updateValidatorActionState("disapproveJobId", "disapproveJob", "disapproveJobNotice");
+    });
+
+    updateValidatorActionState("validateJobId", "validateJob", "validateJobNotice");
+    updateValidatorActionState("disapproveJobId", "disapproveJob", "disapproveJobNotice");
 
     ids("pauseContract").addEventListener("click", async () => {
       try {

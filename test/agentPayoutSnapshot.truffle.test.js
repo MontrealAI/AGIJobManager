@@ -83,6 +83,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await agiType.transferFrom(agent, other, tokenId, { from: agent });
     const agentBalanceBefore = await token.balanceOf(agent);
 
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
 
     const agentBalanceAfter = await token.balanceOf(agent);
@@ -108,6 +109,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await agiType75.mint(agent, { from: owner });
     const agentBalanceBefore = await token.balanceOf(agent);
 
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
 
     const agentBalanceAfter = await token.balanceOf(agent);
@@ -144,6 +146,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await agiType.transferFrom(agent, other, tokenId, { from: agent });
     const agentBalanceBefore = await token.balanceOf(agent);
 
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
 
     const agentBalanceAfter = await token.balanceOf(agent);
