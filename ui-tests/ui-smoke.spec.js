@@ -125,7 +125,8 @@ test.describe("AGIJobManager UI smoke", () => {
     }
     await expect(page.locator("#activityLog")).toContainText("Employer approve confirmed", { timeout: 20000 });
 
-    await page.fill("#jobIpfs", "QmTestJobHash");
+    await page.selectOption("#jobMetaSource", "existing");
+    await page.fill("#jobSpecUriExisting", "ipfs://QmTestJobHash");
     await page.fill("#jobPayout", "1");
     await page.fill("#jobDuration", "3600");
     await page.fill("#jobDetails", "UI smoke test");

@@ -54,8 +54,8 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); console.log(a.
 
 ### Employer actions
 1. In **Approve AGI token**, enter `10` and click **Approve token** → Activity Log should show `Employer approve confirmed`.
-2. In **Create job**, enter:
-   - IPFS hash: `QmTestJobHash`
+2. In **Create job**, set **Metadata source** to **Use existing job spec URI** and enter:
+   - Job spec URI: `ipfs://QmTestJobHash`
    - Payout: `1`
    - Duration: `3600`
    - Details: `UI smoke test`

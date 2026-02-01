@@ -107,12 +107,12 @@ These steps assume you are using a block explorer like Etherscan and have the co
    - `subdomain`: the left‑most label only (e.g., `"helper"`)
    - `proof`: Merkle proof array if allowlisted; otherwise `[]` (empty array)
 3. **Request completion**
-   - Call `requestJobCompletion(jobId, ipfsHash)`
-   - Use a final IPFS hash that represents your deliverable.
+   - Call `requestJobCompletion(jobId, jobCompletionURI)`
+   - Use a completion metadata URI (ERC‑721 JSON) that represents your deliverable.
 
 **What happens on‑chain**
 - `JobApplied` assigns you to the job.
-- `JobCompletionRequested` updates the job’s IPFS hash.
+- `JobCompletionRequested` stores the job’s completion metadata URI.
 - You are paid when validators approve (or when a moderator resolves dispute as “agent win”).
 
 ---

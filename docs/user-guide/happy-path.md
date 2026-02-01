@@ -23,7 +23,7 @@ This walkthrough shows a full job lifecycle for **Employer → Agent → Validat
 ### Employer flow
 1. **Approve token spend** for the payout amount.
 2. **Create job** with:
-   - IPFS hash (job details)
+   - Job spec metadata URI (ERC‑721 JSON)
    - Payout
    - Duration
    - Details string
@@ -35,7 +35,7 @@ This walkthrough shows a full job lifecycle for **Employer → Agent → Validat
 1. **Check eligibility** (allowlist/Merkle/ENS) using label only.
 2. **Apply** to the job.
 3. **Deliver work off‑chain.**
-4. **Request completion** with updated IPFS hash.
+4. **Request completion** with completion metadata URI.
 
 ### Validator flow
 1. **Check eligibility** (allowlist/Merkle/ENS) using label only.

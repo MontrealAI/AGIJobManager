@@ -226,7 +226,11 @@ contract("AGIJobManager comprehensive", (accounts) => {
       expectEvent(applyReceipt, "JobApplied", { jobId: new BN(jobId), agent });
 
       const completionReceipt = await manager.requestJobCompletion(jobId, "ipfs-final", { from: agent });
-      expectEvent(completionReceipt, "JobCompletionRequested", { jobId: new BN(jobId), agent });
+      expectEvent(completionReceipt, "JobCompletionRequested", {
+        jobId: new BN(jobId),
+        agent,
+        jobCompletionURI: "ipfs-final",
+      });
 
       const validator1Proof = buildProof(validatorTree, validator1);
       const validator2Proof = buildProof(validatorTree, validator2);
@@ -281,6 +285,14 @@ contract("AGIJobManager comprehensive", (accounts) => {
         assignJob(manager, jobId, other, buildProof(agentTree, other)),
         "InvalidState"
       );
+    });
+
+    it("rejects empty completion metadata URIs", async () => {
+      const payout = new BN(web3.utils.toWei("2"));
+      const { jobId } = await createJob(manager, token, employer, payout, 1000);
+      await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
+
+      await expectCustomError(manager.requestJobCompletion(jobId, "", { from: agent }), "InvalidParameters");
     });
   });
 
@@ -589,7 +601,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       assert.equal(job.disputed, true);
       assert.equal(job.completed, false);
       assert.equal(job.completionRequested, true);
-      assert.equal(job.ipfsHash, "ipfs-final");
+      assert.equal(job.jobCompletionURI, "ipfs-final");
     });
 
     it("restricts dispute resolution to moderators", async () => {

@@ -98,8 +98,8 @@ The **user‑visible lifecycle is preserved** — same role flow, same function 
 2) **Agent applies** — `applyForJob(jobId, "888.node.agi.eth", proof)`  
    **New guard**: `_job(...)` requires job existence, preventing pre‑claim/phantom job takeover.
 
-3) **Agent requests completion** — `requestJobCompletion(jobId, ipfsHash)`  
-   IPFS hash is updated for minting on completion.
+3) **Agent requests completion** — `requestJobCompletion(jobId, jobCompletionURI)`  
+   Completion metadata URI is stored and used for minting.
 
 4) **Validators approve** — `validateJob(jobId, "bluebutterfli", proof)`  
    **New rule**: validators cannot approve after disapproving (or vice‑versa). Double votes are blocked.
@@ -107,7 +107,7 @@ The **user‑visible lifecycle is preserved** — same role flow, same function 
 5) **Completion executes** — `_completeJob(jobId)`  
    **New guards**: no double completion, no payout if agent missing, no div‑by‑zero when validator list is empty.  
    **Safe transfers**: `_t` / `_tFrom` enforce ERC‑20 success.  
-   **NFT mint**: `tokenURI = baseIpfsUrl + "/" + ipfsHash`.
+   **NFT mint**: `tokenURI` resolves the completion metadata URI (full URI or `baseIpfsUrl + "/" + cid`).
 
 > ✅ **Behavior preserved**: same external call names, same event names, same payout structure.  
 > ✅ **Safety improved**: existence checks, vote protections, and transfer‑failure reverts.

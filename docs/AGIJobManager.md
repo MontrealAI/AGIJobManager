@@ -50,7 +50,7 @@ Job entries are created in `createJob` and stored in `jobs(jobId)`.
 `Listing` entries represent non‑escrowed job NFT listings (tokenId, seller, price, isActive). The NFT remains in the seller’s wallet until purchase.
 
 ### Read‑only helpers
-- `getJobStatus(jobId)` returns `(completed, completionRequested, ipfsHash)` for lightweight polling.
+- `getJobStatus(jobId)` returns `(completed, completionRequested, statusURI)` for lightweight polling, where `statusURI` is the completion URI if present, otherwise the job spec URI.
 - `getJobAgentPayoutPct(jobId)` returns the snapshotted agent payout percentage.
 - `jobs(jobId)` returns the fixed fields of the `Job` struct (it omits the internal validator list and per‑validator mappings).
 - `jobStatus(jobId)` returns the canonical `JobStatus` enum value for external consumers.

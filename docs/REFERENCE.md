@@ -112,7 +112,7 @@ Adds or updates an AGIType NFT that boosts agent payout percentage. Emits `AGITy
 
 ## View helpers
 ### `getJobStatus(uint256 jobId)`
-Returns `(completed, completionRequested, ipfsHash)`.
+Returns `(completed, completionRequested, statusURI)` where `statusURI` is the completion URI if present, otherwise the job spec URI.
 
 ### `lockedEscrow()`
 Returns the total AGI reserved for unsettled job escrows.
