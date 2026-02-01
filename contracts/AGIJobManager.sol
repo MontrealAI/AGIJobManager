@@ -660,9 +660,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
-        uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
-        if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
+        if (job.validators.length > 0) {
+            uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
+            uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
+            if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
+        }
 
         job.completed = true;
         job.disputed = false;
