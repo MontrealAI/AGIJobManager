@@ -62,7 +62,7 @@ stateDiagram-v2
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
-*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested). Agent‑win dispute resolution can still complete a job even if completion was never requested.
+*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested). Agent‑win dispute resolution now requires a prior completion request so settlement always has completion metadata; agents may submit completion even if a dispute is already open, including after the nominal duration has elapsed.
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid
