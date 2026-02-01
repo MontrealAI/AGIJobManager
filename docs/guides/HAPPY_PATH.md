@@ -146,7 +146,7 @@ const token = await IERC20.at(await jm.agiToken());
 const payout = web3.utils.toWei("100");
 const duration = 86400; // 1 day
 await token.approve(jm.address, payout);
-await jm.createJob("Qm...", payout, duration, "Short description");
+await jm.createJob("ipfs://<job-spec-cid>", payout, duration, "Short description");
 ```
 
 ## Agent
@@ -155,7 +155,7 @@ const jobId = 1;
 const label = "helper"; // label only
 const proof = []; // bytes32[] if required
 await jm.applyForJob(jobId, label, proof);
-await jm.requestJobCompletion(jobId, "QmCompletion...");
+await jm.requestJobCompletion(jobId, "ipfs://<job-completion-cid>...");
 ```
 
 ## Validator

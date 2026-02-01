@@ -29,11 +29,11 @@ If you are not using a Merkle allowlist, pass `[]` for `proof`.
 
 ### Employer
 1. `approve(AGIJobManager, amount)` on the ERC‑20 token.
-2. `createJob(ipfsHash, payout, duration, details)`.
+2. `createJob(jobSpecURI, payout, duration, details)`.
 
 ### Agent
 1. `applyForJob(jobId, "helper", proof)`.
-2. `requestJobCompletion(jobId, ipfsHash)`.
+2. `requestJobCompletion(jobId, jobCompletionURI)`.
 
 ### Validator
 1. `validateJob(jobId, "alice", proof)`.

@@ -29,15 +29,15 @@ sequenceDiagram
   participant ValidatorB
   participant Contract
 
-  Employer->>Contract: createJob(ipfsHash,payout,duration,details)
+  Employer->>Contract: createJob(jobSpecURI,payout,duration,details)
   Agent->>Contract: applyForJob(jobId, subdomain, proof)
-  Agent->>Contract: requestJobCompletion(jobId, ipfsHash)
+  Agent->>Contract: requestJobCompletion(jobId, jobCompletionURI)
   ValidatorA->>Contract: validateJob(jobId, subdomain, proof)
   ValidatorB->>Contract: validateJob(jobId, subdomain, proof)
   Contract-->>Agent: AGI payout (transfer)
   Contract-->>ValidatorA: validation reward
   Contract-->>ValidatorB: validation reward
-  Contract-->>Employer: NFT minted (tokenURI=base/ipfsHash)
+  Contract-->>Employer: NFT minted (tokenURI=jobCompletionURI)
 ```
 
 ### Dispute path (disapproval or manual dispute → moderator resolution)
@@ -120,11 +120,11 @@ await nameWrapper.setOwner(subnode(clubRoot, "validator-a"), validatorA);
 await nameWrapper.setOwner(subnode(clubRoot, "validator-b"), validatorB);
 
 // Create & complete job
-const jobTx = await manager.createJob("ipfs-job", web3.utils.toWei("100"), 3600, "details", { from: employer });
+const jobTx = await manager.createJob("ipfs://job-spec-cid", web3.utils.toWei("100"), 3600, "details", { from: employer });
 const jobId = jobTx.logs[0].args.jobId.toNumber();
 
 await manager.applyForJob(jobId, "agent", [], { from: agent });
-await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+await manager.requestJobCompletion(jobId, "ipfs://job-completion-cid", { from: agent });
 
 await manager.setRequiredValidatorApprovals(2, { from: owner });
 await manager.validateJob(jobId, "validator-a", [], { from: validatorA });
@@ -157,8 +157,8 @@ This path uses the Etherscan **Write Contract** UI. You will need the contract a
 > **Screenshot placeholder:** (Add screenshot of Etherscan “Write Contract” tab with wallet connected.)
 
 **Employer**
-1. `createJob(ipfsHash, payout, duration, details)`
-   - `ipfsHash`: CID or hash only (no “ipfs://” prefix)
+1. `createJob(jobSpecURI, payout, duration, details)`
+   - `jobSpecURI`: CID or full URI (`ipfs://...` or `https://...`)
    - `payout`: integer in token wei (18 decimals)
    - `duration`: seconds
    - `details`: short plain text
@@ -169,7 +169,8 @@ This path uses the Etherscan **Write Contract** UI. You will need the contract a
 1. `applyForJob(jobId, subdomain, proof)`
    - `subdomain`: your ENS/NameWrapper subdomain label (ex: `alice`)
    - `proof`: Merkle proof array if using allowlist, else `[]`
-2. `requestJobCompletion(jobId, ipfsHash)` after work is done.
+2. `requestJobCompletion(jobId, jobCompletionURI)` after work is done.
+   - `jobCompletionURI`: CID or full URI (`ipfs://...` or `https://...`)
 
 **Validator**
 1. `validateJob(jobId, subdomain, proof)` to approve.
@@ -191,7 +192,7 @@ Every step emits events and changes state/balances.
 | --- | --- | --- | --- |
 | `createJob` | `JobCreated` | employer → contract escrow | new job stored |
 | `applyForJob` | `JobApplied` | none | `assignedAgent`, `assignedAt` |
-| `requestJobCompletion` | `JobCompletionRequested` | none | `completionRequested`, `ipfsHash` |
+| `requestJobCompletion` | `JobCompletionRequested` | none | `completionRequested`, `jobCompletionURI` |
 | `validateJob` | `JobValidated` | none (until threshold) | `validatorApprovals`, validator maps |
 | `disapproveJob` | `JobDisapproved`, maybe `JobDisputed` | none | `validatorDisapprovals`, `disputed` |
 | `resolveDisputeWithCode(AGENT_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, `NFTIssued` | contract → agent/validators | `completed`, reputation updates |

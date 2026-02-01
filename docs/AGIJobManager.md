@@ -36,7 +36,7 @@ Refer to the ABI‑derived access map in [`Interface.md`](Interface.md).
 
 ### Job
 Each job is a struct containing:
-- `id`, `employer`, `ipfsHash`, `payout`, `duration`, `assignedAgent`, `assignedAt`, `details`.
+- `id`, `employer`, `jobSpecURI`, `jobCompletionURI`, `ipfsHash` (legacy fallback), `payout`, `duration`, `assignedAgent`, `assignedAt`, `details`.
 - State flags: `completed`, `completionRequested`, `disputed`, `expired`.
 - Timestamps: `completionRequestedAt`, `disputedAt`.
 - Validation: `validatorApprovals`, `validatorDisapprovals`, per‑validator `approvals` and `disapprovals`, plus the `validators` list.
@@ -149,7 +149,7 @@ Agents and validators must either:
 If ENS or NameWrapper calls fail, the contract emits `RecoveryInitiated` for observability and continues evaluation.
 
 ## NFT issuance and marketplace
-- **Minting**: completion mints a job NFT to the employer, with `tokenURI = baseIpfsUrl + '/' + job.ipfsHash`.
+- **Minting**: completion mints a job NFT to the employer, with `tokenURI` set to `jobCompletionURI` (resolved via `baseIpfsUrl` if it is a CID; legacy jobs may fall back to `ipfsHash`).
 - **Listings**: NFT owners can list tokens without escrow; listings live in the `listings` mapping.
 - **Purchases**: `purchaseNFT` transfers ERC‑20 from buyer to seller and transfers the NFT using ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received`.
 
