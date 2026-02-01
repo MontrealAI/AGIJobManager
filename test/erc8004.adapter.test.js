@@ -70,6 +70,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
 
     const jobId2 = await createJob();
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId2, 'ipfs-complete', { from: agent });
     await manager.disapproveJob(jobId2, 'club', EMPTY_PROOF, { from: validator });
     await manager.resolveDispute(jobId2, 'employer win', { from: moderator });
 
