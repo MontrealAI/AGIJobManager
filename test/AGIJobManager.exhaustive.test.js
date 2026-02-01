@@ -200,6 +200,19 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await expectRevert.unspecified(manager.delistJob(99, { from: owner }));
     });
 
+    it("blocks validator actions before completion is requested", async () => {
+      const payout = web3.utils.toWei("12");
+      const jobId = await createJob({ manager, token, employer, payout });
+      await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+
+      await expectRevert.unspecified(
+        manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator })
+      );
+      await expectRevert.unspecified(
+        manager.disapproveJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator })
+      );
+    });
+
     it("prevents double completion and follow-on payouts", async () => {
       const payout = web3.utils.toWei("50");
       const jobId = await createJob({ manager, token, employer, payout });
@@ -208,6 +221,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.addAGIType(agiType.address, 92, { from: owner });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
 
       await expectRevert.unspecified(
@@ -224,6 +238,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.addAGIType(agiType.address, 92, { from: owner });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.disputeJob(jobId, { from: employer });
       await manager.addModerator(moderator, { from: owner });
 
@@ -239,6 +254,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await expectRevert.unspecified(manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent }));
       await manager.blacklistAgent(agent, false, { from: owner });
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
       await manager.blacklistValidator(validator, true, { from: owner });
       await expectRevert.unspecified(
@@ -267,6 +283,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const payout = web3.utils.toWei("18");
       const jobId = await createJob({ manager, token, employer, payout });
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.disapproveJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
       const job = await manager.jobs(jobId);
       assert.equal(job.disputed, true);
@@ -302,6 +319,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.addModerator(moderator, { from: owner });
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.disputeJob(jobId, { from: employer });
 
       const agentBalanceBefore = web3.utils.toBN(await token.balanceOf(agent));
@@ -363,6 +381,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await agiType.mint(agent, { from: owner });
       await failingManager.addAGIType(agiType.address, 92, { from: owner });
       await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
       await failingToken.setFailTransfers(true, { from: owner });
       await expectRevert.unspecified(
@@ -396,6 +415,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await agiType.mint(agent, { from: owner });
       await failingManager.addAGIType(agiType.address, 92, { from: owner });
       await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await failingManager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
 
       const tokenId = (await failingManager.nextTokenId()).toNumber() - 1;
@@ -453,6 +473,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await agiType.mint(agent, { from: owner });
       await manager.addAGIType(agiType.address, 92, { from: owner });
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
 
       const tokenId = (await manager.nextTokenId()).toNumber() - 1;
@@ -474,6 +495,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const jobId = await createJob({ manager, token, employer, payout });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await expectRevert.unspecified(manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator }));
       await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
     });
@@ -486,6 +508,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.applyForJob(jobId, "alice", EMPTY_PROOF, { from: agent });
 
       await setResolverOwnership(ens, resolver, rootNode("club-root"), "validator", validator);
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     });
   });
