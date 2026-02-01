@@ -152,6 +152,9 @@ If ENS or NameWrapper calls fail, the contract emits `RecoveryInitiated` for obs
 - **Listings**: NFT owners can list tokens without escrow; listings live in the `listings` mapping.
 - **Purchases**: `purchaseNFT` transfers ERC‑20 from buyer to seller and transfers the NFT using ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received`.
 
+Marketplace purchases rely on ERC‑721 safe transfers. If the buyer is a smart contract, it must implement
+`IERC721Receiver` / `onERC721Received`, or the purchase will revert. EOAs are unaffected.
+
 ## Reward pool contributions
 `contributeToRewardPool` allows any address to transfer ERC‑20 into the contract. These funds increase the contract’s balance and are withdrawable by the owner via `withdrawAGI` while paused.
 
