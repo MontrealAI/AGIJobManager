@@ -515,14 +515,16 @@
       <h2>Moderator actions</h2>
       <label for="resolveJobId">Job ID</label>
       <input id="resolveJobId" placeholder="0" />
-      <label for="resolveText">Resolution string</label>
-      <input id="resolveText" placeholder="agent win / employer win / other" />
-      <div class="inline">
-        <button id="resolutionAgent" class="secondary">Use “agent win”</button>
-        <button id="resolutionEmployer" class="secondary">Use “employer win”</button>
-      </div>
+      <label for="resolveAction">Resolution action</label>
+      <select id="resolveAction">
+        <option value="0">No action (note only)</option>
+        <option value="1">Agent wins</option>
+        <option value="2">Employer wins</option>
+      </select>
+      <label for="resolveReason">Resolution reason (optional)</label>
+      <textarea id="resolveReason" placeholder="Reason for audit logs / UI only (freeform)"></textarea>
       <button id="resolveDispute">Resolve dispute</button>
-      <p class="muted">Canonical strings “agent win” and “employer win” trigger settlement. Any other string only clears the dispute flag.</p>
+      <p class="muted">Settlement is controlled by the action code. The reason text is freeform and does not move funds.</p>
     </section>
 
     <details class="panel" id="adminPanel">
@@ -955,6 +957,7 @@
       "function disapproveJob(uint256,string,bytes32[])",
       "function disputeJob(uint256)",
       "function resolveDispute(uint256,string)",
+      "function resolveDisputeWithCode(uint256,uint8,string)",
       "function listNFT(uint256,uint256)",
       "function purchaseNFT(uint256)",
       "function delistNFT(uint256)",
@@ -967,6 +970,7 @@
       "event JobCancelled(uint256 jobId)",
       "event JobDisputed(uint256 jobId, address disputant)",
       "event DisputeResolved(uint256 jobId, address resolver, string resolution)",
+      "event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)",
       "event NFTIssued(uint256 tokenId, address employer, string tokenURI)",
       "event NFTListed(uint256 tokenId, address seller, uint256 price)",
       "event NFTPurchased(uint256 tokenId, address buyer, uint256 price)",
@@ -2321,6 +2325,7 @@
         state.readContract.filters.JobCompletionRequested(),
         state.readContract.filters.JobDisputed(),
         state.readContract.filters.DisputeResolved(),
+        state.readContract.filters.DisputeResolvedWithCode(),
         state.readContract.filters.JobCompleted(),
         state.readContract.filters.JobCancelled(),
         state.readContract.filters.NFTIssued(),
@@ -2362,6 +2367,17 @@
       5: "Completed",
       6: "Expired",
     };
+
+    const disputeResolutionLabels = {
+      0: "No action (note only)",
+      1: "Agent wins",
+      2: "Employer wins",
+    };
+
+    function formatResolutionCode(code) {
+      const key = Number(code);
+      return disputeResolutionLabels[key] || `Unknown (${code})`;
+    }
 
     function normalizeJobStatusLabel(status) {
       if (!status) return status;
@@ -3049,6 +3065,7 @@
         state.readContract.filters.JobCancelled(),
         state.readContract.filters.JobDisputed(),
         state.readContract.filters.DisputeResolved(),
+        state.readContract.filters.DisputeResolvedWithCode(),
         state.readContract.filters.NFTIssued(),
         state.readContract.filters.NFTListed(),
         state.readContract.filters.NFTPurchased(),
@@ -3078,6 +3095,11 @@
       contract.on("JobCancelled", (jobId) => logEvent(`JobCancelled #${jobId}`));
       contract.on("JobDisputed", (jobId) => logEvent(`JobDisputed #${jobId}`));
       contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
+      contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
+        const action = formatResolutionCode(resolutionCode);
+        const detail = reason ? ` — ${reason}` : "";
+        logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
+      });
       contract.on("NFTIssued", (tokenId) => logEvent(`NFTIssued #${tokenId}`));
       contract.on("NFTListed", (tokenId) => logEvent(`NFTListed #${tokenId}`));
       contract.on("NFTPurchased", (tokenId) => logEvent(`NFTPurchased #${tokenId}`));
@@ -3384,20 +3406,27 @@
       }
     });
 
-    ids("resolutionAgent").addEventListener("click", () => {
-      ids("resolveText").value = "agent win";
-    });
-
-    ids("resolutionEmployer").addEventListener("click", () => {
-      ids("resolveText").value = "employer win";
-    });
-
     ids("resolveDispute").addEventListener("click", async () => {
       try {
         const jobId = parseUint(ids("resolveJobId").value, "Job ID");
-        const resolution = ids("resolveText").value.trim();
-        if (!resolution) throw new Error("Resolution string is required.");
-        await sendTx("resolveDispute", [jobId, resolution], "Resolve dispute");
+        const resolutionCode = parseInt(ids("resolveAction").value, 10);
+        if (!Number.isFinite(resolutionCode)) throw new Error("Resolution action is required.");
+        const reason = ids("resolveReason").value.trim();
+        const actionLabel = formatResolutionCode(resolutionCode);
+        if (resolutionCode === 1 || resolutionCode === 2) {
+          const confirmMessage = [
+            `Resolve dispute for job ${jobId}`,
+            `Action: ${actionLabel}`,
+            `Reason: ${reason || "—"}`,
+            "This will move funds and finalize the job.",
+            "Proceed?",
+          ].join("\\n");
+          if (!window.confirm(confirmMessage)) {
+            logEvent(`⚠️ Resolve dispute #${jobId} aborted by user.`);
+            return;
+          }
+        }
+        await sendTx("resolveDisputeWithCode", [jobId, resolutionCode, reason], `Resolve dispute (${actionLabel})`);
       } catch (error) {
         showAlert(error.message);
       }

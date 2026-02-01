@@ -18,7 +18,7 @@ const functionNames = new Set(
   artifact.abi.filter((item) => item.type === "function").map((item) => item.name)
 );
 
-["createJob", "applyForJob", "resolveDispute"].forEach((name) => {
+["createJob", "applyForJob", "resolveDispute", "resolveDisputeWithCode"].forEach((name) => {
   assert.ok(functionNames.has(name), `Missing expected function: ${name}`);
 });
 
@@ -26,7 +26,7 @@ const eventNames = new Set(
   artifact.abi.filter((item) => item.type === "event").map((item) => item.name)
 );
 
-["JobCreated", "JobCompleted", "DisputeResolved"].forEach((name) => {
+["JobCreated", "JobCompleted", "DisputeResolved", "DisputeResolvedWithCode"].forEach((name) => {
   assert.ok(eventNames.has(name), `Missing expected event: ${name}`);
 });
 

@@ -25,7 +25,7 @@ AGIJobManager coordinates employer‑funded jobs, agent assignment, validator re
 | Role | Capabilities |
 | --- | --- |
 | **Owner** | Pause/unpause flows, update parameters, change ERC‑20 address, manage allowlists/blacklists, assign moderators, add AGI types, withdraw surplus ERC‑20 (balance minus `lockedEscrow`). |
-| **Moderator** | Resolve disputes via `resolveDispute`. |
+| **Moderator** | Resolve disputes via `resolveDisputeWithCode`. |
 | **Employer** | Create jobs, cancel before assignment, dispute jobs, receive job NFTs. |
 | **Agent** | Apply to eligible jobs, request completion, earn payouts and reputation. |
 | **Validator** | Validate or disapprove jobs, earn payouts and reputation when voting. |
@@ -100,9 +100,9 @@ stateDiagram-v2
     Assigned --> Disputed: disapproveJob (threshold)
     CompletionRequested --> Disputed: disapproveJob (threshold)
 
-    Disputed --> Finalized: resolveDispute("agent win")
-    Disputed --> Finalized: resolveDispute("employer win")
-    Disputed --> Assigned: resolveDispute(other)
+    Disputed --> Finalized: resolveDisputeWithCode(AGENT_WIN)
+    Disputed --> Finalized: resolveDisputeWithCode(EMPLOYER_WIN)
+    Disputed --> Disputed: resolveDisputeWithCode(NO_ACTION)
     Disputed --> Finalized: resolveStaleDispute (owner, paused, timeout)
 
     Assigned --> Expired: expireJob (timeout, no completion request)
@@ -111,7 +111,7 @@ stateDiagram-v2
     Created --> Cancelled: delistJob (owner)
 ```
 
-**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDispute(other)` clears the dispute while preserving the in‑progress flags (for example, `completionRequested` remains set if it was set before the dispute). Validators can call `validateJob`/`disapproveJob` without a prior `requestJobCompletion`. **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
+**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` without a prior `requestJobCompletion`. **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
@@ -119,7 +119,7 @@ stateDiagram-v2
 - **Validator payout**: when validators voted, `validationRewardPercentage` of the payout is split equally across all validators who voted (approvals and disapprovals both append to the validator list).
 - **Locked escrow accounting**: `lockedEscrow` tracks total job payout escrow for unsettled jobs (currently job payouts only).
 - **Residual funds**: any unallocated balance remains in the contract and is withdrawable by the owner via `withdrawAGI` while paused, which is restricted to `withdrawableAGI()` (balance minus `lockedEscrow`).
-- **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDispute` with `employer win` refunds and finalizes the job.
+- **Refunds**: `cancelJob` and `delistJob` refund the employer before assignment; `resolveDisputeWithCode(EMPLOYER_WIN)` refunds and finalizes the job.
 - **ERC‑20 compatibility**: token transfers accept ERC‑20s that return `bool` or return no data. Calls that revert, return `false`, or return malformed data revert with `TransferFailed`. Escrow deposits enforce exact amount received, so fee‑on‑transfer, rebasing, or other balance‑mutating tokens are not supported.
 
 ## Validation and dispute flow
@@ -129,10 +129,12 @@ stateDiagram-v2
 - Owner‑set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
 - `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
 - `finalizeJob` lets anyone finalize after `completionReviewPeriod` if the job is not disputed. The outcome is deterministic: validator thresholds are honored, silence defaults to agent completion, and otherwise approvals must strictly exceed disapprovals for agent payout (ties refund the employer).
-- `resolveDispute` accepts any resolution string, but only two canonical strings trigger on‑chain actions:
-  - `agent win` → `_completeJob`
-  - `employer win` → employer refund + `completed = true`
-  - The string match is case‑sensitive; any other value only clears the dispute flag.
+- `resolveDisputeWithCode` accepts a typed action code and a freeform reason:
+  - `NO_ACTION (0)` → log only; dispute remains active.
+  - `AGENT_WIN (1)` → `_completeJob`.
+  - `EMPLOYER_WIN (2)` → employer refund + `completed = true`.
+- `resolveDispute` (string) is deprecated. It maps exact `agent win` / `employer win` strings to the corresponding action codes; any other string maps to `NO_ACTION`.
+- `DisputeResolved` remains for legacy consumers; on typed settlements it emits the canonical string (`agent win` / `employer win`) regardless of the freeform reason.
 - `resolveStaleDispute` is an owner‑only, paused‑only escape hatch that allows settlement after `disputeReviewPeriod` if disputes would otherwise deadlock.
 
 ## Reputation mechanics
@@ -160,7 +162,7 @@ Marketplace purchases rely on ERC‑721 safe transfers. If the buyer is a smart 
 
 ## Events
 High‑signal events to index:
-- **Lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`, `JobCompleted`, `JobCancelled`.
+- **Lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, `JobCancelled`.
 - **Timeouts**: `JobExpired`, `JobFinalized`, `DisputeTimeoutResolved`.
 - **Reputation**: `ReputationUpdated` (agents and validators). Note that agent completion emits `ReputationUpdated` once via `enforceReputationGrowth` and again at the end of `_completeJob`.
 - **NFT marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.

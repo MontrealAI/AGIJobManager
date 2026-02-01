@@ -137,11 +137,11 @@ These steps assume you are using a block explorer like Etherscan and have the co
 
 ### D) Moderator — resolve disputes
 
-1. Call `resolveDispute(jobId, resolution)`.
-2. Use one of the **exact** canonical strings:
-   - `"agent win"` → triggers completion and payment to agent
-   - `"employer win"` → refunds escrow to employer and finalizes job
-3. Any **other string** still emits `DisputeResolved` but **does not** move funds.
+1. Call `resolveDisputeWithCode(jobId, resolutionCode, reason)`.
+2. Use one of the **typed** codes:
+   - `0 (NO_ACTION)` → logs a reason; dispute remains active.
+   - `1 (AGENT_WIN)` → triggers completion and payment to agent.
+   - `2 (EMPLOYER_WIN)` → refunds escrow to employer and finalizes job.
 
 ---
 
@@ -232,7 +232,7 @@ sequenceDiagram
   Agent->>Contract: applyForJob(...)
   Validator->>Contract: disapproveJob(...)
   Contract-->>Contract: job.disputed = true
-  Moderator->>Contract: resolveDispute("agent win" | "employer win" | other)
+  Moderator->>Contract: resolveDisputeWithCode(jobId, code, reason)
   Contract-->>Agent: payout (only on "agent win")
   Contract-->>Employer: refund (only on "employer win")
 ```

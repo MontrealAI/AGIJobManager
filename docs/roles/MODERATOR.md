@@ -2,27 +2,28 @@
 
 Moderators resolve disputed jobs. Only accounts listed in `moderators` can resolve disputes.
 
-## Resolution strings (exact match)
-The contract only triggers actions for **exactly** these strings:
-- `"agent win"` → pays the agent and completes the job.
-- `"employer win"` → refunds the employer and closes the job.
+## Resolution codes (typed)
+Use `resolveDisputeWithCode(jobId, resolutionCode, reason)`:
+- `0 (NO_ACTION)` → log only; dispute remains active.
+- `1 (AGENT_WIN)` → pays the agent and completes the job.
+- `2 (EMPLOYER_WIN)` → refunds the employer and closes the job.
 
-Any other string will **only** emit a `DisputeResolved` event and close the dispute without payouts.
+The `reason` string is freeform for logs/UI and does not control settlement. The legacy `resolveDispute` string interface is deprecated and maps only the exact `"agent win"` / `"employer win"` strings to settlement actions.
 
 ## Step‑by‑step (non‑technical)
-> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `resolveDispute` inputs filled in.
+> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `resolveDisputeWithCode` inputs filled in.
 1. Confirm the job is disputed (look for the `JobDisputed` event).
-2. Call `resolveDispute(jobId, resolution)` with the exact string above.
-3. Verify the `DisputeResolved` event.
+2. Call `resolveDisputeWithCode(jobId, resolutionCode, reason)` with the typed code above.
+3. Verify the `DisputeResolvedWithCode` event (and `DisputeResolved` if the dispute was finalized).
 
 ## Expected moderation policy (recommended)
 - Require evidence from the agent (final work artifacts) and employer (requirements).
-- Record a plain‑English reason in the `resolution` string if you are not using the canonical payout strings.
+- Record a plain‑English reason in the `reason` field for auditability.
 - Keep a public log of disputes and resolutions off‑chain.
 
 ## For developers
 ### Key function
-- `resolveDispute(jobId, resolution)`
+- `resolveDisputeWithCode(jobId, resolutionCode, reason)`
 
 ### Events to index
-`DisputeResolved`
+`DisputeResolvedWithCode` (and `DisputeResolved` for finalized settlements)

@@ -40,7 +40,7 @@ If you are not using a Merkle allowlist, pass `[]` for `proof`.
 2. Or `disapproveJob(jobId, "alice", proof)`.
 
 ### Moderator
-- `resolveDispute(jobId, "agent win" | "employer win" | other)`.
+- `resolveDisputeWithCode(jobId, code, reason)` with `code = 0 (NO_ACTION)`, `1 (AGENT_WIN)`, or `2 (EMPLOYER_WIN)`.
 
 ---
 

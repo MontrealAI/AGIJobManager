@@ -270,7 +270,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       assert.equal(job.disputed, true);
     });
 
-    it("dispute resolution respects canonical outcomes and keeps other strings in-progress", async () => {
+    it("dispute resolution respects typed outcomes and keeps NO_ACTION disputed", async () => {
       const payout = web3.utils.toWei("30");
       const jobId = await createJob({ manager, token, employer, payout });
       const agiType = await MockERC721.new({ from: owner });
@@ -281,18 +281,36 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.addModerator(moderator, { from: owner });
 
       await manager.disputeJob(jobId, { from: employer });
-      await manager.resolveDispute(jobId, "needs more info", { from: moderator });
+      await manager.resolveDisputeWithCode(jobId, 0, "needs more info", { from: moderator });
       const job = await manager.jobs(jobId);
-      assert.equal(job.disputed, false);
+      assert.equal(job.disputed, true);
       assert.equal(job.completed, false);
 
-      await manager.disputeJob(jobId, { from: employer });
-      await manager.resolveDispute(jobId, "employer win", { from: moderator });
+      await manager.resolveDisputeWithCode(jobId, 2, "employer win", { from: moderator });
       const jobAfter = await manager.jobs(jobId);
       assert.equal(jobAfter.completed, true);
       await expectRevert.unspecified(
         manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator })
       );
+    });
+
+    it("settles agent win via resolveDisputeWithCode", async () => {
+      const payout = web3.utils.toWei("22");
+      const jobId = await createJob({ manager, token, employer, payout });
+
+      await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
+      await manager.addModerator(moderator, { from: owner });
+      await manager.disputeJob(jobId, { from: employer });
+
+      const agentBalanceBefore = web3.utils.toBN(await token.balanceOf(agent));
+      await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
+      const agentBalanceAfter = web3.utils.toBN(await token.balanceOf(agent));
+
+      const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100));
+      assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
+
+      const jobAfter = await manager.jobs(jobId);
+      assert.equal(jobAfter.completed, true);
     });
   });
 
