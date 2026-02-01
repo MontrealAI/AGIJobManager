@@ -12,6 +12,9 @@ Call `listNFT(tokenId, price)` from the wallet that owns the NFT.
 ### 2) Purchase an NFT
 The buyer must approve the AGIJobManager contract to spend the purchase amount.
 Call `purchaseNFT(tokenId)` from the buyer wallet.
+Marketplace purchases use ERC-721 safe transfer semantics.
+If the buyer is a smart contract, it must implement `IERC721Receiver` /
+`onERC721Received` or the purchase will revert.
 
 ### 3) Delist an NFT
 If you change your mind before it sells, call `delistNFT(tokenId)` from the seller wallet.
