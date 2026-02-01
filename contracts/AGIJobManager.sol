@@ -363,11 +363,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit JobApplied(_jobId, msg.sender);
     }
 
-    function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external whenNotPaused {
+    function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
         Job storage job = _job(_jobId);
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
-        if (job.completed || job.disputed || job.expired) revert InvalidState();
-        if (block.timestamp > job.assignedAt + job.duration) revert InvalidState();
+        if (paused() && !job.disputed) revert InvalidState();
+        if (job.completed || job.expired) revert InvalidState();
+        if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
         if (job.completionRequested) revert InvalidState();
         _requireValidUri(_jobCompletionURI);
         job.jobCompletionURI = _jobCompletionURI;
@@ -393,7 +394,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.validators.push(msg.sender);
         validatorApprovedJobs[msg.sender].push(_jobId);
         emit JobValidated(_jobId, msg.sender);
-        if (job.validatorApprovals >= requiredValidatorApprovals) _completeJob(_jobId, false);
+        if (job.validatorApprovals >= requiredValidatorApprovals) _completeJob(_jobId);
     }
 
     function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
@@ -468,7 +469,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.disputedAt = 0;
 
         if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
-            _completeJob(_jobId, true);
+            _completeJob(_jobId);
         } else if (resolutionCode == uint8(DisputeResolutionCode.EMPLOYER_WIN)) {
             _refundEmployer(job);
         } else {
@@ -492,7 +493,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (employerWins) {
             _refundEmployer(job);
         } else {
-            _completeJob(_jobId, true);
+            _completeJob(_jobId);
         }
 
         job.disputed = false;
@@ -691,7 +692,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         }
 
         if (requiredValidatorApprovals > 0 && job.validatorApprovals >= requiredValidatorApprovals) {
-            _completeJob(_jobId, false);
+            _completeJob(_jobId);
             emit JobFinalized(_jobId, job.assignedAgent, job.employer, true, job.payout);
             return;
         }
@@ -704,7 +705,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         }
 
         if (agentWins) {
-            _completeJob(_jobId, false);
+            _completeJob(_jobId);
         } else {
             _refundEmployer(job);
         }
@@ -712,11 +713,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         emit JobFinalized(_jobId, job.assignedAgent, job.employer, agentWins, job.payout);
     }
 
-    function _completeJob(uint256 _jobId, bool allowMissingCompletionRequest) internal {
+    function _completeJob(uint256 _jobId) internal {
         Job storage job = _job(_jobId);
         if (job.completed || job.expired) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
-        if (!job.completionRequested && !allowMissingCompletionRequest) revert InvalidState();
+        if (!job.completionRequested) revert InvalidState();
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
