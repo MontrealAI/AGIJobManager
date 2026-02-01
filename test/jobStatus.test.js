@@ -19,6 +19,15 @@ contract("AGIJobManager jobStatus", (accounts) => {
   let ens;
   let nameWrapper;
   let manager;
+  const statusLabels = [
+    "Deleted",
+    "Open",
+    "InProgress",
+    "CompletionRequested",
+    "Disputed",
+    "Completed",
+    "Expired",
+  ];
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -55,8 +64,7 @@ contract("AGIJobManager jobStatus", (accounts) => {
 
     let status = await manager.jobStatus(jobId);
     assert.strictEqual(status.toString(), "1", "new job should be Open");
-    let statusString = await manager.jobStatusString(jobId);
-    assert.strictEqual(statusString, "Open", "jobStatusString should map Open");
+    assert.strictEqual(statusLabels[Number(status)], "Open", "status should map Open off-chain");
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     status = await manager.jobStatus(jobId);

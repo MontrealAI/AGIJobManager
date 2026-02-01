@@ -25,12 +25,25 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.33`, `SOLC_RUNS=1`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
 
 > **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.17`, while the default Truffle compiler is `0.8.33`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
+
+## Runtime bytecode size (EIP-170)
+
+Ethereum mainnet enforces the Spurious Dragon / EIP-170 limit of **24,576 bytes** for deployed runtime bytecode. To measure the runtime size locally after compiling:
+
+```bash
+node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
+```
+
+The mainnet-safe compiler settings used in `truffle-config.js` are:
+- Optimizer enabled with **runs = 1**.
+- `viaIR = true`.
+- `metadata.bytecodeHash = 'none'`.
 
 ## Networks configured
 - **test**: in‑process Ganache provider for `truffle test`.

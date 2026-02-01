@@ -45,7 +45,7 @@ OVERRIDING AUTHORITY: AGI.ETH
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -63,7 +63,7 @@ interface NameWrapper {
     function ownerOf(uint256 id) external view returns (address);
 }
 
-contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
+contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     using MerkleProof for bytes32[];
 
     // -----------------------
@@ -128,7 +128,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     uint256 public jobDurationLimit = 10000000;
     uint256 public completionReviewPeriod = 7 days;
     uint256 public disputeReviewPeriod = 14 days;
-    uint256 public constant MAX_REVIEW_PERIOD = 365 days;
+    uint256 internal constant MAX_REVIEW_PERIOD = 365 days;
     uint256 public additionalAgentPayoutPercentage = 50;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
@@ -197,6 +197,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     mapping(address => bool) public blacklistedAgents;
     mapping(address => bool) public blacklistedValidators;
     AGIType[] public agiTypes;
+    mapping(uint256 => string) private _tokenURIs;
 
     event JobCreated(uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details);
     event JobApplied(uint256 jobId, address agent);
@@ -558,10 +559,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function getJobStatus(uint256 _jobId) external view returns (bool, bool, string memory) {
         Job storage job = jobs[_jobId];
         string memory statusUri = job.jobCompletionURI;
-        if (bytes(statusUri).length == 0) {
-            statusUri = job.ipfsHash;
-        }
-        return (job.completed, job.completionRequested, statusUri);
+        return (
+            job.completed,
+            job.completionRequested,
+            bytes(statusUri).length == 0 ? job.ipfsHash : statusUri
+        );
     }
 
     function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
@@ -575,17 +577,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     /// @dev "Deleted" corresponds to the internal cancel/delete representation (employer == address(0)).
     function jobStatus(uint256 jobId) external view returns (JobStatus) {
         return _jobStatus(jobId);
-    }
-
-    function jobStatusString(uint256 jobId) external view returns (string memory) {
-        JobStatus status = _jobStatus(jobId);
-        if (status == JobStatus.Deleted) return "Deleted";
-        if (status == JobStatus.Open) return "Open";
-        if (status == JobStatus.InProgress) return "InProgress";
-        if (status == JobStatus.CompletionRequested) return "CompletionRequested";
-        if (status == JobStatus.Disputed) return "Disputed";
-        if (status == JobStatus.Completed) return "Completed";
-        return "Expired";
     }
 
     function _jobStatus(uint256 jobId) internal view returns (JobStatus) {
@@ -785,11 +776,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function _mintJobNft(Job storage job) internal {
         uint256 tokenId = nextTokenId++;
         _requireValidUri(job.jobCompletionURI);
-        string memory metadataURI = job.jobCompletionURI;
-        string memory tokenURI = _formatTokenURI(metadataURI);
+        string memory tokenUriValue = _formatTokenURI(job.jobCompletionURI);
         _mint(job.employer, tokenId);
-        _setTokenURI(tokenId, tokenURI);
-        emit NFTIssued(tokenId, job.employer, tokenURI);
+        _setTokenURI(tokenId, tokenUriValue);
+        emit NFTIssued(tokenId, job.employer, tokenUriValue);
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireMinted(tokenId);
+        return _tokenURIs[tokenId];
+    }
+
+    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
+        _requireMinted(tokenId);
+        _tokenURIs[tokenId] = _tokenURI;
     }
 
     function _formatTokenURI(string memory uri) internal view returns (string memory) {
