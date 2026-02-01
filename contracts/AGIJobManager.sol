@@ -487,6 +487,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
     function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
+        if (_percentage > 100 - validationRewardPercentage) revert InvalidParameters();
         additionalAgentPayoutPercentage = _percentage;
         emit AdditionalAgentPayoutPercentageUpdated(_percentage);
     }
@@ -548,6 +549,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         uint256 maxPct = _maxAGITypePayoutPercentage();
+        if (additionalAgentPayoutPercentage > maxPct) {
+            maxPct = additionalAgentPayoutPercentage;
+        }
         if (maxPct > 100 - _percentage) revert InvalidParameters();
         validationRewardPercentage = _percentage;
     }
