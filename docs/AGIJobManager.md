@@ -87,9 +87,9 @@ Indexers and UIs should prefer `jobStatus()` over client‑side derivations to a
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Created: createJob
-    Created --> Assigned: applyForJob
-    Assigned --> CompletionRequested: requestJobCompletion
+    [*] --> Open: createJob
+    Open --> InProgress: applyForJob
+    InProgress --> CompletionRequested: requestJobCompletion
 
     CompletionRequested --> Finalized: validateJob (threshold)
     CompletionRequested --> Finalized: finalizeJob (timeout, deterministic fallback)
@@ -102,13 +102,13 @@ stateDiagram-v2
     Disputed --> Disputed: resolveDisputeWithCode(NO_ACTION)
     Disputed --> Finalized: resolveStaleDispute (owner, paused, timeout)
 
-    Assigned --> Expired: expireJob (timeout, no completion request)
+    InProgress --> Expired: expireJob (timeout, no completion request)
 
-    Created --> Cancelled: cancelJob (employer)
-    Created --> Cancelled: delistJob (owner)
+    Open --> Deleted: cancelJob (employer)
+    Open --> Deleted: delistJob (owner)
 ```
 
-**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` only after `requestJobCompletion`. Agent‑win dispute resolution requires a prior completion request so settlement always carries completion metadata, and agents may submit completion even if a dispute is already open (including after the nominal duration or while paused for dispute recovery). **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
+**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` only after `requestJobCompletion`. Agent‑win dispute resolution requires a prior completion request so settlement always carries completion metadata, and agents may submit completion even if a dispute is already open (including after the nominal duration or while paused for dispute recovery). **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later. **Deleted** represents cancelled or delisted jobs where the job struct is cleared (`employer == address(0)`).
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
