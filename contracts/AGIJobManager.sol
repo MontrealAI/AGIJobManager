@@ -383,6 +383,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (job.expired) revert InvalidState();
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (!job.completionRequested) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
 
@@ -402,6 +403,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (job.expired) revert InvalidState();
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (!job.completionRequested) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
 
@@ -714,6 +716,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         Job storage job = _job(_jobId);
         if (job.completed || job.expired) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
+        if (!job.completionRequested) revert InvalidState();
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();

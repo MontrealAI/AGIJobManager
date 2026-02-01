@@ -95,6 +95,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
     await original.addAGIType(nft.address, 92, { from: owner });
     const originalJobId = await createAssignedJob(original, token, employer, agent, payout);
+    await original.requestJobCompletion(originalJobId, "ipfs-complete", { from: agent });
     await original.disputeJob(originalJobId, { from: employer });
     await original.addModerator(moderator, { from: owner });
     await original.setRequiredValidatorApprovals(1, { from: owner });
@@ -107,6 +108,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
+    await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
     await current.setRequiredValidatorApprovals(1, { from: owner });
@@ -128,6 +130,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
     await original.addAGIType(nft.address, 92, { from: owner });
     const originalJobId = await createAssignedJob(original, token, employer, agent, payout);
+    await original.requestJobCompletion(originalJobId, "ipfs-complete", { from: agent });
     await original.disputeJob(originalJobId, { from: employer });
     await original.addModerator(moderator, { from: owner });
     await expectRevert(original.resolveDispute(originalJobId, "agent win", { from: moderator }));
@@ -136,6 +139,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
+    await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
     await current.resolveDispute(currentJobId, "agent win", { from: moderator });
@@ -167,12 +171,14 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await nft.mint(agent, { from: owner });
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentApproveThenDisapproveId = await createAssignedJob(current, token, employer, agent, payout);
+    await current.requestJobCompletion(currentApproveThenDisapproveId, "ipfs-complete", { from: agent });
     await current.validateJob(currentApproveThenDisapproveId, "validator", EMPTY_PROOF, { from: validator });
     await expectRevert(
       current.disapproveJob(currentApproveThenDisapproveId, "validator", EMPTY_PROOF, { from: validator })
     );
 
     const currentDisapproveThenApproveId = await createAssignedJob(current, token, employer, agent, payout);
+    await current.requestJobCompletion(currentDisapproveThenApproveId, "ipfs-complete", { from: agent });
     await current.disapproveJob(currentDisapproveThenApproveId, "validator", EMPTY_PROOF, { from: validator });
     await expectRevert(
       current.validateJob(currentDisapproveThenApproveId, "validator", EMPTY_PROOF, { from: validator })

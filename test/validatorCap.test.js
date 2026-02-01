@@ -89,6 +89,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     const payout = toBN(toWei("10"));
     const jobId = await createJob(manager, token, employer, payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const validators = Array.from({ length: cap + 1 }, () => web3.eth.accounts.create());
     for (const validator of validators) {
@@ -122,6 +123,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     const payout = toBN(toWei("20"));
     const jobId = await createJob(manager, token, employer, payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const validators = Array.from({ length: cap }, () => web3.eth.accounts.create());
     for (const validator of validators) {
