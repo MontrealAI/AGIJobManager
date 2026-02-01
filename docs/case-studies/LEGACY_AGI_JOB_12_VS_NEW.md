@@ -234,7 +234,7 @@ In the test:
 6) Assertions:
    - `JobCompleted` + `NFTIssued`
    - NFT minted to employer
-   - `tokenURI = baseIpfsUrl + "/" + ipfsHash`
+   - `tokenURI = jobCompletionURI` (full URI or `baseIpfsUrl + "/" + cid`)
    - AGI token balances updated as expected
 
 **Better‑only assertions in the replay test**

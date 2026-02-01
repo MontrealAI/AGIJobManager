@@ -22,14 +22,14 @@ The following `public` state variables have auto‑generated getter functions:
 - `agiTypes(index)`
 
 ## Core workflow
-### `createJob(string ipfsHash, uint256 payout, uint256 duration, string details)`
+### `createJob(string jobSpecURI, uint256 payout, uint256 duration, string details)`
 Escrows `payout` tokens and creates a job. Emits `JobCreated`.
 
 ### `applyForJob(uint256 jobId, string subdomain, bytes32[] proof)`
 Assigns the agent if identity checks pass. The agent payout tier is **snapshotted at assignment time** and stored on the job. Agents without a payout tier (0%) cannot apply; `additionalAgents` only bypass identity checks. Emits `JobApplied`.
 
-### `requestJobCompletion(uint256 jobId, string ipfsHash)`
-Marks completion requested and updates the job’s `ipfsHash`. Emits `JobCompletionRequested`.
+### `requestJobCompletion(uint256 jobId, string jobCompletionURI)`
+Marks completion requested and updates the job’s `jobCompletionURI`. Emits `JobCompletionRequested`.
 
 ### `validateJob(uint256 jobId, string subdomain, bytes32[] proof)`
 Validator approval. Emits `JobValidated`. When approvals reach threshold, completes the job.
@@ -78,7 +78,7 @@ Explicit allowlists for roles, bypassing ENS/Merkle checks.
 Changes the ERC‑20 token used for payouts.
 
 ### `setBaseIpfsUrl(string)`
-Base prefix for minted NFT tokenURIs.
+Base prefix for minted NFT tokenURIs when a job URI is a bare CID.
 
 ### `setRequiredValidatorApprovals(uint256)`
 ### `setRequiredValidatorDisapprovals(uint256)`

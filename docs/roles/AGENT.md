@@ -23,12 +23,12 @@ Call `applyForJob(jobId, subdomain, proof)`.
 - State: `assignedAgent` set to your address
 
 ### 3) Request completion
-Call `requestJobCompletion(jobId, ipfsHash)` before the job duration expires.
-- `ipfsHash` should point to your final deliverable.
+Generate/upload the **job completion metadata** JSON and call `requestJobCompletion(jobId, jobCompletionURI)` before the job duration expires.
+- `jobCompletionURI` should point to the ERC‑721 metadata JSON (see [`docs/job-metadata.md`](../job-metadata.md)).
 
 **On‑chain results**
 - Event: `JobCompletionRequested`
-- State: job’s `ipfsHash` updated
+- State: job’s `jobCompletionURI` updated
 
 ### 4) Wait for validator approvals
 Once enough validators approve, the job completes automatically and you are paid.
@@ -50,6 +50,7 @@ Once enough validators approve, the job completes automatically and you are paid
 ### State fields to inspect
 - `jobs[jobId].assignedAt`
 - `jobs[jobId].completionRequested`
+- `jobs[jobId].jobCompletionURI`
 
 ### Events to index
 `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `ReputationUpdated`, `OwnershipVerified`
