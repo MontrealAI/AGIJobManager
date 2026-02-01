@@ -83,12 +83,13 @@ This guide explains what each role can do, what you need before starting, and co
 ### Common mistakes
 - Trying to validate the same job twice.
 - Entering the full ENS name instead of the label.
-- Attempting to validate a job before it has an assigned agent.
+- Attempting to validate a job before the agent requests completion.
 
 ### Typical workflow
 1. Confirm eligibility (allowlist/Merkle/ENS).
 2. Review job status and details.
-3. Approve or disapprove.
+3. Wait for the agent’s completion request (completion metadata).
+4. Approve or disapprove.
 
 ---
 

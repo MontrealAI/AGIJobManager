@@ -32,10 +32,10 @@ Assigns the agent if identity checks pass. The agent payout tier is **snapshotte
 Marks completion requested and updates the job’s `jobCompletionURI`. Emits `JobCompletionRequested`.
 
 ### `validateJob(uint256 jobId, string subdomain, bytes32[] proof)`
-Validator approval. Emits `JobValidated`. When approvals reach threshold, completes the job.
+Validator approval (requires `completionRequested`). Emits `JobValidated`. When approvals reach threshold, completes the job.
 
 ### `disapproveJob(uint256 jobId, string subdomain, bytes32[] proof)`
-Validator disapproval. Emits `JobDisapproved`. When disapprovals reach threshold, marks disputed and emits `JobDisputed`.
+Validator disapproval (requires `completionRequested`). Emits `JobDisapproved`. When disapprovals reach threshold, marks disputed and emits `JobDisputed`.
 
 ### `disputeJob(uint256 jobId)`
 Marks a job disputed (employer or assigned agent only). Emits `JobDisputed`.
