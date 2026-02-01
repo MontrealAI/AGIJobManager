@@ -40,7 +40,7 @@ This guide covers administrative operations and safety controls.
 - `updateAdditionalText1/2/3(string)`
 
 ### Financial operations
-- `withdrawAGI(amount)` withdraws surplus ERC‑20 and reverts if `amount > withdrawableAGI()`.
+- `withdrawAGI(amount)` withdraws surplus ERC‑20 while paused and reverts if `amount > withdrawableAGI()`.
 
 ## Safety checklist
 - Use a multisig or hardware wallet for the owner address.

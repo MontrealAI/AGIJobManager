@@ -653,6 +653,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("withdraws AGI with bounds checks", async () => {
       await token.mint(manager.address, payout);
+      await expectRevert(manager.withdrawAGI(payout, { from: owner }), "Pausable: not paused");
+      await manager.pause({ from: owner });
       await expectCustomError(manager.withdrawAGI.call(0, { from: owner }), "InvalidParameters");
       await expectCustomError(
         manager.withdrawAGI.call(payout.muln(2), { from: owner }),

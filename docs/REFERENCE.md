@@ -99,7 +99,7 @@ Sets max job duration allowed.
 Updates informational metadata fields.
 
 ### `withdrawAGI(uint256 amount)`
-Withdraws surplus AGI tokens held by the contract. Reverts if `amount > withdrawableAGI()`.
+Withdraws surplus AGI tokens held by the contract while paused. Reverts if `amount > withdrawableAGI()`.
 
 ### `contributeToRewardPool(uint256 amount)`
 Transfers tokens to the contract and emits `RewardPoolContribution`.

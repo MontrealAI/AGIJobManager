@@ -828,7 +828,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         return bal - lockedEscrow;
     }
 
-    function withdrawAGI(uint256 amount) external onlyOwner nonReentrant {
+    function withdrawAGI(uint256 amount) external onlyOwner whenPaused nonReentrant {
         if (amount == 0) revert InvalidParameters();
         uint256 available = withdrawableAGI();
         if (amount > available) revert InsufficientWithdrawableBalance();

@@ -417,6 +417,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.contributeToRewardPool(web3.utils.toWei("5"), { from: employer });
       await expectRevert.unspecified(manager.withdrawAGI(0, { from: owner }));
       await expectRevert.unspecified(manager.withdrawAGI(web3.utils.toWei("100"), { from: owner }));
+      await expectRevert(manager.withdrawAGI(web3.utils.toWei("5"), { from: owner }), "Pausable: not paused");
+      await manager.pause({ from: owner });
       await manager.withdrawAGI(web3.utils.toWei("5"), { from: owner });
       const balance = await token.balanceOf(manager.address);
       assert.equal(balance.toString(), "0");
