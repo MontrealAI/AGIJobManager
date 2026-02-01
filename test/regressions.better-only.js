@@ -126,7 +126,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await nft.mint(agent, { from: owner });
 
     const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
-    await original.addAGIType(nft.address, 100, { from: owner });
+    await original.addAGIType(nft.address, 92, { from: owner });
     const originalJobId = await createAssignedJob(original, token, employer, agent, payout);
     await original.disputeJob(originalJobId, { from: employer });
     await original.addModerator(moderator, { from: owner });
@@ -134,7 +134,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     assert.equal((await original.nextTokenId()).toNumber(), 0, "original should not mint on div-by-zero");
 
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
-    await current.addAGIType(nft.address, 100, { from: owner });
+    await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
