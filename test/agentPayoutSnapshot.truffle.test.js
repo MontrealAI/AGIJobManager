@@ -126,4 +126,28 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
       "IneligibleAgentPayout"
     );
   });
+
+  it("snapshots payout for additional agents after assignment", async () => {
+    const payout = toBN(toWei("100"));
+    const jobId = await createJob(payout);
+
+    const agiType = await MockERC721.new({ from: owner });
+    const tokenId = await agiType.mint.call(agent, { from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 60, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+    const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
+    assert.strictEqual(snapshotPct.toNumber(), 60);
+
+    await agiType.transferFrom(agent, other, tokenId, { from: agent });
+    const agentBalanceBefore = await token.balanceOf(agent);
+
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    const agentBalanceAfter = await token.balanceOf(agent);
+    const expected = payout.muln(60).divn(100);
+    assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
+  });
 });
