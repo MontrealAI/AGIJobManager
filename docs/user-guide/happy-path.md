@@ -56,10 +56,8 @@ stateDiagram-v2
     Created --> Assigned: applyForJob
     Assigned --> CompletionRequested: requestJobCompletion
 
-    Assigned --> Completed: validateJob (approval threshold)
     CompletionRequested --> Completed: validateJob (approval threshold)
 
-    Assigned --> Disputed: disapproveJob (disapproval threshold)
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
     Assigned --> Disputed: disputeJob (manual)
     CompletionRequested --> Disputed: disputeJob (manual)
