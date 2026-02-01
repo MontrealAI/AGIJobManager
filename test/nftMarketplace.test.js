@@ -73,15 +73,21 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
 
   it("lists, purchases, and delists NFTs", async () => {
     const tokenId = await mintJobNft();
+    const price = toBN(toWei("5"));
 
     await expectCustomError(manager.listNFT.call(tokenId, 0, { from: employer }), "InvalidParameters");
     await expectCustomError(manager.listNFT.call(tokenId, 10, { from: other }), "NotAuthorized");
 
-    await manager.listNFT(tokenId, toBN(toWei("5")), { from: employer });
+    await manager.listNFT(tokenId, price, { from: employer });
 
-    await token.mint(buyer, toBN(toWei("5")), { from: owner });
-    await token.approve(manager.address, toBN(toWei("5")), { from: buyer });
-    await manager.purchaseNFT(tokenId, { from: buyer });
+    await token.mint(buyer, price, { from: owner });
+    await token.approve(manager.address, price, { from: buyer });
+    const purchaseTx = await manager.purchaseNFT(tokenId, { from: buyer });
+    const purchaseEvent = purchaseTx.logs.find((log) => log.event === "NFTPurchased");
+    assert.ok(purchaseEvent, "NFTPurchased event should be emitted");
+    assert.strictEqual(purchaseEvent.args.tokenId.toNumber(), tokenId, "event tokenId should match");
+    assert.strictEqual(purchaseEvent.args.buyer, buyer, "event buyer should match");
+    assert(purchaseEvent.args.price.eq(price), "event price should match");
 
     const newOwner = await manager.ownerOf(tokenId);
     assert.equal(newOwner, buyer, "buyer should own NFT after purchase");

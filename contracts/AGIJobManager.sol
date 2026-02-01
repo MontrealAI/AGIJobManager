@@ -755,14 +755,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function purchaseNFT(uint256 tokenId) external nonReentrant {
         Listing storage listing = listings[tokenId];
         if (!listing.isActive) revert InvalidState();
-        if (listing.seller == address(0)) revert InvalidState();
-        if (listing.seller == msg.sender) revert NotAuthorized();
-        if (listing.price == 0) revert InvalidParameters();
-        if (ownerOf(tokenId) != listing.seller) revert InvalidState();
+        address seller = listing.seller;
+        uint256 price = listing.price;
+        if (seller == address(0)) revert InvalidState();
+        if (seller == msg.sender) revert NotAuthorized();
+        if (price == 0) revert InvalidParameters();
+        if (ownerOf(tokenId) != seller) revert InvalidState();
         listing.isActive = false;
-        _tFrom(msg.sender, listing.seller, listing.price);
-        _safeTransfer(listing.seller, msg.sender, tokenId, "");
-        emit NFTPurchased(tokenId, msg.sender, listing.price);
+        _tFrom(msg.sender, seller, price);
+        _safeTransfer(seller, msg.sender, tokenId, "");
+        emit NFTPurchased(tokenId, msg.sender, price);
     }
 
     function delistNFT(uint256 tokenId) external {
