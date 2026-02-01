@@ -81,7 +81,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     );
   });
 
-  it("reverts when the validator cap is reached", async () => {
+  it("reverts validator votes once disputes freeze the validator set", async () => {
     const cap = (await manager.MAX_VALIDATORS_PER_JOB()).toNumber();
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(cap - 1, { from: owner });
@@ -105,20 +105,20 @@ contract("AGIJobManager validator cap", (accounts) => {
       .disapproveJob(jobId, "validator", EMPTY_PROOF)
       .encodeABI();
 
-    for (let i = 0; i < cap; i += 1) {
+    for (let i = 0; i < cap - 1; i += 1) {
       await sendSigned(manager, validators[i], disapproveData);
     }
 
     await expectCustomError(
-      manager.disapproveJob.call(jobId, "validator", EMPTY_PROOF, { from: validators[cap].address }),
-      "ValidatorLimitReached"
+      manager.disapproveJob.call(jobId, "validator", EMPTY_PROOF, { from: validators[cap - 1].address }),
+      "InvalidState"
     );
   });
 
   it("completes successfully at the validator cap", async () => {
     const cap = (await manager.MAX_VALIDATORS_PER_JOB()).toNumber();
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
-    await manager.setRequiredValidatorDisapprovals(cap - 1, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(0, { from: owner });
+    await manager.setRequiredValidatorApprovals(cap, { from: owner });
 
     const payout = toBN(toWei("20"));
     const jobId = await createJob(manager, token, employer, payout);
@@ -135,17 +135,12 @@ contract("AGIJobManager validator cap", (accounts) => {
       await manager.addAdditionalValidator(validator.address, { from: owner });
     }
 
-    const disapproveData = manager.contract.methods
-      .disapproveJob(jobId, "validator", EMPTY_PROOF)
-      .encodeABI();
-    for (let i = 0; i < cap - 1; i += 1) {
-      await sendSigned(manager, validators[i], disapproveData);
-    }
-
     const validateData = manager.contract.methods
       .validateJob(jobId, "validator", EMPTY_PROOF)
       .encodeABI();
-    await sendSigned(manager, validators[cap - 1], validateData, 2500000);
+    for (let i = 0; i < cap; i += 1) {
+      await sendSigned(manager, validators[i], validateData, 2500000);
+    }
 
     const job = await manager.jobs(jobId);
     assert.strictEqual(job.completed, true, "job should complete at the cap");
