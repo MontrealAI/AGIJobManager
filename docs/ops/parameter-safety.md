@@ -48,7 +48,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `clubRootNode`, `agentRootNode` (constructor) | ENS namehash | Eligibility gating. | Must match intended ENS hierarchy. | Wrong root nodes → `_verifyOwnership` fails → validators/agents cannot qualify. | Use `additional*` allowlist; redeploy if pervasive. |
 | `validatorMerkleRoot`, `agentMerkleRoot` (constructor) | Merkle root | Eligibility gating. | Must match allowlists; immutable after deploy. | Bad root means Merkle proofs always fail; gating relies solely on ENS or allowlist. | Use `additional*` allowlist or redeploy. |
 | `ens`, `nameWrapper` (constructor) | contract address | ENS/NameWrapper ownership checks. | Must be correct chain-specific addresses. | Wrong addresses → ownership checks fail; `_verifyOwnership` emits recovery events and returns false. | Use `additional*` allowlist or redeploy. |
-| `withdrawAGI` | token amount | Owner withdraws escrow. | **Never withdraw** against outstanding jobs. | Insufficient escrow → completion/cancel refunds revert → stuck jobs. | Re-fund contract balance; re-validate. |
+| `withdrawAGI` | token amount | Owner withdraws surplus (`withdrawableAGI()`). | Only withdraw when `withdrawableAGI()` is positive. | Withdrawal reverts if amount exceeds surplus. | Use `withdrawableAGI()` to size withdrawals; do not rely on raw balance. |
 | `baseIpfsUrl` (`setBaseIpfsUrl`) | string URL | Token URI for job NFTs. | Stable HTTP/IPFS base. | Wrong value breaks NFT metadata display (no settlement impact). | Update base URL; metadata reads fixed retroactively. |
 | `termsAndConditionsIpfsHash`, `contactEmail`, `additionalText1/2/3` | strings | UI/legal metadata only. | Non-empty strings recommended. | Mis-set affects UI/legal metadata only. | Update strings. |
 | `listNFT` price | token amount | Marketplace list price. | Must be > 0. | Zero price reverts listing; invalid price prevents sale. | Re-list with valid price. |
@@ -71,10 +71,10 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Failure:** no completion, no disputes.
    - **Escape hatch:** lower thresholds, add validators via `addAdditionalValidator`, or moderator resolves disputes.
 
-4. **Owner withdraws escrow**
+4. **Owner attempts to withdraw escrow**
    - **Prerequisite:** `withdrawAGI` called while jobs outstanding.
-   - **Failure:** `_completeJob` / `cancelJob` / `delistJob` refund transfers revert.
-   - **Escape hatch:** owner replenishes escrow; re-validate or cancel/delist.
+   - **Failure:** Withdrawal reverts with `InsufficientWithdrawableBalance`.
+   - **Escape hatch:** use `withdrawableAGI()` to withdraw surplus only.
 
 5. **Token transfer failures (blacklist / frozen ERC‑20)**
    - **Prerequisite:** ERC‑20 reverts on `transfer` / `transferFrom` for a recipient.
@@ -153,6 +153,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `ValidatorLimitReached` / `ValidatorSetTooLarge` | `validateJob`, `disapproveJob`, `_completeJob` | More than `MAX_VALIDATORS_PER_JOB` (50) validators attempted. | Keep validators per job ≤ 50; set thresholds well below 50. |
 | `InvalidValidatorThresholds` | `setRequiredValidatorApprovals` / `setRequiredValidatorDisapprovals` | Approvals + disapprovals exceed 50, or individual > 50. | Reconfigure thresholds within limits. |
 | `JobNotFound` | Any job access | Job ID not created or deleted. | Use `nextJobId` bounds to identify valid IDs. |
+| `InsufficientWithdrawableBalance` | `withdrawAGI` | Withdrawal exceeds `withdrawableAGI()` (balance minus `lockedEscrow`). | Check `withdrawableAGI()` and withdraw only surplus. |
 
 ## Pre-deploy / post-deploy verification checklist
 

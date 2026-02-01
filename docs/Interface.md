@@ -34,8 +34,9 @@
 | `getApproved(uint256 tokenId)` | view | address |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
-| `jobs(uint256)` | view | uint256, address, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool, uint8 |
+| `jobs(uint256)` | view | uint256, address, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool, uint8, bool |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
+| `lockedEscrow()` | view | uint256 |
 | `maxJobPayout()` | view | uint256 |
 | `moderators(address)` | view | bool |
 | `name()` | view | string |
@@ -107,6 +108,7 @@
 | `removeAdditionalValidator(address validator)` | nonpayable | — |
 | `addAdditionalAgent(address agent)` | nonpayable | — |
 | `removeAdditionalAgent(address agent)` | nonpayable | — |
+| `withdrawableAGI()` | view | uint256 |
 | `withdrawAGI(uint256 amount)` | nonpayable | — |
 | `canAccessPremiumFeature(address user)` | view | bool |
 | `contributeToRewardPool(uint256 amount)` | nonpayable | — |
@@ -117,6 +119,7 @@
 | Event | Indexed fields |
 | --- | --- |
 | `AGITypeUpdated(address nftAddress, uint256 payoutPercentage)` | indexed address nftAddress, uint256 payoutPercentage |
+| `AGIWithdrawn(address to, uint256 amount, uint256 remainingWithdrawable)` | indexed address to, uint256 amount, uint256 remainingWithdrawable |
 | `AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage)` | uint256 newPercentage |
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |
 | `ApprovalForAll(address owner, address operator, bool approved)` | indexed address owner, indexed address operator, bool approved |
@@ -156,6 +159,8 @@
 | --- | --- |
 | `Blacklisted()` | — |
 | `IneligibleAgentPayout()` | — |
+| `InsolventEscrowBalance()` | — |
+| `InsufficientWithdrawableBalance()` | — |
 | `InvalidAgentPayoutSnapshot()` | — |
 | `InvalidParameters()` | — |
 | `InvalidState()` | — |

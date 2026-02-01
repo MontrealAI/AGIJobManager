@@ -81,6 +81,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     error ValidatorSetTooLarge();
     error IneligibleAgentPayout();
     error InvalidAgentPayoutSnapshot();
+    error InsufficientWithdrawableBalance();
+    error InsolventEscrowBalance();
 
     /// @notice Canonical job lifecycle status enum (numeric ordering is stable; do not reorder).
     /// @dev 0 = Deleted (employer == address(0) or removed)
@@ -118,6 +120,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     uint256 public disputeReviewPeriod = 14 days;
     uint256 public constant MAX_REVIEW_PERIOD = 365 days;
     uint256 public additionalAgentPayoutPercentage = 50;
+    /// @notice Total AGI reserved for unsettled job escrows.
+    /// @dev Tracks job payout escrows only.
+    uint256 public lockedEscrow;
 
     string public termsAndConditionsIpfsHash;
     string public contactEmail;
@@ -153,6 +158,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         uint256 disputedAt;
         bool expired;
         uint8 agentPayoutPct;
+        bool escrowReleased;
     }
 
     struct AGIType {
@@ -206,6 +212,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
+    event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
 
     constructor(
         address _agiTokenAddress,
@@ -235,7 +242,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     }
 
     // -----------------------
-    // Internal helpers (no new public/external functions/events)
+    // Internal helpers
     // -----------------------
     function _job(uint256 jobId) internal view returns (Job storage job) {
         job = jobs[jobId];
@@ -266,6 +273,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         _safeERC20TransferFrom(token, from, to, amount);
         uint256 balanceAfter = token.balanceOf(to);
         if (balanceAfter < balanceBefore || balanceAfter - balanceBefore != amount) revert TransferFailed();
+    }
+
+    function _releaseEscrow(Job storage job) internal {
+        if (job.escrowReleased) return;
+        job.escrowReleased = true;
+        lockedEscrow -= job.payout;
     }
 
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
@@ -326,6 +339,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.duration = _duration;
         job.details = _details;
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), _payout);
+        lockedEscrow += _payout;
         emit JobCreated(jobId, _ipfsHash, _payout, _duration, _details);
     }
 
@@ -426,9 +440,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (r == RES_AGENT_WIN) {
             _completeJob(_jobId);
         } else if (r == RES_EMPLOYER_WIN) {
-            _t(job.employer, job.payout);
-            // Critical fix: close the job to prevent later completion/double payout.
-            job.completed = true;
+            _refundEmployer(job);
         }
 
         job.disputed = false;
@@ -444,8 +456,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
         emit RecoveryInitiated("DISPUTE_TIMEOUT");
         if (employerWins) {
-            _t(job.employer, job.payout);
-            job.completed = true;
+            _refundEmployer(job);
         } else {
             _completeJob(_jobId);
         }
@@ -461,6 +472,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function delistJob(uint256 _jobId) external onlyOwner {
         Job storage job = _job(_jobId);
         if (job.completed || job.assignedAgent != address(0)) revert InvalidState();
+        _releaseEscrow(job);
         _t(job.employer, job.payout);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
@@ -613,6 +625,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         Job storage job = _job(_jobId);
         if (msg.sender != job.employer) revert NotAuthorized();
         if (job.completed || job.assignedAgent != address(0)) revert InvalidState();
+        _releaseEscrow(job);
         _t(job.employer, job.payout);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
@@ -625,6 +638,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         if (block.timestamp <= job.assignedAt + job.duration) revert InvalidState();
 
         job.expired = true;
+        _releaseEscrow(job);
         _t(job.employer, job.payout);
         emit JobExpired(_jobId, job.employer, job.assignedAgent, job.payout);
     }
@@ -678,6 +692,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
 
         job.completed = true;
         job.disputed = false;
+        _releaseEscrow(job);
 
         uint256 completionTime = block.timestamp - job.assignedAt;
         uint256 reputationPoints = calculateReputationPoints(job.payout, completionTime);
@@ -695,6 +710,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
         job.completed = true;
         job.disputed = false;
         job.disputedAt = 0;
+        _releaseEscrow(job);
         _t(job.employer, job.payout);
     }
 
@@ -806,10 +822,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
     function addAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = true; }
     function removeAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = false; }
 
-    function withdrawAGI(uint256 amount) external onlyOwner nonReentrant {
+    function withdrawableAGI() public view returns (uint256) {
         uint256 bal = agiToken.balanceOf(address(this));
-        if (amount == 0 || amount > bal) revert InvalidParameters();
+        if (bal < lockedEscrow) revert InsolventEscrowBalance();
+        return bal - lockedEscrow;
+    }
+
+    function withdrawAGI(uint256 amount) external onlyOwner nonReentrant {
+        if (amount == 0) revert InvalidParameters();
+        uint256 available = withdrawableAGI();
+        if (amount > available) revert InsufficientWithdrawableBalance();
         _t(msg.sender, amount);
+        emit AGIWithdrawn(msg.sender, amount, available - amount);
     }
 
     function canAccessPremiumFeature(address user) public view returns (bool) {

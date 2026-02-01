@@ -123,7 +123,7 @@ This guide explains what each role can do, what you need before starting, and co
 - Manage moderators and allowlists (`addModerator`, `addAdditionalAgent/Validator`).
 - Blacklist/un‑blacklist agents or validators.
 - Update parameters (limits, reward percentage, metadata fields).
-- Withdraw escrowed AGI tokens (`withdrawAGI`).
+- Withdraw surplus AGI tokens (`withdrawAGI`, limited to `withdrawableAGI()`).
 - Delist jobs before assignment (`delistJob`).
 - Manage AGI Types for agent payout bonuses (`addAGIType`).
 

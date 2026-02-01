@@ -99,7 +99,7 @@ Sets max job duration allowed.
 Updates informational metadata fields.
 
 ### `withdrawAGI(uint256 amount)`
-Withdraws AGI tokens held by the contract. Emits transfer via ERC‑20.
+Withdraws surplus AGI tokens held by the contract. Reverts if `amount > withdrawableAGI()`.
 
 ### `contributeToRewardPool(uint256 amount)`
 Transfers tokens to the contract and emits `RewardPoolContribution`.
@@ -110,6 +110,12 @@ Adds or updates an AGIType NFT that boosts agent payout percentage. Emits `AGITy
 ## View helpers
 ### `getJobStatus(uint256 jobId)`
 Returns `(completed, completionRequested, ipfsHash)`.
+
+### `lockedEscrow()`
+Returns the total AGI reserved for unsettled job escrows.
+
+### `withdrawableAGI()`
+Returns the surplus AGI balance (`balance - lockedEscrow`). Reverts if balance is below `lockedEscrow`.
 
 ### `canAccessPremiumFeature(address user)`
 Returns true if reputation exceeds `premiumReputationThreshold`.
@@ -139,3 +145,5 @@ Key events to index:
 - `ValidatorSetTooLarge`
 - `IneligibleAgentPayout`
 - `InvalidAgentPayoutSnapshot`
+- `InsufficientWithdrawableBalance`
+- `InsolventEscrowBalance`

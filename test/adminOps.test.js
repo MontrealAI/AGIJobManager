@@ -103,14 +103,21 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.setMaxJobPayout(toBN(toWei("5000")), { from: owner });
 
     const payout = toBN(toWei("8"));
+    const surplus = toBN(toWei("3"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
     await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
 
+    await token.mint(manager.address, surplus, { from: owner });
+
     const balanceBefore = await token.balanceOf(owner);
-    await manager.withdrawAGI(payout, { from: owner });
+    await expectCustomError(
+      manager.withdrawAGI.call(payout, { from: owner }),
+      "InsufficientWithdrawableBalance"
+    );
+    await manager.withdrawAGI(surplus, { from: owner });
     const balanceAfter = await token.balanceOf(owner);
-    assert.equal(balanceAfter.sub(balanceBefore).toString(), payout.toString(), "withdraw should move funds");
+    assert.equal(balanceAfter.sub(balanceBefore).toString(), surplus.toString(), "withdraw should move funds");
   });
 
   it("reverts withdrawals on failed transfers", async () => {

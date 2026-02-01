@@ -654,7 +654,10 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("withdraws AGI with bounds checks", async () => {
       await token.mint(manager.address, payout);
       await expectCustomError(manager.withdrawAGI.call(0, { from: owner }), "InvalidParameters");
-      await expectCustomError(manager.withdrawAGI.call(payout.muln(2), { from: owner }), "InvalidParameters");
+      await expectCustomError(
+        manager.withdrawAGI.call(payout.muln(2), { from: owner }),
+        "InsufficientWithdrawableBalance"
+      );
 
       const ownerBalanceBefore = await token.balanceOf(owner);
       await manager.withdrawAGI(payout, { from: owner });

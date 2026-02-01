@@ -84,7 +84,7 @@ flowchart LR
 
 | Role | Capabilities | Trust considerations |
 | --- | --- | --- |
-| **Owner** | Pause/unpause, set parameters, manage allowlists/blacklists, add moderators and AGI types, withdraw escrowed ERC‑20. | Highly privileged. Compromise or misuse can override operational safety. |
+| **Owner** | Pause/unpause, set parameters, manage allowlists/blacklists, add moderators and AGI types, withdraw surplus ERC‑20 (balance minus locked escrow). | Highly privileged. Compromise or misuse can override operational safety. |
 | **Moderator** | Resolve disputes via `resolveDispute`. | Central dispute authority; outcomes depend on moderator integrity. |
 | **Employer** | Create jobs, fund escrow, cancel pre-assignment, dispute jobs, receive job NFTs. | Funds are custodied by contract until resolution. |
 | **Agent** | Apply for jobs, request completion, earn payouts and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
