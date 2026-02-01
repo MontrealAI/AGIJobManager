@@ -170,4 +170,28 @@ contract("AGIJobManager economic safety", (accounts) => {
     assert.equal(validatorBalance.toString(), expectedValidatorPayout.toString());
     assert.equal(contractBalance.toString(), payout.sub(expectedAgentPayout).sub(expectedValidatorPayout).toString());
   });
+
+  it("defensively blocks minting when job metadata is empty", async () => {
+    const manager = await TestableAGIJobManager.new(
+      token.address,
+      "ipfs://base",
+      ens.address,
+      nameWrapper.address,
+      clubRoot,
+      agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
+      { from: owner }
+    );
+
+    const payout = toBN(toWei("1"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs-job", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.setJobIpfsHashUnsafe(jobId, "", { from: owner });
+
+    await expectCustomError(manager.mintJobNftUnsafe(jobId, { from: owner }), "InvalidParameters");
+  });
 });
