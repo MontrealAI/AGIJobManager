@@ -251,7 +251,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const payout = toBN(toWei("30"));
     await token.mint(employer, payout, { from: owner });
     const { jobId } = await createJobWithApproval(payout);
-    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await assignAndRequest(jobId, "ipfs-dispute");
 
     const disputeTx = await manager.disputeJob(jobId, { from: employer });
     assert.ok(disputeTx.logs.find((log) => log.event === "JobDisputed"), "JobDisputed should emit");
@@ -275,7 +275,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     );
   });
 
-  it("keeps disputes active on NO_ACTION and allows later completion", async () => {
+  it("keeps disputes active on NO_ACTION and freezes validator voting", async () => {
     const payout = toBN(toWei("20"));
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
@@ -292,9 +292,10 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.strictEqual(midJob.completed, false, "job should remain in progress");
     assert.strictEqual(midJob.completionRequested, true, "completion request should be preserved");
 
-    await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
-    const finalJob = await manager.jobs(jobId);
-    assert.strictEqual(finalJob.completed, true, "job should complete after follow-up validation");
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator-b", EMPTY_PROOF, { from: validatorB }),
+      "InvalidState"
+    );
   });
 
   it("preserves escrow on NO_ACTION dispute resolution until later completion", async () => {
@@ -335,13 +336,10 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.equal(balancesAfter.validatorB.toString(), balancesBefore.validatorB.toString(), "validator B should not be paid yet");
     assert.equal(balancesAfter.contract.toString(), payout.toString(), "escrow should remain locked");
 
-    await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
-    const balancesFinal = {
-      agent: await token.balanceOf(agent),
-      contract: await token.balanceOf(manager.address),
-    };
-    assert.ok(balancesFinal.agent.gt(balancesAfter.agent), "agent should be paid on final completion");
-    assert.equal(balancesFinal.contract.toString(), "0", "escrow should clear after completion");
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator-b", EMPTY_PROOF, { from: validatorB }),
+      "InvalidState"
+    );
   });
 
   it("pauses state-changing actions and resumes after unpause", async () => {

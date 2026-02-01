@@ -546,6 +546,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const payout = new BN(web3.utils.toWei("6"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
       await manager.disputeJob(jobId, { from: employer });
       await expectCustomError(manager.disputeJob(jobId, { from: agent }), "InvalidState");
@@ -618,6 +619,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const payout = new BN(web3.utils.toWei("9"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
+      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.disputeJob(jobId, { from: employer });
 
       await expectCustomError(manager.resolveDispute(jobId, "agent win", { from: other }), "NotModerator");

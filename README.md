@@ -49,7 +49,6 @@ stateDiagram-v2
     CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
 
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
-    Assigned --> Disputed: disputeJob (manual)
     CompletionRequested --> Disputed: disputeJob (manual)
 
     Disputed --> Completed: resolveDispute("agent win")
@@ -63,6 +62,11 @@ stateDiagram-v2
     Created --> Cancelled: delistJob (owner)
 ```
 *Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested). Agent‑win dispute resolution now requires a prior completion request so settlement always has completion metadata; agents may submit completion even if a dispute is already open, including after the nominal duration has elapsed or while paused for dispute recovery.
+
+**Dispute lane policy**
+- Disputes can only be initiated after completion is requested (`completionRequested == true`).
+- Once disputed, validator voting is frozen; approvals/disapprovals no longer progress settlement.
+- Settlement while disputed happens only via moderator resolution or owner stale‑dispute resolution (when paused).
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid

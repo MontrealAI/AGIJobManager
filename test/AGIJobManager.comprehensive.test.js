@@ -318,6 +318,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       await createJob();
       await manager.applyForJob(0, "agent", [], { from: agent });
+      await requestCompletion(0);
       await manager.disputeJob(0, { from: employer });
 
       const employerBalanceBefore = await token.balanceOf(employer);
@@ -461,6 +462,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("allows only employer or agent to dispute", async () => {
       await manager.applyForJob(0, "agent", [], { from: agent });
+      await requestCompletion(0);
       await expectCustomError(manager.disputeJob.call(0, { from: outsider }), "NotAuthorized");
       await manager.disputeJob(0, { from: agent });
       await expectCustomError(manager.disputeJob.call(0, { from: agent }), "InvalidState");
