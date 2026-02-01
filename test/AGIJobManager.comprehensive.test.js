@@ -462,13 +462,13 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.applyForJob(0, "agent", [], { from: agent });
       await manager.disputeJob(0, { from: employer });
       await expectCustomError(
-        manager.resolveDispute.call(0, "agent win", { from: outsider }),
+        manager.resolveDisputeWithCode.call(0, 1, "agent win", { from: outsider }),
         "NotModerator"
       );
 
       const agentBalanceBefore = await token.balanceOf(agent);
-      const resolutionReceipt = await manager.resolveDispute(0, "agent win", { from: moderator });
-      expectEvent(resolutionReceipt, "DisputeResolved", { jobId: new BN(0), resolver: moderator });
+      const resolutionReceipt = await manager.resolveDisputeWithCode(0, 1, "agent win", { from: moderator });
+      expectEvent(resolutionReceipt, "DisputeResolvedWithCode", { jobId: new BN(0), resolver: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
       const expectedPayout = payout.muln(92).divn(100);
       assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
@@ -477,11 +477,11 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await createJob();
       await manager.applyForJob(newJobId, "agent", [], { from: agent });
       await manager.disputeJob(newJobId, { from: employer });
-      const neutralReceipt = await manager.resolveDispute(newJobId, "needs more info", { from: moderator });
-      expectEvent(neutralReceipt, "DisputeResolved", { jobId: newJobId, resolver: moderator });
+      const neutralReceipt = await manager.resolveDisputeWithCode(newJobId, 0, "needs more info", { from: moderator });
+      expectEvent(neutralReceipt, "DisputeResolvedWithCode", { jobId: newJobId, resolver: moderator });
       const neutralJob = await manager.jobs(newJobId);
       assert.equal(neutralJob.completed, false);
-      assert.equal(neutralJob.disputed, false);
+      assert.equal(neutralJob.disputed, true);
     });
 
     it("prevents disputes after completion", async () => {

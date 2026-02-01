@@ -63,6 +63,8 @@ function startGanache() {
     "1337",
     "--chain.networkId",
     "1337",
+    "--chain.allowUnlimitedContractSize",
+    "true",
     "--logging.quiet",
     "--miner.blockGasLimit",
     "100000000",

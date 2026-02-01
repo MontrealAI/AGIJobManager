@@ -54,9 +54,9 @@ sequenceDiagram
   Validator->>Contract: disapproveJob(...)
   Contract-->>Contract: job.disputed = true
   Employer->>Contract: disputeJob(jobId)
-  Moderator->>Contract: resolveDispute(jobId, "agent win" | "employer win" | other)
-  Contract-->>Agent: payout if "agent win"
-  Contract-->>Employer: refund if "employer win"
+  Moderator->>Contract: resolveDisputeWithCode(jobId, code, reason)
+  Contract-->>Agent: payout if code == AGENT_WIN
+  Contract-->>Employer: refund if code == EMPLOYER_WIN
 ```
 
 ## Quickstart — Local Dev Chain (Truffle + Ganache)
@@ -176,7 +176,7 @@ This path uses the Etherscan **Write Contract** UI. You will need the contract a
 2. `disapproveJob(jobId, subdomain, proof)` to reject (may trigger dispute).
 
 **Moderator**
-1. `resolveDispute(jobId, resolution)`
+1. `resolveDisputeWithCode(jobId, resolutionCode, reason)`
    - Use exactly `"agent win"` or `"employer win"` to trigger payouts/refunds.
 
 **NFT Marketplace**
@@ -194,15 +194,15 @@ Every step emits events and changes state/balances.
 | `requestJobCompletion` | `JobCompletionRequested` | none | `completionRequested`, `ipfsHash` |
 | `validateJob` | `JobValidated` | none (until threshold) | `validatorApprovals`, validator maps |
 | `disapproveJob` | `JobDisapproved`, maybe `JobDisputed` | none | `validatorDisapprovals`, `disputed` |
-| `resolveDispute("agent win")` | `DisputeResolved`, `JobCompleted`, `NFTIssued` | contract → agent/validators | `completed`, reputation updates |
-| `resolveDispute("employer win")` | `DisputeResolved` | contract → employer refund | `completed` |
+| `resolveDisputeWithCode(AGENT_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, `NFTIssued` | contract → agent/validators | `completed`, reputation updates |
+| `resolveDisputeWithCode(EMPLOYER_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved` | contract → employer refund | `completed` |
 | `listNFT` | `NFTListed` | none | listing active |
 | `purchaseNFT` | `NFTPurchased` | buyer → seller | listing inactive, NFT transfer |
 | `delistNFT` | `NFTDelisted` | none | listing inactive |
 
 Key events include:
 - `JobCreated`, `JobApplied`, `JobCompletionRequested`
-- `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`
+- `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
 - `JobCompleted`, `NFTIssued`
 - `NFTListed`, `NFTPurchased`, `NFTDelisted`
 

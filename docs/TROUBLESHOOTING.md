@@ -5,7 +5,7 @@ This guide explains why transactions fail and what to check before retrying.
 ## Custom errors (from the contract)
 | Error | Meaning | Common triggers | Fix |
 | --- | --- | --- | --- |
-| `NotModerator` | Caller is not a moderator | `resolveDispute` called by non‑moderator | Ask owner to add moderator |
+| `NotModerator` | Caller is not a moderator | `resolveDisputeWithCode` called by non‑moderator | Ask owner to add moderator |
 | `NotAuthorized` | Caller fails identity checks | Wrong subdomain, missing Merkle proof, not allowlisted | Verify subdomain, proof, or allowlist |
 | `Blacklisted` | Address is blocked | `applyForJob`, `validateJob`, `disapproveJob` while blacklisted | Ask owner to remove blacklist |
 | `InvalidParameters` | Inputs out of range | payout=0, duration=0, price=0, invalid percent | Fix input values |
@@ -33,7 +33,7 @@ If the contract is paused, most user actions revert with `Pausable: paused`.
 - Validators cannot approve or disapprove twice.
 
 ### Dispute status
-- `resolveDispute` only works when `disputed == true`.
+- `resolveDisputeWithCode` only works when `disputed == true`.
 - `disputeJob` can only be called by employer or assigned agent.
 
 ## How to diagnose

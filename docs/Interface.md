@@ -72,6 +72,7 @@
 | `disapproveJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `disputeJob(uint256 _jobId)` | nonpayable | — |
 | `resolveDispute(uint256 _jobId, string resolution)` | nonpayable | — |
+| `resolveDisputeWithCode(uint256 _jobId, uint8 resolutionCode, string reason)` | nonpayable | — |
 | `resolveStaleDispute(uint256 _jobId, bool employerWins)` | nonpayable | — |
 | `blacklistAgent(address _agent, bool _status)` | nonpayable | — |
 | `blacklistValidator(address _validator, bool _status)` | nonpayable | — |
@@ -126,6 +127,7 @@
 | `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)` | uint256 _fromTokenId, uint256 _toTokenId |
 | `CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
 | `DisputeResolved(uint256 jobId, address resolver, string resolution)` | uint256 jobId, address resolver, string resolution |
+| `DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)` | uint256 jobId, address resolver, uint8 resolutionCode, string reason |
 | `DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
 | `DisputeTimeoutResolved(uint256 jobId, address resolver, bool employerWins)` | uint256 jobId, address resolver, bool employerWins |
 | `JobApplied(uint256 jobId, address agent)` | uint256 jobId, address agent |

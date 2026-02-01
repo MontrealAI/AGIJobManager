@@ -84,7 +84,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
 - **On‑chain recovery:**
   - Lower thresholds via `setRequiredValidatorApprovals` / `setRequiredValidatorDisapprovals`.
   - Add validators directly with `addAdditionalValidator` to bypass allowlist/ENS.
-  - As a last resort, use `disputeJob` + `resolveDispute` (moderator required) to close jobs.
+  - As a last resort, use `disputeJob` + `resolveDisputeWithCode` (moderator required) to close jobs.
 - **Operational recovery:** Pause, correct thresholds, add validators, unpause, and have validators re‑validate.
 - **Outcome:** **Recoverable** if owner/moderator actions are available.
 
@@ -123,11 +123,11 @@ Below are plausible misconfiguration or operational failures that can trap funds
 - **Operational recovery:** Verify `withdrawableAGI()` before withdrawing.
 - **Outcome:** **Prevented** when accounting is correct.
 
-### 6) Misuse of `resolveDispute` resolution strings
-- **Symptom:** Dispute is cleared but no payout occurs; job remains incomplete.
-- **Root cause:** `resolveDispute` only triggers payouts for exact strings `"agent win"` or `"employer win"`. Other strings only clear the dispute flag.
-- **On‑chain recovery:** Re‑dispute and resolve with the correct string.
-- **Operational recovery:** Educate moderators on canonical resolution strings; keep a runbook.
+### 6) Misuse of legacy `resolveDispute` resolution strings
+- **Symptom:** Dispute remains active and no payout occurs; only a log entry is emitted.
+- **Root cause:** The legacy `resolveDispute` maps only the exact strings `"agent win"` or `"employer win"` to settlement actions. Any other string maps to `NO_ACTION`.
+- **On‑chain recovery:** Call `resolveDisputeWithCode(jobId, code, reason)` with the correct typed code (`AGENT_WIN` or `EMPLOYER_WIN`).
+- **Operational recovery:** Use the UI’s action selector (typed code) instead of free‑form strings.
 - **Outcome:** **Recoverable** with proper moderator action.
 
 ## Pre‑deploy / post‑deploy parameter sanity checklist
@@ -164,7 +164,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - For unassigned jobs: employer can `cancelJob` (if no agent assigned). Owner can `delistJob` to refund.
    - For assigned jobs: instruct validators to retry `validateJob` or `disapproveJob` after parameters are fixed.
    - If completion is requested but thresholds never form, use `finalizeJob` after `completionReviewPeriod` to settle deterministically.
-   - If validators cannot reach thresholds and a dispute is needed, use `disputeJob` and resolve with `resolveDispute` (moderator only).
+   - If validators cannot reach thresholds and a dispute is needed, use `disputeJob` and resolve with `resolveDisputeWithCode` (moderator only).
 
 4. **Validate recovery:**
    - Use `getJobStatus` and the public `jobs(jobId)` getter to confirm `completed`/`disputed` status.

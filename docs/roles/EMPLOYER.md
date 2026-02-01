@@ -57,4 +57,4 @@ When a job completes, an NFT is minted to your wallet.
 - `jobs[jobId].disputed`
 
 ### Events to index
-`JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `NFTIssued`, `JobDisputed`, `DisputeResolved`
+`JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `NFTIssued`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
