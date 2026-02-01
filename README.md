@@ -53,7 +53,6 @@ stateDiagram-v2
 
     Disputed --> Completed: resolveDispute("agent win")
     Disputed --> Completed: resolveDispute("employer win")
-    Disputed --> Assigned: resolveDispute(other)
     Disputed --> Completed: resolveStaleDispute (owner, paused, timeout)
 
     Assigned --> Expired: expireJob (timeout, no completion request)
@@ -61,7 +60,7 @@ stateDiagram-v2
     Created --> Cancelled: cancelJob (employer)
     Created --> Cancelled: delistJob (owner)
 ```
-*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string clears the `disputed` flag and returns the job to its prior in‑progress state (Assigned or CompletionRequested). Agent‑win dispute resolution now requires a prior completion request so settlement always has completion metadata; agents may submit completion even if a dispute is already open, including after the nominal duration has elapsed or while paused for dispute recovery.
+*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string maps to `NO_ACTION` and leaves the dispute active. Agent‑win dispute resolution requires a prior completion request so settlement always has completion metadata; agents may submit completion even if a dispute is already open, including after the nominal duration has elapsed or while paused for dispute recovery.
 
 **Settlement invariant (payout + NFT)**: the agent can only be paid and the completion NFT can only be minted after a completion request is recorded on-chain **and** a non-empty, valid completion metadata URI is stored. Moderators/owners cannot award an agent win without that completion request, and the job NFT always points to the completion metadata (not the job spec).
 
@@ -191,6 +190,21 @@ Pause is an incident-response safety control. When paused, all job lifecycle act
 
 See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
 
+## Ecosystem links
+
+- **Repository**: https://github.com/MontrealAI/AGIJobManager
+- **ERC‑8004 specification**: https://eips.ethereum.org/EIPS/eip-8004
+- **ERC‑8004 deck (framing)**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0/blob/main/docs/presentation/MONTREALAI_x_ERC8004_v0.pdf
+- **ERC‑8004 deck (repo copy)**: [`presentations/MONTREALAI_x_ERC8004_v0.pdf`](presentations/MONTREALAI_x_ERC8004_v0.pdf)
+- **Institutional overview (repo PDF)**: [`presentations/AGI_Eth_Institutional_v0.pdf`](presentations/AGI_Eth_Institutional_v0.pdf)
+- **AGI‑Alpha‑Agent reference repo**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0
+- **ENS docs**: https://docs.ens.domains/
+- **ENS NameWrapper**: https://docs.ens.domains/ens-improvement-proposals/ensip-10-namewrapper
+- **OpenZeppelin Contracts**: https://docs.openzeppelin.com/contracts/4.x/
+- **Truffle**: https://trufflesuite.com/docs/truffle/
+- **Etherscan (deployments)**: https://etherscan.io/address/<your-contract-address>
+- **OpenSea (job NFTs)**: https://opensea.io/assets/ethereum/<your-contract-address>/<token-id>
+
 ## Documentation
 
 Start here:
@@ -208,12 +222,3 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
-
-## Ecosystem links
-
-- **Contract repo**: https://github.com/MontrealAI/AGIJobManager
-- **ERC‑8004 spec**: https://eips.ethereum.org/EIPS/eip-8004
-- **ERC‑8004 framing deck (PDF)**: [`presentations/MONTREALAI_x_ERC8004_v0.pdf`](presentations/MONTREALAI_x_ERC8004_v0.pdf)
-- **Institutional overview (PDF)**: [`presentations/AGI_Eth_Institutional_v0.pdf`](presentations/AGI_Eth_Institutional_v0.pdf)
-- **Etherscan explorers**: https://etherscan.io / https://sepolia.etherscan.io
-- **OpenSea (NFT marketplace)**: https://opensea.io

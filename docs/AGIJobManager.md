@@ -94,7 +94,6 @@ stateDiagram-v2
     CompletionRequested --> Finalized: validateJob (threshold)
     CompletionRequested --> Finalized: finalizeJob (timeout, deterministic fallback)
 
-    Assigned --> Disputed: disputeJob
     CompletionRequested --> Disputed: disputeJob
     CompletionRequested --> Disputed: disapproveJob (threshold)
 
@@ -109,7 +108,7 @@ stateDiagram-v2
     Created --> Cancelled: delistJob (owner)
 ```
 
-**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` only after `requestJobCompletion`. Agent‑win dispute resolution now requires a prior completion request so settlement always carries completion metadata, and agents may submit completion even if a dispute is already open (including after the nominal duration or while paused for dispute recovery). **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
+**Finalized** means `completed = true`. An `employer win` finalizes the job *without* agent payout or NFT minting. `resolveDisputeWithCode(NO_ACTION)` only logs a reason and leaves the dispute active (in‑progress flags such as `completionRequested` remain set). Validators can call `validateJob`/`disapproveJob` only after `requestJobCompletion`. Agent‑win dispute resolution requires a prior completion request so settlement always carries completion metadata, and agents may submit completion even if a dispute is already open (including after the nominal duration or while paused for dispute recovery). **Expired** means `expired = true` with the escrow refunded to the employer; expired jobs are terminal and cannot be completed later.
 
 ## Escrow and payout mechanics
 - **Escrow on creation**: `createJob` transfers the payout from employer to the contract via `transferFrom`.
@@ -126,7 +125,7 @@ stateDiagram-v2
 - `disapproveJob` increments disapproval count, records participation, and flips `disputed` when disapprovals reach the required threshold; it requires `completionRequested`.
 - Each job records at most `MAX_VALIDATORS_PER_JOB` unique validators; once the cap is reached, additional `validateJob`/`disapproveJob` calls revert.
 - Owner‑set validator thresholds must each be ≤ the cap and their sum must not exceed the cap or the configuration reverts.
-- `disputeJob` can be called by employer or assigned agent (if not already disputed or completed).
+- `disputeJob` can be called by employer or assigned agent **after completion is requested** (if not already disputed or completed).
 - `finalizeJob` lets anyone finalize after `completionReviewPeriod` if the job is not disputed. The outcome is deterministic: validator thresholds are honored, silence defaults to agent completion, and otherwise approvals must strictly exceed disapprovals for agent payout (ties refund the employer).
 - `resolveDisputeWithCode` accepts a typed action code and a freeform reason:
   - `NO_ACTION (0)` → log only; dispute remains active.
