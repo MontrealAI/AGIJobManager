@@ -77,6 +77,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const jobId = await createJob();
     await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
     await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await setResolverOwnership(ens, resolver, clubRoot, "alice", validator);
 
@@ -116,6 +117,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     await manager.addAdditionalValidator(validator, { from: owner });
 
     await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
 
     const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
