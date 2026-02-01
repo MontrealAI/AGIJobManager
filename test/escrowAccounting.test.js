@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { time } = require("@openzeppelin/test-helpers");
+const { expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -60,6 +60,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const withdrawable = await manager.withdrawableAGI();
     assert.equal(withdrawable.toString(), "0", "withdrawable should exclude escrow");
 
+    await manager.pause({ from: owner });
     await expectCustomError(
       manager.withdrawAGI.call(toBN(1), { from: owner }),
       "InsufficientWithdrawableBalance"
@@ -75,6 +76,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const withdrawable = await manager.withdrawableAGI();
     assert.equal(withdrawable.toString(), surplus.toString(), "withdrawable should be surplus only");
 
+    await expectRevert(manager.withdrawAGI(surplus, { from: owner }), "Pausable: not paused");
+    await manager.pause({ from: owner });
     await manager.withdrawAGI(surplus, { from: owner });
 
     const remainingWithdrawable = await manager.withdrawableAGI();

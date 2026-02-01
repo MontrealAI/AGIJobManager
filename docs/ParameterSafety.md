@@ -39,7 +39,7 @@ On completion (`_completeJob`), the contract executes the following calculations
 **Rounding behavior:** all divisions are integer divisions; any remainder stays in the contract. Specifically:
 - Any fractional remainder from `agentPayout` is retained by the contract.
 - Any remainder from `totalValidatorPayout / vCount` stays in the contract.
-- There is no “dust” redistribution. Remaining tokens are only recoverable by the owner via `withdrawAGI`, which is limited to `withdrawableAGI()` (balance minus `lockedEscrow`).
+- There is no “dust” redistribution. Remaining tokens are only recoverable by the owner via `withdrawAGI` while paused, which is limited to `withdrawableAGI()` (balance minus `lockedEscrow`).
 
 ### Safety constraints derived from settlement
 

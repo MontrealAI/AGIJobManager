@@ -111,6 +111,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     await token.mint(manager.address, surplus, { from: owner });
 
     const balanceBefore = await token.balanceOf(owner);
+    await expectRevert(manager.withdrawAGI(surplus, { from: owner }), "Pausable: not paused");
+    await manager.pause({ from: owner });
     await expectCustomError(
       manager.withdrawAGI.call(payout, { from: owner }),
       "InsufficientWithdrawableBalance"
@@ -138,6 +140,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     await failing.transfer(managerFailing.address, toBN(toWei("2")), { from: owner });
     await failing.setFailTransfers(true, { from: owner });
+    await managerFailing.pause({ from: owner });
     await expectCustomError(
       managerFailing.withdrawAGI.call(toBN(toWei("1")), { from: owner }),
       "TransferFailed"
