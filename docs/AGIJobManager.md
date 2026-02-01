@@ -148,6 +148,7 @@ If ENS or NameWrapper calls fail, the contract emits `RecoveryInitiated` for obs
 
 ## NFT issuance and marketplace
 - **Minting**: completion mints a job NFT to the employer, with `tokenURI` pointing to the job completion metadata. The contract uses `jobCompletionURI` when set and falls back to the legacy `ipfsHash` for older jobs. Full URIs (e.g., `ipfs://...` or `https://...`) are accepted; otherwise `baseIpfsUrl` is prepended.
+- **Completion metadata required**: `requestJobCompletion(jobId, jobCompletionURI)` requires a non‑empty completion metadata URI. This URI must resolve to the ERC‑721 metadata JSON for the completion because it becomes the NFT’s `tokenURI` (for example, `ipfs://bafy...` or a CID such as `bafy...` when `baseIpfsUrl` is configured).
 - **Listings**: NFT owners can list tokens without escrow; listings live in the `listings` mapping.
 - **Purchases**: `purchaseNFT` transfers ERC‑20 from buyer to seller and transfers the NFT using ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received`.
 
