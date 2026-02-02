@@ -433,24 +433,6 @@ module.exports = async function postdeployConfig(callback) {
     });
 
     await addParamOp({
-      key: "additionalAgentPayoutPercentage",
-      label: "Set additionalAgentPayoutPercentage",
-      currentValue: await instance.additionalAgentPayoutPercentage(),
-      desiredValue: config.additionalAgentPayoutPercentage,
-      send: () =>
-        instance.setAdditionalAgentPayoutPercentage(
-          config.additionalAgentPayoutPercentage,
-          txFrom ? { from: txFrom } : {}
-        ),
-      verify: async () => {
-        const updated = await instance.additionalAgentPayoutPercentage();
-        if (updated.toString() !== toStringValue(config.additionalAgentPayoutPercentage)) {
-          throw new Error("additionalAgentPayoutPercentage did not update");
-        }
-      },
-    });
-
-    await addParamOp({
       key: "termsAndConditionsIpfsHash",
       label: "Set termsAndConditionsIpfsHash",
       currentValue: await instance.termsAndConditionsIpfsHash(),
@@ -524,6 +506,49 @@ module.exports = async function postdeployConfig(callback) {
       },
     });
 
+    const currentAdditionalAgentPayout = await instance.additionalAgentPayoutPercentage();
+    const desiredAdditionalAgentPayout = config.additionalAgentPayoutPercentage;
+    const additionalAgentPayoutTarget = toStringValue(desiredAdditionalAgentPayout);
+    const additionalAgentNeedsUpdate =
+      additionalAgentPayoutTarget !== undefined &&
+      additionalAgentPayoutTarget !== currentAdditionalAgentPayout.toString();
+    const desiredAdditionalAgentPayoutNumber =
+      additionalAgentPayoutTarget !== undefined
+        ? Number(additionalAgentPayoutTarget)
+        : Number(currentAdditionalAgentPayout.toString());
+    const currentHeadroom = 100 - Number(currentValidationReward.toString());
+    const desiredHeadroom = 100 - validationRewardTargetNumber;
+    if (additionalAgentNeedsUpdate && desiredAdditionalAgentPayoutNumber > desiredHeadroom) {
+      throw new Error("additionalAgentPayoutPercentage exceeds validation reward headroom");
+    }
+    const additionalAgentAfterValidation =
+      additionalAgentNeedsUpdate &&
+      validationRewardNeedsUpdate &&
+      desiredAdditionalAgentPayoutNumber > currentHeadroom;
+
+    const addAdditionalAgentPayoutOp = async () =>
+      addParamOp({
+        key: "additionalAgentPayoutPercentage",
+        label: "Set additionalAgentPayoutPercentage",
+        currentValue: currentAdditionalAgentPayout,
+        desiredValue: desiredAdditionalAgentPayout,
+        send: () =>
+          instance.setAdditionalAgentPayoutPercentage(
+            desiredAdditionalAgentPayout,
+            txFrom ? { from: txFrom } : {}
+          ),
+        verify: async () => {
+          const updated = await instance.additionalAgentPayoutPercentage();
+          if (updated.toString() !== toStringValue(desiredAdditionalAgentPayout)) {
+            throw new Error("additionalAgentPayoutPercentage did not update");
+          }
+        },
+      });
+
+    if (additionalAgentNeedsUpdate && !additionalAgentAfterValidation) {
+      await addAdditionalAgentPayoutOp();
+    }
+
     const agiTypeOps = [];
     if (Array.isArray(config.agiTypes)) {
       for (const entry of config.agiTypes) {
@@ -553,8 +578,6 @@ module.exports = async function postdeployConfig(callback) {
       }
     }
 
-    const currentHeadroom = 100 - Number(currentValidationReward.toString());
-    const desiredHeadroom = 100 - validationRewardTargetNumber;
     const needsValidationFirst =
       validationRewardNeedsUpdate && agiTypeOps.length > 0 && desiredMaxAgiPayout > currentHeadroom;
     const needsAgiTypesFirst =
@@ -569,6 +592,10 @@ module.exports = async function postdeployConfig(callback) {
     } else {
       ops.push(...agiTypeOps);
       await addValidationRewardOp();
+    }
+
+    if (additionalAgentNeedsUpdate && additionalAgentAfterValidation) {
+      await addAdditionalAgentPayoutOp();
     }
 
     const listOps = [
