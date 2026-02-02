@@ -7,8 +7,14 @@ const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
-const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const {
+  setupAgiToken,
+  AGI_TOKEN_ADDRESS,
+  CLUB_ROOT_NODE,
+  AGENT_ROOT_NODE,
+} = require("./helpers/agiToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -23,17 +29,17 @@ contract("AGIJobManager economic safety", (accounts) => {
   let agentRoot;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setupAgiToken(MockERC20, accounts);
     ens = await MockENS.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = rootNode("club-root");
-    agentRoot = rootNode("agent-root");
+    clubRoot = CLUB_ROOT_NODE;
+    agentRoot = AGENT_ROOT_NODE;
   });
 
   it("prevents adding or updating AGI types that exceed payout headroom", async () => {
     const manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -55,7 +61,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
   it("prevents validation reward updates that exceed configured max agent payout", async () => {
     const manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -73,7 +79,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
   it("ignores additional agent payout settings when validating reward headroom", async () => {
     const manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -91,7 +97,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
   it("reverts settlement when misconfigured payout exceeds escrow (defense-in-depth)", async () => {
     const manager = await TestableAGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -129,7 +135,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
   it("settles successfully with safe payout configuration", async () => {
     const manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -173,7 +179,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
   it("reverts minting a job NFT when completion metadata is empty (defensive)", async () => {
     const manager = await TestableAGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,

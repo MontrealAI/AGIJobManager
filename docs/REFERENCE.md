@@ -74,8 +74,8 @@ Manages moderator permissions.
 ### `addAdditionalValidator(address)` / `removeAdditionalValidator(address)`
 Explicit allowlists for roles, bypassing ENS/Merkle checks.
 
-### `updateAGITokenAddress(address)`
-Changes the ERC‑20 token used for payouts.
+### `agiToken()` (view)
+Returns the fixed AGI token address (`0xA61a…`).
 
 ### `setBaseIpfsUrl(string)`
 Base prefix for minted NFT tokenURIs when a job URI is a bare CID.
