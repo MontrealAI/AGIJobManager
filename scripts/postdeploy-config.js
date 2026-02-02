@@ -233,8 +233,10 @@ module.exports = async function postdeployConfig(callback) {
 
     const validatorOps = [];
     if (approvalsTarget !== undefined || disapprovalsTarget !== undefined) {
-      const targetApprovals = approvalsTarget ? BigInt(approvalsTarget) : BigInt(currentApprovals);
-      const targetDisapprovals = disapprovalsTarget ? BigInt(disapprovalsTarget) : BigInt(currentDisapprovals);
+      const targetApprovals =
+        approvalsTarget !== undefined ? BigInt(approvalsTarget) : BigInt(currentApprovals);
+      const targetDisapprovals =
+        disapprovalsTarget !== undefined ? BigInt(disapprovalsTarget) : BigInt(currentDisapprovals);
       const maxValidatorsNum = BigInt(maxValidators.toString());
 
       if (targetApprovals > maxValidatorsNum || targetDisapprovals > maxValidatorsNum) {
