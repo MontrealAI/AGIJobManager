@@ -78,8 +78,6 @@
 | `delistJob(uint256 _jobId)` | nonpayable | — |
 | `addModerator(address _moderator)` | nonpayable | — |
 | `removeModerator(address _moderator)` | nonpayable | — |
-| `updateAGITokenAddress(address _newTokenAddress)` | nonpayable | — |
-| `setBaseIpfsUrl(string _url)` | nonpayable | — |
 | `setRequiredValidatorApprovals(uint256 _approvals)` | nonpayable | — |
 | `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | nonpayable | — |
 | `setPremiumReputationThreshold(uint256 _threshold)` | nonpayable | — |

@@ -59,10 +59,9 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - `withdrawAGI(amount)` can only withdraw surplus balances; it fails if `balance < lockedEscrow` or `amount > withdrawableAGI()`.
 - Withdrawals are only allowed while paused.
 
-### Rotating the escrow token
-- `updateAGITokenAddress` changes the ERC‑20 used for escrow, payouts, and reward pool contributions.
-- Changing the token can break integrations and invalidate approvals. Ensure all users re‑approve the new token and carefully manage `lockedEscrow` vs balances before switching.
-- **Mainnet invariant**: production deployments must keep `agiToken` fixed to AGIALPHA (`0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`). Treat token rotation as a testnet‑only or redeploy‑only operation.
+### Escrow token invariant
+- The escrow token is fixed at deployment to the canonical AGI token (`0xA61a…`).
+- There is no on-chain token rotation; redeploy if the token address ever needs to change.
 
 ## Monitoring checklist
 

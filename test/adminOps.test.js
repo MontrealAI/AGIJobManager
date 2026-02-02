@@ -10,8 +10,9 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const FailingERC20 = artifacts.require("FailingERC20");
 const MockERC721 = artifacts.require("MockERC721");
 
-const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { AGI_TOKEN_ADDRESS, AGENT_ROOT_NODE, CLUB_ROOT_NODE, setTokenCode } = require("./helpers/fixedToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -29,16 +30,16 @@ contract("AGIJobManager admin ops", (accounts) => {
   let agiTypeNft;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setTokenCode(MockERC20);
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = rootNode("club-root");
-    agentRoot = rootNode("agent-root");
+    clubRoot = CLUB_ROOT_NODE;
+    agentRoot = AGENT_ROOT_NODE;
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -122,11 +123,11 @@ contract("AGIJobManager admin ops", (accounts) => {
   });
 
   it("reverts withdrawals on failed transfers", async () => {
-    const failing = await FailingERC20.new({ from: owner });
+    const failing = await setTokenCode(FailingERC20);
     await failing.mint(owner, toBN(toWei("2")), { from: owner });
 
     const managerFailing = await AGIJobManager.new(
-      failing.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,

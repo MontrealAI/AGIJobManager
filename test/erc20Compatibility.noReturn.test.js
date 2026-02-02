@@ -6,8 +6,8 @@ const MockENS = artifacts.require("MockENS");
 const MockERC721 = artifacts.require("MockERC721");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
-const { rootNode } = require("./helpers/ens");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { AGI_TOKEN_ADDRESS, AGENT_ROOT_NODE, CLUB_ROOT_NODE, setTokenCode } = require("./helpers/fixedToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 
@@ -17,17 +17,17 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
   let manager;
 
   beforeEach(async () => {
-    token = await ERC20NoReturn.new({ from: owner });
+    token = await setTokenCode(ERC20NoReturn);
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
-      rootNode("club-root"),
-      rootNode("agent-root"),
+      CLUB_ROOT_NODE,
+      AGENT_ROOT_NODE,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -75,13 +75,18 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
     const tokenId = nftIssued.args.tokenId.toNumber();
 
     await manager.listNFT(tokenId, price, { from: employer });
+    const employerBalanceBefore = await token.balanceOf(employer);
     await manager.purchaseNFT(tokenId, { from: buyer });
 
     const newOwner = await manager.ownerOf(tokenId);
     assert.equal(newOwner, buyer, "buyer should own the NFT");
 
-    const employerBalance = await token.balanceOf(employer);
-    assert.equal(employerBalance.toString(), price.toString(), "seller should receive payment");
+    const employerBalanceAfter = await token.balanceOf(employer);
+    assert.equal(
+      employerBalanceAfter.sub(employerBalanceBefore).toString(),
+      price.toString(),
+      "seller should receive payment"
+    );
   });
 
   it("reverts with TransferFailed when transferFrom cannot be completed", async () => {

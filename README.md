@@ -109,10 +109,20 @@ npm test
 
 **Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.17`, while the Truffle default compiler is `0.8.23` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
 
+## Set-and-forget deployment
+
+For mainnet deployers who want to configure once and minimize ongoing governance, start with:
+- [Deployment checklist](docs/DEPLOYMENT_CHECKLIST.md)
+- [Minimal governance guide](docs/GOVERNANCE_MINIMAL.md)
+- [ENS identity verification](docs/ENS_IDENTITY.md)
+
 ## Contract documentation
 
 Detailed contract documentation lives in `docs/`:
 
+- [Set-and-forget deployment checklist](docs/DEPLOYMENT_CHECKLIST.md)
+- [Minimal governance guide](docs/GOVERNANCE_MINIMAL.md)
+- [ENS identity verification](docs/ENS_IDENTITY.md)
 - [Configure-once operations guide](docs/CONFIGURE_ONCE.md)
 - [Configure-once deployment profile](docs/DEPLOYMENT_PROFILE.md)
 - [Minimal governance model](docs/GOVERNANCE.md)

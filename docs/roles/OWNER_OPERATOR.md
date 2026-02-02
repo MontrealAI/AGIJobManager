@@ -34,7 +34,6 @@ This guide covers administrative operations and safety controls.
 - `setPremiumReputationThreshold(uint256)`
 
 ### Metadata
-- `setBaseIpfsUrl(string)`
 - `updateTermsAndConditionsIpfsHash(string)`
 - `updateContactEmail(string)`
 - `updateAdditionalText1/2/3(string)`
