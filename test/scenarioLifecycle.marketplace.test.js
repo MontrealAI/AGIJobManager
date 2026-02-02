@@ -8,8 +8,8 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
-const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { AGI_TOKEN_ADDRESS, AGENT_ROOT_NODE, CLUB_ROOT_NODE, setTokenCode } = require("./helpers/fixedToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -25,18 +25,18 @@ contract("AGIJobManager scenario coverage", (accounts) => {
   let agiType;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setTokenCode(MockERC20);
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
-      rootNode("club-root"),
-      rootNode("agent-root"),
+      CLUB_ROOT_NODE,
+      AGENT_ROOT_NODE,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -257,14 +257,19 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.ok(disputeTx.logs.find((log) => log.event === "JobDisputed"), "JobDisputed should emit");
     const disputedJob = await manager.jobs(jobId);
     assert.strictEqual(disputedJob.disputed, true, "job should be flagged as disputed");
+    const employerBalanceBefore = await token.balanceOf(employer);
     await manager.resolveDispute(jobId, "employer win", { from: moderator });
 
     const job = await manager.jobs(jobId);
     assert.strictEqual(job.completed, true, "job should be closed after employer win");
     assert.strictEqual(job.disputed, false, "disputed flag should clear");
 
-    const employerBalance = await token.balanceOf(employer);
-    assert.equal(employerBalance.toString(), payout.toString(), "employer should be refunded");
+    const employerBalanceAfter = await token.balanceOf(employer);
+    assert.equal(
+      employerBalanceAfter.sub(employerBalanceBefore).toString(),
+      payout.toString(),
+      "employer should be refunded"
+    );
     assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear on employer win");
 
     assert.equal((await manager.nextTokenId()).toNumber(), 0, "no NFT should be minted");

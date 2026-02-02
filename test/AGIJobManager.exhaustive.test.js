@@ -10,7 +10,8 @@ const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
-const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { AGI_TOKEN_ADDRESS, AGENT_ROOT_NODE, CLUB_ROOT_NODE, setTokenCode } = require("./helpers/fixedToken");
 
 const EMPTY_PROOF = [];
 
@@ -38,7 +39,7 @@ async function deployManager({
   owner,
 }) {
   return AGIJobManager.new(
-    token.address,
+    AGI_TOKEN_ADDRESS,
     "ipfs://base",
     ens.address,
     nameWrapper.address,
@@ -70,7 +71,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
   let defaultAgiType;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setTokenCode(MockERC20);
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
@@ -82,8 +83,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       token,
       ens,
       nameWrapper,
-      validatorRootNode: rootNode("club-root"),
-      agentRootNode: rootNode("agent-root"),
+      validatorRootNode: CLUB_ROOT_NODE,
+      agentRootNode: AGENT_ROOT_NODE,
       validatorMerkleRoot: validatorMerkle.root,
       agentMerkleRoot: agentMerkle.root,
       owner,
@@ -105,14 +106,14 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
         token,
         ens,
         nameWrapper,
-        validatorRootNode: rootNode("club-root"),
-        agentRootNode: rootNode("agent-root"),
+        validatorRootNode: CLUB_ROOT_NODE,
+        agentRootNode: AGENT_ROOT_NODE,
         validatorMerkleRoot: validatorMerkle.root,
         agentMerkleRoot: agentMerkle.root,
         owner,
       });
       const tokenAddress = await defaultsManager.agiToken();
-      assert.equal(tokenAddress, token.address);
+      assert.equal(tokenAddress, AGI_TOKEN_ADDRESS);
       assert.equal(await defaultsManager.name(), "AGIJobs");
       assert.equal(await defaultsManager.symbol(), "Job");
       assert.equal(await defaultsManager.requiredValidatorApprovals(), "3");
@@ -322,14 +323,14 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
   describe("Checked ERC20 transfers", () => {
     it("reverts createJob if transferFrom fails", async () => {
-      const failingToken = await FailingERC20.new({ from: owner });
+      const failingToken = await setTokenCode(FailingERC20);
       await failingToken.mint(employer, web3.utils.toWei("10"), { from: owner });
       const failingManager = await deployManager({
         token: failingToken,
         ens,
         nameWrapper,
-        validatorRootNode: rootNode("club-root"),
-        agentRootNode: rootNode("agent-root"),
+        validatorRootNode: CLUB_ROOT_NODE,
+        agentRootNode: AGENT_ROOT_NODE,
         validatorMerkleRoot: validatorMerkle.root,
         agentMerkleRoot: agentMerkle.root,
         owner,
@@ -343,14 +344,14 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
     });
 
     it("reverts payouts when transfer returns false", async () => {
-      const failingToken = await FailingERC20.new({ from: owner });
+      const failingToken = await setTokenCode(FailingERC20);
       await failingToken.mint(employer, web3.utils.toWei("100"), { from: owner });
       const failingManager = await deployManager({
         token: failingToken,
         ens,
         nameWrapper,
-        validatorRootNode: rootNode("club-root"),
-        agentRootNode: rootNode("agent-root"),
+        validatorRootNode: CLUB_ROOT_NODE,
+        agentRootNode: AGENT_ROOT_NODE,
         validatorMerkleRoot: validatorMerkle.root,
         agentMerkleRoot: agentMerkle.root,
         owner,
@@ -376,7 +377,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
     });
 
     it("reverts purchaseNFT when transferFrom fails", async () => {
-      const failingToken = await FailingERC20.new({ from: owner });
+      const failingToken = await setTokenCode(FailingERC20);
       await failingToken.mint(employer, web3.utils.toWei("100"), { from: owner });
       await failingToken.mint(buyer, web3.utils.toWei("100"), { from: owner });
 
@@ -384,8 +385,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
         token: failingToken,
         ens,
         nameWrapper,
-        validatorRootNode: rootNode("club-root"),
-        agentRootNode: rootNode("agent-root"),
+        validatorRootNode: CLUB_ROOT_NODE,
+        agentRootNode: AGENT_ROOT_NODE,
         validatorMerkleRoot: validatorMerkle.root,
         agentMerkleRoot: agentMerkle.root,
         owner,
@@ -416,7 +417,6 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
   describe("Admin & configuration", () => {
     it("enforces owner-only modifiers and updates config", async () => {
       await expectRevert.unspecified(manager.pause({ from: other }));
-      await manager.setBaseIpfsUrl("ipfs://new", { from: owner });
       assert.equal(await manager.canAccessPremiumFeature(agent), false);
 
       await manager.setPremiumReputationThreshold(1, { from: owner });
@@ -490,10 +490,10 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const payout = web3.utils.toWei("12");
       const jobId = await createJob({ manager, token, employer, payout });
 
-      await setNameWrapperOwnership(nameWrapper, rootNode("agent-root"), "alice", agent);
+      await setNameWrapperOwnership(nameWrapper, AGENT_ROOT_NODE, "alice", agent);
       await manager.applyForJob(jobId, "alice", EMPTY_PROOF, { from: agent });
 
-      await setResolverOwnership(ens, resolver, rootNode("club-root"), "validator", validator);
+      await setResolverOwnership(ens, resolver, CLUB_ROOT_NODE, "validator", validator);
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     });

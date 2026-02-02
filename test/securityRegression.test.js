@@ -8,9 +8,10 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 const FailingERC20 = artifacts.require("FailingERC20");
 
-const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { time } = require("@openzeppelin/test-helpers");
+const { AGI_TOKEN_ADDRESS, AGENT_ROOT_NODE, CLUB_ROOT_NODE, setTokenCode } = require("./helpers/fixedToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -28,16 +29,16 @@ contract("AGIJobManager security regressions", (accounts) => {
   let agiTypeNft;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setTokenCode(MockERC20);
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = rootNode("club-root");
-    agentRoot = rootNode("agent-root");
+    clubRoot = CLUB_ROOT_NODE;
+    agentRoot = AGENT_ROOT_NODE;
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -121,11 +122,16 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.disputeJob(jobId, { from: employer });
+    const agentBalanceBefore = await token.balanceOf(agent);
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
-    const agentBalance = await token.balanceOf(agent);
+    const agentBalanceAfter = await token.balanceOf(agent);
     const expectedPayout = payout.muln(92).divn(100);
-    assert.equal(agentBalance.toString(), expectedPayout.toString(), "agent payout should succeed without validators");
+    assert.equal(
+      agentBalanceAfter.sub(agentBalanceBefore).toString(),
+      expectedPayout.toString(),
+      "agent payout should succeed without validators"
+    );
   });
 
   it("rejects validator approvals before completion is requested", async () => {
@@ -266,11 +272,11 @@ contract("AGIJobManager security regressions", (accounts) => {
   });
 
   it("reverts on ERC20 transfer failures", async () => {
-    const failing = await FailingERC20.new({ from: owner });
+    const failing = await setTokenCode(FailingERC20);
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
     const managerFailing = await AGIJobManager.new(
-      failing.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -293,11 +299,11 @@ contract("AGIJobManager security regressions", (accounts) => {
   });
 
   it("reverts on payout transfer failures", async () => {
-    const failing = await FailingERC20.new({ from: owner });
+    const failing = await setTokenCode(FailingERC20);
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
     const managerFailing = await AGIJobManager.new(
-      failing.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,

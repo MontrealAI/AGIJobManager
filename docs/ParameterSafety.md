@@ -10,7 +10,7 @@ The table below lists configurable parameters and relevant caps, including who c
 
 | Parameter | Who can change | How it is used | On-chain enforced bounds | Recommended operational range | Failure mode if mis-set |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` | Owner (`updateAGITokenAddress`) | ERC‑20 used for escrow deposits, payouts, reward pool, and withdrawals. | None. | **Never change** after any job funds are deposited. Treat as immutable post‑deploy. | If changed after jobs are funded, payouts will attempt the *new* token while escrow sits in the old token. Completion/cancellation transfers can revert from insufficient balance; old token escrow becomes unrecoverable (no in-contract method to transfer old token). Funds can become permanently stuck. |
+| `agiToken` | Constructor (fixed) | ERC‑20 used for escrow deposits, payouts, reward pool, and withdrawals. | Fixed to canonical AGI token (`0xA61a…`). | **Immutable.** | Misconfigured deploys revert at construction time. |
 | `requiredValidatorApprovals` | Owner (`setRequiredValidatorApprovals`) | Approvals needed to auto‑complete a job via `validateJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **2–5** (or <= available validator count). Ensure enough active validators can realistically approve. | Too high → job completion requires more validators than are available; jobs can stall and require moderator dispute resolution. Setting to `0` makes any validation sufficient, which may be too weak for trust. |
 | `requiredValidatorDisapprovals` | Owner (`setRequiredValidatorDisapprovals`) | Disapprovals needed to mark job as `disputed` in `disapproveJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **1–3**; keep low so disputes are reachable with a small validator set. | Too high → disputes rarely trigger; jobs can remain in limbo if approvals never reach threshold. Setting to `0` means *any* disapproval triggers dispute. |
 | `validationRewardPercentage` | Owner (`setValidationRewardPercentage`) | Total % of payout distributed to validators on completion. | `1..100`; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100` | **Keep low enough so:** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. Commonly **1–10%**. | If `validationRewardPercentage + agent payout % > 100` and validators are present, settlement reverts due to insufficient escrow, making jobs uncompletable. |
@@ -64,21 +64,14 @@ On completion (`_completeJob`), the contract executes the following calculations
 
 Below are plausible misconfiguration or operational failures that can trap funds or make jobs uncompletable.
 
-### 1) ERC‑20 token address changed after jobs are funded
-- **Symptom:** Validators attempt to approve; completion reverts. Employer/agent cannot receive payouts or refunds.
-- **Root cause:** `agiToken` was updated while escrow for existing jobs remains in the old token. Payouts now target the new token balance (likely zero).
-- **On‑chain recovery:** **None** for existing escrow in the old token; there is no function to transfer arbitrary ERC‑20s out. `withdrawAGI` only works for the *current* token.
-- **Operational recovery:** Pause the contract, and redeploy a new instance. If possible, coordinate off‑chain refunds from treasury.
-- **Outcome:** **Funds can be permanently stuck** in the old token.
-
-### 2) `validationRewardPercentage + agent payout % > 100`
+### 1) `validationRewardPercentage + agent payout % > 100`
 - **Symptom:** Any completion attempt reverts during validator payouts.
 - **Root cause:** Agent payout is paid first; validator payouts are then attempted from remaining escrow. If total exceeds escrow, transfers fail.
 - **On‑chain recovery:** Update `validationRewardPercentage` or reduce any `AGIType.payoutPercentage` so the total is ≤ 100. After changing, a validator can retry `validateJob` to complete.
 - **Operational recovery:** Pause to prevent new jobs, adjust parameters, unpause, and instruct validators to re‑submit.
 - **Outcome:** **Recoverable** once parameters are fixed.
 
-### 3) Validator thresholds too high or validator eligibility misconfigured
+### 2) Validator thresholds too high or validator eligibility misconfigured
 - **Symptom:** Approvals never reach `requiredValidatorApprovals`; disputes never reach `requiredValidatorDisapprovals`.
 - **Root cause:** Thresholds exceed the available validator set, or Merkle/ENS gating blocks validators from proving eligibility. Roots are immutable post‑deploy.
 - **On‑chain recovery:**
@@ -88,42 +81,42 @@ Below are plausible misconfiguration or operational failures that can trap funds
 - **Operational recovery:** Pause, correct thresholds, add validators, unpause, and have validators re‑validate.
 - **Outcome:** **Recoverable** if owner/moderator actions are available.
 
-### 3b) Employer/validator silence after completion request
+### 2b) Employer/validator silence after completion request
 - **Symptom:** Agent requested completion, but validator activity is insufficient to reach thresholds.
 - **Root cause:** Review/validation activity never reaches the configured thresholds.
 - **On‑chain recovery:** After `completionReviewPeriod`, anyone can call `finalizeJob`. Silence defaults to agent payout; otherwise approvals must exceed disapprovals for agent payout (ties refund the employer).
 - **Operational recovery:** Choose a review period long enough to permit normal review. Shorten or lengthen as needed via `setCompletionReviewPeriod`.
 - **Outcome:** **Recoverable** without owner intervention.
 
-### 3c) Agent disappearance after assignment
+### 2c) Agent disappearance after assignment
 - **Symptom:** Agent never requests completion; job is past its deadline.
 - **Root cause:** Assigned agent disappears or misses the duration window.
 - **On‑chain recovery:** Anyone can call `expireJob` after `assignedAt + duration` (only if completion was never requested) to refund the employer.
 - **Operational recovery:** Monitor overdue jobs and trigger expiration.
 - **Outcome:** **Recoverable** without owner intervention.
 
-### 3d) Disputed jobs with no moderator availability
+### 2d) Disputed jobs with no moderator availability
 - **Symptom:** Job is disputed and no moderator action occurs.
 - **Root cause:** Moderator key loss, unavailability, or operational outage.
 - **On‑chain recovery:** Owner can pause the contract and call `resolveStaleDispute` after `disputeReviewPeriod` to complete or refund.
 - **Operational recovery:** Maintain moderator redundancy; reserve `resolveStaleDispute` for incident recovery.
 - **Outcome:** **Recoverable** with owner intervention.
 
-### 4) Token transfer failures to specific recipients
+### 3) Token transfer failures to specific recipients
 - **Symptom:** Settlement reverts when paying a validator or agent (or employer in disputes/cancels).
 - **Root cause:** ERC‑20 transfers fail (blacklisted address, paused token, or non‑standard behavior). `_safeERC20Transfer` treats any failure as a revert.
 - **On‑chain recovery:** None if the token refuses transfer to that address.
 - **Operational recovery:** Prefer `disputeJob` and resolve in favor of the counterparty **only if that address can receive tokens**. If the token itself is frozen, jobs cannot be settled.
 - **Outcome:** Potentially **stuck** until token behavior changes or you redeploy.
 
-### 5) Owner attempts to withdraw escrowed funds (`withdrawAGI`)
+### 4) Owner attempts to withdraw escrowed funds (`withdrawAGI`)
 - **Symptom:** Withdrawal reverts with `InsufficientWithdrawableBalance`.
 - **Root cause:** Owner attempted to withdraw funds reserved in `lockedEscrow`.
 - **On‑chain recovery:** None needed; withdrawal is blocked. If `lockedEscrow` is mis-accounted and insolvency occurs, fix the underlying accounting via a redeploy or off-chain remediation.
 - **Operational recovery:** Verify `withdrawableAGI()` before withdrawing.
 - **Outcome:** **Prevented** when accounting is correct.
 
-### 6) Misuse of legacy `resolveDispute` resolution strings
+### 5) Misuse of legacy `resolveDispute` resolution strings
 - **Symptom:** Dispute remains active and no payout occurs; only a log entry is emitted.
 - **Root cause:** The legacy `resolveDispute` maps only the exact strings `"agent win"` or `"employer win"` to settlement actions. Any other string maps to `NO_ACTION`.
 - **On‑chain recovery:** Call `resolveDisputeWithCode(jobId, code, reason)` with the correct typed code (`AGENT_WIN` or `EMPLOYER_WIN`).
@@ -133,7 +126,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
 ## Pre‑deploy / post‑deploy parameter sanity checklist
 
 ### Pre‑deploy (before contract creation)
-1. **Token selection:** confirm `agiToken` is a standard ERC‑20 (no fee‑on‑transfer, no rebasing) and will not be changed post‑deploy.
+1. **Token selection:** confirm the canonical AGI token (`0xA61a…`) is the escrow token; it is fixed in the constructor and cannot be changed post‑deploy.
 2. **Eligibility roots:** verify `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, and `agentMerkleRoot` against your allowlists and ENS settings.
 3. **Validator thresholds:** choose `requiredValidatorApprovals` and `requiredValidatorDisapprovals` so that your known validator set can reach them quickly.
 4. **Payout economics:** define a maximum `AGIType.payoutPercentage` and choose `validationRewardPercentage` so their sum is **≤ 100**.
@@ -158,7 +151,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - Adjust validator thresholds (`setRequiredValidatorApprovals`, `setRequiredValidatorDisapprovals`).
    - Adjust payout percentages (`setValidationRewardPercentage`, `addAGIType`).
    - Add emergency allowlisted validators/agents (`addAdditionalValidator`, `addAdditionalAgent`).
-   - **Do not** change `agiToken` when escrow is outstanding.
+   - `agiToken` is immutable; no post‑deploy changes are possible.
 
 3. **Unstick existing jobs:**
    - For unassigned jobs: employer can `cancelJob` (if no agent assigned). Owner can `delistJob` to refund.
@@ -174,6 +167,5 @@ Below are plausible misconfiguration or operational failures that can trap funds
 
 If you plan a future upgrade or redeploy, consider:
 - Enforce `agentPayoutPercentage + validationRewardPercentage <= 100` in `addAGIType` or `setValidationRewardPercentage` to prevent uncompletable jobs.
-- Disallow `updateAGITokenAddress` once `nextJobId > 0` or once any escrow exists.
-- Add a controlled rescue method for non‑current tokens (with strict event logging and governance).
+- Add a controlled rescue method for non‑current tokens (with strict event logging and governance) only if you plan a future upgrade.
 - Require `completionRequested` before `validateJob` to align on‑chain behavior with off‑chain expectations.

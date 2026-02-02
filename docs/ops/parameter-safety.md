@@ -29,7 +29,7 @@ This document is a production-grade **operator checklist** for preventing and re
 
 | Parameter / lever | Type / units | Used in | Safe range / constraints | What breaks if wrong | Recovery / escape hatch |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` (`updateAGITokenAddress`) | ERC‑20 address | Escrow deposits, payouts, marketplace purchases, reward pool, `withdrawAGI`. | **Treat as immutable after any job is funded.** Must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | If changed after funding, escrow in the old token becomes **unrecoverable**; new payouts can revert due to missing balance. | **No on-chain recovery** for old token escrow; redeploy + off-chain remediation. |
+| `agiToken` (constructor, fixed) | ERC‑20 address | Escrow deposits, payouts, marketplace purchases, reward pool, `withdrawAGI`. | **Immutable.** Must be the canonical AGI token (`0xA61a…`). Must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | Misconfigured deploys revert in the constructor. | Redeploy with correct constructor args. |
 | `requiredValidatorApprovals` (`setRequiredValidatorApprovals`) | uint256 count | `validateJob` threshold → `_completeJob`. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Operationally keep ≤ active validator count. | Too high → completion unreachable; jobs stall unless a moderator resolves disputes. | Lower threshold or add validators with `addAdditionalValidator`. |
 | `requiredValidatorDisapprovals` (`setRequiredValidatorDisapprovals`) | uint256 count | `disapproveJob` threshold → dispute. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Keep low to enable disputes. | Too high → disputes never trigger; jobs can remain in limbo. | Lower threshold; use `disputeJob` + `resolveDisputeWithCode`. |
 | `validationRewardPercentage` (`setValidationRewardPercentage`) | uint256 percentage | Validator payout pool in `_completeJob`. | `1..100` on-chain; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If sum exceeds 100, payouts can exceed escrow → completion reverts. | Reduce `validationRewardPercentage` or reduce any AGI type payout percentage. |
@@ -49,64 +49,59 @@ This document is a production-grade **operator checklist** for preventing and re
 | `validatorMerkleRoot`, `agentMerkleRoot` (constructor) | Merkle root | Eligibility gating. | Must match allowlists; immutable after deploy. | Bad root means Merkle proofs always fail; gating relies solely on ENS or allowlist. | Use `additional*` allowlist or redeploy. |
 | `ens`, `nameWrapper` (constructor) | contract address | ENS/NameWrapper ownership checks. | Must be correct chain-specific addresses. | Wrong addresses → ownership checks fail; `_verifyOwnership` emits recovery events and returns false. | Use `additional*` allowlist or redeploy. |
 | `withdrawAGI` | token amount | Owner withdraws surplus (`withdrawableAGI()`) while paused. | Only withdraw when paused and `withdrawableAGI()` is positive. | Withdrawal reverts if amount exceeds surplus. | Use `withdrawableAGI()` to size withdrawals; do not rely on raw balance. |
-| `baseIpfsUrl` (`setBaseIpfsUrl`) | string URL | Token URI for job NFTs. | Stable HTTP/IPFS base. | Wrong value breaks NFT metadata display (no settlement impact). | Update base URL; metadata reads fixed retroactively. |
+| `baseIpfsUrl` (constructor) | string URL | Token URI for job NFTs. | Stable HTTP/IPFS base. | Wrong value breaks NFT metadata display (no settlement impact). | Redeploy with correct constructor args. |
 | `termsAndConditionsIpfsHash`, `contactEmail`, `additionalText1/2/3` | strings | UI/legal metadata only. | Non-empty strings recommended. | Mis-set affects UI/legal metadata only. | Update strings. |
 | `listNFT` price | token amount | Marketplace list price. | Must be > 0. | Zero price reverts listing; invalid price prevents sale. | Re-list with valid price. |
 | `purchaseNFT` allowance/balance | token amount | Marketplace purchase path. | Buyer must approve and hold `agiToken` balance. | Purchase reverts; listing stays active. | Buyer increases allowance/balance; seller can `delistNFT`. |
 
 ## Stuck-funds scenarios (prerequisites + escape hatch)
 
-1. **Token address changed after escrow exists**
-   - **Prerequisite:** `updateAGITokenAddress` called after jobs funded.
-   - **Failure:** payouts/refunds revert; old-token escrow is unrecoverable.
-   - **Escape hatch:** none on-chain; **redeploy** and coordinate off-chain remediation.
-
-2. **Validator + agent payout exceeds escrow**
+1. **Validator + agent payout exceeds escrow**
    - **Prerequisite:** `validationRewardPercentage + maxAgentPayoutPercentage > 100` (blocked by setters, but still guarded at settlement).
    - **Failure:** `_completeJob` reverts before payouts.
    - **Escape hatch:** lower validation reward or AGI type payout; re-validate.
 
-3. **Validator thresholds unreachable**
+2. **Validator thresholds unreachable**
    - **Prerequisite:** thresholds > available validator count, or validator gating fails (bad Merkle/ENS config).
    - **Failure:** no completion, no disputes.
    - **Escape hatch:** lower thresholds, add validators via `addAdditionalValidator`, or moderator resolves disputes.
 
-4. **Owner attempts to withdraw escrow**
+3. **Owner attempts to withdraw escrow**
    - **Prerequisite:** `withdrawAGI` called while jobs outstanding (and paused).
    - **Failure:** Withdrawal reverts with `InsufficientWithdrawableBalance`.
    - **Escape hatch:** use `withdrawableAGI()` to withdraw surplus only.
 
-5. **Token transfer failures (blacklist / frozen ERC‑20)**
+4. **Token transfer failures (blacklist / frozen ERC‑20)**
    - **Prerequisite:** ERC‑20 reverts on `transfer` / `transferFrom` for a recipient.
    - **Failure:** settlement reverts during payouts or purchases.
    - **Escape hatch:** resolve disputes in favor of a recipient that can receive tokens, or redeploy with a compatible token.
 
-6. **No active moderators**
+5. **No active moderators**
    - **Prerequisite:** moderators removed or never set.
    - **Failure:** disputes cannot resolve; jobs stuck in `disputed` state.
    - **Escape hatch:** owner adds a moderator.
 
-7. **Legacy dispute resolved with a non-settlement string**
+6. **Legacy dispute resolved with a non-settlement string**
    - **Prerequisite:** moderator calls the deprecated `resolveDispute` with any string other than `"agent win"` or `"employer win"`.
    - **Failure:** dispute remains active; no payout/refund occurs.
    - **Escape hatch:** moderator re‑resolves with `resolveDisputeWithCode` and the correct action code.
 
-8. **Stale NFT listings**
+7. **Stale NFT listings**
    - **Prerequisite:** seller transfers NFT away after listing.
    - **Failure:** `purchaseNFT` reverts because seller is no longer owner; listing remains active.
    - **Escape hatch:** seller (current owner) delists and re-lists; buyers retry after listing is valid.
 
-9. **Silent or low-vote completion request**
+8. **Silent or low-vote completion request**
    - **Prerequisite:** agent called `requestJobCompletion`, but validators do not reach thresholds.
    - **Failure:** job remains incomplete, escrow locked.
    - **Escape hatch:** after `completionReviewPeriod`, anyone can call `finalizeJob`. Silence defaults to agent payout; otherwise approvals must exceed disapprovals for agent payout (ties refund the employer).
 
-10. **Expired assignment (agent disappears)**
+9. **Expired assignment (agent disappears)**
    - **Prerequisite:** agent assigned but never requests completion.
    - **Failure:** escrow locked beyond deadline.
    - **Escape hatch:** anyone can call `expireJob` after `assignedAt + duration` (only if completion was never requested).
 
-11. **Dispute deadlock (no moderators)**
+10. **Dispute deadlock (no moderators)**
    - **Prerequisite:** job remains disputed without moderator action.
    - **Failure:** escrow locked indefinitely.
    - **Escape hatch:** owner pauses and calls `resolveStaleDispute` after `disputeReviewPeriod` to settle.
