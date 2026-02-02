@@ -146,13 +146,15 @@ async function loadContract(address, networkName) {
 
 async function fetchAgiTypes(instance) {
   const items = [];
-  for (let i = 0; i < 200; i += 1) {
+  let i = 0;
+  while (true) {
     try {
       const entry = await instance.agiTypes(i);
       items.push({
         nftAddress: entry.nftAddress,
         payoutPercentage: entry.payoutPercentage.toString(),
       });
+      i += 1;
     } catch (error) {
       break;
     }
