@@ -10,6 +10,10 @@ function pad32(value) {
   return web3.utils.padLeft(value, 64);
 }
 
+function mappingSlot(keyType, key, slot) {
+  return web3.utils.keccak256(web3.eth.abi.encodeParameters([keyType, "uint256"], [key, slot]));
+}
+
 function rpc(method, params) {
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
@@ -36,21 +40,12 @@ async function setStorageAt(address, position, value) {
 }
 
 function balanceSlot(address) {
-  return web3.utils.soliditySha3(
-    { type: "address", value: address },
-    { type: "uint256", value: 0 }
-  );
+  return mappingSlot("address", address, 0);
 }
 
 function allowanceSlot(owner, spender) {
-  const outer = web3.utils.soliditySha3(
-    { type: "address", value: owner },
-    { type: "uint256", value: 1 }
-  );
-  return web3.utils.soliditySha3(
-    { type: "address", value: spender },
-    { type: "bytes32", value: outer }
-  );
+  const outer = mappingSlot("address", owner, 1);
+  return mappingSlot("address", spender, outer);
 }
 
 async function resetErc20Storage(address, accounts) {
