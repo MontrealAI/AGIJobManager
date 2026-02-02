@@ -6,9 +6,9 @@ Use this checklist if you already know your role and just need the **correct inp
 
 | Role | ENS name pattern | Example | `subdomain` input |
 | --- | --- | --- | --- |
-| Validator | `<entity>.alpha.club.agi.eth` | `alice.alpha.club.agi.eth` | `"alice"` |
-| Agent | `<entity>.alpha.agent.agi.eth` | `helper.alpha.agent.agi.eth` | `"helper"` |
-| Node (convention) | `<entity>.alpha.node.agi.eth` | `gpu01.alpha.node.agi.eth` | `"gpu01"` |
+| Validator | `<entity>.club.agi.eth` **or** `<entity>.alpha.club.agi.eth` | `alice.alpha.club.agi.eth` | `"alice"` |
+| Agent | `<entity>.agent.agi.eth` **or** `<entity>.alpha.agent.agi.eth` | `helper.alpha.agent.agi.eth` | `"helper"` |
+| Node (convention) | `<entity>.node.agi.eth` **or** `<entity>.alpha.node.agi.eth` | `gpu01.alpha.node.agi.eth` | `"gpu01"` |
 
 **Important:** `subdomain` is the left‑most label only. Do **not** pass the full ENS name.
 
