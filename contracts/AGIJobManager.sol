@@ -460,9 +460,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             resolutionCode = uint8(DisputeResolutionCode.EMPLOYER_WIN);
         }
         _resolveDispute(_jobId, resolutionCode, resolution);
-        if (resolutionCode != uint8(DisputeResolutionCode.NO_ACTION)) {
-            emit DisputeResolved(_jobId, msg.sender, resolution);
-        }
     }
 
     /// @notice Resolve a dispute with a typed action code and freeform reason.
@@ -488,8 +485,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
             _completeJob(_jobId);
+            emit DisputeResolved(_jobId, msg.sender, "agent win");
         } else if (resolutionCode == uint8(DisputeResolutionCode.EMPLOYER_WIN)) {
             _refundEmployer(job);
+            emit DisputeResolved(_jobId, msg.sender, "employer win");
         } else {
             revert InvalidParameters();
         }
