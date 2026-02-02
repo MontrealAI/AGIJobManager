@@ -13,7 +13,7 @@ const NonReceiverBuyer = artifacts.require("NonReceiverBuyer");
 const ERC721ReceiverBuyer = artifacts.require("ERC721ReceiverBuyer");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
-const { expectCustomError, extractRevertData, selectorFor } = require("./helpers/errors");
+const { expectCustomError } = require("./helpers/errors");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -59,25 +59,6 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
   });
 
-  async function expectPausedRevert(promise) {
-    try {
-      await promise;
-    } catch (error) {
-      if (error?.message?.includes("Pausable: paused")) {
-        return;
-      }
-      const data = extractRevertData(error);
-      if (data) {
-        const selector = selectorFor("EnforcedPause").toLowerCase();
-        if (data.toLowerCase().startsWith(selector)) {
-          return;
-        }
-      }
-      throw error;
-    }
-    throw new Error("Expected pause revert, but the call succeeded.");
-  }
-
   async function mintJobNft() {
     const payout = toBN(toWei("40"));
     await token.mint(employer, payout, { from: owner });
@@ -122,17 +103,17 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     const price = toBN(toWei("5"));
 
     await manager.pause({ from: owner });
-    await expectPausedRevert(manager.listNFT(tokenId, price, { from: employer }));
+    await expectCustomError(manager.listNFT.call(tokenId, price, { from: employer }), "EnforcedPause");
 
     await manager.unpause({ from: owner });
     await manager.listNFT(tokenId, price, { from: employer });
 
     await manager.pause({ from: owner });
-    await expectPausedRevert(manager.delistNFT(tokenId, { from: employer }));
+    await expectCustomError(manager.delistNFT.call(tokenId, { from: employer }), "EnforcedPause");
 
     await token.mint(buyer, price, { from: owner });
     await token.approve(manager.address, price, { from: buyer });
-    await expectPausedRevert(manager.purchaseNFT(tokenId, { from: buyer }));
+    await expectCustomError(manager.purchaseNFT.call(tokenId, { from: buyer }), "EnforcedPause");
 
     await manager.unpause({ from: owner });
     await manager.purchaseNFT(tokenId, { from: buyer });
