@@ -1,8 +1,8 @@
-# AGI.Eth Namespace (env = alpha) — User Guide
+# AGI.Eth Namespace (alpha + envless) — User Guide
 
 This guide is **non‑technical** and written for institutions and end users who want to use the **AGI.Eth Namespace (alpha environment)** with the existing `AGIJobManager` smart contract. It explains naming, roles, the exact inputs the contract expects, and practical step‑by‑step flows for common roles.
 
-> **Scope**: This guide explains how to use the **alpha** namespace (e.g., `helper.alpha.agent.agi.eth`) with **AGIJobManager** deployments that are configured with alpha root nodes at deploy time.
+> **Scope**: This guide explains how to use the **alpha** namespace (e.g., `helper.alpha.agent.agi.eth`) alongside envless names. The contract accepts **both** `*.agent.agi.eth` and `*.alpha.agent.agi.eth` (and the same for `club`).
 
 ---
 
@@ -52,7 +52,7 @@ The namespace grammar follows one rule:
 | Validator | `alice.club.agi.eth` | `alice.alpha.club.agi.eth` | The **root node** changes (`club.agi.eth` vs `alpha.club.agi.eth`), but the **`subdomain` label stays** `"alice"`. |
 | Agent | `helper.agent.agi.eth` | `helper.alpha.agent.agi.eth` | The **root node** changes (`agent.agi.eth` vs `alpha.agent.agi.eth`); you still pass `"helper"`. |
 
-**Operational implication:** an alpha‑configured deployment only accepts **alpha** names because its root nodes are fixed at deploy time.
+**Operational implication:** deployments accept **both** envless and alpha names because the contract derives `alpha.*` from the canonical envless roots.
 
 ---
 

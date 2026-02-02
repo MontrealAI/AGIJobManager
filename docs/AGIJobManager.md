@@ -112,7 +112,7 @@ For detailed call sequences, revert conditions, and events, see [`AGIJobManager_
 
 ## Quickstart examples (Truffle + web3)
 
-> These snippets assume a Truffle environment (`truffle exec` or test context) and that `agiToken` is a standard ERC‑20 with `approve`/`transferFrom`.
+> These snippets assume a Truffle environment (`truffle exec` or test context). `agiToken` is fixed to the canonical AGI token and supports `approve`/`transferFrom`.
 
 ### Approve ERC‑20 then create a job (employer)
 

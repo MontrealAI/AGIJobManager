@@ -1,4 +1,4 @@
-# ENS Identity Gating — Technical Appendix (AGI.Eth alpha)
+# ENS Identity Gating — Technical Appendix
 
 This appendix explains the **exact identity checks** used by `AGIJobManager` and how to derive the on‑chain node hashes for the **alpha** namespace.
 
@@ -22,14 +22,14 @@ If all checks fail, the call reverts `NotAuthorized`.
 
 ---
 
-## 2) How root nodes are set (alpha environment)
+## 2) How root nodes are set (envless + alpha)
 
-The **alpha** namespace uses these root nodes at deployment time:
+The deployment uses the **envless** roots; alpha.* nodes are derived in‑contract:
 
-- `clubRootNode = namehash("alpha.club.agi.eth")`
-- `agentRootNode = namehash("alpha.agent.agi.eth")`
+- `clubRootNode = namehash("club.agi.eth")`
+- `agentRootNode = namehash("agent.agi.eth")`
 
-These root nodes are **immutable after deployment**, so a mismatch requires redeployment.
+The contract also checks `alpha.club.agi.eth` and `alpha.agent.agi.eth` by hashing the `alpha` label under the envless roots. These root nodes are **immutable after deployment**, so a mismatch requires redeployment.
 
 ---
 
@@ -69,10 +69,10 @@ function subnode(rootNode, subdomain) {
 }
 ```
 
-### Example (alpha agent)
+### Example (alpha + envless agent)
 
-- Full ENS name: `helper.alpha.agent.agi.eth`
-- `rootNode`: `namehash("alpha.agent.agi.eth")`
+- Full ENS name: `helper.agent.agi.eth` **or** `helper.alpha.agent.agi.eth`
+- `rootNode`: `namehash("agent.agi.eth")` (contract also derives `alpha.agent.agi.eth`)
 - `subdomain`: `"helper"`
 - `subnode`: `keccak256(rootNode, keccak256("helper"))`
 

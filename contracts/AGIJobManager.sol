@@ -84,6 +84,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error InsufficientWithdrawableBalance();
     error InsolventEscrowBalance();
 
+    address public constant AGI_TOKEN_ADDRESS = 0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA;
+    bytes32 public constant CLUB_ROOT_NODE = 0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16;
+    bytes32 public constant AGENT_ROOT_NODE = 0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d;
+    bytes32 private constant ALPHA_LABEL_HASH = 0x6dfc21ac0c8c2db036305d8bc6f887630d35e156f37d5a7e2275bc05bc004846;
+
     /// @notice Canonical job lifecycle status enum (numeric ordering is stable; do not reorder).
     /// @dev 0 = Deleted (employer == address(0) or removed)
     /// @dev 1 = Open (exists, employer set, no assigned agent)
@@ -116,7 +121,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     bytes32 private constant RES_AGENT_WIN = 0x6594a8dd3f558fd2dd11fa44c7925f5b9e19868e6d0b4b97d2132fe5e25b5071;
     bytes32 private constant RES_EMPLOYER_WIN = 0xee31e9f396a85b8517c6d07b02f904858ad9f3456521bedcff02cc14e75ca8ce;
 
-    IERC20 public agiToken;
+    IERC20 public immutable agiToken;
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
@@ -140,8 +145,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     string public additionalText2;
     string public additionalText3;
 
-    bytes32 public clubRootNode;
-    bytes32 public agentRootNode;
+    bytes32 public immutable clubRootNode;
+    bytes32 public immutable agentRootNode;
     bytes32 public validatorMerkleRoot;
     bytes32 public agentMerkleRoot;
     ENS public ens;
@@ -238,12 +243,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32 _validatorMerkleRoot,
         bytes32 _agentMerkleRoot
     ) ERC721("AGIJobs", "Job") {
-        agiToken = IERC20(_agiTokenAddress);
+        if (_agiTokenAddress != AGI_TOKEN_ADDRESS) revert InvalidParameters();
+        if (_clubRootNode != CLUB_ROOT_NODE) revert InvalidParameters();
+        if (_agentRootNode != AGENT_ROOT_NODE) revert InvalidParameters();
+        agiToken = IERC20(AGI_TOKEN_ADDRESS);
         baseIpfsUrl = _baseIpfsUrl;
         ens = ENS(_ensAddress);
         nameWrapper = NameWrapper(_nameWrapperAddress);
-        clubRootNode = _clubRootNode;
-        agentRootNode = _agentRootNode;
+        clubRootNode = CLUB_ROOT_NODE;
+        agentRootNode = AGENT_ROOT_NODE;
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
 
@@ -529,7 +537,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function addModerator(address _moderator) external onlyOwner { moderators[_moderator] = true; }
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
-    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner { agiToken = IERC20(_newTokenAddress); }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
@@ -897,7 +904,22 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             return true;
         }
 
-        bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
+        bytes32 labelHash = keccak256(bytes(subdomain));
+        if (_verifyEnsOwnership(claimant, rootNode, labelHash, subdomain)) {
+            return true;
+        }
+
+        bytes32 alphaRoot = keccak256(abi.encodePacked(rootNode, ALPHA_LABEL_HASH));
+        return _verifyEnsOwnership(claimant, alphaRoot, labelHash, subdomain);
+    }
+
+    function _verifyEnsOwnership(
+        address claimant,
+        bytes32 rootNode,
+        bytes32 labelHash,
+        string memory subdomain
+    ) internal returns (bool) {
+        bytes32 subnode = keccak256(abi.encodePacked(rootNode, labelHash));
         if (_verifyNameWrapperOwnership(claimant, subnode)) {
             emit OwnershipVerified(claimant, subdomain);
             return true;
