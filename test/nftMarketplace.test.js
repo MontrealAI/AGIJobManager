@@ -12,8 +12,14 @@ const ReentrantERC20 = artifacts.require("ReentrantERC20");
 const NonReceiverBuyer = artifacts.require("NonReceiverBuyer");
 const ERC721ReceiverBuyer = artifacts.require("ERC721ReceiverBuyer");
 
-const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError, extractRevertData, selectorFor } = require("./helpers/errors");
+const {
+  setupAgiToken,
+  AGI_TOKEN_ADDRESS,
+  CLUB_ROOT_NODE,
+  AGENT_ROOT_NODE,
+} = require("./helpers/agiToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -30,16 +36,16 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
   let agentRoot;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setupAgiToken(MockERC20, accounts);
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = rootNode("club-root");
-    agentRoot = rootNode("agent-root");
+    clubRoot = CLUB_ROOT_NODE;
+    agentRoot = AGENT_ROOT_NODE;
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -208,11 +214,11 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
   });
 
   it("reverts on transfer failures during purchase", async () => {
-    const failing = await FailingERC20.new({ from: owner });
+    const failing = await setupAgiToken(FailingERC20, accounts);
     await failing.mint(employer, toBN(toWei("40")), { from: owner });
 
     const managerFailing = await AGIJobManager.new(
-      failing.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -246,9 +252,9 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
   });
 
   it("blocks reentrancy during NFT purchase", async () => {
-    const reentrant = await ReentrantERC20.new({ from: owner });
+    const reentrant = await setupAgiToken(ReentrantERC20, accounts);
     const managerReentrant = await AGIJobManager.new(
-      reentrant.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
