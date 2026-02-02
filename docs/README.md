@@ -23,6 +23,7 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 - **Troubleshooting**: [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)
 - **Regression tests summary**: [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md)
 - **FAQ**: [`FAQ.md`](FAQ.md)
+- **Configure once, then operate with minimal governance**: [`CONFIGURE_ONCE.md`](CONFIGURE_ONCE.md)
 
 ## Trust layer & integrations
 - **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)
