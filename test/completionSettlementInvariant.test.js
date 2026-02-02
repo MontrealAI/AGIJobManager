@@ -96,7 +96,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
   it("reverts agent-win dispute resolution without a completion request", async () => {
     const jobId = await setupDisputedJob(toBN(toWei("5")));
 
-    await manager.setCompletionRequested(jobId, false, { from: owner });
+    await manager.setJobMetadata(jobId, "ipfs-complete", "ipfs-spec", false, { from: owner });
 
     await expectCustomError(
       manager.resolveDisputeWithCode.call(jobId, 1, "agent win", { from: moderator }),
@@ -107,7 +107,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
   it("reverts agent-win dispute resolution when completion metadata is empty", async () => {
     const jobId = await setupDisputedJob(toBN(toWei("6")));
 
-    await manager.setJobMetadata(jobId, "", "ipfs-spec", { from: owner });
+    await manager.setJobMetadata(jobId, "", "ipfs-spec", true, { from: owner });
 
     await expectCustomError(
       manager.resolveDisputeWithCode.call(jobId, 1, "agent win", { from: moderator }),
@@ -118,7 +118,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
   it("reverts stale dispute resolution without a completion request", async () => {
     const jobId = await setupDisputedJob(toBN(toWei("7")));
 
-    await manager.setCompletionRequested(jobId, false, { from: owner });
+    await manager.setJobMetadata(jobId, "ipfs-complete", "ipfs-spec", false, { from: owner });
 
     await advanceTime(120);
     await manager.pause({ from: owner });

@@ -113,8 +113,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     // Pre-hashed resolution strings (smaller + cheaper than hashing literals each call)
-    bytes32 private constant RES_AGENT_WIN = keccak256("agent win");
-    bytes32 private constant RES_EMPLOYER_WIN = keccak256("employer win");
+    bytes32 private constant RES_AGENT_WIN = 0x6594a8dd3f558fd2dd11fa44c7925f5b9e19868e6d0b4b97d2132fe5e25b5071;
+    bytes32 private constant RES_EMPLOYER_WIN = 0xee31e9f396a85b8517c6d07b02f904858ad9f3456521bedcff02cc14e75ca8ce;
 
     IERC20 public agiToken;
     string private baseIpfsUrl;
@@ -292,7 +292,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _releaseEscrow(Job storage job) internal {
         if (job.escrowReleased) return;
         job.escrowReleased = true;
-        lockedEscrow -= job.payout;
+        unchecked {
+            lockedEscrow -= job.payout;
+        }
     }
 
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
@@ -311,10 +313,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _maxAGITypePayoutPercentage() internal view returns (uint256) {
         uint256 maxPercentage = 0;
-        for (uint256 i = 0; i < agiTypes.length; i++) {
+        for (uint256 i = 0; i < agiTypes.length; ) {
             uint256 pct = agiTypes[i].payoutPercentage;
             if (pct > maxPercentage) {
                 maxPercentage = pct;
+            }
+            unchecked {
+                ++i;
             }
         }
         return maxPercentage;
@@ -337,7 +342,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details) external whenNotPaused nonReentrant {
         if (!(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit)) revert InvalidParameters();
         _requireValidUri(_jobSpecURI);
-        uint256 jobId = nextJobId++;
+        uint256 jobId = nextJobId;
+        unchecked {
+            ++nextJobId;
+        }
         Job storage job = jobs[jobId];
         job.id = jobId;
         job.employer = msg.sender;
@@ -347,7 +355,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.duration = _duration;
         job.details = _details;
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), _payout);
-        lockedEscrow += _payout;
+        unchecked {
+            lockedEscrow += _payout;
+        }
         emit JobCreated(jobId, _jobSpecURI, _payout, _duration, _details);
     }
 
@@ -450,6 +460,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             resolutionCode = uint8(DisputeResolutionCode.EMPLOYER_WIN);
         }
         _resolveDispute(_jobId, resolutionCode, resolution);
+        if (resolutionCode != uint8(DisputeResolutionCode.NO_ACTION)) {
+            emit DisputeResolved(_jobId, msg.sender, resolution);
+        }
     }
 
     /// @notice Resolve a dispute with a typed action code and freeform reason.
@@ -481,10 +494,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             revert InvalidParameters();
         }
 
-        string memory legacyResolution = resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)
-            ? "agent win"
-            : "employer win";
-        emit DisputeResolved(_jobId, msg.sender, legacyResolution);
         emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
     }
 
@@ -607,13 +616,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function calculateReputationPoints(uint256 _payout, uint256 _duration) internal pure returns (uint256) {
-        uint256 scaledPayout = _payout / 1e18;
-        uint256 payoutPoints = scaledPayout ** 3 / 1e5;
-        return log2(1 + payoutPoints * 1e6) + _duration / 10000;
+        unchecked {
+            uint256 scaledPayout = _payout / 1e18;
+            uint256 payoutPoints = scaledPayout ** 3 / 1e5;
+            return log2(1 + payoutPoints * 1e6) + _duration / 10000;
+        }
     }
 
     function calculateValidatorReputationPoints(uint256 agentReputationGain) internal view returns (uint256) {
-        return (agentReputationGain * validationRewardPercentage) / 100;
+        unchecked {
+            return (agentReputationGain * validationRewardPercentage) / 100;
+        }
     }
 
     function log2(uint x) internal pure returns (uint y) {
@@ -719,10 +732,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
         uint256 validatorPayoutPercentage = job.validators.length > 0 ? validationRewardPercentage : 0;
         if (agentPayoutPercentage + validatorPayoutPercentage > 100) revert InvalidParameters();
-        uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        uint256 agentPayout;
+        unchecked {
+            agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        }
         uint256 totalValidatorPayout = 0;
         if (job.validators.length > 0) {
-            totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
+            unchecked {
+                totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
+            }
         }
         if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
 
@@ -753,7 +771,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _payAgent(Job storage job) internal {
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
-        uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        uint256 agentPayout;
+        unchecked {
+            agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        }
         _t(job.assignedAgent, agentPayout);
     }
 
@@ -762,19 +783,29 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (vCount > MAX_VALIDATORS_PER_JOB) revert ValidatorSetTooLarge();
         if (vCount == 0) return;
 
-        uint256 totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
-        uint256 validatorPayout = totalValidatorPayout / vCount;
+        uint256 totalValidatorPayout;
+        uint256 validatorPayout;
+        unchecked {
+            totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
+            validatorPayout = totalValidatorPayout / vCount;
+        }
         uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
 
-        for (uint256 i = 0; i < vCount; i++) {
+        for (uint256 i = 0; i < vCount; ) {
             address validator = job.validators[i];
             _t(validator, validatorPayout);
             enforceReputationGrowth(validator, validatorReputationGain);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _mintJobNft(Job storage job) internal {
-        uint256 tokenId = nextTokenId++;
+        uint256 tokenId = nextTokenId;
+        unchecked {
+            ++nextTokenId;
+        }
         _requireValidUri(job.jobCompletionURI);
         string memory tokenUriValue = _formatTokenURI(job.jobCompletionURI);
         _mint(job.employer, tokenId);
@@ -805,9 +836,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _isFullUri(string memory uri) internal pure returns (bool) {
         bytes memory data = bytes(uri);
         if (data.length < 3) return false;
-        for (uint256 i = 0; i + 2 < data.length; i++) {
+        for (uint256 i = 0; i + 2 < data.length; ) {
             if (data[i] == ":" && data[i + 1] == "/" && data[i + 2] == "/") {
                 return true;
+            }
+            unchecked {
+                ++i;
             }
         }
         return false;
@@ -816,9 +850,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _requireValidUri(string memory uri) internal pure {
         bytes memory data = bytes(uri);
         if (data.length == 0) revert InvalidParameters();
-        for (uint256 i = 0; i < data.length; i++) {
+        for (uint256 i = 0; i < data.length; ) {
             bytes1 c = data[i];
             if (c == 0x20 || c == 0x09 || c == 0x0a || c == 0x0d) revert InvalidParameters();
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -876,8 +913,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _verifyNameWrapperOwnership(address claimant, bytes32 subnode) internal returns (bool) {
         try nameWrapper.ownerOf(uint256(subnode)) returns (address actualOwner) {
             return actualOwner == claimant;
-        } catch Error(string memory reason) {
-            emit RecoveryInitiated(reason);
         } catch {
             emit RecoveryInitiated("NW_FAIL");
         }
@@ -934,7 +969,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         uint256 maxPct = payoutPercentage;
         bool exists = false;
-        for (uint256 i = 0; i < agiTypes.length; i++) {
+        for (uint256 i = 0; i < agiTypes.length; ) {
             uint256 pct = agiTypes[i].payoutPercentage;
             if (agiTypes[i].nftAddress == nftAddress) {
                 pct = payoutPercentage;
@@ -943,15 +978,21 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             if (pct > maxPct) {
                 maxPct = pct;
             }
+            unchecked {
+                ++i;
+            }
         }
         if (maxPct > 100 - validationRewardPercentage) revert InvalidParameters();
         if (!exists) {
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
         } else {
-            for (uint256 i = 0; i < agiTypes.length; i++) {
+            for (uint256 i = 0; i < agiTypes.length; ) {
                 if (agiTypes[i].nftAddress == nftAddress) {
                     agiTypes[i].payoutPercentage = payoutPercentage;
                     break;
+                }
+                unchecked {
+                    ++i;
                 }
             }
         }
@@ -961,9 +1002,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function getHighestPayoutPercentage(address agent) public view returns (uint256) {
         uint256 highestPercentage = 0;
-        for (uint256 i = 0; i < agiTypes.length; i++) {
+        for (uint256 i = 0; i < agiTypes.length; ) {
             if (IERC721(agiTypes[i].nftAddress).balanceOf(agent) > 0 && agiTypes[i].payoutPercentage > highestPercentage) {
                 highestPercentage = agiTypes[i].payoutPercentage;
+            }
+            unchecked {
+                ++i;
             }
         }
         return highestPercentage;
