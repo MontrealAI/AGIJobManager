@@ -317,20 +317,6 @@ module.exports = async function postdeployConfig(callback) {
     });
 
     await addParamOp({
-      key: "validationRewardPercentage",
-      label: "Set validationRewardPercentage",
-      currentValue: await instance.validationRewardPercentage(),
-      desiredValue: config.validationRewardPercentage,
-      send: () => instance.setValidationRewardPercentage(config.validationRewardPercentage, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.validationRewardPercentage();
-        if (updated.toString() !== toStringValue(config.validationRewardPercentage)) {
-          throw new Error("validationRewardPercentage did not update");
-        }
-      },
-    });
-
-    await addParamOp({
       key: "maxJobPayout",
       label: "Set maxJobPayout",
       currentValue: await instance.maxJobPayout(),
@@ -505,6 +491,20 @@ module.exports = async function postdeployConfig(callback) {
         });
       }
     }
+
+    await addParamOp({
+      key: "validationRewardPercentage",
+      label: "Set validationRewardPercentage",
+      currentValue: await instance.validationRewardPercentage(),
+      desiredValue: config.validationRewardPercentage,
+      send: () => instance.setValidationRewardPercentage(config.validationRewardPercentage, txFrom ? { from: txFrom } : {}),
+      verify: async () => {
+        const updated = await instance.validationRewardPercentage();
+        if (updated.toString() !== toStringValue(config.validationRewardPercentage)) {
+          throw new Error("validationRewardPercentage did not update");
+        }
+      },
+    });
 
     const listOps = [
       {

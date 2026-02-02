@@ -156,10 +156,11 @@ truffle exec scripts/postdeploy-config.js --network sepolia --address 0x... --dr
 ```
 
 **Safe order** enforced by the script:
-1. Parameter updates
+1. Parameter updates (except `validationRewardPercentage`)
 2. AGI type updates
-3. Moderator/additional lists & blacklists
-4. Ownership transfer (last)
+3. `validationRewardPercentage` update
+4. Moderator/additional lists & blacklists
+5. Ownership transfer (last)
 
 ## Read-only verification (scripted)
 
