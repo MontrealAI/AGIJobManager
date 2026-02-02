@@ -26,20 +26,21 @@ contract TestableAGIJobManager is AGIJobManager {
         )
     {}
 
-    function setValidationRewardPercentageUnsafe(uint256 _percentage) external onlyOwner {
+    function setValidationRewardPercentageUnsafe(uint256 _percentage) external {
         validationRewardPercentage = _percentage;
     }
 
-    function setJobMetadata(uint256 jobId, string calldata completionURI, string calldata ipfsHash) external onlyOwner {
+    function setJobMetadata(
+        uint256 jobId,
+        string calldata completionURI,
+        string calldata ipfsHash,
+        bool completionRequested
+    ) external {
         Job storage job = jobs[jobId];
         job.jobCompletionURI = completionURI;
         job.ipfsHash = ipfsHash;
-    }
-
-    function setCompletionRequested(uint256 jobId, bool requested) external onlyOwner {
-        Job storage job = jobs[jobId];
-        job.completionRequested = requested;
-        if (!requested) {
+        job.completionRequested = completionRequested;
+        if (!completionRequested) {
             job.completionRequestedAt = 0;
         }
     }
