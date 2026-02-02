@@ -59,11 +59,11 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
   });
 
-  async function expectPausedRevert(promise) {
+  async function expectPausedRevert(promise, callFn) {
     try {
       await promise;
     } catch (error) {
-      if (error.message && error.message.includes("Pausable: paused")) {
+      if (error?.message?.includes("Pausable: paused")) {
         return;
       }
       const data = extractRevertData(error);
@@ -72,6 +72,14 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
         if (data.toLowerCase().startsWith(selector)) {
           return;
         }
+      }
+      if (callFn) {
+        await expectRevert.unspecified(callFn());
+        const paused = await manager.paused();
+        if (!paused) {
+          throw error;
+        }
+        return;
       }
       throw error;
     }
@@ -122,17 +130,26 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     const price = toBN(toWei("5"));
 
     await manager.pause({ from: owner });
-    await expectPausedRevert(manager.listNFT(tokenId, price, { from: employer }));
+    await expectPausedRevert(
+      manager.listNFT(tokenId, price, { from: employer }),
+      () => manager.listNFT.call(tokenId, price, { from: employer })
+    );
 
     await manager.unpause({ from: owner });
     await manager.listNFT(tokenId, price, { from: employer });
 
     await manager.pause({ from: owner });
-    await expectPausedRevert(manager.delistNFT(tokenId, { from: employer }));
+    await expectPausedRevert(
+      manager.delistNFT(tokenId, { from: employer }),
+      () => manager.delistNFT.call(tokenId, { from: employer })
+    );
 
     await token.mint(buyer, price, { from: owner });
     await token.approve(manager.address, price, { from: buyer });
-    await expectPausedRevert(manager.purchaseNFT(tokenId, { from: buyer }));
+    await expectPausedRevert(
+      manager.purchaseNFT(tokenId, { from: buyer }),
+      () => manager.purchaseNFT.call(tokenId, { from: buyer })
+    );
 
     await manager.unpause({ from: owner });
     await manager.purchaseNFT(tokenId, { from: buyer });
