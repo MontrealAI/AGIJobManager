@@ -50,7 +50,7 @@ const timeoutBlocksMainnet = n(process.env.MAINNET_TIMEOUT_BLOCKS, 500);
 const timeoutBlocksSepolia = n(process.env.SEPOLIA_TIMEOUT_BLOCKS, 500);
 
 const solcVersion = (process.env.SOLC_VERSION || '0.8.33').trim();
-const solcRuns = Math.floor(n(process.env.SOLC_RUNS, 50));
+const solcRuns = Math.floor(n(process.env.SOLC_RUNS, 1));
 const solcViaIR = (process.env.SOLC_VIA_IR || 'true').toLowerCase() === 'true';
 const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();
 
