@@ -8,6 +8,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { AGI_TOKEN_ADDRESS, createFixedTokenManager } = require("./helpers/fixedToken");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -17,6 +18,7 @@ const { toBN, toWei } = web3.utils;
 contract("AGIJobManager alpha namespace gating", (accounts) => {
   const [owner, employer, agent, validator, outsider] = accounts;
   let token;
+  let fixedToken;
   let ens;
   let resolver;
   let nameWrapper;
@@ -34,17 +36,21 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     return tx.logs[0].args.jobId.toNumber();
   }
 
+  before(async () => {
+    fixedToken = await createFixedTokenManager(MockERC20);
+  });
+
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await fixedToken.reset();
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = namehash("alpha.club.agi.eth");
-    agentRoot = namehash("alpha.agent.agi.eth");
+    clubRoot = namehash("club.agi.eth");
+    agentRoot = namehash("agent.agi.eth");
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -63,7 +69,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
 
   it("authorizes an agent via NameWrapper ownership under alpha.agent", async () => {
     const jobId = await createJob();
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
+    const alphaAgentRoot = namehash("alpha.agent.agi.eth");
+    await setNameWrapperOwnership(nameWrapper, alphaAgentRoot, "helper", agent);
 
     const tx = await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
     const appliedEvent = tx.logs.find((log) => log.event === "JobApplied");
@@ -79,7 +86,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
-    await setResolverOwnership(ens, resolver, clubRoot, "alice", validator);
+    const alphaClubRoot = namehash("alpha.club.agi.eth");
+    await setResolverOwnership(ens, resolver, alphaClubRoot, "alice", validator);
 
     const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
     const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
@@ -99,10 +107,23 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     );
   });
 
-  it("rejects non-alpha ownership when alpha root nodes are configured", async () => {
+  it("accepts envless club/agent ownership in addition to alpha", async () => {
     const jobId = await createJob();
-    const nonAlphaAgentRoot = namehash("agent.agi.eth");
-    const nonAlphaNode = subnode(nonAlphaAgentRoot, "helper");
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
+
+    await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await setResolverOwnership(ens, resolver, clubRoot, "alice", validator);
+    const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
+    const completedEvent = tx.logs.find((log) => log.event === "JobCompleted");
+    assert.ok(completedEvent, "envless validator should complete job");
+  });
+
+  it("rejects unrelated ENS roots", async () => {
+    const jobId = await createJob();
+    const unrelatedRoot = namehash("agent.other.eth");
+    const nonAlphaNode = subnode(unrelatedRoot, "helper");
     await nameWrapper.setOwner(toBN(nonAlphaNode), agent, { from: owner });
 
     await expectRevert.unspecified(

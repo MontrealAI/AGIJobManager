@@ -8,8 +8,10 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 const FailingERC20 = artifacts.require("FailingERC20");
 
-const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership } = require("./helpers/ens");
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require("./helpers/constants");
 const { expectCustomError } = require("./helpers/errors");
+const { AGI_TOKEN_ADDRESS, createFixedTokenManager, setFixedTokenCode } = require("./helpers/fixedToken");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -26,18 +28,23 @@ contract("AGIJobManager security regressions", (accounts) => {
   let clubRoot;
   let agentRoot;
   let agiTypeNft;
+  let fixedToken;
+
+  before(async () => {
+    fixedToken = await createFixedTokenManager(MockERC20);
+  });
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await fixedToken.reset();
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = rootNode("club-root");
-    agentRoot = rootNode("agent-root");
+    clubRoot = CLUB_ROOT_NODE;
+    agentRoot = AGENT_ROOT_NODE;
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -266,11 +273,11 @@ contract("AGIJobManager security regressions", (accounts) => {
   });
 
   it("reverts on ERC20 transfer failures", async () => {
-    const failing = await FailingERC20.new({ from: owner });
+    const failing = await setFixedTokenCode(FailingERC20);
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
     const managerFailing = await AGIJobManager.new(
-      failing.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
@@ -293,11 +300,11 @@ contract("AGIJobManager security regressions", (accounts) => {
   });
 
   it("reverts on payout transfer failures", async () => {
-    const failing = await FailingERC20.new({ from: owner });
+    const failing = await setFixedTokenCode(FailingERC20);
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
     const managerFailing = await AGIJobManager.new(
-      failing.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,

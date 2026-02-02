@@ -5,6 +5,9 @@ const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC721 = artifacts.require("MockERC721");
 const ReentrantERC20 = artifacts.require("ReentrantERC20");
 
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require("./helpers/constants");
+const { AGI_TOKEN_ADDRESS, createFixedTokenManager } = require("./helpers/fixedToken");
+
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
@@ -13,6 +16,7 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
   const [owner, employer, agent, validator, buyer, ensPlaceholder, nameWrapperPlaceholder] = accounts;
   let token;
   let manager;
+  let fixedToken;
 
   const createAndCompleteJob = async (payout) => {
     await token.mint(employer, payout, { from: owner });
@@ -26,15 +30,19 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
     return issueEvent.args.tokenId.toNumber();
   };
 
+  before(async () => {
+    fixedToken = await createFixedTokenManager(ReentrantERC20);
+  });
+
   beforeEach(async () => {
-    token = await ReentrantERC20.new({ from: owner });
+    token = await fixedToken.reset();
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ensPlaceholder,
       nameWrapperPlaceholder,
-      ZERO_ROOT,
-      ZERO_ROOT,
+      CLUB_ROOT_NODE,
+      AGENT_ROOT_NODE,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

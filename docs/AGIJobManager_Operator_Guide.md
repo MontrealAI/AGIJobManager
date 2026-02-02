@@ -6,12 +6,12 @@ This runbook is for owners/operators deploying and maintaining the `AGIJobManage
 
 The constructor requires:
 
-1. `address _agiTokenAddress` — ERC‑20 token used for escrow and payouts.
+1. `address _agiTokenAddress` — must be the canonical AGI token used for escrow and payouts.
 2. `string _baseIpfsUrl` — base URL used to prefix non‑full token URIs.
 3. `address _ensAddress` — ENS registry address.
 4. `address _nameWrapperAddress` — ENS NameWrapper address.
-5. `bytes32 _clubRootNode` — ENS root node for validator subdomains.
-6. `bytes32 _agentRootNode` — ENS root node for agent subdomains.
+5. `bytes32 _clubRootNode` — must be the `club.agi.eth` root node.
+6. `bytes32 _agentRootNode` — must be the `agent.agi.eth` root node.
 7. `bytes32 _validatorMerkleRoot` — Merkle root for validator allowlist (leaf = `keccak256(abi.encodePacked(address))`).
 8. `bytes32 _agentMerkleRoot` — Merkle root for agent allowlist (leaf = `keccak256(abi.encodePacked(address))`).
 
@@ -19,7 +19,7 @@ The ERC‑721 token is initialized as `AGIJobs` / `Job`.
 
 ## Safe default parameters
 
-All parameters are upgradable by the owner. Defaults are set in the contract to conservative values; operators should verify each one before deployment:
+Owner‑governed parameters default to conservative values; operators should verify each one before deployment:
 
 - `requiredValidatorApprovals` / `requiredValidatorDisapprovals`: thresholds that control validation vs dispute. Must not exceed `MAX_VALIDATORS_PER_JOB` and the sum must not exceed `MAX_VALIDATORS_PER_JOB`.
 - `validationRewardPercentage`: percent of payout reserved for validators (only paid if at least one validator participates). Keep `max(AGIType.payoutPercentage) + validationRewardPercentage <= 100`.
@@ -59,10 +59,8 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - `withdrawAGI(amount)` can only withdraw surplus balances; it fails if `balance < lockedEscrow` or `amount > withdrawableAGI()`.
 - Withdrawals are only allowed while paused.
 
-### Rotating the escrow token
-- `updateAGITokenAddress` changes the ERC‑20 used for escrow, payouts, and reward pool contributions.
-- Changing the token can break integrations and invalidate approvals. Ensure all users re‑approve the new token and carefully manage `lockedEscrow` vs balances before switching.
-- **Mainnet invariant**: production deployments must keep `agiToken` fixed to AGIALPHA (`0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`). Treat token rotation as a testnet‑only or redeploy‑only operation.
+### Token invariant
+- `agiToken` is fixed in the contract to AGI (`0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`) and cannot be changed post‑deploy.
 
 ## Monitoring checklist
 

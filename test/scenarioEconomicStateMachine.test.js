@@ -9,6 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { AGI_TOKEN_ADDRESS, createFixedTokenManager } = require("./helpers/fixedToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -18,14 +19,19 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
   const [owner, employer, agent, validatorA, validatorB, moderator, buyer, other] = accounts;
   let token;
   let manager;
+  let fixedToken;
+
+  before(async () => {
+    fixedToken = await createFixedTokenManager(MockERC20);
+  });
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await fixedToken.reset();
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
