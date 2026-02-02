@@ -19,7 +19,7 @@ The ERC‑721 token is initialized as `AGIJobs` / `Job`.
 
 ## Safe default parameters
 
-All parameters are upgradable by the owner. Defaults are set in the contract to conservative values; operators should verify each one before deployment:
+Most parameters are upgradable by the owner (the escrow token is not). Defaults are set in the contract to conservative values; operators should verify each one before deployment:
 
 - `requiredValidatorApprovals` / `requiredValidatorDisapprovals`: thresholds that control validation vs dispute. Must not exceed `MAX_VALIDATORS_PER_JOB` and the sum must not exceed `MAX_VALIDATORS_PER_JOB`.
 - `validationRewardPercentage`: percent of payout reserved for validators (only paid if at least one validator participates). Keep `max(AGIType.payoutPercentage) + validationRewardPercentage <= 100`.
@@ -59,9 +59,9 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - `withdrawAGI(amount)` can only withdraw surplus balances; it fails if `balance < lockedEscrow` or `amount > withdrawableAGI()`.
 - Withdrawals are only allowed while paused.
 
-### Rotating the escrow token
-- `updateAGITokenAddress` changes the ERC‑20 used for escrow, payouts, and reward pool contributions.
-- Changing the token can break integrations and invalidate approvals. Ensure all users re‑approve the new token and carefully manage `lockedEscrow` vs balances before switching.
+### Escrow token immutability
+- The ERC‑20 token address is set in the constructor and cannot be changed post‑deploy.
+- Treat the token address as a deployment invariant and document it alongside the deployment record.
 
 ## Monitoring checklist
 

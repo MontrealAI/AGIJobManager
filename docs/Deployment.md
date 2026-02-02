@@ -7,6 +7,26 @@ This guide documents the deployment and verification workflow defined in `truffl
 - Truffle (installed via `npm install`).
 - RPC access for Sepolia or Mainnet (or a local Ganache instance).
 
+## Pre-deploy inputs (record before deploying)
+Collect the immutable constructor inputs and record them in your deployment log:
+
+- **ERC‑20 token** (`agiToken`): on mainnet, **AGIALPHA** is fixed at `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`.
+- **Base metadata URL** (`baseIpfsUrl`): IPFS gateway or content base.
+- **ENS registry** (`ens`) and **NameWrapper** (`nameWrapper`) addresses for the target network.
+- **Root nodes**: `clubRootNode`, `agentRootNode` (ENS namehash values).
+- **Merkle roots**: `validatorMerkleRoot`, `agentMerkleRoot` for role allowlists.
+
+See the configure‑once guide for root computation, allowlist conventions, and ENS identity schema: [`docs/CONFIGURE_ONCE.md`](CONFIGURE_ONCE.md).
+
+## Deployment checklist (configure once → operate)
+1. **Deploy** the contract, then **pause immediately** before configuration (recommended).
+2. **Run post‑deploy configuration** once (see `scripts/postdeploy-config.js`).
+3. **Verify read‑only settings** (see `scripts/verify-config.js`).
+4. **Unpause** after verification.
+5. **Transfer ownership** to the long‑term multisig/timelock.
+
+This keeps governance minimal while preserving emergency controls (pause + dispute recovery).
+
 ## Environment variables
 
 The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS` is required for Sepolia/Mainnet deployments.
@@ -25,7 +45,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.23`, `SOLC_RUNS=50`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.23`, `SOLC_RUNS=800`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
@@ -41,7 +61,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 ```
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
-- Optimizer enabled with **runs = 50**.
+- Optimizer enabled with **runs = 800**.
 - `viaIR = true`.
 - `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
@@ -57,6 +77,22 @@ The default `npm test` script compiles with `--all`, runs `truffle test --networ
 ## Migration script notes
 
 The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Edit these values** before deploying to any production network.
+
+## Post-deploy configuration (single run)
+
+Use the idempotent post‑deploy script to set operational parameters, add initial moderators, configure AGI types, and optionally transfer ownership:
+
+```bash
+truffle exec scripts/postdeploy-config.js --network <network> --address <AGIJobManagerAddress> --config-path /path/to/config.json
+```
+
+See the full config schema and examples in [`docs/CONFIGURE_ONCE.md`](CONFIGURE_ONCE.md).
+
+## Post-deploy verification (read-only)
+
+```bash
+truffle exec scripts/verify-config.js --network <network> --address <AGIJobManagerAddress> --config-path /path/to/config.json
+```
 
 ## Local deployment (Ganache)
 

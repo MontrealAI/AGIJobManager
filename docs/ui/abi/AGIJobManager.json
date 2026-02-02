@@ -2,7 +2,7 @@
   "contractName": "AGIJobManager",
   "compiler": {
     "name": "solc",
-    "version": "0.8.33+commit.64118f21.Emscripten.clang"
+    "version": "0.8.23+commit.f704f362.Emscripten.clang"
   },
   "abi": [
     {
@@ -2034,19 +2034,6 @@
         }
       ],
       "name": "removeModerator",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_newTokenAddress",
-          "type": "address"
-        }
-      ],
-      "name": "updateAGITokenAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

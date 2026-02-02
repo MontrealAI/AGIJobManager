@@ -24,7 +24,6 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 These are fixed at deployment and **cannot be changed** without redeploying.
 
 - `agiToken` (ERC-20 used for escrow)
-- `baseIpfsUrl`
 - `ens` + `nameWrapper`
 - `clubRootNode` + `agentRootNode`
 - `validatorMerkleRoot` + `agentMerkleRoot`
@@ -36,6 +35,7 @@ Set these once via `scripts/postdeploy-config.js` and treat changes as exception
 - `requiredValidatorDisapprovals`
 - `premiumReputationThreshold`
 - `validationRewardPercentage`
+- `baseIpfsUrl`
 - `maxJobPayout`
 - `jobDurationLimit`
 - `completionReviewPeriod`
@@ -44,6 +44,26 @@ Set these once via `scripts/postdeploy-config.js` and treat changes as exception
 - `termsAndConditionsIpfsHash`
 - `contactEmail`, `additionalText1-3`
 - **AGI Types** (payout tiers)
+
+## Set-and-mostly-forget table (recommended posture)
+
+| Parameter | Purpose | Recommended posture |
+| --- | --- | --- |
+| `agiToken` | ERC‑20 used for escrow/payouts. | **Set once at deploy.** Immutable; confirm mainnet AGIALPHA address before launch. |
+| `baseIpfsUrl` | Base prefix for NFT metadata when URIs are CIDs. | Set once pre‑launch; change only if metadata hosting changes. |
+| `ens`, `nameWrapper` | ENS registry + NameWrapper references. | Set once per network. |
+| `clubRootNode`, `agentRootNode` | ENS root nodes for validators/agents. | Set once per namespace strategy. |
+| `validatorMerkleRoot`, `agentMerkleRoot` | Merkle allowlist roots. | Set once pre‑launch; re‑deploy if policy changes materially. |
+| `requiredValidatorApprovals`, `requiredValidatorDisapprovals` | Validation/dispute thresholds. | Set pre‑launch; avoid changing post‑launch unless policy changes. |
+| `validationRewardPercentage` | Validator reward share. | Set pre‑launch; change only with documented policy update. |
+| `maxJobPayout`, `jobDurationLimit` | Job risk caps. | Set pre‑launch; adjust rarely for risk management. |
+| `completionReviewPeriod`, `disputeReviewPeriod` | Review/timeout windows. | Set pre‑launch; adjust only if operational timelines change. |
+| `additionalAgentPayoutPercentage` | Stored config for future payout tuning. | Set once; avoid changing without a governance runbook. |
+| `termsAndConditionsIpfsHash`, `contactEmail`, `additionalText1-3` | Operator metadata fields. | Update only for legal/comms changes. |
+| `moderators` | Dispute arbiters. | Keep small; change only for staffing/security. |
+| `additionalAgents`, `additionalValidators` | Explicit allowlists. | Use sparingly; document every change. |
+| `blacklistedAgents`, `blacklistedValidators` | Explicit denylist. | Emergency-only; document every change. |
+| `agiTypes` | Payout tiers based on AGIType NFTs. | Add/update only with policy changes. |
 
 ## Emergency-only actions
 
@@ -90,6 +110,12 @@ Record these per network **before deploy**, and keep them immutable afterward.
   ```
   The output includes the Merkle root and proof for that address.
 - Maintain a canonical allowlist file per network (e.g., `allowlists/validators-mainnet.json`) and regenerate roots when the list changes.
+
+### ENS identity schema (canonical)
+- **Validators**: `*.alpha.club.agi.eth` or `*.club.agi.eth`
+- **Agents**: `*.alpha.agent.agi.eth` or `*.agent.agi.eth`
+- **Nodes**: `*.alpha.node.agi.eth` or `*.node.agi.eth`
+- **Sovereigns**: `*.alpha.agi.eth` or `*.agi.eth`
 
 ## Post-deploy configuration (scripted)
 

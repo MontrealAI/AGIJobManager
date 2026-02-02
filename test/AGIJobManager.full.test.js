@@ -778,9 +778,6 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       await manager.setValidationRewardPercentage(12, { from: owner });
       assert.equal(await manager.validationRewardPercentage(), "12");
-
-      await manager.updateAGITokenAddress(other, { from: owner });
-      assert.equal(await manager.agiToken(), other);
     });
 
     it("withdraws AGI within bounds and respects pause", async () => {

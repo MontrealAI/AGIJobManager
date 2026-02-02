@@ -29,7 +29,7 @@ This document is a production-grade **operator checklist** for preventing and re
 
 | Parameter / lever | Type / units | Used in | Safe range / constraints | What breaks if wrong | Recovery / escape hatch |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` (`updateAGITokenAddress`) | ERC‑20 address | Escrow deposits, payouts, marketplace purchases, reward pool, `withdrawAGI`. | **Treat as immutable after any job is funded.** Must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | If changed after funding, escrow in the old token becomes **unrecoverable**; new payouts can revert due to missing balance. | **No on-chain recovery** for old token escrow; redeploy + off-chain remediation. |
+| `agiToken` (constructor) | ERC‑20 address | Escrow deposits, payouts, marketplace purchases, reward pool, `withdrawAGI`. | **Immutable post-deploy.** Must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | If deployed with the wrong token, escrow/payout flows are misconfigured. | **No on-chain recovery**; redeploy + off-chain remediation. |
 | `requiredValidatorApprovals` (`setRequiredValidatorApprovals`) | uint256 count | `validateJob` threshold → `_completeJob`. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Operationally keep ≤ active validator count. | Too high → completion unreachable; jobs stall unless a moderator resolves disputes. | Lower threshold or add validators with `addAdditionalValidator`. |
 | `requiredValidatorDisapprovals` (`setRequiredValidatorDisapprovals`) | uint256 count | `disapproveJob` threshold → dispute. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Keep low to enable disputes. | Too high → disputes never trigger; jobs can remain in limbo. | Lower threshold; use `disputeJob` + `resolveDisputeWithCode`. |
 | `validationRewardPercentage` (`setValidationRewardPercentage`) | uint256 percentage | Validator payout pool in `_completeJob`. | `1..100` on-chain; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If sum exceeds 100, payouts can exceed escrow → completion reverts. | Reduce `validationRewardPercentage` or reduce any AGI type payout percentage. |
@@ -57,7 +57,7 @@ This document is a production-grade **operator checklist** for preventing and re
 ## Stuck-funds scenarios (prerequisites + escape hatch)
 
 1. **Token address changed after escrow exists**
-   - **Prerequisite:** `updateAGITokenAddress` called after jobs funded.
+   - **Prerequisite:** contract deployed with the wrong `agiToken`.
    - **Failure:** payouts/refunds revert; old-token escrow is unrecoverable.
    - **Escape hatch:** none on-chain; **redeploy** and coordinate off-chain remediation.
 
@@ -126,7 +126,7 @@ This document is a production-grade **operator checklist** for preventing and re
    - Add emergency validators/agents with `addAdditionalValidator` / `addAdditionalAgent`.
    - Add a moderator if disputes are stuck.
    - Adjust `completionReviewPeriod` or `disputeReviewPeriod` if timeouts are misaligned.
-   - **Never** change `agiToken` if outstanding jobs exist.
+   - `agiToken` is immutable; if incorrect, redeploy instead of attempting a change.
 
 4. **Unstick jobs (path depends on job state; always available if the correct role exists):**
    - **Unassigned jobs:** employer uses `cancelJob`; owner uses `delistJob` for recovery.

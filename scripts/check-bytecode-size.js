@@ -3,7 +3,7 @@ const path = require("path");
 
 const MAX_RUNTIME_BYTES = 24576;
 const artifactsDir = path.join(__dirname, "..", "build", "contracts");
-const defaultContracts = ["AGIJobManager"];
+const defaultContracts = ["AGIJobManager", "TestableAGIJobManager"];
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =

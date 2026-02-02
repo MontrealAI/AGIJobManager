@@ -3,8 +3,10 @@
 This documentation set targets engineers, integrators, operators, auditors, and non‑technical stakeholders. Each document has a focused scope with cross‑references for fast navigation and auditability.
 
 ## Core entry points (engineers & auditors)
+- **AGI Jobs one‑pager (canonical)**: [`AGI_JOBS_ONE_PAGER.md`](AGI_JOBS_ONE_PAGER.md)
 - **Contract specification**: [`AGIJobManager.md`](AGIJobManager.md)
 - **Deployment guide (Truffle)**: [`Deployment.md`](Deployment.md)
+- **Governance model**: [`GOVERNANCE.md`](GOVERNANCE.md)
 - **Security model and limitations**: [`Security.md`](Security.md)
 - **Parameter safety & stuck‑funds analysis**: [`ParameterSafety.md`](ParameterSafety.md)
 - **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)

@@ -56,7 +56,6 @@
 | `supportsInterface(bytes4 interfaceId)` | view | bool |
 | `symbol()` | view | string |
 | `termsAndConditionsIpfsHash()` | view | string |
-| `tokenURI(uint256 tokenId)` | view | string |
 | `transferFrom(address from, address to, uint256 tokenId)` | nonpayable | — |
 | `transferOwnership(address newOwner)` | nonpayable | — |
 | `validationRewardPercentage()` | view | uint256 |
@@ -78,7 +77,6 @@
 | `delistJob(uint256 _jobId)` | nonpayable | — |
 | `addModerator(address _moderator)` | nonpayable | — |
 | `removeModerator(address _moderator)` | nonpayable | — |
-| `updateAGITokenAddress(address _newTokenAddress)` | nonpayable | — |
 | `setBaseIpfsUrl(string _url)` | nonpayable | — |
 | `setRequiredValidatorApprovals(uint256 _approvals)` | nonpayable | — |
 | `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | nonpayable | — |
@@ -100,6 +98,7 @@
 | `cancelJob(uint256 _jobId)` | nonpayable | — |
 | `expireJob(uint256 _jobId)` | nonpayable | — |
 | `finalizeJob(uint256 _jobId)` | nonpayable | — |
+| `tokenURI(uint256 tokenId)` | view | string |
 | `listNFT(uint256 tokenId, uint256 price)` | nonpayable | — |
 | `purchaseNFT(uint256 tokenId)` | nonpayable | — |
 | `delistNFT(uint256 tokenId)` | nonpayable | — |
@@ -122,7 +121,6 @@
 | `AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage)` | uint256 newPercentage |
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |
 | `ApprovalForAll(address owner, address operator, bool approved)` | indexed address owner, indexed address operator, bool approved |
-| `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)` | uint256 _fromTokenId, uint256 _toTokenId |
 | `CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
 | `DisputeResolved(uint256 jobId, address resolver, string resolution)` | uint256 jobId, address resolver, string resolution |
 | `DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)` | uint256 jobId, address resolver, uint8 resolutionCode, string reason |
@@ -139,7 +137,6 @@
 | `JobFinalized(uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout)` | uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout |
 | `JobValidated(uint256 jobId, address validator)` | uint256 jobId, address validator |
 | `MerkleRootUpdated(bytes32 newMerkleRoot)` | indexed bytes32 newMerkleRoot |
-| `MetadataUpdate(uint256 _tokenId)` | uint256 _tokenId |
 | `NFTDelisted(uint256 tokenId)` | indexed uint256 tokenId |
 | `NFTIssued(uint256 tokenId, address employer, string tokenURI)` | indexed uint256 tokenId, indexed address employer, string tokenURI |
 | `NFTListed(uint256 tokenId, address seller, uint256 price)` | indexed uint256 tokenId, indexed address seller, uint256 price |

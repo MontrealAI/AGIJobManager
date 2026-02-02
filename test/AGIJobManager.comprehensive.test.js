@@ -657,8 +657,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
   describe("admin & configuration", () => {
     it("restricts owner-only controls and updates config", async () => {
       await expectRevert.unspecified(manager.setBaseIpfsUrl("ipfs://new", { from: outsider }));
-      await expectRevert.unspecified(
-        manager.updateAGITokenAddress(token.address, { from: outsider }));
       await expectRevert.unspecified(manager.setMaxJobPayout(payout, { from: outsider }));
       await expectRevert.unspecified(manager.setJobDurationLimit(1, { from: outsider }));
       await expectRevert.unspecified(manager.addModerator(outsider, { from: outsider }));
@@ -666,7 +664,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectRevert.unspecified(manager.addAdditionalAgent(agent, { from: outsider }));
 
       await manager.setBaseIpfsUrl("ipfs://new", { from: owner });
-      await manager.updateAGITokenAddress(token.address, { from: owner });
       await manager.setMaxJobPayout(payout.muln(10), { from: owner });
       await manager.setJobDurationLimit(9000, { from: owner });
       await manager.addModerator(validatorFour, { from: owner });
