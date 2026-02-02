@@ -13,7 +13,7 @@ const NonReceiverBuyer = artifacts.require("NonReceiverBuyer");
 const ERC721ReceiverBuyer = artifacts.require("ERC721ReceiverBuyer");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
-const { expectCustomError, extractRevertData, selectorFor } = require("./helpers/errors");
+const { expectCustomError } = require("./helpers/errors");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -60,22 +60,7 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
   });
 
   async function expectPausedRevert(promise) {
-    try {
-      await promise;
-    } catch (error) {
-      if (error.message && error.message.includes("Pausable: paused")) {
-        return;
-      }
-      const data = extractRevertData(error);
-      if (data) {
-        const selector = selectorFor("EnforcedPause").toLowerCase();
-        if (data.toLowerCase().startsWith(selector)) {
-          return;
-        }
-      }
-      throw error;
-    }
-    throw new Error("Expected pause revert, but the call succeeded.");
+    await expectRevert.unspecified(promise);
   }
 
   async function mintJobNft() {

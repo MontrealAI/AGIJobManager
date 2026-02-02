@@ -1,7 +1,7 @@
 # AGIJobManager
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Solidity](https://img.shields.io/badge/solidity-0.8.33-363636.svg)](contracts/AGIJobManager.sol)
+[![Solidity](https://img.shields.io/badge/solidity-0.8.19-363636.svg)](contracts/AGIJobManager.sol)
 [![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
 [![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
 
@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.17`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.17`, while the Truffle default compiler is `0.8.19` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
 
 ## Mainnet bytecode size (EIP-170)
 
@@ -118,11 +118,18 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 ```
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
+- `SOLC_VERSION`: **0.8.19** (default in `truffle-config.js`)
 - Optimizer: enabled
 - `optimizer.runs`: **50** (via `SOLC_RUNS`, default in `truffle-config.js`)
 - `viaIR`: **true** (via `SOLC_VIA_IR`)
+- `debug.revertStrings`: **strip** (to minimize runtime bytecode)
 - `metadata.bytecodeHash`: **none**
 - `evmVersion`: **london** (or the target chain default)
+
+**Contract size check (all deployable artifacts)**:
+```bash
+node scripts/check-contract-sizes.js
+```
 
 ## Web UI (GitHub Pages)
 

@@ -25,12 +25,12 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.33`, `SOLC_RUNS=1`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.19`, `SOLC_RUNS=50`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
 
-> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.17`, while the default Truffle compiler is `0.8.33`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
+> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.17`, while the default Truffle compiler is `0.8.19`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
 
 ## Runtime bytecode size (EIP-170)
 
@@ -41,8 +41,9 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 ```
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
-- Optimizer enabled with **runs = 1**.
+- Optimizer enabled with **runs = 50**.
 - `viaIR = true`.
+- `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
 
 ## Networks configured
