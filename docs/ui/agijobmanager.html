@@ -312,13 +312,14 @@
           <div class="inline">
             <button id="saveContract">Save address</button>
             <button id="clearContract" class="secondary">Clear</button>
-            <button id="legacyContract" class="secondary">Use legacy v0 (not the new deployment)</button>
+            <button id="legacyContract" class="secondary">Use legacy fallback (v0)</button>
           </div>
           <p class="muted">
-            Known mainnet deployment: <span id="mainnetDeployment">TBD</span>. Legacy v0:
+            Preferred mainnet deployment (config): <span id="mainnetDeployment">TBD</span>. Legacy fallback:
             <code id="legacyAddress">0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477</code> (opt-in only).
           </p>
-          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, or manual input.</p>
+          <p class="muted">Active source: <span id="contractSource">—</span></p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, config file, or legacy fallback.</p>
         </div>
       </div>
       <div class="panel-row">
@@ -332,6 +333,10 @@
           <button id="switchMainnet">Switch to Mainnet</button>
           <p class="muted">If you are not on Ethereum Mainnet, interactions may revert.</p>
         </div>
+      </div>
+      <div id="mainnetWarning" class="banner" hidden>
+        You are connected to <strong><span id="mainnetWarningNetwork">—</span></strong>, not Ethereum Mainnet.
+        Please switch networks before using production contracts.
       </div>
     </section>
 
@@ -986,6 +991,8 @@
       chainId: null,
       chainName: null,
       contractAddress: null,
+      contractSource: null,
+      config: null,
       legacyAddress: null,
       agiTokenAddress: null,
       agiTokenDecimals: 18,
@@ -1031,6 +1038,12 @@
     };
 
     const legacyAddress = "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477";
+    const configDefaults = {
+      defaultNetwork: "mainnet",
+      legacyContract: legacyAddress,
+      preferredContract: "",
+      notes: "",
+    };
     const storageKey = "agijobmanager_contract";
     const uiSettingsKey = "agijobmanager_ui_settings_v1";
     const indexCacheKey = "agijobmanager_index_cache_v1";
@@ -1181,9 +1194,17 @@
       ids(id).textContent = value;
     }
 
-    function setDeploymentHints(mainnetAddress) {
-      setText("legacyAddress", legacyAddress);
-      setText("mainnetDeployment", mainnetAddress || "TBD");
+    const contractSourceLabels = {
+      query: "Query param",
+      localStorage: "LocalStorage",
+      config: "Config file",
+      legacy: "Legacy fallback",
+      manual: "Manual entry",
+    };
+
+    function updateContractSourceDisplay() {
+      const label = state.contractSource ? contractSourceLabels[state.contractSource] : null;
+      setText("contractSource", label || "—");
     }
 
     function setLegacyAddress(value) {
@@ -1248,26 +1269,47 @@
       if (!state.walletAddress) {
         pill.textContent = "Disconnected";
         pill.className = "pill danger";
+        updateMainnetWarning();
         return;
       }
       if (!state.chainId) {
         pill.textContent = "Connected (unknown network)";
         pill.className = "pill warn";
+        updateMainnetWarning();
         return;
       }
       if (!supportedChainIds.has(state.chainId)) {
         pill.textContent = `Unsupported chain (chain ${state.chainId})`;
         pill.className = "pill danger";
+        updateMainnetWarning();
         return;
       }
       if (state.contractAddress && state.contractDeployed === false) {
         pill.textContent = "Contract not found on this chain";
         pill.className = "pill danger";
+        updateMainnetWarning();
         return;
       }
       const label = state.chainName ? state.chainName : `chain ${state.chainId}`;
       pill.textContent = `Connected (${label})`;
       pill.className = "pill ok";
+      updateMainnetWarning();
+    }
+
+    function updateMainnetWarning() {
+      const warning = ids("mainnetWarning");
+      if (!warning) return;
+      if (!state.chainId) {
+        warning.hidden = true;
+        return;
+      }
+      if (state.chainId === 1n) {
+        warning.hidden = true;
+        return;
+      }
+      const label = state.chainName ? `${state.chainName} (${state.chainId})` : `chain ${state.chainId}`;
+      setText("mainnetWarningNetwork", label);
+      warning.hidden = false;
     }
 
     function getExplorerTxUrl(txHash) {
@@ -1317,7 +1359,7 @@
       const link = document.createElement("a");
       link.href = `${base}${address}`;
       link.target = "_blank";
-      link.rel = "noreferrer";
+      link.rel = "noreferrer noopener";
       link.textContent = shortAddr(address);
       link.title = address;
       return link;
@@ -1454,6 +1496,19 @@
       }
     }
 
+    function applyContractAddress(address, { source = "manual", persist = false } = {}) {
+      const parsed = parseAddress(address, "Contract address");
+      state.contractAddress = parsed;
+      state.contractSource = source;
+      ids("contractAddress").value = parsed;
+      updateContractSourceDisplay();
+      if (persist) {
+        localStorage.setItem(storageKey, parsed);
+      }
+      maybeInitProvider();
+      setContracts();
+    }
+
     function parseUint(value, fieldLabel) {
       const trimmed = value.trim();
       if (!trimmed) {
@@ -1538,7 +1593,7 @@
           .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
           .replace(/\*(.+?)\*/g, "<em>$1</em>")
           .replace(/`(.+?)`/g, "<code>$1</code>")
-          .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+          .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noreferrer noopener">$1</a>');
         return `<div>${htmlLine}</div>`;
       });
       return rendered.join("");
@@ -3650,79 +3705,90 @@
       contract.on("NFTDelisted", (tokenId) => logEvent(`NFTDelisted #${tokenId}`));
     }
 
-    function loadContractFromQuery() {
+    async function loadUiConfig() {
+      let config = { ...configDefaults };
+      try {
+        const response = await fetch("./agijobmanager.config.json", { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json();
+          config = { ...configDefaults, ...(data || {}) };
+        }
+      } catch (error) {
+        // Non-fatal: fall back to defaults.
+      }
+
+      let preferred = "";
+      if (config.preferredContract) {
+        try {
+          preferred = parseAddress(config.preferredContract, "Preferred contract address");
+        } catch (error) {
+          logEvent(`⚠️ Config preferredContract invalid: ${error.message}`);
+        }
+      }
+      let legacy = "";
+      if (config.legacyContract) {
+        try {
+          legacy = setLegacyAddress(config.legacyContract);
+        } catch (error) {
+          logEvent(`⚠️ Config legacyContract invalid: ${error.message}`);
+        }
+      }
+      if (!legacy) {
+        try {
+          legacy = setLegacyAddress(legacyAddress);
+        } catch (error) {
+          legacy = "";
+        }
+      }
+
+      state.config = {
+        ...config,
+        preferredContract: preferred,
+        legacyContract: legacy,
+      };
+      setText("mainnetDeployment", preferred || "TBD");
+      if (!legacy) {
+        state.legacyAddress = null;
+        setText("legacyAddress", "Unavailable");
+      }
+      return state.config;
+    }
+
+    function resolveInitialContractAddress() {
       const url = new URL(window.location.href);
       const contract = url.searchParams.get("contract");
       if (contract) {
         try {
-          const parsed = ethers.getAddress(contract);
-          ids("contractAddress").value = parsed;
-          state.contractAddress = parsed;
-          localStorage.setItem(storageKey, parsed);
-          maybeInitProvider();
-          setContracts();
+          applyContractAddress(contract, { source: "query", persist: true });
+          return;
         } catch (error) {
           showAlert("Invalid contract address in query string.");
         }
-      } else {
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          try {
-            const parsed = ethers.getAddress(stored);
-            ids("contractAddress").value = parsed;
-            state.contractAddress = parsed;
-            maybeInitProvider();
-            setContracts();
-          } catch (error) {
-            localStorage.removeItem(storageKey);
-          }
+      }
+
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          applyContractAddress(stored, { source: "localStorage" });
+          return;
+        } catch (error) {
+          localStorage.removeItem(storageKey);
         }
       }
-    }
 
-    async function loadKnownDeployment() {
-      try {
-        const response = await fetch("../deployments/mainnet.json", { cache: "no-store" });
-        if (!response.ok) {
-          state.legacyAddress = null;
-          setText("legacyAddress", "Unavailable");
-          setText("mainnetDeployment", "TBD");
+      if (state.config?.preferredContract) {
+        try {
+          applyContractAddress(state.config.preferredContract, { source: "config" });
           return;
+        } catch (error) {
+          logEvent(`⚠️ Config preferredContract invalid: ${error.message}`);
         }
-        const data = await response.json();
-        const legacy = typeof data.legacyV0 === "string" ? data.legacyV0 : "";
-        const mainnet = typeof data.agiJobManager === "string" ? data.agiJobManager : "";
-        if (legacy) {
-          try {
-            setLegacyAddress(legacy);
-          } catch (error) {
-            state.legacyAddress = null;
-            setText("legacyAddress", "Unavailable");
-          }
-        } else {
-          state.legacyAddress = null;
-          setText("legacyAddress", "Unavailable");
-        }
-        if (mainnet) {
-          try {
-            const parsed = ethers.getAddress(mainnet);
-            setText("mainnetDeployment", parsed);
-            if (!state.contractAddress && !ids("contractAddress").value.trim()) {
-              ids("contractAddress").value = parsed;
-              state.contractAddress = parsed;
-              maybeInitProvider();
-              setContracts();
-            }
-          } catch (error) {
-            setText("mainnetDeployment", "TBD");
-          }
-        } else {
-          setText("mainnetDeployment", "TBD");
-        }
-      } catch (error) {
-        state.legacyAddress = null;
-        setText("legacyAddress", "Unavailable");
-        setText("mainnetDeployment", "TBD");
+      }
+
+      if (state.legacyAddress) {
+        applyContractAddress(state.legacyAddress, { source: "legacy" });
+      } else {
+        updateContractSourceDisplay();
       }
     }
 
@@ -3731,11 +3797,9 @@
       if (!value) {
         throw new Error("Contract address cannot be empty.");
       }
-      state.contractAddress = parseAddress(value, "Contract address");
-      localStorage.setItem(storageKey, state.contractAddress);
+      applyContractAddress(value, { source: "manual", persist: true });
       const provider = maybeInitProvider();
       if (provider) {
-        setContracts();
         await updateWriteAccess();
         await refreshDashboard();
       } else {
@@ -3777,23 +3841,21 @@
     ids("clearContract").addEventListener("click", () => {
       ids("contractAddress").value = "";
       state.contractAddress = null;
+      state.contractSource = null;
       localStorage.removeItem(storageKey);
       setContracts();
       setWriteEnabled(false, "Contract address not set.");
       resetSnapshot();
       resetRoleFlags();
+      updateContractSourceDisplay();
     });
 
     ids("legacyContract").addEventListener("click", () => {
       if (!state.legacyAddress) {
-        showAlert("Legacy address unavailable. Check deployments config.");
+        showAlert("Legacy address unavailable. Check UI config.");
         return;
       }
-      ids("contractAddress").value = state.legacyAddress;
-      state.contractAddress = state.legacyAddress;
-      localStorage.setItem(storageKey, state.legacyAddress);
-      maybeInitProvider();
-      setContracts();
+      applyContractAddress(state.legacyAddress, { source: "legacy", persist: true });
     });
 
     ids("switchMainnet").addEventListener("click", async () => {
@@ -4611,7 +4673,7 @@
 
     async function bootstrap() {
       await loadAbi();
-      setDeploymentHints();
+      await loadUiConfig();
       loadUiSettings();
       hydrateUiControls();
       refreshCredentialStatus();
@@ -4619,8 +4681,7 @@
       syncMarkdownPreview();
       await refreshJobSpecPreview();
       await refreshCompletionPreview();
-      loadContractFromQuery();
-      loadKnownDeployment();
+      resolveInitialContractAddress();
       initNetwork();
       unbindWalletEvents();
       bindWalletEvents();
