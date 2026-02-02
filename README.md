@@ -114,6 +114,9 @@ npm test
 Detailed contract documentation lives in `docs/`:
 
 - [Configure-once operations guide](docs/CONFIGURE_ONCE.md)
+- [Configure-once deployment profile](docs/DEPLOYMENT_PROFILE.md)
+- [Minimal governance model](docs/GOVERNANCE.md)
+- [AGI Jobs one-pager (canonical narrative)](docs/AGI_JOBS_ONE_PAGER.md)
 - [AGIJobManager overview](docs/AGIJobManager.md)
 - [AGIJobManager interface reference](docs/AGIJobManager_Interface.md)
 - [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
@@ -129,7 +132,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
-- `optimizer.runs`: **50** (via `SOLC_RUNS`, default in `truffle-config.js`)
+- `optimizer.runs`: **800** (via `SOLC_RUNS`, default in `truffle-config.js`)
 - `viaIR`: **true** (via `SOLC_VIA_IR`)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
@@ -139,6 +142,11 @@ The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 To check runtime sizes locally after compilation:
 ```bash
 node scripts/check-contract-sizes.js
+```
+
+To enforce a deterministic size gate on deployable contracts:
+```bash
+node scripts/check-bytecode-size.js
 ```
 
 ## Web UI (GitHub Pages)
