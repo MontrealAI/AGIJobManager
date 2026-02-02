@@ -12,7 +12,7 @@ This static page provides a **non-custodial** interface to the AGIJobManager con
 - **Not** a deployment tracker; you must supply the contract address yourself.
 
 ## Setting the contract address
-You can set the contract address in three ways (the UI uses the first one it finds):
+You can set the contract address in four ways (the UI uses the first one it finds):
 
 1) **Query parameter**
 ```
@@ -21,8 +21,13 @@ You can set the contract address in three ways (the UI uses the first one it fin
 
 2) **LocalStorage** (the UI stores the last saved address automatically)
 
-3) **Manual input**
+3) **Config file** (`docs/ui/agijobmanager.config.json`)
+   - `preferredContract` is intentionally blank until the new deployment is finalized.
+
+4) **Manual input**
 Use the “Contract address” input and click **Save address**.
+
+If none of the above are set, the UI will fall back to the **legacy v0** address (explicitly labeled “Legacy fallback”).
 
 > The new AGIJobManager mainnet address is not yet known. This UI is designed to work with **any** valid deployment.
 > A helper button is available to prefill the **legacy v0** mainnet address, which is clearly labeled as legacy.
@@ -57,6 +62,14 @@ Use the “Contract address” input and click **Save address**.
    - `1 (AGENT_WIN)` → settle in favor of the agent.
    - `2 (EMPLOYER_WIN)` → settle in favor of the employer.
 2) Add an optional freeform reason (logs/UI only).
+
+### Dispute resolution strings (legacy API)
+The deprecated `resolveDispute(jobId, resolution)` method only recognizes two canonical strings:
+
+- `"agent win"`
+- `"employer win"`
+
+Any other string maps to `NO_ACTION`, and the dispute **remains active** on-chain. Prefer `resolveDisputeWithCode`.
 
 ### NFT marketplace user
 1) Buyer **approves** AGI token for the contract (to cover the purchase).
@@ -123,9 +136,11 @@ await jm.setRequiredValidatorApprovals(3, { from: owner });
 ```
 
 ## Security notes
-- Verify the **contract address** and **verified source** before sending transactions.
+- Verify the **contract address**, **token address**, and **chainId** before sending transactions.
+- The UI uses `staticCall` preflight checks, but these are **not guarantees**; state can change between preflight and execution.
 - Be cautious of phishing URLs; always check the hostname.
 - This UI has **no backend** and uses only your wallet for signing.
+- Never paste private keys or seed phrases; your wallet handles signing.
 
 ## GitHub Pages (docs folder)
 1) In GitHub, open **Settings → Pages**.
@@ -144,3 +159,12 @@ Then open:
 ```
 http://localhost:8000/ui/agijobmanager.html?contract=0xYourContract
 ```
+
+## ENS / Merkle gating summary
+AGIJobManager enforces role eligibility with a layered OR-logic check:
+
+1. **Merkle proof membership** (if provided and valid).
+2. **NameWrapper.ownerOf(subnode)** for the label under the contract’s root node.
+3. **ENS resolver.addr(subnode)** for the label under the contract’s root node.
+
+The UI expects **label only** (e.g., `helper`), and reads the root nodes directly from the contract (`agentRootNode`, `clubRootNode`).

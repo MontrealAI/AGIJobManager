@@ -17,8 +17,8 @@ Then open:
 http://localhost:8000/ui/agijobmanager.html
 ```
 
-You can also run the server from `docs/ui/` and open `http://localhost:8000/agijobmanager.html`,
-but the deployments hints will be unavailable because `docs/deployments/` is outside that server root.
+You can also run the server from `docs/ui/` and open `http://localhost:8000/agijobmanager.html`.
+The UI config file (`agijobmanager.config.json`) lives alongside the HTML and will still be available.
 
 Alternatively, you can serve the UI directly:
 
@@ -31,6 +31,7 @@ npx http-server docs/ui
 The UI does **not** assume a default deployment. Provide a contract address explicitly:
 
 - Query param: `?contract=0x...`
+- Config file: `docs/ui/agijobmanager.config.json` (`preferredContract`)
 - Manual entry in the “Contract address” field
 - Save button: persists to `localStorage` under the key `agijobmanager_contract`
 
@@ -39,7 +40,7 @@ To reset:
 - Click **Clear** in the UI, or
 - Remove `localStorage` key `agijobmanager_contract` in your browser’s dev tools.
 
-The legacy v0 address is displayed as a reference and only used if you explicitly opt in.
+If none of the above are set, the UI falls back to the legacy v0 address, which is clearly labeled as legacy.
 
 ## ABI export + drift guardrails
 

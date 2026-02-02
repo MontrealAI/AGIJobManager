@@ -9,7 +9,8 @@
     "lint": "solhint \"contracts/**/*.sol\"",
     "test": "truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js",
     "test:ui": "node scripts/ui/run_ui_smoke_test.js",
-    "ui:abi": "node scripts/ui/export_abi.js"
+    "ui:abi": "node scripts/ui/export_abi.js",
+    "ui:abi:check": "node scripts/ui/check_ui_abi.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.5"
