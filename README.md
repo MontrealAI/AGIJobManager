@@ -113,6 +113,7 @@ npm test
 
 Detailed contract documentation lives in `docs/`:
 
+- [Configure-once operations guide](docs/CONFIGURE_ONCE.md)
 - [AGIJobManager overview](docs/AGIJobManager.md)
 - [AGIJobManager interface reference](docs/AGIJobManager_Interface.md)
 - [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
