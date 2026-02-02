@@ -109,6 +109,21 @@ npm test
 
 **Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.17`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
 
+### Mainnet bytecode size (EIP-170)
+
+Ethereum mainnet enforces a deployed runtime bytecode limit of **24,576 bytes** (Spurious Dragon / EIP-170). Measure the runtime size locally after compiling:
+
+```bash
+node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
+```
+
+Mainnet deploy settings (from `truffle-config.js`):
+- `optimizer.enabled = true`
+- `optimizer.runs = 10` (override with `SOLC_RUNS` if needed)
+- `viaIR = true`
+- `metadata.bytecodeHash = 'none'`
+- `evmVersion = 'london'`
+
 ## Web UI (GitHub Pages)
 
 - Canonical UI path in-repo: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)

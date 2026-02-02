@@ -311,10 +311,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _maxAGITypePayoutPercentage() internal view returns (uint256) {
         uint256 maxPercentage = 0;
-        for (uint256 i = 0; i < agiTypes.length; i++) {
+        for (uint256 i = 0; i < agiTypes.length; ) {
             uint256 pct = agiTypes[i].payoutPercentage;
             if (pct > maxPercentage) {
                 maxPercentage = pct;
+            }
+            unchecked {
+                ++i;
             }
         }
         return maxPercentage;
@@ -766,10 +769,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 validatorPayout = totalValidatorPayout / vCount;
         uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
 
-        for (uint256 i = 0; i < vCount; i++) {
+        for (uint256 i = 0; i < vCount; ) {
             address validator = job.validators[i];
             _t(validator, validatorPayout);
             enforceReputationGrowth(validator, validatorReputationGain);
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -805,9 +811,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _isFullUri(string memory uri) internal pure returns (bool) {
         bytes memory data = bytes(uri);
         if (data.length < 3) return false;
-        for (uint256 i = 0; i + 2 < data.length; i++) {
+        for (uint256 i = 0; i + 2 < data.length; ) {
             if (data[i] == ":" && data[i + 1] == "/" && data[i + 2] == "/") {
                 return true;
+            }
+            unchecked {
+                ++i;
             }
         }
         return false;
@@ -816,9 +825,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _requireValidUri(string memory uri) internal pure {
         bytes memory data = bytes(uri);
         if (data.length == 0) revert InvalidParameters();
-        for (uint256 i = 0; i < data.length; i++) {
+        for (uint256 i = 0; i < data.length; ) {
             bytes1 c = data[i];
             if (c == 0x20 || c == 0x09 || c == 0x0a || c == 0x0d) revert InvalidParameters();
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -934,7 +946,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         uint256 maxPct = payoutPercentage;
         bool exists = false;
-        for (uint256 i = 0; i < agiTypes.length; i++) {
+        for (uint256 i = 0; i < agiTypes.length; ) {
             uint256 pct = agiTypes[i].payoutPercentage;
             if (agiTypes[i].nftAddress == nftAddress) {
                 pct = payoutPercentage;
@@ -943,15 +955,21 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             if (pct > maxPct) {
                 maxPct = pct;
             }
+            unchecked {
+                ++i;
+            }
         }
         if (maxPct > 100 - validationRewardPercentage) revert InvalidParameters();
         if (!exists) {
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
         } else {
-            for (uint256 i = 0; i < agiTypes.length; i++) {
+            for (uint256 i = 0; i < agiTypes.length; ) {
                 if (agiTypes[i].nftAddress == nftAddress) {
                     agiTypes[i].payoutPercentage = payoutPercentage;
                     break;
+                }
+                unchecked {
+                    ++i;
                 }
             }
         }
@@ -961,9 +979,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function getHighestPayoutPercentage(address agent) public view returns (uint256) {
         uint256 highestPercentage = 0;
-        for (uint256 i = 0; i < agiTypes.length; i++) {
+        for (uint256 i = 0; i < agiTypes.length; ) {
             if (IERC721(agiTypes[i].nftAddress).balanceOf(agent) > 0 && agiTypes[i].payoutPercentage > highestPercentage) {
                 highestPercentage = agiTypes[i].payoutPercentage;
+            }
+            unchecked {
+                ++i;
             }
         }
         return highestPercentage;
