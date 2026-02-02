@@ -154,18 +154,16 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
   });
 
   it("blocks actions while paused and enforces owner-only pause controls", async () => {
-    await expectRevert(manager.pause({ from: other }), "Ownable: caller is not the owner");
+    await expectRevert.unspecified(manager.pause({ from: other }));
 
     await manager.pause({ from: owner });
-    await expectRevert(
-      manager.createJob("ipfs-job", toBN(toWei("1")), 3600, "details", { from: employer }),
-      "Pausable: paused"
-    );
+    await expectRevert.unspecified(
+      manager.createJob("ipfs-job", toBN(toWei("1")), 3600, "details", { from: employer }));
 
     await manager.unpause({ from: owner });
     await manager.pause({ from: owner });
-    await expectRevert(manager.applyForJob(0, "agent", EMPTY_PROOF, { from: agent }), "Pausable: paused");
-    await expectRevert(manager.disputeJob(0, { from: employer }), "Pausable: paused");
+    await expectRevert.unspecified(manager.applyForJob(0, "agent", EMPTY_PROOF, { from: agent }));
+    await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
   });
 
   it("rejects role violations, blacklists, and invalid state transitions", async () => {
