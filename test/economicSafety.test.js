@@ -190,7 +190,9 @@ contract("AGIJobManager economic safety", (accounts) => {
     const createTx = await manager.createJob("ipfs-job", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
-    await manager.setJobMetadata(jobId, "", "ipfs-job", true, { from: owner });
-    await expectCustomError(manager.mintJobNftUnsafe.call(jobId, { from: owner }), "InvalidParameters");
+    await expectCustomError(
+      manager.setJobMetadata.call(jobId, "", "ipfs-job", true, true, { from: owner }),
+      "InvalidParameters"
+    );
   });
 });
