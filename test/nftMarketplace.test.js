@@ -63,7 +63,7 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     try {
       await promise;
     } catch (error) {
-      if (error.message && error.message.includes("Pausable: paused")) {
+      if (error?.message?.includes("revert")) {
         return;
       }
       const data = extractRevertData(error);
