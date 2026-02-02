@@ -23,7 +23,7 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 ### A) Constructor-time (immutable)
 These are fixed at deployment and **cannot be changed** without redeploying.
 
-- `agiToken` (ERC-20 used for escrow)
+- `agiToken` (fixed ERC-20 used for escrow; must be the canonical AGI token)
 - `baseIpfsUrl`
 - `ens` + `nameWrapper`
 - `clubRootNode` + `agentRootNode`

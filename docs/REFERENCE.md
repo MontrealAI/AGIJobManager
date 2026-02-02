@@ -5,6 +5,7 @@ This is a function‑by‑function reference of the deployed contract’s public
 ## Read‑only getters (auto‑generated)
 The following `public` state variables have auto‑generated getter functions:
 - `agiToken()`, `baseIpfsUrl()`
+- `AGI_TOKEN_ADDRESS()`, `CLUB_ROOT_NODE()`, `AGENT_ROOT_NODE()`
 - `requiredValidatorApprovals()`, `requiredValidatorDisapprovals()`
 - `premiumReputationThreshold()`, `validationRewardPercentage()`
 - `maxJobPayout()`, `jobDurationLimit()`
@@ -73,9 +74,6 @@ Manages moderator permissions.
 ### `addAdditionalAgent(address)` / `removeAdditionalAgent(address)`
 ### `addAdditionalValidator(address)` / `removeAdditionalValidator(address)`
 Explicit allowlists for roles, bypassing ENS/Merkle checks.
-
-### `updateAGITokenAddress(address)`
-Changes the ERC‑20 token used for payouts.
 
 ### `setBaseIpfsUrl(string)`
 Base prefix for minted NFT tokenURIs when a job URI is a bare CID.

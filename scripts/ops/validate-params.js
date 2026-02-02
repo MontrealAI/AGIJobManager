@@ -15,9 +15,14 @@ function evaluateInvariants({
   jobDurationLimit,
   maxAgentPayoutPercentage,
   agiToken,
+  clubRootNode,
+  agentRootNode,
   ens,
   nameWrapper,
 }) {
+  const expectedAgiToken = "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA".toLowerCase();
+  const expectedClubRootNode = "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16";
+  const expectedAgentRootNode = "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d";
   const results = [];
   const approvals = Number(requiredValidatorApprovals);
   const disapprovals = Number(requiredValidatorDisapprovals);
@@ -27,8 +32,18 @@ function evaluateInvariants({
 
   results.push({
     key: "agiToken",
-    status: agiToken && agiToken !== "0x0000000000000000000000000000000000000000" ? CHECK.PASS : CHECK.FAIL,
-    message: "agiToken address must be non-zero",
+    status: agiToken && agiToken.toLowerCase() === expectedAgiToken ? CHECK.PASS : CHECK.FAIL,
+    message: "agiToken address must be the canonical AGI token",
+  });
+  results.push({
+    key: "clubRootNode",
+    status: clubRootNode === expectedClubRootNode ? CHECK.PASS : CHECK.FAIL,
+    message: "clubRootNode must match club.agi.eth",
+  });
+  results.push({
+    key: "agentRootNode",
+    status: agentRootNode === expectedAgentRootNode ? CHECK.PASS : CHECK.FAIL,
+    message: "agentRootNode must match agent.agi.eth",
   });
   results.push({
     key: "ens",
@@ -137,6 +152,8 @@ module.exports = async function validateParams(callback) {
       owner,
       paused,
       agiToken,
+      clubRootNode,
+      agentRootNode,
       ens,
       nameWrapper,
       requiredValidatorApprovals,
@@ -149,6 +166,8 @@ module.exports = async function validateParams(callback) {
       instance.owner(),
       instance.paused(),
       instance.agiToken(),
+      instance.clubRootNode(),
+      instance.agentRootNode(),
       instance.ens(),
       instance.nameWrapper(),
       instance.requiredValidatorApprovals(),
@@ -170,6 +189,8 @@ module.exports = async function validateParams(callback) {
       jobDurationLimit,
       maxAgentPayoutPercentage,
       agiToken,
+      clubRootNode,
+      agentRootNode,
       ens,
       nameWrapper,
     });

@@ -9,7 +9,7 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 ## Preconditions (capture before deployment)
 
 **Required constructor parameters** (immutable after deploy):
-- `agiToken` (ERC‑20 escrow token)
+- `agiToken` (fixed canonical AGI token address)
 - `baseIpfsUrl`
 - `ens` registry
 - `nameWrapper`
@@ -20,7 +20,7 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 
 **Mainnet token invariant (non‑negotiable)**
 - **AGIALPHA ERC‑20**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA` (18 decimals)
-- This token address **does not change** on Ethereum mainnet.
+- This token address **does not change** and is enforced by the constructor.
 
 **ENS identity schema (canonical)**
 - **Validators**: `*.alpha.club.agi.eth` | `*.club.agi.eth`
@@ -30,7 +30,7 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 
 **Allowlists & roots**
 - Confirm Merkle roots for validators/agents (sorted‑pairs Merkle tree, leaf = `keccak256(address)`).
-- Compute ENS root nodes (namehash for `club.agi.eth`, `alpha.club.agi.eth`, `agent.agi.eth`, `alpha.agent.agi.eth`).
+- Compute ENS root nodes (namehash for `club.agi.eth` and `agent.agi.eth` only; `alpha.*` is derived on-chain).
 
 **Bytecode size guardrail**
 - Compile and check runtime sizes before deployment:

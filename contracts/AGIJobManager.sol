@@ -116,7 +116,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     bytes32 private constant RES_AGENT_WIN = 0x6594a8dd3f558fd2dd11fa44c7925f5b9e19868e6d0b4b97d2132fe5e25b5071;
     bytes32 private constant RES_EMPLOYER_WIN = 0xee31e9f396a85b8517c6d07b02f904858ad9f3456521bedcff02cc14e75ca8ce;
 
-    IERC20 public agiToken;
+    address public constant AGI_TOKEN_ADDRESS = 0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA;
+    bytes32 public constant CLUB_ROOT_NODE = 0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16;
+    bytes32 public constant AGENT_ROOT_NODE = 0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d;
+    bytes32 private constant ALPHA_LABELHASH = keccak256("alpha");
+
+    IERC20 public immutable agiToken;
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
@@ -140,8 +145,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     string public additionalText2;
     string public additionalText3;
 
-    bytes32 public clubRootNode;
-    bytes32 public agentRootNode;
+    bytes32 public immutable clubRootNode;
+    bytes32 public immutable agentRootNode;
     bytes32 public validatorMerkleRoot;
     bytes32 public agentMerkleRoot;
     ENS public ens;
@@ -238,12 +243,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32 _validatorMerkleRoot,
         bytes32 _agentMerkleRoot
     ) ERC721("AGIJobs", "Job") {
-        agiToken = IERC20(_agiTokenAddress);
+        if (_agiTokenAddress != AGI_TOKEN_ADDRESS) revert InvalidParameters();
+        if (_clubRootNode != CLUB_ROOT_NODE) revert InvalidParameters();
+        if (_agentRootNode != AGENT_ROOT_NODE) revert InvalidParameters();
+
+        agiToken = IERC20(AGI_TOKEN_ADDRESS);
         baseIpfsUrl = _baseIpfsUrl;
         ens = ENS(_ensAddress);
         nameWrapper = NameWrapper(_nameWrapperAddress);
-        clubRootNode = _clubRootNode;
-        agentRootNode = _agentRootNode;
+        clubRootNode = CLUB_ROOT_NODE;
+        agentRootNode = AGENT_ROOT_NODE;
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
 
@@ -365,7 +374,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
-        if (!(additionalAgents[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, agentRootNode))) revert NotAuthorized();
+        if (
+            !(
+                additionalAgents[msg.sender] ||
+                _verifyOwnership(msg.sender, subdomain, proof, agentRootNode, agentMerkleRoot)
+            )
+        ) revert NotAuthorized();
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
@@ -396,7 +410,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.completed) revert InvalidState();
         if (job.expired) revert InvalidState();
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
-        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (
+            !(
+                additionalValidators[msg.sender] ||
+                _verifyOwnership(msg.sender, subdomain, proof, clubRootNode, validatorMerkleRoot)
+            )
+        ) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
@@ -417,7 +436,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.completed) revert InvalidState();
         if (job.expired) revert InvalidState();
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
-        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (
+            !(
+                additionalValidators[msg.sender] ||
+                _verifyOwnership(msg.sender, subdomain, proof, clubRootNode, validatorMerkleRoot)
+            )
+        ) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
@@ -529,7 +553,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function addModerator(address _moderator) external onlyOwner { moderators[_moderator] = true; }
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
-    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner { agiToken = IERC20(_newTokenAddress); }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
@@ -631,7 +654,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function log2(uint x) internal pure returns (uint y) {
-        assembly {
+        assembly ("memory-safe") {
             x := sub(x, 1)
             x := or(x, div(x, 0x02))
             x := or(x, div(x, 0x04))
@@ -889,21 +912,26 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit NFTDelisted(tokenId);
     }
 
-    function _verifyOwnership(address claimant, string memory subdomain, bytes32[] calldata proof, bytes32 rootNode) internal returns (bool) {
+    function _verifyOwnership(
+        address claimant,
+        string memory subdomain,
+        bytes32[] calldata proof,
+        bytes32 baseRootNode,
+        bytes32 merkleRoot
+    ) internal returns (bool) {
         bytes32 leaf = keccak256(abi.encodePacked(claimant));
-        bytes32 merkleRoot = rootNode == agentRootNode ? agentMerkleRoot : validatorMerkleRoot;
         if (proof.verify(merkleRoot, leaf)) {
             emit OwnershipVerified(claimant, subdomain);
             return true;
         }
 
-        bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
-        if (_verifyNameWrapperOwnership(claimant, subnode)) {
+        if (_verifyEnsOwnership(claimant, subdomain, baseRootNode)) {
             emit OwnershipVerified(claimant, subdomain);
             return true;
         }
 
-        if (_verifyResolverOwnership(claimant, subnode)) {
+        bytes32 alphaRootNode = _alphaRoot(baseRootNode);
+        if (_verifyEnsOwnership(claimant, subdomain, alphaRootNode)) {
             emit OwnershipVerified(claimant, subdomain);
             return true;
         }
@@ -911,6 +939,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return false;
     }
 
+    function _alphaRoot(bytes32 baseRootNode) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(baseRootNode, ALPHA_LABELHASH));
+    }
+
+    function _verifyEnsOwnership(address claimant, string memory subdomain, bytes32 rootNode) internal returns (bool) {
+        bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
+        if (_verifyNameWrapperOwnership(claimant, subnode)) {
+            return true;
+        }
+        if (_verifyResolverOwnership(claimant, subnode)) {
+            return true;
+        }
+        return false;
+    }
     function _verifyNameWrapperOwnership(address claimant, bytes32 subnode) internal returns (bool) {
         try nameWrapper.ownerOf(uint256(subnode)) returns (address actualOwner) {
             return actualOwner == claimant;

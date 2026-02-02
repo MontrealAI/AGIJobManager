@@ -11,6 +11,8 @@ const MockERC721 = artifacts.require('MockERC721');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
 const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require('./helpers/constants');
+const { AGI_TOKEN_ADDRESS, createFixedTokenManager } = require('./helpers/fixedToken');
 
 const ZERO_ROOT = '0x' + '00'.repeat(32);
 const EMPTY_PROOF = [];
@@ -23,6 +25,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
   let resolver;
   let nameWrapper;
   let manager;
+  let fixedToken;
 
   const payout = toBN(toWei('10'));
 
@@ -33,19 +36,23 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     return tx.logs[0].args.jobId.toNumber();
   }
 
+  before(async () => {
+    fixedToken = await createFixedTokenManager(MockERC20);
+  });
+
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await fixedToken.reset();
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       'ipfs://base',
       ens.address,
       nameWrapper.address,
-      ZERO_ROOT,
-      ZERO_ROOT,
+      CLUB_ROOT_NODE,
+      AGENT_ROOT_NODE,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

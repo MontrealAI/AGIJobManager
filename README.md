@@ -113,6 +113,9 @@ npm test
 
 Detailed contract documentation lives in `docs/`:
 
+- [Set-and-forget deployment](docs/DEPLOYMENT_CHECKLIST.md)
+- [Minimal governance runbook](docs/GOVERNANCE_MINIMAL.md)
+- [ENS identity namespaces](docs/ENS_IDENTITY.md)
 - [Configure-once operations guide](docs/CONFIGURE_ONCE.md)
 - [Configure-once deployment profile](docs/DEPLOYMENT_PROFILE.md)
 - [Minimal governance model](docs/GOVERNANCE.md)
@@ -132,7 +135,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
-- `optimizer.runs`: **800** (via `SOLC_RUNS`, default in `truffle-config.js`)
+- `optimizer.runs`: **150** (via `SOLC_RUNS`, default in `truffle-config.js`; highest observed value that keeps runtime bytecode under the 24,576-byte limit)
 - `viaIR`: **true** (via `SOLC_VIA_IR`)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**

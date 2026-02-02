@@ -9,6 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { AGI_TOKEN_ADDRESS, createFixedTokenManager } = require("./helpers/fixedToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -23,6 +24,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
   let manager;
   let clubRoot;
   let agentRoot;
+  let fixedToken;
 
   const createJob = async (payout) => {
     await token.mint(employer, payout, { from: owner });
@@ -31,8 +33,12 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     return receipt.logs[0].args.jobId.toNumber();
   };
 
+  before(async () => {
+    fixedToken = await createFixedTokenManager(MockERC20);
+  });
+
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await fixedToken.reset();
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
@@ -41,7 +47,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     agentRoot = rootNode("agent-root");
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,

@@ -1,4 +1,5 @@
 const { soliditySha3, keccak256, toBN } = web3.utils;
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require("./constants");
 
 function namehash(name) {
   let node = "0x" + "00".repeat(32);
@@ -14,6 +15,13 @@ function namehash(name) {
 }
 
 function rootNode(label) {
+  const normalized = label.toLowerCase();
+  if (normalized.startsWith("club")) {
+    return CLUB_ROOT_NODE;
+  }
+  if (normalized.startsWith("agent")) {
+    return AGENT_ROOT_NODE;
+  }
   return soliditySha3({ type: "string", value: label });
 }
 

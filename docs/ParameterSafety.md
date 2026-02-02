@@ -10,7 +10,7 @@ The table below lists configurable parameters and relevant caps, including who c
 
 | Parameter | Who can change | How it is used | On-chain enforced bounds | Recommended operational range | Failure mode if mis-set |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` | Owner (`updateAGITokenAddress`) | ERC‑20 used for escrow deposits, payouts, reward pool, and withdrawals. | None. | **Never change** after any job funds are deposited. Treat as immutable post‑deploy. | If changed after jobs are funded, payouts will attempt the *new* token while escrow sits in the old token. Completion/cancellation transfers can revert from insufficient balance; old token escrow becomes unrecoverable (no in-contract method to transfer old token). Funds can become permanently stuck. |
+| `agiToken` | Immutable (constructor‑fixed) | ERC‑20 used for escrow deposits, payouts, reward pool, and withdrawals. | Must equal the canonical AGI token. | **Fixed** to `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`. | Not configurable post‑deploy; misuse is prevented at construction time. |
 | `requiredValidatorApprovals` | Owner (`setRequiredValidatorApprovals`) | Approvals needed to auto‑complete a job via `validateJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **2–5** (or <= available validator count). Ensure enough active validators can realistically approve. | Too high → job completion requires more validators than are available; jobs can stall and require moderator dispute resolution. Setting to `0` makes any validation sufficient, which may be too weak for trust. |
 | `requiredValidatorDisapprovals` | Owner (`setRequiredValidatorDisapprovals`) | Disapprovals needed to mark job as `disputed` in `disapproveJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **1–3**; keep low so disputes are reachable with a small validator set. | Too high → disputes rarely trigger; jobs can remain in limbo if approvals never reach threshold. Setting to `0` means *any* disapproval triggers dispute. |
 | `validationRewardPercentage` | Owner (`setValidationRewardPercentage`) | Total % of payout distributed to validators on completion. | `1..100`; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100` | **Keep low enough so:** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. Commonly **1–10%**. | If `validationRewardPercentage + agent payout % > 100` and validators are present, settlement reverts due to insufficient escrow, making jobs uncompletable. |
@@ -64,12 +64,10 @@ On completion (`_completeJob`), the contract executes the following calculations
 
 Below are plausible misconfiguration or operational failures that can trap funds or make jobs uncompletable.
 
-### 1) ERC‑20 token address changed after jobs are funded
-- **Symptom:** Validators attempt to approve; completion reverts. Employer/agent cannot receive payouts or refunds.
-- **Root cause:** `agiToken` was updated while escrow for existing jobs remains in the old token. Payouts now target the new token balance (likely zero).
-- **On‑chain recovery:** **None** for existing escrow in the old token; there is no function to transfer arbitrary ERC‑20s out. `withdrawAGI` only works for the *current* token.
-- **Operational recovery:** Pause the contract, and redeploy a new instance. If possible, coordinate off‑chain refunds from treasury.
-- **Outcome:** **Funds can be permanently stuck** in the old token.
+### 1) Token address mismatch at deploy (prevented)
+- **Symptom:** Deployment fails.
+- **Root cause:** Constructor rejects any `agiToken` address other than the canonical AGI token.
+- **On‑chain recovery:** Not applicable (deployment does not succeed).
 
 ### 2) `validationRewardPercentage + agent payout % > 100`
 - **Symptom:** Any completion attempt reverts during validator payouts.
@@ -133,7 +131,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
 ## Pre‑deploy / post‑deploy parameter sanity checklist
 
 ### Pre‑deploy (before contract creation)
-1. **Token selection:** confirm `agiToken` is a standard ERC‑20 (no fee‑on‑transfer, no rebasing) and will not be changed post‑deploy.
+1. **Token selection:** confirm the canonical AGI token (`0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`) is used.
 2. **Eligibility roots:** verify `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, and `agentMerkleRoot` against your allowlists and ENS settings.
 3. **Validator thresholds:** choose `requiredValidatorApprovals` and `requiredValidatorDisapprovals` so that your known validator set can reach them quickly.
 4. **Payout economics:** define a maximum `AGIType.payoutPercentage` and choose `validationRewardPercentage` so their sum is **≤ 100**.
@@ -158,7 +156,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - Adjust validator thresholds (`setRequiredValidatorApprovals`, `setRequiredValidatorDisapprovals`).
    - Adjust payout percentages (`setValidationRewardPercentage`, `addAGIType`).
    - Add emergency allowlisted validators/agents (`addAdditionalValidator`, `addAdditionalAgent`).
-   - **Do not** change `agiToken` when escrow is outstanding.
+   - `agiToken` is immutable; no token rotation is possible.
 
 3. **Unstick existing jobs:**
    - For unassigned jobs: employer can `cancelJob` (if no agent assigned). Owner can `delistJob` to refund.
@@ -174,6 +172,6 @@ Below are plausible misconfiguration or operational failures that can trap funds
 
 If you plan a future upgrade or redeploy, consider:
 - Enforce `agentPayoutPercentage + validationRewardPercentage <= 100` in `addAGIType` or `setValidationRewardPercentage` to prevent uncompletable jobs.
-- Disallow `updateAGITokenAddress` once `nextJobId > 0` or once any escrow exists.
+- Ensure constructor invariants remain unchanged in future deployments (token + ENS roots).
 - Add a controlled rescue method for non‑current tokens (with strict event logging and governance).
 - Require `completionRequested` before `validateJob` to align on‑chain behavior with off‑chain expectations.
