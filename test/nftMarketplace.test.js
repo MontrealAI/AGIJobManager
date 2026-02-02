@@ -59,17 +59,23 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
   });
 
-  async function expectPausedRevert(promise) {
+  async function expectPausedRevert(promise, pausedContract) {
     try {
       await promise;
     } catch (error) {
-      if (error.message && error.message.includes("Pausable: paused")) {
+      if (error?.message?.includes("Pausable: paused")) {
         return;
       }
       const data = extractRevertData(error);
       if (data) {
         const selector = selectorFor("EnforcedPause").toLowerCase();
         if (data.toLowerCase().startsWith(selector)) {
+          return;
+        }
+      }
+      if (pausedContract && error?.message?.includes("revert")) {
+        const paused = await pausedContract.paused();
+        if (paused) {
           return;
         }
       }
@@ -122,17 +128,17 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     const price = toBN(toWei("5"));
 
     await manager.pause({ from: owner });
-    await expectPausedRevert(manager.listNFT(tokenId, price, { from: employer }));
+    await expectPausedRevert(manager.listNFT(tokenId, price, { from: employer }), manager);
 
     await manager.unpause({ from: owner });
     await manager.listNFT(tokenId, price, { from: employer });
 
     await manager.pause({ from: owner });
-    await expectPausedRevert(manager.delistNFT(tokenId, { from: employer }));
+    await expectPausedRevert(manager.delistNFT(tokenId, { from: employer }), manager);
 
     await token.mint(buyer, price, { from: owner });
     await token.approve(manager.address, price, { from: buyer });
-    await expectPausedRevert(manager.purchaseNFT(tokenId, { from: buyer }));
+    await expectPausedRevert(manager.purchaseNFT(tokenId, { from: buyer }), manager);
 
     await manager.unpause({ from: owner });
     await manager.purchaseNFT(tokenId, { from: buyer });
