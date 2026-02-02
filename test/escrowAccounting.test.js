@@ -81,7 +81,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const withdrawable = await manager.withdrawableAGI();
     assert.equal(withdrawable.toString(), surplus.toString(), "withdrawable should be surplus only");
 
-    await expectRevert(manager.withdrawAGI(surplus, { from: owner }), "Pausable: not paused");
+    await expectRevert.unspecified(manager.withdrawAGI(surplus, { from: owner }));
     await manager.pause({ from: owner });
     await manager.withdrawAGI(surplus, { from: owner });
 

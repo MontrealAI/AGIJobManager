@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const MAX_RUNTIME_BYTES = 24576;
-const targets = ["AGIJobManager", "TestableAGIJobManager"];
+const artifactsDir = path.join(__dirname, "..", "build", "contracts");
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =
@@ -13,25 +13,29 @@ function deployedSizeBytes(artifact) {
   return hex.length / 2;
 }
 
-let failed = false;
-for (const name of targets) {
-  const artifactPath = path.join(__dirname, "..", "build", "contracts", `${name}.json`);
-  if (!fs.existsSync(artifactPath)) {
-    console.error(`Missing Truffle artifact: ${artifactPath}`);
-    failed = true;
-    continue;
-  }
+if (!fs.existsSync(artifactsDir)) {
+  console.error(`Missing Truffle artifacts directory: ${artifactsDir}`);
+  process.exit(1);
+}
+
+const failures = [];
+for (const file of fs.readdirSync(artifactsDir)) {
+  if (!file.endsWith(".json")) continue;
+  const artifactPath = path.join(artifactsDir, file);
   const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
   const sizeBytes = deployedSizeBytes(artifact);
+  if (!sizeBytes) continue;
+  const name = artifact.contractName || path.basename(file, ".json");
   console.log(`${name} deployedBytecode size: ${sizeBytes} bytes`);
-  if (name === "AGIJobManager" && sizeBytes > MAX_RUNTIME_BYTES) {
-    console.error(
-      `AGIJobManager deployed bytecode exceeds ${MAX_RUNTIME_BYTES} bytes: ${sizeBytes}`
-    );
-    failed = true;
+  if (sizeBytes > MAX_RUNTIME_BYTES) {
+    failures.push({ name, sizeBytes });
   }
 }
 
-if (failed) {
+if (failures.length) {
+  console.error(`Deployed bytecode exceeds ${MAX_RUNTIME_BYTES} bytes:`);
+  for (const { name, sizeBytes } of failures) {
+    console.error(`- ${name}: ${sizeBytes} bytes`);
+  }
   process.exit(1);
 }
