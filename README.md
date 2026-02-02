@@ -171,6 +171,7 @@ npx truffle migrate --network development
 ## Deployment & verification (Truffle)
 
 `truffle-config.js` is the source of truth for networks and env vars. A full guide lives in [`docs/Deployment.md`](docs/Deployment.md).
+For operational setup, see **[Configure once, then operate with minimal governance](docs/CONFIGURE_ONCE.md)**.
 
 **Environment setup**
 - Copy `.env.example` → `.env` (keep it local):
@@ -241,6 +242,7 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 
 Start here:
 - [`docs/README.md`](docs/README.md)
+- **Configure once, then operate with minimal governance**: [`docs/CONFIGURE_ONCE.md`](docs/CONFIGURE_ONCE.md)
 - **Non‑technical user guides**: [`docs/user-guide/README.md`](docs/user-guide/README.md)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/ParameterSafety.md`](docs/ParameterSafety.md)
