@@ -70,7 +70,7 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
           return;
         }
       }
-      return;
+      throw error;
     }
     throw new Error("Expected pause revert, but the call succeeded.");
   }
