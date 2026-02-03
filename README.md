@@ -1,7 +1,7 @@
 # AGIJobManager
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Solidity](https://img.shields.io/badge/solidity-0.8.33-363636.svg)](contracts/AGIJobManager.sol)
+[![Solidity](https://img.shields.io/badge/solidity-0.8.19-363636.svg)](contracts/AGIJobManager.sol)
 [![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
 [![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
 
@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.33`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). `viaIR` is **enabled by default** because compilation without IR hits stack‑too‑deep; keep compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle default compiler is `0.8.19` (configurable via `SOLC_VERSION`). `viaIR` remains **disabled**; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
 
 ## Contract documentation
 
@@ -136,11 +136,11 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
-- `optimizer.runs`: **200** (via `SOLC_RUNS`, default in `truffle-config.js`)
-- `viaIR`: **true** by default (required to compile without stack‑too‑deep)
+- `optimizer.runs`: **50** (via `SOLC_RUNS`, default in `truffle-config.js`)
+- `viaIR`: **false** by default
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
-- `SOLC_VERSION`: **0.8.33**
+- `SOLC_VERSION`: **0.8.19**
 - `evmVersion`: **london** (or the target chain default)
 
 To check runtime sizes locally after compilation:
@@ -205,7 +205,7 @@ npx truffle migrate --network development
 **Optional tuning**
 - Gas & confirmations: `SEPOLIA_GAS`, `MAINNET_GAS`, `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`, `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`, `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`.
 - Provider polling: `RPC_POLLING_INTERVAL_MS`.
-- Compiler settings: `SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`.
+- Compiler settings: `SOLC_VERSION`, `SOLC_RUNS`, `SOLC_EVM_VERSION`.
 - Local chain: `GANACHE_MNEMONIC`.
 
 **Network notes**

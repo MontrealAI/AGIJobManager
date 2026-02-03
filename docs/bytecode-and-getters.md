@@ -22,7 +22,8 @@ when the job is missing.
 
 ## Runtime bytecode size check (EIP-170)
 The deployed/runtime bytecode of `AGIJobManager` must remain **≤ 24575 bytes**
-(a safety margin under the 24,576 byte EIP-170 limit).
+(a safety margin under the 24,576 byte EIP-170 limit). Tests also guard the
+`TestableAGIJobManager` wrapper when it is compiled for local suites.
 
 After compiling, run:
 
@@ -30,10 +31,24 @@ After compiling, run:
 npm run size
 ```
 
-This reads `build/contracts/AGIJobManager.json` and prints the runtime byte
-length. CI also enforces the same limit.
+This reads `build/contracts/AGIJobManager.json` by default (or any contracts
+listed via `BYTECODE_CONTRACTS`) and prints the runtime byte length. CI and the
+Truffle test guard enforce the same limit for `AGIJobManager` and
+`TestableAGIJobManager` artifacts.
+
+Current measured sizes from the latest build (Solidity 0.8.19, runs=50):
+- `AGIJobManager`: **24295 bytes**
+- `TestableAGIJobManager`: **24545 bytes**
 
 ## Compiler configuration
-`viaIR` remains **OFF** in `truffle-config.js`. Optimizer runs are pinned low
-(`runs=1`) to keep runtime bytecode under the EIP‑170 safety margin; if you
-adjust this, ensure the bytecode limit test still passes.
+`viaIR` remains **OFF** in `truffle-config.js`. The repo pins Solidity
+**0.8.19** (override with `SOLC_VERSION` only if needed) to avoid the
+OpenZeppelin `memory-safe-assembly` deprecation warnings while staying
+compatible with the current OZ 4.x dependencies. Optimizer runs default to
+**50**; if you adjust this, ensure the bytecode limit tests still pass.
+
+## OpenZeppelin warning background
+Newer Solidity releases emit deprecation warnings for the legacy
+`@solidity memory-safe-assembly` natspec comment used in OpenZeppelin 4.x. We
+pin a compatible Solidity release in Truffle to keep the compile output clean
+without modifying `node_modules`.
