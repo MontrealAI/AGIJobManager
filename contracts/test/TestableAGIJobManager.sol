@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.33;
+pragma solidity ^0.8.19;
 
 import "../AGIJobManager.sol";
 
@@ -26,7 +26,7 @@ contract TestableAGIJobManager is AGIJobManager {
         job.jobCompletionURI = completionURI;
         job.completionRequested = completionRequested;
         if (mintNft) {
-            _mintJobNft(job);
+            _requireValidUri(job.jobCompletionURI);
         }
     }
 }

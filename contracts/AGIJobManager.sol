@@ -42,7 +42,7 @@ OVERRIDING AUTHORITY: AGI.ETH
 
 */
 
-pragma solidity ^0.8.33;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -684,24 +684,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         validationRewardPercentage = _percentage;
     }
 
-    function calculateReputationPoints(uint256 _payout, uint256 _duration) internal pure returns (uint256) {
-        unchecked {
-            uint256 scaledPayout = _payout / 1e18;
-            uint256 payoutPoints = scaledPayout ** 3 / 1e5;
-            return log2(1 + payoutPoints * 1e6) + _duration / 10000;
-        }
-    }
-
-    function calculateValidatorReputationPoints(uint256 agentReputationGain) internal view returns (uint256) {
-        unchecked {
-            return (agentReputationGain * validationRewardPercentage) / 100;
-        }
-    }
-
-    function log2(uint x) internal pure returns (uint y) {
-        return Math.log2(x);
-    }
-
     function enforceReputationGrowth(address _user, uint256 _points) internal {
         uint256 currentReputation = reputation[_user];
         uint256 newReputation = currentReputation + _points;
@@ -741,15 +723,25 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
-        _validateFinalization(job);
+        if (job.completed || job.expired || job.disputed) revert InvalidState();
+        if (!job.completionRequested || job.completionRequestedAt == 0) revert InvalidState();
+        if (block.timestamp <= job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
+        if (requiredValidatorDisapprovals > 0 && job.validatorDisapprovals >= requiredValidatorDisapprovals) {
+            revert InvalidState();
+        }
 
-        if (_shouldFinalizeFromValidators(job)) {
+        if (requiredValidatorApprovals > 0 && job.validatorApprovals >= requiredValidatorApprovals) {
             _completeJob(_jobId);
             emit JobFinalized(_jobId, job.assignedAgent, job.employer, true, job.payout);
             return;
         }
 
-        bool agentWins = _agentWinsFinalization(job);
+        bool agentWins;
+        if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
+            agentWins = true;
+        } else {
+            agentWins = job.validatorApprovals > job.validatorDisapprovals;
+        }
         if (agentWins) {
             _completeJob(_jobId);
         } else {
@@ -759,54 +751,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit JobFinalized(_jobId, job.assignedAgent, job.employer, agentWins, job.payout);
     }
 
-    function _validateFinalization(Job storage job) internal view {
-        if (job.completed || job.expired || job.disputed) revert InvalidState();
-        if (!job.completionRequested || job.completionRequestedAt == 0) revert InvalidState();
-        if (block.timestamp <= job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
-        if (requiredValidatorDisapprovals > 0 && job.validatorDisapprovals >= requiredValidatorDisapprovals) {
-            revert InvalidState();
-        }
-    }
-
-    function _shouldFinalizeFromValidators(Job storage job) internal view returns (bool) {
-        return requiredValidatorApprovals > 0 && job.validatorApprovals >= requiredValidatorApprovals;
-    }
-
-    function _agentWinsFinalization(Job storage job) internal view returns (bool) {
-        if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
-            return true;
-        }
-        return job.validatorApprovals > job.validatorDisapprovals;
-    }
-
     function _completeJob(uint256 _jobId) internal {
         Job storage job = _job(_jobId);
-        _validateCompletion(job);
-        _validatePayoutBounds(job);
-
-        job.completed = true;
-        job.disputed = false;
-        _releaseEscrow(job);
-
-        uint256 reputationPoints = _applyCompletionReputation(job);
-
-        _payAgent(job);
-        _payValidators(job, reputationPoints);
-        _mintJobNft(job);
-
-        emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
-        emit ReputationUpdated(job.assignedAgent, reputation[job.assignedAgent]);
-    }
-
-    function _validateCompletion(Job storage job) internal view {
         if (job.completed || job.expired) revert InvalidState();
         if (job.disputed) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
         _requireValidUri(job.jobCompletionURI);
-    }
 
-    function _validatePayoutBounds(Job storage job) internal view {
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
         uint256 validatorPayoutPercentage = job.validators.length > 0 ? validationRewardPercentage : 0;
@@ -816,13 +768,68 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ? (job.payout * validationRewardPercentage) / 100
             : 0;
         if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
-    }
 
-    function _applyCompletionReputation(Job storage job) internal returns (uint256) {
+        job.completed = true;
+        job.disputed = false;
+        _releaseEscrow(job);
+
         uint256 completionTime = block.timestamp - job.assignedAt;
-        uint256 reputationPoints = calculateReputationPoints(job.payout, completionTime);
+        uint256 reputationPoints;
+        unchecked {
+            uint256 scaledPayout = job.payout / 1e18;
+            uint256 payoutPoints = scaledPayout ** 3 / 1e5;
+            reputationPoints = Math.log2(1 + payoutPoints * 1e6) + completionTime / 10000;
+        }
         enforceReputationGrowth(job.assignedAgent, reputationPoints);
-        return reputationPoints;
+
+        _t(job.assignedAgent, agentPayout);
+
+        uint256 vCount = job.validators.length;
+        if (vCount > MAX_VALIDATORS_PER_JOB) revert ValidatorSetTooLarge();
+        if (vCount > 0) {
+            uint256 validatorPayout;
+            unchecked {
+                validatorPayout = totalValidatorPayout / vCount;
+            }
+            uint256 validatorReputationGain;
+            unchecked {
+                validatorReputationGain = (reputationPoints * validationRewardPercentage) / 100;
+            }
+            for (uint256 i = 0; i < vCount; ) {
+                address validator = job.validators[i];
+                _t(validator, validatorPayout);
+                enforceReputationGrowth(validator, validatorReputationGain);
+                unchecked {
+                    ++i;
+                }
+            }
+        }
+
+        uint256 tokenId = nextTokenId;
+        unchecked {
+            ++nextTokenId;
+        }
+        string memory tokenUriValue = job.jobCompletionURI;
+        bytes memory uriBytes = bytes(tokenUriValue);
+        bool hasScheme;
+        for (uint256 i = 0; i + 2 < uriBytes.length; ) {
+            if (uriBytes[i] == ":" && uriBytes[i + 1] == "/" && uriBytes[i + 2] == "/") {
+                hasScheme = true;
+                break;
+            }
+            unchecked {
+                ++i;
+            }
+        }
+        if (!hasScheme && bytes(baseIpfsUrl).length != 0) {
+            tokenUriValue = string(abi.encodePacked(baseIpfsUrl, "/", tokenUriValue));
+        }
+        _mint(job.employer, tokenId);
+        _tokenURIs[tokenId] = tokenUriValue;
+        emit NFTIssued(tokenId, job.employer, tokenUriValue);
+
+        emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
+        emit ReputationUpdated(job.assignedAgent, reputation[job.assignedAgent]);
     }
 
     function _refundEmployer(Job storage job) internal {
@@ -833,83 +840,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _t(job.employer, job.payout);
     }
 
-    function _payAgent(Job storage job) internal {
-        uint256 agentPayoutPercentage = job.agentPayoutPct;
-        if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
-        uint256 agentPayout;
-        unchecked {
-            agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        }
-        _t(job.assignedAgent, agentPayout);
-    }
-
-    function _payValidators(Job storage job, uint256 reputationPoints) internal {
-        uint256 vCount = job.validators.length;
-        if (vCount > MAX_VALIDATORS_PER_JOB) revert ValidatorSetTooLarge();
-        if (vCount == 0) return;
-
-        uint256 totalValidatorPayout;
-        uint256 validatorPayout;
-        unchecked {
-            totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
-            validatorPayout = totalValidatorPayout / vCount;
-        }
-        uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
-
-        for (uint256 i = 0; i < vCount; ) {
-            address validator = job.validators[i];
-            _t(validator, validatorPayout);
-            enforceReputationGrowth(validator, validatorReputationGain);
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    function _mintJobNft(Job storage job) internal {
-        uint256 tokenId = nextTokenId;
-        unchecked {
-            ++nextTokenId;
-        }
-        _requireValidUri(job.jobCompletionURI);
-        string memory tokenUriValue = _formatTokenURI(job.jobCompletionURI);
-        _mint(job.employer, tokenId);
-        _setTokenURI(tokenId, tokenUriValue);
-        emit NFTIssued(tokenId, job.employer, tokenUriValue);
-    }
-
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireMinted(tokenId);
         return _tokenURIs[tokenId];
-    }
-
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
-        _requireMinted(tokenId);
-        _tokenURIs[tokenId] = _tokenURI;
-    }
-
-    function _formatTokenURI(string memory uri) internal view returns (string memory) {
-        if (_isFullUri(uri)) {
-            return uri;
-        }
-        if (bytes(baseIpfsUrl).length == 0) {
-            return uri;
-        }
-        return string(abi.encodePacked(baseIpfsUrl, "/", uri));
-    }
-
-    function _isFullUri(string memory uri) internal pure returns (bool) {
-        bytes memory data = bytes(uri);
-        if (data.length < 3) return false;
-        for (uint256 i = 0; i + 2 < data.length; ) {
-            if (data[i] == ":" && data[i + 1] == "/" && data[i + 2] == "/") {
-                return true;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        return false;
     }
 
     function _requireValidUri(string memory uri) internal pure {
