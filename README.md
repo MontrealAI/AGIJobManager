@@ -1,7 +1,7 @@
 # AGIJobManager
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Solidity](https://img.shields.io/badge/solidity-0.8.26-363636.svg)](contracts/AGIJobManager.sol)
+[![Solidity](https://img.shields.io/badge/solidity-0.8.33-363636.svg)](contracts/AGIJobManager.sol)
 [![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
 [![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
 
@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.26`, while the Truffle default compiler is `0.8.26` (configurable via `SOLC_VERSION`). `viaIR` is enabled by default because the legacy contract and current shape hit stack‑too‑deep without it; keep compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.33`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). `viaIR` is **enabled by default** because compilation without IR hits stack‑too‑deep in this contract; keep compiler settings consistent for verification.
 
 ## Contract documentation
 
@@ -138,7 +138,7 @@ The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - `viaIR`: **true** by default (set `SOLC_VIA_IR=false` only if you have a validated refactor that avoids stack‑too‑deep)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
-- `SOLC_VERSION`: **0.8.26**
+- `SOLC_VERSION`: **0.8.33**
 - `evmVersion`: **london** (or the target chain default)
 
 To check runtime sizes locally after compilation:

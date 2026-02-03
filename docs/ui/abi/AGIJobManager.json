@@ -2,7 +2,7 @@
   "contractName": "AGIJobManager",
   "compiler": {
     "name": "solc",
-    "version": "0.8.26+commit.8a97fa7a.Emscripten.clang"
+    "version": "0.8.33+commit.64118f21.Emscripten.clang"
   },
   "abi": [
     {
