@@ -25,7 +25,13 @@ for (const file of artifacts) {
   const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
   const name = artifact.contractName || path.basename(file, ".json");
   const sizeBytes = deployedSizeBytes(artifact);
-  console.log(`${name} deployedBytecode size: ${sizeBytes} bytes`);
+  const sourcePath = artifact.sourcePath || "";
+  const isTestContract = sourcePath.includes("contracts/test/");
+  const suffix = isTestContract ? " (test-only)" : "";
+  console.log(`${name} deployedBytecode size: ${sizeBytes} bytes${suffix}`);
+  if (isTestContract) {
+    continue;
+  }
   if (sizeBytes > MAX_RUNTIME_BYTES) {
     oversized.push({ name, sizeBytes });
   }
