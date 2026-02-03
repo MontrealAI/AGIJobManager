@@ -943,6 +943,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _verifyOwnershipByRoot(address claimant, string memory subdomain, bytes32 rootNode) internal returns (bool) {
+        if (rootNode == bytes32(0)) {
+            return false;
+        }
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
         if (_verifyNameWrapperOwnership(claimant, subnode)) {
             return true;
