@@ -10,6 +10,8 @@ Use these getters instead:
 - `getJobValidation(jobId)` for validation-related fields (completion request state and validator counts/timestamps).
 - `getJobSpecURI(jobId)` for the job specification URI.
 - `getJobCompletionURI(jobId)` for the completion URI (when provided).
+- `getJobValidatorCount(jobId)` / `getJobValidatorAt(jobId, index)` for validator lists.
+- `getJobVote(jobId, validator)` for validator votes (0 = none, 1 = approved, 2 = disapproved).
 
 ## Runtime bytecode size limit (EIP-170)
 
@@ -22,7 +24,6 @@ Compile and check the deployed bytecode size:
 ```bash
 npx truffle compile --all
 node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
-node -e "const a=require('./build/contracts/TestableAGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('TestableAGIJobManager deployedBytecode bytes:', b.length/2)"
 ```
 
 We also enforce this in tests (`test/bytecodeSize.test.js`) so CI fails if the limit is exceeded.
@@ -31,6 +32,6 @@ We also enforce this in tests (`test/bytecodeSize.test.js`) so CI fails if the l
 
 - **Solidity version:** pinned to `0.8.19` in `truffle-config.js` to avoid the OpenZeppelin *memory-safe-assembly* deprecation warnings emitted by newer compilers.
 - **OpenZeppelin contracts:** kept at `@openzeppelin/contracts@4.9.6` (same major version).
-- **Optimizer:** enabled with **runs = 50** to keep deployed bytecode under the EIP‑170 safety margin (viaIR stays off).
+- **Optimizer:** enabled with **runs = 200** to balance deploy size and runtime gas (viaIR stays off).
 
 If you change compiler settings for a new deployment, keep the version and optimizer runs consistent for reproducible verification.

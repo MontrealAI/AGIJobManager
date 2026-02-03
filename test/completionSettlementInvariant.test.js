@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const TestableAGIJobManager = artifacts.require("TestableAGIJobManager");
+const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
@@ -55,7 +55,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    manager = await TestableAGIJobManager.new(...buildInitConfig(
+    manager = await AGIJobManager.new(...buildInitConfig(
         token.address,
         "ipfs://base",
         ens.address,
@@ -97,10 +97,9 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     return jobId;
   }
 
-  it("reverts agent-win dispute resolution without a completion request", async () => {
-    const jobId = await setupDisputedJob(toBN(toWei("5")));
-
-    await manager.setJobMetadata(jobId, "ipfs-complete", false, false, { from: owner });
+  it("reverts agent-win dispute resolution when the job is not disputed", async () => {
+    const jobId = await createJob(toBN(toWei("5")));
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await expectCustomError(
       manager.resolveDisputeWithCode.call(jobId, 1, "agent win", { from: moderator }),
@@ -108,41 +107,36 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     );
   });
 
-  it("reverts agent-win dispute resolution when completion metadata is empty", async () => {
-    const jobId = await setupDisputedJob(toBN(toWei("6")));
-
-    await manager.setJobMetadata(jobId, "", true, false, { from: owner });
+  it("reverts completion requests when completion metadata is empty", async () => {
+    const jobId = await createJob(toBN(toWei("6")));
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await expectCustomError(
-      manager.resolveDisputeWithCode.call(jobId, 1, "agent win", { from: moderator }),
+      manager.requestJobCompletion.call(jobId, "", { from: agent }),
       "InvalidParameters"
     );
   });
 
-  it("reverts stale dispute resolution without a completion request", async () => {
+  it("reverts stale dispute resolution before the timeout elapses", async () => {
     const jobId = await setupDisputedJob(toBN(toWei("7")));
 
-    await manager.setJobMetadata(jobId, "ipfs-complete", false, false, { from: owner });
-
-    await advanceTime(120);
+    await advanceTime(50);
     await manager.pause({ from: owner });
 
     await expectCustomError(manager.resolveStaleDispute.call(jobId, false, { from: owner }), "InvalidState");
   });
 
-  it("blocks validator actions when completion metadata is empty", async () => {
+  it("blocks validator actions before completion is requested", async () => {
     const jobId = await createJob(toBN(toWei("4")));
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
-    await manager.setJobMetadata(jobId, "", true, false, { from: owner });
-
     await expectCustomError(
       manager.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
-      "InvalidParameters"
+      "InvalidState"
     );
     await expectCustomError(
       manager.disapproveJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
-      "InvalidParameters"
+      "InvalidState"
     );
   });
 

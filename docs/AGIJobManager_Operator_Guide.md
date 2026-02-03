@@ -69,7 +69,6 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - Track `JobCreated`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `JobCompleted`, `DisputeResolvedWithCode`, and `JobFinalized` for lifecycle visibility.
 - Track `AGIWithdrawn` and `lockedEscrow` to ensure the contract remains solvent.
 - Monitor `ReputationUpdated` to maintain off‑chain reputation views.
-- Monitor `RecoveryInitiated` for ENS/NameWrapper failures or dispute recovery actions.
 
 ## Upgrade & recovery notes
 

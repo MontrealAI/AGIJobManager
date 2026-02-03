@@ -29,7 +29,7 @@ function loadArtifact(name) {
 
 contract("Bytecode size guard", () => {
   it("keeps deployed bytecode within the EIP-170 safety margin", () => {
-    ["AGIJobManager", "TestableAGIJobManager"].forEach((name) => {
+    ["AGIJobManager"].forEach((name) => {
       const artifact = loadArtifact(name);
       if (!artifact) {
         return;

@@ -51,10 +51,8 @@ When a job completes, an NFT is minted to your wallet.
 - `disputeJob` → triggers dispute mode
 
 ### State fields to inspect
-- `jobs[jobId].assignedAgent`
-- `jobs[jobId].completionRequested`
-- `jobs[jobId].completed`
-- `jobs[jobId].disputed`
+- `getJobCore(jobId)` → assigned agent, completion/dispute flags
+- `getJobValidation(jobId)` → completionRequested flag
 
 ### Events to index
 `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `NFTIssued`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`

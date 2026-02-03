@@ -15,7 +15,7 @@ The following `public` state variables have auto‑generated getter functions:
 - `reputation(address)`
 - `moderators(address)`
 - `additionalValidators(address)`, `additionalAgents(address)`
-- `validatorApprovedJobs(address, index)`
+- `validatorVotedJobs(address, index)`
 - `listings(tokenId)`
 - `blacklistedAgents(address)`, `blacklistedValidators(address)`
 - `agiTypes(index)`
@@ -23,6 +23,8 @@ The following `public` state variables have auto‑generated getter functions:
 Explicit job accessors:
 - `getJobCore(jobId)`, `getJobValidation(jobId)`
 - `getJobSpecURI(jobId)`, `getJobCompletionURI(jobId)`
+- `getJobValidatorCount(jobId)`, `getJobValidatorAt(jobId, index)`
+- `getJobVote(jobId, validator)`
 
 ## Core workflow
 ### `createJob(string jobSpecURI, uint256 payout, uint256 duration, string details)`
@@ -132,7 +134,7 @@ Key events to index:
 - `JobCreated`, `JobApplied`, `JobCompletionRequested`
 - `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
 - `JobCompleted`, `NFTIssued`, `JobCancelled`
-- `ReputationUpdated`, `OwnershipVerified`, `RecoveryInitiated`
+- `ReputationUpdated`, `OwnershipVerified`
 - `NFTListed`, `NFTPurchased`, `NFTDelisted`
 - `RewardPoolContribution`, `AGITypeUpdated`
 

@@ -10,7 +10,6 @@ This document summarizes integration points for AGIJobManager, including role ga
 
 Events to watch:
 - `OwnershipVerified` indicates a successful ownership check.
-- `RecoveryInitiated` indicates an ENS or NameWrapper failure path.
 
 ## ERC‑8004 signaling (off‑chain)
 AGIJobManager keeps escrow settlement fully on‑chain and does **not** depend on any ERC‑8004 contract. The repository provides an off‑chain adapter that maps job events into ERC‑8004 reputation signals.

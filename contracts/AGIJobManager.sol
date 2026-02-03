@@ -46,6 +46,7 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -65,8 +66,6 @@ interface NameWrapper {
 }
 
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
-    using MerkleProof for bytes32[];
-
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
     // -----------------------
@@ -177,7 +176,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     mapping(address => bool) public moderators;
     mapping(address => bool) public additionalValidators;
     mapping(address => bool) public additionalAgents;
-    mapping(address => uint256[]) public validatorApprovedJobs;
+    mapping(address => uint256[]) public validatorVotedJobs;
     mapping(uint256 => Listing) public listings;
     mapping(address => bool) public blacklistedAgents;
     mapping(address => bool) public blacklistedValidators;
@@ -208,7 +207,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     );
     event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
     event OwnershipVerified(address claimant, string subdomain);
-    event RecoveryInitiated(string reason);
     event AGITypeUpdated(address indexed nftAddress, uint256 payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event NFTListed(uint256 indexed tokenId, address indexed seller, uint256 price);
@@ -417,7 +415,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.validatorApprovals++;
         job.approvals[msg.sender] = true;
         job.validators.push(msg.sender);
-        validatorApprovedJobs[msg.sender].push(_jobId);
+        validatorVotedJobs[msg.sender].push(_jobId);
         emit JobValidated(_jobId, msg.sender);
         if (job.validatorApprovals >= requiredValidatorApprovals) _completeJob(_jobId);
     }
@@ -439,7 +437,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.validatorDisapprovals++;
         job.disapprovals[msg.sender] = true;
         job.validators.push(msg.sender);
-        validatorApprovedJobs[msg.sender].push(_jobId);
+        validatorVotedJobs[msg.sender].push(_jobId);
         emit JobDisapproved(_jobId, msg.sender);
         if (job.validatorDisapprovals >= requiredValidatorDisapprovals) {
             job.disputed = true;
@@ -517,7 +515,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.disputedAt == 0) revert InvalidState();
         if (block.timestamp <= job.disputedAt + disputeReviewPeriod) revert InvalidState();
 
-        emit RecoveryInitiated("DISPUTE_TIMEOUT");
         if (employerWins) {
             _refundEmployer(job);
         } else {
@@ -677,6 +674,27 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return job.jobCompletionURI;
     }
 
+    function getJobValidatorCount(uint256 jobId) external view returns (uint256) {
+        Job storage job = _job(jobId);
+        return job.validators.length;
+    }
+
+    function getJobValidatorAt(uint256 jobId, uint256 index) external view returns (address) {
+        Job storage job = _job(jobId);
+        return job.validators[index];
+    }
+
+    function getJobVote(uint256 jobId, address validator) external view returns (uint8) {
+        Job storage job = _job(jobId);
+        if (job.approvals[validator]) {
+            return 1;
+        }
+        if (job.disapprovals[validator]) {
+            return 2;
+        }
+        return 0;
+    }
+
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         uint256 maxPct = _maxAGITypePayoutPercentage();
@@ -761,10 +779,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
-        uint256 validatorPayoutPercentage = job.validators.length > 0 ? validationRewardPercentage : 0;
+        uint256 approverCount = job.validatorApprovals;
+        uint256 validatorPayoutPercentage = approverCount > 0 ? validationRewardPercentage : 0;
         if (agentPayoutPercentage + validatorPayoutPercentage > 100) revert InvalidParameters();
         uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        uint256 totalValidatorPayout = job.validators.length > 0
+        uint256 totalValidatorPayout = approverCount > 0
             ? (job.payout * validationRewardPercentage) / 100
             : 0;
         if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
@@ -784,27 +803,44 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         _t(job.assignedAgent, agentPayout);
 
+        _payApprovingValidators(job, reputationPoints, totalValidatorPayout);
+        _mintCompletionNFT(job);
+
+        emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
+    }
+
+    function _payApprovingValidators(
+        Job storage job,
+        uint256 reputationPoints,
+        uint256 totalValidatorPayout
+    ) internal {
         uint256 vCount = job.validators.length;
         if (vCount > MAX_VALIDATORS_PER_JOB) revert ValidatorSetTooLarge();
-        if (vCount > 0) {
-            uint256 validatorPayout;
-            unchecked {
-                validatorPayout = totalValidatorPayout / vCount;
-            }
-            uint256 validatorReputationGain;
-            unchecked {
-                validatorReputationGain = (reputationPoints * validationRewardPercentage) / 100;
-            }
-            for (uint256 i = 0; i < vCount; ) {
-                address validator = job.validators[i];
+        uint256 approverCount = job.validatorApprovals;
+        if (approverCount == 0) {
+            return;
+        }
+        uint256 validatorPayout;
+        unchecked {
+            validatorPayout = totalValidatorPayout / approverCount;
+        }
+        uint256 validatorReputationGain;
+        unchecked {
+            validatorReputationGain = (reputationPoints * validationRewardPercentage) / 100;
+        }
+        for (uint256 i = 0; i < vCount; ) {
+            address validator = job.validators[i];
+            if (job.approvals[validator]) {
                 _t(validator, validatorPayout);
                 enforceReputationGrowth(validator, validatorReputationGain);
-                unchecked {
-                    ++i;
-                }
+            }
+            unchecked {
+                ++i;
             }
         }
+    }
 
+    function _mintCompletionNFT(Job storage job) internal {
         uint256 tokenId = nextTokenId;
         unchecked {
             ++nextTokenId;
@@ -813,7 +849,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes memory uriBytes = bytes(tokenUriValue);
         bool hasScheme;
         for (uint256 i = 0; i + 2 < uriBytes.length; ) {
-            if (uriBytes[i] == ":" && uriBytes[i + 1] == "/" && uriBytes[i + 2] == "/") {
+            if (uriBytes[i] == ':' && uriBytes[i + 1] == '/' && uriBytes[i + 2] == '/') {
                 hasScheme = true;
                 break;
             }
@@ -827,9 +863,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _mint(job.employer, tokenId);
         _tokenURIs[tokenId] = tokenUriValue;
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
-
-        emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
-        emit ReputationUpdated(job.assignedAgent, reputation[job.assignedAgent]);
     }
 
     function _refundEmployer(Job storage job) internal {
@@ -874,7 +907,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (price == 0) revert InvalidParameters();
         if (ownerOf(tokenId) != seller) revert InvalidState();
         listing.isActive = false;
-        _tFrom(msg.sender, seller, price);
+        _safeERC20TransferFromExact(agiToken, msg.sender, seller, price);
         _safeTransfer(seller, msg.sender, tokenId, "");
         emit NFTPurchased(tokenId, msg.sender, price);
     }
@@ -887,44 +920,26 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _verifyOwnershipAgent(address claimant, string memory subdomain, bytes32[] calldata proof) internal returns (bool) {
-        if (proof.verify(agentMerkleRoot, keccak256(abi.encodePacked(claimant)))) {
+        bool verified = MerkleProof.verifyCalldata(proof, agentMerkleRoot, keccak256(abi.encodePacked(claimant)))
+            || _verifyOwnershipByRoot(claimant, subdomain, agentRootNode)
+            || _verifyOwnershipByRoot(claimant, subdomain, alphaAgentRootNode);
+        if (verified) {
             emit OwnershipVerified(claimant, subdomain);
-            return true;
         }
-
-        if (_verifyOwnershipByRoot(claimant, subdomain, agentRootNode)) {
-            emit OwnershipVerified(claimant, subdomain);
-            return true;
-        }
-
-        if (_verifyOwnershipByRoot(claimant, subdomain, alphaAgentRootNode)) {
-            emit OwnershipVerified(claimant, subdomain);
-            return true;
-        }
-
-        return false;
+        return verified;
     }
 
     function _verifyOwnershipValidator(address claimant, string memory subdomain, bytes32[] calldata proof) internal returns (bool) {
-        if (proof.verify(validatorMerkleRoot, keccak256(abi.encodePacked(claimant)))) {
+        bool verified = MerkleProof.verifyCalldata(proof, validatorMerkleRoot, keccak256(abi.encodePacked(claimant)))
+            || _verifyOwnershipByRoot(claimant, subdomain, clubRootNode)
+            || _verifyOwnershipByRoot(claimant, subdomain, alphaClubRootNode);
+        if (verified) {
             emit OwnershipVerified(claimant, subdomain);
-            return true;
         }
-
-        if (_verifyOwnershipByRoot(claimant, subdomain, clubRootNode)) {
-            emit OwnershipVerified(claimant, subdomain);
-            return true;
-        }
-
-        if (_verifyOwnershipByRoot(claimant, subdomain, alphaClubRootNode)) {
-            emit OwnershipVerified(claimant, subdomain);
-            return true;
-        }
-
-        return false;
+        return verified;
     }
 
-    function _verifyOwnershipByRoot(address claimant, string memory subdomain, bytes32 rootNode) internal returns (bool) {
+    function _verifyOwnershipByRoot(address claimant, string memory subdomain, bytes32 rootNode) internal view returns (bool) {
         if (rootNode == bytes32(0)) {
             return false;
         }
@@ -940,19 +955,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return false;
     }
 
-    function _verifyNameWrapperOwnership(address claimant, bytes32 subnode) internal returns (bool) {
+    function _verifyNameWrapperOwnership(address claimant, bytes32 subnode) internal view returns (bool) {
         try nameWrapper.ownerOf(uint256(subnode)) returns (address actualOwner) {
             return actualOwner == claimant;
         } catch {
-            emit RecoveryInitiated("NW_FAIL");
         }
         return false;
     }
 
-    function _verifyResolverOwnership(address claimant, bytes32 subnode) internal returns (bool) {
+    function _verifyResolverOwnership(address claimant, bytes32 subnode) internal view returns (bool) {
         address resolverAddress = ens.resolver(subnode);
         if (resolverAddress == address(0)) {
-            emit RecoveryInitiated("NO_RES");
             return false;
         }
 
@@ -960,7 +973,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         try resolver.addr(subnode) returns (address payable resolvedAddress) {
             return resolvedAddress == claimant;
         } catch {
-            emit RecoveryInitiated("RES_FAIL");
         }
         return false;
     }

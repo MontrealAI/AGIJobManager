@@ -47,7 +47,7 @@ Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and 
 
 ## Operational monitoring
 - Index and alert on `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, and `ReputationUpdated` events.
-- Track `OwnershipVerified` and `RecoveryInitiated` to monitor ENS/Merkle ownership checks and fallbacks.
+- Track `OwnershipVerified` to monitor ENS/Merkle ownership checks.
 
 ## Disclosure
 Report security issues privately via [`SECURITY.md`](../SECURITY.md).

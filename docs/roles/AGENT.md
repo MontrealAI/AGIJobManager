@@ -48,9 +48,9 @@ Once enough validators approve, the job completes automatically and you are paid
 - `requestJobCompletion`
 
 ### State fields to inspect
-- `jobs[jobId].assignedAt`
-- `jobs[jobId].completionRequested`
-- `jobs[jobId].jobCompletionURI`
+- `getJobCore(jobId)` → assigned timestamp
+- `getJobValidation(jobId)` → completionRequested flag
+- `getJobCompletionURI(jobId)` → completion URI
 
 ### Events to index
 `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `ReputationUpdated`, `OwnershipVerified`
