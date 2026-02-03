@@ -20,16 +20,6 @@ contract("AGIJobManager jobStatus", (accounts) => {
   let ens;
   let nameWrapper;
   let manager;
-  const statusLabels = [
-    "Deleted",
-    "Open",
-    "InProgress",
-    "CompletionRequested",
-    "Disputed",
-    "Completed",
-    "Expired",
-  ];
-
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
     ens = await MockENS.new({ from: owner });
@@ -58,7 +48,7 @@ contract("AGIJobManager jobStatus", (accounts) => {
     await manager.addModerator(moderator, { from: owner });
   });
 
-  it("reports canonical job status transitions", async () => {
+  it("tracks canonical job lifecycle flags", async () => {
     const payout = toWei("5");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -66,25 +56,27 @@ contract("AGIJobManager jobStatus", (accounts) => {
     const createTx = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
-    let status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "1", "new job should be Open");
-    assert.strictEqual(statusLabels[Number(status)], "Open", "status should map Open off-chain");
+    let job = await manager.getJobCore(jobId);
+    let jobValidation = await manager.getJobValidation(jobId);
+    assert.strictEqual(job.completed, false, "new job should not be completed");
+    assert.strictEqual(job.disputed, false, "new job should not be disputed");
+    assert.strictEqual(jobValidation.completionRequested, false, "new job should not be completion requested");
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "2", "assigned job should be InProgress");
+    job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.assignedAgent, agent, "assigned job should set agent");
 
     await manager.requestJobCompletion(jobId, "ipfs-completed", { from: agent });
-    status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "3", "completion request should set CompletionRequested");
+    jobValidation = await manager.getJobValidation(jobId);
+    assert.strictEqual(jobValidation.completionRequested, true, "completion request should be recorded");
 
     await manager.disputeJob(jobId, { from: employer });
-    status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "4", "disputed job should be Disputed");
+    job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.disputed, true, "disputed job should be flagged");
 
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
-    status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "5", "resolved job should be Completed");
+    job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.completed, true, "resolved job should be completed");
   });
 
   it("marks cancelled jobs and rejects out-of-range status", async () => {
@@ -96,13 +88,11 @@ contract("AGIJobManager jobStatus", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.cancelJob(jobId, { from: employer });
-    const status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "0", "cancelled job should be Deleted");
-
-    await expectCustomError(manager.jobStatus.call(999), "JobNotFound");
+    await expectCustomError(manager.getJobCore.call(jobId), "JobNotFound");
+    await expectCustomError(manager.getJobCore.call(999), "JobNotFound");
   });
 
-  it("computes Expired when assigned jobs pass their duration", async () => {
+  it("marks expired jobs when expireJob is called", async () => {
     const payout = toWei("1");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -112,8 +102,8 @@ contract("AGIJobManager jobStatus", (accounts) => {
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await time.increase(6);
-
-    const status = await manager.jobStatus(jobId);
-    assert.strictEqual(status.toString(), "6", "expired jobs should return Expired");
+    await manager.expireJob(jobId);
+    const job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.expired, true, "expired jobs should be flagged");
   });
 });

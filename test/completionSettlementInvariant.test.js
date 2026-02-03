@@ -100,7 +100,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
   it("reverts agent-win dispute resolution without a completion request", async () => {
     const jobId = await setupDisputedJob(toBN(toWei("5")));
 
-    await manager.setJobMetadata(jobId, "ipfs-complete", "ipfs-spec", false, false, { from: owner });
+    await manager.setJobMetadata(jobId, "ipfs-complete", false, false, { from: owner });
 
     await expectCustomError(
       manager.resolveDisputeWithCode.call(jobId, 1, "agent win", { from: moderator }),
@@ -111,7 +111,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
   it("reverts agent-win dispute resolution when completion metadata is empty", async () => {
     const jobId = await setupDisputedJob(toBN(toWei("6")));
 
-    await manager.setJobMetadata(jobId, "", "ipfs-spec", true, false, { from: owner });
+    await manager.setJobMetadata(jobId, "", true, false, { from: owner });
 
     await expectCustomError(
       manager.resolveDisputeWithCode.call(jobId, 1, "agent win", { from: moderator }),
@@ -122,7 +122,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
   it("reverts stale dispute resolution without a completion request", async () => {
     const jobId = await setupDisputedJob(toBN(toWei("7")));
 
-    await manager.setJobMetadata(jobId, "ipfs-complete", "ipfs-spec", false, false, { from: owner });
+    await manager.setJobMetadata(jobId, "ipfs-complete", false, false, { from: owner });
 
     await advanceTime(120);
     await manager.pause({ from: owner });
@@ -134,7 +134,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     const jobId = await createJob(toBN(toWei("4")));
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
-    await manager.setJobMetadata(jobId, "", "ipfs-spec", true, false, { from: owner });
+    await manager.setJobMetadata(jobId, "", true, false, { from: owner });
 
     await expectCustomError(
       manager.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),

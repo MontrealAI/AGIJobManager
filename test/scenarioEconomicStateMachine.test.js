@@ -78,10 +78,10 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
 
     const jobId = await createJob(payout);
     const createdJob = await manager.getJobCore(jobId);
-    const createdJobUris = await manager.getJobURIs(jobId);
     assert.equal(createdJob.employer, employer, "job should record employer");
     assert.equal(createdJob.payout.toString(), payout.toString(), "payout should be recorded");
-    assert.equal(createdJobUris.jobSpecURI, "ipfs-job", "job spec URI should be recorded");
+    const createdJobUri = await manager.getJobSpecURI(jobId);
+    assert.equal(createdJobUri, "ipfs-job", "job spec URI should be recorded");
     assert.equal((await token.balanceOf(manager.address)).toString(), payout.toString(), "escrow should hold payout");
 
     await assignAndRequest(jobId, "ipfs-complete");

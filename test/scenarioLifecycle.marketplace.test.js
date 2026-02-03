@@ -167,8 +167,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const cancelTx = await manager.cancelJob(jobId, { from: employer });
     assert.ok(cancelTx.logs.find((log) => log.event === "JobCancelled"), "JobCancelled event should emit");
 
-    const jobStatus = await manager.jobStatus(jobId);
-    assert.equal(jobStatus.toString(), "0", "job should be deleted");
+    await expectCustomError(manager.getJobCore.call(jobId), "JobNotFound");
 
     const employerBalance = await token.balanceOf(employer);
     assert.equal(employerBalance.toString(), payout.toString(), "employer should be refunded escrow");

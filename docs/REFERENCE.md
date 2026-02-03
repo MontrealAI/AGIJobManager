@@ -21,8 +21,8 @@ The following `public` state variables have auto‑generated getter functions:
 - `agiTypes(index)`
 
 Explicit job accessors:
-- `getJobCore(jobId)`, `getJobValidation(jobId)`, `getJobURIs(jobId)`
-- `getJobValidatorCount(jobId)`, `getJobValidatorAt(jobId, index)`
+- `getJobCore(jobId)`, `getJobValidation(jobId)`
+- `getJobSpecURI(jobId)`, `getJobCompletionURI(jobId)`
 
 ## Core workflow
 ### `createJob(string jobSpecURI, uint256 payout, uint256 duration, string details)`
@@ -114,8 +114,6 @@ Transfers tokens to the contract and emits `RewardPoolContribution`.
 Adds or updates an AGIType NFT that boosts agent payout percentage. Emits `AGITypeUpdated`.
 
 ## View helpers
-### `getJobStatus(uint256 jobId)`
-Returns `(completed, completionRequested, statusURI)` where `statusURI` is the completion URI if present, otherwise the job spec URI.
 
 ### `lockedEscrow()`
 Returns the total AGI reserved for unsettled job escrows.

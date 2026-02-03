@@ -63,9 +63,8 @@ If `truffle test` fails with an ABI mismatch, run `npm run ui:abi` and commit th
 
 ### Job status API support
 
-The UI prefers the on-chain `jobStatus(jobId)` helper when available to display the canonical
-job lifecycle status. When connected to older deployments that do not expose it, the UI falls
-back to its existing client-side derivation.
+The UI derives job lifecycle status client-side from `getJobCore`, `getJobValidation`, and
+indexed events. Expiration is based on the on-chain `expired` flag and the job timestamps.
 
 ## Supported networks
 
@@ -292,7 +291,7 @@ The UI no longer enumerates every job or token ID. Instead it:
 ### Fallback mode (no indexer)
 
 If event indexing fails (wallet provider limits, RPC errors, etc.), the UI falls back to
-**range-based pagination** by calling `getJobCore/getJobValidation/getJobURIs` or `ownerOf/tokenURI/listings` only for the
+**range-based pagination** by calling `getJobCore/getJobValidation/getJobSpecURI/getJobCompletionURI` or `ownerOf/tokenURI/listings` only for the
 current page range (`latest` descending). Filters require the indexer and are disabled otherwise.
 
 ### Known indexing limitations

@@ -19,13 +19,11 @@ contract TestableAGIJobManager is AGIJobManager {
     function setJobMetadata(
         uint256 jobId,
         string calldata completionURI,
-        string calldata ipfsHash,
         bool completionRequested,
         bool mintNft
     ) external {
         Job storage job = jobs[jobId];
         job.jobCompletionURI = completionURI;
-        job.ipfsHash = ipfsHash;
         job.completionRequested = completionRequested;
         if (mintNft) {
             _mintJobNft(job);

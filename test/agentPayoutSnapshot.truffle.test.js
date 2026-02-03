@@ -81,7 +81,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.addAGIType(agiType.address, 75, { from: owner });
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
+    const job = await manager.getJobCore(jobId);
+    const snapshotPct = job[8];
     assert.strictEqual(snapshotPct.toNumber(), 75);
 
     await agiType.transferFrom(agent, other, tokenId, { from: agent });
@@ -107,7 +108,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.addAGIType(agiType75.address, 75, { from: owner });
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
+    const job = await manager.getJobCore(jobId);
+    const snapshotPct = job[8];
     assert.strictEqual(snapshotPct.toNumber(), 25);
 
     await agiType75.mint(agent, { from: owner });
@@ -144,7 +146,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
 
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
-    const snapshotPct = await manager.getJobAgentPayoutPct(jobId);
+    const job = await manager.getJobCore(jobId);
+    const snapshotPct = job[8];
     assert.strictEqual(snapshotPct.toNumber(), 60);
 
     await agiType.transferFrom(agent, other, tokenId, { from: agent });

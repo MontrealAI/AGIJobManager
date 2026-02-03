@@ -2300,35 +2300,6 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_jobId",
-          "type": "uint256"
-        }
-      ],
-      "name": "getJobStatus",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        },
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
           "name": "jobId",
           "type": "uint256"
         }
@@ -2431,26 +2402,11 @@
           "type": "uint256"
         }
       ],
-      "name": "getJobURIs",
+      "name": "getJobSpecURI",
       "outputs": [
         {
           "internalType": "string",
-          "name": "jobSpecURI",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "jobCompletionURI",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "ipfsHash",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "details",
+          "name": "",
           "type": "string"
         }
       ],
@@ -2465,74 +2421,12 @@
           "type": "uint256"
         }
       ],
-      "name": "getJobValidatorCount",
+      "name": "getJobCompletionURI",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "string",
           "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "jobId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "index",
-          "type": "uint256"
-        }
-      ],
-      "name": "getJobValidatorAt",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_jobId",
-          "type": "uint256"
-        }
-      ],
-      "name": "getJobAgentPayoutPct",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "jobId",
-          "type": "uint256"
-        }
-      ],
-      "name": "jobStatus",
-      "outputs": [
-        {
-          "internalType": "enum AGIJobManager.JobStatus",
-          "name": "",
-          "type": "uint8"
+          "type": "string"
         }
       ],
       "stateMutability": "view",

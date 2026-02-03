@@ -1006,9 +1006,7 @@
       contractDeployed: null,
       contractOwner: null,
       contractPaused: null,
-      capabilities: {
-        jobStatus: null,
-      },
+      capabilities: {},
       marketAllowance: null,
       nftCache: {},
       metadata: {
@@ -1111,14 +1109,11 @@
       "function blacklistedValidators(address) view returns (bool)",
       "function getJobCore(uint256) view returns (address,address,uint256,uint256,uint256,bool,bool,bool,uint8)",
       "function getJobValidation(uint256) view returns (bool,uint256,uint256,uint256,uint256)",
-      "function getJobURIs(uint256) view returns (string,string,string,string)",
-      "function getJobValidatorCount(uint256) view returns (uint256)",
-      "function getJobValidatorAt(uint256,uint256) view returns (address)",
+      "function getJobSpecURI(uint256) view returns (string)",
+      "function getJobCompletionURI(uint256) view returns (string)",
       "function listings(uint256) view returns (uint256,address,uint256,bool)",
       "function ownerOf(uint256) view returns (address)",
       "function tokenURI(uint256) view returns (string)",
-      "function getJobStatus(uint256) view returns (bool,bool,string)",
-      "function jobStatus(uint256) view returns (uint8)",
       "function createJob(string,uint256,uint256,string)",
       "function cancelJob(uint256)",
       "function pause()",
@@ -2029,9 +2024,7 @@
         state.contractDeployed = null;
         state.marketAllowance = null;
         state.nftCache = {};
-        state.capabilities = {
-          jobStatus: null,
-        };
+        state.capabilities = {};
         state.index = {
           jobs: {},
           nfts: {},
@@ -2058,9 +2051,7 @@
       state.nameWrapper = null;
       state.marketAllowance = null;
       state.nftCache = {};
-      state.capabilities = {
-        jobStatus: null,
-      };
+      state.capabilities = {};
       state.readContract = new ethers.Contract(state.contractAddress, abi, state.provider);
       if (state.signer) {
         state.contract = new ethers.Contract(state.contractAddress, abi, state.signer);
@@ -2972,16 +2963,6 @@
       logEvent(`Indexed ${ordered.length} events from blocks ${fromBlock} to ${toBlock}.`);
     }
 
-    const jobStatusLabels = {
-      0: "Deleted",
-      1: "Open",
-      2: "In Progress",
-      3: "Completion Requested",
-      4: "Disputed",
-      5: "Completed",
-      6: "Expired",
-    };
-
     const disputeResolutionLabels = {
       0: "No action (note only)",
       1: "Agent wins",
@@ -3019,11 +3000,14 @@
       const completed = job.completed;
       const completionRequested = job.completionRequested;
       const disputed = job.disputed;
+      const expired = job.expired;
       let status = jobStatusFromIndex(indexEntry);
       if (employer === ethers.ZeroAddress) {
         status = "Deleted";
       } else if (completed) {
         status = "Completed";
+      } else if (expired) {
+        status = "Expired";
       } else if (disputed) {
         status = "Disputed";
       } else if (assignedAgent === ethers.ZeroAddress) {
@@ -3037,30 +3021,7 @@
     }
 
     async function resolveJobStatus(jobId, job, indexEntry) {
-      const derived = deriveJobStatus(job, indexEntry);
-      if (!state.readContract) return derived;
-      const shouldDisableCapability = (error) => {
-        if (!error) return false;
-        const message = (error.shortMessage || error.message || "").toLowerCase();
-        if (message.includes("method not found")) return true;
-        if (message.includes("unknown function")) return true;
-        if (message.includes("function selector was not recognized")) return true;
-        if (error.code === "CALL_EXCEPTION" && error.data === "0x") return true;
-        return false;
-      };
-      if (state.capabilities.jobStatus !== false) {
-        try {
-          const statusValue = await state.readContract.jobStatus(BigInt(jobId));
-          state.capabilities.jobStatus = true;
-          const key = Number(statusValue);
-          return jobStatusLabels[key] || derived;
-        } catch (error) {
-          if (state.capabilities.jobStatus == null && shouldDisableCapability(error)) {
-            state.capabilities.jobStatus = false;
-          }
-        }
-      }
-      return derived;
+      return deriveJobStatus(job, indexEntry);
     }
 
     function nftStatusFromIndex(entry) {
@@ -3456,10 +3417,11 @@
 
       const jobs = await asyncPool(6, jobIds, async (jobId) => {
         try {
-          const [jobCore, jobValidation, jobUris] = await Promise.all([
+          const [jobCore, jobValidation, jobSpecURI, jobCompletionURI] = await Promise.all([
             state.readContract.getJobCore(BigInt(jobId)),
             state.readContract.getJobValidation(BigInt(jobId)),
-            state.readContract.getJobURIs(BigInt(jobId)),
+            state.readContract.getJobSpecURI(BigInt(jobId)),
+            state.readContract.getJobCompletionURI(BigInt(jobId)),
           ]);
           const job = {
             employer: jobCore[0],
@@ -3468,27 +3430,19 @@
             duration: jobCore[3],
             completed: jobCore[5],
             disputed: jobCore[6],
+            expired: jobCore[7],
             completionRequested: jobValidation[0],
             approvals: jobValidation[1],
             disapprovals: jobValidation[2],
-            jobSpecURI: jobUris[0],
-            jobCompletionURI: jobUris[1],
-            details: jobUris[3],
+            jobSpecURI,
+            jobCompletionURI,
+            details: "",
           };
           const indexEntry = state.index.jobs[jobId];
           const status = await resolveJobStatus(jobId, job, indexEntry);
           return { jobId, job, status };
         } catch (error) {
-          let status = "Deleted";
-          if (state.readContract) {
-            try {
-              const statusValue = await state.readContract.jobStatus(BigInt(jobId));
-              const key = Number(statusValue);
-              status = jobStatusLabels[key] || status;
-            } catch (statusError) {
-              status = "Deleted";
-            }
-          }
+          const status = "Deleted";
           const job = {
             employer: ethers.ZeroAddress,
             assignedAgent: ethers.ZeroAddress,
@@ -3496,6 +3450,7 @@
             duration: 0n,
             completed: false,
             disputed: false,
+            expired: false,
             completionRequested: false,
             approvals: 0n,
             disapprovals: 0n,

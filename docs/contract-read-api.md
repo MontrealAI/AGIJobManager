@@ -8,9 +8,8 @@ Use the targeted read functions below instead of `jobs(jobId)`:
 
 - `getJobCore(jobId)` → employer, assignedAgent, payout, duration, assignedAt, completed, disputed, expired, agentPayoutPct
 - `getJobValidation(jobId)` → completionRequested, validatorApprovals, validatorDisapprovals, completionRequestedAt, disputedAt
-- `getJobURIs(jobId)` → jobSpecURI, jobCompletionURI, ipfsHash, details
-- `getJobValidatorCount(jobId)` → validator count
-- `getJobValidatorAt(jobId, index)` → validator address at index
+- `getJobSpecURI(jobId)` → jobSpecURI
+- `getJobCompletionURI(jobId)` → jobCompletionURI
 
 ## Indexers and UIs
-If you previously hydrated rows via `jobs(jobId)`, call `getJobCore`, `getJobValidation`, and `getJobURIs` (plus validator count/index accessors when needed). Events remain the primary source of truth for changes over time; use these getters for point-in-time snapshots.
+If you previously hydrated rows via `jobs(jobId)`, call `getJobCore`, `getJobValidation`, and the URI getters above. Events remain the primary source of truth for changes over time; use these getters for point-in-time snapshots.

@@ -122,6 +122,7 @@ Detailed contract documentation lives in `docs/`:
 - [AGIJobManager overview](docs/AGIJobManager.md)
 - [AGIJobManager interface reference](docs/AGIJobManager_Interface.md)
 - [Contract read API (job getters)](docs/contract-read-api.md)
+- [Bytecode size & job getters](docs/bytecode-and-getters.md)
 - [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
 - [AGIJobManager security considerations](docs/AGIJobManager_Security.md)
 
