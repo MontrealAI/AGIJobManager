@@ -94,7 +94,7 @@ After setup and validation, lock configuration to minimize governance:
 - **Manual**: call `lockConfiguration()` from the owner account.
 
 Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
-In the current implementation, only the token address is lockable because ENS wiring and root nodes are constructor-only.
+This includes the token address, ENS registry/NameWrapper addresses, and the ENS root node configuration.
 
 ## 6) Break-glass runbook (after lock)
 
@@ -107,3 +107,23 @@ After lock, operators should only use:
 > **Escrow safety:** withdrawals can never touch escrowed job funds because `withdrawableAGI = balance - lockedEscrow` and the call reverts if the escrow balance is insolvent.
 
 Everything else remains operable but should be governed by your ops policy to keep the surface minimal.
+
+## 7) Verification (Etherscan)
+
+### Normal path (no viaIR, if compilation succeeds)
+1. Compile with the pinned compiler and optimizer settings, forcing `SOLC_VIA_IR=false` if you can compile without stack-too-deep errors.
+2. Deploy via Truffle migrations.
+3. Verify with the plugin:
+   ```bash
+   npx truffle run verify AGIJobManager --network <network>
+   ```
+
+### Fallback path (viaIR + Standard JSON input)
+If stack-too-deep requires `SOLC_VIA_IR=true`, the Etherscan plugin may not accept the metadata. In that case:
+1. Compile with the exact deployment settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`).
+2. Extract the Standard JSON input from the build metadata:
+   ```bash
+   node -e "const a=require('./build/contracts/AGIJobManager.json'); const m=JSON.parse(a.metadata); console.log(JSON.stringify({language:m.language, sources:m.sources, settings:m.settings}, null, 2));" > AGIJobManager.standard.json
+   ```
+3. Use Etherscan’s “Solidity (Standard-Json-Input)” verification flow and paste `AGIJobManager.standard.json`.
+4. Ensure constructor args match the migration inputs (token, IPFS base, ENS/NameWrapper, root nodes, Merkle roots).

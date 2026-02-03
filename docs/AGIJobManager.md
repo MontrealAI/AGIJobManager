@@ -80,14 +80,18 @@ stateDiagram-v2
 
 ## ENS / NameWrapper / Merkle ownership verification
 
-Eligibility checks for agents and validators use `_verifyOwnership`, which accepts:
-- **Merkle proof**: leaf = `keccak256(abi.encodePacked(claimant))`, checked against either `agentMerkleRoot` or `validatorMerkleRoot` depending on the root node passed.
+Eligibility checks for agents and validators accept **either** Merkle allowlist proofs **or** ENS ownership:
+- **Merkle proof**: leaf = `keccak256(abi.encodePacked(claimant))`, checked against `agentMerkleRoot` or `validatorMerkleRoot`.
 - **ENS NameWrapper ownership**: `nameWrapper.ownerOf(uint256(subnode))` must equal `claimant`.
 - **ENS Resolver ownership**: resolve `ens.resolver(subnode)` then call `resolver.addr(subnode)` and compare to `claimant`.
 
 **Root nodes**
-- `agentRootNode` and `clubRootNode` are the ENS root nodes for agents and validators respectively.
-- `_verifyOwnership` chooses the Merkle root based on which root node is supplied (agent vs validator).
+- `agentRootNode` + `alphaAgentRootNode` are the ENS root nodes for agents (base + alpha namespaces).
+- `clubRootNode` + `alphaClubRootNode` are the ENS root nodes for validators (base + alpha namespaces).
+
+**Allowlist vs payout**
+- Merkle roots are **access-only** allowlists; they do **not** affect payout percentages.
+- Agent payouts are **always** based on the highest `AGIType` NFT tier held at `applyForJob`.
 
 **RecoveryInitiated events**
 - Emitted when NameWrapper or Resolver calls revert or when stale dispute recovery is triggered; informational only (does not change state by itself).

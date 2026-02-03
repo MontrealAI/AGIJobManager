@@ -4,7 +4,7 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 
 ## Scope
 
-- **No contract changes required** for this workflow.
+- **No additional contract changes required** for this workflow.
 - **Truffle-first**: uses `truffle exec` scripts.
 - **No secrets in-repo**: use `.env` locally and keep it uncommitted.
 
@@ -20,15 +20,15 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 
 ## One-time parameters (configure once)
 
-### A) Constructor-time (immutable)
-These are fixed at deployment and **cannot be changed** without redeploying.
+### A) Critical wiring (lockable)
+These are **critical wiring** parameters. They can only be changed **before any job exists** and **before** `lockConfiguration()`:
 
 - `agiToken` (ERC-20 used for escrow)
-- `baseIpfsUrl`
 - `ens` + `nameWrapper`
 - `clubRootNode` + `alphaClubRootNode`
 - `agentRootNode` + `alphaAgentRootNode`
-- `validatorMerkleRoot` + `agentMerkleRoot`
+
+Merkle roots are **allowlists only** and remain changeable post-lock for operational flexibility.
 
 > **Constructor encoding note (Truffle)**: the deployment script groups constructor inputs as `[token, baseIpfsUrl, [ENS, NameWrapper], [club, agent, alpha club, alpha agent], [validator Merkle, agent Merkle]]` to keep the ABI manageable. Mirror this ordering for custom deployments.
 
@@ -86,7 +86,7 @@ The intended production token address is:
 - **AGI token**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
 
 ### ENS + NameWrapper + root nodes + Merkle roots
-Record these per network **before deploy**, and keep them immutable afterward.
+Record these per network **before deploy**, and lock critical wiring once verified.
 
 | Network | ENS | NameWrapper | clubRootNode | agentRootNode | validatorMerkleRoot | agentMerkleRoot |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -98,7 +98,7 @@ Record these per network **before deploy**, and keep them immutable afterward.
 - `clubRootNode` and `agentRootNode` are **ENS namehashes** for the root namespaces you want to use (e.g., `club.agi.eth`, `agent.agi.eth`).
 - Use `ethers.utils.namehash("<root-name>")` (or any ENS namehash implementation) and record the hex value per network.
 
-**Computing Merkle roots**:
+**Computing Merkle roots** (allowlist-only; does not affect payouts):
 - Leaves are `keccak256(address)` (address bytes, lowercased). The Merkle tree uses **sorted pairs + sorted leaves**.
 - Use the existing helper:
   ```bash

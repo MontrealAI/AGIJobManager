@@ -42,7 +42,7 @@ OVERRIDING AUTHORITY: AGI.ETH
 
 */
 
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -221,6 +221,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event DisputeTimeoutResolved(uint256 jobId, address resolver, bool employerWins);
     event RootNodeUpdated(bytes32 indexed newRootNode);
     event MerkleRootUpdated(bytes32 indexed newMerkleRoot);
+    event ENSConfigUpdated(address indexed ens, address indexed nameWrapper);
+    event RootNodesUpdated(
+        bytes32 clubRootNode,
+        bytes32 agentRootNode,
+        bytes32 alphaClubRootNode,
+        bytes32 alphaAgentRootNode
+    );
+    event ValidatorMerkleRootUpdated(bytes32 indexed newMerkleRoot);
+    event AgentMerkleRootUpdated(bytes32 indexed newMerkleRoot);
     event OwnershipVerified(address claimant, string subdomain);
     event RecoveryInitiated(string reason);
     event AGITypeUpdated(address indexed nftAddress, uint256 payoutPercentage);
@@ -561,10 +570,44 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function addModerator(address _moderator) external onlyOwner { moderators[_moderator] = true; }
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
+    function _requireConfigWindow() internal view {
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+    }
+
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenCriticalConfigurable {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
-        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        _requireConfigWindow();
         agiToken = IERC20(_newTokenAddress);
+    }
+    function setEnsConfig(address ensAddress, address nameWrapperAddress) external onlyOwner whenCriticalConfigurable {
+        if (ensAddress == address(0) || nameWrapperAddress == address(0)) revert InvalidParameters();
+        _requireConfigWindow();
+        ens = ENS(ensAddress);
+        nameWrapper = NameWrapper(nameWrapperAddress);
+        emit ENSConfigUpdated(ensAddress, nameWrapperAddress);
+    }
+    function setRootNodes(
+        bytes32 clubRoot,
+        bytes32 agentRoot,
+        bytes32 alphaClubRoot,
+        bytes32 alphaAgentRoot
+    ) external onlyOwner whenCriticalConfigurable {
+        _requireConfigWindow();
+        clubRootNode = clubRoot;
+        agentRootNode = agentRoot;
+        alphaClubRootNode = alphaClubRoot;
+        alphaAgentRootNode = alphaAgentRoot;
+        emit RootNodesUpdated(clubRoot, agentRoot, alphaClubRoot, alphaAgentRoot);
+    }
+    function setValidatorMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
+        validatorMerkleRoot = newMerkleRoot;
+        emit MerkleRootUpdated(newMerkleRoot);
+        emit ValidatorMerkleRootUpdated(newMerkleRoot);
+    }
+    function setAgentMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
+        agentMerkleRoot = newMerkleRoot;
+        emit MerkleRootUpdated(newMerkleRoot);
+        emit AgentMerkleRootUpdated(newMerkleRoot);
     }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {

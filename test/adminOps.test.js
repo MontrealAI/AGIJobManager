@@ -163,6 +163,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.addAdditionalAgent(other, { from: owner });
     await manager.updateContactEmail("ops@example.com", { from: owner });
     await manager.blacklistAgent(agent, true, { from: owner });
+    await manager.addModerator(other, { from: owner });
+    await manager.removeModerator(other, { from: owner });
 
     await manager.pause({ from: owner });
     await manager.unpause({ from: owner });
@@ -170,10 +172,26 @@ contract("AGIJobManager admin ops", (accounts) => {
     await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
   });
 
-  it("locks critical config and restricts token updates to pre-job setup", async () => {
+  it("locks critical config and restricts wiring updates to pre-job setup", async () => {
     const newToken = await MockERC20.new({ from: owner });
     await manager.updateAGITokenAddress(newToken.address, { from: owner });
     assert.equal(await manager.agiToken(), newToken.address, "token should update before jobs");
+
+    const newEns = await MockENS.new({ from: owner });
+    const newNameWrapper = await MockNameWrapper.new({ from: owner });
+    await manager.setEnsConfig(newEns.address, newNameWrapper.address, { from: owner });
+    assert.equal(await manager.ens(), newEns.address, "ens should update before jobs");
+    assert.equal(await manager.nameWrapper(), newNameWrapper.address, "nameWrapper should update before jobs");
+
+    const newClubRoot = rootNode("club-root-2");
+    const newAgentRoot = rootNode("agent-root-2");
+    const newAlphaClubRoot = rootNode("alpha-club-root-2");
+    const newAlphaAgentRoot = rootNode("alpha-agent-root-2");
+    await manager.setRootNodes(newClubRoot, newAgentRoot, newAlphaClubRoot, newAlphaAgentRoot, { from: owner });
+    assert.equal(await manager.clubRootNode(), newClubRoot);
+    assert.equal(await manager.agentRootNode(), newAgentRoot);
+    assert.equal(await manager.alphaClubRootNode(), newAlphaClubRoot);
+    assert.equal(await manager.alphaAgentRootNode(), newAlphaAgentRoot);
 
     const payout = toBN(toWei("3"));
     await newToken.mint(employer, payout, { from: owner });
@@ -186,10 +204,35 @@ contract("AGIJobManager admin ops", (accounts) => {
       "InvalidState"
     );
 
+    const anotherEns = await MockENS.new({ from: owner });
+    await expectCustomError(
+      manager.setEnsConfig.call(anotherEns.address, newNameWrapper.address, { from: owner }),
+      "InvalidState"
+    );
+    await expectCustomError(
+      manager.setRootNodes.call(newClubRoot, newAgentRoot, newAlphaClubRoot, newAlphaAgentRoot, { from: owner }),
+      "InvalidState"
+    );
+
     await manager.lockConfiguration({ from: owner });
     await expectCustomError(
       manager.updateAGITokenAddress.call(newToken.address, { from: owner }),
       "ConfigLocked"
     );
+    await expectCustomError(
+      manager.setEnsConfig.call(newEns.address, newNameWrapper.address, { from: owner }),
+      "ConfigLocked"
+    );
+    await expectCustomError(
+      manager.setRootNodes.call(newClubRoot, newAgentRoot, newAlphaClubRoot, newAlphaAgentRoot, { from: owner }),
+      "ConfigLocked"
+    );
+
+    const updatedValidatorRoot = rootNode("validator-merkle-root");
+    const updatedAgentRoot = rootNode("agent-merkle-root");
+    await manager.setValidatorMerkleRoot(updatedValidatorRoot, { from: owner });
+    await manager.setAgentMerkleRoot(updatedAgentRoot, { from: owner });
+    assert.equal(await manager.validatorMerkleRoot(), updatedValidatorRoot);
+    assert.equal(await manager.agentMerkleRoot(), updatedAgentRoot);
   });
 });

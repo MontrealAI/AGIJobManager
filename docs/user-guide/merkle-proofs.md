@@ -65,7 +65,7 @@ Compare the root you were given with the on‑chain root for your role.
 ## Troubleshooting
 
 - **Wrong wallet:** proofs are tied to a specific wallet address.
-- **Wrong chain:** Merkle roots are fixed per deployment.
+- **Wrong chain:** Merkle roots are per deployment and may be updated by the owner; verify the current on-chain root.
 - **Malformed proof:** must be a JSON array of hex strings.
 - **Wrong label:** ENS checks require **label only**.
 

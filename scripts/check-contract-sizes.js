@@ -23,6 +23,9 @@ const artifacts = fs.readdirSync(artifactsDir).filter((file) => file.endsWith(".
 for (const file of artifacts) {
   const artifactPath = path.join(artifactsDir, file);
   const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+  if (artifact.sourcePath && artifact.sourcePath.includes(`${path.sep}contracts${path.sep}test${path.sep}`)) {
+    continue;
+  }
   const name = artifact.contractName || path.basename(file, ".json");
   const sizeBytes = deployedSizeBytes(artifact);
   console.log(`${name} deployedBytecode size: ${sizeBytes} bytes`);
