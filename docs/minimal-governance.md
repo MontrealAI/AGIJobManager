@@ -1,52 +1,32 @@
 # Minimal governance model
 
-This document explains the **configuration lock** and the intended “configure once → operate” posture.
+This document explains the **critical configuration lock** and the intended “configure once → operate” posture.
 
 ## What the configuration lock does
 
-Calling `lockConfiguration()` permanently disables configuration-changing admin functions. It is **one-way** and irreversible.
+Calling `lockConfiguration()` permanently disables **critical configuration setters**. It is **one-way** and irreversible.
 
-Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, but governance surface is minimized.
+Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, but the **critical config surface** is frozen.
 
 ## Functions disabled after lock
 
-These functions are guarded by `whenConfigurable` and **revert** once the configuration is locked:
+These functions are guarded by `whenCriticalConfigurable` and **revert** once the configuration is locked:
 
-**Economic + policy knobs**
-- `setRequiredValidatorApprovals`
-- `setRequiredValidatorDisapprovals`
-- `setPremiumReputationThreshold`
-- `setValidationRewardPercentage`
-- `setAdditionalAgentPayoutPercentage`
-- `setMaxJobPayout`
-- `setJobDurationLimit`
-- `setCompletionReviewPeriod`
-- `setDisputeReviewPeriod`
+**Critical routing / identity**
+- `updateAGITokenAddress` (only allowed before any job exists and before the lock)
 
-**Identity + allowlist controls**
-- `addAdditionalValidator` / `removeAdditionalValidator`
-- `addAdditionalAgent` / `removeAdditionalAgent`
-- `blacklistAgent` / `blacklistValidator`
-
-**Metadata + UI/terms**
-- `setBaseIpfsUrl`
-- `updateTermsAndConditionsIpfsHash`
-- `updateContactEmail`
-- `updateAdditionalText1/2/3`
-
-**Token + types + admin cleanup**
-- `updateAGITokenAddress`
-- `addAGIType`
-- `delistJob`
-- `withdrawAGI`
+> **Note:** ENS registry, NameWrapper, and root nodes are constructor-only in this version. If they are ever made changeable after deployment, they must be guarded by the same critical lock.
 
 ## Functions still available after lock
 
-These are considered **break-glass** or operational safety controls:
+These are considered **break-glass** or operational safety controls and remain available after the lock:
 
 - `pause()` / `unpause()` — incident response.
 - `resolveStaleDispute()` — owner-only recovery **while paused**, after the dispute timeout.
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
+- `withdrawAGI()` — surplus withdrawals while paused (escrow is always reserved).
+
+Other configuration knobs (thresholds, review periods, allowlists, metadata, etc.) remain **tunable** after lock because they are not part of the critical configuration surface.
 
 > **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.
 

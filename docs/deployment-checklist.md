@@ -93,7 +93,8 @@ After setup and validation, lock configuration to minimize governance:
 - **Preferred**: set `LOCK_CONFIG=true` before migration to auto-lock.
 - **Manual**: call `lockConfiguration()` from the owner account.
 
-Once locked, all configuration setters are disabled permanently (see `docs/minimal-governance.md`).
+Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
+In the current implementation, only the token address is lockable because ENS wiring and root nodes are constructor-only.
 
 ## 6) Break-glass runbook (after lock)
 
@@ -101,5 +102,8 @@ After lock, operators should only use:
 - `pause()` / `unpause()` for incident response.
 - `resolveStaleDispute()` (owner + paused, after timeout) for dispute recovery.
 - Optional moderator rotation if required.
+- Surplus withdrawals (`withdrawAGI`) while paused; escrowed funds remain reserved (`lockedEscrow`).
 
-Everything else is frozen to keep governance surface minimal.
+> **Escrow safety:** withdrawals can never touch escrowed job funds because `withdrawableAGI = balance - lockedEscrow` and the call reverts if the escrow balance is insolvent.
+
+Everything else remains operable but should be governed by your ops policy to keep the surface minimal.
