@@ -79,7 +79,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const appliedEvent = tx.logs.find((log) => log.event === "JobApplied");
     assert.ok(appliedEvent, "JobApplied should be emitted");
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.equal(job.assignedAgent, agent, "agent should be assigned");
   });
 
