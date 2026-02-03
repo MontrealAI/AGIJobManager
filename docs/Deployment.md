@@ -112,6 +112,7 @@ npx truffle run verify AGIJobManager --network mainnet
 - Keep the compiler settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`) identical to the original deployment.
 - Ensure your migration constructor parameters match the deployed contract.
 - If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
+- If `SOLC_VIA_IR=true` is used, be prepared to verify with Etherscan’s **Standard JSON input** using the exact compiler settings and metadata options captured by Truffle.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.
