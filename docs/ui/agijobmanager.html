@@ -1975,9 +1975,9 @@
     }
 
     function isCancelEligible(job) {
-      const employer = job[1];
-      const assignedAgent = job[7];
-      const completed = job[9];
+      const employer = job.employer ?? job[1];
+      const assignedAgent = job.assignedAgent ?? job[7];
+      const completed = job.completed ?? job[9];
       if (!state.walletAddress) return false;
       return employer !== ethers.ZeroAddress
         && employer === state.walletAddress
