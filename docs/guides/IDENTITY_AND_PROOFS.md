@@ -28,7 +28,7 @@ The UI fields say **label only** or **subdomain only**. That means:
 - ✅ Use `helper`
 - ❌ Do **not** use `helper.agi.eth` or `helper.club.agi.eth`
 
-The contract combines your **label** with a root node (`agentRootNode` or `clubRootNode`) to compute the subnode on‑chain. If you paste a full name, the hash will be wrong and the check will fail.
+The contract combines your **label** with both base + alpha root nodes (`agentRootNode`/`agentRootNodeAlpha` or `clubRootNode`/`clubRootNodeAlpha`) to compute subnodes on‑chain. If you paste a full name, the hash will be wrong and the check will fail.
 
 ## NameWrapper vs ENS resolver (plain language)
 

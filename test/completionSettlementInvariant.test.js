@@ -7,6 +7,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
 const { expectCustomError } = require("./helpers/errors");
+const { setupFixedToken } = require("./helpers/token");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -50,17 +51,14 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
   let manager;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setupFixedToken(MockERC20, accounts);
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await TestableAGIJobManager.new(
-      token.address,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
-      ZERO_ROOT,
-      ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

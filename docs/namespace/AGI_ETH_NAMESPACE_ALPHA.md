@@ -2,7 +2,7 @@
 
 This guide is **non‑technical** and written for institutions and end users who want to use the **AGI.Eth Namespace (alpha environment)** with the existing `AGIJobManager` smart contract. It explains naming, roles, the exact inputs the contract expects, and practical step‑by‑step flows for common roles.
 
-> **Scope**: This guide explains how to use the **alpha** namespace (e.g., `helper.alpha.agent.agi.eth`) with **AGIJobManager** deployments that are configured with alpha root nodes at deploy time.
+> **Scope**: This guide explains how to use the **alpha** namespace (e.g., `helper.alpha.agent.agi.eth`) with **AGIJobManager** deployments that recognize both base and alpha root nodes.
 
 ---
 
@@ -19,7 +19,7 @@ When AGIJobManager checks your identity, it **does not** use the full ENS name. 
 - `helper.alpha.agent.agi.eth` → `subdomain = "helper"`
 - `alice.alpha.club.agi.eth` → `subdomain = "alice"`
 
-The contract then combines your **subdomain label** with the **configured root node** (e.g., `alpha.agent.agi.eth` or `alpha.club.agi.eth`) to verify ownership.
+The contract then combines your **subdomain label** with **both** root nodes (`agent.agi.eth` + `alpha.agent.agi.eth`, `club.agi.eth` + `alpha.club.agi.eth`) to verify ownership.
 
 ---
 
@@ -52,7 +52,7 @@ The namespace grammar follows one rule:
 | Validator | `alice.club.agi.eth` | `alice.alpha.club.agi.eth` | The **root node** changes (`club.agi.eth` vs `alpha.club.agi.eth`), but the **`subdomain` label stays** `"alice"`. |
 | Agent | `helper.agent.agi.eth` | `helper.alpha.agent.agi.eth` | The **root node** changes (`agent.agi.eth` vs `alpha.agent.agi.eth`); you still pass `"helper"`. |
 
-**Operational implication:** an alpha‑configured deployment only accepts **alpha** names because its root nodes are fixed at deploy time.
+**Operational implication:** deployments accept **both** base and alpha names because root nodes are fixed for both namespaces.
 
 ---
 
@@ -78,7 +78,7 @@ These steps assume you are using a block explorer like Etherscan and have the co
 
 ### A) Employer — create and fund a job
 
-1. **Acquire tokens** (AGI or the configured ERC‑20).
+1. **Acquire tokens** (AGI token; fixed for the deployment).
 2. **Approve allowance** for the AGIJobManager contract.
    - Go to the ERC‑20 contract → **Write Contract** → `approve(spender, amount)`
    - Use a **small, exact amount** (avoid unlimited approvals).
@@ -178,8 +178,8 @@ Before doing anything on-chain:
 If a call fails with `NotAuthorized`, check:
 
 - Are you passing only the left‑most label in `subdomain`?
-- Does the contract deployment use **alpha** root nodes?
-- Do you own the **alpha** ENS name or set the resolver correctly?
+- Does the contract deployment recognize **both** base and alpha root nodes? (It should.)
+- Do you own the base or alpha ENS name or set the resolver correctly?
 - Are you on the allowlist, or has the owner added you to `additionalAgents/Validators`?
 
 ---

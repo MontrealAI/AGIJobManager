@@ -215,7 +215,7 @@ subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))))
 In the test:
 - **`clubRootNode`** → validator subdomains
 - **`agentRootNode`** → agent subdomains
-- These are set as `keccak256("club-root")` and `keccak256("agent-root")`.
+- These are set to the fixed base root node constants used by the contract.
 - Mocks return the expected ownership and resolver mapping:
   - `ENS.resolver(subnode)` → mock resolver address
   - `Resolver.addr(subnode)` → claimant address

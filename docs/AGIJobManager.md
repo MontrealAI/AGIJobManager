@@ -81,13 +81,15 @@ stateDiagram-v2
 ## ENS / NameWrapper / Merkle ownership verification
 
 Eligibility checks for agents and validators use `_verifyOwnership`, which accepts:
-- **Merkle proof**: leaf = `keccak256(abi.encodePacked(claimant))`, checked against either `agentMerkleRoot` or `validatorMerkleRoot` depending on the root node passed.
+- **Merkle proof**: leaf = `keccak256(abi.encodePacked(claimant))`, checked against `agentMerkleRoot` for agents and `validatorMerkleRoot` for validators.
 - **ENS NameWrapper ownership**: `nameWrapper.ownerOf(uint256(subnode))` must equal `claimant`.
 - **ENS Resolver ownership**: resolve `ens.resolver(subnode)` then call `resolver.addr(subnode)` and compare to `claimant`.
 
 **Root nodes**
-- `agentRootNode` and `clubRootNode` are the ENS root nodes for agents and validators respectively.
-- `_verifyOwnership` chooses the Merkle root based on which root node is supplied (agent vs validator).
+- The contract checks **both** base and alpha root nodes for each role:
+  - Agents: `agentRootNode` + `agentRootNodeAlpha`
+  - Validators: `clubRootNode` + `clubRootNodeAlpha`
+- Root nodes are compile-time constants and not configurable at deployment.
 
 **RecoveryInitiated events**
 - Emitted when NameWrapper or Resolver calls revert or when stale dispute recovery is triggered; informational only (does not change state by itself).

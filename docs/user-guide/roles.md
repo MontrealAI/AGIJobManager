@@ -5,7 +5,7 @@ This guide explains what each role can do, what you need before starting, and co
 > **Reminder: use the label only** for ENS identity checks.
 > - ✅ `helper` (label)
 > - ❌ `helper.agent.agi.eth`
-> The contract derives the namehash from a fixed root node + label.
+> The contract derives the namehash from fixed base + alpha root nodes + label.
 
 ## Employer
 

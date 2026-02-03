@@ -7,8 +7,14 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
-const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { setupFixedToken } = require("./helpers/token");
+const {
+  AGENT_ROOT_NODE,
+  AGENT_ROOT_NODE_ALPHA,
+  CLUB_ROOT_NODE_ALPHA,
+} = require("./helpers/constants");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -35,21 +41,18 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
   }
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setupFixedToken(MockERC20, accounts);
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = namehash("alpha.club.agi.eth");
-    agentRoot = namehash("alpha.agent.agi.eth");
+    clubRoot = CLUB_ROOT_NODE_ALPHA;
+    agentRoot = AGENT_ROOT_NODE_ALPHA;
 
     manager = await AGIJobManager.new(
-      token.address,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
-      clubRoot,
-      agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -99,15 +102,12 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     );
   });
 
-  it("rejects non-alpha ownership when alpha root nodes are configured", async () => {
+  it("accepts base namespace ownership alongside alpha roots", async () => {
     const jobId = await createJob();
-    const nonAlphaAgentRoot = namehash("agent.agi.eth");
-    const nonAlphaNode = subnode(nonAlphaAgentRoot, "helper");
-    await nameWrapper.setOwner(toBN(nonAlphaNode), agent, { from: owner });
-
-    await expectRevert.unspecified(
-      manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent })
-    );
+    await setNameWrapperOwnership(nameWrapper, AGENT_ROOT_NODE, "helper", agent);
+    const tx = await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    const appliedEvent = tx.logs.find((log) => log.event === "JobApplied");
+    assert.ok(appliedEvent, "JobApplied should be emitted for base namespace");
   });
 
   it("allows additionalAgents/additionalValidators bypass", async () => {

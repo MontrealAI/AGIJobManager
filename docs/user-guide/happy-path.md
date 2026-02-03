@@ -16,7 +16,7 @@ This walkthrough shows a full job lifecycle for **Employer → Agent → Validat
 > **Label‑only rule (important):** When the UI asks for a subdomain or identity, enter the **label only**.
 > - ✅ `helper`
 > - ❌ `helper.agent.agi.eth`
-> The contract derives the ENS node from a **fixed root node + your label**, so full names won’t match.
+> The contract derives the ENS node from **fixed base + alpha root nodes + your label**, so full names won’t match.
 
 ## Happy path (full lifecycle)
 

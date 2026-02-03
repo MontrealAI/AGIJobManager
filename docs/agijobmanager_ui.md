@@ -167,4 +167,4 @@ AGIJobManager enforces role eligibility with a layered OR-logic check:
 2. **NameWrapper.ownerOf(subnode)** for the label under the contract’s root node.
 3. **ENS resolver.addr(subnode)** for the label under the contract’s root node.
 
-The UI expects **label only** (e.g., `helper`), and reads the root nodes directly from the contract (`agentRootNode`, `clubRootNode`).
+The UI expects **label only** (e.g., `helper`), and reads the root nodes directly from the contract (`agentRootNode`, `agentRootNodeAlpha`, `clubRootNode`, `clubRootNodeAlpha`).

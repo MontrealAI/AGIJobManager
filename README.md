@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.17`, while the Truffle default compiler is `0.8.23` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.23`, matching the Truffle default compiler (`SOLC_VERSION=0.8.23`). Keep deploy-time compiler settings consistent for verification (no `viaIR`, modest optimizer runs).
 
 ## Contract documentation
 
@@ -133,7 +133,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
 - `optimizer.runs`: **800** (via `SOLC_RUNS`, default in `truffle-config.js`)
-- `viaIR`: **true** (via `SOLC_VIA_IR`)
+- `viaIR`: **false** (not used)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
 - `SOLC_VERSION`: **0.8.23**
@@ -201,7 +201,7 @@ npx truffle migrate --network development
 **Optional tuning**
 - Gas & confirmations: `SEPOLIA_GAS`, `MAINNET_GAS`, `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`, `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`, `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`.
 - Provider polling: `RPC_POLLING_INTERVAL_MS`.
-- Compiler settings: `SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`.
+- Compiler settings: `SOLC_VERSION`, `SOLC_RUNS`, `SOLC_EVM_VERSION`.
 - Local chain: `GANACHE_MNEMONIC`.
 
 **Network notes**
@@ -211,7 +211,7 @@ npx truffle migrate --network development
 - `mainnet` needs `ALCHEMY_KEY_MAIN` (or `MAINNET_RPC_URL`) + `PRIVATE_KEYS`.
 - `PRIVATE_KEYS` format: comma-separated, no spaces, keep it local.
 
-> **Deployment caution**: `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token, ENS, NameWrapper, root nodes, Merkle roots). Update them before any production deployment.
+> **Deployment caution**: `migrations/2_deploy_contracts.js` hardcodes constructor parameters (base IPFS URL, ENS, NameWrapper, Merkle roots). Update them before any production deployment. Token and ENS root nodes are fixed in-contract.
 
 ## Security considerations
 

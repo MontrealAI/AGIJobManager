@@ -54,7 +54,7 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 
 **Check eligibility**
 1. In **Identity checks (preflight only)**:
-   - **Identity type**: `Agent (agentRootNode)`
+   - **Identity type**: `Agent (agentRootNode / agentRootNodeAlpha)`
    - **Label only (e.g., “helper”)**
    - **Merkle proof (JSON bytes32 array)** if required
 2. Click **Run identity check** or **Evaluate Agent Eligibility**.
@@ -82,7 +82,7 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 
 **Check eligibility**
 1. In **Identity checks (preflight only)**:
-   - **Identity type**: `Validator / Club (clubRootNode)`
+   - **Identity type**: `Validator / Club (clubRootNode / clubRootNodeAlpha)`
    - **Label only (e.g., “validator”)**
    - **Merkle proof (JSON bytes32 array)** if required
 2. Click **Run identity check** or **Evaluate Validator Eligibility**.

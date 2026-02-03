@@ -10,7 +10,7 @@ The table below lists configurable parameters and relevant caps, including who c
 
 | Parameter | Who can change | How it is used | On-chain enforced bounds | Recommended operational range | Failure mode if mis-set |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` | Owner (`updateAGITokenAddress`) | ERC‑20 used for escrow deposits, payouts, reward pool, and withdrawals. | None. | **Never change** after any job funds are deposited. Treat as immutable post‑deploy. | If changed after jobs are funded, payouts will attempt the *new* token while escrow sits in the old token. Completion/cancellation transfers can revert from insufficient balance; old token escrow becomes unrecoverable (no in-contract method to transfer old token). Funds can become permanently stuck. |
+| `agiToken` | Immutable (compile-time constant) | ERC‑20 used for escrow deposits, payouts, reward pool, and withdrawals. | N/A | Fixed to the AGI token address; redeploy if the invariant ever changes. | Misalignment requires redeploy (no on-chain rotation). |
 | `requiredValidatorApprovals` | Owner (`setRequiredValidatorApprovals`) | Approvals needed to auto‑complete a job via `validateJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **2–5** (or <= available validator count). Ensure enough active validators can realistically approve. | Too high → job completion requires more validators than are available; jobs can stall and require moderator dispute resolution. Setting to `0` makes any validation sufficient, which may be too weak for trust. |
 | `requiredValidatorDisapprovals` | Owner (`setRequiredValidatorDisapprovals`) | Disapprovals needed to mark job as `disputed` in `disapproveJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **1–3**; keep low so disputes are reachable with a small validator set. | Too high → disputes rarely trigger; jobs can remain in limbo if approvals never reach threshold. Setting to `0` means *any* disapproval triggers dispute. |
 | `validationRewardPercentage` | Owner (`setValidationRewardPercentage`) | Total % of payout distributed to validators on completion. | `1..100`; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100` | **Keep low enough so:** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. Commonly **1–10%**. | If `validationRewardPercentage + agent payout % > 100` and validators are present, settlement reverts due to insufficient escrow, making jobs uncompletable. |
@@ -21,7 +21,7 @@ The table below lists configurable parameters and relevant caps, including who c
 | `premiumReputationThreshold` | Owner (`setPremiumReputationThreshold`) | Gate for `canAccessPremiumFeature`. | None. | Set based on desired premium access policy; no settlement impact. | Mis-set only affects premium feature access (not escrow or payouts). |
 | `MAX_VALIDATORS_PER_JOB` (constant) | Immutable | Caps validators per job and enforces `requiredValidatorApprovals + requiredValidatorDisapprovals <= 50`. | `50` | Keep validator thresholds well below 50 to ensure reachable consensus and reasonable gas. | If validator thresholds approach 50, a single unexpected disapproval can make approvals unreachable; disputes may become the only path. |
 | `AGIType.payoutPercentage` (per NFT) | Owner (`addAGIType`) | Determines agent payout percentage via `getHighestPayoutPercentage`. | `1..100`; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100` | Choose a **max agent payout %** so that `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If any agent holds an NFT with a payout percentage that, combined with `validationRewardPercentage`, exceeds 100, job completion will revert when validator payouts execute. |
-| `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot` | Immutable post‑deploy | Gate eligibility for validators/agents via ENS + Merkle proofs. | Set only in constructor (no setters). | Validate before deployment; keep canonical allowlists and ENS settings accurate. | Mis-set roots can prevent validators/agents from ever qualifying, blocking validation and making jobs uncompletable without manual additional allowlisting or redeploy. |
+| `clubRootNode`, `clubRootNodeAlpha`, `agentRootNode`, `agentRootNodeAlpha`, `validatorMerkleRoot`, `agentMerkleRoot` | Immutable (compile-time for root nodes; constructor for Merkle roots) | Gate eligibility for validators/agents via ENS + Merkle proofs. | Root nodes are constants; Merkle roots set in constructor. | Validate allowlists before deployment; ENS root nodes are fixed for base + alpha namespaces. | Mis-set Merkle roots can prevent validators/agents from qualifying, blocking validation and making jobs uncompletable without manual additional allowlisting or redeploy. |
 | `additionalAgentPayoutPercentage` | Owner (`setAdditionalAgentPayoutPercentage`) | **Legacy** parameter retained for compatibility; no longer used to determine payouts. | `1..100`; **enforced with** `additionalAgentPayoutPercentage + validationRewardPercentage <= 100` | Avoid relying on this parameter for payout logic. | Misconfiguration has no effect on payouts, but can still fail to set if it violates the validation reward headroom check. |
 | `additionalValidators`, `additionalAgents` | Owner (`addAdditionalValidator`, `addAdditionalAgent`) | Manual allowlist bypass for eligibility checks. | None. | Use as a recovery tool when allowlist/ENS config blocks participation. | Overuse weakens trust; underuse when root nodes are wrong can stall jobs. Additional agents still require a nonzero AGI‑type payout tier at apply time. |
 
@@ -64,12 +64,11 @@ On completion (`_completeJob`), the contract executes the following calculations
 
 Below are plausible misconfiguration or operational failures that can trap funds or make jobs uncompletable.
 
-### 1) ERC‑20 token address changed after jobs are funded
-- **Symptom:** Validators attempt to approve; completion reverts. Employer/agent cannot receive payouts or refunds.
-- **Root cause:** `agiToken` was updated while escrow for existing jobs remains in the old token. Payouts now target the new token balance (likely zero).
-- **On‑chain recovery:** **None** for existing escrow in the old token; there is no function to transfer arbitrary ERC‑20s out. `withdrawAGI` only works for the *current* token.
-- **Operational recovery:** Pause the contract, and redeploy a new instance. If possible, coordinate off‑chain refunds from treasury.
-- **Outcome:** **Funds can be permanently stuck** in the old token.
+### 1) ERC‑20 token immutability
+- **Symptom:** N/A (token cannot be changed on-chain).
+- **Root cause:** `agiToken` is a compile-time constant; rotation is impossible without redeploy.
+- **Operational recovery:** Redeploy if a different token is ever required.
+- **Outcome:** The previous stuck-funds risk from token rotation is removed.
 
 ### 2) `validationRewardPercentage + agent payout % > 100`
 - **Symptom:** Any completion attempt reverts during validator payouts.
@@ -133,8 +132,8 @@ Below are plausible misconfiguration or operational failures that can trap funds
 ## Pre‑deploy / post‑deploy parameter sanity checklist
 
 ### Pre‑deploy (before contract creation)
-1. **Token selection:** confirm `agiToken` is a standard ERC‑20 (no fee‑on‑transfer, no rebasing) and will not be changed post‑deploy.
-2. **Eligibility roots:** verify `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, and `agentMerkleRoot` against your allowlists and ENS settings.
+1. **Token selection:** confirm `agiToken` is the fixed AGI token address and is a standard ERC‑20 (no fee‑on‑transfer, no rebasing).
+2. **Eligibility roots:** verify `clubRootNode`, `clubRootNodeAlpha`, `agentRootNode`, `agentRootNodeAlpha`, `validatorMerkleRoot`, and `agentMerkleRoot` against your allowlists and ENS settings.
 3. **Validator thresholds:** choose `requiredValidatorApprovals` and `requiredValidatorDisapprovals` so that your known validator set can reach them quickly.
 4. **Payout economics:** define a maximum `AGIType.payoutPercentage` and choose `validationRewardPercentage` so their sum is **≤ 100**.
 5. **Exposure controls:** set `maxJobPayout`, `jobDurationLimit`, and `completionReviewPeriod` aligned with operational SLAs and escrow risk.
@@ -145,7 +144,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - `requiredValidatorApprovals`, `requiredValidatorDisapprovals`
    - `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`
    - `premiumReputationThreshold`, `completionReviewPeriod`, `disputeReviewPeriod`, `MAX_VALIDATORS_PER_JOB`
-   - `agiToken`, `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot`
+   - `agiToken`, `clubRootNode`, `clubRootNodeAlpha`, `agentRootNode`, `agentRootNodeAlpha`, `validatorMerkleRoot`, `agentMerkleRoot`
 2. **Verify add‑on configuration:** check `AGIType` entries to confirm max payout percentages.
 3. **Dry‑run acceptance:** have one agent and one validator prove eligibility (Merkle/ENS) and perform a small‑value job end‑to‑end.
 
@@ -158,7 +157,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - Adjust validator thresholds (`setRequiredValidatorApprovals`, `setRequiredValidatorDisapprovals`).
    - Adjust payout percentages (`setValidationRewardPercentage`, `addAGIType`).
    - Add emergency allowlisted validators/agents (`addAdditionalValidator`, `addAdditionalAgent`).
-   - **Do not** change `agiToken` when escrow is outstanding.
+   - `agiToken` is fixed in-contract; redeploy if a different token is ever required.
 
 3. **Unstick existing jobs:**
    - For unassigned jobs: employer can `cancelJob` (if no agent assigned). Owner can `delistJob` to refund.
@@ -174,6 +173,6 @@ Below are plausible misconfiguration or operational failures that can trap funds
 
 If you plan a future upgrade or redeploy, consider:
 - Enforce `agentPayoutPercentage + validationRewardPercentage <= 100` in `addAGIType` or `setValidationRewardPercentage` to prevent uncompletable jobs.
-- Disallow `updateAGITokenAddress` once `nextJobId > 0` or once any escrow exists.
+- Token rotation is already disabled (compile-time constant).
 - Add a controlled rescue method for non‑current tokens (with strict event logging and governance).
 - Require `completionRequested` before `validateJob` to align on‑chain behavior with off‑chain expectations.

@@ -51,7 +51,6 @@ const timeoutBlocksSepolia = n(process.env.SEPOLIA_TIMEOUT_BLOCKS, 500);
 
 const solcVersion = (process.env.SOLC_VERSION || '0.8.23').trim();
 const solcRuns = Math.floor(n(process.env.SOLC_RUNS, 800));
-const solcViaIR = (process.env.SOLC_VIA_IR || 'true').toLowerCase() === 'true';
 const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();
 
 const testProvider = ganache.provider({
@@ -102,7 +101,7 @@ module.exports = {
       settings: {
         optimizer: { enabled: true, runs: solcRuns },
         evmVersion,
-        viaIR: solcViaIR,
+        viaIR: false,
         metadata: { bytecodeHash: 'none' },
         debug: { revertStrings: 'strip' },
       },

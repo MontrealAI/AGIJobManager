@@ -29,7 +29,7 @@ This document is a production-grade **operator checklist** for preventing and re
 
 | Parameter / lever | Type / units | Used in | Safe range / constraints | What breaks if wrong | Recovery / escape hatch |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` (`updateAGITokenAddress`) | ERC‑20 address | Escrow deposits, payouts, marketplace purchases, reward pool, `withdrawAGI`. | **Treat as immutable after any job is funded.** Must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | If changed after funding, escrow in the old token becomes **unrecoverable**; new payouts can revert due to missing balance. | **No on-chain recovery** for old token escrow; redeploy + off-chain remediation. |
+| `agiToken` (constant) | ERC‑20 address | Escrow deposits, payouts, marketplace purchases, reward pool, `withdrawAGI`. | Fixed to the AGI token address; must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | Misalignment requires redeploy. | Redeploy + off-chain remediation if the invariant changes. |
 | `requiredValidatorApprovals` (`setRequiredValidatorApprovals`) | uint256 count | `validateJob` threshold → `_completeJob`. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Operationally keep ≤ active validator count. | Too high → completion unreachable; jobs stall unless a moderator resolves disputes. | Lower threshold or add validators with `addAdditionalValidator`. |
 | `requiredValidatorDisapprovals` (`setRequiredValidatorDisapprovals`) | uint256 count | `disapproveJob` threshold → dispute. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Keep low to enable disputes. | Too high → disputes never trigger; jobs can remain in limbo. | Lower threshold; use `disputeJob` + `resolveDisputeWithCode`. |
 | `validationRewardPercentage` (`setValidationRewardPercentage`) | uint256 percentage | Validator payout pool in `_completeJob`. | `1..100` on-chain; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If sum exceeds 100, payouts can exceed escrow → completion reverts. | Reduce `validationRewardPercentage` or reduce any AGI type payout percentage. |
@@ -45,7 +45,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `blacklistedAgents` / `blacklistedValidators` | bool | Eligibility gating. | Use sparingly with documented reasons. | If critical participants are blacklisted, jobs cannot progress (validate/apply revert). | Un-blacklist or resolve by moderator. |
 | `addModerator` / `removeModerator` | address | Dispute resolution authority. | Ensure ≥1 active moderator. | If no moderator exists, disputes can’t resolve → funds stuck. | Add a moderator (owner action). |
 | `resolveDisputeWithCode` action | uint8 code | Dispute settlement path. | `0 (NO_ACTION)`, `1 (AGENT_WIN)`, `2 (EMPLOYER_WIN)`. | Using `NO_ACTION` logs a reason but keeps the dispute active. | Moderator re-calls with the correct action code. |
-| `clubRootNode`, `agentRootNode` (constructor) | ENS namehash | Eligibility gating. | Must match intended ENS hierarchy. | Wrong root nodes → `_verifyOwnership` fails → validators/agents cannot qualify. | Use `additional*` allowlist; redeploy if pervasive. |
+| `clubRootNode`, `clubRootNodeAlpha`, `agentRootNode`, `agentRootNodeAlpha` (constants) | ENS namehash | Eligibility gating. | Fixed to base + alpha namespaces. | Wrong root nodes → `_verifyOwnership` fails → validators/agents cannot qualify. | Use `additional*` allowlist; redeploy if pervasive. |
 | `validatorMerkleRoot`, `agentMerkleRoot` (constructor) | Merkle root | Eligibility gating. | Must match allowlists; immutable after deploy. | Bad root means Merkle proofs always fail; gating relies solely on ENS or allowlist. | Use `additional*` allowlist or redeploy. |
 | `ens`, `nameWrapper` (constructor) | contract address | ENS/NameWrapper ownership checks. | Must be correct chain-specific addresses. | Wrong addresses → ownership checks fail; `_verifyOwnership` emits recovery events and returns false. | Use `additional*` allowlist or redeploy. |
 | `withdrawAGI` | token amount | Owner withdraws surplus (`withdrawableAGI()`) while paused. | Only withdraw when paused and `withdrawableAGI()` is positive. | Withdrawal reverts if amount exceeds surplus. | Use `withdrawableAGI()` to size withdrawals; do not rely on raw balance. |
@@ -56,10 +56,10 @@ This document is a production-grade **operator checklist** for preventing and re
 
 ## Stuck-funds scenarios (prerequisites + escape hatch)
 
-1. **Token address changed after escrow exists**
-   - **Prerequisite:** `updateAGITokenAddress` called after jobs funded.
-   - **Failure:** payouts/refunds revert; old-token escrow is unrecoverable.
-   - **Escape hatch:** none on-chain; **redeploy** and coordinate off-chain remediation.
+1. **Token immutability**
+   - **Prerequisite:** none (token cannot be rotated on-chain).
+   - **Failure:** N/A; rotation risk is removed.
+   - **Escape hatch:** redeploy if a different token is ever required.
 
 2. **Validator + agent payout exceeds escrow**
    - **Prerequisite:** `validationRewardPercentage + maxAgentPayoutPercentage > 100` (blocked by setters, but still guarded at settlement).
@@ -117,7 +117,7 @@ This document is a production-grade **operator checklist** for preventing and re
    - Call `pause()` to stop new job actions while you diagnose.
 
 2. **Diagnose root cause:**
-   - Read current parameters (`requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, `disputeReviewPeriod`, `agiToken`, roots, ENS/NameWrapper addresses).
+   - Read current parameters (`requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, `disputeReviewPeriod`, `agiToken`, root nodes, ENS/NameWrapper addresses).
    - Check current escrow balance against total outstanding job payouts.
 
 3. **Apply fixes (owner/moderator, always available if owner keys are live):**
@@ -126,7 +126,7 @@ This document is a production-grade **operator checklist** for preventing and re
    - Add emergency validators/agents with `addAdditionalValidator` / `addAdditionalAgent`.
    - Add a moderator if disputes are stuck.
    - Adjust `completionReviewPeriod` or `disputeReviewPeriod` if timeouts are misaligned.
-   - **Never** change `agiToken` if outstanding jobs exist.
+   - `agiToken` is fixed in-contract; verify the address against the canonical AGI token.
 
 4. **Unstick jobs (path depends on job state; always available if the correct role exists):**
    - **Unassigned jobs:** employer uses `cancelJob`; owner uses `delistJob` for recovery.
@@ -158,9 +158,9 @@ This document is a production-grade **operator checklist** for preventing and re
 ## Pre-deploy / post-deploy verification checklist
 
 **Pre-deploy (constructor inputs):**
-- `agiToken` points to a standard ERC‑20 (no fee-on-transfer or rebasing).
+- `agiToken` is fixed to a standard ERC‑20 (no fee-on-transfer or rebasing).
 - `ens`, `nameWrapper` addresses are correct for the deployment chain.
-- `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot` match allowlist/ENS policy.
+- `clubRootNode`, `clubRootNodeAlpha`, `agentRootNode`, `agentRootNodeAlpha`, `validatorMerkleRoot`, `agentMerkleRoot` match allowlist/ENS policy.
 - Decide `requiredValidatorApprovals` + `requiredValidatorDisapprovals` (both ≤ 50).
 - Set max agent payout percentage and ensure `maxAgentPayoutPercentage + validationRewardPercentage <= 100`.
 - Set realistic `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, and `disputeReviewPeriod`.
@@ -171,7 +171,7 @@ This document is a production-grade **operator checklist** for preventing and re
   - `agiToken`, `ens`, `nameWrapper`
   - `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`
   - `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, `disputeReviewPeriod`, `premiumReputationThreshold`
-  - `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot`
+  - `clubRootNode`, `clubRootNodeAlpha`, `agentRootNode`, `agentRootNodeAlpha`, `validatorMerkleRoot`, `agentMerkleRoot`
 - Confirm at least one moderator is set.
 - Dry-run: create a small job, validate, and confirm payout + NFT issuance.
 

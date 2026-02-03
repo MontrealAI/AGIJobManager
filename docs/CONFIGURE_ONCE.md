@@ -23,11 +23,17 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 ### A) Constructor-time (immutable)
 These are fixed at deployment and **cannot be changed** without redeploying.
 
-- `agiToken` (ERC-20 used for escrow)
 - `baseIpfsUrl`
 - `ens` + `nameWrapper`
-- `clubRootNode` + `agentRootNode`
 - `validatorMerkleRoot` + `agentMerkleRoot`
+
+**Hard-coded invariants (non-configurable)**:
+- `agiToken` is fixed to `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`.
+- ENS root nodes are fixed and dual-root for each role:
+  - `clubRootNode` = `0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16`
+  - `clubRootNodeAlpha` = `0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e`
+  - `agentRootNode` = `0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d`
+  - `agentRootNodeAlpha` = `0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e`
 
 ### B) Post-deploy but intended to remain stable
 Set these once via `scripts/postdeploy-config.js` and treat changes as exceptional.
@@ -69,18 +75,16 @@ The intended production token address is:
 
 - **AGI token**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
 
-### ENS + NameWrapper + root nodes + Merkle roots
+### ENS + NameWrapper + Merkle roots
 Record these per network **before deploy**, and keep them immutable afterward.
 
-| Network | ENS | NameWrapper | clubRootNode | agentRootNode | validatorMerkleRoot | agentMerkleRoot |
-| --- | --- | --- | --- | --- | --- | --- |
-| mainnet | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
-| sepolia | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
-| other | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
+| Network | ENS | NameWrapper | validatorMerkleRoot | agentMerkleRoot |
+| --- | --- | --- | --- | --- |
+| mainnet | _fill_ | _fill_ | _fill_ | _fill_ |
+| sepolia | _fill_ | _fill_ | _fill_ | _fill_ |
+| other | _fill_ | _fill_ | _fill_ | _fill_ |
 
-**Computing root nodes**:
-- `clubRootNode` and `agentRootNode` are **ENS namehashes** for the root namespaces you want to use (e.g., `club.agi.eth`, `agent.agi.eth`).
-- Use `ethers.utils.namehash("<root-name>")` (or any ENS namehash implementation) and record the hex value per network.
+**Root nodes** are fixed in-contract (base + alpha) and cannot be changed at deployment time.
 
 **Computing Merkle roots**:
 - Leaves are `keccak256(address)` (address bytes, lowercased). The Merkle tree uses **sorted pairs + sorted leaves**.
@@ -177,7 +181,7 @@ Set `AGI_EXPECTED_OWNER` (or include `expectedOwner` in the JSON config) to vali
 
 - Owner is the expected multisig/hardware key.
 - Contract is **unpaused** (or intentionally paused for incident response).
-- ENS / NameWrapper / root nodes match the deployment record.
+- ENS / NameWrapper addresses match the deployment record; root nodes are fixed in-contract.
 - Merkle roots match the allowlist artifacts used at deploy.
 
 Suggested commands:
