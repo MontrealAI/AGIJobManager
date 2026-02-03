@@ -37,7 +37,7 @@ async function deployManager({
   agentMerkleRoot,
   owner,
 }) {
-  return AGIJobManager.new(
+  const manager = await AGIJobManager.new(
     token.address,
     "ipfs://base",
     ens.address,
@@ -48,6 +48,8 @@ async function deployManager({
     agentMerkleRoot,
     { from: owner }
   );
+  await manager.setAlphaRootNodes(validatorRootNode, agentRootNode, { from: owner });
+  return manager;
 }
 
 async function createJob({ manager, token, employer, payout, duration = 1000, ipfsHash = "job1" }) {

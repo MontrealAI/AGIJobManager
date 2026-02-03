@@ -1,7 +1,7 @@
 # AGIJobManager
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Solidity](https://img.shields.io/badge/solidity-0.8.23-363636.svg)](contracts/AGIJobManager.sol)
+[![Solidity](https://img.shields.io/badge/solidity-0.8.24-363636.svg)](contracts/AGIJobManager.sol)
 [![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
 [![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
 
@@ -107,13 +107,15 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.17`, while the Truffle default compiler is `0.8.23` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.24`, while the Truffle default compiler is `0.8.24` (configurable via `SOLC_VERSION`). Keep the deploy-time compiler settings consistent for verification.
 
 ## Contract documentation
 
 Detailed contract documentation lives in `docs/`:
 
 - [Configure-once operations guide](docs/CONFIGURE_ONCE.md)
+- [Deployment checklist](docs/deployment-checklist.md)
+- [Minimal governance](docs/minimal-governance.md)
 - [Configure-once deployment profile](docs/DEPLOYMENT_PROFILE.md)
 - [Minimal governance model](docs/GOVERNANCE.md)
 - [AGI Jobs one-pager (canonical narrative)](docs/AGI_JOBS_ONE_PAGER.md)
@@ -132,11 +134,11 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
-- `optimizer.runs`: **800** (via `SOLC_RUNS`, default in `truffle-config.js`)
-- `viaIR`: **true** (via `SOLC_VIA_IR`)
+- `optimizer.runs`: **200** (via `SOLC_RUNS`, default in `truffle-config.js`)
+- `viaIR`: **true** (via `SOLC_VIA_IR`, required to avoid stack-too-deep errors in the non-IR pipeline)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
-- `SOLC_VERSION`: **0.8.23**
+- `SOLC_VERSION`: **0.8.24**
 - `evmVersion`: **london** (or the target chain default)
 
 To check runtime sizes locally after compilation:
