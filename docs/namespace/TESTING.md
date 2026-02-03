@@ -1,16 +1,17 @@
 # Namespace Identity Tests — Local Coverage
 
-This document explains the **local Truffle tests** added to prove AGI.Eth namespace gating for the **alpha** environment using deterministic mocks.
+This document explains the **local Truffle tests** added to prove AGI.Eth namespace gating for **envless + alpha** namespaces using deterministic mocks.
 
 ## What the tests cover
 
-The new test suite focuses on the alpha namespace and identity‑gating logic using mock ENS contracts:
+The test suite focuses on envless + alpha namespace support and identity‑gating logic using mock ENS contracts:
 
-1. **Agent authorization via NameWrapper** under `alpha.agent.agi.eth`.
-2. **Validator authorization via ENS resolver** under `alpha.club.agi.eth`.
-3. **Unauthorized access rejection** when no allowlist or ownership exists.
-4. **Wrong root node rejection** (non‑alpha name with alpha deployment).
-5. **Owner allowlist bypass** using `additionalAgents` / `additionalValidators`.
+1. **Agent authorization via NameWrapper** under `agent.agi.eth`.
+2. **Validator authorization via ENS resolver** under `club.agi.eth`.
+3. **Alpha namespace acceptance** under `alpha.agent.agi.eth` and `alpha.club.agi.eth`.
+4. **Unauthorized access rejection** when no allowlist or ownership exists.
+5. **Wrong root node rejection** (unrelated namespace).
+6. **Owner allowlist bypass** using `additionalAgents` / `additionalValidators`.
 
 ## How the tests simulate mainnet behavior
 
@@ -20,7 +21,7 @@ Local tests use deterministic mocks:
 - `MockResolver` returns an address for `addr(node)`.
 - `MockNameWrapper` returns an owner for `ownerOf(node)`.
 
-The tests compute **alpha root nodes** using namehash and derive subnodes exactly as the contract does:
+The tests compute root nodes using namehash and derive subnodes exactly as the contract does:
 
 ```
 subnode = keccak256(rootNode, keccak256(label))

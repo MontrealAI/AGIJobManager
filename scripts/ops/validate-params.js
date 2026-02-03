@@ -6,6 +6,8 @@ const CHECK = {
   WARN: "WARN",
 };
 
+const AGI_TOKEN_ADDRESS = "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA";
+
 function evaluateInvariants({
   requiredValidatorApprovals,
   requiredValidatorDisapprovals,
@@ -27,8 +29,11 @@ function evaluateInvariants({
 
   results.push({
     key: "agiToken",
-    status: agiToken && agiToken !== "0x0000000000000000000000000000000000000000" ? CHECK.PASS : CHECK.FAIL,
-    message: "agiToken address must be non-zero",
+    status:
+      agiToken && agiToken.toLowerCase() === AGI_TOKEN_ADDRESS.toLowerCase()
+        ? CHECK.PASS
+        : CHECK.FAIL,
+    message: `agiToken must be fixed to ${AGI_TOKEN_ADDRESS}`,
   });
   results.push({
     key: "ens",

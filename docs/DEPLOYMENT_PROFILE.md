@@ -9,12 +9,12 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 ## Preconditions (capture before deployment)
 
 **Required constructor parameters** (immutable after deploy):
-- `agiToken` (ERC‑20 escrow token)
+- `agiToken` (**must** be `0xA61a…`)
 - `baseIpfsUrl`
 - `ens` registry
 - `nameWrapper`
-- `clubRootNode` (validator namespace)
-- `agentRootNode` (agent namespace)
+- `clubRootNode` (**must** be `namehash("club.agi.eth")`)
+- `agentRootNode` (**must** be `namehash("agent.agi.eth")`)
 - `validatorMerkleRoot`
 - `agentMerkleRoot`
 
@@ -30,7 +30,7 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 
 **Allowlists & roots**
 - Confirm Merkle roots for validators/agents (sorted‑pairs Merkle tree, leaf = `keccak256(address)`).
-- Compute ENS root nodes (namehash for `club.agi.eth`, `alpha.club.agi.eth`, `agent.agi.eth`, `alpha.agent.agi.eth`).
+- Compute ENS root nodes for `club.agi.eth` and `agent.agi.eth`; `alpha.*` variants are derived in‑contract.
 
 **Bytecode size guardrail**
 - Compile and check runtime sizes before deployment:

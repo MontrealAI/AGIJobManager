@@ -2,7 +2,7 @@
   "contractName": "AGIJobManager",
   "compiler": {
     "name": "solc",
-    "version": "0.8.33+commit.64118f21.Emscripten.clang"
+    "version": "0.8.19+commit.7dd6d404.Emscripten.clang"
   },
   "abi": [
     {
@@ -844,6 +844,45 @@
       ],
       "name": "Unpaused",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "AGENT_ROOT_NODE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "AGI_TOKEN_ADDRESS",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CLUB_ROOT_NODE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [],
@@ -2034,19 +2073,6 @@
         }
       ],
       "name": "removeModerator",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_newTokenAddress",
-          "type": "address"
-        }
-      ],
-      "name": "updateAGITokenAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
