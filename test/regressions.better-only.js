@@ -263,7 +263,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
       currentBalanceAfterCancel.eq(currentBalanceBeforeCancel),
       "current should keep escrowed funds after revert"
     );
-    const currentJob = await current.jobs(currentJobId);
+    const currentJob = await current.getJobCore(currentJobId);
     assert.equal(currentJob.employer, employer, "current should keep job after failed refund");
   });
 });
