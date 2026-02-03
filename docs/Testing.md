@@ -25,7 +25,7 @@ npx truffle compile
 ```
 
 By default the Truffle config enables `viaIR` because compilation without IR hits stack-too-deep for this contract.
-If you have a validated refactor that compiles without IR, set `SOLC_VIA_IR=false` and keep the setting consistent for verification.
+Keep the setting consistent for verification.
 
 ## Run the full test suite
 

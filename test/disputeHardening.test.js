@@ -46,7 +46,7 @@ async function advanceTime(seconds) {
 }
 
 contract("AGIJobManager dispute hardening", (accounts) => {
-  const [owner, employer, agent, validatorA, validatorB, validatorC] = accounts;
+  const [owner, employer, agent, validatorA, validatorB, validatorC, moderator] = accounts;
   let token;
   let manager;
 
@@ -78,6 +78,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.addAdditionalValidator(validatorA, { from: owner });
     await manager.addAdditionalValidator(validatorB, { from: owner });
     await manager.addAdditionalValidator(validatorC, { from: owner });
+    await manager.addModerator(moderator, { from: owner });
 
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
@@ -149,6 +150,33 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     assert.strictEqual(job.disputed, true, "job should be disputed after completion request");
   });
 
+  it("blocks validator actions before completion is requested", async () => {
+    const payout = toBN(toWei("8"));
+    const jobId = await createJob(payout);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator-a", EMPTY_PROOF, { from: validatorA }),
+      "InvalidState"
+    );
+    await expectCustomError(
+      manager.disapproveJob.call(jobId, "validator-a", EMPTY_PROOF, { from: validatorA }),
+      "InvalidState"
+    );
+  });
+
+  it("prevents validators from switching stances", async () => {
+    const payout = toBN(toWei("6"));
+    const jobId = await setupCompletion(payout);
+
+    await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
+
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator-a", EMPTY_PROOF, { from: validatorA }),
+      "InvalidState"
+    );
+  });
+
   it("resolves stale disputes through the owner recovery path", async () => {
     const payout = toBN(toWei("15"));
     const jobId = await setupCompletion(payout);
@@ -184,6 +212,45 @@ contract("AGIJobManager dispute hardening", (accounts) => {
       employerAfter.sub(employerBefore).toString(),
       payoutRefund.toString(),
       "employer should be refunded"
+    );
+  });
+
+  it("settles agent-win disputes without validator votes", async () => {
+    const payout = toBN(toWei("11"));
+    const jobId = await setupCompletion(payout);
+    await manager.disputeJob(jobId, { from: employer });
+
+    const before = await token.balanceOf(agent);
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
+    const after = await token.balanceOf(agent);
+
+    assert.ok(after.sub(before).gt(toBN("0")), "agent should be paid on dispute resolution");
+    const job = await manager.jobs(jobId);
+    assert.strictEqual(job.completed, true, "job should be completed");
+  });
+
+  it("marks employer-win disputes as terminal and refunds escrow", async () => {
+    const payout = toBN(toWei("13"));
+    const jobId = await setupCompletion(payout);
+    await manager.disputeJob(jobId, { from: employer });
+
+    const lockedBefore = await manager.lockedEscrow();
+    const employerBefore = await token.balanceOf(employer);
+
+    await manager.resolveDisputeWithCode(jobId, 2, "employer win", { from: moderator });
+
+    const employerAfter = await token.balanceOf(employer);
+    const lockedAfter = await manager.lockedEscrow();
+    const job = await manager.jobs(jobId);
+
+    assert.strictEqual(job.completed, true, "job should be marked completed");
+    assert.strictEqual(job.disputed, false, "dispute should be cleared");
+    assert.equal(job.disputedAt.toString(), "0", "dispute timestamp should clear");
+    assert.equal(employerAfter.sub(employerBefore).toString(), payout.toString(), "escrow should refund");
+    assert.equal(
+      lockedBefore.sub(lockedAfter).toString(),
+      payout.toString(),
+      "locked escrow should release"
     );
   });
 });
