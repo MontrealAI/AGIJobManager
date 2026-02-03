@@ -433,6 +433,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender] || _verifyOwnershipValidator(msg.sender, subdomain, proof))) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
+        _requireValidUri(job.jobCompletionURI);
         if (job.approvals[msg.sender]) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
 
@@ -454,6 +455,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender] || _verifyOwnershipValidator(msg.sender, subdomain, proof))) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
+        _requireValidUri(job.jobCompletionURI);
         if (job.disapprovals[msg.sender]) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
 
