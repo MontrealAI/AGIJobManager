@@ -34,6 +34,8 @@ This reads `build/contracts/AGIJobManager.json` and prints the runtime byte
 length. CI also enforces the same limit.
 
 ## Compiler configuration
-`viaIR` remains **OFF** in `truffle-config.js`. Optimizer runs are pinned low
-(`runs=1`) to keep runtime bytecode under the EIP‑170 safety margin; if you
+`viaIR` remains **OFF** in `truffle-config.js`. The repo pins Solidity
+`0.8.12` to avoid the OpenZeppelin `memory-safe-assembly` deprecation warnings
+seen with newer compilers, while keeping compatibility with OZ 4.9.x. Optimizer
+runs are kept low (`runs=1`) to stay within the EIP‑170 bytecode limit; if you
 adjust this, ensure the bytecode limit test still passes.
