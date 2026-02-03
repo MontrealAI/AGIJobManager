@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.26`, while the Truffle default compiler is `0.8.26` (configurable via `SOLC_VERSION`). The current build enables `viaIR` to avoid stack‑too‑deep errors; keep compiler settings consistent for verification and document the tradeoffs.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.26`, while the Truffle default compiler is `0.8.26` (configurable via `SOLC_VERSION`). `viaIR` is enabled by default because the current contract shape otherwise hits stack‑too‑deep errors; keep compiler settings consistent for verification and only change if you have a validated refactor.
 
 ## Contract documentation
 
