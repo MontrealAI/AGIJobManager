@@ -44,7 +44,9 @@ These values are fixed **identity anchors** on Ethereum mainnet (documented inva
 - `agent.agi.eth`: `0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d`
 - `alpha.agent.agi.eth`: `0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e`
 
-> **Note:** ENS registry and NameWrapper addresses are chain-specific and must remain configurable for Sepolia/local/private networks.
+> **Notes:**  
+> - ENS registry and NameWrapper addresses are chain-specific and must remain configurable for Sepolia/local/private networks.  
+> - Namehash outputs are deterministic across chains; only the registry/NameWrapper addresses vary by network.
 
 ## 3) Step-by-step deployment
 
@@ -86,6 +88,8 @@ If using ENS gating, test **both namespaces**:
 - `agent.agi.eth` **and** `alpha.agent.agi.eth`
 - `club.agi.eth` **and** `alpha.club.agi.eth`
 
+Merkle roots are **allowlists only**. They grant access to apply/validate but do **not** change payouts. Agent payout remains determined by AGIType NFT ownership (`getHighestPayoutPercentage`).
+
 ## 5) Lock configuration (one-way)
 
 After setup and validation, lock configuration to minimize governance:
@@ -94,7 +98,7 @@ After setup and validation, lock configuration to minimize governance:
 - **Manual**: call `lockConfiguration()` from the owner account.
 
 Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
-In the current implementation, only the token address is lockable because ENS wiring and root nodes are constructor-only.
+Critical wiring includes the AGI token address, ENS registry, NameWrapper, and ENS root nodes; each is only mutable pre‑first‑job and pre‑lock.
 
 ## 6) Break-glass runbook (after lock)
 
@@ -107,3 +111,16 @@ After lock, operators should only use:
 > **Escrow safety:** withdrawals can never touch escrowed job funds because `withdrawableAGI = balance - lockedEscrow` and the call reverts if the escrow balance is insolvent.
 
 Everything else remains operable but should be governed by your ops policy to keep the surface minimal.
+
+## 7) Verification (Etherscan)
+
+**Normal path (viaIR enabled)**:
+1. Compile with `SOLC_VERSION=0.8.26`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`.
+2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args.
+
+**Fallback (Standard JSON input)**:
+1. Compile with `SOLC_VIA_IR=true` and the same optimizer/metadata settings.
+2. In Etherscan, select **Solidity (Standard-Json-Input)** and paste the JSON from the build step.
+3. Ensure the JSON includes `viaIR: true`, `optimizer.runs: 200`, `metadata.bytecodeHash: "none"`, and the exact constructor args.
+
+> To reproduce Standard JSON input deterministically, keep compiler settings pinned in `truffle-config.js` and rebuild before verification.

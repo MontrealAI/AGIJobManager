@@ -14,8 +14,11 @@ These functions are guarded by `whenCriticalConfigurable` and **revert** once th
 
 **Critical routing / identity**
 - `updateAGITokenAddress` (only allowed before any job exists and before the lock)
+- `updateEnsRegistry` (only allowed before any job exists and before the lock)
+- `updateNameWrapper` (only allowed before any job exists and before the lock)
+- `updateRootNodes` (only allowed before any job exists and before the lock)
 
-> **Note:** ENS registry, NameWrapper, and root nodes are constructor-only in this version. If they are ever made changeable after deployment, they must be guarded by the same critical lock.
+> **Note:** ENS registry, NameWrapper, and root node updates are intentionally limited to pre‑first‑job and pre‑lock windows to preserve identity safety.
 
 ## Functions still available after lock
 
@@ -27,6 +30,9 @@ These are considered **break-glass** or operational safety controls and remain a
 - `withdrawAGI()` — surplus withdrawals while paused (escrow is always reserved).
 
 Other configuration knobs (thresholds, review periods, allowlists, metadata, etc.) remain **tunable** after lock because they are not part of the critical configuration surface.
+
+**Allowlists remain mutable after lock**:
+- `updateMerkleRoots` stays available post-lock so validator/agent allowlists can evolve.
 
 > **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.
 

@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.26`, while the Truffle default compiler is `0.8.26` (configurable via `SOLC_VERSION`). `viaIR` is enabled by default because the current contract shape otherwise hits stack‑too‑deep errors; keep compiler settings consistent for verification and only change if you have a validated refactor.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.26`, while the Truffle default compiler is `0.8.26` (configurable via `SOLC_VERSION`). `viaIR` is enabled by default because the legacy contract and current shape hit stack‑too‑deep without it; keep compiler settings consistent for verification.
 
 ## Contract documentation
 
@@ -135,7 +135,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
 - `optimizer.runs`: **200** (via `SOLC_RUNS`, default in `truffle-config.js`)
-- `viaIR`: **true** (via `SOLC_VIA_IR`, required to avoid stack‑too‑deep in the current contract size)
+- `viaIR`: **true** by default (set `SOLC_VIA_IR=false` only if you have a validated refactor that avoids stack‑too‑deep)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
 - `SOLC_VERSION`: **0.8.26**
@@ -218,7 +218,7 @@ npx truffle migrate --network development
 ## Security considerations
 
 - **Centralization risk**: the owner can change critical parameters and withdraw escrowed ERC‑20; moderators can resolve disputes.
-- **Eligibility gating**: Merkle roots and ENS dependencies are immutable post-deploy; misconfiguration requires redeployment.
+- **Eligibility gating**: ENS registry/NameWrapper/root nodes are intended to be configured before any job exists and then locked; Merkle roots remain configurable for allowlist updates.
 - **Token compatibility**: ERC‑20 `transfer`/`transferFrom` may return `true`/`false` **or** return no data; calls that revert or return `false` are treated as failures. Fee‑on‑transfer, rebasing, and other balance‑mutating tokens are **not supported**; escrow deposits enforce exact amounts received.
 - **Marketplace reentrancy guard**: `purchaseNFT` is protected by `nonReentrant` because it crosses an external ERC‑20 `transferFrom` boundary; removing this protection requires a redeploy even though the ABI is unchanged.
 - **Marketplace safe transfer**: `purchaseNFT` uses ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received` or the purchase will revert.

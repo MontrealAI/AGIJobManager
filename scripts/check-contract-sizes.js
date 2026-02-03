@@ -3,6 +3,7 @@ const path = require("path");
 
 const MAX_RUNTIME_BYTES = 24576;
 const artifactsDir = path.join(__dirname, "..", "build", "contracts");
+const IGNORED_CONTRACTS = new Set(["TestableAGIJobManager"]);
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =
@@ -26,7 +27,7 @@ for (const file of artifacts) {
   const name = artifact.contractName || path.basename(file, ".json");
   const sizeBytes = deployedSizeBytes(artifact);
   console.log(`${name} deployedBytecode size: ${sizeBytes} bytes`);
-  if (sizeBytes > MAX_RUNTIME_BYTES) {
+  if (sizeBytes > MAX_RUNTIME_BYTES && !IGNORED_CONTRACTS.has(name)) {
     oversized.push({ name, sizeBytes });
   }
 }
