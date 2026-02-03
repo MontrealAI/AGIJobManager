@@ -39,4 +39,4 @@ If the contract is paused, most user actions revert with `Pausable: paused`.
 ## How to diagnose
 1. Check the revert error in your wallet or Etherscan.
 2. Look up the last emitted event for the job.
-3. Compare the job state (`jobs(jobId)` getter) with the requirements above.
+3. Compare the job state (`getJobCore(jobId)` and `getJobValidation(jobId)` getters) with the requirements above.
