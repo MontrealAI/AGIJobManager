@@ -25,7 +25,9 @@ contract("AGIJobManager admin ops", (accounts) => {
   let nameWrapper;
   let manager;
   let clubRoot;
+  let alphaClubRoot;
   let agentRoot;
+  let alphaAgentRoot;
   let agiTypeNft;
 
   beforeEach(async () => {
@@ -35,7 +37,9 @@ contract("AGIJobManager admin ops", (accounts) => {
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     clubRoot = rootNode("club-root");
+    alphaClubRoot = rootNode("alpha-club-root");
     agentRoot = rootNode("agent-root");
+    alphaAgentRoot = rootNode("alpha-agent-root");
 
     manager = await AGIJobManager.new(
       token.address,
@@ -43,7 +47,9 @@ contract("AGIJobManager admin ops", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -131,7 +137,9 @@ contract("AGIJobManager admin ops", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -144,5 +152,31 @@ contract("AGIJobManager admin ops", (accounts) => {
       managerFailing.withdrawAGI.call(toBN(toWei("1")), { from: owner }),
       "TransferFailed"
     );
+  });
+
+  it("locks configuration changes while preserving break-glass controls", async () => {
+    assert.equal(await manager.configLocked(), false);
+
+    await manager.lockConfiguration({ from: owner });
+    assert.equal(await manager.configLocked(), true);
+
+    await expectCustomError(
+      manager.setMaxJobPayout.call(toBN(toWei("9000")), { from: owner }),
+      "ConfigLocked"
+    );
+    await expectCustomError(
+      manager.addAdditionalAgent.call(other, { from: owner }),
+      "ConfigLocked"
+    );
+
+    await manager.blacklistAgent(agent, true, { from: owner });
+    assert.equal(await manager.blacklistedAgents(agent), true);
+
+    await manager.pause({ from: owner });
+    assert.equal(await manager.paused(), true);
+    await manager.unpause({ from: owner });
+    assert.equal(await manager.paused(), false);
+
+    await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
   });
 });

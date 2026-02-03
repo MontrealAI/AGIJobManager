@@ -20,7 +20,9 @@ contract("AGIJobManager economic safety", (accounts) => {
   let ens;
   let nameWrapper;
   let clubRoot;
+  let alphaClubRoot;
   let agentRoot;
+  let alphaAgentRoot;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -28,7 +30,9 @@ contract("AGIJobManager economic safety", (accounts) => {
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     clubRoot = rootNode("club-root");
+    alphaClubRoot = rootNode("alpha-club-root");
     agentRoot = rootNode("agent-root");
+    alphaAgentRoot = rootNode("alpha-agent-root");
   });
 
   it("prevents adding or updating AGI types that exceed payout headroom", async () => {
@@ -38,7 +42,9 @@ contract("AGIJobManager economic safety", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -60,7 +66,9 @@ contract("AGIJobManager economic safety", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -78,7 +86,9 @@ contract("AGIJobManager economic safety", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -96,7 +106,9 @@ contract("AGIJobManager economic safety", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -134,7 +146,9 @@ contract("AGIJobManager economic safety", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -178,7 +192,9 @@ contract("AGIJobManager economic safety", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

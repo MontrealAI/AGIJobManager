@@ -43,6 +43,8 @@ contract("AGIJobManager jobStatus", (accounts) => {
       ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

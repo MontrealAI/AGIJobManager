@@ -24,7 +24,9 @@ contract("AGIJobManager security regressions", (accounts) => {
   let nameWrapper;
   let manager;
   let clubRoot;
+  let alphaClubRoot;
   let agentRoot;
+  let alphaAgentRoot;
   let agiTypeNft;
 
   beforeEach(async () => {
@@ -34,7 +36,9 @@ contract("AGIJobManager security regressions", (accounts) => {
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     clubRoot = rootNode("club-root");
+    alphaClubRoot = rootNode("alpha-club-root");
     agentRoot = rootNode("agent-root");
+    alphaAgentRoot = rootNode("alpha-agent-root");
 
     manager = await AGIJobManager.new(
       token.address,
@@ -42,7 +46,9 @@ contract("AGIJobManager security regressions", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -275,7 +281,9 @@ contract("AGIJobManager security regressions", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -302,7 +310,9 @@ contract("AGIJobManager security regressions", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

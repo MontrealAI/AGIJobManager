@@ -7,6 +7,9 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
+const { MerkleTree } = require("merkletreejs");
+const keccak256 = require("keccak256");
+
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -22,7 +25,9 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
   let nameWrapper;
   let manager;
   let clubRoot;
+  let alphaClubRoot;
   let agentRoot;
+  let alphaAgentRoot;
   let agiTypeNft;
 
   const payout = toBN(toWei("10"));
@@ -40,8 +45,10 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = namehash("alpha.club.agi.eth");
-    agentRoot = namehash("alpha.agent.agi.eth");
+    clubRoot = namehash("club.agi.eth");
+    alphaClubRoot = namehash("alpha.club.agi.eth");
+    agentRoot = namehash("agent.agi.eth");
+    alphaAgentRoot = namehash("alpha.agent.agi.eth");
 
     manager = await AGIJobManager.new(
       token.address,
@@ -49,7 +56,9 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -61,7 +70,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     await agiTypeNft.mint(agent, { from: owner });
   });
 
-  it("authorizes an agent via NameWrapper ownership under alpha.agent", async () => {
+  it("authorizes an agent via NameWrapper ownership under agent.agi.eth", async () => {
     const jobId = await createJob();
     await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
 
@@ -73,13 +82,44 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     assert.equal(job.assignedAgent, agent, "agent should be assigned");
   });
 
-  it("authorizes a validator via ENS resolver addr under alpha.club", async () => {
+  it("authorizes an agent via NameWrapper ownership under alpha.agent.agi.eth", async () => {
+    const jobId = await createJob();
+    await setNameWrapperOwnership(nameWrapper, alphaAgentRoot, "helper", agent);
+
+    const tx = await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    const appliedEvent = tx.logs.find((log) => log.event === "JobApplied");
+    assert.ok(appliedEvent, "JobApplied should be emitted");
+
+    const job = await manager.jobs(jobId);
+    assert.equal(job.assignedAgent, agent, "agent should be assigned");
+  });
+
+  it("authorizes a validator via ENS resolver addr under club.agi.eth", async () => {
     const jobId = await createJob();
     await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
     await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await setResolverOwnership(ens, resolver, clubRoot, "alice", validator);
+
+    const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
+    const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
+    const completedEvent = tx.logs.find((log) => log.event === "JobCompleted");
+    assert.ok(validatedEvent, "JobValidated should be emitted");
+    assert.ok(completedEvent, "JobCompleted should be emitted when approvals threshold met");
+
+    const status = await manager.getJobStatus(jobId);
+    const completed = status.completed ?? status[0];
+    assert.equal(completed, true, "job should be completed");
+  });
+
+  it("authorizes a validator via ENS resolver addr under alpha.club.agi.eth", async () => {
+    const jobId = await createJob();
+    await setNameWrapperOwnership(nameWrapper, alphaAgentRoot, "helper", agent);
+    await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await setResolverOwnership(ens, resolver, alphaClubRoot, "alice", validator);
 
     const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
     const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
@@ -99,15 +139,62 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     );
   });
 
-  it("rejects non-alpha ownership when alpha root nodes are configured", async () => {
+  it("rejects ownership under unrelated ENS roots", async () => {
     const jobId = await createJob();
-    const nonAlphaAgentRoot = namehash("agent.agi.eth");
-    const nonAlphaNode = subnode(nonAlphaAgentRoot, "helper");
-    await nameWrapper.setOwner(toBN(nonAlphaNode), agent, { from: owner });
+    const unrelatedRoot = namehash("node.agi.eth");
+    const unrelatedNode = subnode(unrelatedRoot, "helper");
+    await nameWrapper.setOwner(toBN(unrelatedNode), agent, { from: owner });
 
     await expectRevert.unspecified(
       manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent })
     );
+  });
+
+  it("accepts Merkle proofs regardless of namespace roots", async () => {
+    const agentLeaf = Buffer.from(web3.utils.soliditySha3({ type: "address", value: agent }).slice(2), "hex");
+    const validatorLeaf = Buffer.from(
+      web3.utils.soliditySha3({ type: "address", value: validator }).slice(2),
+      "hex"
+    );
+    const agentTree = new MerkleTree([agentLeaf], keccak256, { sortPairs: true });
+    const validatorTree = new MerkleTree([validatorLeaf], keccak256, { sortPairs: true });
+
+    const merkleManager = await AGIJobManager.new(
+      token.address,
+      "ipfs://base",
+      ens.address,
+      nameWrapper.address,
+      clubRoot,
+      alphaClubRoot,
+      agentRoot,
+      alphaAgentRoot,
+      validatorTree.getHexRoot(),
+      agentTree.getHexRoot(),
+      { from: owner }
+    );
+
+    await merkleManager.setRequiredValidatorApprovals(1, { from: owner });
+    const merkleAgiType = await MockERC721.new({ from: owner });
+    await merkleAgiType.mint(agent, { from: owner });
+    await merkleManager.addAGIType(merkleAgiType.address, 1, { from: owner });
+
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(merkleManager.address, payout, { from: employer });
+    const tx = await merkleManager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+    const jobId = tx.logs[0].args.jobId.toNumber();
+
+    await merkleManager.applyForJob(jobId, "helper", agentTree.getHexProof(agentLeaf), { from: agent });
+    await merkleManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await merkleManager.validateJob(
+      jobId,
+      "alice",
+      validatorTree.getHexProof(validatorLeaf),
+      { from: validator }
+    );
+
+    const status = await merkleManager.getJobStatus(jobId);
+    const completed = status.completed ?? status[0];
+    assert.equal(completed, true, "job should be completed via Merkle allowlist");
   });
 
   it("allows additionalAgents/additionalValidators bypass", async () => {

@@ -58,7 +58,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
   let agentTree;
   let validatorTree;
   let clubRoot;
+  let alphaClubRoot;
   let agentRoot;
+  let alphaAgentRoot;
 
   const approveToken = async (holder, amount = payout) => {
     await token.approve(manager.address, amount, { from: holder });
@@ -88,7 +90,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     agentTree = buildTree([agent, validatorFour]);
     validatorTree = buildTree([validatorOne, validatorTwo, validatorThree]);
     clubRoot = rootNode("club");
+    alphaClubRoot = rootNode("alpha-club");
     agentRoot = rootNode("agent");
+    alphaAgentRoot = rootNode("alpha-agent");
 
     manager = await AGIJobManager.new(
       token.address,
@@ -96,7 +100,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       validatorTree.root,
       agentTree.root
     );
@@ -538,7 +544,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         ens.address,
         nameWrapper.address,
         clubRoot,
+        alphaClubRoot,
         agentRoot,
+        alphaAgentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -561,7 +569,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         ens.address,
         nameWrapper.address,
         clubRoot,
+        alphaClubRoot,
         agentRoot,
+        alphaAgentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -594,7 +604,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         ens.address,
         nameWrapper.address,
         clubRoot,
+        alphaClubRoot,
         agentRoot,
+        alphaAgentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -629,7 +641,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         ens.address,
         nameWrapper.address,
         clubRoot,
+        alphaClubRoot,
         agentRoot,
+        alphaAgentRoot,
         validatorTree.root,
         agentTree.root
       );

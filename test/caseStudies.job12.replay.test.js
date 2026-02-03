@@ -61,7 +61,9 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
   let nameWrapper;
   let manager;
   let clubRootNode;
+  let alphaClubRootNode;
   let agentRootNode;
+  let alphaAgentRootNode;
   let baseIpfsUrl;
 
   beforeEach(async () => {
@@ -73,7 +75,9 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
 
     baseIpfsUrl = "https://ipfs.io/ipfs";
     clubRootNode = web3.utils.soliditySha3({ type: "string", value: "club-root" });
+    alphaClubRootNode = web3.utils.soliditySha3({ type: "string", value: "alpha-club-root" });
     agentRootNode = web3.utils.soliditySha3({ type: "string", value: "agent-root" });
+    alphaAgentRootNode = web3.utils.soliditySha3({ type: "string", value: "alpha-agent-root" });
 
     manager = await AGIJobManager.new(
       token.address,
@@ -81,7 +85,9 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRootNode,
+      alphaClubRootNode,
       agentRootNode,
+      alphaAgentRootNode,
       ZERO_BYTES32,
       ZERO_BYTES32,
       { from: owner }

@@ -30,7 +30,9 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
       ens.address,
       nameWrapper.address,
       rootNode("club-root"),
+      rootNode("alpha-club-root"),
       rootNode("agent-root"),
+      rootNode("alpha-agent-root"),
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
