@@ -6,6 +6,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
 const { buildInitConfig } = require("./helpers/deploy");
+const { getJob } = require("./helpers/job");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_PROOF = [];
@@ -263,7 +264,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
       currentBalanceAfterCancel.eq(currentBalanceBeforeCancel),
       "current should keep escrowed funds after revert"
     );
-    const currentJob = await current.jobs(currentJobId);
+    const currentJob = await getJob(current, currentJobId);
     assert.equal(currentJob.employer, employer, "current should keep job after failed refund");
   });
 });

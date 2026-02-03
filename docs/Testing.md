@@ -24,7 +24,7 @@ npx ganache -p 8545
 npx truffle compile
 ```
 
-By default the Truffle config enables `viaIR` because compilation without IR hits stack-too-deep for this contract.
+By default the Truffle config disables `viaIR` now that stack-too-deep is resolved.
 Keep the setting consistent for verification.
 
 ## Run the full test suite
