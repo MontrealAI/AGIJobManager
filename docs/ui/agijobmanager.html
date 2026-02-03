@@ -3455,27 +3455,48 @@
       }
 
       const jobs = await asyncPool(6, jobIds, async (jobId) => {
-        const [jobCore, jobValidation, jobUris] = await Promise.all([
-          state.readContract.getJobCore(BigInt(jobId)),
-          state.readContract.getJobValidation(BigInt(jobId)),
-          state.readContract.getJobURIs(BigInt(jobId)),
-        ]);
-        const job = {
-          employer: jobCore[0],
-          assignedAgent: jobCore[1],
-          payout: jobCore[2],
-          duration: jobCore[3],
-          completed: jobCore[5],
-          disputed: jobCore[6],
-          completionRequested: jobValidation[0],
-          approvals: jobValidation[1],
-          disapprovals: jobValidation[2],
-          jobSpecURI: jobUris[0],
-          jobCompletionURI: jobUris[1],
-          details: jobUris[3],
-        };
+        let job;
+        let status = "Deleted";
+        try {
+          const [jobCore, jobValidation, jobUris] = await Promise.all([
+            state.readContract.getJobCore(BigInt(jobId)),
+            state.readContract.getJobValidation(BigInt(jobId)),
+            state.readContract.getJobURIs(BigInt(jobId)),
+          ]);
+          job = {
+            employer: jobCore[0],
+            assignedAgent: jobCore[1],
+            payout: jobCore[2],
+            duration: jobCore[3],
+            completed: jobCore[5],
+            disputed: jobCore[6],
+            completionRequested: jobValidation[0],
+            approvals: jobValidation[1],
+            disapprovals: jobValidation[2],
+            jobSpecURI: jobUris[0],
+            jobCompletionURI: jobUris[1],
+            details: jobUris[3],
+          };
+        } catch (error) {
+          job = {
+            employer: ethers.ZeroAddress,
+            assignedAgent: ethers.ZeroAddress,
+            payout: 0n,
+            duration: 0n,
+            completed: false,
+            disputed: false,
+            completionRequested: false,
+            approvals: 0n,
+            disapprovals: 0n,
+            jobSpecURI: "",
+            jobCompletionURI: "",
+            details: "",
+          };
+        }
         const indexEntry = state.index.jobs[jobId];
-        const status = await resolveJobStatus(jobId, job, indexEntry);
+        if (job.employer !== ethers.ZeroAddress) {
+          status = await resolveJobStatus(jobId, job, indexEntry);
+        }
         return { jobId, job, status };
       });
 
