@@ -12,7 +12,7 @@ The following `public` state variables have auto‑generated getter functions:
 - `clubRootNode()`, `agentRootNode()`, `validatorMerkleRoot()`, `agentMerkleRoot()`
 - `ens()`, `nameWrapper()`
 - `nextJobId()`, `nextTokenId()`
-- `jobs(jobId)` (struct summary)
+- `getJobState(jobId)` / `getJobValidation(jobId)` / `getJobMetadata(jobId)` (job summary getters)
 - `reputation(address)`
 - `moderators(address)`
 - `additionalValidators(address)`, `additionalAgents(address)`

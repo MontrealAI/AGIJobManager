@@ -33,7 +33,9 @@
 | `getApproved(uint256 tokenId)` | view | address |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
-| `jobs(uint256)` | view | uint256, address, string, string, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool, uint8, bool |
+| `getJobState(uint256)` | view | address, address, uint256, uint256, uint256, bool, bool, bool, uint8 |
+| `getJobValidation(uint256)` | view | bool, uint256, uint256, uint256, uint256 |
+| `getJobMetadata(uint256)` | view | string, string, string |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
 | `lockedEscrow()` | view | uint256 |
 | `maxJobPayout()` | view | uint256 |
