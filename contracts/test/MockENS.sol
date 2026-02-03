@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.33;
+pragma solidity ^0.8.12;
 
 contract MockENS {
     mapping(bytes32 => address) private resolvers;

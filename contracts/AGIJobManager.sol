@@ -42,7 +42,7 @@ OVERRIDING AUTHORITY: AGI.ETH
 
 */
 
-pragma solidity ^0.8.33;
+pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -688,18 +688,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             uint256 scaledPayout = _payout / 1e18;
             uint256 payoutPoints = scaledPayout ** 3 / 1e5;
-            return log2(1 + payoutPoints * 1e6) + _duration / 10000;
+            return Math.log2(1 + payoutPoints * 1e6) + _duration / 10000;
         }
-    }
-
-    function calculateValidatorReputationPoints(uint256 agentReputationGain) internal view returns (uint256) {
-        unchecked {
-            return (agentReputationGain * validationRewardPercentage) / 100;
-        }
-    }
-
-    function log2(uint x) internal pure returns (uint y) {
-        return Math.log2(x);
     }
 
     function enforceReputationGrowth(address _user, uint256 _points) internal {
@@ -854,7 +844,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
             validatorPayout = totalValidatorPayout / vCount;
         }
-        uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
+        uint256 validatorReputationGain;
+        unchecked {
+            validatorReputationGain = (reputationPoints * validationRewardPercentage) / 100;
+        }
 
         for (uint256 i = 0; i < vCount; ) {
             address validator = job.validators[i];
