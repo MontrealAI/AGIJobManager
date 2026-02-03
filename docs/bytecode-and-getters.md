@@ -7,8 +7,9 @@
 Use these getters instead:
 
 - `getJobCore(jobId)` for core job fields (employer, assigned agent, payout, duration, assignment data, completion/dispute/expiry state, and agent payout percentage).
-- `getJobValidation(jobId)` for validation-related fields (completion request state and validator counts).
-- `getJobStatus(jobId)` and `getJobAgentPayoutPct(jobId)` for narrower single-purpose reads.
+- `getJobValidation(jobId)` for validation-related fields (completion request state and validator counts/timestamps).
+- `getJobSpecURI(jobId)` for the job specification URI.
+- `getJobCompletionURI(jobId)` for the completion URI (when provided).
 
 ## Runtime bytecode size limit (EIP-170)
 
