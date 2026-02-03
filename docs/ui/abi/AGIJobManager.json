@@ -360,6 +360,19 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newEnsRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "EnsRegistryUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "uint256",
           "name": "jobId",
@@ -604,13 +617,19 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "bytes32",
-          "name": "newMerkleRoot",
+          "name": "validatorMerkleRoot",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "agentMerkleRoot",
           "type": "bytes32"
         }
       ],
-      "name": "MerkleRootUpdated",
+      "name": "MerkleRootsUpdated",
       "type": "event"
     },
     {
@@ -699,6 +718,19 @@
         }
       ],
       "name": "NFTPurchased",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newNameWrapper",
+          "type": "address"
+        }
+      ],
+      "name": "NameWrapperUpdated",
       "type": "event"
     },
     {
@@ -807,13 +839,31 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "bytes32",
-          "name": "newRootNode",
+          "name": "clubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "agentRootNode",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "alphaClubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "alphaAgentRootNode",
           "type": "bytes32"
         }
       ],
-      "name": "RootNodeUpdated",
+      "name": "RootNodesUpdated",
       "type": "event"
     },
     {
@@ -2102,6 +2152,78 @@
         }
       ],
       "name": "updateAGITokenAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newEnsRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "updateEnsRegistry",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newNameWrapper",
+          "type": "address"
+        }
+      ],
+      "name": "updateNameWrapper",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_clubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_agentRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_alphaClubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_alphaAgentRootNode",
+          "type": "bytes32"
+        }
+      ],
+      "name": "updateRootNodes",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_validatorMerkleRoot",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_agentMerkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "updateMerkleRoots",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

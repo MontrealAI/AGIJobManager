@@ -69,6 +69,8 @@ function loadConfig(args) {
     additionalText1: process.env.AGI_ADDITIONAL_TEXT_1,
     additionalText2: process.env.AGI_ADDITIONAL_TEXT_2,
     additionalText3: process.env.AGI_ADDITIONAL_TEXT_3,
+    validatorMerkleRoot: process.env.AGI_VALIDATOR_MERKLE_ROOT,
+    agentMerkleRoot: process.env.AGI_AGENT_MERKLE_ROOT,
     moderators: process.env.AGI_MODERATORS ? parseEnvList(process.env.AGI_MODERATORS) : undefined,
     additionalValidators: process.env.AGI_ADDITIONAL_VALIDATORS
       ? parseEnvList(process.env.AGI_ADDITIONAL_VALIDATORS)
@@ -251,6 +253,16 @@ module.exports = async function verifyConfig(callback) {
         key: "additionalText3",
         expected: config.additionalText3,
         actual: await instance.additionalText3(),
+      },
+      {
+        key: "validatorMerkleRoot",
+        expected: config.validatorMerkleRoot,
+        actual: await instance.validatorMerkleRoot(),
+      },
+      {
+        key: "agentMerkleRoot",
+        expected: config.agentMerkleRoot,
+        actual: await instance.agentMerkleRoot(),
       },
     ];
 

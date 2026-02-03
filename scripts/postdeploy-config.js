@@ -75,6 +75,8 @@ function loadConfig(args) {
     additionalText1: process.env.AGI_ADDITIONAL_TEXT_1,
     additionalText2: process.env.AGI_ADDITIONAL_TEXT_2,
     additionalText3: process.env.AGI_ADDITIONAL_TEXT_3,
+    validatorMerkleRoot: process.env.AGI_VALIDATOR_MERKLE_ROOT,
+    agentMerkleRoot: process.env.AGI_AGENT_MERKLE_ROOT,
     moderators: process.env.AGI_MODERATORS ? parseEnvList(process.env.AGI_MODERATORS) : undefined,
     additionalValidators: process.env.AGI_ADDITIONAL_VALIDATORS
       ? parseEnvList(process.env.AGI_ADDITIONAL_VALIDATORS)
@@ -222,12 +224,12 @@ module.exports = async function postdeployConfig(callback) {
         "additionalAgentPayoutPercentage",
         "termsAndConditionsIpfsHash",
         "contactEmail",
-        "additionalText1",
-        "additionalText2",
-        "additionalText3",
-        "additionalValidators",
-        "additionalAgents",
-        "agiTypes",
+      "additionalText1",
+      "additionalText2",
+      "additionalText3",
+      "additionalValidators",
+      "additionalAgents",
+      "agiTypes",
       ];
       const lockedRequested = lockedKeys.filter((key) => config[key] !== undefined);
       if (lockedRequested.length) {
@@ -557,6 +559,30 @@ module.exports = async function postdeployConfig(callback) {
         }
       },
     });
+
+    const currentValidatorMerkleRoot = await instance.validatorMerkleRoot();
+    const currentAgentMerkleRoot = await instance.agentMerkleRoot();
+    const desiredValidatorMerkleRoot = config.validatorMerkleRoot ?? currentValidatorMerkleRoot;
+    const desiredAgentMerkleRoot = config.agentMerkleRoot ?? currentAgentMerkleRoot;
+
+    if (
+      desiredValidatorMerkleRoot !== currentValidatorMerkleRoot ||
+      desiredAgentMerkleRoot !== currentAgentMerkleRoot
+    ) {
+      ops.push({
+        key: "merkleRoots",
+        label: `Update Merkle roots: validator ${currentValidatorMerkleRoot} -> ${desiredValidatorMerkleRoot}, agent ${currentAgentMerkleRoot} -> ${desiredAgentMerkleRoot}`,
+        send: () =>
+          instance.updateMerkleRoots(desiredValidatorMerkleRoot, desiredAgentMerkleRoot, txFrom ? { from: txFrom } : {}),
+        verify: async () => {
+          const updatedValidator = await instance.validatorMerkleRoot();
+          const updatedAgent = await instance.agentMerkleRoot();
+          if (updatedValidator !== desiredValidatorMerkleRoot || updatedAgent !== desiredAgentMerkleRoot) {
+            throw new Error("Merkle roots did not update");
+          }
+        },
+      });
+    }
 
     const agiTypeOps = [];
     if (Array.isArray(config.agiTypes)) {

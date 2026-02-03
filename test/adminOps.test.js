@@ -159,6 +159,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.lockConfiguration({ from: owner });
     assert.equal(await manager.configLocked(), true, "config should be locked");
 
+    await manager.updateMerkleRoots(clubRoot, agentRoot, { from: owner });
+
     await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
     await manager.addAdditionalAgent(other, { from: owner });
     await manager.updateContactEmail("ops@example.com", { from: owner });
@@ -168,6 +170,36 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.unpause({ from: owner });
 
     await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
+  });
+
+  it("updates ENS wiring and root nodes before jobs, then locks them", async () => {
+    const newEns = await MockENS.new({ from: owner });
+    const newWrapper = await MockNameWrapper.new({ from: owner });
+    const newClubRoot = rootNode("new-club-root");
+    const newAgentRoot = rootNode("new-agent-root");
+
+    await manager.updateEnsRegistry(newEns.address, { from: owner });
+    await manager.updateNameWrapper(newWrapper.address, { from: owner });
+    await manager.updateRootNodes(newClubRoot, newAgentRoot, newClubRoot, newAgentRoot, { from: owner });
+
+    assert.equal(await manager.ens(), newEns.address, "ens registry should update");
+    assert.equal(await manager.nameWrapper(), newWrapper.address, "name wrapper should update");
+    assert.equal(await manager.clubRootNode(), newClubRoot, "club root should update");
+    assert.equal(await manager.agentRootNode(), newAgentRoot, "agent root should update");
+
+    const payout = toBN(toWei("2"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+
+    await expectCustomError(
+      manager.updateRootNodes.call(clubRoot, agentRoot, clubRoot, agentRoot, { from: owner }),
+      "InvalidState"
+    );
+
+    await manager.lockConfiguration({ from: owner });
+    await expectCustomError(manager.updateEnsRegistry.call(ens.address, { from: owner }), "ConfigLocked");
+    await expectCustomError(manager.updateNameWrapper.call(nameWrapper.address, { from: owner }), "ConfigLocked");
   });
 
   it("locks critical config and restricts token updates to pre-job setup", async () => {
