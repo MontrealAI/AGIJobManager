@@ -7,6 +7,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
+const { readJob } = require("./helpers/job");
 const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -146,7 +147,7 @@ contract("AGIJobManager validator cap", (accounts) => {
       await sendSigned(manager, validators[i], validateData, 2500000);
     }
 
-    const job = await manager.jobs(jobId);
+    const job = await readJob(manager, jobId);
     assert.strictEqual(job.completed, true, "job should complete at the cap");
   });
 });

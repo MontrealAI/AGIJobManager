@@ -3,6 +3,7 @@ const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
 
 const { expectCustomError } = require("./helpers/errors");
+const { readJob } = require("./helpers/job");
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
 
@@ -163,7 +164,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const applyReceipt = await assignAgentWithProof(0);
       expectEvent(applyReceipt, "JobApplied", { jobId: new BN(0), agent });
-      const job = await manager.jobs(0);
+      const job = await readJob(manager, 0);
       assert.equal(job.assignedAgent, agent);
       assert.isTrue(new BN(job.assignedAt).gt(new BN(0)));
 
@@ -172,7 +173,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const status = await manager.getJobStatus(0);
       assert.equal(status[1], true);
       assert.equal(status[2], updatedIpfs);
-      const completionJob = await manager.jobs(0);
+      const completionJob = await readJob(manager, 0);
       assert.equal(completionJob.jobCompletionURI, updatedIpfs);
 
       const validatorOneBalanceBefore = await token.balanceOf(validatorOne);
@@ -185,7 +186,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const completionReceipt = await validateWithProof(0, validatorThree);
       expectEvent(completionReceipt, "JobCompleted", { jobId: new BN(0), agent });
 
-      const finalJob = await manager.jobs(0);
+      const finalJob = await readJob(manager, 0);
       assert.equal(finalJob.completed, true);
 
       const validatorPayoutTotal = payout.muln(8).divn(100);
@@ -330,7 +331,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       assert.equal(employerBalanceAfter.sub(employerBalanceBefore).toString(), payout.toString());
 
-      const job = await manager.jobs(0);
+      const job = await readJob(manager, 0);
       assert.equal(job.completed, true);
       await expectCustomError(
         manager.validateJob.call(0, "validator", [], { from: validatorOne }),
@@ -358,7 +359,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const expectedPayout = payout.muln(92).divn(100);
       assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
-      const job = await manager.jobs(0);
+      const job = await readJob(manager, 0);
       assert.equal(job.completed, true);
     });
   });
@@ -481,7 +482,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disapproveJob(0, "validator", [], { from: validatorOne });
       const receipt = await manager.disapproveJob(0, "validator", [], { from: validatorTwo });
       expectEvent(receipt, "JobDisputed", { jobId: new BN(0), disputant: validatorTwo });
-      const job = await manager.jobs(0);
+      const job = await readJob(manager, 0);
       assert.equal(job.disputed, true);
     });
 
@@ -513,7 +514,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disputeJob(newJobId, { from: employer });
       const neutralReceipt = await manager.resolveDisputeWithCode(newJobId, 0, "needs more info", { from: moderator });
       expectEvent(neutralReceipt, "DisputeResolvedWithCode", { jobId: newJobId, resolver: moderator });
-      const neutralJob = await manager.jobs(newJobId);
+      const neutralJob = await readJob(manager, newJobId);
       assert.equal(neutralJob.completed, false);
       assert.equal(neutralJob.disputed, true);
     });
@@ -628,7 +629,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         altManager.validateJob.call(0, "validator", [], { from: validatorOne }),
         "TransferFailed"
       );
-      const job = await altManager.jobs(0);
+      const job = await readJob(altManager, 0);
       assert.equal(job.completed, false);
     });
 
@@ -814,7 +815,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const balanceAfter = await token.balanceOf(employer);
       assert.equal(balanceAfter.sub(balanceBefore).toString(), payout.toString());
 
-      const job = await manager.jobs(0);
+      const job = await readJob(manager, 0);
       assert.equal(job.employer, "0x0000000000000000000000000000000000000000");
     });
 
