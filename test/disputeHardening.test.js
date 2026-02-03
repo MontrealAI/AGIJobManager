@@ -106,8 +106,8 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await manager.disapproveJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
 
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.disputed, true, "job should be disputed");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.disputed, true, "job should be disputed");
 
     await expectCustomError(
       manager.validateJob.call(jobId, "validator-c", EMPTY_PROOF, { from: validatorC }),
@@ -131,8 +131,8 @@ contract("AGIJobManager dispute hardening", (accounts) => {
       "InvalidState"
     );
 
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.completed, false, "job should not be completed");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.completed, false, "job should not be completed");
   });
 
   it("allows disputes only after completion is requested", async () => {
@@ -146,8 +146,8 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-completed", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.disputed, true, "job should be disputed after completion request");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.disputed, true, "job should be disputed after completion request");
   });
 
   it("blocks validator actions before completion is requested", async () => {
@@ -192,9 +192,9 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     const expected = payout.muln(90).divn(100);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
 
-    const resolvedJob = await manager.jobs(jobId);
-    assert.strictEqual(resolvedJob.completed, true, "job should be completed");
-    assert.strictEqual(resolvedJob.disputed, false, "dispute should be cleared");
+    const resolvedJobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(resolvedJobCore.completed, true, "job should be completed");
+    assert.strictEqual(resolvedJobCore.disputed, false, "dispute should be cleared");
 
     await manager.unpause({ from: owner });
 
@@ -225,8 +225,8 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     const after = await token.balanceOf(agent);
 
     assert.ok(after.sub(before).gt(toBN("0")), "agent should be paid on dispute resolution");
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.completed, true, "job should be completed");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.completed, true, "job should be completed");
   });
 
   it("marks employer-win disputes as terminal and refunds escrow", async () => {
@@ -241,11 +241,12 @@ contract("AGIJobManager dispute hardening", (accounts) => {
 
     const employerAfter = await token.balanceOf(employer);
     const lockedAfter = await manager.lockedEscrow();
-    const job = await manager.jobs(jobId);
+    const jobCore = await manager.getJobCore(jobId);
+    const jobValidation = await manager.getJobValidation(jobId);
 
-    assert.strictEqual(job.completed, true, "job should be marked completed");
-    assert.strictEqual(job.disputed, false, "dispute should be cleared");
-    assert.equal(job.disputedAt.toString(), "0", "dispute timestamp should clear");
+    assert.strictEqual(jobCore.completed, true, "job should be marked completed");
+    assert.strictEqual(jobCore.disputed, false, "dispute should be cleared");
+    assert.equal(jobValidation.disputedAt.toString(), "0", "dispute timestamp should clear");
     assert.equal(employerAfter.sub(employerBefore).toString(), payout.toString(), "escrow should refund");
     assert.equal(
       lockedBefore.sub(lockedAfter).toString(),

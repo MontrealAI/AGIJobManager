@@ -349,9 +349,9 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       assert(contractBalanceAfter.sub(contractBalanceBefore).eq(payout));
 
-      const job = await manager.jobs(jobId);
-      assert.equal(job.employer, employer);
-      assert.equal(job.payout.toString(), payout.toString());
+      const jobCore = await manager.getJobCore(jobId);
+      assert.equal(jobCore.employer, employer);
+      assert.equal(jobCore.payout.toString(), payout.toString());
     });
   });
 
@@ -546,8 +546,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const receipt = await manager.disapproveJob(jobId, "validator", buildProof(validatorTree, validator3), { from: validator3 });
       expectEvent(receipt, "JobDisputed", { jobId: new BN(jobId) });
 
-      const job = await manager.jobs(jobId);
-      assert.equal(job.disputed, true);
+      const jobCore = await manager.getJobCore(jobId);
+      assert.equal(jobCore.disputed, true);
     });
 
     it("prevents repeated disputes and limits dispute initiation to in-progress jobs", async () => {
@@ -616,11 +616,13 @@ contract("AGIJobManager comprehensive", (accounts) => {
         resolutionCode: new BN(0),
       });
 
-      const job = await manager.jobs(jobId);
-      assert.equal(job.disputed, true);
-      assert.equal(job.completed, false);
-      assert.equal(job.completionRequested, true);
-      assert.equal(job.jobCompletionURI, "ipfs-final");
+      const jobCore = await manager.getJobCore(jobId);
+      const jobValidation = await manager.getJobValidation(jobId);
+      const jobUris = await manager.getJobURIs(jobId);
+      assert.equal(jobCore.disputed, true);
+      assert.equal(jobCore.completed, false);
+      assert.equal(jobValidation.completionRequested, true);
+      assert.equal(jobUris.jobCompletionURI, "ipfs-final");
     });
 
     it("restricts dispute resolution to moderators", async () => {

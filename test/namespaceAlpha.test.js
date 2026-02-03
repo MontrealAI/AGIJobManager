@@ -79,8 +79,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const appliedEvent = tx.logs.find((log) => log.event === "JobApplied");
     assert.ok(appliedEvent, "JobApplied should be emitted");
 
-    const job = await manager.jobs(jobId);
-    assert.equal(job.assignedAgent, agent, "agent should be assigned");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.equal(jobCore.assignedAgent, agent, "agent should be assigned");
   });
 
   it("authorizes a validator via ENS resolver addr under alpha.club", async () => {
