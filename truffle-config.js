@@ -49,10 +49,10 @@ const confirmationsSepolia = n(process.env.SEPOLIA_CONFIRMATIONS, 2);
 const timeoutBlocksMainnet = n(process.env.MAINNET_TIMEOUT_BLOCKS, 500);
 const timeoutBlocksSepolia = n(process.env.SEPOLIA_TIMEOUT_BLOCKS, 500);
 
-const solcVersion = (process.env.SOLC_VERSION || '0.8.33').trim();
-const solcRuns = Math.floor(n(process.env.SOLC_RUNS, 200));
-const solcViaIR = (process.env.SOLC_VIA_IR || 'true').toLowerCase() === 'true';
-const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();
+const solcVersion = (process.env.SOLC_VERSION || '0.8.24').trim();
+const solcRuns = Math.floor(n(process.env.SOLC_RUNS, 1));
+const solcViaIR = (process.env.SOLC_VIA_IR || 'false').toLowerCase() === 'true';
+const evmVersion = (process.env.SOLC_EVM_VERSION || 'shanghai').trim();
 
 const testProvider = ganache.provider({
   wallet: {
@@ -100,7 +100,7 @@ module.exports = {
     solc: {
       version: solcVersion,
       settings: {
-        optimizer: { enabled: true, runs: solcRuns },
+        optimizer: { enabled: true, runs: solcRuns, details: { yul: true } },
         evmVersion,
         viaIR: solcViaIR,
         metadata: { bytecodeHash: 'none' },

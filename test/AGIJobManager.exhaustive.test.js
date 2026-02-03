@@ -141,8 +141,9 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.pause({ from: owner });
       await expectRevert.unspecified(
         manager.createJob("ipfs", web3.utils.toWei("1"), 1000, "details", { from: employer }));
-      const status = await manager.getJobStatus(jobId);
-      assert.equal(status[2], "paused-job");
+      const jobUris = await manager.getJobURIs(jobId);
+      const statusUri = jobUris.jobCompletionURI.length === 0 ? jobUris.ipfsHash : jobUris.jobCompletionURI;
+      assert.equal(statusUri, "paused-job");
       await manager.unpause({ from: owner });
     });
   });
@@ -164,9 +165,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       assert.notEqual(jobInfo.assignedAt.toString(), "0");
 
       await manager.requestJobCompletion(jobId, "ipfs2", { from: agent });
-      const status = await manager.getJobStatus(jobId);
-      assert.equal(status[1], true);
-      assert.equal(status[2], "ipfs2");
+      const jobValidation = await manager.getJobValidation(jobId);
+      assert.equal(jobValidation.completionRequested, true);
       const completionJob = await manager.getJobURIs(jobId);
       assert.equal(completionJob.jobCompletionURI, "ipfs2");
 

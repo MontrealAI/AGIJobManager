@@ -36,8 +36,6 @@
 | `getJobCore(uint256)` | view | address, address, uint256, uint256, uint256, bool, bool, bool, uint8 |
 | `getJobValidation(uint256)` | view | bool, uint256, uint256, uint256, uint256 |
 | `getJobURIs(uint256)` | view | string, string, string, string |
-| `getJobValidatorCount(uint256)` | view | uint256 |
-| `getJobValidatorAt(uint256,uint256)` | view | address |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
 | `lockedEscrow()` | view | uint256 |
 | `maxJobPayout()` | view | uint256 |
@@ -91,15 +89,8 @@
 | `setJobDurationLimit(uint256 _limit)` | nonpayable | — |
 | `setCompletionReviewPeriod(uint256 _period)` | nonpayable | — |
 | `setDisputeReviewPeriod(uint256 _period)` | nonpayable | — |
-| `setAdditionalAgentPayoutPercentage(uint256 _percentage)` | nonpayable | — |
-| `updateTermsAndConditionsIpfsHash(string _hash)` | nonpayable | — |
-| `updateContactEmail(string _email)` | nonpayable | — |
-| `updateAdditionalText1(string _text)` | nonpayable | — |
-| `updateAdditionalText2(string _text)` | nonpayable | — |
-| `updateAdditionalText3(string _text)` | nonpayable | — |
-| `getJobStatus(uint256 _jobId)` | view | bool, bool, string |
-| `getJobAgentPayoutPct(uint256 _jobId)` | view | uint256 |
-| `jobStatus(uint256 jobId)` | view | uint8 |
+| `updateTermsAndContact(string _hash, string _email)` | nonpayable | — |
+| `updateAdditionalTexts(string _text1, string _text2, string _text3)` | nonpayable | — |
 | `setValidationRewardPercentage(uint256 _percentage)` | nonpayable | — |
 | `cancelJob(uint256 _jobId)` | nonpayable | — |
 | `expireJob(uint256 _jobId)` | nonpayable | — |

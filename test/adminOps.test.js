@@ -167,7 +167,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.removeModerator(other, { from: owner });
     assert.equal(await manager.moderators(other), false, "moderator should be removable after lock");
     await manager.addAdditionalAgent(other, { from: owner });
-    await manager.updateContactEmail("ops@example.com", { from: owner });
+    await manager.updateTermsAndContact("terms", "ops@example.com", { from: owner });
     await manager.blacklistAgent(agent, true, { from: owner });
 
     await manager.pause({ from: owner });

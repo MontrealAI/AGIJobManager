@@ -22,7 +22,6 @@ The following `public` state variables have auto‑generated getter functions:
 
 Explicit job accessors:
 - `getJobCore(jobId)`, `getJobValidation(jobId)`, `getJobURIs(jobId)`
-- `getJobValidatorCount(jobId)`, `getJobValidatorAt(jobId, index)`
 
 ## Core workflow
 ### `createJob(string jobSpecURI, uint256 payout, uint256 duration, string details)`
@@ -99,10 +98,9 @@ Sets max payout allowed.
 ### `setJobDurationLimit(uint256)`
 Sets max job duration allowed.
 
-### `updateTermsAndConditionsIpfsHash(string)`
-### `updateContactEmail(string)`
-### `updateAdditionalText1/2/3(string)`
-Updates informational metadata fields.
+### `updateTermsAndContact(string termsHash, string contactEmail)`
+### `updateAdditionalTexts(string text1, string text2, string text3)`
+Updates the informational metadata fields together.
 
 ### `withdrawAGI(uint256 amount)`
 Withdraws surplus AGI tokens held by the contract while paused. Reverts if `amount > withdrawableAGI()`.
@@ -114,8 +112,7 @@ Transfers tokens to the contract and emits `RewardPoolContribution`.
 Adds or updates an AGIType NFT that boosts agent payout percentage. Emits `AGITypeUpdated`.
 
 ## View helpers
-### `getJobStatus(uint256 jobId)`
-Returns `(completed, completionRequested, statusURI)` where `statusURI` is the completion URI if present, otherwise the job spec URI.
+Use `getJobCore(jobId)` + `getJobValidation(jobId)` + `getJobURIs(jobId)` for status snapshots; validator sets are tracked via events.
 
 ### `lockedEscrow()`
 Returns the total AGI reserved for unsettled job escrows.

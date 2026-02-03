@@ -135,9 +135,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.pause({ from: owner });
       await expectRevert.unspecified(
         manager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer }));
-      const status = await manager.getJobStatus(0);
-      assert.equal(status[0], false);
-      assert.equal(status[1], false);
       await manager.unpause({ from: owner });
       await approveToken(employer);
       await manager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
@@ -169,9 +166,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const completion = await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
       expectEvent(completion, "JobCompletionRequested", { jobId: new BN(0), agent, jobCompletionURI: updatedIpfs });
-      const status = await manager.getJobStatus(0);
-      assert.equal(status[1], true);
-      assert.equal(status[2], updatedIpfs);
+      const jobValidation = await manager.getJobValidation(0);
+      assert.equal(jobValidation.completionRequested, true);
       const completionJob = await manager.getJobURIs(0);
       assert.equal(completionJob.jobCompletionURI, updatedIpfs);
 
@@ -814,8 +810,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const balanceAfter = await token.balanceOf(employer);
       assert.equal(balanceAfter.sub(balanceBefore).toString(), payout.toString());
 
-      const jobStatus = await manager.jobStatus(0);
-      assert.equal(jobStatus.toString(), "0");
+      await expectCustomError(manager.getJobCore(0), "JobNotFound");
     });
 
     it("prevents cancel/delist after assignment and restricts delist to owner", async () => {

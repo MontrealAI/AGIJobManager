@@ -42,7 +42,7 @@ OVERRIDING AUTHORITY: AGI.ETH
 
 */
 
-pragma solidity ^0.8.33;
+pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -629,26 +629,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         disputeReviewPeriod = _period;
         emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
-    function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
-        if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
-        if (_percentage > 100 - validationRewardPercentage) revert InvalidParameters();
-        additionalAgentPayoutPercentage = _percentage;
-        emit AdditionalAgentPayoutPercentageUpdated(_percentage);
+    function updateTermsAndContact(string calldata _hash, string calldata _email) external onlyOwner {
+        termsAndConditionsIpfsHash = _hash;
+        contactEmail = _email;
     }
-    function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
-    function updateContactEmail(string calldata _email) external onlyOwner { contactEmail = _email; }
-    function updateAdditionalText1(string calldata _text) external onlyOwner { additionalText1 = _text; }
-    function updateAdditionalText2(string calldata _text) external onlyOwner { additionalText2 = _text; }
-    function updateAdditionalText3(string calldata _text) external onlyOwner { additionalText3 = _text; }
-
-    function getJobStatus(uint256 _jobId) external view returns (bool, bool, string memory) {
-        Job storage job = jobs[_jobId];
-        string memory statusUri = job.jobCompletionURI;
-        return (
-            job.completed,
-            job.completionRequested,
-            bytes(statusUri).length == 0 ? job.ipfsHash : statusUri
-        );
+    function updateAdditionalTexts(
+        string calldata _text1,
+        string calldata _text2,
+        string calldata _text3
+    ) external onlyOwner {
+        additionalText1 = _text1;
+        additionalText2 = _text2;
+        additionalText3 = _text3;
     }
 
     function getJobCore(uint256 jobId)
@@ -713,50 +705,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     {
         Job storage job = _job(jobId);
         return (job.jobSpecURI, job.jobCompletionURI, job.ipfsHash, job.details);
-    }
-
-    function getJobValidatorCount(uint256 jobId) external view returns (uint256) {
-        Job storage job = _job(jobId);
-        return job.validators.length;
-    }
-
-    function getJobValidatorAt(uint256 jobId, uint256 index) external view returns (address) {
-        Job storage job = _job(jobId);
-        if (index >= job.validators.length) revert InvalidParameters();
-        return job.validators[index];
-    }
-
-    function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
-        Job storage job = _job(_jobId);
-        return job.agentPayoutPct;
-    }
-
-    /// @notice Returns the canonical job status for UI/indexing.
-    /// @dev Precedence order: Completed, Deleted, Disputed, Open, CompletionRequested, Expired, InProgress.
-    /// @dev "Expired" is time-derived and does not imply settlement unless expireJob is called.
-    /// @dev "Deleted" corresponds to the internal cancel/delete representation (employer == address(0)).
-    function jobStatus(uint256 jobId) external view returns (JobStatus) {
-        return _jobStatus(jobId);
-    }
-
-    function _jobStatus(uint256 jobId) internal view returns (JobStatus) {
-        if (jobId >= nextJobId) revert JobNotFound();
-        Job storage job = jobs[jobId];
-        if (job.completed) return JobStatus.Completed;
-        if (job.employer == address(0)) return JobStatus.Deleted;
-        if (job.disputed) return JobStatus.Disputed;
-        if (job.assignedAgent == address(0)) return JobStatus.Open;
-        if (job.completionRequested) return JobStatus.CompletionRequested;
-        if (
-            job.expired ||
-            (job.assignedAgent != address(0) &&
-                job.assignedAt != 0 &&
-                job.duration != 0 &&
-                block.timestamp > job.assignedAt + job.duration)
-        ) {
-            return JobStatus.Expired;
-        }
-        return JobStatus.InProgress;
     }
 
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {

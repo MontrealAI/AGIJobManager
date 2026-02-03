@@ -69,7 +69,6 @@ function loadConfig(args) {
     jobDurationLimit: process.env.AGI_JOB_DURATION_LIMIT,
     completionReviewPeriod: process.env.AGI_COMPLETION_REVIEW_PERIOD,
     disputeReviewPeriod: process.env.AGI_DISPUTE_REVIEW_PERIOD,
-    additionalAgentPayoutPercentage: process.env.AGI_ADDITIONAL_AGENT_PAYOUT_PERCENTAGE,
     termsAndConditionsIpfsHash: process.env.AGI_TERMS_AND_CONDITIONS_IPFS_HASH,
     contactEmail: process.env.AGI_CONTACT_EMAIL,
     additionalText1: process.env.AGI_ADDITIONAL_TEXT_1,
@@ -221,15 +220,14 @@ module.exports = async function postdeployConfig(callback) {
         "jobDurationLimit",
         "completionReviewPeriod",
         "disputeReviewPeriod",
-        "additionalAgentPayoutPercentage",
         "termsAndConditionsIpfsHash",
         "contactEmail",
-      "additionalText1",
-      "additionalText2",
-      "additionalText3",
-      "additionalValidators",
-      "additionalAgents",
-      "agiTypes",
+        "additionalText1",
+        "additionalText2",
+        "additionalText3",
+        "additionalValidators",
+        "additionalAgents",
+        "agiTypes",
       ];
       const lockedRequested = lockedKeys.filter((key) => config[key] !== undefined);
       if (lockedRequested.length) {
@@ -465,100 +463,77 @@ module.exports = async function postdeployConfig(callback) {
       },
     });
 
-    const currentAdditionalAgentPayout = await instance.additionalAgentPayoutPercentage();
-    const desiredAdditionalAgentPayout = config.additionalAgentPayoutPercentage;
-    const addAdditionalAgentPayoutOp = async () =>
-      addParamOp({
-        key: "additionalAgentPayoutPercentage",
-        label: "Set additionalAgentPayoutPercentage",
-        currentValue: currentAdditionalAgentPayout,
-        desiredValue: desiredAdditionalAgentPayout,
-        send: () =>
-          instance.setAdditionalAgentPayoutPercentage(
-            desiredAdditionalAgentPayout,
-            txFrom ? { from: txFrom } : {}
-          ),
-        verify: async () => {
-          const updated = await instance.additionalAgentPayoutPercentage();
-          if (updated.toString() !== toStringValue(desiredAdditionalAgentPayout)) {
-            throw new Error("additionalAgentPayoutPercentage did not update");
-          }
-        },
-      });
+    const currentTerms = await instance.termsAndConditionsIpfsHash();
+    const currentContact = await instance.contactEmail();
+    const shouldUpdateTermsContact =
+      config.termsAndConditionsIpfsHash !== undefined || config.contactEmail !== undefined;
 
-    await addParamOp({
-      key: "termsAndConditionsIpfsHash",
-      label: "Set termsAndConditionsIpfsHash",
-      currentValue: await instance.termsAndConditionsIpfsHash(),
-      desiredValue: config.termsAndConditionsIpfsHash,
-      send: () =>
-        instance.updateTermsAndConditionsIpfsHash(
-          config.termsAndConditionsIpfsHash,
-          txFrom ? { from: txFrom } : {}
-        ),
-      verify: async () => {
-        const updated = await instance.termsAndConditionsIpfsHash();
-        if (updated !== config.termsAndConditionsIpfsHash) {
-          throw new Error("termsAndConditionsIpfsHash did not update");
-        }
-      },
-    });
+    if (shouldUpdateTermsContact) {
+      const desiredTerms = config.termsAndConditionsIpfsHash ?? currentTerms;
+      const desiredContact = config.contactEmail ?? currentContact;
+      if (desiredTerms !== currentTerms || desiredContact !== currentContact) {
+        ops.push({
+          key: "termsAndContact",
+          label: "Set termsAndConditionsIpfsHash + contactEmail",
+          send: () =>
+            instance.updateTermsAndContact(
+              desiredTerms,
+              desiredContact,
+              txFrom ? { from: txFrom } : {}
+            ),
+          verify: async () => {
+            const updatedTerms = await instance.termsAndConditionsIpfsHash();
+            const updatedContact = await instance.contactEmail();
+            if (updatedTerms !== desiredTerms || updatedContact !== desiredContact) {
+              throw new Error("termsAndContact did not update");
+            }
+          },
+        });
+      }
+    }
 
-    await addParamOp({
-      key: "contactEmail",
-      label: "Set contactEmail",
-      currentValue: await instance.contactEmail(),
-      desiredValue: config.contactEmail,
-      send: () => instance.updateContactEmail(config.contactEmail, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.contactEmail();
-        if (updated !== config.contactEmail) {
-          throw new Error("contactEmail did not update");
-        }
-      },
-    });
+    const currentAdditionalText1 = await instance.additionalText1();
+    const currentAdditionalText2 = await instance.additionalText2();
+    const currentAdditionalText3 = await instance.additionalText3();
+    const shouldUpdateAdditionalTexts =
+      config.additionalText1 !== undefined ||
+      config.additionalText2 !== undefined ||
+      config.additionalText3 !== undefined;
 
-    await addParamOp({
-      key: "additionalText1",
-      label: "Set additionalText1",
-      currentValue: await instance.additionalText1(),
-      desiredValue: config.additionalText1,
-      send: () => instance.updateAdditionalText1(config.additionalText1, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText1();
-        if (updated !== config.additionalText1) {
-          throw new Error("additionalText1 did not update");
-        }
-      },
-    });
-
-    await addParamOp({
-      key: "additionalText2",
-      label: "Set additionalText2",
-      currentValue: await instance.additionalText2(),
-      desiredValue: config.additionalText2,
-      send: () => instance.updateAdditionalText2(config.additionalText2, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText2();
-        if (updated !== config.additionalText2) {
-          throw new Error("additionalText2 did not update");
-        }
-      },
-    });
-
-    await addParamOp({
-      key: "additionalText3",
-      label: "Set additionalText3",
-      currentValue: await instance.additionalText3(),
-      desiredValue: config.additionalText3,
-      send: () => instance.updateAdditionalText3(config.additionalText3, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText3();
-        if (updated !== config.additionalText3) {
-          throw new Error("additionalText3 did not update");
-        }
-      },
-    });
+    if (shouldUpdateAdditionalTexts) {
+      const desiredAdditionalText1 = config.additionalText1 ?? currentAdditionalText1;
+      const desiredAdditionalText2 = config.additionalText2 ?? currentAdditionalText2;
+      const desiredAdditionalText3 = config.additionalText3 ?? currentAdditionalText3;
+      if (
+        desiredAdditionalText1 !== currentAdditionalText1 ||
+        desiredAdditionalText2 !== currentAdditionalText2 ||
+        desiredAdditionalText3 !== currentAdditionalText3
+      ) {
+        ops.push({
+          key: "additionalTexts",
+          label: `Set additionalText1/2/3`,
+          send: () =>
+            instance.updateAdditionalTexts(
+              desiredAdditionalText1,
+              desiredAdditionalText2,
+              desiredAdditionalText3,
+              txFrom ? { from: txFrom } : {}
+            ),
+          verify: async () => {
+            const updatedText1 = await instance.additionalText1();
+            const updatedText2 = await instance.additionalText2();
+            const updatedText3 = await instance.additionalText3();
+            if (
+              updatedText1 !== desiredAdditionalText1 ||
+              updatedText2 !== desiredAdditionalText2 ||
+              updatedText3 !== desiredAdditionalText3
+            ) {
+              throw new Error("additionalTexts did not update");
+            }
+          },
+        });
+      }
+    }
 
     const currentValidatorMerkleRoot = await instance.validatorMerkleRoot();
     const currentAgentMerkleRoot = await instance.agentMerkleRoot();
@@ -615,15 +590,10 @@ module.exports = async function postdeployConfig(callback) {
 
     const currentHeadroom = 100 - Number(currentValidationReward.toString());
     const desiredHeadroom = 100 - validationRewardTargetNumber;
-    const additionalAgentTarget = toStringValue(desiredAdditionalAgentPayout);
-    const desiredAdditionalAgentPayoutNumber =
-      additionalAgentTarget !== undefined ? Number(additionalAgentTarget) : Number(currentAdditionalAgentPayout);
     const needsValidationFirst =
-      validationRewardNeedsUpdate &&
-      (desiredMaxAgiPayout > currentHeadroom || desiredAdditionalAgentPayoutNumber > currentHeadroom);
+      validationRewardNeedsUpdate && desiredMaxAgiPayout > currentHeadroom;
     const needsOtherFirst =
-      validationRewardNeedsUpdate &&
-      (currentMaxAgiPayout > desiredHeadroom || Number(currentAdditionalAgentPayout) > desiredHeadroom);
+      validationRewardNeedsUpdate && currentMaxAgiPayout > desiredHeadroom;
 
     if (needsValidationFirst && needsOtherFirst) {
       throw new Error(
@@ -634,14 +604,11 @@ module.exports = async function postdeployConfig(callback) {
     if (needsValidationFirst) {
       await addValidationRewardOp();
       ops.push(...agiTypeOps);
-      await addAdditionalAgentPayoutOp();
     } else if (needsOtherFirst) {
       ops.push(...agiTypeOps);
-      await addAdditionalAgentPayoutOp();
       await addValidationRewardOp();
     } else {
       ops.push(...agiTypeOps);
-      await addAdditionalAgentPayoutOp();
       await addValidationRewardOp();
     }
 

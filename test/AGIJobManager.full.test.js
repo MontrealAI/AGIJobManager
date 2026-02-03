@@ -214,7 +214,6 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       await expectRevert.unspecified(
         manager.createJob("ipfs", web3.utils.toWei("1"), 1000, "details", { from: employer }));
-      await manager.getJobStatus(0);
 
       await manager.unpause({ from: owner });
       await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
@@ -374,7 +373,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "90");
+      const job = await manager.getJobCore(jobId);
+      assert.equal(job.agentPayoutPct.toString(), "90");
 
       await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
 
@@ -396,7 +396,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await manager.applyForJob(jobId, "", [], { from: other });
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "1");
+      const job = await manager.getJobCore(jobId);
+      assert.equal(job.agentPayoutPct.toString(), "1");
 
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const agentBalanceBefore = new BN(await token.balanceOf(other));
@@ -828,12 +829,9 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("updates metadata fields and premium threshold", async () => {
-      await expectRevert.unspecified(manager.updateTermsAndConditionsIpfsHash("hash", { from: other }));
-      await manager.updateTermsAndConditionsIpfsHash("terms", { from: owner });
-      await manager.updateContactEmail("contact@example.com", { from: owner });
-      await manager.updateAdditionalText1("text1", { from: owner });
-      await manager.updateAdditionalText2("text2", { from: owner });
-      await manager.updateAdditionalText3("text3", { from: owner });
+      await expectRevert.unspecified(manager.updateTermsAndContact("hash", "contact@example.com", { from: other }));
+      await manager.updateTermsAndContact("terms", "contact@example.com", { from: owner });
+      await manager.updateAdditionalTexts("text1", "text2", "text3", { from: owner });
       await manager.setPremiumReputationThreshold(42, { from: owner });
 
       assert.equal(await manager.termsAndConditionsIpfsHash(), "terms");

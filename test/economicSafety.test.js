@@ -78,27 +78,6 @@ contract("AGIJobManager economic safety", (accounts) => {
     await expectCustomError(manager.setValidationRewardPercentage.call(30, { from: owner }), "InvalidParameters");
   });
 
-  it("ignores additional agent payout settings when validating reward headroom", async () => {
-    const manager = await AGIJobManager.new(...buildInitConfig(
-        token.address,
-        "ipfs://base",
-        ens.address,
-        nameWrapper.address,
-        clubRoot,
-        agentRoot,
-        clubRoot,
-        agentRoot,
-        ZERO_ROOT,
-        ZERO_ROOT,
-      ),
-      { from: owner }
-    );
-
-    await manager.setAdditionalAgentPayoutPercentage(90, { from: owner });
-    await manager.setValidationRewardPercentage(90, { from: owner });
-    assert.equal((await manager.validationRewardPercentage()).toString(), "90");
-  });
-
   it("reverts settlement when misconfigured payout exceeds escrow (defense-in-depth)", async () => {
     const manager = await TestableAGIJobManager.new(...buildInitConfig(
         token.address,

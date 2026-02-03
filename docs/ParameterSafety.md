@@ -22,7 +22,6 @@ The table below lists configurable parameters and relevant caps, including who c
 | `MAX_VALIDATORS_PER_JOB` (constant) | Immutable | Caps validators per job and enforces `requiredValidatorApprovals + requiredValidatorDisapprovals <= 50`. | `50` | Keep validator thresholds well below 50 to ensure reachable consensus and reasonable gas. | If validator thresholds approach 50, a single unexpected disapproval can make approvals unreachable; disputes may become the only path. |
 | `AGIType.payoutPercentage` (per NFT) | Owner (`addAGIType`) | Determines agent payout percentage via `getHighestPayoutPercentage`. | `1..100`; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100` | Choose a **max agent payout %** so that `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If any agent holds an NFT with a payout percentage that, combined with `validationRewardPercentage`, exceeds 100, job completion will revert when validator payouts execute. |
 | `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot` | Immutable post‑deploy | Gate eligibility for validators/agents via ENS + Merkle proofs. | Set only in constructor (no setters). | Validate before deployment; keep canonical allowlists and ENS settings accurate. | Mis-set roots can prevent validators/agents from ever qualifying, blocking validation and making jobs uncompletable without manual additional allowlisting or redeploy. |
-| `additionalAgentPayoutPercentage` | Owner (`setAdditionalAgentPayoutPercentage`) | **Legacy** parameter retained for compatibility; no longer used to determine payouts. | `1..100`; **enforced with** `additionalAgentPayoutPercentage + validationRewardPercentage <= 100` | Avoid relying on this parameter for payout logic. | Misconfiguration has no effect on payouts, but can still fail to set if it violates the validation reward headroom check. |
 | `additionalValidators`, `additionalAgents` | Owner (`addAdditionalValidator`, `addAdditionalAgent`) | Manual allowlist bypass for eligibility checks. | None. | Use as a recovery tool when allowlist/ENS config blocks participation. | Overuse weakens trust; underuse when root nodes are wrong can stall jobs. Additional agents still require a nonzero AGI‑type payout tier at apply time. |
 
 ## Settlement math safety
@@ -167,7 +166,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - If validators cannot reach thresholds and a dispute is needed, use `disputeJob` and resolve with `resolveDisputeWithCode` (moderator only).
 
 4. **Validate recovery:**
-   - Use `getJobStatus` and `getJobCore(jobId)` to confirm `completed`/`disputed` status.
+   - Use `getJobCore(jobId)` and `getJobValidation(jobId)` to confirm `completed`/`disputed` status.
    - Confirm contract token balance is ≥ expected payout obligations.
 
 ## Optional hardening ideas (no code changes in this task)

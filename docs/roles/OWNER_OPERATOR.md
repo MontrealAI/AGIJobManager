@@ -35,9 +35,8 @@ This guide covers administrative operations and safety controls.
 
 ### Metadata
 - `setBaseIpfsUrl(string)`
-- `updateTermsAndConditionsIpfsHash(string)`
-- `updateContactEmail(string)`
-- `updateAdditionalText1/2/3(string)`
+- `updateTermsAndContact(string,string)`
+- `updateAdditionalTexts(string,string,string)`
 
 ### Financial operations
 - `withdrawAGI(amount)` withdraws surplus ERC‑20 while paused and reverts if `amount > withdrawableAGI()`.
