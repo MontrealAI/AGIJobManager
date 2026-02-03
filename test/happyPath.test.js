@@ -42,6 +42,8 @@ contract("AGIJobManager happy path", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

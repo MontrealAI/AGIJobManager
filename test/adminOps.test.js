@@ -46,6 +46,8 @@ contract("AGIJobManager admin ops", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -134,6 +136,8 @@ contract("AGIJobManager admin ops", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -144,5 +148,33 @@ contract("AGIJobManager admin ops", (accounts) => {
       managerFailing.withdrawAGI.call(toBN(toWei("1")), { from: owner }),
       "TransferFailed"
     );
+  });
+
+  it("locks configuration and blocks admin setters", async () => {
+    await manager.lockConfiguration({ from: owner });
+    await expectCustomError(
+      manager.setMaxJobPayout.call(toBN(toWei("100")), { from: owner }),
+      "ConfigLocked"
+    );
+    await expectCustomError(
+      manager.setCompletionReviewPeriod.call(1000, { from: owner }),
+      "ConfigLocked"
+    );
+    await expectCustomError(
+      manager.addAdditionalAgent.call(other, { from: owner }),
+      "ConfigLocked"
+    );
+    await expectCustomError(
+      manager.lockConfiguration.call({ from: owner }),
+      "ConfigLocked"
+    );
+  });
+
+  it("keeps break-glass controls available after lock", async () => {
+    await manager.lockConfiguration({ from: owner });
+    await manager.pause({ from: owner });
+    await manager.unpause({ from: owner });
+    await manager.addModerator(other, { from: owner });
+    await manager.blacklistAgent(agent, true, { from: owner });
   });
 });

@@ -23,6 +23,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
   let manager;
   let clubRoot;
   let agentRoot;
+  let alphaClubRoot;
+  let alphaAgentRoot;
   let agiTypeNft;
 
   const payout = toBN(toWei("10"));
@@ -40,8 +42,10 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = namehash("alpha.club.agi.eth");
-    agentRoot = namehash("alpha.agent.agi.eth");
+    clubRoot = namehash("club.agi.eth");
+    agentRoot = namehash("agent.agi.eth");
+    alphaClubRoot = namehash("alpha.club.agi.eth");
+    alphaAgentRoot = namehash("alpha.agent.agi.eth");
 
     manager = await AGIJobManager.new(
       token.address,
@@ -50,6 +54,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      alphaClubRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -61,7 +67,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     await agiTypeNft.mint(agent, { from: owner });
   });
 
-  it("authorizes an agent via NameWrapper ownership under alpha.agent", async () => {
+  it("authorizes an agent via NameWrapper ownership under agent", async () => {
     const jobId = await createJob();
     await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
 
@@ -73,13 +79,44 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     assert.equal(job.assignedAgent, agent, "agent should be assigned");
   });
 
-  it("authorizes a validator via ENS resolver addr under alpha.club", async () => {
+  it("authorizes an agent via NameWrapper ownership under alpha.agent", async () => {
+    const jobId = await createJob();
+    await setNameWrapperOwnership(nameWrapper, alphaAgentRoot, "helper", agent);
+
+    const tx = await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    const appliedEvent = tx.logs.find((log) => log.event === "JobApplied");
+    assert.ok(appliedEvent, "JobApplied should be emitted");
+
+    const job = await manager.jobs(jobId);
+    assert.equal(job.assignedAgent, agent, "agent should be assigned");
+  });
+
+  it("authorizes a validator via ENS resolver addr under club", async () => {
     const jobId = await createJob();
     await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
     await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await setResolverOwnership(ens, resolver, clubRoot, "alice", validator);
+
+    const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
+    const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
+    const completedEvent = tx.logs.find((log) => log.event === "JobCompleted");
+    assert.ok(validatedEvent, "JobValidated should be emitted");
+    assert.ok(completedEvent, "JobCompleted should be emitted when approvals threshold met");
+
+    const status = await manager.getJobStatus(jobId);
+    const completed = status.completed ?? status[0];
+    assert.equal(completed, true, "job should be completed");
+  });
+
+  it("authorizes a validator via ENS resolver addr under alpha.club", async () => {
+    const jobId = await createJob();
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "helper", agent);
+    await manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await setResolverOwnership(ens, resolver, alphaClubRoot, "alice", validator);
 
     const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
     const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
@@ -99,11 +136,11 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     );
   });
 
-  it("rejects non-alpha ownership when alpha root nodes are configured", async () => {
+  it("rejects ownership outside base/alpha roots", async () => {
     const jobId = await createJob();
-    const nonAlphaAgentRoot = namehash("agent.agi.eth");
-    const nonAlphaNode = subnode(nonAlphaAgentRoot, "helper");
-    await nameWrapper.setOwner(toBN(nonAlphaNode), agent, { from: owner });
+    const unrelatedRoot = namehash("beta.agent.agi.eth");
+    const unrelatedNode = subnode(unrelatedRoot, "helper");
+    await nameWrapper.setOwner(toBN(unrelatedNode), agent, { from: owner });
 
     await expectRevert.unspecified(
       manager.applyForJob(jobId, "helper", EMPTY_PROOF, { from: agent })

@@ -102,15 +102,16 @@ OVERRIDING AUTHORITY: AGI.ETH
    
 */
 
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 interface ENSOriginal {
     function resolver(bytes32 node) external view returns (address);
@@ -124,7 +125,7 @@ interface NameWrapperOriginal {
     function ownerOf(uint256 id) external view returns (address);
 }
 
-contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIStorage {
+contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721 {
     using ECDSA for bytes32;
     using MerkleProof for bytes32[];
 
@@ -193,6 +194,7 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
     mapping(address => bool) public blacklistedAgents;
     mapping(address => bool) public blacklistedValidators;
     AGIType[] public agiTypes;
+    mapping(uint256 => string) private _tokenURIs;
 
     event JobCreated(uint256 jobId, string ipfsHash, uint256 payout, uint256 duration, string details);
     event JobApplied(uint256 jobId, address agent);
@@ -420,27 +422,7 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
     }
 
     function log2(uint x) internal pure returns (uint y) {
-        assembly {
-            let arg := x
-            x := sub(x, 1)
-            x := or(x, div(x, 0x02))
-            x := or(x, div(x, 0x04))
-            x := or(x, div(x, 0x10))
-            x := or(x, div(x, 0x100))
-            x := or(x, div(x, 0x10000))
-            x := or(x, div(x, 0x100000000))
-            x := or(x, div(x, 0x10000000000000000))
-            x := or(x, div(x, 0x100000000000000000000000000000000))
-            x := add(x, 1)
-            y := 0
-            for { let shift := 128 } gt(shift, 0) { shift := div(shift, 2) } {
-                let temp := shr(shift, x)
-                if gt(temp, 0) {
-                    x := temp
-                    y := add(y, shift)
-                }
-            }
-        }
+        return Math.log2(x);
     }
 
     function enforceReputationGrowth(address _user, uint256 _points) internal {
@@ -509,6 +491,16 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
         emit NFTIssued(tokenId, job.employer, tokenURI);
     }
 
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireMinted(tokenId);
+        return _tokenURIs[tokenId];
+    }
+
+    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
+        _requireMinted(tokenId);
+        _tokenURIs[tokenId] = _tokenURI;
+    }
+
     function listNFT(uint256 tokenId, uint256 price) external {
         require(ownerOf(tokenId) == msg.sender && price > 0, "Not authorized or invalid price");
         listings[tokenId] = Listing(tokenId, msg.sender, price, true);
@@ -539,32 +531,43 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
         }
 
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
+        if (_verifyNameWrapperOwnership(claimant, subnode)) {
+            emit OwnershipVerified(claimant, subdomain);
+            return true;
+        }
+
+        if (_verifyResolverOwnership(claimant, subnode)) {
+            emit OwnershipVerified(claimant, subdomain);
+            return true;
+        }
+
+        return false;
+    }
+
+    function _verifyNameWrapperOwnership(address claimant, bytes32 subnode) internal returns (bool) {
         try nameWrapper.ownerOf(uint256(subnode)) returns (address actualOwner) {
-            if (actualOwner == claimant) {
-                emit OwnershipVerified(claimant, subdomain);
-                return true;
-            }
+            return actualOwner == claimant;
         } catch Error(string memory reason) {
             emit RecoveryInitiated(reason);
         } catch {
             emit RecoveryInitiated("NameWrapper call failed without a specified reason.");
         }
+        return false;
+    }
 
+    function _verifyResolverOwnership(address claimant, bytes32 subnode) internal returns (bool) {
         address resolverAddress = ens.resolver(subnode);
-        if (resolverAddress != address(0)) {
-            ResolverOriginal resolver = ResolverOriginal(resolverAddress);
-            try resolver.addr(subnode) returns (address payable resolvedAddress) {
-                if (resolvedAddress == claimant) {
-                    emit OwnershipVerified(claimant, subdomain);
-                    return true;
-                }
-            } catch {
-                emit RecoveryInitiated("Resolver call failed without a specified reason.");
-            }
-        } else {
+        if (resolverAddress == address(0)) {
             emit RecoveryInitiated("Resolver address not found for node.");
+            return false;
         }
 
+        ResolverOriginal resolver = ResolverOriginal(resolverAddress);
+        try resolver.addr(subnode) returns (address payable resolvedAddress) {
+            return resolvedAddress == claimant;
+        } catch {
+            emit RecoveryInitiated("Resolver call failed without a specified reason.");
+        }
         return false;
     }
 

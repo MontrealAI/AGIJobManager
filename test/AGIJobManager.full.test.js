@@ -13,6 +13,7 @@ const FailTransferToken = artifacts.require("FailTransferToken");
 const FailingERC20 = artifacts.require("FailingERC20");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const ZERO_ROOT = "0x" + "00".repeat(32);
 
 function hashAddress(address) {
   return Buffer.from(
@@ -166,6 +167,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       nameWrapper.address,
       clubRootNode,
       agentRootNode,
+      ZERO_ROOT,
+      ZERO_ROOT,
       validatorRoot,
       agentRoot,
       { from: owner }
@@ -636,6 +639,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -661,6 +666,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -695,6 +702,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -729,6 +738,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -1010,6 +1021,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorRoot,
         agentRoot,
         { from: owner }

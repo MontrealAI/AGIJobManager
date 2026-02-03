@@ -45,6 +45,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -278,6 +280,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -303,6 +307,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

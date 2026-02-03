@@ -63,6 +63,8 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
       ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
