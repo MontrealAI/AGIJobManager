@@ -146,7 +146,7 @@ contract("AGIJobManager validator cap", (accounts) => {
       await sendSigned(manager, validators[i], validateData, 2500000);
     }
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should complete at the cap");
   });
 });
