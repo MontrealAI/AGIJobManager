@@ -232,7 +232,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
-    event ConfigurationLocked(address indexed by);
+    event ConfigurationLocked(address indexed locker, uint256 atBlockOrTimestamp);
 
     constructor(
         address _agiTokenAddress,
@@ -322,6 +322,24 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
+    function _initializeJob(
+        Job storage job,
+        uint256 jobId,
+        address employer,
+        string memory jobSpecURI,
+        uint256 payout,
+        uint256 duration,
+        string memory details
+    ) internal {
+        job.id = jobId;
+        job.employer = employer;
+        job.jobSpecURI = jobSpecURI;
+        job.ipfsHash = jobSpecURI;
+        job.payout = payout;
+        job.duration = duration;
+        job.details = details;
+    }
+
     function _enforceValidatorCapacity(uint256 currentCount) internal pure {
         if (currentCount >= MAX_VALIDATORS_PER_JOB) revert ValidatorLimitReached();
     }
@@ -355,7 +373,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function unpause() external onlyOwner { _unpause(); }
     function lockConfiguration() external onlyOwner whenConfigurable {
         configLocked = true;
-        emit ConfigurationLocked(msg.sender);
+        emit ConfigurationLocked(msg.sender, block.number);
     }
 
     function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details) external whenNotPaused nonReentrant {
@@ -366,13 +384,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ++nextJobId;
         }
         Job storage job = jobs[jobId];
-        job.id = jobId;
-        job.employer = msg.sender;
-        job.jobSpecURI = _jobSpecURI;
-        job.ipfsHash = _jobSpecURI;
-        job.payout = _payout;
-        job.duration = _duration;
-        job.details = _details;
+        _initializeJob(job, jobId, msg.sender, _jobSpecURI, _payout, _duration, _details);
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), _payout);
         unchecked {
             lockedEscrow += _payout;
@@ -534,8 +546,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit DisputeTimeoutResolved(_jobId, msg.sender, employerWins);
     }
 
-    function blacklistAgent(address _agent, bool _status) external onlyOwner { blacklistedAgents[_agent] = _status; }
-    function blacklistValidator(address _validator, bool _status) external onlyOwner { blacklistedValidators[_validator] = _status; }
+    function blacklistAgent(address _agent, bool _status) external onlyOwner whenConfigurable { blacklistedAgents[_agent] = _status; }
+    function blacklistValidator(address _validator, bool _status) external onlyOwner whenConfigurable { blacklistedValidators[_validator] = _status; }
 
     function delistJob(uint256 _jobId) external onlyOwner whenConfigurable {
         Job storage job = _job(_jobId);

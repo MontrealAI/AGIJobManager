@@ -26,6 +26,7 @@ These functions are guarded by `whenConfigurable` and **revert** once the config
 **Identity + allowlist controls**
 - `addAdditionalValidator` / `removeAdditionalValidator`
 - `addAdditionalAgent` / `removeAdditionalAgent`
+- `blacklistAgent` / `blacklistValidator`
 
 **Metadata + UI/terms**
 - `setBaseIpfsUrl`
@@ -45,7 +46,6 @@ These are considered **break-glass** or operational safety controls:
 
 - `pause()` / `unpause()` — incident response.
 - `resolveStaleDispute()` — owner-only recovery **while paused**, after the dispute timeout.
-- `blacklistAgent()` / `blacklistValidator()` — abuse mitigation.
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
 
 > **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.
@@ -55,8 +55,9 @@ These are considered **break-glass** or operational safety controls:
 1. **Deploy** (set ENS/NameWrapper/token/root nodes and Merkle roots).
 2. **Configure** (thresholds, payouts, metadata, moderators, allowlists).
 3. **Validate** (run sanity checks and real job flow).
-4. **Lock** (`lockConfiguration()` or `LOCK_CONFIG=true` during migration).
-5. **Operate** (minimal governance with incident-response tools only).
+4. **(Optional) Pause/unpause smoke test** to confirm incident tooling works.
+5. **Lock** (`lockConfiguration()` or `LOCK_CONFIG=true` during migration).
+6. **Operate** (minimal governance with incident-response tools only).
 
 ## Notes for Sepolia/local/private deployments
 

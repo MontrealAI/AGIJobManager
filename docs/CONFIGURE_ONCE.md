@@ -64,10 +64,25 @@ Use only when needed, with a runbook + signoff:
 
 ## Network addresses
 
-### Production token (fixed)
-The intended production token address is:
+## Invariants and defaults
 
-- **AGI token**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
+These values are treated as **invariants** for mainnet deployments and should be recorded in your deployment runbook:
+
+- **Canonical AGI token (mainnet, 18 decimals)**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
+- **Validator roots (club role)**:
+  - `club.agi.eth`: `0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16`
+  - `alpha.club.agi.eth`: `0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e`
+- **Agent roots (agent role)**:
+  - `agent.agi.eth`: `0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d`
+  - `alpha.agent.agi.eth`: `0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e`
+
+**Notes**
+- Namehash root nodes are deterministic.
+- ENS registry and NameWrapper addresses are **network-specific** and must be supplied at deploy time for Sepolia/local/private networks.
+
+### Production token (fixed)
+Mainnet deployments should use the canonical AGI token listed in **Invariants and defaults** above.
+Non-mainnet deployments must supply their own token address via deployment env vars.
 
 ### ENS + NameWrapper + root nodes + Merkle roots
 Record these per network **before deploy**, and keep them immutable afterward.

@@ -1,4 +1,4 @@
-# Deployment checklist (configure once → operate with minimal governance)
+# Set-and-mostly-forget deployment checklist (configure once → operate with minimal governance)
 
 This checklist is a practical, operator-facing guide for deploying **AGIJobManager** with a “configure once, then operate” posture. It assumes Truffle deployments and the environment variables used by `migrations/2_deploy_contracts.js`.
 
@@ -8,10 +8,23 @@ This checklist is a practical, operator-facing guide for deploying **AGIJobManag
 - **Moderator set**: decide who can resolve disputes (ideally a separate multisig or a small quorum).
 - **Operational posture**: decide whether you will:
   - allow any post-lock changes (recommended: only pause/unpause + incident response),
-  - enable blacklists for abuse mitigation,
   - rotate moderators (optional break-glass).
+- **Merkle roots strategy**:
+  - If you have a fixed allowlist, publish Merkle roots at deploy time.
+  - If you plan to lean on ENS-only gating, set empty roots and keep allowlists off.
 
-## 2) Network-specific addresses
+## 2) Default operational parameters (recommended starting points)
+
+- `requiredValidatorApprovals`: 3
+- `requiredValidatorDisapprovals`: 3
+- `completionReviewPeriod`: 7 days
+- `disputeReviewPeriod`: 14 days
+- `maxJobPayout`: 4,888 AGI (18 decimals)
+- `jobDurationLimit`: 10,000,000 seconds
+- `validationRewardPercentage`: 8
+- `additionalAgentPayoutPercentage`: 50
+
+## 3) Network-specific addresses
 
 Provide these addresses via environment variables (see `.env.example`):
 
@@ -46,7 +59,7 @@ These values are fixed **identity anchors** on Ethereum mainnet (documented inva
 
 > **Note:** ENS registry and NameWrapper addresses are chain-specific and must remain configurable for Sepolia/local/private networks.
 
-## 3) Step-by-step deployment
+## 4) Step-by-step deployment
 
 1. **Install deps**
    ```bash
@@ -72,7 +85,7 @@ Use the post-deploy configuration script to set thresholds, payouts, moderators,
 truffle exec scripts/postdeploy-config.js --network <network>
 ```
 
-## 4) Post-deploy sanity checks
+## 5) Post-deploy sanity checks
 
 Perform at least one lifecycle test on the deployed contract:
 
@@ -86,7 +99,7 @@ If using ENS gating, test **both namespaces**:
 - `agent.agi.eth` **and** `alpha.agent.agi.eth`
 - `club.agi.eth` **and** `alpha.club.agi.eth`
 
-## 5) Lock configuration (one-way)
+## 6) Lock configuration (one-way)
 
 After setup and validation, lock configuration to minimize governance:
 
@@ -95,12 +108,17 @@ After setup and validation, lock configuration to minimize governance:
 
 Once locked, all configuration setters are disabled permanently (see `docs/minimal-governance.md`).
 
-## 6) Break-glass runbook (after lock)
+## 7) Break-glass runbook (after lock)
 
 After lock, operators should only use:
 - `pause()` / `unpause()` for incident response.
 - `resolveStaleDispute()` (owner + paused, after timeout) for dispute recovery.
-- `blacklistAgent()` / `blacklistValidator()` for abuse mitigation.
 - Optional moderator rotation if required.
+
+## 8) Explorer verification
+
+- Verify the deployment with `truffle-plugin-verify` (see `docs/Deployment.md`).
+- Ensure the compiler version, optimizer runs, and `viaIR` settings exactly match the deployment.
+- Record the verified link in your deployment log.
 
 Everything else is frozen to keep governance surface minimal.

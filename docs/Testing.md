@@ -25,7 +25,7 @@ npx truffle compile
 ```
 
 By default the Truffle config enables `viaIR` to avoid stack-too-deep compilation errors at this contract size.
-If you need to disable it for comparison, set `SOLC_VIA_IR=false` in your environment (compilation may fail).
+If you need to compare the legacy pipeline, set `SOLC_VIA_IR=false` (compilation may fail).
 
 ## Run the full test suite
 
