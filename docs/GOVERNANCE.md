@@ -34,7 +34,7 @@ Use emergency controls only for incidents or recovery; keep an audit log.
 ## Day‑to‑day operations (low‑touch)
 
 - Monitor core events (`JobCreated`, `JobCompleted`, `DisputeResolvedWithCode`, etc.).
-- Keep validator allowlists stable; update Merkle roots only via redeploy.
+- Keep validator allowlists stable; update Merkle roots via `setValidatorMerkleRoot` / `setAgentMerkleRoot` only when needed (allowlist‑only, no payout impact).
 - Avoid changing payout parameters post‑launch unless absolutely necessary.
 
 ## Documentation & record‑keeping

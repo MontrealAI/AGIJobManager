@@ -6,7 +6,7 @@ This appendix explains the **exact identity checks** used by `AGIJobManager` and
 
 ## 1) Contract checks (exact order)
 
-For agent and validator calls (`applyForJob`, `validateJob`, `disapproveJob`), `_verifyOwnership` runs these checks **in order**:
+For agent and validator calls (`applyForJob`, `validateJob`, `disapproveJob`), ownership verification runs these checks **in order**:
 
 1. **Merkle allowlist**
    - Leaf = `keccak256(abi.encodePacked(claimant))` (the wallet address).
@@ -24,12 +24,14 @@ If all checks fail, the call reverts `NotAuthorized`.
 
 ## 2) How root nodes are set (alpha environment)
 
-The **alpha** namespace uses these root nodes at deployment time:
+The contract supports **base + alpha** namespaces:
 
-- `clubRootNode = namehash("alpha.club.agi.eth")`
-- `agentRootNode = namehash("alpha.agent.agi.eth")`
+- `clubRootNode = namehash("club.agi.eth")`
+- `agentRootNode = namehash("agent.agi.eth")`
+- `alphaClubRootNode = namehash("alpha.club.agi.eth")`
+- `alphaAgentRootNode = namehash("alpha.agent.agi.eth")`
 
-These root nodes are **immutable after deployment**, so a mismatch requires redeployment.
+Root nodes are critical wiring and can only be updated **before any job exists** and **before** `lockConfiguration()`.
 
 ---
 

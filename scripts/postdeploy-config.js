@@ -75,6 +75,8 @@ function loadConfig(args) {
     additionalText1: process.env.AGI_ADDITIONAL_TEXT_1,
     additionalText2: process.env.AGI_ADDITIONAL_TEXT_2,
     additionalText3: process.env.AGI_ADDITIONAL_TEXT_3,
+    validatorMerkleRoot: process.env.AGI_VALIDATOR_MERKLE_ROOT,
+    agentMerkleRoot: process.env.AGI_AGENT_MERKLE_ROOT,
     moderators: process.env.AGI_MODERATORS ? parseEnvList(process.env.AGI_MODERATORS) : undefined,
     additionalValidators: process.env.AGI_ADDITIONAL_VALIDATORS
       ? parseEnvList(process.env.AGI_ADDITIONAL_VALIDATORS)
@@ -207,36 +209,6 @@ module.exports = async function postdeployConfig(callback) {
     const currentApprovals = await instance.requiredValidatorApprovals();
     const currentDisapprovals = await instance.requiredValidatorDisapprovals();
     const maxValidators = await instance.MAX_VALIDATORS_PER_JOB();
-    const configLocked = await instance.configLocked();
-
-    if (configLocked) {
-      const lockedKeys = [
-        "requiredValidatorApprovals",
-        "requiredValidatorDisapprovals",
-        "premiumReputationThreshold",
-        "validationRewardPercentage",
-        "maxJobPayout",
-        "jobDurationLimit",
-        "completionReviewPeriod",
-        "disputeReviewPeriod",
-        "additionalAgentPayoutPercentage",
-        "termsAndConditionsIpfsHash",
-        "contactEmail",
-        "additionalText1",
-        "additionalText2",
-        "additionalText3",
-        "additionalValidators",
-        "additionalAgents",
-        "agiTypes",
-      ];
-      const lockedRequested = lockedKeys.filter((key) => config[key] !== undefined);
-      if (lockedRequested.length) {
-        throw new Error(
-          `Configuration is locked; remove these settings and retry: ${lockedRequested.join(", ")}`
-        );
-      }
-    }
-
     const ops = [];
 
     const addParamOp = async ({
@@ -554,6 +526,34 @@ module.exports = async function postdeployConfig(callback) {
         const updated = await instance.additionalText3();
         if (updated !== config.additionalText3) {
           throw new Error("additionalText3 did not update");
+        }
+      },
+    });
+
+    await addParamOp({
+      key: "validatorMerkleRoot",
+      label: "Set validatorMerkleRoot",
+      currentValue: await instance.validatorMerkleRoot(),
+      desiredValue: config.validatorMerkleRoot,
+      send: () => instance.setValidatorMerkleRoot(config.validatorMerkleRoot, txFrom ? { from: txFrom } : {}),
+      verify: async () => {
+        const updated = await instance.validatorMerkleRoot();
+        if (updated !== config.validatorMerkleRoot) {
+          throw new Error("validatorMerkleRoot did not update");
+        }
+      },
+    });
+
+    await addParamOp({
+      key: "agentMerkleRoot",
+      label: "Set agentMerkleRoot",
+      currentValue: await instance.agentMerkleRoot(),
+      desiredValue: config.agentMerkleRoot,
+      send: () => instance.setAgentMerkleRoot(config.agentMerkleRoot, txFrom ? { from: txFrom } : {}),
+      verify: async () => {
+        const updated = await instance.agentMerkleRoot();
+        if (updated !== config.agentMerkleRoot) {
+          throw new Error("agentMerkleRoot did not update");
         }
       },
     });

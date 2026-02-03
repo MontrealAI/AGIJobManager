@@ -5,7 +5,7 @@
 > `node scripts/generate-interface-doc.js`
 
 ## Constructor
-`constructor(address _agiTokenAddress, string _baseIpfsUrl, address _ensAddress, address _nameWrapperAddress, bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)`
+`constructor(address agiTokenAddress, string baseIpfs, address[2] ensConfig, bytes32[4] rootNodes, bytes32[2] merkleRoots)`
 
 ## Functions
 | Signature | State mutability | Returns |
@@ -21,12 +21,15 @@
 | `agentRootNode()` | view | bytes32 |
 | `agiToken()` | view | address |
 | `agiTypes(uint256)` | view | address, uint256 |
+| `alphaAgentRootNode()` | view | bytes32 |
+| `alphaClubRootNode()` | view | bytes32 |
 | `approve(address to, uint256 tokenId)` | nonpayable | — |
 | `balanceOf(address owner)` | view | uint256 |
 | `blacklistedAgents(address)` | view | bool |
 | `blacklistedValidators(address)` | view | bool |
 | `clubRootNode()` | view | bytes32 |
 | `completionReviewPeriod()` | view | uint256 |
+| `configLocked()` | view | bool |
 | `contactEmail()` | view | string |
 | `disputeReviewPeriod()` | view | uint256 |
 | `ens()` | view | address |
@@ -56,7 +59,6 @@
 | `supportsInterface(bytes4 interfaceId)` | view | bool |
 | `symbol()` | view | string |
 | `termsAndConditionsIpfsHash()` | view | string |
-| `tokenURI(uint256 tokenId)` | view | string |
 | `transferFrom(address from, address to, uint256 tokenId)` | nonpayable | — |
 | `transferOwnership(address newOwner)` | nonpayable | — |
 | `validationRewardPercentage()` | view | uint256 |
@@ -64,6 +66,7 @@
 | `validatorMerkleRoot()` | view | bytes32 |
 | `pause()` | nonpayable | — |
 | `unpause()` | nonpayable | — |
+| `lockConfiguration()` | nonpayable | — |
 | `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)` | nonpayable | — |
 | `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)` | nonpayable | — |
@@ -79,6 +82,10 @@
 | `addModerator(address _moderator)` | nonpayable | — |
 | `removeModerator(address _moderator)` | nonpayable | — |
 | `updateAGITokenAddress(address _newTokenAddress)` | nonpayable | — |
+| `setEnsConfig(address ensAddress, address nameWrapperAddress)` | nonpayable | — |
+| `setRootNodes(bytes32 clubRoot, bytes32 agentRoot, bytes32 alphaClubRoot, bytes32 alphaAgentRoot)` | nonpayable | — |
+| `setValidatorMerkleRoot(bytes32 newMerkleRoot)` | nonpayable | — |
+| `setAgentMerkleRoot(bytes32 newMerkleRoot)` | nonpayable | — |
 | `setBaseIpfsUrl(string _url)` | nonpayable | — |
 | `setRequiredValidatorApprovals(uint256 _approvals)` | nonpayable | — |
 | `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | nonpayable | — |
@@ -100,6 +107,7 @@
 | `cancelJob(uint256 _jobId)` | nonpayable | — |
 | `expireJob(uint256 _jobId)` | nonpayable | — |
 | `finalizeJob(uint256 _jobId)` | nonpayable | — |
+| `tokenURI(uint256 tokenId)` | view | string |
 | `listNFT(uint256 tokenId, uint256 price)` | nonpayable | — |
 | `purchaseNFT(uint256 tokenId)` | nonpayable | — |
 | `delistNFT(uint256 tokenId)` | nonpayable | — |
@@ -120,14 +128,16 @@
 | `AGITypeUpdated(address nftAddress, uint256 payoutPercentage)` | indexed address nftAddress, uint256 payoutPercentage |
 | `AGIWithdrawn(address to, uint256 amount, uint256 remainingWithdrawable)` | indexed address to, uint256 amount, uint256 remainingWithdrawable |
 | `AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage)` | uint256 newPercentage |
+| `AgentMerkleRootUpdated(bytes32 newMerkleRoot)` | indexed bytes32 newMerkleRoot |
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |
 | `ApprovalForAll(address owner, address operator, bool approved)` | indexed address owner, indexed address operator, bool approved |
-| `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)` | uint256 _fromTokenId, uint256 _toTokenId |
 | `CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
+| `ConfigurationLocked(address locker, uint256 atTimestamp)` | indexed address locker, uint256 atTimestamp |
 | `DisputeResolved(uint256 jobId, address resolver, string resolution)` | uint256 jobId, address resolver, string resolution |
 | `DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)` | uint256 jobId, address resolver, uint8 resolutionCode, string reason |
 | `DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
 | `DisputeTimeoutResolved(uint256 jobId, address resolver, bool employerWins)` | uint256 jobId, address resolver, bool employerWins |
+| `ENSConfigUpdated(address ens, address nameWrapper)` | indexed address ens, indexed address nameWrapper |
 | `JobApplied(uint256 jobId, address agent)` | uint256 jobId, address agent |
 | `JobCancelled(uint256 jobId)` | uint256 jobId |
 | `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)` | uint256 jobId, address agent, uint256 reputationPoints |
@@ -139,7 +149,6 @@
 | `JobFinalized(uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout)` | uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout |
 | `JobValidated(uint256 jobId, address validator)` | uint256 jobId, address validator |
 | `MerkleRootUpdated(bytes32 newMerkleRoot)` | indexed bytes32 newMerkleRoot |
-| `MetadataUpdate(uint256 _tokenId)` | uint256 _tokenId |
 | `NFTDelisted(uint256 tokenId)` | indexed uint256 tokenId |
 | `NFTIssued(uint256 tokenId, address employer, string tokenURI)` | indexed uint256 tokenId, indexed address employer, string tokenURI |
 | `NFTListed(uint256 tokenId, address seller, uint256 price)` | indexed uint256 tokenId, indexed address seller, uint256 price |
@@ -151,13 +160,16 @@
 | `ReputationUpdated(address user, uint256 newReputation)` | address user, uint256 newReputation |
 | `RewardPoolContribution(address contributor, uint256 amount)` | indexed address contributor, uint256 amount |
 | `RootNodeUpdated(bytes32 newRootNode)` | indexed bytes32 newRootNode |
+| `RootNodesUpdated(bytes32 clubRootNode, bytes32 agentRootNode, bytes32 alphaClubRootNode, bytes32 alphaAgentRootNode)` | bytes32 clubRootNode, bytes32 agentRootNode, bytes32 alphaClubRootNode, bytes32 alphaAgentRootNode |
 | `Transfer(address from, address to, uint256 tokenId)` | indexed address from, indexed address to, indexed uint256 tokenId |
 | `Unpaused(address account)` | address account |
+| `ValidatorMerkleRootUpdated(bytes32 newMerkleRoot)` | indexed bytes32 newMerkleRoot |
 
 ## Custom errors
 | Error | Inputs |
 | --- | --- |
 | `Blacklisted()` | — |
+| `ConfigLocked()` | — |
 | `IneligibleAgentPayout()` | — |
 | `InsolventEscrowBalance()` | — |
 | `InsufficientWithdrawableBalance()` | — |

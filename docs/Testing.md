@@ -24,7 +24,7 @@ npx ganache -p 8545
 npx truffle compile
 ```
 
-By default the Truffle config enables `viaIR` to avoid stack-too-deep compilation errors at this contract size.
+By default the Truffle config enables `viaIR` to avoid stack-too-deep compilation errors.
 If you need to compare non-IR compilation, set `SOLC_VIA_IR=false` in your environment (compilation may fail).
 
 ## Run the full test suite

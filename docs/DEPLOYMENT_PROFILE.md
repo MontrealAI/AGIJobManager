@@ -8,7 +8,7 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 
 ## Preconditions (capture before deployment)
 
-**Required constructor parameters** (immutable after deploy):
+**Required constructor parameters** (lockable critical wiring):
 - `agiToken` (ERC‑20 escrow token)
 - `baseIpfsUrl`
 - `ens` registry
@@ -17,8 +17,8 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 - `alphaClubRootNode` (validator alpha namespace)
 - `agentRootNode` (agent namespace)
 - `alphaAgentRootNode` (agent alpha namespace)
-- `validatorMerkleRoot`
-- `agentMerkleRoot`
+- `validatorMerkleRoot` (allowlist-only; updateable post-lock)
+- `agentMerkleRoot` (allowlist-only; updateable post-lock)
 
 > **Constructor encoding note (Truffle)**: the deployment script groups constructor inputs as `[token, baseIpfsUrl, [ENS, NameWrapper], [club, agent, alpha club, alpha agent], [validator Merkle, agent Merkle]]`. Mirror this ordering for custom deployments.
 
@@ -34,6 +34,7 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 
 **Allowlists & roots**
 - Confirm Merkle roots for validators/agents (sorted‑pairs Merkle tree, leaf = `keccak256(address)`).
+- Merkle roots gate access only; payouts still come from AGIType NFT tiers.
 - Compute ENS root nodes (namehash for `club.agi.eth`, `alpha.club.agi.eth`, `agent.agi.eth`, `alpha.agent.agi.eth`).
 
 **Bytecode size guardrail**

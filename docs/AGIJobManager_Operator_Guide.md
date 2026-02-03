@@ -10,10 +10,12 @@ The constructor requires:
 2. `string _baseIpfsUrl` — base URL used to prefix non‑full token URIs.
 3. `address _ensAddress` — ENS registry address.
 4. `address _nameWrapperAddress` — ENS NameWrapper address.
-5. `bytes32 _clubRootNode` — ENS root node for validator subdomains.
-6. `bytes32 _agentRootNode` — ENS root node for agent subdomains.
-7. `bytes32 _validatorMerkleRoot` — Merkle root for validator allowlist (leaf = `keccak256(abi.encodePacked(address))`).
-8. `bytes32 _agentMerkleRoot` — Merkle root for agent allowlist (leaf = `keccak256(abi.encodePacked(address))`).
+5. `bytes32 _clubRootNode` — ENS root node for validator subdomains (base namespace).
+6. `bytes32 _agentRootNode` — ENS root node for agent subdomains (base namespace).
+7. `bytes32 _alphaClubRootNode` — ENS root node for validator subdomains (alpha namespace).
+8. `bytes32 _alphaAgentRootNode` — ENS root node for agent subdomains (alpha namespace).
+9. `bytes32 _validatorMerkleRoot` — Merkle root for validator allowlist (leaf = `keccak256(abi.encodePacked(address))`).
+10. `bytes32 _agentMerkleRoot` — Merkle root for agent allowlist (leaf = `keccak256(abi.encodePacked(address))`).
 
 The ERC‑721 token is initialized as `AGIJobs` / `Job`.
 
@@ -38,7 +40,9 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
   - `resolveStaleDispute` and `withdrawAGI` require the contract to be paused.
 
 ### Managing allowlists
-- **Merkle roots** are fixed at deployment (no setter exists).
+- **Merkle roots** are allowlists-only (no payout impact) and can be updated at runtime via:
+  - `setValidatorMerkleRoot`
+  - `setAgentMerkleRoot`
 - **Explicit allowlists** can be modified at runtime via:
   - `addAdditionalAgent` / `removeAdditionalAgent`
   - `addAdditionalValidator` / `removeAdditionalValidator`
@@ -63,6 +67,10 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - `updateAGITokenAddress` changes the ERC‑20 used for escrow, payouts, and reward pool contributions.
 - Changing the token can break integrations and invalidate approvals. Ensure all users re‑approve the new token and carefully manage `lockedEscrow` vs balances before switching.
 - **Mainnet invariant**: production deployments must keep `agiToken` fixed to AGIALPHA (`0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`). Treat token rotation as a testnet‑only or redeploy‑only operation.
+
+### ENS wiring + root nodes
+- `setEnsConfig` can update ENS registry and NameWrapper addresses **before** any job exists and before `lockConfiguration()`.
+- `setRootNodes` updates the base + alpha root nodes for agent/validator namespaces and is also restricted to the pre‑job window.
 
 ## Monitoring checklist
 
