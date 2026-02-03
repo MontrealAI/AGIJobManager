@@ -30,6 +30,8 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
       rootNode("agent-root"),
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

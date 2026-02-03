@@ -33,6 +33,8 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
       rootNode("agent-root"),
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

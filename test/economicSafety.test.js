@@ -41,6 +41,8 @@ contract("AGIJobManager economic safety", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -63,6 +65,8 @@ contract("AGIJobManager economic safety", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -81,6 +85,8 @@ contract("AGIJobManager economic safety", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -97,6 +103,8 @@ contract("AGIJobManager economic safety", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -135,6 +143,8 @@ contract("AGIJobManager economic safety", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -179,6 +189,8 @@ contract("AGIJobManager economic safety", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

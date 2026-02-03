@@ -47,6 +47,8 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
@@ -220,6 +222,8 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
@@ -254,6 +258,8 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

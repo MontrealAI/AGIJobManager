@@ -14,6 +14,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
 const toWei = (value) => web3.utils.toWei(value.toString());
+const ZERO_ROOT = "0x" + "00".repeat(32);
 
 const leafFor = (address) =>
   Buffer.from(web3.utils.soliditySha3({ type: "address", value: address }).slice(2), "hex");
@@ -97,6 +98,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      ZERO_ROOT,
+      ZERO_ROOT,
       validatorTree.root,
       agentTree.root
     );
@@ -539,6 +542,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         nameWrapper.address,
         clubRoot,
         agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorTree.root,
         agentTree.root
       );
@@ -562,6 +567,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         nameWrapper.address,
         clubRoot,
         agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorTree.root,
         agentTree.root
       );
@@ -595,6 +602,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         nameWrapper.address,
         clubRoot,
         agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorTree.root,
         agentTree.root
       );
@@ -630,6 +639,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         nameWrapper.address,
         clubRoot,
         agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
         validatorTree.root,
         agentTree.root
       );

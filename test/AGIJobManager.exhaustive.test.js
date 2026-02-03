@@ -13,6 +13,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 
 const EMPTY_PROOF = [];
+const ZERO_ROOT = "0x" + "00".repeat(32);
 
 function leafFor(address) {
   return web3.utils.soliditySha3({ type: "address", value: address });
@@ -33,6 +34,8 @@ async function deployManager({
   nameWrapper,
   validatorRootNode,
   agentRootNode,
+  alphaValidatorRootNode = ZERO_ROOT,
+  alphaAgentRootNode = ZERO_ROOT,
   validatorMerkleRoot,
   agentMerkleRoot,
   owner,
@@ -44,6 +47,8 @@ async function deployManager({
     nameWrapper.address,
     validatorRootNode,
     agentRootNode,
+    alphaValidatorRootNode,
+    alphaAgentRootNode,
     validatorMerkleRoot,
     agentMerkleRoot,
     { from: owner }

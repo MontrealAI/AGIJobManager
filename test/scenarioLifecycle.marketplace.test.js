@@ -39,6 +39,8 @@ contract("AGIJobManager scenario coverage", (accounts) => {
       rootNode("agent-root"),
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

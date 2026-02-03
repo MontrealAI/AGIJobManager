@@ -49,6 +49,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
       agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

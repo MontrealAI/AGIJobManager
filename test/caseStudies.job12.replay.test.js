@@ -84,6 +84,8 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       agentRootNode,
       ZERO_BYTES32,
       ZERO_BYTES32,
+      ZERO_BYTES32,
+      ZERO_BYTES32,
       { from: owner }
     );
 

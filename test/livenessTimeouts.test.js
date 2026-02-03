@@ -64,6 +64,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
       rootNode("agent-root"),
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 
