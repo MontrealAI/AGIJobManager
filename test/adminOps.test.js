@@ -166,11 +166,15 @@ contract("AGIJobManager admin ops", (accounts) => {
       manager.updateContactEmail.call("ops@example.com", { from: owner }),
       "ConfigLocked"
     );
+    await expectCustomError(
+      manager.blacklistAgent.call(agent, true, { from: owner }),
+      "ConfigLocked"
+    );
 
     await manager.pause({ from: owner });
     await manager.unpause({ from: owner });
-    await manager.blacklistAgent(agent, true, { from: owner });
-    assert.equal(await manager.blacklistedAgents(agent), true, "blacklist should remain operable");
+    await manager.addModerator(other, { from: owner });
+    assert.equal(await manager.moderators(other), true, "moderator rotation should remain operable");
 
     await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
   });

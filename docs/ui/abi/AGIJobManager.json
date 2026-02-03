@@ -268,8 +268,14 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "by",
+          "name": "locker",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "atBlockOrTimestamp",
+          "type": "uint256"
         }
       ],
       "name": "ConfigurationLocked",

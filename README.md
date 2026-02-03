@@ -134,8 +134,8 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
-- `optimizer.runs`: **500** (via `SOLC_RUNS`, default in `truffle-config.js`)
-- `viaIR`: **true** (via `SOLC_VIA_IR`)
+- `optimizer.runs`: **200** (via `SOLC_RUNS`, default in `truffle-config.js`)
+- `viaIR`: **true** (via `SOLC_VIA_IR`) — required to avoid stack-too-deep errors in the legacy compilation pipeline.
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
 - `SOLC_VERSION`: **0.8.26**
