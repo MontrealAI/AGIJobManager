@@ -12,6 +12,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const FailingERC20 = artifacts.require("FailingERC20");
 const { buildInitConfig } = require("./helpers/deploy");
+const { readJob } = require("./helpers/job");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -349,7 +350,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       assert(contractBalanceAfter.sub(contractBalanceBefore).eq(payout));
 
-      const job = await manager.jobs(jobId);
+      const job = await readJob(manager, jobId);
       assert.equal(job.employer, employer);
       assert.equal(job.payout.toString(), payout.toString());
     });
@@ -546,7 +547,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const receipt = await manager.disapproveJob(jobId, "validator", buildProof(validatorTree, validator3), { from: validator3 });
       expectEvent(receipt, "JobDisputed", { jobId: new BN(jobId) });
 
-      const job = await manager.jobs(jobId);
+      const job = await readJob(manager, jobId);
       assert.equal(job.disputed, true);
     });
 
@@ -616,7 +617,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
         resolutionCode: new BN(0),
       });
 
-      const job = await manager.jobs(jobId);
+      const job = await readJob(manager, jobId);
       assert.equal(job.disputed, true);
       assert.equal(job.completed, false);
       assert.equal(job.completionRequested, true);

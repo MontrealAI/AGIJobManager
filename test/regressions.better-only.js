@@ -6,6 +6,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
 const { buildInitConfig } = require("./helpers/deploy");
+const { readJob } = require("./helpers/job");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_PROOF = [];
@@ -175,14 +176,14 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const approveThenDisapproveId = await createAssignedJob(original, token, employer, agent, payout);
     await original.validateJob(approveThenDisapproveId, "validator", EMPTY_PROOF, { from: validator });
     await original.disapproveJob(approveThenDisapproveId, "validator", EMPTY_PROOF, { from: validator });
-    const approveThenDisapproveJob = await original.jobs(approveThenDisapproveId);
+    const approveThenDisapproveJob = await readJob(original, approveThenDisapproveId);
     assert.equal(approveThenDisapproveJob.validatorApprovals.toNumber(), 1, "original should track approvals");
     assert.equal(approveThenDisapproveJob.validatorDisapprovals.toNumber(), 1, "original should allow disapproval after approval");
 
     const disapproveThenApproveId = await createAssignedJob(original, token, employer, agent, payout);
     await original.disapproveJob(disapproveThenApproveId, "validator", EMPTY_PROOF, { from: validator });
     await original.validateJob(disapproveThenApproveId, "validator", EMPTY_PROOF, { from: validator });
-    const disapproveThenApproveJob = await original.jobs(disapproveThenApproveId);
+    const disapproveThenApproveJob = await readJob(original, disapproveThenApproveId);
     assert.equal(disapproveThenApproveJob.validatorApprovals.toNumber(), 1, "original should allow approval after disapproval");
     assert.equal(disapproveThenApproveJob.validatorDisapprovals.toNumber(), 1, "original should track disapprovals");
 
@@ -251,7 +252,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
       originalBalanceAfterCancel.eq(originalBalanceBeforeCancel),
       "original should not refund when transfer returns false"
     );
-    const originalJob = await original.jobs(originalJobId);
+    const originalJob = await readJob(original, originalJobId);
     assert.equal(originalJob.employer, ZERO_ADDRESS, "original should delete job even if refund fails");
 
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
@@ -263,7 +264,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
       currentBalanceAfterCancel.eq(currentBalanceBeforeCancel),
       "current should keep escrowed funds after revert"
     );
-    const currentJob = await current.jobs(currentJobId);
+    const currentJob = await readJob(current, currentJobId);
     assert.equal(currentJob.employer, employer, "current should keep job after failed refund");
   });
 });

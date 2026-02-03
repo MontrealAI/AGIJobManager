@@ -1309,22 +1309,71 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "_jobId",
           "type": "uint256"
         }
       ],
-      "name": "jobs",
+      "name": "getJobCore",
       "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
         {
           "internalType": "address",
           "name": "employer",
           "type": "address"
         },
+        {
+          "internalType": "address",
+          "name": "assignedAgent",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "payout",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "assignedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "completed",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "disputed",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "expired",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint8",
+          "name": "agentPayoutPct",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getJobMetadata",
+      "outputs": [
         {
           "internalType": "string",
           "name": "jobSpecURI",
@@ -1341,30 +1390,24 @@
           "type": "string"
         },
         {
-          "internalType": "uint256",
-          "name": "payout",
-          "type": "uint256"
-        },
+          "internalType": "string",
+          "name": "details",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "uint256",
-          "name": "duration",
+          "name": "_jobId",
           "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "assignedAgent",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "assignedAt",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "completed",
-          "type": "bool"
-        },
+        }
+      ],
+      "name": "getJobValidation",
+      "outputs": [
         {
           "internalType": "bool",
           "name": "completionRequested",
@@ -1381,16 +1424,6 @@
           "type": "uint256"
         },
         {
-          "internalType": "bool",
-          "name": "disputed",
-          "type": "bool"
-        },
-        {
-          "internalType": "string",
-          "name": "details",
-          "type": "string"
-        },
-        {
           "internalType": "uint256",
           "name": "completionRequestedAt",
           "type": "uint256"
@@ -1399,21 +1432,6 @@
           "internalType": "uint256",
           "name": "disputedAt",
           "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "expired",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint8",
-          "name": "agentPayoutPct",
-          "type": "uint8"
-        },
-        {
-          "internalType": "bool",
-          "name": "escrowReleased",
-          "type": "bool"
         }
       ],
       "stateMutability": "view",

@@ -8,6 +8,7 @@ const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { buildInitConfig } = require("./helpers/deploy");
+const { readJob } = require("./helpers/job");
 
 const ZERO_BYTES32 = "0x" + "0".repeat(64);
 const EMPTY_PROOF = [];
@@ -179,7 +180,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     assert.equal((await token.balanceOf(validator2)).toString(), validatorPayout.toString());
     assert.equal((await token.balanceOf(validator3)).toString(), validatorPayout.toString());
 
-    const job = await manager.jobs(jobId);
+    const job = await readJob(manager, jobId);
     assert.equal(job.completed, true);
     assert.equal(job.assignedAgent, agent);
 
@@ -316,7 +317,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     const afterTokenId = await manager.nextTokenId();
 
     assert.equal(afterTokenId.toString(), new BN(beforeTokenId).addn(1).toString());
-    const job = await manager.jobs(jobId);
+    const job = await readJob(manager, jobId);
     assert.equal(job.completed, true);
   });
 });
