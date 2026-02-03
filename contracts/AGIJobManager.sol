@@ -193,7 +193,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     uint256 public nextJobId;
     uint256 public nextTokenId;
-    mapping(uint256 => Job) public jobs;
+    mapping(uint256 => Job) internal jobs;
     mapping(address => uint256) public reputation;
     mapping(address => bool) public moderators;
     mapping(address => bool) public additionalValidators;
@@ -654,6 +654,73 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
         Job storage job = _job(_jobId);
         return job.agentPayoutPct;
+    }
+
+    function getJobCore(uint256 _jobId)
+        external
+        view
+        returns (
+            address employer,
+            address assignedAgent,
+            uint256 payout,
+            uint256 duration,
+            uint256 assignedAt,
+            bool completed,
+            bool disputed,
+            bool expired,
+            uint8 agentPayoutPct
+        )
+    {
+        Job storage job = _job(_jobId);
+        return (
+            job.employer,
+            job.assignedAgent,
+            job.payout,
+            job.duration,
+            job.assignedAt,
+            job.completed,
+            job.disputed,
+            job.expired,
+            job.agentPayoutPct
+        );
+    }
+
+    function getJobValidation(uint256 _jobId)
+        external
+        view
+        returns (
+            bool completionRequested,
+            uint256 validatorApprovals,
+            uint256 validatorDisapprovals,
+            uint256 completionRequestedAt,
+            uint256 disputedAt
+        )
+    {
+        Job storage job = _job(_jobId);
+        return (
+            job.completionRequested,
+            job.validatorApprovals,
+            job.validatorDisapprovals,
+            job.completionRequestedAt,
+            job.disputedAt
+        );
+    }
+
+    function getJobUris(uint256 _jobId)
+        external
+        view
+        returns (
+            string memory jobSpecURI,
+            string memory jobCompletionURI
+        )
+    {
+        Job storage job = _job(_jobId);
+        return (job.jobSpecURI, job.jobCompletionURI);
+    }
+
+    function getJobDetails(uint256 _jobId) external view returns (string memory) {
+        Job storage job = _job(_jobId);
+        return job.details;
     }
 
     /// @notice Returns the canonical job status for UI/indexing.
