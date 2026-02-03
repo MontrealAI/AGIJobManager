@@ -138,6 +138,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
   let baseIpfsUrl;
   let clubRootNode;
   let agentRootNode;
+  let alphaClubRootNode;
+  let alphaAgentRootNode;
   let agentTokenId;
 
   beforeEach(async () => {
@@ -158,6 +160,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
     baseIpfsUrl = "ipfs://base";
     clubRootNode = web3.utils.soliditySha3({ type: "string", value: "club-root" });
     agentRootNode = web3.utils.soliditySha3({ type: "string", value: "agent-root" });
+    alphaClubRootNode = clubRootNode;
+    alphaAgentRootNode = agentRootNode;
 
     manager = await AGIJobManager.new(
       token.address,
@@ -166,6 +170,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       nameWrapper.address,
       clubRootNode,
       agentRootNode,
+      alphaClubRootNode,
+      alphaAgentRootNode,
       validatorRoot,
       agentRoot,
       { from: owner }
@@ -194,6 +200,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       assert.equal(await manager.nameWrapper(), nameWrapper.address);
       assert.equal(await manager.clubRootNode(), clubRootNode);
       assert.equal(await manager.agentRootNode(), agentRootNode);
+      assert.equal(await manager.alphaClubRootNode(), alphaClubRootNode);
+      assert.equal(await manager.alphaAgentRootNode(), alphaAgentRootNode);
       assert.equal(await manager.validatorMerkleRoot(), validatorRoot);
       assert.equal(await manager.agentMerkleRoot(), agentRoot);
     });
@@ -636,6 +644,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        alphaClubRootNode,
+        alphaAgentRootNode,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -661,6 +671,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        alphaClubRootNode,
+        alphaAgentRootNode,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -695,6 +707,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        alphaClubRootNode,
+        alphaAgentRootNode,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -729,6 +743,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        alphaClubRootNode,
+        alphaAgentRootNode,
         validatorRoot,
         agentRoot,
         { from: owner }
@@ -1010,6 +1026,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         nameWrapper.address,
         clubRootNode,
         agentRootNode,
+        alphaClubRootNode,
+        alphaAgentRootNode,
         validatorRoot,
         agentRoot,
         { from: owner }

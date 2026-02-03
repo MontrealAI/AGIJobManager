@@ -37,6 +37,8 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
       ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

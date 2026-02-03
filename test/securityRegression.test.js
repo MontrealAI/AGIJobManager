@@ -43,6 +43,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      clubRoot,
+      agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -276,6 +278,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      clubRoot,
+      agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -301,6 +305,8 @@ contract("AGIJobManager security regressions", (accounts) => {
       "ipfs://base",
       ens.address,
       nameWrapper.address,
+      clubRoot,
+      agentRoot,
       clubRoot,
       agentRoot,
       ZERO_ROOT,
