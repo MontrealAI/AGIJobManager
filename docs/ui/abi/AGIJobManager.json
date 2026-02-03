@@ -2,7 +2,7 @@
   "contractName": "AGIJobManager",
   "compiler": {
     "name": "solc",
-    "version": "0.8.26+commit.8a97fa7a.Emscripten.clang"
+    "version": "0.8.33+commit.64118f21.Emscripten.clang"
   },
   "abi": [
     {
@@ -166,6 +166,19 @@
         }
       ],
       "name": "AdditionalAgentPayoutPercentageUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "newMerkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AgentMerkleRootUpdated",
       "type": "event"
     },
     {
@@ -354,6 +367,25 @@
         }
       ],
       "name": "DisputeTimeoutResolved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oldAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newAddress",
+          "type": "address"
+        }
+      ],
+      "name": "EnsRegistryUpdated",
       "type": "event"
     },
     {
@@ -707,6 +739,25 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "oldAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newAddress",
+          "type": "address"
+        }
+      ],
+      "name": "NameWrapperUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "previousOwner",
           "type": "address"
         },
@@ -820,6 +871,37 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "clubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "agentRootNode",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "alphaClubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "alphaAgentRootNode",
+          "type": "bytes32"
+        }
+      ],
+      "name": "RootNodesUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "internalType": "address",
           "name": "from",
@@ -852,6 +934,19 @@
         }
       ],
       "name": "Unpaused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "newMerkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "ValidatorMerkleRootUpdated",
       "type": "event"
     },
     {
@@ -2102,6 +2197,86 @@
         }
       ],
       "name": "updateAGITokenAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newEnsAddress",
+          "type": "address"
+        }
+      ],
+      "name": "updateENSRegistry",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newNameWrapper",
+          "type": "address"
+        }
+      ],
+      "name": "updateNameWrapper",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_clubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_agentRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_alphaClubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_alphaAgentRootNode",
+          "type": "bytes32"
+        }
+      ],
+      "name": "updateRootNodes",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_newRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setValidatorMerkleRoot",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_newRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setAgentMerkleRoot",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

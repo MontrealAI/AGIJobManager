@@ -12,6 +12,7 @@ const keccak256 = require("keccak256");
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectCustomError } = require("./helpers/errors");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -178,5 +179,20 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     await merkleManager.applyForJob(jobId, "helper", tree.getHexProof(agentLeaf), { from: agent });
     await merkleManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await merkleManager.validateJob(jobId, "alice", tree.getHexProof(validatorLeaf), { from: validator });
+  });
+
+  it("treats Merkle allowlists as access only (payout still requires AGIType)", async () => {
+    const leafFor = (addr) => web3.utils.soliditySha3({ type: "address", value: addr });
+    const leaves = [outsider].map((addr) => Buffer.from(leafFor(addr).slice(2), "hex"));
+    const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+    const outsiderLeaf = Buffer.from(leafFor(outsider).slice(2), "hex");
+
+    await manager.setAgentMerkleRoot(tree.getHexRoot(), { from: owner });
+
+    const jobId = await createJob();
+    await expectCustomError(
+      manager.applyForJob.call(jobId, "helper", tree.getHexProof(outsiderLeaf), { from: outsider }),
+      "IneligibleAgentPayout"
+    );
   });
 });

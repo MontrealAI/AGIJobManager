@@ -44,7 +44,7 @@ These values are fixed **identity anchors** on Ethereum mainnet (documented inva
 - `agent.agi.eth`: `0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d`
 - `alpha.agent.agi.eth`: `0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e`
 
-> **Note:** ENS registry and NameWrapper addresses are chain-specific and must remain configurable for Sepolia/local/private networks.
+> **Note:** ENS namehash outputs are deterministic, but **ENS registry** and **NameWrapper** addresses are chain‑specific and must remain configurable for Sepolia/local/private networks.
 
 ## 3) Step-by-step deployment
 
@@ -86,6 +86,11 @@ If using ENS gating, test **both namespaces**:
 - `agent.agi.eth` **and** `alpha.agent.agi.eth`
 - `club.agi.eth` **and** `alpha.club.agi.eth`
 
+### Merkle allowlists (access only)
+
+- **Allowlists** (`agentMerkleRoot`, `validatorMerkleRoot`) only grant **eligibility** to apply/validate.
+- **Payouts are NOT controlled by Merkle membership.** Agent payout percentage still comes from **AGIType NFT ownership** (`getHighestPayoutPercentage`).
+
 ## 5) Lock configuration (one-way)
 
 After setup and validation, lock configuration to minimize governance:
@@ -94,7 +99,7 @@ After setup and validation, lock configuration to minimize governance:
 - **Manual**: call `lockConfiguration()` from the owner account.
 
 Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
-In the current implementation, only the token address is lockable because ENS wiring and root nodes are constructor-only.
+The lock only freezes **critical wiring**: token address changes, ENS registry/NameWrapper updates, and ENS root node configuration.
 
 ## 6) Break-glass runbook (after lock)
 
@@ -107,3 +112,17 @@ After lock, operators should only use:
 > **Escrow safety:** withdrawals can never touch escrowed job funds because `withdrawableAGI = balance - lockedEscrow` and the call reverts if the escrow balance is insolvent.
 
 Everything else remains operable but should be governed by your ops policy to keep the surface minimal.
+
+## 7) Verification (Etherscan)
+
+1. **Standard path** (Truffle plugin):
+   ```bash
+   npx truffle run verify AGIJobManager --network <network>
+   ```
+2. **Fallback path** (viaIR + Standard JSON input):
+   - Compile with the deployment settings (same `SOLC_VERSION`, runs, `viaIR`, `evmVersion`).
+   - Export the Standard JSON input:
+     ```bash
+     node -e "const a=require('./build/contracts/AGIJobManager.json'); console.log(JSON.stringify(a.metadata));" > standard-json-input.json
+     ```
+   - In Etherscan, choose **Solidity (Standard-Json-Input)** and upload the file, plus the constructor args (same ordering as `migrations/2_deploy_contracts.js`).

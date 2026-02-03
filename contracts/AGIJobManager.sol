@@ -42,7 +42,7 @@ OVERRIDING AUTHORITY: AGI.ETH
 
 */
 
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.33;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -234,6 +234,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
     event ConfigurationLocked(address indexed locker, uint256 atTimestamp);
+    event EnsRegistryUpdated(address indexed oldAddress, address indexed newAddress);
+    event NameWrapperUpdated(address indexed oldAddress, address indexed newAddress);
+    event RootNodesUpdated(
+        bytes32 clubRootNode,
+        bytes32 agentRootNode,
+        bytes32 alphaClubRootNode,
+        bytes32 alphaAgentRootNode
+    );
+    event ValidatorMerkleRootUpdated(bytes32 indexed newMerkleRoot);
+    event AgentMerkleRootUpdated(bytes32 indexed newMerkleRoot);
 
     constructor(
         address agiTokenAddress,
@@ -256,6 +266,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     modifier whenCriticalConfigurable() {
         if (configLocked) revert ConfigLocked();
         _;
+    }
+
+    function _requirePreJobConfig() internal view {
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
     }
 
     function _initAddressConfig(
@@ -563,8 +577,43 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenCriticalConfigurable {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
-        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        _requirePreJobConfig();
         agiToken = IERC20(_newTokenAddress);
+    }
+    function updateENSRegistry(address _newEnsAddress) external onlyOwner whenCriticalConfigurable {
+        if (_newEnsAddress == address(0)) revert InvalidParameters();
+        _requirePreJobConfig();
+        address oldAddress = address(ens);
+        ens = ENS(_newEnsAddress);
+        emit EnsRegistryUpdated(oldAddress, _newEnsAddress);
+    }
+    function updateNameWrapper(address _newNameWrapper) external onlyOwner whenCriticalConfigurable {
+        if (_newNameWrapper == address(0)) revert InvalidParameters();
+        _requirePreJobConfig();
+        address oldAddress = address(nameWrapper);
+        nameWrapper = NameWrapper(_newNameWrapper);
+        emit NameWrapperUpdated(oldAddress, _newNameWrapper);
+    }
+    function updateRootNodes(
+        bytes32 _clubRootNode,
+        bytes32 _agentRootNode,
+        bytes32 _alphaClubRootNode,
+        bytes32 _alphaAgentRootNode
+    ) external onlyOwner whenCriticalConfigurable {
+        _requirePreJobConfig();
+        clubRootNode = _clubRootNode;
+        agentRootNode = _agentRootNode;
+        alphaClubRootNode = _alphaClubRootNode;
+        alphaAgentRootNode = _alphaAgentRootNode;
+        emit RootNodesUpdated(_clubRootNode, _agentRootNode, _alphaClubRootNode, _alphaAgentRootNode);
+    }
+    function setValidatorMerkleRoot(bytes32 _newRoot) external onlyOwner {
+        validatorMerkleRoot = _newRoot;
+        emit ValidatorMerkleRootUpdated(_newRoot);
+    }
+    function setAgentMerkleRoot(bytes32 _newRoot) external onlyOwner {
+        agentMerkleRoot = _newRoot;
+        emit AgentMerkleRootUpdated(_newRoot);
     }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
