@@ -29,7 +29,7 @@ Provide these addresses via environment variables (see `.env.example`):
 | Agent Merkle root | `AGI_AGENT_MERKLE_ROOT` | Allowlist root for agents. |
 | Optional auto-lock | `LOCK_CONFIG=true` | Locks configuration at the end of migration. |
 
-### Canonical mainnet invariants
+### Invariants + defaults (mainnet)
 
 These values are fixed **identity anchors** on Ethereum mainnet (documented invariants):
 
@@ -115,10 +115,10 @@ Everything else remains operable but should be governed by your ops policy to ke
 ## 7) Verification (Etherscan)
 
 **Normal path (viaIR enabled)**:
-1. Compile with `SOLC_VERSION=0.8.26`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`.
+1. Compile with `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`.
 2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args.
 
-**Fallback (Standard JSON input)**:
+**Fallback (viaIR + Standard JSON input)**:
 1. Compile with `SOLC_VIA_IR=true` and the same optimizer/metadata settings.
 2. In Etherscan, select **Solidity (Standard-Json-Input)** and paste the JSON from the build step.
 3. Ensure the JSON includes `viaIR: true`, `optimizer.runs: 200`, `metadata.bytecodeHash: "none"`, and the exact constructor args.
