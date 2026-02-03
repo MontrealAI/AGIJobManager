@@ -12,6 +12,7 @@ const keccak256 = require("keccak256");
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { getJob } = require("./helpers/job");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -79,7 +80,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const appliedEvent = tx.logs.find((log) => log.event === "JobApplied");
     assert.ok(appliedEvent, "JobApplied should be emitted");
 
-    const job = await manager.jobs(jobId);
+    const job = await getJob(manager, jobId);
     assert.equal(job.assignedAgent, agent, "agent should be assigned");
   });
 

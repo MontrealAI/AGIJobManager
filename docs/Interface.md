@@ -31,9 +31,11 @@
 | `disputeReviewPeriod()` | view | uint256 |
 | `ens()` | view | address |
 | `getApproved(uint256 tokenId)` | view | address |
+| `getJobCore(uint256 jobId)` | view | address, address, uint256, uint256, uint256, bool, bool, bool, uint8 |
+| `getJobValidation(uint256 jobId)` | view | bool, uint256, uint256, uint256, uint256 |
+| `getJobUris(uint256 jobId)` | view | string, string, string, string |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
-| `jobs(uint256)` | view | uint256, address, string, string, string, uint256, uint256, address, uint256, bool, bool, uint256, uint256, bool, string, uint256, uint256, bool, uint8, bool |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
 | `lockedEscrow()` | view | uint256 |
 | `maxJobPayout()` | view | uint256 |

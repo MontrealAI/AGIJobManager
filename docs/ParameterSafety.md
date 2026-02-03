@@ -167,7 +167,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - If validators cannot reach thresholds and a dispute is needed, use `disputeJob` and resolve with `resolveDisputeWithCode` (moderator only).
 
 4. **Validate recovery:**
-   - Use `getJobStatus` and the public `jobs(jobId)` getter to confirm `completed`/`disputed` status.
+   - Use `getJobStatus` plus `getJobCore(jobId)` / `getJobValidation(jobId)` to confirm `completed`/`disputed` status.
    - Confirm contract token balance is ≥ expected payout obligations.
 
 ## Optional hardening ideas (no code changes in this task)
