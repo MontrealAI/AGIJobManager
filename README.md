@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.33`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). `viaIR` is **enabled by default** because compilation without IR hits stack‑too‑deep; keep compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.33`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). `viaIR` is **disabled by default** now that stack‑too‑deep is resolved; keep compiler settings consistent for verification.
 
 ## Contract documentation
 
@@ -121,6 +121,7 @@ Detailed contract documentation lives in `docs/`:
 - [AGI Jobs one-pager (canonical narrative)](docs/AGI_JOBS_ONE_PAGER.md)
 - [AGIJobManager overview](docs/AGIJobManager.md)
 - [AGIJobManager interface reference](docs/AGIJobManager_Interface.md)
+- [Contract read API (jobs getters)](docs/contract-read-api.md)
 - [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
 - [AGIJobManager security considerations](docs/AGIJobManager_Security.md)
 

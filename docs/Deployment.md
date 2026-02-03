@@ -26,7 +26,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=false`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
@@ -43,7 +43,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
 - Optimizer enabled with **runs = 200**.
-- `viaIR = true` by default (required to compile without stack-too-deep errors).
+- `viaIR = false` by default.
 - `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
 
@@ -112,7 +112,7 @@ npx truffle run verify AGIJobManager --network mainnet
 - Keep the compiler settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`) identical to the original deployment.
 - Ensure your migration constructor parameters match the deployed contract.
 - If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
-- For `viaIR=true` deployments, Etherscan’s **Standard-Json-Input** flow must include `viaIR: true`, `optimizer.runs: 200`, and `metadata.bytecodeHash: "none"` if you verify manually.
+- If verifying a `viaIR=true` deployment, Etherscan’s **Standard-Json-Input** flow must include `viaIR: true`, `optimizer.runs: 200`, and `metadata.bytecodeHash: "none"` if you verify manually.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.

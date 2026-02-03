@@ -2,8 +2,8 @@
 
 This is a function‑by‑function reference of the deployed contract’s public/external interface. It is derived from the contract source and ABI.
 
-## Read‑only getters (auto‑generated)
-The following `public` state variables have auto‑generated getter functions:
+## Read‑only getters (auto‑generated + explicit)
+The following `public` state variables have auto‑generated getter functions (job storage uses explicit getters):
 - `agiToken()`, `baseIpfsUrl()`
 - `requiredValidatorApprovals()`, `requiredValidatorDisapprovals()`
 - `premiumReputationThreshold()`, `validationRewardPercentage()`
@@ -12,7 +12,8 @@ The following `public` state variables have auto‑generated getter functions:
 - `clubRootNode()`, `agentRootNode()`, `validatorMerkleRoot()`, `agentMerkleRoot()`
 - `ens()`, `nameWrapper()`
 - `nextJobId()`, `nextTokenId()`
-- `jobs(jobId)` (struct summary)
+- `getJobCore(jobId)`, `getJobValidation(jobId)`, `getJobURIs(jobId)`
+- `getJobValidatorCount(jobId)`, `getJobValidatorAt(jobId, index)`
 - `reputation(address)`
 - `moderators(address)`
 - `additionalValidators(address)`, `additionalAgents(address)`
