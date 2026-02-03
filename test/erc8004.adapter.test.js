@@ -48,6 +48,8 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
       ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

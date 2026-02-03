@@ -22,7 +22,9 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
   let nameWrapper;
   let manager;
   let clubRoot;
+  let alphaClubRoot;
   let agentRoot;
+  let alphaAgentRoot;
 
   const createJob = async (payout) => {
     await token.mint(employer, payout, { from: owner });
@@ -38,7 +40,9 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     clubRoot = rootNode("club-root");
+    alphaClubRoot = rootNode("alpha-club-root");
     agentRoot = rootNode("agent-root");
+    alphaAgentRoot = rootNode("alpha-agent-root");
 
     manager = await AGIJobManager.new(
       token.address,
@@ -46,7 +50,9 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

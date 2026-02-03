@@ -63,6 +63,8 @@ contract("AGIJobManager dispute hardening", (accounts) => {
       ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

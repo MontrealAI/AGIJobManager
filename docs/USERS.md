@@ -86,7 +86,9 @@ const resolver = await MockResolver.new();
 const nameWrapper = await MockNameWrapper.new();
 
 const clubRoot = web3.utils.soliditySha3({ type: "string", value: "club-root" });
+const alphaClubRoot = web3.utils.soliditySha3({ type: "string", value: "alpha-club-root" });
 const agentRoot = web3.utils.soliditySha3({ type: "string", value: "agent-root" });
+const alphaAgentRoot = web3.utils.soliditySha3({ type: "string", value: "alpha-agent-root" });
 const zeroRoot = "0x" + "00".repeat(32);
 
 const manager = await AGIJobManager.new(
@@ -95,7 +97,9 @@ const manager = await AGIJobManager.new(
   ens.address,
   nameWrapper.address,
   clubRoot,
+  alphaClubRoot,
   agentRoot,
+  alphaAgentRoot,
   zeroRoot,
   zeroRoot
 );

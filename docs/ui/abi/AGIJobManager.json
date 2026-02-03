@@ -2,7 +2,7 @@
   "contractName": "AGIJobManager",
   "compiler": {
     "name": "solc",
-    "version": "0.8.33+commit.64118f21.Emscripten.clang"
+    "version": "0.8.26+commit.8a97fa7a.Emscripten.clang"
   },
   "abi": [
     {
@@ -34,7 +34,17 @@
         },
         {
           "internalType": "bytes32",
+          "name": "_alphaClubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
           "name": "_agentRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_alphaAgentRootNode",
           "type": "bytes32"
         },
         {
@@ -54,6 +64,11 @@
     {
       "inputs": [],
       "name": "Blacklisted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ConfigLocked",
       "type": "error"
     },
     {
@@ -245,6 +260,19 @@
         }
       ],
       "name": "CompletionReviewPeriodUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        }
+      ],
+      "name": "ConfigurationLocked",
       "type": "event"
     },
     {
@@ -1012,6 +1040,32 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "alphaAgentRootNode",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "alphaClubRootNode",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -1107,6 +1161,19 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "configLocked",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -1772,6 +1839,13 @@
     {
       "inputs": [],
       "name": "unpause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lockConfiguration",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

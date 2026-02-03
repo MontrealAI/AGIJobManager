@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.26;
 
 import "../AGIJobManager.sol";
 
@@ -10,7 +10,9 @@ contract TestableAGIJobManager is AGIJobManager {
         address _ensAddress,
         address _nameWrapperAddress,
         bytes32 _clubRootNode,
+        bytes32 _alphaClubRootNode,
         bytes32 _agentRootNode,
+        bytes32 _alphaAgentRootNode,
         bytes32 _validatorMerkleRoot,
         bytes32 _agentMerkleRoot
     )
@@ -20,7 +22,9 @@ contract TestableAGIJobManager is AGIJobManager {
             _ensAddress,
             _nameWrapperAddress,
             _clubRootNode,
+            _alphaClubRootNode,
             _agentRootNode,
+            _alphaAgentRootNode,
             _validatorMerkleRoot,
             _agentMerkleRoot
         )

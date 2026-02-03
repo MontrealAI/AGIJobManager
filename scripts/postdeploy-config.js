@@ -203,6 +203,10 @@ module.exports = async function postdeployConfig(callback) {
     const accounts = await web3.eth.getAccounts();
     const txFrom = process.env.TX_FROM || accounts[0];
     assert(txFrom, "Missing TX_FROM and unable to resolve a default account");
+    const configLocked = await instance.configLocked();
+    if (configLocked && !args.dryRun) {
+      throw new Error("Configuration is locked. Re-run with --dry-run to inspect changes.");
+    }
 
     const currentApprovals = await instance.requiredValidatorApprovals();
     const currentDisapprovals = await instance.requiredValidatorDisapprovals();

@@ -22,7 +22,9 @@ contract("AGIJobManager happy path", (accounts) => {
   let manager;
   let agiType;
   let clubRoot;
+  let alphaClubRoot;
   let agentRoot;
+  let alphaAgentRoot;
 
   beforeEach(async () => {
     token = await MockERC20.new({ from: owner });
@@ -31,7 +33,9 @@ contract("AGIJobManager happy path", (accounts) => {
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     clubRoot = rootNode("club-root");
+    alphaClubRoot = rootNode("alpha-club-root");
     agentRoot = rootNode("agent-root");
+    alphaAgentRoot = rootNode("alpha-agent-root");
 
     manager = await AGIJobManager.new(
       token.address,
@@ -39,7 +43,9 @@ contract("AGIJobManager happy path", (accounts) => {
       ens.address,
       nameWrapper.address,
       clubRoot,
+      alphaClubRoot,
       agentRoot,
+      alphaAgentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
