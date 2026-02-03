@@ -349,7 +349,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       assert(contractBalanceAfter.sub(contractBalanceBefore).eq(payout));
 
-      const job = await manager.jobs(jobId);
+      const job = await manager.getJobCore(jobId);
       assert.equal(job.employer, employer);
       assert.equal(job.payout.toString(), payout.toString());
     });
@@ -494,6 +494,15 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
 
+      await expectCustomError(
+        manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 }),
+        "InvalidState"
+      );
+      await expectCustomError(
+        manager.disapproveJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 }),
+        "InvalidState"
+      );
+
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
       await expectCustomError(
@@ -546,7 +555,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const receipt = await manager.disapproveJob(jobId, "validator", buildProof(validatorTree, validator3), { from: validator3 });
       expectEvent(receipt, "JobDisputed", { jobId: new BN(jobId) });
 
-      const job = await manager.jobs(jobId);
+      const job = await manager.getJobCore(jobId);
       assert.equal(job.disputed, true);
     });
 
@@ -616,11 +625,12 @@ contract("AGIJobManager comprehensive", (accounts) => {
         resolutionCode: new BN(0),
       });
 
-      const job = await manager.jobs(jobId);
+      const job = await manager.getJobCore(jobId);
       assert.equal(job.disputed, true);
       assert.equal(job.completed, false);
       assert.equal(job.completionRequested, true);
-      assert.equal(job.jobCompletionURI, "ipfs-final");
+      const metadata = await manager.getJobMetadata(jobId);
+      assert.equal(metadata.jobCompletionURI, "ipfs-final");
     });
 
     it("restricts dispute resolution to moderators", async () => {

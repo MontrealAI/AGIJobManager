@@ -13,10 +13,10 @@ Once locked, the contract keeps operating for normal jobs, escrows, and dispute 
 These functions are guarded by `whenCriticalConfigurable` and **revert** once the configuration is locked:
 
 **Critical routing / identity**
-- `updateAGITokenAddress` (only allowed before any job exists and before the lock)
-- `updateEnsRegistry` (only allowed before any job exists and before the lock)
-- `updateNameWrapper` (only allowed before any job exists and before the lock)
-- `updateRootNodes` (only allowed before any job exists and before the lock)
+- `updateAGITokenAddress` (only allowed before any job exists/escrow and before the lock)
+- `updateEnsRegistry` (only allowed before any job exists/escrow and before the lock)
+- `updateNameWrapper` (only allowed before any job exists/escrow and before the lock)
+- `updateRootNodes` (only allowed before any job exists/escrow and before the lock)
 
 > **Note:** ENS registry, NameWrapper, and root node updates are intentionally limited to pre‑first‑job and pre‑lock windows to preserve identity safety.
 
