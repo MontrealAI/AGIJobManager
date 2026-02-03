@@ -12,7 +12,6 @@ The following `public` state variables have auto‑generated getter functions:
 - `clubRootNode()`, `agentRootNode()`, `validatorMerkleRoot()`, `agentMerkleRoot()`
 - `ens()`, `nameWrapper()`
 - `nextJobId()`, `nextTokenId()`
-- `jobs(jobId)` (struct summary)
 - `reputation(address)`
 - `moderators(address)`
 - `additionalValidators(address)`, `additionalAgents(address)`
@@ -20,6 +19,10 @@ The following `public` state variables have auto‑generated getter functions:
 - `listings(tokenId)`
 - `blacklistedAgents(address)`, `blacklistedValidators(address)`
 - `agiTypes(index)`
+
+Explicit job accessors:
+- `getJobCore(jobId)`, `getJobValidation(jobId)`, `getJobURIs(jobId)`
+- `getJobValidatorCount(jobId)`, `getJobValidatorAt(jobId, index)`
 
 ## Core workflow
 ### `createJob(string jobSpecURI, uint256 payout, uint256 duration, string details)`
