@@ -93,13 +93,14 @@ After setup and validation, lock configuration to minimize governance:
 - **Preferred**: set `LOCK_CONFIG=true` before migration to auto-lock.
 - **Manual**: call `lockConfiguration()` from the owner account.
 
-Once locked, all configuration setters are disabled permanently (see `docs/minimal-governance.md`).
+Once locked, **only critical configuration setters** are disabled permanently (token/ENS wiring/ENS roots if changeable). Normal operational knobs stay available (see `docs/minimal-governance.md`).
 
 ## 6) Break-glass runbook (after lock)
 
-After lock, operators should only use:
+After lock, operators should still have:
 - `pause()` / `unpause()` for incident response.
 - `resolveStaleDispute()` (owner + paused, after timeout) for dispute recovery.
-- Optional moderator rotation if required.
+- Moderator rotation (`addModerator`/`removeModerator`).
+- **Withdrawals of surplus funds only** (never escrowed funds), restricted to owner and only while paused.
 
-Everything else is frozen to keep governance surface minimal.
+Critical configuration (token/ENS wiring/ENS roots if configurable) is frozen to keep governance surface minimal while keeping operational safety tools available.

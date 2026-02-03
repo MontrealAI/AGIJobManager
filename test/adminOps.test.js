@@ -153,29 +153,43 @@ contract("AGIJobManager admin ops", (accounts) => {
     );
   });
 
-  it("locks configuration changes while retaining break-glass controls", async () => {
+  it("restricts token updates to pre-job configuration", async () => {
+    const newToken = await MockERC20.new({ from: owner });
+    await manager.updateAGITokenAddress(newToken.address, { from: owner });
+    assert.equal(await manager.agiToken(), newToken.address, "token should update before jobs");
+
+    const payout = toBN(toWei("3"));
+    await newToken.mint(employer, payout, { from: owner });
+    await newToken.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+
+    await expectCustomError(
+      manager.updateAGITokenAddress.call(token.address, { from: owner }),
+      "InvalidState"
+    );
+  });
+
+  it("locks only critical config and keeps operational controls", async () => {
     await manager.lockConfiguration({ from: owner });
     assert.equal(await manager.configLocked(), true, "config should be locked");
 
     await expectCustomError(
-      manager.setMaxJobPayout.call(toBN(toWei("1")), { from: owner }),
-      "ConfigLocked"
-    );
-    await expectCustomError(
-      manager.addAdditionalAgent.call(other, { from: owner }),
-      "ConfigLocked"
-    );
-    await expectCustomError(
-      manager.updateContactEmail.call("ops@example.com", { from: owner }),
+      manager.updateAGITokenAddress.call(token.address, { from: owner }),
       "ConfigLocked"
     );
 
+    await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
+    await manager.addAdditionalAgent(other, { from: owner });
+    await manager.updateContactEmail("ops@example.com", { from: owner });
+    await manager.blacklistAgent(agent, true, { from: owner });
+    await manager.addModerator(other, { from: owner });
+    await manager.removeModerator(other, { from: owner });
+
+    const surplus = toBN(toWei("2"));
+    await token.mint(manager.address, surplus, { from: owner });
     await manager.pause({ from: owner });
+    await manager.withdrawAGI(surplus, { from: owner });
     await manager.unpause({ from: owner });
-    await expectCustomError(
-      manager.blacklistAgent.call(agent, true, { from: owner }),
-      "ConfigLocked"
-    );
 
     await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
   });
