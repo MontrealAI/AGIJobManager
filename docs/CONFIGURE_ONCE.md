@@ -20,15 +20,15 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 
 ## One-time parameters (configure once)
 
-### A) Constructor-time (immutable)
-These are fixed at deployment and **cannot be changed** without redeploying.
+### A) Constructor-time (critical wiring)
+These are set at deployment and are **intended to be locked** before any job exists. They can be updated only pre‑first‑job and pre‑lock.
 
 - `agiToken` (ERC-20 used for escrow)
 - `baseIpfsUrl`
 - `ens` + `nameWrapper`
 - `clubRootNode` + `alphaClubRootNode`
 - `agentRootNode` + `alphaAgentRootNode`
-- `validatorMerkleRoot` + `agentMerkleRoot`
+- `validatorMerkleRoot` + `agentMerkleRoot` (allowlists only; can be updated post‑lock)
 
 > **Constructor encoding note (Truffle)**: the deployment script groups constructor inputs as `[token, baseIpfsUrl, [ENS, NameWrapper], [club, agent, alpha club, alpha agent], [validator Merkle, agent Merkle]]` to keep the ABI manageable. Mirror this ordering for custom deployments.
 
@@ -64,6 +64,7 @@ Use only when needed, with a runbook + signoff:
 - Add/remove additional validators/agents
 - Blacklist/unblacklist agents/validators
 - Add/update AGI types (payout tiers)
+- Update Merkle roots (allowlists only; does not change payout %)
 
 ## Invariants and defaults
 
@@ -107,6 +108,8 @@ Record these per network **before deploy**, and keep them immutable afterward.
   The output includes the Merkle root and proof for that address.
 - Maintain a canonical allowlist file per network (e.g., `allowlists/validators-mainnet.json`) and regenerate roots when the list changes.
 
+> **Allowlists do not affect payouts**: Merkle roots only gate access to apply/validate. Agent payout is always determined by AGIType NFT ownership (`getHighestPayoutPercentage`) at the time of application.
+
 ## Post-deploy configuration (scripted)
 
 ### 1) Configuration file (recommended)
@@ -141,6 +144,8 @@ truffle exec scripts/postdeploy-config.js --network <network> --address <AGIJobM
   "additionalText1": "...",
   "additionalText2": "...",
   "additionalText3": "...",
+  "validatorMerkleRoot": "0x...",
+  "agentMerkleRoot": "0x...",
   "agiTypes": [
     { "nftAddress": "0x...", "payoutPercentage": 50 }
   ],

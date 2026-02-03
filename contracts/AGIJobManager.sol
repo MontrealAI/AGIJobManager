@@ -219,8 +219,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event JobExpired(uint256 jobId, address employer, address agent, uint256 payout);
     event JobFinalized(uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout);
     event DisputeTimeoutResolved(uint256 jobId, address resolver, bool employerWins);
-    event RootNodeUpdated(bytes32 indexed newRootNode);
-    event MerkleRootUpdated(bytes32 indexed newMerkleRoot);
+    event EnsRegistryUpdated(address indexed newEnsRegistry);
+    event NameWrapperUpdated(address indexed newNameWrapper);
+    event RootNodesUpdated(
+        bytes32 clubRootNode,
+        bytes32 agentRootNode,
+        bytes32 alphaClubRootNode,
+        bytes32 alphaAgentRootNode
+    );
+    event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
     event OwnershipVerified(address claimant, string subdomain);
     event RecoveryInitiated(string reason);
     event AGITypeUpdated(address indexed nftAddress, uint256 payoutPercentage);
@@ -565,6 +572,36 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         agiToken = IERC20(_newTokenAddress);
+    }
+    function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenCriticalConfigurable {
+        if (_newEnsRegistry == address(0)) revert InvalidParameters();
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        ens = ENS(_newEnsRegistry);
+        emit EnsRegistryUpdated(_newEnsRegistry);
+    }
+    function updateNameWrapper(address _newNameWrapper) external onlyOwner whenCriticalConfigurable {
+        if (_newNameWrapper == address(0)) revert InvalidParameters();
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        nameWrapper = NameWrapper(_newNameWrapper);
+        emit NameWrapperUpdated(_newNameWrapper);
+    }
+    function updateRootNodes(
+        bytes32 _clubRootNode,
+        bytes32 _agentRootNode,
+        bytes32 _alphaClubRootNode,
+        bytes32 _alphaAgentRootNode
+    ) external onlyOwner whenCriticalConfigurable {
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        clubRootNode = _clubRootNode;
+        agentRootNode = _agentRootNode;
+        alphaClubRootNode = _alphaClubRootNode;
+        alphaAgentRootNode = _alphaAgentRootNode;
+        emit RootNodesUpdated(_clubRootNode, _agentRootNode, _alphaClubRootNode, _alphaAgentRootNode);
+    }
+    function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner {
+        validatorMerkleRoot = _validatorMerkleRoot;
+        agentMerkleRoot = _agentMerkleRoot;
+        emit MerkleRootsUpdated(_validatorMerkleRoot, _agentMerkleRoot);
     }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
