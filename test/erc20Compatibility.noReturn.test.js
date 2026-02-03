@@ -6,8 +6,13 @@ const MockENS = artifacts.require("MockENS");
 const MockERC721 = artifacts.require("MockERC721");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
-const { rootNode } = require("./helpers/ens");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const {
+  setupAgiToken,
+  AGI_TOKEN_ADDRESS,
+  CLUB_ROOT_NODE,
+  AGENT_ROOT_NODE,
+} = require("./helpers/agiToken");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 
@@ -17,17 +22,17 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
   let manager;
 
   beforeEach(async () => {
-    token = await ERC20NoReturn.new({ from: owner });
+    token = await setupAgiToken(ERC20NoReturn, accounts);
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
     manager = await AGIJobManager.new(
-      token.address,
+      AGI_TOKEN_ADDRESS,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
-      rootNode("club-root"),
-      rootNode("agent-root"),
+      CLUB_ROOT_NODE,
+      AGENT_ROOT_NODE,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

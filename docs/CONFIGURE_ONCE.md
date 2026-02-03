@@ -1,6 +1,6 @@
 # Configure Once, Operate with Minimal Governance
 
-This guide defines a **configure-once, set-and-forget** operational posture for AGIJobManager. The intent is to set stable parameters at deploy time (or immediately after), then minimize governance touchpoints to emergency-only actions. The contract itself remains unchanged; this guide focuses on **docs + tooling** aligned with the existing Truffle workflow.
+This guide defines a **configure-once, set-and-forget** operational posture for AGIJobManager. The intent is to set stable parameters at deploy time (or immediately after), then minimize governance touchpoints to emergency-only actions. The contract enforces fixed invariants for the AGI token and ENS roots; this guide focuses on **docs + tooling** aligned with the existing Truffle workflow.
 
 ## Scope
 
@@ -23,10 +23,10 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 ### A) Constructor-time (immutable)
 These are fixed at deployment and **cannot be changed** without redeploying.
 
-- `agiToken` (ERC-20 used for escrow)
+- `agiToken` (ERC-20 used for escrow; **must** be `0xA61a…`)
 - `baseIpfsUrl`
 - `ens` + `nameWrapper`
-- `clubRootNode` + `agentRootNode`
+- `clubRootNode` + `agentRootNode` (**must** be `namehash("club.agi.eth")` / `namehash("agent.agi.eth")`)
 - `validatorMerkleRoot` + `agentMerkleRoot`
 
 ### B) Post-deploy but intended to remain stable
@@ -65,12 +65,12 @@ Use only when needed, with a runbook + signoff:
 ## Network addresses
 
 ### Production token (fixed)
-The intended production token address is:
+The token address is enforced on-chain:
 
 - **AGI token**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
 
 ### ENS + NameWrapper + root nodes + Merkle roots
-Record these per network **before deploy**, and keep them immutable afterward.
+Record these per network **before deploy**, and keep them immutable afterward. `clubRootNode` and `agentRootNode` are enforced to the canonical roots; alpha.* variants are derived on-chain.
 
 | Network | ENS | NameWrapper | clubRootNode | agentRootNode | validatorMerkleRoot | agentMerkleRoot |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -79,7 +79,7 @@ Record these per network **before deploy**, and keep them immutable afterward.
 | other | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
 
 **Computing root nodes**:
-- `clubRootNode` and `agentRootNode` are **ENS namehashes** for the root namespaces you want to use (e.g., `club.agi.eth`, `agent.agi.eth`).
+- `clubRootNode` and `agentRootNode` are **ENS namehashes** for the canonical roots (`club.agi.eth`, `agent.agi.eth`).
 - Use `ethers.utils.namehash("<root-name>")` (or any ENS namehash implementation) and record the hex value per network.
 
 **Computing Merkle roots**:

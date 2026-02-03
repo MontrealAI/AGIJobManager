@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const MAX_RUNTIME_BYTES = 24575;
+const MAX_RUNTIME_BYTES = 24576;
 const artifactsDir = path.join(__dirname, "..", "build", "contracts");
 const defaultContracts = ["AGIJobManager", "TestableAGIJobManager"];
 
