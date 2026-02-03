@@ -136,7 +136,7 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Disputed + no moderators:** owner pauses and uses `resolveStaleDispute` after `disputeReviewPeriod`.
 
 5. **Verify recovery:**
-   - Query `jobs(jobId)` and `getJobStatus(jobId)` to confirm `completed` and `disputed` flags.
+   - Query `getJobState(jobId)`, `getJobValidation(jobId)`, and `getJobStatus(jobId)` to confirm `completed` and `disputed` flags.
    - Inspect emitted events (`JobCompleted`, `DisputeResolvedWithCode`, `DisputeResolved`, `NFTIssued`) and updated balances.
 
 ## Common reasons settlement reverts (errors → explanation → fix)
@@ -145,7 +145,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | --- | --- | --- | --- |
 | `Pausable: paused` | Most lifecycle actions | Contract is paused by owner. | Unpause once parameters are safe. |
 | `InvalidParameters` | `createJob`, `setValidationRewardPercentage`, `addAGIType`, `withdrawAGI`, `listNFT`, `contributeToRewardPool` | Input out of allowed bounds (e.g., zero payout, duration > limit, invalid percentage, zero price). | Provide valid values; check `maxJobPayout` and `jobDurationLimit`. |
-| `InvalidState` | Job actions, disputes, listings | Job not in expected lifecycle state (e.g., already completed, already assigned, listing inactive). | Read `jobs(jobId)` to confirm state; retry appropriate action. |
+| `InvalidState` | Job actions, disputes, listings | Job not in expected lifecycle state (e.g., already completed, already assigned, listing inactive). | Read `getJobState(jobId)` / `getJobValidation(jobId)` to confirm state; retry appropriate action. |
 | `NotAuthorized` | Role-gated paths | Caller lacks role/ownership (agent not assigned, validator not allowlisted, seller not NFT owner). | Verify role gating, allowlists, and ownership; add via owner if needed. |
 | `NotModerator` | `resolveDisputeWithCode` | Caller is not a moderator. | Owner must add moderator; then re-resolve. |
 | `Blacklisted` | `applyForJob`, `validateJob`, `disapproveJob` | Agent/validator is blocked. | Remove blacklist entry or use another participant. |
