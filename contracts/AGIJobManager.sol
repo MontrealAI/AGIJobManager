@@ -193,7 +193,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     uint256 public nextJobId;
     uint256 public nextTokenId;
-    mapping(uint256 => Job) public jobs;
+    mapping(uint256 => Job) internal jobs;
     mapping(address => uint256) public reputation;
     mapping(address => bool) public moderators;
     mapping(address => bool) public additionalValidators;
@@ -433,6 +433,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender] || _verifyOwnershipValidator(msg.sender, subdomain, proof))) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
+        if (bytes(job.jobCompletionURI).length == 0) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
 
@@ -454,6 +455,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender] || _verifyOwnershipValidator(msg.sender, subdomain, proof))) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
+        if (bytes(job.jobCompletionURI).length == 0) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
 
@@ -652,6 +654,62 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
         Job storage job = _job(_jobId);
         return job.agentPayoutPct;
+    }
+
+    function getJobCore(uint256 jobId) external view returns (
+        uint256 id,
+        address employer,
+        uint256 payout,
+        uint256 duration,
+        address assignedAgent,
+        uint256 assignedAt,
+        bool completed,
+        bool completionRequested,
+        bool disputed,
+        bool expired,
+        uint8 agentPayoutPct,
+        bool escrowReleased
+    ) {
+        Job storage job = jobs[jobId];
+        return (
+            job.id,
+            job.employer,
+            job.payout,
+            job.duration,
+            job.assignedAgent,
+            job.assignedAt,
+            job.completed,
+            job.completionRequested,
+            job.disputed,
+            job.expired,
+            job.agentPayoutPct,
+            job.escrowReleased
+        );
+    }
+
+    function getJobValidation(uint256 jobId) external view returns (
+        uint256 validatorApprovals,
+        uint256 validatorDisapprovals,
+        uint256 completionRequestedAt,
+        uint256 disputedAt
+    ) {
+        Job storage job = jobs[jobId];
+        return (
+            job.validatorApprovals,
+            job.validatorDisapprovals,
+            job.completionRequestedAt,
+            job.disputedAt
+        );
+    }
+
+    function getJobMetadata(uint256 jobId) external view returns (
+        string memory jobSpecURI,
+        string memory jobCompletionURI,
+        string memory ipfsHash,
+        string memory details
+    ) {
+        Job storage job = jobs[jobId];
+        return (job.jobSpecURI, job.jobCompletionURI, job.ipfsHash, job.details);
     }
 
     /// @notice Returns the canonical job status for UI/indexing.

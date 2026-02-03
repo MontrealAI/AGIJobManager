@@ -175,7 +175,7 @@ contract("AGIJobManager security regressions", (accounts) => {
 
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "agent-win dispute should complete after completion request");
     assert.strictEqual(job.completionRequested, true, "completion request should be recorded");
   });
@@ -194,7 +194,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.disputeJob(jobId, { from: employer });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "agent-win should settle after late completion request");
     assert.strictEqual(job.completionRequested, true, "late completion request should be recorded");
   });
@@ -213,7 +213,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.pause({ from: owner });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "agent-win should settle after paused completion request");
     assert.strictEqual(job.completionRequested, true, "paused completion request should be recorded");
   });
@@ -246,7 +246,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     await manager.disapproveJob(jobIdTwo, "validator", EMPTY_PROOF, { from: validator });
 
-    const job = await manager.jobs(jobIdTwo);
+    const job = await manager.getJobCore(jobIdTwo);
     assert.strictEqual(job.disputed, true, "job should be disputed after threshold");
   });
 

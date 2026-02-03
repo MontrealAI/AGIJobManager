@@ -1109,7 +1109,9 @@
       "function additionalValidators(address) view returns (bool)",
       "function blacklistedAgents(address) view returns (bool)",
       "function blacklistedValidators(address) view returns (bool)",
-      "function jobs(uint256) view returns (uint256,address,string,string,string,uint256,uint256,address,uint256,bool,bool,uint256,uint256,bool,string,uint256,uint256,bool,uint8,bool)",
+      "function getJobCore(uint256) view returns (uint256,address,uint256,uint256,address,uint256,bool,bool,bool,bool,uint8,bool)",
+      "function getJobValidation(uint256) view returns (uint256,uint256,uint256,uint256)",
+      "function getJobMetadata(uint256) view returns (string,string,string,string)",
       "function listings(uint256) view returns (uint256,address,uint256,bool)",
       "function ownerOf(uint256) view returns (address)",
       "function tokenURI(uint256) view returns (string)",
@@ -1746,13 +1748,13 @@
       let onchain = {};
       if (state.readContract) {
         try {
-          const job = await state.readContract.jobs(jobId);
+          const job = await state.readContract.getJobCore(jobId);
           onchain = {
-            payout_raw: job[5].toString(),
-            payout: formatToken(job[5]),
-            agent_payout_pct: job[18]?.toString?.() ?? null,
-            completion_requested: job[10],
-            disputed: job[13],
+            payout_raw: job[2].toString(),
+            payout: formatToken(job[2]),
+            agent_payout_pct: job[10]?.toString?.() ?? null,
+            completion_requested: job[7],
+            disputed: job[8],
           };
         } catch (error) {
           onchain = {};
@@ -2708,17 +2710,17 @@
       if (!state.contract) {
         throw new Error("Wallet signer not available.");
       }
-      const job = await state.readContract.jobs(jobId);
+      const job = await state.readContract.getJobCore(jobId);
       const eligibilityMessage = describeCancelIneligibility({
         employer: job[1],
-        assignedAgent: job[7],
-        completed: job[9],
+        assignedAgent: job[4],
+        completed: job[6],
       });
       if (eligibilityMessage) {
         throw new Error(eligibilityMessage);
       }
       await preflight(state.contract, "cancelJob", [jobId]);
-      const payout = formatToken(job[5]);
+      const payout = formatToken(job[2]);
       const confirmMessage = [
         `Cancel job ${jobId}`,
         `Contract: ${state.contractAddress}`,
@@ -3009,11 +3011,11 @@
     }
 
     function deriveJobStatus(job, indexEntry) {
-      const employer = job[1];
-      const assignedAgent = job[7];
-      const completed = job[9];
-      const completionRequested = job[10];
-      const disputed = job[13];
+      const employer = job.employer ?? job[1];
+      const assignedAgent = job.assignedAgent ?? job[4];
+      const completed = job.completed ?? job[6];
+      const completionRequested = job.completionRequested ?? job[7];
+      const disputed = job.disputed ?? job[8];
       let status = jobStatusFromIndex(indexEntry);
       if (employer === ethers.ZeroAddress) {
         status = "Deleted";
@@ -3450,20 +3452,22 @@
       }
 
       const jobs = await asyncPool(6, jobIds, async (jobId) => {
-        const job = await state.readContract.jobs(BigInt(jobId));
+        const jobCore = await state.readContract.getJobCore(BigInt(jobId));
+        const jobValidation = await state.readContract.getJobValidation(BigInt(jobId));
+        const jobMetadata = await state.readContract.getJobMetadata(BigInt(jobId));
         const indexEntry = state.index.jobs[jobId];
-        const status = await resolveJobStatus(jobId, job, indexEntry);
-        return { jobId, job, status };
+        const status = await resolveJobStatus(jobId, jobCore, indexEntry);
+        return { jobId, jobCore, jobValidation, jobMetadata, status };
       });
 
-      for (const { jobId, job, status } of jobs) {
-        const employer = job[1];
-        const assignedAgent = job[7];
-        const completed = job[9];
-        const completionRequested = job[10];
-        const approvals = job[11];
-        const disapprovals = job[12];
-        const disputed = job[13];
+      for (const { jobId, jobCore, jobValidation, jobMetadata, status } of jobs) {
+        const employer = jobCore.employer;
+        const assignedAgent = jobCore.assignedAgent;
+        const completed = jobCore.completed;
+        const completionRequested = jobCore.completionRequested;
+        const approvals = jobValidation.validatorApprovals;
+        const disapprovals = jobValidation.validatorDisapprovals;
+        const disputed = jobCore.disputed;
 
         const row = document.createElement("tr");
         const cells = [
@@ -3471,13 +3475,13 @@
           status,
           employer,
           assignedAgent,
-          formatToken(job[5]),
-          job[6].toString(),
+          formatToken(jobCore.payout),
+          jobCore.duration.toString(),
           `${approvals.toString()} / ${disapprovals.toString()}`,
           completionRequested ? "Yes" : "No",
           disputed ? "Yes" : "No",
-          job[2],
-          job[3],
+          jobMetadata.jobSpecURI,
+          jobMetadata.jobCompletionURI,
           job[14],
         ];
         for (const cell of cells) {
@@ -4183,8 +4187,8 @@
         return;
       }
       try {
-        const job = await state.readContract.jobs(BigInt(jobId));
-        const completionRequested = job[10];
+        const job = await state.readContract.getJobCore(BigInt(jobId));
+        const completionRequested = job[7];
         if (completionRequested) {
           button.disabled = false;
           if (notice) notice.hidden = true;

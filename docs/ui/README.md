@@ -128,7 +128,7 @@ The UI includes an employer-only **Cancel job** flow that mirrors the contractâ€
 - **Cancellation refunds the job payout** back to the employer.
 - **Disputed jobs can still be cancelled** as long as they remain unassigned and incomplete.
 
-The UI verifies the job struct (`jobs(jobId)`) before sending a transaction and then runs a static-call preflight
+The UI verifies the job state (`getJobCore(jobId)` / `getJobValidation(jobId)`) before sending a transaction and then runs a static-call preflight
 before showing a confirmation dialog. If the job was already cancelled/deleted, the employer address will be `0x0`
 and the UI will refuse to proceed.
 
@@ -293,11 +293,11 @@ The UI no longer enumerates every job or token ID. Instead it:
 ### Fallback mode (no indexer)
 
 If event indexing fails (wallet provider limits, RPC errors, etc.), the UI falls back to
-**range-based pagination** by calling `jobs(jobId)` or `ownerOf/tokenURI/listings` only for the
+**range-based pagination** by calling `getJobCore(jobId)` or `ownerOf/tokenURI/listings` only for the
 current page range (`latest` descending). Filters require the indexer and are disabled otherwise.
 
 ### Known indexing limitations
 
-- `JobCreated` does not include the employer address, so job rows hydrate via `jobs(jobId)`.
+- `JobCreated` does not include the employer address, so job rows hydrate via `getJobCore(jobId)`.
 - `JobCompletionRequested` now includes the completion metadata URI; the UI still hydrates job rows for the rest of the struct.
 - RPC providers often limit `eth_getLogs` ranges; smaller windows avoid failures.
