@@ -158,25 +158,42 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.equal(await manager.configLocked(), true, "config should be locked");
 
     await expectCustomError(
-      manager.setMaxJobPayout.call(toBN(toWei("1")), { from: owner }),
-      "ConfigLocked"
-    );
-    await expectCustomError(
-      manager.addAdditionalAgent.call(other, { from: owner }),
-      "ConfigLocked"
-    );
-    await expectCustomError(
-      manager.updateContactEmail.call("ops@example.com", { from: owner }),
+      manager.updateAGITokenAddress.call(other, { from: owner }),
       "ConfigLocked"
     );
 
+    await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
+    await manager.addAdditionalAgent(other, { from: owner });
+    await manager.updateContactEmail("ops@example.com", { from: owner });
+    await manager.blacklistAgent(agent, true, { from: owner });
+
+    const surplus = toBN(toWei("2"));
+    await token.mint(manager.address, surplus, { from: owner });
     await manager.pause({ from: owner });
+    await manager.withdrawAGI(surplus, { from: owner });
     await manager.unpause({ from: owner });
-    await expectCustomError(
-      manager.blacklistAgent.call(agent, true, { from: owner }),
-      "ConfigLocked"
-    );
 
     await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
+  });
+
+  it("only allows token updates before jobs exist and before lock", async () => {
+    const newToken = await MockERC20.new({ from: owner });
+    await manager.updateAGITokenAddress(newToken.address, { from: owner });
+
+    const payout = toBN(toWei("4"));
+    await newToken.mint(employer, payout, { from: owner });
+    await newToken.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+
+    await expectCustomError(
+      manager.updateAGITokenAddress.call(token.address, { from: owner }),
+      "InvalidState"
+    );
+
+    await manager.lockConfiguration({ from: owner });
+    await expectCustomError(
+      manager.updateAGITokenAddress.call(token.address, { from: owner }),
+      "ConfigLocked"
+    );
   });
 });

@@ -75,7 +75,7 @@ Manages moderator permissions.
 Explicit allowlists for roles, bypassing ENS/Merkle checks.
 
 ### `updateAGITokenAddress(address)`
-Changes the ERC‑20 token used for payouts.
+Changes the ERC‑20 token used for payouts. Only allowed before any jobs exist (`nextJobId == 0`), when `lockedEscrow == 0`, and before `lockConfiguration()`.
 
 ### `setBaseIpfsUrl(string)`
 Base prefix for minted NFT tokenURIs when a job URI is a bare CID.

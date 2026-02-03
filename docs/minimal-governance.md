@@ -4,49 +4,28 @@ This document explains the **configuration lock** and the intended “configure 
 
 ## What the configuration lock does
 
-Calling `lockConfiguration()` permanently disables configuration-changing admin functions. It is **one-way** and irreversible.
+Calling `lockConfiguration()` permanently disables **critical configuration** setters only. It is **one-way** and irreversible.
 
-Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, but governance surface is minimized.
+Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, while preventing catastrophic misconfiguration of identity and fund routing.
 
 ## Functions disabled after lock
 
-These functions are guarded by `whenConfigurable` and **revert** once the configuration is locked:
+The lock applies **only** to the critical configuration surface:
 
-**Economic + policy knobs**
-- `setRequiredValidatorApprovals`
-- `setRequiredValidatorDisapprovals`
-- `setPremiumReputationThreshold`
-- `setValidationRewardPercentage`
-- `setAdditionalAgentPayoutPercentage`
-- `setMaxJobPayout`
-- `setJobDurationLimit`
-- `setCompletionReviewPeriod`
-- `setDisputeReviewPeriod`
+- `updateAGITokenAddress` (ERC‑20 routing for escrow/payouts/withdrawals).
 
-**Identity + allowlist controls**
-- `addAdditionalValidator` / `removeAdditionalValidator`
-- `addAdditionalAgent` / `removeAdditionalAgent`
-- `blacklistAgent` / `blacklistValidator`
-
-**Metadata + UI/terms**
-- `setBaseIpfsUrl`
-- `updateTermsAndConditionsIpfsHash`
-- `updateContactEmail`
-- `updateAdditionalText1/2/3`
-
-**Token + types + admin cleanup**
-- `updateAGITokenAddress`
-- `addAGIType`
-- `delistJob`
-- `withdrawAGI`
+> **Note:** ENS registry, NameWrapper, and root nodes are constructor-only in this contract. If they become configurable in a future version, they must also be gated by the lock.
 
 ## Functions still available after lock
 
-These are considered **break-glass** or operational safety controls:
+These are considered operational controls and remain available after lock:
 
 - `pause()` / `unpause()` — incident response.
 - `resolveStaleDispute()` — owner-only recovery **while paused**, after the dispute timeout.
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
+- `withdrawAGI()` — owner-only, **paused**, and limited to **surplus** funds (`balance - lockedEscrow`).
+
+Tunable parameters (thresholds, timeouts, allowlists, metadata) remain adjustable post-lock unless they affect critical identity or fund routing.
 
 > **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.
 
