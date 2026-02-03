@@ -5,30 +5,12 @@ import "../AGIJobManager.sol";
 
 contract TestableAGIJobManager is AGIJobManager {
     constructor(
-        address _agiTokenAddress,
-        string memory _baseIpfsUrl,
-        address _ensAddress,
-        address _nameWrapperAddress,
-        bytes32 _clubRootNode,
-        bytes32 _agentRootNode,
-        bytes32 _alphaClubRootNode,
-        bytes32 _alphaAgentRootNode,
-        bytes32 _validatorMerkleRoot,
-        bytes32 _agentMerkleRoot
-    )
-        AGIJobManager(
-            _agiTokenAddress,
-            _baseIpfsUrl,
-            _ensAddress,
-            _nameWrapperAddress,
-            _clubRootNode,
-            _agentRootNode,
-            _alphaClubRootNode,
-            _alphaAgentRootNode,
-            _validatorMerkleRoot,
-            _agentMerkleRoot
-        )
-    {}
+        address agiTokenAddress,
+        string memory baseIpfs,
+        address[2] memory ensConfig,
+        bytes32[4] memory rootNodes,
+        bytes32[2] memory merkleRoots
+    ) AGIJobManager(agiTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots) {}
 
     function setValidationRewardPercentageUnsafe(uint256 _percentage) external {
         validationRewardPercentage = _percentage;

@@ -5,6 +5,8 @@ const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC721 = artifacts.require("MockERC721");
 const ReentrantERC20 = artifacts.require("ReentrantERC20");
 
+const { buildInitConfig } = require("./helpers/deploy");
+
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
@@ -28,17 +30,18 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
 
   beforeEach(async () => {
     token = await ReentrantERC20.new({ from: owner });
-    manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ensPlaceholder,
-      nameWrapperPlaceholder,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ensPlaceholder,
+        nameWrapperPlaceholder,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 

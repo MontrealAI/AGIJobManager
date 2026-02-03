@@ -10,6 +10,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { buildInitConfig } = require("./helpers/deploy");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -49,17 +50,18 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     alphaClubRoot = namehash("alpha.club.agi.eth");
     alphaAgentRoot = namehash("alpha.agent.agi.eth");
 
-    manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      alphaClubRoot,
-      alphaAgentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        alphaClubRoot,
+        alphaAgentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -151,17 +153,18 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const agentLeaf = Buffer.from(leafFor(agent).slice(2), "hex");
     const validatorLeaf = Buffer.from(leafFor(validator).slice(2), "hex");
 
-    const merkleManager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      alphaClubRoot,
-      alphaAgentRoot,
-      tree.getHexRoot(),
-      tree.getHexRoot(),
+    const merkleManager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        alphaClubRoot,
+        alphaAgentRoot,
+        tree.getHexRoot(),
+        tree.getHexRoot(),
+      ),
       { from: owner }
     );
 

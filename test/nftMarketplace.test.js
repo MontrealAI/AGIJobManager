@@ -14,6 +14,7 @@ const ERC721ReceiverBuyer = artifacts.require("ERC721ReceiverBuyer");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError, extractRevertData, selectorFor } = require("./helpers/errors");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -38,17 +39,18 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -213,17 +215,18 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(employer, toBN(toWei("40")), { from: owner });
 
-    const managerFailing = await AGIJobManager.new(
-      failing.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const managerFailing = await AGIJobManager.new(...buildInitConfig(
+        failing.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
@@ -251,17 +254,18 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
 
   it("blocks reentrancy during NFT purchase", async () => {
     const reentrant = await ReentrantERC20.new({ from: owner });
-    const managerReentrant = await AGIJobManager.new(
-      reentrant.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const managerReentrant = await AGIJobManager.new(...buildInitConfig(
+        reentrant.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);

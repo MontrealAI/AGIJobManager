@@ -14,9 +14,13 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 - `ens` registry
 - `nameWrapper`
 - `clubRootNode` (validator namespace)
+- `alphaClubRootNode` (validator alpha namespace)
 - `agentRootNode` (agent namespace)
+- `alphaAgentRootNode` (agent alpha namespace)
 - `validatorMerkleRoot`
 - `agentMerkleRoot`
+
+> **Constructor encoding note (Truffle)**: the deployment script groups constructor inputs as `[token, baseIpfsUrl, [ENS, NameWrapper], [club, agent, alpha club, alpha agent], [validator Merkle, agent Merkle]]`. Mirror this ordering for custom deployments.
 
 **Mainnet token invariant (non‑negotiable)**
 - **AGIALPHA ERC‑20**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA` (18 decimals)
@@ -84,7 +88,7 @@ These values should be set once in the post‑deploy configuration and treated a
 ## Minimal governance operations (day‑to‑day)
 
 - **Normal operations** require no owner action.
-- **Incident actions**: `pause`, `resolveStaleDispute` (paused), `withdrawAGI` (paused).
+- **Incident actions**: `pause`, `resolveStaleDispute` (paused).
 - **Rare actions**: adjust allowlists, add/remove moderators, update AGI types.
 
 For governance posture and emergency policy, see [`docs/GOVERNANCE.md`](GOVERNANCE.md).

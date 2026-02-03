@@ -5,6 +5,7 @@ const AGIJobManagerOriginal = artifacts.require("AGIJobManagerOriginal");
 const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_PROOF = [];
@@ -45,10 +46,17 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
   const merkleArgs = [leaf(validator), leaf(agent)];
   if (Contract.contractName === "AGIJobManager") {
     return Contract.new(
-      ...baseArgs,
-      rootNode("club-root"),
-      rootNode("agent-root"),
-      ...merkleArgs,
+      ...buildInitConfig(
+        tokenAddress,
+        "ipfs://base",
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        rootNode("club-root"),
+        rootNode("agent-root"),
+        rootNode("club-root"),
+        rootNode("agent-root"),
+        ...merkleArgs,
+      ),
       { from: owner }
     );
   }

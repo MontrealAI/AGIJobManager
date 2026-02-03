@@ -11,6 +11,7 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const EMPTY_PROOF = [];
 
@@ -41,17 +42,18 @@ async function deployManager({
 }) {
   const resolvedAlphaValidatorRootNode = alphaValidatorRootNode || validatorRootNode;
   const resolvedAlphaAgentRootNode = alphaAgentRootNode || agentRootNode;
-  return AGIJobManager.new(
-    token.address,
-    "ipfs://base",
-    ens.address,
-    nameWrapper.address,
-    validatorRootNode,
-    agentRootNode,
-    resolvedAlphaValidatorRootNode,
-    resolvedAlphaAgentRootNode,
-    validatorMerkleRoot,
-    agentMerkleRoot,
+  return AGIJobManager.new(...buildInitConfig(
+      token.address,
+      "ipfs://base",
+      ens.address,
+      nameWrapper.address,
+      validatorRootNode,
+      agentRootNode,
+      resolvedAlphaValidatorRootNode,
+      resolvedAlphaAgentRootNode,
+      validatorMerkleRoot,
+      agentMerkleRoot,
+    ),
     { from: owner }
   );
 }

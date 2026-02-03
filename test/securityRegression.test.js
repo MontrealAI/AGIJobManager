@@ -10,6 +10,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { buildInitConfig } = require("./helpers/deploy");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -36,17 +37,18 @@ contract("AGIJobManager security regressions", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -271,17 +273,18 @@ contract("AGIJobManager security regressions", (accounts) => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
-    const managerFailing = await AGIJobManager.new(
-      failing.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const managerFailing = await AGIJobManager.new(...buildInitConfig(
+        failing.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -300,17 +303,18 @@ contract("AGIJobManager security regressions", (accounts) => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(employer, toBN(toWei("10")), { from: owner });
 
-    const managerFailing = await AGIJobManager.new(
-      failing.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const managerFailing = await AGIJobManager.new(...buildInitConfig(
+        failing.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 

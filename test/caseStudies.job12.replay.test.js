@@ -7,6 +7,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_BYTES32 = "0x" + "0".repeat(64);
 const EMPTY_PROOF = [];
@@ -79,17 +80,18 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     alphaClubRootNode = clubRootNode;
     alphaAgentRootNode = agentRootNode;
 
-    manager = await AGIJobManager.new(
-      token.address,
-      baseIpfsUrl,
-      ens.address,
-      nameWrapper.address,
-      clubRootNode,
-      agentRootNode,
-      alphaClubRootNode,
-      alphaAgentRootNode,
-      ZERO_BYTES32,
-      ZERO_BYTES32,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        baseIpfsUrl,
+        ens.address,
+        nameWrapper.address,
+        clubRootNode,
+        agentRootNode,
+        alphaClubRootNode,
+        alphaAgentRootNode,
+        ZERO_BYTES32,
+        ZERO_BYTES32,
+      ),
       { from: owner }
     );
 

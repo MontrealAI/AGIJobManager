@@ -13,6 +13,7 @@ const MAINNET_ALPHA_CLUB_ROOT = "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768
 const MAINNET_AGENT_ROOT = "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d";
 const MAINNET_ALPHA_AGENT_ROOT = "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e";
 const DEFAULT_MERKLE_ROOT = "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b";
+const DEFAULT_IPFS_BASE = "https://ipfs.io/ipfs/";
 
 function isTrue(value) {
   return (value || "").toLowerCase() === "true";
@@ -31,6 +32,27 @@ function requireEnv(key, fallback) {
   return value;
 }
 
+function buildInitConfig(
+  tokenAddress,
+  baseIpfsUrl,
+  ensAddress,
+  nameWrapperAddress,
+  clubRootNode,
+  agentRootNode,
+  alphaClubRootNode,
+  alphaAgentRootNode,
+  validatorMerkleRoot,
+  agentMerkleRoot
+) {
+  return [
+    tokenAddress,
+    baseIpfsUrl,
+    [ensAddress, nameWrapperAddress],
+    [clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode],
+    [validatorMerkleRoot, agentMerkleRoot],
+  ];
+}
+
 module.exports = async function (deployer, network, accounts) {
   if (network === "development" || network === "test") {
     await deployer.deploy(MockERC20);
@@ -47,16 +69,18 @@ module.exports = async function (deployer, network, accounts) {
 
     await deployer.deploy(
       AGIJobManager,
-      token.address,
-      "https://ipfs.io/ipfs/",
-      ens.address,
-      nameWrapper.address,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT
+      ...buildInitConfig(
+        token.address,
+        DEFAULT_IPFS_BASE,
+        ens.address,
+        nameWrapper.address,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT
+      )
     );
 
     const mintAmount = web3.utils.toWei("100000");
@@ -66,7 +90,7 @@ module.exports = async function (deployer, network, accounts) {
 
   const networkId = Number(deployer.network_id);
   const isMainnet = network === "mainnet" || networkId === 1;
-  const baseIpfsUrl = envValue("AGI_BASE_IPFS_URL", "https://ipfs.io/ipfs/");
+  const baseIpfsUrl = envValue("AGI_BASE_IPFS_URL", DEFAULT_IPFS_BASE);
 
   const tokenAddress = isMainnet
     ? envValue("AGI_TOKEN_ADDRESS", MAINNET_TOKEN)
@@ -94,16 +118,18 @@ module.exports = async function (deployer, network, accounts) {
 
   await deployer.deploy(
     AGIJobManager,
-    tokenAddress,
-    baseIpfsUrl,
-    ensAddress,
-    nameWrapperAddress,
-    clubRootNode,
-    agentRootNode,
-    alphaClubRootNode,
-    alphaAgentRootNode,
-    validatorMerkleRoot,
-    agentMerkleRoot
+    ...buildInitConfig(
+      tokenAddress,
+      baseIpfsUrl,
+      ensAddress,
+      nameWrapperAddress,
+      clubRootNode,
+      agentRootNode,
+      alphaClubRootNode,
+      alphaAgentRootNode,
+      validatorMerkleRoot,
+      agentMerkleRoot
+    )
   );
 
   const manager = await AGIJobManager.deployed();

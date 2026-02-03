@@ -12,6 +12,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -37,17 +38,18 @@ contract("AGIJobManager admin ops", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -127,17 +129,18 @@ contract("AGIJobManager admin ops", (accounts) => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(owner, toBN(toWei("2")), { from: owner });
 
-    const managerFailing = await AGIJobManager.new(
-      failing.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const managerFailing = await AGIJobManager.new(...buildInitConfig(
+        failing.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -169,8 +172,10 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     await manager.pause({ from: owner });
     await manager.unpause({ from: owner });
-    await manager.blacklistAgent(agent, true, { from: owner });
-    assert.equal(await manager.blacklistedAgents(agent), true, "blacklist should remain operable");
+    await expectCustomError(
+      manager.blacklistAgent.call(agent, true, { from: owner }),
+      "ConfigLocked"
+    );
 
     await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
   });
