@@ -9,6 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -40,17 +41,18 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 

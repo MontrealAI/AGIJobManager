@@ -26,8 +26,11 @@ These are fixed at deployment and **cannot be changed** without redeploying.
 - `agiToken` (ERC-20 used for escrow)
 - `baseIpfsUrl`
 - `ens` + `nameWrapper`
-- `clubRootNode` + `agentRootNode`
+- `clubRootNode` + `alphaClubRootNode`
+- `agentRootNode` + `alphaAgentRootNode`
 - `validatorMerkleRoot` + `agentMerkleRoot`
+
+> **Constructor encoding note (Truffle)**: the deployment script groups constructor inputs as `[token, baseIpfsUrl, [ENS, NameWrapper], [club, agent, alpha club, alpha agent], [validator Merkle, agent Merkle]]` to keep the ABI manageable. Mirror this ordering for custom deployments.
 
 ### B) Post-deploy but intended to remain stable
 Set these once via `scripts/postdeploy-config.js` and treat changes as exceptional.
@@ -61,6 +64,19 @@ Use only when needed, with a runbook + signoff:
 - Add/remove additional validators/agents
 - Blacklist/unblacklist agents/validators
 - Add/update AGI types (payout tiers)
+
+## Invariants and defaults
+
+**Canonical mainnet token (18 decimals)**
+- AGIALPHA mainnet token: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
+
+**ENS root nodes (namehash)**
+- `club.agi.eth`: `0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16`
+- `alpha.club.agi.eth`: `0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e`
+- `agent.agi.eth`: `0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d`
+- `alpha.agent.agi.eth`: `0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e`
+
+> **Note:** ENS registry and NameWrapper addresses are chain-specific and must remain configurable for Sepolia/local/private networks. The root node namehashes above are deterministic across chains.
 
 ## Network addresses
 

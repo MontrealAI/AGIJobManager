@@ -11,6 +11,7 @@ const MockERC721 = artifacts.require('MockERC721');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
 const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
+const { buildInitConfig } = require('./helpers/deploy');
 
 const ZERO_ROOT = '0x' + '00'.repeat(32);
 const EMPTY_PROOF = [];
@@ -39,17 +40,18 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    manager = await AGIJobManager.new(
-      token.address,
-      'ipfs://base',
-      ens.address,
-      nameWrapper.address,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        'ipfs://base',
+        ens.address,
+        nameWrapper.address,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 

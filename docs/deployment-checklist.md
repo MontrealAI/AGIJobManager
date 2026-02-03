@@ -8,7 +8,7 @@ This checklist is a practical, operator-facing guide for deploying **AGIJobManag
 - **Moderator set**: decide who can resolve disputes (ideally a separate multisig or a small quorum).
 - **Operational posture**: decide whether you will:
   - allow any post-lock changes (recommended: only pause/unpause + incident response),
-  - enable blacklists for abuse mitigation,
+  - use blacklists for abuse mitigation before configuration is locked,
   - rotate moderators (optional break-glass).
 
 ## 2) Network-specific addresses
@@ -100,7 +100,6 @@ Once locked, all configuration setters are disabled permanently (see `docs/minim
 After lock, operators should only use:
 - `pause()` / `unpause()` for incident response.
 - `resolveStaleDispute()` (owner + paused, after timeout) for dispute recovery.
-- `blacklistAgent()` / `blacklistValidator()` for abuse mitigation.
 - Optional moderator rotation if required.
 
 Everything else is frozen to keep governance surface minimal.

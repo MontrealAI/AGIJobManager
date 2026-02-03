@@ -26,6 +26,7 @@ These functions are guarded by `whenConfigurable` and **revert** once the config
 **Identity + allowlist controls**
 - `addAdditionalValidator` / `removeAdditionalValidator`
 - `addAdditionalAgent` / `removeAdditionalAgent`
+- `blacklistAgent` / `blacklistValidator`
 
 **Metadata + UI/terms**
 - `setBaseIpfsUrl`
@@ -45,7 +46,6 @@ These are considered **break-glass** or operational safety controls:
 
 - `pause()` / `unpause()` — incident response.
 - `resolveStaleDispute()` — owner-only recovery **while paused**, after the dispute timeout.
-- `blacklistAgent()` / `blacklistValidator()` — abuse mitigation.
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
 
 > **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.

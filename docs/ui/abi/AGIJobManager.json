@@ -9,53 +9,28 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_agiTokenAddress",
+          "name": "agiTokenAddress",
           "type": "address"
         },
         {
           "internalType": "string",
-          "name": "_baseIpfsUrl",
+          "name": "baseIpfs",
           "type": "string"
         },
         {
-          "internalType": "address",
-          "name": "_ensAddress",
-          "type": "address"
+          "internalType": "address[2]",
+          "name": "ensConfig",
+          "type": "address[2]"
         },
         {
-          "internalType": "address",
-          "name": "_nameWrapperAddress",
-          "type": "address"
+          "internalType": "bytes32[4]",
+          "name": "rootNodes",
+          "type": "bytes32[4]"
         },
         {
-          "internalType": "bytes32",
-          "name": "_clubRootNode",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_agentRootNode",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_alphaClubRootNode",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_alphaAgentRootNode",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_validatorMerkleRoot",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_agentMerkleRoot",
-          "type": "bytes32"
+          "internalType": "bytes32[2]",
+          "name": "merkleRoots",
+          "type": "bytes32[2]"
         }
       ],
       "stateMutability": "nonpayable",
@@ -268,8 +243,14 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "by",
+          "name": "locker",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "atTimestamp",
+          "type": "uint256"
         }
       ],
       "name": "ConfigurationLocked",

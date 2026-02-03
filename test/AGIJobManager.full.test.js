@@ -11,6 +11,7 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const FailingERC20 = artifacts.require("FailingERC20");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -163,17 +164,18 @@ contract("AGIJobManager comprehensive", (accounts) => {
     alphaClubRootNode = clubRootNode;
     alphaAgentRootNode = agentRootNode;
 
-    manager = await AGIJobManager.new(
-      token.address,
-      baseIpfsUrl,
-      ens.address,
-      nameWrapper.address,
-      clubRootNode,
-      agentRootNode,
-      alphaClubRootNode,
-      alphaAgentRootNode,
-      validatorRoot,
-      agentRoot,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        baseIpfsUrl,
+        ens.address,
+        nameWrapper.address,
+        clubRootNode,
+        agentRootNode,
+        alphaClubRootNode,
+        alphaAgentRootNode,
+        validatorRoot,
+        agentRoot,
+      ),
       { from: owner }
     );
 
@@ -637,17 +639,18 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failing = await FailingERC20.new({ from: owner });
       await failing.mint(employer, web3.utils.toWei("10"), { from: owner });
 
-      const managerFailing = await AGIJobManager.new(
-        failing.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRootNode,
-        agentRootNode,
-        alphaClubRootNode,
-        alphaAgentRootNode,
-        validatorRoot,
-        agentRoot,
+      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+          failing.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRootNode,
+          agentRootNode,
+          alphaClubRootNode,
+          alphaAgentRootNode,
+          validatorRoot,
+          agentRoot,
+        ),
         { from: owner }
       );
 
@@ -664,17 +667,18 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failing = await FailingERC20.new({ from: owner });
       await failing.mint(employer, web3.utils.toWei("20"), { from: owner });
 
-      const managerFailing = await AGIJobManager.new(
-        failing.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRootNode,
-        agentRootNode,
-        alphaClubRootNode,
-        alphaAgentRootNode,
-        validatorRoot,
-        agentRoot,
+      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+          failing.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRootNode,
+          agentRootNode,
+          alphaClubRootNode,
+          alphaAgentRootNode,
+          validatorRoot,
+          agentRoot,
+        ),
         { from: owner }
       );
 
@@ -700,17 +704,18 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await failing.mint(employer, web3.utils.toWei("20"), { from: owner });
       await failing.mint(buyer, web3.utils.toWei("20"), { from: owner });
 
-      const managerFailing = await AGIJobManager.new(
-        failing.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRootNode,
-        agentRootNode,
-        alphaClubRootNode,
-        alphaAgentRootNode,
-        validatorRoot,
-        agentRoot,
+      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+          failing.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRootNode,
+          agentRootNode,
+          alphaClubRootNode,
+          alphaAgentRootNode,
+          validatorRoot,
+          agentRoot,
+        ),
         { from: owner }
       );
 
@@ -736,17 +741,18 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failing = await FailingERC20.new({ from: owner });
       await failing.mint(employer, web3.utils.toWei("10"), { from: owner });
 
-      const managerFailing = await AGIJobManager.new(
-        failing.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRootNode,
-        agentRootNode,
-        alphaClubRootNode,
-        alphaAgentRootNode,
-        validatorRoot,
-        agentRoot,
+      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+          failing.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRootNode,
+          agentRootNode,
+          alphaClubRootNode,
+          alphaAgentRootNode,
+          validatorRoot,
+          agentRoot,
+        ),
         { from: owner }
       );
 
@@ -1019,17 +1025,18 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failTransferToken = await FailTransferToken.new({ from: owner });
       await failTransferToken.mint(employer, payout, { from: owner });
 
-      const managerFailing = await AGIJobManager.new(
-        failTransferToken.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRootNode,
-        agentRootNode,
-        alphaClubRootNode,
-        alphaAgentRootNode,
-        validatorRoot,
-        agentRoot,
+      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+          failTransferToken.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRootNode,
+          agentRootNode,
+          alphaClubRootNode,
+          alphaAgentRootNode,
+          validatorRoot,
+          agentRoot,
+        ),
         { from: owner }
       );
 

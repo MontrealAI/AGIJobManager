@@ -4,6 +4,7 @@ const keccak256 = require("keccak256");
 
 const { expectCustomError } = require("./helpers/errors");
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -90,17 +91,18 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     clubRoot = rootNode("club");
     agentRoot = rootNode("agent");
 
-    manager = await AGIJobManager.new(
-      token.address,
-      baseIpfsUrl,
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      validatorTree.root,
-      agentTree.root,
+    manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        baseIpfsUrl,
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        validatorTree.root,
+        agentTree.root,
+      ),
       { from: owner }
     );
 
@@ -535,17 +537,18 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.setFailTransferFroms(true);
 
-      const altManager = await AGIJobManager.new(
-        failingToken.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRoot,
-        agentRoot,
-        clubRoot,
-        agentRoot,
-        validatorTree.root,
-        agentTree.root
+      const altManager = await AGIJobManager.new(...buildInitConfig(
+          failingToken.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRoot,
+          agentRoot,
+          clubRoot,
+          agentRoot,
+          validatorTree.root,
+          agentTree.root,
+        )
       );
 
       await failingToken.approve(altManager.address, payout, { from: employer });
@@ -560,17 +563,18 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
-      const altManager = await AGIJobManager.new(
-        failingToken.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRoot,
-        agentRoot,
-        clubRoot,
-        agentRoot,
-        validatorTree.root,
-        agentTree.root
+      const altManager = await AGIJobManager.new(...buildInitConfig(
+          failingToken.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRoot,
+          agentRoot,
+          clubRoot,
+          agentRoot,
+          validatorTree.root,
+          agentTree.root,
+        )
       );
       await altManager.addAdditionalAgent(agent, { from: owner });
       await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });
@@ -595,17 +599,18 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
-      const altManager = await AGIJobManager.new(
-        failingToken.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRoot,
-        agentRoot,
-        clubRoot,
-        agentRoot,
-        validatorTree.root,
-        agentTree.root
+      const altManager = await AGIJobManager.new(...buildInitConfig(
+          failingToken.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRoot,
+          agentRoot,
+          clubRoot,
+          agentRoot,
+          validatorTree.root,
+          agentTree.root,
+        )
       );
       await altManager.addAdditionalAgent(agent, { from: owner });
       await altManager.addAdditionalValidator(validatorOne, { from: owner });
@@ -632,17 +637,18 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(buyer, payout);
 
-      const altManager = await AGIJobManager.new(
-        failingToken.address,
-        baseIpfsUrl,
-        ens.address,
-        nameWrapper.address,
-        clubRoot,
-        agentRoot,
-        clubRoot,
-        agentRoot,
-        validatorTree.root,
-        agentTree.root
+      const altManager = await AGIJobManager.new(...buildInitConfig(
+          failingToken.address,
+          baseIpfsUrl,
+          ens.address,
+          nameWrapper.address,
+          clubRoot,
+          agentRoot,
+          clubRoot,
+          agentRoot,
+          validatorTree.root,
+          agentTree.root,
+        )
       );
       await altManager.addAdditionalAgent(agent, { from: owner });
       await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });

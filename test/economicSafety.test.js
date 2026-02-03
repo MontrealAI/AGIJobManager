@@ -9,6 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
+const { buildInitConfig } = require("./helpers/deploy");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -32,17 +33,18 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("prevents adding or updating AGI types that exceed payout headroom", async () => {
-    const manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -56,17 +58,18 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("prevents validation reward updates that exceed configured max agent payout", async () => {
-    const manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -76,17 +79,18 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("ignores additional agent payout settings when validating reward headroom", async () => {
-    const manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -96,17 +100,18 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("reverts settlement when misconfigured payout exceeds escrow (defense-in-depth)", async () => {
-    const manager = await TestableAGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const manager = await TestableAGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -136,17 +141,18 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("settles successfully with safe payout configuration", async () => {
-    const manager = await AGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
@@ -182,17 +188,18 @@ contract("AGIJobManager economic safety", (accounts) => {
   });
 
   it("reverts minting a job NFT when completion metadata is empty (defensive)", async () => {
-    const manager = await TestableAGIJobManager.new(
-      token.address,
-      "ipfs://base",
-      ens.address,
-      nameWrapper.address,
-      clubRoot,
-      agentRoot,
-      clubRoot,
-      agentRoot,
-      ZERO_ROOT,
-      ZERO_ROOT,
+    const manager = await TestableAGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
       { from: owner }
     );
 
