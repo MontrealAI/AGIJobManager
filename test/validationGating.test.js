@@ -9,6 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
+const { getJob } = require("./helpers/job");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -85,7 +86,7 @@ contract("AGIJobManager validation gating", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
-    const job = await manager.jobs(jobId);
+    const job = await getJob(manager, jobId);
     assert.equal(job.disputed, true, "job should be marked disputed after disapproval threshold");
   });
 });
