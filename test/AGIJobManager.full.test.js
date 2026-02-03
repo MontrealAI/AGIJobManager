@@ -12,6 +12,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const FailingERC20 = artifacts.require("FailingERC20");
 const { buildInitConfig } = require("./helpers/deploy");
+const { getJob } = require("./helpers/job");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -349,7 +350,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       assert(contractBalanceAfter.sub(contractBalanceBefore).eq(payout));
 
-      const job = await manager.jobs(jobId);
+      const job = await getJob(manager, jobId);
       assert.equal(job.employer, employer);
       assert.equal(job.payout.toString(), payout.toString());
     });
@@ -374,7 +375,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "90");
+      assert.equal((await getJob(manager, jobId)).agentPayoutPct.toString(), "90");
 
       await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
 
@@ -396,7 +397,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await manager.applyForJob(jobId, "", [], { from: other });
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "1");
+      assert.equal((await getJob(manager, jobId)).agentPayoutPct.toString(), "1");
 
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const agentBalanceBefore = new BN(await token.balanceOf(other));
@@ -546,7 +547,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const receipt = await manager.disapproveJob(jobId, "validator", buildProof(validatorTree, validator3), { from: validator3 });
       expectEvent(receipt, "JobDisputed", { jobId: new BN(jobId) });
 
-      const job = await manager.jobs(jobId);
+      const job = await getJob(manager, jobId);
       assert.equal(job.disputed, true);
     });
 
@@ -616,7 +617,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
         resolutionCode: new BN(0),
       });
 
-      const job = await manager.jobs(jobId);
+      const job = await getJob(manager, jobId);
       assert.equal(job.disputed, true);
       assert.equal(job.completed, false);
       assert.equal(job.completionRequested, true);

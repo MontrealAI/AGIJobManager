@@ -116,11 +116,22 @@ Everything else remains operable but should be governed by your ops policy to ke
 
 **Normal path (viaIR enabled)**:
 1. Compile with `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`.
-2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args.
+2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args:
+   ```bash
+   npx truffle run verify AGIJobManager --network mainnet
+   ```
 
-**Fallback (viaIR + Standard JSON input)**:
-1. Compile with `SOLC_VIA_IR=true` and the same optimizer/metadata settings.
-2. In Etherscan, select **Solidity (Standard-Json-Input)** and paste the JSON from the build step.
-3. Ensure the JSON includes `viaIR: true`, `optimizer.runs: 200`, `metadata.bytecodeHash: "none"`, and the exact constructor args.
+**Fallback (Standard JSON input)**:
+If the plugin fails, verify with Etherscan’s **Standard-Json-Input** flow:
 
-> To reproduce Standard JSON input deterministically, keep compiler settings pinned in `truffle-config.js` and rebuild before verification.
+1. Build a standard JSON input file (set `viaIR` to match your deployment):
+   ```bash
+   node -e "const fs=require('fs');const input={language:'Solidity',sources:{'contracts/AGIJobManager.sol':{content:fs.readFileSync('contracts/AGIJobManager.sol','utf8')}},settings:{optimizer:{enabled:true,runs:200},evmVersion:'london',viaIR:true,metadata:{bytecodeHash:'none'},outputSelection:{'*':{'*':['abi','evm.bytecode','evm.deployedBytecode','metadata']}}}};fs.writeFileSync('standard-json-input.json',JSON.stringify(input,null,2));"
+   ```
+2. Compile the JSON input with the exact compiler version:
+   ```bash
+   npx solc@0.8.33 --standard-json --base-path . --include-path node_modules standard-json-input.json > standard-json-output.json
+   ```
+3. In Etherscan, select **Solidity (Standard-Json-Input)** and paste `standard-json-input.json`.
+
+Ensure the JSON settings match the deployment (`viaIR`, `optimizer.runs`, `metadata.bytecodeHash`, and constructor args).

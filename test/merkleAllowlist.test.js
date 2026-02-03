@@ -8,6 +8,8 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const MockENSReverter = artifacts.require("MockENSReverter");
+const MockNameWrapperReverter = artifacts.require("MockNameWrapperReverter");
 const MockERC721 = artifacts.require("MockERC721");
 
 const { buildInitConfig } = require("./helpers/deploy");
@@ -90,5 +92,43 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
 
     const expected = payout.muln(payoutTier).divn(100);
     assert.equal(after.sub(before).toString(), expected.toString(), "payout should match AGIType tier");
+  });
+
+  it("checks Merkle allowlists before ENS ownership lookups", async () => {
+    const ensReverter = await MockENSReverter.new({ from: owner });
+    const nameWrapperReverter = await MockNameWrapperReverter.new({ from: owner });
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+
+    const localManager = await AGIJobManager.new(
+      ...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ensReverter.address,
+        nameWrapperReverter.address,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        ZERO_ROOT,
+        tree.getHexRoot(),
+        tree.getHexRoot(),
+      ),
+      { from: owner },
+    );
+
+    await localManager.addAGIType(agiType.address, 10, { from: owner });
+    await localManager.setRequiredValidatorApprovals(1, { from: owner });
+    await token.approve(localManager.address, payout, { from: employer });
+
+    const jobId = (await localManager.createJob("ipfs-job", payout, 3600, "details", { from: employer }))
+      .logs[0]
+      .args.jobId.toNumber();
+
+    const agentLeaf = Buffer.from(leafFor(agent).slice(2), "hex");
+    const validatorLeaf = Buffer.from(leafFor(validator).slice(2), "hex");
+
+    await localManager.applyForJob(jobId, "ignored", tree.getHexProof(agentLeaf), { from: agent });
+    await localManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await localManager.validateJob(jobId, "ignored", tree.getHexProof(validatorLeaf), { from: validator });
   });
 });
