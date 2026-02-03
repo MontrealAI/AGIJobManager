@@ -7,15 +7,15 @@
 ## Q2) Why does `NotAuthorized` happen even though I own the name?
 Common causes:
 - You are using the **wrong environment** (non‑alpha vs alpha).
-- The deployment is configured with **alpha** root nodes, but you own a **non‑alpha** name.
+- The subdomain label is correct, but ENS ownership is not set under either the base or alpha root.
 - The ENS resolver is not set to your wallet address.
 - You are not on the allowlist and were not added to `additionalAgents/Validators`.
 
 ## Q3) Can I use `helper.agent.agi.eth` with an alpha deployment?
-**No.** If the contract was deployed with `alpha.agent.agi.eth` and `alpha.club.agi.eth` root nodes, only the **alpha** names (e.g., `helper.alpha.agent.agi.eth`) will pass the ownership checks.
+**Yes.** The contract checks **both** base and alpha roots, so `helper.agent.agi.eth` and `helper.alpha.agent.agi.eth` are both valid when ownership is correctly set.
 
 ## Q4) Can the root nodes or Merkle roots be changed after deployment?
-**No.** They are immutable in this contract. If they are wrong, the contract must be redeployed.
+**No.** Root nodes are compile-time constants and Merkle roots are constructor-time immutables. If they are wrong, the contract must be redeployed.
 
 ## Q5) What if the ENS/NameWrapper contracts are down or revert?
 The contract emits `RecoveryInitiated` events for these failure paths and continues evaluation. In practice, this means you should **monitor those events** to spot ENS issues.

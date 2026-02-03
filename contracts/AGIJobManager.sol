@@ -42,7 +42,7 @@ OVERRIDING AUTHORITY: AGI.ETH
 
 */
 
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -116,7 +116,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     bytes32 private constant RES_AGENT_WIN = 0x6594a8dd3f558fd2dd11fa44c7925f5b9e19868e6d0b4b97d2132fe5e25b5071;
     bytes32 private constant RES_EMPLOYER_WIN = 0xee31e9f396a85b8517c6d07b02f904858ad9f3456521bedcff02cc14e75ca8ce;
 
-    IERC20 public agiToken;
+    address public constant AGI_TOKEN_ADDRESS = 0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA;
+    IERC20 public constant agiToken = IERC20(AGI_TOKEN_ADDRESS);
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
@@ -140,8 +141,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     string public additionalText2;
     string public additionalText3;
 
-    bytes32 public clubRootNode;
-    bytes32 public agentRootNode;
+    bytes32 public constant clubRootNode = 0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16;
+    bytes32 public constant clubRootNodeAlpha = 0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e;
+    bytes32 public constant agentRootNode = 0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d;
+    bytes32 public constant agentRootNodeAlpha = 0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e;
     bytes32 public validatorMerkleRoot;
     bytes32 public agentMerkleRoot;
     ENS public ens;
@@ -229,21 +232,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
 
     constructor(
-        address _agiTokenAddress,
         string memory _baseIpfsUrl,
         address _ensAddress,
         address _nameWrapperAddress,
-        bytes32 _clubRootNode,
-        bytes32 _agentRootNode,
         bytes32 _validatorMerkleRoot,
         bytes32 _agentMerkleRoot
     ) ERC721("AGIJobs", "Job") {
-        agiToken = IERC20(_agiTokenAddress);
         baseIpfsUrl = _baseIpfsUrl;
         ens = ENS(_ensAddress);
         nameWrapper = NameWrapper(_nameWrapperAddress);
-        clubRootNode = _clubRootNode;
-        agentRootNode = _agentRootNode;
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
 
@@ -365,7 +362,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
-        if (!(additionalAgents[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, agentRootNode))) revert NotAuthorized();
+        if (!(additionalAgents[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, true))) revert NotAuthorized();
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
@@ -396,7 +393,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.completed) revert InvalidState();
         if (job.expired) revert InvalidState();
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
-        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, false))) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
@@ -417,7 +414,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.completed) revert InvalidState();
         if (job.expired) revert InvalidState();
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
-        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, clubRootNode))) revert NotAuthorized();
+        if (!(additionalValidators[msg.sender] || _verifyOwnership(msg.sender, subdomain, proof, false))) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
         if (job.disapprovals[msg.sender]) revert InvalidState();
         if (job.approvals[msg.sender]) revert InvalidState();
@@ -529,7 +526,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function addModerator(address _moderator) external onlyOwner { moderators[_moderator] = true; }
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
-    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner { agiToken = IERC20(_newTokenAddress); }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
@@ -705,20 +701,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             return;
         }
 
-        bool agentWins;
-        if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
-            agentWins = true;
-        } else {
-            agentWins = job.validatorApprovals > job.validatorDisapprovals;
-        }
-
+        bool agentWins = _determineFinalizeOutcome(job);
         if (agentWins) {
             _completeJob(_jobId);
         } else {
             _refundEmployer(job);
         }
-
         emit JobFinalized(_jobId, job.assignedAgent, job.employer, agentWins, job.payout);
+    }
+
+    function _determineFinalizeOutcome(Job storage job) internal view returns (bool) {
+        if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
+            return true;
+        }
+        return job.validatorApprovals > job.validatorDisapprovals;
     }
 
     function _completeJob(uint256 _jobId) internal {
@@ -728,30 +724,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.assignedAgent == address(0)) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
         _requireValidUri(job.jobCompletionURI);
-
-        uint256 agentPayoutPercentage = job.agentPayoutPct;
-        if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
-        uint256 validatorPayoutPercentage = job.validators.length > 0 ? validationRewardPercentage : 0;
-        if (agentPayoutPercentage + validatorPayoutPercentage > 100) revert InvalidParameters();
-        uint256 agentPayout;
-        unchecked {
-            agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        }
-        uint256 totalValidatorPayout = 0;
-        if (job.validators.length > 0) {
-            unchecked {
-                totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
-            }
-        }
-        if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
+        _validatePayouts(job);
 
         job.completed = true;
         job.disputed = false;
         _releaseEscrow(job);
-
-        uint256 completionTime = block.timestamp - job.assignedAt;
-        uint256 reputationPoints = calculateReputationPoints(job.payout, completionTime);
-        enforceReputationGrowth(job.assignedAgent, reputationPoints);
+        uint256 reputationPoints = _applyCompletionReputation(job);
 
         _payAgent(job);
         _payValidators(job, reputationPoints);
@@ -759,6 +737,31 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
         emit ReputationUpdated(job.assignedAgent, reputation[job.assignedAgent]);
+    }
+
+    function _validatePayouts(Job storage job) internal view {
+        uint256 agentPayoutPercentage = job.agentPayoutPct;
+        if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
+        uint256 validatorCount = job.validators.length;
+        uint256 validatorPayoutPercentage = validatorCount > 0 ? validationRewardPercentage : 0;
+        if (agentPayoutPercentage + validatorPayoutPercentage > 100) revert InvalidParameters();
+        uint256 agentPayout;
+        unchecked {
+            agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        }
+        uint256 totalValidatorPayout = 0;
+        if (validatorCount > 0) {
+            unchecked {
+                totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
+            }
+        }
+        if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
+    }
+
+    function _applyCompletionReputation(Job storage job) internal returns (uint256 reputationPoints) {
+        uint256 completionTime = block.timestamp - job.assignedAt;
+        reputationPoints = calculateReputationPoints(job.payout, completionTime);
+        enforceReputationGrowth(job.assignedAgent, reputationPoints);
     }
 
     function _refundEmployer(Job storage job) internal {
@@ -784,11 +787,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (vCount > MAX_VALIDATORS_PER_JOB) revert ValidatorSetTooLarge();
         if (vCount == 0) return;
 
-        uint256 totalValidatorPayout;
         uint256 validatorPayout;
         unchecked {
-            totalValidatorPayout = (job.payout * validationRewardPercentage) / 100;
-            validatorPayout = totalValidatorPayout / vCount;
+            validatorPayout = ((job.payout * validationRewardPercentage) / 100) / vCount;
         }
         uint256 validatorReputationGain = calculateValidatorReputationPoints(reputationPoints);
 
@@ -889,25 +890,37 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit NFTDelisted(tokenId);
     }
 
-    function _verifyOwnership(address claimant, string memory subdomain, bytes32[] calldata proof, bytes32 rootNode) internal returns (bool) {
+    function _verifyOwnership(address claimant, string memory subdomain, bytes32[] calldata proof, bool isAgent) internal returns (bool) {
         bytes32 leaf = keccak256(abi.encodePacked(claimant));
-        bytes32 merkleRoot = rootNode == agentRootNode ? agentMerkleRoot : validatorMerkleRoot;
+        bytes32 merkleRoot = isAgent ? agentMerkleRoot : validatorMerkleRoot;
         if (proof.verify(merkleRoot, leaf)) {
             emit OwnershipVerified(claimant, subdomain);
             return true;
         }
+        if (isAgent) {
+            if (_verifySubdomainOwnership(claimant, subdomain, agentRootNode)) return true;
+            if (_verifySubdomainOwnership(claimant, subdomain, agentRootNodeAlpha)) return true;
+            return false;
+        }
+        if (_verifySubdomainOwnership(claimant, subdomain, clubRootNode)) return true;
+        if (_verifySubdomainOwnership(claimant, subdomain, clubRootNodeAlpha)) return true;
+        return false;
+    }
 
-        bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
+    function _subnode(bytes32 rootNode, string memory subdomain) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
+    }
+
+    function _verifySubdomainOwnership(address claimant, string memory subdomain, bytes32 rootNode) internal returns (bool) {
+        bytes32 subnode = _subnode(rootNode, subdomain);
         if (_verifyNameWrapperOwnership(claimant, subnode)) {
             emit OwnershipVerified(claimant, subdomain);
             return true;
         }
-
         if (_verifyResolverOwnership(claimant, subnode)) {
             emit OwnershipVerified(claimant, subdomain);
             return true;
         }
-
         return false;
     }
 
@@ -968,13 +981,36 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
         if (!(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100)) revert InvalidParameters();
 
+        uint256 existingIndex = _findAGITypeIndex(nftAddress);
+        uint256 maxPct = _maxAGITypePayoutAfterUpdate(existingIndex, payoutPercentage);
+        if (maxPct > 100 - validationRewardPercentage) revert InvalidParameters();
+        if (existingIndex == type(uint256).max) {
+            agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
+        } else {
+            agiTypes[existingIndex].payoutPercentage = payoutPercentage;
+        }
+
+        emit AGITypeUpdated(nftAddress, payoutPercentage);
+    }
+
+    function _findAGITypeIndex(address nftAddress) internal view returns (uint256) {
+        for (uint256 i = 0; i < agiTypes.length; ) {
+            if (agiTypes[i].nftAddress == nftAddress) {
+                return i;
+            }
+            unchecked {
+                ++i;
+            }
+        }
+        return type(uint256).max;
+    }
+
+    function _maxAGITypePayoutAfterUpdate(uint256 existingIndex, uint256 payoutPercentage) internal view returns (uint256) {
         uint256 maxPct = payoutPercentage;
-        bool exists = false;
         for (uint256 i = 0; i < agiTypes.length; ) {
             uint256 pct = agiTypes[i].payoutPercentage;
-            if (agiTypes[i].nftAddress == nftAddress) {
+            if (i == existingIndex) {
                 pct = payoutPercentage;
-                exists = true;
             }
             if (pct > maxPct) {
                 maxPct = pct;
@@ -983,22 +1019,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 ++i;
             }
         }
-        if (maxPct > 100 - validationRewardPercentage) revert InvalidParameters();
-        if (!exists) {
-            agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
-        } else {
-            for (uint256 i = 0; i < agiTypes.length; ) {
-                if (agiTypes[i].nftAddress == nftAddress) {
-                    agiTypes[i].payoutPercentage = payoutPercentage;
-                    break;
-                }
-                unchecked {
-                    ++i;
-                }
-            }
-        }
-
-        emit AGITypeUpdated(nftAddress, payoutPercentage);
+        return maxPct;
     }
 
     function getHighestPayoutPercentage(address agent) public view returns (uint256) {

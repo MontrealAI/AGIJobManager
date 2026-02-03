@@ -10,7 +10,7 @@ For agent and validator calls (`applyForJob`, `validateJob`, `disapproveJob`), `
 
 1. **Merkle allowlist**
    - Leaf = `keccak256(abi.encodePacked(claimant))` (the wallet address).
-   - Proof is verified against `agentMerkleRoot` or `validatorMerkleRoot`.
+   - Proof is verified against `agentMerkleRoot` (agents) or `validatorMerkleRoot` (validators).
 2. **NameWrapper ownership**
    - Node = `subnode(rootNode, labelHash(subdomain))`.
    - `ownerOf(uint256(node))` must equal the claimant.
@@ -22,14 +22,16 @@ If all checks fail, the call reverts `NotAuthorized`.
 
 ---
 
-## 2) How root nodes are set (alpha environment)
+## 2) How root nodes are set (base + alpha)
 
-The **alpha** namespace uses these root nodes at deployment time:
+Root nodes are compile-time constants for both namespaces:
 
-- `clubRootNode = namehash("alpha.club.agi.eth")`
-- `agentRootNode = namehash("alpha.agent.agi.eth")`
+- `clubRootNode = namehash("club.agi.eth")`
+- `clubRootNodeAlpha = namehash("alpha.club.agi.eth")`
+- `agentRootNode = namehash("agent.agi.eth")`
+- `agentRootNodeAlpha = namehash("alpha.agent.agi.eth")`
 
-These root nodes are **immutable after deployment**, so a mismatch requires redeployment.
+The contract checks **both** root nodes per role; mismatches require redeployment.
 
 ---
 

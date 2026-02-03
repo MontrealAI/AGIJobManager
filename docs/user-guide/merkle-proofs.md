@@ -15,7 +15,7 @@ You are authorized **if any** of the following are true:
 > - ✅ `helper`
 > - ❌ `helper.agent.agi.eth`
 >
-> Why: the contract combines a **fixed root node** with your label to derive the ENS node. Full names will not match that calculation.
+> Why: the contract combines the **fixed base + alpha root nodes** with your label to derive the ENS node. Full names will not match that calculation.
 
 ## Where proofs come from
 

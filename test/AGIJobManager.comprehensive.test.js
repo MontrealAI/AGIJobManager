@@ -3,7 +3,9 @@ const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
 
 const { expectCustomError } = require("./helpers/errors");
-const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { setupFixedToken, AGI_TOKEN_ADDRESS } = require("./helpers/token");
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require("./helpers/constants");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -79,7 +81,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     manager.requestJobCompletion(jobId, completionUri, { from: requester });
 
   beforeEach(async () => {
-    token = await MockERC20.new();
+    token = await setupFixedToken(MockERC20, accounts);
     ens = await MockENS.new();
     resolver = await MockResolver.new();
     nameWrapper = await MockNameWrapper.new();
@@ -87,16 +89,13 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     agentTree = buildTree([agent, validatorFour]);
     validatorTree = buildTree([validatorOne, validatorTwo, validatorThree]);
-    clubRoot = rootNode("club");
-    agentRoot = rootNode("agent");
+    clubRoot = CLUB_ROOT_NODE;
+    agentRoot = AGENT_ROOT_NODE;
 
     manager = await AGIJobManager.new(
-      token.address,
       baseIpfsUrl,
       ens.address,
       nameWrapper.address,
-      clubRoot,
-      agentRoot,
       validatorTree.root,
       agentTree.root
     );
@@ -114,7 +113,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
   describe("deployment & initialization", () => {
     it("deploys with expected constructor configuration", async () => {
       const agiTokenAddress = await manager.agiToken();
-      assert.equal(agiTokenAddress, token.address);
+      assert.equal(agiTokenAddress, AGI_TOKEN_ADDRESS);
       assert.equal(await manager.requiredValidatorApprovals(), "3");
       assert.equal(await manager.requiredValidatorDisapprovals(), "3");
       assert.equal(await manager.validationRewardPercentage(), "8");
@@ -528,17 +527,14 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
   describe("checked ERC20 transfers", () => {
     it("reverts createJob if transferFrom fails", async () => {
-      const failingToken = await FailingERC20.new();
+      const failingToken = await setupFixedToken(FailingERC20, accounts);
       await failingToken.mint(employer, payout);
       await failingToken.setFailTransferFroms(true);
 
       const altManager = await AGIJobManager.new(
-        failingToken.address,
         baseIpfsUrl,
         ens.address,
         nameWrapper.address,
-        clubRoot,
-        agentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -551,17 +547,14 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     });
 
     it("reverts payouts when transfer returns false", async () => {
-      const failingToken = await FailingERC20.new();
+      const failingToken = await setupFixedToken(FailingERC20, accounts);
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
       const altManager = await AGIJobManager.new(
-        failingToken.address,
         baseIpfsUrl,
         ens.address,
         nameWrapper.address,
-        clubRoot,
-        agentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -584,17 +577,14 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     });
 
     it("reverts validator-driven completion when transfer returns false", async () => {
-      const failingToken = await FailingERC20.new();
+      const failingToken = await setupFixedToken(FailingERC20, accounts);
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
       const altManager = await AGIJobManager.new(
-        failingToken.address,
         baseIpfsUrl,
         ens.address,
         nameWrapper.address,
-        clubRoot,
-        agentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -619,17 +609,14 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     });
 
     it("reverts NFT purchases when transferFrom fails", async () => {
-      const failingToken = await FailingERC20.new();
+      const failingToken = await setupFixedToken(FailingERC20, accounts);
       await failingToken.mint(employer, payout);
       await failingToken.mint(buyer, payout);
 
       const altManager = await AGIJobManager.new(
-        failingToken.address,
         baseIpfsUrl,
         ens.address,
         nameWrapper.address,
-        clubRoot,
-        agentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -657,8 +644,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
   describe("admin & configuration", () => {
     it("restricts owner-only controls and updates config", async () => {
       await expectRevert.unspecified(manager.setBaseIpfsUrl("ipfs://new", { from: outsider }));
-      await expectRevert.unspecified(
-        manager.updateAGITokenAddress(token.address, { from: outsider }));
       await expectRevert.unspecified(manager.setMaxJobPayout(payout, { from: outsider }));
       await expectRevert.unspecified(manager.setJobDurationLimit(1, { from: outsider }));
       await expectRevert.unspecified(manager.addModerator(outsider, { from: outsider }));
@@ -666,7 +651,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectRevert.unspecified(manager.addAdditionalAgent(agent, { from: outsider }));
 
       await manager.setBaseIpfsUrl("ipfs://new", { from: owner });
-      await manager.updateAGITokenAddress(token.address, { from: owner });
       await manager.setMaxJobPayout(payout.muln(10), { from: owner });
       await manager.setJobDurationLimit(9000, { from: owner });
       await manager.addModerator(validatorFour, { from: owner });

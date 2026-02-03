@@ -7,7 +7,9 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
-const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
+const { setNameWrapperOwnership } = require("./helpers/ens");
+const { setupFixedToken } = require("./helpers/token");
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require("./helpers/constants");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -25,21 +27,18 @@ contract("AGIJobManager happy path", (accounts) => {
   let agentRoot;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setupFixedToken(MockERC20, accounts);
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    clubRoot = rootNode("club-root");
-    agentRoot = rootNode("agent-root");
+    clubRoot = CLUB_ROOT_NODE;
+    agentRoot = AGENT_ROOT_NODE;
 
     manager = await AGIJobManager.new(
-      token.address,
       "ipfs://base",
       ens.address,
       nameWrapper.address,
-      clubRoot,
-      agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

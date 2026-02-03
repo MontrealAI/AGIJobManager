@@ -26,12 +26,12 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.23`, `SOLC_RUNS=800`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.23`, `SOLC_RUNS=800`, `SOLC_EVM_VERSION=london` (no `viaIR`). |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
 
-> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.17`, while the default Truffle compiler is `0.8.23`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
+> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.23`, matching the default Truffle compiler. For reproducible verification, keep `SOLC_VERSION` and optimizer runs consistent (do not enable `viaIR`).
 
 ## Runtime bytecode size (EIP-170)
 
@@ -43,7 +43,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
 - Optimizer enabled with **runs = 800**.
-- `viaIR = true`.
+- `viaIR = false` (not used).
 - `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
 
@@ -63,7 +63,7 @@ The default `npm test` script compiles with `--all`, runs `truffle test --networ
 
 ## Migration script notes
 
-The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Edit these values** before deploying to any production network.
+The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructor parameters (base IPFS URL, ENS registry, NameWrapper address, Merkle roots). **Edit these values** before deploying to any production network.
 
 ## Local deployment (Ganache)
 
@@ -108,12 +108,12 @@ npx truffle run verify AGIJobManager --network mainnet
 ```
 
 ### Verification tips
-- Keep the compiler settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`) identical to the original deployment.
+- Keep the compiler settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_EVM_VERSION`) identical to the original deployment (no `viaIR`).
 - Ensure your migration constructor parameters match the deployed contract.
 - If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.
 - **Missing private keys**: ensure `PRIVATE_KEYS` is set and comma‑separated.
-- **Verification failures**: confirm compiler version, optimizer runs, and `viaIR` settings match the deployed bytecode.
+- **Verification failures**: confirm compiler version and optimizer runs match the deployed bytecode (`viaIR` must remain off).
 - **Nonce conflicts**: avoid running multiple deployment processes with the same keys.

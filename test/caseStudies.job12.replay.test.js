@@ -8,6 +8,9 @@ const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 
+const { setupFixedToken } = require("./helpers/token");
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require("./helpers/constants");
+
 const ZERO_BYTES32 = "0x" + "0".repeat(64);
 const EMPTY_PROOF = [];
 
@@ -65,23 +68,20 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
   let baseIpfsUrl;
 
   beforeEach(async () => {
-    token = await MockERC20.new({ from: owner });
+    token = await setupFixedToken(MockERC20, accounts);
     nft = await MockERC721.new({ from: owner });
     ens = await MockENS.new({ from: owner });
     resolver = await MockResolver.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
     baseIpfsUrl = "https://ipfs.io/ipfs";
-    clubRootNode = web3.utils.soliditySha3({ type: "string", value: "club-root" });
-    agentRootNode = web3.utils.soliditySha3({ type: "string", value: "agent-root" });
+    clubRootNode = CLUB_ROOT_NODE;
+    agentRootNode = AGENT_ROOT_NODE;
 
     manager = await AGIJobManager.new(
-      token.address,
       baseIpfsUrl,
       ens.address,
       nameWrapper.address,
-      clubRootNode,
-      agentRootNode,
       ZERO_BYTES32,
       ZERO_BYTES32,
       { from: owner }

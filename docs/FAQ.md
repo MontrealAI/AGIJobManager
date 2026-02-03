@@ -4,7 +4,7 @@
 No. Agents must hold an AGI type NFT with a nonzero payout tier at apply time or `applyForJob` reverts with `IneligibleAgentPayout`. The payout tier is snapshotted on assignment and used at completion, and `additionalAgents` only bypass identity checks.
 
 ## Can the Merkle roots or ENS root nodes be updated after deployment?
-No. The current contract has no setters for root nodes or Merkle roots. Deployments must be configured correctly upfront.
+No. Root nodes are compile-time constants (base + alpha), and Merkle roots are constructor-time immutables. Deployments must be configured correctly upfront.
 
 ## What dispute strings trigger payouts or refunds?
 Only the canonical strings `agent win` and `employer win` trigger on-chain actions. Any other string closes the dispute without moving funds.

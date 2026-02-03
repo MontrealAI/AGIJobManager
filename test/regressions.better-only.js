@@ -6,6 +6,9 @@ const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
 
+const { setupFixedToken } = require("./helpers/token");
+const { AGENT_ROOT_NODE, CLUB_ROOT_NODE } = require("./helpers/constants");
+
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_PROOF = [];
 
@@ -15,9 +18,6 @@ function leaf(address) {
   return soliditySha3({ type: "address", value: address });
 }
 
-function rootNode(label) {
-  return soliditySha3({ type: "string", value: label });
-}
 
 async function expectRevert(promise) {
   try {
@@ -33,14 +33,24 @@ async function expectRevert(promise) {
   assert.fail("Expected revert not received.");
 }
 
-async function deployManager(Contract, tokenAddress, agent, validator, owner) {
+async function deployManager(Contract, token, agent, validator, owner) {
+  if (Contract.contractName === "AGIJobManagerOriginal") {
+    return Contract.new(
+      token.address,
+      "ipfs://base",
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      CLUB_ROOT_NODE,
+      AGENT_ROOT_NODE,
+      leaf(validator),
+      leaf(agent),
+      { from: owner }
+    );
+  }
   return Contract.new(
-    tokenAddress,
     "ipfs://base",
     ZERO_ADDRESS,
     ZERO_ADDRESS,
-    rootNode("club-root"),
-    rootNode("agent-root"),
     leaf(validator),
     leaf(agent),
     { from: owner }
@@ -65,11 +75,11 @@ contract("AGIJobManager better-only regressions", (accounts) => {
 
   it("blocks pre-apply takeover in current (original allows it)", async () => {
     const payout = toBN(toWei("10"));
-    const token = await MockERC20.new({ from: owner });
+    const token = await setupFixedToken(MockERC20, accounts);
     await token.mint(employer, payout.muln(3), { from: owner });
 
-    const original = await deployManager(AGIJobManagerOriginal, token.address, attacker, validator, owner);
-    const current = await deployManager(AGIJobManager, token.address, attacker, validator, owner);
+    const original = await deployManager(AGIJobManagerOriginal, token, attacker, validator, owner);
+    const current = await deployManager(AGIJobManager, token, attacker, validator, owner);
 
     await original.applyForJob(0, "attacker", EMPTY_PROOF, { from: attacker });
     await token.approve(original.address, payout, { from: employer });
@@ -86,13 +96,13 @@ contract("AGIJobManager better-only regressions", (accounts) => {
 
   it("prevents disputed double-complete in current (original completes twice)", async () => {
     const payout = toBN(toWei("100"));
-    const token = await MockERC20.new({ from: owner });
+    const token = await setupFixedToken(MockERC20, accounts);
     await token.mint(employer, payout.muln(3), { from: owner });
 
     const nft = await MockERC721.new({ from: owner });
     await nft.mint(agent, { from: owner });
 
-    const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
+    const original = await deployManager(AGIJobManagerOriginal, token, agent, validator, owner);
     await original.addAGIType(nft.address, 92, { from: owner });
     const originalJobId = await createAssignedJob(original, token, employer, agent, payout);
     await original.requestJobCompletion(originalJobId, "ipfs-complete", { from: agent });
@@ -105,7 +115,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await original.resolveDispute(originalJobId, "agent win", { from: moderator });
     assert.equal((await original.nextTokenId()).toNumber(), 2, "original should mint twice after dispute resolution");
 
-    const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
+    const current = await deployManager(AGIJobManager, token, agent, validator, owner);
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
     await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
@@ -121,13 +131,13 @@ contract("AGIJobManager better-only regressions", (accounts) => {
 
   it("avoids div-by-zero on agent-win disputes in current", async () => {
     const payout = toBN(toWei("50"));
-    const token = await MockERC20.new({ from: owner });
+    const token = await setupFixedToken(MockERC20, accounts);
     await token.mint(employer, payout.muln(2), { from: owner });
 
     const nft = await MockERC721.new({ from: owner });
     await nft.mint(agent, { from: owner });
 
-    const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
+    const original = await deployManager(AGIJobManagerOriginal, token, agent, validator, owner);
     await original.addAGIType(nft.address, 92, { from: owner });
     const originalJobId = await createAssignedJob(original, token, employer, agent, payout);
     await original.requestJobCompletion(originalJobId, "ipfs-complete", { from: agent });
@@ -136,7 +146,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await expectRevert(original.resolveDispute(originalJobId, "agent win", { from: moderator }));
     assert.equal((await original.nextTokenId()).toNumber(), 0, "original should not mint on div-by-zero");
 
-    const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
+    const current = await deployManager(AGIJobManager, token, agent, validator, owner);
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
     await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
@@ -148,10 +158,10 @@ contract("AGIJobManager better-only regressions", (accounts) => {
 
   it("blocks validator double-votes in current (original allows it)", async () => {
     const payout = toBN(toWei("20"));
-    const token = await MockERC20.new({ from: owner });
+    const token = await setupFixedToken(MockERC20, accounts);
     await token.mint(employer, payout.muln(4), { from: owner });
 
-    const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
+    const original = await deployManager(AGIJobManagerOriginal, token, agent, validator, owner);
     const approveThenDisapproveId = await createAssignedJob(original, token, employer, agent, payout);
     await original.validateJob(approveThenDisapproveId, "validator", EMPTY_PROOF, { from: validator });
     await original.disapproveJob(approveThenDisapproveId, "validator", EMPTY_PROOF, { from: validator });
@@ -166,7 +176,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     assert.equal(disapproveThenApproveJob.validatorApprovals.toNumber(), 1, "original should allow approval after disapproval");
     assert.equal(disapproveThenApproveJob.validatorDisapprovals.toNumber(), 1, "original should track disapprovals");
 
-    const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
+    const current = await deployManager(AGIJobManager, token, agent, validator, owner);
     const nft = await MockERC721.new({ from: owner });
     await nft.mint(agent, { from: owner });
     await current.addAGIType(nft.address, 92, { from: owner });
@@ -187,13 +197,13 @@ contract("AGIJobManager better-only regressions", (accounts) => {
 
   it("closes employer-win disputes in current (original allows later completion)", async () => {
     const payout = toBN(toWei("75"));
-    const token = await MockERC20.new({ from: owner });
+    const token = await setupFixedToken(MockERC20, accounts);
     await token.mint(employer, payout.muln(3), { from: owner });
 
     const nft = await MockERC721.new({ from: owner });
     await nft.mint(agent, { from: owner });
 
-    const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
+    const original = await deployManager(AGIJobManagerOriginal, token, agent, validator, owner);
     await original.addAGIType(nft.address, 92, { from: owner });
     const originalJobId = await createAssignedJob(original, token, employer, agent, payout);
     await original.requestJobCompletion(originalJobId, "ipfs-complete", { from: agent });
@@ -205,7 +215,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await original.validateJob(originalJobId, "validator", EMPTY_PROOF, { from: validator });
     assert.equal((await original.nextTokenId()).toNumber(), 1, "original should still complete after employer win");
 
-    const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
+    const current = await deployManager(AGIJobManager, token, agent, validator, owner);
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
     await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
@@ -219,10 +229,10 @@ contract("AGIJobManager better-only regressions", (accounts) => {
 
   it("reverts on failed refunds in current (original silently deletes job)", async () => {
     const payout = toBN(toWei("30"));
-    const token = await FailTransferToken.new({ from: owner });
+    const token = await setupFixedToken(FailTransferToken, accounts);
     await token.mint(employer, payout.muln(2), { from: owner });
 
-    const original = await deployManager(AGIJobManagerOriginal, token.address, agent, validator, owner);
+    const original = await deployManager(AGIJobManagerOriginal, token, agent, validator, owner);
     const originalJobId = await createJob(original, token, employer, payout);
     const originalBalanceBeforeCancel = await token.balanceOf(employer);
     await original.cancelJob(originalJobId, { from: employer });
@@ -234,7 +244,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const originalJob = await original.jobs(originalJobId);
     assert.equal(originalJob.employer, ZERO_ADDRESS, "original should delete job even if refund fails");
 
-    const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
+    const current = await deployManager(AGIJobManager, token, agent, validator, owner);
     const currentJobId = await createJob(current, token, employer, payout);
     const currentBalanceBeforeCancel = await token.balanceOf(employer);
     await expectRevert(current.cancelJob(currentJobId, { from: employer }));

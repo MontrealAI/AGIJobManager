@@ -25,7 +25,7 @@ Welcome! This guide set is written for non-technical users in **any** role. You 
   - ❌ `helper.agent.agi.eth`
   - ✅ `alice`
   - ❌ `alice.club.agi.eth`
-  The contract derives the namehash from a fixed root node + label only.
+  The contract derives the namehash from fixed base + alpha root nodes + label only.
 - **Approvals are real on-chain actions.** Approving ERC‑20 spending allows the contract to move your tokens. Verify the contract address and network first.
 - **Network matters.** Always confirm you’re on the same chain as the contract deployment.
 

@@ -4,7 +4,7 @@ This document summarizes integration points for AGIJobManager, including role ga
 
 ## Access control integrations
 - **Merkle allowlists**: agents and validators can be authorized by Merkle proofs over their address (`agentMerkleRoot`, `validatorMerkleRoot`).
-- **ENS ownership checks**: `_verifyOwnership` attempts NameWrapper and resolver lookups for a subdomain under the configured root node.
+- **ENS ownership checks**: `_verifyOwnership` attempts NameWrapper and resolver lookups for a subdomain under the fixed base + alpha root nodes.
 - **Explicit allowlists**: the owner can add or remove `additionalAgents` and `additionalValidators` to bypass Merkle or ENS checks.
 - **Explicit blacklists**: the owner can blacklist agents or validators to block participation.
 

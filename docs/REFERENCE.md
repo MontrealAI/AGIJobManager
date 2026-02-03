@@ -4,12 +4,12 @@ This is a function‑by‑function reference of the deployed contract’s public
 
 ## Read‑only getters (auto‑generated)
 The following `public` state variables have auto‑generated getter functions:
-- `agiToken()`, `baseIpfsUrl()`
+- `AGI_TOKEN_ADDRESS()`, `agiToken()`, `baseIpfsUrl()`
 - `requiredValidatorApprovals()`, `requiredValidatorDisapprovals()`
 - `premiumReputationThreshold()`, `validationRewardPercentage()`
 - `maxJobPayout()`, `jobDurationLimit()`
 - `termsAndConditionsIpfsHash()`, `contactEmail()`, `additionalText1/2/3()`
-- `clubRootNode()`, `agentRootNode()`, `validatorMerkleRoot()`, `agentMerkleRoot()`
+- `clubRootNode()`, `clubRootNodeAlpha()`, `agentRootNode()`, `agentRootNodeAlpha()`, `validatorMerkleRoot()`, `agentMerkleRoot()`
 - `ens()`, `nameWrapper()`
 - `nextJobId()`, `nextTokenId()`
 - `jobs(jobId)` (struct summary)
@@ -74,8 +74,8 @@ Manages moderator permissions.
 ### `addAdditionalValidator(address)` / `removeAdditionalValidator(address)`
 Explicit allowlists for roles, bypassing ENS/Merkle checks.
 
-### `updateAGITokenAddress(address)`
-Changes the ERC‑20 token used for payouts.
+### `agiToken()` / `AGI_TOKEN_ADDRESS()`
+Read‑only ERC‑20 token address (fixed in‑contract).
 
 ### `setBaseIpfsUrl(string)`
 Base prefix for minted NFT tokenURIs when a job URI is a bare CID.
