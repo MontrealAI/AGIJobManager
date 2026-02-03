@@ -2109,6 +2109,78 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_newEnsAddress",
+          "type": "address"
+        }
+      ],
+      "name": "updateENSRegistry",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newNameWrapper",
+          "type": "address"
+        }
+      ],
+      "name": "updateNameWrapper",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_clubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_agentRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_alphaClubRootNode",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_alphaAgentRootNode",
+          "type": "bytes32"
+        }
+      ],
+      "name": "updateRootNodes",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_validatorMerkleRoot",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_agentMerkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "updateMerkleRoots",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "string",
           "name": "_url",
           "type": "string"

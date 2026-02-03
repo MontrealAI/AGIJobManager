@@ -566,6 +566,38 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         agiToken = IERC20(_newTokenAddress);
     }
+    function updateENSRegistry(address _newEnsAddress) external onlyOwner whenCriticalConfigurable {
+        if (_newEnsAddress == address(0)) revert InvalidParameters();
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        ens = ENS(_newEnsAddress);
+    }
+    function updateNameWrapper(address _newNameWrapper) external onlyOwner whenCriticalConfigurable {
+        if (_newNameWrapper == address(0)) revert InvalidParameters();
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        nameWrapper = NameWrapper(_newNameWrapper);
+    }
+    function updateRootNodes(
+        bytes32 _clubRootNode,
+        bytes32 _agentRootNode,
+        bytes32 _alphaClubRootNode,
+        bytes32 _alphaAgentRootNode
+    ) external onlyOwner whenCriticalConfigurable {
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        clubRootNode = _clubRootNode;
+        agentRootNode = _agentRootNode;
+        alphaClubRootNode = _alphaClubRootNode;
+        alphaAgentRootNode = _alphaAgentRootNode;
+        emit RootNodeUpdated(_clubRootNode);
+        emit RootNodeUpdated(_agentRootNode);
+        emit RootNodeUpdated(_alphaClubRootNode);
+        emit RootNodeUpdated(_alphaAgentRootNode);
+    }
+    function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner {
+        validatorMerkleRoot = _validatorMerkleRoot;
+        agentMerkleRoot = _agentMerkleRoot;
+        emit MerkleRootUpdated(_validatorMerkleRoot);
+        emit MerkleRootUpdated(_agentMerkleRoot);
+    }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);

@@ -19,13 +19,13 @@ function isTrue(value) {
   return (value || "").toLowerCase() === "true";
 }
 
-function envValue(key, fallback) {
-  const value = (process.env[key] || "").trim();
+function envValue(key, fallback, env = process.env) {
+  const value = (env[key] || "").trim();
   return value || fallback;
 }
 
-function requireEnv(key, fallback) {
-  const value = envValue(key, fallback);
+function requireEnv(key, fallback, env = process.env) {
+  const value = envValue(key, fallback, env);
   if (!value) {
     throw new Error(`Missing ${key} (set in .env or environment)`);
   }
@@ -51,6 +51,49 @@ function buildInitConfig(
     [clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode],
     [validatorMerkleRoot, agentMerkleRoot],
   ];
+}
+
+function resolveDeploymentConfig({ network, networkId, env = process.env }) {
+  const isMainnet = network === "mainnet" || networkId === 1;
+  const baseIpfsUrl = envValue("AGI_BASE_IPFS_URL", DEFAULT_IPFS_BASE, env);
+
+  const tokenAddress = isMainnet
+    ? envValue("AGI_TOKEN_ADDRESS", MAINNET_TOKEN, env)
+    : requireEnv("AGI_TOKEN_ADDRESS", undefined, env);
+  const ensAddress = isMainnet
+    ? envValue("AGI_ENS_REGISTRY", MAINNET_ENS, env)
+    : requireEnv("AGI_ENS_REGISTRY", undefined, env);
+  const nameWrapperAddress = isMainnet
+    ? envValue("AGI_NAMEWRAPPER", MAINNET_NAMEWRAPPER, env)
+    : requireEnv("AGI_NAMEWRAPPER", undefined, env);
+  const clubRootNode = isMainnet
+    ? envValue("AGI_CLUB_ROOT_NODE", MAINNET_CLUB_ROOT, env)
+    : requireEnv("AGI_CLUB_ROOT_NODE", undefined, env);
+  const alphaClubRootNode = isMainnet
+    ? envValue("AGI_ALPHA_CLUB_ROOT_NODE", MAINNET_ALPHA_CLUB_ROOT, env)
+    : requireEnv("AGI_ALPHA_CLUB_ROOT_NODE", undefined, env);
+  const agentRootNode = isMainnet
+    ? envValue("AGI_AGENT_ROOT_NODE", MAINNET_AGENT_ROOT, env)
+    : requireEnv("AGI_AGENT_ROOT_NODE", undefined, env);
+  const alphaAgentRootNode = isMainnet
+    ? envValue("AGI_ALPHA_AGENT_ROOT_NODE", MAINNET_ALPHA_AGENT_ROOT, env)
+    : requireEnv("AGI_ALPHA_AGENT_ROOT_NODE", undefined, env);
+  const validatorMerkleRoot = envValue("AGI_VALIDATOR_MERKLE_ROOT", DEFAULT_MERKLE_ROOT, env);
+  const agentMerkleRoot = envValue("AGI_AGENT_MERKLE_ROOT", DEFAULT_MERKLE_ROOT, env);
+
+  return {
+    isMainnet,
+    baseIpfsUrl,
+    tokenAddress,
+    ensAddress,
+    nameWrapperAddress,
+    clubRootNode,
+    alphaClubRootNode,
+    agentRootNode,
+    alphaAgentRootNode,
+    validatorMerkleRoot,
+    agentMerkleRoot,
+  };
 }
 
 module.exports = async function (deployer, network, accounts) {
@@ -89,32 +132,19 @@ module.exports = async function (deployer, network, accounts) {
   }
 
   const networkId = Number(deployer.network_id);
-  const isMainnet = network === "mainnet" || networkId === 1;
-  const baseIpfsUrl = envValue("AGI_BASE_IPFS_URL", DEFAULT_IPFS_BASE);
-
-  const tokenAddress = isMainnet
-    ? envValue("AGI_TOKEN_ADDRESS", MAINNET_TOKEN)
-    : requireEnv("AGI_TOKEN_ADDRESS");
-  const ensAddress = isMainnet
-    ? envValue("AGI_ENS_REGISTRY", MAINNET_ENS)
-    : requireEnv("AGI_ENS_REGISTRY");
-  const nameWrapperAddress = isMainnet
-    ? envValue("AGI_NAMEWRAPPER", MAINNET_NAMEWRAPPER)
-    : requireEnv("AGI_NAMEWRAPPER");
-  const clubRootNode = isMainnet
-    ? envValue("AGI_CLUB_ROOT_NODE", MAINNET_CLUB_ROOT)
-    : requireEnv("AGI_CLUB_ROOT_NODE");
-  const alphaClubRootNode = isMainnet
-    ? envValue("AGI_ALPHA_CLUB_ROOT_NODE", MAINNET_ALPHA_CLUB_ROOT)
-    : requireEnv("AGI_ALPHA_CLUB_ROOT_NODE");
-  const agentRootNode = isMainnet
-    ? envValue("AGI_AGENT_ROOT_NODE", MAINNET_AGENT_ROOT)
-    : requireEnv("AGI_AGENT_ROOT_NODE");
-  const alphaAgentRootNode = isMainnet
-    ? envValue("AGI_ALPHA_AGENT_ROOT_NODE", MAINNET_ALPHA_AGENT_ROOT)
-    : requireEnv("AGI_ALPHA_AGENT_ROOT_NODE");
-  const validatorMerkleRoot = envValue("AGI_VALIDATOR_MERKLE_ROOT", DEFAULT_MERKLE_ROOT);
-  const agentMerkleRoot = envValue("AGI_AGENT_MERKLE_ROOT", DEFAULT_MERKLE_ROOT);
+  const {
+    isMainnet,
+    baseIpfsUrl,
+    tokenAddress,
+    ensAddress,
+    nameWrapperAddress,
+    clubRootNode,
+    alphaClubRootNode,
+    agentRootNode,
+    alphaAgentRootNode,
+    validatorMerkleRoot,
+    agentMerkleRoot,
+  } = resolveDeploymentConfig({ network, networkId });
 
   await deployer.deploy(
     AGIJobManager,
@@ -150,3 +180,6 @@ module.exports = async function (deployer, network, accounts) {
   console.log(`- agent merkle root: ${agentMerkleRoot}`);
   console.log(`- config locked: ${await manager.configLocked()}`);
 };
+
+module.exports.buildInitConfig = buildInitConfig;
+module.exports.resolveDeploymentConfig = resolveDeploymentConfig;

@@ -14,8 +14,11 @@ These functions are guarded by `whenCriticalConfigurable` and **revert** once th
 
 **Critical routing / identity**
 - `updateAGITokenAddress` (only allowed before any job exists and before the lock)
+- `updateENSRegistry` (only allowed before any job exists and before the lock)
+- `updateNameWrapper` (only allowed before any job exists and before the lock)
+- `updateRootNodes` (only allowed before any job exists and before the lock)
 
-> **Note:** ENS registry, NameWrapper, and root nodes are constructor-only in this version. If they are ever made changeable after deployment, they must be guarded by the same critical lock.
+> **Note:** These setters also require `nextJobId == 0` and `lockedEscrow == 0` to prevent rewiring after jobs exist.
 
 ## Functions still available after lock
 
@@ -25,6 +28,7 @@ These are considered **break-glass** or operational safety controls and remain a
 - `resolveStaleDispute()` — owner-only recovery **while paused**, after the dispute timeout.
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
 - `withdrawAGI()` — surplus withdrawals while paused (escrow is always reserved).
+- `updateMerkleRoots()` — allowlist membership updates (access control only).
 
 Other configuration knobs (thresholds, review periods, allowlists, metadata, etc.) remain **tunable** after lock because they are not part of the critical configuration surface.
 

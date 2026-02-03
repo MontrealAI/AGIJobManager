@@ -10,6 +10,7 @@ This checklist is a practical, operator-facing guide for deploying **AGIJobManag
   - allow any post-lock changes (recommended: only pause/unpause + incident response),
   - use blacklists for abuse mitigation before configuration is locked,
   - rotate moderators (optional break-glass).
+  - update Merkle allowlists over time (recommended for membership churn).
 
 ## 2) Network-specific addresses
 
@@ -45,6 +46,11 @@ These values are fixed **identity anchors** on Ethereum mainnet (documented inva
 - `alpha.agent.agi.eth`: `0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e`
 
 > **Note:** ENS registry and NameWrapper addresses are chain-specific and must remain configurable for Sepolia/local/private networks.
+
+### Merkle roots are access control only
+
+- Merkle roots **only grant access** to apply/validate. They do **not** change payouts.
+- Agent payout percentages are still determined by AGIType NFT ownership (`getHighestPayoutPercentage`).
 
 ## 3) Step-by-step deployment
 
@@ -86,7 +92,26 @@ If using ENS gating, test **both namespaces**:
 - `agent.agi.eth` **and** `alpha.agent.agi.eth`
 - `club.agi.eth` **and** `alpha.club.agi.eth`
 
-## 5) Lock configuration (one-way)
+## 5) Verification on explorers (Etherscan)
+
+**Default path (viaIR enabled by default)**
+1. Compile with your pinned settings: `npm run build`.
+2. Verify with Truffle’s Etherscan plugin (works if the plugin accepts the viaIR flag):
+   ```bash
+   npx truffle run verify AGIJobManager --network <network>
+   ```
+
+**Fallback path (Standard JSON input)**
+1. Compile with the same settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`).
+2. Generate a Standard JSON input from the repo:
+   ```bash
+   node scripts/ops/export-standard-json.js
+   ```
+3. In Etherscan’s “Verify & Publish” UI, select **Solidity (Standard-Json-Input)**,
+   paste the contents of `build/standard-json/AGIJobManager.standard.json`, and enter the
+   constructor arguments exactly as used in deployment.
+
+## 6) Lock configuration (one-way)
 
 After setup and validation, lock configuration to minimize governance:
 
@@ -94,9 +119,10 @@ After setup and validation, lock configuration to minimize governance:
 - **Manual**: call `lockConfiguration()` from the owner account.
 
 Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
-In the current implementation, only the token address is lockable because ENS wiring and root nodes are constructor-only.
+In the current implementation, the lock covers the token address, ENS registry, NameWrapper, and ENS root nodes.
+Merkle roots (allowlists) remain adjustable after lock to permit membership churn.
 
-## 6) Break-glass runbook (after lock)
+## 7) Break-glass runbook (after lock)
 
 After lock, operators should only use:
 - `pause()` / `unpause()` for incident response.

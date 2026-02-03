@@ -79,6 +79,10 @@
 | `addModerator(address _moderator)` | nonpayable | — |
 | `removeModerator(address _moderator)` | nonpayable | — |
 | `updateAGITokenAddress(address _newTokenAddress)` | nonpayable | — |
+| `updateENSRegistry(address _newEnsAddress)` | nonpayable | — |
+| `updateNameWrapper(address _newNameWrapper)` | nonpayable | — |
+| `updateRootNodes(bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _alphaClubRootNode, bytes32 _alphaAgentRootNode)` | nonpayable | — |
+| `updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` | nonpayable | — |
 | `setBaseIpfsUrl(string _url)` | nonpayable | — |
 | `setRequiredValidatorApprovals(uint256 _approvals)` | nonpayable | — |
 | `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | nonpayable | — |
