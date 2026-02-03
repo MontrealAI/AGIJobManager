@@ -4,49 +4,25 @@ This document explains the **configuration lock** and the intended “configure 
 
 ## What the configuration lock does
 
-Calling `lockConfiguration()` permanently disables configuration-changing admin functions. It is **one-way** and irreversible.
+Calling `lockConfiguration()` permanently disables **critical configuration** changes. It is **one-way** and irreversible.
 
 Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, but governance surface is minimized.
 
 ## Functions disabled after lock
 
-These functions are guarded by `whenConfigurable` and **revert** once the configuration is locked:
+Only **critical configuration** setters are disabled after lock; other operational parameters remain adjustable to preserve owner flexibility.
 
-**Economic + policy knobs**
-- `setRequiredValidatorApprovals`
-- `setRequiredValidatorDisapprovals`
-- `setPremiumReputationThreshold`
-- `setValidationRewardPercentage`
-- `setAdditionalAgentPayoutPercentage`
-- `setMaxJobPayout`
-- `setJobDurationLimit`
-- `setCompletionReviewPeriod`
-- `setDisputeReviewPeriod`
-
-**Identity + allowlist controls**
-- `addAdditionalValidator` / `removeAdditionalValidator`
-- `addAdditionalAgent` / `removeAdditionalAgent`
-- `blacklistAgent` / `blacklistValidator`
-
-**Metadata + UI/terms**
-- `setBaseIpfsUrl`
-- `updateTermsAndConditionsIpfsHash`
-- `updateContactEmail`
-- `updateAdditionalText1/2/3`
-
-**Token + types + admin cleanup**
-- `updateAGITokenAddress`
-- `addAGIType`
-- `delistJob`
-- `withdrawAGI`
+- **Token routing**: `updateAGITokenAddress` (guarded to only allow changes before any job/escrow exists).
+- **ENS wiring / root nodes**: if a future build exposes setters for ENS registry, NameWrapper, or root nodes, they must be gated by the same lock.
 
 ## Functions still available after lock
 
-These are considered **break-glass** or operational safety controls:
+These are considered **break-glass** or operational safety controls, and remain callable after lock:
 
 - `pause()` / `unpause()` — incident response.
 - `resolveStaleDispute()` — owner-only recovery **while paused**, after the dispute timeout.
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
+- `withdrawAGI()` — **surplus-only** withdrawals (`balance - lockedEscrow`), owner-only, paused, nonReentrant.
 
 > **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.
 

@@ -153,30 +153,52 @@ contract("AGIJobManager admin ops", (accounts) => {
     );
   });
 
-  it("locks configuration changes while retaining break-glass controls", async () => {
+  it("locks only critical configuration changes while retaining break-glass controls", async () => {
     await manager.lockConfiguration({ from: owner });
     assert.equal(await manager.configLocked(), true, "config should be locked");
 
     await expectCustomError(
-      manager.setMaxJobPayout.call(toBN(toWei("1")), { from: owner }),
+      manager.updateAGITokenAddress.call(other, { from: owner }),
       "ConfigLocked"
     );
-    await expectCustomError(
-      manager.addAdditionalAgent.call(other, { from: owner }),
-      "ConfigLocked"
-    );
-    await expectCustomError(
-      manager.updateContactEmail.call("ops@example.com", { from: owner }),
-      "ConfigLocked"
-    );
+
+    await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
+    await manager.addAdditionalAgent(other, { from: owner });
+    await manager.updateContactEmail("ops@example.com", { from: owner });
+    await manager.blacklistAgent(agent, true, { from: owner });
 
     await manager.pause({ from: owner });
     await manager.unpause({ from: owner });
-    await expectCustomError(
-      manager.blacklistAgent.call(agent, true, { from: owner }),
-      "ConfigLocked"
-    );
 
     await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
+  });
+
+  it("guards token updates after jobs or escrow exist", async () => {
+    await manager.updateAGITokenAddress(other, { from: owner });
+
+    const payout = toBN(toWei("2"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+
+    await expectCustomError(
+      manager.updateAGITokenAddress.call(other, { from: owner }),
+      "InvalidState"
+    );
+
+    await manager.lockConfiguration({ from: owner });
+    await expectCustomError(
+      manager.updateAGITokenAddress.call(other, { from: owner }),
+      "ConfigLocked"
+    );
+  });
+
+  it("allows surplus withdrawals after lock while paused", async () => {
+    const surplus = toBN(toWei("3"));
+    await token.mint(manager.address, surplus, { from: owner });
+
+    await manager.lockConfiguration({ from: owner });
+    await manager.pause({ from: owner });
+    await manager.withdrawAGI(surplus, { from: owner });
   });
 });
