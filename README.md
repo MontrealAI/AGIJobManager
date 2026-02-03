@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.26`, while the Truffle default compiler is `0.8.26` (configurable via `SOLC_VERSION`). `viaIR` is enabled by default because the legacy contract and current shape hit stack‑too‑deep without it; keep compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.26`, while the Truffle default compiler is `0.8.26` (configurable via `SOLC_VERSION`). `viaIR` is disabled by default; enable it only if a non‑IR build cannot compile. Keep compiler settings consistent for verification.
 
 ## Contract documentation
 
@@ -135,7 +135,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
 - `optimizer.runs`: **200** (via `SOLC_RUNS`, default in `truffle-config.js`)
-- `viaIR`: **true** by default (set `SOLC_VIA_IR=false` only if you have a validated refactor that avoids stack‑too‑deep)
+- `viaIR`: **false** by default (set `SOLC_VIA_IR=true` only if a non‑IR build cannot compile)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
 - `SOLC_VERSION`: **0.8.26**

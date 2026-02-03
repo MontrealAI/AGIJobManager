@@ -159,6 +159,11 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.lockConfiguration({ from: owner });
     assert.equal(await manager.configLocked(), true, "config should be locked");
 
+    await manager.addModerator(other, { from: owner });
+    assert.equal(await manager.moderators(other), true, "moderator should be added post-lock");
+    await manager.removeModerator(other, { from: owner });
+    assert.equal(await manager.moderators(other), false, "moderator should be removed post-lock");
+
     await manager.updateMerkleRoots(clubRoot, agentRoot, { from: owner });
 
     await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
