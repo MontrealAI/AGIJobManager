@@ -1,7 +1,8 @@
 # JobStatus (canonical job lifecycle)
 
-`AGIJobManager.jobStatus(jobId)` returns a stable, numeric enum that external consumers can rely on.
-The numeric ordering is fixed and **must not be reordered**.
+`jobStatus(jobId)` has been removed from current deployments to reduce runtime bytecode size. Use
+`getJobCore(jobId)`, `getJobValidation(jobId)`, `getJobURIs(jobId)`, and events to derive lifecycle
+state off-chain. The mapping below remains the canonical ordering for reference and UI compatibility.
 
 ## Precedence order
 
@@ -31,4 +32,4 @@ When multiple flags could apply, the contract resolves status in this order:
 
 - **Deleted** is used for cancelled/deleted records and does not imply any on-chain settlement beyond the cancel path.
 - **Expired** is computed and **informational** unless an explicit expiry/settlement function is called.
-- **Legacy deployments** may not implement `jobStatus`; the UI falls back to client-side derivation when the selector is missing.
+- UI clients derive status from the getters/events when `jobStatus` is unavailable.

@@ -114,13 +114,13 @@ Everything else remains operable but should be governed by your ops policy to ke
 
 ## 7) Verification (Etherscan)
 
-**Normal path (viaIR enabled)**:
-1. Compile with `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`.
+**Normal path (viaIR disabled)**:
+1. Compile with `SOLC_VERSION=0.8.24`, `SOLC_RUNS=1`, `SOLC_VIA_IR=false`.
 2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args.
 
-**Fallback (viaIR + Standard JSON input)**:
-1. Compile with `SOLC_VIA_IR=true` and the same optimizer/metadata settings.
+**Fallback (Standard JSON input)**:
+1. Compile with `SOLC_VIA_IR=false` and the same optimizer/metadata settings.
 2. In Etherscan, select **Solidity (Standard-Json-Input)** and paste the JSON from the build step.
-3. Ensure the JSON includes `viaIR: true`, `optimizer.runs: 200`, `metadata.bytecodeHash: "none"`, and the exact constructor args.
+3. Ensure the JSON includes `viaIR: false`, `optimizer.runs: 1`, `optimizer.details.inliner: false`, `metadata.bytecodeHash: "none"`, and the exact constructor args.
 
 > To reproduce Standard JSON input deterministically, keep compiler settings pinned in `truffle-config.js` and rebuild before verification.

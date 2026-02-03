@@ -136,7 +136,7 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Disputed + no moderators:** owner pauses and uses `resolveStaleDispute` after `disputeReviewPeriod`.
 
 5. **Verify recovery:**
-   - Query `getJobCore(jobId)` and `getJobStatus(jobId)` to confirm `completed` and `disputed` flags.
+   - Query `getJobCore(jobId)` and `getJobValidation(jobId)` to confirm `completed`, `disputed`, and completion flags.
    - Inspect emitted events (`JobCompleted`, `DisputeResolvedWithCode`, `DisputeResolved`, `NFTIssued`) and updated balances.
 
 ## Common reasons settlement reverts (errors → explanation → fix)

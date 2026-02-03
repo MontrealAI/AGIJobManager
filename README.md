@@ -1,7 +1,7 @@
 # AGIJobManager
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Solidity](https://img.shields.io/badge/solidity-0.8.33-363636.svg)](contracts/AGIJobManager.sol)
+[![Solidity](https://img.shields.io/badge/solidity-0.8.24-363636.svg)](contracts/AGIJobManager.sol)
 [![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
 [![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
 
@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.33`, while the Truffle default compiler is `0.8.33` (configurable via `SOLC_VERSION`). `viaIR` is **enabled by default** because compilation without IR hits stack‑too‑deep; keep compiler settings consistent for verification.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.24`, while the Truffle default compiler is `0.8.24` (configurable via `SOLC_VERSION`). `viaIR` is **disabled by default**; stack‑too‑deep is avoided by keeping the large `jobs` getter internal. Keep compiler settings consistent for verification.
 
 ## Contract documentation
 
@@ -122,6 +122,7 @@ Detailed contract documentation lives in `docs/`:
 - [AGIJobManager overview](docs/AGIJobManager.md)
 - [AGIJobManager interface reference](docs/AGIJobManager_Interface.md)
 - [Contract read API (job getters)](docs/contract-read-api.md)
+- [Bytecode size + job getter notes](docs/bytecode-and-getters.md)
 - [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
 - [AGIJobManager security considerations](docs/AGIJobManager_Security.md)
 
@@ -135,12 +136,13 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
-- `optimizer.runs`: **200** (via `SOLC_RUNS`, default in `truffle-config.js`)
-- `viaIR`: **true** by default (required to compile without stack‑too‑deep)
+- `optimizer.runs`: **1** (via `SOLC_RUNS`, default in `truffle-config.js`)
+- `optimizer.details.inliner`: **false**
+- `viaIR`: **false** by default (keep disabled)
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
-- `SOLC_VERSION`: **0.8.33**
-- `evmVersion`: **london** (or the target chain default)
+- `SOLC_VERSION`: **0.8.24**
+- `evmVersion`: **shanghai** (or the target chain default)
 
 To check runtime sizes locally after compilation:
 ```bash

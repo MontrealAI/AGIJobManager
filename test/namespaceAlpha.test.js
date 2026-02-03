@@ -97,9 +97,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     assert.ok(validatedEvent, "JobValidated should be emitted");
     assert.ok(completedEvent, "JobCompleted should be emitted when approvals threshold met");
 
-    const status = await manager.getJobStatus(jobId);
-    const completed = status.completed ?? status[0];
-    assert.equal(completed, true, "job should be completed");
+    const job = await manager.getJobCore(jobId);
+    assert.equal(job.completed, true, "job should be completed");
   });
 
   it("authorizes base namespaces for agent and validator", async () => {
