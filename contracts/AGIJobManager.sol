@@ -253,7 +253,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _;
     }
 
-    modifier whenConfigurable() {
+    modifier whenCriticalConfigurable() {
         if (configLocked) revert ConfigLocked();
         _;
     }
@@ -362,7 +362,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
-    function lockConfiguration() external onlyOwner whenConfigurable {
+    function lockConfiguration() external onlyOwner whenCriticalConfigurable {
         configLocked = true;
         emit ConfigurationLocked(msg.sender, block.timestamp);
     }
@@ -543,14 +543,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit DisputeTimeoutResolved(_jobId, msg.sender, employerWins);
     }
 
-    function blacklistAgent(address _agent, bool _status) external onlyOwner whenConfigurable {
+    function blacklistAgent(address _agent, bool _status) external onlyOwner {
         blacklistedAgents[_agent] = _status;
     }
-    function blacklistValidator(address _validator, bool _status) external onlyOwner whenConfigurable {
+    function blacklistValidator(address _validator, bool _status) external onlyOwner {
         blacklistedValidators[_validator] = _status;
     }
 
-    function delistJob(uint256 _jobId) external onlyOwner whenConfigurable {
+    function delistJob(uint256 _jobId) external onlyOwner {
         Job storage job = _job(_jobId);
         if (job.completed || job.assignedAgent != address(0)) revert InvalidState();
         _releaseEscrow(job);
@@ -561,42 +561,45 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function addModerator(address _moderator) external onlyOwner { moderators[_moderator] = true; }
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
-    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenConfigurable { agiToken = IERC20(_newTokenAddress); }
-    function setBaseIpfsUrl(string calldata _url) external onlyOwner whenConfigurable { baseIpfsUrl = _url; }
-    function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner whenConfigurable {
+    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenCriticalConfigurable {
+        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        agiToken = IERC20(_newTokenAddress);
+    }
+    function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
+    function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
         requiredValidatorApprovals = _approvals;
     }
-    function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner whenConfigurable {
+    function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
         _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
         requiredValidatorDisapprovals = _disapprovals;
     }
-    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner whenConfigurable { premiumReputationThreshold = _threshold; }
-    function setMaxJobPayout(uint256 _maxPayout) external onlyOwner whenConfigurable { maxJobPayout = _maxPayout; }
-    function setJobDurationLimit(uint256 _limit) external onlyOwner whenConfigurable { jobDurationLimit = _limit; }
-    function setCompletionReviewPeriod(uint256 _period) external onlyOwner whenConfigurable {
+    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
+    function setMaxJobPayout(uint256 _maxPayout) external onlyOwner { maxJobPayout = _maxPayout; }
+    function setJobDurationLimit(uint256 _limit) external onlyOwner { jobDurationLimit = _limit; }
+    function setCompletionReviewPeriod(uint256 _period) external onlyOwner {
         if (!(_period > 0 && _period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
         uint256 oldPeriod = completionReviewPeriod;
         completionReviewPeriod = _period;
         emit CompletionReviewPeriodUpdated(oldPeriod, _period);
     }
-    function setDisputeReviewPeriod(uint256 _period) external onlyOwner whenConfigurable {
+    function setDisputeReviewPeriod(uint256 _period) external onlyOwner {
         if (!(_period > 0 && _period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
         uint256 oldPeriod = disputeReviewPeriod;
         disputeReviewPeriod = _period;
         emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
-    function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner whenConfigurable {
+    function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         if (_percentage > 100 - validationRewardPercentage) revert InvalidParameters();
         additionalAgentPayoutPercentage = _percentage;
         emit AdditionalAgentPayoutPercentageUpdated(_percentage);
     }
-    function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner whenConfigurable { termsAndConditionsIpfsHash = _hash; }
-    function updateContactEmail(string calldata _email) external onlyOwner whenConfigurable { contactEmail = _email; }
-    function updateAdditionalText1(string calldata _text) external onlyOwner whenConfigurable { additionalText1 = _text; }
-    function updateAdditionalText2(string calldata _text) external onlyOwner whenConfigurable { additionalText2 = _text; }
-    function updateAdditionalText3(string calldata _text) external onlyOwner whenConfigurable { additionalText3 = _text; }
+    function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
+    function updateContactEmail(string calldata _email) external onlyOwner { contactEmail = _email; }
+    function updateAdditionalText1(string calldata _text) external onlyOwner { additionalText1 = _text; }
+    function updateAdditionalText2(string calldata _text) external onlyOwner { additionalText2 = _text; }
+    function updateAdditionalText3(string calldata _text) external onlyOwner { additionalText3 = _text; }
 
     function getJobStatus(uint256 _jobId) external view returns (bool, bool, string memory) {
         Job storage job = jobs[_jobId];
@@ -641,7 +644,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return JobStatus.InProgress;
     }
 
-    function setValidationRewardPercentage(uint256 _percentage) external onlyOwner whenConfigurable {
+    function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         uint256 maxPct = _maxAGITypePayoutPercentage();
         if (maxPct > 100 - _percentage) revert InvalidParameters();
@@ -996,10 +999,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return false;
     }
 
-    function addAdditionalValidator(address validator) external onlyOwner whenConfigurable { additionalValidators[validator] = true; }
-    function removeAdditionalValidator(address validator) external onlyOwner whenConfigurable { additionalValidators[validator] = false; }
-    function addAdditionalAgent(address agent) external onlyOwner whenConfigurable { additionalAgents[agent] = true; }
-    function removeAdditionalAgent(address agent) external onlyOwner whenConfigurable { additionalAgents[agent] = false; }
+    function addAdditionalValidator(address validator) external onlyOwner { additionalValidators[validator] = true; }
+    function removeAdditionalValidator(address validator) external onlyOwner { additionalValidators[validator] = false; }
+    function addAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = true; }
+    function removeAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = false; }
 
     function withdrawableAGI() public view returns (uint256) {
         uint256 bal = agiToken.balanceOf(address(this));
@@ -1007,7 +1010,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return bal - lockedEscrow;
     }
 
-    function withdrawAGI(uint256 amount) external onlyOwner whenPaused nonReentrant whenConfigurable {
+    function withdrawAGI(uint256 amount) external onlyOwner whenPaused nonReentrant {
         if (amount == 0) revert InvalidParameters();
         uint256 available = withdrawableAGI();
         if (amount > available) revert InsufficientWithdrawableBalance();
@@ -1025,7 +1028,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit RewardPoolContribution(msg.sender, amount);
     }
 
-    function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner whenConfigurable {
+    function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
         if (!(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100)) revert InvalidParameters();
 
         (bool exists, uint256 maxPct) = _maxAGITypePayoutAfterUpdate(nftAddress, payoutPercentage);
