@@ -1,10 +1,10 @@
 # Configure Once, Operate with Minimal Governance
 
-This guide defines a **configure-once, set-and-forget** operational posture for AGIJobManager. The intent is to set stable parameters at deploy time (or immediately after), then minimize governance touchpoints to emergency-only actions. The contract itself remains unchanged; this guide focuses on **docs + tooling** aligned with the existing Truffle workflow.
+This guide defines a **configure-once, set-and-forget** operational posture for AGIJobManager. The intent is to set stable parameters at deploy time (or immediately after), then minimize governance touchpoints to emergency-only actions. The contract supports this posture via a **one-way configuration lock** (`lockConfiguration()`), aligned with the existing Truffle workflow.
 
 ## Scope
 
-- **No contract changes required** for this workflow.
+- **Configuration lock available**: once locked, admin configuration changes are disabled.
 - **Truffle-first**: uses `truffle exec` scripts.
 - **No secrets in-repo**: use `.env` locally and keep it uncommitted.
 
@@ -30,10 +30,11 @@ These are fixed at deployment and **cannot be changed** without redeploying.
 - `validatorMerkleRoot` + `agentMerkleRoot`
 
 ### B) Post-deploy but intended to remain stable
-Set these once via `scripts/postdeploy-config.js` and treat changes as exceptional.
+Set these once via `scripts/postdeploy-config.js`, then lock configuration and treat changes as exceptional.
 
 - `requiredValidatorApprovals`
 - `requiredValidatorDisapprovals`
+- `setAlphaRootNodes` (alpha roots for club/agent namespaces)
 - `premiumReputationThreshold`
 - `validationRewardPercentage`
 - `maxJobPayout`
@@ -53,14 +54,17 @@ These should be used only for incident response, then returned to normal operati
 - `resolveStaleDispute()` (owner + paused)
 - `resolveDisputeWithCode()` (moderator)
 
+### Configuration lock (one-way)
+After initial setup and validation, call `lockConfiguration()` to permanently disable configuration-changing admin functions.
+
 ## Rare governance actions
 
 Use only when needed, with a runbook + signoff:
 
 - Add/remove moderators
-- Add/remove additional validators/agents
+- Add/remove additional validators/agents (disabled after lock)
 - Blacklist/unblacklist agents/validators
-- Add/update AGI types (payout tiers)
+- Add/update AGI types (payout tiers; disabled after lock)
 
 ## Network addresses
 
@@ -72,14 +76,14 @@ The intended production token address is:
 ### ENS + NameWrapper + root nodes + Merkle roots
 Record these per network **before deploy**, and keep them immutable afterward.
 
-| Network | ENS | NameWrapper | clubRootNode | agentRootNode | validatorMerkleRoot | agentMerkleRoot |
-| --- | --- | --- | --- | --- | --- | --- |
-| mainnet | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
-| sepolia | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
-| other | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
+| Network | ENS | NameWrapper | clubRootNode | alphaClubRootNode | agentRootNode | alphaAgentRootNode | validatorMerkleRoot | agentMerkleRoot |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| mainnet | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
+| sepolia | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
+| other | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
 
 **Computing root nodes**:
-- `clubRootNode` and `agentRootNode` are **ENS namehashes** for the root namespaces you want to use (e.g., `club.agi.eth`, `agent.agi.eth`).
+- `clubRootNode`/`agentRootNode` and `clubRootNodeAlpha`/`agentRootNodeAlpha` are **ENS namehashes** for the root namespaces you want to use (e.g., `club.agi.eth`, `alpha.club.agi.eth`, `agent.agi.eth`, `alpha.agent.agi.eth`).
 - Use `ethers.utils.namehash("<root-name>")` (or any ENS namehash implementation) and record the hex value per network.
 
 **Computing Merkle roots**:

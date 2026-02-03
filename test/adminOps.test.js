@@ -121,6 +121,22 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.equal(balanceAfter.sub(balanceBefore).toString(), surplus.toString(), "withdraw should move funds");
   });
 
+  it("locks configuration while allowing break-glass operations", async () => {
+    await manager.lockConfiguration({ from: owner });
+    await expectCustomError(manager.lockConfiguration.call({ from: owner }), "InvalidState");
+
+    await expectCustomError(manager.setMaxJobPayout.call(toBN(toWei("2")), { from: owner }), "InvalidState");
+    await expectCustomError(manager.setRequiredValidatorApprovals.call(1, { from: owner }), "InvalidState");
+    await expectCustomError(manager.setAlphaRootNodes.call(ZERO_ROOT, ZERO_ROOT, { from: owner }), "InvalidState");
+    await expectCustomError(manager.addAdditionalAgent.call(agent, { from: owner }), "InvalidState");
+    await expectCustomError(manager.addAGIType.call(agiTypeNft.address, 10, { from: owner }), "InvalidState");
+
+    await manager.pause({ from: owner });
+    await manager.unpause({ from: owner });
+    await manager.blacklistAgent(agent, true, { from: owner });
+    assert.equal(await manager.blacklistedAgents(agent), true);
+  });
+
   it("reverts withdrawals on failed transfers", async () => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(owner, toBN(toWei("2")), { from: owner });

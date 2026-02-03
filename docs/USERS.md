@@ -86,7 +86,9 @@ const resolver = await MockResolver.new();
 const nameWrapper = await MockNameWrapper.new();
 
 const clubRoot = web3.utils.soliditySha3({ type: "string", value: "club-root" });
+const clubRootAlpha = web3.utils.soliditySha3({ type: "string", value: "alpha.club-root" });
 const agentRoot = web3.utils.soliditySha3({ type: "string", value: "agent-root" });
+const agentRootAlpha = web3.utils.soliditySha3({ type: "string", value: "alpha.agent-root" });
 const zeroRoot = "0x" + "00".repeat(32);
 
 const manager = await AGIJobManager.new(
@@ -99,6 +101,7 @@ const manager = await AGIJobManager.new(
   zeroRoot,
   zeroRoot
 );
+await manager.setAlphaRootNodes(clubRootAlpha, agentRootAlpha);
 ```
 
 ### 4) Run a happy‑path job end‑to‑end
