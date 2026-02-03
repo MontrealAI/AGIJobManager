@@ -5,7 +5,7 @@
   "description": "Single-contract AGIJobManager",
   "scripts": {
     "build": "truffle compile",
-    "size": "node scripts/check-bytecode-size.js",
+    "size": "SOLC_VIA_IR=true truffle compile --all && node scripts/check-bytecode-size.js",
     "docs:interface": "node scripts/generate-interface-doc.js",
     "lint": "solhint \"contracts/**/*.sol\"",
     "test": "SOLC_VIA_IR=true truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js && node scripts/check-contract-sizes.js",
