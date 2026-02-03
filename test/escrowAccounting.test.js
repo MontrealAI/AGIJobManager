@@ -35,6 +35,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
       ZERO_ROOT,
       ZERO_ROOT,
       ZERO_ROOT,
+      ZERO_ROOT,
+      ZERO_ROOT,
       { from: owner }
     );
 

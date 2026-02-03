@@ -26,12 +26,12 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.23`, `SOLC_RUNS=800`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.26`, `SOLC_RUNS=500`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
 
-> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.17`, while the default Truffle compiler is `0.8.23`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
+> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.26`, while the default Truffle compiler is `0.8.26`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
 
 ## Runtime bytecode size (EIP-170)
 
@@ -42,8 +42,8 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 ```
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
-- Optimizer enabled with **runs = 800**.
-- `viaIR = true`.
+- Optimizer enabled with **runs = 500**.
+- `viaIR = true` (required to avoid stack-too-deep compilation errors at this size).
 - `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
 
@@ -63,7 +63,7 @@ The default `npm test` script compiles with `--all`, runs `truffle test --networ
 
 ## Migration script notes
 
-The deployment script in `migrations/2_deploy_contracts.js` hardcodes constructor parameters (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Edit these values** before deploying to any production network.
+The deployment script in `migrations/2_deploy_contracts.js` reads constructor parameters from environment variables (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Set these values** before deploying to any production network.
 
 ## Local deployment (Ganache)
 

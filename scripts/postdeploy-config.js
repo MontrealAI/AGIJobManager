@@ -207,6 +207,35 @@ module.exports = async function postdeployConfig(callback) {
     const currentApprovals = await instance.requiredValidatorApprovals();
     const currentDisapprovals = await instance.requiredValidatorDisapprovals();
     const maxValidators = await instance.MAX_VALIDATORS_PER_JOB();
+    const configLocked = await instance.configLocked();
+
+    if (configLocked) {
+      const lockedKeys = [
+        "requiredValidatorApprovals",
+        "requiredValidatorDisapprovals",
+        "premiumReputationThreshold",
+        "validationRewardPercentage",
+        "maxJobPayout",
+        "jobDurationLimit",
+        "completionReviewPeriod",
+        "disputeReviewPeriod",
+        "additionalAgentPayoutPercentage",
+        "termsAndConditionsIpfsHash",
+        "contactEmail",
+        "additionalText1",
+        "additionalText2",
+        "additionalText3",
+        "additionalValidators",
+        "additionalAgents",
+        "agiTypes",
+      ];
+      const lockedRequested = lockedKeys.filter((key) => config[key] !== undefined);
+      if (lockedRequested.length) {
+        throw new Error(
+          `Configuration is locked; remove these settings and retry: ${lockedRequested.join(", ")}`
+        );
+      }
+    }
 
     const ops = [];
 
