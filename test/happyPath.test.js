@@ -40,6 +40,8 @@ contract("AGIJobManager happy path", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      clubRoot,
+      agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }

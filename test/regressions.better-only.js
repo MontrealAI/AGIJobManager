@@ -34,15 +34,27 @@ async function expectRevert(promise) {
 }
 
 async function deployManager(Contract, tokenAddress, agent, validator, owner) {
-  return Contract.new(
+  const baseArgs = [
     tokenAddress,
     "ipfs://base",
     ZERO_ADDRESS,
     ZERO_ADDRESS,
     rootNode("club-root"),
     rootNode("agent-root"),
-    leaf(validator),
-    leaf(agent),
+  ];
+  const merkleArgs = [leaf(validator), leaf(agent)];
+  if (Contract.contractName === "AGIJobManager") {
+    return Contract.new(
+      ...baseArgs,
+      rootNode("club-root"),
+      rootNode("agent-root"),
+      ...merkleArgs,
+      { from: owner }
+    );
+  }
+  return Contract.new(
+    ...baseArgs,
+    ...merkleArgs,
     { from: owner }
   );
 }

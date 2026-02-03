@@ -44,6 +44,8 @@ contract("AGIJobManager admin ops", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      clubRoot,
+      agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -132,6 +134,8 @@ contract("AGIJobManager admin ops", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      clubRoot,
+      agentRoot,
       ZERO_ROOT,
       ZERO_ROOT,
       { from: owner }
@@ -144,5 +148,30 @@ contract("AGIJobManager admin ops", (accounts) => {
       managerFailing.withdrawAGI.call(toBN(toWei("1")), { from: owner }),
       "TransferFailed"
     );
+  });
+
+  it("locks configuration changes while retaining break-glass controls", async () => {
+    await manager.lockConfiguration({ from: owner });
+    assert.equal(await manager.configLocked(), true, "config should be locked");
+
+    await expectCustomError(
+      manager.setMaxJobPayout.call(toBN(toWei("1")), { from: owner }),
+      "ConfigLocked"
+    );
+    await expectCustomError(
+      manager.addAdditionalAgent.call(other, { from: owner }),
+      "ConfigLocked"
+    );
+    await expectCustomError(
+      manager.updateContactEmail.call("ops@example.com", { from: owner }),
+      "ConfigLocked"
+    );
+
+    await manager.pause({ from: owner });
+    await manager.unpause({ from: owner });
+    await manager.blacklistAgent(agent, true, { from: owner });
+    assert.equal(await manager.blacklistedAgents(agent), true, "blacklist should remain operable");
+
+    await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
   });
 });

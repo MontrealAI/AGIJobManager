@@ -97,8 +97,11 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       nameWrapper.address,
       clubRoot,
       agentRoot,
+      clubRoot,
+      agentRoot,
       validatorTree.root,
-      agentTree.root
+      agentTree.root,
+      { from: owner }
     );
 
     await token.mint(employer, payout.muln(5));
@@ -539,6 +542,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         nameWrapper.address,
         clubRoot,
         agentRoot,
+        clubRoot,
+        agentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -560,6 +565,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         baseIpfsUrl,
         ens.address,
         nameWrapper.address,
+        clubRoot,
+        agentRoot,
         clubRoot,
         agentRoot,
         validatorTree.root,
@@ -595,6 +602,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         nameWrapper.address,
         clubRoot,
         agentRoot,
+        clubRoot,
+        agentRoot,
         validatorTree.root,
         agentTree.root
       );
@@ -628,6 +637,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         baseIpfsUrl,
         ens.address,
         nameWrapper.address,
+        clubRoot,
+        agentRoot,
         clubRoot,
         agentRoot,
         validatorTree.root,

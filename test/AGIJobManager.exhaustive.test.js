@@ -33,10 +33,14 @@ async function deployManager({
   nameWrapper,
   validatorRootNode,
   agentRootNode,
+  alphaValidatorRootNode,
+  alphaAgentRootNode,
   validatorMerkleRoot,
   agentMerkleRoot,
   owner,
 }) {
+  const resolvedAlphaValidatorRootNode = alphaValidatorRootNode || validatorRootNode;
+  const resolvedAlphaAgentRootNode = alphaAgentRootNode || agentRootNode;
   return AGIJobManager.new(
     token.address,
     "ipfs://base",
@@ -44,6 +48,8 @@ async function deployManager({
     nameWrapper.address,
     validatorRootNode,
     agentRootNode,
+    resolvedAlphaValidatorRootNode,
+    resolvedAlphaAgentRootNode,
     validatorMerkleRoot,
     agentMerkleRoot,
     { from: owner }
