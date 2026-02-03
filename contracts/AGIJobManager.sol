@@ -651,11 +651,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         );
     }
 
-    function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
-        Job storage job = _job(_jobId);
-        return job.agentPayoutPct;
-    }
-
     function getJobCore(uint256 _jobId)
         external
         view
@@ -685,7 +680,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         );
     }
 
-    function getJobValidation(uint256 _jobId)
+    function getJobMeta(uint256 _jobId)
         external
         view
         returns (
@@ -693,7 +688,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             uint256 validatorApprovals,
             uint256 validatorDisapprovals,
             uint256 completionRequestedAt,
-            uint256 disputedAt
+            uint256 disputedAt,
+            string memory jobSpecURI,
+            string memory jobCompletionURI,
+            string memory details
         )
     {
         Job storage job = _job(_jobId);
@@ -702,25 +700,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             job.validatorApprovals,
             job.validatorDisapprovals,
             job.completionRequestedAt,
-            job.disputedAt
+            job.disputedAt,
+            job.jobSpecURI,
+            job.jobCompletionURI,
+            job.details
         );
-    }
-
-    function getJobUris(uint256 _jobId)
-        external
-        view
-        returns (
-            string memory jobSpecURI,
-            string memory jobCompletionURI
-        )
-    {
-        Job storage job = _job(_jobId);
-        return (job.jobSpecURI, job.jobCompletionURI);
-    }
-
-    function getJobDetails(uint256 _jobId) external view returns (string memory) {
-        Job storage job = _job(_jobId);
-        return job.details;
     }
 
     /// @notice Returns the canonical job status for UI/indexing.

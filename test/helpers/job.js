@@ -1,7 +1,6 @@
 async function getJob(manager, jobId) {
   const core = await manager.getJobCore(jobId);
-  const validation = await manager.getJobValidation(jobId);
-  const uris = await manager.getJobUris(jobId);
+  const meta = await manager.getJobMeta(jobId);
 
   const employer = core[0];
   const assignedAgent = core[1];
@@ -13,14 +12,14 @@ async function getJob(manager, jobId) {
   const expired = core[7];
   const agentPayoutPct = core[8];
 
-  const completionRequested = validation[0];
-  const validatorApprovals = validation[1];
-  const validatorDisapprovals = validation[2];
-  const completionRequestedAt = validation[3];
-  const disputedAt = validation[4];
-
-  const jobSpecURI = uris[0];
-  const jobCompletionURI = uris[1];
+  const completionRequested = meta[0];
+  const validatorApprovals = meta[1];
+  const validatorDisapprovals = meta[2];
+  const completionRequestedAt = meta[3];
+  const disputedAt = meta[4];
+  const jobSpecURI = meta[5];
+  const jobCompletionURI = meta[6];
+  const details = meta[7];
 
   return {
     employer,
@@ -39,6 +38,7 @@ async function getJob(manager, jobId) {
     disputedAt,
     jobSpecURI,
     jobCompletionURI,
+    details,
   };
 }
 

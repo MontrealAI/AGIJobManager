@@ -24,8 +24,7 @@ npx ganache -p 8545
 npx truffle compile
 ```
 
-By default the Truffle config disables `viaIR` to keep mainnet verification straightforward. Enable `viaIR` only if you cannot compile without it, and ensure verification settings match the deployment.
-Keep the setting consistent for verification.
+By default the Truffle config enables `viaIR` to keep runtime bytecode under the EIP‑170 limit. Keep the setting consistent for verification.
 
 ## Run the full test suite
 

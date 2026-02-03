@@ -114,15 +114,15 @@ Everything else remains operable but should be governed by your ops policy to ke
 
 ## 7) Verification (Etherscan)
 
-**Normal path (viaIR disabled)**:
-1. Compile with `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=false`.
+**Normal path (viaIR enabled)**:
+1. Compile with `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`.
 2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args:
    ```bash
    npx truffle run verify AGIJobManager --network mainnet
    ```
 
 **Fallback (Standard JSON input)**:
-If you deploy with `SOLC_VIA_IR=true` (or the plugin fails), verify with Etherscan’s **Standard-Json-Input** flow:
+If the plugin fails, verify with Etherscan’s **Standard-Json-Input** flow:
 
 1. Build a standard JSON input file (set `viaIR` to match your deployment):
    ```bash

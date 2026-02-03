@@ -375,7 +375,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "90");
+      assert.equal((await getJob(manager, jobId)).agentPayoutPct.toString(), "90");
 
       await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
 
@@ -397,7 +397,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await manager.applyForJob(jobId, "", [], { from: other });
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "1");
+      assert.equal((await getJob(manager, jobId)).agentPayoutPct.toString(), "1");
 
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const agentBalanceBefore = new BN(await token.balanceOf(other));
