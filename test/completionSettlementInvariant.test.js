@@ -130,6 +130,18 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     await expectCustomError(manager.resolveStaleDispute.call(jobId, false, { from: owner }), "InvalidState");
   });
 
+  it("rejects validation when completion metadata is empty", async () => {
+    const jobId = await createJob(toBN(toWei("4")));
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.setJobMetadata(jobId, "", "ipfs-spec", true, false, { from: owner });
+
+    await expectCustomError(
+      manager.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
+      "InvalidState"
+    );
+  });
+
   it("mints completion NFTs using the completion metadata URI", async () => {
     const jobId = await createJob(toBN(toWei("9")));
 
