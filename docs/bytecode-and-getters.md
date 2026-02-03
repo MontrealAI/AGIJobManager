@@ -1,54 +1,35 @@
-# Bytecode size & job getters
+# Bytecode size guardrails & job getters
 
-## Why `jobs` is internal
-The `Job` struct is large and contains mappings/arrays. Exposing a public
-`jobs(jobId)` getter risks Solidity stack-too-deep compilation failures and
-creates an oversized ABI tuple. To keep compilation stable (with `viaIR` OFF),
-`jobs` is kept `internal` and callers should use the smaller read-model getters
-instead.
+## Why the `jobs` mapping is not public
 
-## Read-model getters to use
-Use the targeted view functions that return only the fields needed for UI/tests:
+`jobs` is intentionally **not** public to avoid Solidity generating a massive auto-getter for the full `Job` struct. That auto-getter previously triggered legacy (non-viaIR) **stack-too-deep** compilation failures. Instead, we expose compact view helpers that keep the ABI small and the stack usage within limits.
 
-- `getJobCore(jobId)` → employer, assignedAgent, payout, duration, assignedAt,
-  completed, disputed, expired, agentPayoutPct.
-- `getJobValidation(jobId)` → completionRequested, validatorApprovals,
-  validatorDisapprovals, completionRequestedAt, disputedAt.
-- `getJobSpecURI(jobId)` → jobSpecURI.
-- `getJobCompletionURI(jobId)` → jobCompletionURI.
+Use these getters instead:
 
-These functions use `_job(jobId)` internally so they revert with `JobNotFound`
-when the job is missing.
+- `getJobCore(jobId)` for core job fields (employer, assigned agent, payout, duration, assignment data, completion/dispute/expiry state, and agent payout percentage).
+- `getJobValidation(jobId)` for validation-related fields (completion request state and validator counts).
+- `getJobStatus(jobId)` and `getJobAgentPayoutPct(jobId)` for narrower single-purpose reads.
 
-## Runtime bytecode size check (EIP-170)
-The deployed/runtime bytecode of `AGIJobManager` must remain **≤ 24575 bytes**
-(a safety margin under the 24,576 byte EIP-170 limit). Tests also guard the
-`TestableAGIJobManager` wrapper when it is compiled for local suites.
+## Runtime bytecode size limit (EIP-170)
 
-After compiling, run:
+Ethereum mainnet enforces a **24,576-byte** runtime bytecode cap (EIP‑170). We enforce a safety margin of **<= 24,575 bytes** for deployable contracts.
+
+### How to measure locally
+
+Compile and check the deployed bytecode size:
 
 ```bash
-npm run size
+npx truffle compile --all
+node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
+node -e "const a=require('./build/contracts/TestableAGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('TestableAGIJobManager deployedBytecode bytes:', b.length/2)"
 ```
 
-This reads `build/contracts/AGIJobManager.json` by default (or any contracts
-listed via `BYTECODE_CONTRACTS`) and prints the runtime byte length. CI and the
-Truffle test guard enforce the same limit for `AGIJobManager` and
-`TestableAGIJobManager` artifacts.
+We also enforce this in tests (`test/bytecodeSize.test.js`) so CI fails if the limit is exceeded.
 
-Current measured sizes from the latest build (Solidity 0.8.19, runs=50):
-- `AGIJobManager`: **24295 bytes**
-- `TestableAGIJobManager`: **24545 bytes**
+## Compiler settings and warning cleanup
 
-## Compiler configuration
-`viaIR` remains **OFF** in `truffle-config.js`. The repo pins Solidity
-**0.8.19** (override with `SOLC_VERSION` only if needed) to avoid the
-OpenZeppelin `memory-safe-assembly` deprecation warnings while staying
-compatible with the current OZ 4.x dependencies. Optimizer runs default to
-**50**; if you adjust this, ensure the bytecode limit tests still pass.
+- **Solidity version:** pinned to `0.8.19` in `truffle-config.js` to avoid the OpenZeppelin *memory-safe-assembly* deprecation warnings emitted by newer compilers.
+- **OpenZeppelin contracts:** kept at `@openzeppelin/contracts@4.9.6` (same major version).
+- **Optimizer:** enabled with **runs = 50** to keep deployed bytecode under the EIP‑170 safety margin (viaIR stays off).
 
-## OpenZeppelin warning background
-Newer Solidity releases emit deprecation warnings for the legacy
-`@solidity memory-safe-assembly` natspec comment used in OpenZeppelin 4.x. We
-pin a compatible Solidity release in Truffle to keep the compile output clean
-without modifying `node_modules`.
+If you change compiler settings for a new deployment, keep the version and optimizer runs consistent for reproducible verification.

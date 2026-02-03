@@ -1,6 +1,8 @@
 const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
 
-const MAX_RUNTIME_BYTES = 24575;
+const MAX_DEPLOYED_BYTES = 24575;
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =
@@ -11,27 +13,32 @@ function deployedSizeBytes(artifact) {
   return hex.length / 2;
 }
 
-function tryRequire(name) {
-  try {
-    return artifacts.require(name);
-  } catch (error) {
+function loadArtifact(name) {
+  const artifactPath = path.join(
+    __dirname,
+    "..",
+    "build",
+    "contracts",
+    `${name}.json`
+  );
+  if (!fs.existsSync(artifactPath)) {
     return null;
   }
+  return require(artifactPath);
 }
 
-describe("Runtime bytecode size", () => {
-  it("keeps AGIJobManager (and test wrapper) under the EIP-170 limit", async () => {
-    const targets = ["AGIJobManager", "TestableAGIJobManager"];
-    for (const name of targets) {
-      const Artifact = tryRequire(name);
-      if (!Artifact) {
-        continue;
+contract("Bytecode size guard", () => {
+  it("keeps deployed bytecode within the EIP-170 safety margin", () => {
+    ["AGIJobManager", "TestableAGIJobManager"].forEach((name) => {
+      const artifact = loadArtifact(name);
+      if (!artifact) {
+        return;
       }
-      const sizeBytes = deployedSizeBytes(Artifact);
+      const sizeBytes = deployedSizeBytes(artifact);
       assert(
-        sizeBytes <= MAX_RUNTIME_BYTES,
-        `${name} runtime bytecode size ${sizeBytes} exceeds ${MAX_RUNTIME_BYTES} bytes`
+        sizeBytes <= MAX_DEPLOYED_BYTES,
+        `${name} deployedBytecode size ${sizeBytes} bytes exceeds ${MAX_DEPLOYED_BYTES} bytes`
       );
-    }
+    });
   });
 });
