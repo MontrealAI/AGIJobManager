@@ -190,6 +190,14 @@ contract("AGIJobManager comprehensive", (accounts) => {
   describe("deployment & initialization", () => {
     it("deploys with expected defaults and ownership", async () => {
       assert.equal(await manager.agiToken(), token.address);
+      assert.equal(await manager.ens(), ens.address);
+      assert.equal(await manager.nameWrapper(), nameWrapper.address);
+      assert.equal(await manager.clubRootNode(), clubRootNode);
+      assert.equal(await manager.agentRootNode(), agentRootNode);
+      assert.equal(await manager.alphaClubRootNode(), alphaClubRootNode);
+      assert.equal(await manager.alphaAgentRootNode(), alphaAgentRootNode);
+      assert.equal(await manager.validatorMerkleRoot(), validatorRoot);
+      assert.equal(await manager.agentMerkleRoot(), agentRoot);
       assert.equal(await manager.requiredValidatorApprovals(), "3");
       assert.equal(await manager.requiredValidatorDisapprovals(), "3");
       assert.equal(await manager.validationRewardPercentage(), "8");

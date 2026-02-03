@@ -4,7 +4,7 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 
 ## Scope
 
-- **No contract changes required** for this workflow.
+- The contract **supports** this workflow; this guide focuses on docs + tooling aligned with the existing Truffle workflow.
 - **Truffle-first**: uses `truffle exec` scripts.
 - **No secrets in-repo**: use `.env` locally and keep it uncommitted.
 
@@ -20,15 +20,15 @@ This guide defines a **configure-once, set-and-forget** operational posture for 
 
 ## One-time parameters (configure once)
 
-### A) Constructor-time (immutable)
-These are fixed at deployment and **cannot be changed** without redeploying.
+### A) Critical wiring (set before first job + lock)
+These are set at deployment and can only be adjusted **before the first job exists** and **before `lockConfiguration()`**.
 
 - `agiToken` (ERC-20 used for escrow)
 - `baseIpfsUrl`
 - `ens` + `nameWrapper`
 - `clubRootNode` + `alphaClubRootNode`
 - `agentRootNode` + `alphaAgentRootNode`
-- `validatorMerkleRoot` + `agentMerkleRoot`
+- `validatorMerkleRoot` + `agentMerkleRoot` (allowlist-only; can be updated post-lock if needed)
 
 > **Constructor encoding note (Truffle)**: the deployment script groups constructor inputs as `[token, baseIpfsUrl, [ENS, NameWrapper], [club, agent, alpha club, alpha agent], [validator Merkle, agent Merkle]]` to keep the ABI manageable. Mirror this ordering for custom deployments.
 
@@ -86,7 +86,7 @@ The intended production token address is:
 - **AGI token**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
 
 ### ENS + NameWrapper + root nodes + Merkle roots
-Record these per network **before deploy**, and keep them immutable afterward.
+Record these per network **before deploy**, and treat ENS/NameWrapper/root nodes as immutable after the first job or configuration lock. Merkle roots can remain adjustable for allowlist updates.
 
 | Network | ENS | NameWrapper | clubRootNode | agentRootNode | validatorMerkleRoot | agentMerkleRoot |
 | --- | --- | --- | --- | --- | --- | --- |

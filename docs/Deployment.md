@@ -26,12 +26,12 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.26`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
 
-> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.26`, while the default Truffle compiler is `0.8.26`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
+> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.33`, while the default Truffle compiler is `0.8.33`. For reproducible verification, keep `SOLC_VERSION`, optimizer runs, and `viaIR` consistent with the original deployment.
 
 ## Runtime bytecode size (EIP-170)
 
@@ -112,6 +112,22 @@ npx truffle run verify AGIJobManager --network mainnet
 - Keep the compiler settings (`SOLC_VERSION`, `SOLC_RUNS`, `SOLC_VIA_IR`, `SOLC_EVM_VERSION`) identical to the original deployment.
 - Ensure your migration constructor parameters match the deployed contract.
 - If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
+
+### Standard JSON verification (fallback, viaIR-compatible)
+
+If the plugin cannot verify a `viaIR` build, you can use the Etherscan “Solidity (Standard-Json-Input)” flow:
+
+1. Compile with the exact deployment settings:
+   ```bash
+   SOLC_VERSION=0.8.33 SOLC_RUNS=200 SOLC_VIA_IR=true SOLC_EVM_VERSION=london npm run build
+   ```
+2. Export the Standard JSON input Truffle emits:
+   ```bash
+   node -e "const a=require('./build/contracts/AGIJobManager.json'); console.log(JSON.stringify(a.metadata));" > standard-json-input.json
+   ```
+3. In Etherscan, choose **Solidity (Standard-Json-Input)**, upload `standard-json-input.json`, and provide the constructor args (same ordering as `migrations/2_deploy_contracts.js`).
+
+Keep the optimizer runs, `viaIR`, and `evmVersion` identical to the deployed bytecode to ensure a match.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.

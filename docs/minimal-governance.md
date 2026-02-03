@@ -14,8 +14,9 @@ These functions are guarded by `whenCriticalConfigurable` and **revert** once th
 
 **Critical routing / identity**
 - `updateAGITokenAddress` (only allowed before any job exists and before the lock)
-
-> **Note:** ENS registry, NameWrapper, and root nodes are constructor-only in this version. If they are ever made changeable after deployment, they must be guarded by the same critical lock.
+- `updateENSRegistry` (only allowed before any job exists and before the lock)
+- `updateNameWrapper` (only allowed before any job exists and before the lock)
+- `updateRootNodes` (only allowed before any job exists and before the lock)
 
 ## Functions still available after lock
 
@@ -26,7 +27,7 @@ These are considered **break-glass** or operational safety controls and remain a
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
 - `withdrawAGI()` — surplus withdrawals while paused (escrow is always reserved).
 
-Other configuration knobs (thresholds, review periods, allowlists, metadata, etc.) remain **tunable** after lock because they are not part of the critical configuration surface.
+Other configuration knobs (thresholds, review periods, allowlists, metadata, etc.) remain **tunable** after lock because they are not part of the critical configuration surface. Merkle roots stay adjustable so allowlists can evolve without rewiring ENS or token dependencies.
 
 > **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.
 
