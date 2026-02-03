@@ -7,8 +7,8 @@ This checklist is a practical, operator-facing guide for deploying **AGIJobManag
 - **Owner account**: choose a multisig or hardened operator address. This account controls configuration and can lock it permanently.
 - **Moderator set**: decide who can resolve disputes (ideally a separate multisig or a small quorum).
 - **Operational posture**: decide whether you will:
-  - allow any post-lock changes (recommended: only pause/unpause + incident response),
-  - use blacklists for abuse mitigation before configuration is locked,
+  - lock only the critical configuration surface (token + ENS registry/NameWrapper + ENS root nodes),
+  - continue tuning non-critical parameters (thresholds, timeouts, allowlists) after lock,
   - rotate moderators (optional break-glass).
 
 ## 2) Network-specific addresses
@@ -93,13 +93,14 @@ After setup and validation, lock configuration to minimize governance:
 - **Preferred**: set `LOCK_CONFIG=true` before migration to auto-lock.
 - **Manual**: call `lockConfiguration()` from the owner account.
 
-Once locked, all configuration setters are disabled permanently (see `docs/minimal-governance.md`).
+Once locked, only **critical configuration** setters are disabled permanently (see `docs/minimal-governance.md`).
 
 ## 6) Break-glass runbook (after lock)
 
-After lock, operators should only use:
+After lock, operators can still use:
 - `pause()` / `unpause()` for incident response.
 - `resolveStaleDispute()` (owner + paused, after timeout) for dispute recovery.
 - Optional moderator rotation if required.
+- `withdrawAGI()` (owner + paused) for **surplus-only** withdrawals; escrowed funds remain reserved.
 
-Everything else is frozen to keep governance surface minimal.
+Tunable parameters (thresholds, timeouts, allowlists, metadata) remain adjustable so long as they do not change critical identity or fund routing.

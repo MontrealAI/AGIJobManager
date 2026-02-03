@@ -43,7 +43,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
 - Optimizer enabled with **runs = 200**.
-- `viaIR = true` (required to avoid stack-too-deep errors at this contract size).
+- `viaIR = true` by default (required to avoid stack-too-deep without refactoring).
 - `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
 
