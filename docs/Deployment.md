@@ -26,7 +26,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.26`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`, `SOLC_EVM_VERSION=london`. |
+| `SOLC_VERSION` / `SOLC_RUNS` / `SOLC_VIA_IR` / `SOLC_EVM_VERSION` | Compiler settings | Defaults: `SOLC_VERSION=0.8.26`, `SOLC_RUNS=200`, `SOLC_VIA_IR=false`, `SOLC_EVM_VERSION=london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
@@ -43,7 +43,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
 - Optimizer enabled with **runs = 200**.
-- `viaIR = true` (required to compile the current contract without stack-too-deep errors).
+- `viaIR = false` (enable only if you can demonstrate a non-IR build cannot compile).
 - `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
 
