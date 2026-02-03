@@ -210,7 +210,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await expectCustomError(
-      manager.setJobMetadata.call(jobId, "", "ipfs-job", true, true, { from: owner }),
+      manager.setJobMetadata.call(jobId, "", true, true, { from: owner }),
       "InvalidParameters"
     );
   });

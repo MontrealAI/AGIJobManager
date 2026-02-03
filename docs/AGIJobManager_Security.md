@@ -16,7 +16,7 @@ Functions without `nonReentrant` (e.g., `requestJobCompletion`, `listNFT`, `deli
 
 The contract explicitly addresses common issues observed in earlier variants:
 
-- **Phantom job IDs / takeover**: `_job` reverts when the job’s employer is the zero address, and `jobStatus` reverts when `jobId >= nextJobId`. This prevents interacting with deleted or nonexistent job records.
+- **Phantom job IDs / takeover**: `_job` reverts when the job’s employer is the zero address. This prevents interacting with deleted or nonexistent job records.
 - **Double voting by validators**: `approvals` and `disapprovals` mappings enforce single‑vote behavior, and the contract reverts if a validator tries to vote twice or vote on both sides.
 - **Division by zero on validator payouts**: validator payouts are only computed if `validators.length > 0`; otherwise, validator payout is zero.
 - **Employer‑win double completion**: `_refundEmployer` marks the job as completed and releases escrow, preventing additional settlement paths.

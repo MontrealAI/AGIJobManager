@@ -141,8 +141,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.pause({ from: owner });
       await expectRevert.unspecified(
         manager.createJob("ipfs", web3.utils.toWei("1"), 1000, "details", { from: employer }));
-      const status = await manager.getJobStatus(jobId);
-      assert.equal(status[2], "paused-job");
+      const status = await manager.getJobSpecURI(jobId);
+      assert.equal(status, "paused-job");
       await manager.unpause({ from: owner });
     });
   });
@@ -164,11 +164,10 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       assert.notEqual(jobInfo.assignedAt.toString(), "0");
 
       await manager.requestJobCompletion(jobId, "ipfs2", { from: agent });
-      const status = await manager.getJobStatus(jobId);
-      assert.equal(status[1], true);
-      assert.equal(status[2], "ipfs2");
-      const completionJob = await manager.getJobURIs(jobId);
-      assert.equal(completionJob.jobCompletionURI, "ipfs2");
+      const status = await manager.getJobValidation(jobId);
+      assert.equal(status.completionRequested, true);
+      const completionJob = await manager.getJobCompletionURI(jobId);
+      assert.equal(completionJob, "ipfs2");
 
       const employerBalanceBefore = await token.balanceOf(employer);
       const agentBalanceBefore = await token.balanceOf(agent);

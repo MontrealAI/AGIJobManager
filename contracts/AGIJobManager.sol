@@ -86,24 +86,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error InsolventEscrowBalance();
     error ConfigLocked();
 
-    /// @notice Canonical job lifecycle status enum (numeric ordering is stable; do not reorder).
-    /// @dev 0 = Deleted (employer == address(0) or removed)
-    /// @dev 1 = Open (exists, employer set, no assigned agent)
-    /// @dev 2 = InProgress (assigned agent, not completed, not disputed, no completion request)
-    /// @dev 3 = CompletionRequested (agent requested completion)
-    /// @dev 4 = Disputed (disputed flag on)
-    /// @dev 5 = Completed (completed flag on)
-    /// @dev 6 = Expired (computed timeout; informational if expireJob not called)
-    enum JobStatus {
-        Deleted,
-        Open,
-        InProgress,
-        CompletionRequested,
-        Disputed,
-        Completed,
-        Expired
-    }
-
     /// @notice Canonical dispute resolution codes (numeric ordering is stable; do not reorder).
     /// @dev 0 = NO_ACTION (log only; dispute remains active)
     /// @dev 1 = AGENT_WIN (settle in favor of agent)
@@ -153,11 +135,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     bool public configLocked;
 
     struct Job {
-        uint256 id;
         address employer;
         string jobSpecURI;
         string jobCompletionURI;
-        string ipfsHash;
         uint256 payout;
         uint256 duration;
         address assignedAgent;
@@ -167,7 +147,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 validatorApprovals;
         uint256 validatorDisapprovals;
         bool disputed;
-        string details;
         mapping(address => bool) approvals;
         mapping(address => bool) disapprovals;
         address[] validators;
@@ -382,13 +361,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ++nextJobId;
         }
         Job storage job = jobs[jobId];
-        job.id = jobId;
         job.employer = msg.sender;
         job.jobSpecURI = _jobSpecURI;
-        job.ipfsHash = _jobSpecURI;
         job.payout = _payout;
         job.duration = _duration;
-        job.details = _details;
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), _payout);
         unchecked {
             lockedEscrow += _payout;
@@ -412,7 +388,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
         Job storage job = _job(_jobId);
         if (bytes(_jobCompletionURI).length == 0) revert InvalidParameters();
-        require(!paused() || job.disputed, "Pausable: paused");
+        if (paused() && !job.disputed) revert InvalidState();
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
         if (job.completed || job.expired) revert InvalidState();
         if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
@@ -641,16 +617,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function updateAdditionalText2(string calldata _text) external onlyOwner { additionalText2 = _text; }
     function updateAdditionalText3(string calldata _text) external onlyOwner { additionalText3 = _text; }
 
-    function getJobStatus(uint256 _jobId) external view returns (bool, bool, string memory) {
-        Job storage job = jobs[_jobId];
-        string memory statusUri = job.jobCompletionURI;
-        return (
-            job.completed,
-            job.completionRequested,
-            bytes(statusUri).length == 0 ? job.ipfsHash : statusUri
-        );
-    }
-
     function getJobCore(uint256 jobId)
         external
         view
@@ -701,62 +667,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         );
     }
 
-    function getJobURIs(uint256 jobId)
-        external
-        view
-        returns (
-            string memory jobSpecURI,
-            string memory jobCompletionURI,
-            string memory ipfsHash,
-            string memory details
-        )
-    {
+    function getJobSpecURI(uint256 jobId) external view returns (string memory) {
         Job storage job = _job(jobId);
-        return (job.jobSpecURI, job.jobCompletionURI, job.ipfsHash, job.details);
+        return job.jobSpecURI;
     }
 
-    function getJobValidatorCount(uint256 jobId) external view returns (uint256) {
+    function getJobCompletionURI(uint256 jobId) external view returns (string memory) {
         Job storage job = _job(jobId);
-        return job.validators.length;
-    }
-
-    function getJobValidatorAt(uint256 jobId, uint256 index) external view returns (address) {
-        Job storage job = _job(jobId);
-        if (index >= job.validators.length) revert InvalidParameters();
-        return job.validators[index];
-    }
-
-    function getJobAgentPayoutPct(uint256 _jobId) external view returns (uint256) {
-        Job storage job = _job(_jobId);
-        return job.agentPayoutPct;
-    }
-
-    /// @notice Returns the canonical job status for UI/indexing.
-    /// @dev Precedence order: Completed, Deleted, Disputed, Open, CompletionRequested, Expired, InProgress.
-    /// @dev "Expired" is time-derived and does not imply settlement unless expireJob is called.
-    /// @dev "Deleted" corresponds to the internal cancel/delete representation (employer == address(0)).
-    function jobStatus(uint256 jobId) external view returns (JobStatus) {
-        return _jobStatus(jobId);
-    }
-
-    function _jobStatus(uint256 jobId) internal view returns (JobStatus) {
-        if (jobId >= nextJobId) revert JobNotFound();
-        Job storage job = jobs[jobId];
-        if (job.completed) return JobStatus.Completed;
-        if (job.employer == address(0)) return JobStatus.Deleted;
-        if (job.disputed) return JobStatus.Disputed;
-        if (job.assignedAgent == address(0)) return JobStatus.Open;
-        if (job.completionRequested) return JobStatus.CompletionRequested;
-        if (
-            job.expired ||
-            (job.assignedAgent != address(0) &&
-                job.assignedAt != 0 &&
-                job.duration != 0 &&
-                block.timestamp > job.assignedAt + job.duration)
-        ) {
-            return JobStatus.Expired;
-        }
-        return JobStatus.InProgress;
+        return job.jobCompletionURI;
     }
 
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {

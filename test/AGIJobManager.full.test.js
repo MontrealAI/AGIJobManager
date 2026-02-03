@@ -214,7 +214,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       await expectRevert.unspecified(
         manager.createJob("ipfs", web3.utils.toWei("1"), 1000, "details", { from: employer }));
-      await manager.getJobStatus(0);
+      assert.equal((await manager.nextJobId()).toString(), "0");
 
       await manager.unpause({ from: owner });
       await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
@@ -374,7 +374,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "90");
+      assert.equal((await manager.getJobCore(jobId))[8].toString(), "90");
 
       await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
 
@@ -396,7 +396,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await manager.applyForJob(jobId, "", [], { from: other });
-      assert.equal((await manager.getJobAgentPayoutPct(jobId)).toString(), "1");
+      assert.equal((await manager.getJobCore(jobId))[8].toString(), "1");
 
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const agentBalanceBefore = new BN(await token.balanceOf(other));
@@ -618,11 +618,11 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       const job = await manager.getJobCore(jobId);
       const jobValidation = await manager.getJobValidation(jobId);
-      const jobUris = await manager.getJobURIs(jobId);
+      const jobCompletionUri = await manager.getJobCompletionURI(jobId);
       assert.equal(job.disputed, true);
       assert.equal(job.completed, false);
       assert.equal(jobValidation.completionRequested, true);
-      assert.equal(jobUris.jobCompletionURI, "ipfs-final");
+      assert.equal(jobCompletionUri, "ipfs-final");
     });
 
     it("restricts dispute resolution to moderators", async () => {
