@@ -105,7 +105,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await manager.disapproveJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.disputed, true, "job should be disputed");
 
     await expectCustomError(
@@ -130,7 +130,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
       "InvalidState"
     );
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, false, "job should not be completed");
   });
 
@@ -145,7 +145,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-completed", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.disputed, true, "job should be disputed after completion request");
   });
 
@@ -164,7 +164,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     const expected = payout.muln(90).divn(100);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
 
-    const resolvedJob = await manager.jobs(jobId);
+    const resolvedJob = await manager.getJobCore(jobId);
     assert.strictEqual(resolvedJob.completed, true, "job should be completed");
     assert.strictEqual(resolvedJob.disputed, false, "dispute should be cleared");
 
@@ -185,5 +185,24 @@ contract("AGIJobManager dispute hardening", (accounts) => {
       payoutRefund.toString(),
       "employer should be refunded"
     );
+  });
+
+  it("marks employer-win disputes as terminal and releases escrow", async () => {
+    const payout = toBN(toWei("11"));
+    const jobId = await setupCompletion(payout);
+
+    await manager.addModerator(validatorA, { from: owner });
+    await manager.disputeJob(jobId, { from: employer });
+    await manager.resolveDisputeWithCode(jobId, 2, "employer win", { from: validatorA });
+
+    const job = await manager.getJobCore(jobId);
+    const validation = await manager.getJobValidation(jobId);
+    assert.strictEqual(job.completed, true, "job should be completed");
+    assert.strictEqual(job.disputed, false, "dispute should be cleared");
+    assert.strictEqual(validation.disputedAt.toNumber(), 0, "disputedAt should be reset");
+    assert.strictEqual(job.escrowReleased, true, "escrow should be released");
+    assert.strictEqual((await manager.lockedEscrow()).toString(), "0", "locked escrow should be released");
+
+    await expectCustomError(manager.finalizeJob.call(jobId, { from: employer }), "InvalidState");
   });
 });

@@ -94,14 +94,14 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.ok(appliedEvent, "JobApplied event should be emitted");
     assert.equal(appliedEvent.args.agent, agent, "JobApplied agent mismatch");
 
-    const applyJob = await manager.jobs(jobId);
+    const applyJob = await manager.getJobCore(jobId);
     assert.equal(applyJob.assignedAgent, agent, "assigned agent should be set");
     assert.ok(toBN(applyJob.assignedAt).gt(toBN(0)), "assignedAt should be recorded");
 
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     const finalTx = await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
 
-    const finalJob = await manager.jobs(jobId);
+    const finalJob = await manager.getJobCore(jobId);
     assert.strictEqual(finalJob.completed, true, "job should be completed");
     assert.strictEqual(finalJob.completionRequested, true, "completionRequested should be true");
     assert.strictEqual(finalJob.disputed, false, "disputed should remain false in happy path");
@@ -166,7 +166,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const cancelTx = await manager.cancelJob(jobId, { from: employer });
     assert.ok(cancelTx.logs.find((log) => log.event === "JobCancelled"), "JobCancelled event should emit");
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.equal(job.employer, "0x0000000000000000000000000000000000000000", "job should be deleted");
 
     const employerBalance = await token.balanceOf(employer);
@@ -186,7 +186,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const completionTx = await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     assert.ok(completionTx.logs.find((log) => log.event === "JobCompleted"), "JobCompleted should emit");
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should complete with validator approvals");
     assert.strictEqual(job.completionRequested, true, "completionRequested should remain true after request");
 
@@ -231,7 +231,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should complete after agent win");
     assert.strictEqual(job.disputed, false, "disputed flag should clear");
 
@@ -259,11 +259,11 @@ contract("AGIJobManager scenario coverage", (accounts) => {
 
     const disputeTx = await manager.disputeJob(jobId, { from: employer });
     assert.ok(disputeTx.logs.find((log) => log.event === "JobDisputed"), "JobDisputed should emit");
-    const disputedJob = await manager.jobs(jobId);
+    const disputedJob = await manager.getJobCore(jobId);
     assert.strictEqual(disputedJob.disputed, true, "job should be flagged as disputed");
     await manager.resolveDispute(jobId, "employer win", { from: moderator });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should be closed after employer win");
     assert.strictEqual(job.disputed, false, "disputed flag should clear");
 
@@ -291,7 +291,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await manager.resolveDisputeWithCode(jobId, 0, "needs more work", { from: moderator });
 
-    const midJob = await manager.jobs(jobId);
+    const midJob = await manager.getJobCore(jobId);
     assert.strictEqual(midJob.disputed, true, "disputed flag should remain set");
     assert.strictEqual(midJob.completed, false, "job should remain in progress");
     assert.strictEqual(midJob.completionRequested, true, "completion request should be preserved");
@@ -322,7 +322,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     };
 
     await manager.resolveDisputeWithCode(jobId, 0, "needs revisions", { from: moderator });
-    const midJob = await manager.jobs(jobId);
+    const midJob = await manager.getJobCore(jobId);
     assert.strictEqual(midJob.disputed, true, "disputed flag should remain set");
     assert.strictEqual(midJob.completed, false, "job should remain open after neutral resolution");
 
@@ -374,7 +374,7 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should complete after unpause");
   });
 

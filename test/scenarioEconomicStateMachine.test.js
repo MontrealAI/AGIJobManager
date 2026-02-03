@@ -77,10 +77,11 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     };
 
     const jobId = await createJob(payout);
-    const createdJob = await manager.jobs(jobId);
+    const createdJob = await manager.getJobCore(jobId);
     assert.equal(createdJob.employer, employer, "job should record employer");
     assert.equal(createdJob.payout.toString(), payout.toString(), "payout should be recorded");
-    assert.equal(createdJob.jobSpecURI, "ipfs-job", "job spec URI should be recorded");
+    const createdMetadata = await manager.getJobMetadata(jobId);
+    assert.equal(createdMetadata.jobSpecURI, "ipfs-job", "job spec URI should be recorded");
     assert.equal((await token.balanceOf(manager.address)).toString(), payout.toString(), "escrow should hold payout");
 
     await assignAndRequest(jobId, "ipfs-complete");
@@ -89,7 +90,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     const finalTx = await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
 
-    const job = await manager.jobs(jobId);
+    const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should be completed");
     assert.strictEqual(job.completionRequested, true, "completionRequested should be true");
     assert.strictEqual(job.disputed, false, "job should not be disputed");
@@ -233,7 +234,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     };
 
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
-    const jobAfterAgentWin = await manager.jobs(jobId);
+    const jobAfterAgentWin = await manager.getJobCore(jobId);
     assert.strictEqual(jobAfterAgentWin.completed, true, "agent-win dispute should complete job");
     assert.strictEqual(jobAfterAgentWin.disputed, false, "dispute flag should clear after resolution");
     assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear on agent win");
@@ -267,7 +268,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
       "employer should be refunded on employer win"
     );
     assert.equal((await manager.nextTokenId()).toNumber(), 1, "no NFT should mint on employer win");
-    const jobAfterEmployerWin = await manager.jobs(jobIdTwo);
+    const jobAfterEmployerWin = await manager.getJobCore(jobIdTwo);
     assert.strictEqual(jobAfterEmployerWin.completed, true, "employer-win dispute should close job");
     assert.strictEqual(jobAfterEmployerWin.disputed, false, "dispute flag should clear on employer win");
     assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear on employer win");

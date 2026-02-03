@@ -98,7 +98,7 @@ After setup and validation, lock configuration to minimize governance:
 - **Manual**: call `lockConfiguration()` from the owner account.
 
 Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
-Critical wiring includes the AGI token address, ENS registry, NameWrapper, and ENS root nodes; each is only mutable pre‑first‑job and pre‑lock.
+Critical wiring includes the AGI token address, ENS registry, NameWrapper, and ENS root nodes; each is only mutable pre‑first‑job, pre‑escrow, and pre‑lock.
 
 ## 6) Break-glass runbook (after lock)
 
@@ -114,7 +114,7 @@ Everything else remains operable but should be governed by your ops policy to ke
 
 ## 7) Verification (Etherscan)
 
-**Normal path (viaIR enabled)**:
+**Normal path (mainnet-size compliant)**:
 1. Compile with `SOLC_VERSION=0.8.33`, `SOLC_RUNS=200`, `SOLC_VIA_IR=true`.
 2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args.
 
