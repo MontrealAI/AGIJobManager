@@ -159,16 +159,16 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.addAGIType(agiType.address, 92, { from: owner });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
-      const jobInfo = await manager.jobs(jobId);
-      assert.equal(jobInfo.assignedAgent, agent);
-      assert.notEqual(jobInfo.assignedAt.toString(), "0");
+      const jobCore = await manager.getJobCore(jobId);
+      assert.equal(jobCore.assignedAgent, agent);
+      assert.notEqual(jobCore.assignedAt.toString(), "0");
 
       await manager.requestJobCompletion(jobId, "ipfs2", { from: agent });
       const status = await manager.getJobStatus(jobId);
       assert.equal(status[1], true);
       assert.equal(status[2], "ipfs2");
-      const completionJob = await manager.jobs(jobId);
-      assert.equal(completionJob.jobCompletionURI, "ipfs2");
+      const completionJobUris = await manager.getJobURIs(jobId);
+      assert.equal(completionJobUris.jobCompletionURI, "ipfs2");
 
       const employerBalanceBefore = await token.balanceOf(employer);
       const agentBalanceBefore = await token.balanceOf(agent);
@@ -278,8 +278,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.disapproveJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
-      const job = await manager.jobs(jobId);
-      assert.equal(job.disputed, true);
+      const jobCore = await manager.getJobCore(jobId);
+      assert.equal(jobCore.disputed, true);
     });
 
     it("dispute resolution respects typed outcomes and keeps NO_ACTION disputed", async () => {
@@ -295,13 +295,13 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.disputeJob(jobId, { from: employer });
       await manager.resolveDisputeWithCode(jobId, 0, "needs more info", { from: moderator });
-      const job = await manager.jobs(jobId);
-      assert.equal(job.disputed, true);
-      assert.equal(job.completed, false);
+      const jobCore = await manager.getJobCore(jobId);
+      assert.equal(jobCore.disputed, true);
+      assert.equal(jobCore.completed, false);
 
       await manager.resolveDisputeWithCode(jobId, 2, "employer win", { from: moderator });
-      const jobAfter = await manager.jobs(jobId);
-      assert.equal(jobAfter.completed, true);
+      const jobAfterCore = await manager.getJobCore(jobId);
+      assert.equal(jobAfterCore.completed, true);
       await expectRevert.unspecified(
         manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator })
       );
@@ -323,8 +323,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100));
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
 
-      const jobAfter = await manager.jobs(jobId);
-      assert.equal(jobAfter.completed, true);
+      const jobAfterCore = await manager.getJobCore(jobId);
+      assert.equal(jobAfterCore.completed, true);
     });
   });
 

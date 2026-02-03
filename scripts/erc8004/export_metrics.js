@@ -255,7 +255,7 @@ async function runExportMetrics(overrides = {}) {
   const getJob = async (jobId) => {
     const idKey = String(jobId);
     if (jobCache.has(idKey)) return jobCache.get(idKey);
-    const job = await contract.jobs(jobId);
+    const job = await contract.getJobCore(jobId);
     const normalized = {
       employer: normalizeAddress(job.employer),
       assignedAgent: normalizeAddress(job.assignedAgent),

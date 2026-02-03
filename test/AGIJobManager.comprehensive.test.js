@@ -163,17 +163,17 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const applyReceipt = await assignAgentWithProof(0);
       expectEvent(applyReceipt, "JobApplied", { jobId: new BN(0), agent });
-      const job = await manager.jobs(0);
-      assert.equal(job.assignedAgent, agent);
-      assert.isTrue(new BN(job.assignedAt).gt(new BN(0)));
+      const jobCore = await manager.getJobCore(0);
+      assert.equal(jobCore.assignedAgent, agent);
+      assert.isTrue(new BN(jobCore.assignedAt).gt(new BN(0)));
 
       const completion = await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
       expectEvent(completion, "JobCompletionRequested", { jobId: new BN(0), agent, jobCompletionURI: updatedIpfs });
       const status = await manager.getJobStatus(0);
       assert.equal(status[1], true);
       assert.equal(status[2], updatedIpfs);
-      const completionJob = await manager.jobs(0);
-      assert.equal(completionJob.jobCompletionURI, updatedIpfs);
+      const completionJobUris = await manager.getJobURIs(0);
+      assert.equal(completionJobUris.jobCompletionURI, updatedIpfs);
 
       const validatorOneBalanceBefore = await token.balanceOf(validatorOne);
       const validatorTwoBalanceBefore = await token.balanceOf(validatorTwo);
@@ -185,8 +185,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const completionReceipt = await validateWithProof(0, validatorThree);
       expectEvent(completionReceipt, "JobCompleted", { jobId: new BN(0), agent });
 
-      const finalJob = await manager.jobs(0);
-      assert.equal(finalJob.completed, true);
+      const finalJobCore = await manager.getJobCore(0);
+      assert.equal(finalJobCore.completed, true);
 
       const validatorPayoutTotal = payout.muln(8).divn(100);
       const validatorPayoutEach = validatorPayoutTotal.divn(3);
@@ -330,8 +330,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       assert.equal(employerBalanceAfter.sub(employerBalanceBefore).toString(), payout.toString());
 
-      const job = await manager.jobs(0);
-      assert.equal(job.completed, true);
+      const jobCore = await manager.getJobCore(0);
+      assert.equal(jobCore.completed, true);
       await expectCustomError(
         manager.validateJob.call(0, "validator", [], { from: validatorOne }),
         "InvalidState"
@@ -358,8 +358,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const expectedPayout = payout.muln(92).divn(100);
       assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
-      const job = await manager.jobs(0);
-      assert.equal(job.completed, true);
+      const jobCore = await manager.getJobCore(0);
+      assert.equal(jobCore.completed, true);
     });
   });
 
@@ -481,8 +481,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disapproveJob(0, "validator", [], { from: validatorOne });
       const receipt = await manager.disapproveJob(0, "validator", [], { from: validatorTwo });
       expectEvent(receipt, "JobDisputed", { jobId: new BN(0), disputant: validatorTwo });
-      const job = await manager.jobs(0);
-      assert.equal(job.disputed, true);
+      const jobCore = await manager.getJobCore(0);
+      assert.equal(jobCore.disputed, true);
     });
 
     it("resolves disputes with agent win, employer win, and neutral outcomes", async () => {
@@ -513,9 +513,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disputeJob(newJobId, { from: employer });
       const neutralReceipt = await manager.resolveDisputeWithCode(newJobId, 0, "needs more info", { from: moderator });
       expectEvent(neutralReceipt, "DisputeResolvedWithCode", { jobId: newJobId, resolver: moderator });
-      const neutralJob = await manager.jobs(newJobId);
-      assert.equal(neutralJob.completed, false);
-      assert.equal(neutralJob.disputed, true);
+      const neutralJobCore = await manager.getJobCore(newJobId);
+      assert.equal(neutralJobCore.completed, false);
+      assert.equal(neutralJobCore.disputed, true);
     });
 
     it("prevents disputes after completion", async () => {
@@ -628,8 +628,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         altManager.validateJob.call(0, "validator", [], { from: validatorOne }),
         "TransferFailed"
       );
-      const job = await altManager.jobs(0);
-      assert.equal(job.completed, false);
+      const jobCore = await altManager.getJobCore(0);
+      assert.equal(jobCore.completed, false);
     });
 
     it("reverts NFT purchases when transferFrom fails", async () => {
@@ -814,8 +814,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const balanceAfter = await token.balanceOf(employer);
       assert.equal(balanceAfter.sub(balanceBefore).toString(), payout.toString());
 
-      const job = await manager.jobs(0);
-      assert.equal(job.employer, "0x0000000000000000000000000000000000000000");
+      const status = await manager.jobStatus(0);
+      assert.equal(status.toString(), "0");
     });
 
     it("prevents cancel/delist after assignment and restricts delist to owner", async () => {

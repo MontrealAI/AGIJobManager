@@ -106,9 +106,9 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     assert.equal(employerAfter.toString(), employerBefore.add(payout).toString(), "employer should be refunded");
 
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.expired, true, "job should be marked expired");
-    assert.strictEqual(job.completed, false, "job should not be marked completed");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.expired, true, "job should be marked expired");
+    assert.strictEqual(jobCore.completed, false, "job should not be marked completed");
 
     await expectCustomError(manager.expireJob.call(jobId, { from: other }), "InvalidState");
     await expectCustomError(
@@ -149,9 +149,9 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const expected = payout.muln(90).divn(100);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid after finalization");
 
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.completed, true, "job should be completed");
-    assert.strictEqual(job.disputed, false, "job should not be disputed");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.completed, true, "job should be completed");
+    assert.strictEqual(jobCore.disputed, false, "job should not be disputed");
 
     await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
   });
@@ -202,8 +202,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     assert.equal(employerAfter.sub(employerBefore).toString(), payout.toString(), "employer should be refunded");
 
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.completed, true, "job should be completed after refund");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.completed, true, "job should be completed after refund");
   });
 
   it("rejects expiry after completion was requested and blocks finalize when disputed", async () => {
@@ -239,8 +239,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
 
     assert.equal(employerAfter.sub(employerBefore).toString(), payout.toString(), "employer should be refunded");
-    const job = await manager.jobs(jobId);
-    assert.strictEqual(job.completed, true, "job should be completed after timeout resolution");
-    assert.strictEqual(job.disputed, false, "job should no longer be disputed");
+    const jobCore = await manager.getJobCore(jobId);
+    assert.strictEqual(jobCore.completed, true, "job should be completed after timeout resolution");
+    assert.strictEqual(jobCore.disputed, false, "job should no longer be disputed");
   });
 });
