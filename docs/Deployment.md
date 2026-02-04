@@ -26,6 +26,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
+| `SOLC_EVM_VERSION` | EVM version override | Defaults to `london` when unset. |
 | Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`). |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
