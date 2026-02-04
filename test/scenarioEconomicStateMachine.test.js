@@ -10,6 +10,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -50,6 +51,8 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
+
+    await fundValidators(token, manager, [validatorA, validatorB], owner);
   });
 
   async function createJob(payout, ipfsHash = "ipfs-job") {
@@ -121,12 +124,12 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.equal(balancesAfter.agent.toString(), agentExpected.toString(), "agent payout should match expected share");
     assert.equal(
       balancesAfter.validatorA.toString(),
-      validatorExpected.toString(),
+      balancesBefore.validatorA.add(validatorExpected).toString(),
       "validator A payout should match expected share"
     );
     assert.equal(
       balancesAfter.validatorB.toString(),
-      validatorExpected.toString(),
+      balancesBefore.validatorB.add(validatorExpected).toString(),
       "validator B payout should match expected share"
     );
     assert.equal(balancesAfter.contract.toString(), "0", "escrow should clear after completion");
@@ -272,16 +275,34 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.applyForJob(jobIdTwo, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobIdTwo, "ipfs-employer-win-complete", { from: agent });
 
+    const validatorABefore = await token.balanceOf(validatorA);
+    const validatorBBefore = await token.balanceOf(validatorB);
+    await manager.disapproveJob(jobIdTwo, "validator-a", EMPTY_PROOF, { from: validatorA });
+    await manager.disapproveJob(jobIdTwo, "validator-b", EMPTY_PROOF, { from: validatorB });
     await manager.disputeJob(jobIdTwo, { from: employer });
     await expectCustomError(manager.resolveDispute.call(jobIdTwo, "agent win", { from: other }), "NotModerator");
 
     const employerBefore = await token.balanceOf(employer);
     await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
     const employerAfter = await token.balanceOf(employer);
+    const validatorRewardTotal = payoutTwo.mul(await manager.validationRewardPercentage()).divn(100);
+    const validatorReward = validatorRewardTotal.divn(2);
     assert.equal(
       employerAfter.toString(),
-      employerBefore.add(payoutTwo).toString(),
-      "employer should be refunded on employer win"
+      employerBefore.add(payoutTwo.sub(validatorRewardTotal)).toString(),
+      "employer should be refunded minus validator rewards on employer win"
+    );
+    const validatorAAfter = await token.balanceOf(validatorA);
+    const validatorBAfter = await token.balanceOf(validatorB);
+    assert.equal(
+      validatorAAfter.sub(validatorABefore).toString(),
+      validatorReward.toString(),
+      "disapproving validator A should earn rewards on employer win"
+    );
+    assert.equal(
+      validatorBAfter.sub(validatorBBefore).toString(),
+      validatorReward.toString(),
+      "disapproving validator B should earn rewards on employer win"
     );
     assert.equal((await manager.nextTokenId()).toNumber(), 1, "no NFT should mint on employer win");
     const jobAfterEmployerWin = await manager.getJobCore(jobIdTwo);
