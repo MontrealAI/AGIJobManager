@@ -161,3 +161,35 @@ mgr.JobCompleted({}).on('data', (ev) => console.log('JobCompleted', ev.returnVal
 mgr.JobDisputed({}).on('data', (ev) => console.log('JobDisputed', ev.returnValues));
 mgr.DisputeResolvedWithCode({}).on('data', (ev) => console.log('DisputeResolved', ev.returnValues));
 ```
+
+## Events (operational telemetry)
+
+Key events to index for monitoring and analytics:
+- **Job lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `JobFinalized`, `JobCompleted`, `JobCancelled`, `JobExpired`.
+- **Dispute outcomes**: `DisputeResolvedWithCode` (preferred), legacy `DisputeResolved`.
+- **Reputation**: `ReputationUpdated` (agent/validator reputation changes).
+- **NFT marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
+- **Identity & allowlists**: `OwnershipVerified`, `MerkleRootsUpdated`, `RootNodesUpdated`, `IdentityConfigurationLocked`.
+
+See the ABI‑exact event list in [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
+
+## Error handling (custom errors)
+
+The contract uses custom errors for strict, gas‑efficient reverts. Common categories include:
+- **Access control**: `NotAuthorized`, `NotModerator`, `Blacklisted`.
+- **State gating**: `InvalidState`, `JobNotFound`, `ConfigLocked`.
+- **Parameter safety**: `InvalidParameters`, `InvalidValidatorThresholds`, `ValidatorSetTooLarge`, `ValidatorLimitReached`.
+- **Escrow integrity**: `InsolventEscrowBalance`, `InsufficientWithdrawableBalance`, `TransferFailed`.
+- **Payout validity**: `InvalidAgentPayoutSnapshot`, `IneligibleAgentPayout`.
+
+For a full list, see the interface reference: [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
+
+## Invariants & guarantees
+
+The current contract logic enforces the following invariants:
+- **Escrow integrity**: funds transferred into escrow are accounted for via `lockedEscrow`, and withdrawals are limited to `withdrawableAGI()` (balance minus locked escrow).
+- **Completion metadata required**: agent payouts and job‑NFT minting require a prior completion request with a non‑empty, valid completion URI.
+- **Snapshot payouts**: agent payout percentage is snapshotted at assignment (`applyForJob`) and does not change with later NFT transfers.
+- **Validator caps**: the contract bounds the validator list to `MAX_VALIDATORS_PER_JOB` to keep settlement gas predictable.
+
+These invariants are reflected in the regression suite and interface reference.
