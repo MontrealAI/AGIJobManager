@@ -1,39 +1,61 @@
-# AGIJobManager Contract Documentation
+# AGIJobManager Contract Specification
 
-This document provides a comprehensive, code‑accurate overview of the `AGIJobManager` contract. It is intended for engineers, integrators, reviewers, and operators. The ABI‑exact reference lives in [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
+This document provides a code‑accurate overview of the `AGIJobManager` contract. It targets engineers, integrators, reviewers, and operators. The ABI‑exact reference lives in [`Interface.md`](Interface.md).
 
-## High‑level overview
+## Scope and non‑goals
 
-**What AGIJobManager is**
-- An on‑chain **job escrow manager** where employers fund jobs in ERC‑20, agents perform work, validators approve/disapprove completion, and moderators resolve disputes.
-- A **reputation tracker** for agents and validators, awarding points based on job payout and completion time.
-- An **ERC‑721 job NFT issuer**: when a job completes, the employer receives an NFT that points to the completion metadata URI.
-- A **minimal NFT marketplace** for those job NFTs only (list, purchase, delist).
-- A **role‑gated system** that enforces access via allowlists (explicit) or Merkle proofs and ENS/NameWrapper/Resolver ownership checks.
+**AGIJobManager is:**
+- An on‑chain job escrow manager for employer‑funded work, validator approval/disapproval, and moderator dispute resolution.
+- A reputation tracker for agents and validators based on job outcomes.
+- An ERC‑721 job NFT issuer and minimal marketplace (list/purchase/delist) for those NFTs.
+- A role‑gated system with explicit allowlists, Merkle proofs, and ENS/NameWrapper/Resolver ownership checks.
 
-**What AGIJobManager is not**
-- Not an on‑chain ERC‑8004 registry or identity system.
-- Not a generalized NFT marketplace.
-- Not a decentralized court or DAO (moderators and owner are privileged).
+**AGIJobManager is not:**
+- An on‑chain ERC‑8004 registry or identity system.
+- A generalized NFT marketplace.
+- A permissionless validator DAO or decentralized court.
 
-## Key components
+## Contract surface (high‑level)
 
-- **Jobs**: funded by employers, assigned to a single agent, validated by a bounded set of validators, optionally disputed and resolved by moderators.
-- **Agents**: apply for jobs if allowlisted/Merkle/ENS‑verified and not blacklisted. Agent payout is snapshotted at assignment time based on AGIType NFT holdings.
-- **Validators**: approve/disapprove job completion if allowlisted/Merkle/ENS‑verified and not blacklisted. Validator payouts are a fixed percentage of job payout split evenly among participating validators.
-- **Moderators**: resolve disputes with a typed resolution code.
-- **NFT issuance & marketplace**: on completion, a job NFT is minted to the employer. It can be listed, purchased, or delisted through the built‑in marketplace.
-- **Reputation**: updated on completion for agents and validators. Reputation saturates with a diminishing‑returns formula.
+**Job lifecycle**
+- `createJob` → employer escrows ERC‑20 payout and defines job spec.
+- `applyForJob` → a single agent is assigned; agent payout % is snapshotted.
+- `requestJobCompletion` → agent submits completion metadata.
+- `validateJob` / `disapproveJob` → validators approve/disapprove after completion request.
+- `finalizeJob` → post‑review timeout settlement when validator thresholds aren’t met.
+- `disputeJob` / `resolveDisputeWithCode` / `resolveStaleDispute` → moderator or owner dispute flow.
+- `cancelJob` / `delistJob` → pre‑assignment cancellation.
+- `expireJob` → employer refund if duration elapses before completion request.
 
-## Roles & permissions (overview)
+**Marketplace**
+- `listNFT`, `purchaseNFT`, `delistNFT` for job NFTs minted by this contract.
 
-- **Owner**: can pause/unpause; manage moderators, allowlists, and blacklists; update parameters; add AGI types; withdraw surplus ERC‑20; and resolve stale disputes while paused.
-- **Moderator**: can resolve disputes (agent‑win or employer‑win) with typed codes.
-- **Employer**: creates jobs; can cancel jobs before assignment; can dispute; receives job NFTs; receives refunds if a job expires or if dispute resolution favors the employer.
-- **Agent**: applies for jobs (eligibility gated) and requests completion; receives payouts and reputation on successful completion.
-- **Validator**: validates or disapproves completion requests; receives payout share and reputation if included.
+## Roles & permissions (summary)
 
-A complete, per‑function access matrix is in the interface reference: [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
+| Role | Capabilities | Notes |
+| --- | --- | --- |
+| **Owner** | Pause/unpause, manage allowlists/blacklists, set parameters, add moderators and AGI types, withdraw surplus ERC‑20, resolve stale disputes while paused. | Highly privileged; operational risk if compromised. |
+| **Moderator** | Resolve disputes via `resolveDisputeWithCode` (preferred) or legacy `resolveDispute`. | Central dispute authority. |
+| **Employer** | Create jobs, cancel pre‑assignment, dispute, receive job NFTs, receive refunds on expiry/employer‑win. | Funds are escrowed until resolution. |
+| **Agent** | Apply for jobs, submit completion, receive payouts and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
+| **Validator** | Approve/disapprove completions, receive payout share and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
+
+## Data model
+
+**Job fields (selected)**
+- `employer`, `assignedAgent`, `assignedAt`
+- `jobSpecURI`, `jobCompletionURI`
+- `payout`, `duration`
+- `completionRequested`, `completionRequestedAt`
+- `validatorApprovals`, `validatorDisapprovals`, `validators[]`
+- `disputed`, `disputedAt`, `completed`, `expired`, `escrowReleased`
+- `agentPayoutPct` (snapshotted on assignment)
+
+**Reputation**
+- `reputation[address]` stores a diminishing‑returns score updated at settlement.
+
+**Marketplace**
+- `listings[tokenId]` stores `price`, `seller`, `isActive`.
 
 ## Job lifecycle (state machine)
 
@@ -44,7 +66,7 @@ stateDiagram-v2
     InProgress --> CompletionRequested: requestJobCompletion
 
     CompletionRequested --> Completed: validateJob (approval threshold)
-    CompletionRequested --> Completed: finalizeJob (timeout)
+    CompletionRequested --> Completed: finalizeJob (review timeout)
 
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
     CompletionRequested --> Disputed: disputeJob (manual)
@@ -59,105 +81,77 @@ stateDiagram-v2
     Open --> Deleted: delistJob (owner)
 ```
 
-**State flags / counters**
-- `assignedAgent`, `assignedAt`: set on `applyForJob`.
-- `completionRequested`, `completionRequestedAt`, `jobCompletionURI`: set on `requestJobCompletion`.
-- `validatorApprovals`, `validatorDisapprovals`, `validators[]`: updated on `validateJob`/`disapproveJob`.
-- `disputed`, `disputedAt`: set by `disputeJob` or when disapproval threshold is reached.
-- `completed`, `escrowReleased`: set when settlement completes.
-- `expired`: set by `expireJob` when duration has passed without a completion request.
+## Escrow & settlement semantics
 
-## Token & escrow semantics
-
-- **Funding**: `createJob` transfers the job payout into the contract and increments `lockedEscrow`.
-- **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPct / 100`, where `agentPayoutPct` is snapshotted on `applyForJob` based on the highest `AGIType` NFT percentage the agent holds.
-- **Validator payout**: on completion, validators split `job.payout * validationRewardPercentage / 100` equally **only if** there is at least one validator.
+- **Funding**: `createJob` transfers the payout into the contract and increments `lockedEscrow`.
+- **Agent payout**: agent receives `job.payout * agentPayoutPct / 100`, with `agentPayoutPct` snapshotted at `applyForJob` based on AGI‑type NFT holdings.
+- **Validator payout**: validators split `job.payout * validationRewardPercentage / 100` equally among those who voted; if no validators voted, the agent receives the validator share.
 - **Refunds**:
-  - `cancelJob`/`delistJob` return the full escrow to the employer if no agent was assigned.
-  - `expireJob` returns escrow after duration ends with no completion request.
-  - Employer‑win dispute resolution or finalization returns escrow to the employer.
-- **ERC‑20 safety**: the contract checks `transfer`/`transferFrom` return values and enforces **exact transfer amounts** (balances must increase by exactly `amount`), so fee‑on‑transfer tokens will revert.
+  - `cancelJob`/`delistJob` return escrow if no agent was assigned.
+  - `expireJob` returns escrow after duration elapses with no completion request.
+  - Employer‑win dispute resolution and employer‑win finalization return escrow.
+- **ERC‑20 safety**: transfers must succeed and match exact amounts; fee‑on‑transfer and rebasing tokens are not supported.
 
-## ENS / NameWrapper / Merkle ownership verification
+## ENS / Merkle role gating
 
-Eligibility checks for agents and validators use `_verifyOwnership`, which accepts:
-- **Merkle proof**: leaf = `keccak256(abi.encodePacked(claimant))`, checked against either `agentMerkleRoot` or `validatorMerkleRoot` depending on the root node passed.
-- **ENS NameWrapper ownership**: `nameWrapper.ownerOf(uint256(subnode))` must equal `claimant`.
-- **ENS Resolver ownership**: resolve `ens.resolver(subnode)` then call `resolver.addr(subnode)` and compare to `claimant`.
+Eligibility checks accept any of the following:
+- **Explicit allowlists** (`additionalAgents`, `additionalValidators`).
+- **Merkle proofs** against `agentMerkleRoot` or `validatorMerkleRoot` (leaf is `keccak256(abi.encodePacked(claimant))`).
+- **ENS NameWrapper ownership** of the relevant subnode.
+- **ENS Resolver ownership** of the relevant subnode.
 
-**Root nodes**
-- `agentRootNode` and `clubRootNode` are the ENS root nodes for agents and validators respectively.
-- `_verifyOwnership` chooses the Merkle root based on which root node is supplied (agent vs validator).
+Root nodes (`clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode`) are configured at deployment and can be updated only while no jobs exist and no escrow is locked (or permanently locked after `lockConfiguration`).
 
-## NFT issuance & marketplace
+## Events
 
-- **Minting**: `NFTIssued` is emitted during `_completeJob`, minting a job NFT to the employer with `tokenURI = baseIpfsUrl + "/" + jobCompletionURI` unless the completion URI is already a full URI.
-- **Listings**: `listNFT` creates a listing for the tokenId at a fixed price; only the current owner can list.
-- **Purchases**: `purchaseNFT` transfers ERC‑20 from buyer to seller, then transfers the NFT to the buyer.
-- **Delisting**: `delistNFT` deactivates an active listing; only the seller can delist.
+**Job lifecycle**
+- `JobCreated`, `JobApplied`, `JobCompletionRequested`
+- `JobValidated`, `JobDisapproved`
+- `JobCompleted`, `JobFinalized`, `JobExpired`, `JobCancelled`
+- `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`, `DisputeTimeoutResolved`
 
-## dApp integration tips
+**Reputation & gating**
+- `ReputationUpdated`
+- `OwnershipVerified`
+- `AgentBlacklisted`, `ValidatorBlacklisted`
+- `MerkleRootsUpdated`, `RootNodesUpdated`
 
-1. **Employer**: approve ERC‑20 → call `createJob`.
-2. **Agent**: prove eligibility → `applyForJob`.
-3. **Agent**: submit completion metadata → `requestJobCompletion`.
-4. **Validators**: approve/disapprove → `validateJob` / `disapproveJob`.
-5. **Moderator** (if disputed): settle → `resolveDisputeWithCode`.
-6. **Employer**: receive job NFT on completion (track `NFTIssued`).
+**Marketplace**
+- `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`
 
-For detailed call sequences, revert conditions, and events, see [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
+**Configuration**
+- `EnsRegistryUpdated`, `NameWrapperUpdated`, `ConfigurationLocked`
+- `CompletionReviewPeriodUpdated`, `DisputeReviewPeriodUpdated`
+- `AdditionalAgentPayoutPercentageUpdated`, `AGITypeUpdated`
 
-## Quickstart examples (Truffle + web3)
+**Treasury**
+- `RewardPoolContribution`, `AGIWithdrawn`
 
-> These snippets assume a Truffle environment (`truffle exec` or test context) and that `agiToken` is a standard ERC‑20 with `approve`/`transferFrom`.
+See [`Interface.md`](Interface.md) for the full ABI and parameter signatures.
 
-### Approve ERC‑20 then create a job (employer)
+## Custom errors
 
-```javascript
-const agi = await IERC20.at(agiTokenAddress);
-const mgr = await AGIJobManager.at(agiJobManagerAddress);
+The contract uses custom errors for gas efficiency. Key errors include:
+- `NotModerator`, `NotAuthorized`, `Blacklisted`
+- `InvalidParameters`, `InvalidState`, `JobNotFound`
+- `TransferFailed`, `InsufficientWithdrawableBalance`, `InsolventEscrowBalance`
+- `ValidatorLimitReached`, `InvalidValidatorThresholds`, `ValidatorSetTooLarge`
+- `IneligibleAgentPayout`, `InvalidAgentPayoutSnapshot`
+- `ConfigLocked`
 
-const payout = web3.utils.toWei('100', 'ether');
-const duration = 7 * 24 * 60 * 60;
-await agi.approve(mgr.address, payout, { from: employer });
-await mgr.createJob('ipfs://job-spec', payout, duration, 'details', { from: employer });
-```
+## Invariants & safety properties (non‑exhaustive)
 
-### Apply for a job (agent)
+- **Completion requires metadata**: an agent can only be paid and a job NFT can only be minted after a completion request exists and the completion URI is valid.
+- **Escrow conservation**: payouts/refunds always release escrow and must not exceed the job payout; withdrawals are limited to `withdrawableAGI()`.
+- **Single‑vote per validator**: a validator cannot both approve and disapprove the same job.
+- **Validator capacity bounded**: per‑job validator list is capped by `MAX_VALIDATORS_PER_JOB`; approval/disapproval thresholds must fit within this bound.
+- **Dispute gating**: disputes can only be opened after completion is requested; once disputed, validator voting no longer advances settlement.
 
-```javascript
-const jobId = 0;
-const subdomain = 'alice';
-const proof = []; // Merkle proof if required; empty if using explicit allowlist
-await mgr.applyForJob(jobId, subdomain, proof, { from: agent });
-```
+## Integration checklist (dApp)
 
-### Request completion (agent)
-
-```javascript
-await mgr.requestJobCompletion(jobId, 'ipfs://job-completion', { from: agent });
-```
-
-### Validate job (validator)
-
-```javascript
-const validatorProof = [];
-await mgr.validateJob(jobId, 'validator', validatorProof, { from: validator });
-```
-
-### Dispute + moderator resolve
-
-```javascript
-await mgr.disputeJob(jobId, { from: employer });
-// AGENT_WIN = 1, EMPLOYER_WIN = 2
-await mgr.resolveDisputeWithCode(jobId, 1, 'work accepted', { from: moderator });
-```
-
-### Event subscriptions
-
-```javascript
-mgr.JobCreated({}).on('data', (ev) => console.log('JobCreated', ev.returnValues));
-mgr.JobCompleted({}).on('data', (ev) => console.log('JobCompleted', ev.returnValues));
-mgr.JobDisputed({}).on('data', (ev) => console.log('JobDisputed', ev.returnValues));
-mgr.DisputeResolvedWithCode({}).on('data', (ev) => console.log('DisputeResolved', ev.returnValues));
-```
+1. Employer approves ERC‑20 and calls `createJob`.
+2. Agent proves eligibility and calls `applyForJob`.
+3. Agent submits completion metadata via `requestJobCompletion`.
+4. Validators approve/disapprove (`validateJob` / `disapproveJob`).
+5. Moderator resolves disputes with `resolveDisputeWithCode` if needed.
+6. Employer receives job NFT; index `NFTIssued` and `JobCompleted` events.
