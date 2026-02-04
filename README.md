@@ -29,8 +29,10 @@
 - **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available; NFT sellers can still delist.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
 
-## Documentation (mainnet)
-Start with the canonical deployment/security overview: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md).
+## Documentation
+- **Mainnet deployment & security overview**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
+- **Docs index**: [`docs/README.md`](docs/README.md)
+- **Local test status**: [`docs/test-status.md`](docs/test-status.md)
 
 ## MONTREAL.AI × ERC‑8004: From signaling → enforcement
 
@@ -263,7 +265,7 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 - **OpenZeppelin Contracts**: https://docs.openzeppelin.com/contracts/4.x/
 - **Truffle**: https://trufflesuite.com/docs/truffle/
 
-## Documentation
+## Documentation index
 
 Start here:
 - [`docs/README.md`](docs/README.md)
