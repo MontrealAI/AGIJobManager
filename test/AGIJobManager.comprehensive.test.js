@@ -739,15 +739,43 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("blocks state-changing job actions while paused", async () => {
       await createJob();
+      await createJob();
+      await assignAgentWithProof(0);
       await manager.pause({ from: owner });
-      await expectRevert.unspecified(manager.applyForJob(0, "agent", [], { from: agent }));
-      await expectRevert.unspecified(
-        manager.requestJobCompletion(0, updatedIpfs, { from: agent }));
+      await expectRevert.unspecified(manager.applyForJob(1, "agent", [], { from: agent }));
+      await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
+      const validation = await manager.getJobValidation(0);
+      assert.strictEqual(validation.completionRequested, true, "completion should be requestable while paused");
       await expectRevert.unspecified(
         manager.validateJob(0, "validator", [], { from: validatorOne }));
       await expectRevert.unspecified(
         manager.disapproveJob(0, "validator", [], { from: validatorOne }));
       await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
+    });
+
+    it("allows exit and settlement actions while paused when predicates are met", async () => {
+      await createJob();
+      await manager.pause({ from: owner });
+      await manager.cancelJob(0, { from: employer });
+      await manager.unpause({ from: owner });
+
+      await createJob(employer, payout, new BN(1), "ipfs-expire");
+      await assignAgentWithProof(1);
+      await time.increase(2);
+      await manager.pause({ from: owner });
+      await manager.expireJob(1, { from: employer });
+      await manager.unpause({ from: owner });
+
+      await manager.setCompletionReviewPeriod(1, { from: owner });
+      await createJob(employer, payout, duration, "ipfs-finalize");
+      await assignAgentWithProof(2);
+      await manager.requestJobCompletion(2, updatedIpfs, { from: agent });
+      await time.increase(2);
+      await manager.pause({ from: owner });
+      await manager.finalizeJob(2, { from: employer });
+
+      const finalizedJob = await manager.getJobCore(2);
+      assert.strictEqual(finalizedJob.completed, true, "finalize should complete job while paused");
     });
   });
 
@@ -786,6 +814,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("allows seller to delist active listing", async () => {
       const tokenId = (await manager.nextTokenId()).subn(1);
       await manager.listNFT(tokenId, payout, { from: employer });
+      await manager.pause({ from: owner });
       const delistReceipt = await manager.delistNFT(tokenId, { from: employer });
       expectEvent(delistReceipt, "NFTDelisted", { tokenId });
 

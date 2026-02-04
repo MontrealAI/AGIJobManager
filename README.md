@@ -117,6 +117,7 @@ Detailed contract documentation lives in `docs/`:
 - [Configure-once deployment profile](docs/DEPLOYMENT_PROFILE.md)
 - [Deployment checklist](docs/deployment-checklist.md)
 - [Minimal governance operations](docs/minimal-governance.md)
+- [Identity wiring lock & treasury pause model](docs/identity-lock-and-treasury.md)
 - [Minimal governance model](docs/GOVERNANCE.md)
 - [AGI Jobs one-pager (canonical narrative)](docs/AGI_JOBS_ONE_PAGER.md)
 - [AGIJobManager overview](docs/AGIJobManager.md)

@@ -96,7 +96,7 @@ Merkle roots are **allowlists only**. They grant access to apply/validate but do
 After setup and validation, lock configuration to minimize governance:
 
 - **Preferred**: set `LOCK_CONFIG=true` before migration to auto-lock.
-- **Manual**: call `lockConfiguration()` from the owner account.
+- **Manual**: call `lockIdentityConfiguration()` from the owner account.
 
 Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
 Critical wiring includes the AGI token address, ENS registry, NameWrapper, and ENS root nodes; each is only mutable pre‑first‑job and pre‑lock.

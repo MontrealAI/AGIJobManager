@@ -377,8 +377,9 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await manager.pause({ from: owner });
-    await expectRevert.unspecified(
-      manager.requestJobCompletion(jobId, "ipfs-paused", { from: agent }));
+    await manager.requestJobCompletion(jobId, "ipfs-paused", { from: agent });
+    const pausedValidation = await manager.getJobValidation(jobId);
+    assert.strictEqual(pausedValidation.completionRequested, true, "completion request should be allowed while paused");
     await expectRevert.unspecified(
       manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA }));
     await expectRevert.unspecified(
@@ -387,7 +388,6 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await expectRevert.unspecified(manager.contributeToRewardPool(payout, { from: employer }));
 
     await manager.unpause({ from: owner });
-    await manager.requestJobCompletion(jobId, "ipfs-resumed", { from: agent });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
 
