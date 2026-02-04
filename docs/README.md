@@ -10,6 +10,12 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 - **Full‑stack trust layer (ERC‑8004 → enforcement)**: [`ERC8004.md`](ERC8004.md)
 - **ABI and interface reference (generated)**: [`Interface.md`](Interface.md)
 
+## Operator & governance references
+- **Operator guide**: [`AGIJobManager_Operator_Guide.md`](AGIJobManager_Operator_Guide.md)
+- **Minimal governance model**: [`GOVERNANCE.md`](GOVERNANCE.md)
+- **Deployment checklist**: [`deployment-checklist.md`](deployment-checklist.md)
+- **Configure‑once deployment profile**: [`DEPLOYMENT_PROFILE.md`](DEPLOYMENT_PROFILE.md)
+
 ## User guide (non‑technical)
 - **Landing page**: [`user-guide/README.md`](user-guide/README.md)
 - **Roles**: [`user-guide/roles.md`](user-guide/roles.md)

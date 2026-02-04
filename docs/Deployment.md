@@ -26,6 +26,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
+| `SOLC_EVM_VERSION` | Solc EVM version override | Defaults to `london`. |
 | Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`). |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
@@ -65,6 +66,24 @@ The default `npm test` script compiles with `--all`, runs `truffle test --networ
 
 The deployment script in `migrations/2_deploy_contracts.js` reads constructor parameters from environment variables (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Set these values** before deploying to any production network.
 The constructor now accepts a grouped config tuple (token, base IPFS URL, `[ENS, NameWrapper]`, `[club, agent, alpha club, alpha agent]`, `[validator Merkle, agent Merkle]`), so custom deployments should mirror the migration script’s ordering.
+
+### Constructor configuration variables
+
+| Variable | Purpose | Notes |
+| --- | --- | --- |
+| `AGI_TOKEN_ADDRESS` | ERC‑20 token for escrow | Required on non‑mainnet; mainnet has a default in `migrations/deploy-config.js`. |
+| `AGI_BASE_IPFS_URL` | Base URI for IPFS content | Defaults to `https://ipfs.io/ipfs/` if unset. |
+| `AGI_ENS_REGISTRY` | ENS registry address | Required on non‑mainnet; mainnet default provided. |
+| `AGI_NAMEWRAPPER` | ENS NameWrapper address | Required on non‑mainnet; mainnet default provided. |
+| `AGI_CLUB_ROOT_NODE` | ENS root node for validator gating | Required on non‑mainnet; mainnet default provided. |
+| `AGI_AGENT_ROOT_NODE` | ENS root node for agent gating | Required on non‑mainnet; mainnet default provided. |
+| `AGI_ALPHA_CLUB_ROOT_NODE` | ENS root node for alpha validators | Required on non‑mainnet; mainnet default provided. |
+| `AGI_ALPHA_AGENT_ROOT_NODE` | ENS root node for alpha agents | Required on non‑mainnet; mainnet default provided. |
+| `AGI_VALIDATOR_MERKLE_ROOT` | Merkle root for validators | Defaults to `DEFAULT_MERKLE_ROOT` if unset. |
+| `AGI_AGENT_MERKLE_ROOT` | Merkle root for agents | Defaults to `DEFAULT_MERKLE_ROOT` if unset. |
+| `LOCK_IDENTITY_CONFIG` / `LOCK_CONFIG` | Lock identity configuration after deploy | Set to `true` to call `lockIdentityConfiguration`. |
+
+Mainnet fallback values (token/ENS/NameWrapper/root nodes) are defined in `migrations/deploy-config.js`. Always review those defaults before production deployments.
 
 ## Local deployment (Ganache)
 
