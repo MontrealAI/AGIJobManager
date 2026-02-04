@@ -62,6 +62,7 @@ Pause is an incident‑response control intended to halt new activity without tr
 | Settlement & exits | `cancelJob`, `expireJob`, `finalizeJob`, `resolveDispute`, `resolveDisputeWithCode` |
 | Stale dispute recovery | `resolveStaleDispute` (owner‑only, paused‑only) |
 | Marketplace exit | `delistNFT` |
+| Owner job delist | `delistJob` (owner‑only, unassigned jobs only) |
 | Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
 
 This ensures pause does not trap existing jobs or listings.
@@ -178,6 +179,7 @@ If you prefer Etherscan’s UI, use the Standard JSON Input with the same compil
 ## Known limitations / non‑economic notes
 - `additionalAgentPayoutPercentage` is currently **unused** in settlement logic (reserved for future use).
 - `contributeToRewardPool` **does not segregate funds**; contributions are treasury and owner‑withdrawable during pause.
+- The contract has **no generic token rescue** function; non‑AGI assets sent to the contract are not recoverable via the ABI.
 - ENS/NameWrapper gating depends on external contracts; resolver lookups or wrapper ownership checks may fail if ENS configuration is incomplete or inconsistent.
 
 ## Sunsetting / migration runbook (operator guidance)
@@ -192,7 +194,7 @@ A safe wind‑down path:
 ## Testing status (local)
 Commands executed and results:
 - `npm ci` → **failed** on Linux because `fsevents@2.3.2` is macOS‑only (EBADPLATFORM).
-- `npm install --omit=optional` → **succeeded** (used to proceed with Truffle).
+- `npm install` → **succeeded** (used to proceed with Truffle after `npm ci` failed).
 - `npx truffle version` → **succeeded**.
 - `npx truffle compile` → **succeeded** (no compiler warnings emitted).
 - `npx truffle test` → **failed** (no local node at `http://127.0.0.1:8545`).
