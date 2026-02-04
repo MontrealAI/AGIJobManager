@@ -127,4 +127,41 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.expireJob(expireJobId, { from: employer });
     assert.equal((await manager.lockedEscrow()).toString(), "0");
   });
+
+  it("treats completion remainder and reward pool contributions as treasury", async () => {
+    const payout = toBN(toWei("10"));
+    const jobId = await createJob(payout);
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+
+    const agentPct = await manager.getHighestPayoutPercentage(agent);
+    const validatorPct = await manager.validationRewardPercentage();
+    const remainderPct = toBN("100").sub(agentPct).sub(validatorPct);
+    const expectedRemainder = payout.mul(remainderPct).divn(100);
+
+    const withdrawableAfterCompletion = await manager.withdrawableAGI();
+    assert.equal(
+      withdrawableAfterCompletion.toString(),
+      expectedRemainder.toString(),
+      "withdrawable should equal completion remainder"
+    );
+
+    const contribution = toBN(toWei("1"));
+    await token.mint(owner, contribution, { from: owner });
+    await token.approve(manager.address, contribution, { from: owner });
+    await manager.contributeToRewardPool(contribution, { from: owner });
+
+    const withdrawableAfterContribution = await manager.withdrawableAGI();
+    assert.equal(
+      withdrawableAfterContribution.toString(),
+      expectedRemainder.add(contribution).toString(),
+      "reward pool contributions should increase treasury"
+    );
+
+    await manager.pause({ from: owner });
+    await manager.withdrawAGI(expectedRemainder.add(contribution), { from: owner });
+    const remainingWithdrawable = await manager.withdrawableAGI();
+    assert.equal(remainingWithdrawable.toString(), "0", "treasury should be withdrawable when paused");
+  });
 });

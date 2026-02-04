@@ -75,6 +75,36 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
   });
 
+  it("blocks job workflow actions while paused", async () => {
+    const payout = toBN(toWei("5"));
+    const totalPayout = payout.muln(2);
+    await token.mint(employer, totalPayout, { from: owner });
+    await token.approve(manager.address, totalPayout, { from: employer });
+
+    const jobReceipt = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = jobReceipt.logs[0].args.jobId.toNumber();
+    const pendingReceipt = await manager.createJob("ipfs-2", payout, 1000, "details", { from: employer });
+    const pendingJobId = pendingReceipt.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await manager.pause({ from: owner });
+
+    await expectRevert.unspecified(
+      manager.applyForJob(pendingJobId, "agent", EMPTY_PROOF, { from: agent })
+    );
+    await expectRevert.unspecified(
+      manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator })
+    );
+    await expectRevert.unspecified(
+      manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator })
+    );
+    await expectRevert.unspecified(
+      manager.disputeJob(jobId, { from: employer })
+    );
+  });
+
   it("manages allowlists and blacklists", async () => {
     const payout = toBN(toWei("6"));
     await token.mint(employer, payout, { from: owner });
