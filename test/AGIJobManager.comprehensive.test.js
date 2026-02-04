@@ -753,6 +753,52 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
     });
 
+    it("rejects invalid completion requests while paused", async () => {
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
+      await createJob();
+      await assignAgentWithProof(0);
+
+      await manager.pause({ from: owner });
+      await expectCustomError(
+        manager.requestJobCompletion.call(0, "", { from: agent }),
+        "InvalidParameters"
+      );
+      await expectCustomError(
+        manager.requestJobCompletion.call(0, updatedIpfs, { from: outsider }),
+        "NotAuthorized"
+      );
+      await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
+      await expectCustomError(
+        manager.requestJobCompletion.call(0, "ipfs-again", { from: agent }),
+        "InvalidState"
+      );
+
+      await manager.unpause({ from: owner });
+      const completedJob = await createJob();
+      const completedJobId = completedJob.logs[0].args.jobId.toNumber();
+      await assignAgentWithProof(completedJobId);
+      await requestCompletion(completedJobId);
+      await validateWithProof(completedJobId, validatorOne);
+
+      await manager.pause({ from: owner });
+      await expectCustomError(
+        manager.requestJobCompletion.call(completedJobId, "ipfs-late", { from: agent }),
+        "InvalidState"
+      );
+
+      await manager.unpause({ from: owner });
+      const shortJob = await createJob(employer, payout, new BN("1"), "ipfs-short");
+      const shortJobId = shortJob.logs[0].args.jobId.toNumber();
+      await assignAgentWithProof(shortJobId);
+      await time.increase(new BN("2"));
+
+      await manager.pause({ from: owner });
+      await expectCustomError(
+        manager.requestJobCompletion.call(shortJobId, "ipfs-too-late", { from: agent }),
+        "InvalidState"
+      );
+    });
+
     it("allows exit and settlement flows while paused", async () => {
       const jobA = await createJob(employer, payout, duration, "ipfs-job-a");
       const jobAId = jobA.logs[0].args.jobId.toNumber();

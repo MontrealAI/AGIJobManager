@@ -160,6 +160,7 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
       owner
     );
 
+    await expectCustomError(manager.delistNFT.call(tokenId, { from: buyer }), "NotAuthorized");
     await manager.delistNFT(tokenId, { from: employer });
     const delisted = await manager.listings(tokenId);
     assert.strictEqual(delisted.isActive, false, "listing should deactivate while paused");
