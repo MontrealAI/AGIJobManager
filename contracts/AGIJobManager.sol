@@ -176,6 +176,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     mapping(address => bool) public moderators;
     mapping(address => bool) public additionalValidators;
     mapping(address => bool) public additionalAgents;
+    /// @notice Tracks jobs a validator has voted on (approved or disapproved).
     mapping(address => uint256[]) public validatorVotedJobs;
     mapping(uint256 => Listing) public listings;
     mapping(address => bool) public blacklistedAgents;
@@ -218,6 +219,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
     event ConfigurationLocked(address indexed locker, uint256 atTimestamp);
+    event AgentBlacklisted(address indexed agent, bool status);
+    event ValidatorBlacklisted(address indexed validator, bool status);
 
     constructor(
         address agiTokenAddress,
@@ -527,9 +530,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function blacklistAgent(address _agent, bool _status) external onlyOwner {
         blacklistedAgents[_agent] = _status;
+        emit AgentBlacklisted(_agent, _status);
     }
     function blacklistValidator(address _validator, bool _status) external onlyOwner {
         blacklistedValidators[_validator] = _status;
+        emit ValidatorBlacklisted(_validator, _status);
     }
 
     function delistJob(uint256 _jobId) external onlyOwner {
@@ -780,10 +785,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidAgentPayoutSnapshot();
         uint256 approverCount = job.validatorApprovals;
-        uint256 validatorPayoutPercentage = approverCount > 0 ? validationRewardPercentage : 0;
+        uint256 validatorCount = job.validators.length;
+        uint256 validatorPayoutPercentage = validatorCount > 0 ? validationRewardPercentage : 0;
         if (agentPayoutPercentage + validatorPayoutPercentage > 100) revert InvalidParameters();
         uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        uint256 totalValidatorPayout = approverCount > 0
+        uint256 totalValidatorPayout = validatorCount > 0
             ? (job.payout * validationRewardPercentage) / 100
             : 0;
         if (agentPayout + totalValidatorPayout > job.payout) revert InvalidParameters();
@@ -801,6 +807,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         enforceReputationGrowth(job.assignedAgent, reputationPoints);
 
+        if (approverCount == 0 && totalValidatorPayout > 0) {
+            agentPayout += totalValidatorPayout;
+        }
         _t(job.assignedAgent, agentPayout);
 
         _payApprovingValidators(job, reputationPoints, totalValidatorPayout);
@@ -1035,6 +1044,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 ++i;
             }
         }
+        return (exists, maxPct);
     }
 
     function _updateAgiTypePayout(address nftAddress, uint256 payoutPercentage) internal {

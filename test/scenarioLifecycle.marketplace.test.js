@@ -257,11 +257,13 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     );
     const agentPayoutPct = toBN(job.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
-    const expectedRemaining = payout.sub(expectedAgentPayout);
+    const validationPct = toBN(await manager.validationRewardPercentage());
+    const expectedValidatorPayout = payout.mul(validationPct).divn(100);
+    const expectedRemaining = payout.sub(expectedAgentPayout).sub(expectedValidatorPayout);
     assert.equal(
       balancesAfter.contract.toString(),
       expectedRemaining.toString(),
-      "escrow should retain unused validator rewards after dispute resolution"
+      "escrow should retain only the non-distributed remainder after dispute resolution"
     );
   });
 
