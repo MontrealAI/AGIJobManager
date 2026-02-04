@@ -43,6 +43,7 @@ These exceptions ensure users can complete or exit positions even during a brief
 ## Identity wiring lock (not a governance lock)
 
 The **identity wiring lock** permanently freezes only the identity-related wiring and does **not** freeze business operations.
+It is an identity wiring lock (token/ENS/root nodes), not a governance lock, and it does not restrict treasury withdrawals or operational controls.
 
 ### Frozen by `lockIdentityConfiguration()`
 - `updateAGITokenAddress`
