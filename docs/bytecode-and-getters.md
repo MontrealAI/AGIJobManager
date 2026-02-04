@@ -36,7 +36,7 @@ When a job completes on an **agent win**, validator rewards are paid **only to a
 
 - **Solidity version:** pinned to `0.8.19` in `truffle-config.js` to avoid the OpenZeppelin *memory-safe-assembly* deprecation warnings emitted by newer compilers.
 - **OpenZeppelin contracts:** kept at `@openzeppelin/contracts@4.9.6` (same major version).
-- **Optimizer:** enabled with **runs = 50** to balance deploy size and runtime gas (viaIR stays off).
+- **Optimizer:** enabled with **runs = 200** to balance deploy size and runtime gas (viaIR stays off).
 
 If you change compiler settings for a new deployment, keep the version and optimizer runs consistent for reproducible verification.
 
