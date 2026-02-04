@@ -14,33 +14,24 @@ failures.
 npm ci
 ```
 **Result:** failed on Linux because `fsevents@2.3.2` is macOS‑only
-(`EBADPLATFORM`).
-
-**Workaround used (no package‑lock updates):**
-```bash
-npm install --no-package-lock --omit=optional
-```
+(`EBADPLATFORM`). No dependency install succeeded, so Truffle config dependencies
+(`dotenv`) were unavailable.
 
 ## Test commands
 ```bash
 npx truffle compile
 ```
-**Result:** succeeded (no compiler warnings emitted).
+**Result:** failed with `Error: Cannot find module 'dotenv'` because dependencies
+were not installed. The `npx` bootstrap also emitted multiple `npm warn` deprecation
+messages while installing Truffle, which should be treated as warnings.
 
 ```bash
 npx truffle test
 ```
-**Result:** failed to connect to `http://127.0.0.1:8545` (no local JSON‑RPC
-node running).
+**Result:** failed with `Error: Cannot find module 'dotenv'` because dependencies
+were not installed.
 
 **Smallest next fix:**
-- Start Ganache locally (`npx ganache -p 8545`), **or**
-- Run tests with the in‑process provider:
-  ```bash
-  npx truffle test --network test
-  ```
-
-```bash
-npx truffle test --network test
-```
-**Result:** succeeded (216 passing).
+- Install dependencies without the macOS‑only optional package (e.g., via an
+  `npm install` workflow that omits optional deps), then rerun `npx truffle compile`
+  and `npx truffle test --network test`.

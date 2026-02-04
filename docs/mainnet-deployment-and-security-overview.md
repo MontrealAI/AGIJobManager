@@ -22,6 +22,10 @@ AGIJobManager is centralized by design. Users must trust the owner and moderator
 - Update economic parameters (validator thresholds, reward percentages, payout caps, duration limits, review periods).
 - Manage moderators and AGI payout tiers (AGI types).
 - Configure identity wiring before lock (token/ENS/NameWrapper/root nodes).
+- Delist unassigned jobs via `delistJob` (owner‑only).
+
+**Transparency note**: all privileged actions emit events and are on‑chain auditable.
+**Operational best practice**: use a multisig owner with strict key management and on‑chain change logging.
 
 **Moderator (dispute authority)**
 - Resolve disputes via `resolveDisputeWithCode` (typed outcomes) or legacy `resolveDispute` (string‑based, deprecated). Outcomes are binary: **agent win** or **employer win**. `NO_ACTION` is allowed and leaves the dispute active.
@@ -55,6 +59,8 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 ## 4) Treasury vs escrow separation (hard invariant)
 **Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Treasury** is the AGI balance minus escrow.
 
+**Why this matters**: it defines the hard boundary auditors and users rely on to ensure escrowed job funds cannot be withdrawn by the operator.
+
 - `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow` and **reverts** if `balance < lockedEscrow`.
 - `withdrawAGI()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableAGI()`.
 
@@ -63,10 +69,19 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 - Rounding dust from integer division.
 - Direct contributions via `contributeToRewardPool` (no segregation).
 
+**Simple example**
+- Contract balance = 10,000 AGI
+- `lockedEscrow` = 9,000 AGI
+- `withdrawableAGI()` = 1,000 AGI (and `withdrawAGI` cannot exceed this)
+
 Escrowed funds can only be released through settlement paths (completion, refund, cancel, expire). The owner cannot sweep escrowed funds.
 
 ## 5) Identity wiring lock (`lockIdentityConfig`)
 The identity lock is a one‑way switch intended to freeze identity wiring after initial setup.
+
+> Naming note: earlier docs called this `configLocked`; the current boolean is `lockIdentityConfig` and the one‑time action is `lockIdentityConfiguration()`.
+
+**Why this matters**: it freezes the core ENS/token wiring to prevent identity spoofing while still allowing day‑to‑day operational controls.
 
 **Locked after `lockIdentityConfiguration()`**
 - `updateAGITokenAddress`
@@ -91,23 +106,21 @@ Even before locking, identity wiring updates require `nextJobId == 0` and `locke
 ## 6) Pause semantics (must match code)
 Pause is an incident‑response control to halt new activity while preserving exits.
 
-**Blocked while paused**
-| Category | Functions |
-| --- | --- |
-| Job creation & onboarding | `createJob`, `applyForJob` |
-| Validation & dispute entry | `validateJob`, `disapproveJob`, `disputeJob` |
-| Marketplace entry | `listNFT`, `purchaseNFT` |
-| Reward pool funding | `contributeToRewardPool` |
+**Why this matters**: pausing must stop new obligations without trapping in‑flight jobs or blocking refunds/settlement paths.
 
-**Allowed while paused**
-| Category | Functions |
-| --- | --- |
-| Completion request | `requestJobCompletion` |
-| Settlement & exits | `cancelJob`, `expireJob`, `finalizeJob`, `resolveDispute`, `resolveDisputeWithCode` |
-| Owner recovery | `resolveStaleDispute` (owner‑only, paused‑only) |
-| Marketplace exit | `delistNFT` |
-| Owner delist | `delistJob` (owner‑only, unassigned only) |
-| Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
+**Pause policy table (code‑accurate)**
+| Function group | Who can call | Paused? | Notes |
+| --- | --- | --- | --- |
+| Job creation & onboarding (`createJob`, `applyForJob`) | Employers / eligible agents | **Blocked** | Prevents new escrow obligations during incident response. |
+| Validation & dispute entry (`validateJob`, `disapproveJob`, `disputeJob`) | Validators / employer / agent | **Blocked** | Freezes new approvals/disputes while paused. |
+| Marketplace entry (`listNFT`, `purchaseNFT`) | NFT owners / buyers | **Blocked** | New listings and purchases disabled while paused. |
+| Reward pool funding (`contributeToRewardPool`) | Any user | **Blocked** | Additional treasury inflow paused. |
+| Completion request (`requestJobCompletion`) | Assigned agent | **Allowed** | Prevents trapping agents mid‑job during a pause. |
+| Settlement & exits (`cancelJob`, `expireJob`, `finalizeJob`, `resolveDispute`, `resolveDisputeWithCode`) | Employer / anyone / moderator | **Allowed** | Exit paths remain available for liveness. |
+| Owner recovery (`resolveStaleDispute`) | Owner | **Allowed (paused‑only)** | Requires pause and dispute timeout. |
+| Marketplace exit (`delistNFT`) | Listing seller | **Allowed** | Sellers can exit listings while paused. |
+| Owner delist (`delistJob`) | Owner | **Allowed** | Unassigned only; refunds employer. |
+| Treasury withdrawal (`withdrawAGI`) | Owner | **Allowed (paused‑only)** | Withdraws only non‑escrow funds. |
 
 ## 7) Security posture (operational highlights)
 - **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `purchaseNFT`, `withdrawAGI`, dispute resolution, settlement).
@@ -121,6 +134,7 @@ Pause is an incident‑response control to halt new activity while preserving ex
 - Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + completionTime / 10000`, with `payoutPoints = (scaledPayout^3) / 1e5`.
 - Reputation is then **diminished** by `1 + (newReputation^2 / 88888^2)` and capped at **88888**.
 - Validator payouts/reputation are only for approving validators; disapprovers receive nothing.
+- `premiumReputationThreshold` gates `canAccessPremiumFeature(address)` (pure threshold check; no time decay).
 
 ## 8) EIP‑170 bytecode size & build reproducibility
 - **EIP‑170 limit**: 24,576 bytes of runtime bytecode.
@@ -181,3 +195,8 @@ Always ensure: `agiToken.balanceOf(contract) >= lockedEscrow`.
 
 ## 12) Test status
 See [`docs/test-status.md`](test-status.md) for the latest local test results and known environment limitations.
+
+## 13) Additional notes (required clarifications)
+- **additionalAgentPayoutPercentage**: present but currently unused in payout math; changing it does not affect settlement.
+- **Marketplace scope**: the internal marketplace lists/purchases the job completion NFTs and settles in the same ERC‑20 used for job payouts.
+- **Not a decentralized court/DAO**: dispute resolution is handled by moderators/owner actions and is transparent via on‑chain events.
