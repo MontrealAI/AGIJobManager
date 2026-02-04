@@ -753,6 +753,44 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
     });
 
+    it("keeps requestJobCompletion invariants while paused", async () => {
+      await createJob();
+      await assignAgentWithProof(0);
+
+      await manager.pause({ from: owner });
+      await expectCustomError(manager.requestJobCompletion.call(0, "", { from: agent }), "InvalidParameters");
+      await expectCustomError(
+        manager.requestJobCompletion.call(0, updatedIpfs, { from: outsider }),
+        "NotAuthorized"
+      );
+
+      await manager.unpause({ from: owner });
+      await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
+      await manager.pause({ from: owner });
+      await expectCustomError(manager.requestJobCompletion.call(0, updatedIpfs, { from: agent }), "InvalidState");
+      await manager.unpause({ from: owner });
+
+      const jobB = await createJob(employer, payout, duration, "ipfs-job-b");
+      const jobBId = jobB.logs[0].args.jobId.toNumber();
+      await assignAgentWithProof(jobBId);
+      await manager.requestJobCompletion(jobBId, updatedIpfs, { from: agent });
+      await validateWithProof(jobBId, validatorOne);
+      await validateWithProof(jobBId, validatorTwo);
+      await validateWithProof(jobBId, validatorThree);
+
+      await manager.pause({ from: owner });
+      await expectCustomError(manager.requestJobCompletion.call(jobBId, updatedIpfs, { from: agent }), "InvalidState");
+      await manager.unpause({ from: owner });
+
+      const shortDuration = new BN("1");
+      const jobC = await createJob(employer, payout, shortDuration, "ipfs-job-c");
+      const jobCId = jobC.logs[0].args.jobId.toNumber();
+      await assignAgentWithProof(jobCId);
+      await time.increase(shortDuration.addn(1));
+      await manager.pause({ from: owner });
+      await expectCustomError(manager.requestJobCompletion.call(jobCId, updatedIpfs, { from: agent }), "InvalidState");
+    });
+
     it("allows exit and settlement flows while paused", async () => {
       const jobA = await createJob(employer, payout, duration, "ipfs-job-a");
       const jobAId = jobA.logs[0].args.jobId.toNumber();
