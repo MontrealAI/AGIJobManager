@@ -3,7 +3,9 @@
 This documentation set targets engineers, integrators, operators, auditors, and non‑technical stakeholders. Each document has a focused scope with cross‑references for fast navigation and auditability.
 
 ## Core entry points (engineers & auditors)
+- **Trust model & security overview**: [`trust-model-and-security-overview.md`](trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview**: [`mainnet-deployment-and-security-overview.md`](mainnet-deployment-and-security-overview.md)
+- **Mainnet deployment & verification**: [`mainnet-deployment-and-verification.md`](mainnet-deployment-and-verification.md)
 - **Contract specification**: [`AGIJobManager.md`](AGIJobManager.md)
 - **Deployment guide (Truffle)**: [`Deployment.md`](Deployment.md)
 - **Security model and limitations**: [`Security.md`](Security.md)
@@ -20,8 +22,10 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 - **Glossary**: [`user-guide/glossary.md`](user-guide/glossary.md)
 
 ## Operational references
+- **Operator runbook**: [`operator-runbook.md`](operator-runbook.md)
 - **Testing guide**: [`Testing.md`](Testing.md)
 - **Test status (local run log)**: [`test-status.md`](test-status.md)
+- **Known issues**: [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md)
 - **Troubleshooting**: [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)
 - **Regression tests summary**: [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md)
 - **FAQ**: [`FAQ.md`](FAQ.md)
@@ -41,6 +45,7 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 
 ## Namespace & extended references
 - **AGI.Eth Namespace (alpha)**: [`namespace/AGI_ETH_NAMESPACE_ALPHA.md`](namespace/AGI_ETH_NAMESPACE_ALPHA.md)
+- **ENS identity & namespaces**: [`ens-identity-and-namespaces.md`](ens-identity-and-namespaces.md)
 - **Parameter safety & stuck‑funds checklist (ops)**: [`ops/parameter-safety.md`](ops/parameter-safety.md)
 - **Case study**: [`case-studies/LEGACY_AGI_JOB_12_VS_NEW.md`](case-studies/LEGACY_AGI_JOB_12_VS_NEW.md)
 

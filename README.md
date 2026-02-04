@@ -30,7 +30,11 @@
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
 
 ## Documentation
+- **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
+- **Mainnet deployment & verification**: [`docs/mainnet-deployment-and-verification.md`](docs/mainnet-deployment-and-verification.md)
+- **ENS identity & namespaces**: [`docs/ens-identity-and-namespaces.md`](docs/ens-identity-and-namespaces.md)
+- **Operator runbook**: [`docs/operator-runbook.md`](docs/operator-runbook.md)
 - **Docs index**: [`docs/README.md`](docs/README.md)
 - **Local test status**: [`docs/test-status.md`](docs/test-status.md)
 
