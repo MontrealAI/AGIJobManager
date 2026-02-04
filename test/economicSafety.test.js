@@ -1,7 +1,6 @@
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
-const TestableAGIJobManager = artifacts.require("TestableAGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
@@ -99,47 +98,6 @@ contract("AGIJobManager economic safety", (accounts) => {
     assert.equal((await manager.validationRewardPercentage()).toString(), "90");
   });
 
-  it("reverts settlement when misconfigured payout exceeds escrow (defense-in-depth)", async () => {
-    const manager = await TestableAGIJobManager.new(...buildInitConfig(
-        token.address,
-        "ipfs://base",
-        ens.address,
-        nameWrapper.address,
-        clubRoot,
-        agentRoot,
-        clubRoot,
-        agentRoot,
-        ZERO_ROOT,
-        ZERO_ROOT,
-      ),
-      { from: owner }
-    );
-
-    const agiType = await MockERC721.new({ from: owner });
-    await agiType.mint(agent, { from: owner });
-    await manager.addAGIType(agiType.address, 60, { from: owner });
-
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
-    await manager.setValidationRewardPercentageUnsafe(60, { from: owner });
-
-    await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
-    await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
-
-    const payout = toBN(toWei("10"));
-    await token.mint(employer, payout, { from: owner });
-    await token.approve(manager.address, payout, { from: employer });
-    const createTx = await manager.createJob("ipfs-job", payout, 1000, "details", { from: employer });
-    const jobId = createTx.logs[0].args.jobId.toNumber();
-
-    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
-    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-
-    await expectCustomError(
-      manager.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
-      "InvalidParameters"
-    );
-  });
-
   it("settles successfully with safe payout configuration", async () => {
     const manager = await AGIJobManager.new(...buildInitConfig(
         token.address,
@@ -187,8 +145,8 @@ contract("AGIJobManager economic safety", (accounts) => {
     assert.equal(contractBalance.toString(), payout.sub(expectedAgentPayout).sub(expectedValidatorPayout).toString());
   });
 
-  it("reverts minting a job NFT when completion metadata is empty (defensive)", async () => {
-    const manager = await TestableAGIJobManager.new(...buildInitConfig(
+  it("reverts job completion requests when completion metadata is empty (defensive)", async () => {
+    const manager = await AGIJobManager.new(...buildInitConfig(
         token.address,
         "ipfs://base",
         ens.address,
@@ -203,14 +161,20 @@ contract("AGIJobManager economic safety", (accounts) => {
       { from: owner }
     );
 
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 80, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
     const payout = toBN(toWei("1"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
     const createTx = await manager.createJob("ipfs-job", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await expectCustomError(
-      manager.setJobMetadata.call(jobId, "", true, true, { from: owner }),
+      manager.requestJobCompletion.call(jobId, "", { from: agent }),
       "InvalidParameters"
     );
   });

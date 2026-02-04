@@ -18,7 +18,7 @@ Common causes:
 **No.** They are immutable in this contract. If they are wrong, the contract must be redeployed.
 
 ## Q5) What if the ENS/NameWrapper contracts are down or revert?
-The contract emits `RecoveryInitiated` events for these failure paths and continues evaluation. In practice, this means you should **monitor those events** to spot ENS issues.
+The contract continues evaluation for ENS failure paths, so you should monitor validation failures during integration testing to spot ENS issues.
 
 ## Q6) Which identity method is safest?
 Use the method that matches your operational policy. For institutions:

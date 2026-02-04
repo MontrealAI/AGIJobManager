@@ -92,7 +92,6 @@ Passing the full ENS name (e.g., `"helper.alpha.agent.agi.eth"`) will **not** wo
 The contract emits two useful events for monitoring identity verification:
 
 - `OwnershipVerified(claimant, subdomain)` → identity check succeeded.
-- `RecoveryInitiated(reason)` → ENS / NameWrapper failure path (useful for diagnostics).
 
 ---
 

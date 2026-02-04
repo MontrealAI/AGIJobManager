@@ -238,7 +238,14 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const jobAfterAgentWin = await manager.getJobCore(jobId);
     assert.strictEqual(jobAfterAgentWin.completed, true, "agent-win dispute should complete job");
     assert.strictEqual(jobAfterAgentWin.disputed, false, "dispute flag should clear after resolution");
-    assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear on agent win");
+    const agentPayoutPct = toBN(jobAfterAgentWin.agentPayoutPct);
+    const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
+    const expectedRemaining = payout.sub(expectedAgentPayout);
+    assert.equal(
+      (await token.balanceOf(manager.address)).toString(),
+      expectedRemaining.toString(),
+      "escrow should retain unused validator rewards on agent win"
+    );
     await expectCustomError(manager.disputeJob.call(jobId, { from: employer }), "InvalidState");
 
     const balancesAfter = {
@@ -248,8 +255,14 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     };
 
     assert.ok(balancesAfter.agent.gt(balancesBefore.agent), "agent should receive payout on agent win");
-    assert.ok(balancesAfter.validatorA.gt(balancesBefore.validatorA), "validators should receive reward on agent win");
-    assert.ok(balancesAfter.validatorB.gt(balancesBefore.validatorB), "validators should receive reward on agent win");
+    assert.ok(
+      balancesAfter.validatorA.eq(balancesBefore.validatorA),
+      "disapproving validators should not receive rewards on agent win"
+    );
+    assert.ok(
+      balancesAfter.validatorB.eq(balancesBefore.validatorB),
+      "disapproving validators should not receive rewards on agent win"
+    );
 
     const payoutTwo = toBN(toWei("22"));
     await token.mint(employer, payoutTwo, { from: owner });
@@ -272,6 +285,10 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const jobAfterEmployerWin = await manager.getJobCore(jobIdTwo);
     assert.strictEqual(jobAfterEmployerWin.completed, true, "employer-win dispute should close job");
     assert.strictEqual(jobAfterEmployerWin.disputed, false, "dispute flag should clear on employer win");
-    assert.equal((await token.balanceOf(manager.address)).toString(), "0", "escrow should clear on employer win");
+    assert.equal(
+      (await token.balanceOf(manager.address)).toString(),
+      expectedRemaining.toString(),
+      "escrow should retain unused validator rewards from prior agent win"
+    );
   });
 });

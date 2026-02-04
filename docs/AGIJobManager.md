@@ -89,9 +89,6 @@ Eligibility checks for agents and validators use `_verifyOwnership`, which accep
 - `agentRootNode` and `clubRootNode` are the ENS root nodes for agents and validators respectively.
 - `_verifyOwnership` chooses the Merkle root based on which root node is supplied (agent vs validator).
 
-**RecoveryInitiated events**
-- Emitted when NameWrapper or Resolver calls revert or when stale dispute recovery is triggered; informational only (does not change state by itself).
-
 ## NFT issuance & marketplace
 
 - **Minting**: `NFTIssued` is emitted during `_completeJob`, minting a job NFT to the employer with `tokenURI = baseIpfsUrl + "/" + jobCompletionURI` unless the completion URI is already a full URI.

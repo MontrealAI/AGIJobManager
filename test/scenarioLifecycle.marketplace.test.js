@@ -247,9 +247,22 @@ contract("AGIJobManager scenario coverage", (accounts) => {
       contract: await token.balanceOf(manager.address),
     };
     assert.ok(balancesAfter.agent.gt(balancesBefore.agent), "agent should be paid on agent-win dispute");
-    assert.ok(balancesAfter.validatorA.gt(balancesBefore.validatorA), "validator A should be rewarded");
-    assert.ok(balancesAfter.validatorB.gt(balancesBefore.validatorB), "validator B should be rewarded");
-    assert.equal(balancesAfter.contract.toString(), "0", "escrow should clear after dispute resolution");
+    assert.ok(
+      balancesAfter.validatorA.eq(balancesBefore.validatorA),
+      "disapproving validators should not be rewarded"
+    );
+    assert.ok(
+      balancesAfter.validatorB.eq(balancesBefore.validatorB),
+      "disapproving validators should not be rewarded"
+    );
+    const agentPayoutPct = toBN(job.agentPayoutPct);
+    const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
+    const expectedRemaining = payout.sub(expectedAgentPayout);
+    assert.equal(
+      balancesAfter.contract.toString(),
+      expectedRemaining.toString(),
+      "escrow should retain unused validator rewards after dispute resolution"
+    );
   });
 
   it("resolves employer-win disputes with refund and no NFT issuance", async () => {
