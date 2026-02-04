@@ -27,7 +27,7 @@ Provide these addresses via environment variables (see `.env.example`):
 | Alpha agent root node | `AGI_ALPHA_AGENT_ROOT_NODE` | Alpha namespace root (agents). |
 | Validator Merkle root | `AGI_VALIDATOR_MERKLE_ROOT` | Allowlist root for validators. |
 | Agent Merkle root | `AGI_AGENT_MERKLE_ROOT` | Allowlist root for agents. |
-| Optional auto-lock | `LOCK_CONFIG=true` | Locks configuration at the end of migration. |
+| Optional auto-lock | `LOCK_IDENTITY_CONFIG=true` | Locks identity wiring at the end of migration. |
 
 ### Defaults (mainnet)
 
@@ -95,8 +95,8 @@ Merkle roots are **allowlists only**. They grant access to apply/validate but do
 
 After setup and validation, lock configuration to minimize governance:
 
-- **Preferred**: set `LOCK_CONFIG=true` before migration to auto-lock.
-- **Manual**: call `lockConfiguration()` from the owner account.
+- **Preferred**: set `LOCK_IDENTITY_CONFIG=true` before migration to auto-lock.
+- **Manual**: call `lockIdentityConfiguration()` from the owner account.
 
 Once locked, **critical configuration setters** are disabled permanently (see `docs/minimal-governance.md`).
 Critical wiring includes the AGI token address, ENS registry, NameWrapper, and ENS root nodes; each is only mutable pre‑first‑job and pre‑lock.

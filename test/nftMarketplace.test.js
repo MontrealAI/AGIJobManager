@@ -152,12 +152,6 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await manager.listNFT(tokenId, price, { from: employer });
 
     await manager.pause({ from: owner });
-    await expectPausedRevert(
-      manager.delistNFT(tokenId, { from: employer }),
-      () => manager.delistNFT.call(tokenId, { from: employer }),
-      owner
-    );
-
     await token.mint(buyer, price, { from: owner });
     await token.approve(manager.address, price, { from: buyer });
     await expectPausedRevert(
@@ -166,7 +160,12 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
       owner
     );
 
+    await manager.delistNFT(tokenId, { from: employer });
+    const delisted = await manager.listings(tokenId);
+    assert.strictEqual(delisted.isActive, false, "listing should deactivate while paused");
+
     await manager.unpause({ from: owner });
+    await manager.listNFT(tokenId, price, { from: employer });
     await manager.purchaseNFT(tokenId, { from: buyer });
 
     const newOwner = await manager.ownerOf(tokenId);

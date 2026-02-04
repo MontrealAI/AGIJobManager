@@ -113,7 +113,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     await token.mint(manager.address, surplus, { from: owner });
 
-    await manager.lockConfiguration({ from: owner });
+    await manager.lockIdentityConfiguration({ from: owner });
 
     const balanceBefore = await token.balanceOf(owner);
     await expectRevert.unspecified(manager.withdrawAGI(surplus, { from: owner }));
@@ -156,8 +156,8 @@ contract("AGIJobManager admin ops", (accounts) => {
   });
 
   it("locks configuration changes while retaining break-glass controls", async () => {
-    await manager.lockConfiguration({ from: owner });
-    assert.equal(await manager.configLocked(), true, "config should be locked");
+    await manager.lockIdentityConfiguration({ from: owner });
+    assert.equal(await manager.lockIdentityConfig(), true, "config should be locked");
 
     await manager.updateMerkleRoots(clubRoot, agentRoot, { from: owner });
 
@@ -173,7 +173,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.pause({ from: owner });
     await manager.unpause({ from: owner });
 
-    await expectCustomError(manager.lockConfiguration.call({ from: owner }), "ConfigLocked");
+    await expectCustomError(manager.lockIdentityConfiguration.call({ from: owner }), "ConfigLocked");
   });
 
   it("updates ENS wiring and root nodes before jobs, then locks them", async () => {
@@ -201,7 +201,7 @@ contract("AGIJobManager admin ops", (accounts) => {
       "InvalidState"
     );
 
-    await manager.lockConfiguration({ from: owner });
+    await manager.lockIdentityConfiguration({ from: owner });
     await expectCustomError(manager.updateEnsRegistry.call(ens.address, { from: owner }), "ConfigLocked");
     await expectCustomError(manager.updateNameWrapper.call(nameWrapper.address, { from: owner }), "ConfigLocked");
   });
@@ -222,7 +222,7 @@ contract("AGIJobManager admin ops", (accounts) => {
       "InvalidState"
     );
 
-    await manager.lockConfiguration({ from: owner });
+    await manager.lockIdentityConfiguration({ from: owner });
     await expectCustomError(
       manager.updateAGITokenAddress.call(newToken.address, { from: owner }),
       "ConfigLocked"

@@ -260,25 +260,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "locker",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "atTimestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ConfigurationLocked",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "uint256",
           "name": "jobId",
@@ -386,6 +367,25 @@
         }
       ],
       "name": "EnsRegistryUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "locker",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "atTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "IdentityConfigurationLocked",
       "type": "event"
     },
     {
@@ -1224,19 +1224,6 @@
     },
     {
       "inputs": [],
-      "name": "configLocked",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "contactEmail",
       "outputs": [
         {
@@ -1358,6 +1345,19 @@
         {
           "internalType": "bool",
           "name": "isActive",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lockIdentityConfig",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
           "type": "bool"
         }
       ],
@@ -1787,7 +1787,7 @@
     },
     {
       "inputs": [],
-      "name": "lockConfiguration",
+      "name": "lockIdentityConfiguration",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

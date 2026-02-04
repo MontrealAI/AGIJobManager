@@ -125,6 +125,7 @@ Detailed contract documentation lives in `docs/`:
 - [Bytecode size & job getters](docs/bytecode-and-getters.md)
 - [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
 - [AGIJobManager security considerations](docs/AGIJobManager_Security.md)
+- [Identity lock & treasury pause semantics](docs/identity-lock-and-treasury.md)
 
 ## Mainnet bytecode size (EIP-170)
 
