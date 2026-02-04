@@ -85,7 +85,7 @@ stateDiagram-v2
 
 - **Funding**: `createJob` transfers the payout into the contract and increments `lockedEscrow`.
 - **Agent payout**: agent receives `job.payout * agentPayoutPct / 100`, with `agentPayoutPct` snapshotted at `applyForJob` based on AGI‑type NFT holdings.
-- **Validator payout**: validators split `job.payout * validationRewardPercentage / 100` equally among those who voted; if no validators voted, the agent receives the validator share.
+- **Validator payout**: validators split `job.payout * validationRewardPercentage / 100` equally among those who voted. If validators exist but none approve, the validator share is added to the agent payout; if no validators participate, the validator share is zero.
 - **Refunds**:
   - `cancelJob`/`delistJob` return escrow if no agent was assigned.
   - `expireJob` returns escrow after duration elapses with no completion request.
