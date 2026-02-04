@@ -26,7 +26,7 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.19`, runs `200`, `evmVersion` `london`). |
+| Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`). |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
@@ -42,7 +42,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 ```
 
 The mainnet-safe compiler settings used in `truffle-config.js` are:
-- Optimizer enabled with **runs = 200**.
+- Optimizer enabled with **runs = 50**.
 - `viaIR = false` by default.
 - `debug.revertStrings = 'strip'`.
 - `metadata.bytecodeHash = 'none'`.
@@ -109,10 +109,10 @@ npx truffle run verify AGIJobManager --network mainnet
 ```
 
 ### Verification tips
-- Keep the compiler settings from `truffle-config.js` identical to the original deployment (solc `0.8.19`, runs `200`, `evmVersion` `london`).
+- Keep the compiler settings from `truffle-config.js` identical to the original deployment (solc `0.8.19`, runs `50`, `evmVersion` `london`).
 - Ensure your migration constructor parameters match the deployed contract.
 - If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
-- Etherscan’s **Standard-Json-Input** flow should include `viaIR: false`, `optimizer.runs: 200`, and `metadata.bytecodeHash: "none"` if you verify manually.
+- Etherscan’s **Standard-Json-Input** flow should include `viaIR: false`, `optimizer.runs: 50`, and `metadata.bytecodeHash: "none"` if you verify manually.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.
