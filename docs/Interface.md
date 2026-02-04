@@ -29,7 +29,6 @@
 | `blacklistedValidators(address)` | view | bool |
 | `clubRootNode()` | view | bytes32 |
 | `completionReviewPeriod()` | view | uint256 |
-| `configLocked()` | view | bool |
 | `contactEmail()` | view | string |
 | `disputeReviewPeriod()` | view | uint256 |
 | `ens()` | view | address |
@@ -37,6 +36,7 @@
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
 | `listings(uint256)` | view | uint256, address, uint256, bool |
+| `lockIdentityConfig()` | view | bool |
 | `lockedEscrow()` | view | uint256 |
 | `maxJobPayout()` | view | uint256 |
 | `moderators(address)` | view | bool |
@@ -65,7 +65,7 @@
 | `validatorVotedJobs(address, uint256)` | view | uint256 |
 | `pause()` | nonpayable | — |
 | `unpause()` | nonpayable | — |
-| `lockConfiguration()` | nonpayable | — |
+| `lockIdentityConfiguration()` | nonpayable | — |
 | `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)` | nonpayable | — |
 | `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)` | nonpayable | — |
@@ -131,15 +131,16 @@
 | `AGITypeUpdated(address nftAddress, uint256 payoutPercentage)` | indexed address nftAddress, uint256 payoutPercentage |
 | `AGIWithdrawn(address to, uint256 amount, uint256 remainingWithdrawable)` | indexed address to, uint256 amount, uint256 remainingWithdrawable |
 | `AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage)` | uint256 newPercentage |
+| `AgentBlacklisted(address agent, bool status)` | indexed address agent, bool status |
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |
 | `ApprovalForAll(address owner, address operator, bool approved)` | indexed address owner, indexed address operator, bool approved |
 | `CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
-| `ConfigurationLocked(address locker, uint256 atTimestamp)` | indexed address locker, uint256 atTimestamp |
 | `DisputeResolved(uint256 jobId, address resolver, string resolution)` | uint256 jobId, address resolver, string resolution |
 | `DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)` | uint256 jobId, address resolver, uint8 resolutionCode, string reason |
 | `DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)` | uint256 oldPeriod, uint256 newPeriod |
 | `DisputeTimeoutResolved(uint256 jobId, address resolver, bool employerWins)` | uint256 jobId, address resolver, bool employerWins |
 | `EnsRegistryUpdated(address newEnsRegistry)` | indexed address newEnsRegistry |
+| `IdentityConfigurationLocked(address locker, uint256 atTimestamp)` | indexed address locker, uint256 atTimestamp |
 | `JobApplied(uint256 jobId, address agent)` | uint256 jobId, address agent |
 | `JobCancelled(uint256 jobId)` | uint256 jobId |
 | `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)` | uint256 jobId, address agent, uint256 reputationPoints |
@@ -164,6 +165,7 @@
 | `RootNodesUpdated(bytes32 clubRootNode, bytes32 agentRootNode, bytes32 alphaClubRootNode, bytes32 alphaAgentRootNode)` | bytes32 clubRootNode, bytes32 agentRootNode, bytes32 alphaClubRootNode, bytes32 alphaAgentRootNode |
 | `Transfer(address from, address to, uint256 tokenId)` | indexed address from, indexed address to, indexed uint256 tokenId |
 | `Unpaused(address account)` | address account |
+| `ValidatorBlacklisted(address validator, bool status)` | indexed address validator, bool status |
 
 ## Custom errors
 | Error | Inputs |

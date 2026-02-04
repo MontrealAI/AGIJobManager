@@ -131,7 +131,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     bytes32 public agentMerkleRoot;
     ENS public ens;
     NameWrapper public nameWrapper;
-    bool public configLocked;
+    /// @notice Freezes identity wiring only; not a governance lock.
+    bool public lockIdentityConfig;
 
     struct Job {
         address employer;
@@ -218,7 +219,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
-    event ConfigurationLocked(address indexed locker, uint256 atTimestamp);
+    event IdentityConfigurationLocked(address indexed locker, uint256 atTimestamp);
     event AgentBlacklisted(address indexed agent, bool status);
     event ValidatorBlacklisted(address indexed validator, bool status);
 
@@ -240,8 +241,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _;
     }
 
-    modifier whenCriticalConfigurable() {
-        if (configLocked) revert ConfigLocked();
+    modifier whenIdentityConfigurable() {
+        if (lockIdentityConfig) revert ConfigLocked();
         _;
     }
 
@@ -349,9 +350,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
-    function lockConfiguration() external onlyOwner whenCriticalConfigurable {
-        configLocked = true;
-        emit ConfigurationLocked(msg.sender, block.timestamp);
+    function lockIdentityConfiguration() external onlyOwner whenIdentityConfigurable {
+        lockIdentityConfig = true;
+        emit IdentityConfigurationLocked(msg.sender, block.timestamp);
     }
 
     function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details) external whenNotPaused nonReentrant {
@@ -389,7 +390,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
         Job storage job = _job(_jobId);
         if (bytes(_jobCompletionURI).length == 0) revert InvalidParameters();
-        if (paused() && !job.disputed) revert InvalidState();
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
         if (job.completed || job.expired) revert InvalidState();
         if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
@@ -548,18 +548,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function addModerator(address _moderator) external onlyOwner { moderators[_moderator] = true; }
     function removeModerator(address _moderator) external onlyOwner { moderators[_moderator] = false; }
-    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenCriticalConfigurable {
+    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         agiToken = IERC20(_newTokenAddress);
     }
-    function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenCriticalConfigurable {
+    function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable {
         if (_newEnsRegistry == address(0)) revert InvalidParameters();
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         ens = ENS(_newEnsRegistry);
         emit EnsRegistryUpdated(_newEnsRegistry);
     }
-    function updateNameWrapper(address _newNameWrapper) external onlyOwner whenCriticalConfigurable {
+    function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable {
         if (_newNameWrapper == address(0)) revert InvalidParameters();
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         nameWrapper = NameWrapper(_newNameWrapper);
@@ -570,7 +570,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32 _agentRootNode,
         bytes32 _alphaClubRootNode,
         bytes32 _alphaAgentRootNode
-    ) external onlyOwner whenCriticalConfigurable {
+    ) external onlyOwner whenIdentityConfigurable {
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         clubRootNode = _clubRootNode;
         agentRootNode = _agentRootNode;
@@ -921,7 +921,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit NFTPurchased(tokenId, msg.sender, price);
     }
 
-    function delistNFT(uint256 tokenId) external whenNotPaused {
+    function delistNFT(uint256 tokenId) external {
         Listing storage listing = listings[tokenId];
         if (!listing.isActive || listing.seller != msg.sender) revert NotAuthorized();
         listing.isActive = false;

@@ -209,9 +209,9 @@ module.exports = async function postdeployConfig(callback) {
     const currentApprovals = await instance.requiredValidatorApprovals();
     const currentDisapprovals = await instance.requiredValidatorDisapprovals();
     const maxValidators = await instance.MAX_VALIDATORS_PER_JOB();
-    const configLocked = await instance.configLocked();
+    const identityConfigLocked = await instance.lockIdentityConfig();
 
-    if (configLocked) {
+    if (identityConfigLocked) {
       const lockedKeys = [
         "requiredValidatorApprovals",
         "requiredValidatorDisapprovals",
@@ -234,7 +234,7 @@ module.exports = async function postdeployConfig(callback) {
       const lockedRequested = lockedKeys.filter((key) => config[key] !== undefined);
       if (lockedRequested.length) {
         throw new Error(
-          `Configuration is locked; remove these settings and retry: ${lockedRequested.join(", ")}`
+          `Identity configuration is locked; remove these settings and retry: ${lockedRequested.join(", ")}`
         );
       }
     }

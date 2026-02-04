@@ -1,16 +1,18 @@
 # Minimal governance model
 
-This document explains the **critical configuration lock** and the intended “configure once → operate” posture.
+This document explains the **identity wiring lock** and the intended “configure once → operate” posture.
 
-## What the configuration lock does
+## What the identity wiring lock does
 
-Calling `lockConfiguration()` permanently disables **critical configuration setters**. It is **one-way** and irreversible.
+Calling `lockIdentityConfiguration()` permanently disables **identity wiring setters**. It is **one-way** and irreversible.
 
-Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, but the **critical config surface** is frozen.
+Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, but the **identity wiring surface** is frozen.
+
+> **Scope reminder:** this lock is **not** governance- or operations-wide; it only freezes identity wiring (token/ENS/root nodes).
 
 ## Functions disabled after lock
 
-These functions are guarded by `whenCriticalConfigurable` and **revert** once the configuration is locked:
+These functions are guarded by `whenIdentityConfigurable` and **revert** once the identity wiring is locked:
 
 **Critical routing / identity**
 - `updateAGITokenAddress` (only allowed before any job exists and before the lock)
@@ -41,7 +43,7 @@ Other configuration knobs (thresholds, review periods, allowlists, metadata, etc
 1. **Deploy** (set ENS/NameWrapper/token/root nodes and Merkle roots).
 2. **Configure** (thresholds, payouts, metadata, moderators, allowlists).
 3. **Validate** (run sanity checks and real job flow).
-4. **Lock** (`lockConfiguration()` or `LOCK_CONFIG=true` during migration).
+4. **Lock** (`lockIdentityConfiguration()` or `LOCK_CONFIG=true` during migration).
 5. **Operate** (minimal governance with incident-response tools only).
 
 ## Monitoring suggestions (post-lock)
@@ -49,7 +51,7 @@ Other configuration knobs (thresholds, review periods, allowlists, metadata, etc
 To keep operations low-touch, monitor the following invariants and events:
 
 - **Escrow solvency**: track `lockedEscrow` vs. token balance; `withdrawableAGI()` must stay non‑negative.
-- **Critical wiring changes (pre-lock)**: watch `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, and `ConfigurationLocked`.
+- **Critical wiring changes (pre-lock)**: watch `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, and `IdentityConfigurationLocked`.
 - **Allowlist updates**: `MerkleRootsUpdated` signals validator/agent allowlist changes (access only, not payout logic).
 - **Dispute recovery**: `DisputeTimeoutResolved` indicates break‑glass resolution by the owner.
 
