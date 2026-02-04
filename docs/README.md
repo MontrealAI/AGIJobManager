@@ -21,6 +21,7 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 
 ## Operational references
 - **Testing guide**: [`Testing.md`](Testing.md)
+- **Test status (local run log)**: [`test-status.md`](test-status.md)
 - **Troubleshooting**: [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)
 - **Regression tests summary**: [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md)
 - **FAQ**: [`FAQ.md`](FAQ.md)

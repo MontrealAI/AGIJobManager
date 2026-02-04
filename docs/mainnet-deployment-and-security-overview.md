@@ -1,49 +1,97 @@
 # AGIJobManager – Mainnet Deployment & Security Overview
 
-## What this contract is
-AGIJobManager is an **owner-operated** on-chain escrow and settlement contract for employer/agent jobs with validator approvals, dispute resolution, reputation tracking, and a tightly scoped ERC-721 job NFT marketplace. It is not a trustless protocol or DAO; the owner and moderators retain operational control while the contract enforces escrow and settlement invariants.
+## 1) Executive summary
+AGIJobManager is an **owner‑operated** on‑chain escrow + settlement engine for employer/agent jobs, with validator approvals/disapprovals, moderator dispute resolution, reputation tracking, and a tightly scoped ERC‑721 “job NFT” marketplace. It is a **business‑operated** system with strong escrow invariants; it is **not** a DAO, not trustless arbitration, and not an upgradeable proxy.
 
-**Roles**
-- **Owner**: operational control (pause/unpause, parameter tuning, allowlists/blacklists, moderator management, treasury withdrawal while paused).
-- **Moderator**: dispute resolution authority.
-- **Employer**: creates jobs, funds escrow, cancels unassigned jobs, disputes.
-- **Agent**: applies for jobs, requests completion, earns payout + reputation, receives completion NFT.
-- **Validator**: approves/disapproves completion, earns payout + reputation on approval.
+**What it is**
+- Job escrow and settlement for employer‑funded tasks.
+- Validator‑gated completion with dispute resolution by moderators.
+- ERC‑721 receipts for completed jobs and a minimal listing/purchase flow.
 
-## Trust model (owner-operated marketplace)
-AGIJobManager is a centralized operational system with on-chain escrow guarantees. Users must trust:
-- **Owner integrity** to pause/unpause appropriately, tune parameters, maintain allowlists/blacklists, and operate within documented withdrawal bounds.
-- **Moderator integrity** to resolve disputes fairly.
-- **Escrow accounting** to prevent owner withdrawal of unsettled funds via `lockedEscrow` and `withdrawableAGI()` invariants.
+**What it is not**
+- Not a DAO, not permissionless arbitration, and not an upgradeable proxy.
+- Not a generalized NFT marketplace or on‑chain ERC‑8004 registry.
 
-This is an owner-operated marketplace with enforced escrow, not a decentralized court or DAO.
+## 2) Trust model & roles
+AGIJobManager is centralized by design. Users must trust the owner and moderators to operate the system honestly, while the contract enforces escrow accounting and settlement invariants.
 
-## Identity wiring lock (`lockIdentityConfig`)
-The contract exposes a one-way identity configuration lock, gated by `lockIdentityConfiguration()` and the `lockIdentityConfig` flag. It is intended to freeze identity wiring after initial setup.
+**Owner (operational authority)**
+- Pause/unpause operations.
+- Withdraw treasury funds **only while paused** (never escrow).
+- Manage allowlists/blacklists and additional agents/validators.
+- Update economic parameters (validator thresholds, reward percentages, payout caps, duration limits, review periods).
+- Manage moderators and AGI payout tiers (AGI types).
+- Configure identity wiring before lock (token/ENS/NameWrapper/root nodes).
 
-### Frozen by the lock
-Once `lockIdentityConfiguration()` is called, the following **cannot** be updated:
-- `updateAGITokenAddress` (ERC-20 escrow token address)
+**Moderator (dispute authority)**
+- Resolve disputes via `resolveDisputeWithCode` (typed outcomes) or legacy `resolveDispute` (string‑based, deprecated). Outcomes are binary: **agent win** or **employer win**. `NO_ACTION` is allowed and leaves the dispute active.
+
+**User roles**
+- **Employer**: creates jobs, funds escrow, cancels unassigned jobs, disputes, receives NFTs.
+- **Agent**: applies for jobs, requests completion, earns payouts + reputation.
+- **Validator**: approves/disapproves completion, earns payouts + reputation on approvals.
+
+## 3) Job lifecycle / state machine
+The job struct encodes the state machine via fields like `assignedAgent`, `completionRequested`, `disputed`, `expired`, `completed`, timestamps, and the `agentPayoutPct` snapshot.
+
+**Happy path (example)**
+1. `createJob` escrows `payout` (increasing `lockedEscrow`).
+2. `applyForJob` assigns an agent and snapshots `agentPayoutPct`.
+3. `requestJobCompletion` stores completion metadata.
+4. Validators call `validateJob` until `requiredValidatorApprovals` is reached.
+5. `_completeJob` releases escrow, pays agent + approving validators, updates reputation, and mints the completion NFT.
+
+**Dispute path (example)**
+1. After completion request, validators disapprove or employer/agent calls `disputeJob`.
+2. Dispute becomes active (`disputed = true`, `disputedAt` set).
+3. Moderator resolves via `resolveDisputeWithCode` (agent win or employer win) or leaves it active with `NO_ACTION`.
+4. If the dispute times out and the contract is paused, the owner may use `resolveStaleDispute`.
+
+**Timeouts & liveness**
+- **Expiration**: `expireJob` refunds the employer when the job duration elapses and completion was never requested.
+- **Finalize after review window**: `finalizeJob` settles after `completionReviewPeriod` if validators are silent or split.
+- **Stale dispute recovery**: `resolveStaleDispute` is owner‑only and **paused‑only**, after `disputeReviewPeriod`.
+
+## 4) Treasury vs escrow separation (hard invariant)
+**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Treasury** is the AGI balance minus escrow.
+
+- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow` and **reverts** if `balance < lockedEscrow`.
+- `withdrawAGI()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableAGI()`.
+
+**What becomes treasury**
+- Payout remainder when `agentPayoutPct + validatorRewardPercentage < 100`.
+- Rounding dust from integer division.
+- Direct contributions via `contributeToRewardPool` (no segregation).
+
+Escrowed funds can only be released through settlement paths (completion, refund, cancel, expire). The owner cannot sweep escrowed funds.
+
+## 5) Identity wiring lock (`lockIdentityConfig`)
+The identity lock is a one‑way switch intended to freeze identity wiring after initial setup.
+
+**Locked after `lockIdentityConfiguration()`**
+- `updateAGITokenAddress`
 - `updateEnsRegistry`
 - `updateNameWrapper`
 - `updateRootNodes`
 
-**Pre-lock constraints**: even before the lock is set, the identity wiring functions above require **no jobs to exist** (`nextJobId == 0`) and **no escrowed funds** (`lockedEscrow == 0`).
+**Not locked**
+- `updateMerkleRoots` (allowlist roots remain adjustable).
+- Operational controls (pause/unpause, allowlists/blacklists, parameter tuning).
+- Treasury withdrawals (still paused‑only).
 
-### Not frozen by the lock
-The lock **does not** restrict:
-- Operational controls (pause/unpause, allowlists/blacklists, parameter tuning)
-- Treasury withdrawals (`withdrawAGI`, owner-only, paused-only)
-- Job settlement flows
-- **Merkle root updates** (`updateMerkleRoots` remains allowed)
+**Pre‑lock constraints**
+Even before locking, identity wiring updates require `nextJobId == 0` and `lockedEscrow == 0`.
 
-### Recommended operational sequence
-Deploy → configure ENS/token/root nodes → confirm wiring → lock identity config → operate.
+**Recommended procedure**
+1. Deploy.
+2. Configure token/ENS/NameWrapper/root nodes.
+3. Validate wiring and allowlists on a testnet.
+4. Call `lockIdentityConfiguration()`.
 
-## Pause semantics (blocked vs allowed)
-Pause is an incident-response control intended to halt new activity without trapping exits.
+## 6) Pause semantics (must match code)
+Pause is an incident‑response control to halt new activity while preserving exits.
 
-### Blocked while paused
+**Blocked while paused**
 | Category | Functions |
 | --- | --- |
 | Job creation & onboarding | `createJob`, `applyForJob` |
@@ -51,134 +99,85 @@ Pause is an incident-response control intended to halt new activity without trap
 | Marketplace entry | `listNFT`, `purchaseNFT` |
 | Reward pool funding | `contributeToRewardPool` |
 
-### Allowed while paused
+**Allowed while paused**
 | Category | Functions |
 | --- | --- |
-| Completion request | `requestJobCompletion` (assigned agent only) |
+| Completion request | `requestJobCompletion` |
 | Settlement & exits | `cancelJob`, `expireJob`, `finalizeJob`, `resolveDispute`, `resolveDisputeWithCode` |
-| Owner recovery | `resolveStaleDispute` (owner-only, paused-only) |
-| Marketplace exit | `delistNFT` (seller-only) |
-| Owner delist | `delistJob` (owner-only; unassigned only) |
-| Treasury withdrawal | `withdrawAGI` (owner-only, paused-only) |
+| Owner recovery | `resolveStaleDispute` (owner‑only, paused‑only) |
+| Marketplace exit | `delistNFT` |
+| Owner delist | `delistJob` (owner‑only, unassigned only) |
+| Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
 
-**Explicit exceptions:** agents may still request completion while paused, and NFT sellers may delist while paused.
+## 7) Security posture (operational highlights)
+- **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `purchaseNFT`, `withdrawAGI`, dispute resolution, settlement).
+- **Exact ERC‑20 transfer checks** are used where escrow integrity matters (`createJob`, `purchaseNFT`, `contributeToRewardPool`), preventing fee‑on‑transfer / rebasing tokens from under‑funding escrow.
+- **Bounded loops**: validator lists are capped at `MAX_VALIDATORS_PER_JOB` (50).
+- **ENS/NameWrapper lookups** use `try/catch` and are view‑only; failures just return false.
+- **Dispute outcomes are binary** (agent win vs employer win); `NO_ACTION` logs without settlement.
+- **Known limitations**: centralized operator risk; parameter changes can affect in‑flight jobs; no slashing; reward pool is not segregated from treasury.
 
-## Treasury vs escrow (withdrawal rules)
-- **Escrow**: job payout deposits tracked by `lockedEscrow`.
-- **Treasury**: AGI balance **minus** `lockedEscrow` (owner-withdrawable only while paused).
+### Reputation system (as implemented)
+- Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + completionTime / 10000`, with `payoutPoints = (scaledPayout^3) / 1e5`.
+- Reputation is then **diminished** by `1 + (newReputation^2 / 88888^2)` and capped at **88888**.
+- Validator payouts/reputation are only for approving validators; disapprovers receive nothing.
 
-### `withdrawableAGI()` invariant
-`withdrawableAGI()` returns `balance - lockedEscrow` and **reverts** if `balance < lockedEscrow` (escrow insolvency is not allowed).
+## 8) EIP‑170 bytecode size & build reproducibility
+- **EIP‑170 limit**: 24,576 bytes of runtime bytecode.
+- **Repo guard**: `test/bytecodeSize.test.js` enforces **≤ 24,575 bytes** for `AGIJobManager`.
 
-### `withdrawAGI()` gating
-- **Owner-only** and **paused-only**.
-- **Cannot exceed** `withdrawableAGI()`.
-- **Never withdraws escrowed funds**.
+**Compiler settings (Truffle)**
+- **solc**: `0.8.23`
+- **optimizer**: enabled, `runs = 50`
+- **viaIR**: `false`
+- **metadata.bytecodeHash**: `none`
+- **debug.revertStrings**: `strip`
+- **evmVersion**: `london` (default unless overridden)
 
-**Example**: if the contract holds **1,000 AGI** and `lockedEscrow` is **800 AGI**, then `withdrawableAGI()` is **200 AGI**. The owner can withdraw at most **200 AGI** while paused.
-
-### Shutdown / migration note
-To withdraw all AGI, `lockedEscrow` must reach **0** through job settlement, cancellation, expiry, or refunds. There is no owner sweep of escrowed funds.
-
-## Reputation system (as implemented)
-Reputation grows with diminishing returns and a hard cap.
-
-### Agent reputation points
-On completion:
-- `scaledPayout = job.payout / 1e18`
-- `payoutPoints = (scaledPayout^3) / 1e5`
-- `reputationPoints = log2(1 + payoutPoints * 1e6) + (completionTime / 10000)`
-
-### Diminishing returns & cap
-- `newReputation = current + reputationPoints`
-- `diminishingFactor = 1 + (newReputation^2 / 88888^2)`
-- `diminished = newReputation / diminishingFactor`
-- Final reputation is `min(diminished, 88888)`.
-
-### Validator reputation and payouts
-Only **approving validators** receive payouts and reputation. Each approver receives:
-- `validatorPayout = totalValidatorPayout / approverCount`
-- `validatorReputationGain = reputationPoints * validationRewardPercentage / 100`
-
-Disapprovers receive no payout or reputation.
-
-## Mainnet deployment constraints
-### EIP-170 bytecode cap
-Ethereum mainnet enforces a **24,576-byte** runtime bytecode limit (EIP-170). The test suite includes a **Bytecode size guard** that asserts the deployed bytecode remains within the configured safety margin.
-
-### How to check deployed bytecode size
-After `truffle compile`, check runtime bytecode length:
+**How to measure size locally**
 ```bash
 node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
 ```
-Or run the helper:
-```bash
-node scripts/check-bytecode-size.js
-```
 
-### Compiler and optimizer pinning (Truffle)
-- **Solidity compiler**: `0.8.23` (pinned in `truffle-config.js`).
-- **Optimizer**: enabled with `runs = 50`.
-- **viaIR**: **disabled** (`viaIR: false`).
-- **Metadata bytecode hash**: `none`.
-- **Revert strings**: `strip`.
-- **EVM version**: `london` (default unless overridden).
-
-These settings are required to keep bytecode within the EIP-170 cap and to ensure deterministic verification.
-
-## Build, deploy, verify (Truffle)
-### Deterministic build & test
+## 9) Verification & deployment guide (Truffle‑first)
+**Build & test**
 ```bash
 npm ci
 npx truffle compile
 npx truffle test --network test
 ```
 
-### Deployment (Truffle migrations)
-The deployment entrypoint is `migrations/2_deploy_contracts.js`, which reads constructor wiring from `migrations/deploy-config.js` and environment variables. For mainnet-grade deployments:
-```bash
-npx truffle migrate --network mainnet
-```
+**Deployment entrypoint**
+- `migrations/2_deploy_contracts.js` (reads values from `migrations/deploy-config.js` + env vars).
 
-### Constructor arguments (AGIJobManager)
-1. `agiTokenAddress` (ERC-20 used for escrow/payouts)
-2. `baseIpfs` (base URI used when completion metadata lacks a scheme)
-3. `ensConfig[0]` = ENS registry address
-4. `ensConfig[1]` = NameWrapper address
-5. `rootNodes[0]` = clubRootNode
-6. `rootNodes[1]` = agentRootNode
-7. `rootNodes[2]` = alphaClubRootNode
-8. `rootNodes[3]` = alphaAgentRootNode
-9. `merkleRoots[0]` = validatorMerkleRoot
-10. `merkleRoots[1]` = agentMerkleRoot
+**Mainnet checklist**
+1. Confirm compiler/settings match `truffle-config.js`.
+2. Run compile + tests.
+3. Record constructor args (token, baseIpfs, ENS, NameWrapper, root nodes, Merkle roots).
+4. Deploy from a multisig if possible.
+5. Verify with `truffle-plugin-verify` using the exact compiler settings + constructor args.
 
-### Verification
-`truffle-plugin-verify` is configured in `truffle-config.js`. With `ETHERSCAN_API_KEY` set:
+**Verification (Etherscan)**
 ```bash
 npx truffle run verify AGIJobManager --network mainnet
 ```
-If you prefer Etherscan’s UI, use the Standard JSON Input with the same compiler settings above and the constructor arguments listed here.
 
-## Known limitations / explicit non-features
-- `additionalAgentPayoutPercentage` is currently **unused** in settlement logic (reserved for future use).
-- `contributeToRewardPool` **does not segregate funds**; contributions become treasury and are owner-withdrawable during pause.
-- There is **no token rescue** function for arbitrary ERC-20s or ERC-721s; avoid sending non-AGI tokens directly to the contract.
-- ENS/NameWrapper gating depends on external ENS contracts; misconfiguration or resolver changes can cause allowlist failures.
+## 10) Monitoring / alerting checklist
+Index and alert on the following events:
+- **Job lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobCompleted`, `JobFinalized`, `JobExpired`, `JobCancelled`.
+- **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`, `DisputeTimeoutResolved`.
+- **NFT market**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
+- **Treasury/ops**: `AGIWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`.
+- **Identity**: `IdentityConfigurationLocked`, `MerkleRootsUpdated`, `RootNodesUpdated`, `EnsRegistryUpdated`, `NameWrapperUpdated`.
+- **Blacklists**: `AgentBlacklisted`, `ValidatorBlacklisted`.
 
-## Testing status (local)
-Commands executed and results:
-- `npm ci` → **failed** on Linux because `fsevents@2.3.2` is macOS-only (EBADPLATFORM).
-- `npm install --omit=optional` → **succeeded** (used to proceed with Truffle).
-- `npx truffle version` → **succeeded**.
-- `npx truffle compile` → **succeeded** (no compiler warnings emitted).
-- `npx truffle test` → **failed** (no local node at `http://127.0.0.1:8545`).
-- `npx truffle test --network test` → **succeeded** (216 passing).
+**Solvency invariant**
+Always ensure: `agiToken.balanceOf(contract) >= lockedEscrow`.
 
-**Next fix when `npx truffle test` fails**: start Ganache on `127.0.0.1:8545` (e.g., `npx ganache -p 8545`) or run `npx truffle test --network test`.
+## 11) Known gaps / future work
+- `additionalAgentPayoutPercentage` is **unused** in settlement logic (reserved for future use).
+- “Reward pool” contributions are **not segregated** from treasury.
+- Optional future work: add more explicit blacklist change events (already present today).
 
-## Glossary (selected)
-- **Escrow**: AGI reserved for unsettled jobs (`lockedEscrow`).
-- **Treasury**: AGI balance minus `lockedEscrow` (owner-withdrawable only while paused).
-- **Identity lock**: one-way freeze of ENS/token/root-node wiring (`lockIdentityConfig`).
-- **Pause**: operator safety switch that blocks new activity but allows exits.
-- **Completion request**: agent-submitted metadata required before settlement or NFT minting.
+## 12) Test status
+See [`docs/test-status.md`](test-status.md) for the latest local test results and known environment limitations.
