@@ -29,11 +29,15 @@
 - **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available; NFT sellers can still delist.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
 
+**Trust model summary**: owner‑operated marketplace; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
+
 ## Documentation
 - **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
 - **Mainnet deployment & verification**: [`docs/mainnet-deployment-and-verification.md`](docs/mainnet-deployment-and-verification.md)
 - **ENS identity & namespaces**: [`docs/ens-identity-and-namespaces.md`](docs/ens-identity-and-namespaces.md)
+- **Architecture & state machine**: [`docs/architecture.md`](docs/architecture.md)
+- **Deployments & bridging safety**: [`docs/deployments-and-bridging.md`](docs/deployments-and-bridging.md)
 - **Operator runbook**: [`docs/operator-runbook.md`](docs/operator-runbook.md)
 - **Docs index**: [`docs/README.md`](docs/README.md)
 - **Local test status**: [`docs/test-status.md`](docs/test-status.md)

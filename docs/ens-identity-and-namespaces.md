@@ -6,9 +6,10 @@ how AGIJobManager enforces agent/validator identity on‑chain.
 ## Namespace grammar (role identity)
 
 **Pattern (on‑chain gating)**: `<entity>.(<env>.)<role>.agi.eth`
-- `role ∈ {club, agent}`
-- `node` is **not** enforced by AGIJobManager today (off‑chain/future‑only).
+- `role ∈ {club, agent, node}`
 - `env ∈ ENV_SET` (optional; examples: `alpha`, `x`, …)
+
+**Contract scope note**: AGIJobManager currently enforces **club** (validators) and **agent** roles only. `node` names are part of the wider namespace grammar and are not consumed by the contract today.
 
 ### Examples (env = alpha)
 - **Validator (role=club)**: `alice.club.agi.eth` or `alice.alpha.club.agi.eth`
@@ -24,7 +25,7 @@ how AGIJobManager enforces agent/validator identity on‑chain.
 `env.agi.eth`.
 
 ### Environment package concept
-**Official environment package** (`env.agi.eth`) includes:
+**Official environment package (issued by AGI King)** (`env.agi.eth`) includes:
 - `env.agi.eth`
 - `env.agent.agi.eth`
 - `env.node.agi.eth`
@@ -72,6 +73,12 @@ The contract stores four root nodes used for namespace checks:
 
 The agent/validator check accepts either base or `alpha` root nodes, so the
 namespace grammar above is supported for both the base and `alpha` environments.
+
+## Contract wiring references
+- **ENS registry**: `ens` is used to resolve the resolver for a node.
+- **NameWrapper**: `nameWrapper` is queried first for ownership of the subnode.
+- **Roots**: `clubRootNode`/`alphaClubRootNode` for validators and `agentRootNode`/`alphaAgentRootNode` for agents.
+- **Allowlist overrides**: `additionalAgents` and `additionalValidators` bypass Merkle/ENS checks, while `blacklistedAgents`/`blacklistedValidators` override everything else.
 
 ## Operational guidance
 

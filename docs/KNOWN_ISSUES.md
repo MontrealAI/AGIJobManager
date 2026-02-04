@@ -2,22 +2,45 @@
 
 This file tracks reproducible failures in local commands or tests.
 
-## `npx truffle test` fails without a local JSON‑RPC node
+## `npm ci` fails on Linux due to macOS‑only optional dependency
 
 **Reproduction**
 ```bash
+npm ci
+```
+
+**Failure**
+```
+npm error notsup Unsupported platform for fsevents@2.3.2: wanted {"os":"darwin"} (current: {"os":"linux"})
+```
+
+**Root cause**
+`fsevents` is a macOS‑only optional dependency; `npm ci` treats it as required
+and fails on Linux in this environment.
+
+**Smallest fix**
+- Use an install path that omits optional dependencies (without touching
+  `package-lock.json`), then rerun `npm ci` when appropriate in a macOS
+  environment.
+
+## `npx truffle compile` / `npx truffle test` fail with missing `dotenv`
+
+**Reproduction**
+```bash
+npx truffle compile
+# or
 npx truffle test
 ```
 
 **Failure**
 ```
-CONNECTION ERROR: Couldn't connect to node http://127.0.0.1:8545.
+Error: Cannot find module 'dotenv'
 ```
 
 **Root cause**
-`truffle test` defaults to the `development` network, which expects a local
-node at `127.0.0.1:8545`. The container does not run Ganache by default.
+Dependencies were not installed because `npm ci` failed, leaving `dotenv`
+missing for `truffle-config.js`.
 
 **Smallest fix**
-- Start Ganache locally: `npx ganache -p 8545`, **or**
-- Use the in‑process provider: `npx truffle test --network test`.
+- Install dependencies in a way that omits the macOS‑only optional package, then
+  rerun `npx truffle compile` and `npx truffle test --network test`.
