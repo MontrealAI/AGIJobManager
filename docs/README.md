@@ -3,6 +3,7 @@
 This documentation set targets engineers, integrators, operators, auditors, and non‑technical stakeholders. Each document has a focused scope with cross‑references for fast navigation and auditability.
 
 ## Core entry points (engineers & auditors)
+- **Mainnet deployment & security overview**: [`mainnet-deployment-and-security-overview.md`](mainnet-deployment-and-security-overview.md)
 - **Contract specification**: [`AGIJobManager.md`](AGIJobManager.md)
 - **Deployment guide (Truffle)**: [`Deployment.md`](Deployment.md)
 - **Security model and limitations**: [`Security.md`](Security.md)
