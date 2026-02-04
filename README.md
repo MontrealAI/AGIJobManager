@@ -1,4 +1,4 @@
-# AGIJobManager
+# AGIJobManager ALPHA
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Solidity](https://img.shields.io/badge/solidity-0.8.19-363636.svg)](contracts/AGIJobManager.sol)
