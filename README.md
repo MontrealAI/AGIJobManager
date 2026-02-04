@@ -233,7 +233,7 @@ npx truffle migrate --network development
 
 ## Pause behavior
 
-Pause is an incident-response safety control. When paused, all job lifecycle actions **and** marketplace actions (listNFT, delistNFT, purchaseNFT) are disabled; read-only/view functions continue to work. Resume operations by unpausing once the issue is resolved.
+Pause is an incident-response safety control. When paused, **new activity** is blocked (job creation, applications, validation/disputes, and marketplace listing/purchases), but safe exits remain available. Assigned agents can still call `requestJobCompletion`, sellers can `delistNFT`, and settlement exits (`cancelJob`, `expireJob`, `finalizeJob`) still work when their normal predicates are satisfied. Resume operations by unpausing once the issue is resolved.
 
 See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
 

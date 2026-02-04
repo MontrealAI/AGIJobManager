@@ -34,7 +34,8 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - `pause`/`unpause` are owner‑only.
 - When paused:
   - Most job actions are blocked (`createJob`, `applyForJob`, validation, listing/purchase, etc.).
-  - `requestJobCompletion` is allowed **only** if the job is already disputed (to support recovery workflows).
+  - `requestJobCompletion` remains available for assigned agents so completion metadata can be submitted even during a brief pause.
+  - `delistNFT` remains available so sellers can exit active listings.
   - `resolveStaleDispute` and `withdrawAGI` require the contract to be paused.
 
 ### Managing allowlists
