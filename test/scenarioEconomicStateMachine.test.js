@@ -240,11 +240,13 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.strictEqual(jobAfterAgentWin.disputed, false, "dispute flag should clear after resolution");
     const agentPayoutPct = toBN(jobAfterAgentWin.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
-    const expectedRemaining = payout.sub(expectedAgentPayout);
+    const validationPct = toBN(await manager.validationRewardPercentage());
+    const expectedValidatorPayout = payout.mul(validationPct).divn(100);
+    const expectedRemaining = payout.sub(expectedAgentPayout).sub(expectedValidatorPayout);
     assert.equal(
       (await token.balanceOf(manager.address)).toString(),
       expectedRemaining.toString(),
-      "escrow should retain unused validator rewards on agent win"
+      "escrow should retain only the non-distributed remainder on agent win"
     );
     await expectCustomError(manager.disputeJob.call(jobId, { from: employer }), "InvalidState");
 
@@ -288,7 +290,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.equal(
       (await token.balanceOf(manager.address)).toString(),
       expectedRemaining.toString(),
-      "escrow should retain unused validator rewards from prior agent win"
+      "escrow should retain only the non-distributed remainder from prior agent win"
     );
   });
 });

@@ -28,10 +28,19 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 We also enforce this in tests (`test/bytecodeSize.test.js`) so CI fails if the limit is exceeded.
 
+## Validator payout rule (approvers-only)
+
+When a job completes on an **agent win**, validator rewards are paid **only to approvers**. Validators who disapproved do **not** receive payouts or reputation. If validators participated but **no approvals** were recorded, the validator reward share is redirected to the agent so escrowed funds are still fully distributed.
+
 ## Compiler settings and warning cleanup
 
 - **Solidity version:** pinned to `0.8.19` in `truffle-config.js` to avoid the OpenZeppelin *memory-safe-assembly* deprecation warnings emitted by newer compilers.
 - **OpenZeppelin contracts:** kept at `@openzeppelin/contracts@4.9.6` (same major version).
-- **Optimizer:** enabled with **runs = 200** to balance deploy size and runtime gas (viaIR stays off).
+- **Optimizer:** enabled with **runs = 50** to balance deploy size and runtime gas (viaIR stays off).
 
 If you change compiler settings for a new deployment, keep the version and optimizer runs consistent for reproducible verification.
+
+## Ops notes
+
+- Reward pool contributions add to the contract balance and are **not escrow-locked**. While paused, the owner can withdraw them via `withdrawAGI` (subject to `lockedEscrow`).  
+- `additionalAgentPayoutPercentage` is currently **not used** in payout math and remains reserved/legacy configuration.
