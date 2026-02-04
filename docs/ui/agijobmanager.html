@@ -312,14 +312,15 @@
           <div class="inline">
             <button id="saveContract">Save address</button>
             <button id="clearContract" class="secondary">Clear</button>
-            <button id="legacyContract" class="secondary">Use legacy fallback (v0)</button>
+            <button id="legacyContract" class="secondary">Use legacy v0 (opt-in)</button>
           </div>
           <p class="muted">
-            Preferred mainnet deployment (config): <span id="mainnetDeployment">TBD</span>. Legacy fallback:
+            Preferred mainnet deployment (config/deployments): <span id="mainnetDeployment">TBD</span>. Legacy reference:
             <code id="legacyAddress">0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477</code> (opt-in only).
           </p>
           <p class="muted">Active source: <span id="contractSource">—</span></p>
-          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, config file, or legacy fallback.</p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, deployments/config file, or manual legacy selection.</p>
+          <p class="muted">No contract is selected by default until you explicitly choose one.</p>
         </div>
       </div>
       <div class="panel-row">
@@ -993,6 +994,7 @@
       contractAddress: null,
       contractSource: null,
       config: null,
+      deployments: null,
       legacyAddress: null,
       agiTokenAddress: null,
       agiTokenDecimals: 18,
@@ -1197,7 +1199,8 @@
       query: "Query param",
       localStorage: "LocalStorage",
       config: "Config file",
-      legacy: "Legacy fallback",
+      deployments: "Deployments registry",
+      legacy: "Legacy v0 (opt-in)",
       manual: "Manual entry",
     };
 
@@ -3731,19 +3734,31 @@
           logEvent(`⚠️ Config preferredContract invalid: ${error.message}`);
         }
       }
-      let legacy = "";
-      if (config.legacyContract) {
+      let deployments = null;
+      let deploymentPreferred = "";
+      try {
+        const response = await fetch("../deployments/mainnet.json", { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json();
+          deployments = data || null;
+        }
+      } catch (error) {
+        deployments = null;
+      }
+      if (deployments?.agiJobManager) {
         try {
-          legacy = setLegacyAddress(config.legacyContract);
+          deploymentPreferred = parseAddress(deployments.agiJobManager, "Deployments contract address");
         } catch (error) {
-          logEvent(`⚠️ Config legacyContract invalid: ${error.message}`);
+          logEvent(`⚠️ Deployments agiJobManager invalid: ${error.message}`);
         }
       }
-      if (!legacy) {
+      let legacy = "";
+      const legacyCandidate = config.legacyContract || deployments?.legacyV0 || legacyAddress;
+      if (legacyCandidate) {
         try {
-          legacy = setLegacyAddress(legacyAddress);
+          legacy = setLegacyAddress(legacyCandidate);
         } catch (error) {
-          legacy = "";
+          logEvent(`⚠️ Legacy contract invalid: ${error.message}`);
         }
       }
 
@@ -3752,7 +3767,8 @@
         preferredContract: preferred,
         legacyContract: legacy,
       };
-      setText("mainnetDeployment", preferred || "TBD");
+      state.deployments = deployments;
+      setText("mainnetDeployment", preferred || deploymentPreferred || "TBD");
       if (!legacy) {
         state.legacyAddress = null;
         setText("legacyAddress", "Unavailable");
@@ -3791,11 +3807,16 @@
         }
       }
 
-      if (state.legacyAddress) {
-        applyContractAddress(state.legacyAddress, { source: "legacy" });
-      } else {
-        updateContractSourceDisplay();
+      if (state.deployments?.agiJobManager) {
+        try {
+          applyContractAddress(state.deployments.agiJobManager, { source: "deployments" });
+          return;
+        } catch (error) {
+          logEvent(`⚠️ Deployments agiJobManager invalid: ${error.message}`);
+        }
       }
+
+      updateContractSourceDisplay();
     }
 
     async function handleSaveContract() {

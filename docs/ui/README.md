@@ -31,7 +31,8 @@ npx http-server docs/ui
 The UI does **not** assume a default deployment. Provide a contract address explicitly:
 
 - Query param: `?contract=0x...`
-- Config file: `docs/ui/agijobmanager.config.json` (`preferredContract`)
+- Deployments record: `docs/deployments/mainnet.json` (`agiJobManager`, if set)
+- Config file: `docs/ui/agijobmanager.config.json` (`preferredContract`, if set)
 - Manual entry in the “Contract address” field
 - Save button: persists to `localStorage` under the key `agijobmanager_contract`
 
@@ -40,7 +41,8 @@ To reset:
 - Click **Clear** in the UI, or
 - Remove `localStorage` key `agijobmanager_contract` in your browser’s dev tools.
 
-If none of the above are set, the UI falls back to the legacy v0 address, which is clearly labeled as legacy.
+If none of the above are set, the UI leaves the contract address empty until you explicitly choose one.
+The legacy v0 address is shown as a reference and is **opt-in** only.
 
 ## ABI export + drift guardrails
 
@@ -72,6 +74,11 @@ indexed events. Expiration is based on the on-chain `expired` flag and the job t
 - **Sepolia** or local dev chains are supported only if you supply a compatible contract address.
 - On unsupported chains, the UI will show a warning (chainId mismatch) and interactions may revert.
   The UI does not generate chain-specific explorer links.
+
+## Known limitations
+
+- Merkle proofs are user-supplied (`bytes32[]` JSON). The UI only verifies membership off-chain; on-chain checks still enforce authorization.
+- ENS checks mirror the contract’s fallback logic (Merkle → NameWrapper.ownerOf → Resolver.addr).
 
 ## Marketplace filters + approval status
 

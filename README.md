@@ -178,7 +178,7 @@ node scripts/check-bytecode-size.js
 ## Web UI (GitHub Pages)
 
 - Canonical UI path in-repo: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)
-- Usage guide: [`docs/agijobmanager_ui.md`](docs/agijobmanager_ui.md)
+- Usage guide: [`docs/ui/README.md`](docs/ui/README.md)
 - Expected Pages URL pattern: `https://<org>.github.io/<repo>/ui/agijobmanager.html`
 - GitHub Pages setup: Settings → Pages → Source “Deploy from branch” → Branch `main` → Folder `/docs`.
 - The contract address is user-configurable and must be provided until the new mainnet deployment is finalized.
