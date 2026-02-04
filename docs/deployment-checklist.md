@@ -29,11 +29,11 @@ Provide these addresses via environment variables (see `.env.example`):
 | Agent Merkle root | `AGI_AGENT_MERKLE_ROOT` | Allowlist root for agents. |
 | Optional auto-lock | `LOCK_CONFIG=true` | Locks configuration at the end of migration. |
 
-### Invariants + defaults (mainnet)
+### Defaults (mainnet)
 
-These values are fixed **identity anchors** on Ethereum mainnet (documented invariants):
+These values are **defaults** used by the migration on Ethereum mainnet when the corresponding env vars are not set:
 
-**Token (18 decimals)**
+**Token (18 decimals, default)**
 - AGIALPHA mainnet token: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
 
 **Validator roots (club role)**
@@ -46,7 +46,8 @@ These values are fixed **identity anchors** on Ethereum mainnet (documented inva
 
 > **Notes:**  
 > - ENS registry and NameWrapper addresses are chain-specific and must remain configurable for Sepolia/local/private networks.  
-> - Namehash outputs are deterministic across chains; only the registry/NameWrapper addresses vary by network.
+> - Namehash outputs are deterministic across chains; only the registry/NameWrapper addresses vary by network.  
+> - Merkle roots are allowlist entries and can be updated later via `updateMerkleRoots` if your allowlist changes.
 
 ## 3) Step-by-step deployment
 

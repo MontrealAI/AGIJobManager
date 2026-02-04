@@ -38,7 +38,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
   - `resolveStaleDispute` and `withdrawAGI` require the contract to be paused.
 
 ### Managing allowlists
-- **Merkle roots** are fixed at deployment (no setter exists).
+- **Merkle roots** are stored on-chain and can be updated by the owner via `updateMerkleRoots`. Treat updates as governance events with audit logs.
 - **Explicit allowlists** can be modified at runtime via:
   - `addAdditionalAgent` / `removeAdditionalAgent`
   - `addAdditionalValidator` / `removeAdditionalValidator`
@@ -62,7 +62,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 ### Rotating the escrow token
 - `updateAGITokenAddress` changes the ERC‑20 used for escrow, payouts, and reward pool contributions.
 - Changing the token can break integrations and invalidate approvals. Ensure all users re‑approve the new token and carefully manage `lockedEscrow` vs balances before switching.
-- **Mainnet invariant**: production deployments must keep `agiToken` fixed to AGIALPHA (`0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`). Treat token rotation as a testnet‑only or redeploy‑only operation.
+- **Production invariant**: treat the escrow token as immutable once jobs are funded. If your program has a canonical token (e.g., AGIALPHA), document the address in deployment records and avoid on-chain rotation outside test environments.
 
 ## Monitoring checklist
 

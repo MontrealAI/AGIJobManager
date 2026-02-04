@@ -36,7 +36,7 @@ See [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md) for details.
 Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and ERC‑721 safe transfer semantics, so contract buyers must implement `onERC721Received`. Marketplace purchases are guarded because `purchaseNFT` crosses an external ERC‑20 `transferFrom` boundary before transferring the ERC‑721.
 
 ## Known limitations and assumptions
-- **Root immutability**: there are no on‑chain setters for root nodes or Merkle roots after deployment. Misconfiguration requires redeployment.
+- **Root immutability**: ENS root nodes are fixed at deployment and cannot be changed on-chain. Merkle roots **can** be updated by the owner via `updateMerkleRoots`; misconfigured roots can be corrected without redeploying, but updates should follow a strict governance process.
 - **ENS dependency**: ownership checks rely on ENS registry, NameWrapper, and resolver behavior.
 - **ERC‑20 compatibility**: transfers must either return `true` or return no data; calls that revert, return `false`, or return malformed data revert.
 - **Agent payout snapshot enforced**: agents must have a nonzero AGI‑type payout tier at apply time; the payout percentage is snapshotted on assignment and used at completion, preventing later NFT transfers from changing settlement for an accepted job. This resolves the earlier 0%/allowlist default payout gap.

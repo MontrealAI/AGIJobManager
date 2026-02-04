@@ -87,7 +87,7 @@ The intended production token address is:
 - **AGI token**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA`
 
 ### ENS + NameWrapper + root nodes + Merkle roots
-Record these per network **before deploy**, and keep them immutable afterward.
+Record these per network **before deploy**. ENS root nodes are immutable post‑deploy; Merkle roots can be updated later via `updateMerkleRoots` if allowlists change.
 
 | Network | ENS | NameWrapper | clubRootNode | agentRootNode | validatorMerkleRoot | agentMerkleRoot |
 | --- | --- | --- | --- | --- | --- | --- |

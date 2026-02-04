@@ -46,7 +46,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `addModerator` / `removeModerator` | address | Dispute resolution authority. | Ensure ≥1 active moderator. | If no moderator exists, disputes can’t resolve → funds stuck. | Add a moderator (owner action). |
 | `resolveDisputeWithCode` action | uint8 code | Dispute settlement path. | `0 (NO_ACTION)`, `1 (AGENT_WIN)`, `2 (EMPLOYER_WIN)`. | Using `NO_ACTION` logs a reason but keeps the dispute active. | Moderator re-calls with the correct action code. |
 | `clubRootNode`, `agentRootNode` (constructor) | ENS namehash | Eligibility gating. | Must match intended ENS hierarchy. | Wrong root nodes → `_verifyOwnership` fails → validators/agents cannot qualify. | Use `additional*` allowlist; redeploy if pervasive. |
-| `validatorMerkleRoot`, `agentMerkleRoot` (constructor) | Merkle root | Eligibility gating. | Must match allowlists; immutable after deploy. | Bad root means Merkle proofs always fail; gating relies solely on ENS or allowlist. | Use `additional*` allowlist or redeploy. |
+| `validatorMerkleRoot`, `agentMerkleRoot` (constructor) | Merkle root | Eligibility gating. | Must match allowlists; updatable via `updateMerkleRoots`. | Bad root means Merkle proofs always fail; gating relies solely on ENS or allowlist. | Use `additional*` allowlist for emergency access, then update roots. |
 | `ens`, `nameWrapper` (constructor) | contract address | ENS/NameWrapper ownership checks. | Must be correct chain-specific addresses. | Wrong addresses → ownership checks fail; `_verifyOwnership` emits recovery events and returns false. | Use `additional*` allowlist or redeploy. |
 | `withdrawAGI` | token amount | Owner withdraws surplus (`withdrawableAGI()`) while paused. | Only withdraw when paused and `withdrawableAGI()` is positive. | Withdrawal reverts if amount exceeds surplus. | Use `withdrawableAGI()` to size withdrawals; do not rely on raw balance. |
 | `baseIpfsUrl` (`setBaseIpfsUrl`) | string URL | Token URI for job NFTs. | Stable HTTP/IPFS base. | Wrong value breaks NFT metadata display (no settlement impact). | Update base URL; metadata reads fixed retroactively. |
@@ -67,9 +67,9 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Escape hatch:** lower validation reward or AGI type payout; re-validate.
 
 3. **Validator thresholds unreachable**
-   - **Prerequisite:** thresholds > available validator count, or validator gating fails (bad Merkle/ENS config).
+- **Prerequisite:** thresholds > available validator count, or validator gating fails (bad Merkle/ENS config).
    - **Failure:** no completion, no disputes.
-   - **Escape hatch:** lower thresholds, add validators via `addAdditionalValidator`, or moderator resolves disputes.
+- **Escape hatch:** lower thresholds, add validators via `addAdditionalValidator`, update Merkle roots if needed, or moderator resolves disputes.
 
 4. **Owner attempts to withdraw escrow**
    - **Prerequisite:** `withdrawAGI` called while jobs outstanding (and paused).
