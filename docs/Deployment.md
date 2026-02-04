@@ -1,16 +1,28 @@
 # Deployment guide (Truffle)
 
 This guide documents the deployment and verification workflow defined in `truffle-config.js` and the migration scripts in `migrations/`.
-For the **configure-once, minimal-governance** deployment profile, see [`docs/DEPLOYMENT_PROFILE.md`](DEPLOYMENT_PROFILE.md).
 
 ## Prerequisites
-- Node.js and npm (CI uses Node 20).
+- Node.js + npm.
 - Truffle (installed via `npm install`).
 - RPC access for Sepolia or Mainnet (or a local Ganache instance).
 
-## Environment variables
+## Install & compile
 
-The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS` is required for Sepolia/Mainnet deployments.
+```bash
+npm install
+npm run build
+```
+
+## Networks configured
+- **test**: in‑process Ganache provider for `truffle test` (chainId/networkId 1337).
+- **development**: local RPC at `127.0.0.1:8545` (Ganache).
+- **sepolia**: remote deployment via RPC (HDWalletProvider).
+- **mainnet**: remote deployment via RPC (HDWalletProvider).
+
+## Environment variables (Truffle + provider)
+
+`truffle-config.js` supports direct RPC URLs or provider keys. `PRIVATE_KEYS` is required for Sepolia/Mainnet deployments.
 
 | Variable | Purpose | Notes |
 | --- | --- | --- |
@@ -21,50 +33,37 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `ALCHEMY_KEY_MAIN` | Alchemy key for Mainnet | Falls back to `ALCHEMY_KEY` if empty. |
 | `INFURA_KEY` | Infura key | Used if no direct RPC URL or Alchemy key. |
 | `ETHERSCAN_API_KEY` | Verification key | Used by `truffle-plugin-verify`. |
+| `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
 | `SEPOLIA_GAS` / `MAINNET_GAS` | Gas limit override | Defaults to 8,000,000. |
 | `SEPOLIA_GAS_PRICE_GWEI` / `MAINNET_GAS_PRICE_GWEI` | Gas price override | In Gwei. |
 | `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
-| `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`). |
+| `SOLC_EVM_VERSION` | Override EVM version | Defaults to `london`. |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
 
-> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.19` in `truffle-config.js`. For reproducible verification, keep the solc version and optimizer runs consistent with the original deployment.
+## Environment variables (deployment configuration)
 
-## Runtime bytecode size (EIP-170)
+`migrations/2_deploy_contracts.js` reads constructor parameters via `migrations/deploy-config.js`.
 
-Ethereum mainnet enforces the Spurious Dragon / EIP-170 limit of **24,576 bytes** for deployed runtime bytecode. To measure the runtime size locally after compiling:
+**Required (Sepolia / non‑mainnet)**
+- `AGI_TOKEN_ADDRESS`
+- `AGI_ENS_REGISTRY`
+- `AGI_NAMEWRAPPER`
+- `AGI_CLUB_ROOT_NODE`
+- `AGI_ALPHA_CLUB_ROOT_NODE`
+- `AGI_AGENT_ROOT_NODE`
+- `AGI_ALPHA_AGENT_ROOT_NODE`
 
-```bash
-node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
-```
+**Optional (all networks)**
+- `AGI_BASE_IPFS_URL` (defaults to `https://ipfs.io/ipfs/`)
+- `AGI_VALIDATOR_MERKLE_ROOT` (defaults to a fixed zero-like root)
+- `AGI_AGENT_MERKLE_ROOT` (defaults to a fixed zero-like root)
+- `LOCK_CONFIG` (set to `true` to call `lockConfiguration` post‑deploy)
 
-The mainnet-safe compiler settings used in `truffle-config.js` are:
-- Optimizer enabled with **runs = 50**.
-- `viaIR = false` by default.
-- `debug.revertStrings = 'strip'`.
-- `metadata.bytecodeHash = 'none'`.
-
-For a deterministic size gate that covers `AGIJobManager`, use:
-
-```bash
-node scripts/check-bytecode-size.js
-```
-
-## Networks configured
-- **test**: in‑process Ganache provider for `truffle test`.
-- **development**: local RPC at `127.0.0.1:8545` (Ganache).
-- **sepolia**: remote deployment via RPC (HDWalletProvider).
-- **mainnet**: remote deployment via RPC (HDWalletProvider).
-
-The default `npm test` script compiles with `--all`, runs `truffle test --network test`, and then executes an additional JavaScript test harness. Use the `test` network for deterministic local runs.
-
-## Migration script notes
-
-The deployment script in `migrations/2_deploy_contracts.js` reads constructor parameters from environment variables (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Set these values** before deploying to any production network.
-The constructor now accepts a grouped config tuple (token, base IPFS URL, `[ENS, NameWrapper]`, `[club, agent, alpha club, alpha agent]`, `[validator Merkle, agent Merkle]`), so custom deployments should mirror the migration script’s ordering.
+**Mainnet defaults**
+For `mainnet`, `deploy-config.js` includes default addresses for token, ENS, NameWrapper, and root nodes. Validate and override these defaults explicitly for any production deployment.
 
 ## Local deployment (Ganache)
 
@@ -80,7 +79,7 @@ The constructor now accepts a grouped config tuple (token, base IPFS URL, `[ENS,
 
 ## Sepolia deployment
 
-1. Set environment variables (`PRIVATE_KEYS` plus RPC configuration).
+1. Set env vars (`PRIVATE_KEYS` + RPC configuration + deploy config).
 2. Deploy:
    ```bash
    npm run build
@@ -89,7 +88,7 @@ The constructor now accepts a grouped config tuple (token, base IPFS URL, `[ENS,
 
 ## Mainnet deployment
 
-1. Set environment variables (`PRIVATE_KEYS` plus RPC configuration).
+1. Set env vars (`PRIVATE_KEYS` + RPC configuration + deploy config).
 2. Deploy:
    ```bash
    npm run build
@@ -102,17 +101,13 @@ When `ETHERSCAN_API_KEY` is set:
 
 ```bash
 npx truffle run verify AGIJobManager --network sepolia
-```
-
-```bash
 npx truffle run verify AGIJobManager --network mainnet
 ```
 
-### Verification tips
-- Keep the compiler settings from `truffle-config.js` identical to the original deployment (solc `0.8.19`, runs `50`, `evmVersion` `london`).
-- Ensure your migration constructor parameters match the deployed contract.
-- If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
-- Etherscan’s **Standard-Json-Input** flow should include `viaIR: false`, `optimizer.runs: 50`, and `metadata.bytecodeHash: "none"` if you verify manually.
+**Verification tips**
+- Keep the compiler settings from `truffle-config.js` identical to the original deployment (solc `0.8.19`, runs `50`, `evmVersion` default `london`).
+- Ensure constructor parameters match the deployed contract.
+- If the plugin fails, re‑run with `--debug` to capture full output.
 
 ## Troubleshooting
 - **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.

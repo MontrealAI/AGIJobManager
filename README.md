@@ -5,16 +5,16 @@
 [![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
 [![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
 
-**AGIJobManager** is MONTREAL.AI’s on-chain enforcement layer for agent–employer workflows: validator-gated job escrow, payouts, dispute resolution, and reputation tracking, with ENS/Merkle role gating and an ERC‑721 job NFT marketplace. It is the *enforcement* half of a “Full‑Stack Trust Layer for AI Agents.”
+**AGIJobManager** is MONTREAL.AI’s on-chain enforcement layer for agent–employer workflows: validator-gated job escrow, payouts, dispute resolution, role gating, and reputation updates, with an ERC‑721 job NFT issuance + listing/purchase flow. It is the **enforcement** half of a “Full‑Stack Trust Layer for AI Agents.”
 
 > **Status / Caution**: Experimental research software. Treat deployments as high-risk until you have performed independent security review, validated parameters, and ensured operational readiness. No public audit report is included in this repository.
 
 ## At a glance
 
 **What it is**
-- **Job escrow & settlement engine**: employer-funded jobs, agent assignment, validator approvals/disapprovals (thresholded), moderator dispute resolution, payouts/refunds.
-- **Reputation mapping**: on-chain reputation updates for agents and validators derived from job outcomes.
-- **Job NFT issuance + listings**: mints an ERC‑721 “job NFT” on completion and supports a minimal listing/purchase flow for those NFTs.
+- **Job escrow & settlement**: employer-funded jobs with agent assignment, validator approvals/disapprovals, moderator dispute resolution, and payouts/refunds.
+- **Reputation mapping**: on-chain reputation updates for agents and validators based on job outcomes.
+- **Job NFT issuance + marketplace**: mints an ERC‑721 “job NFT” on completion and supports listing/purchase/delist for those NFTs.
 - **Trust gating**: role eligibility enforced via explicit allowlists, Merkle proofs, and ENS/NameWrapper/Resolver ownership checks.
 
 **What it is NOT**
@@ -33,7 +33,7 @@
 3. **Translate policy into allowlists** (Merkle roots at deployment, explicit allowlists/blacklists during operation).
 4. **Use AGIJobManager** as the enforcement/settlement anchor.
 
-**Implemented here**: validator-gated escrow, dispute resolution, reputation mapping, ENS/Merkle role gating, and job NFT issuance.
+**Implemented here**: validator‑gated escrow, dispute resolution, reputation mapping, ENS/Merkle role gating, and job NFT issuance.
 **Not implemented here**: any on-chain ERC‑8004 registry or trust‑signal processing.
 
 ## Architecture + illustrations
@@ -46,7 +46,7 @@ stateDiagram-v2
     InProgress --> CompletionRequested: requestJobCompletion
 
     CompletionRequested --> Completed: validateJob (approval threshold)
-    CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
+    CompletionRequested --> Completed: finalizeJob (review timeout)
 
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
     CompletionRequested --> Disputed: disputeJob (manual)
@@ -55,25 +55,18 @@ stateDiagram-v2
     Disputed --> Completed: resolveDisputeWithCode(EMPLOYER_WIN)
     Disputed --> Completed: resolveStaleDispute (owner, paused, timeout)
 
-    InProgress --> Expired: expireJob (timeout, no completion request)
+    InProgress --> Expired: expireJob (duration timeout, no completion request)
 
     Open --> Deleted: cancelJob (employer)
     Open --> Deleted: delistJob (owner)
 ```
-*Note:* `validateJob`/`disapproveJob` require `completionRequested` to be true; validators can only act after the agent submits completion metadata. `resolveDispute` with a non‑canonical resolution string maps to `NO_ACTION` and leaves the dispute active. Agent‑win dispute resolution requires a prior completion request so settlement always has completion metadata; agents may submit completion even if a dispute is already open, including after the nominal duration has elapsed or while paused for dispute recovery. `Deleted` corresponds to cancelled/delisted jobs where the job struct is cleared (`employer == address(0)`).
-
-**Settlement invariant (payout + NFT)**: the agent can only be paid and the completion NFT can only be minted after a completion request is recorded on-chain **and** a non-empty, valid completion metadata URI is stored. Moderators/owners cannot award an agent win without that completion request, and the job NFT always points to the completion metadata (not the job spec).
-
-**Dispute lane policy**
-- Disputes can only be initiated after completion is requested (`completionRequested == true`).
-- Once disputed, validator voting is frozen; approvals/disapprovals no longer progress settlement.
-- Settlement while disputed happens only via moderator resolution or owner stale‑dispute resolution (when paused).
+*Notes:* `validateJob`/`disapproveJob` require `completionRequested` to be true. Disputes only open after completion is requested; once disputed, validator voting no longer advances settlement.
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid
 flowchart LR
     subgraph Off-chain signaling
-        A[Agents, Validators, Observers] --> B[ERC-8004 signals]
+        A[Agents, Validators, Observers] --> B[ERC-8004 trust signals]
         B --> C[Indexers / Rankers]
         C --> D[Policy decisions<br/>allowlists, trust tiers]
     end
@@ -88,7 +81,7 @@ flowchart LR
 | Role | Capabilities | Trust considerations |
 | --- | --- | --- |
 | **Owner** | Pause/unpause, set parameters, manage allowlists/blacklists, add moderators and AGI types, withdraw surplus ERC‑20 (balance minus locked escrow). | Highly privileged. Compromise or misuse can override operational safety. |
-| **Moderator** | Resolve disputes via `resolveDispute`. | Central dispute authority; outcomes depend on moderator integrity. |
+| **Moderator** | Resolve disputes via `resolveDispute` (legacy) or `resolveDisputeWithCode` (typed). | Central dispute authority; outcomes depend on moderator integrity. |
 | **Employer** | Create jobs, fund escrow, cancel pre-assignment, dispute jobs, receive job NFTs. | Funds are custodied by contract until resolution. |
 | **Agent** | Apply for jobs, request completion, earn payouts and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
 | **Validator** | Approve/disapprove jobs, earn payout share and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
@@ -107,79 +100,13 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.19` in `truffle-config.js`. `viaIR` remains **disabled**; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
-
-## Contract documentation
-
-Detailed contract documentation lives in `docs/`:
-
-- [Configure-once operations guide](docs/CONFIGURE_ONCE.md)
-- [Configure-once deployment profile](docs/DEPLOYMENT_PROFILE.md)
-- [Deployment checklist](docs/deployment-checklist.md)
-- [Minimal governance operations](docs/minimal-governance.md)
-- [Minimal governance model](docs/GOVERNANCE.md)
-- [AGI Jobs one-pager (canonical narrative)](docs/AGI_JOBS_ONE_PAGER.md)
-- [AGIJobManager overview](docs/AGIJobManager.md)
-- [AGIJobManager interface reference](docs/AGIJobManager_Interface.md)
-- [Contract read API (job getters)](docs/contract-read-api.md)
-- [Bytecode size & job getters](docs/bytecode-and-getters.md)
-- [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
-- [AGIJobManager security considerations](docs/AGIJobManager_Security.md)
-
-## Mainnet bytecode size (EIP-170)
-
-Ethereum mainnet enforces a **24,576-byte** runtime bytecode cap (Spurious Dragon / EIP‑170). Always check the deployed runtime size before deploying:
-
-```bash
-node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
-```
-
-The mainnet deployment settings that keep `AGIJobManager` under the limit are:
-- Optimizer: enabled
-- `optimizer.runs`: **50** (pinned in `truffle-config.js`)
-- `viaIR`: **false** by default
-- `metadata.bytecodeHash`: **none**
-- `debug.revertStrings`: **strip**
-- `solc` version: **0.8.19** (pinned in `truffle-config.js`)
-- `evmVersion`: **london** (or the target chain default)
-
-To check runtime sizes locally after compilation:
-```bash
-node scripts/check-contract-sizes.js
-```
-
-To enforce a deterministic size gate on deployable contracts:
-```bash
-node scripts/check-bytecode-size.js
-```
-
-## Web UI (GitHub Pages)
-
-- Canonical UI path in-repo: [`docs/ui/agijobmanager.html`](docs/ui/agijobmanager.html)
-- Usage guide: [`docs/agijobmanager_ui.md`](docs/agijobmanager_ui.md)
-- Expected Pages URL pattern: `https://<org>.github.io/<repo>/ui/agijobmanager.html`
-- GitHub Pages setup: Settings → Pages → Source “Deploy from branch” → Branch `main` → Folder `/docs`.
-- The contract address is user-configurable and must be provided until the new mainnet deployment is finalized.
-- Contract address override: query param `?contract=0x...` or the UI **Save address** button (stored in `localStorage`).
-
-## ERC‑8004 integration (control plane ↔ execution plane)
-See [`docs/ERC8004.md`](docs/ERC8004.md) and [`docs/erc8004/README.md`](docs/erc8004/README.md) for the mapping spec, threat model, and adapter notes. Quick export example:
-
-```bash
-AGIJOBMANAGER_ADDRESS=0xYourContract \
-ERC8004_IDENTITY_REGISTRY=0xIdentityRegistry \
-ERC8004_REPUTATION_REGISTRY=0xReputationRegistry \
-FROM_BLOCK=0 \
-TO_BLOCK=latest \
-OUT_DIR=integrations/erc8004/out \
-truffle exec scripts/erc8004/export_feedback.js --network sepolia
-```
-
-Local dev chain (Ganache):
+**Local chain (Ganache)**
 ```bash
 npx ganache -p 8545
 npx truffle migrate --network development
 ```
+
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.19` in `truffle-config.js` (optimizer runs `50`, `viaIR` disabled, `evmVersion` default `london`).
 
 ## Deployment & verification (Truffle)
 
@@ -190,50 +117,52 @@ npx truffle migrate --network development
   ```bash
   cp .env.example .env
   ```
-- `.env.example` lists every variable read by `truffle-config.js`, with optional defaults.
 
-**Required (Sepolia / Mainnet)**
+**RPC + keys (Sepolia / Mainnet)**
 - `PRIVATE_KEYS`: comma-separated private keys.
 - RPC configuration, one of:
   - `SEPOLIA_RPC_URL` / `MAINNET_RPC_URL`, or
   - `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN`, or
   - `INFURA_KEY`.
+- Optional provider polling: `RPC_POLLING_INTERVAL_MS`.
+
+**Gas + confirmations (optional)**
+- `SEPOLIA_GAS`, `MAINNET_GAS`
+- `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`
+- `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`
+- `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`
+
+**Deployment configuration (migrations/2_deploy_contracts.js)**
+- `AGI_TOKEN_ADDRESS`, `AGI_ENS_REGISTRY`, `AGI_NAMEWRAPPER`
+- `AGI_BASE_IPFS_URL`
+- `AGI_CLUB_ROOT_NODE`, `AGI_ALPHA_CLUB_ROOT_NODE`, `AGI_AGENT_ROOT_NODE`, `AGI_ALPHA_AGENT_ROOT_NODE`
+- `AGI_VALIDATOR_MERKLE_ROOT`, `AGI_AGENT_MERKLE_ROOT`
+- `LOCK_CONFIG` (optional: set `true` to lock critical config after deploy)
 
 **Verification**
 - `ETHERSCAN_API_KEY` for `truffle-plugin-verify`.
 
-**Optional tuning**
-- Gas & confirmations: `SEPOLIA_GAS`, `MAINNET_GAS`, `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`, `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`, `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`.
-- Provider polling: `RPC_POLLING_INTERVAL_MS`.
-- Compiler settings are pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`).
-- Local chain: `GANACHE_MNEMONIC`.
+**Deploy**
+```bash
+npx truffle migrate --network sepolia
+npx truffle migrate --network mainnet
+```
 
-**Network notes**
-- `test` uses an in-process Ganache provider for deterministic `truffle test` runs.
-- `development`/Ganache typically needs no env vars.
-- `sepolia` needs `ALCHEMY_KEY` (or `SEPOLIA_RPC_URL`) + `PRIVATE_KEYS`.
-- `mainnet` needs `ALCHEMY_KEY_MAIN` (or `MAINNET_RPC_URL`) + `PRIVATE_KEYS`.
-- `PRIVATE_KEYS` format: comma-separated, no spaces, keep it local.
+**Verify**
+```bash
+npx truffle run verify AGIJobManager --network sepolia
+npx truffle run verify AGIJobManager --network mainnet
+```
 
-> **Deployment caution**: `migrations/2_deploy_contracts.js` reads constructor parameters from environment variables. Ensure token/ENS/NameWrapper/root nodes/Merkle roots are set correctly before any production deployment.
+## Security considerations (summary)
 
-## Security considerations
+- **Centralization risk**: the owner can change critical parameters and withdraw surplus ERC‑20; moderators can resolve disputes.
+- **Eligibility gating**: ENS root nodes are configured at deploy-time; Merkle roots can be updated by the owner.
+- **ERC‑20 compatibility**: transfers must succeed and match exact amounts; fee‑on‑transfer and rebasing tokens are not supported.
+- **Dispute path**: once disputed, validator voting no longer advances settlement; moderators/owner resolve.
+- **Marketplace safety**: `purchaseNFT` uses `nonReentrant` and ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received`.
 
-- **Centralization risk**: the owner can change critical parameters and withdraw escrowed ERC‑20; moderators can resolve disputes.
-- **Eligibility gating**: ENS registry/NameWrapper/root nodes are intended to be configured before any job exists and then locked; Merkle roots remain configurable for allowlist updates.
-- **Token compatibility**: ERC‑20 `transfer`/`transferFrom` may return `true`/`false` **or** return no data; calls that revert or return `false` are treated as failures. Fee‑on‑transfer, rebasing, and other balance‑mutating tokens are **not supported**; escrow deposits enforce exact amounts received.
-- **Marketplace reentrancy guard**: `purchaseNFT` is protected by `nonReentrant` because it crosses an external ERC‑20 `transferFrom` boundary; removing this protection requires a redeploy even though the ABI is unchanged.
-- **Marketplace safe transfer**: `purchaseNFT` uses ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received` or the purchase will revert.
-- **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
-- **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline **once completion is requested** unless off‑chain policies intervene.
-- **Dispute resolution codes**: moderators should use `resolveDisputeWithCode(jobId, code, reason)` with `code = 0 (NO_ACTION)`, `1 (AGENT_WIN)`, or `2 (EMPLOYER_WIN)`. The `reason` is freeform and does not control settlement. The legacy string-based `resolveDispute` is deprecated; non‑canonical strings map to `NO_ACTION` and keep the dispute active.
-- **Agent payout snapshot**: the agent payout percentage is snapshotted at `applyForJob` and used at completion; later NFT transfers do **not** change payout for that job. Agents must have a nonzero AGI‑type payout tier at apply time (0% tiers cannot accept jobs), and `additionalAgents` only bypass identity checks (not payout eligibility).
-
-## Pause behavior
-
-Pause is an incident-response safety control. When paused, all job lifecycle actions **and** marketplace actions (listNFT, delistNFT, purchaseNFT) are disabled; read-only/view functions continue to work. Resume operations by unpausing once the issue is resolved.
-
-See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
+See [`docs/Security.md`](docs/Security.md) for the threat model, trust assumptions, and limitations.
 
 ## Ecosystem links
 
@@ -241,31 +170,19 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 - **Etherscan (deployment-specific)**: https://etherscan.io/address/<contract-address>
 - **OpenSea (job NFTs, deployment-specific)**: https://opensea.io/assets/ethereum/<contract-address>
 - **ERC‑8004 specification**: https://eips.ethereum.org/EIPS/eip-8004
-- **ERC‑8004 deck (framing)**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0/blob/main/docs/presentation/MONTREALAI_x_ERC8004_v0.pdf
+- **ERC‑8004 deck**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0/blob/main/docs/presentation/MONTREALAI_x_ERC8004_v0.pdf
 - **ERC‑8004 deck (repo copy)**: [`presentations/MONTREALAI_x_ERC8004_v0.pdf`](presentations/MONTREALAI_x_ERC8004_v0.pdf)
-- **Institutional overview (repo PDF)**: [`presentations/AGI_Eth_Institutional_v0.pdf`](presentations/AGI_Eth_Institutional_v0.pdf)
+- **AGI Jobs one‑pager (repo)**: [`docs/AGI_JOBS_ONE_PAGER.md`](docs/AGI_JOBS_ONE_PAGER.md)
 - **AGI‑Alpha‑Agent reference repo**: https://github.com/MontrealAI/AGI-Alpha-Agent-v0
 - **ENS docs**: https://docs.ens.domains/
-- **ENS NameWrapper**: https://docs.ens.domains/ens-improvement-proposals/ensip-10-namewrapper
-- **OpenZeppelin Contracts**: https://docs.openzeppelin.com/contracts/4.x/
 - **Truffle**: https://trufflesuite.com/docs/truffle/
 
 ## Documentation
 
 Start here:
 - [`docs/README.md`](docs/README.md)
-- **Non‑technical user guides**: [`docs/user-guide/README.md`](docs/user-guide/README.md)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
-- [`docs/ParameterSafety.md`](docs/ParameterSafety.md)
-- [`docs/ops/parameter-safety.md`](docs/ops/parameter-safety.md)
 - [`docs/Deployment.md`](docs/Deployment.md)
 - [`docs/Security.md`](docs/Security.md)
-- [`docs/Testing.md`](docs/Testing.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
 - [`docs/Interface.md`](docs/Interface.md)
-- **ERC‑8004 integration (control plane ↔ execution plane)**: [`docs/erc8004/README.md`](docs/erc8004/README.md)
-- **AGI.Eth Namespace (alpha)**:
-  - User guide: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md)
-  - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
-  - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
-  - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
