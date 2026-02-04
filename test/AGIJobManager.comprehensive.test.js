@@ -737,17 +737,54 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         manager.contributeToRewardPool(payout, { from: employer }));
     });
 
-    it("blocks state-changing job actions while paused", async () => {
+    it("blocks most job actions while paused but allows completion requests", async () => {
       await createJob();
+      await assignAgentWithProof(0);
+
       await manager.pause({ from: owner });
       await expectRevert.unspecified(manager.applyForJob(0, "agent", [], { from: agent }));
-      await expectRevert.unspecified(
-        manager.requestJobCompletion(0, updatedIpfs, { from: agent }));
+      await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
+      const jobValidation = await manager.getJobValidation(0);
+      assert.strictEqual(jobValidation.completionRequested, true);
       await expectRevert.unspecified(
         manager.validateJob(0, "validator", [], { from: validatorOne }));
       await expectRevert.unspecified(
         manager.disapproveJob(0, "validator", [], { from: validatorOne }));
       await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
+    });
+
+    it("allows exit and settlement flows while paused", async () => {
+      const jobA = await createJob(employer, payout, duration, "ipfs-job-a");
+      const jobAId = jobA.logs[0].args.jobId.toNumber();
+      await assignAgentWithProof(jobAId);
+
+      const jobB = await createJob(employer, payout, duration, "ipfs-job-b");
+      const jobBId = jobB.logs[0].args.jobId.toNumber();
+
+      const jobC = await createJob(employer, payout, duration, "ipfs-job-c");
+      const jobCId = jobC.logs[0].args.jobId.toNumber();
+      await assignAgentWithProof(jobCId);
+
+      const jobD = await createJob(employer, payout, duration, "ipfs-job-d");
+      const jobDId = jobD.logs[0].args.jobId.toNumber();
+      await assignAgentWithProof(jobDId);
+
+      await manager.pause({ from: owner });
+
+      await manager.requestJobCompletion(jobAId, "ipfs-complete-paused", { from: agent });
+      await manager.requestJobCompletion(jobDId, "ipfs-finalize-paused", { from: agent });
+
+      const cancelReceipt = await manager.cancelJob(jobBId, { from: employer });
+      expectEvent(cancelReceipt, "JobCancelled", { jobId: new BN(jobBId) });
+
+      await time.increase(duration.addn(1));
+      const expireReceipt = await manager.expireJob(jobCId, { from: employer });
+      expectEvent(expireReceipt, "JobExpired", { jobId: new BN(jobCId) });
+
+      const reviewPeriod = await manager.completionReviewPeriod();
+      await time.increase(reviewPeriod.addn(1));
+      const finalizeReceipt = await manager.finalizeJob(jobDId, { from: employer });
+      expectEvent(finalizeReceipt, "JobFinalized", { jobId: new BN(jobDId) });
     });
   });
 

@@ -82,8 +82,8 @@ module.exports = async function (deployer, network, accounts) {
   );
 
   const manager = await AGIJobManager.deployed();
-  if (isTrue(process.env.LOCK_CONFIG)) {
-    await manager.lockConfiguration({ from: accounts[0] });
+  if (isTrue(process.env.LOCK_IDENTITY_CONFIG) || isTrue(process.env.LOCK_CONFIG)) {
+    await manager.lockIdentityConfiguration({ from: accounts[0] });
   }
 
   console.log("AGIJobManager deployment summary:");
@@ -97,5 +97,5 @@ module.exports = async function (deployer, network, accounts) {
   console.log(`- alpha agent root: ${alphaAgentRootNode}`);
   console.log(`- validator merkle root: ${validatorMerkleRoot}`);
   console.log(`- agent merkle root: ${agentMerkleRoot}`);
-  console.log(`- config locked: ${await manager.configLocked()}`);
+  console.log(`- identity config locked: ${await manager.lockIdentityConfig()}`);
 };
