@@ -21,13 +21,17 @@ You can set the contract address in four ways (the UI uses the first one it find
 
 2) **LocalStorage** (the UI stores the last saved address automatically)
 
-3) **Config file** (`docs/ui/agijobmanager.config.json`)
+3) **Deployments record** (`docs/deployments/mainnet.json`)
+   - `agiJobManager` is intentionally blank until the new deployment is finalized.
+
+4) **Config file** (`docs/ui/agijobmanager.config.json`)
    - `preferredContract` is intentionally blank until the new deployment is finalized.
 
-4) **Manual input**
+5) **Manual input**
 Use the “Contract address” input and click **Save address**.
 
-If none of the above are set, the UI will fall back to the **legacy v0** address (explicitly labeled “Legacy fallback”).
+If none of the above are set, the UI leaves the contract address empty until you explicitly choose one.
+The **legacy v0** address is shown as a reference and must be selected manually.
 
 > The new AGIJobManager mainnet address is not yet known. This UI is designed to work with **any** valid deployment.
 > A helper button is available to prefill the **legacy v0** mainnet address, which is clearly labeled as legacy.
