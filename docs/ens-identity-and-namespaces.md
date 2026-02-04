@@ -6,13 +6,16 @@ how AGIJobManager enforces agent/validator identity on‑chain.
 ## Namespace grammar (role identity)
 
 **Pattern**: `<entity>.(<env>.)<role>.agi.eth`
-- `role ∈ {club, agent, node}`
+- `role ∈ {club, agent}` (roles enforced on-chain)
 - `env ∈ ENV_SET` (optional; examples: `alpha`, `x`, …)
+
+**Note**: The contract enforces only `club` and `agent` roles today. Any other
+role names (including `node`) are out of scope for on‑chain gating and would
+require additional contract support before being accepted on‑chain.
 
 ### Examples (env = alpha)
 - **Validator (role=club)**: `alice.club.agi.eth` or `alice.alpha.club.agi.eth`
 - **Agent (role=agent)**: `helper.agent.agi.eth` or `helper.alpha.agent.agi.eth`
-- **Node (role=node)**: `gpu01.node.agi.eth` or `gpu01.alpha.node.agi.eth`
 
 ### Sovereigns / businesses (general)
 - **Global sovereign**: `<sovereign>.agi.eth`
@@ -26,12 +29,10 @@ how AGIJobManager enforces agent/validator identity on‑chain.
 **Official environment package** (`env.agi.eth`) includes:
 - `env.agi.eth`
 - `env.agent.agi.eth`
-- `env.node.agi.eth`
 - `env.club.agi.eth`
 
 **Optional aliases (env‑local; not official by default)**
 - `agent.env.agi.eth`
-- `node.env.agi.eth`
 - `club.env.agi.eth`
 
 These aliases are recognized **only within** `env.agi.eth` unless explicitly
