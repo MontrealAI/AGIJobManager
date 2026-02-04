@@ -23,6 +23,15 @@
 - **Not a generalized NFT marketplace**: listings are only for job NFTs minted by this contract.
 - **Not a decentralized court or DAO**: moderators and the owner have significant authority; there is no slashing or permissionless validator set.
 
+## Important trust notes
+- **Owner-operated**: the owner can pause/unpause, tune parameters, and manage allowlists/blacklists.
+- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`) and only while paused; escrowed funds are not withdrawable.
+- **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available; NFT sellers can still delist.
+- **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
+
+## Documentation (mainnet)
+Start with the canonical deployment/security overview: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md).
+
 ## MONTREAL.AI × ERC‑8004: From signaling → enforcement
 
 **ERC‑8004** standardizes *trust signals* (identity, reputation, validation outcomes) for off-chain publication and indexing. **AGIJobManager** enforces *settlement* (escrow, payouts, dispute resolution, reputation updates) on-chain.
@@ -223,7 +232,7 @@ npx truffle migrate --network development
 
 ## Security considerations
 
-- **Centralization risk**: the owner can change critical parameters and withdraw escrowed ERC‑20; moderators can resolve disputes.
+- **Centralization risk**: the owner can change critical parameters and withdraw surplus AGI (balance minus `lockedEscrow`) while paused; moderators can resolve disputes.
 - **Eligibility gating**: ENS registry/NameWrapper/root nodes are intended to be configured before any job exists and then locked; Merkle roots remain configurable for allowlist updates.
 - **Token compatibility**: ERC‑20 `transfer`/`transferFrom` may return `true`/`false` **or** return no data; calls that revert or return `false` are treated as failures. Fee‑on‑transfer, rebasing, and other balance‑mutating tokens are **not supported**; escrow deposits enforce exact amounts received.
 - **Marketplace reentrancy guard**: `purchaseNFT` is protected by `nonReentrant` because it crosses an external ERC‑20 `transferFrom` boundary; removing this protection requires a redeploy even though the ABI is unchanged.
