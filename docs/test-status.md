@@ -14,22 +14,23 @@ failures.
 npm ci
 ```
 **Result:** failed on Linux because `fsevents@2.3.2` is macOS‑only
-(`EBADPLATFORM`). No dependency install succeeded, so Truffle config dependencies
-(`dotenv`) were unavailable.
+(`EBADPLATFORM`). The command also emitted `npm warn Unknown env config "http-proxy"`.
+No dependency install succeeded, so Truffle config dependencies (`dotenv`) were unavailable.
 
 ## Test commands
 ```bash
 npx truffle compile
 ```
 **Result:** failed with `Error: Cannot find module 'dotenv'` because dependencies
-were not installed. The `npx` bootstrap also emitted multiple `npm warn` deprecation
-messages while installing Truffle, which should be treated as warnings.
+were not installed. The `npx` bootstrap also emitted `npm warn` deprecation
+messages and `npm warn Unknown env config "http-proxy"` while installing Truffle,
+which should be treated as warnings.
 
 ```bash
 npx truffle test
 ```
 **Result:** failed with `Error: Cannot find module 'dotenv'` because dependencies
-were not installed.
+were not installed. The command also emitted `npm warn Unknown env config "http-proxy"`.
 
 **Smallest next fix:**
 - Install dependencies without the macOS‑only optional package (e.g., via an

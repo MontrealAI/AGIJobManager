@@ -198,5 +198,5 @@ See [`docs/test-status.md`](test-status.md) for the latest local test results an
 
 ## 13) Additional notes (required clarifications)
 - **additionalAgentPayoutPercentage**: present but currently unused in payout math; changing it does not affect settlement.
-- **Marketplace scope**: the internal marketplace lists/purchases the job completion NFTs and settles in the same ERC‑20 used for job payouts.
-- **Not a decentralized court/DAO**: dispute resolution is handled by moderators/owner actions and is transparent via on‑chain events.
+- **Marketplace scope**: the NFT marketplace is internal to AGIJobManager and settles listings in the same ERC‑20 token used for job payouts (the configured AGI token).
+- **Dispute model**: dispute outcomes are centralized (moderators/owner), with all resolutions emitted as on-chain events; this is not a decentralized court/DAO.
