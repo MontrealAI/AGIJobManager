@@ -49,7 +49,7 @@ const confirmationsSepolia = n(process.env.SEPOLIA_CONFIRMATIONS, 2);
 const timeoutBlocksMainnet = n(process.env.MAINNET_TIMEOUT_BLOCKS, 500);
 const timeoutBlocksSepolia = n(process.env.SEPOLIA_TIMEOUT_BLOCKS, 500);
 
-const solcVersion = '0.8.19';
+const solcVersion = '0.8.23';
 const solcRuns = 50;
 const solcViaIR = false;
 const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();

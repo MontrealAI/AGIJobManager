@@ -131,7 +131,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     bytes32 public agentMerkleRoot;
     ENS public ens;
     NameWrapper public nameWrapper;
-    /// @notice Identity wiring lock: freezes token/ENS/root nodes; not a governance lock; does not restrict treasury withdrawals or ops.
+    /// @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
 
     struct Job {
