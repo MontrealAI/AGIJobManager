@@ -137,7 +137,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 
 The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - Optimizer: enabled
-- `optimizer.runs`: **50** (pinned in `truffle-config.js`)
+- `optimizer.runs`: **200** (pinned in `truffle-config.js`)
 - `viaIR`: **false** by default
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
@@ -206,7 +206,7 @@ npx truffle migrate --network development
 **Optional tuning**
 - Gas & confirmations: `SEPOLIA_GAS`, `MAINNET_GAS`, `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`, `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`, `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`.
 - Provider polling: `RPC_POLLING_INTERVAL_MS`.
-- Compiler settings are pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`).
+- Compiler settings are pinned in `truffle-config.js` (solc `0.8.19`, runs `200`, `evmVersion` `london`).
 - Local chain: `GANACHE_MNEMONIC`.
 
 **Network notes**
