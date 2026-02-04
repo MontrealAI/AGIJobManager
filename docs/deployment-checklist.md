@@ -116,7 +116,7 @@ Everything else remains operable but should be governed by your ops policy to ke
 ## 7) Verification (Etherscan)
 
 **Normal path (viaIR disabled)**:
-1. Compile with the pinned compiler settings (solc `0.8.19`, runs `50`).
+1. Compile with the pinned compiler settings (solc `0.8.23`, runs `50`).
 2. Verify using `truffle-plugin-verify` with the same compiler settings and constructor args.
 
 **Fallback (Standard JSON input)**:

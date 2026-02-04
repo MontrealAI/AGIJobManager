@@ -27,12 +27,12 @@ The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS
 | `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
 | `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
 | `SOLC_EVM_VERSION` | EVM version override | Defaults to `london` when unset. |
-| Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`). |
+| Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.23`, runs `50`, `evmVersion` `london`). |
 | `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
 
 A template lives in [`.env.example`](../.env.example).
 
-> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.19` in `truffle-config.js`. For reproducible verification, keep the solc version and optimizer runs consistent with the original deployment.
+> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. For reproducible verification, keep the solc version and optimizer runs consistent with the original deployment.
 
 ## Runtime bytecode size (EIP-170)
 
@@ -110,7 +110,7 @@ npx truffle run verify AGIJobManager --network mainnet
 ```
 
 ### Verification tips
-- Keep the compiler settings from `truffle-config.js` identical to the original deployment (solc `0.8.19`, runs `50`, `evmVersion` `london`).
+- Keep the compiler settings from `truffle-config.js` identical to the original deployment (solc `0.8.23`, runs `50`, `evmVersion` `london`).
 - Ensure your migration constructor parameters match the deployed contract.
 - If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
 - Etherscan’s **Standard-Json-Input** flow should include `viaIR: false`, `optimizer.runs: 50`, and `metadata.bytecodeHash: "none"` if you verify manually.

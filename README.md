@@ -107,7 +107,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.19` in `truffle-config.js`. `viaIR` remains **disabled**; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled**; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
 
 ## Contract documentation
 
@@ -126,6 +126,8 @@ Detailed contract documentation lives in `docs/`:
 - [AGIJobManager operator guide](docs/AGIJobManager_Operator_Guide.md)
 - [AGIJobManager security considerations](docs/AGIJobManager_Security.md)
 - [Identity lock & treasury pause semantics](docs/identity-lock-and-treasury.md)
+- [Mainnet deployment & security overview](docs/mainnet-deployment-and-security-overview.md)
+- [Security policy](SECURITY.md)
 
 ## Mainnet bytecode size (EIP-170)
 
@@ -141,7 +143,7 @@ The mainnet deployment settings that keep `AGIJobManager` under the limit are:
 - `viaIR`: **false** by default
 - `metadata.bytecodeHash`: **none**
 - `debug.revertStrings`: **strip**
-- `solc` version: **0.8.19** (pinned in `truffle-config.js`)
+- `solc` version: **0.8.23** (pinned in `truffle-config.js`)
 - `evmVersion`: **london** (or the target chain default)
 
 To check runtime sizes locally after compilation:
@@ -207,7 +209,7 @@ npx truffle migrate --network development
 - Gas & confirmations: `SEPOLIA_GAS`, `MAINNET_GAS`, `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`, `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`, `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`.
 - Provider polling: `RPC_POLLING_INTERVAL_MS`.
 - EVM version override: `SOLC_EVM_VERSION` (defaults to `london`).
-- Compiler settings are pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`).
+- Compiler settings are pinned in `truffle-config.js` (solc `0.8.23`, runs `50`, `evmVersion` `london`).
 - Local chain: `GANACHE_MNEMONIC`.
 
 **Network notes**
