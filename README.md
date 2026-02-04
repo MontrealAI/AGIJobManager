@@ -206,6 +206,7 @@ npx truffle migrate --network development
 **Optional tuning**
 - Gas & confirmations: `SEPOLIA_GAS`, `MAINNET_GAS`, `SEPOLIA_GAS_PRICE_GWEI`, `MAINNET_GAS_PRICE_GWEI`, `SEPOLIA_CONFIRMATIONS`, `MAINNET_CONFIRMATIONS`, `SEPOLIA_TIMEOUT_BLOCKS`, `MAINNET_TIMEOUT_BLOCKS`.
 - Provider polling: `RPC_POLLING_INTERVAL_MS`.
+- EVM version override: `SOLC_EVM_VERSION` (defaults to `london`).
 - Compiler settings are pinned in `truffle-config.js` (solc `0.8.19`, runs `50`, `evmVersion` `london`).
 - Local chain: `GANACHE_MNEMONIC`.
 
@@ -264,6 +265,7 @@ Start here:
 - [`docs/Testing.md`](docs/Testing.md)
 - [`docs/ERC8004.md`](docs/ERC8004.md)
 - [`docs/Interface.md`](docs/Interface.md)
+  - To regenerate from ABI: `npm run build` then `npm run docs:interface`.
 - **ERC‑8004 integration (control plane ↔ execution plane)**: [`docs/erc8004/README.md`](docs/erc8004/README.md)
 - **AGI.Eth Namespace (alpha)**:
   - User guide: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA.md)

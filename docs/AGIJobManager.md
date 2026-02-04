@@ -67,6 +67,67 @@ stateDiagram-v2
 - `completed`, `escrowReleased`: set when settlement completes.
 - `expired`: set by `expireJob` when duration has passed without a completion request.
 
+## Events (audit-focused map)
+
+| Event | Emitted on | Notes |
+| --- | --- | --- |
+| `JobCreated` | `createJob` | Emits job spec URI, payout, duration, and details. |
+| `JobApplied` | `applyForJob` | Records assigned agent. |
+| `JobCompletionRequested` | `requestJobCompletion` | Records completion metadata URI. |
+| `JobValidated` | `validateJob` | One event per validator approval. |
+| `JobDisapproved` | `disapproveJob` | One event per validator disapproval. |
+| `JobCompleted` | `_completeJob` | Completion anchor; also emits `ReputationUpdated` per recipient. |
+| `ReputationUpdated` | `_completeJob` | Fired for agent and validators when payouts complete. |
+| `JobCancelled` | `cancelJob`/`delistJob` | Cancellation (employer) or owner delist of open job. |
+| `JobDisputed` | `disputeJob` / disapproval threshold | Dispute opened. |
+| `DisputeResolved` | `resolveDispute` | Legacy string-based resolution (deprecated). |
+| `DisputeResolvedWithCode` | `resolveDisputeWithCode` | Canonical dispute resolution event. |
+| `DisputeTimeoutResolved` | `resolveStaleDispute` | Owner resolution while paused + timeout. |
+| `JobExpired` | `expireJob` | Expired without completion request. |
+| `JobFinalized` | `finalizeJob` | Employer wins after review period with no approvals/dispute. |
+| `EnsRegistryUpdated` / `NameWrapperUpdated` | owner updates | Only allowed before any jobs exist. |
+| `RootNodesUpdated` / `MerkleRootsUpdated` | owner updates | Root node updates are restricted (no jobs/escrow). |
+| `OwnershipVerified` | `_verifyOwnership` | Emits successful ENS/Merkle check. |
+| `AGITypeUpdated` | `addAGIType` | Payout percentage per AGI type NFT. |
+| `NFTIssued` | `_completeJob` | ERC‑721 minted to employer. |
+| `NFTListed` / `NFTPurchased` / `NFTDelisted` | marketplace | List/purchase/delist for job NFTs only. |
+| `RewardPoolContribution` | `contributeToRewardPool` | Additional reward pool contributions. |
+| `CompletionReviewPeriodUpdated` / `DisputeReviewPeriodUpdated` | owner updates | Review period changes. |
+| `AdditionalAgentPayoutPercentageUpdated` | owner update | Used for `additionalAgents` allowlist. |
+| `AGIWithdrawn` | `withdrawAGI` | Withdraws only surplus over `lockedEscrow`. |
+| `IdentityConfigurationLocked` | `lockIdentityConfiguration` | One‑way lock for ENS/token wiring. |
+| `AgentBlacklisted` / `ValidatorBlacklisted` | owner updates | Eligibility gating. |
+
+## Error handling (custom errors + typical causes)
+
+The contract uses custom errors for gas‑efficient reverts. Common triggers:
+
+| Error | Typical causes |
+| --- | --- |
+| `NotModerator` | Non‑moderator calls dispute resolution. |
+| `NotAuthorized` | Wrong actor for a role‑gated action; invalid ENS/Merkle ownership; marketplace seller/buyer mismatch. |
+| `Blacklisted` | Agent/validator is blacklisted. |
+| `InvalidParameters` | Zero/invalid payout, duration, URI, percentages, or parameter bounds. |
+| `InvalidState` | Action not permitted in current lifecycle state. |
+| `JobNotFound` | Job ID is not initialized or was deleted. |
+| `TransferFailed` | ERC‑20 transfer/transferFrom failed or returned false. |
+| `ValidatorLimitReached` | Validator cap reached for a job. |
+| `InvalidValidatorThresholds` | Approval/disapproval thresholds exceed caps. |
+| `ValidatorSetTooLarge` | Validator list exceeds `MAX_VALIDATORS_PER_JOB`. |
+| `IneligibleAgentPayout` | Agent has 0% payout tier at apply time. |
+| `InvalidAgentPayoutSnapshot` | Snapshot missing or inconsistent during settlement. |
+| `InsufficientWithdrawableBalance` | Withdrawal exceeds `withdrawableAGI()`. |
+| `InsolventEscrowBalance` | Contract balance < `lockedEscrow`. |
+| `ConfigLocked` | Identity wiring already locked. |
+
+## Core invariants (implementation expectations)
+
+- **Escrow accounting**: `lockedEscrow` tracks total job escrow; withdrawals are limited to `balance - lockedEscrow`.
+- **Completion gating**: payout + NFT mint require `completionRequested == true` and a valid `jobCompletionURI`.
+- **Role gating**: agents/validators must pass allowlist/Merkle/ENS checks (or be in `additional*` allowlists) and not be blacklisted.
+- **Single‑settlement**: a job can be completed, expired, or deleted once; settlement functions guard against double‑finalization.
+- **Validator bounds**: approvals/disapprovals must remain within `MAX_VALIDATORS_PER_JOB` or settlement becomes unreachable.
+
 ## Token & escrow semantics
 
 - **Funding**: `createJob` transfers the job payout into the contract and increments `lockedEscrow`.
