@@ -8,7 +8,7 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 
 ## Preconditions (capture before deployment)
 
-**Required constructor parameters** (immutable after deploy):
+**Required constructor parameters** (root nodes immutable after deploy; Merkle roots can be updated by owner):
 - `agiToken` (ERC‑20 escrow token)
 - `baseIpfsUrl`
 - `ens` registry
@@ -17,14 +17,14 @@ This profile gives a **step‑by‑step** workflow to deploy AGIJobManager, run 
 - `alphaClubRootNode` (validator alpha namespace)
 - `agentRootNode` (agent namespace)
 - `alphaAgentRootNode` (agent alpha namespace)
-- `validatorMerkleRoot`
-- `agentMerkleRoot`
+- `validatorMerkleRoot` (initial allowlist root; updatable via `updateMerkleRoots`)
+- `agentMerkleRoot` (initial allowlist root; updatable via `updateMerkleRoots`)
 
 > **Constructor encoding note (Truffle)**: the deployment script groups constructor inputs as `[token, baseIpfsUrl, [ENS, NameWrapper], [club, agent, alpha club, alpha agent], [validator Merkle, agent Merkle]]`. Mirror this ordering for custom deployments.
 
-**Mainnet token invariant (non‑negotiable)**
+**Mainnet token default (migration fallback)**
 - **AGIALPHA ERC‑20**: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA` (18 decimals)
-- This token address **does not change** on Ethereum mainnet.
+- The migration uses this as a **default** on mainnet when `AGI_TOKEN_ADDRESS` is not set. Override via env vars only if your deployment explicitly requires it.
 
 **ENS identity schema (canonical)**
 - **Validators**: `*.alpha.club.agi.eth` | `*.club.agi.eth`

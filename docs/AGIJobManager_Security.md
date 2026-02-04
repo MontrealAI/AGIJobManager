@@ -27,7 +27,7 @@ The contract explicitly addresses common issues observed in earlier variants:
 - **Owner centralization**: the owner can pause/unpause, modify parameters, update the escrow token, add AGI types, and withdraw surplus funds. A compromised owner can disrupt or redirect flows.
 - **Moderator trust**: moderators can unilaterally decide disputes. There is no on‑chain appeal mechanism.
 - **External dependencies**: ENS, NameWrapper, and Resolver contracts are trusted for ownership validation.
-- **Merkle root management**: Merkle roots are set at deployment and cannot be updated. Incorrect roots will permanently block eligibility unless explicit allowlisting is used.
+- **Merkle root management**: Merkle roots are set at deployment but can be updated by the owner via `updateMerkleRoots`. Incorrect roots can be corrected without redeploying; use explicit allowlists for urgent recovery while governance approves an update.
 - **ERC‑20 behavior assumptions**: the token must return `true` on transfers or provide no return data, and it must transfer exact amounts (no transfer fees). Fee‑on‑transfer tokens are incompatible.
 - **Escrow solvency**: `withdrawableAGI` reverts if the contract balance is below `lockedEscrow`. Operators must avoid draining escrowed funds by mistake.
 

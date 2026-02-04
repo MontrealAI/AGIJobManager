@@ -45,7 +45,7 @@ You need a proof **only if**:
 - You are **not** in the additional allowlist, and
 - You do **not** own a matching ENS subdomain.
 
-If you are allowlisted by Merkle proof, the contract verifies the proof against a fixed **Merkle root** set at deployment.
+If you are allowlisted by Merkle proof, the contract verifies the proof against the **Merkle root** stored on-chain for your role. The owner can update these roots when allowlists change, so always use the latest published root.
 
 ---
 
@@ -76,7 +76,7 @@ node scripts/merkle/generate_merkle_proof.js --input /path/to/addresses.json --a
 ```
 
 **Output**
-- `root`: the Merkle root to use at deployment
+- `root`: the Merkle root to publish on-chain
 - `proof`: a bytes32 array for the UI or contract call
 
 ### 3) Paste proof into the UI
@@ -89,4 +89,4 @@ Use the output proof in:
 
 - The helper uses **sorted pairs & sorted leaves**. Your proof will only verify if the deployed contract uses the same root.
 - Production deployments must publish the **same root** used to generate proofs.
-- Roots are set at deployment and **cannot be changed** later.
+- Roots can be updated by the owner via `updateMerkleRoots`; publish updated roots alongside refreshed proofs.

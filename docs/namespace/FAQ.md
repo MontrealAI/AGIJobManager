@@ -15,7 +15,7 @@ Common causes:
 **No.** If the contract was deployed with `alpha.agent.agi.eth` and `alpha.club.agi.eth` root nodes, only the **alpha** names (e.g., `helper.alpha.agent.agi.eth`) will pass the ownership checks.
 
 ## Q4) Can the root nodes or Merkle roots be changed after deployment?
-**No.** They are immutable in this contract. If they are wrong, the contract must be redeployed.
+ENS root nodes are immutable after deployment. Merkle roots can be updated by the owner using `updateMerkleRoots`; use change control and publish updated allowlists when doing so.
 
 ## Q5) What if the ENS/NameWrapper contracts are down or revert?
 The contract continues evaluation for ENS failure paths, so you should monitor validation failures during integration testing to spot ENS issues.

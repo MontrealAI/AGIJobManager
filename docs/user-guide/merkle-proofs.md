@@ -27,7 +27,7 @@ node scripts/merkle/generate_merkle_proof.js --input /path/to/addresses.json --a
 ```
 
 Output includes:
-- `root`: Merkle root for deployment
+- `root`: Merkle root to publish on-chain
 - `proof`: the array you provide when applying/validating
 
 ## Proof format (copy/paste)
@@ -65,7 +65,7 @@ Compare the root you were given with the on‑chain root for your role.
 ## Troubleshooting
 
 - **Wrong wallet:** proofs are tied to a specific wallet address.
-- **Wrong chain:** Merkle roots are fixed per deployment.
+- **Wrong chain / outdated root:** Merkle roots live on-chain and can be updated by the owner. Always compare your proof’s root to the current on-chain root for your role.
 - **Malformed proof:** must be a JSON array of hex strings.
 - **Wrong label:** ENS checks require **label only**.
 
