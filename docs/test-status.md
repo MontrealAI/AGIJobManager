@@ -1,6 +1,7 @@
 # Test status (local)
 
-This file records the latest local test outcomes and any environment‑specific failures.
+This file records the latest local test outcomes and any environment‑specific
+failures.
 
 ## Environment
 - OS: Linux (container)
@@ -12,19 +13,15 @@ This file records the latest local test outcomes and any environment‑specific 
 ```bash
 npm ci
 ```
-**Result:** failed on Linux because `fsevents@2.3.2` is macOS‑only (`EBADPLATFORM`).
+**Result:** failed on Linux because `fsevents@2.3.2` is macOS‑only
+(`EBADPLATFORM`).
 
-**Workaround used:**
+**Workaround used (no package‑lock updates):**
 ```bash
-npm install --omit=optional
+npm install --no-package-lock --omit=optional
 ```
 
 ## Test commands
-```bash
-npx truffle version
-```
-**Result:** succeeded.
-
 ```bash
 npx truffle compile
 ```
@@ -33,13 +30,12 @@ npx truffle compile
 ```bash
 npx truffle test
 ```
-**Result:** failed to connect to `http://127.0.0.1:8545`.
-
-**What the failure means:**
-- This command targets the default `development` network, which expects a local JSON‑RPC node at 127.0.0.1:8545.
+**Result:** failed to connect to `http://127.0.0.1:8545` (no local JSON‑RPC
+node running).
 
 **Smallest next fix:**
-- Start Ganache locally (`npx ganache -p 8545`), **or** run tests with the in‑process provider:
+- Start Ganache locally (`npx ganache -p 8545`), **or**
+- Run tests with the in‑process provider:
   ```bash
   npx truffle test --network test
   ```
