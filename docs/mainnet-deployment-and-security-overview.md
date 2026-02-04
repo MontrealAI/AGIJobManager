@@ -110,12 +110,16 @@ Disapprovers do not receive payouts or reputation.
 
 ## Mainnet deployment constraints
 ### EIP‑170 bytecode cap
-Ethereum mainnet enforces a **24,576‑byte** runtime bytecode limit (EIP‑170). The repository includes a test guard that asserts deployed bytecode remains within the configured safety margin.
+Ethereum mainnet enforces a **24,576‑byte** runtime bytecode limit (EIP‑170). The repository includes a test guard that asserts deployed bytecode remains within the configured safety margin (currently **24,575 bytes**, see `scripts/check-bytecode-size.js` and the “Bytecode size guard” test).
 
 ### How to check deployed bytecode size
 After `truffle compile`, check the runtime bytecode length:
 ```bash
 node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
+```
+Or run the helper:
+```bash
+node scripts/check-bytecode-size.js
 ```
 
 ### Compiler and optimizer pinning (Truffle)

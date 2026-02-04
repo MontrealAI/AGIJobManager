@@ -258,6 +258,8 @@ See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known
 
 Start here:
 - [`docs/README.md`](docs/README.md)
+- [Mainnet deployment & security overview](docs/mainnet-deployment-and-security-overview.md)
+- [Security policy](SECURITY.md)
 - **Non‑technical user guides**: [`docs/user-guide/README.md`](docs/user-guide/README.md)
 - [`docs/AGIJobManager.md`](docs/AGIJobManager.md)
 - [`docs/ParameterSafety.md`](docs/ParameterSafety.md)
