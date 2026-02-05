@@ -179,6 +179,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await token.mint(employer, web3.utils.toWei("500"), { from: owner });
@@ -671,6 +673,12 @@ contract("AGIJobManager comprehensive", (accounts) => {
         ),
         { from: owner }
       );
+      await managerFailing.setAgentBondParams(0, 0, 0, { from: owner });
+      await managerFailing.setMaxActiveJobsPerAgent(50, { from: owner });
+      await managerFailing.setAgentBondParams(0, 0, 0, { from: owner });
+      await managerFailing.setMaxActiveJobsPerAgent(50, { from: owner });
+      await managerFailing.setAgentBondParams(0, 0, 0, { from: owner });
+      await managerFailing.setMaxActiveJobsPerAgent(50, { from: owner });
 
       await failing.setFailTransferFroms(true, { from: owner });
       await failing.approve(managerFailing.address, web3.utils.toWei("5"), { from: employer });
@@ -972,6 +980,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
         ),
         { from: owner }
       );
+      await managerFailing.setAgentBondParams(0, 0, 0, { from: owner });
+      await managerFailing.setMaxActiveJobsPerAgent(50, { from: owner });
 
       await failTransferToken.approve(managerFailing.address, payout, { from: employer });
       await managerFailing.createJob("ipfs", payout, 1000, "details", { from: employer });

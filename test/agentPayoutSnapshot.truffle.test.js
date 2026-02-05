@@ -57,6 +57,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
 
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);

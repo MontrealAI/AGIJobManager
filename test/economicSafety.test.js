@@ -16,6 +16,11 @@ const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
 
+async function configureManager(manager, owner) {
+  await manager.setAgentBondParams(0, 0, 0, { from: owner });
+  await manager.setMaxActiveJobsPerAgent(50, { from: owner });
+}
+
 contract("AGIJobManager economic safety", (accounts) => {
   const [owner, employer, agent, validator] = accounts;
   let token;
@@ -48,6 +53,8 @@ contract("AGIJobManager economic safety", (accounts) => {
       ),
       { from: owner }
     );
+    await configureManager(manager, owner);
+    await configureManager(manager, owner);
 
     await manager.setValidationRewardPercentage(40, { from: owner });
 
@@ -73,6 +80,7 @@ contract("AGIJobManager economic safety", (accounts) => {
       ),
       { from: owner }
     );
+    await configureManager(manager, owner);
 
     const agiType = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiType.address, 75, { from: owner });
@@ -94,6 +102,7 @@ contract("AGIJobManager economic safety", (accounts) => {
       ),
       { from: owner }
     );
+    await configureManager(manager, owner);
 
     await manager.setAdditionalAgentPayoutPercentage(90, { from: owner });
     await manager.setValidationRewardPercentage(90, { from: owner });
@@ -115,6 +124,7 @@ contract("AGIJobManager economic safety", (accounts) => {
       ),
       { from: owner }
     );
+    await configureManager(manager, owner);
 
     await manager.setValidationRewardPercentage(10, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });

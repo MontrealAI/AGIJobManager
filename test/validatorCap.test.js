@@ -65,6 +65,8 @@ contract("AGIJobManager validator cap", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
 
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });

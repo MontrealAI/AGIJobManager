@@ -10,7 +10,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
+const { fundValidators, computeAgentBond, computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -63,6 +63,15 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     return receipt.logs[0].args.jobId.toNumber();
   };
 
+  const fundAgentBond = async (payout) => {
+    const bond = await computeAgentBond(manager, payout);
+    if (bond.gt(toBN(0))) {
+      await token.mint(agent, bond, { from: owner });
+      await token.approve(manager.address, bond, { from: agent });
+    }
+    return bond;
+  };
+
   it("prevents withdrawing escrowed funds", async () => {
     const payout = toBN(toWei("5"));
     await createJob(payout);
@@ -99,10 +108,30 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     assert.equal(lockedEscrow.toString(), payout.toString(), "escrow remains locked");
   });
 
+  it("prevents withdrawing bonded agent funds before settlement", async () => {
+    const payout = toBN(toWei("5"));
+    const jobId = await createJob(payout);
+    const bond = await fundAgentBond(payout);
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+
+    const lockedBonds = await manager.lockedAgentBonds();
+    assert.equal(lockedBonds.toString(), bond.toString(), "agent bond should be locked");
+
+    const withdrawable = await manager.withdrawableAGI();
+    assert.equal(withdrawable.toString(), "0", "withdrawable should exclude locked bonds");
+
+    await manager.pause({ from: owner });
+    await expectCustomError(
+      manager.withdrawAGI.call(toBN(1), { from: owner }),
+      "InsufficientWithdrawableBalance"
+    );
+  });
+
   it("prevents withdrawing bonded validator funds before settlement", async () => {
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     const payout = toBN(toWei("6"));
     const jobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -125,6 +154,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
   it("requires validator bond allowance for votes", async () => {
     const payout = toBN(toWei("5"));
     const jobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -146,6 +176,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -182,6 +213,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     const payout = toBN(toWei("12"));
     const jobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -214,6 +246,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     const payout = toBN(toWei("8"));
     const jobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -242,6 +275,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     assert.equal((await manager.lockedEscrow()).toString(), "0");
 
     const completeJobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(completeJobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(completeJobId, "ipfs-complete", { from: agent });
     await manager.validateJob(completeJobId, "", EMPTY_PROOF, { from: validator });
@@ -250,6 +284,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     assert.equal((await manager.lockedEscrow()).toString(), "0");
 
     const disputeJobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(disputeJobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(disputeJobId, "ipfs-dispute", { from: agent });
     await manager.disputeJob(disputeJobId, { from: employer });
@@ -257,6 +292,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     assert.equal((await manager.lockedEscrow()).toString(), "0");
 
     const expireJobId = await createJob(payout, 1);
+    await fundAgentBond(payout);
     await manager.applyForJob(expireJobId, "", EMPTY_PROOF, { from: agent });
     await time.increase(2);
     await manager.expireJob(expireJobId, { from: employer });
@@ -266,6 +302,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
   it("treats completion remainder and reward pool contributions as treasury", async () => {
     const payout = toBN(toWei("10"));
     const jobId = await createJob(payout);
+    await fundAgentBond(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });

@@ -43,7 +43,7 @@ async function deployManager({
 }) {
   const resolvedAlphaValidatorRootNode = alphaValidatorRootNode || validatorRootNode;
   const resolvedAlphaAgentRootNode = alphaAgentRootNode || agentRootNode;
-  return AGIJobManager.new(...buildInitConfig(
+  const manager = await AGIJobManager.new(...buildInitConfig(
       token.address,
       "ipfs://base",
       ens.address,
@@ -57,6 +57,9 @@ async function deployManager({
     ),
     { from: owner }
   );
+  await manager.setAgentBondParams(0, 0, 0, { from: owner });
+  await manager.setMaxActiveJobsPerAgent(50, { from: owner });
+  return manager;
 }
 
 async function createJob({ manager, token, employer, payout, duration = 1000, ipfsHash = "job1" }) {

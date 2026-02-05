@@ -53,6 +53,8 @@ contract("AGIJobManager admin ops", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
 
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
@@ -178,6 +180,8 @@ contract("AGIJobManager admin ops", (accounts) => {
       ),
       { from: owner }
     );
+    await managerFailing.setAgentBondParams(0, 0, 0, { from: owner });
+    await managerFailing.setMaxActiveJobsPerAgent(50, { from: owner });
 
     await failing.transfer(managerFailing.address, toBN(toWei("2")), { from: owner });
     await failing.setFailTransfers(true, { from: owner });

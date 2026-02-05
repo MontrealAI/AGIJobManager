@@ -65,6 +65,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
@@ -172,6 +174,8 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
       ),
       { from: owner }
     );
+    await merkleManager.setAgentBondParams(0, 0, 0, { from: owner });
+    await merkleManager.setMaxActiveJobsPerAgent(50, { from: owner });
 
     await merkleManager.addAGIType(agiTypeNft.address, 1, { from: owner });
     await merkleManager.setRequiredValidatorApprovals(1, { from: owner });
