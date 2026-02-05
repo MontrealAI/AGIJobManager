@@ -100,7 +100,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, 1000);
     const expected = payout.muln(75).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
@@ -130,7 +130,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, 1000);
     const expected = payout.muln(25).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
@@ -171,7 +171,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, 1000);
     const expected = payout.muln(60).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
