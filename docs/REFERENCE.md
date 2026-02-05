@@ -16,7 +16,6 @@ The following `public` state variables have auto‑generated getter functions:
 - `moderators(address)`
 - `additionalValidators(address)`, `additionalAgents(address)`
 - `validatorVotedJobs(address, index)`
-- `listings(tokenId)`
 - `blacklistedAgents(address)`, `blacklistedValidators(address)`
 - `agiTypes(index)`
 
@@ -53,16 +52,6 @@ Legacy string-based interface. Exact `"agent win"` / `"employer win"` strings ma
 
 ### `cancelJob(uint256 jobId)`
 Employer only. Cancels if no agent assigned and not completed. Emits `JobCancelled`.
-
-## NFT marketplace
-### `listNFT(uint256 tokenId, uint256 price)`
-Lists an employer‑owned NFT for sale. Emits `NFTListed`.
-
-### `purchaseNFT(uint256 tokenId)`
-Transfers AGI tokens from buyer to seller and transfers the NFT. Emits `NFTPurchased`.
-
-### `delistNFT(uint256 tokenId)`
-Seller removes the listing. Emits `NFTDelisted`.
 
 ## Admin operations
 ### `pause()` / `unpause()`
@@ -135,7 +124,6 @@ Key events to index:
 - `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
 - `JobCompleted`, `NFTIssued`, `JobCancelled`
 - `ReputationUpdated`, `OwnershipVerified`
-- `NFTListed`, `NFTPurchased`, `NFTDelisted`
 - `RewardPoolContribution`, `AGITypeUpdated`
 
 ## Custom errors (gas‑efficient reverts)

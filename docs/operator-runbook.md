@@ -62,7 +62,7 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
   `JobExpired`, `JobCancelled`
 - **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`,
   `DisputeTimeoutResolved`
-- **Marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`
+- **NFT issuance**: `NFTIssued`
 - **Treasury/ops**: `AGIWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`
 - **Identity**: `IdentityConfigurationLocked`, `RootNodesUpdated`,
   `MerkleRootsUpdated`, `EnsRegistryUpdated`, `NameWrapperUpdated`

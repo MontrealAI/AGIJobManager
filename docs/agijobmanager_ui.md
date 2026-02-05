@@ -75,10 +75,8 @@ The deprecated `resolveDispute(jobId, resolution)` method only recognizes two ca
 
 Any other string maps to `NO_ACTION`, and the dispute **remains active** on-chain. Prefer `resolveDisputeWithCode`.
 
-### NFT marketplace user
-1) Buyer **approves** AGI token for the contract (to cover the purchase).
-2) Owner **lists** (`listNFT`) or **delists** (`delistNFT`) the NFT.
-3) Buyer **purchases** (`purchaseNFT`) the NFT.
+### NFT trading
+Job NFTs are standard ERC‑721 tokens. The contract does not include an internal marketplace; trade externally using standard approvals and transfers.
 
 ## Admin / Owner panel
 

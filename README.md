@@ -5,7 +5,7 @@
 [![Truffle](https://img.shields.io/badge/truffle-5.x-3fe0c5.svg)](https://trufflesuite.com/)
 [![CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml)
 
-**AGIJobManager** is MONTREAL.AI’s on-chain enforcement layer for agent–employer workflows: validator-gated job escrow, payouts, dispute resolution, and reputation tracking, with ENS/Merkle role gating and an ERC‑721 job NFT marketplace. It is the *enforcement* half of a “Full‑Stack Trust Layer for AI Agents.”
+**AGIJobManager** is MONTREAL.AI’s on-chain enforcement layer for agent–employer workflows: validator-gated job escrow, payouts, dispute resolution, and reputation tracking, with ENS/Merkle role gating and ERC‑721 job NFTs. It is the *enforcement* half of a “Full‑Stack Trust Layer for AI Agents.”
 
 > **Status / Caution**: Experimental research software. Treat deployments as high-risk until you have performed independent security review, validated parameters, and ensured operational readiness. No public audit report is included in this repository.
 
@@ -14,22 +14,26 @@
 **What it is**
 - **Job escrow & settlement engine**: employer-funded jobs, agent assignment, validator approvals/disapprovals (thresholded), moderator dispute resolution, payouts/refunds.
 - **Reputation mapping**: on-chain reputation updates for agents and validators derived from job outcomes.
-- **Job NFT issuance + listings**: mints an ERC‑721 “job NFT” on completion and supports a minimal listing/purchase flow for those NFTs.
+- **Job NFT issuance**: mints an ERC‑721 “job NFT” on completion for the employer.
 - **Trust gating**: role eligibility enforced via explicit allowlists, Merkle proofs, and ENS/NameWrapper/Resolver ownership checks.
 
 **What it is NOT**
 - **Not an on-chain ERC‑8004 implementation**: ERC‑8004 is consumed off-chain; this repo does not integrate it on-chain.
 - **Not a generalized identity or reputation registry**: only contract-local reputation mappings and ENS/Merkle gating are provided.
-- **Not a generalized NFT marketplace**: listings are only for job NFTs minted by this contract.
+- **Not a generalized NFT marketplace**: the contract does not include an internal marketplace.
 - **Not a decentralized court or DAO**: moderators and the owner have significant authority; there is no slashing or permissionless validator set.
 
 ## Important trust notes
 - **Owner-operated**: the owner can pause/unpause, tune parameters, and manage allowlists/blacklists.
 - **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`) and only while paused; escrowed funds are not withdrawable.
-- **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available; NFT sellers can still delist.
+- **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
 
-**Trust model summary**: owner‑operated marketplace; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
+**Trust model summary**: owner‑operated escrow and settlement; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
+
+## NFT Trading
+
+AGI Jobs are ERC‑721 NFTs. They can be traded on OpenSea and other marketplaces using standard approvals and transfers. This contract does not implement an internal marketplace.
 
 ## Documentation
 - **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
@@ -245,8 +249,6 @@ npx truffle migrate --network development
 - **Centralization risk**: the owner can change critical parameters and withdraw surplus AGI (balance minus `lockedEscrow`) while paused; moderators can resolve disputes.
 - **Eligibility gating**: ENS registry/NameWrapper/root nodes are intended to be configured before any job exists and then locked; Merkle roots remain configurable for allowlist updates.
 - **Token compatibility**: ERC‑20 `transfer`/`transferFrom` may return `true`/`false` **or** return no data; calls that revert or return `false` are treated as failures. Fee‑on‑transfer, rebasing, and other balance‑mutating tokens are **not supported**; escrow deposits enforce exact amounts received.
-- **Marketplace reentrancy guard**: `purchaseNFT` is protected by `nonReentrant` because it crosses an external ERC‑20 `transferFrom` boundary; removing this protection requires a redeploy even though the ABI is unchanged.
-- **Marketplace safe transfer**: `purchaseNFT` uses ERC‑721 safe transfer semantics; contract buyers must implement `onERC721Received` or the purchase will revert.
 - **Validator trust**: validators are allowlisted; no slashing or decentralization guarantees.
 - **Duration enforcement**: only `requestJobCompletion` enforces the job duration; validators can still approve/disapprove after a deadline **once completion is requested** unless off‑chain policies intervene.
 - **Dispute resolution codes**: moderators should use `resolveDisputeWithCode(jobId, code, reason)` with `code = 0 (NO_ACTION)`, `1 (AGENT_WIN)`, or `2 (EMPLOYER_WIN)`. The `reason` is freeform and does not control settlement. The legacy string-based `resolveDispute` is deprecated; non‑canonical strings map to `NO_ACTION` and keep the dispute active.
@@ -254,7 +256,7 @@ npx truffle migrate --network development
 
 ## Pause behavior
 
-Pause is an incident-response safety control. When paused, **new activity** is blocked (job creation, applications, validation/disputes, and marketplace listing/purchases), but safe exits remain available. Assigned agents can still call `requestJobCompletion`, sellers can `delistNFT`, and settlement exits (`cancelJob`, `expireJob`, `finalizeJob`) still work when their normal predicates are satisfied. Resume operations by unpausing once the issue is resolved.
+Pause is an incident-response safety control. When paused, **new activity** is blocked (job creation, applications, validation/disputes), but safe exits remain available. Assigned agents can still call `requestJobCompletion`, and settlement exits (`cancelJob`, `expireJob`, `finalizeJob`) still work when their normal predicates are satisfied. Resume operations by unpausing once the issue is resolved.
 
 See [`docs/Security.md`](docs/Security.md) for a detailed threat model and known limitations.
 

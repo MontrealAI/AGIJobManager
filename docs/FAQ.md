@@ -9,8 +9,8 @@ Merkle roots can be updated by the owner using `updateMerkleRoots`. ENS root nod
 ## What dispute strings trigger payouts or refunds?
 Only the canonical strings `agent win` and `employer win` trigger on-chain actions. Any other string maps to `NO_ACTION`, logs the resolution, and leaves the dispute active.
 
-## Are job NFTs escrowed during listings?
-No. Listings are recorded in the contract, but the NFT stays in the seller wallet until purchase.
+## Does the contract include a built-in NFT marketplace?
+No. Job NFTs are standard ERC‑721 tokens and can be traded externally using standard approvals and transfers.
 
 ## Where is the full ABI reference?
 See [`Interface.md`](Interface.md). It is generated from the compiled ABI.

@@ -32,9 +32,9 @@ See [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md) for details.
 
 ## Reentrancy posture
 `ReentrancyGuard` is applied to:
-- `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `resolveDisputeWithCode`, `resolveStaleDispute`, `cancelJob`, `expireJob`, `finalizeJob`, `withdrawAGI`, `contributeToRewardPool`, `purchaseNFT`.
+- `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `resolveDisputeWithCode`, `resolveStaleDispute`, `cancelJob`, `expireJob`, `finalizeJob`, `withdrawAGI`, `contributeToRewardPool`.
 
-Functions without `nonReentrant` include `requestJobCompletion`, `listNFT`, and `delistNFT`. `purchaseNFT` uses `transferFrom` (ERC‑20) and ERC‑721 safe transfer semantics, so contract buyers must implement `onERC721Received`. Marketplace purchases are guarded because `purchaseNFT` crosses an external ERC‑20 `transferFrom` boundary before transferring the ERC‑721.
+Functions without `nonReentrant` include `requestJobCompletion`.
 
 ## Known limitations and assumptions
 - **Root immutability**: ENS root nodes are fixed at deployment and cannot be changed on-chain. Merkle roots **can** be updated by the owner via `updateMerkleRoots`; misconfigured roots can be corrected without redeploying, but updates should follow a strict governance process.

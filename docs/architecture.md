@@ -10,8 +10,6 @@ This document summarizes the on-chain modules inside the monolithic
   dispute opening, moderator resolution, and stale-dispute owner recovery.
 - **ERC‑721 completion NFTs**: minted on job completion; URI points to completion
   metadata.
-- **Internal marketplace**: listing/purchase/delist for completion NFTs, settled
-  in the same ERC‑20 token used for job payouts.
 - **Reputation system**: on-chain reputation updates for agents and approving
   validators with diminishing returns and a hard cap.
 - **Identity verification**: ENS/NameWrapper checks plus Merkle allowlists and

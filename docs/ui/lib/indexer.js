@@ -32,12 +32,6 @@
       index.nfts[tokenId] = {
         tokenId,
         issued: false,
-        listed: false,
-        purchased: false,
-        delisted: false,
-        activeListing: false,
-        lastListPrice: null,
-        lastListedBy: null,
         issuedBlock: null,
         lastActivityBlock: null,
       };
@@ -93,17 +87,6 @@
       if (eventName === "NFTIssued") {
         entry.issued = true;
         entry.issuedBlock = entry.issuedBlock ?? blockNumber;
-      } else if (eventName === "NFTListed") {
-        entry.listed = true;
-        entry.activeListing = true;
-        entry.lastListedBy = event.args?.seller ?? event.args?.[1] ?? null;
-        entry.lastListPrice = event.args?.price ?? event.args?.[2] ?? null;
-      } else if (eventName === "NFTPurchased") {
-        entry.purchased = true;
-        entry.activeListing = false;
-      } else if (eventName === "NFTDelisted") {
-        entry.delisted = true;
-        entry.activeListing = false;
       }
       entry.lastActivityBlock = blockNumber;
     }
