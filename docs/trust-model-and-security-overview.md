@@ -2,16 +2,16 @@
 
 This document provides a concise, audit-focused reference for how AGIJobManager
 is operated, what the owner can do, and the hard invariants enforced by the
-contract. It is a business‑operated marketplace, not a DAO.
+contract. It is a business‑operated escrow system, not a DAO.
 
-## 1) Trust model (owner‑operated marketplace)
+## 1) Trust model (owner‑operated escrow)
 
-AGIJobManager is an owner‑operated marketplace. Users must trust the owner and
+AGIJobManager is an owner‑operated escrow system. Users must trust the owner and
 moderators to operate honestly, while the contract enforces escrow accounting
 and settlement invariants.
 
 **Owner powers (as implemented)**
-- **Pause/unpause** the marketplace.
+- **Pause/unpause** the contract.
 - **Withdraw treasury** (non‑escrow balance) while paused only.
 - **Manage allowlists/blacklists** for agents and validators.
 - **Manage moderators** and AGI payout tiers (AGI types).
@@ -56,7 +56,6 @@ Pausing is intended to stop new risk while preserving exits/settlement.
 | --- | --- |
 | Job creation & onboarding | `createJob`, `applyForJob` |
 | Validation & dispute entry | `validateJob`, `disapproveJob`, `disputeJob` |
-| Marketplace entry | `listNFT`, `purchaseNFT` |
 | Reward pool funding | `contributeToRewardPool` |
 
 **Allowed while paused**
@@ -66,7 +65,6 @@ Pausing is intended to stop new risk while preserving exits/settlement.
 | Settlement & exits | `cancelJob`, `expireJob`, `finalizeJob` |
 | Dispute resolution | `resolveDispute`, `resolveDisputeWithCode` |
 | Owner recovery | `resolveStaleDispute` (owner‑only, paused‑only) |
-| Marketplace exit | `delistNFT` |
 | Owner job delist | `delistJob` (owner‑only, unassigned only) |
 | Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
 

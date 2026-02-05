@@ -87,24 +87,11 @@
       entry.disputed = false;
       entry.disputeResolved = true;
       entry.lastActivityBlock = blockNumber;
-    } else if (eventName.startsWith("NFT")) {
+    } else if (eventName === "NFTIssued") {
       const tokenId = toIdString(event.args?.tokenId ?? event.args?.[0]);
       const entry = ensureNftEntry(index, tokenId);
-      if (eventName === "NFTIssued") {
-        entry.issued = true;
-        entry.issuedBlock = entry.issuedBlock ?? blockNumber;
-      } else if (eventName === "NFTListed") {
-        entry.listed = true;
-        entry.activeListing = true;
-        entry.lastListedBy = event.args?.seller ?? event.args?.[1] ?? null;
-        entry.lastListPrice = event.args?.price ?? event.args?.[2] ?? null;
-      } else if (eventName === "NFTPurchased") {
-        entry.purchased = true;
-        entry.activeListing = false;
-      } else if (eventName === "NFTDelisted") {
-        entry.delisted = true;
-        entry.activeListing = false;
-      }
+      entry.issued = true;
+      entry.issuedBlock = entry.issuedBlock ?? blockNumber;
       entry.lastActivityBlock = blockNumber;
     }
   }

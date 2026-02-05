@@ -83,7 +83,7 @@ indexed events. Expiration is based on the on-chain `expired` flag and the job t
 ## Marketplace filters + approval status
 
 - **My NFTs only** filters the NFTs table to tokens where `ownerOf(tokenId)` matches the connected wallet.
-- **Active listings only** filters to listings where `listing.isActive` is true.
+- NFT filters are limited to ownership visibility and require indexed events.
 - Filters require the event indexer (see “Mainnet scalability”). When the indexer is unavailable, the
   UI disables the filters and loads the current page without filtering.
 
@@ -122,7 +122,7 @@ If the contract address has no code on the active chain, the UI shows a warning 
 - The UI only talks to your wallet provider (e.g., MetaMask). No keys or secrets are collected.
 - Always verify the contract address and chainId before signing transactions.
 - The UI runs a **staticCall preflight** for every state-changing action (including cancel and admin). If a call would revert, it surfaces the reason before you sign.
-- If the UI shows the contract is paused, wait for an unpause or switch to a different deployment before attempting marketplace or job actions.
+- If the UI shows the contract is paused, wait for an unpause or switch to a different deployment before attempting job actions.
 
 ## Employer lifecycle completeness: cancel job
 
@@ -281,7 +281,7 @@ The UI no longer enumerates every job or token ID. Instead it:
 
 - Defaults to **latest 50** jobs/NFTs, with configurable page size and navigation.
 - Uses a chunked event indexer (`eth_getLogs`) to build a local cache of job/NFT state.
-- Hydrates **only the current page** with bounded `eth_call` reads (jobs, ownerOf/tokenURI/listings).
+- Hydrates **only the current page** with bounded `eth_call` reads (jobs, ownerOf/tokenURI).
 
 ### How event indexing works
 
@@ -298,7 +298,7 @@ The UI no longer enumerates every job or token ID. Instead it:
 ### Fallback mode (no indexer)
 
 If event indexing fails (wallet provider limits, RPC errors, etc.), the UI falls back to
-**range-based pagination** by calling `getJobCore/getJobValidation/getJobSpecURI/getJobCompletionURI` or `ownerOf/tokenURI/listings` only for the
+**range-based pagination** by calling `getJobCore/getJobValidation/getJobSpecURI/getJobCompletionURI` or `ownerOf/tokenURI` only for the
 current page range (`latest` descending). Filters require the indexer and are disabled otherwise.
 
 ### Known indexing limitations

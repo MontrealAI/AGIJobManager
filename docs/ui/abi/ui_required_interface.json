@@ -30,7 +30,6 @@
     "getJobValidation": 1,
     "getJobSpecURI": 1,
     "getJobCompletionURI": 1,
-    "listings": 1,
     "ownerOf": 1,
     "tokenURI": 1,
     "createJob": 4,
@@ -53,10 +52,7 @@
     "disapproveJob": 3,
     "disputeJob": 1,
     "resolveDispute": 2,
-    "resolveDisputeWithCode": 3,
-    "listNFT": 2,
-    "purchaseNFT": 1,
-    "delistNFT": 1
+    "resolveDisputeWithCode": 3
   },
   "events": [
     "JobCreated",
@@ -69,10 +65,7 @@
     "JobDisputed",
     "DisputeResolved",
     "DisputeResolvedWithCode",
-    "NFTIssued",
-    "NFTListed",
-    "NFTPurchased",
-    "NFTDelisted"
+    "NFTIssued"
   ],
   "errors": []
 }

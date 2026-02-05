@@ -388,45 +388,6 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       );
     });
 
-    it("reverts purchaseNFT when transferFrom fails", async () => {
-      const failingToken = await FailingERC20.new({ from: owner });
-      await failingToken.mint(employer, web3.utils.toWei("100"), { from: owner });
-      await failingToken.mint(buyer, web3.utils.toWei("100"), { from: owner });
-
-      const failingManager = await deployManager({
-        token: failingToken,
-        ens,
-        nameWrapper,
-        validatorRootNode: rootNode("club-root"),
-        agentRootNode: rootNode("agent-root"),
-        validatorMerkleRoot: validatorMerkle.root,
-        agentMerkleRoot: agentMerkle.root,
-        owner,
-      });
-      await failingManager.setRequiredValidatorApprovals(1, { from: owner });
-      const jobId = await createJob({
-        manager: failingManager,
-        token: failingToken,
-        employer,
-        payout: web3.utils.toWei("50"),
-      });
-      const agiType = await MockERC721.new({ from: owner });
-      await agiType.mint(agent, { from: owner });
-      await failingManager.addAGIType(agiType.address, 92, { from: owner });
-      await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
-      await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-      const bond = await failingManager.validatorBond();
-      await failingToken.mint(validator, bond, { from: owner });
-      await failingToken.approve(failingManager.address, bond, { from: validator });
-      await failingManager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
-
-      const tokenId = (await failingManager.nextTokenId()).toNumber() - 1;
-      await failingManager.listNFT(tokenId, web3.utils.toWei("10"), { from: employer });
-      await failingToken.approve(failingManager.address, web3.utils.toWei("10"), { from: buyer });
-      await failingToken.setFailTransferFroms(true, { from: owner });
-
-      await expectRevert.unspecified(failingManager.purchaseNFT(tokenId, { from: buyer }));
-    });
   });
 
   describe("Admin & configuration", () => {
@@ -464,30 +425,6 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.withdrawAGI(web3.utils.toWei("5"), { from: owner });
       const balance = await token.balanceOf(manager.address);
       assert.equal(balance.toString(), "0");
-    });
-  });
-
-  describe("NFT marketplace", () => {
-    it("lists, purchases, and delists NFTs", async () => {
-      const payout = web3.utils.toWei("40");
-      const jobId = await createJob({ manager, token, employer, payout });
-      const agiType = await MockERC721.new({ from: owner });
-      await agiType.mint(agent, { from: owner });
-      await manager.addAGIType(agiType.address, 92, { from: owner });
-      await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
-      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-      await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
-
-      const tokenId = (await manager.nextTokenId()).toNumber() - 1;
-      await expectRevert.unspecified(manager.listNFT(tokenId, 0, { from: employer }));
-      await manager.listNFT(tokenId, web3.utils.toWei("5"), { from: employer });
-      await token.approve(manager.address, web3.utils.toWei("5"), { from: buyer });
-      await manager.purchaseNFT(tokenId, { from: buyer });
-      assert.equal(await manager.ownerOf(tokenId), buyer);
-
-      await manager.listNFT(tokenId, web3.utils.toWei("7"), { from: buyer });
-      await manager.delistNFT(tokenId, { from: buyer });
-      await expectRevert.unspecified(manager.purchaseNFT(tokenId, { from: employer }));
     });
   });
 
