@@ -133,7 +133,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const agentBalance = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, 1000);
     const expectedPayout = payout.muln(92).divn(100).add(agentBond);
     assert.equal(
       agentBalance.sub(agentBefore).toString(),
