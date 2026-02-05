@@ -10,7 +10,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -221,10 +221,8 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.strictEqual(jobAfterAgentWin.disputed, false, "dispute flag should clear after resolution");
     const agentPayoutPct = toBN(jobAfterAgentWin.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
-    const bond = await computeValidatorBond(manager, payout);
     const escrowValidatorReward = payout.mul(await manager.validationRewardPercentage()).divn(100);
-    const totalSlashed = bond.muln(2);
-    const expectedRemaining = escrowValidatorReward.add(totalSlashed);
+    const expectedRemaining = payout.sub(expectedAgentPayout).sub(escrowValidatorReward);
     assert.equal(
       (await token.balanceOf(manager.address)).toString(),
       expectedRemaining.toString(),
