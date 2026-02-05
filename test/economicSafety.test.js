@@ -17,7 +17,7 @@ const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
 
 contract("AGIJobManager economic safety", (accounts) => {
-  const [owner, employer, agent, validator] = accounts;
+  const [owner, employer, agent, validator, agentTwo] = accounts;
   let token;
   let ens;
   let nameWrapper;
@@ -155,6 +155,58 @@ contract("AGIJobManager economic safety", (accounts) => {
     assert.equal(agentBalance.sub(agentBalanceBefore).toString(), expectedAgentPayout.toString());
     assert.equal(validatorBalance.sub(validatorBefore).toString(), expectedValidatorPayout.toString());
     assert.equal(contractBalance.toString(), payout.sub(agentPayout).sub(expectedValidatorPayout).toString());
+  });
+
+  it("does not reward slower completion requests with higher reputation", async () => {
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
+      { from: owner }
+    );
+
+    await manager.setCompletionReviewPeriod(1, { from: owner });
+
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await agiType.mint(agentTwo, { from: owner });
+    await manager.addAGIType(agiType.address, 80, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalAgent(agentTwo, { from: owner });
+    await fundAgents(token, manager, [agent, agentTwo], owner);
+
+    const payout = toBN(toWei("5"));
+    const duration = 500;
+
+    await token.mint(employer, payout.muln(2), { from: owner });
+    await token.approve(manager.address, payout.muln(2), { from: employer });
+
+    const fastJobTx = await manager.createJob("ipfs-fast", payout, duration, "details", { from: employer });
+    const fastJobId = fastJobTx.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(fastJobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(fastJobId, "ipfs-fast-complete", { from: agent });
+
+    const slowJobTx = await manager.createJob("ipfs-slow", payout, duration, "details", { from: employer });
+    const slowJobId = slowJobTx.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(slowJobId, "agent", EMPTY_PROOF, { from: agentTwo });
+    await time.increase(100);
+    await manager.requestJobCompletion(slowJobId, "ipfs-slow-complete", { from: agentTwo });
+
+    await time.increase(2);
+    await manager.finalizeJob(fastJobId, { from: employer });
+    await manager.finalizeJob(slowJobId, { from: employer });
+
+    const repFast = await manager.reputation(agent);
+    const repSlow = await manager.reputation(agentTwo);
+    assert(repSlow.lte(repFast), "slower completion should not yield higher reputation");
   });
 
   it("reverts job completion requests when completion metadata is empty (defensive)", async () => {
