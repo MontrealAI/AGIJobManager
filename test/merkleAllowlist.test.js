@@ -96,7 +96,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
     const after = await token.balanceOf(agent);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(3600));
     const expected = payout.muln(payoutTier).divn(100).add(agentBond);
     assert.equal(after.sub(before).toString(), expected.toString(), "payout should match AGIType tier");
   });

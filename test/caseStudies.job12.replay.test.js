@@ -12,6 +12,7 @@ const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = r
 
 const ZERO_BYTES32 = "0x" + "0".repeat(64);
 const EMPTY_PROOF = [];
+const { toBN } = web3.utils;
 
 function makeSubnode(rootNode, label) {
   const labelHash = web3.utils.soliditySha3({ type: "string", value: label });
@@ -185,7 +186,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     const validatorPayout = totalValidatorPayout.divn(3);
     const agentPayout = payout.muln(92).divn(100);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(duration));
     assert.equal(
       (await token.balanceOf(agent)).sub(agentBefore).toString(),
       agentPayout.add(agentBond).toString()

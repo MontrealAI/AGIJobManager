@@ -109,7 +109,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerBefore = await token.balanceOf(employer);
     await manager.expireJob(jobId, { from: other });
     const employerAfter = await token.balanceOf(employer);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(100));
     assert.equal(
       employerAfter.toString(),
       employerBefore.add(payout).add(agentBond).toString(),
@@ -183,7 +183,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const agentBefore = await token.balanceOf(agent);
     await manager.finalizeJob(jobId, { from: other });
     const agentAfter = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     const expected = payout.muln(90).divn(100).add(agentBond);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
   });
@@ -205,7 +205,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     const validationPct = await manager.validationRewardPercentage();
     const validatorReward = payout.mul(validationPct).divn(100);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
       payout.sub(validatorReward).add(agentBond).toString(),
@@ -247,14 +247,13 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
-    await manager.pause({ from: owner });
     await advanceTime(120);
 
     const employerBefore = await token.balanceOf(employer);
     await manager.resolveStaleDispute(jobId, true, { from: owner });
     const employerAfter = await token.balanceOf(employer);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
       payout.add(agentBond).toString(),
