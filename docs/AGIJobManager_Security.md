@@ -29,11 +29,11 @@ The contract explicitly addresses common issues observed in earlier variants:
 - **External dependencies**: ENS, NameWrapper, and Resolver contracts are trusted for ownership validation.
 - **Merkle root management**: Merkle roots are set at deployment but can be updated by the owner via `updateMerkleRoots`. Incorrect roots can be corrected without redeploying; use explicit allowlists for urgent recovery while governance approves an update.
 - **ERC‑20 behavior assumptions**: the token must return `true` on transfers or provide no return data, and it must transfer exact amounts (no transfer fees). Fee‑on‑transfer tokens are incompatible.
-- **Escrow solvency**: `withdrawableAGI` reverts if the contract balance is below `lockedEscrow`. Operators must avoid draining escrowed funds by mistake.
+- **Escrow solvency**: `withdrawableAGI` reverts if the contract balance is below `lockedEscrow + lockedAgentBonds + lockedValidatorBonds`. Operators must avoid draining escrowed funds or locked bonds by mistake.
 
 ## Recommended best practices
 
 - Use multi‑sig ownership and rotate moderators periodically.
-- Monitor `lockedEscrow` and ensure the contract’s ERC‑20 balance never drops below it.
+- Monitor `lockedEscrow + lockedAgentBonds + lockedValidatorBonds` and ensure the contract’s ERC‑20 balance never drops below it.
 - Ensure validator thresholds, AGI type percentages, and validation reward percentage maintain `agentPayoutPct + validationRewardPercentage <= 100`.
 - Prefer explicit allowlisting when ENS/Merkle configuration is uncertain.

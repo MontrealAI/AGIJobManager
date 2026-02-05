@@ -83,7 +83,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     const repFast = await manager.reputation(agentFast);
     const repSlow = await manager.reputation(agentSlow);
-    assert(repFast.gt(repSlow), "faster completion should yield higher or equal reputation");
+    assert(repFast.gte(repSlow), "delayed completion should not increase reputation");
   });
 
   it("snapshots and returns or slashes agent bonds, and excludes them from withdrawable AGI", async () => {
