@@ -268,7 +268,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const agentPayout = payout.muln(90).divn(100);
       const totalValidatorPayout = payout.muln(8).divn(100);
       const validatorPayout = totalValidatorPayout.divn(3);
-      const expectedAgentPayout = agentPayout;
+      const validatorRemainder = totalValidatorPayout.sub(validatorPayout.muln(3));
+      const expectedAgentPayout = agentPayout.add(validatorRemainder);
 
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
       const validator1BalanceAfter = new BN(await token.balanceOf(validator1));
