@@ -62,7 +62,8 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
   });
 
   it("keeps allowlists as access-only (no payout boost)", async () => {
-    const jobId = (await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer }))
+    const duration = 3600;
+    const jobId = (await manager.createJob("ipfs-job", payout, duration, "details", { from: employer }))
       .logs[0]
       .args.jobId.toNumber();
 
@@ -96,7 +97,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
     const after = await token.balanceOf(agent);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     const expected = payout.muln(payoutTier).divn(100).add(agentBond);
     assert.equal(after.sub(before).toString(), expected.toString(), "payout should match AGIType tier");
   });

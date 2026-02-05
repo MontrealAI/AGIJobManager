@@ -101,7 +101,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
 
-    const jobId = await createJob(payout, 100);
+    const duration = 100;
+    const jobId = await createJob(payout, duration);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await advanceTime(120);
@@ -109,7 +110,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerBefore = await token.balanceOf(employer);
     await manager.expireJob(jobId, { from: other });
     const employerAfter = await token.balanceOf(employer);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     assert.equal(
       employerAfter.toString(),
       employerBefore.add(payout).add(agentBond).toString(),
@@ -135,7 +136,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const payout = toBN(toWei("3"));
     await token.mint(employer, payout, { from: owner });
 
-    const jobId = await createJob(payout, 500);
+    const duration = 500;
+    const jobId = await createJob(payout, duration);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
 
     await advanceTime(100);
@@ -146,7 +148,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const payout = toBN(toWei("25"));
     await token.mint(employer, payout, { from: owner });
 
-    const jobId = await createJob(payout, 1000);
+    const duration = 1000;
+    const jobId = await createJob(payout, duration);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -161,7 +164,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const payout = toBN(toWei("4"));
     await token.mint(employer, payout, { from: owner });
 
-    const jobId = await createJob(payout, 1000);
+    const duration = 1000;
+    const jobId = await createJob(payout, duration);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -173,7 +177,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const payout = toBN(toWei("5"));
     await token.mint(employer, payout, { from: owner });
 
-    const jobId = await createJob(payout, 1000);
+    const duration = 1000;
+    const jobId = await createJob(payout, duration);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -183,7 +188,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const agentBefore = await token.balanceOf(agent);
     await manager.finalizeJob(jobId, { from: other });
     const agentAfter = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     const expected = payout.muln(90).divn(100).add(agentBond);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
   });
@@ -192,7 +197,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const payout = toBN(toWei("6"));
     await token.mint(employer, payout, { from: owner });
 
-    const jobId = await createJob(payout, 1000);
+    const duration = 1000;
+    const jobId = await createJob(payout, duration);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -205,7 +211,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     const validationPct = await manager.validationRewardPercentage();
     const validatorReward = payout.mul(validationPct).divn(100);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
       payout.sub(validatorReward).add(agentBond).toString(),
@@ -247,14 +253,13 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
-    await manager.pause({ from: owner });
     await advanceTime(120);
 
     const employerBefore = await token.balanceOf(employer);
     await manager.resolveStaleDispute(jobId, true, { from: owner });
     const employerAfter = await token.balanceOf(employer);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
       payout.add(agentBond).toString(),

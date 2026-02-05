@@ -71,7 +71,8 @@ contract("AGIJobManager happy path", (accounts) => {
     await token.mint(employer, payout, { from: owner });
 
     await token.approve(manager.address, payout, { from: employer });
-    const createTx = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+    const duration = 3600;
+    const createTx = await manager.createJob("ipfs-job", payout, duration, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
@@ -94,7 +95,7 @@ contract("AGIJobManager happy path", (accounts) => {
 
     const agentBalance = await token.balanceOf(agent);
     const agentExpected = payout.muln(92).divn(100);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     assert.equal(
       agentBalance.sub(agentBalanceBefore).toString(),
       agentExpected.add(agentBond).toString(),
