@@ -1,4 +1,5 @@
 const AGENT_BOND_BPS = 500;
+const AGENT_BOND_MAX = web3.utils.toBN("0");
 
 async function fundValidators(token, manager, validators, owner, multiplier = 5) {
   const bondMax = await manager.validatorBondMax();
@@ -45,6 +46,7 @@ async function computeAgentBond(manager, payout) {
   const minBond = await resolveAgentBond(manager);
   let bond = payout.muln(AGENT_BOND_BPS).divn(10000);
   if (bond.lt(minBond)) bond = minBond;
+  if (AGENT_BOND_MAX.gt(web3.utils.toBN("0")) && bond.gt(AGENT_BOND_MAX)) bond = AGENT_BOND_MAX;
   if (bond.gt(payout)) bond = payout;
   return bond;
 }
