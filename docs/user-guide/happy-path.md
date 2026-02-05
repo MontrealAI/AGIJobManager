@@ -10,7 +10,6 @@ This walkthrough shows a full job lifecycle for **Employer → Agent → Validat
    - `agiToken()` (read‑only)
 4. **Approve token spend** for actions that move AGI tokens:
    - Employer: `createJob` (escrow payout)
-   - Buyer: `purchaseNFT`
    - Contributor: `contributeToRewardPool`
 
 > **Label‑only rule (important):** When the UI asks for a subdomain or identity, enter the **label only**.

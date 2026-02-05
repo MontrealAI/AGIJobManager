@@ -7,10 +7,9 @@ This document summarizes security posture, fixed issues, and remaining risks bas
 The contract inherits `ReentrancyGuard` and applies `nonReentrant` to state‑changing functions that handle funds or sensitive transitions, including:
 - Job escrow and settlement (`createJob`, `finalizeJob`, `cancelJob`, `expireJob`).
 - Validation and dispute resolution (`validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `resolveDisputeWithCode`, `resolveStaleDispute`).
-- Marketplace settlement (`purchaseNFT`).
 - Funds management (`withdrawAGI`, `contributeToRewardPool`).
 
-Functions without `nonReentrant` (e.g., `requestJobCompletion`, `listNFT`, `delistNFT`) do not transfer funds and only update job/listing metadata.
+Functions without `nonReentrant` (e.g., `requestJobCompletion`) do not transfer funds and only update job metadata.
 
 ## Fixed issues vs. legacy v0
 
