@@ -8,6 +8,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -83,6 +84,8 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setDisputeReviewPeriod(100, { from: owner });
+
+    await fundValidators(token, manager, [validatorA, validatorB, validatorC], owner);
   });
 
   async function createJob(payout) {

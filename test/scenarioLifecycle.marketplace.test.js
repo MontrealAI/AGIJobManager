@@ -11,6 +11,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -56,6 +57,8 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
+
+    await fundValidators(token, manager, [validatorA, validatorB], owner);
   });
 
   async function createJobWithApproval(payout, ipfsHash = "ipfs-job") {
@@ -125,8 +128,16 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const validatorABalance = await token.balanceOf(validatorA);
     const validatorBBalance = await token.balanceOf(validatorB);
     assert.equal(agentBalance.toString(), agentExpected.toString(), "agent payout should match AGI type share");
-    assert.equal(validatorABalance.toString(), validatorExpected.toString(), "validator A reward mismatch");
-    assert.equal(validatorBBalance.toString(), validatorExpected.toString(), "validator B reward mismatch");
+    assert.equal(
+      validatorABalance.toString(),
+      balancesBefore.validatorA.add(validatorExpected).toString(),
+      "validator A reward mismatch"
+    );
+    assert.equal(
+      validatorBBalance.toString(),
+      balancesBefore.validatorB.add(validatorExpected).toString(),
+      "validator B reward mismatch"
+    );
 
     const balancesAfter = {
       employer: await token.balanceOf(employer),
@@ -247,19 +258,18 @@ contract("AGIJobManager scenario coverage", (accounts) => {
       contract: await token.balanceOf(manager.address),
     };
     assert.ok(balancesAfter.agent.gt(balancesBefore.agent), "agent should be paid on agent-win dispute");
+    const bond = await manager.validatorBond();
     assert.ok(
-      balancesAfter.validatorA.eq(balancesBefore.validatorA),
-      "disapproving validators should not be rewarded"
+      balancesAfter.validatorA.eq(balancesBefore.validatorA.sub(bond)),
+      "incorrect disapproving validators should lose their bond"
     );
     assert.ok(
-      balancesAfter.validatorB.eq(balancesBefore.validatorB),
-      "disapproving validators should not be rewarded"
+      balancesAfter.validatorB.eq(balancesBefore.validatorB.sub(bond)),
+      "incorrect disapproving validators should lose their bond"
     );
     const agentPayoutPct = toBN(job.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
-    const validationPct = toBN(await manager.validationRewardPercentage());
-    const expectedValidatorPayout = payout.mul(validationPct).divn(100);
-    const expectedRemaining = payout.sub(expectedAgentPayout).sub(expectedValidatorPayout);
+    const expectedRemaining = payout.sub(expectedAgentPayout).add(bond.muln(2));
     assert.equal(
       balancesAfter.contract.toString(),
       expectedRemaining.toString(),
@@ -355,7 +365,8 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.equal(balancesAfter.agent.toString(), balancesBefore.agent.toString(), "agent should not be paid yet");
     assert.equal(balancesAfter.validatorA.toString(), balancesBefore.validatorA.toString(), "validator A should not be paid yet");
     assert.equal(balancesAfter.validatorB.toString(), balancesBefore.validatorB.toString(), "validator B should not be paid yet");
-    assert.equal(balancesAfter.contract.toString(), payout.toString(), "escrow should remain locked");
+    const bond = await manager.validatorBond();
+    assert.equal(balancesAfter.contract.toString(), payout.add(bond).toString(), "escrow should remain locked");
 
     await expectCustomError(
       manager.validateJob.call(jobId, "validator-b", EMPTY_PROOF, { from: validatorB }),
