@@ -2,9 +2,9 @@
 
 This document summarizes the operational trust model for **AGIJobManager** and clarifies how the identity wiring lock and pause state interact with treasury withdrawals and user exits.
 
-## Business-operated marketplace model
+## Business-operated escrow model
 
-AGIJobManager is an operator-run marketplace: the owner retains operational control (pausing, parameter updates, allowlist maintenance, and incident response) while user funds in escrow are protected by on-chain accounting. The contract is intentionally **not** a decentralized governance system; instead, it enforces strong safety invariants around escrow and identity wiring while allowing operational controls for the business operator.
+AGIJobManager is an operator-run escrow system: the owner retains operational control (pausing, parameter updates, allowlist maintenance, and incident response) while user funds in escrow are protected by on-chain accounting. The contract is intentionally **not** a decentralized governance system; instead, it enforces strong safety invariants around escrow and identity wiring while allowing operational controls for the business operator.
 
 ## Escrow protection invariant
 
@@ -29,12 +29,10 @@ Pausing is intended to be a **brief, operator-initiated window** (e.g., to withd
 ### Blocked while paused
 - Job creation and onboarding: `createJob`, `applyForJob`.
 - Validation and disputes: `validateJob`, `disapproveJob`, `disputeJob`.
-- Marketplace entry: `listNFT`, `purchaseNFT`.
 - Reward pool contributions: `contributeToRewardPool`.
 
 ### Allowed while paused
 - **Completion submission**: assigned agents can call `requestJobCompletion` for valid, active jobs.
-- **Marketplace exit**: sellers can call `delistNFT` to remove active listings.
 - **Settlement exits**: `cancelJob`, `expireJob`, and `finalizeJob` still operate when their normal predicates are satisfied.
 - **Owner withdrawals**: `withdrawAGI` is available only while paused.
 
@@ -58,7 +56,7 @@ The **identity wiring lock** permanently freezes only the identity-related wirin
 - Economic parameters (thresholds, limits, review periods, payouts)
 - Merkle root updates (`updateMerkleRoots`)
 
-This lock is intended to **freeze identity wiring only**, allowing the operator to keep running the marketplace without being able to rewire identity primitives.
+This lock is intended to **freeze identity wiring only**, allowing the operator to keep running the escrow system without being able to rewire identity primitives.
 
 ## Additional notes
 

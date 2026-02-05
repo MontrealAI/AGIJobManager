@@ -8,7 +8,7 @@ otherwise.
 - **Legacy AGIJobManager (Ethereum)**: `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`
 - **Deployer ENS**: `deployer.agi.eth`
 - **“AGI Jobs” collection on OpenSea**: reference surface for historical
-  listings (verify current URLs and ownership off-chain before use).
+  assets (verify current URLs and ownership off-chain before use).
 
 ## Bridging / onboarding safety (SOL ↔ ETH)
 **Always verify domains and addresses before signing.** Prefer:
