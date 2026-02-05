@@ -119,7 +119,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
      *      thresholds are met, a short challenge window prevents instant settlement. When validators
      *      participate and the employer wins, the refund is reduced by the validator reward pool.
      */
-    uint256 public validatorBondBps = 500;
+    uint256 public validatorBondBps = 1000;
     uint256 public validatorBondMin = 1e18;
     uint256 public validatorBondMax = 4888e18;
     uint256 public validatorSlashBps = 10_000;
