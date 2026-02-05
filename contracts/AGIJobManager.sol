@@ -221,7 +221,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event RewardPoolContribution(address indexed contributor, uint256 amount);
     event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
-    event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
     event IdentityConfigurationLocked(address indexed locker, uint256 atTimestamp);
     event AgentBlacklisted(address indexed agent, bool status);
@@ -705,7 +704,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         if (_percentage > 100 - validationRewardPercentage) revert InvalidParameters();
         additionalAgentPayoutPercentage = _percentage;
-        emit AdditionalAgentPayoutPercentageUpdated(_percentage);
     }
     function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
     function updateContactEmail(string calldata _email) external onlyOwner { contactEmail = _email; }
@@ -842,6 +840,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 if (msg.sender != job.assignedAgent) revert InvalidState();
                 job.disputed = true;
                 job.disputedAt = block.timestamp;
+                emit JobDisputed(_jobId, msg.sender);
                 return;
             }
             agentWins = true;
