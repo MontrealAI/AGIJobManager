@@ -16,7 +16,7 @@ Call `validateJob(jobId, subdomain, proof)`.
 **On‑chain results**
 - Event: `JobValidated`
 - State: validator approval count increments
-- Bond: the contract transfers the required bond from your wallet (ensure allowance)
+- Bond: the contract transfers the required bond from your wallet (ensure allowance); bond is capped at the job payout.
 
 ### 2) Disapprove a job (if needed)
 Call `disapproveJob(jobId, subdomain, proof)`.
@@ -35,7 +35,7 @@ Call `disapproveJob(jobId, subdomain, proof)`.
 When a job completes:
 - Validators whose vote matches the final outcome split the reward pool and any slashed bonds.
 - Validators who vote against the final outcome recover only the un‑slashed portion of their bond.
-- Correct‑side validators gain reputation points.
+- Correct‑side validators gain reputation points (based on payout size and job duration).
 
 ## Common mistakes
 - Voting twice → `InvalidState`
