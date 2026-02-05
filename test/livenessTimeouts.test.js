@@ -153,7 +153,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await advanceTime(120);
 
     const agentBefore = await token.balanceOf(agent);
-    await manager.finalizeJob(jobId, { from: agent });
+    await manager.finalizeJob(jobId, { from: employer });
     const agentAfter = await token.balanceOf(agent);
 
     const agentBond = await computeAgentBond(manager, payout);

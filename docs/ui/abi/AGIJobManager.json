@@ -63,11 +63,6 @@
     },
     {
       "inputs": [],
-      "name": "InvalidAgentPayoutSnapshot",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "InvalidParameters",
       "type": "error"
     },
@@ -1095,6 +1090,19 @@
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "agentBond",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -2363,6 +2371,19 @@
         }
       ],
       "name": "setValidatorBondParams",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "bond",
+          "type": "uint256"
+        }
+      ],
+      "name": "setAgentBond",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
