@@ -216,7 +216,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32 alphaAgentRootNode
     );
     event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
-    event AGITypeUpdated(address indexed nftAddress, uint256 payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event RewardPoolContribution(address indexed contributor, uint256 amount);
     event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
@@ -1124,7 +1123,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
         }
 
-        emit AGITypeUpdated(nftAddress, payoutPercentage);
     }
 
     function _maxAGITypePayoutAfterUpdate(address nftAddress, uint256 payoutPercentage) internal view returns (bool exists, uint256 maxPct) {
