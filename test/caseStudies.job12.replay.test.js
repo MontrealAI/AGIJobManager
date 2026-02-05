@@ -185,7 +185,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     const validatorPayout = totalValidatorPayout.divn(3);
     const agentPayout = payout.muln(92).divn(100);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     assert.equal(
       (await token.balanceOf(agent)).sub(agentBefore).toString(),
       agentPayout.add(agentBond).toString()
