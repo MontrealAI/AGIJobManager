@@ -4,7 +4,7 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 
 ## Core entry points (engineers & auditors)
 - **Trust model & security overview**: [`trust-model-and-security-overview.md`](trust-model-and-security-overview.md)
-- **Mainnet deployment & security overview**: [`mainnet-deployment-and-security-overview.md`](mainnet-deployment-and-security-overview.md)
+- **Mainnet deployment & security overview (authoritative)**: [`mainnet-deployment-and-security-overview.md`](mainnet-deployment-and-security-overview.md)
 - **Mainnet deployment & verification**: [`mainnet-deployment-and-verification.md`](mainnet-deployment-and-verification.md)
 - **Architecture & state machine**: [`architecture.md`](architecture.md)
 - **Deployments & bridging safety**: [`deployments-and-bridging.md`](deployments-and-bridging.md)
