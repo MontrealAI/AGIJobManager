@@ -172,6 +172,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
 
     await merkleManager.addAGIType(agiTypeNft.address, 1, { from: owner });
     await merkleManager.setRequiredValidatorApprovals(1, { from: owner });
+    await fundValidators(token, merkleManager, [validator], owner);
     await token.mint(employer, payout, { from: owner });
     await token.approve(merkleManager.address, payout, { from: employer });
     const jobId = (await merkleManager.nextJobId()).toNumber();

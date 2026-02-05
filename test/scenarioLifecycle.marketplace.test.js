@@ -270,8 +270,8 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     const agentPayoutPct = toBN(job.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
     const validationPct = toBN(await manager.validationRewardPercentage());
-    const expectedValidatorPayout = payout.mul(validationPct).divn(100);
-    const expectedRemaining = payout.sub(expectedAgentPayout).sub(expectedValidatorPayout);
+    const slashedTotal = bond.muln(2);
+    const expectedRemaining = payout.sub(expectedAgentPayout).add(slashedTotal);
     assert.equal(
       balancesAfter.contract.toString(),
       expectedRemaining.toString(),
@@ -367,7 +367,12 @@ contract("AGIJobManager scenario coverage", (accounts) => {
     assert.equal(balancesAfter.agent.toString(), balancesBefore.agent.toString(), "agent should not be paid yet");
     assert.equal(balancesAfter.validatorA.toString(), balancesBefore.validatorA.toString(), "validator A should not be paid yet");
     assert.equal(balancesAfter.validatorB.toString(), balancesBefore.validatorB.toString(), "validator B should not be paid yet");
-    assert.equal(balancesAfter.contract.toString(), payout.toString(), "escrow should remain locked");
+    const bond = await manager.validatorBond();
+    assert.equal(
+      balancesAfter.contract.toString(),
+      payout.add(bond).toString(),
+      "escrow should remain locked"
+    );
 
     await expectCustomError(
       manager.validateJob.call(jobId, "validator-b", EMPTY_PROOF, { from: validatorB }),

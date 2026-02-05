@@ -244,8 +244,9 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const agentPayoutPct = toBN(jobAfterAgentWin.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
     const validationPct = toBN(await manager.validationRewardPercentage());
-    const expectedValidatorPayout = payout.mul(validationPct).divn(100);
-    const expectedRemaining = payout.sub(expectedAgentPayout).sub(expectedValidatorPayout);
+    const bond = await manager.validatorBond();
+    const slashedTotal = bond.muln(2);
+    const expectedRemaining = payout.sub(expectedAgentPayout).add(slashedTotal);
     assert.equal(
       (await token.balanceOf(manager.address)).toString(),
       expectedRemaining.toString(),
@@ -279,7 +280,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const validatorBBefore = await token.balanceOf(validatorB);
     await manager.disapproveJob(jobIdTwo, "validator-a", EMPTY_PROOF, { from: validatorA });
     await manager.disapproveJob(jobIdTwo, "validator-b", EMPTY_PROOF, { from: validatorB });
-    await manager.disputeJob(jobIdTwo, { from: employer });
+    await expectCustomError(manager.disputeJob.call(jobIdTwo, { from: employer }), "InvalidState");
     await expectCustomError(manager.resolveDispute.call(jobIdTwo, "agent win", { from: other }), "NotModerator");
 
     const employerBefore = await token.balanceOf(employer);
