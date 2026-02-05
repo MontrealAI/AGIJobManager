@@ -29,7 +29,3 @@ Use this checklist to minimize risk when operating or interacting with AGIJobMan
 ## Dispute handling
 - Use consistent, transparent moderation policies.
 - Record dispute evidence off‑chain in a tamper‑evident system.
-
-## NFT marketplace safety
-- Verify listing prices and buyer address before purchasing.
-- Check token allowances and revoke after purchase.

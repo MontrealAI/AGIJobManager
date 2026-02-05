@@ -1,12 +1,12 @@
 # AGIJobManager – Mainnet Deployment & Security Overview
 
 ## 1) Executive summary
-AGIJobManager is an **owner‑operated** on‑chain escrow + settlement engine for employer/agent jobs, with validator approvals/disapprovals, moderator dispute resolution, reputation tracking, and a tightly scoped ERC‑721 “job NFT” marketplace. It is a **business‑operated** system with strong escrow invariants; it is **not** a DAO, not trustless arbitration, and not an upgradeable proxy.
+AGIJobManager is an **owner‑operated** on‑chain escrow + settlement engine for employer/agent jobs, with validator approvals/disapprovals, moderator dispute resolution, reputation tracking, and ERC‑721 job NFT issuance. It is a **business‑operated** system with strong escrow invariants; it is **not** a DAO, not trustless arbitration, and not an upgradeable proxy.
 
 **What it is**
 - Job escrow and settlement for employer‑funded tasks.
 - Validator‑gated completion with dispute resolution by moderators.
-- ERC‑721 receipts for completed jobs and a minimal listing/purchase flow.
+- ERC‑721 receipts for completed jobs.
 
 **What it is not**
 - Not a DAO, not permissionless arbitration, and not an upgradeable proxy.
@@ -113,18 +113,16 @@ Pause is an incident‑response control to halt new activity while preserving ex
 | --- | --- | --- | --- |
 | Job creation & onboarding (`createJob`, `applyForJob`) | Employers / eligible agents | **Blocked** | Prevents new escrow obligations during incident response. |
 | Validation & dispute entry (`validateJob`, `disapproveJob`, `disputeJob`) | Validators / employer / agent | **Blocked** | Freezes new approvals/disputes while paused. |
-| Marketplace entry (`listNFT`, `purchaseNFT`) | NFT owners / buyers | **Blocked** | New listings and purchases disabled while paused. |
 | Reward pool funding (`contributeToRewardPool`) | Any user | **Blocked** | Additional treasury inflow paused. |
 | Completion request (`requestJobCompletion`) | Assigned agent | **Allowed** | Prevents trapping agents mid‑job during a pause. |
 | Settlement & exits (`cancelJob`, `expireJob`, `finalizeJob`, `resolveDispute`, `resolveDisputeWithCode`) | Employer / anyone / moderator | **Allowed** | Exit paths remain available for liveness. |
 | Owner recovery (`resolveStaleDispute`) | Owner | **Allowed (paused‑only)** | Requires pause and dispute timeout. |
-| Marketplace exit (`delistNFT`) | Listing seller | **Allowed** | Sellers can exit listings while paused. |
 | Owner delist (`delistJob`) | Owner | **Allowed** | Unassigned only; refunds employer. |
 | Treasury withdrawal (`withdrawAGI`) | Owner | **Allowed (paused‑only)** | Withdraws only non‑escrow funds. |
 
 ## 7) Security posture (operational highlights)
-- **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `purchaseNFT`, `withdrawAGI`, dispute resolution, settlement).
-- **Exact ERC‑20 transfer checks** are used where escrow integrity matters (`createJob`, `purchaseNFT`, `contributeToRewardPool`), preventing fee‑on‑transfer / rebasing tokens from under‑funding escrow.
+- **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `withdrawAGI`, dispute resolution, settlement).
+- **Exact ERC‑20 transfer checks** are used where escrow integrity matters (`createJob`, `contributeToRewardPool`), preventing fee‑on‑transfer / rebasing tokens from under‑funding escrow.
 - **Bounded loops**: validator lists are capped at `MAX_VALIDATORS_PER_JOB` (50).
 - **ENS/NameWrapper lookups** use `try/catch` and are view‑only; failures just return false.
 - **Dispute outcomes are binary** (agent win vs employer win); `NO_ACTION` logs without settlement.
@@ -180,7 +178,7 @@ npx truffle run verify AGIJobManager --network mainnet
 Index and alert on the following events:
 - **Job lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobCompleted`, `JobFinalized`, `JobExpired`, `JobCancelled`.
 - **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`, `DisputeTimeoutResolved`.
-- **NFT market**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
+- **NFT issuance**: `NFTIssued`.
 - **Treasury/ops**: `AGIWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`.
 - **Identity**: `IdentityConfigurationLocked`, `MerkleRootsUpdated`, `RootNodesUpdated`, `EnsRegistryUpdated`, `NameWrapperUpdated`.
 - **Blacklists**: `AgentBlacklisted`, `ValidatorBlacklisted`.
@@ -198,5 +196,5 @@ See [`docs/test-status.md`](test-status.md) for the latest local test results an
 
 ## 13) Additional notes (required clarifications)
 - **additionalAgentPayoutPercentage**: present but currently unused in payout math; changing it does not affect settlement.
-- **Marketplace scope**: the NFT marketplace is internal to AGIJobManager and settles listings in the same ERC‑20 token used for job payouts (the configured AGI token).
+- **NFT trading**: AGI Jobs are standard ERC‑721 NFTs and can be traded externally via normal approvals and transfers; this contract does not implement an internal marketplace.
 - **Dispute model**: dispute outcomes are centralized (moderators/owner), with all resolutions emitted as on-chain events; this is not a decentralized court/DAO.

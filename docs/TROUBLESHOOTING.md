@@ -23,7 +23,7 @@ If the contract is paused, most user actions revert with `Pausable: paused`.
 - A typo in the subdomain will fail identity checks.
 
 ### Missing ERC‑20 allowance
-- **createJob** and **purchaseNFT** require a prior `approve`.
+- **createJob** requires a prior `approve`.
 - Approve only the exact amount and revoke after use.
 
 ### Job expired

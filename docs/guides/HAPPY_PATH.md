@@ -172,12 +172,5 @@ const jobId = 1;
 await jm.resolveDisputeWithCode(jobId, 1, "agent win");
 ```
 
-## Marketplace
-```javascript
-const tokenId = 1;
-const price = web3.utils.toWei("10");
-await jm.listNFT(tokenId, price);
-await jm.delistNFT(tokenId);
-await token.approve(jm.address, price);
-await jm.purchaseNFT(tokenId);
-```
+## NFT trading
+AGI Jobs are standard ERC‑721 NFTs and can be traded on external marketplaces using normal approvals and transfers. This contract does not implement an internal marketplace.
