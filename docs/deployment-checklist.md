@@ -107,9 +107,9 @@ After lock, operators should only use:
 - `pause()` / `unpause()` for incident response.
 - `resolveStaleDispute()` (owner + paused, after timeout) for dispute recovery.
 - Optional moderator rotation if required.
-- Surplus withdrawals (`withdrawAGI`) while paused; escrowed funds remain reserved (`lockedEscrow`).
+- Surplus withdrawals (`withdrawAGI`) while paused; escrowed funds and bonds remain reserved (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`).
 
-> **Escrow safety:** withdrawals can never touch escrowed job funds because `withdrawableAGI = balance - lockedEscrow` and the call reverts if the escrow balance is insolvent.
+> **Escrow safety:** withdrawals can never touch escrowed job funds because `withdrawableAGI = balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and the call reverts if obligations are insolvent.
 
 Everything else remains operable but should be governed by your ops policy to keep the surface minimal.
 

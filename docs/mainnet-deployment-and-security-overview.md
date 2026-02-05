@@ -57,11 +57,11 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 - **Stale dispute recovery**: `resolveStaleDispute` is owner‑only and **paused‑only**, after `disputeReviewPeriod`.
 
 ## 4) Treasury vs escrow separation (hard invariant)
-**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Treasury** is the AGI balance minus escrow.
+**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Bonds** are tracked by `lockedAgentBonds` and `lockedValidatorBonds`. **Treasury** is the AGI balance minus escrow and locked bonds.
 
 **Why this matters**: it defines the hard boundary auditors and users rely on to ensure escrowed job funds cannot be withdrawn by the operator.
 
-- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow` and **reverts** if `balance < lockedEscrow`.
+- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and **reverts** if obligations exceed balance.
 - `withdrawAGI()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableAGI()`.
 
 **What becomes treasury**
@@ -72,7 +72,8 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 **Simple example**
 - Contract balance = 10,000 AGI
 - `lockedEscrow` = 9,000 AGI
-- `withdrawableAGI()` = 1,000 AGI (and `withdrawAGI` cannot exceed this)
+- `lockedAgentBonds + lockedValidatorBonds` = 250 AGI
+- `withdrawableAGI()` = 750 AGI (and `withdrawAGI` cannot exceed this)
 
 Escrowed funds can only be released through settlement paths (completion, refund, cancel, expire). The owner cannot sweep escrowed funds.
 
@@ -129,7 +130,7 @@ Pause is an incident‑response control to halt new activity while preserving ex
 - **Known limitations**: centralized operator risk; parameter changes can affect in‑flight jobs; no slashing; reward pool is not segregated from treasury.
 
 ### Reputation system (as implemented)
-- Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + completionTime / 10000`, with `payoutPoints = (scaledPayout^3) / 1e5`.
+- Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + timeBonus`, with `payoutPoints = (scaledPayout^3) / 1e5` and `timeBonus = max(0, (duration - completionTime) / 10000)`.
 - Reputation is then **diminished** by `1 + (newReputation^2 / 88888^2)` and capped at **88888**.
 - Validator payouts/reputation are outcome‑aligned: correct‑side voters earn rewards, incorrect‑side voters are slashed.
 - `premiumReputationThreshold` gates `canAccessPremiumFeature(address)` (pure threshold check; no time decay).

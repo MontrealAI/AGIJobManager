@@ -113,7 +113,7 @@ Adds or updates an AGIType NFT that boosts agent payout percentage. Emits `AGITy
 Returns the total AGI reserved for unsettled job escrows.
 
 ### `withdrawableAGI()`
-Returns the surplus AGI balance (`balance - lockedEscrow`). Reverts if balance is below `lockedEscrow`.
+Returns the surplus AGI balance (`balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`). Reverts if obligations exceed balance.
 
 ### `canAccessPremiumFeature(address user)`
 Returns true if reputation exceeds `premiumReputationThreshold`.

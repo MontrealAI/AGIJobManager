@@ -14,7 +14,7 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 ### 2) Treasury withdrawals (owner‑only, paused‑only)
 **Process**
 1. **Pause** the contract.
-2. Check `withdrawableAGI()` = `balance - lockedEscrow`.
+2. Check `withdrawableAGI()` = `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`.
 3. Withdraw up to `withdrawableAGI()` using `withdrawAGI(amount)`.
 4. **Unpause** after confirming balances.
 
