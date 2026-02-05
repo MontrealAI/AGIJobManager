@@ -154,19 +154,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "newPercentage",
-          "type": "uint256"
-        }
-      ],
-      "name": "AdditionalAgentPayoutPercentageUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
           "internalType": "address",
           "name": "agent",
