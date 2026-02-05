@@ -13,7 +13,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { time } = require("@openzeppelin/test-helpers");
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeAgentBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const { toBN, toWei } = web3.utils;
@@ -58,6 +58,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     await token.approve(manager.address, payout, { from: employer });
 
     await fundValidators(token, manager, [validator], owner);
+    await fundAgents(token, manager, [agent], owner);
   });
 
   it("keeps allowlists as access-only (no payout boost)", async () => {
@@ -95,7 +96,8 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
     const after = await token.balanceOf(agent);
 
-    const expected = payout.muln(payoutTier).divn(100);
+    const agentBond = await computeAgentBond(manager, payout);
+    const expected = payout.muln(payoutTier).divn(100).add(agentBond);
     assert.equal(after.sub(before).toString(), expected.toString(), "payout should match AGIType tier");
   });
 });

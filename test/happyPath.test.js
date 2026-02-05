@@ -9,7 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeAgentBond } = require("./helpers/bonds");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -63,6 +63,7 @@ contract("AGIJobManager happy path", (accounts) => {
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await fundValidators(token, manager, [validatorA, validatorB], owner);
+    await fundAgents(token, manager, [agent], owner);
   });
 
   it("runs a full job lifecycle with payouts and NFT issuance", async () => {
@@ -81,6 +82,7 @@ contract("AGIJobManager happy path", (accounts) => {
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
     await time.increase(2);
+    const agentBalanceBefore = await token.balanceOf(agent);
     const finalTx = await manager.finalizeJob(jobId, { from: employer });
 
     const tokenId = 0;
@@ -92,7 +94,12 @@ contract("AGIJobManager happy path", (accounts) => {
 
     const agentBalance = await token.balanceOf(agent);
     const agentExpected = payout.muln(92).divn(100);
-    assert.equal(agentBalance.toString(), agentExpected.toString(), "agent payout should match AGIType percentage");
+    const agentBond = await computeAgentBond(manager, payout);
+    assert.equal(
+      agentBalance.sub(agentBalanceBefore).toString(),
+      agentExpected.add(agentBond).toString(),
+      "agent payout should match AGIType percentage plus bond refund"
+    );
 
     const validatorReward = payout.muln(8).divn(100).divn(2);
     const validatorABalance = await token.balanceOf(validatorA);

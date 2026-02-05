@@ -8,7 +8,7 @@ const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
 
 const ZERO_BYTES32 = "0x" + "0".repeat(64);
 const EMPTY_PROOF = [];
@@ -103,6 +103,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     await token.mint(employer, web3.utils.toWei("2500"), { from: owner });
 
     await fundValidators(token, manager, [validator1, validator2, validator3], owner);
+    await fundAgents(token, manager, [agent], owner);
   });
 
   it("replays the legacy Job 12 lifecycle with ENS-mocked ownership", async () => {
@@ -157,6 +158,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     await manager.applyForJob(jobId, subdomains.agent, EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, ipfsHash, { from: agent });
 
+    const agentBefore = await token.balanceOf(agent);
     const validator1Before = await token.balanceOf(validator1);
     const validator2Before = await token.balanceOf(validator2);
     const validator3Before = await token.balanceOf(validator3);
@@ -183,7 +185,11 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     const validatorPayout = totalValidatorPayout.divn(3);
     const agentPayout = payout.muln(92).divn(100);
 
-    assert.equal((await token.balanceOf(agent)).toString(), agentPayout.toString());
+    const agentBond = await computeAgentBond(manager, payout);
+    assert.equal(
+      (await token.balanceOf(agent)).sub(agentBefore).toString(),
+      agentPayout.add(agentBond).toString()
+    );
     assert.equal(
       (await token.balanceOf(validator1)).sub(validator1Before).toString(),
       validatorPayout.toString()
