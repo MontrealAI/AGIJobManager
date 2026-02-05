@@ -197,7 +197,6 @@ contract("AGIJobManager incentive hardening", (accounts) => {
   });
 
   it("allows owner to disable agent bonds via params", async () => {
-    await manager.setAgentBondParams(0, 0, { from: owner });
     await manager.setAgentBond(0, { from: owner });
 
     const payout = toBN(toWei("10"));

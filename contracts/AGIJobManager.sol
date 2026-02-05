@@ -480,6 +480,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 lockedValidatorBonds += bond;
             }
         }
+        emit ValidatorBonded(_jobId, msg.sender, bond, 1);
         _enforceValidatorCapacity(job.validators.length);
         job.validatorApprovals++;
         job.approvals[msg.sender] = true;
@@ -492,6 +493,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         ) {
             job.validatorApproved = true;
             job.validatorApprovedAt = block.timestamp;
+            emit JobValidatorApproved(_jobId, msg.sender, job.validatorApprovedAt);
         }
     }
 
@@ -523,6 +525,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 lockedValidatorBonds += bond;
             }
         }
+        emit ValidatorBonded(_jobId, msg.sender, bond, 2);
         _enforceValidatorCapacity(job.validators.length);
         job.validatorDisapprovals++;
         job.disapprovals[msg.sender] = true;
@@ -560,6 +563,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             resolutionCode = uint8(DisputeResolutionCode.EMPLOYER_WIN);
         }
         _resolveDispute(_jobId, resolutionCode, resolution);
+        if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
+            emit DisputeResolved(_jobId, msg.sender, "agent win");
+        } else if (resolutionCode == uint8(DisputeResolutionCode.EMPLOYER_WIN)) {
+            emit DisputeResolved(_jobId, msg.sender, "employer win");
+        }
     }
 
     /// @notice Resolve a dispute with a typed action code and freeform reason.
@@ -591,11 +599,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             revert InvalidParameters();
         }
 
-        emit DisputeResolved(
-            _jobId,
-            msg.sender,
-            resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN) ? "agent win" : "employer win"
-        );
         emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
     }
 
@@ -694,11 +697,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
     function setValidatorBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
-        if (bps > 10_000) revert InvalidParameters();
-        if (min > max) revert InvalidParameters();
-        if (!(bps == 0 && min == 0 && max == 0)) {
-            if (max == 0) revert InvalidParameters();
-        }
         validatorBondBps = bps;
         validatorBondMin = min;
         validatorBondMax = max;
@@ -706,11 +704,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function setAgentBond(uint256 bond) external onlyOwner {
         agentBond = bond;
-    }
-    function setAgentBondParams(uint256 bps, uint256 max) external onlyOwner {
-        if (bps > 10_000) revert InvalidParameters();
-        agentBondBps = bps;
-        agentBondMax = max;
+        if (bond == 0) {
+            agentBondBps = 0;
+            agentBondMax = 0;
+        }
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
