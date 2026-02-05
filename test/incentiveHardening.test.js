@@ -128,6 +128,22 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     );
   });
 
+  it("requires the employer to finalize when there are no validator votes", async () => {
+    const payout = toBN(toWei("10"));
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-novotes", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-novotes-complete", { from: agentFast });
+    await time.increase(2);
+
+    await manager.finalizeJob(jobId, { from: agentFast });
+    const job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.disputed, true, "dispute should be set");
+  });
+
   it("caps validator bonds at payout and prevents rush-to-approve settlement", async () => {
     const payout = toBN(toWei("0.5"));
     await token.mint(employer, payout, { from: owner });
