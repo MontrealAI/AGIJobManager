@@ -182,8 +182,10 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     const totalValidatorPayout = payout.muln(8).divn(100);
     const validatorPayout = totalValidatorPayout.divn(3);
     const agentPayout = payout.muln(92).divn(100);
+    const remainder = totalValidatorPayout.sub(validatorPayout.muln(3));
+    const expectedAgentPayout = agentPayout.add(remainder);
 
-    assert.equal((await token.balanceOf(agent)).toString(), agentPayout.toString());
+    assert.equal((await token.balanceOf(agent)).toString(), expectedAgentPayout.toString());
     assert.equal(
       (await token.balanceOf(validator1)).sub(validator1Before).toString(),
       validatorPayout.toString()

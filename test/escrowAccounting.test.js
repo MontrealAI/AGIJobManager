@@ -151,22 +151,34 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     const bond = await computeValidatorBond(manager, payout);
     const validatorBefore = await token.balanceOf(validator);
+    const moderatorBefore = await token.balanceOf(moderator);
     const validatorTwoBefore = await token.balanceOf(validatorTwo);
 
+    await manager.addAdditionalValidator(moderator, { from: owner });
+    await token.mint(moderator, bond, { from: owner });
+    await token.approve(manager.address, bond, { from: moderator });
+
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: moderator });
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
 
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });
 
     const validatorAfter = await token.balanceOf(validator);
+    const moderatorAfter = await token.balanceOf(moderator);
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
     const rewardPool = payout.mul(await manager.validationRewardPercentage()).divn(100);
-    const expectedValidatorGain = rewardPool.add(bond);
+    const expectedValidatorGain = rewardPool.add(bond).divn(2);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
       expectedValidatorGain.toString(),
       "correct validator should gain reward plus slashed bond"
+    );
+    assert.equal(
+      moderatorAfter.sub(moderatorBefore).toString(),
+      expectedValidatorGain.toString(),
+      "second correct validator should gain reward plus slashed bond"
     );
     assert.equal(
       validatorTwoBefore.sub(validatorTwoAfter).toString(),
@@ -218,6 +230,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+    const jobAfterApproval = await manager.getJobCore(jobId);
+    assert.equal(jobAfterApproval.completed, false, "approval should not immediately complete the job");
     await expectCustomError(
       manager.finalizeJob.call(jobId, { from: employer }),
       "InvalidState"
@@ -226,6 +240,26 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
     const job = await manager.getJobCore(jobId);
     assert.equal(job.disputed, true, "dispute should be allowed during the challenge window");
+  });
+
+  it("does not early finalize when approvals are not ahead after the challenge window", async () => {
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(2, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
+
+    const payout = toBN(toWei("9"));
+    const jobId = await createJob(payout);
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+    await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
+
+    await time.increase(2);
+    await expectCustomError(
+      manager.finalizeJob.call(jobId, { from: employer }),
+      "InvalidState"
+    );
   });
 
   it("releases escrow on terminal transitions", async () => {
