@@ -26,7 +26,7 @@ const eventNames = new Set(
   artifact.abi.filter((item) => item.type === "event").map((item) => item.name)
 );
 
-["JobCreated", "JobCompleted", "DisputeResolved", "DisputeResolvedWithCode"].forEach((name) => {
+    ["JobCreated", "JobCompleted", "DisputeResolved", "DisputeResolvedWithCode"].forEach((name) => {
   assert.ok(eventNames.has(name), `Missing expected event: ${name}`);
 });
 
