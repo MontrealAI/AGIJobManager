@@ -15,6 +15,7 @@ const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const { toBN } = web3.utils;
 
 function hashAddress(address) {
   return Buffer.from(
@@ -270,7 +271,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const totalValidatorPayout = payout.muln(8).divn(100);
       const validatorPayout = totalValidatorPayout.divn(3);
       const validatorRemainder = totalValidatorPayout.sub(validatorPayout.muln(3));
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, toBN(2000));
       const expectedAgentPayout = agentPayout.add(validatorRemainder).add(agentBond);
 
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
@@ -397,7 +398,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.finalizeJob(jobId, { from: employer });
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
 
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, toBN(1000));
       const expectedPayout = payout.muln(90).divn(100).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
     });
@@ -420,7 +421,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.finalizeJob(jobId, { from: employer });
       const agentBalanceAfter = new BN(await token.balanceOf(other));
 
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, toBN(1000));
       const expectedPayout = payout.muln(1).divn(100).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
     });
@@ -495,7 +496,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.resolveDispute(jobId, "agent win", { from: moderator });
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
 
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, toBN(1000));
       const agentPayout = payout.muln(92).divn(100).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(agentPayout));
       assert.equal((await manager.nextTokenId()).toNumber(), 1);
@@ -601,7 +602,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const resolveReceipt = await manager.resolveDispute(jobId, "agent win", { from: moderator });
       expectEvent(resolveReceipt, "DisputeResolved", { jobId: new BN(jobId), resolver: moderator });
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, toBN(1000));
       const agentPayout = payout.muln(92).divn(100).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(agentPayout));
 
@@ -616,7 +617,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const employerBalanceBefore = new BN(await token.balanceOf(employer));
       await manager.resolveDispute(jobId2, "employer win", { from: moderator });
       const employerBalanceAfter = new BN(await token.balanceOf(employer));
-      const agentBond2 = await computeAgentBond(manager, payout2);
+      const agentBond2 = await computeAgentBond(manager, payout2, toBN(1000));
       assert(employerBalanceAfter.sub(employerBalanceBefore).eq(payout2.add(agentBond2)));
 
       await expectCustomError(

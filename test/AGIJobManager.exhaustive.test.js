@@ -15,6 +15,7 @@ const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
 
 const EMPTY_PROOF = [];
+const { toBN } = web3.utils;
 
 function leafFor(address) {
   return web3.utils.soliditySha3({ type: "address", value: address });
@@ -186,7 +187,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const validatorBalanceAfter = await token.balanceOf(validator);
       const employerBalanceAfter = await token.balanceOf(employer);
 
-      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout), toBN(1000));
       assert.equal(employerBalanceAfter.toString(), employerBalanceBefore.toString());
       assert.equal(
         agentBalanceAfter.sub(agentBalanceBefore).toString(),
@@ -332,7 +333,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
       const agentBalanceAfter = web3.utils.toBN(await token.balanceOf(agent));
 
-      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout), toBN(1000));
       const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100)).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
 
