@@ -10,6 +10,8 @@ const MockResolver = artifacts.require('MockResolver');
 const MockERC721 = artifacts.require('MockERC721');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
+const { time } = require('@openzeppelin/test-helpers');
+
 const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
 const { buildInitConfig } = require('./helpers/deploy');
 const { fundValidators } = require('./helpers/bonds');
@@ -62,6 +64,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addModerator(moderator, { from: owner });
@@ -74,6 +77,8 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.applyForJob(jobId1, 'agent', EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId1, 'ipfs-complete', { from: agent });
     await manager.validateJob(jobId1, 'club', EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId1, { from: employer });
 
     const jobId2 = await createJob();
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });

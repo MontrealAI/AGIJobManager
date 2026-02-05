@@ -327,6 +327,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await managerFailing.setRequiredValidatorApprovals(1, { from: owner });
+    await managerFailing.setChallengePeriodAfterApproval(1, { from: owner });
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
     await managerFailing.addAGIType(agiType.address, 1, { from: owner });
@@ -340,9 +341,11 @@ contract("AGIJobManager security regressions", (accounts) => {
     const bond = await computeValidatorBond(managerFailing, toBN(toWei("10")));
     await failing.mint(validator, bond, { from: owner });
     await failing.approve(managerFailing.address, bond, { from: validator });
+    await managerFailing.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await failing.setFailTransfers(true, { from: owner });
+    await time.increase(2);
     await expectCustomError(
-      managerFailing.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
+      managerFailing.finalizeJob.call(jobId, { from: employer }),
       "TransferFailed"
     );
   });

@@ -269,6 +269,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+    await time.increase((await manager.challengePeriodAfterApproval()).addn(1));
+    await manager.finalizeJob(jobId, { from: employer });
 
     const agentPct = await manager.getHighestPayoutPercentage(agent);
     const validatorPct = await manager.validationRewardPercentage();

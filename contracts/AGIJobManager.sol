@@ -426,7 +426,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.disapprovals[msg.sender]) revert InvalidState();
 
         uint256 bond = job.validatorBondAmount;
-        if (bond == 0) {
+        if (bond == 0 && job.validators.length == 0) {
             bond = _computeValidatorBond(job.payout);
             job.validatorBondAmount = bond;
         }
@@ -466,7 +466,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.approvals[msg.sender]) revert InvalidState();
 
         uint256 bond = job.validatorBondAmount;
-        if (bond == 0) {
+        if (bond == 0 && job.validators.length == 0) {
             bond = _computeValidatorBond(job.payout);
             job.validatorBondAmount = bond;
         }
@@ -1020,9 +1020,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bool verified = MerkleProof.verifyCalldata(proof, agentMerkleRoot, keccak256(abi.encodePacked(claimant)))
             || _verifyOwnershipByRoot(claimant, subdomain, agentRootNode)
             || _verifyOwnershipByRoot(claimant, subdomain, alphaAgentRootNode);
-        if (verified) {
-            emit OwnershipVerified(claimant, subdomain);
-        }
         return verified;
     }
 
@@ -1030,9 +1027,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bool verified = MerkleProof.verifyCalldata(proof, validatorMerkleRoot, keccak256(abi.encodePacked(claimant)))
             || _verifyOwnershipByRoot(claimant, subdomain, clubRootNode)
             || _verifyOwnershipByRoot(claimant, subdomain, alphaClubRootNode);
-        if (verified) {
-            emit OwnershipVerified(claimant, subdomain);
-        }
         return verified;
     }
 
@@ -1091,7 +1085,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 available = withdrawableAGI();
         if (amount > available) revert InsufficientWithdrawableBalance();
         _t(msg.sender, amount);
-        emit AGIWithdrawn(msg.sender, amount, available - amount);
     }
 
     function canAccessPremiumFeature(address user) public view returns (bool) {
@@ -1115,7 +1108,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
         }
 
-        emit AGITypeUpdated(nftAddress, payoutPercentage);
     }
 
     function _maxAGITypePayoutAfterUpdate(address nftAddress, uint256 payoutPercentage) internal view returns (bool exists, uint256 maxPct) {

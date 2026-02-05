@@ -1,5 +1,6 @@
 const assert = require("assert");
 
+const { time } = require("@openzeppelin/test-helpers");
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
 
@@ -53,6 +54,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     );
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -89,6 +91,8 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
 
     const before = await token.balanceOf(agent);
     await manager.validateJob(jobId, "ignored", tree.getHexProof(validatorLeaf), { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
     const after = await token.balanceOf(agent);
 
     const expected = payout.muln(payoutTier).divn(100);
