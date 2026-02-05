@@ -126,10 +126,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
-    uint256 internal constant AGENT_BOND_BPS = 500;
-    uint256 internal constant AGENT_BOND_MIN = 1e18;
-    uint256 internal constant AGENT_BOND_MAX = 500e18;
-    uint256 internal constant MAX_SPEED_BONUS = 500;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
@@ -137,6 +133,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public lockedAgentBonds;
     /// @notice Total AGI locked as validator bonds for unsettled votes.
     uint256 public lockedValidatorBonds;
+    /// @notice Flat agent bond required to capture a job (capped by payout).
+    uint256 public agentBond;
 
     string public termsAndConditionsIpfsHash;
     string public contactEmail;
@@ -355,15 +353,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bond > payout) bond = payout;
     }
 
-    function _computeAgentBond(uint256 payout) internal pure returns (uint256 bond) {
-        unchecked {
-            bond = (payout * AGENT_BOND_BPS) / 10_000;
-        }
-        if (bond < AGENT_BOND_MIN) bond = AGENT_BOND_MIN;
-        if (bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
-        if (bond > payout) bond = payout;
-    }
-
     function _maxAGITypePayoutPercentage() internal view returns (uint256) {
         uint256 maxPercentage = 0;
         for (uint256 i = 0; i < agiTypes.length; ) {
@@ -423,12 +412,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = _computeAgentBond(job.payout);
-        _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
-        unchecked {
-            lockedAgentBonds += bond;
+        uint256 bond = agentBond;
+        if (bond > job.payout) {
+            bond = job.payout;
         }
-        job.agentBondAmount = bond;
+        if (bond > 0) {
+            _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
+            unchecked {
+                lockedAgentBonds += bond;
+            }
+            job.agentBondAmount = bond;
+        }
         job.assignedAgent = msg.sender;
         job.assignedAt = block.timestamp;
         emit JobApplied(_jobId, msg.sender);
@@ -708,6 +702,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         validatorSlashBps = bps;
         emit ValidatorSlashBpsUpdated(bps);
     }
+    function setAgentBond(uint256 bond) external onlyOwner { agentBond = bond; }
     function setChallengePeriodAfterApproval(uint256 period) external onlyOwner {
         if (!(period > 0 && period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
         uint256 oldPeriod = challengePeriodAfterApproval;
@@ -851,6 +846,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         bool agentWins;
         if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
+            if (msg.sender != job.employer) revert InvalidState();
             agentWins = true;
         } else {
             agentWins = job.validatorApprovals > job.validatorDisapprovals;
@@ -1012,8 +1008,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             uint256 scaledPayout = job.payout / 1e18;
             uint256 payoutPoints = scaledPayout ** 3 / 1e5;
             uint256 timeBonus;
-            if (completionTime <= job.duration) {
-                timeBonus = ((job.duration - completionTime) * MAX_SPEED_BONUS) / job.duration;
+            if (completionTime < job.duration) {
+                timeBonus = (job.duration - completionTime) / 10000;
             }
             reputationPoints = Math.log2(1 + payoutPoints * 1e6) + timeBonus;
         }
