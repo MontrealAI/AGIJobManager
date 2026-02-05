@@ -155,7 +155,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
   describe("Job lifecycle happy path", () => {
     it("creates, assigns, completes, pays out, and mints NFT", async () => {
       const payout = web3.utils.toWei("100");
-      const jobId = await createJob({ manager, token, employer, payout });
+      const duration = 1000;
+      const jobId = await createJob({ manager, token, employer, payout, duration });
       const contractBalance = await token.balanceOf(manager.address);
       assert.equal(contractBalance.toString(), payout.toString());
 
@@ -186,7 +187,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const validatorBalanceAfter = await token.balanceOf(validator);
       const employerBalanceAfter = await token.balanceOf(employer);
 
-      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout), duration);
       assert.equal(employerBalanceAfter.toString(), employerBalanceBefore.toString());
       assert.equal(
         agentBalanceAfter.sub(agentBalanceBefore).toString(),
@@ -321,7 +322,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
     it("settles agent win via resolveDisputeWithCode", async () => {
       const payout = web3.utils.toWei("22");
-      const jobId = await createJob({ manager, token, employer, payout });
+      const duration = 1000;
+      const jobId = await createJob({ manager, token, employer, payout, duration });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.addModerator(moderator, { from: owner });
@@ -332,7 +334,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
       const agentBalanceAfter = web3.utils.toBN(await token.balanceOf(agent));
 
-      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout), duration);
       const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100)).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
 

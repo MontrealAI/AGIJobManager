@@ -15,6 +15,7 @@ const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = r
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
+const DEFAULT_DURATION = 3600;
 
 contract("AGIJobManager economic state-machine scenarios", (accounts) => {
   const [owner, employer, agent, validatorA, validatorB, moderator, other] = accounts;
@@ -57,9 +58,9 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await fundAgents(token, manager, [agent], owner);
   });
 
-  async function createJob(payout, ipfsHash = "ipfs-job") {
+  async function createJob(payout, ipfsHash = "ipfs-job", duration = DEFAULT_DURATION) {
     await token.approve(manager.address, payout, { from: employer });
-    const tx = await manager.createJob(ipfsHash, payout, 3600, "details", { from: employer });
+    const tx = await manager.createJob(ipfsHash, payout, duration, "details", { from: employer });
     const jobId = tx.logs.find((log) => log.event === "JobCreated").args.jobId.toNumber();
     return jobId;
   }
@@ -90,7 +91,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.equal((await token.balanceOf(manager.address)).toString(), payout.toString(), "escrow should hold payout");
 
     await assignAndRequest(jobId, "ipfs-complete");
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, DEFAULT_DURATION);
     assert.equal(
       (await token.balanceOf(agent)).toString(),
       balancesBefore.agent.sub(agentBond).toString(),
@@ -268,7 +269,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
     const employerAfter = await token.balanceOf(employer);
     const validatorRewardTotal = payoutTwo.mul(await manager.validationRewardPercentage()).divn(100);
-    const agentBondTwo = await computeAgentBond(manager, payoutTwo);
+    const agentBondTwo = await computeAgentBond(manager, payoutTwo, DEFAULT_DURATION);
     const validatorReward = validatorRewardTotal.divn(2);
     assert.equal(
       employerAfter.toString(),

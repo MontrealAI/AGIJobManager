@@ -131,7 +131,8 @@ contract("AGIJobManager economic safety", (accounts) => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
-    const createTx = await manager.createJob("ipfs-job", payout, 1000, "details", { from: employer });
+    const duration = 1000;
+    const createTx = await manager.createJob("ipfs-job", payout, duration, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
@@ -147,7 +148,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     const agentBalance = await token.balanceOf(agent);
     const validatorBalance = await token.balanceOf(validator);
     const contractBalance = await token.balanceOf(manager.address);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     const agentPayout = payout.muln(80).divn(100);
     const expectedAgentPayout = agentPayout.add(agentBond);
     const expectedValidatorPayout = payout.muln(10).divn(100);

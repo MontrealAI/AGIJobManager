@@ -13,6 +13,7 @@ const { fundValidators, fundAgents, computeAgentBond } = require("./helpers/bond
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
+const JOB_DURATION = 1000;
 
 async function advanceTime(seconds) {
   await new Promise((resolve, reject) => {
@@ -92,7 +93,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
   async function createJob(payout) {
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
-    const tx = await manager.createJob("ipfs-job", payout, 1000, "details", { from: employer });
+    const tx = await manager.createJob("ipfs-job", payout, JOB_DURATION, "details", { from: employer });
     return tx.logs.find((log) => log.event === "JobCreated").args.jobId.toNumber();
   }
 
@@ -187,13 +188,12 @@ contract("AGIJobManager dispute hardening", (accounts) => {
 
     await manager.disputeJob(jobId, { from: employer });
     await advanceTime(120);
-    await manager.pause({ from: owner });
 
     const agentBefore = await token.balanceOf(agent);
     await manager.resolveStaleDispute(jobId, false, { from: owner });
     const agentAfter = await token.balanceOf(agent);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, JOB_DURATION);
     const expected = payout.muln(90).divn(100).add(agentBond);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
 
@@ -201,19 +201,16 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     assert.strictEqual(resolvedJob.completed, true, "job should be completed");
     assert.strictEqual(resolvedJob.disputed, false, "dispute should be cleared");
 
-    await manager.unpause({ from: owner });
-
     const payoutRefund = toBN(toWei("9"));
     const refundJobId = await setupCompletion(payoutRefund);
     await manager.disputeJob(refundJobId, { from: employer });
     await advanceTime(120);
-    await manager.pause({ from: owner });
 
     const employerBefore = await token.balanceOf(employer);
     await manager.resolveStaleDispute(refundJobId, true, { from: owner });
     const employerAfter = await token.balanceOf(employer);
 
-    const refundBond = await computeAgentBond(manager, payoutRefund);
+    const refundBond = await computeAgentBond(manager, payoutRefund, JOB_DURATION);
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
       payoutRefund.add(refundBond).toString(),
@@ -249,7 +246,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     const lockedAfter = await manager.lockedEscrow();
     const job = await manager.getJobCore(jobId);
     const jobValidation = await manager.getJobValidation(jobId);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, JOB_DURATION);
 
     assert.strictEqual(job.completed, true, "job should be marked completed");
     assert.strictEqual(job.disputed, false, "dispute should be cleared");

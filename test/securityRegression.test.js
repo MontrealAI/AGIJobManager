@@ -86,7 +86,8 @@ contract("AGIJobManager security regressions", (accounts) => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
-    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const duration = 1000;
+    const createTx = await manager.createJob("ipfs", payout, duration, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
@@ -133,7 +134,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const agentBalance = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, duration);
     const expectedPayout = payout.muln(92).divn(100).add(agentBond);
     assert.equal(
       agentBalance.sub(agentBefore).toString(),
