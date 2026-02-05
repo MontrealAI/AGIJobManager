@@ -21,15 +21,14 @@ This document is a production-grade **operator checklist** for preventing and re
   - `AGENT_WIN (1)` → `_completeJob`.
   - `EMPLOYER_WIN (2)` → refund employer and mark completed.
 
-**Marketplace paths (job NFTs):**
+**NFT issuance:**
 - Minted on completion in `_completeJob` (ERC‑721 `Job` token).
-- `listNFT` → `purchaseNFT` → `delistNFT` (seller-controlled listing lifecycle).
 
 ## Parameter safety table (all configurable parameters and operational levers)
 
 | Parameter / lever | Type / units | Used in | Safe range / constraints | What breaks if wrong | Recovery / escape hatch |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` (`updateAGITokenAddress`) | ERC‑20 address | Escrow deposits, payouts, marketplace purchases, reward pool, `withdrawAGI`. | **Treat as immutable after any job is funded.** Must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | If changed after funding, escrow in the old token becomes **unrecoverable**; new payouts can revert due to missing balance. | **No on-chain recovery** for old token escrow; redeploy + off-chain remediation. |
+| `agiToken` (`updateAGITokenAddress`) | ERC‑20 address | Escrow deposits, payouts, reward pool, `withdrawAGI`. | **Treat as immutable after any job is funded.** Must be a standard ERC‑20 (no fee-on-transfer, no rebasing). | If changed after funding, escrow in the old token becomes **unrecoverable**; new payouts can revert due to missing balance. | **No on-chain recovery** for old token escrow; redeploy + off-chain remediation. |
 | `requiredValidatorApprovals` (`setRequiredValidatorApprovals`) | uint256 count | `validateJob` threshold → `_completeJob`. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Operationally keep ≤ active validator count. | Too high → completion unreachable; jobs stall unless a moderator resolves disputes. | Lower threshold or add validators with `addAdditionalValidator`. |
 | `requiredValidatorDisapprovals` (`setRequiredValidatorDisapprovals`) | uint256 count | `disapproveJob` threshold → dispute. | `0..MAX_VALIDATORS_PER_JOB`, with `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. Keep low to enable disputes. | Too high → disputes never trigger; jobs can remain in limbo. | Lower threshold; use `disputeJob` + `resolveDisputeWithCode`. |
 | `validationRewardPercentage` (`setValidationRewardPercentage`) | uint256 percentage | Validator payout pool in `_completeJob`. | `1..100` on-chain; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. | If sum exceeds 100, payouts can exceed escrow → completion reverts. | Reduce `validationRewardPercentage` or reduce any AGI type payout percentage. |
@@ -40,7 +39,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `disputeReviewPeriod` (`setDisputeReviewPeriod`) | seconds | Window before `resolveStaleDispute` is allowed (paused + owner only). | `1..365 days` | Days to weeks (7d–30d) to give moderators time to resolve. | Too short → owner can settle too early in incidents; too long → disputes can deadlock. | Adjust window; maintain moderator redundancy. |
 | `premiumReputationThreshold` (`setPremiumReputationThreshold`) | points | `canAccessPremiumFeature`. | Any non-negative uint. | Mis-set only affects premium access (no settlement impact). | Adjust threshold. |
 | `AGIType.payoutPercentage` (`addAGIType`) | uint256 percentage | Agent payout percentage in `_completeJob`. | `1..100`; **highest** payout across AGI types must satisfy `maxAgentPayoutPercentage + validationRewardPercentage <= 100` (enforced). | If any agent holds a high-percentage NFT that pushes the sum > 100, completion can revert. | Lower AGI type percentage (or validation reward %); re-validate. |
-| `pause` / `unpause` | bool | Gates most job actions. | Use `pause` for incident response, not normal ops. | If paused, new activity reverts (create/apply/validate/dispute, list/purchase). Completion requests, delistings, and settlement exits can still proceed. | Unpause after fixing parameters; no funds lost. |
+| `pause` / `unpause` | bool | Gates most job actions. | Use `pause` for incident response, not normal ops. | If paused, new activity reverts (create/apply/validate/dispute). Completion requests and settlement exits can still proceed. | Unpause after fixing parameters; no funds lost. |
 | `addAdditionalAgent` / `addAdditionalValidator` | allowlist | Eligibility bypass. | Only use for emergency recovery or vetted identities. | Overuse weakens gating; underuse when Merkle/ENS config is wrong can stall jobs. | Add temporary allowlist entries; remove later. |
 | `blacklistedAgents` / `blacklistedValidators` | bool | Eligibility gating. | Use sparingly with documented reasons. | If critical participants are blacklisted, jobs cannot progress (validate/apply revert). | Un-blacklist or resolve by moderator. |
 | `addModerator` / `removeModerator` | address | Dispute resolution authority. | Ensure ≥1 active moderator. | If no moderator exists, disputes can’t resolve → funds stuck. | Add a moderator (owner action). |
@@ -51,8 +50,6 @@ This document is a production-grade **operator checklist** for preventing and re
 | `withdrawAGI` | token amount | Owner withdraws surplus (`withdrawableAGI()`) while paused. | Only withdraw when paused and `withdrawableAGI()` is positive. | Withdrawal reverts if amount exceeds surplus. | Use `withdrawableAGI()` to size withdrawals; do not rely on raw balance. |
 | `baseIpfsUrl` (`setBaseIpfsUrl`) | string URL | Token URI for job NFTs. | Stable HTTP/IPFS base. | Wrong value breaks NFT metadata display (no settlement impact). | Update base URL; metadata reads fixed retroactively. |
 | `termsAndConditionsIpfsHash`, `contactEmail`, `additionalText1/2/3` | strings | UI/legal metadata only. | Non-empty strings recommended. | Mis-set affects UI/legal metadata only. | Update strings. |
-| `listNFT` price | token amount | Marketplace list price. | Must be > 0. | Zero price reverts listing; invalid price prevents sale. | Re-list with valid price. |
-| `purchaseNFT` allowance/balance | token amount | Marketplace purchase path. | Buyer must approve and hold `agiToken` balance. | Purchase reverts; listing stays active. | Buyer increases allowance/balance; seller can `delistNFT`. |
 
 ## Stuck-funds scenarios (prerequisites + escape hatch)
 
@@ -91,22 +88,17 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Failure:** dispute remains active; no payout/refund occurs.
    - **Escape hatch:** moderator re‑resolves with `resolveDisputeWithCode` and the correct action code.
 
-8. **Stale NFT listings**
-   - **Prerequisite:** seller transfers NFT away after listing.
-   - **Failure:** `purchaseNFT` reverts because seller is no longer owner; listing remains active.
-   - **Escape hatch:** seller (current owner) delists and re-lists; buyers retry after listing is valid.
-
-9. **Silent or low-vote completion request**
+8. **Silent or low-vote completion request**
    - **Prerequisite:** agent called `requestJobCompletion`, but validators do not reach thresholds.
    - **Failure:** job remains incomplete, escrow locked.
    - **Escape hatch:** after `completionReviewPeriod`, anyone can call `finalizeJob`. Silence defaults to agent payout; otherwise approvals must exceed disapprovals for agent payout (ties refund the employer).
 
-10. **Expired assignment (agent disappears)**
+9. **Expired assignment (agent disappears)**
    - **Prerequisite:** agent assigned but never requests completion.
    - **Failure:** escrow locked beyond deadline.
    - **Escape hatch:** anyone can call `expireJob` after `assignedAt + duration` (only if completion was never requested).
 
-11. **Dispute deadlock (no moderators)**
+10. **Dispute deadlock (no moderators)**
    - **Prerequisite:** job remains disputed without moderator action.
    - **Failure:** escrow locked indefinitely.
    - **Escape hatch:** owner pauses and calls `resolveStaleDispute` after `disputeReviewPeriod` to settle.
@@ -144,8 +136,8 @@ This document is a production-grade **operator checklist** for preventing and re
 | Error / condition | Where it occurs | Explanation | Suggested fix |
 | --- | --- | --- | --- |
 | `Pausable: paused` | Most lifecycle actions | Contract is paused by owner. | Unpause once parameters are safe. |
-| `InvalidParameters` | `createJob`, `setValidationRewardPercentage`, `addAGIType`, `withdrawAGI`, `listNFT`, `contributeToRewardPool` | Input out of allowed bounds (e.g., zero payout, duration > limit, invalid percentage, zero price). | Provide valid values; check `maxJobPayout` and `jobDurationLimit`. |
-| `InvalidState` | Job actions, disputes, listings | Job not in expected lifecycle state (e.g., already completed, already assigned, listing inactive). | Read `getJobCore(jobId)` to confirm state; retry appropriate action. |
+| `InvalidParameters` | `createJob`, `setValidationRewardPercentage`, `addAGIType`, `withdrawAGI`, `contributeToRewardPool` | Input out of allowed bounds (e.g., zero payout, duration > limit, invalid percentage). | Provide valid values; check `maxJobPayout` and `jobDurationLimit`. |
+| `InvalidState` | Job actions, disputes | Job not in expected lifecycle state (e.g., already completed, already assigned). | Read `getJobCore(jobId)` to confirm state; retry appropriate action. |
 | `NotAuthorized` | Role-gated paths | Caller lacks role/ownership (agent not assigned, validator not allowlisted, seller not NFT owner). | Verify role gating, allowlists, and ownership; add via owner if needed. |
 | `NotModerator` | `resolveDisputeWithCode` | Caller is not a moderator. | Owner must add moderator; then re-resolve. |
 | `Blacklisted` | `applyForJob`, `validateJob`, `disapproveJob` | Agent/validator is blocked. | Remove blacklist entry or use another participant. |

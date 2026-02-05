@@ -84,4 +84,4 @@ Actuators: fee splits · burn fraction · tier multipliers · quorum/slashing pa
 
 1. **Pilot**: pick one workflow, define acceptance tests, run private nodes, export audit packs.
 2. **Harden**: add validator quorum, enable policy brakes, increase replay coverage, establish key custody + rotation.
-3. **Scale**: route more workloads, publish α‑WU indices, open marketplace channels as governance confidence increases.
+3. **Scale**: route more workloads, publish α‑WU indices, and enable broader external NFT trading as governance confidence increases.

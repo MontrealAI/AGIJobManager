@@ -35,7 +35,6 @@
 | `getApproved(uint256 tokenId)` | view | address |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
-| `listings(uint256)` | view | uint256, address, uint256, bool |
 | `lockIdentityConfig()` | view | bool |
 | `lockedEscrow()` | view | uint256 |
 | `maxJobPayout()` | view | uint256 |
@@ -111,9 +110,6 @@
 | `expireJob(uint256 _jobId)` | nonpayable | — |
 | `finalizeJob(uint256 _jobId)` | nonpayable | — |
 | `tokenURI(uint256 tokenId)` | view | string |
-| `listNFT(uint256 tokenId, uint256 price)` | nonpayable | — |
-| `purchaseNFT(uint256 tokenId)` | nonpayable | — |
-| `delistNFT(uint256 tokenId)` | nonpayable | — |
 | `addAdditionalValidator(address validator)` | nonpayable | — |
 | `removeAdditionalValidator(address validator)` | nonpayable | — |
 | `addAdditionalAgent(address agent)` | nonpayable | — |
@@ -152,10 +148,7 @@
 | `JobFinalized(uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout)` | uint256 jobId, address agent, address employer, bool agentPaid, uint256 payout |
 | `JobValidated(uint256 jobId, address validator)` | uint256 jobId, address validator |
 | `MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot)` | bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot |
-| `NFTDelisted(uint256 tokenId)` | indexed uint256 tokenId |
 | `NFTIssued(uint256 tokenId, address employer, string tokenURI)` | indexed uint256 tokenId, indexed address employer, string tokenURI |
-| `NFTListed(uint256 tokenId, address seller, uint256 price)` | indexed uint256 tokenId, indexed address seller, uint256 price |
-| `NFTPurchased(uint256 tokenId, address buyer, uint256 price)` | indexed uint256 tokenId, indexed address buyer, uint256 price |
 | `NameWrapperUpdated(address newNameWrapper)` | indexed address newNameWrapper |
 | `OwnershipTransferred(address previousOwner, address newOwner)` | indexed address previousOwner, indexed address newOwner |
 | `OwnershipVerified(address claimant, string subdomain)` | address claimant, string subdomain |

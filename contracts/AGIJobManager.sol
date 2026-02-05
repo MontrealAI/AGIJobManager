@@ -166,14 +166,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 payoutPercentage;
     }
 
-    struct Listing {
-        uint256 tokenId;
-        address seller;
-        uint256 price;
-        bool isActive;
-    }
-
-
     uint256 public nextJobId;
     uint256 public nextTokenId;
     mapping(uint256 => Job) internal jobs;
@@ -183,7 +175,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     mapping(address => bool) public additionalAgents;
     /// @notice Tracks jobs a validator has voted on (approved or disapproved).
     mapping(address => uint256[]) public validatorVotedJobs;
-    mapping(uint256 => Listing) public listings;
     mapping(address => bool) public blacklistedAgents;
     mapping(address => bool) public blacklistedValidators;
     AGIType[] public agiTypes;
@@ -215,9 +206,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event OwnershipVerified(address claimant, string subdomain);
     event AGITypeUpdated(address indexed nftAddress, uint256 payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
-    event NFTListed(uint256 indexed tokenId, address indexed seller, uint256 price);
-    event NFTPurchased(uint256 indexed tokenId, address indexed buyer, uint256 price);
-    event NFTDelisted(uint256 indexed tokenId);
     event RewardPoolContribution(address indexed contributor, uint256 amount);
     event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
@@ -920,35 +908,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 ++i;
             }
         }
-    }
-
-    function listNFT(uint256 tokenId, uint256 price) external whenNotPaused {
-        if (ownerOf(tokenId) != msg.sender) revert NotAuthorized();
-        if (price == 0) revert InvalidParameters();
-        listings[tokenId] = Listing(tokenId, msg.sender, price, true);
-        emit NFTListed(tokenId, msg.sender, price);
-    }
-
-    function purchaseNFT(uint256 tokenId) external whenNotPaused nonReentrant {
-        Listing storage listing = listings[tokenId];
-        if (!listing.isActive) revert InvalidState();
-        address seller = listing.seller;
-        uint256 price = listing.price;
-        if (seller == address(0)) revert InvalidState();
-        if (seller == msg.sender) revert NotAuthorized();
-        if (price == 0) revert InvalidParameters();
-        if (ownerOf(tokenId) != seller) revert InvalidState();
-        listing.isActive = false;
-        _safeERC20TransferFromExact(agiToken, msg.sender, seller, price);
-        _safeTransfer(seller, msg.sender, tokenId, "");
-        emit NFTPurchased(tokenId, msg.sender, price);
-    }
-
-    function delistNFT(uint256 tokenId) external {
-        Listing storage listing = listings[tokenId];
-        if (!listing.isActive || listing.seller != msg.sender) revert NotAuthorized();
-        listing.isActive = false;
-        emit NFTDelisted(tokenId);
     }
 
     function _verifyOwnershipAgent(address claimant, string memory subdomain, bytes32[] calldata proof) internal returns (bool) {
