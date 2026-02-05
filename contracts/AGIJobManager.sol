@@ -125,8 +125,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
-    uint256 public agentBond = 1e18;
-    uint256 internal constant agentBondBps = 100;
+    uint256 public agentBond = 100;
     uint256 internal constant agentBondMin = 1e18;
     uint256 internal constant agentBondMax = 200e18;
     uint256 internal constant agentSlashBps = 10_000;
@@ -366,8 +365,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return _computeBond(payout, validatorBondBps, validatorBondMin, validatorBondMax);
     }
 
-    function _computeAgentBond(uint256 payout) internal pure returns (uint256 bond) {
-        return _computeBond(payout, agentBondBps, agentBondMin, agentBondMax);
+    function _computeAgentBond(uint256 payout) internal view returns (uint256 bond) {
+        return _computeBond(payout, agentBond, agentBondMin, agentBondMax);
     }
 
     function _maxAGITypePayoutPercentage() internal view returns (uint256) {
