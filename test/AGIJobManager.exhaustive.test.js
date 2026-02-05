@@ -12,7 +12,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
 
 const EMPTY_PROOF = [];
 
@@ -66,6 +66,11 @@ async function createJob({ manager, token, employer, payout, duration = 1000, ip
   return jobId;
 }
 
+async function setChallengePeriod(manager, owner, period) {
+  const [bondBps, bondMin, bondMax, slashBps] = await manager.getValidatorConfig();
+  await manager.setValidatorConfig(bondBps, bondMin, bondMax, slashBps, period, { from: owner });
+}
+
 contract("AGIJobManager exhaustive suite", (accounts) => {
   const [owner, employer, agent, validator, validatorTwo, buyer, moderator, other] = accounts;
 
@@ -97,6 +102,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       agentMerkleRoot: agentMerkle.root,
       owner,
     });
+    await setChallengePeriod(manager, owner, 1);
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
@@ -177,6 +183,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const validatorBalanceBefore = await token.balanceOf(validator);
 
       await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
 
       const agentBalanceAfter = await token.balanceOf(agent);
       const validatorBalanceAfter = await token.balanceOf(validator);
@@ -218,6 +226,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
 
       await expectRevert.unspecified(
         manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validatorTwo), { from: validatorTwo })
@@ -366,6 +376,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
         owner,
       });
       await failingManager.setRequiredValidatorApprovals(1, { from: owner });
+      await setChallengePeriod(failingManager, owner, 1);
 
       const jobId = await createJob({
         manager: failingManager,
@@ -379,12 +390,14 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
-      const bond = await failingManager.validatorBond();
+      const bond = await computeValidatorBond(failingManager, web3.utils.toBN(web3.utils.toWei("50")));
       await failingToken.mint(validator, bond, { from: owner });
       await failingToken.approve(failingManager.address, bond, { from: validator });
+      await failingManager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
       await failingToken.setFailTransfers(true, { from: owner });
+      await time.increase(2);
       await expectRevert.unspecified(
-        failingManager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator })
+        failingManager.finalizeJob(jobId, { from: employer })
       );
     });
 

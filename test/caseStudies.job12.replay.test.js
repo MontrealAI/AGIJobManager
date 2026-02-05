@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { BN, expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -8,7 +8,7 @@ const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_BYTES32 = "0x" + "0".repeat(64);
 const EMPTY_PROOF = [];
@@ -36,6 +36,11 @@ async function configureEnsOwnership({
   await ens.setResolver(subnode, resolver.address, { from });
   await resolver.setAddr(subnode, claimant, { from });
   return subnode;
+}
+
+async function setChallengePeriod(manager, owner, period) {
+  const [bondBps, bondMin, bondMax, slashBps] = await manager.getValidatorConfig();
+  await manager.setValidatorConfig(bondBps, bondMin, bondMax, slashBps, period, { from: owner });
 }
 
 contract("Case study replay: legacy AGI Job 12", (accounts) => {
@@ -95,6 +100,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       ),
       { from: owner }
     );
+    await setChallengePeriod(manager, owner, 1);
 
     await manager.addAGIType(nft.address, 92, { from: owner });
     await nft.mint(agent, { from: owner });
@@ -161,7 +167,9 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     const validator3Before = await token.balanceOf(validator3);
     await manager.validateJob(jobId, subdomains.validatorPrimary, EMPTY_PROOF, { from: validator1 });
     await manager.validateJob(jobId, subdomains.validator2, EMPTY_PROOF, { from: validator2 });
-    const receipt = await manager.validateJob(jobId, subdomains.validator3, EMPTY_PROOF, { from: validator3 });
+    await manager.validateJob(jobId, subdomains.validator3, EMPTY_PROOF, { from: validator3 });
+    await time.increase(2);
+    const receipt = await manager.finalizeJob(jobId, { from: employer });
 
     expectEvent(receipt, "JobCompleted", {
       jobId: new BN(jobId),
@@ -283,7 +291,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
 
     await manager.setRequiredValidatorApprovals(3, { from: owner });
     await manager.validateJob(jobId, subdomains.validator3, EMPTY_PROOF, { from: validator3 });
-    const bond = await manager.validatorBond();
+    const bond = await computeValidatorBond(manager, payout);
     await token.mint(other, bond, { from: owner });
     await token.approve(manager.address, bond, { from: other });
     await manager.validateJob(jobId, subdomains.validator4, EMPTY_PROOF, { from: other });

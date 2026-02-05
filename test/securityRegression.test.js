@@ -11,7 +11,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -337,7 +337,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await managerFailing.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await managerFailing.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
-    const bond = await managerFailing.validatorBond();
+    const bond = await computeValidatorBond(managerFailing, toBN(toWei("10")));
     await failing.mint(validator, bond, { from: owner });
     await failing.approve(managerFailing.address, bond, { from: validator });
     await failing.setFailTransfers(true, { from: owner });

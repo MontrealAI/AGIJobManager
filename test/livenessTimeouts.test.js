@@ -15,6 +15,11 @@ const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
 
+async function setChallengePeriod(manager, owner, period) {
+  const [bondBps, bondMin, bondMax, slashBps] = await manager.getValidatorConfig();
+  await manager.setValidatorConfig(bondBps, bondMin, bondMax, slashBps, period, { from: owner });
+}
+
 async function advanceTime(seconds) {
   await new Promise((resolve, reject) => {
     web3.currentProvider.send(
@@ -84,6 +89,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setCompletionReviewPeriod(100, { from: owner });
     await manager.setDisputeReviewPeriod(100, { from: owner });
+    await setChallengePeriod(manager, owner, 100);
 
     await fundValidators(token, manager, [validator], owner);
   });

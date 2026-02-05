@@ -11,10 +11,16 @@ const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators } = require("./helpers/bonds");
+const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
+
+async function setChallengePeriod(manager, owner, period) {
+  const [bondBps, bondMin, bondMax, slashBps] = await manager.getValidatorConfig();
+  await manager.setValidatorConfig(bondBps, bondMin, bondMax, slashBps, period, { from: owner });
+}
 
 contract("AGIJobManager agent payout snapshots", (accounts) => {
   const [owner, employer, agent, validator, other] = accounts;
@@ -60,6 +66,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await setChallengePeriod(manager, owner, 1);
 
     await fundValidators(token, manager, [validator], owner);
   });
@@ -93,6 +100,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const expected = payout.muln(75).divn(100);
@@ -120,6 +129,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const expected = payout.muln(25).divn(100);
@@ -158,6 +169,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const expected = payout.muln(60).divn(100);
