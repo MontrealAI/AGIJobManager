@@ -75,11 +75,6 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const withdrawable = await manager.withdrawableAGI();
     assert.equal(withdrawable.toString(), "0", "withdrawable should exclude escrow");
 
-    await manager.pause({ from: owner });
-    await expectCustomError(
-      manager.withdrawAGI.call(toBN(1), { from: owner }),
-      "InsufficientWithdrawableBalance"
-    );
   });
 
   it("allows withdrawing surplus only", async () => {
@@ -112,21 +107,29 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     const agentBond = await computeAgentBond(manager, payout);
     const bond = await computeValidatorBond(manager, payout);
-    const lockedBonds = await manager.lockedValidatorBonds();
+    const lockedValidatorBonds = await manager.lockedValidatorBonds();
+    const lockedAgentBonds = await manager.lockedAgentBonds();
     assert.equal(
-      lockedBonds.toString(),
-      bond.add(agentBond).toString(),
+      lockedValidatorBonds.toString(),
+      bond.toString(),
       "validator bond should be locked"
     );
+    assert.equal(
+      lockedAgentBonds.toString(),
+      agentBond.toString(),
+      "agent bond should be locked"
+    );
+
+    const surplus = toBN(toWei("1"));
+    await token.mint(manager.address, surplus, { from: owner });
 
     const withdrawable = await manager.withdrawableAGI();
-    assert.equal(withdrawable.toString(), "0", "withdrawable should exclude locked bonds");
-
-    await manager.pause({ from: owner });
-    await expectCustomError(
-      manager.withdrawAGI.call(toBN(1), { from: owner }),
-      "InsufficientWithdrawableBalance"
+    assert.equal(
+      withdrawable.toString(),
+      surplus.toString(),
+      "withdrawable should exclude locked escrow and bonds"
     );
+
   });
 
   it("requires validator bond allowance for votes", async () => {

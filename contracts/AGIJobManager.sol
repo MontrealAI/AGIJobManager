@@ -125,10 +125,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public validatorBondMax = 200e18;
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
-    uint256 internal constant AGENT_BOND = 1e18;
+    uint256 public agentBond = 1e18;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
+    /// @notice Total AGI locked as agent performance bonds for unsettled jobs.
+    uint256 public lockedAgentBonds;
     /// @notice Total AGI locked as validator bonds for unsettled votes.
     uint256 public lockedValidatorBonds;
 
@@ -173,6 +175,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bool validatorApproved;
         uint256 validatorApprovedAt;
         uint256 validatorBondAmount;
+        uint256 agentBondAmount;
     }
 
     struct AGIType {
@@ -316,9 +319,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _settleAgentBond(Job storage job, bool agentWon) internal {
-        uint256 bond = _agentBond(job.payout);
+        uint256 bond = job.agentBondAmount;
+        job.agentBondAmount = 0;
         unchecked {
-            lockedValidatorBonds -= bond;
+            lockedAgentBonds -= bond;
         }
         _t(agentWon ? job.assignedAgent : job.employer, bond);
     }
@@ -335,11 +339,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _enforceValidatorCapacity(uint256 currentCount) internal pure {
         if (currentCount >= MAX_VALIDATORS_PER_JOB) revert ValidatorLimitReached();
-    }
-
-    function _agentBond(uint256 payout) internal pure returns (uint256 bond) {
-        bond = AGENT_BOND;
-        if (bond > payout) bond = payout;
     }
 
     function _computeValidatorBond(uint256 payout) internal view returns (uint256 bond) {
@@ -412,11 +411,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = _agentBond(job.payout);
+        uint256 bond = agentBond > job.payout ? job.payout : agentBond;
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
         unchecked {
-            lockedValidatorBonds += bond;
+            lockedAgentBonds += bond;
         }
+        job.agentBondAmount = bond;
         job.assignedAgent = msg.sender;
         job.assignedAt = block.timestamp;
         emit JobApplied(_jobId, msg.sender);
@@ -702,6 +702,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         challengePeriodAfterApproval = period;
         emit ChallengePeriodAfterApprovalUpdated(oldPeriod, period);
     }
+    function setAgentBond(uint256 bond) external onlyOwner { agentBond = bond; }
     function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         if (_percentage > 100 - validationRewardPercentage) revert InvalidParameters();
@@ -980,10 +981,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ? (job.payout * validationRewardPercentage) / 100
             : 0;
         uint256 employerRefund = escrowValidatorReward > 0 ? job.payout - escrowValidatorReward : job.payout;
-        uint256 completionTime = job.completionRequestedAt > job.assignedAt
-            ? job.completionRequestedAt - job.assignedAt
-            : 0;
-        uint256 reputationPoints = _computeReputationPointsWithTime(job, completionTime);
+        uint256 reputationPoints = _computeReputationPoints(job);
         _settleValidators(jobId, job, false, reputationPoints, escrowValidatorReward);
         _t(job.employer, employerRefund);
     }
@@ -1090,7 +1088,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function withdrawableAGI() public view returns (uint256) {
         uint256 bal = agiToken.balanceOf(address(this));
-        uint256 lockedTotal = lockedEscrow + lockedValidatorBonds;
+        uint256 lockedTotal = lockedEscrow + lockedValidatorBonds + lockedAgentBonds;
         if (bal < lockedTotal) revert InsolventEscrowBalance();
         return bal - lockedTotal;
     }
