@@ -6,7 +6,7 @@ This document provides a comprehensive, code‑accurate overview of the `AGIJobM
 
 **What AGIJobManager is**
 - An on‑chain **job escrow manager** where employers fund jobs in ERC‑20, agents perform work, validators approve/disapprove completion, and moderators resolve disputes.
-- A **reputation tracker** for agents and validators, awarding points based on job payout and completion time.
+- A **reputation tracker** for agents and validators, awarding points based on job payout and earlier completion requests (delays do not increase reputation).
 - An **ERC‑721 job NFT issuer**: when a job completes, the employer receives an NFT that points to the completion metadata URI.
 - A **role‑gated system** that enforces access via allowlists (explicit) or Merkle proofs and ENS/NameWrapper/Resolver ownership checks.
 
@@ -129,7 +129,9 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 ## Token & escrow semantics
 
 - **Funding**: `createJob` transfers the job payout into the contract and increments `lockedEscrow`.
+- **Agent bond**: `applyForJob` posts a payout‑proportional bond (minimum floor, capped at payout) that is returned on agent wins and fully slashed to the employer on employer wins or expiry.
 - **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPct / 100`, where `agentPayoutPct` is snapshotted on `applyForJob` based on the highest `AGIType` NFT percentage the agent holds.
+- **Validator bond**: each validator posts a per‑job bond that is capped at the job payout; correct‑side validators split the validator reward pool and slashed bonds.
 - **Validator payout**: on completion, validators split `job.payout * validationRewardPercentage / 100` equally **only if** there is at least one validator.
 - **Refunds**:
   - `cancelJob`/`delistJob` return the full escrow to the employer if no agent was assigned.
