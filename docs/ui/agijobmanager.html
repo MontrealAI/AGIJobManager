@@ -1425,7 +1425,7 @@
         return;
       }
       setWriteEnabled(true);
-      await refreshMarketplacePanels({ refreshAllowance: true });
+      await loadNfts();
     }
 
     function parseAddress(value, fieldLabel) {
@@ -2494,7 +2494,7 @@
       if (state.walletAddress) {
         await updateRoleFlags();
       }
-      await refreshMarketplacePanels({ refreshAllowance: true });
+      await loadNfts();
     }
 
     async function handleAccountsChanged(accounts) {
@@ -4262,7 +4262,7 @@
       updateNetworkPill();
       setWriteEnabled(false);
       updateIndexStatus("Indexer not synced yet.");
-      await refreshMarketplacePanels();
+      await loadNfts();
     }
 
     bootstrap();
