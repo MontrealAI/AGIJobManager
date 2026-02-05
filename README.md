@@ -25,12 +25,13 @@
 
 ## Important trust notes
 - **Owner-operated**: the owner can pause/unpause, tune parameters, and manage allowlists/blacklists.
-- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`) and only while paused; escrowed funds are not withdrawable.
+- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`, `lockedAgentBonds`, and `lockedValidatorBonds`) and only while paused; escrowed funds and bonds are not withdrawable.
 - **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
 - **Validator incentives**: validators post a bond per vote, earn rewards when their vote matches the final outcome, and are slashed when they are wrong.
+- **Agent incentives**: agents post a payout‑scaled bond on assignment; bonds are returned on agent‑win and slashed to the employer on employer‑win/expiry. Reputation gains are based on payout and job duration (not completion delays).
 
-**Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
+**Trust model summary**: owner‑operated escrow; escrows and bonds protected by `lockedEscrow` + locked bond counters; owner withdraws only non‑escrow funds under defined conditions.
 
 ## NFT trading
 
@@ -132,7 +133,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled**; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled** to stay under the EIP‑170 runtime bytecode cap; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
 
 ## Contract documentation
 

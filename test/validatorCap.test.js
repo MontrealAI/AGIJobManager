@@ -167,4 +167,38 @@ contract("AGIJobManager validator cap", (accounts) => {
     const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should complete at the cap");
   });
+
+  it("caps validator bonds at the job payout for tiny escrows", async () => {
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(0, { from: owner });
+
+    const payout = toBN(toWei("0.1"));
+    const jobId = await createJob(manager, token, employer, payout);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    const validator = web3.eth.accounts.create();
+    await web3.eth.sendTransaction({
+      from: owner,
+      to: validator.address,
+      value: toWei("1"),
+    });
+    await manager.addAdditionalValidator(validator.address, { from: owner });
+
+    const bond = await computeValidatorBond(manager, payout);
+    assert.equal(bond.toString(), payout.toString(), "bond should cap at payout");
+    await token.mint(validator.address, bond, { from: owner });
+    const approveData = token.contract.methods
+      .approve(manager.address, bond)
+      .encodeABI();
+    await sendSigned(token.address, validator, approveData);
+    await sendSigned(
+      manager.address,
+      validator,
+      manager.contract.methods.validateJob(jobId, "validator", EMPTY_PROOF).encodeABI()
+    );
+
+    const lockedValidatorBonds = await manager.lockedValidatorBonds();
+    assert.equal(lockedValidatorBonds.toString(), payout.toString(), "locked bonds should match payout cap");
+  });
 });

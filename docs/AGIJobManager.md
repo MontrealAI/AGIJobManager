@@ -6,7 +6,7 @@ This document provides a comprehensive, code‑accurate overview of the `AGIJobM
 
 **What AGIJobManager is**
 - An on‑chain **job escrow manager** where employers fund jobs in ERC‑20, agents perform work, validators approve/disapprove completion, and moderators resolve disputes.
-- A **reputation tracker** for agents and validators, awarding points based on job payout and completion time.
+- A **reputation tracker** for agents and validators, awarding points based on job payout and job duration (not delay in requesting completion).
 - An **ERC‑721 job NFT issuer**: when a job completes, the employer receives an NFT that points to the completion metadata URI.
 - A **role‑gated system** that enforces access via allowlists (explicit) or Merkle proofs and ENS/NameWrapper/Resolver ownership checks.
 
@@ -120,7 +120,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 
 ## Core invariants (implementation expectations)
 
-- **Escrow accounting**: `lockedEscrow` tracks total job escrow; withdrawals are limited to `balance - lockedEscrow`.
+- **Escrow accounting**: `lockedEscrow` tracks total job escrow and locked bond counters track agent/validator bonds; withdrawals are limited to `balance - (lockedEscrow + lockedAgentBonds + lockedValidatorBonds)`.
 - **Completion gating**: payout + NFT mint require `completionRequested == true` and a valid `jobCompletionURI`.
 - **Role gating**: agents/validators must pass allowlist/Merkle/ENS checks (or be in `additional*` allowlists) and not be blacklisted.
 - **Single‑settlement**: a job can be completed, expired, or deleted once; settlement functions guard against double‑finalization.
@@ -130,6 +130,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 
 - **Funding**: `createJob` transfers the job payout into the contract and increments `lockedEscrow`.
 - **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPct / 100`, where `agentPayoutPct` is snapshotted on `applyForJob` based on the highest `AGIType` NFT percentage the agent holds.
+- **Agent bond**: on `applyForJob`, agents post a payout‑scaled bond (bounded by a floor, cap, and the payout itself). The bond returns to the agent on agent‑win and is slashed to the employer on employer‑win or expiry.
 - **Validator payout**: on completion, validators split `job.payout * validationRewardPercentage / 100` equally **only if** there is at least one validator.
 - **Refunds**:
   - `cancelJob`/`delistJob` return the full escrow to the employer if no agent was assigned.
