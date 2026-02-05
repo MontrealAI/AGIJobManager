@@ -125,7 +125,6 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     const jobId = await setupDisputedJob(toBN(toWei("7")));
 
     await advanceTime(50);
-    await manager.pause({ from: owner });
 
     await expectCustomError(manager.resolveStaleDispute.call(jobId, false, { from: owner }), "InvalidState");
   });

@@ -187,7 +187,6 @@ contract("AGIJobManager dispute hardening", (accounts) => {
 
     await manager.disputeJob(jobId, { from: employer });
     await advanceTime(120);
-    await manager.pause({ from: owner });
 
     const agentBefore = await token.balanceOf(agent);
     await manager.resolveStaleDispute(jobId, false, { from: owner });
@@ -201,13 +200,10 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     assert.strictEqual(resolvedJob.completed, true, "job should be completed");
     assert.strictEqual(resolvedJob.disputed, false, "dispute should be cleared");
 
-    await manager.unpause({ from: owner });
-
     const payoutRefund = toBN(toWei("9"));
     const refundJobId = await setupCompletion(payoutRefund);
     await manager.disputeJob(refundJobId, { from: employer });
     await advanceTime(120);
-    await manager.pause({ from: owner });
 
     const employerBefore = await token.balanceOf(employer);
     await manager.resolveStaleDispute(refundJobId, true, { from: owner });

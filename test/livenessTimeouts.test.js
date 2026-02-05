@@ -247,7 +247,6 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.disputeJob(jobId, { from: employer });
 
-    await manager.pause({ from: owner });
     await advanceTime(120);
 
     const employerBefore = await token.balanceOf(employer);
