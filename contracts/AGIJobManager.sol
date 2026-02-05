@@ -170,6 +170,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint8 agentPayoutPct;
         bool escrowReleased;
         bool validatorApproved;
+        bool validatorBondSet;
         uint256 validatorApprovedAt;
         uint256 validatorBondAmount;
     }
@@ -434,9 +435,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.disapprovals[msg.sender]) revert InvalidState();
 
         uint256 bond = job.validatorBondAmount;
-        if (bond == 0) {
+        if (!job.validatorBondSet) {
             bond = _computeValidatorBond(job.payout);
             job.validatorBondAmount = bond;
+            job.validatorBondSet = true;
         }
         if (bond > 0) {
             _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
@@ -476,9 +478,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.approvals[msg.sender]) revert InvalidState();
 
         uint256 bond = job.validatorBondAmount;
-        if (bond == 0) {
+        if (!job.validatorBondSet) {
             bond = _computeValidatorBond(job.payout);
             job.validatorBondAmount = bond;
+            job.validatorBondSet = true;
         }
         if (bond > 0) {
             _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
@@ -882,6 +885,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             lockedValidatorBonds -= bond * vCount;
         }
         job.validatorBondAmount = 0;
+        job.validatorBondSet = false;
         uint256 correctCount = agentWins ? job.validatorApprovals : job.validatorDisapprovals;
         uint256 slashedPerIncorrect;
         uint256 refundWrong;
