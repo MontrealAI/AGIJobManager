@@ -3,6 +3,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+const { time } = require('@openzeppelin/test-helpers');
+
 const AGIJobManager = artifacts.require('AGIJobManager');
 const MockERC20 = artifacts.require('MockERC20');
 const MockENS = artifacts.require('MockENS');
@@ -74,6 +76,9 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.applyForJob(jobId1, 'agent', EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId1, 'ipfs-complete', { from: agent });
     await manager.validateJob(jobId1, 'club', EMPTY_PROOF, { from: validator });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
+    await time.increase(2);
+    await manager.finalizeJob(jobId1, { from: employer });
 
     const jobId2 = await createJob();
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });

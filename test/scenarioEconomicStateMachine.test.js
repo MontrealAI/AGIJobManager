@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -10,7 +10,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -51,6 +51,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await fundValidators(token, manager, [validatorA, validatorB], owner);
   });
@@ -91,7 +92,9 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.equal((await token.balanceOf(agent)).toString(), "0", "agent should not be paid before completion");
 
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
-    const finalTx = await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
+    await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
+    await time.increase(2);
+    const finalTx = await manager.finalizeJob(jobId, { from: employer });
 
     const job = await manager.getJobCore(jobId);
     const jobValidation = await manager.getJobValidation(jobId);
@@ -218,8 +221,10 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.strictEqual(jobAfterAgentWin.disputed, false, "dispute flag should clear after resolution");
     const agentPayoutPct = toBN(jobAfterAgentWin.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
-    const bond = await manager.validatorBond();
-    const expectedRemaining = payout.sub(expectedAgentPayout).add(bond.muln(2));
+    const bond = await computeValidatorBond(manager, payout);
+    const escrowValidatorReward = payout.mul(await manager.validationRewardPercentage()).divn(100);
+    const totalSlashed = bond.muln(2);
+    const expectedRemaining = escrowValidatorReward.add(totalSlashed);
     assert.equal(
       (await token.balanceOf(manager.address)).toString(),
       expectedRemaining.toString(),
