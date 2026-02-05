@@ -9,6 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -58,6 +59,8 @@ contract("AGIJobManager happy path", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-b", validatorB);
 
     await manager.setRequiredValidatorApprovals(2, { from: owner });
+
+    await fundValidators(token, manager, [validatorA, validatorB], owner);
   });
 
   it("runs a full job lifecycle with payouts and NFT issuance", async () => {
@@ -71,6 +74,8 @@ contract("AGIJobManager happy path", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-completed", { from: agent });
 
+    const validatorABefore = await token.balanceOf(validatorA);
+    const validatorBBefore = await token.balanceOf(validatorB);
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     const finalTx = await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
 
@@ -88,8 +93,16 @@ contract("AGIJobManager happy path", (accounts) => {
     const validatorReward = payout.muln(8).divn(100).divn(2);
     const validatorABalance = await token.balanceOf(validatorA);
     const validatorBBalance = await token.balanceOf(validatorB);
-    assert.equal(validatorABalance.toString(), validatorReward.toString(), "validator A reward mismatch");
-    assert.equal(validatorBBalance.toString(), validatorReward.toString(), "validator B reward mismatch");
+    assert.equal(
+      validatorABalance.sub(validatorABefore).toString(),
+      validatorReward.toString(),
+      "validator A reward mismatch"
+    );
+    assert.equal(
+      validatorBBalance.sub(validatorBBefore).toString(),
+      validatorReward.toString(),
+      "validator B reward mismatch"
+    );
 
     const agentReputation = await manager.reputation(agent);
     assert.ok(agentReputation.gt(toBN(0)), "agent reputation should increase");

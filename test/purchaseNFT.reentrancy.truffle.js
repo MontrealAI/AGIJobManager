@@ -6,6 +6,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const ReentrantERC20 = artifacts.require("ReentrantERC20");
 
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -52,6 +53,8 @@ contract("AGIJobManager purchaseNFT reentrancy", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   it("allows purchases when reentrancy is disabled", async () => {

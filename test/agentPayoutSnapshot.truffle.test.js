@@ -10,6 +10,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -59,6 +60,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   it("rejects agents with a 0% payout tier", async () => {
