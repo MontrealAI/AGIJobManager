@@ -233,4 +233,12 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(bondLarge.gt(bondSmall), "validator bond should scale with payout");
     assert(bondLarge.lte(payoutLarge), "validator bond should never exceed payout");
   });
+
+  it("does not cap validator bonds below the proportional amount for large payouts by default", async () => {
+    const maxPayout = toBN(await manager.maxJobPayout());
+    const bps = toBN(await manager.validatorBondBps());
+    const bond = await computeValidatorBond(manager, maxPayout);
+    const expected = maxPayout.mul(bps).divn(10000);
+    assert.equal(bond.toString(), expected.toString(), "validator bond should remain proportional at max payout");
+  });
 });
