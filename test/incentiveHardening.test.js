@@ -14,6 +14,7 @@ const { time } = require("@openzeppelin/test-helpers");
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
+const AGENT_SLASH_BPS = toBN(10000);
 
 contract("AGIJobManager incentive hardening", (accounts) => {
   const [owner, employer, agentFast, agentSlow, validator] = accounts;
@@ -179,8 +180,9 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const employerBeforeExpire = await token.balanceOf(employer);
     await manager.expireJob(jobExpire, { from: employer });
     const employerAfterExpire = await token.balanceOf(employer);
+    const slashedBond = agentBondExpire.mul(AGENT_SLASH_BPS).divn(10000);
     assert(
-      employerAfterExpire.sub(employerBeforeExpire).eq(payoutTwo.add(agentBondExpire)),
+      employerAfterExpire.sub(employerBeforeExpire).eq(payoutTwo.add(slashedBond)),
       "employer should receive payout plus slashed bond on expiry"
     );
   });

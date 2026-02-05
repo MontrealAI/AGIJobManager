@@ -119,15 +119,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
      *      thresholds are met, a short challenge window prevents instant settlement. When validators
      *      participate and the employer wins, the refund is reduced by the validator reward pool.
      */
-    uint256 public validatorBondBps = 500;
-    uint256 public validatorBondMin = 1e18;
+    uint256 public validatorBondBps = 1000;
+    uint256 public validatorBondMin = 5e18;
     uint256 public validatorBondMax = 4888e18;
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
-    uint256 public agentBond = 1e18;
     uint256 internal constant AGENT_BOND_BPS = 500;
-    uint256 internal constant AGENT_BOND_MAX = 0;
+    uint256 internal constant AGENT_BOND_MIN = 1e18;
+    uint256 internal constant AGENT_BOND_MAX = 200e18;
+    uint256 internal constant AGENT_SLASH_BPS = 10_000;
+    /// @dev Deprecated: use AGENT_BOND_* constants for bond sizing.
+    uint256 public agentBond = 1e18;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
@@ -320,12 +323,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _settleAgentBond(Job storage job, bool agentWon) internal {
         uint256 bond = job.agentBondAmount;
-        if (bond == 0) return;
         job.agentBondAmount = 0;
         unchecked {
             lockedAgentBonds -= bond;
         }
-        _t(agentWon ? job.assignedAgent : job.employer, bond);
+        uint256 slash = agentWon ? 0 : (bond * AGENT_SLASH_BPS) / 10_000;
+        _t(job.employer, slash);
+        _t(job.assignedAgent, bond - slash);
     }
 
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
@@ -354,12 +358,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bond > payout) bond = payout;
     }
 
-    function _computeAgentBond(uint256 payout, uint256) internal view returns (uint256 bond) {
+    function _computeAgentBond(uint256 payout) internal pure returns (uint256 bond) {
         unchecked {
             bond = (payout * AGENT_BOND_BPS) / 10_000;
         }
-        if (bond < agentBond) bond = agentBond;
-        if (AGENT_BOND_MAX != 0 && bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
+        if (bond < AGENT_BOND_MIN) bond = AGENT_BOND_MIN;
+        if (bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
         if (bond > payout) bond = payout;
     }
 
@@ -422,7 +426,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = _computeAgentBond(job.payout, job.duration);
+        uint256 bond = _computeAgentBond(job.payout);
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
         unchecked {
             lockedAgentBonds += bond;
@@ -911,7 +915,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (vCount == 0) {
             return;
         }
-        if (vCount > MAX_VALIDATORS_PER_JOB) revert ValidatorSetTooLarge();
         uint256 bond = job.validatorBondAmount;
         if (bond != 0) {
             unchecked {
@@ -1038,10 +1041,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         string memory subdomain,
         bytes32[] calldata proof
     ) internal view returns (bool) {
-        bool verified = MerkleProof.verifyCalldata(proof, agentMerkleRoot, keccak256(abi.encodePacked(claimant)))
+        return MerkleProof.verifyCalldata(proof, agentMerkleRoot, keccak256(abi.encodePacked(claimant)))
             || _verifyOwnershipByRoot(claimant, subdomain, agentRootNode)
             || _verifyOwnershipByRoot(claimant, subdomain, alphaAgentRootNode);
-        return verified;
     }
 
     function _verifyOwnershipValidator(
@@ -1049,10 +1051,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         string memory subdomain,
         bytes32[] calldata proof
     ) internal view returns (bool) {
-        bool verified = MerkleProof.verifyCalldata(proof, validatorMerkleRoot, keccak256(abi.encodePacked(claimant)))
+        return MerkleProof.verifyCalldata(proof, validatorMerkleRoot, keccak256(abi.encodePacked(claimant)))
             || _verifyOwnershipByRoot(claimant, subdomain, clubRootNode)
             || _verifyOwnershipByRoot(claimant, subdomain, alphaClubRootNode);
-        return verified;
     }
 
     function _verifyOwnershipByRoot(address claimant, string memory subdomain, bytes32 rootNode) internal view returns (bool) {
@@ -1060,15 +1061,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             return false;
         }
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
-        if (_verifyNameWrapperOwnership(claimant, subnode)) {
-            return true;
-        }
-
-        if (_verifyResolverOwnership(claimant, subnode)) {
-            return true;
-        }
-
-        return false;
+        return _verifyNameWrapperOwnership(claimant, subnode) || _verifyResolverOwnership(claimant, subnode);
     }
 
     function _verifyNameWrapperOwnership(address claimant, bytes32 subnode) internal view returns (bool) {
@@ -1113,7 +1106,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit AGIWithdrawn(msg.sender, amount, available - amount);
     }
 
-    function canAccessPremiumFeature(address user) public view returns (bool) {
+    function canAccessPremiumFeature(address user) external view returns (bool) {
         return reputation[user] >= premiumReputationThreshold;
     }
 
