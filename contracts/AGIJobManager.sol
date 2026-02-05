@@ -119,15 +119,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
      *      thresholds are met, a short challenge window prevents instant settlement. When validators
      *      participate and the employer wins, the refund is reduced by the validator reward pool.
      */
-    uint256 public validatorBondBps = 500;
-    uint256 public validatorBondMin = 1e18;
+    uint256 public validatorBondBps = 1000;
+    uint256 public validatorBondMin = 5e18;
     uint256 public validatorBondMax = 4888e18;
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
     uint256 public agentBond = 1e18;
-    uint256 internal constant AGENT_BOND_BPS = 500;
-    uint256 internal constant AGENT_BOND_MAX = 0;
+    uint256 internal constant AGENT_BOND_BPS = 100;
+    uint256 internal constant AGENT_BOND_MAX = 200e18;
+    uint256 internal constant AGENT_SLASH_BPS = 10_000;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
@@ -325,7 +326,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             lockedAgentBonds -= bond;
         }
-        _t(agentWon ? job.assignedAgent : job.employer, bond);
+        uint256 refund = bond;
+        if (!agentWon) {
+            uint256 slash;
+        unchecked {
+            slash = (bond * AGENT_SLASH_BPS) / 10_000;
+        }
+            refund = bond - slash;
+            _t(job.employer, slash);
+        }
+        _t(job.assignedAgent, refund);
     }
 
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
@@ -354,12 +364,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bond > payout) bond = payout;
     }
 
-    function _computeAgentBond(uint256 payout, uint256) internal view returns (uint256 bond) {
+    function _computeAgentBond(uint256 payout) internal view returns (uint256 bond) {
         unchecked {
             bond = (payout * AGENT_BOND_BPS) / 10_000;
         }
         if (bond < agentBond) bond = agentBond;
-        if (AGENT_BOND_MAX != 0 && bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
+        if (bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
         if (bond > payout) bond = payout;
     }
 
@@ -422,7 +432,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = _computeAgentBond(job.payout, job.duration);
+        uint256 bond = _computeAgentBond(job.payout);
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
         unchecked {
             lockedAgentBonds += bond;
@@ -475,7 +485,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 lockedValidatorBonds += bond;
             }
         }
-        emit ValidatorBonded(_jobId, msg.sender, bond, 1);
         _enforceValidatorCapacity(job.validators.length);
         job.validatorApprovals++;
         job.approvals[msg.sender] = true;
@@ -488,7 +497,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         ) {
             job.validatorApproved = true;
             job.validatorApprovedAt = block.timestamp;
-            emit JobValidatorApproved(_jobId, msg.sender, job.validatorApprovedAt);
         }
     }
 
@@ -520,7 +528,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 lockedValidatorBonds += bond;
             }
         }
-        emit ValidatorBonded(_jobId, msg.sender, bond, 2);
         _enforceValidatorCapacity(job.validators.length);
         job.validatorDisapprovals++;
         job.disapprovals[msg.sender] = true;
@@ -694,6 +701,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
         if (!(bps == 0 && min == 0 && max == 0)) {
+            if (min == 0) revert InvalidParameters();
             if (max == 0) revert InvalidParameters();
         }
         validatorBondBps = bps;
