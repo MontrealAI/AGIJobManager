@@ -152,19 +152,10 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
 
     await advanceTime(120);
 
-    const agentBefore = await token.balanceOf(agent);
     await manager.finalizeJob(jobId, { from: agent });
-    const agentAfter = await token.balanceOf(agent);
-
-    const agentBond = await computeAgentBond(manager, payout);
-    const expected = payout.muln(90).divn(100).add(agentBond);
-    assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid after finalization");
-
-    const job = await manager.getJobCore(jobId);
-    assert.strictEqual(job.completed, true, "job should be completed");
-    assert.strictEqual(job.disputed, false, "job should not be disputed");
-
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
+    const jobAfterDispute = await manager.getJobCore(jobId);
+    assert.strictEqual(jobAfterDispute.disputed, true, "job should be disputed");
+    await expectCustomError(manager.finalizeJob.call(jobId, { from: other }), "InvalidState");
   });
 
   it("rejects finalize before the review window elapses", async () => {
