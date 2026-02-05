@@ -29,7 +29,7 @@ and settlement invariants.
 ## 2) Treasury vs escrow separation (hard invariant)
 
 **Escrow** is the sum of outstanding job payouts tracked by `lockedEscrow`.
-**Treasury** is any AGI held by the contract **above** `lockedEscrow`.
+**Treasury** is any AGI held by the contract **above** `lockedEscrow`, `lockedAgentBonds`, and `lockedValidatorBonds`.
 
 **Sources of treasury (as implemented)**
 - Any payout remainder when `agentPayoutPct + validationRewardPercentage < 100`.
@@ -38,7 +38,7 @@ and settlement invariants.
 - Any direct token transfers to the contract.
 
 **Withdrawal semantics**
-- `withdrawableAGI()` returns `balance - lockedEscrow` and reverts on insolvency.
+- `withdrawableAGI()` returns `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and reverts on insolvency.
 - `withdrawAGI(amount)` is **owner‑only** and **paused‑only**.
 
 **Example**
@@ -94,11 +94,16 @@ Even before locking, identity wiring updates require **no jobs created** and
 ## 5) Reputation system overview
 
 - Agent reputation is updated only on successful completion paths.
-- The points calculation is **log‑scaled** from payout and time, then
-  **diminished** by a quadratic factor and **capped** at `88888`.
+- The points calculation is **log‑scaled** from payout plus a **duration term**
+  (not completion delay), then **diminished** by a quadratic factor and
+  **capped** at `88888`.
 - Validator reputation increases only for approving validators.
 - There is **no slashing or decay** mechanism.
 - Premium access is a simple threshold check via `premiumReputationThreshold`.
+
+**Bond incentives (summary)**
+- Agents post a proportional bond (min/max‑capped) that is refunded on agent wins and slashed on employer wins/expiry.
+- Validators post per‑vote bonds capped at the job payout; wrong‑side votes are slashed.
 
 ## 6) Notes on unused or future knobs
 

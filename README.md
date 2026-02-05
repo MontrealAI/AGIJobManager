@@ -25,12 +25,14 @@
 
 ## Important trust notes
 - **Owner-operated**: the owner can pause/unpause, tune parameters, and manage allowlists/blacklists.
-- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`) and only while paused; escrowed funds are not withdrawable.
+- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`, `lockedAgentBonds`, and `lockedValidatorBonds`) and only while paused; escrowed funds and bonds are not withdrawable.
 - **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
-- **Validator incentives**: validators post a bond per vote, earn rewards when their vote matches the final outcome, and are slashed when they are wrong.
+- **Validator incentives**: validators post a bond per vote (capped at the job payout), earn rewards when their vote matches the final outcome, and are slashed when they are wrong.
+- **Agent incentives**: agents post a proportional bond (min/max-capped) that is returned on agent wins and slashed on employer wins/expiry.
+- **Reputation**: reputation increases with payout scale plus a duration-based term; delaying completion requests does not increase rep.
 
-**Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
+**Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow` + bonded funds; owner withdraws only non‑escrow funds under defined conditions.
 
 ## NFT trading
 
@@ -132,7 +134,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled**; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled** to preserve bytecode reproducibility and stay under the EIP‑170 size cap; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
 
 ## Contract documentation
 
