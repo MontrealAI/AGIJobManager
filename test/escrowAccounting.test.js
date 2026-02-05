@@ -17,7 +17,7 @@ const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
 
 contract("AGIJobManager escrow accounting", (accounts) => {
-  const [owner, employer, agent, validator, moderator, validatorTwo] = accounts;
+  const [owner, employer, agent, validator, moderator, validatorTwo, validatorThree] = accounts;
   let token;
   let ens;
   let nameWrapper;
@@ -50,10 +50,11 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addAdditionalValidator(validatorTwo, { from: owner });
+    await manager.addAdditionalValidator(validatorThree, { from: owner });
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
 
-    await fundValidators(token, manager, [validator, validatorTwo], owner);
+    await fundValidators(token, manager, [validator, validatorTwo, validatorThree], owner);
   });
 
   const createJob = async (payout, duration = 1000) => {
@@ -152,21 +153,29 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const bond = await computeValidatorBond(manager, payout);
     const validatorBefore = await token.balanceOf(validator);
     const validatorTwoBefore = await token.balanceOf(validatorTwo);
+    const validatorThreeBefore = await token.balanceOf(validatorThree);
 
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validatorThree });
 
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });
 
     const validatorAfter = await token.balanceOf(validator);
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
+    const validatorThreeAfter = await token.balanceOf(validatorThree);
     const rewardPool = payout.mul(await manager.validationRewardPercentage()).divn(100);
-    const expectedValidatorGain = rewardPool.add(bond);
+    const perCorrectReward = rewardPool.add(bond).divn(2);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      expectedValidatorGain.toString(),
+      perCorrectReward.toString(),
       "correct validator should gain reward plus slashed bond"
+    );
+    assert.equal(
+      validatorThreeAfter.sub(validatorThreeBefore).toString(),
+      perCorrectReward.toString(),
+      "second correct validator should gain reward plus slashed bond"
     );
     assert.equal(
       validatorTwoBefore.sub(validatorTwoAfter).toString(),

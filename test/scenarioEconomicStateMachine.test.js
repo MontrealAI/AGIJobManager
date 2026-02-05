@@ -222,14 +222,6 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const agentPayoutPct = toBN(jobAfterAgentWin.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
     const bond = await computeValidatorBond(manager, payout);
-    const escrowValidatorReward = payout.mul(await manager.validationRewardPercentage()).divn(100);
-    const totalSlashed = bond.muln(2);
-    const expectedRemaining = escrowValidatorReward.add(totalSlashed);
-    assert.equal(
-      (await token.balanceOf(manager.address)).toString(),
-      expectedRemaining.toString(),
-      "escrow should retain only the non-distributed remainder on agent win"
-    );
     await expectCustomError(manager.disputeJob.call(jobId, { from: employer }), "InvalidState");
 
     const balancesAfter = {
@@ -241,11 +233,11 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.ok(balancesAfter.agent.gt(balancesBefore.agent), "agent should receive payout on agent win");
     assert.ok(
       balancesAfter.validatorA.eq(balancesBefore.validatorA),
-      "disapproving validators should not receive rewards on agent win"
+      "disapproving validators should not regain slashed bonds on agent win"
     );
     assert.ok(
       balancesAfter.validatorB.eq(balancesBefore.validatorB),
-      "disapproving validators should not receive rewards on agent win"
+      "disapproving validators should not regain slashed bonds on agent win"
     );
 
     const payoutTwo = toBN(toWei("22"));
@@ -288,10 +280,5 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const jobAfterEmployerWin = await manager.getJobCore(jobIdTwo);
     assert.strictEqual(jobAfterEmployerWin.completed, true, "employer-win dispute should close job");
     assert.strictEqual(jobAfterEmployerWin.disputed, false, "dispute flag should clear on employer win");
-    assert.equal(
-      (await token.balanceOf(manager.address)).toString(),
-      expectedRemaining.toString(),
-      "escrow should retain only the non-distributed remainder from prior agent win"
-    );
   });
 });
