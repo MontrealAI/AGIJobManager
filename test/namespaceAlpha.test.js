@@ -12,7 +12,7 @@ const keccak256 = require("keccak256");
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators } = require("./helpers/bonds");
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -67,6 +67,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     );
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 1, { from: owner });
     await agiTypeNft.mint(agent, { from: owner });
@@ -96,9 +97,11 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
 
     const tx = await manager.validateJob(jobId, "alice", EMPTY_PROOF, { from: validator });
     const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
-    const completedEvent = tx.logs.find((log) => log.event === "JobCompleted");
     assert.ok(validatedEvent, "JobValidated should be emitted");
-    assert.ok(completedEvent, "JobCompleted should be emitted when approvals threshold met");
+    await time.increase(2);
+    const finalizeTx = await manager.finalizeJob(jobId, { from: employer });
+    const completedEvent = finalizeTx.logs.find((log) => log.event === "JobCompleted");
+    assert.ok(completedEvent, "JobCompleted should be emitted after finalize");
 
     const job = await manager.getJobCore(jobId);
     assert.equal(job.completed, true, "job should be completed");

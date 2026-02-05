@@ -84,6 +84,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setCompletionReviewPeriod(100, { from: owner });
     await manager.setDisputeReviewPeriod(100, { from: owner });
+    await manager.setChallengePeriodAfterApproval(100, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
   });

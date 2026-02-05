@@ -12,7 +12,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const FailingERC20 = artifacts.require("FailingERC20");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -179,6 +179,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await token.mint(employer, web3.utils.toWei("500"), { from: owner });
     await token.mint(buyer, web3.utils.toWei("500"), { from: owner });
@@ -258,12 +259,16 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const receipt = await manager.validateJob(jobId, "validator", validator3Proof, { from: validator3 });
 
       expectEvent(receipt, "JobValidated", { jobId: new BN(jobId), validator: validator3 });
-      expectEvent(receipt, "JobCompleted", { jobId: new BN(jobId), agent });
-      expectEvent(receipt, "NFTIssued");
+
+      await time.increase((await manager.challengePeriodAfterApproval()).addn(1));
+      const finalizeReceipt = await manager.finalizeJob(jobId, { from: employer });
+      expectEvent(finalizeReceipt, "JobCompleted", { jobId: new BN(jobId), agent });
+      expectEvent(finalizeReceipt, "NFTIssued");
 
       const agentPayout = payout.muln(90).divn(100);
       const totalValidatorPayout = payout.muln(8).divn(100);
       const validatorPayout = totalValidatorPayout.divn(3);
+      const expectedAgentPayout = agentPayout;
 
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
       const validator1BalanceAfter = new BN(await token.balanceOf(validator1));
@@ -271,7 +276,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const validator3BalanceAfter = new BN(await token.balanceOf(validator3));
       const employerBalanceAfter = new BN(await token.balanceOf(employer));
 
-      assert(agentBalanceAfter.sub(agentBalanceBefore).eq(agentPayout));
+      assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedAgentPayout));
       assert(validator1BalanceAfter.sub(validator1BalanceBefore).eq(validatorPayout));
       assert(validator2BalanceAfter.sub(validator2BalanceBefore).eq(validatorPayout));
       assert(validator3BalanceAfter.sub(validator3BalanceBefore).eq(validatorPayout));
@@ -385,6 +390,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const agentBalanceBefore = new BN(await token.balanceOf(agent));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
 
       const expectedPayout = payout.muln(90).divn(100);
@@ -405,6 +412,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const agentBalanceBefore = new BN(await token.balanceOf(other));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: other });
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
       const agentBalanceAfter = new BN(await token.balanceOf(other));
 
       const expectedPayout = payout.muln(1).divn(100);
@@ -434,6 +443,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
 
       await manager.addModerator(moderator, { from: owner });
       await expectCustomError(
@@ -457,6 +468,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
 
       await expectCustomError(manager.disputeJob(jobId, { from: employer }), "InvalidState");
     });
@@ -695,14 +708,17 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await nft.mint(agent, { from: owner });
       await managerFailing.applyForJob(jobId, "agent", buildProof(agentTree, agent), { from: agent });
       await managerFailing.setRequiredValidatorApprovals(1, { from: owner });
+      await managerFailing.setChallengePeriodAfterApproval(1, { from: owner });
 
       await managerFailing.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-      const bond = await managerFailing.validatorBond();
+      const bond = await computeValidatorBond(managerFailing, new BN(web3.utils.toWei("10")));
       await failing.mint(validator1, bond, { from: owner });
       await failing.approve(managerFailing.address, bond, { from: validator1 });
+      await managerFailing.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
       await failing.setFailTransfers(true, { from: owner });
+      await time.increase(2);
       await expectCustomError(
-        managerFailing.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 }),
+        managerFailing.finalizeJob(jobId, { from: employer }),
         "TransferFailed"
       );
     });
@@ -825,6 +841,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.requestJobCompletion(jobId, "ipfs-6", { from: agent });
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
 
       const tokenId = (await manager.nextTokenId()).subn(1);
       assert.equal(await manager.tokenURI(tokenId), "ipfs://new/ipfs-6");
@@ -842,6 +860,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
+      await time.increase(2);
+      await manager.finalizeJob(jobId, { from: employer });
 
       const rep = await manager.reputation(agent);
       await manager.setPremiumReputationThreshold(rep, { from: owner });
@@ -886,7 +906,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.setRequiredValidatorApprovals(1, { from: owner });
 
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-      const bond = await manager.validatorBond();
+      const bond = await computeValidatorBond(manager, payout);
       await token.mint(validator4, bond, { from: owner });
       await token.approve(manager.address, bond, { from: validator4 });
       await manager.validateJob(jobId, subdomain, [], { from: validator4 });
@@ -903,7 +923,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.applyForJob(jobId, "ignored", [], { from: other });
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: other });
-      const bond = await manager.validatorBond();
+      const bond = await computeValidatorBond(manager, payout);
       await token.mint(other, bond, { from: owner });
       await token.approve(manager.address, bond, { from: other });
       await manager.validateJob(jobId, "ignored", [], { from: other });
