@@ -12,6 +12,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const EMPTY_PROOF = [];
 
@@ -105,6 +106,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
     defaultAgiType = await MockERC721.new({ from: owner });
     await manager.addAGIType(defaultAgiType.address, 1, { from: owner });
     await defaultAgiType.mint(agent, { from: owner });
+
+    await fundValidators(token, manager, [validator, validatorTwo], owner);
   });
 
   describe("Deployment & initialization", () => {
@@ -376,6 +379,9 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
+      const bond = await failingManager.validatorBond();
+      await failingToken.mint(validator, bond, { from: owner });
+      await failingToken.approve(failingManager.address, bond, { from: validator });
       await failingToken.setFailTransfers(true, { from: owner });
       await expectRevert.unspecified(
         failingManager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator })
@@ -409,6 +415,9 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await failingManager.addAGIType(agiType.address, 92, { from: owner });
       await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+      const bond = await failingManager.validatorBond();
+      await failingToken.mint(validator, bond, { from: owner });
+      await failingToken.approve(failingManager.address, bond, { from: validator });
       await failingManager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
 
       const tokenId = (await failingManager.nextTokenId()).toNumber() - 1;

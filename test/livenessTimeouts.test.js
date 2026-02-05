@@ -9,6 +9,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -83,6 +84,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setCompletionReviewPeriod(100, { from: owner });
     await manager.setDisputeReviewPeriod(100, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   async function createJob(payout, duration = 1000) {
@@ -194,13 +197,26 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
+    const validatorBefore = await token.balanceOf(validator);
     await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await advanceTime(120);
 
     const employerBefore = await token.balanceOf(employer);
     await manager.finalizeJob(jobId, { from: other });
     const employerAfter = await token.balanceOf(employer);
-    assert.equal(employerAfter.sub(employerBefore).toString(), payout.toString(), "employer should be refunded");
+    const validationPct = await manager.validationRewardPercentage();
+    const validatorReward = payout.mul(validationPct).divn(100);
+    assert.equal(
+      employerAfter.sub(employerBefore).toString(),
+      payout.sub(validatorReward).toString(),
+      "employer should be refunded minus validator reward"
+    );
+    const validatorAfter = await token.balanceOf(validator);
+    assert.equal(
+      validatorAfter.sub(validatorBefore).toString(),
+      validatorReward.toString(),
+      "disapproving validator should be rewarded on employer win"
+    );
 
     const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should be completed after refund");

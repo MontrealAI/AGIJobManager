@@ -13,12 +13,12 @@ const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
 
-async function sendSigned(manager, account, data, gas = 500000) {
+async function sendSigned(to, account, data, gas = 500000) {
   const gasPrice = await web3.eth.getGasPrice();
   const nonce = await web3.eth.getTransactionCount(account.address);
   const signed = await web3.eth.accounts.signTransaction(
     {
-      to: manager.address,
+      to,
       data,
       gas,
       gasPrice,
@@ -96,6 +96,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const validators = Array.from({ length: cap + 1 }, () => web3.eth.accounts.create());
+    const bond = await manager.validatorBond();
     for (const validator of validators) {
       await web3.eth.sendTransaction({
         from: owner,
@@ -103,6 +104,11 @@ contract("AGIJobManager validator cap", (accounts) => {
         value: toWei("1"),
       });
       await manager.addAdditionalValidator(validator.address, { from: owner });
+      await token.mint(validator.address, bond, { from: owner });
+      const approveData = token.contract.methods
+        .approve(manager.address, bond)
+        .encodeABI();
+      await sendSigned(token.address, validator, approveData);
     }
 
     const disapproveData = manager.contract.methods
@@ -110,7 +116,7 @@ contract("AGIJobManager validator cap", (accounts) => {
       .encodeABI();
 
     for (let i = 0; i < cap - 1; i += 1) {
-      await sendSigned(manager, validators[i], disapproveData);
+      await sendSigned(manager.address, validators[i], disapproveData);
     }
 
     await expectCustomError(
@@ -130,6 +136,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const validators = Array.from({ length: cap }, () => web3.eth.accounts.create());
+    const bond = await manager.validatorBond();
     for (const validator of validators) {
       await web3.eth.sendTransaction({
         from: owner,
@@ -137,13 +144,18 @@ contract("AGIJobManager validator cap", (accounts) => {
         value: toWei("1"),
       });
       await manager.addAdditionalValidator(validator.address, { from: owner });
+      await token.mint(validator.address, bond, { from: owner });
+      const approveData = token.contract.methods
+        .approve(manager.address, bond)
+        .encodeABI();
+      await sendSigned(token.address, validator, approveData);
     }
 
     const validateData = manager.contract.methods
       .validateJob(jobId, "validator", EMPTY_PROOF)
       .encodeABI();
     for (let i = 0; i < cap; i += 1) {
-      await sendSigned(manager, validators[i], validateData, 2500000);
+      await sendSigned(manager.address, validators[i], validateData, 2500000);
     }
 
     const job = await manager.getJobCore(jobId);

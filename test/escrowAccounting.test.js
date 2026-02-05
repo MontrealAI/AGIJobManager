@@ -10,6 +10,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -50,6 +51,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   const createJob = async (payout, duration = 1000) => {
@@ -93,6 +96,29 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     assert.equal(remainingWithdrawable.toString(), "0", "surplus should be fully withdrawn");
     const lockedEscrow = await manager.lockedEscrow();
     assert.equal(lockedEscrow.toString(), payout.toString(), "escrow remains locked");
+  });
+
+  it("prevents withdrawing bonded validator funds before settlement", async () => {
+    await manager.setRequiredValidatorApprovals(2, { from: owner });
+    const payout = toBN(toWei("6"));
+    const jobId = await createJob(payout);
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+
+    const bond = await manager.validatorBond();
+    const lockedBonds = await manager.lockedValidatorBonds();
+    assert.equal(lockedBonds.toString(), bond.toString(), "validator bond should be locked");
+
+    const withdrawable = await manager.withdrawableAGI();
+    assert.equal(withdrawable.toString(), "0", "withdrawable should exclude locked bonds");
+
+    await manager.pause({ from: owner });
+    await expectCustomError(
+      manager.withdrawAGI.call(toBN(1), { from: owner }),
+      "InsufficientWithdrawableBalance"
+    );
   });
 
   it("releases escrow on terminal transitions", async () => {

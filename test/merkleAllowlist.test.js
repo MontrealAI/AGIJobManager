@@ -12,6 +12,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const { toBN, toWei } = web3.utils;
@@ -54,6 +55,8 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   it("keeps allowlists as access-only (no payout boost)", async () => {
