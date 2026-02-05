@@ -1007,11 +1007,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job,
         uint256 completionTime
     ) internal view returns (uint256 reputationPoints) {
-        completionTime;
         unchecked {
             uint256 scaledPayout = job.payout / 1e18;
             uint256 payoutPoints = scaledPayout ** 3 / 1e5;
-            uint256 timeBonus = job.duration / 10000;
+            uint256 timeBonus = (job.duration - completionTime) / 10000;
             reputationPoints = Math.log2(1 + payoutPoints * 1e6) + timeBonus;
         }
     }
