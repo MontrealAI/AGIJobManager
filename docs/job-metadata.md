@@ -32,7 +32,7 @@ Every metadata JSON **must** include the ERC-721 fields below:
 | `description` | ✅ | Markdown-supported text | 
 | `image` / `animation_url` | ✅ | At least one must be present |
 | `external_url` | ✅ | Canonical job page in the dapp (includes chainId + contract + jobId) |
-| `attributes` | ✅ | Array of job traits (marketplace visibility) |
+| `attributes` | ✅ | Array of job traits (metadata traits) |
 | `properties` | ✅ | Structured data for detail pages |
 
 ## Job Spec metadata (`jobSpec.v1.json`)

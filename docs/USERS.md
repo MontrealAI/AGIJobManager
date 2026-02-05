@@ -17,7 +17,8 @@ AGIJobManager lets an employer escrow an ERC‑20 payout, select an agent to do 
 - **Validator**: approve/disapprove, vote rules, payouts, reputation → [`docs/roles/VALIDATOR.md`](roles/VALIDATOR.md)
 - **Moderator**: resolve disputes, resolution strings → [`docs/roles/MODERATOR.md`](roles/MODERATOR.md)
 - **Owner/Operator**: pause, allowlists, blacklists, parameter tuning, withdrawals → [`docs/roles/OWNER_OPERATOR.md`](roles/OWNER_OPERATOR.md)
-- **NFT buyers/sellers**: listNFT, purchaseNFT, delistNFT → [`docs/roles/NFT_MARKETPLACE.md`](roles/NFT_MARKETPLACE.md)
+
+**NFT trading note**: job NFTs are standard ERC‑721 tokens. The contract does not include an internal marketplace; trade externally using standard ERC‑721 approvals and transfers.
 
 ## Contract lifecycle (visual)
 ### Happy path (job → validation → payout + NFT)
@@ -179,11 +180,6 @@ This path uses the Etherscan **Write Contract** UI. You will need the contract a
 1. `resolveDisputeWithCode(jobId, resolutionCode, reason)`
    - Use `1` for agent win, `2` for employer win, `0` to log a note and keep the dispute active.
 
-**NFT Marketplace**
-1. `listNFT(tokenId, price)`
-2. `purchaseNFT(tokenId)` (buyer must approve token spending first)
-3. `delistNFT(tokenId)`
-
 ## What happens on‑chain (events + balances)
 Every step emits events and changes state/balances.
 
@@ -196,21 +192,16 @@ Every step emits events and changes state/balances.
 | `disapproveJob` | `JobDisapproved`, maybe `JobDisputed` | none | `validatorDisapprovals`, `disputed` |
 | `resolveDisputeWithCode(AGENT_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, `NFTIssued` | contract → agent/validators | `completed`, reputation updates |
 | `resolveDisputeWithCode(EMPLOYER_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved` | contract → employer refund | `completed` |
-| `listNFT` | `NFTListed` | none | listing active |
-| `purchaseNFT` | `NFTPurchased` | buyer → seller | listing inactive, NFT transfer |
-| `delistNFT` | `NFTDelisted` | none | listing inactive |
 
 Key events include:
 - `JobCreated`, `JobApplied`, `JobCompletionRequested`
 - `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
 - `JobCompleted`, `NFTIssued`
-- `NFTListed`, `NFTPurchased`, `NFTDelisted`
 
 Token movements:
 - **createJob**: employer → contract escrow
 - **completion**: contract → agent + validators
 - **employer win**: contract → employer refund
-- **NFT sale**: buyer → seller
 
 ## Safety & failure modes
 Common revert reasons include `NotAuthorized`, `InvalidState`, `JobNotFound`, and `TransferFailed`. For full diagnostics and fixes, see [`docs/TROUBLESHOOTING.md`](TROUBLESHOOTING.md).

@@ -32,10 +32,6 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 | Resolve a dispute | `InvalidState` | The job is not currently disputed. | Confirm the job is in dispute before resolving. | [Happy path](happy-path.md) |
 | Cancel a job | `NotAuthorized` | Only the employer can cancel. | Use the employer wallet that created the job. | [Roles → Employer](roles.md#employer) |
 | Cancel or delist a job | `InvalidState` | The job is completed or already assigned. | Only cancel/delist while the job is still unassigned. | [Happy path](happy-path.md) |
-| List an NFT | `NotAuthorized` | You are not the NFT owner. | Only the NFT owner can list it. | [Roles → Employer](roles.md#employer) |
-| List an NFT | `InvalidParameters` | Listing price is zero. | Set a non‑zero price. | [Roles → Employer](roles.md#employer) |
-| Purchase an NFT | `InvalidState` | Listing is inactive or already purchased. | Refresh listing state; buy only active listings. | [Happy path](happy-path.md) |
-| Delist an NFT | `NotAuthorized` | You are not the seller or listing is inactive. | Only the listing seller can delist. | [Roles → Employer](roles.md#employer) |
 | Create a job | `InvalidParameters` | Payout/duration is zero or above contract limits. | Use a positive payout and duration within limits (`maxJobPayout`, `jobDurationLimit`). | [Happy path](happy-path.md) |
 | Withdraw AGI (owner) | `InvalidParameters` | Amount is zero or exceeds contract balance. | Withdraw an amount within the contract’s AGI balance. | [Roles → Owner](roles.md#owner) |
 | Contribute to reward pool | `InvalidParameters` | Amount is zero. | Enter a positive amount. | [Happy path](happy-path.md) |

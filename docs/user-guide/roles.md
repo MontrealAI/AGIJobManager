@@ -14,7 +14,7 @@ This guide explains what each role can do, what you need before starting, and co
 - Cancel a job **before** an agent is assigned (`cancelJob`).
 - Dispute a job while it is in progress (`disputeJob`).
 - Receive the job NFT when the job completes (minted automatically).
-- List and sell the job NFT on the built‑in marketplace (`listNFT`, `delistNFT`).
+- Trade the job NFT externally using standard ERC‑721 marketplaces.
 
 ### What you need first
 - A wallet with enough **AGI token** balance for the job payout.

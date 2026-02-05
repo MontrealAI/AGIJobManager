@@ -53,16 +53,10 @@ describe("UI indexer helpers", () => {
     assert.strictEqual(job.lastActivityBlock, 9);
 
     applyEventToIndex(index, { eventName: "NFTIssued", blockNumber: 9, args: { tokenId: 3n } });
-    applyEventToIndex(index, { eventName: "NFTListed", blockNumber: 10, args: { tokenId: 3n, seller: "0xabc", price: 25n } });
-    applyEventToIndex(index, { eventName: "NFTPurchased", blockNumber: 11, args: { tokenId: 3n } });
 
     const nft = index.nfts["3"];
     assert.ok(nft.issued);
-    assert.ok(nft.listed);
-    assert.ok(nft.purchased);
-    assert.strictEqual(nft.activeListing, false);
-    assert.strictEqual(nft.lastListedBy, "0xabc");
-    assert.strictEqual(nft.lastListPrice, 25n);
-    assert.strictEqual(nft.lastActivityBlock, 11);
+    assert.strictEqual(nft.issuedBlock, 9);
+    assert.strictEqual(nft.lastActivityBlock, 9);
   });
 });

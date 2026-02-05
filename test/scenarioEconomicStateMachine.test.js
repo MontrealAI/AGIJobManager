@@ -67,7 +67,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.requestJobCompletion(jobId, completionHash, { from: agent });
   }
 
-  it("runs the full economic lifecycle through settlement and marketplace purchase", async () => {
+  it("runs the full economic lifecycle through settlement and NFT issuance", async () => {
     const payout = toBN(toWei("100"));
     await token.mint(employer, payout, { from: owner });
 
@@ -139,27 +139,6 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
       "InvalidState"
     );
 
-    const price = toBN(toWei("5"));
-    await manager.listNFT(tokenId, price, { from: employer });
-    const listing = await manager.listings(tokenId);
-    assert.strictEqual(listing.isActive, true, "listing should be active");
-
-    await token.mint(buyer, price, { from: owner });
-    await token.approve(manager.address, price, { from: buyer });
-
-    const buyerBefore = await token.balanceOf(buyer);
-    const sellerBefore = await token.balanceOf(employer);
-    await manager.purchaseNFT(tokenId, { from: buyer });
-    assert.equal(await manager.ownerOf(tokenId), buyer, "buyer should own NFT after purchase");
-    const listingAfter = await manager.listings(tokenId);
-    assert.strictEqual(listingAfter.isActive, false, "listing should deactivate after purchase");
-
-    const buyerAfter = await token.balanceOf(buyer);
-    const sellerAfter = await token.balanceOf(employer);
-    assert.equal(buyerAfter.toString(), buyerBefore.sub(price).toString(), "buyer should pay listing price");
-    assert.equal(sellerAfter.toString(), sellerBefore.add(price).toString(), "seller should receive listing price");
-
-    await expectCustomError(manager.purchaseNFT.call(tokenId, { from: buyer }), "InvalidState");
   });
 
   it("blocks actions while paused and enforces owner-only pause controls", async () => {
@@ -214,10 +193,6 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
       "InvalidState"
     );
 
-    const tokenId = (await manager.nextTokenId()).toNumber() - 1;
-    await manager.listNFT(tokenId, toBN(toWei("3")), { from: employer });
-    await manager.delistNFT(tokenId, { from: employer });
-    await expectCustomError(manager.purchaseNFT.call(tokenId, { from: buyer }), "InvalidState");
   });
 
   it("resolves disputes with correct economic outcomes", async () => {

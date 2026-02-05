@@ -88,4 +88,4 @@ namespace grammar above is supported for both the base and `alpha` environments.
   treated as infrastructure and locked using `lockIdentityConfiguration()` once
   validated.
 - **Lock timing**: lock after the first deployment and a successful validation
-  of allowlists/ENS wiring, before the marketplace goes live.
+  of allowlists/ENS wiring, before production operations begin.

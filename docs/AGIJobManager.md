@@ -8,7 +8,7 @@ This document provides a comprehensive, code‑accurate overview of the `AGIJobM
 - An on‑chain **job escrow manager** where employers fund jobs in ERC‑20, agents perform work, validators approve/disapprove completion, and moderators resolve disputes.
 - A **reputation tracker** for agents and validators, awarding points based on job payout and completion time.
 - An **ERC‑721 job NFT issuer**: when a job completes, the employer receives an NFT that points to the completion metadata URI.
-- A **minimal NFT marketplace** for those job NFTs only (list, purchase, delist).
+- No internal NFT marketplace; job NFTs are standard ERC‑721 tokens.
 - A **role‑gated system** that enforces access via allowlists (explicit) or Merkle proofs and ENS/NameWrapper/Resolver ownership checks.
 
 **What AGIJobManager is not**
@@ -22,7 +22,7 @@ This document provides a comprehensive, code‑accurate overview of the `AGIJobM
 - **Agents**: apply for jobs if allowlisted/Merkle/ENS‑verified and not blacklisted. Agent payout is snapshotted at assignment time based on AGIType NFT holdings.
 - **Validators**: approve/disapprove job completion if allowlisted/Merkle/ENS‑verified and not blacklisted. Validator payouts are a fixed percentage of job payout split evenly among participating validators.
 - **Moderators**: resolve disputes with a typed resolution code.
-- **NFT issuance & marketplace**: on completion, a job NFT is minted to the employer. It can be listed, purchased, or delisted through the built‑in marketplace.
+- **NFT issuance**: on completion, a job NFT is minted to the employer.
 - **Reputation**: updated on completion for agents and validators. Reputation saturates with a diminishing‑returns formula.
 
 ## Roles & permissions (overview)
@@ -90,7 +90,6 @@ stateDiagram-v2
 | `OwnershipVerified` | `_verifyOwnership` | Emits successful ENS/Merkle check. |
 | `AGITypeUpdated` | `addAGIType` | Payout percentage per AGI type NFT. |
 | `NFTIssued` | `_completeJob` | ERC‑721 minted to employer. |
-| `NFTListed` / `NFTPurchased` / `NFTDelisted` | marketplace | List/purchase/delist for job NFTs only. |
 | `RewardPoolContribution` | `contributeToRewardPool` | Additional reward pool contributions. |
 | `CompletionReviewPeriodUpdated` / `DisputeReviewPeriodUpdated` | owner updates | Review period changes. |
 | `AdditionalAgentPayoutPercentageUpdated` | owner update | Used for `additionalAgents` allowlist. |
@@ -105,7 +104,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 | Error | Typical causes |
 | --- | --- |
 | `NotModerator` | Non‑moderator calls dispute resolution. |
-| `NotAuthorized` | Wrong actor for a role‑gated action; invalid ENS/Merkle ownership; marketplace seller/buyer mismatch. |
+| `NotAuthorized` | Wrong actor for a role‑gated action; invalid ENS/Merkle ownership. |
 | `Blacklisted` | Agent/validator is blacklisted. |
 | `InvalidParameters` | Zero/invalid payout, duration, URI, percentages, or parameter bounds. |
 | `InvalidState` | Action not permitted in current lifecycle state. |
@@ -150,12 +149,10 @@ Eligibility checks for agents and validators use `_verifyOwnership`, which accep
 - `agentRootNode` and `clubRootNode` are the ENS root nodes for agents and validators respectively.
 - `_verifyOwnership` chooses the Merkle root based on which root node is supplied (agent vs validator).
 
-## NFT issuance & marketplace
+## NFT issuance & trading
 
 - **Minting**: `NFTIssued` is emitted during `_completeJob`, minting a job NFT to the employer with `tokenURI = baseIpfsUrl + "/" + jobCompletionURI` unless the completion URI is already a full URI.
-- **Listings**: `listNFT` creates a listing for the tokenId at a fixed price; only the current owner can list.
-- **Purchases**: `purchaseNFT` transfers ERC‑20 from buyer to seller, then transfers the NFT to the buyer.
-- **Delisting**: `delistNFT` deactivates an active listing; only the seller can delist.
+- **Trading**: job NFTs are standard ERC‑721 tokens and can be traded externally using standard approvals and transfers; the contract does not include an internal marketplace.
 
 ## dApp integration tips
 

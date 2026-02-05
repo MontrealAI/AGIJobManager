@@ -107,20 +107,9 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 
 **Important**: Any other string only clears the dispute flag and does **not** settle funds.
 
-## 7) Marketplace flow (list → delist → purchase)
+## 7) NFT trading (external marketplaces)
 
-**List an NFT**
-1. In **List NFT**, enter **Token ID** and **Price (token units)**.
-2. Click **List NFT**.
-
-**Delist an NFT**
-1. In **Delist NFT**, enter **Token ID**.
-2. Click **Delist NFT**.
-
-**Purchase an NFT**
-1. In **Purchase NFT**, enter **Token ID**.
-2. If **Approval status** shows “Approve required,” click **Approve token (listing price)**.
-3. Click **Purchase NFT**.
+AGI job NFTs are standard ERC‑721 tokens. The contract does not include an internal marketplace; trade externally using standard approvals and transfers.
 
 ---
 
@@ -170,14 +159,4 @@ await jm.validateJob(jobId, label, proof); // or jm.disapproveJob(jobId, label, 
 ```javascript
 const jobId = 1;
 await jm.resolveDisputeWithCode(jobId, 1, "agent win");
-```
-
-## Marketplace
-```javascript
-const tokenId = 1;
-const price = web3.utils.toWei("10");
-await jm.listNFT(tokenId, price);
-await jm.delistNFT(tokenId);
-await token.approve(jm.address, price);
-await jm.purchaseNFT(tokenId);
 ```

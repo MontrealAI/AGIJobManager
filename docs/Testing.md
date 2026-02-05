@@ -33,7 +33,7 @@ keeping the large `jobs` getter internal and providing smaller read-model getter
 npx truffle test
 ```
 
-## Scenario/state-machine tests (escrow + NFT marketplace economics)
+## Scenario/state-machine tests (escrow + NFT issuance economics)
 
 Run the deterministic economic lifecycle scenarios:
 
@@ -42,9 +42,9 @@ npx truffle test test/scenarioEconomicStateMachine.test.js
 ```
 
 Coverage highlights:
-- Happy path lifecycle (escrow funding → apply → completion → validator approvals → settlement → NFT issuance → listing → purchase).
+- Happy path lifecycle (escrow funding → apply → completion → validator approvals → settlement → NFT issuance).
 - Negative paths (pause behavior, blacklist/role gating failures, invalid state transitions, dispute branches).
-- Invariants (no double payout, no payout in non-terminal states, no stuck escrow, listings can’t be purchased twice or after delist).
+- Invariants (no double payout, no payout in non-terminal states, no stuck escrow).
 
 Troubleshooting tips:
 - **NotAuthorized / Blacklisted**: ensure the test fixture addrs are allowlisted via `addAdditionalAgent` / `addAdditionalValidator` and not blacklisted.

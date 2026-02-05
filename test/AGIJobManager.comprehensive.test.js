@@ -635,46 +635,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       assert.equal(job.completed, false);
     });
 
-    it("reverts NFT purchases when transferFrom fails", async () => {
-      const failingToken = await FailingERC20.new();
-      await failingToken.mint(employer, payout);
-      await failingToken.mint(buyer, payout);
-
-      const altManager = await AGIJobManager.new(...buildInitConfig(
-          failingToken.address,
-          baseIpfsUrl,
-          ens.address,
-          nameWrapper.address,
-          clubRoot,
-          agentRoot,
-          clubRoot,
-          agentRoot,
-          validatorTree.root,
-          agentTree.root,
-        )
-      );
-      await altManager.addAdditionalAgent(agent, { from: owner });
-      await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });
-      await agiTypeNft.mint(agent);
-
-      await failingToken.approve(altManager.address, payout, { from: employer });
-      await altManager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
-      await altManager.applyForJob(0, "agent", [], { from: agent });
-      await altManager.addAdditionalValidator(validatorOne, { from: owner });
-      await altManager.setRequiredValidatorApprovals(1, { from: owner });
-      await altManager.requestJobCompletion(0, updatedIpfs, { from: agent });
-      const bond = await altManager.validatorBond();
-      await failingToken.mint(validatorOne, bond, { from: owner });
-      await failingToken.approve(altManager.address, bond, { from: validatorOne });
-      await altManager.validateJob(0, "validator", [], { from: validatorOne });
-
-      const tokenId = (await altManager.nextTokenId()).subn(1);
-      await altManager.listNFT(tokenId, payout, { from: employer });
-      await failingToken.setFailTransferFroms(true);
-      await failingToken.approve(altManager.address, payout, { from: buyer });
-
-      await expectCustomError(altManager.purchaseNFT.call(tokenId, { from: buyer }), "TransferFailed");
-    });
   });
 
   describe("admin & configuration", () => {
@@ -840,56 +800,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await time.increase(reviewPeriod.addn(1));
       const finalizeReceipt = await manager.finalizeJob(jobDId, { from: employer });
       expectEvent(finalizeReceipt, "JobFinalized", { jobId: new BN(jobDId) });
-    });
-  });
-
-  describe("NFT marketplace", () => {
-    beforeEach(async () => {
-      await manager.addAdditionalAgent(agent, { from: owner });
-      await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
-      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
-      await agiTypeNft.mint(agent);
-
-      await createJob();
-      await manager.applyForJob(0, "agent", [], { from: agent });
-      await requestCompletion(0);
-      await manager.validateJob(0, "validator", [], { from: validatorOne });
-    });
-
-    it("lists, purchases, and delists NFTs with proper access control", async () => {
-      const tokenId = (await manager.nextTokenId()).subn(1);
-      await expectCustomError(manager.listNFT.call(tokenId, 0, { from: employer }), "InvalidParameters");
-      await expectCustomError(manager.listNFT.call(tokenId, payout, { from: outsider }), "NotAuthorized");
-
-      const listReceipt = await manager.listNFT(tokenId, payout, { from: employer });
-      expectEvent(listReceipt, "NFTListed", { tokenId, seller: employer, price: payout });
-
-      await token.approve(manager.address, payout, { from: buyer });
-      const purchaseReceipt = await manager.purchaseNFT(tokenId, { from: buyer });
-      expectEvent(purchaseReceipt, "NFTPurchased", { tokenId, buyer, price: payout });
-
-      assert.equal(await manager.ownerOf(tokenId), buyer);
-      const listing = await manager.listings(tokenId);
-      assert.equal(listing.isActive, false);
-      await expectCustomError(manager.delistNFT.call(tokenId, { from: employer }), "NotAuthorized");
-    });
-
-    it("allows seller to delist active listing", async () => {
-      const tokenId = (await manager.nextTokenId()).subn(1);
-      await manager.listNFT(tokenId, payout, { from: employer });
-      const delistReceipt = await manager.delistNFT(tokenId, { from: employer });
-      expectEvent(delistReceipt, "NFTDelisted", { tokenId });
-
-      const listing = await manager.listings(tokenId);
-      assert.equal(listing.isActive, false);
-    });
-
-    it("rejects delisting inactive listings", async () => {
-      const tokenId = (await manager.nextTokenId()).subn(1);
-      await manager.listNFT(tokenId, payout, { from: employer });
-      await manager.delistNFT(tokenId, { from: employer });
-      await expectCustomError(manager.delistNFT.call(tokenId, { from: employer }), "NotAuthorized");
     });
   });
 

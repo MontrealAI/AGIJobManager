@@ -10,7 +10,7 @@ Use this checklist to minimize risk when operating or interacting with AGIJobMan
 
 ## ERC‑20 approvals
 - **Never grant unlimited approvals** unless absolutely required.
-- Approve **exact amounts** for each job or NFT purchase.
+- Approve **exact amounts** for each job.
 - Revoke approvals after use by calling `approve(spender, 0)`.
 
 ## Owner/operator key management
@@ -29,7 +29,3 @@ Use this checklist to minimize risk when operating or interacting with AGIJobMan
 ## Dispute handling
 - Use consistent, transparent moderation policies.
 - Record dispute evidence off‑chain in a tamper‑evident system.
-
-## NFT marketplace safety
-- Verify listing prices and buyer address before purchasing.
-- Check token allowances and revoke after purchase.
