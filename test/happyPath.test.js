@@ -17,7 +17,7 @@ const EMPTY_PROOF = [];
 const { toBN, toWei } = web3.utils;
 
 contract("AGIJobManager happy path", (accounts) => {
-  const [owner, employer, agent, validatorA, validatorB] = accounts;
+  const [owner, employer, agent, validatorA, validatorB, slowAgent] = accounts;
   let token;
   let ens;
   let resolver;
@@ -53,9 +53,11 @@ contract("AGIJobManager happy path", (accounts) => {
 
     agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
+    await agiType.mint(slowAgent, { from: owner });
     await manager.addAGIType(agiType.address, 92, { from: owner });
 
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
+    await setNameWrapperOwnership(nameWrapper, agentRoot, "slow-agent", slowAgent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-a", validatorA);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-b", validatorB);
 
@@ -63,7 +65,7 @@ contract("AGIJobManager happy path", (accounts) => {
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await fundValidators(token, manager, [validatorA, validatorB], owner);
-    await fundAgents(token, manager, [agent], owner);
+    await fundAgents(token, manager, [agent, slowAgent], owner);
   });
 
   it("runs a full job lifecycle with payouts and NFT issuance", async () => {
@@ -122,5 +124,32 @@ contract("AGIJobManager happy path", (accounts) => {
     const nftIssuedEvent = finalTx.logs.find((log) => log.event === "NFTIssued");
     assert.ok(jobCompletedEvent, "JobCompleted event should be emitted");
     assert.ok(nftIssuedEvent, "NFTIssued event should be emitted");
+  });
+
+  it("does not reward slower completion requests with higher reputation", async () => {
+    const payout = toBN(toWei("20"));
+    const duration = 3600;
+
+    await token.mint(employer, payout.muln(2), { from: owner });
+    await token.approve(manager.address, payout.muln(2), { from: employer });
+
+    const fastReceipt = await manager.createJob("ipfs-fast", payout, duration, "details", { from: employer });
+    const fastJobId = fastReceipt.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(fastJobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(fastJobId, "ipfs-fast-complete", { from: agent });
+    await time.increase((await manager.completionReviewPeriod()).addn(1));
+    await manager.finalizeJob(fastJobId, { from: employer });
+    const fastRep = await manager.reputation(agent);
+
+    const slowReceipt = await manager.createJob("ipfs-slow", payout, duration, "details", { from: employer });
+    const slowJobId = slowReceipt.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(slowJobId, "slow-agent", EMPTY_PROOF, { from: slowAgent });
+    await time.increase(120);
+    await manager.requestJobCompletion(slowJobId, "ipfs-slow-complete", { from: slowAgent });
+    await time.increase((await manager.completionReviewPeriod()).addn(1));
+    await manager.finalizeJob(slowJobId, { from: employer });
+    const slowRep = await manager.reputation(slowAgent);
+
+    assert.ok(fastRep.gte(slowRep), "delayed completion should not increase reputation");
   });
 });

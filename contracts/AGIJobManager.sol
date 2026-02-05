@@ -125,7 +125,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public validatorBondMax = 200e18;
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
+    /// @notice Minimum agent bond floor (bond is otherwise proportional to payout).
     uint256 public agentBond = 1e18;
+    uint256 internal constant AGENT_BOND_BPS = 500;
+    uint256 internal constant AGENT_BOND_MAX = 200e18;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
@@ -350,6 +353,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         if (bond < validatorBondMin) bond = validatorBondMin;
         if (bond > validatorBondMax) bond = validatorBondMax;
+        if (bond > payout) bond = payout;
+    }
+
+    function _computeAgentBond(uint256 payout) internal view returns (uint256 bond) {
+        unchecked {
+            bond = (payout * AGENT_BOND_BPS) / 10_000;
+        }
+        uint256 minBond = agentBond;
+        if (bond < minBond) bond = minBond;
+        if (bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
+        if (bond > payout) bond = payout;
     }
 
     function _maxAGITypePayoutPercentage() internal view returns (uint256) {
@@ -411,7 +425,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = agentBond > job.payout ? job.payout : agentBond;
+        uint256 bond = _computeAgentBond(job.payout);
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
         unchecked {
             lockedAgentBonds += bond;
@@ -987,20 +1001,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _computeReputationPoints(Job storage job) internal view returns (uint256 reputationPoints) {
-        uint256 completionTime = job.completionRequestedAt > job.assignedAt
-            ? job.completionRequestedAt - job.assignedAt
-            : 0;
-        return _computeReputationPointsWithTime(job, completionTime);
-    }
-
-    function _computeReputationPointsWithTime(
-        Job storage job,
-        uint256 completionTime
-    ) internal view returns (uint256 reputationPoints) {
+        uint256 scaledPayout = job.payout / 1e18;
+        uint256 payoutPoints;
         unchecked {
-            uint256 scaledPayout = job.payout / 1e18;
-            uint256 payoutPoints = scaledPayout ** 3 / 1e5;
-            reputationPoints = Math.log2(1 + payoutPoints * 1e6) + completionTime / 10000;
+            payoutPoints = scaledPayout ** 3 / 1e5;
+            reputationPoints = Math.log2(1 + payoutPoints * 1e6) + job.duration / 10000;
         }
     }
 

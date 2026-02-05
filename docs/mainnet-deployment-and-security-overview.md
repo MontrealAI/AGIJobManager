@@ -57,11 +57,11 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 - **Stale dispute recovery**: `resolveStaleDispute` is owner‑only and **paused‑only**, after `disputeReviewPeriod`.
 
 ## 4) Treasury vs escrow separation (hard invariant)
-**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Treasury** is the AGI balance minus escrow.
+**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Treasury** is the AGI balance minus escrow and bonded funds.
 
 **Why this matters**: it defines the hard boundary auditors and users rely on to ensure escrowed job funds cannot be withdrawn by the operator.
 
-- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow` and **reverts** if `balance < lockedEscrow`.
+- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and **reverts** if obligations exceed balance.
 - `withdrawAGI()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableAGI()`.
 
 **What becomes treasury**
@@ -123,13 +123,14 @@ Pause is an incident‑response control to halt new activity while preserving ex
 ## 7) Security posture (operational highlights)
 - **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `withdrawAGI`, dispute resolution, settlement).
 - **Exact ERC‑20 transfer checks** are used where escrow integrity matters (`createJob`, `contributeToRewardPool`), preventing fee‑on‑transfer / rebasing tokens from under‑funding escrow.
+- **Bonded incentives**: agent bonds are proportional (min/max‑capped) and slashed on employer wins; validator bonds are capped at the job payout.
 - **Bounded loops**: validator lists are capped at `MAX_VALIDATORS_PER_JOB` (50).
 - **ENS/NameWrapper lookups** use `try/catch` and are view‑only; failures just return false.
 - **Dispute outcomes are binary** (agent win vs employer win); `NO_ACTION` logs without settlement.
 - **Known limitations**: centralized operator risk; parameter changes can affect in‑flight jobs; no slashing; reward pool is not segregated from treasury.
 
 ### Reputation system (as implemented)
-- Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + completionTime / 10000`, with `payoutPoints = (scaledPayout^3) / 1e5`.
+- Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + jobDuration / 10000`, with `payoutPoints = (scaledPayout^3) / 1e5`; delays in completion requests do not increase rep.
 - Reputation is then **diminished** by `1 + (newReputation^2 / 88888^2)` and capped at **88888**.
 - Validator payouts/reputation are outcome‑aligned: correct‑side voters earn rewards, incorrect‑side voters are slashed.
 - `premiumReputationThreshold` gates `canAccessPremiumFeature(address)` (pure threshold check; no time decay).
@@ -137,6 +138,7 @@ Pause is an incident‑response control to halt new activity while preserving ex
 ## 8) EIP‑170 bytecode size & build reproducibility
 - **EIP‑170 limit**: 24,576 bytes of runtime bytecode.
 - **Repo guard**: `test/bytecodeSize.test.js` enforces **≤ 24,575 bytes** for `AGIJobManager`.
+- **viaIR off**: bytecode is sized and reproducible under the legacy (non‑viaIR) pipeline, so `viaIR` remains disabled to stay under the cap.
 
 **Compiler settings (Truffle)**
 - **solc**: `0.8.23`

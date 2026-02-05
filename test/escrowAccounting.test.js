@@ -132,6 +132,31 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
   });
 
+  it("caps validator bond to payout for tiny jobs", async () => {
+    const payout = toBN(toWei("0.25"));
+    const jobId = await createJob(payout);
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    const expectedBond = await computeValidatorBond(manager, payout);
+    assert.equal(expectedBond.toString(), payout.toString(), "bond should be capped to payout");
+
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+
+    const lockedValidatorBonds = await manager.lockedValidatorBonds();
+    assert.equal(lockedValidatorBonds.toString(), expectedBond.toString(), "bond should lock at payout cap");
+  });
+
+  it("does not allow instant finalize after validator approval", async () => {
+    const payout = toBN(toWei("5"));
+    const jobId = await createJob(payout);
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
+
+    await expectRevert.unspecified(manager.finalizeJob(jobId, { from: employer }));
+  });
+
   it("requires validator bond allowance for votes", async () => {
     const payout = toBN(toWei("5"));
     const jobId = await createJob(payout);
