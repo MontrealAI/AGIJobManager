@@ -196,7 +196,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const validatorPayoutEach = validatorPayoutTotal.divn(3);
       const validatorRemainder = validatorPayoutTotal.sub(validatorPayoutEach.muln(3));
       const agentPayout = payout.muln(92).divn(100);
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, duration);
       const expectedAgentPayout = agentPayout.add(validatorRemainder).add(agentBond);
 
       const agentBalanceAfter = await token.balanceOf(agent);
@@ -339,7 +339,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.resolveDispute(0, "employer win", { from: moderator });
       const employerBalanceAfter = await token.balanceOf(employer);
 
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, duration);
       assert.equal(employerBalanceAfter.sub(employerBalanceBefore).toString(), payout.add(agentBond).toString());
 
       const job = await manager.getJobCore(0);
@@ -368,7 +368,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.resolveDispute(0, "agent win", { from: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
 
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, duration);
       const expectedPayout = payout.muln(92).divn(100).add(agentBond);
       assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
       const job = await manager.getJobCore(0);
@@ -516,7 +516,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const resolutionReceipt = await manager.resolveDisputeWithCode(0, 1, "agent win", { from: moderator });
       expectEvent(resolutionReceipt, "DisputeResolvedWithCode", { jobId: new BN(0), resolver: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
-      const agentBond = await computeAgentBond(manager, payout);
+      const agentBond = await computeAgentBond(manager, payout, duration);
       const expectedPayout = payout.muln(92).divn(100).add(agentBond);
       assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
 
