@@ -10,6 +10,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators } = require("./helpers/bonds");
+const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -59,6 +60,7 @@ contract("AGIJobManager happy path", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-b", validatorB);
 
     await manager.setRequiredValidatorApprovals(2, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await fundValidators(token, manager, [validatorA, validatorB], owner);
   });
@@ -77,7 +79,9 @@ contract("AGIJobManager happy path", (accounts) => {
     const validatorABefore = await token.balanceOf(validatorA);
     const validatorBBefore = await token.balanceOf(validatorB);
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
-    const finalTx = await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
+    await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
+    await time.increase(2);
+    const finalTx = await manager.finalizeJob(jobId, { from: employer });
 
     const tokenId = 0;
     const tokenUri = await manager.tokenURI(tokenId);

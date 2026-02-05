@@ -7,6 +7,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
+const { time } = require("@openzeppelin/test-helpers");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators } = require("./helpers/bonds");
@@ -135,7 +136,10 @@ contract("AGIJobManager economic safety", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     const validatorBefore = await token.balanceOf(validator);
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalance = await token.balanceOf(agent);
     const validatorBalance = await token.balanceOf(validator);

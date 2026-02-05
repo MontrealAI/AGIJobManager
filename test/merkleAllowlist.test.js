@@ -13,6 +13,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
 const { fundValidators } = require("./helpers/bonds");
+const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const { toBN, toWei } = web3.utils;
@@ -88,7 +89,10 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const before = await token.balanceOf(agent);
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await manager.validateJob(jobId, "ignored", tree.getHexProof(validatorLeaf), { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
     const after = await token.balanceOf(agent);
 
     const expected = payout.muln(payoutTier).divn(100);
