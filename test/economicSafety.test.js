@@ -9,6 +9,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -123,6 +124,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
+    await fundValidators(token, manager, [validator], owner);
 
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
@@ -132,6 +134,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    const validatorBefore = await token.balanceOf(validator);
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
 
     const agentBalance = await token.balanceOf(agent);
@@ -141,7 +144,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     const expectedValidatorPayout = payout.muln(10).divn(100);
 
     assert.equal(agentBalance.toString(), expectedAgentPayout.toString());
-    assert.equal(validatorBalance.toString(), expectedValidatorPayout.toString());
+    assert.equal(validatorBalance.sub(validatorBefore).toString(), expectedValidatorPayout.toString());
     assert.equal(contractBalance.toString(), payout.sub(expectedAgentPayout).sub(expectedValidatorPayout).toString());
   });
 
