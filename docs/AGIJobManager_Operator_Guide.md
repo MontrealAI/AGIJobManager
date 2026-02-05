@@ -56,7 +56,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - Agent payout percentage is snapshotted at assignment based on the highest AGI type the agent holds.
 
 ### Withdrawing ERC‑20
-- `withdrawAGI(amount)` can only withdraw surplus balances; it fails if `balance < lockedEscrow` or `amount > withdrawableAGI()`.
+- `withdrawAGI(amount)` can only withdraw surplus balances; it fails if `balance < lockedEscrow + lockedAgentBonds + lockedValidatorBonds` or `amount > withdrawableAGI()`.
 - Withdrawals are only allowed while paused.
 
 ### Rotating the escrow token

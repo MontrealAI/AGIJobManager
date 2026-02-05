@@ -29,7 +29,8 @@ and settlement invariants.
 ## 2) Treasury vs escrow separation (hard invariant)
 
 **Escrow** is the sum of outstanding job payouts tracked by `lockedEscrow`.
-**Treasury** is any AGI held by the contract **above** `lockedEscrow`.
+**Bonds** are tracked by `lockedAgentBonds` and `lockedValidatorBonds`.
+**Treasury** is any AGI held by the contract **above** escrow and locked bonds.
 
 **Sources of treasury (as implemented)**
 - Any payout remainder when `agentPayoutPct + validationRewardPercentage < 100`.
@@ -38,13 +39,14 @@ and settlement invariants.
 - Any direct token transfers to the contract.
 
 **Withdrawal semantics**
-- `withdrawableAGI()` returns `balance - lockedEscrow` and reverts on insolvency.
+- `withdrawableAGI()` returns `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and reverts on insolvency.
 - `withdrawAGI(amount)` is **owner‑only** and **paused‑only**.
 
 **Example**
 - Contract balance: 1,000 AGI
 - `lockedEscrow`: 700 AGI
-- `withdrawableAGI()`: 300 AGI
+- `lockedAgentBonds + lockedValidatorBonds`: 50 AGI
+- `withdrawableAGI()`: 250 AGI
 - `withdrawAGI(400)` reverts; `withdrawAGI(300)` succeeds while paused.
 
 ## 3) Pause semantics (blocked vs allowed)

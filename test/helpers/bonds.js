@@ -8,16 +8,19 @@ async function fundValidators(token, manager, validators, owner, multiplier = 5)
   return bondMax;
 }
 
+const AGENT_BOND_BPS = 500;
+
 async function resolveAgentBond(manager) {
-  if (manager.agentBond) {
-    return manager.agentBond();
-  }
   return web3.utils.toBN(web3.utils.toWei("1"));
 }
 
 async function fundAgents(token, manager, agents, owner, multiplier = 5) {
-  const bond = await resolveAgentBond(manager);
-  if (bond.isZero()) return bond;
+  const [maxPayout, min] = await Promise.all([
+    manager.maxJobPayout(),
+    resolveAgentBond(manager),
+  ]);
+  let bond = maxPayout.muln(AGENT_BOND_BPS).divn(10000);
+  if (bond.lt(min)) bond = min;
   const amount = bond.muln(multiplier);
   for (const agent of agents) {
     await token.mint(agent, amount, { from: owner });
@@ -35,11 +38,14 @@ async function computeValidatorBond(manager, payout) {
   let bond = payout.mul(bps).divn(10000);
   if (bond.lt(min)) bond = min;
   if (bond.gt(max)) bond = max;
+  if (bond.gt(payout)) bond = payout;
   return bond;
 }
 
 async function computeAgentBond(manager, payout) {
-  const bond = await resolveAgentBond(manager);
+  const min = await resolveAgentBond(manager);
+  let bond = payout.muln(AGENT_BOND_BPS).divn(10000);
+  if (bond.lt(min)) bond = min;
   if (bond.gt(payout)) return payout;
   return bond;
 }

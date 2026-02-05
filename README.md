@@ -25,10 +25,12 @@
 
 ## Important trust notes
 - **Owner-operated**: the owner can pause/unpause, tune parameters, and manage allowlists/blacklists.
-- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`) and only while paused; escrowed funds are not withdrawable.
+- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`, `lockedAgentBonds`, and `lockedValidatorBonds`) and only while paused; escrowed funds and bonds are not withdrawable.
 - **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
-- **Validator incentives**: validators post a bond per vote, earn rewards when their vote matches the final outcome, and are slashed when they are wrong.
+- **Validator incentives**: validators post a bond per vote (capped at payout), earn rewards when their vote matches the final outcome, and are slashed when they are wrong.
+- **Agent incentives**: agents post a payout‑proportional bond (minimum floor, capped at payout) at apply time; bonds are returned on agent wins and fully slashed to employers on employer wins/expiry.
+- **Reputation**: reputation increases with payout size and *faster* completion requests (delays do not increase scores).
 
 **Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
 
@@ -112,7 +114,7 @@ flowchart LR
 
 | Role | Capabilities | Trust considerations |
 | --- | --- | --- |
-| **Owner** | Pause/unpause, set parameters, manage allowlists/blacklists, add moderators and AGI types, withdraw surplus ERC‑20 (balance minus locked escrow). | Highly privileged. Compromise or misuse can override operational safety. |
+| **Owner** | Pause/unpause, set parameters, manage allowlists/blacklists, add moderators and AGI types, withdraw surplus ERC‑20 (balance minus locked escrow + bonds). | Highly privileged. Compromise or misuse can override operational safety. |
 | **Moderator** | Resolve disputes via `resolveDispute`. | Central dispute authority; outcomes depend on moderator integrity. |
 | **Employer** | Create jobs, fund escrow, cancel pre-assignment, dispute jobs, receive job NFTs. | Funds are custodied by contract until resolution. |
 | **Agent** | Apply for jobs, request completion, earn payouts and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
@@ -132,7 +134,7 @@ npm run build
 npm test
 ```
 
-**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled**; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
+**Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled** to keep runtime bytecode under the EIP‑170 cap; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
 
 ## Contract documentation
 

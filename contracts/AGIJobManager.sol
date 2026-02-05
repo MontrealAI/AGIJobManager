@@ -125,7 +125,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public validatorBondMax = 200e18;
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
-    uint256 public agentBond = 1e18;
+    uint256 internal constant AGENT_BOND_BPS = 500;
+    uint256 internal constant AGENT_BOND_MIN = 1e18;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
@@ -320,6 +321,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _settleAgentBond(Job storage job, bool agentWon) internal {
         uint256 bond = job.agentBondAmount;
+        if (bond == 0) return;
         job.agentBondAmount = 0;
         unchecked {
             lockedAgentBonds -= bond;
@@ -350,6 +352,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         if (bond < validatorBondMin) bond = validatorBondMin;
         if (bond > validatorBondMax) bond = validatorBondMax;
+        if (bond > payout) bond = payout;
+    }
+
+    function _computeAgentBond(uint256 payout) internal view returns (uint256 bond) {
+        unchecked {
+            bond = (payout * AGENT_BOND_BPS) / 10_000;
+        }
+        if (bond < AGENT_BOND_MIN) bond = AGENT_BOND_MIN;
+        if (bond > payout) bond = payout;
     }
 
     function _maxAGITypePayoutPercentage() internal view returns (uint256) {
@@ -411,7 +422,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = agentBond > job.payout ? job.payout : agentBond;
+        uint256 bond = _computeAgentBond(job.payout);
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
         unchecked {
             lockedAgentBonds += bond;
@@ -702,7 +713,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         challengePeriodAfterApproval = period;
         emit ChallengePeriodAfterApprovalUpdated(oldPeriod, period);
     }
-    function setAgentBond(uint256 bond) external onlyOwner { agentBond = bond; }
     function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         if (_percentage > 100 - validationRewardPercentage) revert InvalidParameters();
@@ -1000,7 +1010,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             uint256 scaledPayout = job.payout / 1e18;
             uint256 payoutPoints = scaledPayout ** 3 / 1e5;
-            reputationPoints = Math.log2(1 + payoutPoints * 1e6) + completionTime / 10000;
+            uint256 timeBonus = job.duration > completionTime ? (job.duration - completionTime) / 10000 : 0;
+            reputationPoints = Math.log2(1 + payoutPoints * 1e6) + timeBonus;
         }
     }
 

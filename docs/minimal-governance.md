@@ -48,7 +48,7 @@ Other configuration knobs (thresholds, review periods, allowlists, metadata, etc
 
 To keep operations low-touch, monitor the following invariants and events:
 
-- **Escrow solvency**: track `lockedEscrow` vs. token balance; `withdrawableAGI()` must stay non‑negative.
+- **Escrow solvency**: track `lockedEscrow + lockedAgentBonds + lockedValidatorBonds` vs. token balance; `withdrawableAGI()` must stay non‑negative.
 - **Identity wiring changes (pre-lock)**: watch `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, and `IdentityConfigurationLocked`.
 - **Allowlist updates**: `MerkleRootsUpdated` signals validator/agent allowlist changes (access only, not payout logic).
 - **Dispute recovery**: `DisputeTimeoutResolved` indicates break‑glass resolution by the owner.

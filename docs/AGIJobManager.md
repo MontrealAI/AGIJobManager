@@ -115,12 +115,12 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 | `IneligibleAgentPayout` | Agent has 0% payout tier at apply time. |
 | `InvalidAgentPayoutSnapshot` | Snapshot missing or inconsistent during settlement. |
 | `InsufficientWithdrawableBalance` | Withdrawal exceeds `withdrawableAGI()`. |
-| `InsolventEscrowBalance` | Contract balance < `lockedEscrow`. |
+| `InsolventEscrowBalance` | Contract balance < `lockedEscrow + lockedAgentBonds + lockedValidatorBonds`. |
 | `ConfigLocked` | Identity wiring already locked. |
 
 ## Core invariants (implementation expectations)
 
-- **Escrow accounting**: `lockedEscrow` tracks total job escrow; withdrawals are limited to `balance - lockedEscrow`.
+- **Escrow accounting**: `lockedEscrow` tracks total job escrow; withdrawals are limited to `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`.
 - **Completion gating**: payout + NFT mint require `completionRequested == true` and a valid `jobCompletionURI`.
 - **Role gating**: agents/validators must pass allowlist/Merkle/ENS checks (or be in `additional*` allowlists) and not be blacklisted.
 - **Single‑settlement**: a job can be completed, expired, or deleted once; settlement functions guard against double‑finalization.

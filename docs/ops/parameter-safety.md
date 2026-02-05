@@ -145,7 +145,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `ValidatorLimitReached` / `ValidatorSetTooLarge` | `validateJob`, `disapproveJob`, `_completeJob` | More than `MAX_VALIDATORS_PER_JOB` (50) validators attempted. | Keep validators per job ≤ 50; set thresholds well below 50. |
 | `InvalidValidatorThresholds` | `setRequiredValidatorApprovals` / `setRequiredValidatorDisapprovals` | Approvals + disapprovals exceed 50, or individual > 50. | Reconfigure thresholds within limits. |
 | `JobNotFound` | Any job access | Job ID not created or deleted. | Use `nextJobId` bounds to identify valid IDs. |
-| `InsufficientWithdrawableBalance` | `withdrawAGI` | Withdrawal exceeds `withdrawableAGI()` (balance minus `lockedEscrow`). | Check `withdrawableAGI()` and withdraw only surplus. |
+| `InsufficientWithdrawableBalance` | `withdrawAGI` | Withdrawal exceeds `withdrawableAGI()` (balance minus `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`). | Check `withdrawableAGI()` and withdraw only surplus. |
 
 ## Pre-deploy / post-deploy verification checklist
 
