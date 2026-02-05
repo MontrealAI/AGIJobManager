@@ -9,6 +9,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundAgents } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -46,6 +47,7 @@ contract("AGIJobManager jobStatus", (accounts) => {
 
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addModerator(moderator, { from: owner });
+    await fundAgents(token, manager, [agent], owner);
   });
 
   it("tracks canonical job lifecycle flags", async () => {

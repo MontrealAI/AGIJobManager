@@ -10,7 +10,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { computeValidatorBond } = require("./helpers/bonds");
+const { fundAgents, computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -71,6 +71,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     await manager.addAGIType(agiType.address, 40, { from: owner });
 
     await manager.addAdditionalAgent(agent, { from: owner });
+    await fundAgents(token, manager, [agent], owner);
   });
 
   it("rejects validator thresholds that exceed the cap", async () => {

@@ -12,7 +12,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
 
 const EMPTY_PROOF = [];
 
@@ -109,6 +109,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
     await defaultAgiType.mint(agent, { from: owner });
 
     await fundValidators(token, manager, [validator, validatorTwo], owner);
+    await fundAgents(token, manager, [agent, other], owner);
   });
 
   describe("Deployment & initialization", () => {
@@ -185,8 +186,12 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const validatorBalanceAfter = await token.balanceOf(validator);
       const employerBalanceAfter = await token.balanceOf(employer);
 
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
       assert.equal(employerBalanceAfter.toString(), employerBalanceBefore.toString());
-      assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), web3.utils.toWei("92"));
+      assert.equal(
+        agentBalanceAfter.sub(agentBalanceBefore).toString(),
+        web3.utils.toBN(web3.utils.toWei("92")).add(agentBond).toString()
+      );
       assert.equal(validatorBalanceAfter.sub(validatorBalanceBefore).toString(), web3.utils.toWei("8"));
 
       const tokenId = (await manager.nextTokenId()).toNumber() - 1;
@@ -327,7 +332,8 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
       const agentBalanceAfter = web3.utils.toBN(await token.balanceOf(agent));
 
-      const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100));
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
+      const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100)).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
 
       const jobAfter = await manager.getJobCore(jobId);
@@ -382,6 +388,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });
       await failingManager.addAGIType(agiType.address, 92, { from: owner });
+      await fundAgents(failingToken, failingManager, [agent], owner);
       await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 

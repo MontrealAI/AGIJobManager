@@ -11,7 +11,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -61,6 +61,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await agiTypeNft.mint(agent, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
+    await fundAgents(token, manager, [agent], owner);
   });
 
   it("reverts on missing jobs for role actions", async () => {
@@ -128,11 +129,17 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.disputeJob(jobId, { from: employer });
+    const agentBefore = await token.balanceOf(agent);
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const agentBalance = await token.balanceOf(agent);
-    const expectedPayout = payout.muln(92).divn(100);
-    assert.equal(agentBalance.toString(), expectedPayout.toString(), "agent payout should succeed without validators");
+    const agentBond = await computeAgentBond(manager, payout);
+    const expectedPayout = payout.muln(92).divn(100).add(agentBond);
+    assert.equal(
+      agentBalance.sub(agentBefore).toString(),
+      expectedPayout.toString(),
+      "agent payout should succeed without validators"
+    );
   });
 
   it("rejects validator approvals before completion is requested", async () => {
@@ -330,6 +337,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
     await managerFailing.addAGIType(agiType.address, 1, { from: owner });
+    await fundAgents(failing, managerFailing, [agent], owner);
 
     await failing.approve(managerFailing.address, toBN(toWei("10")), { from: employer });
     const createTx = await managerFailing.createJob("ipfs", toBN(toWei("10")), 1000, "details", { from: employer });

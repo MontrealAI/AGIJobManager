@@ -10,7 +10,7 @@ const { time } = require("@openzeppelin/test-helpers");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeAgentBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -126,6 +126,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await fundValidators(token, manager, [validator], owner);
+    await fundAgents(token, manager, [agent], owner);
 
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
@@ -137,6 +138,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
+    const agentBalanceBefore = await token.balanceOf(agent);
     const validatorBefore = await token.balanceOf(validator);
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
@@ -145,12 +147,14 @@ contract("AGIJobManager economic safety", (accounts) => {
     const agentBalance = await token.balanceOf(agent);
     const validatorBalance = await token.balanceOf(validator);
     const contractBalance = await token.balanceOf(manager.address);
-    const expectedAgentPayout = payout.muln(80).divn(100);
+    const agentBond = await computeAgentBond(manager, payout);
+    const agentPayout = payout.muln(80).divn(100);
+    const expectedAgentPayout = agentPayout.add(agentBond);
     const expectedValidatorPayout = payout.muln(10).divn(100);
 
-    assert.equal(agentBalance.toString(), expectedAgentPayout.toString());
+    assert.equal(agentBalance.sub(agentBalanceBefore).toString(), expectedAgentPayout.toString());
     assert.equal(validatorBalance.sub(validatorBefore).toString(), expectedValidatorPayout.toString());
-    assert.equal(contractBalance.toString(), payout.sub(expectedAgentPayout).sub(expectedValidatorPayout).toString());
+    assert.equal(contractBalance.toString(), payout.sub(agentPayout).sub(expectedValidatorPayout).toString());
   });
 
   it("reverts job completion requests when completion metadata is empty (defensive)", async () => {
@@ -173,6 +177,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 80, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
+    await fundAgents(token, manager, [agent], owner);
 
     const payout = toBN(toWei("1"));
     await token.mint(employer, payout, { from: owner });

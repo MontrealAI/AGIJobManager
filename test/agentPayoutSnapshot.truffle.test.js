@@ -10,7 +10,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeAgentBond } = require("./helpers/bonds");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -64,6 +64,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
+    await fundAgents(token, manager, [agent, other], owner);
   });
 
   it("rejects agents with a 0% payout tier", async () => {
@@ -99,7 +100,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
-    const expected = payout.muln(75).divn(100);
+    const agentBond = await computeAgentBond(manager, payout);
+    const expected = payout.muln(75).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
 
@@ -128,7 +130,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
-    const expected = payout.muln(25).divn(100);
+    const agentBond = await computeAgentBond(manager, payout);
+    const expected = payout.muln(25).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
 
@@ -168,7 +171,8 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
-    const expected = payout.muln(60).divn(100);
+    const agentBond = await computeAgentBond(manager, payout);
+    const expected = payout.muln(60).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
 });

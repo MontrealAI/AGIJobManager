@@ -11,7 +11,7 @@ const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, fundAgents } = require("./helpers/bonds");
 const { expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -73,6 +73,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     await agiTypeNft.mint(agent, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
+    await fundAgents(token, manager, [agent], owner);
   });
 
   it("authorizes an agent via NameWrapper ownership under alpha.agent", async () => {
@@ -178,6 +179,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     await token.mint(employer, payout, { from: owner });
     await token.approve(merkleManager.address, payout, { from: employer });
     await fundValidators(token, merkleManager, [validator], owner);
+    await fundAgents(token, merkleManager, [agent], owner);
     const jobId = (await merkleManager.nextJobId()).toNumber();
     await merkleManager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
 
