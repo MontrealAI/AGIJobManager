@@ -2,7 +2,7 @@
   "contractName": "AGIJobManager",
   "compiler": {
     "name": "solc",
-    "version": "0.8.19+commit.7dd6d404.Emscripten.clang"
+    "version": "0.8.23+commit.f704f362.Emscripten.clang"
   },
   "abi": [
     {
@@ -1379,6 +1379,19 @@
     },
     {
       "inputs": [],
+      "name": "lockedValidatorBonds",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "maxJobPayout",
       "outputs": [
         {
@@ -1724,6 +1737,19 @@
     {
       "inputs": [],
       "name": "validationRewardPercentage",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "validatorBond",
       "outputs": [
         {
           "internalType": "uint256",

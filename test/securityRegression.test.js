@@ -11,6 +11,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -58,6 +59,8 @@ contract("AGIJobManager security regressions", (accounts) => {
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 1, { from: owner });
     await agiTypeNft.mint(agent, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   it("reverts on missing jobs for role actions", async () => {
@@ -334,6 +337,9 @@ contract("AGIJobManager security regressions", (accounts) => {
     await managerFailing.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await managerFailing.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
+    const bond = await managerFailing.validatorBond();
+    await failing.mint(validator, bond, { from: owner });
+    await failing.approve(managerFailing.address, bond, { from: validator });
     await failing.setFailTransfers(true, { from: owner });
     await expectCustomError(
       managerFailing.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),

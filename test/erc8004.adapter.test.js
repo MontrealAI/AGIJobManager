@@ -12,6 +12,7 @@ const MockNameWrapper = artifacts.require('MockNameWrapper');
 
 const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
 const { buildInitConfig } = require('./helpers/deploy');
+const { fundValidators } = require('./helpers/bonds');
 
 const ZERO_ROOT = '0x' + '00'.repeat(32);
 const EMPTY_PROOF = [];
@@ -64,6 +65,8 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addModerator(moderator, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   it('exports deterministic metrics and expected aggregates', async () => {

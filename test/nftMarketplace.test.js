@@ -15,6 +15,7 @@ const ERC721ReceiverBuyer = artifacts.require("ERC721ReceiverBuyer");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError, extractRevertData, selectorFor } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -61,6 +62,8 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 92, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   async function expectPausedRevert(promise, callFn, pauseController) {
@@ -242,6 +245,9 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     const jobId = createTx.logs[0].args.jobId.toNumber();
     await managerFailing.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await managerFailing.requestJobCompletion(jobId, "ipfs-finished", { from: agent });
+    const bond = await managerFailing.validatorBond();
+    await failing.mint(validator, bond, { from: owner });
+    await failing.approve(managerFailing.address, bond, { from: validator });
     await managerFailing.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
 
     await managerFailing.listNFT(0, toBN(toWei("4")), { from: employer });
@@ -275,6 +281,9 @@ contract("AGIJobManager NFT marketplace", (accounts) => {
     await agiType.mint(agent, { from: owner });
     await managerReentrant.addAGIType(agiType.address, 92, { from: owner });
     await managerReentrant.setRequiredValidatorApprovals(1, { from: owner });
+    const bond = await managerReentrant.validatorBond();
+    await reentrant.mint(validator, bond.muln(2), { from: owner });
+    await reentrant.approve(managerReentrant.address, bond.muln(2), { from: validator });
 
     const mintJobNftWith = async () => {
       const payout = toBN(toWei("40"));

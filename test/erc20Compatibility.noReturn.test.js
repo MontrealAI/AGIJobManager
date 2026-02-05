@@ -8,6 +8,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { rootNode } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundValidators } = require("./helpers/bonds");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -40,6 +41,8 @@ contract("AGIJobManager ERC20 compatibility", (accounts) => {
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 60, { from: owner });
+
+    await fundValidators(token, manager, [validator], owner);
   });
 
   it("accepts ERC20 tokens that return no data on transfer/transferFrom", async () => {
