@@ -31,7 +31,8 @@ Generate/upload the **job completion metadata** JSON and call `requestJobComplet
 - State: job’s `jobCompletionURI` updated
 
 ### 4) Wait for validator approvals
-Once enough validators approve, the job completes automatically and you are paid.
+Once enough validators approve, a short challenge window opens. After it elapses (and if no dispute is raised),
+anyone can finalize the job to pay the agent.
 
 ## What you receive
 - **AGI payout** (possibly boosted by AGIType NFT holdings)

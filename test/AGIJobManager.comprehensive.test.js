@@ -5,7 +5,7 @@ const keccak256 = require("keccak256");
 const { expectCustomError } = require("./helpers/errors");
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators } = require("./helpers/bonds");
+const { fundValidators, computeValidatorBond } = require("./helpers/bonds");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -28,6 +28,11 @@ const buildTree = (addresses) => {
     root: tree.getHexRoot(),
     proofFor: (address) => tree.getHexProof(leafFor(address)),
   };
+};
+
+const setChallengePeriod = async (manager, owner, period) => {
+  const [bondBps, bondMin, bondMax, slashBps] = await manager.getValidatorConfig();
+  await manager.setValidatorConfig(bondBps, bondMin, bondMax, slashBps, period, { from: owner });
 };
 
 contract("AGIJobManager comprehensive suite", (accounts) => {
@@ -117,6 +122,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     await agiTypeNft.mint(agent);
 
     await fundValidators(token, manager, [validatorOne, validatorTwo, validatorThree], owner);
+    await setChallengePeriod(manager, owner, 1);
   });
 
   describe("deployment & initialization", () => {
@@ -182,7 +188,9 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       await validateWithProof(0, validatorOne);
       await validateWithProof(0, validatorTwo);
-      const completionReceipt = await validateWithProof(0, validatorThree);
+      await validateWithProof(0, validatorThree);
+      await time.increase(2);
+      const completionReceipt = await manager.finalizeJob(0, { from: employer });
       expectEvent(completionReceipt, "JobCompleted", { jobId: new BN(0), agent });
 
       const finalJob = await manager.getJobCore(0);
@@ -191,13 +199,15 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const validatorPayoutTotal = payout.muln(8).divn(100);
       const validatorPayoutEach = validatorPayoutTotal.divn(3);
       const agentPayout = payout.muln(92).divn(100);
+      const remainder = validatorPayoutTotal.sub(validatorPayoutEach.muln(3));
+      const expectedAgentPayout = agentPayout.add(remainder);
 
       const agentBalanceAfter = await token.balanceOf(agent);
       const validatorOneBalanceAfter = await token.balanceOf(validatorOne);
       const validatorTwoBalanceAfter = await token.balanceOf(validatorTwo);
       const validatorThreeBalanceAfter = await token.balanceOf(validatorThree);
 
-      assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), agentPayout.toString());
+      assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedAgentPayout.toString());
       assert.equal(
         validatorOneBalanceAfter.sub(validatorOneBalanceBefore).toString(),
         validatorPayoutEach.toString()
@@ -281,6 +291,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.applyForJob(0, "agent", [], { from: agent });
       await requestCompletion(0);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
+      await time.increase(2);
+      await manager.finalizeJob(0, { from: employer });
 
       await expectCustomError(
         manager.validateJob.call(0, "validator", [], { from: validatorOne }),
@@ -304,6 +316,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.applyForJob(0, "agent", [], { from: agent });
       await requestCompletion(0);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
+      await time.increase(2);
+      await manager.finalizeJob(0, { from: employer });
 
       const tokenIdAfterCompletion = await manager.nextTokenId();
       await expectCustomError(
@@ -527,6 +541,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.applyForJob(0, "agent", [], { from: agent });
       await requestCompletion(0);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
+      await time.increase(2);
+      await manager.finalizeJob(0, { from: employer });
       await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
     });
   });
@@ -615,6 +631,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.addAdditionalAgent(agent, { from: owner });
       await altManager.addAdditionalValidator(validatorOne, { from: owner });
       await altManager.setRequiredValidatorApprovals(1, { from: owner });
+      await setChallengePeriod(altManager, owner, 1);
       await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
@@ -622,13 +639,15 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
       await altManager.applyForJob(0, "agent", [], { from: agent });
       await altManager.requestJobCompletion(0, updatedIpfs, { from: agent });
-      const bond = await altManager.validatorBond();
+      const bond = await computeValidatorBond(altManager, payout);
       await failingToken.mint(validatorOne, bond, { from: owner });
       await failingToken.approve(altManager.address, bond, { from: validatorOne });
 
+      await altManager.validateJob(0, "validator", [], { from: validatorOne });
       await failingToken.setFailTransfers(true);
+      await time.increase(2);
       await expectCustomError(
-        altManager.validateJob.call(0, "validator", [], { from: validatorOne }),
+        altManager.finalizeJob.call(0, { from: employer }),
         "TransferFailed"
       );
       const job = await altManager.getJobCore(0);
@@ -663,7 +682,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.addAdditionalValidator(validatorOne, { from: owner });
       await altManager.setRequiredValidatorApprovals(1, { from: owner });
       await altManager.requestJobCompletion(0, updatedIpfs, { from: agent });
-      const bond = await altManager.validatorBond();
+      const bond = await computeValidatorBond(altManager, payout);
       await failingToken.mint(validatorOne, bond, { from: owner });
       await failingToken.approve(altManager.address, bond, { from: validatorOne });
       await altManager.validateJob(0, "validator", [], { from: validatorOne });
@@ -782,6 +801,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await assignAgentWithProof(completedJobId);
       await requestCompletion(completedJobId);
       await validateWithProof(completedJobId, validatorOne);
+      await time.increase(2);
+      await manager.finalizeJob(completedJobId, { from: employer });
 
       await manager.pause({ from: owner });
       await expectCustomError(

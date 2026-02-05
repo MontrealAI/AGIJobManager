@@ -21,13 +21,14 @@
 - **Not an on-chain ERC‑8004 implementation**: ERC‑8004 is consumed off-chain; this repo does not integrate it on-chain.
 - **Not a generalized identity or reputation registry**: only contract-local reputation mappings and ENS/Merkle gating are provided.
 - **Not a generalized NFT marketplace**: this contract does not embed a marketplace; NFTs trade externally via standard ERC‑721 approvals and transfers.
-- **Not a decentralized court or DAO**: moderators and the owner have significant authority; there is no slashing or permissionless validator set.
+- **Not a decentralized court or DAO**: moderators and the owner have significant authority; validator membership remains permissioned even with bonded voting.
 
 ## Important trust notes
 - **Owner-operated**: the owner can pause/unpause, tune parameters, and manage allowlists/blacklists.
 - **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`) and only while paused; escrowed funds are not withdrawable.
 - **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
+- **Validator incentives**: validators post a bond per vote, earn rewards when their vote matches the final outcome, and are slashed when they are wrong.
 
 **Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
 
@@ -68,7 +69,8 @@ stateDiagram-v2
     Open --> InProgress: applyForJob
     InProgress --> CompletionRequested: requestJobCompletion
 
-    CompletionRequested --> Completed: validateJob (approval threshold)
+    CompletionRequested --> ApprovalWindow: validateJob (approval threshold)
+    ApprovalWindow --> Completed: finalizeJob (after challenge window)
     CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
 
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
