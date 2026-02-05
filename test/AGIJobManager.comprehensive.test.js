@@ -106,6 +106,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
 
     await token.mint(employer, payout.muln(5));
     await token.mint(agent, payout);
@@ -560,6 +562,12 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
           agentTree.root,
         )
       );
+      await altManager.setAgentBondParams(0, 0, 0, { from: owner });
+      await altManager.setMaxActiveJobsPerAgent(50, { from: owner });
+      await altManager.setAgentBondParams(0, 0, 0, { from: owner });
+      await altManager.setMaxActiveJobsPerAgent(50, { from: owner });
+      await altManager.setAgentBondParams(0, 0, 0, { from: owner });
+      await altManager.setMaxActiveJobsPerAgent(50, { from: owner });
 
       await failingToken.approve(altManager.address, payout, { from: employer });
       await expectCustomError(
@@ -586,6 +594,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
           agentTree.root,
         )
       );
+      await altManager.setAgentBondParams(0, 0, 0, { from: owner });
+      await altManager.setMaxActiveJobsPerAgent(50, { from: owner });
       await altManager.addAdditionalAgent(agent, { from: owner });
       await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);

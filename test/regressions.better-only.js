@@ -46,7 +46,7 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
   ];
   const merkleArgs = [leaf(validator), leaf(agent)];
   if (Contract.contractName === "AGIJobManager") {
-    return Contract.new(
+    const manager = await Contract.new(
       ...buildInitConfig(
         tokenAddress,
         "ipfs://base",
@@ -60,6 +60,9 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
+    return manager;
   }
   return Contract.new(
     ...baseArgs,

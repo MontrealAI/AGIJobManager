@@ -95,6 +95,8 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       ),
       { from: owner }
     );
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setMaxActiveJobsPerAgent(50, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await manager.addAGIType(nft.address, 92, { from: owner });
