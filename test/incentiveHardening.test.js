@@ -194,6 +194,11 @@ contract("AGIJobManager incentive hardening", (accounts) => {
       afterFinalize.sub(beforeFinalize).eq(payoutSmall.muln(90).divn(100).add(bondSmall)),
       "bond should be refunded based on snapshot"
     );
+
+    await manager.setAgentBondParams(0, 0, { from: owner });
+    await manager.setAgentBond(0, { from: owner });
+    const disabledBond = await computeAgentBond(manager, payoutSmall, 100);
+    assert.strictEqual(disabledBond.toString(), "0", "owner should be able to disable agent bonds");
   });
 
   it("uses uncapped validator bonds for large payouts by default", async () => {
