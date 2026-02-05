@@ -86,6 +86,26 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(repFast.gte(repSlow), "delayed completion should not increase reputation");
   });
 
+  it("requires employer to finalize when there are no validator votes", async () => {
+    const payout = toBN(toWei("10"));
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-novote", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-novote-complete", { from: agentFast });
+    await time.increase(2);
+
+    await expectCustomError(manager.finalizeJob.call(jobId, { from: agentFast }), "InvalidState");
+
+    const agentBond = await computeAgentBond(manager, payout);
+    const agentBefore = await token.balanceOf(agentFast);
+    await manager.finalizeJob(jobId, { from: employer });
+    const agentAfter = await token.balanceOf(agentFast);
+    assert(agentAfter.sub(agentBefore).eq(payout.muln(90).divn(100).add(agentBond)));
+  });
+
   it("snapshots and returns or slashes agent bonds, and excludes them from withdrawable AGI", async () => {
     const payout = toBN(toWei("20"));
     await token.mint(employer, payout, { from: owner });
