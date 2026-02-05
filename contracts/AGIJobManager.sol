@@ -127,6 +127,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
     uint256 public agentBond = 1e18;
     uint256 internal constant AGENT_BOND_BPS = 500;
+    uint256 internal constant AGENT_BOND_MAX = 0;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
@@ -358,6 +359,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             bond = (payout * AGENT_BOND_BPS) / 10_000;
         }
         if (bond < agentBond) bond = agentBond;
+        if (AGENT_BOND_MAX != 0 && bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
         if (bond > payout) bond = payout;
     }
 
@@ -420,7 +422,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = _computeAgentBond(job.payout, 0);
+        uint256 bond = _computeAgentBond(job.payout, job.duration);
         _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
         unchecked {
             lockedAgentBonds += bond;
