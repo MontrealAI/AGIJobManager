@@ -20,6 +20,7 @@ The contract explicitly addresses common issues observed in earlier variants:
 - **Division by zero on validator payouts**: validator payouts are only computed if `validators.length > 0`; otherwise, validator payout is zero.
 - **Employer‑win double completion**: `_refundEmployer` marks the job as completed and releases escrow, preventing additional settlement paths.
 - **Unchecked ERC‑20 transfers**: `_callOptionalReturn` and `_safeERC20TransferFromExact` enforce successful transfers and exact amount receipt; fee‑on‑transfer or non‑standard tokens will revert.
+- **Validator bonds & slashing**: bonded voting is accounted via `lockedValidatorBonds` and released on settlement; incorrect votes are slashed, while correct votes receive rewards.
 
 ## Remaining risks and assumptions
 
