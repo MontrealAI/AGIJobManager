@@ -830,7 +830,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             revert InvalidState();
         }
 
-        if (job.validatorApproved && !job.disputed) {
+        if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (job.validatorApprovals > job.validatorDisapprovals) {
                 _completeJob(_jobId);
@@ -842,7 +842,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         bool agentWins;
         if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
-            if (msg.sender != job.employer) revert InvalidState();
+            if (msg.sender != job.employer) {
+                job.disputed = true;
+                job.disputedAt = block.timestamp;
+                return;
+            }
             agentWins = true;
         } else {
             agentWins = job.validatorApprovals > job.validatorDisapprovals;

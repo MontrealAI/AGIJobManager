@@ -139,8 +139,11 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-novotes-complete", { from: agentFast });
     await time.increase(2);
 
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: agentFast }), "InvalidState");
-    await manager.finalizeJob(jobId, { from: employer });
+    await manager.finalizeJob(jobId, { from: agentFast });
+    const validation = await manager.getJobValidation(jobId);
+    assert.strictEqual(validation.disputedAt.toNumber() > 0, true, "dispute timestamp should be set");
+    const core = await manager.getJobCore(jobId);
+    assert.strictEqual(core.disputed, true, "job should be disputed on silent finalize by agent");
   });
 
   it("caps validator bonds at payout and prevents rush-to-approve settlement", async () => {
