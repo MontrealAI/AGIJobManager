@@ -13,6 +13,7 @@ const MockNameWrapper = artifacts.require('MockNameWrapper');
 const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
 const { buildInitConfig } = require('./helpers/deploy');
 const { fundValidators } = require('./helpers/bonds');
+const { time } = require('@openzeppelin/test-helpers');
 
 const ZERO_ROOT = '0x' + '00'.repeat(32);
 const EMPTY_PROOF = [];
@@ -73,7 +74,10 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     const jobId1 = await createJob();
     await manager.applyForJob(jobId1, 'agent', EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId1, 'ipfs-complete', { from: agent });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await manager.validateJob(jobId1, 'club', EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId1, { from: employer });
 
     const jobId2 = await createJob();
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });

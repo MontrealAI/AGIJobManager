@@ -148,7 +148,10 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-    const tx = await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await advanceTime(2);
+    const tx = await manager.finalizeJob(jobId, { from: employer });
 
     const issued = tx.logs.find((log) => log.event === "NFTIssued");
     assert.ok(issued, "NFTIssued event should be emitted");

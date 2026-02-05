@@ -42,8 +42,8 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 1. `createJob` escrows `payout` (increasing `lockedEscrow`).
 2. `applyForJob` assigns an agent and snapshots `agentPayoutPct`.
 3. `requestJobCompletion` stores completion metadata.
-4. Validators call `validateJob` until `requiredValidatorApprovals` is reached.
-5. `_completeJob` releases escrow, pays agent + approving validators, updates reputation, and mints the completion NFT.
+4. Validators call `validateJob` until `requiredValidatorApprovals` is reached (bonded voting).
+5. After the challenge window, `finalizeJob` releases escrow, pays the agent, settles validators by outcome, and mints the completion NFT.
 
 **Dispute path (example)**
 1. After completion request, validators disapprove or employer/agent calls `disputeJob`.
@@ -131,7 +131,7 @@ Pause is an incident‑response control to halt new activity while preserving ex
 ### Reputation system (as implemented)
 - Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + completionTime / 10000`, with `payoutPoints = (scaledPayout^3) / 1e5`.
 - Reputation is then **diminished** by `1 + (newReputation^2 / 88888^2)` and capped at **88888**.
-- Validator payouts/reputation are only for approving validators; disapprovers receive nothing.
+- Validator payouts/reputation are outcome‑aligned: correct‑side voters earn rewards, incorrect‑side voters are slashed.
 - `premiumReputationThreshold` gates `canAccessPremiumFeature(address)` (pure threshold check; no time decay).
 
 ## 8) EIP‑170 bytecode size & build reproducibility
