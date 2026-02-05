@@ -1,5 +1,7 @@
 const assert = require("assert");
 
+const { time } = require("@openzeppelin/test-helpers");
+
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
@@ -8,6 +10,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
+const { computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -96,7 +99,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const validators = Array.from({ length: cap + 1 }, () => web3.eth.accounts.create());
-    const bond = await manager.validatorBond();
+    const bond = await computeValidatorBond(manager, payout);
     for (const validator of validators) {
       await web3.eth.sendTransaction({
         from: owner,
@@ -136,7 +139,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const validators = Array.from({ length: cap }, () => web3.eth.accounts.create());
-    const bond = await manager.validatorBond();
+    const bond = await computeValidatorBond(manager, payout);
     for (const validator of validators) {
       await web3.eth.sendTransaction({
         from: owner,
@@ -158,6 +161,8 @@ contract("AGIJobManager validator cap", (accounts) => {
       await sendSigned(manager.address, validators[i], validateData, 2500000);
     }
 
+    await time.increase((await manager.challengePeriodAfterApproval()).addn(1));
+    await manager.finalizeJob(jobId, { from: employer });
     const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should complete at the cap");
   });
