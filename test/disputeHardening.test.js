@@ -253,7 +253,6 @@ contract("AGIJobManager dispute hardening", (accounts) => {
 
     assert.strictEqual(job.completed, true, "job should be marked completed");
     assert.strictEqual(job.disputed, false, "dispute should be cleared");
-    assert.equal(jobValidation.disputedAt.toString(), "0", "dispute timestamp should clear");
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
       payout.add(agentBond).toString(),

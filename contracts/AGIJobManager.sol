@@ -567,7 +567,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
 
         job.disputed = false;
-        job.disputedAt = 0;
 
         if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
             _completeJob(_jobId);
@@ -823,7 +822,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function finalizeJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
         if (job.completed || job.expired || job.disputed) revert InvalidState();
-        if (!job.completionRequested || job.completionRequestedAt == 0) revert InvalidState();
+        if (!job.completionRequested) revert InvalidState();
         if (requiredValidatorDisapprovals > 0 && job.validatorDisapprovals >= requiredValidatorDisapprovals) {
             revert InvalidState();
         }
@@ -841,6 +840,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bool agentWins;
         if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
             if (msg.sender != job.employer) {
+                if (msg.sender != job.assignedAgent) revert InvalidState();
                 job.disputed = true;
                 job.disputedAt = block.timestamp;
                 return;
@@ -866,7 +866,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _requireValidUri(job.jobCompletionURI);
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
-        if (agentPayoutPercentage == 0) revert InvalidState();
         uint256 validatorCount = job.validators.length;
         uint256 escrowValidatorReward = validatorCount > 0
             ? (job.payout * validationRewardPercentage) / 100
@@ -978,7 +977,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _refundEmployer(uint256 jobId, Job storage job) internal {
         job.completed = true;
         job.disputed = false;
-        job.disputedAt = 0;
         _releaseEscrow(job);
         _settleAgentBond(job, false);
         uint256 validatorCount = job.validators.length;
