@@ -119,12 +119,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
      *      thresholds are met, a short challenge window prevents instant settlement. When validators
      *      participate and the employer wins, the refund is reduced by the validator reward pool.
      */
-    uint256 public validatorBondBps = 50;
-    uint256 public validatorBondMin = 1e18;
-    uint256 public validatorBondMax = 200e18;
+    uint256 public validatorBondBps = 200;
+    uint256 public validatorBondMin = 5e18;
+    uint256 public validatorBondMax = 400e18;
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
+    uint256 public agentBondBps = 100;
+    uint256 public agentBondMin = 1e18;
+    uint256 public agentBondMax = 200e18;
+    uint256 public agentSlashBps = 10_000;
+    /// @dev Legacy fixed bond parameter retained for compatibility; new bonds use proportional settings.
     uint256 public agentBond = 1e18;
     /// @notice Total AGI reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
@@ -323,7 +328,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             lockedAgentBonds -= bond;
         }
-        _t(agentWon ? job.assignedAgent : job.employer, bond);
+        if (agentWon) {
+            _t(job.assignedAgent, bond);
+            return;
+        }
+        uint256 slashed = (bond * agentSlashBps) / 10_000;
+        uint256 refund = bond - slashed;
+        _t(job.employer, slashed);
+        _t(job.assignedAgent, refund);
     }
 
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
@@ -341,11 +353,28 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _computeValidatorBond(uint256 payout) internal view returns (uint256 bond) {
+        if (validatorBondBps == 0 && validatorBondMin == 0 && validatorBondMax == 0) {
+            return 0;
+        }
         unchecked {
             bond = (payout * validatorBondBps) / 10_000;
         }
         if (bond < validatorBondMin) bond = validatorBondMin;
         if (bond > validatorBondMax) bond = validatorBondMax;
+        if (bond == 0 && payout > 0) bond = 1;
+        if (bond > payout) bond = payout;
+    }
+
+    function _computeAgentBond(uint256 payout) internal view returns (uint256 bond) {
+        if (agentBondBps == 0 && agentBondMin == 0 && agentBondMax == 0) {
+            return 0;
+        }
+        unchecked {
+            bond = (payout * agentBondBps) / 10_000;
+        }
+        if (bond < agentBondMin) bond = agentBondMin;
+        if (bond > agentBondMax) bond = agentBondMax;
+        if (bond == 0 && payout > 0) bond = 1;
         if (bond > payout) bond = payout;
     }
 
@@ -408,11 +437,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
-        uint256 bond = agentBond;
-        if (bond > job.payout) bond = job.payout;
-        _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
-        unchecked {
-            lockedAgentBonds += bond;
+        uint256 bond = _computeAgentBond(job.payout);
+        if (bond > 0) {
+            _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
+            unchecked {
+                lockedAgentBonds += bond;
+            }
         }
         job.agentBondAmount = bond;
         job.assignedAgent = msg.sender;
@@ -687,8 +717,22 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         validatorBondMax = max;
         emit ValidatorBondParamsUpdated(bps, min, max);
     }
+    function setAgentBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
+        if (bps > 10_000) revert InvalidParameters();
+        if (min > max) revert InvalidParameters();
+        if (!(bps == 0 && min == 0 && max == 0)) {
+            if (max == 0) revert InvalidParameters();
+        }
+        agentBondBps = bps;
+        agentBondMin = min;
+        agentBondMax = max;
+    }
     function setAgentBond(uint256 bond) external onlyOwner {
         agentBond = bond;
+    }
+    function setAgentSlashBps(uint256 bps) external onlyOwner {
+        if (bps > 10_000) revert InvalidParameters();
+        agentSlashBps = bps;
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
