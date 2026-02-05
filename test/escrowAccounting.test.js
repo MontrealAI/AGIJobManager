@@ -143,6 +143,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
+    await manager.addAdditionalValidator(moderator, { from: owner });
 
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
@@ -150,11 +151,14 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const bond = await computeValidatorBond(manager, payout);
+    await token.mint(moderator, bond, { from: owner });
+    await token.approve(manager.address, bond, { from: moderator });
     const validatorBefore = await token.balanceOf(validator);
     const validatorTwoBefore = await token.balanceOf(validatorTwo);
 
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
+    await manager.validateJob(jobId, "", EMPTY_PROOF, { from: moderator });
 
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });
@@ -162,11 +166,11 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const validatorAfter = await token.balanceOf(validator);
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
     const rewardPool = payout.mul(await manager.validationRewardPercentage()).divn(100);
-    const expectedValidatorGain = rewardPool.add(bond);
+    const expectedValidatorGain = rewardPool.add(bond).divn(2);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
       expectedValidatorGain.toString(),
-      "correct validator should gain reward plus slashed bond"
+      "correct validator should gain split reward plus slashed bond"
     );
     assert.equal(
       validatorTwoBefore.sub(validatorTwoAfter).toString(),
