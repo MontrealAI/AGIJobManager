@@ -80,7 +80,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.addModerator(moderator, { from: owner });
 
-    await manager.setRequiredValidatorApprovals(2, { from: owner });
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setCompletionReviewPeriod(100, { from: owner });
     await manager.setDisputeReviewPeriod(100, { from: owner });
@@ -229,13 +229,13 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      payout.sub(validatorReward).toString(),
-      "employer should be refunded minus validator reward and agent bond"
+      payout.sub(validatorReward).add(agentBond).toString(),
+      "employer should be refunded minus validator reward plus agent bond"
     );
     const validatorAfter = await token.balanceOf(validator);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      validatorReward.add(agentBond).toString(),
+      validatorReward.toString(),
       "disapproving validator should be rewarded on employer win"
     );
 
