@@ -8,7 +8,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents, computeAgentBond } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeAgentBond, computeDisputeBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -103,6 +103,13 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     return jobId;
   }
 
+  async function fundDisputeBond(payer, payout) {
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.mint(payer, disputeBond, { from: owner });
+    await token.approve(manager.address, disputeBond, { from: payer });
+    return disputeBond;
+  }
+
   it("freezes validator voting once disputed", async () => {
     const payout = toBN(toWei("10"));
     const jobId = await setupCompletion(payout);
@@ -148,10 +155,63 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await expectCustomError(manager.disputeJob.call(jobId, { from: agent }), "InvalidState");
 
     await manager.requestJobCompletion(jobId, "ipfs-completed", { from: agent });
+    const disputeBond = await fundDisputeBond(employer, payout);
     await manager.disputeJob(jobId, { from: employer });
 
     const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.disputed, true, "job should be disputed after completion request");
+  });
+
+  it("charges dispute bonds for manual disputes and slashes to the winner", async () => {
+    const payout = toBN(toWei("12"));
+    const jobId = await setupCompletion(payout);
+    const disputeBond = await computeDisputeBond(manager, payout);
+
+    await token.mint(employer, disputeBond, { from: owner });
+    await token.approve(manager.address, disputeBond, { from: employer });
+
+    const employerBefore = await token.balanceOf(employer);
+    await manager.disputeJob(jobId, { from: employer });
+    const employerAfter = await token.balanceOf(employer);
+    assert.equal(
+      employerBefore.sub(employerAfter).toString(),
+      disputeBond.toString(),
+      "dispute bond should be collected"
+    );
+
+    const withdrawable = await manager.withdrawableAGI();
+    assert.equal(withdrawable.toString(), "0", "withdrawable should exclude dispute bond");
+
+    const agentBefore = await token.balanceOf(agent);
+    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    const agentAfter = await token.balanceOf(agent);
+
+    const agentBond = await computeAgentBond(manager, payout, 1000);
+    const expected = payout.muln(90).divn(100).add(agentBond).add(disputeBond);
+    assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should receive slashed dispute bond");
+    assert.equal((await manager.lockedDisputeBonds()).toString(), "0", "dispute bonds should be unlocked");
+  });
+
+  it("refunds dispute bonds to employer on employer win when agent initiates", async () => {
+    const payout = toBN(toWei("6"));
+    const jobId = await setupCompletion(payout);
+    const disputeBond = await computeDisputeBond(manager, payout);
+
+    const agentBefore = await token.balanceOf(agent);
+    await manager.disputeJob(jobId, { from: agent });
+    const agentAfter = await token.balanceOf(agent);
+    assert.equal(agentBefore.sub(agentAfter).toString(), disputeBond.toString(), "agent should post dispute bond");
+
+    const employerBefore = await token.balanceOf(employer);
+    await manager.resolveDispute(jobId, "employer win", { from: moderator });
+    const employerAfter = await token.balanceOf(employer);
+
+    const agentBond = await computeAgentBond(manager, payout, 1000);
+    assert.equal(
+      employerAfter.sub(employerBefore).toString(),
+      payout.add(agentBond).add(disputeBond).toString(),
+      "employer should receive slashed dispute bond"
+    );
   });
 
   it("blocks validator actions before completion is requested", async () => {
@@ -181,10 +241,23 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     );
   });
 
+  it("does not charge dispute bonds when validators trigger disputes", async () => {
+    const payout = toBN(toWei("10"));
+    const jobId = await setupCompletion(payout);
+
+    await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
+    await manager.disapproveJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
+
+    const job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.disputed, true, "job should be disputed by validators");
+    assert.equal((await manager.lockedDisputeBonds()).toString(), "0", "validator-triggered disputes should not lock bonds");
+  });
+
   it("resolves stale disputes through the owner recovery path", async () => {
     const payout = toBN(toWei("15"));
     const jobId = await setupCompletion(payout);
 
+    const disputeBond = await fundDisputeBond(employer, payout);
     await manager.disputeJob(jobId, { from: employer });
     await advanceTime(120);
 
@@ -192,8 +265,8 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.resolveStaleDispute(jobId, false, { from: owner });
     const agentAfter = await token.balanceOf(agent);
 
-    const agentBond = await computeAgentBond(manager, payout);
-    const expected = payout.muln(90).divn(100).add(agentBond);
+    const agentBond = await computeAgentBond(manager, payout, 1000);
+    const expected = payout.muln(90).divn(100).add(agentBond).add(disputeBond);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
 
     const resolvedJob = await manager.getJobCore(jobId);
@@ -202,6 +275,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
 
     const payoutRefund = toBN(toWei("9"));
     const refundJobId = await setupCompletion(payoutRefund);
+    const refundDisputeBond = await fundDisputeBond(employer, payoutRefund);
     await manager.disputeJob(refundJobId, { from: employer });
     await advanceTime(120);
 
@@ -209,10 +283,10 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     await manager.resolveStaleDispute(refundJobId, true, { from: owner });
     const employerAfter = await token.balanceOf(employer);
 
-    const refundBond = await computeAgentBond(manager, payoutRefund);
+    const refundBond = await computeAgentBond(manager, payoutRefund, 1000);
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      payoutRefund.add(refundBond).toString(),
+      payoutRefund.add(refundBond).add(refundDisputeBond).toString(),
       "employer should be refunded"
     );
   });
@@ -220,6 +294,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
   it("settles agent-win disputes without validator votes", async () => {
     const payout = toBN(toWei("11"));
     const jobId = await setupCompletion(payout);
+    await fundDisputeBond(employer, payout);
     await manager.disputeJob(jobId, { from: employer });
 
     const before = await token.balanceOf(agent);
@@ -234,6 +309,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
   it("marks employer-win disputes as terminal and refunds escrow", async () => {
     const payout = toBN(toWei("13"));
     const jobId = await setupCompletion(payout);
+    await fundDisputeBond(employer, payout);
     await manager.disputeJob(jobId, { from: employer });
 
     const lockedBefore = await manager.lockedEscrow();
@@ -245,14 +321,14 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     const lockedAfter = await manager.lockedEscrow();
     const job = await manager.getJobCore(jobId);
     const jobValidation = await manager.getJobValidation(jobId);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, 1000);
 
     assert.strictEqual(job.completed, true, "job should be marked completed");
     assert.strictEqual(job.disputed, false, "dispute should be cleared");
     assert.equal(jobValidation.disputedAt.toString(), "0", "dispute timestamp should clear");
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      payout.add(agentBond).toString(),
+      payout.add(agentBond).add(disputeBond).toString(),
       "escrow should refund"
     );
     assert.equal(
