@@ -94,7 +94,7 @@ contract("AGIJobManager happy path", (accounts) => {
 
     const agentBalance = await token.balanceOf(agent);
     const agentExpected = payout.muln(92).divn(100);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(3600));
     assert.equal(
       agentBalance.sub(agentBalanceBefore).toString(),
       agentExpected.add(agentBond).toString(),
