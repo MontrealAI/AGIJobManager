@@ -126,9 +126,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public challengePeriodAfterApproval = 1 days;
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
     uint256 internal constant AGENT_BOND_BPS = 500;
-    uint256 internal constant AGENT_BOND_MAX = 200e18;
-    uint256 internal constant AGENT_SLASH_BPS = 10_000;
-    uint256 internal constant DISPUTE_BOND_BPS = 200;
+    uint256 internal constant DISPUTE_BOND_BPS = 50;
+    uint256 internal constant DISPUTE_BOND_MIN = 1e18;
+    uint256 internal constant DISPUTE_BOND_MAX = 200e18;
     /// @dev Deprecated: use AGENT_BOND_* constants for bond sizing.
     uint256 public agentBond = 1e18;
     /// @notice Total AGI reserved for unsettled job escrows.
@@ -140,6 +140,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public lockedValidatorBonds;
     /// @notice Total AGI locked as dispute bonds for unsettled disputes.
     uint256 public lockedDisputeBonds;
+    /// @notice Maximum number of concurrently assigned jobs per agent.
+    uint256 internal constant MAX_ACTIVE_JOBS_PER_AGENT = 3;
 
     string public termsAndConditionsIpfsHash;
     string public contactEmail;
@@ -201,6 +203,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     mapping(address => bool) public additionalAgents;
     mapping(address => bool) public blacklistedAgents;
     mapping(address => bool) public blacklistedValidators;
+    mapping(address => uint256) public activeJobsByAgent;
     AGIType[] public agiTypes;
     mapping(uint256 => string) private _tokenURIs;
 
@@ -325,29 +328,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-    function _settleAgentBond(Job storage job, bool agentWon) internal {
-        uint256 bond = job.agentBondAmount;
-        if (bond == 0) return;
-        job.agentBondAmount = 0;
-        unchecked {
-            lockedAgentBonds -= bond;
-        }
-        uint256 slash = agentWon ? 0 : (bond * AGENT_SLASH_BPS) / 10_000;
-        _t(job.employer, slash);
-        _t(job.assignedAgent, bond - slash);
-    }
-
     function _settleDisputeBond(Job storage job, bool agentWon) internal {
         uint256 bond = job.disputeBondAmount;
         if (bond == 0) return;
         job.disputeBondAmount = 0;
-        address initiator = job.disputeInitiator;
         job.disputeInitiator = address(0);
         unchecked {
             lockedDisputeBonds -= bond;
         }
-        if (initiator == address(0)) return;
-        _t(agentWon ? job.assignedAgent : job.employer, bond);
+        address winner = agentWon ? job.assignedAgent : job.employer;
+        _t(winner, bond);
     }
 
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
@@ -384,9 +374,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
         }
         if (bond < agentBond) bond = agentBond;
-        if (AGENT_BOND_MAX != 0 && bond > AGENT_BOND_MAX) bond = AGENT_BOND_MAX;
         if (bond > payout) bond = payout;
     }
+
+    function _pullAgentBond(Job storage job) internal returns (uint256 bond) {
+        bond = job.agentBondAmount;
+        if (bond == 0) return 0;
+        job.agentBondAmount = 0;
+        unchecked {
+            lockedAgentBonds -= bond;
+        }
+    }
+
 
     function _maxAGITypePayoutPercentage() internal view returns (uint256) {
         uint256 maxPercentage = 0;
@@ -444,6 +443,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
         if (!(additionalAgents[msg.sender] || _verifyOwnershipAgent(msg.sender, subdomain, proof))) revert NotAuthorized();
+        if (activeJobsByAgent[msg.sender] >= MAX_ACTIVE_JOBS_PER_AGENT) revert InvalidState();
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
@@ -455,6 +455,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.agentBondAmount = bond;
         job.assignedAgent = msg.sender;
         job.assignedAt = block.timestamp;
+        unchecked {
+            activeJobsByAgent[msg.sender] += 1;
+        }
         emit JobApplied(_jobId, msg.sender);
     }
 
@@ -549,13 +552,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
         uint256 bond;
-        if (DISPUTE_BOND_BPS != 0) {
-            unchecked {
-                bond = (job.payout * DISPUTE_BOND_BPS) / 10_000;
-            }
-            if (bond < agentBond) bond = agentBond;
-            if (bond > job.payout) bond = job.payout;
+        unchecked {
+            bond = (job.payout * DISPUTE_BOND_BPS) / 10_000;
         }
+        if (bond < DISPUTE_BOND_MIN) bond = DISPUTE_BOND_MIN;
+        if (bond > DISPUTE_BOND_MAX) bond = DISPUTE_BOND_MAX;
+        if (bond > job.payout) bond = job.payout;
         if (bond > 0) {
             _safeERC20TransferFromExact(agiToken, msg.sender, address(this), bond);
             unchecked {
@@ -852,8 +854,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (block.timestamp <= job.assignedAt + job.duration) revert InvalidState();
 
         job.expired = true;
+        unchecked {
+            activeJobsByAgent[job.assignedAgent] -= 1;
+        }
         _releaseEscrow(job);
-        _settleAgentBond(job, false);
+        uint256 bond = _pullAgentBond(job);
+        _t(job.employer, bond);
         _t(job.employer, job.payout);
         emit JobExpired(_jobId, job.employer, job.assignedAgent, job.payout);
     }
@@ -878,7 +884,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         bool agentWins;
         if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
-            if (msg.sender != job.employer) revert InvalidState();
             agentWins = true;
         } else {
             agentWins = job.validatorApprovals > job.validatorDisapprovals;
@@ -912,15 +917,19 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (agentPayout + escrowValidatorReward > job.payout) revert InvalidParameters();
 
         job.completed = true;
+        unchecked {
+            activeJobsByAgent[job.assignedAgent] -= 1;
+        }
         _releaseEscrow(job);
-        _settleAgentBond(job, true);
+        uint256 agentBondAmount = _pullAgentBond(job);
 
         uint256 reputationPoints = _computeReputationPoints(job, repEligible);
         enforceReputationGrowth(job.assignedAgent, reputationPoints);
 
+        _t(job.assignedAgent, agentBondAmount);
         _t(job.assignedAgent, agentPayout);
 
-        _settleValidators(job, true, reputationPoints, escrowValidatorReward);
+        _settleValidators(job, true, reputationPoints, escrowValidatorReward, 0);
         _mintCompletionNFT(job);
         _settleDisputeBond(job, true);
 
@@ -931,7 +940,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job,
         bool agentWins,
         uint256 reputationPoints,
-        uint256 escrowValidatorReward
+        uint256 escrowValidatorReward,
+        uint256 extraPoolForCorrect
     ) internal {
         uint256 vCount = job.validators.length;
         if (vCount == 0) {
@@ -946,19 +956,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         job.validatorBondAmount = 0;
         uint256 correctCount = agentWins ? job.validatorApprovals : job.validatorDisapprovals;
-        uint256 slashedPerIncorrect;
-        uint256 refundWrong;
-        uint256 totalSlashed;
-        uint256 poolForCorrect;
         uint256 perCorrectReward;
+        uint256 refundWrong;
+        uint256 slashedPerIncorrect;
         uint256 validatorReputationGain;
         unchecked {
             slashedPerIncorrect = (bond * validatorSlashBps) / 10_000;
             refundWrong = bond - slashedPerIncorrect;
-            totalSlashed = slashedPerIncorrect * (vCount - correctCount);
-            poolForCorrect = escrowValidatorReward + totalSlashed;
             if (correctCount > 0) {
-                perCorrectReward = poolForCorrect / correctCount;
+                perCorrectReward = (escrowValidatorReward + (slashedPerIncorrect * (vCount - correctCount)) + extraPoolForCorrect)
+                    / correctCount;
             }
             validatorReputationGain = (reputationPoints * validationRewardPercentage) / 100;
         }
@@ -976,7 +983,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         uint256 remainder;
         unchecked {
-            remainder = poolForCorrect - (perCorrectReward * correctCount);
+            remainder = escrowValidatorReward + (slashedPerIncorrect * (vCount - correctCount)) + extraPoolForCorrect;
+            remainder -= perCorrectReward * correctCount;
         }
         _t(agentWins ? job.assignedAgent : job.employer, remainder);
     }
@@ -1009,15 +1017,22 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _refundEmployer(Job storage job) internal {
         job.completed = true;
         job.disputed = false;
+        unchecked {
+            activeJobsByAgent[job.assignedAgent] -= 1;
+        }
         _releaseEscrow(job);
-        _settleAgentBond(job, false);
+        uint256 agentBondAmount = _pullAgentBond(job);
         uint256 validatorCount = job.validators.length;
         uint256 escrowValidatorReward = validatorCount > 0
             ? (job.payout * validationRewardPercentage) / 100
             : 0;
         uint256 employerRefund = escrowValidatorReward > 0 ? job.payout - escrowValidatorReward : job.payout;
         uint256 reputationPoints = _computeReputationPoints(job, true);
-        _settleValidators(job, false, reputationPoints, escrowValidatorReward);
+        uint256 extraPoolForCorrect = job.validatorDisapprovals > 0 ? agentBondAmount : 0;
+        if (extraPoolForCorrect == 0 && agentBondAmount > 0) {
+            _t(job.employer, agentBondAmount);
+        }
+        _settleValidators(job, false, reputationPoints, escrowValidatorReward, extraPoolForCorrect);
         _t(job.employer, employerRefund);
         _settleDisputeBond(job, false);
     }
@@ -1033,13 +1048,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ? job.completionRequestedAt - job.assignedAt
             : 0;
         unchecked {
-            uint256 payoutUnits = job.payout / 1e18;
-            uint256 payoutPoints = payoutUnits * payoutUnits * payoutUnits;
+            uint256 payoutSignal = job.payout / 1e16;
             uint256 timeBonus;
             if (job.duration > completionTime) {
                 timeBonus = (job.duration - completionTime) / 10000;
             }
-            uint256 base = Math.log2(1 + payoutPoints * 25);
+            uint256 base = Math.log2(1 + payoutSignal);
             if (timeBonus > base) {
                 timeBonus = base;
             }

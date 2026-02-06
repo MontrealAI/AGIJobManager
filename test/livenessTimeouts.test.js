@@ -152,9 +152,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
 
     await advanceTime(120);
 
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: other }), "InvalidState");
-    await manager.finalizeJob(jobId, { from: employer });
+    await manager.finalizeJob(jobId, { from: other });
   });
 
   it("rejects finalize before the review window elapses", async () => {
@@ -205,17 +203,18 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     const validationPct = await manager.validationRewardPercentage();
     const validatorReward = payout.mul(validationPct).divn(100);
-    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      payout.sub(validatorReward).add(agentBond).toString(),
-      "employer should be refunded minus validator reward"
+      payout.sub(validatorReward).toString(),
+      "employer should be refunded minus validator reward and agent bond pool"
     );
     const validatorAfter = await token.balanceOf(validator);
+    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
+    const expectedValidatorGain = validatorReward.add(agentBond);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      validatorReward.toString(),
-      "disapproving validator should be rewarded on employer win"
+      expectedValidatorGain.toString(),
+      "disapproving validator should receive escrow reward plus agent bond"
     );
 
     const job = await manager.getJobCore(jobId);
