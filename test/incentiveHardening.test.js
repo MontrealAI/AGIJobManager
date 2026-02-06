@@ -121,6 +121,26 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(repLarge.gt(repSmall), "higher payouts should dominate time bonus in reputation");
   });
 
+  it("keeps very small payouts from yielding outsized reputation", async () => {
+    const payout = toBN(toWei("0.001"));
+    const duration = 1000;
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-tiny", payout, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-tiny-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    assert(rep.lte(toBN(1)), "tiny payout should yield negligible reputation");
+  });
+
   it("scales agent bonds with payout and snapshots at assignment", async () => {
     const payoutSmall = toBN(toWei("10"));
     const payoutLarge = toBN(toWei("1000"));
@@ -208,6 +228,47 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await time.increase(2);
 
     await manager.finalizeJob(jobId, { from: agentFast });
+  });
+
+  it("throttles active jobs per agent and releases slots on completion", async () => {
+    const payout = toBN(toWei("1"));
+    await token.mint(employer, payout.muln(4), { from: owner });
+    await token.approve(manager.address, payout.muln(4), { from: employer });
+
+    const jobIds = [];
+    for (let i = 0; i < 3; i += 1) {
+      const jobId = (await manager.createJob(`ipfs-active-${i}`, payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+      await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+      jobIds.push(jobId);
+    }
+
+    const blockedJobId = (await manager.createJob("ipfs-active-block", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+    await expectCustomError(
+      manager.applyForJob.call(blockedJobId, "agent-fast", EMPTY_PROOF, { from: agentFast }),
+      "InvalidState"
+    );
+
+    await manager.requestJobCompletion(jobIds[0], "ipfs-active-complete", { from: agentFast });
+    await manager.validateJob(jobIds[0], "validator", EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(jobIds[0], { from: employer });
+
+    await manager.applyForJob(blockedJobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+  });
+
+  it("releases active job slots on expiry", async () => {
+    const payout = toBN(toWei("1"));
+    await token.mint(employer, payout.muln(2), { from: owner });
+    await token.approve(manager.address, payout.muln(2), { from: employer });
+
+    const jobId = (await manager.createJob("ipfs-expire-slot", payout, 1, "details", { from: employer })).logs[0].args.jobId.toNumber();
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+
+    await time.increase(2);
+    await manager.expireJob(jobId, { from: employer });
+    const newJobId = (await manager.createJob("ipfs-expire-slot-next", payout, 1, "details", { from: employer })).logs[0].args.jobId.toNumber();
+    await manager.applyForJob(newJobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
   });
 
   it("caps validator bonds at payout and prevents rush-to-approve settlement", async () => {

@@ -37,7 +37,14 @@ async function computeValidatorBond(manager, payout) {
 }
 
 async function computeDisputeBond(manager, payout) {
-  return computeValidatorBond(manager, payout);
+  const bps = web3.utils.toBN("50");
+  const min = web3.utils.toBN(web3.utils.toWei("1"));
+  const max = web3.utils.toBN(web3.utils.toWei("200"));
+  let bond = payout.mul(bps).divn(10000);
+  if (bond.lt(min)) bond = min;
+  if (bond.gt(max)) bond = max;
+  if (bond.gt(payout)) bond = payout;
+  return bond;
 }
 
 async function fundDisputeBond(token, manager, disputant, payout, owner) {
