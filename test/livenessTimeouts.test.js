@@ -175,6 +175,21 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
   });
 
+  it("rejects finalize once a dispute is raised", async () => {
+    const payout = toBN(toWei("9"));
+    await token.mint(employer, payout, { from: owner });
+
+    const jobId = await createJob(payout, 1000);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await fundDisputeBond(token, manager, employer, payout, owner);
+    await manager.disputeJob(jobId, { from: employer });
+    await advanceTime(120);
+
+    await expectCustomError(manager.finalizeJob.call(jobId, { from: other }), "InvalidState");
+  });
+
   it("finalizes in favor of the agent when validators lean positive", async () => {
     const payout = toBN(toWei("5"));
     await token.mint(employer, payout, { from: owner });
