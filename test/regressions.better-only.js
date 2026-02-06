@@ -6,7 +6,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeDisputeBond } = require("./helpers/bonds");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_PROOF = [];
@@ -70,7 +70,8 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
 
 async function createJob(manager, token, employer, payout) {
   const jobId = (await manager.nextJobId()).toNumber();
-  await token.approve(manager.address, payout, { from: employer });
+  const disputeBond = await computeDisputeBond(manager, payout);
+  await token.approve(manager.address, payout.add(disputeBond), { from: employer });
   await manager.createJob("ipfs1", payout, 1000, "details", { from: employer });
   return jobId;
 }
