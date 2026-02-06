@@ -6,7 +6,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeDisputeBond } = require("./helpers/bonds");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_PROOF = [];
@@ -19,6 +19,13 @@ function leaf(address) {
 
 function rootNode(label) {
   return soliditySha3({ type: "string", value: label });
+}
+
+async function fundDisputeBond(token, manager, payer, payout, owner) {
+  const disputeBond = await computeDisputeBond(manager, payout);
+  await token.mint(payer, disputeBond, { from: owner });
+  await token.approve(manager.address, disputeBond, { from: payer });
+  return disputeBond;
 }
 
 async function expectRevert(promise) {
@@ -138,6 +145,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
     await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
+    await fundDisputeBond(token, current, employer, payout, owner);
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
     await current.setRequiredValidatorApprovals(1, { from: owner });
@@ -171,6 +179,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
     await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
+    await fundDisputeBond(token, current, employer, payout, owner);
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
     await current.resolveDispute(currentJobId, "agent win", { from: moderator });
@@ -244,6 +253,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await current.addAGIType(nft.address, 92, { from: owner });
     const currentJobId = await createAssignedJob(current, token, employer, agent, payout);
     await current.requestJobCompletion(currentJobId, "ipfs-complete", { from: agent });
+    await fundDisputeBond(token, current, employer, payout, owner);
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
     await current.setRequiredValidatorApprovals(1, { from: owner });

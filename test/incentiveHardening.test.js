@@ -66,6 +66,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const payout = toBN(toWei("100"));
     const duration = 200000;
     await token.mint(employer, payout.muln(2), { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await token.approve(manager.address, payout.muln(2), { from: employer });
     const jobFast = (await manager.createJob("ipfs-fast", payout, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
@@ -78,6 +79,8 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await time.increase(20000);
     await manager.requestJobCompletion(jobSlow, "ipfs-slow-complete", { from: agentSlow });
 
+    await manager.validateJob(jobFast, "validator", EMPTY_PROOF, { from: validator });
+    await manager.validateJob(jobSlow, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
     await manager.finalizeJob(jobFast, { from: employer });
     await manager.finalizeJob(jobSlow, { from: employer });
@@ -92,6 +95,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const payoutLarge = toBN(toWei("10"));
     const duration = 1000000;
     await token.mint(employer, payoutSmall.add(payoutLarge), { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await token.approve(manager.address, payoutSmall.add(payoutLarge), { from: employer });
     const jobSmall = (await manager.createJob("ipfs-small", payoutSmall, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
@@ -103,6 +107,8 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobSmall, "ipfs-small-complete", { from: agentFast });
     await manager.requestJobCompletion(jobLarge, "ipfs-large-complete", { from: agentSlow });
 
+    await manager.validateJob(jobSmall, "validator", EMPTY_PROOF, { from: validator });
+    await manager.validateJob(jobLarge, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
     await manager.finalizeJob(jobSmall, { from: employer });
     await manager.finalizeJob(jobLarge, { from: employer });
@@ -110,6 +116,46 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const repSmall = await manager.reputation(agentFast);
     const repLarge = await manager.reputation(agentSlow);
     assert(repLarge.gt(repSmall), "higher payouts should dominate time bonus in reputation");
+  });
+
+  it("awards zero reputation without validators or dispute wins", async () => {
+    const payout = toBN(toWei("5"));
+    const duration = 1000;
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-zero-rep", payout, duration, "details", { from: employer }))
+      .logs[0]
+      .args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-zero-rep-complete", { from: agentFast });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    assert(rep.isZero(), "reputation should be zero without validators or dispute wins");
+  });
+
+  it("awards reputation when validators participate", async () => {
+    const payout = toBN(toWei("8"));
+    const duration = 1000;
+    await token.mint(employer, payout, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-rep", payout, duration, "details", { from: employer }))
+      .logs[0]
+      .args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-rep-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    assert(rep.gt(toBN(0)), "reputation should increase with validator participation");
   });
 
   it("scales agent bonds with payout and snapshots at assignment", async () => {
@@ -121,8 +167,8 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const jobSmall = (await manager.createJob("ipfs-small-bond", payoutSmall, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
     const jobLarge = (await manager.createJob("ipfs-large-bond", payoutLarge, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
 
-    const bondSmall = await computeAgentBond(manager, payoutSmall);
-    const bondLarge = await computeAgentBond(manager, payoutLarge);
+    const bondSmall = await computeAgentBond(manager, payoutSmall, 100);
+    const bondLarge = await computeAgentBond(manager, payoutLarge, 100);
     assert(bondLarge.gt(bondSmall), "agent bond should scale with payout");
 
     const agentFastBefore = await token.balanceOf(agentFast);
@@ -144,6 +190,41 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     );
   });
 
+  it("scales agent bonds with duration for the same payout", async () => {
+    const payout = toBN(toWei("20"));
+    await token.mint(employer, payout.muln(2), { from: owner });
+
+    await token.approve(manager.address, payout.muln(2), { from: employer });
+    const jobShort = (await manager.createJob("ipfs-short", payout, 100, "details", { from: employer }))
+      .logs[0]
+      .args.jobId.toNumber();
+    const jobLong = (await manager.createJob("ipfs-long", payout, 100000, "details", { from: employer }))
+      .logs[0]
+      .args.jobId.toNumber();
+
+    const bondShort = await computeAgentBond(manager, payout, 100);
+    const bondLong = await computeAgentBond(manager, payout, 100000);
+    assert(bondLong.gt(bondShort), "bond should scale with duration");
+
+    const agentFastBefore = await token.balanceOf(agentFast);
+    await manager.applyForJob(jobShort, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    const agentFastAfter = await token.balanceOf(agentFast);
+    assert.strictEqual(
+      agentFastBefore.sub(agentFastAfter).toString(),
+      bondShort.toString(),
+      "short bond should be collected"
+    );
+
+    const agentSlowBefore = await token.balanceOf(agentSlow);
+    await manager.applyForJob(jobLong, "agent-slow", EMPTY_PROOF, { from: agentSlow });
+    const agentSlowAfter = await token.balanceOf(agentSlow);
+    assert.strictEqual(
+      agentSlowBefore.sub(agentSlowAfter).toString(),
+      bondLong.toString(),
+      "long bond should be collected"
+    );
+  });
+
   it("snapshots and returns or slashes agent bonds, and excludes them from withdrawable AGI", async () => {
     const payout = toBN(toWei("20"));
     await token.mint(employer, payout, { from: owner });
@@ -151,7 +232,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await token.approve(manager.address, payout, { from: employer });
     const jobId = (await manager.createJob("ipfs-bond", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, 100);
     const agentBefore = await token.balanceOf(agentFast);
     await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
     const agentAfterApply = await token.balanceOf(agentFast);
@@ -175,7 +256,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await token.approve(manager.address, payoutTwo, { from: employer });
     const jobExpire = (await manager.createJob("ipfs-expire", payoutTwo, 1, "details", { from: employer })).logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobExpire, "agent-fast", EMPTY_PROOF, { from: agentFast });
-    const agentBondExpire = await computeAgentBond(manager, payoutTwo);
+    const agentBondExpire = await computeAgentBond(manager, payoutTwo, 1);
     await time.increase(2);
     const employerBeforeExpire = await token.balanceOf(employer);
     await manager.expireJob(jobExpire, { from: employer });
@@ -234,5 +315,30 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const bondLarge = await computeValidatorBond(manager, payoutLarge);
     assert(bondLarge.gt(bondSmall), "validator bond should scale with payout");
     assert(bondLarge.lte(payoutLarge), "validator bond should never exceed payout");
+  });
+
+  it("disables validator bonds only when parameters are zeroed", async () => {
+    await manager.setValidatorBondParams(0, 0, 0, { from: owner });
+    const payout = toBN(toWei("3"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-no-bond", payout, 100, "details", { from: employer }))
+      .logs[0]
+      .args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-no-bond-complete", { from: agentFast });
+
+    await token.approve(manager.address, 0, { from: validator });
+    const validatorBefore = await token.balanceOf(validator);
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    const validatorAfter = await token.balanceOf(validator);
+
+    assert.equal(
+      validatorAfter.sub(validatorBefore).toString(),
+      "0",
+      "validator bond should be zero when disabled"
+    );
+    assert.equal((await manager.lockedValidatorBonds()).toString(), "0", "no validator bonds should be locked");
   });
 });

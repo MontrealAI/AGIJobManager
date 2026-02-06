@@ -90,7 +90,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.equal((await token.balanceOf(manager.address)).toString(), payout.toString(), "escrow should hold payout");
 
     await assignAndRequest(jobId, "ipfs-complete");
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, 3600);
     assert.equal(
       (await token.balanceOf(agent)).toString(),
       balancesBefore.agent.sub(agentBond).toString(),
@@ -268,7 +268,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
     const employerAfter = await token.balanceOf(employer);
     const validatorRewardTotal = payoutTwo.mul(await manager.validationRewardPercentage()).divn(100);
-    const agentBondTwo = await computeAgentBond(manager, payoutTwo);
+    const agentBondTwo = await computeAgentBond(manager, payoutTwo, 3600);
     const validatorReward = validatorRewardTotal.divn(2);
     assert.equal(
       employerAfter.toString(),
