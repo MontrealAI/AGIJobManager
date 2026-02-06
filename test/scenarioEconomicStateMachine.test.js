@@ -208,7 +208,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
 
   });
 
-  it("resolves disputes with correct economic outcomes", async () => {
+  it("resolves disputes with correct economic outcomes and validator bond routing", async () => {
     const payout = toBN(toWei("40"));
     await token.mint(employer, payout, { from: owner });
 
@@ -269,11 +269,11 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     const validatorRewardTotal = payoutTwo.mul(await manager.validationRewardPercentage()).divn(100);
     const agentBondTwo = await computeAgentBond(manager, payoutTwo, toBN(3600));
-    const validatorReward = validatorRewardTotal.divn(2);
+    const validatorReward = validatorRewardTotal.add(agentBondTwo).divn(2);
     assert.equal(
       employerAfter.toString(),
-      employerBefore.add(payoutTwo.sub(validatorRewardTotal)).add(agentBondTwo).toString(),
-      "employer should be refunded minus validator rewards on employer win"
+      employerBefore.add(payoutTwo.sub(validatorRewardTotal)).toString(),
+      "employer should be refunded minus validator rewards and agent bond on employer win"
     );
     const validatorAAfter = await token.balanceOf(validatorA);
     const validatorBAfter = await token.balanceOf(validatorB);
