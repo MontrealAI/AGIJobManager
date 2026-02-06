@@ -882,29 +882,41 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
+        uint256 approvals = job.validatorApprovals;
+        uint256 disapprovals = job.validatorDisapprovals;
+        uint256 disapprovalsRequired = requiredValidatorDisapprovals;
+        uint256 quorum = requiredValidatorApprovals;
         if (job.completed || job.expired || job.disputed) revert InvalidState();
         if (!job.completionRequested || job.completionRequestedAt == 0) revert InvalidState();
-        if (requiredValidatorDisapprovals > 0 && job.validatorDisapprovals >= requiredValidatorDisapprovals) {
-            revert InvalidState();
+        if (disapprovalsRequired != 0) {
+            if (disapprovals >= disapprovalsRequired) revert InvalidState();
+            if (quorum == 0 || disapprovalsRequired < quorum) {
+                quorum = disapprovalsRequired;
+            }
         }
+        bool repEligible = job.validators.length != 0;
 
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
-            if (job.validatorApprovals > job.validatorDisapprovals) {
-                _completeJob(_jobId, job.validators.length != 0);
+            if (approvals > disapprovals) {
+                _completeJob(_jobId, repEligible);
                 return;
             }
         }
 
         if (block.timestamp <= job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
 
-        if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
+        uint256 totalVotes;
+        unchecked {
+            totalVotes = approvals + disapprovals;
+        }
+        if (totalVotes == 0 || (quorum != 0 && totalVotes < quorum)) {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
-            _completeJob(_jobId, job.validators.length != 0);
+            _completeJob(_jobId, repEligible);
             return;
         }
-        if (job.validatorApprovals > job.validatorDisapprovals) {
-            _completeJob(_jobId, job.validators.length != 0);
+        if (approvals > disapprovals) {
+            _completeJob(_jobId, repEligible);
             return;
         }
         _refundEmployer(job);
