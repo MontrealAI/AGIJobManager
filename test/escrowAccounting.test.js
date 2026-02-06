@@ -222,7 +222,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
   });
 
   it("refunds employer minus validator rewards when validators participate", async () => {
-    await manager.setRequiredValidatorApprovals(2, { from: owner });
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setCompletionReviewPeriod(1, { from: owner });
 
@@ -244,13 +244,13 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      payout.sub(rewardPool).toString(),
-      "employer refund should exclude validator rewards; agent bond routes to disapprovers"
+      payout.sub(rewardPool).add(agentBond).toString(),
+      "employer refund should exclude validator rewards and include agent bond under low disapprovals"
     );
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      rewardPool.add(agentBond).toString(),
-      "correct disapprover should earn reward pool plus agent bond"
+      rewardPool.toString(),
+      "correct disapprover should earn reward pool without agent bond"
     );
   });
 
