@@ -356,6 +356,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             lockedDisputeBonds -= bond;
         }
         if (initiator == address(0)) return;
+        // Dispute bonds follow the outcome: initiators are refunded on wins, otherwise the counterparty receives the bond.
         _t(agentWon ? job.assignedAgent : job.employer, bond);
     }
 
