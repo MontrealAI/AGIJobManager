@@ -353,6 +353,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
+    function _markDisputed(Job storage job, uint256 jobId, address disputant) internal {
+        job.disputed = true;
+        if (job.disputedAt == 0) {
+            job.disputedAt = block.timestamp;
+        }
+        emit JobDisputed(jobId, disputant);
+    }
+
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
         if (
             approvals > MAX_VALIDATORS_PER_JOB ||
@@ -545,11 +553,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.validators.push(msg.sender);
         emit JobDisapproved(_jobId, msg.sender);
         if (job.validatorDisapprovals >= requiredValidatorDisapprovals) {
-            job.disputed = true;
-            if (job.disputedAt == 0) {
-                job.disputedAt = block.timestamp;
-            }
-            emit JobDisputed(_jobId, msg.sender);
+            _markDisputed(job, _jobId, msg.sender);
         }
     }
 
@@ -572,11 +576,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         job.disputeInitiator = msg.sender;
         job.disputeBondAmount = bond;
-        job.disputed = true;
-        if (job.disputedAt == 0) {
-            job.disputedAt = block.timestamp;
-        }
-        emit JobDisputed(_jobId, msg.sender);
+        _markDisputed(job, _jobId, msg.sender);
     }
 
     /// @notice Deprecated: use resolveDisputeWithCode for typed settlement.
@@ -910,9 +910,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             totalVotes = approvals + disapprovals;
         }
-        if (totalVotes == 0 || (quorum != 0 && totalVotes < quorum)) {
-            // No-vote liveness: after the review window, settle deterministically in favor of the agent.
+        if (totalVotes == 0) {
             _completeJob(_jobId, repEligible);
+            return;
+        }
+        if (totalVotes < quorum || approvals == disapprovals) {
+            _markDisputed(job, _jobId, msg.sender);
             return;
         }
         if (approvals > disapprovals) {
@@ -933,14 +936,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidState();
         uint256 validatorCount = job.validators.length;
-        uint256 escrowValidatorReward = validatorCount > 0
-            ? (job.payout * validationRewardPercentage) / 100
-            : 0;
-        if (agentPayoutPercentage + (validatorCount > 0 ? validationRewardPercentage : 0) > 100) {
+        uint256 validatorBudget = (job.payout * validationRewardPercentage) / 100;
+        if (agentPayoutPercentage + validationRewardPercentage > 100) {
             revert InvalidParameters();
         }
         uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        if (agentPayout + escrowValidatorReward > job.payout) revert InvalidParameters();
+        if (agentPayout + validatorBudget > job.payout) revert InvalidParameters();
 
         job.completed = true;
         _decrementActiveJob(job);
@@ -951,8 +952,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         enforceReputationGrowth(job.assignedAgent, reputationPoints);
 
         _t(job.assignedAgent, agentPayout);
-
-        _settleValidators(job, true, reputationPoints, escrowValidatorReward, 0);
+        if (validatorCount == 0) {
+            _t(job.employer, validatorBudget);
+        } else {
+            _settleValidators(job, true, reputationPoints, validatorBudget, 0);
+        }
         _mintCompletionNFT(job);
         _settleDisputeBond(job, true);
 
@@ -1039,7 +1043,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.disputed = false;
         _decrementActiveJob(job);
         _releaseEscrow(job);
-        bool poolToValidators = job.validatorDisapprovals > 0;
+        bool poolToValidators = requiredValidatorDisapprovals != 0
+            && job.validatorDisapprovals >= requiredValidatorDisapprovals;
         uint256 agentBondPool = _settleAgentBond(job, false, poolToValidators);
         uint256 validatorCount = job.validators.length;
         uint256 escrowValidatorReward = validatorCount > 0
