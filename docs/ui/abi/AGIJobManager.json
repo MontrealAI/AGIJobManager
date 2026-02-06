@@ -588,31 +588,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "jobId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "lastApprover",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "at",
-          "type": "uint256"
-        }
-      ],
-      "name": "JobValidatorApproved",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "bytes32",
           "name": "validatorMerkleRoot",
@@ -853,37 +828,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "jobId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "validator",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "bond",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "vote",
-          "type": "uint8"
-        }
-      ],
-      "name": "ValidatorBonded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "uint256",
           "name": "bps",
@@ -894,64 +838,8 @@
       "type": "event"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "jobId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "agentWins",
-          "type": "bool"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "correctCount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "escrowValidatorReward",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "totalSlashed",
-          "type": "uint256"
-        }
-      ],
-      "name": "ValidatorsSettled",
-      "type": "event"
-    },
-    {
       "inputs": [],
       "name": "MAX_VALIDATORS_PER_JOB",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "activeJobsByAgent",
       "outputs": [
         {
           "internalType": "uint256",
@@ -1055,6 +943,32 @@
     {
       "inputs": [],
       "name": "agentBond",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "agentBondBps",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "agentBondMax",
       "outputs": [
         {
           "internalType": "uint256",
@@ -2341,6 +2255,29 @@
         }
       ],
       "name": "setValidatorBondParams",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "bps",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "min",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "max",
+          "type": "uint256"
+        }
+      ],
+      "name": "setAgentBondParams",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
