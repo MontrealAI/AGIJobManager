@@ -899,7 +899,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (block.timestamp <= job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
 
         if (job.validatorApprovals == 0 && job.validatorDisapprovals == 0) {
-            _completeJob(_jobId, job.validators.length != 0);
+            _completeJob(_jobId, false);
             return;
         }
         if (job.validatorApprovals > job.validatorDisapprovals) {
