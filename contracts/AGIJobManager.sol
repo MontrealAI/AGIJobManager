@@ -880,12 +880,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
-        uint256 disapprovalsRequired = requiredValidatorDisapprovals;
         uint256 quorum = requiredValidatorApprovals;
         if (job.completed || job.expired || job.disputed) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
-        if (disapprovalsRequired != 0 && (quorum == 0 || disapprovalsRequired < quorum)) {
-            quorum = disapprovalsRequired;
+        if (requiredValidatorDisapprovals != 0
+            && (quorum == 0 || requiredValidatorDisapprovals < quorum)
+        ) {
+            quorum = requiredValidatorDisapprovals;
         }
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
@@ -901,14 +902,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             totalVotes = approvals + disapprovals;
         }
-        if (totalVotes == 0 || totalVotes < quorum) {
+        if (totalVotes == 0) {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
             _completeJob(_jobId, job.validators.length != 0);
             return;
         }
-        if (approvals == disapprovals) {
+        if (totalVotes < quorum || approvals == disapprovals) {
             job.disputed = true;
-            job.disputedAt = block.timestamp;
+            if (job.disputedAt == 0) {
+                job.disputedAt = block.timestamp;
+            }
             emit JobDisputed(_jobId, msg.sender);
             return;
         }
@@ -928,7 +931,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidState();
-        uint256 validatorCount = job.validators.length;
         uint256 validatorBudget = (job.payout * validationRewardPercentage) / 100;
         if (agentPayoutPercentage + validationRewardPercentage > 100) {
             revert InvalidParameters();
@@ -946,7 +948,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         _t(job.assignedAgent, agentPayout);
 
-        if (validatorCount == 0) {
+        if (job.validators.length == 0) {
             _t(job.employer, validatorBudget);
         } else {
             _settleValidators(job, true, reputationPoints, validatorBudget, 0);
