@@ -273,7 +273,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.equal(
       employerAfter.toString(),
       employerBefore.add(payoutTwo.sub(validatorRewardTotal)).toString(),
-      "employer should be refunded minus validator rewards and agent bond on employer win"
+      "employer should be refunded minus validator rewards; agent bond routes to disapprovers"
     );
     const validatorAAfter = await token.balanceOf(validatorA);
     const validatorBAfter = await token.balanceOf(validatorB);

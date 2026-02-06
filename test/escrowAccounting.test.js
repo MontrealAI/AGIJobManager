@@ -242,12 +242,12 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
       payout.sub(rewardPool).toString(),
-      "employer refund should exclude validator rewards and agent bond"
+      "employer refund should exclude validator rewards; agent bond routes to disapprovers"
     );
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
       rewardPool.add(agentBond).toString(),
-      "correct disapprover should earn reward pool and agent bond"
+      "correct disapprover should earn reward pool plus agent bond"
     );
   });
 
