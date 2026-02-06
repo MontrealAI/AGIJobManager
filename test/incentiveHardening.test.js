@@ -290,6 +290,63 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(bondLarge.lte(payoutLarge), "validator bond should never exceed payout");
   });
 
+  it("enforces active job caps and decrements on completion", async () => {
+    const payout = toBN(toWei("5"));
+    await token.mint(employer, payout.muln(4), { from: owner });
+    await token.approve(manager.address, payout.muln(4), { from: employer });
+
+    const jobIds = [];
+    for (let i = 0; i < 4; i += 1) {
+      const jobId = (await manager.createJob(`ipfs-cap-${i}`, payout, 100, "details", { from: employer }))
+        .logs[0].args.jobId.toNumber();
+      jobIds.push(jobId);
+    }
+
+    await manager.applyForJob(jobIds[0], "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.applyForJob(jobIds[1], "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.applyForJob(jobIds[2], "agent-fast", EMPTY_PROOF, { from: agentFast });
+
+    await expectCustomError(
+      manager.applyForJob.call(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast }),
+      "InvalidState"
+    );
+
+    await manager.requestJobCompletion(jobIds[0], "ipfs-cap-complete", { from: agentFast });
+    await time.increase(2);
+    await manager.finalizeJob(jobIds[0], { from: agentFast });
+
+    await manager.applyForJob(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast });
+  });
+
+  it("keeps tiny payouts from dominating reputation", async () => {
+    const payoutTiny = toBN(toWei("0.001"));
+    const payoutSmall = toBN(toWei("1"));
+    const duration = 100000;
+    await token.mint(employer, payoutTiny.add(payoutSmall), { from: owner });
+
+    await token.approve(manager.address, payoutTiny.add(payoutSmall), { from: employer });
+    const jobTiny = (await manager.createJob("ipfs-tiny", payoutTiny, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
+    const jobSmall = (await manager.createJob("ipfs-small", payoutSmall, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobTiny, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.applyForJob(jobSmall, "agent-slow", EMPTY_PROOF, { from: agentSlow });
+
+    await manager.requestJobCompletion(jobTiny, "ipfs-tiny-complete", { from: agentFast });
+    await manager.requestJobCompletion(jobSmall, "ipfs-small-complete", { from: agentSlow });
+
+    await manager.validateJob(jobTiny, "validator", EMPTY_PROOF, { from: validator });
+    await manager.validateJob(jobSmall, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(jobTiny, { from: employer });
+    await manager.finalizeJob(jobSmall, { from: employer });
+
+    const repTiny = await manager.reputation(agentFast);
+    const repSmall = await manager.reputation(agentSlow);
+    assert(repSmall.gt(repTiny), "larger payouts should dominate reputation");
+  });
+
   it("supports validator bond disable mode only when bps/min/max are zero", async () => {
     const payout = toBN(toWei("4"));
     await token.mint(employer, payout, { from: owner });
