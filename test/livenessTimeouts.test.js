@@ -48,7 +48,7 @@ async function advanceTime(seconds) {
 }
 
 contract("AGIJobManager liveness timeouts", (accounts) => {
-  const [owner, employer, agent, validator, moderator, other] = accounts;
+  const [owner, employer, agent, validator, moderator, other, validatorTwo, validatorThree] = accounts;
   let token;
   let manager;
 
@@ -142,7 +142,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await expectCustomError(manager.expireJob.call(jobId, { from: other }), "InvalidState");
   });
 
-  it("finalizes completion after the review window when validators are silent", async () => {
+  it("0 votes remains live", async () => {
     const payout = toBN(toWei("25"));
     await token.mint(employer, payout, { from: owner });
 
@@ -161,6 +161,56 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
       payout.muln(90).divn(100).add(agentBond).toString(),
       "agent should be paid on no-vote finalize"
     );
+  });
+
+  it("under-quorum votes cannot flip the slow-path", async () => {
+    const payout = toBN(toWei("8"));
+    await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(3, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+
+    const jobId = await createJob(payout, 1000);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await advanceTime(120);
+
+    const agentBefore = await token.balanceOf(agent);
+    const employerBefore = await token.balanceOf(employer);
+    await manager.finalizeJob(jobId, { from: other });
+    const agentAfter = await token.balanceOf(agent);
+    const employerAfter = await token.balanceOf(employer);
+    assert.strictEqual(employerAfter.toString(), employerBefore.toString(), "employer should not be refunded");
+    assert.ok(agentAfter.gt(agentBefore), "agent should be paid on under-quorum finalize");
+  });
+
+  it("at-quorum votes still decide the slow-path", async () => {
+    const payout = toBN(toWei("11"));
+    await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(3, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+
+    await manager.addAdditionalValidator(validatorTwo, { from: owner });
+    await manager.addAdditionalValidator(validatorThree, { from: owner });
+    await fundValidators(token, manager, [validatorTwo, validatorThree], owner);
+
+    const jobId = await createJob(payout, 1000);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.disapproveJob(jobId, "validatorTwo", EMPTY_PROOF, { from: validatorTwo });
+    await manager.disapproveJob(jobId, "validatorThree", EMPTY_PROOF, { from: validatorThree });
+    await advanceTime(120);
+
+    const agentBefore = await token.balanceOf(agent);
+    const employerBefore = await token.balanceOf(employer);
+    await manager.finalizeJob(jobId, { from: other });
+    const agentAfter = await token.balanceOf(agent);
+    const employerAfter = await token.balanceOf(employer);
+    assert.strictEqual(agentAfter.toString(), agentBefore.toString(), "agent should not be paid");
+    assert.ok(employerAfter.gt(employerBefore), "employer should be refunded when disapprovals win");
   });
 
   it("rejects finalize before the review window elapses", async () => {
@@ -212,6 +262,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
   it("finalizes in favor of the employer when validators lean negative", async () => {
     const payout = toBN(toWei("6"));
     await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(2, { from: owner });
 
     const jobId = await createJob(payout, 1000);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
