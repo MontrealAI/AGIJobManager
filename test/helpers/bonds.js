@@ -10,7 +10,8 @@ async function fundValidators(token, manager, validators, owner, multiplier = 5)
 
 async function fundAgents(token, manager, agents, owner, multiplier = 5) {
   const maxPayout = web3.utils.toBN(await manager.maxJobPayout());
-  const bond = await computeAgentBond(manager, maxPayout);
+  const durationLimit = web3.utils.toBN(await manager.jobDurationLimit());
+  const bond = await computeAgentBond(manager, maxPayout, durationLimit);
   const amount = bond.muln(multiplier);
   for (const agent of agents) {
     await token.mint(agent, amount, { from: owner });
@@ -35,19 +36,42 @@ async function computeValidatorBond(manager, payout) {
   return bond;
 }
 
-const AGENT_BOND_BPS = web3.utils.toBN(500);
-const AGENT_BOND_MIN = web3.utils.toBN(web3.utils.toWei("1"));
-const AGENT_BOND_MAX = web3.utils.toBN(web3.utils.toWei("200"));
-
-async function computeAgentBond(manager, payout) {
-  if (AGENT_BOND_BPS.isZero() && AGENT_BOND_MIN.isZero() && AGENT_BOND_MAX.isZero()) {
-    return web3.utils.toBN("0");
-  }
-  let bond = payout.mul(AGENT_BOND_BPS).divn(10000);
-  if (bond.lt(AGENT_BOND_MIN)) bond = AGENT_BOND_MIN;
-  if (bond.gt(AGENT_BOND_MAX)) bond = AGENT_BOND_MAX;
+async function computeDisputeBond(manager, payout) {
+  let bond = payout.muln(200).divn(10000);
+  const floor = web3.utils.toBN(await manager.agentBond());
+  if (bond.lt(floor)) bond = floor;
   if (bond.gt(payout)) bond = payout;
   return bond;
 }
 
-module.exports = { fundValidators, fundAgents, computeValidatorBond, computeAgentBond };
+async function fundDisputeBond(token, manager, disputant, payout, owner) {
+  const bond = await computeDisputeBond(manager, payout);
+  await token.mint(disputant, bond, { from: owner });
+  await token.approve(manager.address, bond, { from: disputant });
+  return bond;
+}
+
+const AGENT_BOND_BPS = web3.utils.toBN(500);
+const AGENT_BOND_MAX = web3.utils.toBN(web3.utils.toWei("200"));
+
+async function computeAgentBond(manager, payout, duration) {
+  const agentBond = web3.utils.toBN(await manager.agentBond());
+  const durationLimit = web3.utils.toBN(await manager.jobDurationLimit());
+  let bond = payout.mul(AGENT_BOND_BPS).divn(10000);
+  if (!durationLimit.isZero()) {
+    bond = bond.mul(durationLimit.add(duration)).div(durationLimit);
+  }
+  if (bond.lt(agentBond)) bond = agentBond;
+  if (!AGENT_BOND_MAX.isZero() && bond.gt(AGENT_BOND_MAX)) bond = AGENT_BOND_MAX;
+  if (bond.gt(payout)) bond = payout;
+  return bond;
+}
+
+module.exports = {
+  fundValidators,
+  fundAgents,
+  fundDisputeBond,
+  computeValidatorBond,
+  computeDisputeBond,
+  computeAgentBond,
+};

@@ -12,7 +12,13 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { rootNode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
+const {
+  fundValidators,
+  fundAgents,
+  fundDisputeBond,
+  computeValidatorBond,
+  computeAgentBond,
+} = require("./helpers/bonds");
 
 const EMPTY_PROOF = [];
 
@@ -130,7 +136,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       assert.equal(await defaultsManager.symbol(), "Job");
       assert.equal(await defaultsManager.requiredValidatorApprovals(), "3");
       assert.equal(await defaultsManager.requiredValidatorDisapprovals(), "3");
-      assert.equal(await defaultsManager.maxJobPayout(), web3.utils.toWei("4888"));
+      assert.equal(await defaultsManager.maxJobPayout(), web3.utils.toWei("88888888"));
       assert.equal(await defaultsManager.jobDurationLimit(), "10000000");
       assert.equal(await defaultsManager.owner(), owner);
     });
@@ -186,7 +192,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const validatorBalanceAfter = await token.balanceOf(validator);
       const employerBalanceAfter = await token.balanceOf(employer);
 
-      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout), web3.utils.toBN(1000));
       assert.equal(employerBalanceAfter.toString(), employerBalanceBefore.toString());
       assert.equal(
         agentBalanceAfter.sub(agentBalanceBefore).toString(),
@@ -244,6 +250,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+      await fundDisputeBond(token, manager, employer, web3.utils.toBN(payout), owner);
       await manager.disputeJob(jobId, { from: employer });
       await manager.addModerator(moderator, { from: owner });
 
@@ -305,6 +312,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.addModerator(moderator, { from: owner });
 
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+      const disputeBond = await fundDisputeBond(token, manager, employer, web3.utils.toBN(payout), owner);
       await manager.disputeJob(jobId, { from: employer });
       await manager.resolveDisputeWithCode(jobId, 0, "needs more info", { from: moderator });
       const job = await manager.getJobCore(jobId);
@@ -326,14 +334,15 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.addModerator(moderator, { from: owner });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+      const disputeBond = await fundDisputeBond(token, manager, employer, web3.utils.toBN(payout), owner);
       await manager.disputeJob(jobId, { from: employer });
 
       const agentBalanceBefore = web3.utils.toBN(await token.balanceOf(agent));
       await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
       const agentBalanceAfter = web3.utils.toBN(await token.balanceOf(agent));
 
-      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout));
-      const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100)).add(agentBond);
+      const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout), web3.utils.toBN(1000));
+      const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100)).add(agentBond).add(disputeBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
 
       const jobAfter = await manager.getJobCore(jobId);
