@@ -241,13 +241,16 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     };
 
     assert.ok(balancesAfter.agent.gt(balancesBefore.agent), "agent should receive payout on agent win");
+    const validatorSlashBps = await manager.validatorSlashBps();
+    const slashedPerIncorrect = bond.mul(validatorSlashBps).divn(10000);
+    const incorrectRefund = bond.sub(slashedPerIncorrect);
     assert.ok(
-      balancesAfter.validatorA.eq(balancesBefore.validatorA),
-      "disapproving validators should not regain slashed bonds on agent win"
+      balancesAfter.validatorA.sub(balancesBefore.validatorA).eq(incorrectRefund),
+      "disapproving validator should receive bond minus slashed amount on agent win"
     );
     assert.ok(
-      balancesAfter.validatorB.eq(balancesBefore.validatorB),
-      "disapproving validators should not regain slashed bonds on agent win"
+      balancesAfter.validatorB.sub(balancesBefore.validatorB).eq(incorrectRefund),
+      "disapproving validator should receive bond minus slashed amount on agent win"
     );
 
     const payoutTwo = toBN(toWei("22"));

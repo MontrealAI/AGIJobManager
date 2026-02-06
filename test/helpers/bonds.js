@@ -37,14 +37,7 @@ async function computeValidatorBond(manager, payout) {
 }
 
 async function computeDisputeBond(manager, payout) {
-  const disputeBondBps = web3.utils.toBN(50);
-  const disputeBondMin = web3.utils.toBN(web3.utils.toWei("1"));
-  const disputeBondMax = web3.utils.toBN(web3.utils.toWei("88888888"));
-  let bond = payout.mul(disputeBondBps).divn(10000);
-  if (bond.lt(disputeBondMin)) bond = disputeBondMin;
-  if (bond.gt(disputeBondMax)) bond = disputeBondMax;
-  if (bond.gt(payout)) bond = payout;
-  return bond;
+  return computeValidatorBond(manager, payout);
 }
 
 async function fundDisputeBond(token, manager, disputant, payout, owner) {
@@ -54,18 +47,22 @@ async function fundDisputeBond(token, manager, disputant, payout, owner) {
   return bond;
 }
 
-const AGENT_BOND_BPS = web3.utils.toBN(500);
-const AGENT_BOND_MAX = web3.utils.toBN("0");
-
 async function computeAgentBond(manager, payout, duration) {
-  const agentBond = web3.utils.toBN(await manager.agentBond());
+  const [agentBondBps, agentBond, agentBondMax] = await Promise.all([
+    manager.agentBondBps(),
+    manager.agentBond(),
+    manager.agentBondMax(),
+  ]);
   const durationLimit = web3.utils.toBN(await manager.jobDurationLimit());
-  let bond = payout.mul(AGENT_BOND_BPS).divn(10000);
-  if (!durationLimit.isZero()) {
-    bond = bond.mul(durationLimit.add(duration)).div(durationLimit);
+  if (agentBondBps.isZero() && agentBond.isZero() && agentBondMax.isZero()) {
+    return web3.utils.toBN("0");
   }
+  let bond = payout.mul(agentBondBps).divn(10000);
   if (bond.lt(agentBond)) bond = agentBond;
-  if (!AGENT_BOND_MAX.isZero() && bond.gt(AGENT_BOND_MAX)) bond = AGENT_BOND_MAX;
+  if (!durationLimit.isZero()) {
+    bond = bond.add(bond.mul(duration).div(durationLimit));
+  }
+  if (!agentBondMax.isZero() && bond.gt(agentBondMax)) bond = agentBondMax;
   if (bond.gt(payout)) bond = payout;
   return bond;
 }

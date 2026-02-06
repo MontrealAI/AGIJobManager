@@ -152,7 +152,15 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
 
     await advanceTime(120);
 
+    const agentBefore = await token.balanceOf(agent);
     await manager.finalizeJob(jobId, { from: other });
+    const agentAfter = await token.balanceOf(agent);
+    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
+    assert.equal(
+      agentAfter.sub(agentBefore).toString(),
+      payout.muln(90).divn(100).add(agentBond).toString(),
+      "agent should be paid on no-vote finalize"
+    );
   });
 
   it("rejects finalize before the review window elapses", async () => {
@@ -228,13 +236,25 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
-    await advanceTime(120);
     await expectCustomError(manager.expireJob.call(jobId, { from: other }), "InvalidState");
 
     await fundDisputeBond(token, manager, employer, payout, owner);
     await manager.disputeJob(jobId, { from: employer });
     await advanceTime(120);
     await expectCustomError(manager.finalizeJob.call(jobId, { from: agent }), "InvalidState");
+  });
+
+  it("rejects disputes after the completion review window", async () => {
+    const payout = toBN(toWei("8"));
+    await token.mint(employer, payout, { from: owner });
+
+    const jobId = await createJob(payout, 1000);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await advanceTime(120);
+    await fundDisputeBond(token, manager, employer, payout, owner);
+    await expectCustomError(manager.disputeJob.call(jobId, { from: employer }), "InvalidState");
   });
 
   it("allows the owner to resolve stale disputes only after the dispute review period", async () => {

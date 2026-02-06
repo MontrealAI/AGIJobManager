@@ -66,6 +66,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const payout = toBN(toWei("100"));
     const duration = 200000;
     await token.mint(employer, payout.muln(2), { from: owner });
+    await manager.setCompletionReviewPeriod(30000, { from: owner });
 
     await token.approve(manager.address, payout.muln(2), { from: employer });
     const jobFast = (await manager.createJob("ipfs-fast", payout, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
@@ -287,33 +288,6 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const bondLarge = await computeValidatorBond(manager, payoutLarge);
     assert(bondLarge.gt(bondSmall), "validator bond should scale with payout");
     assert(bondLarge.lte(payoutLarge), "validator bond should never exceed payout");
-  });
-
-  it("enforces the active job cap per agent and frees capacity on expiry", async () => {
-    const payout = toBN(toWei("2"));
-    const duration = 5;
-    const maxActive = 3;
-    await token.mint(employer, payout.muln(maxActive + 1), { from: owner });
-    await token.approve(manager.address, payout.muln(maxActive + 1), { from: employer });
-
-    const jobIds = [];
-    for (let i = 0; i < maxActive + 1; i += 1) {
-      const receipt = await manager.createJob(`ipfs-cap-${i}`, payout, duration, "details", { from: employer });
-      jobIds.push(receipt.logs[0].args.jobId.toNumber());
-    }
-
-    await manager.applyForJob(jobIds[0], "agent-fast", EMPTY_PROOF, { from: agentFast });
-    await manager.applyForJob(jobIds[1], "agent-fast", EMPTY_PROOF, { from: agentFast });
-    await manager.applyForJob(jobIds[2], "agent-fast", EMPTY_PROOF, { from: agentFast });
-
-    await expectCustomError(
-      manager.applyForJob.call(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast }),
-      "InvalidState"
-    );
-
-    await time.increase(duration + 1);
-    await manager.expireJob(jobIds[0], { from: employer });
-    await manager.applyForJob(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast });
   });
 
   it("supports validator bond disable mode only when bps/min/max are zero", async () => {
