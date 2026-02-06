@@ -120,6 +120,75 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(repLarge.gt(repSmall), "higher payouts should dominate time bonus in reputation");
   });
 
+  it("keeps reputation negligible for very small payouts", async () => {
+    const payout = toBN("10000000000000"); // 0.00001 AGI
+    const duration = 100000;
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-tiny", payout, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-tiny-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    assert(rep.isZero(), "tiny payouts should not farm reputation");
+  });
+
+  it("bounds the time bonus by the payout-based base", async () => {
+    const payout = toBN(toWei("1"));
+    const duration = 10000000;
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-bonus", payout, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-bonus-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    const payoutSignal = payout.div(toBN("100000000000000")); // 1e14
+    const base = Math.floor(Math.log2(1 + Number(payoutSignal.toString())));
+    assert(rep.lte(toBN(base * 2)), "time bonus should be capped by the base");
+  });
+
+  it("enforces a cap on active jobs per agent", async () => {
+    const payout = toBN(toWei("1"));
+    await token.mint(employer, payout.muln(4), { from: owner });
+    await token.approve(manager.address, payout.muln(4), { from: employer });
+
+    const jobIds = [];
+    for (let i = 0; i < 4; i += 1) {
+      const receipt = await manager.createJob(`ipfs-cap-${i}`, payout, 100, "details", { from: employer });
+      jobIds.push(receipt.logs[0].args.jobId.toNumber());
+    }
+
+    await manager.applyForJob(jobIds[0], "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.applyForJob(jobIds[1], "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.applyForJob(jobIds[2], "agent-fast", EMPTY_PROOF, { from: agentFast });
+
+    await expectCustomError(
+      manager.applyForJob.call(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast }),
+      "InvalidState"
+    );
+
+    await manager.requestJobCompletion(jobIds[0], "ipfs-cap-complete", { from: agentFast });
+    await time.increase(2);
+    await manager.finalizeJob(jobIds[0], { from: employer });
+
+    await manager.applyForJob(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast });
+  });
+
   it("scales agent bonds with payout and snapshots at assignment", async () => {
     const payoutSmall = toBN(toWei("10"));
     const payoutLarge = toBN(toWei("1000"));
@@ -195,7 +264,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     );
   });
 
-  it("requires the employer to finalize when there are no validator votes", async () => {
+  it("allows any caller to finalize when there are no validator votes", async () => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
 
@@ -206,9 +275,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-novotes-complete", { from: agentFast });
     await time.increase(2);
 
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: agentFast }), "InvalidState");
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: validator }), "InvalidState");
-    await manager.finalizeJob(jobId, { from: employer });
+    await manager.finalizeJob(jobId, { from: agentFast });
   });
 
   it("caps validator bonds at payout and prevents rush-to-approve settlement", async () => {

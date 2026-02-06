@@ -241,12 +241,12 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      payout.sub(rewardPool).add(agentBond).toString(),
+      payout.sub(rewardPool).toString(),
       "employer refund should exclude validator rewards"
     );
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      rewardPool.toString(),
+      rewardPool.add(agentBond).toString(),
       "correct disapprover should earn reward pool"
     );
   });

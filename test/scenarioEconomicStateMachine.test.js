@@ -271,20 +271,20 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const agentBondTwo = await computeAgentBond(manager, payoutTwo, toBN(3600));
     const validatorReward = validatorRewardTotal.divn(2);
     assert.equal(
-      employerAfter.toString(),
-      employerBefore.add(payoutTwo.sub(validatorRewardTotal)).add(agentBondTwo).toString(),
+      employerAfter.sub(employerBefore).toString(),
+      payoutTwo.sub(validatorRewardTotal).toString(),
       "employer should be refunded minus validator rewards on employer win"
     );
     const validatorAAfter = await token.balanceOf(validatorA);
     const validatorBAfter = await token.balanceOf(validatorB);
     assert.equal(
       validatorAAfter.sub(validatorABefore).toString(),
-      validatorReward.toString(),
+      validatorReward.add(agentBondTwo.divn(2)).toString(),
       "disapproving validator A should earn rewards on employer win"
     );
     assert.equal(
       validatorBAfter.sub(validatorBBefore).toString(),
-      validatorReward.toString(),
+      validatorReward.add(agentBondTwo.divn(2)).toString(),
       "disapproving validator B should earn rewards on employer win"
     );
     assert.equal((await manager.nextTokenId()).toNumber(), 1, "no NFT should mint on employer win");
