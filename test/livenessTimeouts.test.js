@@ -153,13 +153,21 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await advanceTime(120);
 
     const agentBefore = await token.balanceOf(agent);
+    const employerBefore = await token.balanceOf(employer);
     await manager.finalizeJob(jobId, { from: other });
     const agentAfter = await token.balanceOf(agent);
+    const employerAfter = await token.balanceOf(employer);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
+    const validatorBudget = payout.mul(await manager.validationRewardPercentage()).divn(100);
     assert.equal(
       agentAfter.sub(agentBefore).toString(),
       payout.muln(90).divn(100).add(agentBond).toString(),
       "agent should be paid on no-vote finalize"
+    );
+    assert.equal(
+      employerAfter.sub(employerBefore).toString(),
+      validatorBudget.toString(),
+      "employer should receive validator budget rebate on no-vote finalize"
     );
   });
 
@@ -181,8 +189,40 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.finalizeJob(jobId, { from: other });
     const agentAfter = await token.balanceOf(agent);
     const employerAfter = await token.balanceOf(employer);
+    const job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.disputed, false, "job should not dispute on under-quorum finalize");
     assert.strictEqual(employerAfter.toString(), employerBefore.toString(), "employer should not be refunded");
     assert.ok(agentAfter.gt(agentBefore), "agent should be paid on under-quorum finalize");
+  });
+
+  it("at-quorum ties escalate to dispute", async () => {
+    const payout = toBN(toWei("10"));
+    await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(3, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+
+    await manager.addAdditionalValidator(validatorTwo, { from: owner });
+    await manager.addAdditionalValidator(validatorThree, { from: owner });
+    await manager.addAdditionalValidator(other, { from: owner });
+    await fundValidators(token, manager, [validatorTwo, validatorThree, other], owner);
+
+    const jobId = await createJob(payout, 1000);
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.validateJob(jobId, "validatorTwo", EMPTY_PROOF, { from: validatorTwo });
+    await manager.disapproveJob(jobId, "validatorThree", EMPTY_PROOF, { from: validatorThree });
+    await manager.disapproveJob(jobId, "validatorFour", EMPTY_PROOF, { from: other });
+    await advanceTime(120);
+
+    const tx = await manager.finalizeJob(jobId, { from: employer });
+    const job = await manager.getJobCore(jobId);
+    assert.strictEqual(job.disputed, true, "job should escalate to dispute on at-quorum tie");
+    assert.ok(
+      tx.logs.some((log) => log.event === "JobDisputed"),
+      "JobDisputed should be emitted on at-quorum tie"
+    );
   });
 
   it("at-quorum votes still decide the slow-path", async () => {
@@ -243,12 +283,15 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
   it("finalizes in favor of the agent when validators lean positive", async () => {
     const payout = toBN(toWei("5"));
     await token.mint(employer, payout, { from: owner });
+    await manager.addAdditionalValidator(validatorTwo, { from: owner });
+    await fundValidators(token, manager, [validatorTwo], owner);
 
     const jobId = await createJob(payout, 1000);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.validateJob(jobId, "validatorTwo", EMPTY_PROOF, { from: validatorTwo });
     await advanceTime(120);
 
     const agentBefore = await token.balanceOf(agent);
@@ -262,15 +305,19 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
   it("finalizes in favor of the employer when validators lean negative", async () => {
     const payout = toBN(toWei("6"));
     await token.mint(employer, payout, { from: owner });
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
-    await manager.setRequiredValidatorDisapprovals(2, { from: owner });
+    await manager.setRequiredValidatorApprovals(2, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+    await manager.addAdditionalValidator(validatorTwo, { from: owner });
+    await fundValidators(token, manager, [validatorTwo], owner);
 
     const jobId = await createJob(payout, 1000);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     const validatorBefore = await token.balanceOf(validator);
+    const validatorTwoBefore = await token.balanceOf(validatorTwo);
     await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.disapproveJob(jobId, "validatorTwo", EMPTY_PROOF, { from: validatorTwo });
     await advanceTime(120);
 
     const employerBefore = await token.balanceOf(employer);
@@ -281,14 +328,20 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      payout.sub(validatorReward).toString(),
-      "employer should be refunded minus validator reward and agent bond"
+      payout.sub(validatorReward).add(agentBond).toString(),
+      "employer should be refunded minus validator reward plus agent bond"
     );
     const validatorAfter = await token.balanceOf(validator);
+    const validatorTwoAfter = await token.balanceOf(validatorTwo);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      validatorReward.add(agentBond).toString(),
+      validatorReward.divn(2).toString(),
       "disapproving validator should be rewarded on employer win"
+    );
+    assert.equal(
+      validatorTwoAfter.sub(validatorTwoBefore).toString(),
+      validatorReward.divn(2).toString(),
+      "second disapproving validator should be rewarded on employer win"
     );
 
     const job = await manager.getJobCore(jobId);
