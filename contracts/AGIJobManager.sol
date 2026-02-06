@@ -561,9 +561,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             unchecked {
                 lockedDisputeBonds += bond;
             }
-            job.disputeBondAmount = bond;
         }
         job.disputeInitiator = msg.sender;
+        job.disputeBondAmount = bond;
         job.disputed = true;
         if (job.disputedAt == 0) {
             job.disputedAt = block.timestamp;
@@ -869,7 +869,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (job.validatorApprovals > job.validatorDisapprovals) {
-                _completeJob(_jobId, true);
+                _completeJob(_jobId, job.validators.length != 0);
                 return;
             }
         }

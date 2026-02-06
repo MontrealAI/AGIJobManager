@@ -253,6 +253,26 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(rep.isZero(), "no-validator completion should award zero reputation");
   });
 
+  it("awards reputation when validators participate", async () => {
+    const payout = toBN(toWei("3"));
+    const duration = 1000;
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-with-rep", payout, duration, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-with-rep-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    assert(rep.gt(toBN(0)), "validator participation should award reputation");
+  });
+
   it("scales agent bonds with duration for identical payouts", async () => {
     const payout = toBN(toWei("1000"));
     const durationShort = toBN(100);
