@@ -186,13 +186,17 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
 
     const agentBefore = await token.balanceOf(agent);
     const employerBefore = await token.balanceOf(employer);
-    await manager.finalizeJob(jobId, { from: other });
+    const tx = await manager.finalizeJob(jobId, { from: other });
     const agentAfter = await token.balanceOf(agent);
     const employerAfter = await token.balanceOf(employer);
     const job = await manager.getJobCore(jobId);
-    assert.strictEqual(job.disputed, false, "job should not dispute on under-quorum finalize");
+    assert.strictEqual(job.disputed, true, "job should dispute on under-quorum finalize");
+    assert.strictEqual(agentAfter.toString(), agentBefore.toString(), "agent should not be paid");
     assert.strictEqual(employerAfter.toString(), employerBefore.toString(), "employer should not be refunded");
-    assert.ok(agentAfter.gt(agentBefore), "agent should be paid on under-quorum finalize");
+    assert.ok(
+      tx.logs.some((log) => log.event === "JobDisputed"),
+      "JobDisputed should be emitted on under-quorum finalize"
+    );
   });
 
   it("at-quorum ties escalate to dispute", async () => {
