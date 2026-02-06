@@ -232,6 +232,8 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const agentPayoutPct = toBN(jobAfterAgentWin.agentPayoutPct);
     const expectedAgentPayout = payout.mul(agentPayoutPct).divn(100);
     const bond = await computeValidatorBond(manager, payout);
+    const slashedPerIncorrect = bond.mul(await manager.validatorSlashBps()).divn(10000);
+    const incorrectRefund = bond.sub(slashedPerIncorrect);
     await expectCustomError(manager.disputeJob.call(jobId, { from: employer }), "InvalidState");
 
     const balancesAfter = {
@@ -242,12 +244,12 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
 
     assert.ok(balancesAfter.agent.gt(balancesBefore.agent), "agent should receive payout on agent win");
     assert.ok(
-      balancesAfter.validatorA.eq(balancesBefore.validatorA),
-      "disapproving validators should not regain slashed bonds on agent win"
+      balancesAfter.validatorA.sub(balancesBefore.validatorA).eq(incorrectRefund),
+      "disapproving validators should only recover the unslashed bond on agent win"
     );
     assert.ok(
-      balancesAfter.validatorB.eq(balancesBefore.validatorB),
-      "disapproving validators should not regain slashed bonds on agent win"
+      balancesAfter.validatorB.sub(balancesBefore.validatorB).eq(incorrectRefund),
+      "disapproving validators should only recover the unslashed bond on agent win"
     );
 
     const payoutTwo = toBN(toWei("22"));

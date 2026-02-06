@@ -200,7 +200,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
     const validatorThreeAfter = await token.balanceOf(validatorThree);
     const rewardPool = payout.mul(await manager.validationRewardPercentage()).divn(100);
-    const perCorrectReward = rewardPool.add(bond).divn(2);
+    const slashedPerIncorrect = bond.mul(await manager.validatorSlashBps()).divn(10000);
+    const perCorrectReward = rewardPool.add(slashedPerIncorrect).divn(2);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
       perCorrectReward.toString(),
@@ -213,8 +214,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     );
     assert.equal(
       validatorTwoBefore.sub(validatorTwoAfter).toString(),
-      bond.toString(),
-      "incorrect validator should lose bonded amount"
+      slashedPerIncorrect.toString(),
+      "incorrect validator should lose slashed bond amount"
     );
   });
 

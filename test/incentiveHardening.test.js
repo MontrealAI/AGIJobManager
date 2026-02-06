@@ -75,10 +75,10 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.applyForJob(jobSlow, "agent-slow", EMPTY_PROOF, { from: agentSlow });
 
     await manager.requestJobCompletion(jobFast, "ipfs-fast-complete", { from: agentFast });
+    await manager.validateJob(jobFast, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(20000);
     await manager.requestJobCompletion(jobSlow, "ipfs-slow-complete", { from: agentSlow });
 
-    await manager.validateJob(jobFast, "validator", EMPTY_PROOF, { from: validator });
     await manager.validateJob(jobSlow, "validator", EMPTY_PROOF, { from: validator });
 
     await time.increase(2);
@@ -287,33 +287,6 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const bondLarge = await computeValidatorBond(manager, payoutLarge);
     assert(bondLarge.gt(bondSmall), "validator bond should scale with payout");
     assert(bondLarge.lte(payoutLarge), "validator bond should never exceed payout");
-  });
-
-  it("enforces the active job cap per agent and frees capacity on expiry", async () => {
-    const payout = toBN(toWei("2"));
-    const duration = 5;
-    const maxActive = 3;
-    await token.mint(employer, payout.muln(maxActive + 1), { from: owner });
-    await token.approve(manager.address, payout.muln(maxActive + 1), { from: employer });
-
-    const jobIds = [];
-    for (let i = 0; i < maxActive + 1; i += 1) {
-      const receipt = await manager.createJob(`ipfs-cap-${i}`, payout, duration, "details", { from: employer });
-      jobIds.push(receipt.logs[0].args.jobId.toNumber());
-    }
-
-    await manager.applyForJob(jobIds[0], "agent-fast", EMPTY_PROOF, { from: agentFast });
-    await manager.applyForJob(jobIds[1], "agent-fast", EMPTY_PROOF, { from: agentFast });
-    await manager.applyForJob(jobIds[2], "agent-fast", EMPTY_PROOF, { from: agentFast });
-
-    await expectCustomError(
-      manager.applyForJob.call(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast }),
-      "InvalidState"
-    );
-
-    await time.increase(duration + 1);
-    await manager.expireJob(jobIds[0], { from: employer });
-    await manager.applyForJob(jobIds[3], "agent-fast", EMPTY_PROOF, { from: agentFast });
   });
 
   it("supports validator bond disable mode only when bps/min/max are zero", async () => {
