@@ -37,9 +37,11 @@ async function computeValidatorBond(manager, payout) {
 }
 
 async function computeDisputeBond(manager, payout) {
-  let bond = payout.muln(200).divn(10000);
-  const floor = web3.utils.toBN(await manager.agentBond());
-  if (bond.lt(floor)) bond = floor;
+  const min = web3.utils.toBN(web3.utils.toWei("1"));
+  const max = web3.utils.toBN(web3.utils.toWei("200"));
+  let bond = payout.muln(50).divn(10000);
+  if (bond.lt(min)) bond = min;
+  if (!max.isZero() && bond.gt(max)) bond = max;
   if (bond.gt(payout)) bond = payout;
   return bond;
 }
@@ -52,7 +54,7 @@ async function fundDisputeBond(token, manager, disputant, payout, owner) {
 }
 
 const AGENT_BOND_BPS = web3.utils.toBN(500);
-const AGENT_BOND_MAX = web3.utils.toBN(web3.utils.toWei("200"));
+const AGENT_BOND_MAX = web3.utils.toBN("0");
 
 async function computeAgentBond(manager, payout, duration) {
   const agentBond = web3.utils.toBN(await manager.agentBond());

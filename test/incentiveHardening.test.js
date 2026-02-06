@@ -195,7 +195,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     );
   });
 
-  it("requires the employer to finalize when there are no validator votes", async () => {
+  it("allows permissionless finalize when there are no validator votes", async () => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
 
@@ -206,9 +206,58 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-novotes-complete", { from: agentFast });
     await time.increase(2);
 
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: agentFast }), "InvalidState");
-    await expectCustomError(manager.finalizeJob.call(jobId, { from: validator }), "InvalidState");
+    await manager.finalizeJob(jobId, { from: agentFast });
+  });
+
+  it("enforces max active jobs per agent and decrements on completion", async () => {
+    await manager.setCompletionReviewPeriod(1, { from: owner });
+    const payout = toBN(toWei("5"));
+    await token.mint(employer, payout.muln(4), { from: owner });
+    await token.approve(manager.address, payout.muln(4), { from: employer });
+
+    const jobIds = [];
+    for (let i = 0; i < 4; i += 1) {
+      const jobId = (await manager.createJob(`ipfs-job-${i}`, payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+      jobIds.push(jobId);
+    }
+
+    for (let i = 0; i < 3; i += 1) {
+      await manager.applyForJob(jobIds[i], `agent-${i}`, EMPTY_PROOF, { from: agentFast });
+    }
+    await expectCustomError(
+      manager.applyForJob.call(jobIds[3], "agent-over", EMPTY_PROOF, { from: agentFast }),
+      "InvalidState"
+    );
+
+    await manager.requestJobCompletion(jobIds[0], "ipfs-complete", { from: agentFast });
+    await time.increase(2);
+    await manager.finalizeJob(jobIds[0], { from: employer });
+
+    const activeAfter = await manager.activeJobsByAgent(agentFast);
+    assert.strictEqual(activeAfter.toString(), "2", "active job count should decrement after completion");
+
+    await manager.applyForJob(jobIds[3], "agent-backfill", EMPTY_PROOF, { from: agentFast });
+    const activeFinal = await manager.activeJobsByAgent(agentFast);
+    assert.strictEqual(activeFinal.toString(), "3", "agent can backfill after completion");
+  });
+
+  it("keeps tiny payouts from farming reputation", async () => {
+    const payout = toBN(toWei("0.001"));
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-tiny", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-tiny", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-tiny-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    await time.increase(101);
     await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    assert(rep.isZero(), "tiny payouts should not accrue meaningful reputation");
   });
 
   it("caps validator bonds at payout and prevents rush-to-approve settlement", async () => {
