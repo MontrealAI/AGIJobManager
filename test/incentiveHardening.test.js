@@ -289,6 +289,43 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(bondLarge.lte(payoutLarge), "validator bond should never exceed payout");
   });
 
+  it("routes agent bond rewards to correct validators on employer win", async () => {
+    const payout = toBN(toWei("10"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-disapprove", payout, 100, "details", { from: employer }))
+      .logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-disapprove-complete", { from: agentFast });
+
+    const validatorBond = await computeValidatorBond(manager, payout);
+    const validatorBeforeVote = await token.balanceOf(validator);
+    await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    const validatorAfterVote = await token.balanceOf(validator);
+    assert(validatorBeforeVote.sub(validatorAfterVote).eq(validatorBond), "validator bond should be collected");
+
+    const agentBond = await computeAgentBond(manager, payout, toBN(100));
+    const validationRewardPct = await manager.validationRewardPercentage();
+    const escrowReward = payout.mul(validationRewardPct).divn(100);
+
+    await time.increase(2);
+    const employerBeforeFinalize = await token.balanceOf(employer);
+    await manager.finalizeJob(jobId, { from: employer });
+    const employerAfterFinalize = await token.balanceOf(employer);
+
+    const validatorAfterFinalize = await token.balanceOf(validator);
+    const expectedValidatorPayout = validatorBond.add(escrowReward).add(agentBond);
+    assert(
+      validatorAfterFinalize.sub(validatorAfterVote).eq(expectedValidatorPayout),
+      "correct validators should receive escrow rewards plus agent bond"
+    );
+    assert(
+      employerAfterFinalize.sub(employerBeforeFinalize).eq(payout.sub(escrowReward)),
+      "employer refund should exclude agent bond when validators were correct"
+    );
+  });
+
   it("enforces the active job cap per agent and frees capacity on expiry", async () => {
     const payout = toBN(toWei("2"));
     const duration = 5;
@@ -336,5 +373,24 @@ contract("AGIJobManager incentive hardening", (accounts) => {
       manager.setValidatorBondParams.call(0, 0, 1, { from: owner }),
       "InvalidParameters"
     );
+  });
+
+  it("keeps very small payouts from earning meaningful reputation", async () => {
+    const payout = toBN(toWei("0.0001"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-tiny", payout, 1000, "details", { from: employer }))
+      .logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-tiny-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const rep = await manager.reputation(agentFast);
+    assert(rep.isZero(), "tiny payouts should not yield meaningful reputation");
   });
 });
