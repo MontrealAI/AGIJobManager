@@ -17,7 +17,7 @@ const { toBN, toWei } = web3.utils;
 const AGENT_SLASH_BPS = toBN(10000);
 
 contract("AGIJobManager incentive hardening", (accounts) => {
-  const [owner, employer, agentFast, agentSlow, validator] = accounts;
+  const [owner, employer, agentFast, agentSlow, validator, validatorTwo, validatorThree, validatorFour] = accounts;
   let token;
   let ens;
   let nameWrapper;
@@ -53,13 +53,16 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.addAdditionalAgent(agentFast, { from: owner });
     await manager.addAdditionalAgent(agentSlow, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
+    await manager.addAdditionalValidator(validatorTwo, { from: owner });
+    await manager.addAdditionalValidator(validatorThree, { from: owner });
+    await manager.addAdditionalValidator(validatorFour, { from: owner });
 
     await manager.setCompletionReviewPeriod(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(100, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
 
     await fundAgents(token, manager, [agentFast, agentSlow], owner);
-    await fundValidators(token, manager, [validator], owner);
+    await fundValidators(token, manager, [validator, validatorTwo, validatorThree, validatorFour], owner);
   });
 
   it("does not reward delaying completion requests in reputation", async () => {
@@ -228,6 +231,128 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await time.increase(2);
 
     await manager.finalizeJob(jobId, { from: agentFast });
+  });
+
+  it("escalates slow-path settlement when votes are under quorum", async () => {
+    const payout = toBN(toWei("12"));
+    await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(3, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-quorum-low", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-quorum-low-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    const receipt = await manager.finalizeJob(jobId, { from: employer });
+    assert(receipt.logs.some((log) => log.event === "JobDisputed"), "expected dispute on under-quorum votes");
+    const job = await manager.getJobCore(jobId);
+    assert.equal(job.disputed, true);
+  });
+
+  it("escalates slow-path settlement on tied quorum votes", async () => {
+    const payout = toBN(toWei("12"));
+    await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(3, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-quorum-tie", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-quorum-tie-complete", { from: agentFast });
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.validateJob(jobId, "validator-two", EMPTY_PROOF, { from: validatorTwo });
+    await manager.disapproveJob(jobId, "validator-three", EMPTY_PROOF, { from: validatorThree });
+    await manager.disapproveJob(jobId, "validator-four", EMPTY_PROOF, { from: validatorFour });
+
+    await time.increase(2);
+    const receipt = await manager.finalizeJob(jobId, { from: employer });
+    assert(receipt.logs.some((log) => log.event === "JobDisputed"), "expected dispute on tied quorum votes");
+    const job = await manager.getJobCore(jobId);
+    assert.equal(job.disputed, true);
+  });
+
+  it("rebates validator budget to employer when no validators participate", async () => {
+    const payout = toBN(toWei("9"));
+    await token.mint(employer, payout, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-rebate", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(jobId, "ipfs-rebate-complete", { from: agentFast });
+
+    await time.increase(2);
+    const employerBefore = await token.balanceOf(employer);
+    await manager.finalizeJob(jobId, { from: employer });
+    const employerAfter = await token.balanceOf(employer);
+
+    const validatorBudget = payout.mul(await manager.validationRewardPercentage()).divn(100);
+    assert(
+      employerAfter.sub(employerBefore).eq(validatorBudget),
+      "employer should receive validator budget rebate when no validators vote"
+    );
+  });
+
+  it("keeps agent bond with employer when disapprovals stay below required threshold", async () => {
+    const payout = toBN(toWei("6"));
+    await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-bond-no-pool", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    const agentBond = await computeAgentBond(manager, payout, toBN(100));
+    await manager.requestJobCompletion(jobId, "ipfs-bond-no-pool-complete", { from: agentFast });
+    await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+
+    await time.increase(2);
+    const employerBefore = await token.balanceOf(employer);
+    await manager.finalizeJob(jobId, { from: employer });
+    const employerAfter = await token.balanceOf(employer);
+
+    const validatorBudget = payout.mul(await manager.validationRewardPercentage()).divn(100);
+    const expectedRefund = payout.sub(validatorBudget).add(agentBond);
+    assert(
+      employerAfter.sub(employerBefore).eq(expectedRefund),
+      "employer should receive agent bond when disapprovals are below threshold"
+    );
+  });
+
+  it("allows agent bond to feed validator pool after strong disapproval threshold", async () => {
+    const payout = toBN(toWei("6"));
+    await token.mint(employer, payout, { from: owner });
+    await manager.setRequiredValidatorApprovals(3, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+
+    await token.approve(manager.address, payout, { from: employer });
+    const jobId = (await manager.createJob("ipfs-bond-pool", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
+
+    await manager.addModerator(owner, { from: owner });
+    await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
+    const agentBond = await computeAgentBond(manager, payout, toBN(100));
+    await manager.requestJobCompletion(jobId, "ipfs-bond-pool-complete", { from: agentFast });
+    await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.disapproveJob(jobId, "validator-two", EMPTY_PROOF, { from: validatorTwo });
+    await manager.disapproveJob(jobId, "validator-three", EMPTY_PROOF, { from: validatorThree });
+
+    const validatorBond = await computeValidatorBond(manager, payout);
+    const validatorBefore = await token.balanceOf(validator);
+    await manager.resolveDisputeWithCode(jobId, 2, "employer win", { from: owner });
+    const validatorAfter = await token.balanceOf(validator);
+
+    const validatorBudget = payout.mul(await manager.validationRewardPercentage()).divn(100);
+    const expectedReward = validatorBond.add(validatorBudget.add(agentBond).divn(3));
+    assert(
+      validatorAfter.sub(validatorBefore).eq(expectedReward),
+      "validator should receive share of agent bond after strong disapproval"
+    );
   });
 
   it("throttles active jobs per agent and releases slots on completion", async () => {
