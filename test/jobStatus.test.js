@@ -9,7 +9,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundAgents } = require("./helpers/bonds");
+const { fundAgents, computeDisputeBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -72,6 +72,8 @@ contract("AGIJobManager jobStatus", (accounts) => {
     jobValidation = await manager.getJobValidation(jobId);
     assert.strictEqual(jobValidation.completionRequested, true, "completion request should be recorded");
 
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobId, { from: employer });
     job = await manager.getJobCore(jobId);
     assert.strictEqual(job.disputed, true, "disputed job should be flagged");

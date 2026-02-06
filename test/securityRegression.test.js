@@ -11,7 +11,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond, computeDisputeBond } = require("./helpers/bonds");
 const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
@@ -106,6 +106,8 @@ contract("AGIJobManager security regressions", (accounts) => {
     const jobIdTwo = createTxTwo.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobIdTwo, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobIdTwo, "ipfs-done-two", { from: agent });
+    const disputeBond = await computeDisputeBond(manager, payoutTwo);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobIdTwo, { from: employer });
     await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
     await expectCustomError(
@@ -128,12 +130,14 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobId, { from: employer });
     const agentBefore = await token.balanceOf(agent);
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
     const agentBalance = await token.balanceOf(agent);
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     const expectedPayout = payout.muln(92).divn(100).add(agentBond);
     assert.equal(
       agentBalance.sub(agentBefore).toString(),
@@ -181,6 +185,8 @@ contract("AGIJobManager security regressions", (accounts) => {
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-disputed-complete", { from: agent });
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobId, { from: employer });
 
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
@@ -202,6 +208,8 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-disputed-late", { from: agent });
 
     await time.increase(2);
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobId, { from: employer });
     await manager.resolveDispute(jobId, "agent win", { from: moderator });
 
@@ -220,6 +228,8 @@ contract("AGIJobManager security regressions", (accounts) => {
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-paused-dispute", { from: agent });
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobId, { from: employer });
 
     await manager.pause({ from: owner });
@@ -274,6 +284,8 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
     await expectCustomError(manager.disputeJob.call(jobId, { from: other }), "NotAuthorized");
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobId, { from: employer });
     await expectCustomError(manager.disputeJob.call(jobId, { from: employer }), "InvalidState");
     await expectCustomError(

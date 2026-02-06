@@ -8,7 +8,7 @@ const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond, computeDisputeBond } = require("./helpers/bonds");
 
 const ZERO_BYTES32 = "0x" + "0".repeat(64);
 const EMPTY_PROOF = [];
@@ -185,7 +185,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     const validatorPayout = totalValidatorPayout.divn(3);
     const agentPayout = payout.muln(92).divn(100);
 
-    const agentBond = await computeAgentBond(manager, payout);
+    const agentBond = await computeAgentBond(manager, payout, toBN(duration));
     assert.equal(
       (await token.balanceOf(agent)).sub(agentBefore).toString(),
       agentPayout.add(agentBond).toString()
@@ -336,6 +336,8 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
 
     await manager.applyForJob(jobId, subdomains.agent, EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.approve(manager.address, disputeBond, { from: employer });
     await manager.disputeJob(jobId, { from: employer });
 
     const beforeTokenId = await manager.nextTokenId();
