@@ -119,8 +119,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
      *      thresholds are met, a short challenge window prevents instant settlement. When validators
      *      participate and the employer wins, the refund is reduced by the validator reward pool.
      */
-    uint256 public validatorBondBps = 1000;
-    uint256 public validatorBondMin = 5e18;
+    uint256 public validatorBondBps = 1500;
+    uint256 public validatorBondMin = 10e18;
     uint256 public validatorBondMax = 4888e18;
     uint256 public validatorSlashBps = 10_000;
     uint256 public challengePeriodAfterApproval = 1 days;
@@ -359,6 +359,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _computeAgentBond(uint256 payout) internal pure returns (uint256 bond) {
+        if (AGENT_BOND_BPS == 0 && AGENT_BOND_MIN == 0 && AGENT_BOND_MAX == 0) {
+            return 0;
+        }
         unchecked {
             bond = (payout * AGENT_BOND_BPS) / 10_000;
         }
@@ -697,8 +700,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setValidatorBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
-        if (!(bps == 0 && min == 0 && max == 0)) {
-            if (max == 0) revert InvalidParameters();
+        if (bps == 0 && min == 0) {
+            if (max != 0) revert InvalidParameters();
+        } else if (max == 0 || (bps > 0 && min == 0)) {
+            revert InvalidParameters();
         }
         validatorBondBps = bps;
         validatorBondMin = min;
@@ -898,14 +903,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
         _t(job.assignedAgent, agentPayout);
 
-        _settleValidators(_jobId, job, true, reputationPoints, escrowValidatorReward);
+        _settleValidators(job, true, reputationPoints, escrowValidatorReward);
         _mintCompletionNFT(job);
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
     }
 
     function _settleValidators(
-        uint256 jobId,
         Job storage job,
         bool agentWins,
         uint256 reputationPoints,
@@ -957,7 +961,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             remainder = poolForCorrect - (perCorrectReward * correctCount);
         }
         _t(agentWins ? job.assignedAgent : job.employer, remainder);
-        emit ValidatorsSettled(jobId, agentWins, correctCount, escrowValidatorReward, totalSlashed);
     }
 
     function _mintCompletionNFT(Job storage job) internal {
@@ -996,7 +999,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             : 0;
         uint256 employerRefund = escrowValidatorReward > 0 ? job.payout - escrowValidatorReward : job.payout;
         uint256 reputationPoints = _computeReputationPoints(job);
-        _settleValidators(jobId, job, false, reputationPoints, escrowValidatorReward);
+        _settleValidators(job, false, reputationPoints, escrowValidatorReward);
         _t(job.employer, employerRefund);
     }
 

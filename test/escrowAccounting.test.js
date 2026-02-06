@@ -75,6 +75,9 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const withdrawable = await manager.withdrawableAGI();
     assert.equal(withdrawable.toString(), "0", "withdrawable should exclude escrow");
 
+    await manager.pause({ from: owner });
+    await expectRevert.unspecified(manager.withdrawAGI(payout, { from: owner }));
+
   });
 
   it("allows withdrawing surplus only", async () => {
