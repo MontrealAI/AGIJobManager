@@ -106,7 +106,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public requiredValidatorDisapprovals = 3;
     uint256 public premiumReputationThreshold = 10000;
     uint256 public validationRewardPercentage = 8;
-    uint256 public maxJobPayout = 4888e18;
+    uint256 public maxJobPayout = 88888888e18;
     uint256 public jobDurationLimit = 10000000;
     uint256 public completionReviewPeriod = 7 days;
     uint256 public disputeReviewPeriod = 14 days;
