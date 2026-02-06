@@ -359,6 +359,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _computeAgentBond(uint256 payout) internal pure returns (uint256 bond) {
+        if (AGENT_BOND_BPS == 0 && AGENT_BOND_MIN == 0 && AGENT_BOND_MAX == 0) {
+            return 0;
+        }
         unchecked {
             bond = (payout * AGENT_BOND_BPS) / 10_000;
         }
@@ -698,7 +701,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
         if (!(bps == 0 && min == 0 && max == 0)) {
-            if (max == 0) revert InvalidParameters();
+            if (max == 0 || min == 0) revert InvalidParameters();
         }
         validatorBondBps = bps;
         validatorBondMin = min;
