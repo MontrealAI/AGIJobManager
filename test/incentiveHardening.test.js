@@ -311,4 +311,69 @@ contract("AGIJobManager incentive hardening", (accounts) => {
       "InvalidParameters"
     );
   });
+
+  it("enforces active job caps and releases slots on terminal outcomes", async () => {
+    const payout = toBN(toWei("2"));
+    const maxActive = 3;
+    const totalJobs = maxActive + 1;
+    await token.mint(employer, payout.muln(totalJobs + 3), { from: owner });
+    await token.approve(manager.address, payout.muln(totalJobs + 3), { from: employer });
+
+    const jobIds = [];
+    for (let i = 0; i < totalJobs; i += 1) {
+      const jobId = (await manager.createJob(`ipfs-cap-${i}`, payout, 100, "details", { from: employer }))
+        .logs[0]
+        .args
+        .jobId
+        .toNumber();
+      jobIds.push(jobId);
+    }
+
+    for (let i = 0; i < maxActive; i += 1) {
+      await manager.applyForJob(jobIds[i], `agent-${i}`, EMPTY_PROOF, { from: agentFast });
+    }
+
+    await expectCustomError(
+      manager.applyForJob.call(jobIds[maxActive], "agent-over", EMPTY_PROOF, { from: agentFast }),
+      "InvalidState"
+    );
+
+    await manager.requestJobCompletion(jobIds[0], "ipfs-cap-complete", { from: agentFast });
+    await time.increase(2);
+    await manager.finalizeJob(jobIds[0], { from: employer });
+
+    await manager.applyForJob(jobIds[maxActive], "agent-over", EMPTY_PROOF, { from: agentFast });
+
+    await manager.requestJobCompletion(jobIds[1], "ipfs-cap-complete-2", { from: agentFast });
+    await time.increase(2);
+    await manager.finalizeJob(jobIds[1], { from: employer });
+
+    const expiryJob = (await manager.createJob("ipfs-expire-cap", payout, 1, "details", { from: employer }))
+      .logs[0]
+      .args
+      .jobId
+      .toNumber();
+    await manager.applyForJob(expiryJob, "agent-expire", EMPTY_PROOF, { from: agentFast });
+    await time.increase(2);
+    await manager.expireJob(expiryJob, { from: employer });
+
+    const refundJob = (await manager.createJob("ipfs-refund-cap", payout, 100, "details", { from: employer }))
+      .logs[0]
+      .args
+      .jobId
+      .toNumber();
+    await manager.applyForJob(refundJob, "agent-refund", EMPTY_PROOF, { from: agentFast });
+    await manager.requestJobCompletion(refundJob, "ipfs-refund-complete", { from: agentFast });
+    await manager.disapproveJob(refundJob, "validator", EMPTY_PROOF, { from: validator });
+    await time.increase(2);
+    await time.increase(101);
+    await manager.finalizeJob(refundJob, { from: employer });
+
+    const newJob = (await manager.createJob("ipfs-new-cap", payout, 100, "details", { from: employer }))
+      .logs[0]
+      .args
+      .jobId
+      .toNumber();
+    await manager.applyForJob(newJob, "agent-new", EMPTY_PROOF, { from: agentFast });
+  });
 });
