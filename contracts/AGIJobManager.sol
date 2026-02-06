@@ -356,7 +356,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             lockedDisputeBonds -= bond;
         }
         if (initiator == address(0)) return;
-        _t(agentWon ? job.assignedAgent : job.employer, bond);
+        address winner = agentWon ? job.assignedAgent : job.employer;
+        _t(winner, bond);
     }
 
     function _validateValidatorThresholds(uint256 approvals, uint256 disapprovals) internal pure {
@@ -1058,7 +1059,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ? job.completionRequestedAt - job.assignedAt
             : 0;
         unchecked {
-            uint256 payoutUnits = job.payout / 1e16;
+            uint256 payoutUnits = job.payout / 1e15;
             uint256 timeBonus;
             if (job.duration > completionTime) {
                 timeBonus = (job.duration - completionTime) / 10000;
