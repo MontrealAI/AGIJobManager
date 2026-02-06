@@ -20,7 +20,7 @@
     "@openzeppelin/test-helpers": "^0.5.16",
     "@playwright/test": "^1.49.1",
     "@truffle/hdwallet-provider": "^2.1.15",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "ganache": "^7.9.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.6.0",
