@@ -9,7 +9,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundAgents } = require("./helpers/bonds");
+const { fundAgents, computeDisputeBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -50,8 +50,15 @@ contract("AGIJobManager jobStatus", (accounts) => {
     await fundAgents(token, manager, [agent], owner);
   });
 
+  async function fundEmployerDisputeBond(payout) {
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.mint(employer, disputeBond, { from: owner });
+    await token.approve(manager.address, disputeBond, { from: employer });
+    return disputeBond;
+  }
+
   it("tracks canonical job lifecycle flags", async () => {
-    const payout = toWei("5");
+    const payout = web3.utils.toBN(toWei("5"));
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -72,6 +79,7 @@ contract("AGIJobManager jobStatus", (accounts) => {
     jobValidation = await manager.getJobValidation(jobId);
     assert.strictEqual(jobValidation.completionRequested, true, "completion request should be recorded");
 
+    await fundEmployerDisputeBond(payout);
     await manager.disputeJob(jobId, { from: employer });
     job = await manager.getJobCore(jobId);
     assert.strictEqual(job.disputed, true, "disputed job should be flagged");

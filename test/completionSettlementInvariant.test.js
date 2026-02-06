@@ -8,7 +8,7 @@ const MockERC721 = artifacts.require("MockERC721");
 
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents } = require("./helpers/bonds");
+const { fundValidators, fundAgents, computeDisputeBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -93,10 +93,18 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     return tx.logs.find((log) => log.event === "JobCreated").args.jobId.toNumber();
   }
 
+  async function fundEmployerDisputeBond(payout) {
+    const disputeBond = await computeDisputeBond(manager, payout);
+    await token.mint(employer, disputeBond, { from: owner });
+    await token.approve(manager.address, disputeBond, { from: employer });
+    return disputeBond;
+  }
+
   async function setupDisputedJob(payout) {
     const jobId = await createJob(payout);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await fundEmployerDisputeBond(payout);
     await manager.disputeJob(jobId, { from: employer });
     return jobId;
   }
