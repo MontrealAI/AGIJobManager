@@ -680,6 +680,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_newEnsRegistry == address(0)) revert InvalidParameters();
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         ens = ENS(_newEnsRegistry);
+        emit EnsRegistryUpdated(_newEnsRegistry);
     }
     function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable {
         if (_newNameWrapper == address(0)) revert InvalidParameters();
