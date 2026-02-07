@@ -35,7 +35,13 @@
 **Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
 
 ## Incentives & game theory
-AGIJobManager is optimized for a **business‑run escrow** with a **permissioned validator club** and **moderator backstop**—not a trustless court. “Optimal” here means **liveness**, **priced deviations**, **predictable validator turnout**, and **cheap operations** within that trust model. The full incentive map, deviation strategies, and operator playbooks live in [`docs/game-theory.md`](docs/game-theory.md). Validators should review the vote‑window and evidence expectations; operators should review the parameter‑tuning and off‑chain governance sections before production use.
+AGIJobManager is optimized for a **business‑run escrow** with a **permissioned validator club** and a **trusted moderator/owner backstop**—not a trustless court.
+“Optimal” here means **liveness**, **priced deviations**, **predictable validator turnout**, and **cheap operations** under that explicit trust model.
+Validators opt‑in **per job** by voting within `completionReviewPeriod`; disputes freeze voting and rely on moderators.
+For the full incentive map, deviation strategies, and parameter playbooks, see
+[`docs/game-theory.md`](docs/game-theory.md).
+Validators should review the 10‑minute workflow in [`docs/validators.md`](docs/validators.md);
+operators should review parameter‑tuning and off‑chain governance before production use.
 
 ## NFT trading
 

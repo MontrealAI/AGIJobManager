@@ -48,6 +48,7 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 - **Employer**: [`roles/EMPLOYER.md`](roles/EMPLOYER.md)
 - **Agent**: [`roles/AGENT.md`](roles/AGENT.md)
 - **Validator**: [`roles/VALIDATOR.md`](roles/VALIDATOR.md)
+- **Validators (10‑minute workflow + incentives)**: [`validators.md`](validators.md)
 - **Validator guide (15‑minute workflow)**: [`validator-guide.md`](validator-guide.md)
 - **Moderator**: [`roles/MODERATOR.md`](roles/MODERATOR.md)
 - **Owner/Operator**: [`roles/OWNER_OPERATOR.md`](roles/OWNER_OPERATOR.md)
