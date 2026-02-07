@@ -25,7 +25,7 @@ These functions are guarded by `whenIdentityConfigurable` and **revert** once th
 These are considered **break-glass** or operational safety controls and remain available after the lock:
 
 - `pause()` / `unpause()` — incident response.
-- `resolveStaleDispute()` — owner-only recovery **while paused**, after the dispute timeout.
+- `resolveStaleDispute()` — owner-only recovery after the dispute timeout (pause optional).
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
 - `withdrawAGI()` — surplus withdrawals while paused (escrow is always reserved).
 

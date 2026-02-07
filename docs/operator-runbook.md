@@ -47,8 +47,8 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 1. Review `JobDisputed` events and age.
 2. Prioritize by `disputedAt` and payout size.
 3. Resolve with `resolveDisputeWithCode` when evidence is sufficient.
-4. Use `resolveStaleDispute` only after the dispute review period and **while
-   paused**, per contract requirements.
+4. Use `resolveStaleDispute` only after the dispute review period (owner‑only;
+   pausing is optional but often used for incident response).
 
 ## Monitoring checklist
 

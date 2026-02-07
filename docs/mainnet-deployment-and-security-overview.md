@@ -46,13 +46,13 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 1. After completion request, validators disapprove or employer/agent calls `disputeJob`.
 2. Dispute becomes active (`disputed = true`, `disputedAt` set) and validator voting is frozen.
 3. Moderator resolves via `resolveDisputeWithCode` (agent win or employer win) or leaves it active with `NO_ACTION`.
-4. If the dispute times out and the contract is paused, the owner may use `resolveStaleDispute`.
+4. If the dispute times out, the owner may use `resolveStaleDispute` (pause optional).
 
 **Timeouts & liveness**
 - **Expiration**: `expireJob` refunds the employer when the job duration elapses and completion was never requested.
 - **Finalize after review window**: `finalizeJob` settles after `completionReviewPeriod` when validators are silent or split. If no validators voted, only the employer can call finalize after the review window.
 - **Validator approval + challenge window**: once `validatorApprovals` reaches `requiredValidatorApprovals`, the job becomes `validatorApproved` and can be finalized after `challengePeriodAfterApproval` if approvals still exceed disapprovals.
-- **Stale dispute recovery**: `resolveStaleDispute` is owner‑only and **paused‑only**, after `disputeReviewPeriod`.
+- **Stale dispute recovery**: `resolveStaleDispute` is owner‑only after `disputeReviewPeriod` (pause optional; often used during incident response).
 
 ## 4) Treasury vs escrow separation (hard invariant)
 **Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Bonds** are tracked by `lockedAgentBonds` and `lockedValidatorBonds`. **Treasury** is the AGI balance minus escrow and locked bonds.
@@ -124,7 +124,7 @@ Pause is an incident‑response control to halt new activity while preserving ex
 - `resolveDisputeWithCode`
 - `delistJob`
 - `withdrawAGI` (owner‑only, **paused‑only**)
-- `resolveStaleDispute` (owner‑only, **paused‑only**)
+- `resolveStaleDispute` (owner‑only after `disputeReviewPeriod`; pause optional)
 
 ## 7) Security posture (operational highlights)
 - **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `withdrawAGI`, dispute resolution, settlement).

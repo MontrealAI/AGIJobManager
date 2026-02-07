@@ -54,7 +54,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - When paused:
   - Most job actions are blocked (`createJob`, `applyForJob`, validation, disputes).
   - `requestJobCompletion` remains available for assigned agents so completion metadata can be submitted even during a brief pause.
-  - `resolveStaleDispute` and `withdrawAGI` require the contract to be paused.
+  - `withdrawAGI` requires the contract to be paused; `resolveStaleDispute` is owner‑only after `disputeReviewPeriod` (pause optional, but often used for incident recovery).
 
 ### Managing allowlists
 - **Merkle roots** are stored on‑chain and can be updated by the owner via `updateMerkleRoots`. Treat updates as governance events with audit logs.
@@ -98,4 +98,4 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 ## Upgrade & recovery notes
 
 - There is no upgradability pattern; any new version requires a new deployment.
-- If a dispute becomes stale (no moderator action within `disputeReviewPeriod`), the owner can call `resolveStaleDispute` (no pause required).
+- If a dispute becomes stale (no moderator action within `disputeReviewPeriod`), the owner can call `resolveStaleDispute` (pause optional).
