@@ -104,6 +104,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
+    uint256 public voteQuorum = 3;
     uint256 public premiumReputationThreshold = 10000;
     uint256 public validationRewardPercentage = 8;
     uint256 public maxJobPayout = 88888888e18;
@@ -626,8 +627,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function resolveStaleDispute(uint256 _jobId, bool employerWins) external onlyOwner nonReentrant {
         Job storage job = _job(_jobId);
-        if (!job.disputed || job.expired) revert InvalidState();
-        if (job.disputedAt == 0) revert InvalidState();
+        if (!job.disputed || job.expired || job.disputedAt == 0) revert InvalidState();
         if (block.timestamp <= job.disputedAt + disputeReviewPeriod) revert InvalidState();
 
         job.disputed = false;
@@ -702,6 +702,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
         _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
         requiredValidatorDisapprovals = _disapprovals;
+    }
+    function setVoteQuorum(uint256 q) external onlyOwner {
+        if (q == 0 || q > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
+        voteQuorum = q;
     }
     function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner { maxJobPayout = _maxPayout; }
@@ -864,8 +868,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function expireJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
-        if (job.completed || job.expired || job.disputed || job.completionRequested) revert InvalidState();
-        if (job.assignedAgent == address(0)) revert InvalidState();
+        if (
+            job.completed
+            || job.expired
+            || job.disputed
+            || job.completionRequested
+            || job.assignedAgent == address(0)
+        ) {
+            revert InvalidState();
+        }
         if (block.timestamp <= job.assignedAt + job.duration) revert InvalidState();
 
         job.expired = true;
@@ -881,12 +892,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
         bool repEligible = job.validators.length != 0;
-        if (job.completed || job.expired || job.disputed) revert InvalidState();
-        if (!job.completionRequested) revert InvalidState();
-        uint256 quorum = requiredValidatorApprovals;
-        if (quorum == 0 || (requiredValidatorDisapprovals != 0 && requiredValidatorDisapprovals < quorum)) {
-            quorum = requiredValidatorDisapprovals;
-        }
+        if (job.completed || job.expired || job.disputed || !job.completionRequested) revert InvalidState();
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (approvals > disapprovals) {
@@ -904,7 +910,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (totalVotes == 0) {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
             _completeJob(_jobId, repEligible);
-        } else if (totalVotes < quorum || approvals == disapprovals) {
+        } else if (totalVotes < voteQuorum || approvals == disapprovals) {
             job.disputed = true;
             if (job.disputedAt == 0) {
                 job.disputedAt = block.timestamp;
@@ -921,8 +927,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _completeJob(uint256 _jobId, bool repEligible) internal {
         Job storage job = _job(_jobId);
-        if (job.completed || job.expired) revert InvalidState();
-        if (job.disputed) revert InvalidState();
+        if (job.completed || job.expired || job.disputed) revert InvalidState();
         if (job.assignedAgent == address(0)) revert InvalidState();
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
