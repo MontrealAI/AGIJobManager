@@ -65,6 +65,16 @@ interface NameWrapper {
     function ownerOf(uint256 id) external view returns (address);
 }
 
+interface IENSJobPages {
+    function handleHook(
+        uint8 hook,
+        uint256 jobId,
+        address employer,
+        address agent,
+        bool burnFuses
+    ) external;
+}
+
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
@@ -93,9 +103,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         EMPLOYER_WIN
     }
 
-    // Pre-hashed resolution strings (smaller + cheaper than hashing literals each call)
-    bytes32 private constant RES_AGENT_WIN = 0x6594a8dd3f558fd2dd11fa44c7925f5b9e19868e6d0b4b97d2132fe5e25b5071;
-    bytes32 private constant RES_EMPLOYER_WIN = 0xee31e9f396a85b8517c6d07b02f904858ad9f3456521bedcff02cc14e75ca8ce;
 
     IERC20 public agiToken;
     string private baseIpfsUrl;
@@ -159,6 +166,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     NameWrapper public nameWrapper;
     /// @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
+    address public ensJobPages;
 
     struct Job {
         address employer;
@@ -215,7 +223,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event JobCompleted(uint256 jobId, address agent, uint256 reputationPoints);
     event ReputationUpdated(address user, uint256 newReputation);
     event JobCancelled(uint256 jobId);
-    event DisputeResolved(uint256 jobId, address resolver, string resolution);
     event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason);
     event JobDisputed(uint256 jobId, address disputant);
     event JobExpired(uint256 jobId, address employer, address agent, uint256 payout);
@@ -445,6 +452,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             lockedEscrow += _payout;
         }
         emit JobCreated(jobId, _jobSpecURI, _payout, _duration, _details);
+        _callEnsJobPagesHook(1, jobId, msg.sender, address(0), false);
     }
 
     function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
@@ -468,6 +476,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             activeJobsByAgent[msg.sender]++;
         }
         emit JobApplied(_jobId, msg.sender);
+        _callEnsJobPagesHook(2, _jobId, address(0), msg.sender, false);
     }
 
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
@@ -575,19 +584,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit JobDisputed(_jobId, msg.sender);
     }
 
-    /// @notice Deprecated: use resolveDisputeWithCode for typed settlement.
-    /// @dev Non-canonical strings map to NO_ACTION (dispute remains active).
-    function resolveDispute(uint256 _jobId, string calldata resolution) external onlyModerator nonReentrant {
-        uint8 resolutionCode = uint8(DisputeResolutionCode.NO_ACTION);
-        bytes32 r = keccak256(bytes(resolution));
-        if (r == RES_AGENT_WIN) {
-            resolutionCode = uint8(DisputeResolutionCode.AGENT_WIN);
-        } else if (r == RES_EMPLOYER_WIN) {
-            resolutionCode = uint8(DisputeResolutionCode.EMPLOYER_WIN);
-        }
-        _resolveDispute(_jobId, resolutionCode, resolution);
-    }
-
     /// @notice Resolve a dispute with a typed action code and freeform reason.
     function resolveDisputeWithCode(
         uint256 _jobId,
@@ -612,15 +608,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
             _completeJob(_jobId, true);
         } else if (resolutionCode == uint8(DisputeResolutionCode.EMPLOYER_WIN)) {
-            _refundEmployer(job);
+            _refundEmployer(_jobId, job);
         } else {
             revert InvalidParameters();
         }
 
-        string memory legacyResolution = resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)
-            ? "agent win"
-            : "employer win";
-        emit DisputeResolved(_jobId, msg.sender, legacyResolution);
         emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
     }
 
@@ -633,7 +625,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.disputed = false;
         job.disputedAt = 0;
         if (employerWins) {
-            _refundEmployer(job);
+            _refundEmployer(_jobId, job);
         } else {
             _completeJob(_jobId, true);
         }
@@ -653,6 +645,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.completed || job.assignedAgent != address(0)) revert InvalidState();
         _releaseEscrow(job);
         _t(job.employer, job.payout);
+        _callEnsJobPagesHook(3, _jobId, job.employer, job.assignedAgent, false);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
     }
@@ -675,6 +668,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         nameWrapper = NameWrapper(_newNameWrapper);
         emit NameWrapperUpdated(_newNameWrapper);
+    }
+    function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
+        ensJobPages = _ensJobPages;
     }
     function updateRootNodes(
         bytes32 _clubRootNode,
@@ -858,6 +854,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.completed || job.assignedAgent != address(0)) revert InvalidState();
         _releaseEscrow(job);
         _t(job.employer, job.payout);
+        _callEnsJobPagesHook(3, _jobId, job.employer, job.assignedAgent, false);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
     }
@@ -874,6 +871,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _settleAgentBond(job, false, false);
         _t(job.employer, job.payout);
         emit JobExpired(_jobId, job.employer, job.assignedAgent, job.payout);
+        _callEnsJobPagesHook(3, _jobId, job.employer, job.assignedAgent, false);
     }
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
@@ -910,7 +908,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         } else if (approvals > disapprovals) {
             _completeJob(_jobId, true);
         } else {
-            _refundEmployer(job);
+            _refundEmployer(_jobId, job);
         }
 
     }
@@ -950,6 +948,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _settleDisputeBond(job, true);
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
+        _callEnsJobPagesHook(3, _jobId, job.employer, job.assignedAgent, false);
     }
 
     function _settleValidators(
@@ -1027,7 +1026,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
     }
 
-    function _refundEmployer(Job storage job) internal {
+    function _refundEmployer(uint256 _jobId, Job storage job) internal {
         job.completed = true;
         job.disputed = false;
         _decrementActiveJob(job);
@@ -1044,6 +1043,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _settleValidators(job, false, reputationPoints, escrowValidatorReward, agentBondPool);
         _t(job.employer, employerRefund);
         _settleDisputeBond(job, false);
+        _callEnsJobPagesHook(3, _jobId, job.employer, job.assignedAgent, false);
     }
 
     function _computeReputationPoints(
@@ -1222,5 +1222,27 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
         }
         return highestPercentage;
+    }
+
+    function _callEnsJobPagesHook(
+        uint8 hook,
+        uint256 jobId,
+        address employer,
+        address agent,
+        bool burnFuses
+    ) internal {
+        if (ensJobPages == address(0)) return;
+        bytes4 selector = IENSJobPages.handleHook.selector;
+        address target = ensJobPages;
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, shl(224, selector))
+            mstore(add(ptr, 4), hook)
+            mstore(add(ptr, 36), jobId)
+            mstore(add(ptr, 68), employer)
+            mstore(add(ptr, 100), agent)
+            mstore(add(ptr, 132), burnFuses)
+            pop(call(gas(), target, 0, ptr, 164, 0, 0))
+        }
     }
 }
