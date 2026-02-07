@@ -139,7 +139,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 - **Validator bond**: each validator vote transfers a bond (computed from `validatorBondBps`, `validatorBondMin`, `validatorBondMax`) and increments `lockedValidatorBonds`. Correct validators earn rewards; incorrect validators are slashed by `validatorSlashBps`.
 - **Dispute bond**: `disputeJob` transfers a bond based on `DISPUTE_BOND_BPS` with min/max caps. The bond is paid to the winner on resolution.
 - **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPct / 100`, where `agentPayoutPct` is snapshotted on `applyForJob` based on the highest `AGIType` NFT percentage the agent holds.
-- **Validator payout**: on completion, validators split `job.payout * validationRewardPercentage / 100` plus any pooled bond amounts, **only if** there is at least one validator. If no validators, the validator budget is returned to the employer.
+- **Validator payout**: on completion, validators on the **winning side** split `job.payout * validationRewardPercentage / 100` plus any pooled bond amounts. Incorrect‑side validators only receive their bond minus slashing, and do not share the reward pool. If no validators, the validator budget is returned to the employer.
 - **Refunds**:
   - `cancelJob`/`delistJob` return the full escrow to the employer if no agent was assigned.
   - `expireJob` returns escrow after duration ends with no completion request and slashes the agent bond to the employer.
