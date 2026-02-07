@@ -656,6 +656,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function blacklistValidator(address _validator, bool _status) external onlyOwner {
         blacklistedValidators[_validator] = _status;
+        emit ValidatorBlacklisted(_validator, _status);
     }
 
     function delistJob(uint256 _jobId) external onlyOwner {
