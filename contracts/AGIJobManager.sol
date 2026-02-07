@@ -248,6 +248,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_REVOKE = 4;
     uint8 private constant ENS_HOOK_LOCK = 5;
     bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
+    bytes4 private constant ENS_LOCK_SELECTOR = bytes4(keccak256("lockJobENS(uint256,address,address,bool)"));
 
     constructor(
         address agiTokenAddress,
@@ -883,8 +884,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function lockJobENS(uint256 jobId, bool burnFuses) external onlyOwner nonReentrant {
-        burnFuses;
-        _callEnsJobPagesHook(ENS_HOOK_LOCK, jobId);
+        Job storage job = _job(jobId);
+        _callEnsJobPagesLock(jobId, job.employer, job.assignedAgent, burnFuses);
     }
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
@@ -1115,6 +1116,22 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             mstore(add(ptr, 0x04), hook)
             mstore(add(ptr, 0x24), jobId)
             ok := call(gas(), target, 0, ptr, 0x44, 0, 0)
+        }
+    }
+
+    function _callEnsJobPagesLock(uint256 jobId, address employer, address agent, bool burnFuses) internal {
+        address target = ensJobPages;
+        if (target == address(0)) return;
+        bool ok;
+        bytes4 selector = ENS_LOCK_SELECTOR;
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, selector)
+            mstore(add(ptr, 0x04), jobId)
+            mstore(add(ptr, 0x24), employer)
+            mstore(add(ptr, 0x44), agent)
+            mstore(add(ptr, 0x64), burnFuses)
+            ok := call(gas(), target, 0, ptr, 0x84, 0, 0)
         }
     }
 
