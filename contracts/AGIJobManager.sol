@@ -881,14 +881,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
         uint256 quorum = requiredValidatorApprovals;
-        if (job.completed || job.expired || job.disputed) revert InvalidState();
-        if (!job.completionRequested) revert InvalidState();
+        if (job.completed || job.expired || job.disputed || !job.completionRequested) {
+            revert InvalidState();
+        }
         if (requiredValidatorDisapprovals != 0
             && (quorum == 0 || requiredValidatorDisapprovals < quorum)
         ) {
             quorum = requiredValidatorDisapprovals;
         }
-        if (quorum < 3 && (requiredValidatorApprovals != 0 || requiredValidatorDisapprovals != 0)) {
+        if (quorum < 3 && (requiredValidatorApprovals | requiredValidatorDisapprovals) != 0) {
             quorum = 3;
         }
         if (job.validatorApproved) {
