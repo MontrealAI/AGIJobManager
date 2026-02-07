@@ -244,6 +244,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     uint8 private constant ENS_HOOK_CREATE = 1;
     uint8 private constant ENS_HOOK_ASSIGN = 2;
+    uint8 private constant ENS_HOOK_COMPLETION = 3;
     uint8 private constant ENS_HOOK_REVOKE = 4;
     uint8 private constant ENS_HOOK_LOCK = 5;
     bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
@@ -490,6 +491,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.completionRequested = true;
         job.completionRequestedAt = block.timestamp;
         emit JobCompletionRequested(_jobId, msg.sender, _jobCompletionURI);
+        _callEnsJobPagesHook(ENS_HOOK_COMPLETION, _jobId);
     }
 
     function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {

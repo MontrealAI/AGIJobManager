@@ -62,6 +62,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     assert.equal((await ensJobPages.assignCalls()).toString(), "1");
 
     await manager.requestJobCompletion(0, "ipfs://completion.json", { from: agent });
+    assert.equal((await ensJobPages.completionCalls()).toString(), "1");
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
