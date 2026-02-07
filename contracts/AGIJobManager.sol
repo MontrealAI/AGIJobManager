@@ -882,7 +882,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _tryENSRevoke(_jobId);
     }
 
-    function lockJobENS(uint256 jobId, bool burnFuses) external nonReentrant {
+    function lockJobENS(uint256 jobId, bool burnFuses) external onlyOwner nonReentrant {
         burnFuses;
         _callEnsJobPagesHook(ENS_HOOK_LOCK, jobId);
     }
