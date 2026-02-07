@@ -3,7 +3,7 @@
 This short guide helps permissioned validators review and vote on a job.
 
 ## 1) Confirm you are eligible
-Validators must be allowlisted or hold a valid ENS identity per the platform’s rules. If you are unsure, ask the operator for your allowlist status or ENS namespace.
+Validators must be allowlisted **or** hold a valid ENS identity in the platform’s validator namespace (the “ENS club”). If you are unsure, ask the operator for your allowlist status or ENS namespace.
 
 ## 2) Gather the evidence
 Use the job’s ENS page (if available) or the on‑chain `jobSpecURI` and `jobCompletionURI`:

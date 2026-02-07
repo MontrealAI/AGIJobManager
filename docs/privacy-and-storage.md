@@ -55,3 +55,8 @@ ENS text records are public and indexed. **Never store secrets** in `text:` reco
    - Users get the easiest flow, at the cost of centralization.
 
 > **No free pinning**: someone pays for storage. Choose who funds it and document that choice.
+
+## Quick decision guide
+- **Privacy‑sensitive employer** → public receipt + private artifacts.
+- **Open/public bounty** → public‑by‑default.
+- **Non‑technical or enterprise** → managed storage.
