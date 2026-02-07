@@ -3,6 +3,7 @@ function buildInitConfig(
   baseIpfsUrl,
   ens,
   nameWrapper,
+  ensJobPages,
   clubRootNode,
   agentRootNode,
   alphaClubRootNode,
@@ -10,10 +11,19 @@ function buildInitConfig(
   validatorMerkleRoot,
   agentMerkleRoot,
 ) {
+  if (agentMerkleRoot === undefined) {
+    agentMerkleRoot = validatorMerkleRoot;
+    validatorMerkleRoot = alphaAgentRootNode;
+    alphaAgentRootNode = alphaClubRootNode;
+    alphaClubRootNode = agentRootNode;
+    agentRootNode = clubRootNode;
+    clubRootNode = ensJobPages;
+    ensJobPages = "0x0000000000000000000000000000000000000000";
+  }
   return [
     token,
     baseIpfsUrl,
-    [ens, nameWrapper],
+    [ens, nameWrapper, ensJobPages],
     [clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode],
     [validatorMerkleRoot, agentMerkleRoot],
   ];

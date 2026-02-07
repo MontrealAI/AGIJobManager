@@ -6,6 +6,7 @@ const MockResolver = artifacts.require("MockResolver");
 
 const {
   ZERO_ROOT,
+  ZERO_ADDRESS,
   DEFAULT_IPFS_BASE,
   buildInitConfig,
   resolveDeployConfig,
@@ -36,6 +37,7 @@ module.exports = async function (deployer, network, accounts) {
         DEFAULT_IPFS_BASE,
         ens.address,
         nameWrapper.address,
+        ZERO_ADDRESS,
         ZERO_ROOT,
         ZERO_ROOT,
         ZERO_ROOT,
@@ -56,6 +58,7 @@ module.exports = async function (deployer, network, accounts) {
     baseIpfsUrl,
     ensAddress,
     nameWrapperAddress,
+    ensJobPagesAddress,
     clubRootNode,
     agentRootNode,
     alphaClubRootNode,
@@ -72,6 +75,7 @@ module.exports = async function (deployer, network, accounts) {
       baseIpfsUrl,
       ensAddress,
       nameWrapperAddress,
+      ensJobPagesAddress,
       clubRootNode,
       agentRootNode,
       alphaClubRootNode,
@@ -91,6 +95,7 @@ module.exports = async function (deployer, network, accounts) {
   console.log(`- token: ${tokenAddress}`);
   console.log(`- ENS registry: ${ensAddress}`);
   console.log(`- NameWrapper: ${nameWrapperAddress}`);
+  console.log(`- ENS job pages: ${ensJobPagesAddress}`);
   console.log(`- club root: ${clubRootNode}`);
   console.log(`- alpha club root: ${alphaClubRootNode}`);
   console.log(`- agent root: ${agentRootNode}`);
