@@ -64,6 +64,10 @@ AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other ma
 - **Docs index**: [`docs/README.md`](docs/README.md)
 - **Local test status**: [`docs/test-status.md`](docs/test-status.md)
 
+## ENS job pages (ALPHA)
+
+AGIJobManager can be paired with the **ENSJobPages** helper to publish **official ENS job pages** under `job-<jobId>.alpha.jobs.agi.eth`, owned by the platform with delegated resolver write access for employers + assigned agents. See [`docs/ens-job-pages.md`](docs/ens-job-pages.md) for naming, record keys, and operational notes.
+
 ## MONTREAL.AI × ERC‑8004: From signaling → enforcement
 
 **ERC‑8004** standardizes *trust signals* (identity, reputation, validation outcomes) for off-chain publication and indexing. **AGIJobManager** enforces *settlement* (escrow, payouts, dispute resolution, reputation updates) on-chain.
