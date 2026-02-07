@@ -66,7 +66,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
   - `blacklistValidator`
 
 ### Managing ENS wiring and identity lock
-- ENS wiring functions (`updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`) are only available while `lockIdentityConfig` is false **and** only before any jobs exist (`nextJobId == 0`) with zero escrow (`lockedEscrow == 0`).
+- ENS wiring functions (`updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`) are only available while `lockIdentityConfig` is false **and** only before any jobs exist (`nextJobId == 0`) with zero escrow (`lockedEscrow == 0`). If either guard fails, the call reverts with `InvalidState` even if identity configuration is still unlocked.
 - `lockIdentityConfiguration()` permanently disables those wiring updates by setting `lockIdentityConfig = true` and emits `IdentityConfigurationLocked`.
 - `updateMerkleRoots` remains available after the lock and is the primary mechanism for allowlist rotation.
 
