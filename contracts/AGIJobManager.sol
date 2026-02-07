@@ -900,6 +900,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
             _completeJob(_jobId, false);
         } else if (totalVotes < voteQuorum || approvals == disapprovals) {
+            // Under-quorum or tie at/over quorum: force dispute to avoid low-participation outcomes.
             job.disputed = true;
             if (job.disputedAt == 0) {
                 job.disputedAt = block.timestamp;
@@ -940,6 +941,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _t(job.assignedAgent, agentPayout);
 
         if (job.validators.length == 0) {
+            // No validators participated: rebate the validator budget to the employer.
             _t(job.employer, validatorBudget);
         } else {
             _settleValidators(job, true, reputationPoints, validatorBudget, 0);
