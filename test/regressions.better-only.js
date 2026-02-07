@@ -129,7 +129,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await token.mint(original.address, payout, { from: owner });
     await original.validateJob(originalJobId, "validator", EMPTY_PROOF, { from: validator });
     assert.equal((await original.nextTokenId()).toNumber(), 1, "original should mint once after validation");
-    await original.resolveDispute(originalJobId, "agent win", { from: moderator });
+    await original.resolveDisputeWithCode(originalJobId, 1, "agent win", { from: moderator });
     assert.equal((await original.nextTokenId()).toNumber(), 2, "original should mint twice after dispute resolution");
 
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
@@ -145,7 +145,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await token.mint(current.address, payout, { from: owner });
     await expectRevert(current.validateJob(currentJobId, "validator", EMPTY_PROOF, { from: validator }));
     assert.equal((await current.nextTokenId()).toNumber(), 0, "current should not mint while disputed");
-    await current.resolveDispute(currentJobId, "agent win", { from: moderator });
+    await current.resolveDisputeWithCode(currentJobId, 1, "agent win", { from: moderator });
     assert.equal((await current.nextTokenId()).toNumber(), 1, "current should mint once via dispute resolution");
   });
 
@@ -163,7 +163,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await original.requestJobCompletion(originalJobId, "ipfs-complete", { from: agent });
     await original.disputeJob(originalJobId, { from: employer });
     await original.addModerator(moderator, { from: owner });
-    await expectRevert(original.resolveDispute(originalJobId, "agent win", { from: moderator }));
+    await expectRevert(original.resolveDisputeWithCode(originalJobId, 1, "agent win", { from: moderator }));
     assert.equal((await original.nextTokenId()).toNumber(), 0, "original should not mint on div-by-zero");
 
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
@@ -175,7 +175,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await fundDisputeBond(token, current, employer, payout, owner);
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
-    await current.resolveDispute(currentJobId, "agent win", { from: moderator });
+    await current.resolveDisputeWithCode(currentJobId, 1, "agent win", { from: moderator });
     assert.equal((await current.nextTokenId()).toNumber(), 1, "current should mint despite zero validators");
   });
 
@@ -236,7 +236,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await original.addModerator(moderator, { from: owner });
     await original.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(original.address, payout, { from: owner });
-    await original.resolveDispute(originalJobId, "employer win", { from: moderator });
+    await original.resolveDisputeWithCode(originalJobId, 2, "employer win", { from: moderator });
     await original.validateJob(originalJobId, "validator", EMPTY_PROOF, { from: validator });
     assert.equal((await original.nextTokenId()).toNumber(), 1, "original should still complete after employer win");
 
@@ -251,7 +251,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await current.addModerator(moderator, { from: owner });
     await current.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(current.address, payout, { from: owner });
-    await current.resolveDispute(currentJobId, "employer win", { from: moderator });
+    await current.resolveDisputeWithCode(currentJobId, 2, "employer win", { from: moderator });
     await expectRevert(current.validateJob(currentJobId, "validator", EMPTY_PROOF, { from: validator }));
   });
 

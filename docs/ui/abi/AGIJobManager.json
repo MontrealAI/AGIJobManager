@@ -282,31 +282,6 @@
         },
         {
           "indexed": false,
-          "internalType": "string",
-          "name": "resolution",
-          "type": "string"
-        }
-      ],
-      "name": "DisputeResolved",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "jobId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "resolver",
-          "type": "address"
-        },
-        {
-          "indexed": false,
           "internalType": "uint8",
           "name": "resolutionCode",
           "type": "uint8"
@@ -1204,6 +1179,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "ensJobPages",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -1916,24 +1904,6 @@
           "type": "uint256"
         },
         {
-          "internalType": "string",
-          "name": "resolution",
-          "type": "string"
-        }
-      ],
-      "name": "resolveDispute",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_jobId",
-          "type": "uint256"
-        },
-        {
           "internalType": "uint8",
           "name": "resolutionCode",
           "type": "uint8"
@@ -2077,6 +2047,19 @@
         }
       ],
       "name": "updateNameWrapper",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_ensJobPages",
+          "type": "address"
+        }
+      ],
+      "name": "setEnsJobPages",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
