@@ -102,11 +102,6 @@
       "type": "error"
     },
     {
-      "inputs": [],
-      "name": "ValidatorSetTooLarge",
-      "type": "error"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
@@ -1753,6 +1748,19 @@
     },
     {
       "inputs": [],
+      "name": "voteQuorum",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "pause",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -2154,6 +2162,19 @@
         }
       ],
       "name": "setRequiredValidatorDisapprovals",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_quorum",
+          "type": "uint256"
+        }
+      ],
+      "name": "setVoteQuorum",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
