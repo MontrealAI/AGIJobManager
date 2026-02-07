@@ -66,7 +66,7 @@ Pausing is intended to stop new risk while preserving exits/settlement.
 | Completion submission | `requestJobCompletion` |
 | Settlement & exits | `cancelJob`, `expireJob`, `finalizeJob` |
 | Dispute resolution | `resolveDispute`, `resolveDisputeWithCode` |
-| Owner recovery | `resolveStaleDispute` (owner‑only, paused‑only) |
+| Owner recovery | `resolveStaleDispute` (owner‑only after `disputeReviewPeriod`; pause optional) |
 | Owner job delist | `delistJob` (owner‑only, unassigned only) |
 | Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
 
