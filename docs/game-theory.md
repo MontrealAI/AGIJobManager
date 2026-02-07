@@ -12,7 +12,7 @@ This document explains **how incentives actually work** in the current contract,
 
 ## A. What “game‑theoretically optimal” means for this repository
 
-**Optimal** in this context means: the permissioned validator club + moderator backstop produces **liveness** (jobs settle), **priced deviation** (misbehavior is costly), **predictable turnout** (validators reliably vote), and **cheap operations** (minimal overhead per job), while honoring the **owner‑operated escrow** trust model.
+**Optimal** in this context means: the permissioned validator club + moderator backstop produces **liveness** (jobs settle), **priced deviation** (misbehavior is costly), **predictable turnout** (validators reliably vote), a **predictable moderator backstop** (disputes resolve on time), and **cheap operations** (minimal overhead per job), while honoring the **owner‑operated escrow** trust model.
 
 **Failures that matter (explicitly):**
 - **Deadlocks**: escrow stuck because thresholds cannot be reached.
@@ -39,8 +39,8 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
   - Escrow is locked until settlement.
   - If validators/agent are inactive, settlement can still happen after `completionReviewPeriod` (see finalize rules).
 - **Information**:
-  - On‑chain: `jobSpecURI`, `jobCompletionURI`, vote counts, dispute state.
-  - Off‑chain: actual deliverables, private artifacts.
+  - On‑chain: `jobSpecURI`, `jobCompletionURI`, vote counts, dispute state, and ENS job page records (if used).
+  - Off‑chain: actual deliverables, private artifacts, and any evidence linked from IPFS or other content stores.
 
 ### Agent
 - **Wants**: get paid quickly, preserve reputation, and minimize bond loss.
@@ -50,8 +50,8 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
   - Bond is slashed to employer on employer‑win outcomes.
   - Missed deadline → `expireJob` slashes bond and refunds employer.
 - **Information**:
-  - On‑chain: job payout, duration, thresholds, review window.
-  - Off‑chain: deliverables and proof of completion.
+  - On‑chain: job payout, duration, thresholds, review window, and eligibility rules.
+  - Off‑chain: deliverables and proof of completion linked in metadata.
 
 ### Validator (permissioned club)
 - **Wants**: earn rewards, preserve reputation, avoid slashing.
@@ -62,13 +62,13 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
   - Abstaining can reduce rewards but avoid risk.
 - **Opt‑in reality**: eligibility is permissioned (allowlist, Merkle proof, or ENS ownership). Validators opt‑in **per job** by choosing to vote within `completionReviewPeriod`. Once a job is disputed, validator votes no longer change settlement.
 - **Information**:
-  - On‑chain: `jobSpecURI`, `jobCompletionURI`, vote counts, review windows.
-  - Off‑chain: evidence and artifacts linked in metadata.
+  - On‑chain: `jobSpecURI`, `jobCompletionURI`, vote counts, review windows, and any ENS job page links.
+  - Off‑chain: evidence and artifacts linked in metadata (often IPFS CIDs).
 
 ### Moderator / Owner
 - **Wants**: restore liveness, resolve disputes, protect system integrity.
 - **Actions**:
-  - Moderators: `resolveDisputeWithCode`.
+  - Moderators: `resolveDisputeWithCode` (or legacy `resolveDispute`).
   - Owner: `pause`, `unpause`, parameter updates, allowlist management, `resolveStaleDispute` after `disputeReviewPeriod`.
 - **Risks**:
   - Centralized authority; operator errors can bias outcomes.
@@ -98,16 +98,16 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
 Below is the **real settlement path** with incentives at each step. For contract‑accurate rules, see [`contract-behavior.md`](contract-behavior.md).
 
 1) **`createJob` (Employer)**
-   - Escrow is funded immediately.
+   - Escrow is funded immediately; this is the employer’s **costly** move.
    - **Best response**: set realistic duration and clear deliverables to reduce disputes.
 
 2) **`applyForJob` (Agent)**
-   - Agent posts a bond and locks the payout tier at this moment.
+   - Agent posts a bond and locks the payout tier at this moment; bond + effort is the agent’s **costly** move.
    - **Best response**: accept only jobs where expected value exceeds bond + opportunity cost.
 
 3) **`requestJobCompletion` (Agent)**
-   - Stores `jobCompletionURI`; enables validation.
-   - **Best response**: submit complete, verifiable evidence; missing/weak evidence invites disapproval.
+   - Stores `jobCompletionURI`; enables validation and starts the `completionReviewPeriod`.
+   - **Best response**: submit complete, verifiable evidence; missing/weak evidence invites disapproval or disputes.
 
 4) **`validateJob` / `disapproveJob` (Validators)**
    - Validators bond per vote; correct votes are rewarded, incorrect are slashed.
@@ -132,6 +132,11 @@ Below is the **real settlement path** with incentives at each step. For contract
 8) **Settlement & NFT mint**
    - Payouts, bonds, slashing, validator rewards, and job NFT issuance happen on completion.
    - **Best response**: parties should assume settlement is final; reputation updates follow payout.
+
+**Lifecycle order (contract‑accurate sequence)**:
+`createJob` → `applyForJob` → `requestJobCompletion` → `validateJob`/`disapproveJob`
+→ `disputeJob` (optional) → `finalizeJob` → `resolveDisputeWithCode`/`resolveStaleDispute`
+→ settle payouts/bonds → mint NFT. Each transition is cheap to call but **costly in bonded risk** for the acting party.
 
 ---
 
@@ -185,7 +190,8 @@ These knobs are **operator tools** for shaping incentives. Always cross‑check 
   - **If bribery risk rises**: increase bond or slash rate to raise deviation cost.
 - **Agent bond (`agentBondBps` / `agentBond` / `agentBondMax`)**
   - **Default**: bond sized to cover expected coordination cost of failure.
-  - **If agent no‑shows spike**: raise bond or lower max job duration. Remember the bond scales upward with duration, so long jobs are already more expensive for agents.
+  - **Duration scaling**: when `jobDurationLimit` is set, an extra bond add‑on scales with duration; long jobs are more expensive for agents.
+  - **If agent no‑shows spike**: raise bond or lower max job duration.
 - **Dispute bond (`DISPUTE_BOND_BPS/MIN/MAX`)**
   - **Default**: small but non‑trivial to discourage spam while keeping legitimate disputes affordable.
   - **If dispute spam rises**: increase dispute bond bounds in a redeploy or adopt stricter off‑chain filing rules.
