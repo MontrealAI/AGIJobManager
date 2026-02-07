@@ -15,18 +15,25 @@ Example:
 job-1-42.jobs.alpha.agi.eth
 ```
 
-### Ownership model (recommended)
-- **Owner of `jobs.alpha.agi.eth`**: the AGI.Eth operator (or platform owner). This keeps the namespace official and prevents spoofed job pages.
-- **Per‑job subdomain owner**: the platform (or a dedicated registrar contract), which can delegate **resolver permissions** to the employer and assigned agent.
+## Ownership and delegation model
 
-### Delegation model (resolver authorization)
+### Ownership (recommended)
+- **Owner of `jobs.alpha.agi.eth`**: the AGI.Eth operator (or platform owner). This keeps the namespace official and prevents spoofed job pages.
+- **Per‑job subdomain owner**: the platform (or a registrar contract). Ownership stays with the operator for integrity.
+
+### Resolver authorization (how employers + agents edit)
 - The platform keeps subdomain ownership but **authorizes** edits via resolver permissions.
-- Employer + assigned agent receive edit rights to update job spec/completion records.
-- Validators can read all records; they do not need edit rights.
+- Employer + assigned agent receive edit rights to update job spec and completion records.
+- Validators read records; they do not need edit rights.
+
+**Typical pattern**
+1. Platform creates `job-<chainId>-<jobId>...` and sets a resolver.
+2. Resolver allows specific accounts (employer + agent) to call `setText` / `setContenthash`.
+3. Platform revokes write access after completion (optional).
 
 ### Optional record locking after completion
 - After settlement, the resolver can **freeze** records to preserve receipt integrity.
-- Locking is resolver‑dependent (e.g., NameWrapper fuses or resolver access control). Treat this as optional and explicitly document the mechanism used.
+- Locking is resolver‑dependent (e.g., NameWrapper fuses or resolver access control). Treat this as optional and document your chosen mechanism.
 
 ## ENS record layout
 
@@ -40,8 +47,8 @@ job-1-42.jobs.alpha.agi.eth
 | `text:agijobs.chainId` | ✅ | Chain ID (e.g., `1`) |
 | `text:agijobs.jobId` | ✅ | Job ID from the contract |
 | `text:agijobs.contract` | ✅ | JobManager address |
-| `text:agijobs.spec` | ✅ | URL/URI to public job spec JSON |
-| `text:agijobs.completion` | ✅ | URL/URI to completion JSON (mirrors the NFT `tokenURI` intent) |
+| `text:agijobs.spec` | ✅ | URL/URI to public job spec JSON (matches on‑chain `jobSpecURI`) |
+| `text:agijobs.completion` | ✅ | URL/URI to completion JSON (matches on‑chain `jobCompletionURI` and NFT intent) |
 | `text:agijobs.ui` | Optional | Canonical job page link |
 
 ### Validator‑friendly record set (recommended)
@@ -78,5 +85,5 @@ text:agijobs.privacy = public-receipt/private-artifacts
 
 ## Integration notes
 - **Indexers** should treat ENS as an authoritative pointer, not the source of truth.
-- **UI/Frontend** should render the job by fetching `agijobs.spec` + `agijobs.completion`.
+- **UIs** should fetch the job spec + completion JSON and render a human‑readable page.
 - **Validators** should verify integrity hashes from `agijobs.integrity` when present.

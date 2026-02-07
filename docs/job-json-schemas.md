@@ -3,9 +3,10 @@
 These schemas define **conventions** only. They do **not** require contract changes. They are aligned with the existing metadata guidance in [`docs/job-metadata.md`](job-metadata.md).
 
 ## Shared conventions
-- **Schema version**: `"agijobmanager.job.v1"`
+- **Schema version**: `"agijobmanager.job.v1"`.
 - **ERC‑721 compatibility**: both documents include `name`, `description`, `external_url`, and `attributes`.
-- **Completion JSON** should be used as the **NFT `tokenURI`**.
+- **Completion JSON** is intended to be the **NFT `tokenURI`**.
+- **Public vs private**: only publish **public receipt data** here; private artifacts should be referenced via gated links.
 
 ---
 
@@ -97,6 +98,26 @@ These schemas define **conventions** only. They do **not** require contract chan
 ```
 
 **Example:** [`docs/examples/spec.json`](examples/spec.json)
+
+**Quick excerpt:**
+```json
+{
+  "schema_version": "agijobmanager.job.v1",
+  "name": "Job #42: Dataset cleanup",
+  "external_url": "https://example.com/jobs/1/42",
+  "properties": {
+    "type": "job_spec",
+    "job": {
+      "job_id": 42,
+      "chain_id": 1,
+      "contract_address": "0x1234...ABCD",
+      "payout_raw": "1000000000000000000",
+      "duration_seconds": 604800,
+      "summary": "Normalize a dataset and provide a report"
+    }
+  }
+}
+```
 
 ---
 
@@ -191,6 +212,26 @@ These schemas define **conventions** only. They do **not** require contract chan
 ```
 
 **Example:** [`docs/examples/completion.json`](examples/completion.json)
+
+**Quick excerpt:**
+```json
+{
+  "schema_version": "agijobmanager.job.v1",
+  "name": "Job #42 completion",
+  "external_url": "https://example.com/jobs/1/42",
+  "properties": {
+    "type": "job_completion",
+    "job": {
+      "job_id": 42,
+      "chain_id": 1,
+      "contract_address": "0x1234...ABCD",
+      "job_spec_uri": "ipfs://bafy.../spec.json"
+    },
+    "deliverables": ["ipfs://bafy.../report.pdf"],
+    "links": [{"label": "Public summary", "url": "https://example.com/jobs/1/42/summary"}]
+  }
+}
+```
 
 ---
 
