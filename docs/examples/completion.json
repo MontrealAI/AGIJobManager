@@ -1,0 +1,42 @@
+{
+  "schema_version": "agijobmanager.job.v1",
+  "name": "Job #42: Completion Receipt",
+  "description": "Delivery package for the Q4 summary: final memo, slide deck, and validation notes.",
+  "image": "ipfs://bafy.../receipt.png",
+  "external_url": "https://example.com/ui/agijobmanager.html?chainId=1&contract=0x1234...ABCD&jobId=42",
+  "attributes": [
+    { "trait_type": "Type", "value": "Job Completion" },
+    { "trait_type": "Chain ID", "value": "1" },
+    { "trait_type": "Contract", "value": "0x1234...ABCD" },
+    { "trait_type": "Job ID", "value": "42" },
+    { "trait_type": "Status", "value": "Completed" }
+  ],
+  "properties": {
+    "type": "job_completion",
+    "job": {
+      "job_id": 42,
+      "chain_id": 1,
+      "contract_address": "0x1234...ABCD",
+      "token_id": 7,
+      "job_spec_uri": "ipfs://bafy.../spec.json",
+      "job_spec_sha256": "b3b7...",
+      "tx_hash": "0xabc123..."
+    },
+    "payouts": {
+      "escrow_amount": "1000 AGI",
+      "agent_payout_pct": 85,
+      "validator_reward_pct": 8,
+      "additional_agent_payout_pct": 50
+    },
+    "deliverables": [
+      "ipfs://bafy.../final-summary.pdf",
+      "ipfs://bafy.../deck.pptx"
+    ],
+    "links": [
+      { "label": "Validation notes", "url": "ipfs://bafy.../validator-notes.md" }
+    ],
+    "attachments": [
+      "ipfs://bafy.../checksums.txt"
+    ]
+  }
+}
