@@ -1,0 +1,15 @@
+{
+  "schema_version": "agijobmanager.artifact_manifest.v1",
+  "artifacts": [
+    {
+      "path": "final-summary.pdf",
+      "sha256": "4a6f...",
+      "cid": "bafy..."
+    },
+    {
+      "path": "deck.pptx",
+      "sha256": "7c12...",
+      "cid": "bafy..."
+    }
+  ]
+}

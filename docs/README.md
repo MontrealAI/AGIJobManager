@@ -23,6 +23,13 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 - **Merkle proofs**: [`user-guide/merkle-proofs.md`](user-guide/merkle-proofs.md)
 - **Glossary**: [`user-guide/glossary.md`](user-guide/glossary.md)
 
+## Newcomer & integrator quick reads
+- **How AGI Jobs work (60‑second overview)**: [`how-agi-jobs-work.md`](how-agi-jobs-work.md)
+- **ENS job pages (namespace + records)**: [`ens-job-pages.md`](ens-job-pages.md)
+- **Job JSON schemas + examples**: [`job-json-schemas.md`](job-json-schemas.md)
+- **Privacy & storage options**: [`privacy-and-storage.md`](privacy-and-storage.md)
+- **Contract behavior summary**: [`contract-behavior.md`](contract-behavior.md)
+
 ## Operational references
 - **Operator runbook**: [`operator-runbook.md`](operator-runbook.md)
 - **Testing guide**: [`Testing.md`](Testing.md)
@@ -41,6 +48,7 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 - **Employer**: [`roles/EMPLOYER.md`](roles/EMPLOYER.md)
 - **Agent**: [`roles/AGENT.md`](roles/AGENT.md)
 - **Validator**: [`roles/VALIDATOR.md`](roles/VALIDATOR.md)
+- **Validator guide (15‑minute workflow)**: [`validator-guide.md`](validator-guide.md)
 - **Moderator**: [`roles/MODERATOR.md`](roles/MODERATOR.md)
 - **Owner/Operator**: [`roles/OWNER_OPERATOR.md`](roles/OWNER_OPERATOR.md)
 - **NFT Marketplace**: [`roles/NFT_MARKETPLACE.md`](roles/NFT_MARKETPLACE.md)
@@ -59,3 +67,23 @@ The interface reference is generated from the compiled ABI. After running a comp
 npm run build
 npm run docs:interface
 ```
+
+## Known Issues / CI
+
+### npm ci fails on Linux (fsevents)
+- **Command**: `npm ci`
+- **First failure**: `Unsupported platform for fsevents@2.3.2: wanted {"os":"darwin"} (current: {"os":"linux"})`
+- **Likely cause**: `fsevents` is present in `package-lock.json` as a non‑optional dependency, so npm treats it as required on Linux.
+- **Fix later**: regenerate `package-lock.json` with `fsevents` marked optional (or remove the dependency chain that pulls it in) so Linux installs succeed.
+
+### npm test fails (missing Truffle)
+- **Command**: `npm test`
+- **First failure**: `sh: 1: truffle: not found`
+- **Likely cause**: `npm ci` did not complete, so `node_modules/.bin` is missing.
+- **Fix later**: resolve `npm ci` (see above), then re‑run `npm test`.
+
+### npm run lint fails (missing solhint)
+- **Command**: `npm run lint`
+- **First failure**: `sh: 1: solhint: not found`
+- **Likely cause**: `npm ci` did not complete, so `node_modules/.bin` is missing.
+- **Fix later**: resolve `npm ci` (see above), then re‑run `npm run lint`.
