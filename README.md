@@ -34,6 +34,9 @@
 
 **Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
 
+## Incentives & game theory
+AGIJobManager is optimized for a **business‑run escrow** with a **permissioned validator club** and **moderator backstop**—not a trustless court. “Optimal” means **liveness**, **priced deviations**, **predictable validator turnout**, and **cheap operations** given that trust model. See [`docs/game-theory.md`](docs/game-theory.md) for the full incentive map, deviation strategies, and operator playbooks. Validators and operators should read the parameter tuning and off‑chain policy sections before production use.
+
 ## NFT trading
 
 AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other marketplaces using normal approvals and transfers. This contract does not implement an internal marketplace.
