@@ -881,6 +881,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
         uint256 quorum = requiredValidatorApprovals;
+        bool repEligible = job.validators.length != 0;
         if (job.completed || job.expired || job.disputed) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
         if (requiredValidatorDisapprovals != 0
@@ -888,10 +889,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         ) {
             quorum = requiredValidatorDisapprovals;
         }
+        if (quorum != 0 && quorum < 3) {
+            quorum = 3;
+        }
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (approvals > disapprovals) {
-                _completeJob(_jobId, job.validators.length != 0);
+                _completeJob(_jobId, repEligible);
                 return;
             }
         }
@@ -904,22 +908,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         if (totalVotes == 0) {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
-            _completeJob(_jobId, job.validators.length != 0);
-            return;
-        }
-        if (totalVotes < quorum || approvals == disapprovals) {
+            _completeJob(_jobId, repEligible);
+        } else if (totalVotes < quorum || approvals == disapprovals) {
             job.disputed = true;
-            if (job.disputedAt == 0) {
-                job.disputedAt = block.timestamp;
-            }
+            job.disputedAt = block.timestamp;
             emit JobDisputed(_jobId, msg.sender);
-            return;
+        } else if (approvals > disapprovals) {
+            _completeJob(_jobId, repEligible);
+        } else {
+            _refundEmployer(job);
         }
-        if (approvals > disapprovals) {
-            _completeJob(_jobId, job.validators.length != 0);
-            return;
-        }
-        _refundEmployer(job);
 
     }
 
