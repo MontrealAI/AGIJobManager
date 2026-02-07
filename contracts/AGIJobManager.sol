@@ -104,6 +104,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
+    uint256 public voteQuorum = 3;
     uint256 public premiumReputationThreshold = 10000;
     uint256 public validationRewardPercentage = 8;
     uint256 public maxJobPayout = 88888888e18;
@@ -641,11 +642,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function blacklistAgent(address _agent, bool _status) external onlyOwner {
         blacklistedAgents[_agent] = _status;
-        emit AgentBlacklisted(_agent, _status);
     }
     function blacklistValidator(address _validator, bool _status) external onlyOwner {
         blacklistedValidators[_validator] = _status;
-        emit ValidatorBlacklisted(_validator, _status);
     }
 
     function delistJob(uint256 _jobId) external onlyOwner {
@@ -702,6 +701,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
         _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
         requiredValidatorDisapprovals = _disapprovals;
+    }
+    function setVoteQuorum(uint256 _quorum) external onlyOwner {
+        if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
+        voteQuorum = _quorum;
     }
     function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner { maxJobPayout = _maxPayout; }
@@ -880,17 +883,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
-        bool repEligible = job.validators.length != 0;
         if (job.completed || job.expired || job.disputed) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
-        uint256 quorum = requiredValidatorApprovals;
-        if (quorum == 0 || (requiredValidatorDisapprovals != 0 && requiredValidatorDisapprovals < quorum)) {
-            quorum = requiredValidatorDisapprovals;
-        }
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (approvals > disapprovals) {
-                _completeJob(_jobId, repEligible);
+                _completeJob(_jobId, true);
                 return;
             }
         }
@@ -903,8 +901,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         if (totalVotes == 0) {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
-            _completeJob(_jobId, repEligible);
-        } else if (totalVotes < quorum || approvals == disapprovals) {
+            _completeJob(_jobId, false);
+        } else if (totalVotes < voteQuorum || approvals == disapprovals) {
             job.disputed = true;
             if (job.disputedAt == 0) {
                 job.disputedAt = block.timestamp;
@@ -912,7 +910,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             emit JobDisputed(_jobId, msg.sender);
             return;
         } else if (approvals > disapprovals) {
-            _completeJob(_jobId, repEligible);
+            _completeJob(_jobId, true);
         } else {
             _refundEmployer(job);
         }
