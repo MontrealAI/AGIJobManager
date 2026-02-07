@@ -91,12 +91,9 @@ const zeroRoot = "0x" + "00".repeat(32);
 const manager = await AGIJobManager.new(
   token.address,
   "ipfs://base",
-  ens.address,
-  nameWrapper.address,
-  clubRoot,
-  agentRoot,
-  zeroRoot,
-  zeroRoot
+  [ens.address, nameWrapper.address, "0x0000000000000000000000000000000000000000"],
+  [clubRoot, agentRoot, zeroRoot, zeroRoot],
+  [zeroRoot, zeroRoot]
 );
 ```
 

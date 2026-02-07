@@ -18,9 +18,9 @@
           "type": "string"
         },
         {
-          "internalType": "address[2]",
+          "internalType": "address[3]",
           "name": "ensConfig",
-          "type": "address[2]"
+          "type": "address[3]"
         },
         {
           "internalType": "bytes32[4]",
@@ -346,19 +346,6 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "newEnsRegistry",
-          "type": "address"
-        }
-      ],
-      "name": "EnsRegistryUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
           "name": "locker",
           "type": "address"
         },
@@ -621,19 +608,6 @@
         }
       ],
       "name": "NFTIssued",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newNameWrapper",
-          "type": "address"
-        }
-      ],
-      "name": "NameWrapperUpdated",
       "type": "event"
     },
     {

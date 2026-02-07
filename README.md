@@ -48,6 +48,9 @@ operators should review parameter‑tuning and off‑chain governance before pro
 AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other marketplaces using normal approvals and transfers. This contract does not implement an internal marketplace.
 
 ## Documentation
+### ENS job pages (alpha)
+AGIJobManager creates one official ENS job page per job under `alpha.jobs.agi.eth`, with platform-owned names and delegated resolver edits for employers/agents. See [`docs/ens-job-pages.md`](docs/ens-job-pages.md) for naming, record keys, and operational setup.
+
 - **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview (authoritative)**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
 - **Mainnet deployment & verification**: [`docs/mainnet-deployment-and-verification.md`](docs/mainnet-deployment-and-verification.md)

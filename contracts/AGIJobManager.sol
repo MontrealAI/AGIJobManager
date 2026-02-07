@@ -157,6 +157,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     bytes32 public agentMerkleRoot;
     ENS public ens;
     NameWrapper public nameWrapper;
+    address internal ensJobPages;
     /// @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
 
@@ -219,8 +220,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason);
     event JobDisputed(uint256 jobId, address disputant);
     event JobExpired(uint256 jobId, address employer, address agent, uint256 payout);
-    event EnsRegistryUpdated(address indexed newEnsRegistry);
-    event NameWrapperUpdated(address indexed newNameWrapper);
     event RootNodesUpdated(
         bytes32 clubRootNode,
         bytes32 agentRootNode,
@@ -241,14 +240,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event ValidatorBondParamsUpdated(uint256 bps, uint256 min, uint256 max);
     event ChallengePeriodAfterApprovalUpdated(uint256 oldPeriod, uint256 newPeriod);
 
+
+
     constructor(
         address agiTokenAddress,
         string memory baseIpfs,
-        address[2] memory ensConfig,
+        address[3] memory ensConfig,
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
     ) ERC721("AGIJobs", "Job") {
         _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
+        ensJobPages = ensConfig[2];
         _initRoots(rootNodes, merkleRoots);
 
         _validateValidatorThresholds(requiredValidatorApprovals, requiredValidatorDisapprovals);
@@ -421,6 +423,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         revert TransferFailed();
     }
 
+    function _ensHook(uint8 action, uint256 jobId) internal {
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, shl(224, 0x256273eb))
+            mstore(add(ptr, 4), action)
+            mstore(add(ptr, 36), jobId)
+            pop(call(gas(), sload(ensJobPages.slot), 0, ptr, 68, 0, 0))
+        }
+    }
+
+
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
     function lockIdentityConfiguration() external onlyOwner whenIdentityConfigurable {
@@ -445,6 +458,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             lockedEscrow += _payout;
         }
         emit JobCreated(jobId, _jobSpecURI, _payout, _duration, _details);
+        _ensHook(1, jobId);
     }
 
     function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
@@ -468,6 +482,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             activeJobsByAgent[msg.sender]++;
         }
         emit JobApplied(_jobId, msg.sender);
+        _ensHook(2, _jobId);
     }
 
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
@@ -668,13 +683,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_newEnsRegistry == address(0)) revert InvalidParameters();
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         ens = ENS(_newEnsRegistry);
-        emit EnsRegistryUpdated(_newEnsRegistry);
     }
     function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable {
         if (_newNameWrapper == address(0)) revert InvalidParameters();
         if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
         nameWrapper = NameWrapper(_newNameWrapper);
-        emit NameWrapperUpdated(_newNameWrapper);
     }
     function updateRootNodes(
         bytes32 _clubRootNode,
@@ -948,7 +961,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         _mintCompletionNFT(job);
         _settleDisputeBond(job, true);
-
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
     }
 

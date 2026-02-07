@@ -1,4 +1,5 @@
 const ZERO_ROOT = "0x" + "00".repeat(32);
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const MAINNET_TOKEN = "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA";
 const MAINNET_ENS = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 const MAINNET_NAMEWRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
@@ -27,6 +28,7 @@ function buildInitConfig(
   baseIpfsUrl,
   ensAddress,
   nameWrapperAddress,
+  ensJobPagesAddress,
   clubRootNode,
   agentRootNode,
   alphaClubRootNode,
@@ -34,10 +36,13 @@ function buildInitConfig(
   validatorMerkleRoot,
   agentMerkleRoot,
 ) {
+  if (!ensJobPagesAddress) {
+    ensJobPagesAddress = ZERO_ADDRESS;
+  }
   return [
     tokenAddress,
     baseIpfsUrl,
-    [ensAddress, nameWrapperAddress],
+    [ensAddress, nameWrapperAddress, ensJobPagesAddress],
     [clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode],
     [validatorMerkleRoot, agentMerkleRoot],
   ];
@@ -56,6 +61,7 @@ function resolveDeployConfig(network, networkId) {
   const nameWrapperAddress = isMainnet
     ? envValue("AGI_NAMEWRAPPER", MAINNET_NAMEWRAPPER)
     : requireEnv("AGI_NAMEWRAPPER");
+  const ensJobPagesAddress = envValue("AGI_ENS_JOB_PAGES", ZERO_ADDRESS);
   const clubRootNode = isMainnet
     ? envValue("AGI_CLUB_ROOT_NODE", MAINNET_CLUB_ROOT)
     : requireEnv("AGI_CLUB_ROOT_NODE");
@@ -76,6 +82,7 @@ function resolveDeployConfig(network, networkId) {
     baseIpfsUrl,
     ensAddress,
     nameWrapperAddress,
+    ensJobPagesAddress,
     clubRootNode,
     agentRootNode,
     alphaClubRootNode,
@@ -97,6 +104,7 @@ module.exports = {
   MAINNET_ALPHA_AGENT_ROOT,
   DEFAULT_MERKLE_ROOT,
   DEFAULT_IPFS_BASE,
+  ZERO_ADDRESS,
   envValue,
   requireEnv,
   buildInitConfig,
