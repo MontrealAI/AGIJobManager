@@ -78,7 +78,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error TransferFailed();
     error ValidatorLimitReached();
     error InvalidValidatorThresholds();
-    error ValidatorSetTooLarge();
     error IneligibleAgentPayout();
     error InsufficientWithdrawableBalance();
     error InsolventEscrowBalance();
@@ -104,6 +103,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
+    uint256 public voteQuorum = 3;
     uint256 public premiumReputationThreshold = 10000;
     uint256 public validationRewardPercentage = 8;
     uint256 public maxJobPayout = 88888888e18;
@@ -703,20 +703,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
         requiredValidatorDisapprovals = _disapprovals;
     }
+    function setVoteQuorum(uint256 _quorum) external onlyOwner {
+        if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
+        voteQuorum = _quorum;
+    }
     function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner { maxJobPayout = _maxPayout; }
     function setJobDurationLimit(uint256 _limit) external onlyOwner { jobDurationLimit = _limit; }
     function setCompletionReviewPeriod(uint256 _period) external onlyOwner {
         if (!(_period > 0 && _period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
-        uint256 oldPeriod = completionReviewPeriod;
         completionReviewPeriod = _period;
-        emit CompletionReviewPeriodUpdated(oldPeriod, _period);
     }
     function setDisputeReviewPeriod(uint256 _period) external onlyOwner {
         if (!(_period > 0 && _period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
-        uint256 oldPeriod = disputeReviewPeriod;
         disputeReviewPeriod = _period;
-        emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
     function setValidatorBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
@@ -880,17 +880,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
-        bool repEligible = job.validators.length != 0;
         if (job.completed || job.expired || job.disputed) revert InvalidState();
         if (!job.completionRequested) revert InvalidState();
-        uint256 quorum = requiredValidatorApprovals;
-        if (quorum == 0 || (requiredValidatorDisapprovals != 0 && requiredValidatorDisapprovals < quorum)) {
-            quorum = requiredValidatorDisapprovals;
-        }
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (approvals > disapprovals) {
-                _completeJob(_jobId, repEligible);
+                _completeJob(_jobId, true);
                 return;
             }
         }
@@ -903,8 +898,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         if (totalVotes == 0) {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
-            _completeJob(_jobId, repEligible);
-        } else if (totalVotes < quorum || approvals == disapprovals) {
+            _completeJob(_jobId, false);
+        } else if (totalVotes < voteQuorum || approvals == disapprovals) {
             job.disputed = true;
             if (job.disputedAt == 0) {
                 job.disputedAt = block.timestamp;
@@ -912,7 +907,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             emit JobDisputed(_jobId, msg.sender);
             return;
         } else if (approvals > disapprovals) {
-            _completeJob(_jobId, repEligible);
+            _completeJob(_jobId, true);
         } else {
             _refundEmployer(job);
         }
