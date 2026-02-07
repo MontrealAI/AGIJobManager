@@ -22,7 +22,7 @@ This document explains **how incentives actually work** in the current contract,
 - **Dispute spam**: disputes used to delay or raise costs.
 - **Job capture / over‑commitment**: agents accept too many jobs or low‑quality jobs because penalties are weak.
 
-**Liveness guarantee**: non‑disputed jobs can always be finalized after `completionReviewPeriod` by anyone; disputed jobs rely on **moderators** (or the owner after `disputeReviewPeriod`) to settle.
+**Liveness guarantee**: non‑disputed jobs can always be finalized after `completionReviewPeriod` by anyone; disputed jobs rely on **moderators** (or the owner after `disputeReviewPeriod`) to settle. Validator voting ends at `completionReviewPeriod`, and once a dispute is opened, validator votes no longer advance settlement.
 
 This contract **does not** aim for censorship resistance, privacy, or fully decentralized governance. Instead, it optimizes for **business‑run escrow with a permissioned validator club** and a **trusted moderator/owner backstop**.
 
@@ -46,7 +46,7 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
 - **Wants**: get paid quickly, preserve reputation, and minimize bond loss.
 - **Actions**: `applyForJob` (posts bond, snapshots payout), `requestJobCompletion`, `finalizeJob` (anyone).
 - **Risks**:
-  - **Agent bond** posted at apply time (from `agentBondBps`, `agentBond`, `agentBondMax`).
+  - **Agent bond** posted at apply time (from `agentBondBps`, `agentBond`, `agentBondMax`), with a **duration‑scaled add‑on** when `jobDurationLimit` is set.
   - Bond is slashed to employer on employer‑win outcomes.
   - Missed deadline → `expireJob` slashes bond and refunds employer.
 - **Information**:
@@ -88,9 +88,12 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
 
 ### Economics snapshot (payouts + bonds)
 - **Escrow payout split**: on agent wins, the payout is allocated between the agent payout (snapshotted at `applyForJob`) and the validator reward budget (`validationRewardPercentage`). If no validators participate, the validator budget is returned to the employer.
-- **Agent bond**: posted at `applyForJob` using `agentBondBps` with `agentBond`/`agentBondMax` caps; returned on agent wins and forfeited to the employer on employer wins or expiry.
+- **Agent bond**: posted at `applyForJob` using `agentBondBps` with `agentBond`/`agentBondMax` caps; **scaled upward by duration** when `jobDurationLimit` is set; returned on agent wins and forfeited to the employer on employer wins or expiry.
 - **Validator bond + slashing**: posted per vote (`validatorBondBps` with min/max caps); correct‑side validators earn rewards and get bond back, incorrect‑side validators are slashed by `validatorSlashBps`.
-- **Dispute bond**: posted by the disputant in `disputeJob` (bounded by `DISPUTE_BOND_*`); paid to the winning side when the dispute resolves.
+- **Dispute bond**: posted by the disputant in `disputeJob` (bounded by `DISPUTE_BOND_BPS/MIN/MAX`); paid to the winning side when the dispute resolves.
+- **Employer refunds**: if validators participated and the employer wins, the refund is reduced by the validator reward pool (validators still get paid).
+
+**Example (numbers):** with a 1,000 AGI payout, a 80% agent payout tier, and a 5% validator reward percentage, the agent receives 800 AGI, the validator pool is 50 AGI split across validators who voted with the final outcome, and any remainder stays in the contract balance (withdrawable only under the `withdrawableAGI()` rules).
 
 Below is the **real settlement path** with incentives at each step. For contract‑accurate rules, see [`contract-behavior.md`](contract-behavior.md).
 
@@ -137,13 +140,18 @@ Below is the **real settlement path** with incentives at each step. For contract
 | Strategy | Who benefits | How it works here | Status | Operator best practice |
 | --- | --- | --- | --- | --- |
 | **Settlement stalling / hold‑up** | Employer or agent | Delay `requestJobCompletion`, or delay finalization to gain leverage. | **Priced**: `completionReviewPeriod` + liveness rules reduce deadlocks, but delays still possible. | Enforce SLAs; auto‑monitor for completion requests and call `finalizeJob` on schedule. |
-| **Validator abstention equilibrium** | Validators | Avoid vote to dodge bond risk if evidence is unclear. | **Still possible**: no‑vote liveness rewards agent without validator rewards, so abstention has opportunity cost. | Set validator SLAs; rotate validators; ensure clear evidence in job metadata. |
-| **Low‑participation capture** | Small voting minority | A few votes decide outcomes if quorum met. | **Mitigated**: `voteQuorum` forces dispute under low participation; still possible when quorum is met by 1–2 votes. | Keep `voteQuorum` >= expected minimum turnout; audit small‑vote outcomes. |
+| **Validator abstention equilibrium** | Validators | Avoid voting to dodge bond risk if evidence is unclear. | **Still possible**: abstention is rational when evidence is thin; no‑vote liveness still pays the agent but yields **no validator rewards**. | Require minimum response SLAs and evidence standards; rotate validators; clarify abstention reasons. |
+| **Low‑participation capture** | Small voting minority | A few votes decide outcomes if quorum is met by 1–2 validators. | **Mitigated**: `voteQuorum` forces dispute under low participation, but capture is **still possible** when quorum is set too low. | Keep `voteQuorum` aligned with expected turnout; audit 1–2 vote outcomes. |
 | **Dispute spam / delay weapon** | Disputant | Use `disputeJob` to delay settlement. | **Priced** by dispute bond; moderators can resolve quickly. | Enforce dispute‑filing policy; require evidence checklist; fast‑track frivolous disputes. |
 | **Job capture / over‑commitment** | Agents | Accept too many jobs if penalties are weak. | **Priced** by agent bond + expiry slashing. | Monitor agent throughput; cap concurrent jobs off‑chain if needed. |
 | **Bribery / herding** | Third parties | Public vote counts + transparent evidence can sway votes. | **Still possible**: votes are public and immediate. | Use validator rotation, audit trails, and post‑vote reviews; consider future commit‑reveal. |
 
 **Zero‑vote stalling status**: addressed by the **no‑vote liveness** rule—after `completionReviewPeriod`, `finalizeJob` settles in favor of the agent **without reputation** if no votes were cast.
+
+**Prior critique checklist (explicit):**
+- **Zero‑vote stalling**: fixed via the no‑vote liveness rule; settlement no longer requires validator participation.
+- **Rational validator abstention**: still possible when evidence is weak; mitigated by SLA expectations, clear metadata standards, and rotating validators.
+- **Low‑participation capture**: possible when `voteQuorum` is too low; mitigated by quorum tuning and auditing 1–2 vote outcomes.
 
 ---
 
@@ -159,6 +167,9 @@ These knobs are **operator tools** for shaping incentives. Always cross‑check 
 - **`voteQuorum`**
   - **Small vetted club default**: 2–3 total votes.
   - **If low‑participation capture is a concern**: raise it, but only if validator turnout can reliably meet it.
+- **`challengePeriodAfterApproval`**
+  - **Small vetted club default**: short (hours) to allow rapid finalization while permitting last‑minute disapprovals.
+  - **If bribery risk rises**: lengthen slightly to give time for counter‑votes.
 
 ### Review windows
 - **`completionReviewPeriod`**
@@ -174,7 +185,10 @@ These knobs are **operator tools** for shaping incentives. Always cross‑check 
   - **If bribery risk rises**: increase bond or slash rate to raise deviation cost.
 - **Agent bond (`agentBondBps` / `agentBond` / `agentBondMax`)**
   - **Default**: bond sized to cover expected coordination cost of failure.
-  - **If agent no‑shows spike**: raise bond or lower max job duration.
+  - **If agent no‑shows spike**: raise bond or lower max job duration. Remember the bond scales upward with duration, so long jobs are already more expensive for agents.
+- **Dispute bond (`DISPUTE_BOND_BPS/MIN/MAX`)**
+  - **Default**: small but non‑trivial to discourage spam while keeping legitimate disputes affordable.
+  - **If dispute spam rises**: increase dispute bond bounds in a redeploy or adopt stricter off‑chain filing rules.
 
 ### Practical “if X then Y”
 - **Low turnout** → lower approval threshold **or** add validators; raise `voteQuorum` only if you can sustain turnout.
