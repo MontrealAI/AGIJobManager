@@ -1,0 +1,41 @@
+{
+  "schema_version": "agijobmanager.job.v1",
+  "name": "Job #42: Summarize Q4 Findings",
+  "description": "Create a concise, client-ready summary of Q4 findings. Include methodology, key risks, and next steps.",
+  "image": "ipfs://bafy.../cover.png",
+  "external_url": "https://example.com/ui/agijobmanager.html?chainId=1&contract=0x1234...ABCD&jobId=42",
+  "attributes": [
+    { "trait_type": "Type", "value": "Job Spec" },
+    { "trait_type": "Chain ID", "value": "1" },
+    { "trait_type": "Contract", "value": "0x1234...ABCD" },
+    { "trait_type": "Job ID", "value": "42" },
+    { "trait_type": "Payout", "value": "1000 AGI" },
+    { "trait_type": "Duration (seconds)", "value": "604800" }
+  ],
+  "properties": {
+    "type": "job_spec",
+    "job": {
+      "job_id": 42,
+      "chain_id": 1,
+      "contract_address": "0x1234...ABCD",
+      "payout_raw": "1000000000000000000000",
+      "payout": "1000 AGI",
+      "duration_seconds": 604800,
+      "summary": "Summarize Q4 findings in a client-ready format.",
+      "description": "Provide a short executive summary plus bullet points for risks and next steps."
+    },
+    "payouts": {
+      "escrow_amount": "1000 AGI",
+      "agent_payout_pct": 85,
+      "validator_reward_pct": 8,
+      "additional_agent_payout_pct": 50
+    },
+    "links": [
+      { "label": "Dataset", "url": "https://example.com/datasets/q4.csv" },
+      { "label": "Template", "url": "https://example.com/templates/summary.md" }
+    ],
+    "attachments": [
+      "https://example.com/attachments/brief.pdf"
+    ]
+  }
+}
