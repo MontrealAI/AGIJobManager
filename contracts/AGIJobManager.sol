@@ -78,7 +78,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error TransferFailed();
     error ValidatorLimitReached();
     error InvalidValidatorThresholds();
-    error ValidatorSetTooLarge();
     error IneligibleAgentPayout();
     error InsufficientWithdrawableBalance();
     error InsolventEscrowBalance();
@@ -881,17 +880,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
         uint256 quorum = requiredValidatorApprovals;
-        if (job.completed || job.expired || job.disputed) revert InvalidState();
-        if (!job.completionRequested) revert InvalidState();
+        bool repEligible = job.validators.length != 0;
+        if (job.completed || job.expired || job.disputed || !job.completionRequested) revert InvalidState();
         if (requiredValidatorDisapprovals != 0
             && (quorum == 0 || requiredValidatorDisapprovals < quorum)
         ) {
             quorum = requiredValidatorDisapprovals;
         }
+        if (quorum < 3 && (requiredValidatorApprovals != 0 || requiredValidatorDisapprovals != 0)) {
+            quorum = 3;
+        }
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (approvals > disapprovals) {
-                _completeJob(_jobId, job.validators.length != 0);
+                _completeJob(_jobId, repEligible);
                 return;
             }
         }
@@ -904,19 +906,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         if (totalVotes == 0) {
             // No-vote liveness: after the review window, settle deterministically in favor of the agent.
-            _completeJob(_jobId, job.validators.length != 0);
+            _completeJob(_jobId, repEligible);
             return;
         }
         if (totalVotes < quorum || approvals == disapprovals) {
             job.disputed = true;
-            if (job.disputedAt == 0) {
-                job.disputedAt = block.timestamp;
-            }
+            job.disputedAt = block.timestamp;
             emit JobDisputed(_jobId, msg.sender);
             return;
         }
         if (approvals > disapprovals) {
-            _completeJob(_jobId, job.validators.length != 0);
+            _completeJob(_jobId, repEligible);
             return;
         }
         _refundEmployer(job);
