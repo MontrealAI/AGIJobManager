@@ -17,11 +17,11 @@ This document summarizes **current on‑chain behavior**. It is a reading guide,
 3. **Request completion**: assigned agent calls `requestJobCompletion`, setting `jobCompletionURI`.
 4. **Validator vote**: validators call `validateJob` or `disapproveJob` during the review window.
 5. **Finalize**:
-   - If approvals meet threshold and the challenge period elapses, the job completes.
+   - If approvals meet threshold and the challenge period elapses, the job **may** complete early **only if approvals exceed disapprovals** at finalize time; otherwise it follows end‑of‑review rules (dispute or refund).
    - After the review period, the job finalizes based on votes (including no‑vote liveness).
 6. **Dispute**: disapprovals hitting threshold, or manual disputes, move the job into a dispute state.
 7. **Dispute resolution**: moderators or owner resolve disputes, leading to completion or employer refund.
-8. **Completion NFT**: minted to the employer; `tokenURI` points to `jobCompletionURI`.
+8. **Completion NFT**: minted to the employer; `tokenURI` uses `jobCompletionURI` unless it lacks a URI scheme, in which case `baseIpfsUrl` is prefixed during minting.
 
 ## Time windows and thresholds
 
