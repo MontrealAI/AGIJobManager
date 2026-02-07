@@ -41,7 +41,7 @@ stateDiagram-v2
 
     Disputed --> Completed: resolveDisputeWithCode(AGENT_WIN)
     Disputed --> Completed: resolveDisputeWithCode(EMPLOYER_WIN)
-    Disputed --> Completed: resolveStaleDispute (owner, paused, timeout)
+    Disputed --> Completed: resolveStaleDispute (owner, timeout; pause optional)
 
     InProgress --> Expired: expireJob (duration elapsed)
     Open --> Cancelled: cancelJob (employer)
@@ -59,7 +59,7 @@ stateDiagram-v2
     disapprovals or defaults to an agent win when no validators acted.
 - **Dispute review period** (`disputeReviewPeriod`):
   - If a dispute remains unresolved past the review window, the owner can call
-    `resolveStaleDispute` **only while paused** to force resolution.
+    `resolveStaleDispute` after `disputeReviewPeriod` (pause optional; often used for incident response).
 
 ## Why this matters
 The state machine guarantees that escrowed funds are released only through

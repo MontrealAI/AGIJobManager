@@ -105,7 +105,7 @@ Critical wiring includes the AGI token address, ENS registry, NameWrapper, and E
 
 After lock, operators should only use:
 - `pause()` / `unpause()` for incident response.
-- `resolveStaleDispute()` (owner + paused, after timeout) for dispute recovery.
+- `resolveStaleDispute()` (owner‑only after timeout; pause optional) for dispute recovery.
 - Optional moderator rotation if required.
 - Surplus withdrawals (`withdrawAGI`) while paused; escrowed funds and bonds remain reserved (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`).
 

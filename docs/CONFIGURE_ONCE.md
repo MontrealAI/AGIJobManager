@@ -53,7 +53,7 @@ Set these once via `scripts/postdeploy-config.js` and treat changes as exception
 These should be used only for incident response, then returned to normal operation.
 
 - `pause()` / `unpause()` (owner)
-- `resolveStaleDispute()` (owner + paused)
+- `resolveStaleDispute()` (owner‑only after `disputeReviewPeriod`; pause optional)
 - `resolveDisputeWithCode()` (moderator)
 
 ## Rare governance actions

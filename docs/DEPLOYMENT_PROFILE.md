@@ -88,7 +88,7 @@ These values should be set once in the post‑deploy configuration and treated a
 ## Minimal governance operations (day‑to‑day)
 
 - **Normal operations** require no owner action.
-- **Incident actions**: `pause`, `resolveStaleDispute` (paused).
+- **Incident actions**: `pause`, `resolveStaleDispute` (pause optional).
 - **Rare actions**: adjust allowlists, add/remove moderators, update AGI types.
 
 For governance posture and emergency policy, see [`docs/GOVERNANCE.md`](GOVERNANCE.md).
