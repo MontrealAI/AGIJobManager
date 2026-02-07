@@ -23,6 +23,26 @@ and fails on Linux in this environment.
   `package-lock.json`), then rerun `npm ci` when appropriate in a macOS
   environment.
 
+## `npm ci --omit=optional` still fails on Linux
+
+**Reproduction**
+```bash
+npm ci --omit=optional
+```
+
+**Failure**
+```
+npm error notsup Unsupported platform for fsevents@2.3.2: wanted {"os":"darwin"} (current: {"os":"linux"})
+```
+
+**Root cause**
+The `fsevents` dependency is still treated as required in this environment,
+even with `--omit=optional`.
+
+**Smallest fix**
+- Resolve `fsevents` handling in the lockfile or run installs on macOS; then
+  rerun `npm ci`.
+
 ## `npx truffle compile` / `npx truffle test` fail with missing `dotenv`
 
 **Reproduction**
@@ -62,3 +82,21 @@ sh: 1: truffle: not found
 
 **Smallest fix**
 - Resolve the `npm ci` Linux failure above, then rerun `npm test`.
+
+## `npm run lint` fails because `solhint` is missing
+
+**Reproduction**
+```bash
+npm run lint
+```
+
+**Failure**
+```
+sh: 1: solhint: not found
+```
+
+**Root cause**
+`npm ci` failed, so `solhint` (a dev dependency) was not installed.
+
+**Smallest fix**
+- Resolve the `npm ci` Linux failure above, then rerun `npm run lint`.
