@@ -642,9 +642,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function blacklistAgent(address _agent, bool _status) external onlyOwner {
         blacklistedAgents[_agent] = _status;
+        emit AgentBlacklisted(_agent, _status);
     }
     function blacklistValidator(address _validator, bool _status) external onlyOwner {
         blacklistedValidators[_validator] = _status;
+        emit ValidatorBlacklisted(_validator, _status);
     }
 
     function delistJob(uint256 _jobId) external onlyOwner {
@@ -711,15 +713,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setJobDurationLimit(uint256 _limit) external onlyOwner { jobDurationLimit = _limit; }
     function setCompletionReviewPeriod(uint256 _period) external onlyOwner {
         if (!(_period > 0 && _period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
-        uint256 oldPeriod = completionReviewPeriod;
         completionReviewPeriod = _period;
-        emit CompletionReviewPeriodUpdated(oldPeriod, _period);
     }
     function setDisputeReviewPeriod(uint256 _period) external onlyOwner {
         if (!(_period > 0 && _period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
-        uint256 oldPeriod = disputeReviewPeriod;
         disputeReviewPeriod = _period;
-        emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
     function setValidatorBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
