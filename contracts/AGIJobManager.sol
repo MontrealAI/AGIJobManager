@@ -881,12 +881,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
         uint256 quorum = requiredValidatorApprovals;
-        if (job.completed || job.expired || job.disputed) revert InvalidState();
-        if (!job.completionRequested) revert InvalidState();
+        if (job.completed || job.expired || job.disputed || !job.completionRequested) {
+            revert InvalidState();
+        }
         if (requiredValidatorDisapprovals != 0
             && (quorum == 0 || requiredValidatorDisapprovals < quorum)
         ) {
             quorum = requiredValidatorDisapprovals;
+        }
+        if (quorum < 3 && (requiredValidatorApprovals | requiredValidatorDisapprovals) != 0) {
+            quorum = 3;
         }
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
@@ -909,9 +913,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         if (totalVotes < quorum || approvals == disapprovals) {
             job.disputed = true;
-            if (job.disputedAt == 0) {
-                job.disputedAt = block.timestamp;
-            }
+            job.disputedAt = block.timestamp;
             emit JobDisputed(_jobId, msg.sender);
             return;
         }
