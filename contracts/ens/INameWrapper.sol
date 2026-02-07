@@ -5,6 +5,7 @@ interface INameWrapper {
     function ownerOf(uint256 id) external view returns (address);
     function isApprovedForAll(address owner, address operator) external view returns (bool);
     function isWrapped(bytes32 node) external view returns (bool);
+    function burnFuses(bytes32 node, uint32 fuses) external;
     function setSubnodeRecord(
         bytes32 parentNode,
         string calldata label,

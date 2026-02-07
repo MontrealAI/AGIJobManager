@@ -5,6 +5,7 @@ contract MockNameWrapper {
     mapping(uint256 => address) private owners;
     mapping(address => mapping(address => bool)) private approvals;
     mapping(bytes32 => bool) private wrapped;
+    mapping(bytes32 => uint32) private burnedFuses;
 
     function setOwner(uint256 id, address owner) external {
         owners[id] = owner;
@@ -24,6 +25,10 @@ contract MockNameWrapper {
 
     function isWrapped(bytes32 node) external view returns (bool) {
         return wrapped[node];
+    }
+
+    function burnFuses(bytes32 node, uint32 fuses) external {
+        burnedFuses[node] = fuses;
     }
 
     function setSubnodeRecord(

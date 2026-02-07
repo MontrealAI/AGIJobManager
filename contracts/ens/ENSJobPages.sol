@@ -168,7 +168,10 @@ contract ENSJobPages is Ownable {
         if (burnFuses && address(nameWrapper) != address(0)) {
             try nameWrapper.isWrapped(node) returns (bool wrapped) {
                 if (wrapped) {
-                    fusesBurned = false;
+                    try nameWrapper.burnFuses(node, type(uint32).max) {
+                        fusesBurned = true;
+                    } catch {
+                    }
                 }
             } catch {
             }
