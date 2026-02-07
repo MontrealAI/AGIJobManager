@@ -44,3 +44,21 @@ missing for `truffle-config.js`.
 **Smallest fix**
 - Install dependencies in a way that omits the macOS‑only optional package, then
   rerun `npx truffle compile` and `npx truffle test --network test`.
+
+## `npm test` fails because `truffle` is missing
+
+**Reproduction**
+```bash
+npm test
+```
+
+**Failure**
+```
+sh: 1: truffle: not found
+```
+
+**Root cause**
+`npm ci` failed, so `truffle` (a dev dependency) was not installed.
+
+**Smallest fix**
+- Resolve the `npm ci` Linux failure above, then rerun `npm test`.

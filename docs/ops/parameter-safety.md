@@ -36,7 +36,7 @@ This document is a production-grade **operator checklist** for preventing and re
 | `maxJobPayout` (`setMaxJobPayout`) | token amount | `createJob` cap; affects reputation math. | > 0; keep to realistic exposure to avoid overflow in reputation math. | Too low → `createJob` reverts. Too high → reputation math overflow (Solidity 0.8 revert) or huge escrow risk. | Set to realistic cap; redeploy if overflow prevents completion. |
 | `jobDurationLimit` (`setJobDurationLimit`) | seconds | `createJob` cap; `requestJobCompletion` deadline. | > 0; align with SLA. | Too low → `createJob` reverts or `requestJobCompletion` fails; too high → long-running stuck jobs. | Update limit; use disputes if deadline already missed. |
 | `completionReviewPeriod` (`setCompletionReviewPeriod`) | seconds | Review window after `requestJobCompletion` before `finalizeJob` can settle with deterministic fallback rules. | `1..365 days` | Hours to days (24h–7d) to give employers/validators time to act. | Too short → silent/low-vote finalization may occur before review; too long → payouts stay locked longer. | Adjust window; monitor completion requests. |
-| `disputeReviewPeriod` (`setDisputeReviewPeriod`) | seconds | Window before `resolveStaleDispute` is allowed (paused + owner only). | `1..365 days` | Days to weeks (7d–30d) to give moderators time to resolve. | Too short → owner can settle too early in incidents; too long → disputes can deadlock. | Adjust window; maintain moderator redundancy. |
+| `disputeReviewPeriod` (`setDisputeReviewPeriod`) | seconds | Window before `resolveStaleDispute` is allowed (owner‑only; pausing optional for incident recovery). | `1..365 days` | Days to weeks (7d–30d) to give moderators time to resolve. | Too short → owner can settle too early in incidents; too long → disputes can deadlock. | Adjust window; maintain moderator redundancy. |
 | `premiumReputationThreshold` (`setPremiumReputationThreshold`) | points | `canAccessPremiumFeature`. | Any non-negative uint. | Mis-set only affects premium access (no settlement impact). | Adjust threshold. |
 | `AGIType.payoutPercentage` (`addAGIType`) | uint256 percentage | Agent payout percentage in `_completeJob`. | `1..100`; **highest** payout across AGI types must satisfy `maxAgentPayoutPercentage + validationRewardPercentage <= 100` (enforced). | If any agent holds a high-percentage NFT that pushes the sum > 100, completion can revert. | Lower AGI type percentage (or validation reward %); re-validate. |
 | `pause` / `unpause` | bool | Gates most job actions. | Use `pause` for incident response, not normal ops. | If paused, new activity reverts (create/apply/validate/dispute). Completion requests and settlement exits can still proceed. | Unpause after fixing parameters; no funds lost. |
@@ -101,7 +101,7 @@ This document is a production-grade **operator checklist** for preventing and re
 10. **Dispute deadlock (no moderators)**
    - **Prerequisite:** job remains disputed without moderator action.
    - **Failure:** escrow locked indefinitely.
-   - **Escape hatch:** owner pauses and calls `resolveStaleDispute` after `disputeReviewPeriod` to settle.
+   - **Escape hatch:** owner calls `resolveStaleDispute` after `disputeReviewPeriod` to settle (pause optional).
 
 ## Recovery playbook (step-by-step)
 
@@ -125,7 +125,7 @@ This document is a production-grade **operator checklist** for preventing and re
    - **Assigned but incomplete:** validators retry `validateJob` or `disapproveJob`; after the deadline, anyone may `expireJob` if no completion request was made.
    - **Completion requested but stalled:** after `completionReviewPeriod`, anyone may `finalizeJob` to settle deterministically (silence → agent; approvals must exceed disapprovals, ties refund).
    - **Disputed jobs:** moderator calls `resolveDisputeWithCode` with the correct action code.
-   - **Disputed + no moderators:** owner pauses and uses `resolveStaleDispute` after `disputeReviewPeriod`.
+   - **Disputed + no moderators:** owner uses `resolveStaleDispute` after `disputeReviewPeriod` (pause optional).
 
 5. **Verify recovery:**
    - Query `getJobCore(jobId)` and `getJobValidation(jobId)` to confirm lifecycle flags.
