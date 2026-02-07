@@ -131,6 +131,10 @@ npm run build
 ```
 
 ```bash
+npm run lint
+```
+
+```bash
 npm test
 ```
 

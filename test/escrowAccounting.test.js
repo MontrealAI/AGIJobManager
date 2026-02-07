@@ -223,7 +223,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
   it("refunds employer minus validator rewards when validators participate", async () => {
     await manager.setRequiredValidatorApprovals(2, { from: owner });
-    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(4, { from: owner });
     await manager.setCompletionReviewPeriod(1, { from: owner });
 
     const payout = toBN(toWei("12"));
@@ -234,8 +234,10 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const employerBefore = await token.balanceOf(employer);
     const validatorBefore = await token.balanceOf(validator);
     const validatorTwoBefore = await token.balanceOf(validatorTwo);
+    const validatorThreeBefore = await token.balanceOf(validatorThree);
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validator });
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
+    await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorThree });
 
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });
@@ -243,7 +245,9 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     const validatorAfter = await token.balanceOf(validator);
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
+    const validatorThreeAfter = await token.balanceOf(validatorThree);
     const rewardPool = payout.mul(await manager.validationRewardPercentage()).divn(100);
+    const expectedReward = rewardPool.divn(3);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
@@ -252,19 +256,19 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     );
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      rewardPool.divn(2).toString(),
-      "correct disapprover should earn half the reward pool"
+      expectedReward.toString(),
+      "correct disapprover should earn one third of the reward pool"
     );
     assert.equal(
       validatorTwoAfter.sub(validatorTwoBefore).toString(),
-      rewardPool.divn(2).toString(),
-      "second disapprover should earn half the reward pool"
+      expectedReward.toString(),
+      "second disapprover should earn one third of the reward pool"
     );
   });
 
   it("routes agent bond to employer when disapprovals are below the threshold", async () => {
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
-    await manager.setRequiredValidatorDisapprovals(3, { from: owner });
+    await manager.setRequiredValidatorApprovals(2, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(4, { from: owner });
     await manager.setCompletionReviewPeriod(1, { from: owner });
 
     const payout = toBN(toWei("9"));
@@ -274,14 +278,20 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     const employerBefore = await token.balanceOf(employer);
     const validatorBefore = await token.balanceOf(validator);
-
+    const validatorTwoBefore = await token.balanceOf(validatorTwo);
+    const validatorThreeBefore = await token.balanceOf(validatorThree);
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validator });
+    await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
+    await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorThree });
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });
 
     const employerAfter = await token.balanceOf(employer);
     const validatorAfter = await token.balanceOf(validator);
+    const validatorTwoAfter = await token.balanceOf(validatorTwo);
+    const validatorThreeAfter = await token.balanceOf(validatorThree);
     const rewardPool = payout.mul(await manager.validationRewardPercentage()).divn(100);
+    const expectedReward = rewardPool.divn(3);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
@@ -290,8 +300,18 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     );
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      rewardPool.toString(),
-      "single disapprover should only receive the validator reward pool"
+      expectedReward.toString(),
+      "first disapprover should receive one third of the validator reward pool"
+    );
+    assert.equal(
+      validatorTwoAfter.sub(validatorTwoBefore).toString(),
+      expectedReward.toString(),
+      "second disapprover should receive one third of the validator reward pool"
+    );
+    assert.equal(
+      validatorThreeAfter.sub(validatorThreeBefore).toString(),
+      expectedReward.toString(),
+      "third disapprover should receive one third of the validator reward pool"
     );
   });
 

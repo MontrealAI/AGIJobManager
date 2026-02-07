@@ -9,7 +9,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { rootNode } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 const { buildInitConfig } = require("./helpers/deploy");
-const { fundValidators, fundAgents, fundDisputeBond, computeAgentBond } = require("./helpers/bonds");
+const { fundValidators, fundAgents, fundDisputeBond, computeAgentBond, computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
@@ -312,7 +312,8 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.setRequiredValidatorApprovals(2, { from: owner });
     await manager.setRequiredValidatorDisapprovals(3, { from: owner });
     await manager.addAdditionalValidator(validatorTwo, { from: owner });
-    await fundValidators(token, manager, [validatorTwo], owner);
+    await manager.addAdditionalValidator(validatorThree, { from: owner });
+    await fundValidators(token, manager, [validatorTwo, validatorThree], owner);
 
     const jobId = await createJob(payout, 1000);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
@@ -322,6 +323,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const validatorTwoBefore = await token.balanceOf(validatorTwo);
     await manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await manager.disapproveJob(jobId, "validatorTwo", EMPTY_PROOF, { from: validatorTwo });
+    await manager.validateJob(jobId, "validatorThree", EMPTY_PROOF, { from: validatorThree });
     await advanceTime(120);
 
     const employerBefore = await token.balanceOf(employer);
@@ -329,6 +331,10 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     const validationPct = await manager.validationRewardPercentage();
     const validatorReward = payout.mul(validationPct).divn(100);
+    const validatorBond = await computeValidatorBond(manager, payout);
+    const validatorSlashBps = await manager.validatorSlashBps();
+    const slashedPerIncorrect = validatorBond.mul(validatorSlashBps).divn(10000);
+    const expectedValidatorReward = validatorReward.add(slashedPerIncorrect).divn(2);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
@@ -339,12 +345,12 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
-      validatorReward.divn(2).toString(),
+      expectedValidatorReward.toString(),
       "disapproving validator should be rewarded on employer win"
     );
     assert.equal(
       validatorTwoAfter.sub(validatorTwoBefore).toString(),
-      validatorReward.divn(2).toString(),
+      expectedValidatorReward.toString(),
       "second disapproving validator should be rewarded on employer win"
     );
 
