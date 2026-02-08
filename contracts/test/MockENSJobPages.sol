@@ -11,6 +11,7 @@ contract MockENSJobPages {
     uint8 public constant HOOK_COMPLETION = 3;
     uint8 public constant HOOK_REVOKE = 4;
     uint8 public constant HOOK_LOCK = 5;
+    uint8 public constant HOOK_LOCK_BURN = 6;
 
     mapping(uint8 => bool) public revertHook;
 
@@ -26,9 +27,14 @@ contract MockENSJobPages {
     string public lastSpecURI;
     string public lastCompletionURI;
     bool public lastBurnFuses;
+    bool public useEnsTokenURI;
 
     function setRevertHook(uint8 hook, bool shouldRevert) external {
         revertHook[hook] = shouldRevert;
+    }
+
+    function setUseEnsJobTokenURI(bool enabled) external {
+        useEnsTokenURI = enabled;
     }
 
     function createJobPage(uint256 jobId, address employer, string calldata specURI) external {
@@ -75,6 +81,14 @@ contract MockENSJobPages {
             lastBurnFuses = false;
             return;
         }
+        if (hook == HOOK_LOCK_BURN) {
+            lockCalls += 1;
+            lastJobId = jobId;
+            lastEmployer = address(0);
+            lastAgent = address(0);
+            lastBurnFuses = true;
+            return;
+        }
     }
 
     function onAgentAssigned(uint256 jobId, address agent) external {
@@ -110,6 +124,11 @@ contract MockENSJobPages {
 
     function jobEnsName(uint256 jobId) external pure returns (string memory) {
         return string(abi.encodePacked("job-", jobId.toString(), ".alpha.jobs.agi.eth"));
+    }
+
+    function jobEnsTokenURI(uint256 jobId) external view returns (string memory) {
+        require(useEnsTokenURI, "disabled");
+        return string(abi.encodePacked("ens://job-", jobId.toString(), ".alpha.jobs.agi.eth"));
     }
 
 }
