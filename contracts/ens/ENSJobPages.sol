@@ -91,6 +91,11 @@ contract ENSJobPages is Ownable {
         _;
     }
 
+    modifier onlyOwnerOrJobManager() {
+        if (msg.sender != owner() && msg.sender != jobManager) revert ENSNotAuthorized();
+        _;
+    }
+
 
     function jobEnsLabel(uint256 jobId) public pure returns (string memory) {
         return string(abi.encodePacked("job-", jobId.toString()));
@@ -107,7 +112,7 @@ contract ENSJobPages is Ownable {
         return keccak256(abi.encodePacked(jobsRootNode, labelHash));
     }
 
-    function createJobPage(uint256 jobId, address employer, string memory specURI) public onlyOwner {
+    function createJobPage(uint256 jobId, address employer, string memory specURI) public onlyOwnerOrJobManager {
         if (employer == address(0)) revert InvalidParameters();
         _requireConfigured();
         bytes32 node = _createSubname(jobId);
@@ -148,7 +153,7 @@ contract ENSJobPages is Ownable {
         }
     }
 
-    function onAgentAssigned(uint256 jobId, address agent) public onlyOwner {
+    function onAgentAssigned(uint256 jobId, address agent) public onlyOwnerOrJobManager {
         if (agent == address(0)) revert InvalidParameters();
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
@@ -156,20 +161,20 @@ contract ENSJobPages is Ownable {
         emit JobENSPermissionsUpdated(jobId, agent, true);
     }
 
-    function onCompletionRequested(uint256 jobId, string memory completionURI) public onlyOwner {
+    function onCompletionRequested(uint256 jobId, string memory completionURI) public onlyOwnerOrJobManager {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
         _setTextBestEffort(node, "agijobs.completion.public", completionURI);
     }
 
-    function revokePermissions(uint256 jobId, address employer, address agent) public onlyOwner {
+    function revokePermissions(uint256 jobId, address employer, address agent) public onlyOwnerOrJobManager {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
         _setAuthorisationBestEffort(jobId, node, employer, false);
         _setAuthorisationBestEffort(jobId, node, agent, false);
     }
 
-    function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner {
+    function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwnerOrJobManager {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
         _setAuthorisationBestEffort(jobId, node, employer, false);
