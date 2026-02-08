@@ -91,6 +91,11 @@ contract ENSJobPages is Ownable {
         _;
     }
 
+    modifier onlyOwnerOrJobManager() {
+        if (msg.sender != owner() && msg.sender != jobManager) revert ENSNotAuthorized();
+        _;
+    }
+
 
     function jobEnsLabel(uint256 jobId) public pure returns (string memory) {
         return string(abi.encodePacked("job-", jobId.toString()));
@@ -185,7 +190,7 @@ contract ENSJobPages is Ownable {
         _setAuthorisationBestEffort(jobId, node, agent, false);
     }
 
-    function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner {
+    function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwnerOrJobManager {
         _lockJobENS(jobId, employer, agent, burnFuses);
     }
 
