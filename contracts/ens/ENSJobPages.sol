@@ -130,8 +130,7 @@ contract ENSJobPages is Ownable {
         _requireConfigured();
         bytes32 node = _createSubname(jobId);
         emit JobENSPageCreated(jobId, node);
-        publicResolver.setAuthorisation(node, employer, true);
-        emit JobENSPermissionsUpdated(jobId, employer, true);
+        _setAuthorisationBestEffort(jobId, node, employer, true);
         _setTextBestEffort(node, "schema", "agijobmanager/v1");
         _setTextBestEffort(node, "agijobs.spec.public", specURI);
     }
@@ -174,8 +173,7 @@ contract ENSJobPages is Ownable {
         if (agent == address(0)) revert InvalidParameters();
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
-        publicResolver.setAuthorisation(node, agent, true);
-        emit JobENSPermissionsUpdated(jobId, agent, true);
+        _setAuthorisationBestEffort(jobId, node, agent, true);
     }
 
     function onCompletionRequested(uint256 jobId, string memory completionURI) public onlyOwner {
