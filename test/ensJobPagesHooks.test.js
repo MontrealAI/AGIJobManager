@@ -111,7 +111,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     await seedAgentType(manager, nft, agent);
     await manager.setEnsJobPages(ensJobPages.address, { from: owner });
-    await ensJobPages.setUseEnsJobTokenURI(true, { from: owner });
+    await manager.setUseEnsJobTokenURI(true, { from: owner });
 
     const payout = web3.utils.toWei("10");
     await token.mint(employer, payout, { from: owner });

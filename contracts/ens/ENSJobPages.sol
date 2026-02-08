@@ -45,7 +45,6 @@ contract ENSJobPages is Ownable {
     bytes32 public jobsRootNode;
     string public jobsRootName;
     address public jobManager;
-    bool public useEnsJobTokenURI;
 
     constructor(
         address ensAddress,
@@ -87,9 +86,6 @@ contract ENSJobPages is Ownable {
         jobManager = manager;
     }
 
-    function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
-        useEnsJobTokenURI = enabled;
-    }
 
     modifier onlyJobManager() {
         if (msg.sender != jobManager) revert ENSNotAuthorized();
@@ -107,9 +103,6 @@ contract ENSJobPages is Ownable {
     }
 
     function jobEnsURI(uint256 jobId) public view returns (string memory) {
-        if (!useEnsJobTokenURI) {
-            return "";
-        }
         return string(abi.encodePacked("ens://", jobEnsName(jobId)));
     }
 
@@ -158,7 +151,23 @@ contract ENSJobPages is Ownable {
             return;
         }
         if (hook == 5 || hook == 6) {
-            (address employer, address agent, , , , , , , ) = jobManagerView.getJobCore(jobId);
+            address employer;
+            address agent;
+            try jobManagerView.getJobCore(jobId) returns (
+                address resolvedEmployer,
+                address resolvedAgent,
+                uint256,
+                uint256,
+                uint256,
+                bool,
+                bool,
+                bool,
+                uint8
+            ) {
+                employer = resolvedEmployer;
+                agent = resolvedAgent;
+            } catch {
+            }
             _lockJobENS(jobId, employer, agent, hook == 6);
             return;
         }
