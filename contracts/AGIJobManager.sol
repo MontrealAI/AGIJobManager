@@ -101,6 +101,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
+    uint256 public constant MAX_AGI_TYPES = 32;
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
     uint256 public voteQuorum = 3;
@@ -250,6 +251,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_REVOKE = 4;
     uint8 private constant ENS_HOOK_LOCK = 5;
     uint8 private constant ENS_HOOK_LOCK_BURN = 6;
+    uint256 internal constant ENS_HOOK_GAS_LIMIT = 500_000;
+    uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
     bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
     bytes4 private constant ENS_URI_SELECTOR = bytes4(keccak256("jobEnsURI(uint256)"));
 
@@ -437,7 +440,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _callEnsJobPagesHook(ENS_HOOK_ASSIGN, _jobId);
     }
 
-    function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
+    function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external nonReentrant {
         Job storage job = _job(_jobId);
         if (bytes(_jobCompletionURI).length == 0) revert InvalidParameters();
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
@@ -1007,13 +1010,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         string memory tokenUriValue = job.jobCompletionURI;
         if (useEnsJobTokenURI) {
-            (bool ok, bytes memory data) = ensJobPages.staticcall(
-                abi.encodeWithSelector(ENS_URI_SELECTOR, jobId)
-            );
-            if (ok && data.length != 0) {
-                string memory ensUri = abi.decode(data, (string));
-                if (bytes(ensUri).length != 0) {
-                    tokenUriValue = ensUri;
+            address target = ensJobPages;
+            if (target != address(0) && target.code.length != 0) {
+                (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(
+                    abi.encodeWithSelector(ENS_URI_SELECTOR, jobId)
+                );
+                if (ok && data.length != 0) {
+                    string memory ensUri = abi.decode(data, (string));
+                    if (bytes(ensUri).length != 0) {
+                        tokenUriValue = ensUri;
+                    }
                 }
             }
         }
@@ -1059,7 +1065,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
-        ensJobPages.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
+        address target = ensJobPages;
+        if (target == address(0)) return;
+        if (target.code.length == 0) return;
+        target.call{ gas: ENS_HOOK_GAS_LIMIT }(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
     }
 
     function _verifyOwnershipAgent(
@@ -1129,6 +1138,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (exists) {
             _updateAgiTypePayout(nftAddress, payoutPercentage);
         } else {
+            if (agiTypes.length >= MAX_AGI_TYPES) revert InvalidParameters();
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
         }
 
