@@ -68,7 +68,7 @@ When ENS job pages are configured, the platform attempts the following **best‑
 - On **requestJobCompletion**: `agijobs.completion.public = <jobCompletionURI>`.
 The platform also authorizes the employer on creation and the assigned agent on assignment, then revokes authorizations after terminal settlement.
 
-> These mirrors are **best‑effort** only; ENS failures never block settlement.
+> These mirrors and authorizations are **best‑effort** only; resolver/NameWrapper failures never block settlement.
 > All other keys (e.g., `agijobs.jobId`, `agijobs.contract`, `agijobs.state`) are intentionally left for employers/agents to set via the PublicResolver once authorized.
 
 ## Wrapped vs unwrapped root setup
