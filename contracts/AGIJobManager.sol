@@ -1205,6 +1205,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 available = withdrawableAGI();
         if (amount > available) revert InsufficientWithdrawableBalance();
         _t(msg.sender, amount);
+        emit AGIWithdrawn(msg.sender, amount, available - amount);
     }
 
     function canAccessPremiumFeature(address user) external view returns (bool) {
