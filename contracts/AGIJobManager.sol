@@ -846,6 +846,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _tryENSRevoke(_jobId);
     }
 
+    /// @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses.
+    /// @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort.
     function lockJobENS(uint256 jobId, bool burnFuses) external {
         Job storage job = jobs[jobId];
         if (!(job.completed || job.expired)) return;
