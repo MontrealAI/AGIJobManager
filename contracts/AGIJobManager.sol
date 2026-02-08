@@ -52,6 +52,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "./ens/IENSJobPages.sol";
 
 interface ENS {
     function resolver(bytes32 node) external view returns (address);
@@ -246,8 +247,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_ASSIGN = 2;
     uint8 private constant ENS_HOOK_COMPLETION = 3;
     uint8 private constant ENS_HOOK_REVOKE = 4;
-    uint8 private constant ENS_HOOK_LOCK = 5;
     bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
+    bytes4 private constant ENS_TOKEN_URI_SELECTOR = 0x06e290bd;
 
     constructor(
         address agiTokenAddress,
@@ -884,9 +885,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _tryENSRevoke(_jobId);
     }
 
-    function lockJobENS(uint256 jobId, bool burnFuses) external onlyOwner {
-        if (burnFuses) revert InvalidParameters();
-        _callEnsJobPagesHook(ENS_HOOK_LOCK, jobId);
+    function lockJobENS(uint256 jobId, bool burnFuses) external {
+        _callEnsJobPagesHook(burnFuses ? 6 : 5, jobId);
     }
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
@@ -959,7 +959,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         } else {
             _settleValidators(job, true, reputationPoints, validatorBudget, 0);
         }
-        _mintCompletionNFT(job);
+        _mintCompletionNFT(_jobId, job);
         _settleDisputeBond(job, true);
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
@@ -1016,12 +1016,30 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _t(agentWins ? job.assignedAgent : job.employer, poolForCorrect);
     }
 
-    function _mintCompletionNFT(Job storage job) internal {
+    function _mintCompletionNFT(uint256 jobId, Job storage job) internal {
         uint256 tokenId = nextTokenId;
         unchecked {
             ++nextTokenId;
         }
         string memory tokenUriValue = job.jobCompletionURI;
+        address target = ensJobPages;
+        bytes4 selector = ENS_TOKEN_URI_SELECTOR;
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, selector)
+            mstore(add(ptr, 0x04), jobId)
+            if staticcall(gas(), target, ptr, 0x24, 0, 0) {
+                let size := returndatasize()
+                if gt(size, 0) {
+                    let data := mload(0x40)
+                    mstore(data, size)
+                    returndatacopy(add(data, 0x20), 0, size)
+                    mstore(0x40, add(add(data, 0x20), size))
+                    let offset := mload(add(data, 0x20))
+                    tokenUriValue := add(add(data, 0x20), offset)
+                }
+            }
+        }
         bytes memory uriBytes = bytes(tokenUriValue);
         bool hasScheme;
         for (uint256 i = 0; i + 2 < uriBytes.length; ) {
@@ -1109,7 +1127,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
         address target = ensJobPages;
         if (target == address(0)) return;
-        target.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
+        bytes4 selector = ENS_HOOK_SELECTOR;
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, selector)
+            mstore(add(ptr, 0x04), hook)
+            mstore(add(ptr, 0x24), jobId)
+            pop(call(gas(), target, 0, ptr, 0x44, 0, 0))
+        }
     }
 
     function _verifyOwnershipAgent(

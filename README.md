@@ -66,6 +66,7 @@ AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other ma
 
 ## ENS job pages (ALPHA)
 Official job pages live under `job-<jobId>.alpha.jobs.agi.eth` and are platform‑owned with delegated resolver edits. See [`docs/ens-job-pages.md`](docs/ens-job-pages.md) for the full record conventions and setup notes.
+The completion NFT tokenURI can optionally point to the ENS job page (`ens://job-<jobId>.alpha.jobs.agi.eth`) when enabled.
 
 ## MONTREAL.AI × ERC‑8004: From signaling → enforcement
 
