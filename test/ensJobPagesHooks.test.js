@@ -8,6 +8,8 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPages = artifacts.require("MockENSJobPages");
 
 const { buildInitConfig } = require("./helpers/deploy");
+const { fundAgents } = require("./helpers/bonds");
+const { expectCustomError } = require("./helpers/errors");
 
 contract("AGIJobManager ENS job pages hooks", (accounts) => {
   const [owner, employer, agent] = accounts;
@@ -41,6 +43,23 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await manager.addAdditionalAgent(agentAddr, { from: owner });
   }
 
+  async function createExpiredJob(manager, token, nft) {
+    await seedAgentType(manager, nft, agent);
+    await fundAgents(token, manager, [agent], owner);
+
+    const payout = web3.utils.toWei("5");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    const createTx = await manager.createJob("ipfs://spec.json", payout, 1, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", [], { from: agent });
+    await time.increase(2);
+    await manager.expireJob(jobId, { from: employer });
+    return jobId;
+  }
+
   it("calls ENS job page hooks during lifecycle", async () => {
     const { token, manager } = await deployManager();
     const nft = await MockERC721.new({ from: owner });
@@ -69,7 +88,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await manager.finalizeJob(0, { from: employer });
     assert.equal((await ensJobPages.revokeCalls()).toString(), "1");
 
-    await manager.lockJobENS(0, true, { from: employer });
+    await manager.lockJobENS(0, true, { from: owner });
     assert.equal((await ensJobPages.lockCalls()).toString(), "1");
     assert.equal(await ensJobPages.lastBurnFuses(), true, "burnFuses should pass through");
   });
@@ -131,6 +150,25 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     await time.increase(2);
     await manager.expireJob(1, { from: employer });
+  });
+
+  it("restricts ENS fuse burning to the owner while keeping permissionless lock", async () => {
+    const { token, manager } = await deployManager();
+    const nft = await MockERC721.new({ from: owner });
+
+    const jobId = await createExpiredJob(manager, token, nft);
+
+    await expectCustomError(manager.lockJobENS.call(jobId, true, { from: employer }), "NotAuthorized");
+    await manager.lockJobENS(jobId, false, { from: employer });
+  });
+
+  it("allows owner fuse burning without ENS being configured", async () => {
+    const { token, manager } = await deployManager();
+    const nft = await MockERC721.new({ from: owner });
+
+    const jobId = await createExpiredJob(manager, token, nft);
+
+    await manager.lockJobENS(jobId, true, { from: owner });
   });
 
   it("uses ENS tokenURI when configured and preserves ens:// scheme", async () => {
