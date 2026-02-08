@@ -100,4 +100,59 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await manager.finalizeJob(0, { from: employer });
   });
 
+  it("locks job ENS records after terminal settlement", async () => {
+    const { token, manager } = await deployManager();
+    const nft = await MockERC721.new({ from: owner });
+    const ensJobPages = await MockENSJobPages.new({ from: owner });
+
+    await seedAgentType(manager, nft, agent);
+    await manager.setEnsJobPages(ensJobPages.address, { from: owner });
+
+    const payout = web3.utils.toWei("3");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+
+    await manager.requestJobCompletion(0, "ipfs://completion.json", { from: agent });
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    await manager.finalizeJob(0, { from: employer });
+
+    await manager.lockJobENS(0, true, { from: agent });
+    assert.equal((await ensJobPages.lockCalls()).toString(), "1");
+    assert.equal(await ensJobPages.lastBurnFuses(), true);
+  });
+
+  it("uses ENS token URIs when enabled", async () => {
+    const { token, manager } = await deployManager();
+    const nft = await MockERC721.new({ from: owner });
+    const ensJobPages = await MockENSJobPages.new({ from: owner });
+
+    await seedAgentType(manager, nft, agent);
+    await manager.setEnsJobPages(ensJobPages.address, { from: owner });
+    await manager.setUseEnsJobTokenURI(true, { from: owner });
+
+    const payout = web3.utils.toWei("4");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+
+    await manager.requestJobCompletion(0, "ipfs://completion.json", { from: agent });
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    await manager.finalizeJob(0, { from: employer });
+
+    assert.equal(await manager.tokenURI(0), "ens://job-0.alpha.jobs.agi.eth");
+  });
+
 });

@@ -53,6 +53,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
+import "./ens/IENSJobPages.sol";
+
 interface ENS {
     function resolver(bytes32 node) external view returns (address);
 }
@@ -158,6 +160,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     ENS public ens;
     NameWrapper public nameWrapper;
     address public ensJobPages;
+    bool private useEnsJobTokenURI;
     /// @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
 
@@ -246,7 +249,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_ASSIGN = 2;
     uint8 private constant ENS_HOOK_COMPLETION = 3;
     uint8 private constant ENS_HOOK_REVOKE = 4;
-    uint8 private constant ENS_HOOK_LOCK = 5;
     bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
 
     constructor(
@@ -457,10 +459,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
         Job storage job = _job(_jobId);
-        if (job.assignedAgent != address(0)) revert InvalidState();
+        if (job.assignedAgent != address(0) || activeJobsByAgent[msg.sender] >= maxActiveJobsPerAgent) {
+            revert InvalidState();
+        }
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
         if (!(additionalAgents[msg.sender] || _verifyOwnershipAgent(msg.sender, subdomain, proof))) revert NotAuthorized();
-        if (activeJobsByAgent[msg.sender] >= maxActiveJobsPerAgent) revert InvalidState();
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
@@ -481,11 +484,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external {
         Job storage job = _job(_jobId);
-        if (bytes(_jobCompletionURI).length == 0) revert InvalidParameters();
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
-        if (job.completed || job.expired) revert InvalidState();
+        if (job.completed || job.expired || job.completionRequested) revert InvalidState();
         if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
-        if (job.completionRequested) revert InvalidState();
         _requireValidUri(_jobCompletionURI);
         job.jobCompletionURI = _jobCompletionURI;
         job.completionRequested = true;
@@ -509,15 +510,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bool approve
     ) internal {
         Job storage job = _job(_jobId);
-        if (job.disputed) revert InvalidState();
-        if (job.assignedAgent == address(0)) revert InvalidState();
-        if (job.completed) revert InvalidState();
-        if (job.expired) revert InvalidState();
+        if (job.disputed || job.completed || job.expired || job.assignedAgent == address(0)) revert InvalidState();
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender] || _verifyOwnershipValidator(msg.sender, subdomain, proof))) revert NotAuthorized();
-        if (!job.completionRequested) revert InvalidState();
-        if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
-        if (job.approvals[msg.sender] || job.disapprovals[msg.sender]) revert InvalidState();
+        if (
+            !job.completionRequested ||
+            block.timestamp > job.completionRequestedAt + completionReviewPeriod ||
+            job.approvals[msg.sender] ||
+            job.disapprovals[msg.sender]
+        ) revert InvalidState();
 
         uint256 bond = job.validatorBondAmount;
         if (bond == 0) {
@@ -563,10 +564,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function disputeJob(uint256 _jobId) external whenNotPaused nonReentrant {
         Job storage job = _job(_jobId);
-        if (job.disputed || job.completed || job.expired) revert InvalidState();
+        if (
+            job.disputed ||
+            job.completed ||
+            job.expired ||
+            !job.completionRequested ||
+            block.timestamp > job.completionRequestedAt + completionReviewPeriod
+        ) revert InvalidState();
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
-        if (!job.completionRequested) revert InvalidState();
-        if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
         uint256 bond;
         unchecked {
             bond = (job.payout * DISPUTE_BOND_BPS) / 10_000;
@@ -636,9 +641,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function resolveStaleDispute(uint256 _jobId, bool employerWins) external onlyOwner nonReentrant {
         Job storage job = _job(_jobId);
-        if (!job.disputed || job.expired) revert InvalidState();
-        if (job.disputedAt == 0) revert InvalidState();
-        if (block.timestamp <= job.disputedAt + disputeReviewPeriod) revert InvalidState();
+        if (
+            !job.disputed ||
+            job.expired ||
+            job.disputedAt == 0 ||
+            block.timestamp <= job.disputedAt + disputeReviewPeriod
+        ) revert InvalidState();
 
         job.disputed = false;
         job.disputedAt = 0;
@@ -688,6 +696,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
         ensJobPages = _ensJobPages;
+    }
+    function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        useEnsJobTokenURI = enabled;
     }
     function updateRootNodes(
         bytes32 _clubRootNode,
@@ -871,8 +882,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function expireJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
-        if (job.completed || job.expired || job.disputed || job.completionRequested) revert InvalidState();
-        if (job.assignedAgent == address(0)) revert InvalidState();
+        if (
+            job.completed ||
+            job.expired ||
+            job.disputed ||
+            job.completionRequested ||
+            job.assignedAgent == address(0)
+        ) revert InvalidState();
         if (block.timestamp <= job.assignedAt + job.duration) revert InvalidState();
 
         job.expired = true;
@@ -884,17 +900,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _tryENSRevoke(_jobId);
     }
 
-    function lockJobENS(uint256 jobId, bool burnFuses) external onlyOwner {
-        if (burnFuses) revert InvalidParameters();
-        _callEnsJobPagesHook(ENS_HOOK_LOCK, jobId);
+    function lockJobENS(uint256 jobId, bool burnFuses) external {
+        _callEnsJobPagesHook(burnFuses ? 6 : 5, jobId);
     }
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
-        if (job.completed || job.expired || job.disputed) revert InvalidState();
-        if (!job.completionRequested) revert InvalidState();
+        if (job.completed || job.disputed || !job.completionRequested) revert InvalidState();
         if (job.validatorApproved) {
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (approvals > disapprovals) {
@@ -930,9 +944,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _completeJob(uint256 _jobId, bool repEligible) internal {
         Job storage job = _job(_jobId);
-        if (job.completed || job.expired) revert InvalidState();
-        if (job.disputed) revert InvalidState();
-        if (job.assignedAgent == address(0)) revert InvalidState();
+        if (job.completed || job.disputed || job.assignedAgent == address(0)) revert InvalidState();
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         if (agentPayoutPercentage == 0) revert InvalidState();
@@ -959,7 +971,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         } else {
             _settleValidators(job, true, reputationPoints, validatorBudget, 0);
         }
-        _mintCompletionNFT(job);
+        _mintCompletionNFT(_jobId, job);
         _settleDisputeBond(job, true);
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
@@ -1016,12 +1028,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _t(agentWins ? job.assignedAgent : job.employer, poolForCorrect);
     }
 
-    function _mintCompletionNFT(Job storage job) internal {
+    function _mintCompletionNFT(uint256 jobId, Job storage job) internal {
         uint256 tokenId = nextTokenId;
         unchecked {
             ++nextTokenId;
         }
         string memory tokenUriValue = job.jobCompletionURI;
+        if (useEnsJobTokenURI) {
+            (bool ok, bytes memory data) = ensJobPages.staticcall(
+                abi.encodeWithSelector(IENSJobPages.jobEnsURI.selector, jobId)
+            );
+            if (ok) {
+                tokenUriValue = abi.decode(data, (string));
+            }
+        }
         bytes memory uriBytes = bytes(tokenUriValue);
         bool hasScheme;
         for (uint256 i = 0; i + 2 < uriBytes.length; ) {
@@ -1107,9 +1127,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
-        address target = ensJobPages;
-        if (target == address(0)) return;
-        target.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
+        ensJobPages.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
     }
 
     function _verifyOwnershipAgent(

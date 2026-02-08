@@ -101,6 +101,10 @@ contract ENSJobPages is Ownable {
         return string(abi.encodePacked(jobEnsLabel(jobId), ".", jobsRootName));
     }
 
+    function jobEnsURI(uint256 jobId) public view returns (string memory) {
+        return string(abi.encodePacked("ens://", jobEnsName(jobId)));
+    }
+
 
     function jobEnsNode(uint256 jobId) public view returns (bytes32) {
         bytes32 labelHash = keccak256(bytes(jobEnsLabel(jobId)));
@@ -146,8 +150,19 @@ contract ENSJobPages is Ownable {
             return;
         }
         if (hook == 5) {
-            (address employer, address agent, , , , , , , ) = jobManagerView.getJobCore(jobId);
+            (address employer, address agent, , , , bool completed, , bool expired, ) = jobManagerView.getJobCore(jobId);
+            if (!completed && !expired) {
+                return;
+            }
             _lockJobENS(jobId, employer, agent, false);
+            return;
+        }
+        if (hook == 6) {
+            (address employer, address agent, , , , bool completed, , bool expired, ) = jobManagerView.getJobCore(jobId);
+            if (!completed && !expired) {
+                return;
+            }
+            _lockJobENS(jobId, employer, agent, true);
             return;
         }
     }
