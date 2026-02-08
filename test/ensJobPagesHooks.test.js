@@ -68,6 +68,10 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await time.increase(reviewPeriod.addn(1));
     await manager.finalizeJob(0, { from: employer });
     assert.equal((await ensJobPages.revokeCalls()).toString(), "1");
+
+    await manager.lockJobENS(0, true, { from: employer });
+    assert.equal((await ensJobPages.lockCalls()).toString(), "1");
+    assert.equal(await ensJobPages.lastBurnFuses(), true, "burnFuses should pass through");
   });
 
   it("does not block flows when ENS hooks revert", async () => {
@@ -98,6 +102,36 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
     await manager.finalizeJob(0, { from: employer });
+  });
+
+  it("uses ENS tokenURI when configured", async () => {
+    const { token, manager } = await deployManager();
+    const nft = await MockERC721.new({ from: owner });
+    const ensJobPages = await MockENSJobPages.new({ from: owner });
+
+    await seedAgentType(manager, nft, agent);
+    await manager.setEnsJobPages(ensJobPages.address, { from: owner });
+    await ensJobPages.setUseEnsJobTokenURI(true, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion.json", { from: agent });
+
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    const receipt = await manager.finalizeJob(0, { from: employer });
+    const issued = receipt.logs.find((log) => log.event === "NFTIssued");
+    assert.ok(issued, "NFTIssued event should be emitted");
+    const tokenId = issued.args.tokenId.toString();
+    const tokenUri = await manager.tokenURI(tokenId);
+    assert.equal(tokenUri, "ens://job-0.alpha.jobs.agi.eth");
   });
 
 });

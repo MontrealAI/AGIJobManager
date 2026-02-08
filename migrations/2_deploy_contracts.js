@@ -3,6 +3,11 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockResolver = artifacts.require("MockResolver");
+const BondMath = artifacts.require("BondMath");
+const ENSOwnership = artifacts.require("ENSOwnership");
+const ReputationMath = artifacts.require("ReputationMath");
+const TransferUtils = artifacts.require("TransferUtils");
+const UriUtils = artifacts.require("UriUtils");
 
 const {
   ZERO_ROOT,
@@ -16,6 +21,17 @@ function isTrue(value) {
 }
 
 module.exports = async function (deployer, network, accounts) {
+  await deployer.deploy(BondMath);
+  await deployer.deploy(ENSOwnership);
+  await deployer.deploy(ReputationMath);
+  await deployer.deploy(TransferUtils);
+  await deployer.deploy(UriUtils);
+  await deployer.link(BondMath, AGIJobManager);
+  await deployer.link(ENSOwnership, AGIJobManager);
+  await deployer.link(ReputationMath, AGIJobManager);
+  await deployer.link(TransferUtils, AGIJobManager);
+  await deployer.link(UriUtils, AGIJobManager);
+
   if (network === "development" || network === "test") {
     await deployer.deploy(MockERC20);
     const token = await MockERC20.deployed();

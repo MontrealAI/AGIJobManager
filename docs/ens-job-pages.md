@@ -32,6 +32,7 @@ This keeps the namespace official and prevents spoofed job pages while still all
 
 ### Optional post‑terminal lock
 If the job subname is wrapped (ENS NameWrapper), the platform may attempt fuse burning after terminal states. This is optional and **best‑effort** only; settlement never depends on fuse behavior.
+Anyone can also call `AGIJobManager.lockJobENS(jobId, burnFuses)` after a job is terminal to revoke authorizations again and optionally attempt fuse burning (best‑effort).
 
 ## ENS record conventions
 
@@ -64,6 +65,7 @@ Use one of:
 When ENS job pages are configured, the platform attempts the following **best‑effort** mirrors:
 - On **createJob**: `schema = agijobmanager/v1`, `agijobs.spec.public = <jobSpecURI>`.
 - On **requestJobCompletion**: `agijobs.completion.public = <jobCompletionURI>`.
+The platform also authorizes the employer on creation and the assigned agent on assignment, then revokes authorizations after terminal settlement.
 
 > These mirrors are **best‑effort** only; ENS failures never block settlement.
 
@@ -83,3 +85,10 @@ When ENS job pages are configured, the platform attempts the following **best‑
 - Ensure employer/agent wallets are authorized to edit text records via the resolver.
 - Avoid secrets: use hashes or URIs only.
 - Revoke resolver authorizations after terminal settlement.
+
+## ENS job NFT tokenURI (optional)
+When `ENSJobPages.useEnsJobTokenURI` is enabled and an ENS helper is configured, completion NFTs point to:
+```
+ens://job-<jobId>.alpha.jobs.agi.eth
+```
+When disabled (default), the tokenURI behavior is unchanged and continues to use the completion metadata pointer.
