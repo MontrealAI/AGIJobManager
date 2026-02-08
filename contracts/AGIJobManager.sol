@@ -237,6 +237,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
+    event PlatformRevenueAccrued(uint256 indexed jobId, uint256 amount);
     event IdentityConfigurationLocked(address indexed locker, uint256 atTimestamp);
     event AgentBlacklisted(address indexed agent, bool status);
     event ValidatorBlacklisted(address indexed validator, bool status);
@@ -847,7 +848,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function lockJobENS(uint256 jobId, bool burnFuses) external {
         Job storage job = jobs[jobId];
-        if (!job.completed && !job.expired && job.employer != address(0)) return;
+        if (!(job.completed || job.expired)) return;
+        if (burnFuses && msg.sender != owner()) revert NotAuthorized();
         _callEnsJobPagesHook(burnFuses ? ENS_HOOK_LOCK_BURN : ENS_HOOK_LOCK, jobId);
     }
 
@@ -890,20 +892,32 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     }
 
+    /// @dev On agent-win, any remainder after agent/validator allocations is intentional platform revenue.
+    /// @dev It stays in-contract and becomes withdrawable via withdrawAGI() when paused,
+    /// @dev as long as lockedEscrow/locked*Bonds are fully covered.
     function _completeJob(uint256 _jobId, bool repEligible) internal {
         Job storage job = _job(_jobId);
-        if (job.completed || job.expired) revert InvalidState();
-        if (job.disputed) revert InvalidState();
-        if (job.assignedAgent == address(0)) revert InvalidState();
+        if (job.completed || job.expired || job.disputed || job.assignedAgent == address(0)) {
+            revert InvalidState();
+        }
 
         uint256 agentPayoutPercentage = job.agentPayoutPct;
-        if (agentPayoutPercentage == 0) revert InvalidState();
-        uint256 validatorBudget = (job.payout * validationRewardPercentage) / 100;
-        if (agentPayoutPercentage + validationRewardPercentage > 100) {
-            revert InvalidParameters();
+        uint256 validatorBudget;
+        uint256 agentPayout;
+        validatorBudget = (job.payout * validationRewardPercentage) / 100;
+        agentPayout = (job.payout * agentPayoutPercentage) / 100;
+        unchecked {
+            if (agentPayoutPercentage + validationRewardPercentage > 100) {
+                revert InvalidParameters();
+            }
         }
-        uint256 agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        if (agentPayout + validatorBudget > job.payout) revert InvalidParameters();
+        uint256 retained;
+        unchecked {
+            retained = job.payout - agentPayout - validatorBudget;
+        }
+        if (retained > 0) {
+            emit PlatformRevenueAccrued(_jobId, retained);
+        }
 
         job.completed = true;
         _decrementActiveJob(job);
@@ -1078,6 +1092,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function addAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = true; }
     function removeAdditionalAgent(address agent) external onlyOwner { additionalAgents[agent] = false; }
 
+    /// @notice Includes retained payout remainders; withdrawable only via withdrawAGI() when paused.
+    /// @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds.
     function withdrawableAGI() public view returns (uint256) {
         uint256 bal = agiToken.balanceOf(address(this));
         uint256 lockedTotal = lockedEscrow + lockedValidatorBonds + lockedAgentBonds + lockedDisputeBonds;
