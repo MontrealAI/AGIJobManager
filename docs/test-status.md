@@ -1,7 +1,7 @@
 # Test status (local)
 
 This file records the latest local test outcomes and any environment‑specific
-failures.
+failures. Warnings are treated as failures for audit readiness.
 
 ## Environment
 - OS: Linux (container)
@@ -19,19 +19,19 @@ npm ci
 ```bash
 npm install --omit=optional
 ```
-**Result:** succeeded (with deprecation warnings). Used as a fallback to install
-dependencies after `npm ci` failed on Linux.
+**Result:** succeeded, but emitted warnings treated as failures:
+- `npm warn Unknown env config "http-proxy"`.
+- Multiple deprecation warnings from transitive dependencies.
+- `npm audit` reports vulnerabilities (27 low, 12 moderate, 19 high, 7 critical).
 
-## Test commands
-```bash
-npx truffle version
-```
-**Result:** succeeded.
-
+## Build + test commands
 ```bash
 npx truffle compile
 ```
-**Result:** succeeded. No compile warnings reported.
+**Result:** succeeded, but emitted compiler warnings treated as failures:
+- Name shadowing warning in `contracts/test/MockENSRegistry.sol` (`setOwner` argument).
+- Name shadowing warning in `contracts/test/MockPublicResolver.sol` (`setAuthorisation` argument).
+- Low‑level call return value unused in `contracts/AGIJobManager.sol` (`ensJobPages.call`).
 
 ```bash
 npx truffle test
@@ -42,7 +42,7 @@ This happens because the default Truffle network expects a local node on port 85
 ```bash
 npx truffle test --network test
 ```
-**Result:** passed (`193 passing`).
+**Result:** passed (`226 passing`).
 
 **Smallest next fix (for the failing command):**
 - Run tests against the configured in‑process Ganache network with

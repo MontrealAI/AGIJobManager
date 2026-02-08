@@ -49,19 +49,13 @@ AGIJobManager validates **agents** and **validators** via a layered model:
 2) **ENS namespace ownership**
    - The contract stores **root nodes** for the agent and club namespaces.
    - It derives a subnode from the supplied `subdomain` and checks ownership.
+   - Ownership checks are satisfied if **either**:
+     - `NameWrapper.ownerOf(subnode) == claimant`, **or**
+     - the ENS resolver’s `addr(subnode)` returns the claimant address.
 
-3) **NameWrapper ownership**
-   - The contract checks `NameWrapper.ownerOf(subnode)` for direct ownership.
-
-4) **Resolver address match**
-   - The contract checks the ENS resolver’s `addr(subnode)` for address matches.
-
-5) **Explicit allowlists & blacklists**
-   - `additionalAgents` / `additionalValidators` are explicit overrides.
+3) **Explicit allow/deny overrides**
+   - `additionalAgents` / `additionalValidators` are explicit allowlist overrides.
    - `blacklistedAgents` / `blacklistedValidators` override everything else.
-
-When ownership checks succeed, an `OwnershipVerified` event is emitted for the
-claimant and subdomain.
 
 ## Root nodes and namespace mapping
 

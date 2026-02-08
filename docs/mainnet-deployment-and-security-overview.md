@@ -50,27 +50,27 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 
 **Timeouts & liveness**
 - **Expiration**: `expireJob` refunds the employer when the job duration elapses and completion was never requested.
-- **Finalize after review window**: `finalizeJob` settles after `completionReviewPeriod` when validators are silent or split. If no validators voted, only the employer can call finalize after the review window.
+- **Finalize after review window**: `finalizeJob` settles after `completionReviewPeriod` when validators are silent or split. If no validators voted, anyone can finalize; the outcome defaults to an agent win.
 - **Validator approval + challenge window**: once `validatorApprovals` reaches `requiredValidatorApprovals`, the job becomes `validatorApproved` and can be finalized after `challengePeriodAfterApproval` if approvals still exceed disapprovals.
 - **Stale dispute recovery**: `resolveStaleDispute` is owner‑only after `disputeReviewPeriod` (pause optional; often used during incident response).
 
 ## 4) Treasury vs escrow separation (hard invariant)
-**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Bonds** are tracked by `lockedAgentBonds` and `lockedValidatorBonds`. **Treasury** is the AGI balance minus escrow and locked bonds.
+**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Bonds** are tracked by `lockedAgentBonds`, `lockedValidatorBonds`, and `lockedDisputeBonds`. **Treasury** is the AGI balance minus escrow and locked bonds.
 
 **Why this matters**: it defines the hard boundary auditors and users rely on to ensure escrowed job funds cannot be withdrawn by the operator.
 
-- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and **reverts** if obligations exceed balance.
+- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow - lockedAgentBonds - lockedValidatorBonds - lockedDisputeBonds` and **reverts** if obligations exceed balance.
 - `withdrawAGI()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableAGI()`.
 
 **What becomes treasury**
 - Payout remainder when `agentPayoutPct + validationRewardPercentage < 100`.
 - Rounding dust from integer division.
-- Direct contributions via `contributeToRewardPool` (no segregation).
+- Direct contributions via `contributeToRewardPool` (no segregation or automated distribution; funds remain in the general contract balance).
 
 **Simple example**
 - Contract balance = 10,000 AGI
 - `lockedEscrow` = 9,000 AGI
-- `lockedAgentBonds + lockedValidatorBonds` = 250 AGI
+- `lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` = 250 AGI
 - `withdrawableAGI()` = 750 AGI (and `withdrawAGI` cannot exceed this)
 
 Escrowed funds can only be released through settlement paths (completion, refund, cancel, expire). The owner cannot sweep escrowed funds.
@@ -86,11 +86,13 @@ The identity lock is a one‑way switch intended to freeze identity wiring after
 - `updateAGITokenAddress`
 - `updateEnsRegistry`
 - `updateNameWrapper`
+- `setEnsJobPages`
 - `updateRootNodes`
 
 **Not locked**
 - `updateMerkleRoots` (allowlist roots remain adjustable).
 - Operational controls (pause/unpause, allowlists/blacklists, parameter tuning).
+- `setUseEnsJobTokenURI` (operational toggle for ENS-based token URIs).
 - Treasury withdrawals (still paused‑only).
 
 **Pre‑lock constraints**
@@ -107,24 +109,20 @@ Pause is an incident‑response control to halt new activity while preserving ex
 
 **Pause policy table**
 
-**Blocked while paused** (`whenNotPaused`):
-- `createJob`
-- `applyForJob`
-- `validateJob`
-- `disapproveJob`
-- `disputeJob`
-- `contributeToRewardPool`
-
-**Allowed while paused** (no `whenNotPaused` guard):
-- `requestJobCompletion`
-- `cancelJob`
-- `expireJob`
-- `finalizeJob`
-- `resolveDispute`
-- `resolveDisputeWithCode`
-- `delistJob`
-- `withdrawAGI` (owner‑only, **paused‑only**)
-- `resolveStaleDispute` (owner‑only after `disputeReviewPeriod`; pause optional)
+| Function group | Who can call | Paused? | Notes |
+| --- | --- | --- | --- |
+| `createJob` | Employer | Blocked | Creates new escrowed obligations. |
+| `applyForJob` | Agent | Blocked | Assigns an agent and locks the agent bond. |
+| `validateJob` / `disapproveJob` | Validator | Blocked | Posts validator bonds and records votes. |
+| `disputeJob` | Employer/Agent | Blocked | Manual dispute initiation (validator-driven disputes are internal). |
+| `contributeToRewardPool` | Any | Blocked | Transfers funds into the contract balance. |
+| `requestJobCompletion` | Assigned agent | Allowed | Keeps agents from being trapped during pauses. |
+| `cancelJob` / `expireJob` | Employer / Any | Allowed | Settlement exits remain live. |
+| `finalizeJob` | Any | Allowed | Finalizes after review windows/challenge periods. |
+| `resolveDispute` / `resolveDisputeWithCode` | Moderator | Allowed | Dispute resolution remains available during pauses. |
+| `delistJob` | Owner | Allowed | Owner can delist unassigned jobs. |
+| `withdrawAGI` | Owner | **Allowed only while paused** | Treasury withdrawals are pause‑gated. |
+| `resolveStaleDispute` | Owner | Allowed | Only after `disputeReviewPeriod`; pause optional. |
 
 ## 7) Security posture (operational highlights)
 - **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `withdrawAGI`, dispute resolution, settlement).
@@ -136,7 +134,11 @@ Pause is an incident‑response control to halt new activity while preserving ex
 - **Known limitations**: centralized operator risk; parameter changes can affect in‑flight jobs; no on‑chain enforcement of off‑chain legal terms; “reward pool” is not segregated from treasury.
 
 ### Reputation system (as implemented)
-- Agent reputation uses `reputationPoints = log2(1 + payoutPoints * 1e6) + timeBonus`, with `payoutPoints = (scaledPayout^3) / 1e5` and `timeBonus = max(0, (duration - completionTime) / 10000)`.
+- Agent and validator reputation points are computed via `ReputationMath.computeReputationPoints`:
+  - `payoutUnits = payout / 1e15`
+  - `base = log2(1 + payoutUnits)`
+  - `timeBonus = (duration - completionTime) / 10000` when `duration > completionTime`, then capped at `base`
+  - `reputationPoints = base + timeBonus` (or `0` if `repEligible` is false)
 - Reputation is then **diminished** by `1 + (newReputation^2 / 88888^2)` and capped at **88888**.
 - Validator payouts/reputation are outcome‑aligned: correct‑side voters earn rewards, incorrect‑side voters are slashed.
 - `premiumReputationThreshold` gates `canAccessPremiumFeature(address)` (pure threshold check; no time decay).
@@ -182,22 +184,27 @@ npx truffle run verify AGIJobManager --network mainnet
 ```
 
 ## 10) Monitoring / alerting checklist
-Index and alert on the following events:
+Index and alert on the following events (as emitted in the current contract):
 - **Job lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobCompleted`, `JobExpired`, `JobCancelled`.
 - **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`.
-- **Validator flow**: `ValidatorBonded`, `JobValidatorApproved`, `ValidatorsSettled`.
 - **NFT issuance**: `NFTIssued`.
-- **Treasury/ops**: `AGIWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`.
-- **Identity**: `IdentityConfigurationLocked`, `MerkleRootsUpdated`, `RootNodesUpdated`, `EnsRegistryUpdated`, `NameWrapperUpdated`.
+- **Treasury/ops**: `AGIWithdrawn`, `RewardPoolContribution`, `PlatformRevenueAccrued`, `Paused`, `Unpaused`.
+- **Identity wiring**: `EnsRegistryUpdated`.
+- **Reputation**: `ReputationUpdated`.
 - **Blacklists**: `AgentBlacklisted`, `ValidatorBlacklisted`.
 
 **Solvency invariant**
-Always ensure: `agiToken.balanceOf(contract) >= lockedEscrow + lockedAgentBonds + lockedValidatorBonds`.
+Always ensure: `agiToken.balanceOf(contract) >= lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`.
 
 **Operational monitoring suggestions**
 - Alert on owner actions (pause, withdrawals, identity lock, parameter changes).
 - Track validator participation rates and dispute volumes.
 - Monitor escrow solvency and delayed finalizations.
+
+## 11) Additional notes (code‑accurate)
+- **`additionalAgentPayoutPercentage` is currently unused** in settlement math; it is a reserved parameter with no effect on payouts today.
+- **No internal NFT marketplace**: job NFTs are standard ERC‑721 tokens; trading happens via external marketplaces using standard approvals/transfers.
+- **Not a decentralized court/DAO**: disputes are resolved by moderators (and stale disputes by the owner) with on‑chain event transparency, not by a DAO or on‑chain jury.
 
 ## 11) Known gaps / future work
 - `additionalAgentPayoutPercentage` is **unused** in settlement logic (reserved for future use).

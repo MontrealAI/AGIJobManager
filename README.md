@@ -25,7 +25,7 @@
 
 ## Important trust notes
 - **Owner-operated**: the owner can pause/unpause, tune parameters, and manage allowlists/blacklists.
-- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`, `lockedAgentBonds`, and `lockedValidatorBonds`) and only while paused; escrowed funds and bonds are not withdrawable.
+- **Escrow invariant**: the owner can withdraw **treasury only** (AGI balance minus `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, and `lockedDisputeBonds`) and only while paused; escrowed funds and bonds are not withdrawable.
 - **Pause semantics**: new activity is blocked, but completion requests and settlement exits remain available.
 - **Identity wiring lock**: `lockIdentityConfiguration()` permanently freezes token/ENS/root-node wiring, while leaving operational controls intact.
 - **Validator incentives**: validators post a bond per vote (capped at payout), earn rewards when their vote matches the final outcome, and are slashed when they are wrong.
@@ -96,13 +96,14 @@ stateDiagram-v2
     CompletionRequested --> ApprovalWindow: validateJob (approval threshold)
     ApprovalWindow --> Completed: finalizeJob (after challenge window)
     CompletionRequested --> Completed: finalizeJob (timeout, no validator activity)
+    CompletionRequested --> Refunded: finalizeJob (timeout, employer win)
 
     CompletionRequested --> Disputed: disapproveJob (disapproval threshold)
     CompletionRequested --> Disputed: disputeJob (manual)
 
     Disputed --> Completed: resolveDisputeWithCode(AGENT_WIN)
-    Disputed --> Completed: resolveDisputeWithCode(EMPLOYER_WIN)
-    Disputed --> Completed: resolveStaleDispute (owner, paused, timeout)
+    Disputed --> Refunded: resolveDisputeWithCode(EMPLOYER_WIN)
+    Disputed --> Completed: resolveStaleDispute (owner, timeout)
 
     InProgress --> Expired: expireJob (timeout, no completion request)
 
@@ -116,7 +117,7 @@ stateDiagram-v2
 **Dispute lane policy**
 - Disputes can only be initiated after completion is requested (`completionRequested == true`).
 - Once disputed, validator voting is frozen; approvals/disapprovals no longer progress settlement.
-- Settlement while disputed happens only via moderator resolution or owner stale‑dispute resolution (when paused).
+- Settlement while disputed happens only via moderator resolution or owner stale‑dispute resolution (pause optional, after the dispute review window).
 
 ### Full‑stack trust layer (signaling → enforcement)
 ```mermaid
