@@ -6,6 +6,7 @@
   - Jobs root node is owned or wrapped by the expected entity.
   - Resolver is set correctly for the root and job subdomains.
   - Job manager address is configured in the ENS job pages contract (if used).
+  - ENS job pages address is non-zero and has contract code when enabled.
 - Run Slither and unit tests; include at least one invariant-style test focused on solvency
   (contract balance >= lockedEscrow + locked*Bonds) and settlement flows.
 - Obtain an external audit or review before deploying funds at scale.
