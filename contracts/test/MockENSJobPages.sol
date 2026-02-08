@@ -15,6 +15,8 @@ contract MockENSJobPages {
 
     mapping(uint8 => bool) public revertHook;
     bool public useEnsJobTokenURI;
+    bool public useJobEnsUriOverride;
+    string public jobEnsUriOverride;
 
     uint256 public createCalls;
     uint256 public assignCalls;
@@ -123,7 +125,20 @@ contract MockENSJobPages {
     }
 
     function jobEnsURI(uint256 jobId) external view returns (string memory) {
+        if (useJobEnsUriOverride) {
+            return jobEnsUriOverride;
+        }
         return string(abi.encodePacked("ens://job-", jobId.toString(), ".alpha.jobs.agi.eth"));
+    }
+
+    function setJobEnsUriOverride(string calldata uri) external {
+        useJobEnsUriOverride = true;
+        jobEnsUriOverride = uri;
+    }
+
+    function clearJobEnsUriOverride() external {
+        useJobEnsUriOverride = false;
+        jobEnsUriOverride = "";
     }
 
     function setUseEnsJobTokenURI(bool enabled) external {

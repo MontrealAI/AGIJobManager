@@ -37,24 +37,25 @@ Anyone can also call `AGIJobManager.lockJobENS(jobId, burnFuses)` after a job is
 ## ENS record conventions
 
 > **Privacy warning**: ENS text records are public and immutable in history. Do **not** store secrets.
+> Prefer URIs, hashes, or encrypted blobs with off‑chain key exchange.
 
-### Core keys (recommended)
+### Core keys (written by the platform, best‑effort)
 | Key | Example | Description |
 | --- | --- | --- |
 | `schema` | `agijobmanager/v1` | Schema/version marker. |
+| `agijobs.spec.public` | `ipfs://...` | Public job spec pointer (matches on‑chain `jobSpecURI`). |
+| `agijobs.completion.public` | `ipfs://...` | Public completion pointer (matches on‑chain `jobCompletionURI`). |
+
+### Optional integrity keys (recommended for operators)
+| Key | Example | Description |
+| --- | --- | --- |
+| `agijobs.spec.hash` | `0x...` | Hash of the spec content (e.g., keccak256/SHA‑256). |
+| `agijobs.completion.hash` | `0x...` | Hash of completion content. |
 | `agijobs.jobId` | `42` | On‑chain job ID. |
 | `agijobs.contract` | `0x...` | AGIJobManager address. |
 | `agijobs.employer` | `0x...` | Employer address. |
 | `agijobs.agent` | `0x...` | Assigned agent address (empty until assigned). |
 | `agijobs.state` | `CREATED` | Current job state (see below). |
-| `agijobs.spec.public` | `ipfs://...` | Public job spec pointer (matches on‑chain `jobSpecURI`). |
-| `agijobs.completion.public` | `ipfs://...` | Public completion pointer (matches on‑chain `jobCompletionURI`). |
-
-### Optional integrity keys (privacy‑friendly)
-| Key | Example | Description |
-| --- | --- | --- |
-| `agijobs.spec.hash` | `0x...` | Hash of the spec content (e.g., keccak256/SHA‑256). |
-| `agijobs.completion.hash` | `0x...` | Hash of completion content. |
 
 ### Canonical job state labels
 Use one of:
@@ -81,6 +82,10 @@ The platform also authorizes the employer on creation and the assigned agent on 
 - NameWrapper owner of the root must be the platform contract (or approve it via `isApprovedForAll`).
 - Subnames are created via `NameWrapper.setSubnodeRecord(...)`.
 
+## Resolver requirements
+- `ENSJobPages` expects a PublicResolver that exposes `setAuthorisation(bytes32,address,bool)` and `setText(bytes32,string,string)`.
+- Verify the resolver by calling `supportsInterface` off‑chain or inspecting the deployment’s ABI.
+
 ## ENSJobPages helper wiring (on-chain)
 
 When using the `ENSJobPages` helper contract, complete these wiring steps:
@@ -104,3 +109,12 @@ When `AGIJobManager.setUseEnsJobTokenURI(true)` is enabled (and an ENS helper is
 ens://job-<jobId>.alpha.jobs.agi.eth
 ```
 When disabled (default), the tokenURI behavior is unchanged and continues to use the completion metadata pointer.
+
+## Post‑terminal lock (optional)
+`AGIJobManager.lockJobENS(jobId, burnFuses)` can be called after a terminal state to re‑revoke resolver authorizations and optionally attempt fuse burning (best‑effort).
+When `burnFuses` is true and the name is wrapped, `ENSJobPages` attempts to burn only:
+- `CANNOT_SET_RESOLVER`
+- `CANNOT_SET_TTL`
+
+These minimal fuses prevent resolver/TTL changes without burning all fuses, reducing the risk of accidental lockouts.
+Fuse burning is optional and does **not** affect settlement or withdrawals if it fails.
