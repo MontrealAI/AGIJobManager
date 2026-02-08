@@ -1204,6 +1204,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "ensJobPages",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -2084,6 +2097,19 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_ensJobPages",
+          "type": "address"
+        }
+      ],
+      "name": "setEnsJobPages",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes32",
           "name": "_clubRootNode",
           "type": "bytes32"
@@ -2578,6 +2604,24 @@
         }
       ],
       "name": "expireJob",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "burnFuses",
+          "type": "bool"
+        }
+      ],
+      "name": "lockJobENS",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
