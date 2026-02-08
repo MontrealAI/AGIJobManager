@@ -107,9 +107,6 @@ contract ENSJobPages is Ownable {
     }
 
     function jobEnsURI(uint256 jobId) public view returns (string memory) {
-        if (!useEnsJobTokenURI) {
-            return "";
-        }
         return string(abi.encodePacked("ens://", jobEnsName(jobId)));
     }
 

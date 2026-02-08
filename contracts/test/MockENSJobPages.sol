@@ -123,9 +123,6 @@ contract MockENSJobPages {
     }
 
     function jobEnsURI(uint256 jobId) external view returns (string memory) {
-        if (!useEnsJobTokenURI) {
-            return "";
-        }
         return string(abi.encodePacked("ens://job-", jobId.toString(), ".alpha.jobs.agi.eth"));
     }
 
