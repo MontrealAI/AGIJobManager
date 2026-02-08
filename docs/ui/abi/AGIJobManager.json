@@ -1683,6 +1683,19 @@
     },
     {
       "inputs": [],
+      "name": "useEnsJobTokenURI",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "validationRewardPercentage",
       "outputs": [
         {
@@ -2103,6 +2116,19 @@
         }
       ],
       "name": "setEnsJobPages",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "setUseEnsJobTokenURI",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

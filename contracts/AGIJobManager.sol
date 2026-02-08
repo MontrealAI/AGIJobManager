@@ -158,6 +158,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     ENS public ens;
     NameWrapper public nameWrapper;
     address public ensJobPages;
+    bool public useEnsJobTokenURI;
     /// @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
 
@@ -645,6 +646,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
         ensJobPages = _ensJobPages;
     }
+    function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        useEnsJobTokenURI = enabled;
+    }
     function updateRootNodes(
         bytes32 _clubRootNode,
         bytes32 _agentRootNode,
@@ -842,7 +846,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function lockJobENS(uint256 jobId, bool burnFuses) external {
         Job storage job = jobs[jobId];
-        if (!job.completed && !job.expired) return;
+        if (!job.completed && !job.expired && job.employer != address(0)) return;
         _callEnsJobPagesHook(burnFuses ? ENS_HOOK_LOCK_BURN : ENS_HOOK_LOCK, jobId);
     }
 
@@ -985,7 +989,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ++nextTokenId;
         }
         string memory tokenUriValue = job.jobCompletionURI;
-        if (ensJobPages != address(0)) {
+        if (useEnsJobTokenURI && ensJobPages != address(0)) {
             (bool ok, bytes memory data) = ensJobPages.staticcall(
                 abi.encodeWithSelector(ENS_URI_SELECTOR, jobId)
             );
