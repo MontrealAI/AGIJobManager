@@ -154,13 +154,40 @@ contract ENSJobPages is Ownable {
             return;
         }
         if (hook == 4) {
-            (address employer, address agent, , , , , , , ) = jobManagerView.getJobCore(jobId);
-            _revokePermissions(jobId, employer, agent);
+            try jobManagerView.getJobCore(jobId) returns (
+                address employer,
+                address agent,
+                uint256,
+                uint256,
+                uint256,
+                bool,
+                bool,
+                bool,
+                uint8
+            ) {
+                _revokePermissions(jobId, employer, agent);
+            } catch {
+                _revokePermissions(jobId, address(0), address(0));
+            }
             return;
         }
         if (hook == 5 || hook == 6) {
-            (address employer, address agent, , , , , , , ) = jobManagerView.getJobCore(jobId);
-            _lockJobENS(jobId, employer, agent, hook == 6);
+            bool burnFuses = hook == 6;
+            try jobManagerView.getJobCore(jobId) returns (
+                address employer,
+                address agent,
+                uint256,
+                uint256,
+                uint256,
+                bool,
+                bool,
+                bool,
+                uint8
+            ) {
+                _lockJobENS(jobId, employer, agent, burnFuses);
+            } catch {
+                _lockJobENS(jobId, address(0), address(0), burnFuses);
+            }
             return;
         }
     }

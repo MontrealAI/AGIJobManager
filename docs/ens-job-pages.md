@@ -17,6 +17,10 @@ job-42.alpha.jobs.agi.eth
 
 `jobId` is the on‑chain AGIJobManager job ID.
 
+The ALPHA root configuration is fixed:
+- `jobsRootName = "alpha.jobs.agi.eth"`
+- `jobsRootNode = namehash("alpha.jobs.agi.eth")`
+
 ## Ownership + delegation model (Model B)
 
 ### Ownership
@@ -79,8 +83,12 @@ The platform also authorizes the employer on creation and the assigned agent on 
 
 ### Wrapped root (`alpha.jobs.agi.eth` wrapped)
 - ENS Registry owner of `alpha.jobs.agi.eth` is NameWrapper.
-- NameWrapper owner of the root must be the platform contract (or approve it via `isApprovedForAll`).
+- NameWrapper owner of the root must be the platform contract **or** must approve it via `setApprovalForAll`.
 - Subnames are created via `NameWrapper.setSubnodeRecord(...)`.
+
+### Operational ownership requirements (summary)
+- **Unwrapped**: `ENSRegistry.owner(jobsRootNode)` must be `ENSJobPages` (or the configured controller).
+- **Wrapped**: `ENSRegistry.owner(jobsRootNode)` must be `NameWrapper`, and the wrapped owner must be `ENSJobPages` **or** have approved it via `setApprovalForAll`.
 
 ## Resolver requirements
 - `ENSJobPages` expects a PublicResolver that exposes `setAuthorisation(bytes32,address,bool)` and `setText(bytes32,string,string)`.
@@ -112,6 +120,7 @@ When disabled (default), the tokenURI behavior is unchanged and continues to use
 
 ## Post‑terminal lock (optional)
 `AGIJobManager.lockJobENS(jobId, burnFuses)` can be called after a terminal state to re‑revoke resolver authorizations and optionally attempt fuse burning (best‑effort).
+If the job was cancelled or delisted (and the job struct is cleared), the lock hook can still attempt fuse burning but may not have access to employer/agent addresses; authorizations were already revoked during terminalization.
 When `burnFuses` is true and the name is wrapped, `ENSJobPages` attempts to burn only:
 - `CANNOT_SET_RESOLVER`
 - `CANNOT_SET_TTL`
