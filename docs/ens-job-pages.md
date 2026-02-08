@@ -80,8 +80,19 @@ The platform also authorizes the employer on creation and the assigned agent on 
 - NameWrapper owner of the root must be the platform contract (or approve it via `isApprovedForAll`).
 - Subnames are created via `NameWrapper.setSubnodeRecord(...)`.
 
+## ENSJobPages helper wiring (on-chain)
+
+When using the `ENSJobPages` helper contract, complete these wiring steps:
+1. Deploy `ENSJobPages` with the ENS registry, NameWrapper (if any), PublicResolver, root node, and root name.
+2. Ensure `alpha.jobs.agi.eth` is owned by the helper (or wrapped and approved for it).
+3. Call `ENSJobPages.setJobManager(AGIJobManager)` so hooks are accepted.
+4. Call `AGIJobManager.setEnsJobPages(ENSJobPages)` to enable hook callbacks.
+
+These steps keep ENS integration **opt-in** and ensure lifecycle hooks remain best-effort.
+
 ## Operator checklist
 - Ensure the platform controls `alpha.jobs.agi.eth` and the configured PublicResolver.
+- Ensure `ENSJobPages` is wired to `AGIJobManager` via `setJobManager` and `setEnsJobPages`.
 - Ensure employer/agent wallets are authorized to edit text records via the resolver.
 - Avoid secrets: use hashes or URIs only.
 - Revoke resolver authorizations after terminal settlement.
