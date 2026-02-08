@@ -44,6 +44,7 @@ contract ENSJobPages is Ownable {
     IPublicResolver public publicResolver;
     bytes32 public jobsRootNode;
     string public jobsRootName;
+    address public jobManager;
 
     constructor(
         address ensAddress,
@@ -80,6 +81,16 @@ contract ENSJobPages is Ownable {
         jobsRootName = rootName;
     }
 
+    function setJobManager(address manager) external onlyOwner {
+        if (manager == address(0)) revert InvalidParameters();
+        jobManager = manager;
+    }
+
+    modifier onlyOwnerOrJobManager() {
+        if (msg.sender != owner() && msg.sender != jobManager) revert ENSNotAuthorized();
+        _;
+    }
+
 
     function jobEnsLabel(uint256 jobId) public pure returns (string memory) {
         return string(abi.encodePacked("job-", jobId.toString()));
@@ -107,7 +118,7 @@ contract ENSJobPages is Ownable {
         _setTextBestEffort(node, "agijobs.spec.public", specURI);
     }
 
-    function handleHook(uint8 hook, uint256 jobId) external onlyOwner {
+    function handleHook(uint8 hook, uint256 jobId) external onlyOwnerOrJobManager {
         IAGIJobManagerView jobManager = IAGIJobManagerView(msg.sender);
         if (hook == 1) {
             string memory specURI = jobManager.getJobSpecURI(jobId);
