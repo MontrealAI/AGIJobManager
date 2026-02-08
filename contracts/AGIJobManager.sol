@@ -1112,7 +1112,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes4 selector = ENS_HOOK_SELECTOR;
         assembly {
             let ptr := mload(0x40)
-            mstore(ptr, selector)
+            mstore(ptr, shl(224, selector))
             mstore(add(ptr, 0x04), hook)
             mstore(add(ptr, 0x24), jobId)
             pop(call(gas(), target, 0, ptr, 0x44, 0, 0))
