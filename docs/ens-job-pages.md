@@ -87,7 +87,7 @@ The platform also authorizes the employer on creation and the assigned agent on 
 - Revoke resolver authorizations after terminal settlement.
 
 ## ENS job NFT tokenURI (optional)
-When `ENSJobPages.useEnsJobTokenURI` is enabled and an ENS helper is configured, completion NFTs point to:
+When `ENSJobPages.setUseEnsJobTokenURI(true)` is enabled (and the helper is configured in `AGIJobManager`), completion NFTs point to:
 ```
 ens://job-<jobId>.alpha.jobs.agi.eth
 ```

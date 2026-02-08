@@ -90,7 +90,9 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
-    await manager.createJob("ipfs://spec.json", payout, 50, "details", { from: employer });
+    const createReceipt = await manager.createJob("ipfs://spec.json", payout, 50, "details", { from: employer });
+    const createHookFailed = createReceipt.logs.find((log) => log.event === "EnsJobPagesHookFailed");
+    assert.ok(createHookFailed, "should emit hook failed event when ENS hook reverts");
 
     await token.mint(agent, web3.utils.toWei("2"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });

@@ -65,6 +65,7 @@ interface NameWrapper {
     function ownerOf(uint256 id) external view returns (address);
 }
 
+
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
@@ -220,6 +221,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason);
     event JobDisputed(uint256 jobId, address disputant);
     event JobExpired(uint256 jobId, address employer, address agent, uint256 payout);
+    event EnsJobPagesHookFailed();
     event EnsRegistryUpdated(address indexed newEnsRegistry);
     event NameWrapperUpdated(address indexed newNameWrapper);
     event RootNodesUpdated(
@@ -1040,7 +1042,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
         address target = ensJobPages;
         if (target == address(0)) return;
-        target.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
+        (bool ok, ) = target.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
+        if (!ok) {
+            emit EnsJobPagesHookFailed();
+        }
     }
 
     function _verifyOwnershipAgent(
