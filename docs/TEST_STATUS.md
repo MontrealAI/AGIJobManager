@@ -14,6 +14,9 @@ Node v20.19.6
 ## Root cause
 `truffle test` defaults to the `development` network (localhost:8545). No Ganache node was running at that address in this environment.
 
+## Passing command
+- `npx truffle test --network test` (`226 passing`)
+
 ## Smallest fix required
 Either:
 1. Run a local node: `npx ganache -p 8545`, then re-run `npx truffle test`, **or**

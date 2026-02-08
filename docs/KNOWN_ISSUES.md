@@ -23,80 +23,48 @@ and fails on Linux in this environment.
   `package-lock.json`), then rerun `npm ci` when appropriate in a macOS
   environment.
 
-## `npm ci --omit=optional` still fails on Linux
+## `npx truffle test` fails without a local JSON‑RPC node
 
 **Reproduction**
 ```bash
-npm ci --omit=optional
-```
-
-**Failure**
-```
-npm error notsup Unsupported platform for fsevents@2.3.2: wanted {"os":"darwin"} (current: {"os":"linux"})
-```
-
-**Root cause**
-The `fsevents` dependency is still treated as required in this environment,
-even with `--omit=optional`.
-
-**Smallest fix**
-- Resolve `fsevents` handling in the lockfile or run installs on macOS; then
-  rerun `npm ci`.
-
-## `npx truffle compile` / `npx truffle test` fail with missing `dotenv`
-
-**Reproduction**
-```bash
-npx truffle compile
-# or
 npx truffle test
 ```
 
 **Failure**
 ```
-Error: Cannot find module 'dotenv'
+> Something went wrong while attempting to connect to the network at http://127.0.0.1:8545.
+CONNECTION ERROR: Couldn't connect to node http://127.0.0.1:8545.
 ```
 
 **Root cause**
-Dependencies were not installed because `npm ci` failed, leaving `dotenv`
-missing for `truffle-config.js`.
+`truffle test` defaults to the `development` network (localhost:8545). No local node was running.
 
 **Smallest fix**
-- Install dependencies in a way that omits the macOS‑only optional package, then
-  rerun `npx truffle compile` and `npx truffle test --network test`.
+- Run `npx truffle test --network test`, or start a local node on `127.0.0.1:8545`.
 
-## `npm test` fails because `truffle` is missing
+## Solidity compiler warnings during `npx truffle compile`
 
 **Reproduction**
 ```bash
-npm test
+npx truffle compile
 ```
 
 **Failure**
 ```
-sh: 1: truffle: not found
+Warning: This declaration has the same name as another declaration.
+--> project:/contracts/test/MockENSRegistry.sol:8:37
+
+Warning: This declaration has the same name as another declaration.
+--> project:/contracts/test/MockPublicResolver.sol:8:61
+
+Warning: Return value of low-level calls not used.
+--> project:/contracts/AGIJobManager.sol:1062:9
 ```
 
 **Root cause**
-`npm ci` failed, so `truffle` (a dev dependency) was not installed.
+Warnings originate from mock contracts used in tests and the best-effort ENS hook call
+that intentionally ignores the return value.
 
 **Smallest fix**
-- Resolve the `npm ci` Linux failure above, then rerun `npm test`.
-
-## `npm run lint` fails because `solhint` is missing
-
-**Reproduction**
-```bash
-npm run lint
-```
-
-**Failure**
-```
-sh: 1: solhint: not found
-```
-
-**Root cause**
-`npm ci` failed, so `solhint` (a dev dependency) was not installed.
-
-**Smallest fix**
-- Resolve the `npm ci` Linux failure above, then rerun `npm run lint`.
+- Optionally rename the mock function arguments to avoid name shadowing and
+  document/annotate the ENS hook call to suppress the warning if desired.
