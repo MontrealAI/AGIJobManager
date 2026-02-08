@@ -9,4 +9,6 @@ interface IENSJobPages {
     function revokePermissions(uint256 jobId, address employer, address agent) external;
     function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) external;
     function jobEnsName(uint256 jobId) external view returns (string memory);
+    function jobEnsURI(uint256 jobId) external view returns (string memory);
+    function setUseEnsJobTokenURI(bool enabled) external;
 }
