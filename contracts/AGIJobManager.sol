@@ -253,8 +253,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_LOCK_BURN = 6;
     uint256 internal constant ENS_HOOK_GAS_LIMIT = 500_000;
     uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
-    bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
-    bytes4 private constant ENS_URI_SELECTOR = bytes4(keccak256("jobEnsURI(uint256)"));
 
     constructor(
         address agiTokenAddress,
@@ -625,7 +623,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _releaseEscrow(job);
         _t(job.employer, job.payout);
         emit JobCancelled(_jobId);
-        _tryENSRevoke(_jobId);
+        _callEnsJobPagesHook(ENS_HOOK_REVOKE, _jobId);
         delete jobs[_jobId];
     }
 
@@ -830,7 +828,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _releaseEscrow(job);
         _t(job.employer, job.payout);
         emit JobCancelled(_jobId);
-        _tryENSRevoke(_jobId);
+        _callEnsJobPagesHook(ENS_HOOK_REVOKE, _jobId);
         delete jobs[_jobId];
     }
 
@@ -846,7 +844,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _settleAgentBond(job, false, false);
         _t(job.employer, job.payout);
         emit JobExpired(_jobId, job.employer, job.assignedAgent, job.payout);
-        _tryENSRevoke(_jobId);
+        _callEnsJobPagesHook(ENS_HOOK_REVOKE, _jobId);
     }
 
     /// @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses.
@@ -950,7 +948,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _settleDisputeBond(job, true);
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
-        _tryENSRevoke(_jobId);
+        _callEnsJobPagesHook(ENS_HOOK_REVOKE, _jobId);
     }
 
     function _settleValidators(
@@ -1009,17 +1007,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ++nextTokenId;
         }
         string memory tokenUriValue = job.jobCompletionURI;
-        if (useEnsJobTokenURI) {
-            address target = ensJobPages;
-            if (target != address(0) && target.code.length != 0) {
-                (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(
-                    abi.encodeWithSelector(ENS_URI_SELECTOR, jobId)
-                );
-                if (ok && data.length != 0) {
-                    string memory ensUri = abi.decode(data, (string));
-                    if (bytes(ensUri).length != 0) {
-                        tokenUriValue = ensUri;
-                    }
+        if (useEnsJobTokenURI && ensJobPages.code.length != 0) {
+            (bool ok, bytes memory data) = ensJobPages.staticcall{ gas: ENS_URI_GAS_LIMIT }(
+                abi.encodeWithSelector(0x751809b4, jobId)
+            );
+            if (ok && data.length != 0) {
+                string memory ensUri = abi.decode(data, (string));
+                if (bytes(ensUri).length != 0) {
+                    tokenUriValue = ensUri;
                 }
             }
         }
@@ -1052,7 +1047,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _settleValidators(job, false, reputationPoints, escrowValidatorReward, agentBondPool);
         _t(job.employer, employerRefund);
         _settleDisputeBond(job, false);
-        _tryENSRevoke(jobId);
+        _callEnsJobPagesHook(ENS_HOOK_REVOKE, jobId);
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
@@ -1060,16 +1055,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return _tokenURIs[tokenId];
     }
 
-    function _tryENSRevoke(uint256 jobId) internal {
-        _callEnsJobPagesHook(ENS_HOOK_REVOKE, jobId);
-    }
-
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
-        address target = ensJobPages;
-        if (target == address(0) || target.code.length == 0) {
-            return;
+        assembly {
+            let target := sload(ensJobPages.slot)
+            if iszero(extcodesize(target)) { stop() }
+            let ptr := 0x00
+            mstore(ptr, shl(224, 0x1f76f7a2))
+            mstore(add(ptr, 0x04), hook)
+            mstore(add(ptr, 0x24), jobId)
+            pop(call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0))
         }
-        target.call{ gas: ENS_HOOK_GAS_LIMIT }(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
     }
 
     function _verifyOwnershipAgent(
