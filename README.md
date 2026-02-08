@@ -32,6 +32,9 @@
 - **Agent incentives**: agents post a payout‑proportional bond (minimum floor, capped at payout) at apply time; bonds are returned on agent wins and fully slashed to employers on employer wins/expiry.
 - **Reputation**: reputation increases with payout size and job duration (delayed completion requests do not increase scores).
 
+### Platform retained revenue (agent wins)
+When a job settles in favor of the agent, any remainder after the agent payout and validator budget (caused by integer division rounding or intentional headroom) is **retained by the platform**. This retained amount stays in the contract and becomes owner‑withdrawable **only while paused** via `withdrawAGI()`, subject to the `withdrawableAGI()` escrow‑solvency checks.
+
 **Trust model summary**: owner‑operated escrow; escrow protected by `lockedEscrow`; owner withdraws only non‑escrow funds under defined conditions.
 
 ## Incentives & game theory
