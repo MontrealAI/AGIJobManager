@@ -342,6 +342,12 @@
     },
     {
       "anonymous": false,
+      "inputs": [],
+      "name": "EnsJobPagesHookFailed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
       "inputs": [
         {
           "indexed": true,
