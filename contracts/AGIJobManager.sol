@@ -246,6 +246,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_ASSIGN = 2;
     uint8 private constant ENS_HOOK_COMPLETION = 3;
     uint8 private constant ENS_HOOK_REVOKE = 4;
+    uint8 private constant ENS_HOOK_LOCK = 5;
     bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
     bytes4 private constant ENS_LOCK_SELECTOR = bytes4(keccak256("lockJobENS(uint256,address,address,bool)"));
     bytes4 private constant ENS_URI_SELECTOR = bytes4(keccak256("jobEnsURI(uint256)"));
@@ -844,7 +845,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (!job.completed && !job.expired) return;
         address target = ensJobPages;
         if (target == address(0)) return;
-        target.call(abi.encodeWithSelector(ENS_LOCK_SELECTOR, jobId, job.employer, job.assignedAgent, burnFuses));
+        if (burnFuses) {
+            (bool ok, ) = target.call(
+                abi.encodeWithSelector(ENS_LOCK_SELECTOR, jobId, job.employer, job.assignedAgent, burnFuses)
+            );
+            if (ok) return;
+        }
+        target.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, ENS_HOOK_LOCK, jobId));
     }
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
