@@ -1109,7 +1109,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
         address target = ensJobPages;
         if (target == address(0)) return;
-        bytes4 selector = ENS_HOOK_SELECTOR;
+        uint256 selector = uint32(ENS_HOOK_SELECTOR);
         assembly {
             let ptr := mload(0x40)
             mstore(ptr, shl(224, selector))
