@@ -853,11 +853,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 diminishingFactor = 1 + ((newReputation * newReputation) / (88888 * 88888));
         uint256 diminishedReputation = newReputation / diminishingFactor;
 
-        if (diminishedReputation > 88888) {
-            reputation[_user] = 88888;
-        } else {
-            reputation[_user] = diminishedReputation;
-        }
+        uint256 updated = diminishedReputation > 88888 ? 88888 : diminishedReputation;
+        reputation[_user] = updated;
+        emit ReputationUpdated(_user, updated);
     }
 
     function cancelJob(uint256 _jobId) external nonReentrant {
@@ -1111,30 +1109,26 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
         address target = ensJobPages;
         if (target == address(0)) return;
-        bool ok;
-        bytes4 selector = ENS_HOOK_SELECTOR;
         assembly {
             let ptr := mload(0x40)
-            mstore(ptr, selector)
+            mstore(ptr, ENS_HOOK_SELECTOR)
             mstore(add(ptr, 0x04), hook)
             mstore(add(ptr, 0x24), jobId)
-            ok := call(gas(), target, 0, ptr, 0x44, 0, 0)
+            pop(call(gas(), target, 0, ptr, 0x44, 0, 0))
         }
     }
 
     function _callEnsJobPagesLock(uint256 jobId, address employer, address agent, bool burnFuses) internal {
         address target = ensJobPages;
         if (target == address(0)) return;
-        bool ok;
-        bytes4 selector = ENS_LOCK_SELECTOR;
         assembly {
             let ptr := mload(0x40)
-            mstore(ptr, selector)
+            mstore(ptr, ENS_LOCK_SELECTOR)
             mstore(add(ptr, 0x04), jobId)
             mstore(add(ptr, 0x24), employer)
             mstore(add(ptr, 0x44), agent)
             mstore(add(ptr, 0x64), burnFuses)
-            ok := call(gas(), target, 0, ptr, 0x84, 0, 0)
+            pop(call(gas(), target, 0, ptr, 0x84, 0, 0))
         }
     }
 
