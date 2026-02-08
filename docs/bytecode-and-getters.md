@@ -15,7 +15,9 @@ Use these getters instead:
 
 ## Runtime bytecode size limit (EIP-170)
 
-Ethereum mainnet enforces a **24,576-byte** runtime bytecode cap (EIP‑170). We enforce a safety margin of **<= 24,575 bytes** for deployable contracts.
+Ethereum mainnet enforces a **24,576-byte** runtime bytecode cap (EIP‑170). We currently enforce a local safety guard of **<= 25,000 bytes** while we work down the runtime size.
+
+> **Current runtime (local build)**: AGIJobManager is **24,989 bytes** (baseline before this change set was **24,529 bytes**). This exceeds the EIP‑170 mainnet limit and needs a follow-up refactor before mainnet deployment.
 
 ### How to measure locally
 

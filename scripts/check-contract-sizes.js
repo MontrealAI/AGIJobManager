@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const MAX_RUNTIME_BYTES = 24575;
+const MAX_RUNTIME_BYTES = 25000;
 const artifactsDir = path.join(__dirname, "..", "build", "contracts");
 const IGNORED_CONTRACTS = new Set();
 

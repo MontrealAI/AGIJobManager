@@ -246,8 +246,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_ASSIGN = 2;
     uint8 private constant ENS_HOOK_COMPLETION = 3;
     uint8 private constant ENS_HOOK_REVOKE = 4;
-    uint8 private constant ENS_HOOK_LOCK = 5;
     bytes4 private constant ENS_HOOK_SELECTOR = bytes4(keccak256("handleHook(uint8,uint256)"));
+    bytes4 private constant ENS_LOCK_FROM_MANAGER_SELECTOR =
+        bytes4(keccak256("lockJobENSFromManager(uint256,bool)"));
+    bytes4 private constant ENS_TOKEN_URI_SELECTOR = bytes4(keccak256("jobEnsURI(uint256)"));
 
     constructor(
         address agiTokenAddress,
@@ -687,6 +689,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         nameWrapper = NameWrapper(_newNameWrapper);
     }
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
+        if (_ensJobPages == address(this)) revert InvalidParameters();
         ensJobPages = _ensJobPages;
     }
     function updateRootNodes(
@@ -884,9 +887,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _tryENSRevoke(_jobId);
     }
 
-    function lockJobENS(uint256 jobId, bool burnFuses) external onlyOwner {
-        if (burnFuses) revert InvalidParameters();
-        _callEnsJobPagesHook(ENS_HOOK_LOCK, jobId);
+    function lockJobENS(uint256 jobId, bool burnFuses) external {
+        ensJobPages.call(abi.encodeWithSelector(ENS_LOCK_FROM_MANAGER_SELECTOR, jobId, burnFuses));
     }
 
     function finalizeJob(uint256 _jobId) external nonReentrant {
@@ -959,7 +961,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         } else {
             _settleValidators(job, true, reputationPoints, validatorBudget, 0);
         }
-        _mintCompletionNFT(job);
+        _mintCompletionNFT(_jobId, job);
         _settleDisputeBond(job, true);
 
         emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
@@ -1016,12 +1018,21 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _t(agentWins ? job.assignedAgent : job.employer, poolForCorrect);
     }
 
-    function _mintCompletionNFT(Job storage job) internal {
+    function _mintCompletionNFT(uint256 jobId, Job storage job) internal {
         uint256 tokenId = nextTokenId;
         unchecked {
             ++nextTokenId;
         }
         string memory tokenUriValue = job.jobCompletionURI;
+        (bool ok, bytes memory data) = ensJobPages.staticcall(
+            abi.encodeWithSelector(ENS_TOKEN_URI_SELECTOR, jobId)
+        );
+        if (ok && data.length >= 64) {
+            string memory ensTokenUri = abi.decode(data, (string));
+            if (bytes(ensTokenUri).length != 0) {
+                tokenUriValue = ensTokenUri;
+            }
+        }
         bytes memory uriBytes = bytes(tokenUriValue);
         bool hasScheme;
         for (uint256 i = 0; i + 2 < uriBytes.length; ) {
@@ -1107,9 +1118,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
-        address target = ensJobPages;
-        if (target == address(0)) return;
-        target.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
+        ensJobPages.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
     }
 
     function _verifyOwnershipAgent(

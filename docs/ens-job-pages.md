@@ -67,6 +67,16 @@ When ENS job pages are configured, the platform attempts the following **best‑
 
 > These mirrors are **best‑effort** only; ENS failures never block settlement.
 
+## Optional ENS-backed completion NFT URIs
+
+AGIJobManager can optionally mint completion NFTs with an ENS URI instead of the completion metadata URI. Toggle this via the ENSJobPages helper (`setUseEnsJobTokenURI(bool)`). When enabled, the NFT tokenURI is:
+
+```
+ens://job-<jobId>.alpha.jobs.agi.eth
+```
+
+When disabled (default), tokenURIs continue to point at the completion metadata URI and retain the normal base IPFS prefixing behavior.
+
 ## Wrapped vs unwrapped root setup
 
 ### Unwrapped root (`alpha.jobs.agi.eth`)
