@@ -158,6 +158,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     ENS public ens;
     NameWrapper public nameWrapper;
     address public ensJobPages;
+    bool private useEnsJobTokenURI;
     /// @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
 
@@ -643,7 +644,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         nameWrapper = NameWrapper(_newNameWrapper);
     }
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
+        if (_ensJobPages != address(0) && _ensJobPages.code.length == 0) revert InvalidParameters();
         ensJobPages = _ensJobPages;
+    }
+    function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        useEnsJobTokenURI = enabled;
     }
     function updateRootNodes(
         bytes32 _clubRootNode,
@@ -842,7 +847,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function lockJobENS(uint256 jobId, bool burnFuses) external {
         Job storage job = jobs[jobId];
-        if (!job.completed && !job.expired) return;
+        if (!job.completed && !job.expired && job.employer != address(0)) return;
         _callEnsJobPagesHook(burnFuses ? ENS_HOOK_LOCK_BURN : ENS_HOOK_LOCK, jobId);
     }
 
@@ -985,7 +990,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             ++nextTokenId;
         }
         string memory tokenUriValue = job.jobCompletionURI;
-        if (ensJobPages != address(0)) {
+        if (useEnsJobTokenURI) {
             (bool ok, bytes memory data) = ensJobPages.staticcall(
                 abi.encodeWithSelector(ENS_URI_SELECTOR, jobId)
             );
@@ -1038,9 +1043,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal {
-        address target = ensJobPages;
-        if (target == address(0)) return;
-        target.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
+        ensJobPages.call(abi.encodeWithSelector(ENS_HOOK_SELECTOR, hook, jobId));
     }
 
     function _verifyOwnershipAgent(
