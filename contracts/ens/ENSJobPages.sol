@@ -35,6 +35,11 @@ contract ENSJobPages is Ownable {
     error ENSNotAuthorized();
     error InvalidParameters();
 
+    // NameWrapper fuses (ENSIP-10).
+    uint32 private constant CANNOT_SET_RESOLVER = 1 << 3;
+    uint32 private constant CANNOT_SET_TTL = 1 << 4;
+    uint32 private constant LOCK_FUSES = CANNOT_SET_RESOLVER | CANNOT_SET_TTL;
+
     event JobENSPageCreated(uint256 indexed jobId, bytes32 indexed node);
     event JobENSPermissionsUpdated(uint256 indexed jobId, address indexed account, bool isAuthorised);
     event JobENSLocked(uint256 indexed jobId, bytes32 indexed node, bool fusesBurned);
@@ -198,6 +203,7 @@ contract ENSJobPages is Ownable {
         _lockJobENS(jobId, employer, agent, burnFuses);
     }
 
+    /* solhint-disable no-empty-blocks */
     function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
@@ -208,12 +214,14 @@ contract ENSJobPages is Ownable {
         if (burnFuses && address(nameWrapper) != address(0)) {
             try nameWrapper.isWrapped(node) returns (bool wrapped) {
                 if (wrapped) {
-                    try nameWrapper.burnFuses(node, type(uint32).max) returns (uint32) {
+                    try nameWrapper.burnFuses(node, LOCK_FUSES) returns (uint32) {
                         fusesBurned = true;
                     } catch {
+                        // solhint-disable-next-line no-empty-blocks
                     }
                 }
             } catch {
+                // solhint-disable-next-line no-empty-blocks
             }
         }
         emit JobENSLocked(jobId, node, fusesBurned);
@@ -246,6 +254,7 @@ contract ENSJobPages is Ownable {
         }
         try publicResolver.setText(node, key, value) {
         } catch {
+            // solhint-disable-next-line no-empty-blocks
         }
     }
 
@@ -261,8 +270,10 @@ contract ENSJobPages is Ownable {
         try publicResolver.setAuthorisation(node, account, authorised) {
             emit JobENSPermissionsUpdated(jobId, account, authorised);
         } catch {
+            // solhint-disable-next-line no-empty-blocks
         }
     }
+    /* solhint-enable no-empty-blocks */
 
     function _isWrappedRoot() internal view returns (bool) {
         return address(nameWrapper) != address(0) && ens.owner(jobsRootNode) == address(nameWrapper);
