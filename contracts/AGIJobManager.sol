@@ -1071,10 +1071,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             return;
         }
         assembly {
-            mstore(0x00, 0x1f76f7a200000000000000000000000000000000000000000000000000000000)
-            mstore(0x04, hook)
-            mstore(0x24, jobId)
-            pop(call(ENS_HOOK_GAS_LIMIT, target, 0, 0x00, 0x44, 0, 0))
+            let ptr := mload(0x40)
+            mstore(ptr, 0x1f76f7a200000000000000000000000000000000000000000000000000000000)
+            mstore(add(ptr, 0x04), hook)
+            mstore(add(ptr, 0x24), jobId)
+            pop(call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0))
         }
     }
 
