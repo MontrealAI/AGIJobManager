@@ -17,6 +17,10 @@ job-42.alpha.jobs.agi.eth
 
 `jobId` is the on‑chain AGIJobManager job ID.
 
+**Root configuration (ALPHA):**
+- `jobsRootName = "alpha.jobs.agi.eth"`
+- `jobsRootNode = namehash("alpha.jobs.agi.eth")`
+
 ## Ownership + delegation model (Model B)
 
 ### Ownership
