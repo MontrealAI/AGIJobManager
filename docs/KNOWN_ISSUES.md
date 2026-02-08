@@ -2,69 +2,44 @@
 
 This file tracks reproducible failures in local commands or tests.
 
-## `npm ci` fails on Linux due to macOS‑only optional dependency
+## `npm install` emits warnings (treated as failures for audit readiness)
 
 **Reproduction**
 ```bash
-npm ci
+npm install
 ```
 
-**Failure**
-```
-npm error notsup Unsupported platform for fsevents@2.3.2: wanted {"os":"darwin"} (current: {"os":"linux"})
-```
+**Warnings (examples)**
+- `npm warn Unknown env config "http-proxy"`.
+- Deprecation warnings from transitive dependencies.
+- `npm audit` reports 88 vulnerabilities (28 low, 12 moderate, 35 high, 13 critical).
 
 **Root cause**
-`fsevents` is a macOS‑only optional dependency; `npm ci` treats it as required
-and fails on Linux in this environment.
+Dependency tree contains deprecated packages; the environment includes an
+`http-proxy` config entry.
 
 **Smallest fix**
-- Use an install path that omits optional dependencies (without touching
-  `package-lock.json`), then rerun `npm ci` when appropriate in a macOS
-  environment.
+- Remove the `http-proxy` npm config entry in the environment.
+- Audit and update dependencies (or apply `npm audit fix` where appropriate).
 
-## `npx truffle test` fails without a local JSON‑RPC node
+## Solidity compiler warnings during `npm run build`
 
 **Reproduction**
 ```bash
-npx truffle test
+npm run build
 ```
 
-**Failure**
-```
-> Something went wrong while attempting to connect to the network at http://127.0.0.1:8545.
-CONNECTION ERROR: Couldn't connect to node http://127.0.0.1:8545.
-```
-
-**Root cause**
-`truffle test` defaults to the `development` network (localhost:8545). No local node was running.
-
-**Smallest fix**
-- Run `npx truffle test --network test`, or start a local node on `127.0.0.1:8545`.
-
-## Solidity compiler warnings during `npx truffle compile`
-
-**Reproduction**
-```bash
-npx truffle compile
-```
-
-**Failure**
+**Warnings**
 ```
 Warning: This declaration has the same name as another declaration.
 --> project:/contracts/test/MockENSRegistry.sol:8:37
 
 Warning: This declaration has the same name as another declaration.
 --> project:/contracts/test/MockPublicResolver.sol:8:61
-
-Warning: Return value of low-level calls not used.
---> project:/contracts/AGIJobManager.sol:1062:9
 ```
 
 **Root cause**
-Warnings originate from mock contracts used in tests and the best-effort ENS hook call
-that intentionally ignores the return value.
+Name shadowing in mock contracts used for tests.
 
 **Smallest fix**
-- Optionally rename the mock function arguments to avoid name shadowing and
-  document/annotate the ENS hook call to suppress the warning if desired.
+- Rename the shadowing function arguments in the mock contracts.

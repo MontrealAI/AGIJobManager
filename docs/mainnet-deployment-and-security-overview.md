@@ -161,11 +161,11 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.dep
 ```
 
 ## 9) Verification & deployment guide (Truffle‑first)
-**Build & test**
+**Build & test (repo scripts)**
 ```bash
-npm ci
-npx truffle compile
-npx truffle test --network test
+npm install
+npm run build
+npm test
 ```
 
 **Deployment entrypoint**
