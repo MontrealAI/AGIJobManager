@@ -13,6 +13,7 @@ contract MockENSJobPages {
     uint8 public constant HOOK_LOCK = 5;
 
     mapping(uint8 => bool) public revertHook;
+    bool public useEnsJobTokenURI;
 
     uint256 public createCalls;
     uint256 public assignCalls;
@@ -108,8 +109,27 @@ contract MockENSJobPages {
         lastBurnFuses = burnFuses;
     }
 
+    function lockJobENSFromManager(uint256 jobId, bool burnFuses) external {
+        if (revertHook[HOOK_LOCK]) revert("revert lock");
+        lockCalls += 1;
+        lastJobId = jobId;
+        lastEmployer = address(0);
+        lastAgent = address(0);
+        lastBurnFuses = burnFuses;
+    }
+
     function jobEnsName(uint256 jobId) external pure returns (string memory) {
         return string(abi.encodePacked("job-", jobId.toString(), ".alpha.jobs.agi.eth"));
     }
 
+    function jobEnsURI(uint256 jobId) external view returns (string memory) {
+        if (!useEnsJobTokenURI) {
+            return "";
+        }
+        return string(abi.encodePacked("ens://job-", jobId.toString(), ".alpha.jobs.agi.eth"));
+    }
+
+    function setUseEnsJobTokenURI(bool enabled) external {
+        useEnsJobTokenURI = enabled;
+    }
 }

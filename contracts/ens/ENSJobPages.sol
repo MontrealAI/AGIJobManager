@@ -45,6 +45,7 @@ contract ENSJobPages is Ownable {
     bytes32 public jobsRootNode;
     string public jobsRootName;
     address public jobManager;
+    bool public useEnsJobTokenURI;
 
     constructor(
         address ensAddress,
@@ -86,6 +87,10 @@ contract ENSJobPages is Ownable {
         jobManager = manager;
     }
 
+    function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        useEnsJobTokenURI = enabled;
+    }
+
     modifier onlyJobManager() {
         if (msg.sender != jobManager) revert ENSNotAuthorized();
         _;
@@ -99,6 +104,13 @@ contract ENSJobPages is Ownable {
     function jobEnsName(uint256 jobId) public view returns (string memory) {
         if (bytes(jobsRootName).length == 0) revert ENSNotConfigured();
         return string(abi.encodePacked(jobEnsLabel(jobId), ".", jobsRootName));
+    }
+
+    function jobEnsURI(uint256 jobId) public view returns (string memory) {
+        if (!useEnsJobTokenURI) {
+            return "";
+        }
+        return string(abi.encodePacked("ens://", jobEnsName(jobId)));
     }
 
 
@@ -186,6 +198,12 @@ contract ENSJobPages is Ownable {
     }
 
     function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner {
+        _lockJobENS(jobId, employer, agent, burnFuses);
+    }
+
+    function lockJobENSFromManager(uint256 jobId, bool burnFuses) external onlyJobManager {
+        IAGIJobManagerView jobManagerView = IAGIJobManagerView(msg.sender);
+        (address employer, address agent, , , , , , , ) = jobManagerView.getJobCore(jobId);
         _lockJobENS(jobId, employer, agent, burnFuses);
     }
 
