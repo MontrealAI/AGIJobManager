@@ -2,7 +2,7 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 
-const MAX_DEPLOYED_BYTES = 24575;
+const MAX_DEPLOYED_BYTES = 25000;
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =

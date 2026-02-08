@@ -26,9 +26,14 @@ contract MockENSJobPages {
     string public lastSpecURI;
     string public lastCompletionURI;
     bool public lastBurnFuses;
+    bool public useEnsJobTokenURI;
 
     function setRevertHook(uint8 hook, bool shouldRevert) external {
         revertHook[hook] = shouldRevert;
+    }
+
+    function setUseEnsJobTokenURI(bool enabled) external {
+        useEnsJobTokenURI = enabled;
     }
 
     function createJobPage(uint256 jobId, address employer, string calldata specURI) external {
@@ -108,8 +113,22 @@ contract MockENSJobPages {
         lastBurnFuses = burnFuses;
     }
 
+    function lockJobENSFromManager(uint256 jobId, bool burnFuses) external {
+        if (revertHook[HOOK_LOCK]) revert("revert lock");
+        lockCalls += 1;
+        lastJobId = jobId;
+        lastEmployer = address(0);
+        lastAgent = address(0);
+        lastBurnFuses = burnFuses;
+    }
+
     function jobEnsName(uint256 jobId) external pure returns (string memory) {
         return string(abi.encodePacked("job-", jobId.toString(), ".alpha.jobs.agi.eth"));
+    }
+
+    function jobEnsURI(uint256 jobId) external view returns (string memory) {
+        if (!useEnsJobTokenURI) return "";
+        return string(abi.encodePacked("ens://job-", jobId.toString(), ".alpha.jobs.agi.eth"));
     }
 
 }

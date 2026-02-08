@@ -8,5 +8,8 @@ interface IENSJobPages {
     function onCompletionRequested(uint256 jobId, string calldata completionURI) external;
     function revokePermissions(uint256 jobId, address employer, address agent) external;
     function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) external;
+    function lockJobENSFromManager(uint256 jobId, bool burnFuses) external;
     function jobEnsName(uint256 jobId) external view returns (string memory);
+    function jobEnsURI(uint256 jobId) external view returns (string memory);
+    function setUseEnsJobTokenURI(bool enabled) external;
 }
