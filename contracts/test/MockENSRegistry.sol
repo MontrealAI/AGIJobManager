@@ -5,8 +5,8 @@ contract MockENSRegistry {
     mapping(bytes32 => address) private owners;
     mapping(bytes32 => address) private resolvers;
 
-    function setOwner(bytes32 node, address owner) external {
-        owners[node] = owner;
+    function setOwner(bytes32 node, address newOwner) external {
+        owners[node] = newOwner;
     }
 
     function owner(bytes32 node) external view returns (address) {
