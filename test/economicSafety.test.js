@@ -79,7 +79,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     await expectCustomError(manager.setValidationRewardPercentage.call(30, { from: owner }), "InvalidParameters");
   });
 
-  it("ignores additional agent payout settings when validating reward headroom", async () => {
+  it("reverts deprecated additional agent payout settings", async () => {
     const manager = await AGIJobManager.new(...buildInitConfig(
         token.address,
         "ipfs://base",
@@ -95,9 +95,10 @@ contract("AGIJobManager economic safety", (accounts) => {
       { from: owner }
     );
 
-    await manager.setAdditionalAgentPayoutPercentage(90, { from: owner });
-    await manager.setValidationRewardPercentage(90, { from: owner });
-    assert.equal((await manager.validationRewardPercentage()).toString(), "90");
+    await expectCustomError(
+      manager.setAdditionalAgentPayoutPercentage(90, { from: owner }),
+      "InvalidState"
+    );
   });
 
   it("settles successfully with safe payout configuration", async () => {
