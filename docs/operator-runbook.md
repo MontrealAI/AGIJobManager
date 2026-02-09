@@ -9,7 +9,7 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 **Use when**: incident response, parameter change review, treasury withdrawal.
 
 - `pause()` blocks new activity (create/apply/vote/dispute/reward pool contribution) but preserves settlement exits.
-- `setSettlementPaused(true)` freezes settlement/exit paths (`cancelJob`, `expireJob`, `finalizeJob`, `delistJob`) guarded by `whenSettlementNotPaused`.
+- `setSettlementPaused(true)` freezes settlement/exit paths (`cancelJob`, `expireJob`, `finalizeJob`, `delistJob`, `resolveDispute*`, `resolveStaleDispute`, `withdrawAGI`) guarded by `whenSettlementNotPaused`.
 - **Incident sequence:** call `setSettlementPaused(true)` first to stop fund-out, then `pause()` to stop intake.
 - **Recovery:** unpause intake only after settlement is safe; keep `settlementPaused` on until final safety, then set it to false last.
 

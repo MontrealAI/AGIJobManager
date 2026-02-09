@@ -39,7 +39,8 @@ This document is a production-grade **operator checklist** for preventing and re
 | `disputeReviewPeriod` (`setDisputeReviewPeriod`) | seconds | Window before `resolveStaleDispute` is allowed (owner‑only; pausing optional for incident recovery). | `1..365 days` | Days to weeks (7d–30d) to give moderators time to resolve. | Too short → owner can settle too early in incidents; too long → disputes can deadlock. | Adjust window; maintain moderator redundancy. |
 | `premiumReputationThreshold` (`setPremiumReputationThreshold`) | points | `canAccessPremiumFeature`. | Any non-negative uint. | Mis-set only affects premium access (no settlement impact). | Adjust threshold. |
 | `AGIType.payoutPercentage` (`addAGIType`) | uint256 percentage | Agent payout percentage in `_completeJob`. | `1..100`; **highest** payout across AGI types must satisfy `maxAgentPayoutPercentage + validationRewardPercentage <= 100` (enforced). | If any agent holds a high-percentage NFT that pushes the sum > 100, completion can revert. | Lower AGI type percentage (or validation reward %); re-validate. |
-| `pause` / `unpause` | bool | Gates most job actions. | Use `pause` for incident response, not normal ops. | If paused, new activity reverts (create/apply/validate/dispute). Completion requests and settlement exits can still proceed. | Unpause after fixing parameters; no funds lost. |
+| `pause` / `unpause` | bool | Intake pause for `whenNotPaused` actions. | Use `pause` for incident response, not normal ops. | If paused, new activity reverts (create/apply/validate/dispute). Completion requests can still proceed. | Unpause after fixing parameters; no funds lost. |
+| `settlementPaused` (`setSettlementPaused`) | bool | Emergency settlement freeze for `whenSettlementNotPaused` actions. | Use `settlementPaused` first during incidents affecting fund-out. | If enabled, settlement/exit paths revert (`finalizeJob`, `cancelJob`, `expireJob`, `delistJob`, `resolveDispute*`, `resolveStaleDispute`, `withdrawAGI`). | Clear only after settlement math/invariants are verified; unpause intake last for conservative recovery. |
 | `addAdditionalAgent` / `addAdditionalValidator` | allowlist | Eligibility bypass. | Only use for emergency recovery or vetted identities. | Overuse weakens gating; underuse when Merkle/ENS config is wrong can stall jobs. | Add temporary allowlist entries; remove later. |
 | `blacklistedAgents` / `blacklistedValidators` | bool | Eligibility gating. | Use sparingly with documented reasons. | If critical participants are blacklisted, jobs cannot progress (validate/apply revert). | Un-blacklist or resolve by moderator. |
 | `addModerator` / `removeModerator` | address | Dispute resolution authority. | Ensure ≥1 active moderator. | If no moderator exists, disputes can’t resolve → funds stuck. | Add a moderator (owner action). |
@@ -105,8 +106,9 @@ This document is a production-grade **operator checklist** for preventing and re
 
 ## Recovery playbook (step-by-step)
 
-1. **Pause operations (owner, always available):**
-   - Call `pause()` to stop new job actions while you diagnose.
+1. **Freeze settlement first (owner, always available):**
+   - Call `setSettlementPaused(true)` to stop fund‑out while you diagnose.
+   - Call `pause()` to stop new job actions (intake).
 
 2. **Diagnose root cause:**
    - Read current parameters (`requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, `disputeReviewPeriod`, `agiToken`, roots, ENS/NameWrapper addresses).
