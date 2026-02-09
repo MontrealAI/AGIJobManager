@@ -103,11 +103,6 @@
     },
     {
       "inputs": [],
-      "name": "TransferFailed",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "ValidatorLimitReached",
       "type": "error"
     },
