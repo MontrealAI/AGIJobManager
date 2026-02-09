@@ -7,6 +7,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const MockENSJobPages = artifacts.require("MockENSJobPages");
 const FailingERC20 = artifacts.require("FailingERC20");
 const MockERC721 = artifacts.require("MockERC721");
 
@@ -159,6 +160,78 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.withdrawAGI(surplus, { from: owner });
     const balanceAfter = await token.balanceOf(owner);
     assert.equal(balanceAfter.sub(balanceBefore).toString(), surplus.toString(), "withdraw should move funds");
+  });
+
+  it("emits events for high-impact configuration updates", async () => {
+    const newToken = await MockERC20.new({ from: owner });
+    const oldTokenAddress = await manager.agiToken();
+    const tokenTx = await manager.updateAGITokenAddress(newToken.address, { from: owner });
+    const tokenEvent = tokenTx.logs.find((log) => log.event === "AGITokenAddressUpdated");
+    assert.ok(tokenEvent, "AGITokenAddressUpdated should be emitted");
+    assert.equal(tokenEvent.args.oldToken, oldTokenAddress);
+    assert.equal(tokenEvent.args.newToken, newToken.address);
+
+    const ensJobPages = await MockENSJobPages.new({ from: owner });
+    const oldEnsJobPages = await manager.ensJobPages();
+    const ensTx = await manager.setEnsJobPages(ensJobPages.address, { from: owner });
+    const ensEvent = ensTx.logs.find((log) => log.event === "EnsJobPagesUpdated");
+    assert.ok(ensEvent, "EnsJobPagesUpdated should be emitted");
+    assert.equal(ensEvent.args.oldEnsJobPages, oldEnsJobPages);
+    assert.equal(ensEvent.args.newEnsJobPages, ensJobPages.address);
+
+    const useEnsTx = await manager.setUseEnsJobTokenURI(true, { from: owner });
+    const useEnsEvent = useEnsTx.logs.find((log) => log.event === "UseEnsJobTokenURIUpdated");
+    assert.ok(useEnsEvent, "UseEnsJobTokenURIUpdated should be emitted");
+    assert.equal(useEnsEvent.args.oldValue, false);
+    assert.equal(useEnsEvent.args.newValue, true);
+
+    const oldQuorum = await manager.voteQuorum();
+    const quorumTx = await manager.setVoteQuorum(oldQuorum.addn(1), { from: owner });
+    const quorumEvent = quorumTx.logs.find((log) => log.event === "VoteQuorumUpdated");
+    assert.ok(quorumEvent, "VoteQuorumUpdated should be emitted");
+    assert.equal(quorumEvent.args.oldQuorum.toString(), oldQuorum.toString());
+    assert.equal(quorumEvent.args.newQuorum.toString(), oldQuorum.addn(1).toString());
+
+    const approvalsTx = await manager.setRequiredValidatorApprovals(4, { from: owner });
+    const approvalsEvent = approvalsTx.logs.find((log) => log.event === "RequiredValidatorApprovalsUpdated");
+    assert.ok(approvalsEvent, "RequiredValidatorApprovalsUpdated should be emitted");
+    assert.equal(approvalsEvent.args.oldApprovals.toString(), "3");
+    assert.equal(approvalsEvent.args.newApprovals.toString(), "4");
+
+    const disapprovalsTx = await manager.setRequiredValidatorDisapprovals(4, { from: owner });
+    const disapprovalsEvent = disapprovalsTx.logs.find((log) => log.event === "RequiredValidatorDisapprovalsUpdated");
+    assert.ok(disapprovalsEvent, "RequiredValidatorDisapprovalsUpdated should be emitted");
+    assert.equal(disapprovalsEvent.args.oldDisapprovals.toString(), "3");
+    assert.equal(disapprovalsEvent.args.newDisapprovals.toString(), "4");
+
+    const validationTx = await manager.setValidationRewardPercentage(7, { from: owner });
+    const validationEvent = validationTx.logs.find((log) => log.event === "ValidationRewardPercentageUpdated");
+    assert.ok(validationEvent, "ValidationRewardPercentageUpdated should be emitted");
+    assert.equal(validationEvent.args.oldPercentage.toString(), "8");
+    assert.equal(validationEvent.args.newPercentage.toString(), "7");
+
+    const bondTx = await manager.setAgentBondParams(600, toBN(toWei("2")), toBN(toWei("20")), { from: owner });
+    const bondEvent = bondTx.logs.find((log) => log.event === "AgentBondParamsUpdated");
+    assert.ok(bondEvent, "AgentBondParamsUpdated should be emitted");
+    assert.equal(bondEvent.args.oldBps.toString(), "500");
+    assert.equal(bondEvent.args.newBps.toString(), "600");
+
+    const bondZeroTx = await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    const bondZeroEvent = bondZeroTx.logs.find((log) => log.event === "AgentBondParamsUpdated");
+    assert.ok(bondZeroEvent, "AgentBondParamsUpdated should be emitted on zeroing");
+    assert.equal(bondZeroEvent.args.newBps.toString(), "0");
+
+    const bondMinTx = await manager.setAgentBond(toBN(toWei("3")), { from: owner });
+    const bondMinEvent = bondMinTx.logs.find((log) => log.event === "AgentBondMinUpdated");
+    assert.ok(bondMinEvent, "AgentBondMinUpdated should be emitted");
+    assert.equal(bondMinEvent.args.oldMin.toString(), "0");
+    assert.equal(bondMinEvent.args.newMin.toString(), toWei("3"));
+
+    const slashTx = await manager.setValidatorSlashBps(7000, { from: owner });
+    const slashEvent = slashTx.logs.find((log) => log.event === "ValidatorSlashBpsUpdated");
+    assert.ok(slashEvent, "ValidatorSlashBpsUpdated should be emitted");
+    assert.equal(slashEvent.args.oldBps.toString(), "8000");
+    assert.equal(slashEvent.args.newBps.toString(), "7000");
   });
 
   it("reverts withdrawals on failed transfers", async () => {
