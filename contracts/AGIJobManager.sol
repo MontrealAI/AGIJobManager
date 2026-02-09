@@ -249,6 +249,24 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event ValidatorBondParamsUpdated(uint256 bps, uint256 min, uint256 max);
     event ChallengePeriodAfterApprovalUpdated(uint256 oldPeriod, uint256 newPeriod);
     event SettlementPauseSet(address indexed setter, bool paused);
+    event AGITokenAddressUpdated(address indexed oldToken, address indexed newToken);
+    event EnsJobPagesUpdated(address indexed oldEnsJobPages, address indexed newEnsJobPages);
+    event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);
+    event VoteQuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
+    event RequiredValidatorApprovalsUpdated(uint256 oldApprovals, uint256 newApprovals);
+    event RequiredValidatorDisapprovalsUpdated(uint256 oldDisapprovals, uint256 newDisapprovals);
+    event ValidationRewardPercentageUpdated(uint256 oldPercentage, uint256 newPercentage);
+    event AgentBondParamsUpdated(
+        uint256 oldBps,
+        uint256 oldMin,
+        uint256 oldMax,
+        uint256 newBps,
+        uint256 newMin,
+        uint256 newMax
+    );
+    event AgentBondMinUpdated(uint256 oldMin, uint256 newMin);
+    event ValidatorSlashBpsUpdated(uint256 oldBps, uint256 newBps);
+    event EnsHookAttempted(uint8 indexed hook, uint256 indexed jobId, address indexed target, bool success);
 
     uint8 private constant ENS_HOOK_CREATE = 1;
     uint8 private constant ENS_HOOK_ASSIGN = 2;
@@ -258,6 +276,29 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_LOCK_BURN = 6;
     uint256 internal constant ENS_HOOK_GAS_LIMIT = 500_000;
     uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
+
+    bytes32 private constant AGI_TOKEN_ADDRESS_UPDATED_TOPIC =
+        keccak256("AGITokenAddressUpdated(address,address)");
+    bytes32 private constant ENS_JOB_PAGES_UPDATED_TOPIC =
+        keccak256("EnsJobPagesUpdated(address,address)");
+    bytes32 private constant USE_ENS_JOB_TOKEN_URI_UPDATED_TOPIC =
+        keccak256("UseEnsJobTokenURIUpdated(bool,bool)");
+    bytes32 private constant VOTE_QUORUM_UPDATED_TOPIC =
+        keccak256("VoteQuorumUpdated(uint256,uint256)");
+    bytes32 private constant REQUIRED_VALIDATOR_APPROVALS_UPDATED_TOPIC =
+        keccak256("RequiredValidatorApprovalsUpdated(uint256,uint256)");
+    bytes32 private constant REQUIRED_VALIDATOR_DISAPPROVALS_UPDATED_TOPIC =
+        keccak256("RequiredValidatorDisapprovalsUpdated(uint256,uint256)");
+    bytes32 private constant VALIDATION_REWARD_PERCENTAGE_UPDATED_TOPIC =
+        keccak256("ValidationRewardPercentageUpdated(uint256,uint256)");
+    bytes32 private constant AGENT_BOND_PARAMS_UPDATED_TOPIC =
+        keccak256("AgentBondParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256)");
+    bytes32 private constant AGENT_BOND_MIN_UPDATED_TOPIC =
+        keccak256("AgentBondMinUpdated(uint256,uint256)");
+    bytes32 private constant VALIDATOR_SLASH_BPS_UPDATED_TOPIC =
+        keccak256("ValidatorSlashBpsUpdated(uint256,uint256)");
+    bytes32 private constant ENS_HOOK_ATTEMPTED_TOPIC =
+        keccak256("EnsHookAttempted(uint8,uint256,address,bool)");
 
     constructor(
         address agiTokenAddress,
@@ -314,6 +355,35 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _job(uint256 jobId) internal view returns (Job storage job) {
         job = jobs[jobId];
         if (job.employer == address(0)) revert JobNotFound();
+    }
+
+    function _emitUintPair(bytes32 topic, uint256 a, uint256 b) private {
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, a)
+            mstore(add(ptr, 32), b)
+            log1(ptr, 64, topic)
+        }
+    }
+
+    function _emitAddressPair(bytes32 topic, address a, address b) private {
+        assembly {
+            log3(0, 0, topic, a, b)
+        }
+    }
+
+    function _emitEnsHookAttempted(
+        bytes32 topic,
+        uint8 hook,
+        uint256 jobId,
+        address target,
+        uint256 success
+    ) private {
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, success)
+            log4(ptr, 32, topic, hook, jobId, target)
+        }
     }
 
     function _t(address to, uint256 amount) internal {
@@ -684,6 +754,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
         _requireEmptyEscrow();
+        _emitAddressPair(AGI_TOKEN_ADDRESS_UPDATED_TOPIC, address(agiToken), _newTokenAddress);
         agiToken = IERC20(_newTokenAddress);
     }
     function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable {
@@ -700,9 +771,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
         if (_ensJobPages != address(0) && _ensJobPages.code.length == 0) revert InvalidParameters();
+        _emitAddressPair(ENS_JOB_PAGES_UPDATED_TOPIC, ensJobPages, _ensJobPages);
         ensJobPages = _ensJobPages;
     }
     function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        _emitUintPair(
+            USE_ENS_JOB_TOKEN_URI_UPDATED_TOPIC,
+            useEnsJobTokenURI ? 1 : 0,
+            enabled ? 1 : 0
+        );
         useEnsJobTokenURI = enabled;
     }
     function updateRootNodes(
@@ -726,14 +803,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
+        _emitUintPair(REQUIRED_VALIDATOR_APPROVALS_UPDATED_TOPIC, requiredValidatorApprovals, _approvals);
         requiredValidatorApprovals = _approvals;
     }
     function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
         _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
+        _emitUintPair(REQUIRED_VALIDATOR_DISAPPROVALS_UPDATED_TOPIC, requiredValidatorDisapprovals, _disapprovals);
         requiredValidatorDisapprovals = _disapprovals;
     }
     function setVoteQuorum(uint256 _quorum) external onlyOwner {
         if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
+        _emitUintPair(VOTE_QUORUM_UPDATED_TOPIC, voteQuorum, _quorum);
         voteQuorum = _quorum;
     }
     function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
@@ -768,21 +848,50 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
         if (bps == 0 && min == 0 && max == 0) {
+            bytes32 topic = AGENT_BOND_PARAMS_UPDATED_TOPIC;
+            assembly {
+                let ptr := mload(0x40)
+                mstore(ptr, sload(agentBondBps.slot))
+                mstore(add(ptr, 32), sload(agentBond.slot))
+                mstore(add(ptr, 64), sload(agentBondMax.slot))
+                mstore(add(ptr, 96), 0)
+                mstore(add(ptr, 128), 0)
+                mstore(add(ptr, 160), 0)
+                log1(ptr, 192, topic)
+            }
             agentBondBps = 0;
             agentBond = 0;
             agentBondMax = 0;
             return;
         }
         if (max == 0) revert InvalidParameters();
+        {
+            bytes32 topic = AGENT_BOND_PARAMS_UPDATED_TOPIC;
+            uint256 oldBps = agentBondBps;
+            uint256 oldMin = agentBond;
+            uint256 oldMax = agentBondMax;
+            assembly {
+                let ptr := mload(0x40)
+                mstore(ptr, oldBps)
+                mstore(add(ptr, 32), oldMin)
+                mstore(add(ptr, 64), oldMax)
+                mstore(add(ptr, 96), bps)
+                mstore(add(ptr, 128), min)
+                mstore(add(ptr, 160), max)
+                log1(ptr, 192, topic)
+            }
+        }
         agentBondBps = bps;
         agentBond = min;
         agentBondMax = max;
     }
     function setAgentBond(uint256 bond) external onlyOwner {
+        _emitUintPair(AGENT_BOND_MIN_UPDATED_TOPIC, agentBond, bond);
         agentBond = bond;
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
+        _emitUintPair(VALIDATOR_SLASH_BPS_UPDATED_TOPIC, validatorSlashBps, bps);
         validatorSlashBps = bps;
     }
     function setChallengePeriodAfterApproval(uint256 period) external onlyOwner {
@@ -865,6 +974,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         uint256 maxPct = _maxAGITypePayoutPercentage();
         if (maxPct > 100 - _percentage) revert InvalidParameters();
+        _emitUintPair(VALIDATION_REWARD_PERCENTAGE_UPDATED_TOPIC, validationRewardPercentage, _percentage);
         validationRewardPercentage = _percentage;
     }
 
@@ -1123,13 +1233,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (target == address(0) || target.code.length == 0) {
             return;
         }
+        uint256 success;
         assembly {
             let ptr := mload(0x40)
             mstore(ptr, shl(224, 0x1f76f7a2))
             mstore(add(ptr, 4), hook)
             mstore(add(ptr, 36), jobId)
-            pop(call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0))
+            success := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
+        _emitEnsHookAttempted(ENS_HOOK_ATTEMPTED_TOPIC, hook, jobId, target, success);
     }
 
     function _verifyOwnership(
