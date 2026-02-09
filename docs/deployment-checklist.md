@@ -104,7 +104,8 @@ Critical wiring includes the AGI token address, ENS registry, NameWrapper, and E
 ## 6) Break-glass runbook (after lock)
 
 After lock, operators should only use:
-- `pause()` / `unpause()` for incident response.
+- `setSettlementPaused(true)` first to freeze settlement fund-out during incidents; clear only after settlement safety is confirmed.
+- `pause()` / `unpause()` to stop intake once settlement is frozen; re-enable intake last after settlement is safe.
 - `resolveStaleDispute()` (owner‑only after `disputeReviewPeriod`; pause optional) for dispute recovery.
 - Optional moderator rotation if required.
 - Surplus withdrawals (`withdrawAGI`) while paused; escrowed funds and bonds remain reserved (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`).
