@@ -376,7 +376,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _settleDisputeBond(Job storage job, bool agentWon) internal {
         uint256 bond = job.disputeBondAmount;
         job.disputeBondAmount = 0;
-        job.disputeInitiator = address(0);
+        if (bond != 0) {
+            job.disputeInitiator = address(0);
+        }
         unchecked {
             lockedDisputeBonds -= bond;
         }
@@ -572,9 +574,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 bond -= 1;
             }
         }
-        _tf(msg.sender, bond);
-        unchecked {
-            lockedValidatorBonds += bond;
+        if (bond > 0) {
+            _tf(msg.sender, bond);
+            unchecked {
+                lockedValidatorBonds += bond;
+            }
         }
         _enforceValidatorCapacity(job.validators.length);
         if (approve) {
