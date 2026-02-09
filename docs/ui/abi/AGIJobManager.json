@@ -93,6 +93,11 @@
     },
     {
       "inputs": [],
+      "name": "SettlementPaused",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "TransferFailed",
       "type": "error"
     },
@@ -754,6 +759,25 @@
         }
       ],
       "name": "RootNodesUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "setter",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "paused",
+          "type": "bool"
+        }
+      ],
+      "name": "SettlementPauseSet",
       "type": "event"
     },
     {
@@ -1633,6 +1657,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "settlementPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes4",
@@ -1814,6 +1851,19 @@
     {
       "inputs": [],
       "name": "unpause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bool",
+          "name": "paused",
+          "type": "bool"
+        }
+      ],
+      "name": "setSettlementPaused",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -2404,7 +2454,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_percentage",
+          "name": "",
           "type": "uint256"
         }
       ],
