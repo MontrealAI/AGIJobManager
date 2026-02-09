@@ -2729,7 +2729,7 @@
       ],
       "name": "setAdditionalAgentPayoutPercentage",
       "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
