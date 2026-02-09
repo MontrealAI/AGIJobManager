@@ -241,6 +241,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
+    event AGITokenAddressUpdated() anonymous;
+    event EnsJobPagesUpdated() anonymous;
+    event UseEnsJobTokenURIUpdated(bool newValue) anonymous;
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
     event PlatformRevenueAccrued(uint256 indexed jobId, uint256 amount);
     event IdentityConfigurationLocked(address indexed locker, uint256 atTimestamp);
@@ -771,12 +774,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             agentBondBps = 0;
             agentBond = 0;
             agentBondMax = 0;
-            return;
+        } else {
+            if (max == 0) revert InvalidParameters();
+            agentBondBps = bps;
+            agentBond = min;
+            agentBondMax = max;
         }
-        if (max == 0) revert InvalidParameters();
-        agentBondBps = bps;
-        agentBond = min;
-        agentBondMax = max;
     }
     function setAgentBond(uint256 bond) external onlyOwner {
         agentBond = bond;
@@ -1123,12 +1126,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (target == address(0) || target.code.length == 0) {
             return;
         }
+        uint256 ok;
         assembly {
             let ptr := mload(0x40)
             mstore(ptr, shl(224, 0x1f76f7a2))
             mstore(add(ptr, 4), hook)
             mstore(add(ptr, 36), jobId)
-            pop(call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0))
+            ok := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
     }
 

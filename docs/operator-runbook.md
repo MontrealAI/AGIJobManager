@@ -8,8 +8,14 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 ### 1) Pause / unpause
 **Use when**: incident response, parameter change review, treasury withdrawal.
 
-- `pause()` blocks new activity but preserves settlement exits.
-- `unpause()` restores normal operations.
+- `setSettlementPaused(true)` freezes settlement/withdrawal paths guarded by
+  `whenSettlementNotPaused` (finalize/cancel/expire/delist/resolveDispute*,
+  `withdrawAGI`, etc.).
+- `pause()` blocks new activity (create/apply/validate/dispute) but preserves
+  settlement exits.
+- `unpause()` restores intake once safe.
+- **Recovery**: unset `settlementPaused` only after settlement math/invariants
+  are confirmed safe; unpause intake last for conservative recovery.
 
 ### 2) Treasury withdrawals (owner‑only, paused‑only)
 **Process**
@@ -37,11 +43,12 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 ## Emergency playbooks
 
 ### A) Critical bug discovered
-1. **Pause** immediately.
-2. Assess `lockedEscrow` vs token balance (solvency check).
-3. Review in‑flight jobs for settlement impact.
-4. Communicate status and expected timeline publicly.
-5. Decide whether to resolve disputes or exit jobs before redeploying.
+1. **Set `settlementPaused(true)` immediately** to freeze fund-out and settlement.
+2. **Pause** intake if you need to stop new jobs.
+3. Assess `lockedEscrow` vs token balance (solvency check).
+4. Review in‑flight jobs for settlement impact.
+5. Communicate status and expected timeline publicly.
+6. Decide whether to resolve disputes or exit jobs before redeploying.
 
 ### B) Dispute backlog
 1. Review `JobDisputed` events and age.

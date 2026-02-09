@@ -39,7 +39,8 @@ This document is a production-grade **operator checklist** for preventing and re
 | `disputeReviewPeriod` (`setDisputeReviewPeriod`) | seconds | Window before `resolveStaleDispute` is allowed (owner‑only; pausing optional for incident recovery). | `1..365 days` | Days to weeks (7d–30d) to give moderators time to resolve. | Too short → owner can settle too early in incidents; too long → disputes can deadlock. | Adjust window; maintain moderator redundancy. |
 | `premiumReputationThreshold` (`setPremiumReputationThreshold`) | points | `canAccessPremiumFeature`. | Any non-negative uint. | Mis-set only affects premium access (no settlement impact). | Adjust threshold. |
 | `AGIType.payoutPercentage` (`addAGIType`) | uint256 percentage | Agent payout percentage in `_completeJob`. | `1..100`; **highest** payout across AGI types must satisfy `maxAgentPayoutPercentage + validationRewardPercentage <= 100` (enforced). | If any agent holds a high-percentage NFT that pushes the sum > 100, completion can revert. | Lower AGI type percentage (or validation reward %); re-validate. |
-| `pause` / `unpause` | bool | Gates most job actions. | Use `pause` for incident response, not normal ops. | If paused, new activity reverts (create/apply/validate/dispute). Completion requests and settlement exits can still proceed. | Unpause after fixing parameters; no funds lost. |
+| `pause` / `unpause` | bool | Gates most job actions (intake). | Use `pause` for incident response, not normal ops. | If paused, new activity reverts (create/apply/validate/dispute). Completion requests and settlement exits can still proceed. | Unpause after fixing parameters; no funds lost. |
+| `settlementPaused` (`setSettlementPaused`) | bool | Emergency settlement freeze. | Use for fund-out/settlement incidents. | If set, settlement and fund-moving exits revert (finalize/cancel/expire/delist/resolveDispute*, `withdrawAGI`). | Unset only after settlement math/invariants are confirmed safe; unpause intake last if needed. |
 | `addAdditionalAgent` / `addAdditionalValidator` | allowlist | Eligibility bypass. | Only use for emergency recovery or vetted identities. | Overuse weakens gating; underuse when Merkle/ENS config is wrong can stall jobs. | Add temporary allowlist entries; remove later. |
 | `blacklistedAgents` / `blacklistedValidators` | bool | Eligibility gating. | Use sparingly with documented reasons. | If critical participants are blacklisted, jobs cannot progress (validate/apply revert). | Un-blacklist or resolve by moderator. |
 | `addModerator` / `removeModerator` | address | Dispute resolution authority. | Ensure ≥1 active moderator. | If no moderator exists, disputes can’t resolve → funds stuck. | Add a moderator (owner action). |
@@ -105,14 +106,16 @@ This document is a production-grade **operator checklist** for preventing and re
 
 ## Recovery playbook (step-by-step)
 
-1. **Pause operations (owner, always available):**
+1. **Freeze settlement first (owner, always available):**
+   - Call `setSettlementPaused(true)` to stop fund-out and settlement paths.
+2. **Pause intake if needed:**
    - Call `pause()` to stop new job actions while you diagnose.
 
-2. **Diagnose root cause:**
+3. **Diagnose root cause:**
    - Read current parameters (`requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`, `completionReviewPeriod`, `disputeReviewPeriod`, `agiToken`, roots, ENS/NameWrapper addresses).
    - Check current escrow balance against total outstanding job payouts.
 
-3. **Apply fixes (owner/moderator, always available if owner keys are live):**
+4. **Apply fixes (owner/moderator, always available if owner keys are live):**
    - Adjust validator thresholds.
    - Reduce validation reward % or AGI type payout %.
    - Add emergency validators/agents with `addAdditionalValidator` / `addAdditionalAgent`.
@@ -120,14 +123,14 @@ This document is a production-grade **operator checklist** for preventing and re
    - Adjust `completionReviewPeriod` or `disputeReviewPeriod` if timeouts are misaligned.
    - **Never** change `agiToken` if outstanding jobs exist.
 
-4. **Unstick jobs (path depends on job state; always available if the correct role exists):**
+5. **Unstick jobs (path depends on job state; always available if the correct role exists):**
    - **Unassigned jobs:** employer uses `cancelJob`; owner uses `delistJob` for recovery.
    - **Assigned but incomplete:** validators retry `validateJob` or `disapproveJob`; after the deadline, anyone may `expireJob` if no completion request was made.
    - **Completion requested but stalled:** after `completionReviewPeriod`, anyone may `finalizeJob` to settle deterministically (silence → agent; approvals must exceed disapprovals, ties refund).
    - **Disputed jobs:** moderator calls `resolveDisputeWithCode` with the correct action code.
    - **Disputed + no moderators:** owner uses `resolveStaleDispute` after `disputeReviewPeriod` (pause optional).
 
-5. **Verify recovery:**
+6. **Verify recovery:**
    - Query `getJobCore(jobId)` and `getJobValidation(jobId)` to confirm lifecycle flags.
    - Inspect emitted events (`JobCompleted`, `DisputeResolvedWithCode`, `DisputeResolved`, `NFTIssued`) and updated balances.
 
