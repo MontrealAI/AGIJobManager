@@ -5,8 +5,8 @@ contract MockPublicResolver {
     mapping(bytes32 => mapping(address => bool)) private authorisations;
     mapping(bytes32 => mapping(bytes32 => string)) private textRecords;
 
-    function setAuthorisation(bytes32 node, address target, bool isAuthorised) external {
-        authorisations[node][target] = isAuthorised;
+    function setAuthorisation(bytes32 node, address target, bool authorised) external {
+        authorisations[node][target] = authorised;
     }
 
     function isAuthorised(bytes32 node, address target) external view returns (bool) {
