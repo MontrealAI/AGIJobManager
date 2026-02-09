@@ -68,6 +68,7 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 - **Treasury/ops**: `AGIWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`
 - **Identity**: `IdentityConfigurationLocked`, `RootNodesUpdated`,
   `MerkleRootsUpdated`, `EnsRegistryUpdated`, `NameWrapperUpdated`
+- **ENS hooks**: `EnsHookAttempted` (ENS integration is auxiliary; hook failure does not affect settlement)
 - **Blacklists**: `AgentBlacklisted`, `ValidatorBlacklisted`
 
 ## Operational notes
