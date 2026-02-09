@@ -96,7 +96,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     );
 
     await expectCustomError(
-      manager.setAdditionalAgentPayoutPercentage(90, { from: owner }),
+      manager.setAdditionalAgentPayoutPercentage.call(90, { from: owner }),
       "InvalidState"
     );
   });
