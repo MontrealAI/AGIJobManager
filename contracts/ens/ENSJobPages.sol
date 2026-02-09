@@ -43,6 +43,17 @@ contract ENSJobPages is Ownable {
     event JobENSPageCreated(uint256 indexed jobId, bytes32 indexed node);
     event JobENSPermissionsUpdated(uint256 indexed jobId, address indexed account, bool isAuthorised);
     event JobENSLocked(uint256 indexed jobId, bytes32 indexed node, bool fusesBurned);
+    event ENSRegistryUpdated(address indexed oldEns, address indexed newEns);
+    event NameWrapperUpdated(address indexed oldNameWrapper, address indexed newNameWrapper);
+    event PublicResolverUpdated(address indexed oldResolver, address indexed newResolver);
+    event JobsRootUpdated(
+        bytes32 indexed oldRootNode,
+        bytes32 indexed newRootNode,
+        string oldRootName,
+        string newRootName
+    );
+    event JobManagerUpdated(address indexed oldJobManager, address indexed newJobManager);
+    event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);
 
     IENSRegistry public ens;
     INameWrapper public nameWrapper;
@@ -67,33 +78,46 @@ contract ENSJobPages is Ownable {
     }
 
     function setENSRegistry(address ensAddress) external onlyOwner {
+        address old = address(ens);
         if (ensAddress == address(0)) revert InvalidParameters();
         ens = IENSRegistry(ensAddress);
+        emit ENSRegistryUpdated(old, ensAddress);
     }
 
     function setNameWrapper(address nameWrapperAddress) external onlyOwner {
+        address old = address(nameWrapper);
         nameWrapper = INameWrapper(nameWrapperAddress);
+        emit NameWrapperUpdated(old, nameWrapperAddress);
     }
 
     function setPublicResolver(address publicResolverAddress) external onlyOwner {
+        address old = address(publicResolver);
         if (publicResolverAddress == address(0)) revert InvalidParameters();
         publicResolver = IPublicResolver(publicResolverAddress);
+        emit PublicResolverUpdated(old, publicResolverAddress);
     }
 
     function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner {
+        bytes32 oldNode = jobsRootNode;
+        string memory oldName = jobsRootName;
         if (rootNode == bytes32(0)) revert InvalidParameters();
         if (bytes(rootName).length == 0) revert InvalidParameters();
         jobsRootNode = rootNode;
         jobsRootName = rootName;
+        emit JobsRootUpdated(oldNode, rootNode, oldName, rootName);
     }
 
     function setJobManager(address manager) external onlyOwner {
+        address old = jobManager;
         if (manager == address(0)) revert InvalidParameters();
         jobManager = manager;
+        emit JobManagerUpdated(old, manager);
     }
 
     function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        bool old = useEnsJobTokenURI;
         useEnsJobTokenURI = enabled;
+        emit UseEnsJobTokenURIUpdated(old, enabled);
     }
 
     modifier onlyJobManager() {
