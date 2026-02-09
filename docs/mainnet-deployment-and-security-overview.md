@@ -105,7 +105,13 @@ Even before locking, identity wiring updates require `nextJobId == 0` and `locke
 4. Call `lockIdentityConfiguration()`.
 
 ## 6) Pause semantics (code‑accurate)
-Pause is an incident‑response control to halt new activity while preserving exits.
+Pause is an incident‑response control to halt new activity while preserving exits. Settlement
+is independently controlled by `setSettlementPaused(bool)` and blocks fund‑out/exit paths guarded
+by `whenSettlementNotPaused`.
+
+**Incident sequencing:** call `setSettlementPaused(true)` first (freeze fund‑out), then `pause()`
+to stop intake. **Recovery:** clear `settlementPaused` only after settlement safety is confirmed;
+unpause intake last.
 
 **Pause policy table**
 
@@ -117,12 +123,12 @@ Pause is an incident‑response control to halt new activity while preserving ex
 | `disputeJob` | Employer/Agent | Blocked | Manual dispute initiation (validator-driven disputes are internal). |
 | `contributeToRewardPool` | Any | Blocked | Transfers funds into the contract balance. |
 | `requestJobCompletion` | Assigned agent | Allowed | Keeps agents from being trapped during pauses. |
-| `cancelJob` / `expireJob` | Employer / Any | Allowed | Settlement exits remain live. |
-| `finalizeJob` | Any | Allowed | Finalizes after review windows/challenge periods. |
-| `resolveDispute` / `resolveDisputeWithCode` | Moderator | Allowed | Dispute resolution remains available during pauses. |
-| `delistJob` | Owner | Allowed | Owner can delist unassigned jobs. |
-| `withdrawAGI` | Owner | **Allowed only while paused** | Treasury withdrawals are pause‑gated. |
-| `resolveStaleDispute` | Owner | Allowed | Only after `disputeReviewPeriod`; pause optional. |
+| `cancelJob` / `expireJob` | Employer / Any | Allowed | Settlement exits remain live unless `settlementPaused` is true. |
+| `finalizeJob` | Any | Allowed | Finalizes after review windows/challenge periods; blocked by `settlementPaused`. |
+| `resolveDispute` / `resolveDisputeWithCode` | Moderator | Allowed | Dispute resolution remains available during pauses; blocked by `settlementPaused`. |
+| `delistJob` | Owner | Allowed | Owner can delist unassigned jobs; blocked by `settlementPaused`. |
+| `withdrawAGI` | Owner | **Allowed only while paused** | Treasury withdrawals are pause‑gated and blocked by `settlementPaused`. |
+| `resolveStaleDispute` | Owner | Allowed | Only after `disputeReviewPeriod`; blocked by `settlementPaused`. |
 
 ## 7) Security posture (operational highlights)
 - **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `withdrawAGI`, dispute resolution, settlement).
