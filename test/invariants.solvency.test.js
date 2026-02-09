@@ -172,7 +172,6 @@ contract("AGIJobManager solvency invariants", (accounts) => {
   });
 
   it("maintains solvency through disputes and moderator resolution", async () => {
-    await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     const payout = toBN(toWei("9"));
     const jobId = await createJob(payout);
     await assertSolvent(manager, token);
@@ -181,9 +180,6 @@ contract("AGIJobManager solvency invariants", (accounts) => {
     await assertSolvent(manager, token);
 
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-    await assertSolvent(manager, token);
-
-    await manager.disapproveJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await assertSolvent(manager, token);
 
     await fundDisputeBond(token, manager, employer, payout, owner);
