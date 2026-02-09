@@ -7,10 +7,20 @@ const defaultContracts = ["AGIJobManager"];
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =
-    artifact.deployedBytecode || artifact.evm?.deployedBytecode?.object || "";
+    artifact.deployedBytecode || artifact.evm?.deployedBytecode?.object;
+  if (!deployedBytecode) {
+    throw new Error(
+      `Missing deployedBytecode in artifact for ${artifact.contractName || "unknown"}`
+    );
+  }
   const hex = deployedBytecode.startsWith("0x")
     ? deployedBytecode.slice(2)
     : deployedBytecode;
+  if (!hex) {
+    throw new Error(
+      `Empty deployedBytecode in artifact for ${artifact.contractName || "unknown"}`
+    );
+  }
   return hex.length / 2;
 }
 
