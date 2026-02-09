@@ -87,14 +87,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     /// @notice Canonical dispute resolution codes (numeric ordering is stable; do not reorder).
     /// @dev 0 = NO_ACTION (log only; dispute remains active)
-    /// @dev 1 = AGENT_WIN (settle in favor of agent)
-    /// @dev 2 = EMPLOYER_WIN (settle in favor of employer)
-    enum DisputeResolutionCode {
-        NO_ACTION,
-        AGENT_WIN,
-        EMPLOYER_WIN
-    }
-
     // Pre-hashed resolution strings (smaller + cheaper than hashing literals each call)
     bytes32 private constant RES_AGENT_WIN = 0x6594a8dd3f558fd2dd11fa44c7925f5b9e19868e6d0b4b97d2132fe5e25b5071;
     bytes32 private constant RES_EMPLOYER_WIN = 0xee31e9f396a85b8517c6d07b02f904858ad9f3456521bedcff02cc14e75ca8ce;
@@ -214,41 +206,70 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     AGIType[] public agiTypes;
     mapping(uint256 => string) private _tokenURIs;
 
-    event JobCreated(uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details);
-    event JobApplied(uint256 jobId, address agent);
-    event JobCompletionRequested(uint256 jobId, address agent, string jobCompletionURI);
-    event JobValidated(uint256 jobId, address validator);
-    event JobDisapproved(uint256 jobId, address validator);
-    event JobCompleted(uint256 jobId, address agent, uint256 reputationPoints);
+    event JobCreated(
+        uint256 indexed jobId,
+        string jobSpecURI,
+        uint256 indexed payout,
+        uint256 indexed duration,
+        string details
+    );
+    event JobApplied(uint256 indexed jobId, address indexed agent);
+    event JobCompletionRequested(uint256 indexed jobId, address indexed agent, string jobCompletionURI);
+    event JobValidated(uint256 indexed jobId, address indexed validator);
+    event JobDisapproved(uint256 indexed jobId, address indexed validator);
+    event JobCompleted(uint256 indexed jobId, address indexed agent, uint256 indexed reputationPoints);
     event ReputationUpdated(address user, uint256 newReputation);
-    event JobCancelled(uint256 jobId);
-    event DisputeResolved(uint256 jobId, address resolver, string resolution);
-    event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason);
-    event JobDisputed(uint256 jobId, address disputant);
-    event JobExpired(uint256 jobId, address employer, address agent, uint256 payout);
+    event JobCancelled(uint256 indexed jobId);
+    event DisputeResolved(uint256 indexed jobId, address indexed resolver, string resolution);
+    event DisputeResolvedWithCode(
+        uint256 indexed jobId,
+        address indexed resolver,
+        uint8 indexed resolutionCode,
+        string reason
+    );
+    event JobDisputed(uint256 indexed jobId, address indexed disputant);
+    event JobExpired(uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout);
     event EnsRegistryUpdated(address indexed newEnsRegistry);
     event NameWrapperUpdated(address indexed newNameWrapper);
     event RootNodesUpdated(
-        bytes32 clubRootNode,
-        bytes32 agentRootNode,
-        bytes32 alphaClubRootNode,
+        bytes32 indexed clubRootNode,
+        bytes32 indexed agentRootNode,
+        bytes32 indexed alphaClubRootNode,
         bytes32 alphaAgentRootNode
     );
-    event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
-    event AGITypeUpdated(address indexed nftAddress, uint256 payoutPercentage);
+    event MerkleRootsUpdated(bytes32 indexed validatorMerkleRoot, bytes32 indexed agentMerkleRoot);
+    event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
-    event RewardPoolContribution(address indexed contributor, uint256 amount);
-    event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
-    event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
+    event RewardPoolContribution(address indexed contributor, uint256 indexed amount);
+    event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
+    event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
-    event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
-    event PlatformRevenueAccrued(uint256 indexed jobId, uint256 amount);
-    event IdentityConfigurationLocked(address indexed locker, uint256 atTimestamp);
-    event AgentBlacklisted(address indexed agent, bool status);
-    event ValidatorBlacklisted(address indexed validator, bool status);
-    event ValidatorBondParamsUpdated(uint256 bps, uint256 min, uint256 max);
-    event ChallengePeriodAfterApprovalUpdated(uint256 oldPeriod, uint256 newPeriod);
-    event SettlementPauseSet(address indexed setter, bool paused);
+    event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 indexed remainingWithdrawable);
+    event PlatformRevenueAccrued(uint256 indexed jobId, uint256 indexed amount);
+    event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);
+    event AgentBlacklisted(address indexed agent, bool indexed status);
+    event ValidatorBlacklisted(address indexed validator, bool indexed status);
+    event ValidatorBondParamsUpdated(uint256 indexed bps, uint256 indexed min, uint256 indexed max);
+    event ChallengePeriodAfterApprovalUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
+    event SettlementPauseSet(address indexed setter, bool indexed paused);
+    event AGITokenAddressUpdated(address indexed oldToken, address indexed newToken);
+    event EnsJobPagesUpdated(address indexed oldEnsJobPages, address indexed newEnsJobPages);
+    event UseEnsJobTokenURIUpdated(bool indexed oldValue, bool indexed newValue);
+    event VoteQuorumUpdated(uint256 indexed oldQuorum, uint256 indexed newQuorum);
+    event RequiredValidatorApprovalsUpdated(uint256 indexed oldApprovals, uint256 indexed newApprovals);
+    event RequiredValidatorDisapprovalsUpdated(uint256 indexed oldDisapprovals, uint256 indexed newDisapprovals);
+    event ValidationRewardPercentageUpdated(uint256 indexed oldPercentage, uint256 indexed newPercentage);
+    event AgentBondParamsUpdated(
+        uint256 indexed oldBps,
+        uint256 indexed oldMin,
+        uint256 indexed oldMax,
+        uint256 newBps,
+        uint256 newMin,
+        uint256 newMax
+    );
+    event AgentBondMinUpdated(uint256 indexed oldMin, uint256 indexed newMin);
+    event ValidatorSlashBpsUpdated(uint256 indexed oldBps, uint256 indexed newBps);
+    event EnsHookAttempted(uint8 indexed hook, uint256 indexed jobId, address indexed target, bool success);
 
     uint8 private constant ENS_HOOK_CREATE = 1;
     uint8 private constant ENS_HOOK_ASSIGN = 2;
@@ -330,7 +351,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _settleAgentBond(Job storage job, bool agentWon, bool toPool) internal returns (uint256 poolAmount) {
         uint256 bond = job.agentBondAmount;
-        if (bond == 0) return 0;
         job.agentBondAmount = 0;
         unchecked {
             lockedAgentBonds -= bond;
@@ -348,9 +368,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _settleDisputeBond(Job storage job, bool agentWon) internal {
         uint256 bond = job.disputeBondAmount;
-        if (bond == 0) return;
         job.disputeBondAmount = 0;
-        job.disputeInitiator = address(0);
         unchecked {
             lockedDisputeBonds -= bond;
         }
@@ -379,10 +397,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (!(period > 0 && period <= MAX_REVIEW_PERIOD)) revert InvalidParameters();
     }
 
-    function _requireActiveDispute(Job storage job) internal view {
-        if (!job.disputed || job.expired) revert InvalidState();
-    }
-
     function _requireJobUnsettled(Job storage job) internal view {
         if (job.completed || job.expired || job.disputed) revert InvalidState();
     }
@@ -391,8 +405,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.assignedAgent == address(0)) revert InvalidState();
     }
 
-    function _requireNotCompletedOrExpired(Job storage job) internal view {
-        if (job.completed || job.expired) revert InvalidState();
+    function _requireActiveDispute(Job storage job) internal view {
+        if (!job.disputed || job.expired) revert InvalidState();
     }
 
     function _clearDispute(Job storage job) internal {
@@ -500,7 +514,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         if (bytes(_jobCompletionURI).length == 0) revert InvalidParameters();
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
-        _requireNotCompletedOrExpired(job);
+        if (job.completed || job.expired) revert InvalidState();
         if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
         if (job.completionRequested) revert InvalidState();
         UriUtils.requireValidUri(_jobCompletionURI);
@@ -526,9 +540,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bool approve
     ) internal {
         Job storage job = _job(_jobId);
-        if (job.disputed) revert InvalidState();
+        _requireJobUnsettled(job);
         _requireAssignedAgent(job);
-        _requireNotCompletedOrExpired(job);
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender]
             || _verifyOwnership(msg.sender, subdomain, proof, validatorMerkleRoot, clubRootNode, alphaClubRootNode)
@@ -540,23 +553,32 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 bond = job.validatorBondAmount;
         if (bond == 0) {
             bond = BondMath.computeValidatorBond(job.payout, validatorBondBps, validatorBondMin, validatorBondMax);
-            job.validatorBondAmount = bond + 1;
+            unchecked {
+                job.validatorBondAmount = bond + 1;
+            }
         } else {
             unchecked {
                 bond -= 1;
             }
         }
-        if (bond > 0) {
-            TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), bond);
-            unchecked {
-                lockedValidatorBonds += bond;
-            }
+        TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), bond);
+        unchecked {
+            lockedValidatorBonds += bond;
         }
         _enforceValidatorCapacity(job.validators.length);
         if (approve) {
-            job.validatorApprovals++;
+            unchecked {
+                job.validatorApprovals++;
+            }
             job.approvals[msg.sender] = true;
-            job.validators.push(msg.sender);
+        } else {
+            unchecked {
+                job.validatorDisapprovals++;
+            }
+            job.disapprovals[msg.sender] = true;
+        }
+        job.validators.push(msg.sender);
+        if (approve) {
             emit JobValidated(_jobId, msg.sender);
             if (
                 !job.validatorApproved &&
@@ -568,9 +590,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
             return;
         }
-        job.validatorDisapprovals++;
-        job.disapprovals[msg.sender] = true;
-        job.validators.push(msg.sender);
         emit JobDisapproved(_jobId, msg.sender);
         if (job.validatorDisapprovals >= requiredValidatorDisapprovals) {
             job.disputed = true;
@@ -596,7 +615,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             lockedDisputeBonds += bond;
         }
-        job.disputeInitiator = msg.sender;
         job.disputeBondAmount = bond;
         job.disputed = true;
         job.disputedAt = block.timestamp;
@@ -606,12 +624,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     /// @notice Deprecated: use resolveDisputeWithCode for typed settlement.
     /// @dev Non-canonical strings map to NO_ACTION (dispute remains active).
     function resolveDispute(uint256 _jobId, string calldata resolution) external onlyModerator whenSettlementNotPaused nonReentrant {
-        uint8 resolutionCode = uint8(DisputeResolutionCode.NO_ACTION);
         bytes32 r = keccak256(bytes(resolution));
+        uint8 resolutionCode;
         if (r == RES_AGENT_WIN) {
-            resolutionCode = uint8(DisputeResolutionCode.AGENT_WIN);
+            resolutionCode = 1;
         } else if (r == RES_EMPLOYER_WIN) {
-            resolutionCode = uint8(DisputeResolutionCode.EMPLOYER_WIN);
+            resolutionCode = 2;
         }
         _resolveDispute(_jobId, resolutionCode, resolution);
     }
@@ -629,32 +647,32 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         _requireActiveDispute(job);
 
-        if (resolutionCode == uint8(DisputeResolutionCode.NO_ACTION)) {
+        if (resolutionCode == 0) {
             emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
             return;
         }
 
         _clearDispute(job);
 
-        if (resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)) {
+        if (resolutionCode == 1) {
             _completeJob(_jobId, true);
-        } else if (resolutionCode == uint8(DisputeResolutionCode.EMPLOYER_WIN)) {
+        } else if (resolutionCode == 2) {
             _refundEmployer(_jobId, job);
         } else {
             revert InvalidParameters();
         }
-
-        string memory legacyResolution = resolutionCode == uint8(DisputeResolutionCode.AGENT_WIN)
-            ? "agent win"
-            : "employer win";
-        emit DisputeResolved(_jobId, msg.sender, legacyResolution);
+        emit DisputeResolved(
+            _jobId,
+            msg.sender,
+            resolutionCode == 1 ? "agent win" : "employer win"
+        );
         emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
     }
 
     function resolveStaleDispute(uint256 _jobId, bool employerWins) external onlyOwner whenSettlementNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         _requireActiveDispute(job);
-        if (job.disputedAt == 0 || block.timestamp <= job.disputedAt + disputeReviewPeriod) revert InvalidState();
+        if (block.timestamp <= job.disputedAt + disputeReviewPeriod) revert InvalidState();
 
         _clearDispute(job);
         if (employerWins) {
@@ -684,6 +702,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
         _requireEmptyEscrow();
+        emit AGITokenAddressUpdated(address(agiToken), _newTokenAddress);
         agiToken = IERC20(_newTokenAddress);
     }
     function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable {
@@ -700,9 +719,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
         if (_ensJobPages != address(0) && _ensJobPages.code.length == 0) revert InvalidParameters();
+        emit EnsJobPagesUpdated(ensJobPages, _ensJobPages);
         ensJobPages = _ensJobPages;
     }
     function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        emit UseEnsJobTokenURIUpdated(useEnsJobTokenURI, enabled);
         useEnsJobTokenURI = enabled;
     }
     function updateRootNodes(
@@ -726,14 +747,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setBaseIpfsUrl(string calldata _url) external onlyOwner { baseIpfsUrl = _url; }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
+        emit RequiredValidatorApprovalsUpdated(requiredValidatorApprovals, _approvals);
         requiredValidatorApprovals = _approvals;
     }
     function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
         _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
+        emit RequiredValidatorDisapprovalsUpdated(requiredValidatorDisapprovals, _disapprovals);
         requiredValidatorDisapprovals = _disapprovals;
     }
     function setVoteQuorum(uint256 _quorum) external onlyOwner {
         if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
+        emit VoteQuorumUpdated(voteQuorum, _quorum);
         voteQuorum = _quorum;
     }
     function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner { premiumReputationThreshold = _threshold; }
@@ -768,21 +792,25 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
         if (bps == 0 && min == 0 && max == 0) {
+            emit AgentBondParamsUpdated(agentBondBps, agentBond, agentBondMax, 0, 0, 0);
             agentBondBps = 0;
             agentBond = 0;
             agentBondMax = 0;
             return;
         }
         if (max == 0) revert InvalidParameters();
+        emit AgentBondParamsUpdated(agentBondBps, agentBond, agentBondMax, bps, min, max);
         agentBondBps = bps;
         agentBond = min;
         agentBondMax = max;
     }
     function setAgentBond(uint256 bond) external onlyOwner {
+        emit AgentBondMinUpdated(agentBond, bond);
         agentBond = bond;
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
+        emit ValidatorSlashBpsUpdated(validatorSlashBps, bps);
         validatorSlashBps = bps;
     }
     function setChallengePeriodAfterApproval(uint256 period) external onlyOwner {
@@ -865,6 +893,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
         uint256 maxPct = _maxAGITypePayoutPercentage();
         if (maxPct > 100 - _percentage) revert InvalidParameters();
+        emit ValidationRewardPercentageUpdated(validationRewardPercentage, _percentage);
         validationRewardPercentage = _percentage;
     }
 
@@ -940,9 +969,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         } else if (totalVotes < voteQuorum || approvals == disapprovals) {
             // Under-quorum or tie at/over quorum: force dispute to avoid low-participation outcomes.
             job.disputed = true;
-            if (job.disputedAt == 0) {
-                job.disputedAt = block.timestamp;
-            }
+            job.disputedAt = block.timestamp;
             emit JobDisputed(_jobId, msg.sender);
             return;
         } else if (approvals > disapprovals) {
@@ -1020,11 +1047,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             return;
         }
         uint256 bond = job.validatorBondAmount;
-        if (bond != 0) {
-            unchecked {
-                bond -= 1;
-                lockedValidatorBonds -= bond * vCount;
-            }
+        unchecked {
+            bond -= 1;
+            lockedValidatorBonds -= bond * vCount;
         }
         job.validatorBondAmount = 0;
         uint256 correctCount = agentWins ? job.validatorApprovals : job.validatorDisapprovals;
@@ -1123,13 +1148,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (target == address(0) || target.code.length == 0) {
             return;
         }
+        uint256 success;
         assembly {
             let ptr := mload(0x40)
             mstore(ptr, shl(224, 0x1f76f7a2))
             mstore(add(ptr, 4), hook)
             mstore(add(ptr, 36), jobId)
-            pop(call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0))
+            success := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
+        emit EnsHookAttempted(hook, jobId, target, success != 0);
     }
 
     function _verifyOwnership(
