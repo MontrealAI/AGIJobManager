@@ -97,7 +97,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     await expectCustomError(
       manager.setAdditionalAgentPayoutPercentage.call(90, { from: owner }),
-      "InvalidState"
+      "DeprecatedParameter"
     );
   });
 
