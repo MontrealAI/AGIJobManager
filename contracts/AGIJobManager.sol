@@ -241,6 +241,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
     event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
+    event AGITokenAddressUpdated(address newToken);
+    event EnsJobPagesUpdated(address newEnsJobPages);
+    event UseEnsJobTokenURIUpdated(bool newValue);
+    event ConfigUintUpdated(uint8 indexed key, uint256 value);
     event AGIWithdrawn(address indexed to, uint256 amount, uint256 remainingWithdrawable);
     event PlatformRevenueAccrued(uint256 indexed jobId, uint256 amount);
     event IdentityConfigurationLocked(address indexed locker, uint256 atTimestamp);
@@ -249,6 +253,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event ValidatorBondParamsUpdated(uint256 bps, uint256 min, uint256 max);
     event ChallengePeriodAfterApprovalUpdated(uint256 oldPeriod, uint256 newPeriod);
     event SettlementPauseSet(address indexed setter, bool paused);
+    event EnsHookAttempted(uint8 hook, uint256 jobId, bool success);
 
     uint8 private constant ENS_HOOK_CREATE = 1;
     uint8 private constant ENS_HOOK_ASSIGN = 2;
@@ -258,6 +263,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_LOCK_BURN = 6;
     uint256 internal constant ENS_HOOK_GAS_LIMIT = 500_000;
     uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
+    uint8 private constant CONFIG_REQUIRED_APPROVALS = 1;
+    uint8 private constant CONFIG_REQUIRED_DISAPPROVALS = 2;
+    uint8 private constant CONFIG_VALIDATION_REWARD = 3;
+    uint8 private constant CONFIG_AGENT_BOND_MIN = 4;
+    uint8 private constant CONFIG_VALIDATOR_SLASH_BPS = 5;
+    uint8 private constant CONFIG_AGENT_BOND_PARAMS = 6;
+    uint256 private constant CONFIG_UINT_UPDATED_SIG =
+        0x277af901e9a576b1b881185583f68014376d12b772897e93c56c7e8d87657f0a;
 
     constructor(
         address agiTokenAddress,
@@ -314,6 +327,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _job(uint256 jobId) internal view returns (Job storage job) {
         job = jobs[jobId];
         if (job.employer == address(0)) revert JobNotFound();
+    }
+
+    function _emitConfigUint(uint8 key, uint256 value) internal {
+        assembly {
+            mstore(0x00, value)
+            log2(0x00, 0x20, CONFIG_UINT_UPDATED_SIG, key)
+        }
     }
 
     function _t(address to, uint256 amount) internal {
@@ -685,6 +705,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
         _requireEmptyEscrow();
         agiToken = IERC20(_newTokenAddress);
+        emit AGITokenAddressUpdated(_newTokenAddress);
     }
     function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable {
         if (_newEnsRegistry == address(0)) revert InvalidParameters();
@@ -701,9 +722,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
         if (_ensJobPages != address(0) && _ensJobPages.code.length == 0) revert InvalidParameters();
         ensJobPages = _ensJobPages;
+        emit EnsJobPagesUpdated(_ensJobPages);
     }
     function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
         useEnsJobTokenURI = enabled;
+        emit UseEnsJobTokenURIUpdated(enabled);
     }
     function updateRootNodes(
         bytes32 _clubRootNode,
@@ -727,10 +750,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
         _validateValidatorThresholds(_approvals, requiredValidatorDisapprovals);
         requiredValidatorApprovals = _approvals;
+        _emitConfigUint(CONFIG_REQUIRED_APPROVALS, _approvals);
     }
     function setRequiredValidatorDisapprovals(uint256 _disapprovals) external onlyOwner {
         _validateValidatorThresholds(requiredValidatorApprovals, _disapprovals);
         requiredValidatorDisapprovals = _disapprovals;
+        _emitConfigUint(CONFIG_REQUIRED_DISAPPROVALS, _disapprovals);
     }
     function setVoteQuorum(uint256 _quorum) external onlyOwner {
         if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
@@ -771,19 +796,23 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             agentBondBps = 0;
             agentBond = 0;
             agentBondMax = 0;
+            _emitConfigUint(CONFIG_AGENT_BOND_PARAMS, 0);
             return;
         }
         if (max == 0) revert InvalidParameters();
         agentBondBps = bps;
         agentBond = min;
         agentBondMax = max;
+        _emitConfigUint(CONFIG_AGENT_BOND_PARAMS, bps);
     }
     function setAgentBond(uint256 bond) external onlyOwner {
         agentBond = bond;
+        _emitConfigUint(CONFIG_AGENT_BOND_MIN, bond);
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
         validatorSlashBps = bps;
+        _emitConfigUint(CONFIG_VALIDATOR_SLASH_BPS, bps);
     }
     function setChallengePeriodAfterApproval(uint256 period) external onlyOwner {
         _requireValidReviewPeriod(period);
@@ -866,6 +895,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 maxPct = _maxAGITypePayoutPercentage();
         if (maxPct > 100 - _percentage) revert InvalidParameters();
         validationRewardPercentage = _percentage;
+        _emitConfigUint(CONFIG_VALIDATION_REWARD, _percentage);
     }
 
     function enforceReputationGrowth(address _user, uint256 _points) internal {
@@ -1123,13 +1153,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (target == address(0) || target.code.length == 0) {
             return;
         }
+        uint256 ok;
         assembly {
             let ptr := mload(0x40)
             mstore(ptr, shl(224, 0x1f76f7a2))
             mstore(add(ptr, 4), hook)
             mstore(add(ptr, 36), jobId)
-            pop(call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0))
+            ok := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
+        emit EnsHookAttempted(hook, jobId, ok != 0);
     }
 
     function _verifyOwnership(
