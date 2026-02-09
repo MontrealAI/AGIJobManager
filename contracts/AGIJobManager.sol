@@ -758,7 +758,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit ChallengePeriodAfterApprovalUpdated(oldPeriod, period);
     }
     function setAdditionalAgentPayoutPercentage(uint256 _percentage) external onlyOwner {
-        _percentage;
         revert InvalidState();
     }
     function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
