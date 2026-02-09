@@ -69,7 +69,6 @@ function loadConfig(args) {
     jobDurationLimit: process.env.AGI_JOB_DURATION_LIMIT,
     completionReviewPeriod: process.env.AGI_COMPLETION_REVIEW_PERIOD,
     disputeReviewPeriod: process.env.AGI_DISPUTE_REVIEW_PERIOD,
-    additionalAgentPayoutPercentage: process.env.AGI_ADDITIONAL_AGENT_PAYOUT_PERCENTAGE,
     termsAndConditionsIpfsHash: process.env.AGI_TERMS_AND_CONDITIONS_IPFS_HASH,
     contactEmail: process.env.AGI_CONTACT_EMAIL,
     additionalText1: process.env.AGI_ADDITIONAL_TEXT_1,
@@ -441,26 +440,9 @@ module.exports = async function postdeployConfig(callback) {
       },
     });
 
-    const currentAdditionalAgentPayout = await instance.additionalAgentPayoutPercentage();
-    const desiredAdditionalAgentPayout = config.additionalAgentPayoutPercentage;
-    const addAdditionalAgentPayoutOp = async () =>
-      addParamOp({
-        key: "additionalAgentPayoutPercentage",
-        label: "Set additionalAgentPayoutPercentage",
-        currentValue: currentAdditionalAgentPayout,
-        desiredValue: desiredAdditionalAgentPayout,
-        send: () =>
-          instance.setAdditionalAgentPayoutPercentage(
-            desiredAdditionalAgentPayout,
-            txFrom ? { from: txFrom } : {}
-          ),
-        verify: async () => {
-          const updated = await instance.additionalAgentPayoutPercentage();
-          if (updated.toString() !== toStringValue(desiredAdditionalAgentPayout)) {
-            throw new Error("additionalAgentPayoutPercentage did not update");
-          }
-        },
-      });
+    if (config.additionalAgentPayoutPercentage !== undefined) {
+      console.warn("additionalAgentPayoutPercentage is deprecated and ignored.");
+    }
 
     await addParamOp({
       key: "termsAndConditionsIpfsHash",
@@ -591,33 +573,23 @@ module.exports = async function postdeployConfig(callback) {
 
     const currentHeadroom = 100 - Number(currentValidationReward.toString());
     const desiredHeadroom = 100 - validationRewardTargetNumber;
-    const additionalAgentTarget = toStringValue(desiredAdditionalAgentPayout);
-    const desiredAdditionalAgentPayoutNumber =
-      additionalAgentTarget !== undefined ? Number(additionalAgentTarget) : Number(currentAdditionalAgentPayout);
-    const needsValidationFirst =
-      validationRewardNeedsUpdate &&
-      (desiredMaxAgiPayout > currentHeadroom || desiredAdditionalAgentPayoutNumber > currentHeadroom);
-    const needsOtherFirst =
-      validationRewardNeedsUpdate &&
-      (currentMaxAgiPayout > desiredHeadroom || Number(currentAdditionalAgentPayout) > desiredHeadroom);
+    const needsValidationFirst = validationRewardNeedsUpdate && desiredMaxAgiPayout > currentHeadroom;
+    const needsOtherFirst = validationRewardNeedsUpdate && currentMaxAgiPayout > desiredHeadroom;
 
     if (needsValidationFirst && needsOtherFirst) {
       throw new Error(
-        "Validation reward and payout updates require conflicting order; check AGI type and additional agent headroom"
+        "Validation reward and payout updates require conflicting order; check AGI type headroom"
       );
     }
 
     if (needsValidationFirst) {
       await addValidationRewardOp();
       ops.push(...agiTypeOps);
-      await addAdditionalAgentPayoutOp();
     } else if (needsOtherFirst) {
       ops.push(...agiTypeOps);
-      await addAdditionalAgentPayoutOp();
       await addValidationRewardOp();
     } else {
       ops.push(...agiTypeOps);
-      await addAdditionalAgentPayoutOp();
       await addValidationRewardOp();
     }
 
