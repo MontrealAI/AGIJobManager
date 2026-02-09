@@ -83,6 +83,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error InsolventEscrowBalance();
     error ConfigLocked();
     error SettlementPaused();
+    error DeprecatedParameter();
 
     /// @notice Canonical dispute resolution codes (numeric ordering is stable; do not reorder).
     /// @dev 0 = NO_ACTION (log only; dispute remains active)
@@ -790,8 +791,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         challengePeriodAfterApproval = period;
         emit ChallengePeriodAfterApprovalUpdated(oldPeriod, period);
     }
+    /// @notice Deprecated and unused in payout logic.
     function setAdditionalAgentPayoutPercentage(uint256) external onlyOwner {
-        revert InvalidState();
+        revert DeprecatedParameter();
     }
     function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
     function updateContactEmail(string calldata _email) external onlyOwner { contactEmail = _email; }

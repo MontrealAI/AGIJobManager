@@ -48,6 +48,11 @@
     },
     {
       "inputs": [],
+      "name": "DeprecatedParameter",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "IneligibleAgentPayout",
       "type": "error"
     },
