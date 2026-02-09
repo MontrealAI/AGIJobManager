@@ -626,12 +626,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (bond < DISPUTE_BOND_MIN) bond = DISPUTE_BOND_MIN;
         if (bond > DISPUTE_BOND_MAX) bond = DISPUTE_BOND_MAX;
         if (bond > job.payout) bond = job.payout;
-        TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), bond);
-        unchecked {
-            lockedDisputeBonds += bond;
+        if (bond > 0) {
+            TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), bond);
+            unchecked {
+                lockedDisputeBonds += bond;
+            }
+            job.disputeInitiator = msg.sender;
         }
         job.disputeBondAmount = bond;
-        job.disputeInitiator = msg.sender;
         job.disputed = true;
         job.disputedAt = block.timestamp;
         emit JobDisputed(_jobId, msg.sender);
