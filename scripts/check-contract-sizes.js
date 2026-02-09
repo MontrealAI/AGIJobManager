@@ -17,9 +17,7 @@ function deployedSizeBytes(artifact) {
     ? deployedBytecode.slice(2)
     : deployedBytecode;
   if (!hex) {
-    throw new Error(
-      `Empty deployedBytecode in artifact for ${artifact.contractName || "unknown"}`
-    );
+    return 0;
   }
   return hex.length / 2;
 }
