@@ -9,6 +9,7 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const FailingERC20 = artifacts.require("FailingERC20");
 const MockERC721 = artifacts.require("MockERC721");
+const MockENSJobPages = artifacts.require("MockENSJobPages");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
@@ -159,6 +160,70 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.withdrawAGI(surplus, { from: owner });
     const balanceAfter = await token.balanceOf(owner);
     assert.equal(balanceAfter.sub(balanceBefore).toString(), surplus.toString(), "withdraw should move funds");
+  });
+
+  it("emits config update events", async () => {
+    const newToken = await MockERC20.new({ from: owner });
+    const tokenUpdate = await manager.updateAGITokenAddress(newToken.address, { from: owner });
+    const tokenEvent = tokenUpdate.logs.find((log) => log.event === "AGITokenAddressUpdated");
+    assert.equal(tokenEvent.args.oldToken, token.address);
+    assert.equal(tokenEvent.args.newToken, newToken.address);
+
+    const ensJobPages = await MockENSJobPages.new({ from: owner });
+    const ensJobPagesUpdate = await manager.setEnsJobPages(ensJobPages.address, { from: owner });
+    const ensEvent = ensJobPagesUpdate.logs.find((log) => log.event === "EnsJobPagesUpdated");
+    assert.equal(ensEvent.args.oldEnsJobPages, "0x0000000000000000000000000000000000000000");
+    assert.equal(ensEvent.args.newEnsJobPages, ensJobPages.address);
+
+    const useEnsUpdate = await manager.setUseEnsJobTokenURI(true, { from: owner });
+    const useEnsEvent = useEnsUpdate.logs.find((log) => log.event === "UseEnsJobTokenURIUpdated");
+    assert.equal(useEnsEvent.args.oldValue, false);
+    assert.equal(useEnsEvent.args.newValue, true);
+
+    const quorumUpdate = await manager.setVoteQuorum(4, { from: owner });
+    const quorumEvent = quorumUpdate.logs.find((log) => log.event === "VoteQuorumUpdated");
+    assert.equal(quorumEvent.args.oldQuorum.toString(), "3");
+    assert.equal(quorumEvent.args.newQuorum.toString(), "4");
+
+    const approvalsUpdate = await manager.setRequiredValidatorApprovals(4, { from: owner });
+    const approvalsEvent = approvalsUpdate.logs.find((log) => log.event === "RequiredValidatorApprovalsUpdated");
+    assert.equal(approvalsEvent.args.oldApprovals.toString(), "3");
+    assert.equal(approvalsEvent.args.newApprovals.toString(), "4");
+
+    const disapprovalsUpdate = await manager.setRequiredValidatorDisapprovals(4, { from: owner });
+    const disapprovalsEvent = disapprovalsUpdate.logs.find((log) => log.event === "RequiredValidatorDisapprovalsUpdated");
+    assert.equal(disapprovalsEvent.args.oldDisapprovals.toString(), "3");
+    assert.equal(disapprovalsEvent.args.newDisapprovals.toString(), "4");
+
+    const validationUpdate = await manager.setValidationRewardPercentage(7, { from: owner });
+    const validationEvent = validationUpdate.logs.find((log) => log.event === "ValidationRewardPercentageUpdated");
+    assert.equal(validationEvent.args.oldPercentage.toString(), "8");
+    assert.equal(validationEvent.args.newPercentage.toString(), "7");
+
+    const bondReset = await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    const bondResetEvent = bondReset.logs.find((log) => log.event === "AgentBondParamsUpdated");
+    assert.equal(bondResetEvent.args.oldBps.toString(), "500");
+    assert.equal(bondResetEvent.args.oldMin.toString(), web3.utils.toWei("1"));
+    assert.equal(bondResetEvent.args.oldMax.toString(), web3.utils.toWei("88888888"));
+    assert.equal(bondResetEvent.args.newBps.toString(), "0");
+    assert.equal(bondResetEvent.args.newMin.toString(), "0");
+    assert.equal(bondResetEvent.args.newMax.toString(), "0");
+
+    const bondUpdate = await manager.setAgentBondParams(600, web3.utils.toWei("1"), web3.utils.toWei("2"), { from: owner });
+    const bondUpdateEvent = bondUpdate.logs.find((log) => log.event === "AgentBondParamsUpdated");
+    assert.equal(bondUpdateEvent.args.newBps.toString(), "600");
+    assert.equal(bondUpdateEvent.args.newMin.toString(), web3.utils.toWei("1"));
+    assert.equal(bondUpdateEvent.args.newMax.toString(), web3.utils.toWei("2"));
+
+    const bondMinUpdate = await manager.setAgentBond(web3.utils.toWei("1.5"), { from: owner });
+    const bondMinEvent = bondMinUpdate.logs.find((log) => log.event === "AgentBondMinUpdated");
+    assert.equal(bondMinEvent.args.oldMin.toString(), web3.utils.toWei("1"));
+    assert.equal(bondMinEvent.args.newMin.toString(), web3.utils.toWei("1.5"));
+
+    const slashUpdate = await manager.setValidatorSlashBps(50, { from: owner });
+    const slashEvent = slashUpdate.logs.find((log) => log.event === "ValidatorSlashBpsUpdated");
+    assert.equal(slashEvent.args.oldBps.toString(), "0");
+    assert.equal(slashEvent.args.newBps.toString(), "50");
   });
 
   it("reverts withdrawals on failed transfers", async () => {

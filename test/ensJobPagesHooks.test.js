@@ -72,8 +72,14 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
-    await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
+    const createReceipt = await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
     assert.equal((await ensJobPages.createCalls()).toString(), "1");
+    const hookEvent = createReceipt.logs.find((log) => log.event === "EnsHookAttempted");
+    assert.ok(hookEvent, "EnsHookAttempted should be emitted");
+    assert.equal(hookEvent.args.hook.toString(), "1");
+    assert.equal(hookEvent.args.jobId.toString(), "0");
+    assert.equal(hookEvent.args.target, ensJobPages.address);
+    assert.equal(hookEvent.args.success, true);
 
     await token.mint(agent, web3.utils.toWei("2"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
@@ -110,7 +116,13 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
-    await manager.createJob("ipfs://spec.json", payout, 50, "details", { from: employer });
+    const createReceipt = await manager.createJob("ipfs://spec.json", payout, 50, "details", { from: employer });
+    const hookEvent = createReceipt.logs.find((log) => log.event === "EnsHookAttempted");
+    assert.ok(hookEvent, "EnsHookAttempted should be emitted");
+    assert.equal(hookEvent.args.hook.toString(), "1");
+    assert.equal(hookEvent.args.jobId.toString(), "0");
+    assert.equal(hookEvent.args.target, ensJobPages.address);
+    assert.equal(hookEvent.args.success, false);
 
     await token.mint(agent, web3.utils.toWei("2"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
