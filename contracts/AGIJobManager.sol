@@ -505,9 +505,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             agentBondMax,
             jobDurationLimit
         );
-        _tf(msg.sender, bond);
-        unchecked {
-            lockedAgentBonds += bond;
+        if (bond > 0) {
+            _tf(msg.sender, bond);
+            unchecked {
+                lockedAgentBonds += bond;
+            }
         }
         job.agentBondAmount = bond;
         job.assignedAgent = msg.sender;
