@@ -37,7 +37,7 @@ Owner operators, reviewers, and incident responders.
 | `nameWrapper` | `updateNameWrapper` | **Immutable after lock** |
 | `ensJobPages` | `setEnsJobPages` | **Immutable after lock** |
 | ENS root nodes | `updateRootNodes` | **Immutable after lock** |
-| Merkle roots | `updateMerkleRoots` | **Immutable after lock** |
+| Merkle roots | `updateMerkleRoots` | Mutable after lock (no `whenIdentityConfigurable` guard) |
 | `useEnsJobTokenURI` | `setUseEnsJobTokenURI` | Mutable after lock |
 
 ## Lists and role toggles
@@ -60,6 +60,7 @@ Owner operators, reviewers, and incident responders.
 - `setAdditionalAgentPayoutPercentage` is deprecated and always reverts.
 - Bad threshold combinations revert via `InvalidValidatorThresholds`.
 - Identity-lock mistakes require redeploy; there is no upgrade path.
+- Identity lock does **not** freeze Merkle roots; `updateMerkleRoots` remains owner-mutable post-lock.
 
 ## References
 - [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
