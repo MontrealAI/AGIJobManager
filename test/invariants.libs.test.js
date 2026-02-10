@@ -4,6 +4,8 @@ const UtilsHarness = artifacts.require("UtilsHarness");
 const BondMath = artifacts.require("BondMath");
 const ENSOwnership = artifacts.require("ENSOwnership");
 const ReputationMath = artifacts.require("ReputationMath");
+const TransferUtils = artifacts.require("TransferUtils");
+const UriUtils = artifacts.require("UriUtils");
 const MockENSRegistry = artifacts.require("MockENSRegistry");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
@@ -20,9 +22,13 @@ contract("Utility library invariants", (accounts) => {
     const bondMath = await BondMath.new({ from: owner });
     const ensOwnership = await ENSOwnership.new({ from: owner });
     const reputationMath = await ReputationMath.new({ from: owner });
+    const transferUtils = await TransferUtils.new({ from: owner });
+    const uriUtils = await UriUtils.new({ from: owner });
     await UtilsHarness.link(BondMath, bondMath.address);
     await UtilsHarness.link(ENSOwnership, ensOwnership.address);
     await UtilsHarness.link(ReputationMath, reputationMath.address);
+    await UtilsHarness.link(TransferUtils, transferUtils.address);
+    await UtilsHarness.link(UriUtils, uriUtils.address);
     harness = await UtilsHarness.new({ from: owner });
   });
 

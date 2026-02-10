@@ -11,6 +11,11 @@ contract MockNameWrapper {
     bytes32 public lastLabelhash;
     uint32 public lastChildFuses;
     uint64 public lastChildExpiry;
+    bool public revertSetChildFuses;
+
+    function setRevertSetChildFuses(bool shouldRevert) external {
+        revertSetChildFuses = shouldRevert;
+    }
 
     function setOwner(uint256 id, address owner) external {
         owners[id] = owner;
@@ -39,6 +44,7 @@ contract MockNameWrapper {
     }
 
     function setChildFuses(bytes32 parentNode, bytes32 labelhash, uint32 fuses, uint64 expiry) external {
+        require(!revertSetChildFuses, "setChildFuses reverted");
         setChildFusesCalls += 1;
         lastParentNode = parentNode;
         lastLabelhash = labelhash;

@@ -96,6 +96,31 @@ contract("ENSJobPages helper", (accounts) => {
     );
   });
 
+  it("emits fusesBurned=false when NameWrapper fuse burning reverts", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, nameWrapper.address, { from: owner });
+    await nameWrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await nameWrapper.setRevertSetChildFuses(true, { from: owner });
+
+    const jobId = 13;
+    const tx = await helper.lockJobENS(jobId, employer, agent, true, { from: owner });
+    const locked = tx.logs.find((log) => log.event === "JobENSLocked");
+    assert.ok(locked, "JobENSLocked should emit");
+    assert.equal(locked.args.fusesBurned, false, "fuse failures should be non-blocking");
+    assert.equal((await nameWrapper.setChildFusesCalls()).toString(), "0", "failed fuse call should not be recorded");
+  });
+
   it("burns child fuses on hook 6 even when job-manager view calls fail", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
