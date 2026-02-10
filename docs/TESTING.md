@@ -1,54 +1,24 @@
-# Testing Guide
-
-## Purpose
-Document test suite structure, commands, and extension practices.
-
-## Audience
-Contributors and release engineers.
-
-## Preconditions / assumptions
-- Run from repository root after `npm ci`.
+# Testing
 
 ## Canonical commands
-```bash
-npm run build
-npm test
-npm run size
-npm run test:ui
-```
+From repo root:
+- `npm install`
+- `npm run build`
+- `npm run test`
+- `npm run size`
 
-## What `npm test` executes
-From `package.json`:
-1. `truffle compile --all`
-2. `truffle test --network test`
-3. `node test/AGIJobManager.test.js`
-4. `node scripts/check-contract-sizes.js`
+`npm run test` executes compile, Truffle tests on network `test`, a direct Node test runner (`node test/AGIJobManager.test.js`), and contract size checks.
 
-## Test suite map
-| Area | Representative files |
-|---|---|
-| Lifecycle and state machine | `test/happyPath.test.js`, `test/jobStatus.test.js`, `test/scenarioEconomicStateMachine.test.js` |
-| Escrow and solvency | `test/escrowAccounting.test.js`, `test/invariants.solvency.test.js`, `test/completionSettlementInvariant.test.js` |
-| Disputes and validators | `test/disputeHardening.test.js`, `test/validatorCap.test.js`, `test/livenessTimeouts.test.js` |
-| Security regression | `test/securityRegression.test.js`, `test/delistJob.reentrancy.test.js`, `test/economicSafety.test.js` |
-| ENS integration | `test/ensJobPagesHooks.test.js`, `test/ensJobPagesHelper.test.js` |
-| Deployment/config checks | `test/deploymentDefaults.test.js`, `test/deploymentWiring.test.js`, `test/validate-params-script.test.js` |
+## Run a single test file
+Use Truffle directly:
+- `npx truffle test test/happyPath.test.js --network test`
 
-## Bytecode size guard behavior
-- `scripts/check-bytecode-size.js`: strict target guard (default `AGIJobManager`) with max `24575` bytes.
-- `scripts/check-contract-sizes.js`: reports all compiled artifacts and fails if any exceed max.
+## Deterministic test guidance
+- Prefer fixtures in `test/helpers/` for reusable setup.
+- Keep proof inputs/static addresses deterministic (see `test/helpers/ens.js`, merkle helper scripts).
+- Avoid time-dependent flakes: use explicit time travel/helpers where needed.
 
-## Writing new tests
-- Reuse mocks in `contracts/test/` and helper utilities in `test/helpers/`.
-- Assert both state changes and emitted events for settlement-critical flows.
-- Prefer deterministic values and explicit time manipulation in timeout paths.
-
-## Gotchas / failure modes
-- Running `truffle test` against non-test networks can produce false negatives due to config/funding assumptions.
-- Size checks require fresh artifacts; run compile before size scripts.
-
-## References
-- [`../package.json`](../package.json)
-- [`../scripts/check-bytecode-size.js`](../scripts/check-bytecode-size.js)
-- [`../scripts/check-contract-sizes.js`](../scripts/check-contract-sizes.js)
-- [`../test`](../test)
+## Troubleshooting
+- **Compile mismatch**: ensure Truffle uses pinned compiler (`0.8.23`) from `truffle-config.js`.
+- **Provider/env issues**: local tests use in-config Ganache test provider; external networks require env RPC + private keys.
+- **Bytecode gate failure**: run `npm run size` and inspect `scripts/check-bytecode-size.js` output.

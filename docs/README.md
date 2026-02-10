@@ -1,42 +1,21 @@
-# AGIJobManager Documentation Index
+# Documentation Hub
 
-## Purpose
-Provide a single navigation entry for engineers, auditors, and operators working with this repository.
+This documentation set is a production-focused map of the current repository behavior for deployment and operations.
 
-## Audience
-- Smart-contract developers
-- Security reviewers/auditors
-- Deployment and incident-response operators
-- Integrators calling contract methods directly
+## 1) Start here
+- [Architecture](./ARCHITECTURE.md)
+- [Contracts overview and permissions](./CONTRACTS.md)
+- [AGIJobManager deep reference](./AGIJOBMANAGER.md)
+- [ENSJobPages integration reference](./ENSJOBPAGES.md)
 
-## Preconditions / assumptions
-- You are working from repository root.
-- You have read the root governance/security docs: [`../CONTRIBUTING.md`](../CONTRIBUTING.md), [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md), [`../SECURITY.md`](../SECURITY.md).
+## 2) Deploy and operate
+- [Configuration guide](./CONFIGURATION.md)
+- [Deploy runbook](./DEPLOY_RUNBOOK.md)
+- [Operations](./OPERATIONS.md)
 
-## Start here
-1. [Quickstart](./QUICKSTART.md)
-2. [Architecture](./ARCHITECTURE.md)
-3. [Contracts overview](./CONTRACTS_OVERVIEW.md)
-4. [Configuration reference](./CONFIGURATION_REFERENCE.md)
-5. [Deploy Day runbook](./DEPLOY_DAY_RUNBOOK.md)
-6. [Operations runbook](./OPERATIONS_RUNBOOK.md)
-
-## Contract reference
-- [AGIJobManager](./contracts/AGIJobManager.md)
-- [ENSJobPages](./contracts/ENSJobPages.md)
-- [Utilities (BondMath/ReputationMath/TransferUtils/UriUtils/ENSOwnership)](./contracts/Utilities.md)
-- [Interfaces (ENS Registry/NameWrapper/PublicResolver)](./contracts/Interfaces.md)
-
-## Security / quality
-- [Security model and invariants](./SECURITY_MODEL.md)
-- [Testing guide](./TESTING.md)
+## 3) Developer workflow
+- [Testing](./TESTING.md)
 - [Glossary](./GLOSSARY.md)
 
-## Gotchas / failure modes
-- `docs/architecture.md` (lowercase) and `docs/ARCHITECTURE.md` both exist historically; prefer this index link to `ARCHITECTURE.md`.
-- Keep commands aligned with `package.json`; do not invent non-existent npm scripts.
-
-## References
-- [`../package.json`](../package.json)
-- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
-- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
+## 4) Existing reference material in this repo
+Legacy and supplemental docs remain available in `docs/` (for example `DEPLOY_DAY_RUNBOOK.md`, `OPERATIONS_RUNBOOK.md`, and `contracts/`). This hub links the production baseline set above.

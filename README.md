@@ -53,6 +53,29 @@ AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other ma
 ## Documentation
 Primary entrypoints: [`docs/README.md`](docs/README.md) and [`docs/DEPLOY_DAY_RUNBOOK.md`](docs/DEPLOY_DAY_RUNBOOK.md).
 
+### Documentation (production set)
+- [Docs hub](docs/README.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Contracts overview](docs/CONTRACTS.md)
+- [AGIJobManager deep reference](docs/AGIJOBMANAGER.md)
+- [ENSJobPages integration](docs/ENSJOBPAGES.md)
+- [Configuration guide](docs/CONFIGURATION.md)
+- [Deploy runbook](docs/DEPLOY_RUNBOOK.md)
+- [Operations](docs/OPERATIONS.md)
+- [Testing](docs/TESTING.md)
+- [Glossary](docs/GLOSSARY.md)
+
+### Quick start (dev)
+```bash
+npm install
+npm run build
+npm run test
+```
+
+### Deploy & Ops
+- Deploy sequence: [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
+- Day-2 operations and incident playbooks: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+
 - **Documentation index (start here)**: [`docs/README.md`](docs/README.md)
 - **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview (authoritative)**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
