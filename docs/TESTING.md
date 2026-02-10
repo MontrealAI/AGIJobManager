@@ -81,3 +81,18 @@ npx truffle test --network test test/*dispute*.test.js
 | AGIType safety and broken ERC721 isolation | `test/agiTypes.safety.test.js` |
 | ENS hook best-effort integration | `test/ensHooks.integration.test.js` |
 | Identity config locking lifecycle | `test/identityConfig.locking.test.js` |
+
+
+## Coverage map (feature → suite)
+
+| Feature area | Primary suite(s) |
+| --- | --- |
+| Job lifecycle state transitions | `test/jobLifecycle.core.test.js`, `test/livenessTimeouts.test.js`, `test/jobStatus.test.js` |
+| Escrow + bond accounting invariants | `test/escrowAccounting.invariants.test.js`, `test/escrowAccounting.test.js`, `test/invariants.solvency.test.js` |
+| Validator voting, quorum, and challenge windows | `test/validatorVoting.bonds.test.js`, `test/validatorCap.test.js`, `test/livenessTimeouts.test.js` |
+| Disputes + stale dispute recovery | `test/disputes.moderator.test.js`, `test/disputeHardening.test.js` |
+| Pause + settlement pause controls | `test/pausing.accessControl.test.js`, `test/adminOps.test.js` |
+| AGIType ERC721 gating safety | `test/agiTypes.safety.test.js`, `test/agentPayoutSnapshot.truffle.test.js` |
+| ENS hook integration + fuse lock path | `test/ensHooks.integration.test.js`, `test/ensJobPagesHooks.test.js`, `test/ensJobPagesHelper.test.js` |
+| Identity lock and wiring freeze semantics | `test/identityConfig.locking.test.js`, `test/adminOps.test.js` |
+| Merkle/ENS access control and namespace checks | `test/merkleAllowlist.test.js`, `test/namespaceAlpha.test.js`, `test/deploymentWiring.test.js` |

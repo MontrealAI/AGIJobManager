@@ -33,3 +33,21 @@ When changing settlement, bonds, pauses, AGIType checks, or ENS hooks:
 - Update the corresponding new suite(s) above.
 - Re-run `npm run build`, `npm run size`, `npm run lint`, `npm test`.
 - Confirm bytecode size guard remains below EIP-170 threshold.
+
+
+## Validation snapshot (local)
+
+Commands executed for deterministic CI-parity validation:
+
+```bash
+npm install
+npm run lint
+npm run build
+npm run size
+npm test
+```
+
+Observed results:
+- Compile succeeded with pinned `solc 0.8.23`.
+- Bytecode guard reported `AGIJobManager runtime bytecode size: 24574 bytes` (below EIP-170 cap).
+- Full deterministic test suite passed (`260 passing`).
