@@ -11,6 +11,7 @@ const MockENSJobPages = artifacts.require("MockENSJobPages");
 const FailingERC20 = artifacts.require("FailingERC20");
 const MockERC721 = artifacts.require("MockERC721");
 const MockERC165Only = artifacts.require("MockERC165Only");
+const MockERC721Only = artifacts.require("MockERC721Only");
 const MockBrokenERC721 = artifacts.require("MockBrokenERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
@@ -340,6 +341,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
   it("rejects non-ERC721 AGI type configurations", async () => {
     const erc165Only = await MockERC165Only.new({ from: owner });
+    const erc721Only = await MockERC721Only.new({ from: owner });
 
     await expectCustomError(
       manager.addAGIType.call(other, 10, { from: owner }),
@@ -347,6 +349,10 @@ contract("AGIJobManager admin ops", (accounts) => {
     );
     await expectCustomError(
       manager.addAGIType.call(erc165Only.address, 10, { from: owner }),
+      "InvalidParameters"
+    );
+    await expectCustomError(
+      manager.addAGIType.call(erc721Only.address, 10, { from: owner }),
       "InvalidParameters"
     );
   });
