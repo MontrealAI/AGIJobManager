@@ -1,11 +1,14 @@
 # Glossary
 
-- **Job**: A paid task created by an employer and funded in escrow.
-- **Escrow**: The AGI tokens held by the contract until the job is completed or resolved.
-- **Validation**: Approvals or disapprovals from validators that determine job completion or dispute.
-- **Dispute**: A flagged job that needs moderator resolution.
-- **Resolution string**: The text used by a moderator to resolve a dispute. Only “agent win” or “employer win” trigger settlement.
-- **Token approval / allowance**: Permission granted to the contract to move AGI tokens on your behalf.
-- **ENS namehash / node / label**: ENS identifiers. The **label** is a single subdomain (e.g., `helper`), and the **node** is its hashed form.
-- **NameWrapper**: The ENS wrapper contract used for wrapped name ownership checks.
-- **Merkle root / proof / leaf**: Cryptographic components of an allowlist. The root is stored on‑chain; the proof proves your wallet is in the list; the leaf is your wallet hash.
+- **Employer**: Job creator who escrows payout funds.
+- **Agent**: Worker assigned to complete a job; posts an agent bond.
+- **Validator**: Permissioned reviewer who votes approve/disapprove and posts validator bond.
+- **Moderator**: Trusted role authorized to resolve disputes.
+- **Dispute bond**: Bond posted by disputing party during active dispute.
+- **Validator bond**: Per-vote bond used for validator incentive/slashing.
+- **Agent bond**: Bond posted on assignment; returned or slashed based on settlement.
+- **Escrow**: Employer payout locked until settlement.
+- **Retained revenue**: Agent-win payout remainder left in contract after agent payout + validator budget.
+- **ENS root node**: Namehash of parent ENS domain under which job names are created.
+- **Labelhash**: `keccak256(label)` used to derive ENS subnodes.
+- **Fuses**: ENS NameWrapper permission bits (e.g., `CANNOT_SET_RESOLVER`, `CANNOT_SET_TTL`) optionally burned for immutability.
