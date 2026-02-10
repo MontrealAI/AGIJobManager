@@ -181,6 +181,12 @@ npm run lint
 npm run size
 ```
 
+## Testing
+
+- Test execution and determinism guide: [`docs/TESTING.md`](docs/TESTING.md)
+- Risk-based coverage and regression policy: [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md)
+- Test architecture diagrams and role/failure matrices: [`docs/ARCHITECTURE_TESTS.md`](docs/ARCHITECTURE_TESTS.md)
+
 ## Deploy & Ops
 
 - Deployment sequence: [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
