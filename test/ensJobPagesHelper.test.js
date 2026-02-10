@@ -84,5 +84,14 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(wrappedOwner, helper.address, "wrapped subnode should be owned by helper");
     const isWrapped = await nameWrapper.isWrapped(node);
     assert.equal(isWrapped, true, "subnode should be marked wrapped");
+
+    await helper.lockJobENS(jobId, employer, agent, true, { from: owner });
+    assert.equal((await nameWrapper.setChildFusesCalls()).toString(), "1", "should set child fuses");
+    assert.equal(await nameWrapper.lastParentNode(), rootNode, "parent node should be jobs root");
+    assert.equal(
+      await nameWrapper.lastLabelhash(),
+      web3.utils.keccak256(`job-${jobId}`),
+      "labelhash should match job label"
+    );
   });
 });
