@@ -399,11 +399,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _requireEmptyEscrow() internal view {
-        uint256 total;
-        unchecked {
-            total = lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds;
-        }
-        if (total != 0) revert InvalidState();
+        if (
+            lockedEscrow != 0 ||
+            lockedAgentBonds != 0 ||
+            lockedValidatorBonds != 0 ||
+            lockedDisputeBonds != 0
+        ) revert InvalidState();
     }
 
     function _requireValidReviewPeriod(uint256 period) internal pure {
