@@ -12,6 +12,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 const MockERC721 = artifacts.require("MockERC721");
 const MockERC165Only = artifacts.require("MockERC165Only");
 const MockERC721Only = artifacts.require("MockERC721Only");
+const MockNoSupportsInterface = artifacts.require("MockNoSupportsInterface");
 const MockBrokenERC721 = artifacts.require("MockBrokenERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
@@ -340,11 +341,16 @@ contract("AGIJobManager admin ops", (accounts) => {
   });
 
   it("rejects non-ERC721 AGI type configurations", async () => {
+    const noSupports = await MockNoSupportsInterface.new({ from: owner });
     const erc165Only = await MockERC165Only.new({ from: owner });
     const erc721Only = await MockERC721Only.new({ from: owner });
 
     await expectCustomError(
       manager.addAGIType.call(other, 10, { from: owner }),
+      "InvalidParameters"
+    );
+    await expectCustomError(
+      manager.addAGIType.call(noSupports.address, 10, { from: owner }),
       "InvalidParameters"
     );
     await expectCustomError(
@@ -360,6 +366,8 @@ contract("AGIJobManager admin ops", (accounts) => {
   it("skips broken AGI types when computing payout eligibility", async () => {
     const brokenType = await MockBrokenERC721.new({ from: owner });
     await manager.addAGIType(brokenType.address, 80, { from: owner });
+    await manager.addAdditionalAgent(other, { from: owner });
+    await agiTypeNft.mint(other, { from: owner });
 
     const payout = toBN(toWei("4"));
     await token.mint(employer, payout, { from: owner });
@@ -367,7 +375,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
-    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: other });
 
     const jobCore = await manager.getJobCore(jobId);
     assert.equal(jobCore.agentPayoutPct.toString(), "92", "valid AGI type should still be selected");
