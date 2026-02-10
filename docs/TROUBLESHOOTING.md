@@ -1,42 +1,51 @@
-# Troubleshooting & Common Errors
+# Troubleshooting
 
-This guide explains why transactions fail and what to check before retrying.
+## Common operational issues
 
-## Custom errors (from the contract)
-| Error | Meaning | Common triggers | Fix |
-| --- | --- | --- | --- |
-| `NotModerator` | Caller is not a moderator | `resolveDisputeWithCode` called by non‑moderator | Ask owner to add moderator |
-| `NotAuthorized` | Caller fails identity checks | Wrong subdomain, missing Merkle proof, not allowlisted | Verify subdomain, proof, or allowlist |
-| `Blacklisted` | Address is blocked | `applyForJob`, `validateJob`, `disapproveJob` while blacklisted | Ask owner to remove blacklist |
-| `InvalidParameters` | Inputs out of range | payout=0, duration=0, price=0, invalid percent | Fix input values |
-| `InvalidState` | Action not allowed in current job state | Completed/assigned/disputed, expired duration | Check job status first |
-| `JobNotFound` | jobId does not exist | Using wrong jobId | Verify jobId from `JobCreated` |
-| `TransferFailed` | ERC‑20 transfer/transferFrom failed | Insufficient allowance/balance, token returns false | Increase allowance/balance or fix token |
+| Symptom | Typical cause | Fix |
+|---|---|---|
+| `createJob` reverts | payout/duration exceeds limits or bad URI or token transfer failure | Verify `maxJobPayout`, `jobDurationLimit`, URI format, allowance/balance |
+| `applyForJob` reverts | agent unauthorized/blacklisted/no payout tier/max active jobs hit | Verify ENS/Merkle/additional lists, blacklist flags, AGI type eligibility |
+| `validateJob`/`disapproveJob` reverts | completion not requested, vote window closed, duplicate vote, unauthorized validator | Check `completionRequestedAt`, review period, prior vote flags, gating proofs |
+| `finalizeJob` reverts | called before challenge/review window or while disputed | Re-evaluate timing and dispute status |
+| `withdrawAGI` reverts | not paused, settlement paused, amount > withdrawable, insolvency | pause contract, ensure settlement not paused, re-check locked totals |
+| ENS hooks failing | ENSJobPages misconfigured or reverts | check `EnsHookAttempted` events and ENSJobPages configuration |
 
-## Pausable errors
-If the contract is paused, most user actions revert with `Pausable: paused`.
-- **Fix**: wait for the owner to unpause.
+## Runbook snippets
 
-## Common pitfalls
-### Wrong subdomain string
-- The contract computes `subnode = keccak256(root, keccak256(subdomain))`.
-- A typo in the subdomain will fail identity checks.
+### Pause / unpause
+1. Owner calls `pause()` for emergency stop.
+2. Investigate and resolve issue.
+3. Owner calls `unpause()` when safe.
 
-### Missing ERC‑20 allowance
-- **createJob** requires a prior `approve`.
-- Approve only the exact amount and revoke after use.
+### Settlement pause toggle
+- Use `setSettlementPaused(true)` to freeze settlement-sensitive operations independently.
+- Restore with `setSettlementPaused(false)` after remediation.
 
-### Job expired
-- `requestJobCompletion` will fail if the job duration has expired.
+### Dispute intervention
+- Moderator uses `resolveDisputeWithCode(jobId, 1|2, reason)`.
+- If stale beyond dispute window, owner can use `resolveStaleDispute(jobId, employerWins)`.
 
-### Double voting
-- Validators cannot approve or disapprove twice.
+### Blacklist action
+- `blacklistAgent(address, bool)` or `blacklistValidator(address, bool)` by owner.
+- Document reason and expiration policy off-chain.
 
-### Dispute status
-- `resolveDisputeWithCode` only works when `disputed == true`.
-- `disputeJob` can only be called by employer or assigned agent.
+## Custom errors map
 
-## How to diagnose
-1. Check the revert error in your wallet or Etherscan.
-2. Look up the last emitted event for the job.
-3. Compare the job state (`getJobCore(jobId)` / `getJobValidation(jobId)` getters) with the requirements above.
+| Error | Meaning | Typical remediation |
+|---|---|---|
+| `NotModerator` | caller not in moderator set | add moderator or use correct account |
+| `NotAuthorized` | caller failed role/ownership check | verify role, ENS/Merkle proof, and caller identity |
+| `Blacklisted` | address currently blacklisted | remove from blacklist if appropriate |
+| `InvalidParameters` | invalid input/parameter combination | validate bounds and non-empty/valid URI constraints |
+| `InvalidState` | call not valid in current job/contract state | inspect job flags and required transitions |
+| `JobNotFound` | nonexistent job ID | query existing job range (`nextJobId`) |
+| `TransferFailed` | ERC20 transfer or transferFrom failed | verify token behavior, approvals, and balances |
+| `ValidatorLimitReached` | max validators per job exceeded | avoid extra validator vote attempts |
+| `InvalidValidatorThresholds` | approvals/disapprovals config invalid | adjust thresholds within `MAX_VALIDATORS_PER_JOB` |
+| `IneligibleAgentPayout` | agent has no positive AGI payout tier | add/enable AGI type holdings with non-zero payout tier |
+| `InsufficientWithdrawableBalance` | withdraw exceeds treasury surplus | reduce withdrawal amount or settle obligations |
+| `InsolventEscrowBalance` | token balance below locked totals | investigate token outflow anomaly immediately |
+| `ConfigLocked` | identity config locked | cannot update identity wiring after lock |
+| `SettlementPaused` | settlement pause guard active | unset settlement pause for those functions |
+| `DeprecatedParameter` | legacy setter disabled | do not use deprecated parameter path |
