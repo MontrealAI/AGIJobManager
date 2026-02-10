@@ -6,6 +6,11 @@ contract MockNameWrapper {
     mapping(address => mapping(address => bool)) private approvals;
     mapping(bytes32 => bool) private wrapped;
     mapping(bytes32 => uint32) private burnedFuses;
+    uint256 public setChildFusesCalls;
+    bytes32 public lastParentNode;
+    bytes32 public lastLabelhash;
+    uint32 public lastChildFuses;
+    uint64 public lastChildExpiry;
 
     function setOwner(uint256 id, address owner) external {
         owners[id] = owner;
@@ -31,6 +36,14 @@ contract MockNameWrapper {
         uint32 nextFuses = burnedFuses[node] | fuses;
         burnedFuses[node] = nextFuses;
         return nextFuses;
+    }
+
+    function setChildFuses(bytes32 parentNode, bytes32 labelhash, uint32 fuses, uint64 expiry) external {
+        setChildFusesCalls += 1;
+        lastParentNode = parentNode;
+        lastLabelhash = labelhash;
+        lastChildFuses = fuses;
+        lastChildExpiry = expiry;
     }
 
     function setSubnodeRecord(
