@@ -4,7 +4,7 @@ This index is the entrypoint for engineers, auditors, and operators working with
 
 ## Start here
 - [Quickstart](./QUICKSTART.md)
-- [Architecture](./ARCHITECTURE.md)
+- [Architecture](./architecture.md)
 - [Contracts overview](./CONTRACTS_OVERVIEW.md)
 - [Security model](./SECURITY_MODEL.md)
 - [Testing guide](./TESTING.md)
