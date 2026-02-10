@@ -10,6 +10,7 @@ const MockNoSupportsInterface = artifacts.require('MockNoSupportsInterface');
 const MockERC165Only = artifacts.require('MockERC165Only');
 const MockBrokenERC721 = artifacts.require('MockBrokenERC721');
 
+
 const { buildInitConfig } = require('./helpers/deploy');
 const { rootNode } = require('./helpers/ens');
 
@@ -37,5 +38,20 @@ contract('agiTypes.safety', (accounts) => {
 
     const pct = await manager.getHighestPayoutPercentage(agent);
     assert.equal(pct.toString(), '40');
+  });
+
+
+  it('emits disable events and reverts when disabling unknown AGI type', async () => {
+    const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
+
+    const working = await MockERC721.new();
+    await manager.addAGIType(working.address, 40, { from: owner });
+    const receipt = await manager.disableAGIType(working.address, { from: owner });
+    const log = receipt.logs.find((l) => l.event === 'AGITypeUpdated');
+    assert.equal(log.args.nftAddress, working.address);
+    assert.equal(log.args.payoutPercentage.toString(), '0');
+
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.disableAGIType(agent, { from: owner }));
   });
 });

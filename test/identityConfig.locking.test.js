@@ -7,9 +7,9 @@ const MockERC20 = artifacts.require('MockERC20');
 const MockENS = artifacts.require('MockENS');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 const MockERC721 = artifacts.require('MockERC721');
+const MockENSJobPages = artifacts.require('MockENSJobPages');
 const { buildInitConfig } = require('./helpers/deploy');
 const { rootNode } = require('./helpers/ens');
-const { expectCustomError } = require('./helpers/errors');
 const { fundValidators, fundAgents } = require('./helpers/bonds');
 
 const leafFor = (address) => Buffer.from(web3.utils.soliditySha3({ type: 'address', value: address }).slice(2), 'hex');
@@ -36,5 +36,18 @@ contract('identityConfig.locking', (accounts) => {
     await manager.updateAGITokenAddress(altToken.address, { from: owner });
     await manager.lockIdentityConfiguration({ from: owner });
     await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateAGITokenAddress(token.address, { from: owner }));
+  });
+
+  it('locks ENS identity wiring permanently after lockIdentityConfiguration', async () => {
+    const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), '0x' + '00'.repeat(32)), { from: owner });
+    const pages = await MockENSJobPages.new();
+
+    await manager.setEnsJobPages(pages.address, { from: owner });
+    await manager.lockIdentityConfiguration({ from: owner });
+
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.setEnsJobPages('0x0000000000000000000000000000000000000000', { from: owner }));
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateEnsRegistry(ens.address, { from: owner }));
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateNameWrapper(nw.address, { from: owner }));
   });
 });

@@ -35,7 +35,7 @@ Existing suites already cover the requested mainnet-critical areas:
 
 ### Baseline results at HEAD
 
-- Full contract suite: **260 passing** (`npm run test`).
+- Full contract suite: **264 passing** (`npm run test`).
 - Runtime size gate: `AGIJobManager runtime bytecode size: 24574 bytes`.
 
 ## Deterministic execution model
