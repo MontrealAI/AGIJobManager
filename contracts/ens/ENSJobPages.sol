@@ -260,15 +260,10 @@ contract ENSJobPages is Ownable {
         _setAuthorisationBestEffort(jobId, node, agent, false);
 
         bool fusesBurned = false;
-        if (burnFuses && address(nameWrapper) != address(0)) {
-            try nameWrapper.isWrapped(node) returns (bool wrapped) {
-                if (wrapped) {
-                    try nameWrapper.burnFuses(node, LOCK_FUSES) returns (uint32) {
-                        fusesBurned = true;
-                    } catch {
-                        // solhint-disable-next-line no-empty-blocks
-                    }
-                }
+        if (burnFuses && _isWrappedRoot()) {
+            bytes32 labelhash = keccak256(bytes(jobEnsLabel(jobId)));
+            try nameWrapper.setChildFuses(jobsRootNode, labelhash, LOCK_FUSES, type(uint64).max) {
+                fusesBurned = true;
             } catch {
                 // solhint-disable-next-line no-empty-blocks
             }
