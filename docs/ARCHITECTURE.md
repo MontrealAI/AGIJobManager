@@ -1,84 +1,62 @@
 # Architecture
 
-## Purpose
-Document system boundaries, trust model, and component interactions for AGIJobManager.
+## Scope (what this system is / is not)
 
-## Audience
-Auditors, integrators, and operators.
+`AGIJobManager` is an owner-operated escrow and settlement contract for employer-agent jobs with validator voting, dispute resolution, and ERC-721 completion NFTs. See `contracts/AGIJobManager.sol` (`createJob`, `applyForJob`, `finalizeJob`, `_completeJob`, `_refundEmployer`).
 
-## Preconditions / assumptions
-- AGIJobManager is non-upgradeable and owner-operated.
-- ENS integration is optional and best-effort; escrow safety is independent of ENS writes.
+`ENSJobPages` is an optional companion contract used through best-effort hooks to create and maintain ENS-backed job pages. See `contracts/ens/ENSJobPages.sol` (`handleHook`).
 
-## On-chain vs off-chain boundaries
-| Domain | Responsibilities |
-|---|---|
-| On-chain (`AGIJobManager`) | Escrow/bond accounting, job state machine, validator voting, dispute settlement, reputation updates, completion NFT minting. |
-| On-chain (`ENSJobPages`) | Optional ENS subname creation, resolver text records, auth delegation and lock hooks. |
-| Off-chain (UI/backends/operators) | Job content creation, URI storage, validator/moderator operations, monitoring and alerts. |
+Not implemented on-chain in this repo:
+- ERC-8004 on-chain protocol logic (off-chain docs/adapters only).
+- Upgrade proxy pattern for `AGIJobManager` / `ENSJobPages`.
 
-## Trust model
-- Owner controls pausing, operational parameters, allowlists/blacklists, moderator membership, and identity wiring until lock.
-- Moderators can resolve disputes.
-- Validators are permissioned participants with bonded votes.
-- Employer/agent/validator role gating can rely on additional allowlists, Merkle roots, and ENS ownership checks.
+## High-level architecture
 
-## Component diagram
 ```mermaid
 flowchart TD
-  subgraph Users
-    EMP[Employer]
-    AG[Agent]
-    VAL[Validator]
-    MOD[Moderator]
-    OWN[Owner]
-  end
+    Employer -->|createJob + escrow AGI| AJM[AGIJobManager]
+    Agent -->|applyForJob + agent bond| AJM
+    Validator -->|validate/disapprove + validator bond| AJM
+    Moderator -->|resolveDispute / resolveDisputeWithCode| AJM
+    Owner -->|admin config / pause / withdraw (paused only)| AJM
 
-  subgraph Contracts
-    AJM[AGIJobManager]
-    ENSP[ENSJobPages]
-    ENSR[ENS Registry]
-    NMW[NameWrapper]
-    PR[Public Resolver]
-    AGI[AGI ERC20]
-  end
+    AJM -->|IERC20 transfers| AGI[(AGI token)]
+    AJM -->|mint completion NFT| NFT[(ERC-721 job NFT)]
+    AJM -->|best-effort hook calls| ENSJP[ENSJobPages]
 
-  EMP -->|create/cancel/dispute| AJM
-  AG -->|apply/request completion| AJM
-  VAL -->|validate/disapprove + bond| AJM
-  MOD -->|resolve dispute| AJM
-  OWN -->|config/pause/lock/withdraw| AJM
+    ENSJP --> ENS[(ENS Registry)]
+    ENSJP --> NW[(NameWrapper)]
+    ENSJP --> RES[(Public Resolver)]
 
-  AJM -->|transferFrom/transfer| AGI
-  AJM -->|hook calls (best effort)| ENSP
-  ENSP --> ENSR
-  ENSP --> NMW
-  ENSP --> PR
+    subgraph Off-chain
+      UI[UI / indexers / operators]
+      Monitoring[Event monitoring + incident response]
+    end
+
+    AJM --> UI
+    ENSJP --> UI
+    AJM --> Monitoring
 ```
 
-**Legend:** solid arrows indicate direct calls; ENS hook failures do not revert AGIJobManager settlement logic.
+## Components and boundaries
 
-## Job + dispute states
-```mermaid
-stateDiagram-v2
-  [*] --> Open
-  Open --> Assigned: applyForJob
-  Assigned --> CompletionRequested: requestJobCompletion
-  CompletionRequested --> Validated: validator approvals
-  CompletionRequested --> Disputed: disapprove threshold / disputeJob
-  Validated --> Completed: finalizeJob
-  Disputed --> Completed: moderator agent-win / stale resolve agent-win
-  Disputed --> Refunded: moderator employer-win / stale resolve employer-win
-  Assigned --> Expired: expireJob
-  Open --> Cancelled: cancelJob
-```
+- **AGIJobManager**
+  - Holds escrow and all bonds (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`).
+  - Performs settlement and payout/refund logic.
+  - Enforces role eligibility with either allowlists (`additionalAgents`, `additionalValidators`) or Merkle/ENS ownership checks.
+- **ENSJobPages (optional)**
+  - Receives hook IDs from `AGIJobManager` and updates ENS pages.
+  - Uses best-effort writes for resolver text and authorizations (errors swallowed with `try/catch`).
+- **IERC20 token (`agiToken`)**
+  - Escrow source, bond transfers, payouts, owner treasury withdrawal constraints.
+- **ENS Registry / NameWrapper / Resolver**
+  - External dependencies for ownership checks and ENS page updates.
+- **Off-chain actors**
+  - Employer, agent, validators, moderator(s), owner/operator.
 
-## Gotchas / failure modes
-- `pause()` blocks new activity but does not imply settlement halt; `settlementPaused` is separate.
-- Identity lock freezes ENS/token/root wiring; Merkle roots remain owner-updatable for allowlist rotation.
-- Completion NFT URI may source from ENS URI mode when enabled.
+## Trust boundaries and external-call philosophy
 
-## References
-- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
-- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
-- [`./contracts/AGIJobManager.md`](./contracts/AGIJobManager.md)
+1. `AGIJobManager` uses internal accounting to protect escrow solvency before owner withdrawal (`withdrawableAGI`).
+2. ENS hook calls from `AGIJobManager` are low-level and best-effort (`_callEnsJobPagesHook`), so settlement logic does not depend on hook success.
+3. ENS resolver writes in `ENSJobPages` are also best-effort (`_setTextBestEffort`, `_setAuthorisationBestEffort`).
+4. Moderator and owner powers are explicit: owner has broad configuration/pause powers; moderators resolve disputes.
