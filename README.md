@@ -51,7 +51,17 @@ operators should review parameter‑tuning and off‑chain governance before pro
 AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other marketplaces using normal approvals and transfers. This contract does not implement an internal marketplace.
 
 ## Documentation
-Primary entrypoints: [`docs/README.md`](docs/README.md) and [`docs/DEPLOY_DAY_RUNBOOK.md`](docs/DEPLOY_DAY_RUNBOOK.md).
+Primary entrypoints: [`docs/00_INDEX.md`](docs/00_INDEX.md) and [`docs/README.md`](docs/README.md).
+
+Operator/integrator/auditor documentation set for current HEAD:
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/PROTOCOL_FLOW.md`](docs/PROTOCOL_FLOW.md)
+- [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)
+- [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
+- [`docs/ENS_INTEGRATION.md`](docs/ENS_INTEGRATION.md)
+- [`docs/SECURITY_MODEL.md`](docs/SECURITY_MODEL.md)
+- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
+- [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
 
 Production-oriented docs added for current codebase:
 
