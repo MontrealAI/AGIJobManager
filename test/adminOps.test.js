@@ -385,12 +385,14 @@ contract("AGIJobManager admin ops", (accounts) => {
     const freshType = await MockERC721.new({ from: owner });
     await manager.addAGIType(freshType.address, 15, { from: owner });
 
+    await freshType.mint(other, { from: owner });
+    assert.equal((await manager.getHighestPayoutPercentage(other)).toString(), "15", "new type should apply before disable");
+
     await manager.disableAGIType(freshType.address, { from: owner });
-    assert.equal((await manager.getHighestPayoutPercentage(agent)).toString(), "92", "disabled type ignored");
+    assert.equal((await manager.getHighestPayoutPercentage(other)).toString(), "0", "disabled type should be ignored");
 
     await manager.addAGIType(freshType.address, 25, { from: owner });
-    await freshType.mint(agent, { from: owner });
-    assert.equal((await manager.getHighestPayoutPercentage(agent)).toString(), "92", "existing higher type still wins");
+    assert.equal((await manager.getHighestPayoutPercentage(other)).toString(), "25", "re-enabled type should apply updated payout");
 
     await expectCustomError(
       manager.disableAGIType.call(validator, { from: owner }),
