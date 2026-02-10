@@ -1,53 +1,33 @@
-# Risk-Based Test Plan
+# Test Plan (Mainnet-Grade Deterministic Suites)
 
-## Inventory snapshot (HEAD)
+## Determinism rules
 
-### Toolchain and execution
+- All suites run on Truffle's local `test` network (Ganache in-process).
+- No test depends on live ENS, mainnet RPC, or external API calls.
+- Time-dependent assertions use `@openzeppelin/test-helpers/time` (`increase`) with fixed values.
+- Invariant-style loops are bounded and seeded with fixed patterns (no random sources).
 
-- Solidity contracts are compiled with Truffle (`solc 0.8.23`, optimizer on, `viaIR: false`).
-- Local deterministic chain is the in-process Ganache provider bound to the `test` network in `truffle-config.js`.
-- CI order: install → playwright install → lint → build → bytecode size → full test → UI smoke.
+## New suites in this patch
 
-### Existing suite baseline
-
-At baseline, the repository already includes broad suites for lifecycle, disputes, economics, ENS hooks, invariants, and UI ABI checks.
-
-Baseline result captured at HEAD:
-
-- `npm test` => **241 passing**.
-- Bytecode check reports `AGIJobManager runtime bytecode size: 24574 bytes` (within 24,576-byte EIP-170 limit).
-
-## Additions in this update
-
-1. **Utility transfer semantics hardening**
-   - Added explicit `TransferUtils` behavior checks for:
-     - standard ERC20 success
-     - no-return ERC20 compatibility
-     - false-return failure path
-     - fee-on-transfer under-delivery rejection (`safeTransferFromExact`)
-2. **URI validation behavior hardening**
-   - Added direct `UriUtils` unit checks for whitespace rejection and base-IPFS application behavior.
-
-## Coverage matrix
-
-| Feature / risk | Tests | Contracts |
+| Suite | Focus | Mainnet risk addressed |
 | --- | --- | --- |
-| Job lifecycle and settlement | `test/AGIJobManager.full.test.js`, `test/AGIJobManager.comprehensive.test.js`, `test/happyPath.test.js`, `test/livenessTimeouts.test.js` | `contracts/AGIJobManager.sol` |
-| Escrow, solvency, no-double-release | `test/escrowAccounting.test.js`, `test/invariants.solvency.test.js`, `test/completionSettlementInvariant.test.js` | `contracts/AGIJobManager.sol` |
-| Permissions, pause, operator controls | `test/adminOps.test.js`, `test/securityRegression.test.js`, `test/economicSafety.test.js` | `contracts/AGIJobManager.sol` |
-| ENS hook resilience and tokenURI fallback | `test/ensJobPagesHooks.test.js`, `test/ensJobPagesHelper.test.js` | `contracts/ens/ENSJobPages.sol`, `contracts/AGIJobManager.sol` |
-| Utility math and ENS ownership | `test/invariants.libs.test.js` | `contracts/utils/BondMath.sol`, `contracts/utils/ReputationMath.sol`, `contracts/utils/ENSOwnership.sol` |
-| URI + transfer wrappers (new explicit unit tests) | `test/utils.uri-transfer.test.js` | `contracts/utils/UriUtils.sol`, `contracts/utils/TransferUtils.sol` |
+| `test/jobLifecycle.core.test.js` | create/apply/completion/finalize/expire branches | settlement deadlocks and invalid transitions |
+| `test/validatorVoting.bonds.test.js` | vote constraints, bond sizing, slashing/rewards | validator incentive integrity |
+| `test/disputes.moderator.test.js` | dispute bond sizing, moderator/owner paths, stale disputes | dispute liveness and role misuse |
+| `test/escrowAccounting.invariants.test.js` | bounded multi-job solvency checks | escrow insolvency and accounting drift |
+| `test/pausing.accessControl.test.js` | pause vs settlementPause gating + withdraw semantics | break-glass misuse and blocked exits |
+| `test/agiTypes.safety.test.js` | AGI type validation and broken ERC721 isolation | agent onboarding bricking risks |
+| `test/ensHooks.integration.test.js` | ENS hook best-effort + fuse burning API behavior | ENS dependency failures affecting core settlement |
+| `test/identityConfig.locking.test.js` | pre-lock mutability checks + permanent lock behavior | post-deploy config tampering |
 
-## Regression policy
+## Fixtures and helpers
 
-- If you change payout, bond, or settlement logic in `AGIJobManager.sol`, update:
-  - `test/escrowAccounting.test.js`
-  - `test/invariants.solvency.test.js`
-  - relevant dispute/liveness suites
-- If you change ENS hook behavior in either manager or helper, update:
-  - `test/ensJobPagesHooks.test.js`
-  - `test/ensJobPagesHelper.test.js`
-- If you change utility-library semantics (`contracts/utils/*`), update or add direct unit tests under:
-  - `test/invariants.libs.test.js`
-  - `test/utils.uri-transfer.test.js`
+- Added `test/helpers/mainnetFixture.js` to keep deployments deterministic and readable.
+- Fixture intentionally uses explicit owner seeding and allowlists (`addAdditionalAgent` / `addAdditionalValidator`) instead of environment-dependent identity wiring.
+
+## Invariants asserted
+
+- Locked totals (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`) remain solvent relative to token balance.
+- `withdrawableAGI()` equals `balanceOf(manager) - lockedTotals` after every bounded settlement iteration.
+- Dispute `NO_ACTION` does not clear disputed state.
+- Disabled AGI types are ignored before any external ERC721 call path.
