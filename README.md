@@ -174,6 +174,11 @@ npm run build
 npm test
 ```
 
+Testing runbooks and coverage planning:
+- [`docs/TESTING.md`](docs/TESTING.md)
+- [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md)
+- [`docs/ARCHITECTURE_TESTS.md`](docs/ARCHITECTURE_TESTS.md)
+
 Additional verified checks:
 
 ```bash

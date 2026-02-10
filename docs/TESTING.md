@@ -1,54 +1,69 @@
 # Testing Guide
 
-## Canonical commands (from `package.json`)
+This repository uses **Truffle + Mocha** against the local in-memory `test` Ganache provider configured in `truffle-config.js`.
 
-- Build:
-  ```bash
-  npm run build
-  ```
-- Full test pipeline:
-  ```bash
-  npm test
-  ```
-  This runs compile, Truffle tests, `test/AGIJobManager.test.js`, and contract size checks.
-- Lint:
-  ```bash
-  npm run lint
-  ```
-- Bytecode size gate:
-  ```bash
-  npm run size
-  ```
-- UI smoke:
-  ```bash
-  npm run test:ui
-  ```
+## CI-parity command order
 
-## Run a single test file
-
-Use Truffle directly:
+Mirror `.github/workflows/ci.yml` locally:
 
 ```bash
-truffle test --network test test/<file>.test.js
+npm install
+npm run lint
+npm run build
+npm run size
+npm test
+npm run test:ui
 ```
 
-Examples:
+## Canonical scripts (`package.json`)
+
+| Script | Command | Purpose |
+| --- | --- | --- |
+| `npm run build` | `truffle compile` | Compile all contracts with pinned solc settings. |
+| `npm run size` | `node scripts/check-bytecode-size.js` | EIP-170 runtime-size guard. |
+| `npm run lint` | `solhint "contracts/**/*.sol"` | Solidity lint policy. |
+| `npm test` | `truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js && node scripts/check-contract-sizes.js` | Full contract test + artifact sanity. |
+| `npm run test:ui` | `node scripts/ui/run_ui_smoke_test.js` | UI smoke checks. |
+
+## Test strategy
+
+### Layers
+
+1. **Lifecycle integration tests** (`test/AGIJobManager.*`, `test/happyPath.test.js`, `test/livenessTimeouts.test.js`, `test/escrowAccounting.test.js`)
+   - Operator-run job lifecycle, payout/escrow transitions, dispute/timeout liveness.
+2. **Security/economic regression tests** (`test/securityRegression.test.js`, `test/disputeHardening.test.js`, `test/invariants.solvency.test.js`, `test/completionSettlementInvariant.test.js`)
+   - Solvency, no-double-release, race prevention, dispute and pause behavior.
+3. **ENS integration tests** (`test/ensJobPagesHooks.test.js`, `test/ensJobPagesHelper.test.js`, `test/namespaceAlpha.test.js`)
+   - ENS hooks are best-effort and must not brick core settlement.
+4. **Utility-library tests** (`test/invariants.libs.test.js`, `test/utils.uri-transfer.test.js`)
+   - Bond/reputation arithmetic, ENS ownership checks, URI validation, transfer wrappers.
+
+## Determinism runbook
+
+- Always run tests on `--network test`.
+- Use explicit EVM time helpers (`time.increase`, `time.advanceBlock`) in timeout/dispute tests.
+- Use `BN` math (`web3.utils.toBN`) for token arithmetic.
+- Keep tests offline: no public RPC endpoints and no secrets.
+
+## Running focused tests
+
+Single file:
 
 ```bash
-truffle test --network test test/deploymentDefaults.test.js
-truffle test --network test test/ensJobPagesHooks.test.js
+npx truffle test --network test test/utils.uri-transfer.test.js
 ```
 
-## Deterministic testing guidelines
+Patterned execution (shell glob):
 
-- Reuse existing helpers under `test/helpers/`.
-- Prefer explicit timestamps/time travel strategy already used in tests.
-- Avoid relying on external RPC/network state.
-- Keep ENS/ERC mocks from `contracts/test/` for isolated behavior coverage.
+```bash
+npx truffle test --network test test/*dispute*.test.js
+```
 
 ## Troubleshooting
 
-- **Compile fails**: verify Node/npm install and pinned solc profile in `truffle-config.js`.
-- **Network/provider issues**: use `--network test` for local deterministic Ganache provider.
-- **Size gate failures**: run `npm run size` and inspect `scripts/check-bytecode-size.js` output.
-- **UI smoke failures**: ensure Playwright browser dependencies are installed in CI-like environments.
+| Symptom | Likely cause | Remediation |
+| --- | --- | --- |
+| `contains unresolved libraries` on `UtilsHarness` | Truffle library links not deployed in test setup | Deploy/link required libraries inside `beforeEach` before `UtilsHarness.new()`. |
+| `TransferFailed` custom-error-style reverts | Token returned `false`, reverted, or under-delivered transfer amount | Validate approvals/balances; for fee-on-transfer tokens expect `safeTransferFromExact` to revert. |
+| Bytecode gate fails | Runtime crossed EIP-170 threshold | Run `npm run size`, inspect recent contract-size growth, avoid feature bloat in core contract. |
+| Flaky timeout tests | Missing deterministic block/time advancement | Add explicit time travel + mine step before timeout-sensitive actions. |
