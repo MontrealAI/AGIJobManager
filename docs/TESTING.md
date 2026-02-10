@@ -1,65 +1,30 @@
-# Testing Guide
+# Testing
 
-This repository uses Truffle with an in‑process Ganache provider (see `truffle-config.js`). Use the `test` network to run against the in‑process chain, or run Ganache locally for the `development` network.
+## Test structure
+- `test/*.test.js`: core contract behavior, invariants, security regressions, economics, deployment wiring.
+- `ui-tests/*`: UI smoke/indexer-focused checks.
+- `contracts/test/*`: mocks and harness contracts used by tests.
 
-## Install dependencies
+Representative suites:
+- lifecycle/state machine (`AGIJobManager.*`, `happyPath`, `jobStatus`)
+- escrow/solvency/invariants (`escrowAccounting`, `invariants.solvency`, `economicSafety`)
+- disputes/validators (`disputeHardening`, `validatorCap`, `livenessTimeouts`)
+- ENS hooks (`ensJobPagesHooks`, `ensJobPagesHelper`)
+- size/deployment checks (`bytecodeSize`, `deployment*`, `validate-params-script`)
+
+## Standard commands
 ```bash
-npm install
+npm run build
+npm test
+npm run size
 ```
 
-## Run compile
-```bash
-npx truffle compile
-```
+## Bytecode size guard
+- `npm run size` executes `scripts/check-bytecode-size.js`.
+- Guard threshold is 24,575 bytes runtime (`AGIJobManager` by default) to stay under EIP-170 deploy limit.
+- `npm test` also executes `scripts/check-contract-sizes.js` for all artifacts.
 
-## Run all tests (in‑process provider)
-```bash
-npx truffle test --network test
-```
-
-## Run against a local Ganache instance
-```bash
-npx ganache -p 8545
-npx truffle test --network development
-```
-
-## Run all tests (development default)
-```bash
-npx truffle test
-```
-
-## ENS / NameWrapper mocks
-Identity gating in AGIJobManager relies on ENS resolver, NameWrapper ownership, or Merkle proofs. The test suite uses mocks under `contracts/test/`:
-- `MockENS` → stores a resolver per node
-- `MockResolver` → maps node → address
-- `MockNameWrapper` → maps node → owner
-
-Tests create deterministic subnodes using:
-```
-subnode = keccak256(rootNode, keccak256(subdomain))
-```
-This allows tests to pass `_verifyOwnership` without external dependencies.
-
-## Test suites
-- `test/happyPath.test.js` — end‑to‑end happy path
-- `test/securityRegression.test.js` — takeover prevention, vote rules, dispute behavior, transfer checks
-- `test/scenarioEconomicStateMachine.test.js` — escrow lifecycle and NFT issuance coverage
-- `test/adminOps.test.js` — pause, allowlists, blacklists, withdrawals
-- Existing regression suites remain in `test/` for backward coverage.
-
-## Scenario coverage (contract-level)
-The scenario suite (`test/scenarioEconomicStateMachine.test.js`) exercises the contract in deterministic flows that map to the lifecycle diagram in the README:
-- **Create → apply → validate → complete** with escrow funding, payouts, reputation updates, and NFT issuance.
-- **Assigned → completion request → validate → complete** to cover the validator approval path after submission.
-- **Cancel** before assignment with escrow refunds and job deletion semantics.
-- **Dispute** paths (thresholded disapprovals, manual disputes, moderator resolutions) covering agent win, employer win, and neutral outcomes.
-- **Neutral dispute escrow** behavior (funds remain locked until validators complete the job after a non-canonical resolution).
-- **Pause/unpause** behavior that blocks when-not-paused actions and resumes normal operation.
-- **Economic assertions** including escrow conservation and zero remaining contract balance after expected payouts.
-- **Event assertions** for JobCreated/JobApplied/NFTIssued to keep regressions visible at the log level.
-- **Custom error selector checks** for InvalidState/NotAuthorized to catch regression in revert surfaces.
-
-Run it locally with the standard test command:
-```bash
-npx truffle test --network test test/scenarioEconomicStateMachine.test.js
-```
+## Adding new tests
+- Prefer focused regression tests per behavior class.
+- Reuse existing mocks in `contracts/test/`.
+- Keep checks deterministic and assert both state and events for settlement paths.
