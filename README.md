@@ -82,6 +82,12 @@ npm run lint
 npm run size
 ```
 
+## Testing
+
+- Testing runbook and deterministic guidance: [`docs/TESTING.md`](docs/TESTING.md)
+- Risk-based coverage matrix and regression policy: [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md)
+- Diagram-first architecture of test harness and failure modes: [`docs/ARCHITECTURE_TESTS.md`](docs/ARCHITECTURE_TESTS.md)
+
 ## Architecture + illustrations
 
 ### Job lifecycle (state machine)

@@ -1,5 +1,43 @@
 # Test Plan (Mainnet-Grade Deterministic Expansion)
 
+## Repository inventory (tooling and CI parity)
+
+### Toolchain and scripts
+
+- Test stack: **Truffle + Mocha** on Ganache in-memory provider (`network: test`, chainId `1337`).
+- Compiler profile: Solidity `0.8.23`, optimizer enabled (`runs=50`), `viaIR=false`, `evmVersion=london`.
+- Canonical scripts from `package.json`:
+  - `build`: `truffle compile`
+  - `lint`: `solhint "contracts/**/*.sol"`
+  - `size`: `node scripts/check-bytecode-size.js`
+  - `test`: `truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js && node scripts/check-contract-sizes.js`
+  - `test:ui`: `node scripts/ui/run_ui_smoke_test.js`
+
+### CI execution order mirrored locally
+
+1. `npm install`
+2. `npm run lint`
+3. `npm run build`
+4. `npm run size`
+5. `npm run test`
+6. `npm run test:ui`
+
+### Current suite inventory highlights
+
+Existing suites already cover the requested mainnet-critical areas:
+
+- Lifecycle and settlement: `test/jobLifecycle.core.test.js`, `test/livenessTimeouts.test.js`, `test/escrowAccounting.test.js`, `test/completionSettlementInvariant.test.js`.
+- Permissioning and controls: `test/adminOps.test.js`, `test/pausing.accessControl.test.js`, `test/identityConfig.locking.test.js`.
+- Disputes and moderator flows: `test/disputeHardening.test.js`, `test/disputes.moderator.test.js`.
+- Invariants and economics: `test/invariants.solvency.test.js`, `test/escrowAccounting.invariants.test.js`, `test/validatorVoting.bonds.test.js`, `test/economicSafety.test.js`.
+- ENS integration and ENSJobPages: `test/ensHooks.integration.test.js`, `test/ensJobPagesHooks.test.js`, `test/ensJobPagesHelper.test.js`, `test/namespaceAlpha.test.js`.
+- Utilities: `test/utils.uri-transfer.test.js`, `test/invariants.libs.test.js`.
+
+### Baseline results at HEAD
+
+- Full contract suite: **260 passing** (`npm run test`).
+- Runtime size gate: `AGIJobManager runtime bytecode size: 24574 bytes`.
+
 ## Deterministic execution model
 
 - Local-only execution on Truffle `test` network (in-memory Ganache).

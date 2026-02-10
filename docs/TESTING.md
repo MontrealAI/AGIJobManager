@@ -15,6 +15,23 @@ npm test
 npm run test:ui
 ```
 
+## Baseline at repository HEAD (inventory run)
+
+Executed in this exact order on a clean checkout:
+
+1. `npm install`
+2. `npm run lint`
+3. `npm run build`
+4. `npm run size`
+5. `npm run test`
+
+Observed baseline:
+
+- `npm run size`: `AGIJobManager runtime bytecode size: 24574 bytes` (within EIP-170 cap, near the limit).
+- `npm run test`: `260 passing` on local Ganache `test` network.
+
+> Note: CI also runs `npm run test:ui` after contract tests.
+
 ## Canonical scripts (`package.json`)
 
 | Script | Command | Purpose |
@@ -81,3 +98,7 @@ npx truffle test --network test test/*dispute*.test.js
 | AGIType safety and broken ERC721 isolation | `test/agiTypes.safety.test.js` |
 | ENS hook best-effort integration | `test/ensHooks.integration.test.js` |
 | Identity config locking lifecycle | `test/identityConfig.locking.test.js` |
+
+## Known offline-test limitation
+
+- ENS tokenURI malformed-return handling is constrained by the current production implementation: empty ENS tokenURI responses are covered and correctly fall back, but malformed ABI payload simulation is documented as an operational caveat because the decode path is inside production minting logic and the runtime bytecode budget is already near the EIP-170 ceiling.
