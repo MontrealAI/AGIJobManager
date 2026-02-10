@@ -34,6 +34,8 @@ contract('ensHooks.integration', (accounts) => {
     await manager.setEnsJobPages(pages.address, { from: owner });
 
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     const payout = new BN(web3.utils.toWei('1000'));
     await token.mint(employer, payout); await token.approve(manager.address, payout, { from: employer });
     await token.mint(validator, payout); await token.approve(manager.address, payout, { from: validator });
@@ -43,10 +45,17 @@ contract('ensHooks.integration', (accounts) => {
     await manager.applyForJob(0, 'agent', mkTree([agent]).proofFor(agent), { from: agent });
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
     await manager.validateJob(0, 'validator', mkTree([validator]).proofFor(validator), { from: validator });
-    await time.increase((await manager.completionReviewPeriod()).toNumber() + 1);
+    await time.increase(2);
     await manager.finalizeJob(0, { from: employer });
 
     const lockReceipt = await manager.lockJobENS(0, true, { from: owner });
-    assert.equal(lockReceipt.receipt.status, true);
+    const hookEvent = lockReceipt.logs.find((log) => log.event === 'EnsHookAttempted');
+    assert.ok(hookEvent, 'EnsHookAttempted should be emitted on lock');
+    assert.equal(hookEvent.args.hook.toString(), '6');
+    assert.equal(hookEvent.args.success, true);
+
+    const lockEvents = await pages.getPastEvents('JobENSLocked', { fromBlock: 0, toBlock: 'latest' });
+    assert.equal(lockEvents.length, 1);
+    assert.equal(lockEvents[0].args.jobId.toString(), '0');
   });
 });

@@ -1,4 +1,4 @@
-const { BN, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN, expectRevert, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 
@@ -23,6 +23,8 @@ contract('pausing.accessControl', (accounts) => {
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
     const payout = new BN(web3.utils.toWei('1000'));
     await token.mint(employer, payout);
+    await token.mint(agent, payout);
+    await token.approve(manager.address, payout, { from: agent });
 
     await manager.pause({ from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -34,7 +36,10 @@ contract('pausing.accessControl', (accounts) => {
     await expectRevert.unspecified(manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent }));
 
     await manager.unpause({ from: owner });
+    await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
+    await manager.requestJobCompletion(0, 'QmDone', { from: agent });
+    await time.increase((await manager.completionReviewPeriod()).toNumber() + 1);
     await manager.setSettlementPaused(true, { from: owner });
-    await expectRevert.unspecified(manager.withdrawAGI(1, { from: owner }));
+    await expectRevert.unspecified(manager.finalizeJob(0, { from: employer }));
   });
 });
