@@ -104,7 +104,7 @@ ENS smoke check (if configured):
 
 ## 7) Rollback / incident notes
 
-- **ENS misconfigured**: update `ensJobPages` to a healthy contract or set to zero address; core settlement remains functional.
+- **ENS misconfigured**: if identity is **not** locked, update `ensJobPages` to a healthy contract or set to zero address. If identity is already locked, `setEnsJobPages` is unavailable; keep core settlement running (hooks are best-effort) and remediate operationally/off-chain until redeploy or governance migration.
 - **Wrong token/identity addresses pre-jobs**: use `updateAGITokenAddress` / identity setters while identity still configurable and locked balances are zero.
 - **Wrong token address after activity**: direct replacement blocked by empty-lock requirement; pause, drain obligations via normal settlement, then reconfigure if still unlocked.
 
