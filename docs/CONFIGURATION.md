@@ -8,7 +8,6 @@
 - `updateNameWrapper`
 - `setEnsJobPages`
 - `updateRootNodes`
-- `updateMerkleRoots`
 
 It **does not** freeze operational controls like pause, settlement pause, thresholds, bond params, blacklists, moderators, or AGI types.
 
