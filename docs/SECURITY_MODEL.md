@@ -1,56 +1,48 @@
-# Security Model
-
-## Purpose
-Threat model and invariant baseline for AGIJobManager.
-
-## Audience
-Auditors, security engineers, and operators.
-
-## Preconditions / assumptions
-- Centralized business-operated control is explicit design choice.
-- No in-place upgrades; redeploy is required for logic changes.
+# Security Model (Repository-specific)
 
 ## Threat model summary
-### In scope
-- Escrow insolvency and accounting mismatches
-- Unauthorized state transitions
-- Validator incentive manipulation and dispute abuse
-- Reentrancy around value-transferring paths
-- External-call fragility (ENS hooks, token behavior)
 
-### Out of scope / accepted risks
-- Full decentralization of dispute governance
-- Trustless validator admission
-- Market-level token or NFT price manipulation
+This system is intentionally **business-operated**. It is not a trustless court.
 
-## Core invariants
-1. **Escrow solvency:** token balance must always cover locked escrow+bonds.
-2. **Single settlement effect:** each job settles exactly once (`escrowReleased` and state gating).
-3. **Bounded loops:** validator and AGI type loops are hard-bounded.
-4. **Controlled withdrawals:** owner can withdraw only computed surplus and only while paused.
-5. **Eligibility enforcement:** apply/vote actions require role eligibility + blacklist checks.
+- Owner has privileged controls (configuration, pause, allowlists, treasury withdrawal under constraints).
+- Moderators resolve disputes.
+- Validators are permissioned by ENS/Merkle/allowlist checks.
 
-## Centralization and privilege risks
-- Owner can pause, reconfigure parameters, adjust role lists, and control moderators.
-- Moderator resolves disputes and can decide payout direction for disputed jobs.
-- Owner can stale-resolve unresolved disputes after timeout.
+## Critical risks and mitigations
 
-## Hardening controls present in code
-- `nonReentrant` on major state-changing settlement paths.
-- Pausable controls and separate settlement pause switch.
-- Exact-transfer checks for `transferFrom` token intake (`TransferUtils.safeTransferFromExact`).
-- Identity wiring lock (`lockIdentityConfiguration`) for ENS/token/root immutability after launch.
+| Risk | Description | Mitigations in code |
+|---|---|---|
+| ERC-20 transfer failure | Token may return false/revert/no-return | `TransferUtils` wrappers and explicit revert on failed transfers |
+| External ENS hook failures | ENS side effects may fail | Best-effort hook call + `EnsHookAttempted`; core settlement is independent |
+| Escrow insolvency | Owner or bad logic could drain escrow | `withdrawableAGI` subtracts locked escrow and all bond buckets; `withdrawAGI` checked |
+| Settlement deadlock | Emergency conditions can block completion | `resolveStaleDispute`, pause controls, explicit review windows |
+| Role compromise | Owner/moderator key loss or abuse | Operational controls: multisig owner, key hygiene, event monitoring |
 
-## Known limitations
-- ENS hook writes are best-effort and can silently fail except for event trace.
-- Deprecated setter `setAdditionalAgentPayoutPercentage` exists but intentionally unusable.
-- Security depends on disciplined operational governance (multisig, change control, monitoring).
+## Pause semantics
 
-## Vulnerability reporting
-Follow root policy: [`../SECURITY.md`](../SECURITY.md).
+- `paused` (OpenZeppelin `Pausable`) blocks most active flows.
+- `settlementPaused` independently gates settlement-sensitive paths.
+- `withdrawAGI` requires **paused=true** and **settlementPaused=false**.
 
-## References
-- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
-- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
-- [`../contracts/utils/TransferUtils.sol`](../contracts/utils/TransferUtils.sol)
-- [`../test/securityRegression.test.js`](../test/securityRegression.test.js)
+## Role compromise scenarios
+
+- **Owner compromise**: attacker can reconfigure policy, alter role lists, pause/unpause, or withdraw treasury surplus.
+- **Moderator compromise**: attacker can resolve disputed jobs in favored direction.
+
+Recommended operational model:
+- owner = multisig
+- limited moderator set with explicit approval policy
+- emergency playbooks for pause + key rotation
+
+## Monitoring recommendations
+
+Monitor and alert on:
+- `SettlementPauseSet`, `Paused`, `Unpaused`
+- `DisputeResolvedWithCode`, `resolveStaleDispute` transactions
+- `AGIWithdrawn`
+- role changes (moderators, allowlists, blacklists)
+- `EnsHookAttempted` failures
+
+## Security process
+
+This document supplements, not replaces, repository `SECURITY.md` reporting guidance.

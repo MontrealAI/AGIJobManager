@@ -1,62 +1,83 @@
 # Architecture
 
-## Scope (what this system is / is not)
+## System overview
 
-`AGIJobManager` is an owner-operated escrow and settlement contract for employer-agent jobs with validator voting, dispute resolution, and ERC-721 completion NFTs. See `contracts/AGIJobManager.sol` (`createJob`, `applyForJob`, `finalizeJob`, `_completeJob`, `_refundEmployer`).
+`AGIJobManager` is the core owner-operated escrow and settlement contract. It handles job creation, assignment, completion, validator voting, disputes, payout/refund settlement, and ERC-721 completion NFT minting.
 
-`ENSJobPages` is an optional companion contract used through best-effort hooks to create and maintain ENS-backed job pages. See `contracts/ens/ENSJobPages.sol` (`handleHook`).
+`ENSJobPages` is an optional companion contract invoked through best-effort hooks from `AGIJobManager` to create/update ENS job pages and optionally lock permissions/fuses.
 
-Not implemented on-chain in this repo:
-- ERC-8004 on-chain protocol logic (off-chain docs/adapters only).
-- Upgrade proxy pattern for `AGIJobManager` / `ENSJobPages`.
+Supporting utility libraries:
+- `TransferUtils` for exact/defensive ERC-20 transfers.
+- `BondMath` for validator and agent bond sizing.
+- `ReputationMath` for reputation score increments.
+- `ENSOwnership` for ENS + NameWrapper ownership checks.
 
-## High-level architecture
+## Component interaction diagram
 
 ```mermaid
-flowchart TD
-    Employer -->|createJob + escrow AGI| AJM[AGIJobManager]
-    Agent -->|applyForJob + agent bond| AJM
-    Validator -->|validate/disapprove + validator bond| AJM
-    Moderator -->|resolveDispute / resolveDisputeWithCode| AJM
-    Owner -->|admin config / pause / withdraw (paused only)| AJM
+flowchart LR
+    E[Employer] -->|createJob + payout escrow| AJM[AGIJobManager]
+    A[Agent] -->|applyForJob + agent bond| AJM
+    V[Validator] -->|validate/disapprove + validator bond| AJM
+    M[Moderator] -->|resolveDispute| AJM
+    O[Owner] -->|configure/pause/withdraw| AJM
 
-    AJM -->|IERC20 transfers| AGI[(AGI token)]
-    AJM -->|mint completion NFT| NFT[(ERC-721 job NFT)]
-    AJM -->|best-effort hook calls| ENSJP[ENSJobPages]
+    AJM -->|ERC-20 transfers| T[(AGI ERC-20)]
+    AJM -->|mint tokenURI| N[(ERC-721 Job NFT)]
+    AJM -->|handleHook(hook,jobId)| ENSJP[ENSJobPages optional]
 
     ENSJP --> ENS[(ENS Registry)]
     ENSJP --> NW[(NameWrapper)]
-    ENSJP --> RES[(Public Resolver)]
-
-    subgraph Off-chain
-      UI[UI / indexers / operators]
-      Monitoring[Event monitoring + incident response]
-    end
-
-    AJM --> UI
-    ENSJP --> UI
-    AJM --> Monitoring
+    ENSJP --> PR[(Public Resolver)]
 ```
 
-## Components and boundaries
+## Happy-path job lifecycle sequence
 
-- **AGIJobManager**
-  - Holds escrow and all bonds (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`).
-  - Performs settlement and payout/refund logic.
-  - Enforces role eligibility with either allowlists (`additionalAgents`, `additionalValidators`) or Merkle/ENS ownership checks.
-- **ENSJobPages (optional)**
-  - Receives hook IDs from `AGIJobManager` and updates ENS pages.
-  - Uses best-effort writes for resolver text and authorizations (errors swallowed with `try/catch`).
-- **IERC20 token (`agiToken`)**
-  - Escrow source, bond transfers, payouts, owner treasury withdrawal constraints.
-- **ENS Registry / NameWrapper / Resolver**
-  - External dependencies for ownership checks and ENS page updates.
-- **Off-chain actors**
-  - Employer, agent, validators, moderator(s), owner/operator.
+```mermaid
+sequenceDiagram
+    participant Employer
+    participant Agent
+    participant Validator
+    participant AJM as AGIJobManager
+    participant ENSJP as ENSJobPages (optional)
 
-## Trust boundaries and external-call philosophy
+    Employer->>AJM: createJob(specURI,payout,duration,details)
+    AJM-->>ENSJP: hook 1 (create page) best effort
+    Agent->>AJM: applyForJob(jobId,subdomain,proof)
+    AJM-->>ENSJP: hook 2 (authorize agent) best effort
+    Agent->>AJM: requestJobCompletion(jobId,completionURI)
+    AJM-->>ENSJP: hook 3 (write completion URI) best effort
+    Validator->>AJM: validateJob(jobId,subdomain,proof)
+    Validator->>AJM: validateJob(...) until thresholds/quorum allow completion
+    anyone->>AJM: finalizeJob(jobId)
+    AJM->>AJM: settle payouts/refunds + mint completion NFT
+    AJM-->>ENSJP: hook 4 (revoke ENS permissions) best effort
+```
 
-1. `AGIJobManager` uses internal accounting to protect escrow solvency before owner withdrawal (`withdrawableAGI`).
-2. ENS hook calls from `AGIJobManager` are low-level and best-effort (`_callEnsJobPagesHook`), so settlement logic does not depend on hook success.
-3. ENS resolver writes in `ENSJobPages` are also best-effort (`_setTextBestEffort`, `_setAuthorisationBestEffort`).
-4. Moderator and owner powers are explicit: owner has broad configuration/pause powers; moderators resolve disputes.
+## Job state machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open: createJob
+    Open --> Assigned: applyForJob
+    Open --> Cancelled: cancelJob / delistJob
+
+    Assigned --> CompletionRequested: requestJobCompletion
+    Assigned --> Expired: expireJob
+
+    CompletionRequested --> Completed: finalizeJob (agent-win branch)
+    CompletionRequested --> Refunded: finalizeJob (employer-win branch)
+    CompletionRequested --> Disputed: disapprove threshold or disputeJob
+
+    Disputed --> Completed: resolveDisputeWithCode AGENT_WIN
+    Disputed --> Refunded: resolveDisputeWithCode EMPLOYER_WIN
+    Disputed --> Completed: resolveStaleDispute(false)
+    Disputed --> Refunded: resolveStaleDispute(true)
+```
+
+## Trust boundaries
+
+1. **External token transfers**: all escrow/bond/payout/refund transfers rely on ERC-20 behavior and defensive transfer wrappers.
+2. **External ENS hooks**: `AGIJobManager` uses low-level calls with a fixed gas cap. Hook failures are emitted via `EnsHookAttempted` but do not block core settlement.
+3. **ENS resolver/namewrapper writes**: `ENSJobPages` uses best-effort `try/catch` for resolver authorization/text updates and fuse burning.
+4. **Owner/moderator trust**: owner controls configuration and emergency operations; moderators decide manual dispute outcomes.

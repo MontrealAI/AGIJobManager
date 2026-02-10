@@ -1,28 +1,21 @@
 # AGIJobManager Documentation Hub
 
-This documentation set is intended for production-minded Ethereum deployment and operations of the current repository code.
+Canonical index: **[00_INDEX.md](./00_INDEX.md)**.
 
-## 1) Start here
+This documentation set targets the current code at repository HEAD and is organized for operators, integrators, developers, and auditors.
+
+## Core documents
 
 - [Architecture](./ARCHITECTURE.md)
-- [Contracts and permissions](./CONTRACTS.md)
-- [AGIJobManager deep reference](./AGIJOBMANAGER.md)
-- [ENSJobPages deep reference](./ENSJOBPAGES.md)
-
-## 2) Deploy and operate
-
-- [Configuration guide](./CONFIGURATION.md)
-- [Deployment runbook](./DEPLOY_RUNBOOK.md)
-- [Operations guide](./OPERATIONS.md)
-
-## 3) Develop and validate
-
-- [Testing guide](./TESTING.md)
+- [Protocol Flow and Funds Accounting](./PROTOCOL_FLOW.md)
+- [Configuration Reference](./CONFIGURATION.md)
+- [Deploy Runbook](./DEPLOY_RUNBOOK.md)
+- [ENS Integration](./ENS_INTEGRATION.md)
+- [Security Model](./SECURITY_MODEL.md)
+- [Troubleshooting](./TROUBLESHOOTING.md)
 - [Glossary](./GLOSSARY.md)
 
-## 4) Source-of-truth files
-
-Use these files as canonical behavior references:
+## Source-of-truth files
 
 - `contracts/AGIJobManager.sol`
 - `contracts/ens/ENSJobPages.sol`
