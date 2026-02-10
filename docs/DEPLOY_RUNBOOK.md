@@ -51,23 +51,25 @@ truffle migrate --network sepolia --reset
 Apply owner settings via script (uses env or JSON config):
 
 ```bash
-node scripts/postdeploy-config.js --network mainnet --address <AGIJOBMANAGER_ADDRESS>
+truffle exec scripts/postdeploy-config.js --network mainnet --address <AGIJOBMANAGER_ADDRESS>
 ```
 
 Dry-run preview:
 
 ```bash
-node scripts/postdeploy-config.js --dry-run --network mainnet --address <AGIJOBMANAGER_ADDRESS>
+truffle exec scripts/postdeploy-config.js --network mainnet --address <AGIJOBMANAGER_ADDRESS> --dry-run
 ```
 
 This script supports thresholds, periods, metadata fields, merkle roots, moderators, allowlists, blacklists, AGI types, and ownership transfer config.
+
+Both `postdeploy-config.js` and `verify-config.js` are implemented as Truffle exec callbacks (`module.exports = async function ... (callback)`), so run them via `truffle exec` rather than `node`.
 
 ## 4) Verification steps
 
 Config verification:
 
 ```bash
-node scripts/verify-config.js --network mainnet --address <AGIJOBMANAGER_ADDRESS>
+truffle exec scripts/verify-config.js --network mainnet --address <AGIJOBMANAGER_ADDRESS>
 truffle exec scripts/ops/validate-params.js --network mainnet --address <AGIJOBMANAGER_ADDRESS>
 ```
 
