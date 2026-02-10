@@ -1317,10 +1317,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             if gt(extcodesize(nftAddress), 0) {
                 let ptr := mload(0x40)
                 mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
-                mstore(add(ptr, 0x04), shl(224, 0x80ac58cd))
+                mstore(add(ptr, 0x04), shl(224, 0x01ffc9a7))
                 isSupported := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
                 isSupported := and(isSupported, gt(returndatasize(), 0x1f))
                 isSupported := and(isSupported, iszero(iszero(mload(ptr))))
+                if isSupported {
+                    mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
+                    mstore(add(ptr, 0x04), shl(224, 0x80ac58cd))
+                    isSupported := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
+                    isSupported := and(isSupported, gt(returndatasize(), 0x1f))
+                    isSupported := and(isSupported, iszero(iszero(mload(ptr))))
+                }
             }
         }
     }
