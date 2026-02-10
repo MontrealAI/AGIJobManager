@@ -1,42 +1,34 @@
-# AGIJobManager Documentation Index
+# AGIJobManager Documentation Hub
 
-## Purpose
-Provide a single navigation entry for engineers, auditors, and operators working with this repository.
+This documentation set is intended for production-minded Ethereum deployment and operations of the current repository code.
 
-## Audience
-- Smart-contract developers
-- Security reviewers/auditors
-- Deployment and incident-response operators
-- Integrators calling contract methods directly
+## 1) Start here
 
-## Preconditions / assumptions
-- You are working from repository root.
-- You have read the root governance/security docs: [`../CONTRIBUTING.md`](../CONTRIBUTING.md), [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md), [`../SECURITY.md`](../SECURITY.md).
+- [Architecture](./ARCHITECTURE.md)
+- [Contracts and permissions](./CONTRACTS.md)
+- [AGIJobManager deep reference](./AGIJOBMANAGER.md)
+- [ENSJobPages deep reference](./ENSJOBPAGES.md)
 
-## Start here
-1. [Quickstart](./QUICKSTART.md)
-2. [Architecture](./ARCHITECTURE.md)
-3. [Contracts overview](./CONTRACTS_OVERVIEW.md)
-4. [Configuration reference](./CONFIGURATION_REFERENCE.md)
-5. [Deploy Day runbook](./DEPLOY_DAY_RUNBOOK.md)
-6. [Operations runbook](./OPERATIONS_RUNBOOK.md)
+## 2) Deploy and operate
 
-## Contract reference
-- [AGIJobManager](./contracts/AGIJobManager.md)
-- [ENSJobPages](./contracts/ENSJobPages.md)
-- [Utilities (BondMath/ReputationMath/TransferUtils/UriUtils/ENSOwnership)](./contracts/Utilities.md)
-- [Interfaces (ENS Registry/NameWrapper/PublicResolver)](./contracts/Interfaces.md)
+- [Configuration guide](./CONFIGURATION.md)
+- [Deployment runbook](./DEPLOY_RUNBOOK.md)
+- [Operations guide](./OPERATIONS.md)
 
-## Security / quality
-- [Security model and invariants](./SECURITY_MODEL.md)
+## 3) Develop and validate
+
 - [Testing guide](./TESTING.md)
 - [Glossary](./GLOSSARY.md)
 
-## Gotchas / failure modes
-- `docs/architecture.md` (lowercase) and `docs/ARCHITECTURE.md` both exist historically; prefer this index link to `ARCHITECTURE.md`.
-- Keep commands aligned with `package.json`; do not invent non-existent npm scripts.
+## 4) Source-of-truth files
 
-## References
-- [`../package.json`](../package.json)
-- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
-- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
+Use these files as canonical behavior references:
+
+- `contracts/AGIJobManager.sol`
+- `contracts/ens/ENSJobPages.sol`
+- `migrations/2_deploy_contracts.js`
+- `migrations/deploy-config.js`
+- `scripts/postdeploy-config.js`
+- `truffle-config.js`
+- `package.json`
+- `.github/workflows/ci.yml`
