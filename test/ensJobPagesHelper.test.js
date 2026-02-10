@@ -2,6 +2,7 @@ const ENSJobPages = artifacts.require("ENSJobPages");
 const MockENSRegistry = artifacts.require("MockENSRegistry");
 const MockPublicResolver = artifacts.require("MockPublicResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const MockHookCaller = artifacts.require("MockHookCaller");
 
 const { namehash, subnode } = require("./helpers/ens");
 
@@ -93,5 +94,32 @@ contract("ENSJobPages helper", (accounts) => {
       web3.utils.keccak256(`job-${jobId}`),
       "labelhash should match job label"
     );
+  });
+
+  it("burns child fuses on hook 6 even when job-manager view calls fail", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, nameWrapper.address, { from: owner });
+    await nameWrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+    await helper.setJobManager(hookCaller.address, { from: owner });
+
+    const jobId = 6;
+    await hookCaller.callHandleHook(helper.address, 6, jobId, { from: owner });
+
+    assert.equal((await nameWrapper.setChildFusesCalls()).toString(), "1", "should set child fuses");
+    assert.equal(await nameWrapper.lastParentNode(), rootNode, "parent node should be jobs root");
+    assert.equal(await nameWrapper.lastLabelhash(), web3.utils.keccak256(`job-${jobId}`), "labelhash should match");
+    assert.equal((await nameWrapper.lastChildExpiry()).toString(), web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1).toString(), "expiry should be max uint64");
   });
 });
