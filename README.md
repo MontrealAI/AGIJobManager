@@ -51,6 +51,7 @@ operators should review parameter‑tuning and off‑chain governance before pro
 AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other marketplaces using normal approvals and transfers. This contract does not implement an internal marketplace.
 
 ## Documentation
+- **Institutional docs index**: [`docs/README.md`](docs/README.md)
 - **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview (authoritative)**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
 - **Mainnet deployment & verification**: [`docs/mainnet-deployment-and-verification.md`](docs/mainnet-deployment-and-verification.md)
