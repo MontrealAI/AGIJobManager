@@ -42,7 +42,7 @@ It **does not** freeze operational controls like pause, settlement pause, thresh
 | `ensJobPages` | `setEnsJobPages` | Yes | identity-configurable; contract code required if nonzero | Enables lifecycle hooks |
 | `useEnsJobTokenURI` | `setUseEnsJobTokenURI` | Yes | none | Pulls NFT tokenURI from ENSJobPages when available |
 | Root nodes | `updateRootNodes` | Yes | identity-configurable + **empty locked balances** | club/agent + alpha variants |
-| Merkle roots | `updateMerkleRoots` | Yes | identity-configurable | validator/agent allowlist roots |
+| Merkle roots | `updateMerkleRoots` | Yes | owner-only (not identity-locked) | validator/agent allowlist roots remain mutable after `lockIdentityConfiguration()` |
 | Moderators | `addModerator/removeModerator` | Yes | nonzero address helper check | Dispute resolution role |
 | Additional allowlists | `add/removeAdditionalAgent`, `add/removeAdditionalValidator` | Yes | nonzero address | Bypass ENS/Merkle ownership checks |
 | Blacklists | `blacklistAgent`, `blacklistValidator` | Yes | none | Hard deny lists |
