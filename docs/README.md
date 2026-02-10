@@ -1,26 +1,42 @@
 # AGIJobManager Documentation Index
 
-This index is the entrypoint for engineers, auditors, and operators working with this repository.
+## Purpose
+Provide a single navigation entry for engineers, auditors, and operators working with this repository.
+
+## Audience
+- Smart-contract developers
+- Security reviewers/auditors
+- Deployment and incident-response operators
+- Integrators calling contract methods directly
+
+## Preconditions / assumptions
+- You are working from repository root.
+- You have read the root governance/security docs: [`../CONTRIBUTING.md`](../CONTRIBUTING.md), [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md), [`../SECURITY.md`](../SECURITY.md).
 
 ## Start here
-- [Quickstart](./QUICKSTART.md)
-- [Architecture](./architecture.md)
-- [Contracts overview](./CONTRACTS_OVERVIEW.md)
-- [Security model](./SECURITY_MODEL.md)
-- [Testing guide](./TESTING.md)
-- [Glossary](./GLOSSARY.md)
+1. [Quickstart](./QUICKSTART.md)
+2. [Architecture](./ARCHITECTURE.md)
+3. [Contracts overview](./CONTRACTS_OVERVIEW.md)
+4. [Configuration reference](./CONFIGURATION_REFERENCE.md)
+5. [Deploy Day runbook](./DEPLOY_DAY_RUNBOOK.md)
+6. [Operations runbook](./OPERATIONS_RUNBOOK.md)
 
 ## Contract reference
 - [AGIJobManager](./contracts/AGIJobManager.md)
 - [ENSJobPages](./contracts/ENSJobPages.md)
-- [Utilities](./contracts/Utilities.md)
-- [ENS/NameWrapper/Resolver interfaces](./contracts/Interfaces.md)
+- [Utilities (BondMath/ReputationMath/TransferUtils/UriUtils/ENSOwnership)](./contracts/Utilities.md)
+- [Interfaces (ENS Registry/NameWrapper/PublicResolver)](./contracts/Interfaces.md)
 
-## Operational runbooks
-- [Deploy Day Runbook](./DEPLOY_DAY_RUNBOOK.md)
-- [Operations Runbook](./OPERATIONS_RUNBOOK.md)
-- [Configuration Reference](./CONFIGURATION_REFERENCE.md)
+## Security / quality
+- [Security model and invariants](./SECURITY_MODEL.md)
+- [Testing guide](./TESTING.md)
+- [Glossary](./GLOSSARY.md)
 
-## Notes
-- Commands in these docs are aligned with repository scripts from `package.json` and Truffle defaults.
-- Placeholder values use angle brackets, for example `<AGI_TOKEN_ADDRESS>` and `<SAFE_ADDRESS>`.
+## Gotchas / failure modes
+- `docs/architecture.md` (lowercase) and `docs/ARCHITECTURE.md` both exist historically; prefer this index link to `ARCHITECTURE.md`.
+- Keep commands aligned with `package.json`; do not invent non-existent npm scripts.
+
+## References
+- [`../package.json`](../package.json)
+- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
