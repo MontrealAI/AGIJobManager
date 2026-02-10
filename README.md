@@ -140,19 +140,7 @@ flowchart LR
 | **Agent** | Apply for jobs, request completion, earn payouts and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
 | **Validator** | Approve/disapprove jobs, earn payout share and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
 
-## Quick start (dev)
-
-```bash
-npm install
-```
-
-```bash
-npm run build
-```
-
-```bash
-npm test
-```
+## Developer testing references
 
 Testing runbooks and coverage planning:
 - [`docs/TESTING.md`](docs/TESTING.md)
