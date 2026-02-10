@@ -1,42 +1,51 @@
-# Troubleshooting & Common Errors
+# Troubleshooting
 
-This guide explains why transactions fail and what to check before retrying.
+## Common issues and fixes
 
-## Custom errors (from the contract)
-| Error | Meaning | Common triggers | Fix |
-| --- | --- | --- | --- |
-| `NotModerator` | Caller is not a moderator | `resolveDisputeWithCode` called by non‑moderator | Ask owner to add moderator |
-| `NotAuthorized` | Caller fails identity checks | Wrong subdomain, missing Merkle proof, not allowlisted | Verify subdomain, proof, or allowlist |
-| `Blacklisted` | Address is blocked | `applyForJob`, `validateJob`, `disapproveJob` while blacklisted | Ask owner to remove blacklist |
-| `InvalidParameters` | Inputs out of range | payout=0, duration=0, price=0, invalid percent | Fix input values |
-| `InvalidState` | Action not allowed in current job state | Completed/assigned/disputed, expired duration | Check job status first |
-| `JobNotFound` | jobId does not exist | Using wrong jobId | Verify jobId from `JobCreated` |
-| `TransferFailed` | ERC‑20 transfer/transferFrom failed | Insufficient allowance/balance, token returns false | Increase allowance/balance or fix token |
+| Symptom | Typical cause | Verification | Remediation |
+|---|---|---|---|
+| `createJob` reverts | invalid payout/duration or ERC20 transfer failure | check `maxJobPayout`, `jobDurationLimit`, allowance/balance | fix params and token approval |
+| `applyForJob` reverts | unauthorized identity, blacklist, payout tier 0, active job cap | inspect allowlists/roots/proofs, blacklist mappings, AGI types, active jobs | authorize identity, remove blacklist, configure AGI type, wait for slot release |
+| `requestJobCompletion` reverts | caller not assigned agent, empty URI, invalid state/time | check `assignedAgent`, URI, completion status/timestamps | call from assigned agent with valid URI and timing |
+| `validateJob`/`disapproveJob` reverts | voting outside review window, duplicate vote, unauthorized validator | check completion timestamp, proof path, prior vote state | vote within review period with valid authorization |
+| `finalizeJob` reverts | too early (challenge/review window) or invalid state | inspect completion/vote timestamps and dispute flag | wait window or resolve dispute path |
+| `withdrawAGI` reverts | paused condition not met, settlement paused, or insufficient withdrawable | check `paused()`, `settlementPaused`, `withdrawableAGI()` | set correct pause flags and requested amount |
 
-## Pausable errors
-If the contract is paused, most user actions revert with `Pausable: paused`.
-- **Fix**: wait for the owner to unpause.
+## Runbook snippets
 
-## Common pitfalls
-### Wrong subdomain string
-- The contract computes `subnode = keccak256(root, keccak256(subdomain))`.
-- A typo in the subdomain will fail identity checks.
+### Pause / unpause
+- Owner calls `pause()` to stop `whenNotPaused` actions.
+- Owner calls `unpause()` to resume.
+- Owner may separately call `setSettlementPaused(true|false)` for settlement-sensitive controls.
 
-### Missing ERC‑20 allowance
-- **createJob** requires a prior `approve`.
-- Approve only the exact amount and revoke after use.
+### Resolve disputes
+- Moderator: `resolveDisputeWithCode(jobId, 1|2, reason)`.
+- Owner stale path after timeout: `resolveStaleDispute(jobId, employerWins)`.
 
-### Job expired
-- `requestJobCompletion` will fail if the job duration has expired.
+### Blacklisting
+- Owner: `blacklistAgent(agent, true|false)`.
+- Owner: `blacklistValidator(validator, true|false)`.
 
-### Double voting
-- Validators cannot approve or disapprove twice.
+### Misconfiguration recovery
+- Before identity lock and with empty obligations, owner may update token/ENS/namewrapper/root wiring.
+- After lock or with active obligations, redeployment is the safe path for identity wiring mistakes.
 
-### Dispute status
-- `resolveDisputeWithCode` only works when `disputed == true`.
-- `disputeJob` can only be called by employer or assigned agent.
+## Custom errors reference
 
-## How to diagnose
-1. Check the revert error in your wallet or Etherscan.
-2. Look up the last emitted event for the job.
-3. Compare the job state (`getJobCore(jobId)` / `getJobValidation(jobId)` getters) with the requirements above.
+| Custom error | Meaning | Typical remediation |
+|---|---|---|
+| `NotModerator` | caller is not an approved moderator | add moderator or call from moderator account |
+| `NotAuthorized` | role/identity gate failed | provide valid allowlist/proof/subdomain ownership or correct caller |
+| `Blacklisted` | account denied by blacklist | owner removes blacklist entry if appropriate |
+| `InvalidParameters` | input value failed constraints | inspect bounds/zero-address checks and retry |
+| `InvalidState` | call not valid in current job/contract state | check lifecycle stage and timing windows |
+| `JobNotFound` | invalid job id | use existing job id |
+| `TransferFailed` | token transfer helper failed | verify token behavior, allowance, balances |
+| `ValidatorLimitReached` | max validators per job reached | stop adding validator votes |
+| `InvalidValidatorThresholds` | threshold params exceed cap/combined limits | set compliant thresholds |
+| `IneligibleAgentPayout` | agent has no eligible AGI type payout tier | configure AGI types or eligibility NFTs |
+| `InsufficientWithdrawableBalance` | withdrawal exceeds treasury surplus | lower amount or release obligations first |
+| `InsolventEscrowBalance` | on-chain token balance below locked liabilities | halt operations and investigate accounting discrepancy |
+| `ConfigLocked` | identity config was permanently locked | redeploy for identity rewiring |
+| `SettlementPaused` | settlement pause flag blocks action | owner sets `setSettlementPaused(false)` if safe |
+| `DeprecatedParameter` | deprecated setter called | do not use deprecated function |
