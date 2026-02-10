@@ -1,67 +1,82 @@
 # Contracts Overview
 
-## Main contracts
-- `AGIJobManager.sol`: escrow lifecycle, disputes, validator economics, reputation, and completion NFT.
-- `ens/ENSJobPages.sol`: optional ENS publication and permission management for per-job pages.
-- `utils/*`: URI validation/base IPFS composition, ERC20 transfer wrappers, bond math, reputation math, ENS ownership checks.
+## Purpose
+High-level map of contracts, major workflows, and cross-contract calls.
 
-## Job lifecycle (user + operator)
+## Audience
+Developers and auditors.
 
-```mermaid
-sequenceDiagram
-    participant E as Employer
-    participant C as AGIJobManager
-    participant A as Agent
-    participant V as Validators
+## Preconditions / assumptions
+- Core runtime contract is `contracts/AGIJobManager.sol`.
+- ENS publication is optional via `contracts/ens/ENSJobPages.sol`.
 
-    E->>C: createJob(specURI,payout,duration,details)
-    A->>C: applyForJob(jobId,subdomain,proof)
-    A->>C: requestJobCompletion(jobId,completionURI)
-    V->>C: validateJob/disapproveJob
-    alt approvals path / no-vote timeout
-      anyone->>C: finalizeJob(jobId)
-      C-->>E: mints completion NFT
-      C-->>A: payout + bond return
-    else disapproval/dispute path
-      party->>C: disputeJob(jobId)
-      moderator->>C: resolveDisputeWithCode(...)
-    end
-```
+## Contract inventory
+| Contract | Type | Responsibility |
+|---|---|---|
+| `AGIJobManager` | Core | Escrow, job lifecycle, validator voting, disputes, payouts/refunds, reputation, ERC-721 completion NFT. |
+| `ENSJobPages` | Integration | Creates/manages ENS job pages and handles hook callbacks. |
+| Utility libraries | Linked libs | URI handling, ERC20 transfer safety, bond math, reputation math, ENS ownership checks. |
+| ENS interfaces | Interfaces | Minimal interaction surface with ENS Registry/NameWrapper/PublicResolver. |
 
-Checklist:
-- Employer approves AGI allowance before creating jobs.
-- Agent must pass allowlist checks and AGIType payout gating.
-- Completion URI must be non-empty and URI-valid.
-- Finalization can happen via fast challenge-window path after threshold approvals or the review-window path.
-
-## Dispute lifecycle
-
+## Call graph (overview)
 ```mermaid
 flowchart TD
-  A[Completion requested] --> B{Disapproved threshold or disputeJob}
-  B --> C[Job.disputed=true]
-  C --> D[Moderator resolveDisputeWithCode]
-  D -->|1 agent win| E[_completeJob]
-  D -->|2 employer win| F[_refundEmployer]
-  D -->|0 no action| C
-  C --> G[Owner resolveStaleDispute after disputeReviewPeriod]
-  G --> E
-  G --> F
+  AJM[AGIJobManager]
+  TF[TransferUtils]
+  BM[BondMath]
+  RM[ReputationMath]
+  EO[ENSOwnership]
+  UU[UriUtils]
+  ENSP[IENSJobPages hook target]
+
+  AJM --> TF
+  AJM --> BM
+  AJM --> RM
+  AJM --> EO
+  AJM --> UU
+  AJM -.best effort.-> ENSP
 ```
 
-## ENS hook lifecycle
-- Hook 1 (`create`): create subname + set schema/spec text + authorize employer.
-- Hook 2 (`assign`): authorize assigned agent.
-- Hook 3 (`completion`): publish completion text.
-- Hook 4 (`revoke`): revoke employer and agent permissions.
-- Hook 5/6 (`lock`/`lock+burn`): lock permissions; optional fuse burn when wrapped root and owner-authorized.
+## Workflow snapshots
 
-All hooks are best-effort in `AGIJobManager` (`_callEnsJobPagesHook`) and non-blocking.
+### Job lifecycle
+```mermaid
+sequenceDiagram
+  participant Employer
+  participant Agent
+  participant Validators
+  participant Contract as AGIJobManager
 
-## Completion NFT lifecycle
-- Minted only in `_completeJob`.
-- Receiver is employer.
-- URI source:
-  1. `jobCompletionURI` by default.
-  2. ENS URI override if `useEnsJobTokenURI=true` and ENSJobPages returns non-empty URI.
-  3. `UriUtils.applyBaseIpfs` prepends base URL for URI values without `://` scheme.
+  Employer->>Contract: createJob(specURI,payout,duration,details)
+  Agent->>Contract: applyForJob(jobId,subdomain,proof)
+  Agent->>Contract: requestJobCompletion(jobId,completionURI)
+  Validators->>Contract: validateJob / disapproveJob
+  alt approvals path
+    AnyCaller->>Contract: finalizeJob(jobId)
+    Contract-->>Agent: payout + (possibly) agent bond return
+    Contract-->>Employer: completion NFT mint
+  else dispute path
+    Employer->>Contract: disputeJob(jobId)
+    Moderator->>Contract: resolveDisputeWithCode(jobId,code,reason)
+  end
+```
+
+### ENS hook lifecycle (optional)
+```mermaid
+flowchart TD
+  A[Job event in AGIJobManager] --> B[_callEnsJobPagesHook(hook,jobId)]
+  B --> C{External call success?}
+  C -->|yes| D[EnsHookAttempted(...,true)]
+  C -->|no| E[EnsHookAttempted(...,false)]
+  E --> F[Continue core settlement path]
+```
+
+## Gotchas / failure modes
+- ENS hooks are non-blocking by design.
+- Validator loops are bounded with `MAX_VALIDATORS_PER_JOB`.
+- AGI type list is bounded with `MAX_AGI_TYPES`.
+
+## References
+- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
+- [`./contracts/Utilities.md`](./contracts/Utilities.md)
