@@ -3154,19 +3154,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "nftAddress",
-          "type": "address"
-        }
-      ],
-      "name": "disableAGIType",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "agent",
           "type": "address"
         }

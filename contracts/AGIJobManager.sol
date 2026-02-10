@@ -399,14 +399,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _requireEmptyEscrow() internal view {
-        if (
-            lockedEscrow != 0 ||
-            lockedAgentBonds != 0 ||
-            lockedValidatorBonds != 0 ||
-            lockedDisputeBonds != 0
-        ) {
-            revert InvalidState();
-        }
+        uint256 total = lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds;
+        if (total != 0) revert InvalidState();
     }
 
     function _requireValidReviewPeriod(uint256 period) internal pure {
@@ -1298,11 +1292,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
         }
         emit AGITypeUpdated(nftAddress, payoutPercentage);
-    }
-
-    function disableAGIType(address nftAddress) external onlyOwner {
-        if (!_updateAgiTypePayout(nftAddress, 0)) revert InvalidParameters();
-        emit AGITypeUpdated(nftAddress, 0);
     }
 
     function _updateAgiTypePayout(address nftAddress, uint256 payoutPercentage) internal returns (bool) {
