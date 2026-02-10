@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -334,5 +334,23 @@ contract("AGIJobManager admin ops", (accounts) => {
       manager.updateAGITokenAddress.call(newToken.address, { from: owner }),
       "ConfigLocked"
     );
+  });
+
+  it("permits identity updates after all escrow obligations settle", async () => {
+    const payout = toBN(toWei("4"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    await manager.finalizeJob(jobId, { from: employer });
+
+    const newEns = await MockENS.new({ from: owner });
+    await manager.updateEnsRegistry(newEns.address, { from: owner });
+    assert.equal(await manager.ens(), newEns.address, "ens registry should update after settlement");
   });
 });

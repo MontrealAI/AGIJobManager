@@ -5,6 +5,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
+const MockBrokenERC721 = artifacts.require("MockBrokenERC721");
 
 const { time } = require("@openzeppelin/test-helpers");
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
@@ -56,6 +57,94 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     await manager.addAGIType(agiType.address, 50, { from: owner });
     await expectCustomError(manager.addAGIType.call(agiType.address, 70, { from: owner }), "InvalidParameters");
+  });
+
+  it("rejects non-contract or non-ERC721 AGI types", async () => {
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
+      { from: owner }
+    );
+
+    await expectCustomError(
+      manager.addAGIType.call(agent, 10, { from: owner }),
+      "InvalidParameters"
+    );
+
+    const nonErc721 = await MockERC20.new({ from: owner });
+    await expectCustomError(
+      manager.addAGIType.call(nonErc721.address, 10, { from: owner }),
+      "InvalidParameters"
+    );
+  });
+
+  it("ignores broken AGI types during payout snapshotting", async () => {
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
+      { from: owner }
+    );
+
+    const validType = await MockERC721.new({ from: owner });
+    const brokenType = await MockBrokenERC721.new({ from: owner });
+    await validType.mint(agent, { from: owner });
+    await manager.addAGIType(validType.address, 60, { from: owner });
+    await manager.addAGIType(brokenType.address, 80, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await fundAgents(token, manager, [agent], owner);
+
+    const payout = toBN(toWei("5"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    const createTx = await manager.createJob("ipfs-job", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+
+    await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
+    const snapshotPct = await manager.getHighestPayoutPercentage(agent);
+    assert.equal(snapshotPct.toString(), "60");
+  });
+
+  it("allows disabling AGI types in place", async () => {
+    const manager = await AGIJobManager.new(...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        nameWrapper.address,
+        clubRoot,
+        agentRoot,
+        clubRoot,
+        agentRoot,
+        ZERO_ROOT,
+        ZERO_ROOT,
+      ),
+      { from: owner }
+    );
+
+    const agiType = await MockERC721.new({ from: owner });
+    await agiType.mint(agent, { from: owner });
+    await manager.addAGIType(agiType.address, 50, { from: owner });
+    await manager.disableAGIType(agiType.address, { from: owner });
+
+    const snapshotPct = await manager.getHighestPayoutPercentage(agent);
+    assert.equal(snapshotPct.toString(), "0");
   });
 
   it("prevents validation reward updates that exceed configured max agent payout", async () => {

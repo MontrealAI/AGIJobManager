@@ -46,7 +46,6 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -400,7 +399,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _requireEmptyEscrow() internal view {
-        if (nextJobId != 0 || lockedEscrow != 0) revert InvalidState();
+        if ((lockedEscrow | lockedAgentBonds | lockedValidatorBonds | lockedDisputeBonds) != 0) {
+            revert InvalidState();
+        }
     }
 
     function _requireValidReviewPeriod(uint256 period) internal pure {
@@ -723,6 +724,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable {
         if (_newTokenAddress == address(0)) revert InvalidParameters();
+        if (nextJobId != 0) revert InvalidState();
         _requireEmptyEscrow();
         address oldToken = address(agiToken);
         agiToken = IERC20(_newTokenAddress);
@@ -1261,27 +1263,27 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
-        if (!(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100)) revert InvalidParameters();
-
-        (bool exists, uint256 maxPct) = _maxAGITypePayoutAfterUpdate(nftAddress, payoutPercentage);
-        if ((!exists && agiTypes.length >= MAX_AGI_TYPES) || maxPct > 100 - validationRewardPercentage) {
+        if (
+            nftAddress == address(0)
+                || payoutPercentage == 0
+                || payoutPercentage > 100
+                || nftAddress.code.length == 0
+        ) {
             revert InvalidParameters();
         }
-        if (exists) {
-            _updateAgiTypePayout(nftAddress, payoutPercentage);
-        } else {
-            agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
+        if (!_supportsInterface(nftAddress, 0x01ffc9a7) || !_supportsInterface(nftAddress, 0x80ac58cd)) {
+            revert InvalidParameters();
         }
-        emit AGITypeUpdated(nftAddress, payoutPercentage);
-    }
 
-    function _maxAGITypePayoutAfterUpdate(address nftAddress, uint256 payoutPercentage) internal view returns (bool exists, uint256 maxPct) {
-        maxPct = payoutPercentage;
-        for (uint256 i = 0; i < agiTypes.length; ) {
-            uint256 pct = agiTypes[i].payoutPercentage;
-            if (agiTypes[i].nftAddress == nftAddress) {
+        uint256 maxPct = payoutPercentage;
+        uint256 length = agiTypes.length;
+        uint256 matchIndex = length;
+        for (uint256 i = 0; i < length; ) {
+            AGIType storage agiType = agiTypes[i];
+            uint256 pct = agiType.payoutPercentage;
+            if (agiType.nftAddress == nftAddress) {
                 pct = payoutPercentage;
-                exists = true;
+                matchIndex = i;
             }
             if (pct > maxPct) {
                 maxPct = pct;
@@ -1290,31 +1292,66 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 ++i;
             }
         }
-        return (exists, maxPct);
+        if ((length == MAX_AGI_TYPES && matchIndex == length) || maxPct > 100 - validationRewardPercentage) {
+            revert InvalidParameters();
+        }
+        if (matchIndex != length) {
+            agiTypes[matchIndex].payoutPercentage = payoutPercentage;
+        } else {
+            agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
+        }
+        emit AGITypeUpdated(nftAddress, payoutPercentage);
     }
 
-    function _updateAgiTypePayout(address nftAddress, uint256 payoutPercentage) internal {
+    function disableAGIType(address nftAddress) external onlyOwner {
         for (uint256 i = 0; i < agiTypes.length; ) {
             if (agiTypes[i].nftAddress == nftAddress) {
-                agiTypes[i].payoutPercentage = payoutPercentage;
-                break;
+                agiTypes[i].payoutPercentage = 0;
+                emit AGITypeUpdated(nftAddress, 0);
+                return;
             }
             unchecked {
                 ++i;
             }
         }
+        revert InvalidParameters();
     }
 
     function getHighestPayoutPercentage(address agent) public view returns (uint256) {
         uint256 highestPercentage = 0;
         for (uint256 i = 0; i < agiTypes.length; ) {
-            if (IERC721(agiTypes[i].nftAddress).balanceOf(agent) > 0 && agiTypes[i].payoutPercentage > highestPercentage) {
-                highestPercentage = agiTypes[i].payoutPercentage;
+            AGIType storage agiType = agiTypes[i];
+            uint256 pct = agiType.payoutPercentage;
+            if (pct > highestPercentage) {
+                assembly {
+                    let ptr := mload(0x40)
+                    let nftAddress := sload(agiType.slot)
+                    mstore(ptr, shl(224, 0x70a08231))
+                    mstore(add(ptr, 4), agent)
+                    if staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20) {
+                        if iszero(lt(returndatasize(), 0x20)) {
+                            if mload(ptr) {
+                                highestPercentage := pct
+                            }
+                        }
+                    }
+                }
             }
             unchecked {
                 ++i;
             }
         }
         return highestPercentage;
+    }
+
+    function _supportsInterface(address target, bytes4 interfaceId) internal view returns (bool supported) {
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, shl(224, 0x01ffc9a7))
+            mstore(add(ptr, 4), interfaceId)
+            let ok := staticcall(gas(), target, ptr, 0x24, ptr, 0x20)
+            supported := and(ok, and(gt(returndatasize(), 0x1f), iszero(iszero(mload(ptr)))))
+        }
+        return supported;
     }
 }
