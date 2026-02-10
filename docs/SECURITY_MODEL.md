@@ -10,7 +10,7 @@
 - **Escrow solvency invariant**: contract AGI balance must cover all locked amounts.
 - **Single-release accounting**: escrow/bonds are released through dedicated settlement helpers and should not be double-released.
 - **Bounded loops**: validator and AGIType loops are bounded by hard caps.
-- **Reentrancy protection**: mutable external paths are `nonReentrant`.
+- **Reentrancy protection**: high-risk token-moving lifecycle/settlement entrypoints are guarded with `nonReentrant`; coverage is function-specific (not blanket across every state-mutating admin function).
 
 ## Centralization assumptions
 - Owner can pause, tune parameters, alter allowlists, and manage moderators.
