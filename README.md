@@ -53,6 +53,19 @@ AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other ma
 ## Documentation
 Primary entrypoints: [`docs/README.md`](docs/README.md) and [`docs/DEPLOY_DAY_RUNBOOK.md`](docs/DEPLOY_DAY_RUNBOOK.md).
 
+Production-oriented docs added for current codebase:
+
+- [`docs/README.md`](docs/README.md)
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/CONTRACTS.md`](docs/CONTRACTS.md)
+- [`docs/AGIJOBMANAGER.md`](docs/AGIJOBMANAGER.md)
+- [`docs/ENSJOBPAGES.md`](docs/ENSJOBPAGES.md)
+- [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)
+- [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
+- [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+- [`docs/TESTING.md`](docs/TESTING.md)
+- [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
+
 - **Documentation index (start here)**: [`docs/README.md`](docs/README.md)
 - **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview (authoritative)**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
@@ -147,7 +160,7 @@ flowchart LR
 | **Agent** | Apply for jobs, request completion, earn payouts and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
 | **Validator** | Approve/disapprove jobs, earn payout share and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
 
-## Quickstart
+## Quick start (dev)
 
 ```bash
 npm install
@@ -160,6 +173,19 @@ npm run build
 ```bash
 npm test
 ```
+
+Additional verified checks:
+
+```bash
+npm run lint
+npm run size
+```
+
+## Deploy & Ops
+
+- Deployment sequence: [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
+- Day-2 operations and incident playbooks: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+- Configuration reference for owner-settable knobs: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)
 
 **Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled** to keep runtime bytecode under the EIP‑170 cap; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
 
