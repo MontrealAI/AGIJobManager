@@ -1,105 +1,127 @@
-# Deployment Runbook (Mainnet-oriented)
+# Deploy Runbook
 
-This runbook uses repository-native Truffle scripts and environment variables.
+## 1) Pre-deploy checklist
 
-```mermaid
-flowchart TD
-    A[Predeploy checks] --> B[Compile + size gates]
-    B --> C[truffle migrate --network mainnet]
-    C --> D[postdeploy-config apply]
-    D --> E[verify-config + validate-params]
-    E --> F{ENS root wrapped?}
-    F -->|Yes| G[Configure NameWrapper auth / optional fuse policy]
-    F -->|No| H[Ensure ENS root owner is ENSJobPages]
-    G --> I[Smoke tests]
-    H --> I
-    I --> J{Identity config proven?}
-    J -->|Yes| K[lockIdentityConfiguration]
-    J -->|No| L[Delay lock]
-    K --> M[Unpause and monitoring]
-    L --> M
+### Addresses and prerequisites
+- AGI ERC20 token address.
+- ENS registry address.
+- ENS NameWrapper address.
+- ENS PublicResolver address (for ENSJobPages deployment).
+- ENS jobs root node and root name string (for ENSJobPages).
+- AGI namespace root nodes for manager constructor:
+  - `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode`.
+- Merkle roots:
+  - `validatorMerkleRoot`, `agentMerkleRoot`.
+
+### Config values to pre-approve
+- Validator thresholds/quorum.
+- Review windows and challenge period.
+- Bond parameters and slash ratio.
+- Max payout and duration limits.
+- Validation reward and AGI type payout tiers.
+
+### ENS ownership requirements
+- If root is unwrapped: ENS root owner must allow contract to set subnode records.
+- If root is wrapped: wrapper owner must be contract or grant `isApprovedForAll`.
+
+## 2) Deploy sequence (repo-accurate)
+
+### Deploy contracts
+```bash
+npm install
+npm run build
+truffle migrate --network <network>
 ```
 
-## 1) Predeploy checks
+Repository migration used: `migrations/2_deploy_contracts.js`.
 
-1. Install deps:
-   ```bash
-   npm install
-   ```
-2. Fill `.env` from `.env.example` (never commit secrets).
-3. Ensure required deploy env values are set (`PRIVATE_KEYS`, RPC, token/ENS/root nodes, merkle roots).
-4. Verify compiler/network pins in `truffle-config.js` match intended chain profile.
+### Optional ENSJobPages deployment
+If using ENS hooks, deploy `ENSJobPages` separately with:
+- ensAddress
+- nameWrapperAddress
+- publicResolverAddress
+- jobs root node
+- jobs root name
 
-## 2) Deploy contracts
+Then set manager address on ENSJobPages (`setJobManager`) and set ENSJobPages on manager (`setEnsJobPages`).
 
-Compile and deploy:
+### Configure post-deploy
+Run script-based configuration:
+```bash
+truffle exec scripts/postdeploy-config.js --network <network> --address <AGIJOBMANAGER_ADDRESS>
+```
 
+Verify configured state:
+```bash
+truffle exec scripts/verify-config.js --network <network> --address <AGIJOBMANAGER_ADDRESS>
+```
+
+## 3) Post-deploy config checklist
+- [ ] Set validator thresholds/quorum.
+- [ ] Set windows (`completionReviewPeriod`, `disputeReviewPeriod`, `challengePeriodAfterApproval`).
+- [ ] Set reward/bond parameters.
+- [ ] Set moderators.
+- [ ] Set additional agents/validators if needed.
+- [ ] Configure blacklists (normally empty at launch).
+- [ ] Add AGI types (`addAGIType`) ensuring combined payout headroom against validation reward.
+- [ ] Configure ENS hook endpoint (`setEnsJobPages`) and `setUseEnsJobTokenURI` as desired.
+
+## 4) Verification and bytecode checks
+
+Runtime size checks:
+```bash
+npm run size
+node scripts/check-contract-sizes.js
+```
+
+Tests and compile:
 ```bash
 npm run build
-npm run size
-truffle migrate --network mainnet --reset
+npm run test
 ```
 
-If deploying to another configured network:
-
-```bash
-truffle migrate --network sepolia --reset
-```
-
-## 3) Post-deploy configuration
-
-Apply owner settings via script (uses env or JSON config):
-
-```bash
-truffle exec scripts/postdeploy-config.js --network mainnet -- --address <AGIJOBMANAGER_ADDRESS>
-```
-
-Dry-run preview:
-
-```bash
-truffle exec scripts/postdeploy-config.js --network mainnet -- --dry-run --address <AGIJOBMANAGER_ADDRESS>
-```
-
-This script supports thresholds, periods, metadata fields, merkle roots, moderators, allowlists, blacklists, AGI types, and ownership transfer config.
-
-## 4) Verification steps
-
-Config verification:
-
-```bash
-truffle exec scripts/verify-config.js --network mainnet -- --address <AGIJOBMANAGER_ADDRESS>
-truffle exec scripts/ops/validate-params.js --network mainnet -- --address <AGIJOBMANAGER_ADDRESS>
-```
-
-Etherscan verification (plugin configured in `truffle-config.js`):
-
-```bash
-truffle run verify AGIJobManager --network mainnet
-```
+Etherscan verification is performed externally (plugin/tool of choice) using deployed constructor args from migration config; do not expose private keys or mnemonics.
 
 ## 5) Smoke tests
 
-Minimal transaction smoke test (manually in `truffle console --network mainnet` or staging net first):
+Use local `test` network or testnet scripts/tests:
+- create job and verify `lockedEscrow` increase.
+- apply agent and verify `lockedAgentBonds` behavior.
+- request completion and cast validator votes.
+- finalize and verify expected payout path and NFT mint.
+- verify `withdrawableAGI()` excludes all locked balances.
 
-1. `createJob` with low payout/duration.
-2. Authorized agent `applyForJob`.
-3. `requestJobCompletion`.
-4. At least one validator vote.
-5. `finalizeJob` after conditions/time windows.
-6. Confirm expected events and locked accounting movement.
+ENS smoke check (if configured):
+- confirm `EnsHookAttempted` emissions across create/assign/completion/revoke.
+- intentionally break ENSJobPages and confirm settlement still succeeds (best-effort behavior).
 
-## 6) Lock identity configuration
+## 6) Lockdown and go-live
 
-Call `lockIdentityConfiguration()` only after confirming:
-- token address,
-- ENS registry + NameWrapper,
-- root node configuration,
-- ENS hook contract address.
+1. Confirm identity and roots are correct.
+2. Optionally execute `lockIdentityConfiguration()` (irreversible).
+3. Confirm not paused and `settlementPaused == false`.
+4. Announce operator monitoring playbooks and event alerts.
 
-After lock, identity setters guarded by `whenIdentityConfigurable` are permanently blocked.
+## 7) Rollback / incident notes
 
-## 7) Unpause + monitoring checklist
+- **ENS misconfigured**: update `ensJobPages` to a healthy contract or set to zero address; core settlement remains functional.
+- **Wrong token/identity addresses pre-jobs**: use `updateAGITokenAddress` / identity setters while identity still configurable and locked balances are zero.
+- **Wrong token address after activity**: direct replacement blocked by empty-lock requirement; pause, drain obligations via normal settlement, then reconfigure if still unlocked.
 
-1. Ensure `pause=false` and `settlementPaused=false` for normal operation.
-2. Start event watchers for: `JobCreated`, `JobDisputed`, `DisputeResolvedWithCode`, `AGIWithdrawn`, `SettlementPauseSet`, `EnsHookAttempted`.
-3. Record deployed addresses and config snapshot in `docs/deployments/` or internal ops registry.
+```mermaid
+flowchart TD
+    A[Prepare addresses + config] --> B[npm install/build]
+    B --> C[truffle migrate]
+    C --> D{Using ENSJobPages?}
+    D -- No --> F[postdeploy-config + verify-config]
+    D -- Yes --> E[Deploy ENSJobPages and wire both contracts]
+    E --> F
+    F --> G[Run build/test/size checks]
+    G --> H{Smoke tests pass?}
+    H -- No --> I[Pause + remediate config]
+    H -- Yes --> J{Lock identity now?}
+    J -- Yes --> K[lockIdentityConfiguration]
+    J -- No --> L[Leave identity configurable]
+    K --> M[Go live]
+    L --> M
+```
