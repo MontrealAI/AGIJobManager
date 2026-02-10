@@ -179,7 +179,7 @@ Operational meaning:
 
 ### 4.3 Sanity checks (must pass before smoke test)
 - [ ] `owner()` equals expected multisig.
-- [ ] `paused() == true`.
+- [ ] `paused() == true` **before opening the smoke-test window**.
 - [ ] `settlementPaused` is at intended value for test plan.
 - [ ] `ensJobPages` address is correct (or zero if intentionally disabled).
 - [ ] `validatorMerkleRoot` / `agentMerkleRoot` as expected.
@@ -218,6 +218,8 @@ Do manual verification on Etherscan with:
 ## 6) Mainnet smoke test (minimal-risk)
 
 > Keep the system paused for public users. Use dedicated internal test accounts and the smallest practical payout.
+>
+> Because core smoke-test actions (`createJob`, `applyForJob`, `validateJob`, `disapproveJob`) are `whenNotPaused`, run them inside a short, controlled unpaused window, then re-pause before lock/go-live decisions.
 
 Test actors:
 - employer test account
@@ -226,6 +228,11 @@ Test actors:
 - moderator/owner account available for emergency intervention
 
 ### 6.1 Flow
+0. [ ] Open a controlled smoke-test window:
+   - [ ] Confirm only internal test participants are ready.
+   - [ ] Ensure `settlementPaused` is at intended smoke-test value.
+   - [ ] Execute `unpause()` and start the smoke-test timer/log.
+
 1. [ ] Employer creates tiny job (`createJob`) with minimal payout/duration.
    - Expect `JobCreated`.
    - Confirm escrow accounting increased (`lockedEscrow`).
@@ -249,6 +256,10 @@ Test actors:
 6. [ ] ENS hook observability
    - Monitor `EnsHookAttempted` events for hook IDs relevant to create/assign/completion/revoke/lock.
    - If hook call fails (`success=false`), treat as integration incident; keep paused until triaged.
+
+7. [ ] Close the smoke-test window:
+   - [ ] Re-apply `pause()` after smoke-test transactions are mined.
+   - [ ] Verify `paused() == true` before proceeding to lock/go-live decision points.
 
 ### 6.2 Abort conditions (hard stop)
 If any of the following occurs:
