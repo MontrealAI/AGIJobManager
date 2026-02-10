@@ -1,34 +1,24 @@
 # AGIJobManager Documentation Hub
 
-This documentation set is intended for production-minded Ethereum deployment and operations of the current repository code.
+Start with the documentation index:
+- [00_INDEX.md](./00_INDEX.md)
 
-## 1) Start here
-
+Primary operator/auditor references:
 - [Architecture](./ARCHITECTURE.md)
-- [Contracts and permissions](./CONTRACTS.md)
-- [AGIJobManager deep reference](./AGIJOBMANAGER.md)
-- [ENSJobPages deep reference](./ENSJOBPAGES.md)
-
-## 2) Deploy and operate
-
-- [Configuration guide](./CONFIGURATION.md)
-- [Deployment runbook](./DEPLOY_RUNBOOK.md)
-- [Operations guide](./OPERATIONS.md)
-
-## 3) Develop and validate
-
-- [Testing guide](./TESTING.md)
+- [Protocol Flow](./PROTOCOL_FLOW.md)
+- [Configuration](./CONFIGURATION.md)
+- [Deploy Runbook](./DEPLOY_RUNBOOK.md)
+- [ENS Integration](./ENS_INTEGRATION.md)
+- [Security Model](./SECURITY_MODEL.md)
+- [Troubleshooting](./TROUBLESHOOTING.md)
 - [Glossary](./GLOSSARY.md)
 
-## 4) Source-of-truth files
-
-Use these files as canonical behavior references:
-
+Implementation sources of truth:
 - `contracts/AGIJobManager.sol`
 - `contracts/ens/ENSJobPages.sol`
 - `migrations/2_deploy_contracts.js`
 - `migrations/deploy-config.js`
 - `scripts/postdeploy-config.js`
-- `truffle-config.js`
+- `scripts/verify-config.js`
 - `package.json`
 - `.github/workflows/ci.yml`
