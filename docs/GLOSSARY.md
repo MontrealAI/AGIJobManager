@@ -1,19 +1,21 @@
 # Glossary
 
-- **Job**: a single escrowed work item in `AGIJobManager` with employer, payout, duration, and lifecycle flags.
-- **Escrow (`lockedEscrow`)**: sum of unsettled job payouts reserved in-contract.
-- **Agent bond**: AGI posted by assigned agent at apply time; returned/slashed depending on outcome.
-- **Validator bond**: AGI posted per validator vote; partially slashable via `validatorSlashBps`.
-- **Dispute bond**: AGI posted when employer/agent calls `disputeJob`.
-- **Validator budget**: portion of payout allocated to validator rewards (`validationRewardPercentage`).
-- **Retained revenue**: remainder of payout on agent-win after agent payout + validator budget.
-- **`withdrawableAGI`**: contract AGI balance minus all locked escrow/bond buckets.
-- **Completion review period**: voting/dispute window after completion request.
-- **Challenge period after approval**: extra delay after approval threshold before immediate finalize branch.
-- **Dispute review period**: time after which owner can force-resolve stale disputes.
-- **Merkle root**: root used to prove role eligibility (agent/validator).
-- **ENS node**: namehash-like node identifying a name in ENS.
-- **Labelhash**: keccak256 of a single ENS label (e.g., `job-123`).
-- **Wrapped root**: ENS root owned by NameWrapper contract.
-- **Fuse**: NameWrapper permission bit; this repo uses `CANNOT_SET_RESOLVER` and `CANNOT_SET_TTL` for optional lock.
-- **Best-effort hook**: external ENS hook call whose failure does not revert core settlement flow.
+- **AGIJobManager**: Core ERC721 + escrow contract implementing job lifecycle and settlement.
+- **ENSJobPages**: Optional ENS helper contract for job page records and permissions.
+- **Escrow (`lockedEscrow`)**: AGI token amount reserved for unsettled job payouts.
+- **Withdrawable AGI**: Treasury balance not reserved by escrow/bond locks.
+- **Agent bond**: Stake posted by assigned agent to align completion incentives.
+- **Validator bond**: Stake posted by each validator vote, slashable on incorrect side.
+- **Dispute bond**: Stake posted by disputant in manual disputes.
+- **Completion review period**: Window for validator voting/disputing after completion request.
+- **Challenge period after approval**: Delay after approval threshold before fast finalize.
+- **Dispute review period**: Timeout before owner can resolve stale disputes.
+- **Vote quorum**: Minimum total votes considered sufficient for deterministic slow-path outcome.
+- **AGI type**: ERC721 collection configured with payout percentage used for agent payout tiering.
+- **Best-effort hook**: External ENS call that emits success/failure but does not revert core flow on failure.
+- **Identity configuration lock**: Irreversible freeze of token/ENS/root/ENSJobPages wiring setters that use `whenIdentityConfigurable`; Merkle roots remain owner-updatable.
+- **Settlement pause**: Dedicated toggle blocking settlement-sensitive methods independently of global pause.
+- **Namespace root node**: ENS node (bytes32) root used for ownership gating (`club`, `agent`, alpha variants).
+- **Merkle root**: Root hash used to verify allowlisted agents/validators via proofs.
+- **NameWrapper**: ENS wrapped-name contract used for wrapped root management and fuse operations.
+- **Fuses**: NameWrapper permission bits; in this repo lock path burns resolver/TTL mutability bits for child names.
