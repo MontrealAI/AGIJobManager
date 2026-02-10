@@ -1,23 +1,25 @@
 # Test Status
 
-## Failing command
-- `npx truffle test`
+## Latest deterministic validation snapshot
 
-## Error output
-```
-> Something went wrong while attempting to connect to the network at http://127.0.0.1:8545. Check your network configuration.
-CONNECTION ERROR: Couldn't connect to node http://127.0.0.1:8545.
-Truffle v5.11.5 (core: 5.11.5)
-Node v20.19.6
-```
+The repository's canonical local/CI-parity checks were executed from repo root and all completed successfully.
 
-## Root cause
-`truffle test` defaults to the `development` network (localhost:8545). No Ganache node was running at that address in this environment.
+### Commands and outcomes
 
-## Passing command
-- `npx truffle test --network test` (`226 passing`)
+- `npm install` ✅
+- `npm run build` ✅
+- `npm test` ✅ (`260 passing`)
+- `npm run size` ✅
 
-## Smallest fix required
-Either:
-1. Run a local node: `npx ganache -p 8545`, then re-run `npx truffle test`, **or**
-2. Use the in-process provider: `npx truffle test --network test`.
+### Environment notes
+
+- `npm` reports deprecation and vulnerability warnings from transitive dependencies during install; these did not block build or test execution.
+- `npm test` is the canonical test command and already uses Truffle's in-process `test` network (`truffle test --network test`), so no external Ganache process is required.
+
+### Size guard snapshot
+
+`npm test` runs `scripts/check-contract-sizes.js` and reports:
+
+- `AGIJobManager deployedBytecode size: 24574 bytes`
+
+This remains under the EIP-170 limit of 24,576 bytes.
