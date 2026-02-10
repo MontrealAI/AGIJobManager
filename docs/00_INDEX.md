@@ -14,6 +14,7 @@ Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 ## Operations docs
 - [Deploy Runbook](./DEPLOY_RUNBOOK.md) — pre-deploy checklist, exact migration/config scripts, smoke tests, lockdown steps. *(Operator / Owner)*
 - [Testing Guide](./TESTING.md) — how CI and local test checks are executed. *(Developer / Auditor)*
+- [Repository Inventory](./REPOSITORY_INVENTORY.md) — codebase map, script inventory, and verified command list at HEAD. *(Operator / Developer / Auditor)*
 
 ## Source-of-truth implementation files
 - `contracts/AGIJobManager.sol`

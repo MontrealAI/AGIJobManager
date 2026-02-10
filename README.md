@@ -65,6 +65,7 @@ Core operator/integrator/auditor docs:
 - [`docs/SECURITY_MODEL.md`](docs/SECURITY_MODEL.md)
 - [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
 - [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
+- [`docs/REPOSITORY_INVENTORY.md`](docs/REPOSITORY_INVENTORY.md)
 
 ## Quickstart
 
@@ -139,32 +140,6 @@ flowchart LR
 | **Employer** | Create jobs, fund escrow, cancel pre-assignment, dispute jobs, receive job NFTs. | Funds are custodied by contract until resolution. |
 | **Agent** | Apply for jobs, request completion, earn payouts and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
 | **Validator** | Approve/disapprove jobs, earn payout share and reputation. | Eligibility gated by allowlists/Merkle/ENS. |
-
-## Quick start (dev)
-
-```bash
-npm install
-```
-
-```bash
-npm run build
-```
-
-```bash
-npm test
-```
-
-Testing runbooks and coverage planning:
-- [`docs/TESTING.md`](docs/TESTING.md)
-- [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md)
-- [`docs/ARCHITECTURE_TESTS.md`](docs/ARCHITECTURE_TESTS.md)
-
-Additional verified checks:
-
-```bash
-npm run lint
-npm run size
-```
 
 ## Deploy & Ops
 

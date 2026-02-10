@@ -12,6 +12,7 @@ Primary operator/auditor references:
 - [Security Model](./SECURITY_MODEL.md)
 - [Troubleshooting](./TROUBLESHOOTING.md)
 - [Glossary](./GLOSSARY.md)
+- [Repository Inventory](./REPOSITORY_INVENTORY.md)
 
 Implementation sources of truth:
 - `contracts/AGIJobManager.sol`
