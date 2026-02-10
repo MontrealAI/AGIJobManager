@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -10,6 +10,8 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPages = artifacts.require("MockENSJobPages");
 const FailingERC20 = artifacts.require("FailingERC20");
 const MockERC721 = artifacts.require("MockERC721");
+const MockERC165Only = artifacts.require("MockERC165Only");
+const MockBrokenERC721 = artifacts.require("MockBrokenERC721");
 
 const { rootNode, setNameWrapperOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
@@ -334,5 +336,58 @@ contract("AGIJobManager admin ops", (accounts) => {
       manager.updateAGITokenAddress.call(newToken.address, { from: owner }),
       "ConfigLocked"
     );
+  });
+
+  it("rejects non-ERC721 AGI type configurations", async () => {
+    const erc165Only = await MockERC165Only.new({ from: owner });
+
+    await expectCustomError(
+      manager.addAGIType.call(other, 10, { from: owner }),
+      "InvalidParameters"
+    );
+    await expectCustomError(
+      manager.addAGIType.call(erc165Only.address, 10, { from: owner }),
+      "InvalidParameters"
+    );
+  });
+
+  it("skips broken AGI types when computing payout eligibility", async () => {
+    const brokenType = await MockBrokenERC721.new({ from: owner });
+    await manager.addAGIType(brokenType.address, 80, { from: owner });
+
+    const payout = toBN(toWei("4"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+
+    const jobCore = await manager.getJobCore(jobId);
+    assert.equal(jobCore.agentPayoutPct.toString(), "92", "valid AGI type should still be selected");
+  });
+
+  it("allows identity config updates after all obligations settle", async () => {
+    const payout = toBN(toWei("3"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    const jobId = createTx.logs[0].args.jobId.toNumber();
+    await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+
+    const newToken = await MockERC20.new({ from: owner });
+    await expectCustomError(
+      manager.updateAGITokenAddress.call(newToken.address, { from: owner }),
+      "InvalidState"
+    );
+
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    await manager.finalizeJob(jobId, { from: employer });
+
+    await manager.updateAGITokenAddress(newToken.address, { from: owner });
+    assert.equal(await manager.agiToken(), newToken.address, "token should update after settlement");
   });
 });
