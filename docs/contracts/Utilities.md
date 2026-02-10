@@ -10,8 +10,8 @@ Auditors and developers reviewing low-level behavior.
 - Utilities are linked at deployment (`migrations/2_deploy_contracts.js`).
 
 ## `UriUtils`
-- `validateURI(string uri)` enforces non-empty URI and max length 2048 bytes.
-- `applyBaseIpfs(string baseIpfsUrl, string uri)` prepends base only when URI has no scheme (`://`).
+- `requireValidUri(string uri)` enforces non-empty URI and rejects whitespace/control characters (space, tab, LF, CR).
+- `applyBaseIpfs(string uri, string baseIpfsUrl)` prepends base only when URI has no scheme (`://`).
 
 **Operational note:** malformed URIs revert early in create/complete flows.
 
