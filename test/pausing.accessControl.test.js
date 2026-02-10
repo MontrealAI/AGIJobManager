@@ -45,4 +45,23 @@ contract('pausing.accessControl', (accounts) => {
     await manager.setSettlementPaused(false, { from: owner });
     await manager.finalizeJob(0, { from: employer });
   });
+
+  it('allows treasury withdrawals only while paused and when settlement is active', async () => {
+    const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), '0x' + '00'.repeat(32)), { from: owner });
+    const treasury = new BN(web3.utils.toWei('5'));
+
+    await token.mint(manager.address, treasury, { from: owner });
+
+    await expectRevert.unspecified(manager.withdrawAGI(1, { from: owner }));
+    await manager.pause({ from: owner });
+    await manager.setSettlementPaused(true, { from: owner });
+    await expectRevert.unspecified(manager.withdrawAGI(1, { from: owner }));
+
+    await manager.setSettlementPaused(false, { from: owner });
+    await expectRevert.unspecified(manager.withdrawAGI(treasury.addn(1), { from: owner }));
+
+    await manager.withdrawAGI(treasury, { from: owner });
+    assert.equal((await token.balanceOf(owner)).toString(), treasury.toString());
+  });
 });

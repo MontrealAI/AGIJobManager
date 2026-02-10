@@ -28,7 +28,7 @@ Executed in this exact order on a clean checkout:
 Observed baseline:
 
 - `npm run size`: `AGIJobManager runtime bytecode size: 24574 bytes` (within EIP-170 cap, near the limit).
-- `npm run test`: `260 passing` on local Ganache `test` network.
+- `npm run test`: `264 passing` on local Ganache `test` network.
 
 > Note: CI also runs `npm run test:ui` after contract tests.
 
