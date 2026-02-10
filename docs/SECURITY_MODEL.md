@@ -1,27 +1,56 @@
 # Security Model
 
+## Purpose
+Threat model and invariant baseline for AGIJobManager.
+
+## Audience
+Auditors, security engineers, and operators.
+
+## Preconditions / assumptions
+- Centralized business-operated control is explicit design choice.
+- No in-place upgrades; redeploy is required for logic changes.
+
 ## Threat model summary
-- This is a centralized, owner-operated escrow protocol.
-- Moderators are trusted dispute resolvers.
-- Validators are permissioned and economically incentivized, not trustless jurors.
-- ENS integrations are ancillary; escrow safety must not depend on ENS liveness.
+### In scope
+- Escrow insolvency and accounting mismatches
+- Unauthorized state transitions
+- Validator incentive manipulation and dispute abuse
+- Reentrancy around value-transferring paths
+- External-call fragility (ENS hooks, token behavior)
 
-## Safety properties
-- **Escrow solvency invariant**: contract AGI balance must cover all locked amounts.
-- **Single-release accounting**: escrow/bonds are released through dedicated settlement helpers and should not be double-released.
-- **Bounded loops**: validator and AGIType loops are bounded by hard caps.
-- **Reentrancy protection**: high-risk external state-changing flows that move funds or settle jobs are guarded with `nonReentrant`, but coverage is not blanket across every admin setter (for example `pause()`/`unpause()` are not marked `nonReentrant`).
+### Out of scope / accepted risks
+- Full decentralization of dispute governance
+- Trustless validator admission
+- Market-level token or NFT price manipulation
 
-## Centralization assumptions
-- Owner can pause, tune parameters, alter allowlists, and manage moderators.
-- Owner stale-dispute resolution is available after dispute timeout.
-- Production operations should use multisig ownership and documented change controls.
+## Core invariants
+1. **Escrow solvency:** token balance must always cover locked escrow+bonds.
+2. **Single settlement effect:** each job settles exactly once (`escrowReleased` and state gating).
+3. **Bounded loops:** validator and AGI type loops are hard-bounded.
+4. **Controlled withdrawals:** owner can withdraw only computed surplus and only while paused.
+5. **Eligibility enforcement:** apply/vote actions require role eligibility + blacklist checks.
 
-## Known limitations / non-goals
-- No internal NFT marketplace.
-- No on-chain decentralized court.
-- ENS hooks are best-effort metadata operations.
-- Contract is non-upgradeable in-place; major logic changes require redeploy and migration planning.
+## Centralization and privilege risks
+- Owner can pause, reconfigure parameters, adjust role lists, and control moderators.
+- Moderator resolves disputes and can decide payout direction for disputed jobs.
+- Owner can stale-resolve unresolved disputes after timeout.
+
+## Hardening controls present in code
+- `nonReentrant` on major state-changing settlement paths.
+- Pausable controls and separate settlement pause switch.
+- Exact-transfer checks for `transferFrom` token intake (`TransferUtils.safeTransferFromExact`).
+- Identity wiring lock (`lockIdentityConfiguration`) for ENS/token/root immutability after launch.
+
+## Known limitations
+- ENS hook writes are best-effort and can silently fail except for event trace.
+- Deprecated setter `setAdditionalAgentPayoutPercentage` exists but intentionally unusable.
+- Security depends on disciplined operational governance (multisig, change control, monitoring).
 
 ## Vulnerability reporting
-Follow the repository security policy: [`../SECURITY.md`](../SECURITY.md).
+Follow root policy: [`../SECURITY.md`](../SECURITY.md).
+
+## References
+- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
+- [`../contracts/utils/TransferUtils.sol`](../contracts/utils/TransferUtils.sol)
+- [`../test/securityRegression.test.js`](../test/securityRegression.test.js)
