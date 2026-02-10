@@ -37,11 +37,11 @@ It **does not** freeze operational controls like pause, settlement pause, thresh
 | `settlementPaused` | `setSettlementPaused` | Yes | none | Blocks settlement-sensitive functions via custom modifier |
 | Pause state | `pause`/`unpause` | Yes | OpenZeppelin Pausable | Pausing required for treasury withdraw |
 | `agiToken` | `updateAGITokenAddress` | Yes | identity-configurable + empty locked balances + nonzero address | High impact; do before production jobs |
-| `ens` | `updateEnsRegistry` | Yes | identity-configurable + nonzero | Identity gating dependency |
-| `nameWrapper` | `updateNameWrapper` | Yes | identity-configurable + nonzero | Wrapped-root checks dependency |
+| `ens` | `updateEnsRegistry` | Yes | identity-configurable + nonzero + empty locked balances required | Identity gating dependency |
+| `nameWrapper` | `updateNameWrapper` | Yes | identity-configurable + nonzero + empty locked balances required | Wrapped-root checks dependency |
 | `ensJobPages` | `setEnsJobPages` | Yes | identity-configurable; contract code required if nonzero | Enables lifecycle hooks |
 | `useEnsJobTokenURI` | `setUseEnsJobTokenURI` | Yes | none | Pulls NFT tokenURI from ENSJobPages when available |
-| Root nodes | `updateRootNodes` | Yes | identity-configurable | club/agent + alpha variants |
+| Root nodes | `updateRootNodes` | Yes | identity-configurable + empty locked balances required | club/agent + alpha variants |
 | Merkle roots | `updateMerkleRoots` | Yes | identity-configurable | validator/agent allowlist roots |
 | Moderators | `addModerator/removeModerator` | Yes | nonzero address helper check | Dispute resolution role |
 | Additional allowlists | `add/removeAdditionalAgent`, `add/removeAdditionalValidator` | Yes | nonzero address | Bypass ENS/Merkle ownership checks |

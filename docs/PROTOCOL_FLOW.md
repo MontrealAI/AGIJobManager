@@ -62,8 +62,8 @@ Owner withdrawals (`withdrawAGI`) are additionally restricted to **paused** mode
 
 | Terminal outcome | Escrow payout | Agent bond | Validator bonds | Dispute bond | NFT minted |
 |---|---|---|---|---|---|
-| Agent win (`_completeJob`) | Agent gets `%` by AGI type, validator budget distributed/refunded; remainder retained as platform revenue | Returned to agent | Settled with slashing/rewards to validators; residual dust to winner side | Returned to disputant if disputant is agent, otherwise to employer | Yes |
-| Employer win (`_refundEmployer`) | Employer refunded payout minus validator reward budget when validators exist | Slashed (to employer or validator pool depending on threshold condition) | Settled with slashing/rewards favoring disapprovers | Returned to employer if employer disputed; else to agent | No |
+| Agent win (`_completeJob`) | Agent gets `%` by AGI type, validator budget distributed/refunded; remainder retained as platform revenue | Returned to agent | Settled with slashing/rewards to validators; residual dust to winner side | Sent to assigned agent (or refunded to dispute initiator if no counterparty is set) | Yes |
+| Employer win (`_refundEmployer`) | Employer refunded payout minus validator reward budget when validators exist | Slashed (to employer or validator pool depending on threshold condition) | Settled with slashing/rewards favoring disapprovers | Sent to employer (or refunded to dispute initiator if no counterparty is set) | No |
 | Expiry (`expireJob`) | Full payout returned to employer | Slashed to employer | none (no completion voting) | none | No |
 | Cancel/Delist before assignment | Full payout returned to employer | none | none | none | No |
 
