@@ -381,6 +381,25 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.equal(jobCore.agentPayoutPct.toString(), "92", "valid AGI type should still be selected");
   });
 
+  it("can disable and later re-enable an AGI type", async () => {
+    const freshType = await MockERC721.new({ from: owner });
+    await manager.addAGIType(freshType.address, 15, { from: owner });
+    await freshType.mint(other, { from: owner });
+
+    assert.equal((await manager.getHighestPayoutPercentage(other)).toString(), "15", "fresh type should be active");
+
+    await manager.disableAGIType(freshType.address, { from: owner });
+    assert.equal((await manager.getHighestPayoutPercentage(other)).toString(), "0", "disabled type should no longer count");
+
+    await manager.addAGIType(freshType.address, 25, { from: owner });
+    assert.equal((await manager.getHighestPayoutPercentage(other)).toString(), "25", "re-enabled type should take effect");
+
+    await expectCustomError(
+      manager.disableAGIType.call(validator, { from: owner }),
+      "InvalidParameters"
+    );
+  });
+
   it("allows identity config updates after all obligations settle", async () => {
     const payout = toBN(toWei("3"));
     await token.mint(employer, payout, { from: owner });
