@@ -65,6 +65,7 @@ Core operator/integrator/auditor docs:
 - [`docs/SECURITY_MODEL.md`](docs/SECURITY_MODEL.md)
 - [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
 - [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
+- [`docs/REPOSITORY_BASELINE.md`](docs/REPOSITORY_BASELINE.md)
 
 ## Quickstart
 

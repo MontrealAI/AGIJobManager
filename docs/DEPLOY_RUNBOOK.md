@@ -20,6 +20,22 @@
 - Max payout and duration limits.
 - Validation reward and AGI type payout tiers.
 
+### Environment variables used by migration/config scripts
+`migrations/deploy-config.js` and `scripts/postdeploy-config.js` consume these variables when set:
+
+| Variable | Purpose | Required? |
+|---|---|---|
+| `AGI_TOKEN_ADDRESS` | AGI ERC20 address wired into constructor or updater | Required on non-mainnet; optional override on mainnet |
+| `AGI_ENS_REGISTRY` | ENS registry address | Required on non-mainnet; optional override on mainnet |
+| `AGI_NAMEWRAPPER` | NameWrapper address | Required on non-mainnet; optional override on mainnet |
+| `AGI_CLUB_ROOT_NODE` / `AGI_AGENT_ROOT_NODE` | Base namespace roots for validator/agent gating | Required on non-mainnet; optional override on mainnet |
+| `AGI_ALPHA_CLUB_ROOT_NODE` / `AGI_ALPHA_AGENT_ROOT_NODE` | Alpha namespace roots | Required on non-mainnet; optional override on mainnet |
+| `AGI_VALIDATOR_MERKLE_ROOT` / `AGI_AGENT_MERKLE_ROOT` | Optional membership roots | Optional (defaults exist in deploy config) |
+| `AGI_BASE_IPFS_URL` | Base URI prefix for scheme-less token metadata | Optional |
+| `LOCK_IDENTITY_CONFIG` or `LOCK_CONFIG` | Lock identity configuration immediately after deploy | Optional (`true`/`false`) |
+| `AGIJOBMANAGER_ADDRESS` | Target manager address for postdeploy/verify scripts | Required for postdeploy + verify runs |
+
+
 ### ENS ownership requirements
 - If root is unwrapped: ENS root owner must allow contract to set subnode records.
 - If root is wrapped: wrapper owner must be contract or grant `isApprovedForAll`.
@@ -55,6 +71,13 @@ Verify configured state:
 ```bash
 truffle exec scripts/verify-config.js --network <network> --address <AGIJOBMANAGER_ADDRESS>
 ```
+
+
+### Expected outputs / checkpoints
+- `truffle migrate` logs **"AGIJobManager deployment summary"** with token, ENS, NameWrapper, root nodes, and lock status.
+- `truffle exec scripts/postdeploy-config.js ...` logs each applied change and exits with code `0` on success.
+- `truffle exec scripts/verify-config.js ...` prints `PASS`/`FAIL` style checks per field and should end with no failures for a clean deployment.
+- `npm run size` should report `AGIJobManager` at or below the EIP-170 runtime limit.
 
 ## 3) Post-deploy config checklist
 - [ ] Set validator thresholds/quorum.

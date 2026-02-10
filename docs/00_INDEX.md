@@ -3,6 +3,7 @@
 Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 
 ## Core protocol docs
+- [Repository Baseline](./REPOSITORY_BASELINE.md) — grounded inventory of scripts, deployment files, tests, and verified local commands. *(Operator / Developer / Auditor)*
 - [Architecture](./ARCHITECTURE.md) — system components, lifecycle, state model, trust boundaries. *(Operator / Integrator / Auditor)*
 - [Protocol Flow](./PROTOCOL_FLOW.md) — escrow accounting, bonds, validator voting, disputes, event map. *(Operator / Auditor / Developer)*
 - [Configuration](./CONFIGURATION.md) — owner-settable parameters, constraints, role matrix, identity lock behavior. *(Operator / Auditor)*
