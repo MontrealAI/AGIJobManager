@@ -51,38 +51,27 @@ operators should review parameter‑tuning and off‑chain governance before pro
 AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other marketplaces using normal approvals and transfers. This contract does not implement an internal marketplace.
 
 ## Documentation
-Primary entrypoints: [`docs/README.md`](docs/README.md) and [`docs/DEPLOY_DAY_RUNBOOK.md`](docs/DEPLOY_DAY_RUNBOOK.md).
 
-Production-oriented docs added for current codebase:
+Start with the curated index: [`docs/00_INDEX.md`](docs/00_INDEX.md).
 
-- [`docs/README.md`](docs/README.md)
+Primary current docs:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- [`docs/CONTRACTS.md`](docs/CONTRACTS.md)
-- [`docs/AGIJOBMANAGER.md`](docs/AGIJOBMANAGER.md)
-- [`docs/ENSJOBPAGES.md`](docs/ENSJOBPAGES.md)
+- [`docs/PROTOCOL_FLOW.md`](docs/PROTOCOL_FLOW.md)
 - [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)
 - [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
-- [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
-- [`docs/TESTING.md`](docs/TESTING.md)
+- [`docs/ENS_INTEGRATION.md`](docs/ENS_INTEGRATION.md)
+- [`docs/SECURITY_MODEL.md`](docs/SECURITY_MODEL.md)
+- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
 - [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
+- [`docs/README.md`](docs/README.md)
 
-- **Documentation index (start here)**: [`docs/README.md`](docs/README.md)
-- **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
-- **Mainnet deployment & security overview (authoritative)**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
-- **Mainnet deployment & verification**: [`docs/mainnet-deployment-and-verification.md`](docs/mainnet-deployment-and-verification.md)
-- **Deploy Day runbook (mainnet operations)**: [`docs/DEPLOY_DAY_RUNBOOK.md`](docs/DEPLOY_DAY_RUNBOOK.md)
-- **ENS identity & namespaces**: [`docs/ens-identity-and-namespaces.md`](docs/ens-identity-and-namespaces.md)
-- **How AGI Jobs work (newcomer overview)**: [`docs/how-agi-jobs-work.md`](docs/how-agi-jobs-work.md)
-- **ENS job pages (records + naming)**: [`docs/ens-job-pages.md`](docs/ens-job-pages.md)
-- **Job JSON schemas + examples**: [`docs/job-json-schemas.md`](docs/job-json-schemas.md)
-- **Privacy & storage options**: [`docs/privacy-and-storage.md`](docs/privacy-and-storage.md)
-- **Contract behavior summary**: [`docs/contract-behavior.md`](docs/contract-behavior.md)
-- **Validator guide (15‑minute workflow)**: [`docs/validator-guide.md`](docs/validator-guide.md)
-- **Architecture & state machine**: [`docs/architecture.md`](docs/architecture.md)
-- **Deployments & bridging safety**: [`docs/deployments-and-bridging.md`](docs/deployments-and-bridging.md)
-- **Operator runbook**: [`docs/operator-runbook.md`](docs/operator-runbook.md)
-- **Docs index**: [`docs/README.md`](docs/README.md)
-- **Local test status**: [`docs/test-status.md`](docs/test-status.md)
+## Quickstart
+
+```bash
+npm install
+npm run build
+npm test
+```
 
 ## ENS job pages (ALPHA)
 Official job pages live under `job-<jobId>.alpha.jobs.agi.eth` and are platform‑owned with delegated resolver edits. See [`docs/ens-job-pages.md`](docs/ens-job-pages.md) for the full record conventions and setup notes.

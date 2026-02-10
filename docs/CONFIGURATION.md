@@ -1,76 +1,64 @@
-# Configuration Guide
+# Configuration Reference (Operator-Focused)
 
-All settings below are from owner-settable functions in `contracts/AGIJobManager.sol` and `contracts/ens/ENSJobPages.sol`.
+## Configuration locking and scope
 
-## 1) Identity / ENS configuration
+`lockIdentityConfiguration()` permanently freezes identity wiring updates guarded by `whenIdentityConfigurable`:
+- `updateAGITokenAddress`
+- `updateEnsRegistry`
+- `updateNameWrapper`
+- `setEnsJobPages`
+- `updateRootNodes`
 
-Set before production traffic; many are frozen by `lockIdentityConfiguration()`.
+Even before lock, these identity updates require empty obligations (`_requireEmptyEscrow`): no active escrow or locked bonds.
 
-1. `updateAGITokenAddress(address)` (requires empty escrow; identity lock must be false)
-2. `updateEnsRegistry(address)` (requires empty escrow; identity lock must be false)
-3. `updateNameWrapper(address)` (requires empty escrow; identity lock must be false)
-4. `setEnsJobPages(address)` (identity lock must be false)
-5. `updateRootNodes(clubRoot, agentRoot, alphaClubRoot, alphaAgentRoot)` (requires empty escrow; identity lock must be false)
-6. `updateMerkleRoots(validatorMerkleRoot, agentMerkleRoot)`
+## Config keys and setter matrix
 
-### ENSJobPages-side setup
+| Variable | Default | Setter | Owner-only | Key guard conditions | Operational notes |
+|---|---:|---|---|---|---|
+| `requiredValidatorApprovals` | `3` | `setRequiredValidatorApprovals` | Yes | combined approval/disapproval limits must stay within `MAX_VALIDATORS_PER_JOB` | Affects fast-approval path and validator-approved timestamping. |
+| `requiredValidatorDisapprovals` | `3` | `setRequiredValidatorDisapprovals` | Yes | same threshold validation | Affects disapproval-triggered dispute. |
+| `voteQuorum` | `3` | `setVoteQuorum` | Yes | must be `1..MAX_VALIDATORS_PER_JOB` | Used by slow path in `finalizeJob`. |
+| `premiumReputationThreshold` | `10000` | `setPremiumReputationThreshold` | Yes | none | Used by `canAccessPremiumFeature`. |
+| `validationRewardPercentage` | `8` | `setValidationRewardPercentage` | Yes | `1..100`; AGI-type max payout must remain `<= 100 - validationRewardPercentage` | Sets escrow validator budget share. |
+| `maxJobPayout` | `88888888e18` | `setMaxJobPayout` | Yes | none | Upper bound for new jobs. |
+| `jobDurationLimit` | `10000000` | `setJobDurationLimit` | Yes | none | Upper bound for new job duration. |
+| `completionReviewPeriod` | `7 days` | `setCompletionReviewPeriod` | Yes | non-zero and `<= 365 days` | Validator voting/finalization window anchor. |
+| `disputeReviewPeriod` | `14 days` | `setDisputeReviewPeriod` | Yes | non-zero and `<= 365 days` | Delay before `resolveStaleDispute`. |
+| `validatorBondBps/min/max` | `1500 / 10e18 / 88888888e18` | `setValidatorBondParams` | Yes | bps<=10000; min<=max; disable mode requires all zero | Used per vote. |
+| `agentBondBps/min/max` | `500 / 1e18 / 88888888e18` | `setAgentBondParams` or `setAgentBond` (min only) | Yes | bps<=10000; min<=max; disable only when all zero | Used at apply time. |
+| `validatorSlashBps` | `8000` | `setValidatorSlashBps` | Yes | bps<=10000 | Portion of incorrect validator bond slashed. |
+| `challengePeriodAfterApproval` | `1 days` | `setChallengePeriodAfterApproval` | Yes | non-zero and `<= 365 days` | Delay after fast approval before finalize. |
+| `settlementPaused` | `false` | `setSettlementPaused` | Yes | none | Stops settlement-sensitive actions via `whenSettlementNotPaused`. |
+| pause state | `unpaused` | `pause` / `unpause` | Yes | OZ `Pausable` | Stops `whenNotPaused` flows; completion request intentionally remains callable. |
+| `agiToken` | constructor input | `updateAGITokenAddress` | Yes | identity-configurable + empty obligations + nonzero addr | High-impact identity wiring. |
+| `ens` | constructor input | `updateEnsRegistry` | Yes | identity-configurable + empty obligations + nonzero addr | Identity gating dependency. |
+| `nameWrapper` | constructor input | `updateNameWrapper` | Yes | identity-configurable + empty obligations + nonzero addr | Identity gating dependency. |
+| `ensJobPages` | `0x0` | `setEnsJobPages` | Yes | identity-configurable; nonzero must be contract | Hook target for ENS best-effort calls. |
+| `useEnsJobTokenURI` | `false` | `setUseEnsJobTokenURI` | Yes | none | If true, NFT URI may prefer ENS URI. |
+| root nodes (`club/agent/alpha*`) | constructor inputs | `updateRootNodes` | Yes | identity-configurable + empty obligations | ENS root namespaces for role checks. |
+| Merkle roots (`validator`, `agent`) | constructor inputs | `updateMerkleRoots` | Yes | none | Address allowlist proofs. |
+| `baseIpfsUrl` | constructor input (`https://ipfs.io/ipfs/` from deploy config) | `setBaseIpfsUrl` | Yes | none | Prefix for URI values with no scheme. |
+| metadata strings (`termsAndConditionsIpfsHash`, `contactEmail`, `additionalText1..3`) | empty | corresponding `update*` functions | Yes | none | Informational fields only. |
 
-- `setENSRegistry`, `setNameWrapper`, `setPublicResolver`, `setJobsRoot`, `setJobManager`.
+## Roles and permissions matrix
 
-## 2) Validator governance thresholds
+| Action group | Owner | Moderator | Employer | Agent | Validator |
+|---|---:|---:|---:|---:|---:|
+| Pause/unpause and settlement pause | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Add/remove moderators | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Identity wiring updates | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Lock identity configuration | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Blacklist agent/validator | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Create job | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Apply for job | ❌ | ❌ | ❌ | ✅ (if authorized/not blacklisted) | ❌ |
+| Request completion | ❌ | ❌ | ❌ | ✅ (assigned agent only) | ❌ |
+| Validate/disapprove | ❌ | ❌ | ❌ | ❌ | ✅ (if authorized/not blacklisted) |
+| Dispute job | ❌ | ❌ | ✅ (job employer) | ✅ (assigned agent) | ❌ |
+| Resolve dispute | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Resolve stale dispute | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Withdraw treasury AGI | ✅ (paused only) | ❌ | ❌ | ❌ | ❌ |
 
-- `setRequiredValidatorApprovals(uint256)`
-- `setRequiredValidatorDisapprovals(uint256)`
-- `setVoteQuorum(uint256)`
-- `setValidationRewardPercentage(uint256)`
+## Additional allowlists / blacklists
 
-Constraints:
-- Threshold sums are bounded by `MAX_VALIDATORS_PER_JOB`.
-- Quorum must be in `1..MAX_VALIDATORS_PER_JOB`.
-- Validation reward must be `1..100` and still allow AGI type payout caps.
-
-## 3) Bond parameters
-
-- Validator bond: `setValidatorBondParams(bps,min,max)`.
-- Agent bond: `setAgentBondParams(bps,min,max)` or legacy min-only setter `setAgentBond(uint256)`.
-- Validator slash: `setValidatorSlashBps(uint256)`.
-
-## 4) Time windows
-
-- `setCompletionReviewPeriod(uint256)`
-- `setDisputeReviewPeriod(uint256)`
-- `setChallengePeriodAfterApproval(uint256)`
-
-All must be `> 0` and `<= 365 days`.
-
-## 5) AGI types / payout policy
-
-- `addAGIType(address nftAddress, uint256 payoutPercentage)`
-- `disableAGIType(address nftAddress)`
-
-Constraints:
-- ERC-721 support is checked.
-- max entries capped by `MAX_AGI_TYPES` (32).
-- Maximum active AGI payout percentage must satisfy: `maxAGITypePct + validationRewardPercentage <= 100`.
-
-## 6) Safety checklist (pre-unpause)
-
-- [ ] `agiToken`, `ens`, `nameWrapper` are correct.
-- [ ] Root nodes and Merkle roots point to intended policy sets.
-- [ ] `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `voteQuorum` are coherent.
-- [ ] Bond params and slash params are non-zero (unless intentional disable).
-- [ ] Review/challenge/dispute windows are operationally realistic.
-- [ ] AGI type payout cap does not collide with validator reward percentage.
-- [ ] ENS hook target (`ensJobPages`) is set and has code if used.
-- [ ] `pause`/`settlementPaused` state matches launch plan.
-- [ ] Decide whether to call `lockIdentityConfiguration` now or after proving deployment.
-
-## Recommended starting profile (code-compatible)
-
-A conservative starting point is to keep defaults and only tune after observing production behavior:
-- approvals/disapprovals/quorum: `3 / 3 / 3`
-- `validationRewardPercentage`: `8`
-- review windows: `7d completion`, `14d dispute`, `1d challenge`
-- validator bonds/slash: `1500 bps`, `10e18..88888888e18`, slash `8000 bps`
-
-These are the constructor defaults in current code and are accepted by all guards.
+- `additionalAgents` and `additionalValidators`: owner-managed bypass lists for role authorization.
+- `blacklistedAgents` and `blacklistedValidators`: explicit deny lists that override normal authorization checks.

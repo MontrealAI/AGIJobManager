@@ -1,56 +1,53 @@
 # Security Model
 
-## Purpose
-Threat model and invariant baseline for AGIJobManager.
-
-## Audience
-Auditors, security engineers, and operators.
-
-## Preconditions / assumptions
-- Centralized business-operated control is explicit design choice.
-- No in-place upgrades; redeploy is required for logic changes.
-
 ## Threat model summary
-### In scope
-- Escrow insolvency and accounting mismatches
-- Unauthorized state transitions
-- Validator incentive manipulation and dispute abuse
-- Reentrancy around value-transferring paths
-- External-call fragility (ENS hooks, token behavior)
 
-### Out of scope / accepted risks
-- Full decentralization of dispute governance
-- Trustless validator admission
-- Market-level token or NFT price manipulation
+This system is explicitly **business-operated**:
+- owner is highly privileged,
+- moderators can determine dispute outcomes,
+- validator set is permissioned through allowlists/Merkle/ENS gates,
+- ENS integration is auxiliary and non-blocking.
 
-## Core invariants
-1. **Escrow solvency:** token balance must always cover locked escrow+bonds.
-2. **Single settlement effect:** each job settles exactly once (`escrowReleased` and state gating).
-3. **Bounded loops:** validator and AGI type loops are hard-bounded.
-4. **Controlled withdrawals:** owner can withdraw only computed surplus and only while paused.
-5. **Eligibility enforcement:** apply/vote actions require role eligibility + blacklist checks.
+The security objective is solvency and deterministic settlement under this trust model, not trustless governance.
 
-## Centralization and privilege risks
-- Owner can pause, reconfigure parameters, adjust role lists, and control moderators.
-- Moderator resolves disputes and can decide payout direction for disputed jobs.
-- Owner can stale-resolve unresolved disputes after timeout.
+## Critical risk classes and mitigations
 
-## Hardening controls present in code
-- `nonReentrant` on major state-changing settlement paths.
-- Pausable controls and separate settlement pause switch.
-- Exact-transfer checks for `transferFrom` token intake (`TransferUtils.safeTransferFromExact`).
-- Identity wiring lock (`lockIdentityConfiguration`) for ENS/token/root immutability after launch.
+### 1) External call failures (ERC20/ENS)
+- **Risk**: token transfer failures can corrupt accounting if unchecked.
+- **Mitigation**: transfer wrappers (`TransferUtils`) enforce revert on failed/under-delivered transfers.
+- **Risk**: ENS hook failures block settlement.
+- **Mitigation**: hooks are best effort; settlement continues and logs `EnsHookAttempted`.
 
-## Known limitations
-- ENS hook writes are best-effort and can silently fail except for event trace.
-- Deprecated setter `setAdditionalAgentPayoutPercentage` exists but intentionally unusable.
-- Security depends on disciplined operational governance (multisig, change control, monitoring).
+### 2) Escrow insolvency / treasury drain
+- **Risk**: owner withdrawal touching escrow/bond liabilities.
+- **Mitigation**: `withdrawableAGI` subtracts all locked liabilities and reverts on insolvency; `withdrawAGI` also requires paused mode.
 
-## Vulnerability reporting
-Follow root policy: [`../SECURITY.md`](../SECURITY.md).
+### 3) Settlement disruption
+- **Risk**: emergency or malformed conditions during settlement.
+- **Mitigation**:
+  - `settlementPaused` kill-switch for settlement-sensitive paths,
+  - separate `Pausable` behavior for `whenNotPaused` flows,
+  - stale-dispute owner resolution path after timeout.
 
-## References
-- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
-- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
-- [`../contracts/utils/TransferUtils.sol`](../contracts/utils/TransferUtils.sol)
-- [`../test/securityRegression.test.js`](../test/securityRegression.test.js)
+### 4) Role compromise scenarios
+
+| Compromised role | Impact | Immediate response |
+|---|---|---|
+| Owner | full config control, pause controls, stale-dispute authority, treasury withdrawal (subject to locked accounting) | rotate ownership to secure multisig; pause system; audit recent admin events |
+| Moderator | can resolve active disputes to chosen side | remove moderator (`removeModerator`), investigate affected jobs, use owner stale-dispute controls where applicable |
+| Validator cohort | can bias votes/disputes within thresholds and quorum rules | tune thresholds/quorum and validator bonds; adjust allowlists/blacklists |
+
+## Operational security recommendations
+
+1. Use a multisig as `owner` (recommended operational practice).
+2. Keep moderator keys separated from owner key material.
+3. Enforce key rotation and hardware-backed signing.
+4. Monitor high-impact events in real time.
+
+## Event monitoring priorities
+
+Watch and alert on:
+- config/admin: `SettlementPauseSet`, `IdentityConfigurationLocked`, `AGITokenAddressUpdated`, `EnsJobPagesUpdated`, root/merkle update events, bond/threshold update events,
+- settlement/dispute: `JobDisputed`, `DisputeResolvedWithCode`, `JobCompleted`, `JobExpired`,
+- treasury and accounting: `AGIWithdrawn`, `PlatformRevenueAccrued`,
+- ENS health: `EnsHookAttempted` with `success=false`.

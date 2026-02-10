@@ -1,34 +1,26 @@
 # AGIJobManager Documentation Hub
 
-This documentation set is intended for production-minded Ethereum deployment and operations of the current repository code.
+This documentation set is aligned with the current repository code and deployment scripts.
 
-## 1) Start here
+## Start here
 
-- [Architecture](./ARCHITECTURE.md)
-- [Contracts and permissions](./CONTRACTS.md)
-- [AGIJobManager deep reference](./AGIJOBMANAGER.md)
-- [ENSJobPages deep reference](./ENSJOBPAGES.md)
+- **Primary index**: [00_INDEX.md](./00_INDEX.md)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [PROTOCOL_FLOW.md](./PROTOCOL_FLOW.md)
+- [CONFIGURATION.md](./CONFIGURATION.md)
+- [DEPLOY_RUNBOOK.md](./DEPLOY_RUNBOOK.md)
+- [ENS_INTEGRATION.md](./ENS_INTEGRATION.md)
+- [SECURITY_MODEL.md](./SECURITY_MODEL.md)
+- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+- [GLOSSARY.md](./GLOSSARY.md)
 
-## 2) Deploy and operate
-
-- [Configuration guide](./CONFIGURATION.md)
-- [Deployment runbook](./DEPLOY_RUNBOOK.md)
-- [Operations guide](./OPERATIONS.md)
-
-## 3) Develop and validate
-
-- [Testing guide](./TESTING.md)
-- [Glossary](./GLOSSARY.md)
-
-## 4) Source-of-truth files
-
-Use these files as canonical behavior references:
+## Source-of-truth code and operations files
 
 - `contracts/AGIJobManager.sol`
 - `contracts/ens/ENSJobPages.sol`
 - `migrations/2_deploy_contracts.js`
 - `migrations/deploy-config.js`
 - `scripts/postdeploy-config.js`
-- `truffle-config.js`
 - `package.json`
+- `truffle-config.js`
 - `.github/workflows/ci.yml`
