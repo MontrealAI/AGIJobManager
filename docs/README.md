@@ -32,6 +32,7 @@ This documentation set targets engineers, integrators, operators, auditors, and 
 
 ## Operational references
 - **Operator runbook**: [`operator-runbook.md`](operator-runbook.md)
+- **Deploy day runbook (Mainnet)**: [`DEPLOY_DAY_RUNBOOK.md`](DEPLOY_DAY_RUNBOOK.md)
 - **Testing guide**: [`Testing.md`](Testing.md)
 - **Test status (local run log)**: [`test-status.md`](test-status.md)
 - **Known issues**: [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md)
