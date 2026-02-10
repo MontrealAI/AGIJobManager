@@ -52,6 +52,7 @@ AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other ma
 
 ## Documentation
 - **Documentation index (start here)**: [`docs/README.md`](docs/README.md)
+- **Architecture and trust boundaries**: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Trust model & security overview**: [`docs/trust-model-and-security-overview.md`](docs/trust-model-and-security-overview.md)
 - **Mainnet deployment & security overview (authoritative)**: [`docs/mainnet-deployment-and-security-overview.md`](docs/mainnet-deployment-and-security-overview.md)
 - **Mainnet deployment & verification**: [`docs/mainnet-deployment-and-verification.md`](docs/mainnet-deployment-and-verification.md)

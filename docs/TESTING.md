@@ -1,30 +1,41 @@
-# Testing
+# Testing Guide
 
-## Test structure
-- `test/*.test.js`: core contract behavior, invariants, security regressions, economics, deployment wiring.
-- `ui-tests/*`: UI smoke/indexer-focused checks.
-- `contracts/test/*`: mocks and harness contracts used by tests.
+## Purpose
+Explain test structure and canonical commands.
 
-Representative suites:
-- lifecycle/state machine (`AGIJobManager.*`, `happyPath`, `jobStatus`)
-- escrow/solvency/invariants (`escrowAccounting`, `invariants.solvency`, `economicSafety`)
-- disputes/validators (`disputeHardening`, `validatorCap`, `livenessTimeouts`)
-- ENS hooks (`ensJobPagesHooks`, `ensJobPagesHelper`)
-- size/deployment checks (`bytecodeSize`, `deployment*`, `validate-params-script`)
+## Audience
+Contributors and reviewers.
 
-## Standard commands
+## Canonical Commands
 ```bash
 npm run build
-npm test
 npm run size
+npm test
 ```
 
-## Bytecode size guard
-- `npm run size` executes `scripts/check-bytecode-size.js`.
-- Guard threshold is 24,575 bytes runtime (`AGIJobManager` by default) to stay under EIP-170 deploy limit.
-- `npm test` also executes `scripts/check-contract-sizes.js` for all artifacts.
+## Test Structure
+- Broad end-to-end and regression suites: `test/AGIJobManager.*.test.js`
+- Security/economic invariants: `test/securityRegression.test.js`, `test/escrowAccounting.test.js`, `test/economicSafety.test.js`, `test/invariants.*`
+- ENS hooks and identity behavior: `test/ensJobPagesHooks.test.js`, `test/namespaceAlpha.test.js`
+- Operational scripts coverage: `test/validate-params-script.test.js`, ABI/UI sync tests
 
-## Adding new tests
-- Prefer focused regression tests per behavior class.
-- Reuse existing mocks in `contracts/test/`.
-- Keep checks deterministic and assert both state and events for settlement paths.
+## Bytecode Guard Interpretation
+- `scripts/check-bytecode-size.js` enforces deployable runtime cap for configured targets.
+- `scripts/check-contract-sizes.js` prints all contract runtime sizes and fails if oversized.
+
+## Writing New Tests
+- Prefer existing helpers in `test/helpers/*`.
+- Keep tests deterministic on Truffle `test` network.
+- Add scenario coverage for both happy path and dispute/timeout paths.
+
+## Testnet / Fork Notes
+- Repo includes `sepolia` and `mainnet` network definitions; most CI/local validation should stay on `test` network.
+
+## Gotchas
+- `npm test` executes additional node scripts beyond `truffle test`.
+- Avoid relying on wall-clock assumptions not controlled by test helpers.
+
+## References
+- [`../package.json`](../package.json)
+- [`../test`](../test)
+- [`../scripts/check-bytecode-size.js`](../scripts/check-bytecode-size.js)

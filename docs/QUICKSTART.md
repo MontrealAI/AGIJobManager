@@ -1,8 +1,14 @@
 # Quickstart
 
-## Prerequisites
-- Node.js and npm compatible with this repository.
-- No secrets committed to the repo; use local `.env` only.
+## Purpose
+Get a contributor from clone to compile and test with commands that exist in this repository.
+
+## Audience
+Developers and reviewers.
+
+## Preconditions
+- Node.js + npm installed.
+- No production secrets required for local `test` network.
 
 ## Install
 ```bash
@@ -14,12 +20,12 @@ npm ci
 npm run build
 ```
 
-## Run bytecode guard
+## Size Guard
 ```bash
 npm run size
 ```
 
-## Run tests
+## Test Suite
 ```bash
 npm test
 ```
@@ -27,11 +33,25 @@ npm test
 ## Optional checks
 ```bash
 npm run lint
-npm run docs:interface
+npm run ui:abi:check
 ```
 
-## Common troubleshooting
-- **`truffle: not found`**: run `npm ci` again so `node_modules/.bin` is populated.
-- **RPC/private key errors on live networks**: set env vars in `.env` (`PRIVATE_KEYS`, `<NETWORK>_RPC_URL`, optional `ALCHEMY_KEY`/`INFURA_KEY`) before using `truffle migrate --network <network>`.
-- **Identity config changes failing with `ConfigLocked`**: `lockIdentityConfiguration()` is irreversible.
-- **Withdraw failing while unpaused**: `withdrawAGI()` requires both `whenPaused` and `whenSettlementNotPaused`.
+## Local migration (development network)
+```bash
+npx truffle migrate --network development
+```
+
+## Troubleshooting
+- **`Missing RPC URL` / `Missing PRIVATE_KEYS`**: only required for `sepolia`/`mainnet` in `truffle-config.js`; use `--network test` locally.
+- **Bytecode cap failures**: run `npm run size` and inspect `scripts/check-bytecode-size.js`.
+- **Unexpected URI validation errors**: `UriUtils` rejects empty and whitespace/newline/tab URIs.
+- **Ganache behavior mismatch**: repo test network uses in-process Ganache provider configured in `truffle-config.js`.
+
+## Gotchas
+- `npm test` already includes compile, Truffle tests, node tests, and contract size checks.
+- Do not change `truffle-config.js` compiler settings just to “make docs pass”; docs should reflect pinned settings.
+
+## References
+- [`../package.json`](../package.json)
+- [`../truffle-config.js`](../truffle-config.js)
+- [`../scripts/check-bytecode-size.js`](../scripts/check-bytecode-size.js)

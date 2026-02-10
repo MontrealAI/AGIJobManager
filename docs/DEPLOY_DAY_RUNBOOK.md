@@ -1,37 +1,94 @@
 # Deploy Day Runbook
 
-## 1. Preflight
-- [ ] Run `npm ci`
-- [ ] Run `npm run build`
-- [ ] Run `npm run size`
-- [ ] Run `npm test`
-- [ ] Confirm deployer, owner multisig (`<SAFE_ADDRESS>`), and env vars are prepared locally.
+## Purpose
+Single source of truth for institutional deployment of AGIJobManager.
 
-## 2. Deploy
+## Audience
+Deployment operators and security signers.
+
+## Preconditions
+- Controlled deployer and owner (recommended multisig) are prepared.
+- Required environment variables are set (use placeholders, never commit secrets).
+
+## Phase 0 — Stop/Go Preflight
+- [ ] `npm ci`
+- [ ] `npm run build`
+- [ ] `npm run size`
+- [ ] `npm test`
+- [ ] Confirm target network config in `truffle-config.js`.
+- [ ] Confirm deploy config in `migrations/deploy-config.js` and overrides.
+
+**Go criteria**: all checks pass, bytecode under cap, sign-off recorded.
+
+## Phase 1 — Deploy
 ```bash
-npx truffle migrate --network <network>
+npx truffle migrate --network <mainnet|sepolia>
 ```
 
-For mainnet/sepolia, deployment config is sourced from `migrations/deploy-config.js` + environment overrides.
+Capture artifacts immediately:
+- chainId
+- deploy tx hash(es)
+- deployed address
+- compiler version and settings from `truffle-config.js`
+- repository commit SHA
 
-## 3. Post-deploy configuration
-- [ ] Set moderators (`addModerator`).
-- [ ] Configure thresholds/periods/bond params.
-- [ ] Configure AGIType list (`addAGIType`).
-- [ ] Configure additional allowlists and blacklists as needed.
-- [ ] If using ENS pages, deploy/configure `ENSJobPages`, then `setEnsJobPages` and optionally `setUseEnsJobTokenURI(true)`.
+## Phase 2 — Post-Deploy Configuration
+Use either env/config driven script or direct transactions.
 
-## 4. Verification and checks
-- [ ] Verify constructor args and current config (optionally with `truffle exec scripts/verify-config.js`).
-- [ ] Smoke-test lifecycle on target network with small values.
-- [ ] Confirm emitted events and locked balances behave as expected.
+```bash
+truffle exec scripts/postdeploy-config.js --network <network> --address <AGIJOBMANAGER_ADDRESS>
+```
 
-## 5. Finalization steps
-- [ ] Consider `lockIdentityConfiguration()` once addresses/root wiring are final.
-- [ ] Unpause for production usage if currently paused.
-- [ ] Record deployment metadata: commit hash, tx hashes, addresses, and config snapshot.
+Checklist:
+- [ ] Moderators added
+- [ ] Validator and agent lists configured
+- [ ] Economic parameters set (thresholds, bonds, windows)
+- [ ] AGIType entries configured
+- [ ] Optional ENSJobPages configured (`setEnsJobPages`, tokenURI mode)
+
+## Phase 3 — Verify Config
+```bash
+truffle exec scripts/verify-config.js --network <network> --address <AGIJOBMANAGER_ADDRESS>
+truffle exec scripts/ops/validate-params.js --network <network> --address <AGIJOBMANAGER_ADDRESS>
+```
+
+**Go criteria**: verification script passes; no FAILs in parameter validator.
+
+## Phase 4 — Smoke Test
+On target network (small values):
+1. create job
+2. apply
+3. request completion
+4. validator vote(s)
+5. finalize or dispute-resolve
+
+Record key event tx hashes for each step.
+
+## Phase 5 — Lock + Enable
+- [ ] If identity wiring is final, call `lockIdentityConfiguration()`.
+- [ ] Set pause states to intended production mode (`unpause`, `setSettlementPaused(false)`).
+- [ ] Transfer ownership to final safe (if needed) and verify owner.
+
+## Verification (Explorer)
+If plugin/env available:
+```bash
+npx truffle run verify AGIJobManager --network <network>
+```
+
+## Rollback / Redeploy Strategy
+Contracts are not upgradeable. Rollback is operational:
+- Pause affected deployment.
+- Redeploy new instance.
+- Re-apply configuration and ownership controls.
+- Migrate off-chain integrations to new address.
 
 ## Gotchas
 - Identity lock is irreversible.
-- ENS hooks are best-effort; failures are observable via `EnsHookAttempted`.
-- Keep owner key in multisig; do not operate production ownership from a single EOA.
+- ENS hook failures are expected to be non-fatal; monitor and remediate separately.
+- Do not withdraw treasury during active incident investigation.
+
+## References
+- [`../migrations/2_deploy_contracts.js`](../migrations/2_deploy_contracts.js)
+- [`../migrations/deploy-config.js`](../migrations/deploy-config.js)
+- [`../scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
+- [`../scripts/verify-config.js`](../scripts/verify-config.js)
