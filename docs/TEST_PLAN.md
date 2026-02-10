@@ -51,3 +51,34 @@ Baseline result captured at HEAD:
 - If you change utility-library semantics (`contracts/utils/*`), update or add direct unit tests under:
   - `test/invariants.libs.test.js`
   - `test/utils.uri-transfer.test.js`
+
+
+## Mainnet-grade deterministic expansion (this change set)
+
+### New suites added
+
+- `test/jobLifecycle.core.test.js`: lifecycle branches (approval path, tie->dispute forcing, expiry branch) with explicit challenge/review time travel.
+- `test/validatorVoting.bonds.test.js`: single-validator vote safety, double-vote prevention, and validator-bond accounting checks.
+- `test/disputes.moderator.test.js`: moderator-only resolution paths, `NO_ACTION` retention semantics, and stale-dispute owner resolution.
+- `test/escrowAccounting.invariants.test.js`: bounded deterministic mixed-outcome loop asserting solvency/withdrawable accounting invariants after each terminal state.
+- `test/pausing.accessControl.test.js`: `whenNotPaused` and settlement pause gate checks.
+- `test/agiTypes.safety.test.js`: AGI type admission hardening and disabled/misbehaving type isolation.
+- `test/ensHooks.integration.test.js`: ENS hook best-effort behavior and owner-only fuse-burn semantics.
+- `test/identityConfig.locking.test.js`: identity-config mutability restrictions while obligations are live and after permanent locking.
+
+### Deterministic time travel policy
+
+- Time-sensitive flows use `@openzeppelin/test-helpers` `time.increase(...)` with explicit integer offsets.
+- No external RPC/ENS dependencies are used; all tests are local Ganache (`truffle test --network test`) with repository mocks.
+
+### Requirement-to-risk mapping
+
+| Mainnet risk | Added deterministic controls |
+| --- | --- |
+| Lifecycle branch regressions | `jobLifecycle.core`, `disputes.moderator` |
+| Validator bond/reward drift | `validatorVoting.bonds`, `escrowAccounting.invariants` |
+| Treasury solvency regressions | `escrowAccounting.invariants` |
+| Pause misconfiguration | `pausing.accessControl` |
+| AGI identity type bricking | `agiTypes.safety` |
+| ENS hook revert blast-radius | `ensHooks.integration` |
+| Owner identity lock misuse | `identityConfig.locking` |

@@ -67,3 +67,17 @@ npx truffle test --network test test/*dispute*.test.js
 | `TransferFailed` custom-error-style reverts | Token returned `false`, reverted, or under-delivered transfer amount | Validate approvals/balances; for fee-on-transfer tokens expect `safeTransferFromExact` to revert. |
 | Bytecode gate fails | Runtime crossed EIP-170 threshold | Run `npm run size`, inspect recent contract-size growth, avoid feature bloat in core contract. |
 | Flaky timeout tests | Missing deterministic block/time advancement | Add explicit time travel + mine step before timeout-sensitive actions. |
+
+
+## Added deterministic suites (mainnet-grade hardening)
+
+| Feature | Test file |
+| --- | --- |
+| Job lifecycle branch coverage | `test/jobLifecycle.core.test.js` |
+| Validator vote/bond accounting | `test/validatorVoting.bonds.test.js` |
+| Dispute + moderator flows | `test/disputes.moderator.test.js` |
+| Escrow/accounting invariants | `test/escrowAccounting.invariants.test.js` |
+| Pause/settlement gate controls | `test/pausing.accessControl.test.js` |
+| AGI type safety | `test/agiTypes.safety.test.js` |
+| ENS best-effort hooks | `test/ensHooks.integration.test.js` |
+| Identity lock semantics | `test/identityConfig.locking.test.js` |
