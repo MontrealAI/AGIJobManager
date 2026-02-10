@@ -1,62 +1,107 @@
-# Architecture
+# AGIJobManager Architecture
 
-## Scope (what this system is / is not)
+## System overview
 
-`AGIJobManager` is an owner-operated escrow and settlement contract for employer-agent jobs with validator voting, dispute resolution, and ERC-721 completion NFTs. See `contracts/AGIJobManager.sol` (`createJob`, `applyForJob`, `finalizeJob`, `_completeJob`, `_refundEmployer`).
+### Components and responsibilities
+- **AGIJobManager (`contracts/AGIJobManager.sol`)**: core escrow, job lifecycle, bond accounting, validator voting, dispute handling, NFT issuance, reputation updates, pause controls, and owner configuration.
+- **ENSJobPages (`contracts/ens/ENSJobPages.sol`)**: optional ENS mirror for job pages and metadata; invoked via best-effort lifecycle hooks.
+- **Utility libraries (`contracts/utils/*.sol`)**:
+  - `BondMath`: computes validator and agent bond sizes.
+  - `ReputationMath`: computes bounded reputation growth points.
+  - `ENSOwnership`: helper checks for ENS/NameWrapper/resolver ownership.
+  - `TransferUtils`: strict ERC20 transfer wrappers.
+  - `UriUtils`: URI validation and base IPFS prefix application.
+- **External systems**:
+  - ERC20 AGI token (`agiToken`) for escrow and bonds.
+  - ENS registry + NameWrapper + PublicResolver used for identity gating and ENS pages.
 
-`ENSJobPages` is an optional companion contract used through best-effort hooks to create and maintain ENS-backed job pages. See `contracts/ens/ENSJobPages.sol` (`handleHook`).
-
-Not implemented on-chain in this repo:
-- ERC-8004 on-chain protocol logic (off-chain docs/adapters only).
-- Upgrade proxy pattern for `AGIJobManager` / `ENSJobPages`.
-
-## High-level architecture
+## Component interaction diagram
 
 ```mermaid
-flowchart TD
-    Employer -->|createJob + escrow AGI| AJM[AGIJobManager]
-    Agent -->|applyForJob + agent bond| AJM
-    Validator -->|validate/disapprove + validator bond| AJM
-    Moderator -->|resolveDispute / resolveDisputeWithCode| AJM
-    Owner -->|admin config / pause / withdraw (paused only)| AJM
+flowchart LR
+    EMP[Employer] -->|createJob + escrow AGI| AJM[AGIJobManager]
+    AGT[Agent] -->|applyForJob + agent bond| AJM
+    VAL[Validator] -->|validate/disapprove + validator bond| AJM
+    MOD[Moderator] -->|resolveDispute*| AJM
+    OWN[Owner] -->|config/pause/lock identity| AJM
 
-    AJM -->|IERC20 transfers| AGI[(AGI token)]
-    AJM -->|mint completion NFT| NFT[(ERC-721 job NFT)]
-    AJM -->|best-effort hook calls| ENSJP[ENSJobPages]
-
+    AJM -->|safeTransfer/safeTransferFrom| ERC20[(AGI ERC20)]
+    AJM -->|best-effort hook 1..6| ENSJP[ENSJobPages]
     ENSJP --> ENS[(ENS Registry)]
-    ENSJP --> NW[(NameWrapper)]
-    ENSJP --> RES[(Public Resolver)]
-
-    subgraph Off-chain
-      UI[UI / indexers / operators]
-      Monitoring[Event monitoring + incident response]
-    end
-
-    AJM --> UI
-    ENSJP --> UI
-    AJM --> Monitoring
+    ENSJP --> WRAP[(NameWrapper)]
+    ENSJP --> RES[(PublicResolver)]
+    AJM --> NFT[(ERC721 job NFT mint)]
 ```
 
-## Components and boundaries
+## Happy-path job lifecycle (sequence)
 
-- **AGIJobManager**
-  - Holds escrow and all bonds (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`).
-  - Performs settlement and payout/refund logic.
-  - Enforces role eligibility with either allowlists (`additionalAgents`, `additionalValidators`) or Merkle/ENS ownership checks.
-- **ENSJobPages (optional)**
-  - Receives hook IDs from `AGIJobManager` and updates ENS pages.
-  - Uses best-effort writes for resolver text and authorizations (errors swallowed with `try/catch`).
-- **IERC20 token (`agiToken`)**
-  - Escrow source, bond transfers, payouts, owner treasury withdrawal constraints.
-- **ENS Registry / NameWrapper / Resolver**
-  - External dependencies for ownership checks and ENS page updates.
-- **Off-chain actors**
-  - Employer, agent, validators, moderator(s), owner/operator.
+```mermaid
+sequenceDiagram
+    participant Employer
+    participant Agent
+    participant Validators
+    participant AGIJobManager
+    participant ENSJobPages
 
-## Trust boundaries and external-call philosophy
+    Employer->>AGIJobManager: createJob(specURI, payout, duration, details)
+    AGIJobManager-->>ENSJobPages: hook 1 (create) best-effort
 
-1. `AGIJobManager` uses internal accounting to protect escrow solvency before owner withdrawal (`withdrawableAGI`).
-2. ENS hook calls from `AGIJobManager` are low-level and best-effort (`_callEnsJobPagesHook`), so settlement logic does not depend on hook success.
-3. ENS resolver writes in `ENSJobPages` are also best-effort (`_setTextBestEffort`, `_setAuthorisationBestEffort`).
-4. Moderator and owner powers are explicit: owner has broad configuration/pause powers; moderators resolve disputes.
+    Agent->>AGIJobManager: applyForJob(jobId, subdomain, proof)
+    AGIJobManager-->>ENSJobPages: hook 2 (assign) best-effort
+
+    Agent->>AGIJobManager: requestJobCompletion(jobId, completionURI)
+    AGIJobManager-->>ENSJobPages: hook 3 (completion) best-effort
+
+    Validators->>AGIJobManager: validateJob(...) votes
+    AGIJobManager->>AGIJobManager: challenge period / review checks
+
+    alt approvals lead and windows satisfied
+      anyone->>AGIJobManager: finalizeJob(jobId)
+      AGIJobManager->>AGIJobManager: settle agent + validators + reputation
+      AGIJobManager->>AGIJobManager: mint completion NFT
+      AGIJobManager-->>ENSJobPages: hook 4 (revoke) best-effort
+    else dispute path
+      Validator/Employer/Agent->>AGIJobManager: disapprove/disputeJob
+      Moderator->>AGIJobManager: resolveDisputeWithCode(...)
+      AGIJobManager->>AGIJobManager: settle win/loss path
+      AGIJobManager->>AGIJobManager: mint NFT only on agent-win
+      AGIJobManager-->>ENSJobPages: hook 4 (revoke) best-effort
+    end
+```
+
+## Job state machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: createJob
+    Created --> Assigned: applyForJob
+    Created --> Cancelled: cancelJob / delistJob
+
+    Assigned --> CompletionRequested: requestJobCompletion
+    Assigned --> Expired: expireJob
+
+    CompletionRequested --> Completed: finalizeJob (agent-win)
+    CompletionRequested --> Refunded: finalizeJob (employer-win)
+    CompletionRequested --> Disputed: disputeJob or disapproval threshold
+
+    Disputed --> Completed: resolveDispute* agent-win
+    Disputed --> Refunded: resolveDispute* employer-win
+    Disputed --> Completed: resolveStaleDispute(false)
+    Disputed --> Refunded: resolveStaleDispute(true)
+
+    Completed --> ENSRevoked: hook 4
+    Refunded --> ENSRevoked: hook 4
+    Expired --> ENSRevoked: hook 4
+```
+
+## Trust boundaries
+
+### External calls
+- **ERC20 transfers** are performed through `TransferUtils` wrappers and can revert settlement/withdraw flows if token transfers fail.
+- **ENS hooks** are called with fixed gas (`ENS_HOOK_GAS_LIMIT`) and are deliberately best-effort (`call` return value emitted as `EnsHookAttempted`), so lifecycle operations continue if ENS integration fails.
+- **ENS URI fetch for NFT minting** is optional and best-effort (`staticcall` + fallback to completion URI).
+
+### Best-effort implications
+- A job can settle correctly even if ENS hooks fail.
+- ENS page state may lag or be incomplete; on-chain escrow/accounting remains canonical.
+- Operators must monitor `EnsHookAttempted` and reconcile ENS issues operationally rather than expecting automatic rollback.
