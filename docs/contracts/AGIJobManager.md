@@ -1,72 +1,126 @@
 # AGIJobManager Contract Reference
 
 ## Purpose
-`AGIJobManager` is the protocol core: AGI escrow + job state machine + validator/dispute settlement + reputation + completion NFT minting.
+`AGIJobManager` is the escrow and settlement engine. It manages job lifecycle, role-gated participation, validator voting, dispute resolution, bond accounting, and completion NFT minting.
 
-## Key state variables
-- Escrow and bond accounting: `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`.
-- Lifecycle controls: `paused()` (OZ), `settlementPaused`.
-- Validator controls: `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `voteQuorum`, `completionReviewPeriod`, `challengePeriodAfterApproval`, `validator*` params.
-- Agent controls: `agentBond`, `agentBondBps`, `agentBondMax`, `maxJobPayout`, `jobDurationLimit`.
-- Identity/gating: Merkle roots, ENS roots, `additionalAgents`, `additionalValidators`, blacklists, `lockIdentityConfig`.
-- ENS integration: `ensJobPages`, `useEnsJobTokenURI`.
+## Audience
+Protocol engineers, auditors, integrators, and operations teams.
 
-## Roles and permissions
-- **Owner**: admin config, pausing, allowlists/blacklists, moderators, AGIType config, treasury withdrawals while paused.
-- **Moderator**: resolves disputes.
-- **Employer**: creates/cancels jobs, can dispute, receives completion NFT.
-- **Agent**: applies, requests completion.
-- **Validator**: approves/disapproves completions.
+## Preconditions / Assumptions
+- AGI token follows ERC20 transfer semantics compatible with `TransferUtils` exact-transfer checks.
+- Moderator and owner keys are operationally controlled (prefer multisig).
+- URI content availability is off-chain responsibility.
 
-## Public workflows
+## Roles and Permissions
+| Role | Core permissions |
+|---|---|
+| Owner | Pause/unpause, settlement pause, config updates, role lists, dispute backstop (`resolveStaleDispute`), treasury withdrawal while paused |
+| Moderator | Resolve disputes (`resolveDispute`, `resolveDisputeWithCode`) |
+| Employer | Create/cancel jobs, dispute jobs, receive completion NFT |
+| Agent | Apply, post agent bond, request completion |
+| Validator | Vote with bond (`validateJob` / `disapproveJob`) |
 
-### 1) Create and assign
+## Key State Variables
+- Economic controls: `validationRewardPercentage`, bond parameters, thresholds/quorum, review periods.
+- Escrow accounting: `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`.
+- Identity gating: ENS roots, Merkle roots, allowlists/blacklists.
+- ENS integration toggles: `ensJobPages`, `useEnsJobTokenURI`, identity lock state.
+
+## Job Lifecycle
+```mermaid
+flowchart TD
+  C[createJob] --> A[applyForJob]
+  A --> R[requestJobCompletion]
+  R --> V[validator votes]
+  V --> F[finalizeJob]
+  F -->|approvals > disapprovals| CW[agent-win completion]
+  F -->|disapprovals > approvals| EW[employer refund]
+  F -->|tie/under quorum| D[dispute]
+  D --> M[moderator/owner resolution]
+  M --> CW
+  M --> EW
+```
+
+## Validator + Challenge Window Sequence
+```mermaid
+sequenceDiagram
+  participant Agent
+  participant Validator
+  participant Contract as AGIJobManager
+  Agent->>Contract: requestJobCompletion(jobId, uri)
+  Validator->>Contract: validateJob/disapproveJob(jobId,...)
+  Contract-->>Validator: lock validator bond
+  Note over Contract: if approvals threshold reached -> validatorApprovedAt set
+  Validator->>Contract: optional more votes until review period ends
+  any->>Contract: finalizeJob(jobId)
+  Note over Contract: if validatorApproved and challengePeriod elapsed, may settle early
+```
+
+## Dispute Sequence
+```mermaid
+sequenceDiagram
+  participant Employer
+  participant Agent
+  participant Mod as Moderator
+  participant Owner
+  participant Contract as AGIJobManager
+
+  Employer->>Contract: disputeJob(jobId)
+  Contract-->>Employer: lock dispute bond
+  Mod->>Contract: resolveDisputeWithCode(jobId, code, reason)
+  alt unresolved beyond disputeReviewPeriod
+    Owner->>Contract: resolveStaleDispute(jobId, employerWins)
+  end
+```
+
+## Function Reference by Workflow
+### Creation / Assignment
 - `createJob(string,uint256,uint256,string)`
 - `applyForJob(uint256,string,bytes32[])`
 
-### 2) Completion and validation
+### Completion / Voting / Settlement
 - `requestJobCompletion(uint256,string)`
 - `validateJob(uint256,string,bytes32[])`
 - `disapproveJob(uint256,string,bytes32[])`
 - `finalizeJob(uint256)`
+- `expireJob(uint256)`
 
-### 3) Disputes
+### Disputes
 - `disputeJob(uint256)`
-- `resolveDispute(uint256,string)` (deprecated string path)
+- `resolveDispute(uint256,string)` (deprecated string matcher)
 - `resolveDisputeWithCode(uint256,uint8,string)`
 - `resolveStaleDispute(uint256,bool)`
 
-### 4) Exit/cancellation
-- `cancelJob(uint256)` employer only pre-assignment.
-- `delistJob(uint256)` owner only pre-assignment.
-- `expireJob(uint256)` after duration, no completion request.
+### Administrative
+- Pausing: `pause`, `unpause`, `setSettlementPaused`
+- Identity wiring: `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`, `lockIdentityConfiguration`
+- Governance config: thresholds, periods, bond params, slash bps, reward percentage, merkle roots
+- Lists: moderators, additional agents/validators, blacklists
 
-### 5) Admin configuration
-- Identity wiring: `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes` (all blocked after `lockIdentityConfiguration`).
-- Gating roots and lists: `updateMerkleRoots`, additional allowlists, blacklists.
-- Economics: `setValidationRewardPercentage`, `setValidatorBondParams`, `setAgentBondParams`, `setValidatorSlashBps`, `setVoteQuorum`, thresholds, review windows.
-- Ops controls: `pause`, `unpause`, `setSettlementPaused`, `withdrawAGI`.
+### Read APIs
+- `getJobCore`, `getJobValidation`, `getJobSpecURI`, `getJobCompletionURI`
+- `withdrawableAGI`, `tokenURI`, `canAccessPremiumFeature`, `getHighestPayoutPercentage`
 
-## Events (high-signal)
-- Lifecycle: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `JobExpired`, `JobCancelled`.
-- Validation/dispute: `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`.
-- Accounting/security: `PlatformRevenueAccrued`, `AGIWithdrawn`, `SettlementPauseSet`, `IdentityConfigurationLocked`.
-- ENS: `EnsHookAttempted`, `EnsRegistryUpdated`, `NameWrapperUpdated`, `EnsJobPagesUpdated`, `UseEnsJobTokenURIUpdated`.
+## Events (Operationally Important)
+- Lifecycle: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `JobExpired`, `JobCancelled`
+- Governance/security: `SettlementPauseSet`, `IdentityConfigurationLocked`, `AGIWithdrawn`, `ConfigUpdated`
+- Disputes: `JobDisputed`, `DisputeResolvedWithCode`
+- Metadata plane: `EnsHookAttempted`, `NFTIssued`
 
-## Edge cases and invariants
-- `withdrawableAGI()` reverts `InsolventEscrowBalance` if balance is below locked totals; this defends treasury withdrawals.
-- Settlement is guarded by both lifecycle checks and `whenSettlementNotPaused` on externally callable settlement endpoints.
-- `setAdditionalAgentPayoutPercentage` is intentionally deprecated and always reverts.
-- `MAX_VALIDATORS_PER_JOB` bounds validator loop cost in `_settleValidators`.
-- Agent-win retained remainder is intentional platform revenue (`PlatformRevenueAccrued`) and only withdrawable under paused treasury rules.
+## Invariants / Assumptions
+- Escrow solvency checked by `withdrawableAGI()`; owner withdrawals are limited to non-locked balances and require both `paused` and `!settlementPaused`.
+- Settlement requires completion request and unsettled job state.
+- Validator settlement loop bounded by `MAX_VALIDATORS_PER_JOB`.
+- Agent/validator bond math is capped at payout.
 
-## Gas / loop notes
-- Per-job validator loop is capped at 50.
-- AGIType scans are capped by `MAX_AGI_TYPES=32`.
-- Ownership checks use Merkle verification + ENS checks; callers should provide minimal proofs.
+## Gotchas / Failure Modes
+- `setAdditionalAgentPayoutPercentage` always reverts (`DeprecatedParameter`).
+- No-vote finalization after review period settles to agent with `repEligible=false`.
+- Under-quorum or tie transitions to dispute.
+- ENS hook failure does not revert escrow flow; monitor `EnsHookAttempted`.
+- `lockIdentityConfiguration()` is irreversible and blocks token/ENS/root rewiring.
 
-## Read API for integrators
-- `getJobCore(jobId)` for core status.
-- `getJobValidation(jobId)` for voting/dispute timestamps.
-- `getJobSpecURI(jobId)`, `getJobCompletionURI(jobId)`.
-- `tokenURI(tokenId)` for completion NFT metadata.
+## References
+- [`../../contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol)
+- [`../../test/escrowAccounting.test.js`](../../test/escrowAccounting.test.js)
+- [`../../test/disputeHardening.test.js`](../../test/disputeHardening.test.js)

@@ -1,22 +1,30 @@
-# ENS Interface Reference
+# ENS and Related Interfaces
 
-## `IENSRegistry`
-Used by `ENSJobPages` to:
-- read `owner(node)` and `resolver(node)`
-- create subnode records via `setSubnodeRecord`
+## Purpose
+Document external interface assumptions for ENS integrations and ownership checks.
 
-## `IPublicResolver`
-Used by `ENSJobPages` for best-effort metadata/permissions:
-- `setAuthorisation(node,target,isAuthorised)`
-- `setText(node,key,value)`
+## Audience
+Integrators and auditors.
 
-## `INameWrapper`
-Used by `ENSJobPages` for wrapped-root operations:
-- `ownerOf(id)` and `isApprovedForAll`
-- `isWrapped(node)`
-- `setChildFuses` and wrapped `setSubnodeRecord`
+## Interfaces
+| Interface | Used by | Assumed behavior |
+|---|---|---|
+| `IENSRegistry` | `ENSJobPages` | Correct `owner`, `resolver`, and subnode record setting |
+| `IPublicResolver` | `ENSJobPages` | Supports `setAuthorisation` and `setText` |
+| `INameWrapper` | `ENSJobPages` | `isWrapped`, `ownerOf`, approval checks, fused subnode operations |
+| lightweight `ENS`/`NameWrapper` in AGIJobManager | `AGIJobManager` | Resolver/wrapper ownership is queryable for role gating |
 
-## Integration notes
-- AGIJobManager itself depends on lightweight ENS/NameWrapper interfaces for gating and identity checks.
-- ENS integration is optional at runtime (`ensJobPages` can be zero address).
-- Hook failures should be treated as metadata-plane failures, not escrow-plane failures.
+## Operational Assumptions
+- ENS records may be unwrapped or wrapped; both paths are handled.
+- Resolver may be missing/incompatible; this should degrade metadata features, not escrow accounting.
+- NameWrapper fuse burning is irreversible.
+
+## Gotchas
+- Interface compatibility is runtime-enforced; misconfigured addresses can cause hook failures and failed ownership checks.
+- Root wiring updates become impossible after `lockIdentityConfiguration()`.
+
+## References
+- [`../../contracts/ens/IENSRegistry.sol`](../../contracts/ens/IENSRegistry.sol)
+- [`../../contracts/ens/IPublicResolver.sol`](../../contracts/ens/IPublicResolver.sol)
+- [`../../contracts/ens/INameWrapper.sol`](../../contracts/ens/INameWrapper.sol)
+- [`../../contracts/ens/IENSJobPages.sol`](../../contracts/ens/IENSJobPages.sol)

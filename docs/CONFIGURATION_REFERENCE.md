@@ -1,35 +1,55 @@
 # Configuration Reference
 
-## Deployment inputs
-Constructor arguments for `AGIJobManager`:
-- `agiTokenAddress` (`<AGI_TOKEN_ADDRESS>`)
-- `baseIpfs`
-- `ensConfig`: `[<ENS_REGISTRY_ADDRESS>, <NAMEWRAPPER_ADDRESS>]`
-- `rootNodes`: club, agent, alpha club, alpha agent
-- `merkleRoots`: validator, agent
+## Purpose
+Canonical parameter and change-management reference for AGIJobManager deployments.
 
-Resolved by `migrations/deploy-config.js` with env overrides.
+## Audience
+Owners/operators and auditors.
 
-## Tunable runtime parameters
-- Validator thresholds: `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `voteQuorum`
-- Timing: `completionReviewPeriod`, `disputeReviewPeriod`, `challengePeriodAfterApproval`
-- Payout/risk controls: `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`
-- Validator bonds: `validatorBondBps/min/max`, `validatorSlashBps`
-- Agent bonds: `agentBondBps/min/max` (`agentBond` is min)
-- Identity/gating: roots, merkle roots, additional allowlists, blacklists
+## Preconditions
+- Deployment completed and address known.
+- Change control process in place.
 
-## Safe ranges and guardrails
-- Percentages in bps must be `<= 10_000`.
-- `validationRewardPercentage` must keep room for max AGIType payout (`maxAGITypePayout <= 100 - validationRewardPercentage`).
-- Review/challenge periods must be `>0` and `<=365 days`.
-- Threshold sums must not exceed `MAX_VALIDATORS_PER_JOB`.
+## Core Parameters
+| Parameter | Default | Setter | Notes / Safe range |
+|---|---:|---|---|
+| `requiredValidatorApprovals` | `3` | `setRequiredValidatorApprovals` | Must satisfy approvals+disapprovals <= `MAX_VALIDATORS_PER_JOB` |
+| `requiredValidatorDisapprovals` | `3` | `setRequiredValidatorDisapprovals` | Same threshold invariant |
+| `voteQuorum` | `3` | `setVoteQuorum` | 1..`MAX_VALIDATORS_PER_JOB` |
+| `validationRewardPercentage` | `8` | `setValidationRewardPercentage` | 1..100 and must leave room for max AGIType payout |
+| `maxJobPayout` | `88888888e18` | `setMaxJobPayout` | Hard upper bound for createJob |
+| `jobDurationLimit` | `10000000` | `setJobDurationLimit` | Hard upper bound for createJob duration |
+| `completionReviewPeriod` | `7 days` | `setCompletionReviewPeriod` | >0 and <=365 days |
+| `disputeReviewPeriod` | `14 days` | `setDisputeReviewPeriod` | >0 and <=365 days |
+| `validatorBondBps/min/max` | `1500 / 10e18 / 88888888e18` | `setValidatorBondParams` | supports full disable only when bps=min=max=0 constraints satisfied |
+| `validatorSlashBps` | `8000` | `setValidatorSlashBps` | 0..10000 |
+| `challengePeriodAfterApproval` | `1 day` | `setChallengePeriodAfterApproval` | >0 and <=365 days |
+| `agentBondBps/min/max` | `500 / 1e18 / 88888888e18` | `setAgentBondParams` | can set all to 0 to disable |
+| `premiumReputationThreshold` | `10000` | `setPremiumReputationThreshold` | app policy knob |
 
-## What lockIdentityConfiguration freezes
-After `lockIdentityConfiguration()`:
-- blocked: `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`
-- still allowed: operational params, pause/unpause, settlement pause, moderators, allowlists, disputes
+## Identity/Gating Configuration
+| Item | Mutable before lock | Mutable after lock |
+|---|---|---|
+| AGI token address | Yes | No |
+| ENS registry | Yes | No |
+| NameWrapper | Yes | No |
+| ENS job pages address | Yes | No |
+| Root nodes | Yes | No |
+| Merkle roots | Yes | Yes |
+| Additional allowlists and blacklists | Yes | Yes |
 
-## Pause semantics
-- `pause()` blocks functions with `whenNotPaused` (new activity).
-- `settlementPaused=true` blocks settlement/ops functions guarded by `whenSettlementNotPaused`.
-- `withdrawAGI` requires `paused==true` and `settlementPaused==false`.
+## Immutable-After-Lock Behavior
+`lockIdentityConfiguration()` permanently disables identity wiring setters guarded by `whenIdentityConfigurable`.
+
+## Change Management Guidance
+- Announce parameter changes ahead of time.
+- For sensitive changes (bonds/thresholds/review windows), pause new activity first.
+- Run `truffle exec scripts/ops/validate-params.js --network <network> --address <AGIJOBMANAGER_ADDRESS>` after every change window.
+
+## Gotchas
+- `setAdditionalAgentPayoutPercentage` is deprecated and unusable.
+- High `validationRewardPercentage` can block AGIType updates due to sum constraint.
+
+## References
+- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- [`../scripts/ops/validate-params.js`](../scripts/ops/validate-params.js)

@@ -1,26 +1,36 @@
 # Utility Libraries
 
-## `UriUtils`
-- `requireValidUri(string)`: rejects empty URIs and whitespace/newline/tab characters.
-- `applyBaseIpfs(uri, baseIpfsUrl)`: prepends base IPFS URL only when URI has no `://` scheme.
-- Safety assumption: callers must still ensure the URI points to expected content.
+## Purpose
+Reference for linked utility libraries used by `AGIJobManager`.
 
-## `TransferUtils`
-- `safeTransfer(token,to,amount)` and `safeTransferFromExact(token,from,to,amount)`.
-- Handles ERC20 tokens with optional bool return values.
-- `safeTransferFromExact` checks destination balance delta equals `amount` to detect fee-on-transfer/deflationary behavior.
+## Audience
+Engineers and auditors.
 
-## `BondMath`
-- `computeValidatorBond`: payout-based bps with min/max and cap at payout.
-- `computeAgentBond`: payout-based with optional duration uplift, min/max, cap at payout.
-- Used to keep bond logic centralized and auditable.
+## UriUtils
+- `requireValidUri(string)` rejects empty values and whitespace/newline/tab.
+- `applyBaseIpfs(uri, baseIpfsUrl)` prepends base only when URI has no `://`.
+- Operational note: malformed but non-empty URIs can still pass; URI quality is off-chain responsibility.
 
-## `ReputationMath`
-- Computes points from payout and completion timing.
-- If `repEligible=false`, returns zero.
-- Caps time bonus relative to payout-derived base (`log2`).
+## TransferUtils
+- `safeTransfer` and `safeTransferFromExact` support optional-return ERC20s.
+- Exact transfer check defends against fee-on-transfer mismatch for escrow and bonds.
+- Failure mode: non-standard tokens revert via `TransferFailed`.
 
-## `ENSOwnership`
-- Verifies claimant ownership by either NameWrapper `ownerOf(uint256(node))` or resolver `addr(node)`.
-- Uses `try/catch` around external calls for fail-closed behavior.
-- Assumes resolver implementations conform to expected `addr(bytes32)` behavior.
+## BondMath
+- `computeValidatorBond(payout,bps,min,max)` with min/max and payout cap.
+- `computeAgentBond(...)` includes duration uplift relative to `jobDurationLimit` and caps at payout.
+
+## ReputationMath
+- Computes bounded reputation points from payout + timing.
+- `repEligible=false` returns 0 points.
+
+## ENSOwnership
+- Verifies claimant ownership under a root using ENS + NameWrapper + resolver checks.
+- Fail-closed semantics when external calls fail.
+
+## References
+- [`../../contracts/utils/UriUtils.sol`](../../contracts/utils/UriUtils.sol)
+- [`../../contracts/utils/TransferUtils.sol`](../../contracts/utils/TransferUtils.sol)
+- [`../../contracts/utils/BondMath.sol`](../../contracts/utils/BondMath.sol)
+- [`../../contracts/utils/ReputationMath.sol`](../../contracts/utils/ReputationMath.sol)
+- [`../../contracts/utils/ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol)

@@ -1,34 +1,61 @@
 # ENSJobPages Contract Reference
 
 ## Purpose
-`ENSJobPages` manages per-job ENS records and optional ENS-based tokenURI output for AGIJobManager completion NFTs.
+Provide per-job ENS pages (`job-<id>.<root>`) and optional `ens://` tokenURI source for completion NFTs.
 
-## Responsibilities
-- Create `job-<id>.<jobsRootName>` subnames.
-- Write text records (`schema`, `agijobs.spec.public`, `agijobs.completion.public`) best-effort.
-- Manage resolver authorizations for employer/agent.
-- Revoke permissions at settlement and optionally burn lock fuses.
+## Audience
+Operators integrating ENS metadata and auditors reviewing metadata-plane risk.
+
+## Preconditions / Assumptions
+- Contract has rights on configured ENS root (wrapped or unwrapped path).
+- `jobManager` is set to deployed AGIJobManager address.
+- Resolver supports required methods.
+
+## Hook Lifecycle
+```mermaid
+flowchart TD
+  H1[hook 1 create] --> P[create subname + set schema/spec]
+  H2[hook 2 assign] --> A[authorise agent]
+  H3[hook 3 completion] --> C[set completion text record]
+  H4[hook 4 revoke] --> R[revoke employer + agent]
+  H5[hook 5 lock] --> L[lock without fuse burn]
+  H6[hook 6 lock burn] --> B[lock + burn fuses if possible]
+```
+
+## ENS Fuse/Lock Flow
+```mermaid
+sequenceDiagram
+  participant Owner
+  participant ENSP as ENSJobPages
+  participant Wrapper as NameWrapper
+  Owner->>ENSP: lockJobENS(jobId,...,burnFuses=true)
+  ENSP->>ENSP: verify configured + authorization
+  ENSP->>Wrapper: setChildFuses(... LOCK_FUSES ...)
+  ENSP-->>Owner: JobENSLocked(event)
+```
 
 ## Roles
-- **Owner**: direct admin and manual hook helpers (`createJobPage`, `onAgentAssigned`, `onCompletionRequested`, `revokePermissions`, `lockJobENS`).
-- **Job manager**: `handleHook` caller restricted by `onlyJobManager`.
+| Role | Permissions |
+|---|---|
+| Owner | All direct mutation/config calls |
+| Job manager | `handleHook` only |
 
-## Hook mapping (`handleHook`)
-- `1`: create job page from `getJobSpecURI` + employer.
-- `2`: authorize assigned agent.
-- `3`: write completion URI text.
-- `4`: revoke employer/agent permissions.
-- `5`: lock permissions.
-- `6`: lock + attempt fuse burn.
+## Key Functions
+- Config: `setENSRegistry`, `setNameWrapper`, `setPublicResolver`, `setJobsRoot`, `setJobManager`, `setUseEnsJobTokenURI`
+- Naming helpers: `jobEnsLabel`, `jobEnsName`, `jobEnsURI`, `jobEnsNode`
+- Hook endpoint: `handleHook(uint8,uint256)`
+- Manual owner helpers: `createJobPage`, `onAgentAssigned`, `onCompletionRequested`, `revokePermissions`, `lockJobENS`
 
-## Best-effort behavior
-- `setText` and `setAuthorisation` calls are wrapped in `try/catch`; failures do not revert.
-- Fuse burning occurs only when root is wrapped and authorization checks pass.
+## Best-Effort Behavior
+- Text updates and authorizations use best-effort calls; failures do not revert.
+- This design keeps escrow settlement independent from ENS outages/misconfiguration.
 
-## Key config
-- `setENSRegistry`, `setNameWrapper`, `setPublicResolver`, `setJobsRoot`, `setJobManager`, `setUseEnsJobTokenURI`.
-- `jobEnsURI(jobId)` returns `ens://job-<id>.<root>`.
+## Failure Modes / Gotchas
+- If root ownership/approvals are missing, wrapped root operations will fail.
+- Empty root name or zero root node is rejected.
+- `useEnsJobTokenURI` in this contract is independent from manager’s `useEnsJobTokenURI`; both must be set coherently if ENS tokenURI mode is desired.
 
-## Operational assumptions
-- For wrapped roots, contract must own wrapper token or be approved-for-all by wrapped owner.
-- For unwrapped roots, ENS owner of root node must be this contract.
+## References
+- [`../../contracts/ens/ENSJobPages.sol`](../../contracts/ens/ENSJobPages.sol)
+- [`../../contracts/ens/IENSJobPages.sol`](../../contracts/ens/IENSJobPages.sol)
+- [`../../test/ensJobPagesHooks.test.js`](../../test/ensJobPagesHooks.test.js)

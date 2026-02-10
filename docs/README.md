@@ -1,26 +1,51 @@
 # AGIJobManager Documentation Index
 
-This index is the entrypoint for engineers, auditors, and operators working with this repository.
+## Purpose
+Single navigation entrypoint for engineers, auditors, and operators working with this repository.
 
-## Start here
-- [Quickstart](./QUICKSTART.md)
-- [Architecture](./architecture.md)
-- [Contracts overview](./CONTRACTS_OVERVIEW.md)
-- [Security model](./SECURITY_MODEL.md)
-- [Testing guide](./TESTING.md)
-- [Glossary](./GLOSSARY.md)
+## Audience
+- Smart contract engineers
+- Security reviewers / auditors
+- Deployment operators
+- Integrators building against on-chain APIs
 
-## Contract reference
-- [AGIJobManager](./contracts/AGIJobManager.md)
-- [ENSJobPages](./contracts/ENSJobPages.md)
-- [Utilities](./contracts/Utilities.md)
-- [ENS/NameWrapper/Resolver interfaces](./contracts/Interfaces.md)
+## Preconditions
+- Read repository governance and safety docs first: [`../CONTRIBUTING.md`](../CONTRIBUTING.md), [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md), [`../SECURITY.md`](../SECURITY.md).
 
-## Operational runbooks
-- [Deploy Day Runbook](./DEPLOY_DAY_RUNBOOK.md)
-- [Operations Runbook](./OPERATIONS_RUNBOOK.md)
-- [Configuration Reference](./CONFIGURATION_REFERENCE.md)
+## Start Here
+1. **Architecture and trust model**: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
+2. **Developer setup**: [`QUICKSTART.md`](./QUICKSTART.md)
+3. **Contract map**: [`CONTRACTS_OVERVIEW.md`](./CONTRACTS_OVERVIEW.md)
+4. **Core contract reference**: [`contracts/AGIJobManager.md`](./contracts/AGIJobManager.md)
 
-## Notes
-- Commands in these docs are aligned with repository scripts from `package.json` and Truffle defaults.
-- Placeholder values use angle brackets, for example `<AGI_TOKEN_ADDRESS>` and `<SAFE_ADDRESS>`.
+## Full Navigation
+
+### Core
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md)
+- [`CONTRACTS_OVERVIEW.md`](./CONTRACTS_OVERVIEW.md)
+- [`SECURITY_MODEL.md`](./SECURITY_MODEL.md)
+- [`GLOSSARY.md`](./GLOSSARY.md)
+
+### Developer
+- [`QUICKSTART.md`](./QUICKSTART.md)
+- [`TESTING.md`](./TESTING.md)
+
+### Contract Reference
+- [`contracts/AGIJobManager.md`](./contracts/AGIJobManager.md)
+- [`contracts/ENSJobPages.md`](./contracts/ENSJobPages.md)
+- [`contracts/Utilities.md`](./contracts/Utilities.md)
+- [`contracts/Interfaces.md`](./contracts/Interfaces.md)
+
+### Operations
+- [`CONFIGURATION_REFERENCE.md`](./CONFIGURATION_REFERENCE.md)
+- [`DEPLOY_DAY_RUNBOOK.md`](./DEPLOY_DAY_RUNBOOK.md)
+- [`OPERATIONS_RUNBOOK.md`](./OPERATIONS_RUNBOOK.md)
+
+## Gotchas / Failure Modes
+- This repo contains legacy and overlapping docs. Treat the pages linked above as the canonical maintainer set for current operations.
+- ENS pages are metadata-plane integrations; escrow settlement does not depend on ENS hook success.
+
+## Code References
+- Main contract: [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- ENS pages: [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
+- Deployment scripts: [`../migrations/2_deploy_contracts.js`](../migrations/2_deploy_contracts.js), [`../scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)

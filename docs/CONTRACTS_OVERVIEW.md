@@ -1,67 +1,63 @@
 # Contracts Overview
 
-## Main contracts
-- `AGIJobManager.sol`: escrow lifecycle, disputes, validator economics, reputation, and completion NFT.
-- `ens/ENSJobPages.sol`: optional ENS publication and permission management for per-job pages.
-- `utils/*`: URI validation/base IPFS composition, ERC20 transfer wrappers, bond math, reputation math, ENS ownership checks.
+## Purpose
+Map contracts, dependencies, and major call paths.
 
-## Job lifecycle (user + operator)
+## Audience
+Engineers and auditors.
 
-```mermaid
-sequenceDiagram
-    participant E as Employer
-    participant C as AGIJobManager
-    participant A as Agent
-    participant V as Validators
+## Preconditions
+Understand Truffle deployment and linked-library model.
 
-    E->>C: createJob(specURI,payout,duration,details)
-    A->>C: applyForJob(jobId,subdomain,proof)
-    A->>C: requestJobCompletion(jobId,completionURI)
-    V->>C: validateJob/disapproveJob
-    alt approvals path / no-vote timeout
-      anyone->>C: finalizeJob(jobId)
-      C-->>E: mints completion NFT
-      C-->>A: payout + bond return
-    else disapproval/dispute path
-      party->>C: disputeJob(jobId)
-      moderator->>C: resolveDisputeWithCode(...)
-    end
-```
+## Contract Inventory
+- Core: `contracts/AGIJobManager.sol`
+- ENS metadata extension: `contracts/ens/ENSJobPages.sol`
+- Libraries: `contracts/utils/{BondMath,ENSOwnership,ReputationMath,TransferUtils,UriUtils}.sol`
+- ENS interfaces: `contracts/ens/I*.sol`
+- Test mocks/harnesses: `contracts/test/*`
 
-Checklist:
-- Employer approves AGI allowance before creating jobs.
-- Agent must pass allowlist checks and AGIType payout gating.
-- Completion URI must be non-empty and URI-valid.
-- Finalization can happen via fast challenge-window path after threshold approvals or the review-window path.
-
-## Dispute lifecycle
-
+## High-level Call Graph
 ```mermaid
 flowchart TD
-  A[Completion requested] --> B{Disapproved threshold or disputeJob}
-  B --> C[Job.disputed=true]
-  C --> D[Moderator resolveDisputeWithCode]
-  D -->|1 agent win| E[_completeJob]
-  D -->|2 employer win| F[_refundEmployer]
-  D -->|0 no action| C
-  C --> G[Owner resolveStaleDispute after disputeReviewPeriod]
-  G --> E
-  G --> F
+  A[AGIJobManager]
+  B[BondMath]
+  C[ReputationMath]
+  D[TransferUtils]
+  E[UriUtils]
+  F[ENSOwnership]
+  G[ENSJobPages optional]
+
+  A --> B
+  A --> C
+  A --> D
+  A --> E
+  A --> F
+  A -. best-effort hook .-> G
 ```
 
-## ENS hook lifecycle
-- Hook 1 (`create`): create subname + set schema/spec text + authorize employer.
-- Hook 2 (`assign`): authorize assigned agent.
-- Hook 3 (`completion`): publish completion text.
-- Hook 4 (`revoke`): revoke employer and agent permissions.
-- Hook 5/6 (`lock`/`lock+burn`): lock permissions; optional fuse burn when wrapped root and owner-authorized.
+## Workflow State Snapshot
+```mermaid
+stateDiagram-v2
+  [*] --> Created
+  Created --> Assigned: applyForJob
+  Assigned --> CompletionRequested: requestJobCompletion
+  CompletionRequested --> Completed: finalizeJob / resolveDispute(agent win)
+  CompletionRequested --> Disputed: disapprove threshold / disputeJob / finalize under-quorum tie
+  Disputed --> Completed: resolveDispute / resolveStaleDispute
+  Assigned --> Expired: expireJob
+  Created --> Cancelled: cancelJob / delistJob
+```
 
-All hooks are best-effort in `AGIJobManager` (`_callEnsJobPagesHook`) and non-blocking.
+## Key Operational Invariants
+- Escrow solvency must hold: AGI balance >= lockedEscrow + all locked bond pools.
+- Validator loops are bounded by `MAX_VALIDATORS_PER_JOB`.
+- `tokenURI` for completion NFTs is minted once at completion and stored.
 
-## Completion NFT lifecycle
-- Minted only in `_completeJob`.
-- Receiver is employer.
-- URI source:
-  1. `jobCompletionURI` by default.
-  2. ENS URI override if `useEnsJobTokenURI=true` and ENSJobPages returns non-empty URI.
-  3. `UriUtils.applyBaseIpfs` prepends base URL for URI values without `://` scheme.
+## Gotchas
+- ENS hook calls never revert escrow flow; check `EnsHookAttempted` for metadata failures.
+- `setAdditionalAgentPayoutPercentage` is deprecated and always reverts.
+
+## References
+- [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- [`contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
+- [`migrations/2_deploy_contracts.js`](../migrations/2_deploy_contracts.js)

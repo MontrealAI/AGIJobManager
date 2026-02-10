@@ -1,14 +1,26 @@
 # Glossary
 
-- **Employer**: Job creator who escrows payout funds.
-- **Agent**: Worker assigned to complete a job; posts an agent bond.
-- **Validator**: Permissioned reviewer who votes approve/disapprove and posts validator bond.
-- **Moderator**: Trusted role authorized to resolve disputes.
-- **Dispute bond**: Bond posted by disputing party during active dispute.
-- **Validator bond**: Per-vote bond used for validator incentive/slashing.
-- **Agent bond**: Bond posted on assignment; returned or slashed based on settlement.
-- **Escrow**: Employer payout locked until settlement.
-- **Retained revenue**: Agent-win payout remainder left in contract after agent payout + validator budget.
-- **ENS root node**: Namehash of parent ENS domain under which job names are created.
-- **Labelhash**: `keccak256(label)` used to derive ENS subnodes.
-- **Fuses**: ENS NameWrapper permission bits (e.g., `CANNOT_SET_RESOLVER`, `CANNOT_SET_TTL`) optionally burned for immutability.
+## Purpose
+Define core protocol terms unambiguously.
+
+- **AGI token**: ERC20 token used for payouts, escrow, and bonds.
+- **Job**: On-chain record containing employer, payout, duration, assignee, and settlement fields.
+- **Employer**: Party funding escrow and receiving completion NFT.
+- **Agent**: Worker address assigned to perform job.
+- **Validator**: Permissioned reviewer posting bond and voting approval/disapproval.
+- **Moderator**: Privileged dispute resolver.
+- **Owner**: Highest-privilege operator account.
+- **Completion review period**: Voting window after completion request.
+- **Dispute review period**: Timeout window before owner stale-dispute backstop.
+- **Challenge period after approval**: Delay after approval-threshold before early finalization.
+- **Escrow locked balance (`lockedEscrow`)**: Total unpaid job payouts currently reserved.
+- **Locked bonds**: Totals reserved for agent/validator/dispute bonds until settlement.
+- **Settlement paused**: Additional kill-switch for settlement endpoints.
+- **Identity lock**: Irreversible freeze of identity wiring setters.
+- **ENS hook**: Best-effort callback from AGIJobManager into ENSJobPages.
+- **AGIType**: External NFT contract + payout percentage used to snapshot agent payout share.
+- **Platform retained revenue**: Agent-win remainder after agent + validator allocations.
+
+## References
+- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- [`../contracts/ens/ENSJobPages.sol`](../contracts/ens/ENSJobPages.sol)
