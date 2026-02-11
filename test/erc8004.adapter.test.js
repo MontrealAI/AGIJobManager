@@ -85,7 +85,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId2, 'ipfs-disputed', { from: agent });
     await manager.disapproveJob(jobId2, 'club', EMPTY_PROOF, { from: validator });
-    await manager.resolveDispute(jobId2, 'employer win', { from: moderator });
+    await manager.resolveDisputeWithCode(jobId2, 2, 'employer win', { from: moderator });
 
     const toBlock = await web3.eth.getBlockNumber();
     const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'erc8004-'));

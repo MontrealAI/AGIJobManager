@@ -163,6 +163,10 @@ function normalizeAddress(address) {
   return address.toLowerCase();
 }
 
+function hasMethod(instance, name) {
+  return typeof instance[name] === "function";
+}
+
 function report(status, key, message) {
   console.log(`${status} ${key}: ${message}`);
   return status === "FAIL";
@@ -225,36 +229,6 @@ module.exports = async function verifyConfig(callback) {
         actual: await instance.disputeReviewPeriod(),
       },
       {
-        key: "additionalAgentPayoutPercentage",
-        expected: config.additionalAgentPayoutPercentage,
-        actual: await instance.additionalAgentPayoutPercentage(),
-      },
-      {
-        key: "termsAndConditionsIpfsHash",
-        expected: config.termsAndConditionsIpfsHash,
-        actual: await instance.termsAndConditionsIpfsHash(),
-      },
-      {
-        key: "contactEmail",
-        expected: config.contactEmail,
-        actual: await instance.contactEmail(),
-      },
-      {
-        key: "additionalText1",
-        expected: config.additionalText1,
-        actual: await instance.additionalText1(),
-      },
-      {
-        key: "additionalText2",
-        expected: config.additionalText2,
-        actual: await instance.additionalText2(),
-      },
-      {
-        key: "additionalText3",
-        expected: config.additionalText3,
-        actual: await instance.additionalText3(),
-      },
-      {
         key: "validatorMerkleRoot",
         expected: config.validatorMerkleRoot,
         actual: await instance.validatorMerkleRoot(),
@@ -265,6 +239,60 @@ module.exports = async function verifyConfig(callback) {
         actual: await instance.agentMerkleRoot(),
       },
     ];
+
+    if (hasMethod(instance, "additionalAgentPayoutPercentage")) {
+      checks.push({
+        key: "additionalAgentPayoutPercentage",
+        expected: config.additionalAgentPayoutPercentage,
+        actual: await instance.additionalAgentPayoutPercentage(),
+      });
+    } else if (config.additionalAgentPayoutPercentage !== undefined) {
+      console.warn("additionalAgentPayoutPercentage getter not present; skipping check.");
+    }
+
+    const hasLegacyMetadataApi = hasMethod(instance, "termsAndConditionsIpfsHash")
+      && hasMethod(instance, "contactEmail")
+      && hasMethod(instance, "additionalText1")
+      && hasMethod(instance, "additionalText2")
+      && hasMethod(instance, "additionalText3");
+
+    if (hasLegacyMetadataApi) {
+      checks.push(
+        {
+          key: "termsAndConditionsIpfsHash",
+          expected: config.termsAndConditionsIpfsHash,
+          actual: await instance.termsAndConditionsIpfsHash(),
+        },
+        {
+          key: "contactEmail",
+          expected: config.contactEmail,
+          actual: await instance.contactEmail(),
+        },
+        {
+          key: "additionalText1",
+          expected: config.additionalText1,
+          actual: await instance.additionalText1(),
+        },
+        {
+          key: "additionalText2",
+          expected: config.additionalText2,
+          actual: await instance.additionalText2(),
+        },
+        {
+          key: "additionalText3",
+          expected: config.additionalText3,
+          actual: await instance.additionalText3(),
+        }
+      );
+    } else if (
+      config.termsAndConditionsIpfsHash !== undefined
+      || config.contactEmail !== undefined
+      || config.additionalText1 !== undefined
+      || config.additionalText2 !== undefined
+      || config.additionalText3 !== undefined
+    ) {
+      console.warn("Legacy metadata getters are unavailable in this ABI; skipping metadata checks.");
+    }
 
     for (const check of checks) {
       if (check.expected === undefined) {
