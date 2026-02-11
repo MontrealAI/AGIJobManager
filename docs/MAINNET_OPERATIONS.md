@@ -49,8 +49,9 @@
 
 ### Rescue functions
 
-- AGI surplus recovery is available on `withdrawAGI(amount)` with pause + settlement-not-paused + withdrawable accounting protections.
-- Generic arbitrary-token/ETH rescue entrypoints are intentionally omitted in the current bytecode-constrained build; forced ETH or unrelated ERC20 transfers should be prevented operationally.
+- `rescueETH(amount)` exists to recover forced ETH (for example via `selfdestruct`) and forwards to `owner()`.
+- `rescueToken(token, data)` is an owner-only low-level emergency path for **non-AGI** tokens only; it rejects `agiToken` directly and validates return data so broken ERC20 integrations fail closed.
+- AGI treasury recovery remains `withdrawAGI(amount)` only, with `whenPaused` + `whenSettlementNotPaused` + `withdrawableAGI()` escrow-solvency enforcement.
 
 ### Disable AGI types safely
 
@@ -64,7 +65,7 @@
 | `pause` / `unpause` | Yes | Yes | Primary incident toggle. |
 | `setSettlementPaused` | Yes (careful) | Yes | Freezes/unfreezes settlement path. |
 | `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Treasury path for AGI surplus only. |
-| Generic token/ETH rescue | No | No | Not exposed in current contract surface. |
+| `rescueETH` / `rescueToken` | Yes (owner only) | Yes | Never use with `agiToken`; AGI must use `withdrawAGI` safeguards. |
 | `lockIdentityConfiguration` | One-way | One-way | Finalize only after full config verification. |
 
 ## Recommended parameter ranges (mainnet)
