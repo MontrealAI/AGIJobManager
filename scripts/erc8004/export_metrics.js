@@ -119,6 +119,17 @@ function sortObjectByKeys(entries) {
   return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
 }
 
+
+function hasEvent(contract, eventName) {
+  const json = contract.constructor?._json?.abi || contract.abi || [];
+  return json.some((item) => item && item.type === 'event' && item.name === eventName);
+}
+
+async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, batchSize) {
+  if (!hasEvent(contract, eventName)) return [];
+  return fetchEvents(contract, eventName, fromBlock, toBlock, batchSize);
+}
+
 function getAGIJobManagerContract() {
   const web3Instance = ensureWeb3();
   if (typeof artifacts !== 'undefined') {
@@ -176,14 +187,16 @@ async function runExportMetrics(overrides = {}) {
     jobCompletionRequested,
     jobCompleted,
     jobDisputed,
-    disputeResolved,
+    disputeResolvedLegacy,
+    disputeResolvedWithCode,
   ] = await Promise.all([
     fetchEvents(contract, 'JobCreated', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobApplied', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompletionRequested', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompleted', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobDisputed', fromBlock, toBlock, batchSize),
-    fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize),
+    fetchEventsIfPresent(contract, 'DisputeResolved', fromBlock, toBlock, batchSize),
+    fetchEventsIfPresent(contract, 'DisputeResolvedWithCode', fromBlock, toBlock, batchSize),
   ]);
 
   let jobValidated = [];
@@ -196,6 +209,11 @@ async function runExportMetrics(overrides = {}) {
       fetchEvents(contract, 'ReputationUpdated', fromBlock, toBlock, batchSize),
     ]);
   }
+
+  const disputeResolved = disputeResolvedLegacy.concat(disputeResolvedWithCode).sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
 
   const chainId = await web3.eth.getChainId();
   const contractAddress = contract.address;
@@ -363,8 +381,17 @@ async function runExportMetrics(overrides = {}) {
 
   for (const ev of disputeResolved) {
     const jobId = ev.returnValues.jobId || ev.returnValues[0];
-    const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
-    const resolution = String(resolutionRaw).toLowerCase();
+    const resolutionCodeRaw = ev.returnValues.resolutionCode || ev.returnValues[2];
+    let resolution = '';
+    if (resolutionCodeRaw !== undefined) {
+      const code = Number(resolutionCodeRaw);
+      if (code === 1) resolution = 'agent win';
+      else if (code === 2) resolution = 'employer win';
+    }
+    if (!resolution) {
+      const resolutionRaw = ev.returnValues.resolution || ev.returnValues.reason || ev.returnValues[2] || '';
+      resolution = String(resolutionRaw).toLowerCase();
+    }
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
