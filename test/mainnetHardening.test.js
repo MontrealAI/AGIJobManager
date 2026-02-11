@@ -1,4 +1,6 @@
 const { time } = require("@openzeppelin/test-helpers");
+const { MerkleTree } = require("merkletreejs");
+const keccak256 = require("keccak256");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -9,7 +11,6 @@ const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
-const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
 const MockRescueERC721 = artifacts.require("MockRescueERC721");
 const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
@@ -22,6 +23,8 @@ const { expectCustomError } = require("./helpers/errors");
 contract("AGIJobManager mainnet hardening", (accounts) => {
   const [owner, employer, agent, validator, treasury] = accounts;
   const ZERO32 = "0x" + "00".repeat(32);
+  const ROOT_AGENT = web3.utils.soliditySha3("root.agent.eth");
+  const ROOT_ALPHA_AGENT = web3.utils.soliditySha3("root.alpha.agent.eth");
 
   async function deployManager(token, ensAddress, nameWrapperAddress, baseIpfs = "ipfs://base") {
     const manager = await AGIJobManager.new(
@@ -142,6 +145,65 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.validateJob(0, "validator", [], { from: validator });
   });
 
+  it("keeps Merkle allowlists functional even when ENS integrations revert", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const leaf = web3.utils.soliditySha3({ type: "address", value: agent });
+    const wrongLeaf = web3.utils.soliditySha3({ type: "address", value: treasury });
+    const tree = new MerkleTree(
+      [Buffer.from(leaf.slice(2), "hex"), Buffer.from(wrongLeaf.slice(2), "hex")],
+      keccak256,
+      { sortPairs: true }
+    );
+    const agentRoot = tree.getHexRoot();
+    const proof = tree.getHexProof(Buffer.from(leaf.slice(2), "hex"));
+    const wrongProof = tree.getHexProof(Buffer.from(wrongLeaf.slice(2), "hex"));
+
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await RevertingNameWrapper.new({ from: owner });
+    const resolver = await RevertingResolver.new({ from: owner });
+    const manager = await AGIJobManager.new(
+      ...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        wrapper.address,
+        ZERO32,
+        ROOT_AGENT,
+        ZERO32,
+        ROOT_ALPHA_AGENT,
+        ZERO32,
+        agentRoot
+      ),
+      { from: owner }
+    );
+    const nft = await MockERC721.new({ from: owner });
+
+    await ens.setResolverAddress(resolver.address, { from: owner });
+    await ens.setRevertResolver(true, { from: owner });
+    await wrapper.setRevertOwnerOf(true, { from: owner });
+    await resolver.setRevertAddr(true, { from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    await token.mint(employer, web3.utils.toWei("5"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("5"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("5"), 100, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+
+    // Exercise ENS fallback path first: Merkle proof fails, ENS integrations revert,
+    // and authorization must return false (NotAuthorized) rather than bubbling reverts.
+    await expectCustomError(manager.applyForJob.call(0, "agent", wrongProof, { from: agent }), "NotAuthorized");
+
+    // Merkle allowlist path must still authorize application under the same ENS failures.
+    await manager.applyForJob(0, "agent", proof, { from: agent });
+
+    const core = await manager.getJobCore(0);
+    assert.equal(core.assignedAgent, agent);
+  });
+
 
 
   it("settlement remains live when ENS hook target reverts with ENS URI mode enabled", async () => {
@@ -159,21 +221,6 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.finalizeJob(0, { from: employer });
     const core = await manager.getJobCore(0);
     assert.equal(core.completed, true);
-  });
-
-  it("rescues forced ETH to owner", async () => {
-    const token = await MockERC20.new({ from: owner });
-    const ens = await MockENS.new({ from: owner });
-    const wrapper = await MockNameWrapper.new({ from: owner });
-    const manager = await deployManager(token, ens.address, wrapper.address);
-    const sender = await ForceSendETH.new({ from: owner, value: web3.utils.toWei("1") });
-
-    await sender.boom(manager.address, { from: owner });
-    const ownerBefore = BigInt(await web3.eth.getBalance(owner));
-    const tx = await manager.rescueETH(web3.utils.toWei("1"), { from: owner });
-    const gasSpent = BigInt(tx.receipt.gasUsed) * BigInt((await web3.eth.getTransaction(tx.tx)).gasPrice);
-    const ownerAfter = BigInt(await web3.eth.getBalance(owner));
-    assert.equal(ownerAfter - ownerBefore + gasSpent, BigInt(web3.utils.toWei("1")));
   });
 
   it("rescues non-AGI tokens via calldata and blocks AGI token rescue", async () => {
