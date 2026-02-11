@@ -35,11 +35,12 @@ library ENSOwnership {
         bytes32 subnode
     ) private view returns (bool) {
         if (nameWrapperAddress == address(0)) return false;
-        try NameWrapperLike(nameWrapperAddress).ownerOf(uint256(subnode)) returns (address actualOwner) {
-            return actualOwner == claimant;
-        } catch {
-            return false;
-        }
+        (bool ok, address actualOwner) = _staticcallAddress(
+            nameWrapperAddress,
+            NameWrapperLike.ownerOf.selector,
+            subnode
+        );
+        return ok && actualOwner == claimant;
     }
 
     function _verifyResolverOwnership(

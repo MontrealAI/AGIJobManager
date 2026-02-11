@@ -64,6 +64,7 @@ interface NameWrapper {
     function ownerOf(uint256 id) external view returns (address);
 }
 
+
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
@@ -1140,10 +1141,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                     mstore(add(payload, 36), jobId)
                 }
                 (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(payload);
-                if (ok && data.length != 0) {
-                    string memory ensUri = abi.decode(data, (string));
-                    if (bytes(ensUri).length != 0) {
-                        tokenUriValue = ensUri;
+                if (ok) {
+                    assembly {
+                        let size := mload(data)
+                        let len := mload(add(data, 64))
+                        if and(gt(size, 95), and(eq(mload(add(data, 32)), 32), and(gt(len, 0), iszero(gt(len, sub(size, 64)))))) {
+                            tokenUriValue := add(data, 64)
+                        }
                     }
                 }
             }
