@@ -1,4 +1,6 @@
 const { time } = require("@openzeppelin/test-helpers");
+const { MerkleTree } = require("merkletreejs");
+const keccak256 = require("keccak256");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -140,6 +142,53 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await token.mint(validator, web3.utils.toWei("20"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
     await manager.validateJob(0, "validator", [], { from: validator });
+  });
+
+  it("keeps Merkle allowlists functional even when ENS integrations revert", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const leaf = web3.utils.soliditySha3({ type: "address", value: agent });
+    const tree = new MerkleTree([Buffer.from(leaf.slice(2), "hex")], keccak256, { sortPairs: true });
+    const agentRoot = tree.getHexRoot();
+    const proof = tree.getHexProof(Buffer.from(leaf.slice(2), "hex"));
+
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await RevertingNameWrapper.new({ from: owner });
+    const resolver = await RevertingResolver.new({ from: owner });
+    const manager = await AGIJobManager.new(
+      ...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        wrapper.address,
+        ZERO32,
+        ZERO32,
+        ZERO32,
+        ZERO32,
+        ZERO32,
+        agentRoot
+      ),
+      { from: owner }
+    );
+    const nft = await MockERC721.new({ from: owner });
+
+    await ens.setResolverAddress(resolver.address, { from: owner });
+    await ens.setRevertResolver(true, { from: owner });
+    await wrapper.setRevertOwnerOf(true, { from: owner });
+    await resolver.setRevertAddr(true, { from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    await token.mint(employer, web3.utils.toWei("5"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("5"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("5"), 100, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", proof, { from: agent });
+
+    const core = await manager.getJobCore(0);
+    assert.equal(core.assignedAgent, agent);
   });
 
 
