@@ -206,7 +206,12 @@ function mergeDisputeResolutionEvents(legacyEvents, typedEvents) {
     const jobId = String(ev.returnValues.jobId || ev.returnValues[0] || '');
     const key = `${ev.transactionHash || ''}:${jobId}`;
     const existing = byKey.get(key);
-    if (!existing || (isTypedDisputeResolutionEvent(ev) && !isTypedDisputeResolutionEvent(existing))) {
+    const incomingTyped = isTypedDisputeResolutionEvent(ev);
+    const existingTyped = existing ? isTypedDisputeResolutionEvent(existing) : false;
+    const shouldReplace = !existing
+      || (incomingTyped && !existingTyped)
+      || (incomingTyped && existingTyped && (ev.logIndex || 0) >= (existing.logIndex || 0));
+    if (shouldReplace) {
       byKey.set(key, ev);
     }
   }

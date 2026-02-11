@@ -93,6 +93,28 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     assert.strictEqual(merged[0].event, 'DisputeResolvedWithCode', 'typed event should be preferred');
   });
 
+
+  it('keeps the latest typed dispute event when multiple typed events share tx/job key', async () => {
+    const typedNoAction = {
+      event: 'DisputeResolvedWithCode',
+      transactionHash: '0xdef',
+      blockNumber: 11,
+      logIndex: 3,
+      returnValues: { jobId: '9', resolutionCode: '0', reason: 'no action' },
+    };
+    const typedTerminal = {
+      event: 'DisputeResolvedWithCode',
+      transactionHash: '0xdef',
+      blockNumber: 11,
+      logIndex: 4,
+      returnValues: { jobId: '9', resolutionCode: '2', reason: 'employer win' },
+    };
+
+    const merged = mergeDisputeResolutionEvents([], [typedNoAction, typedTerminal]);
+    assert.strictEqual(merged.length, 1, 'same tx/job should collapse to one typed settlement');
+    assert.strictEqual(merged[0].returnValues.resolutionCode, '2', 'latest typed event should win');
+  });
+
   it('exports deterministic metrics and expected aggregates', async () => {
     const jobId1 = await createJob();
     await manager.applyForJob(jobId1, 'agent', EMPTY_PROOF, { from: agent });
