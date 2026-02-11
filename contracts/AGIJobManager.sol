@@ -1240,32 +1240,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (!ok) revert TransferFailed();
     }
 
-    function rescueERC20(address token, address to, uint256 amount) external onlyOwner nonReentrant {
-        if (token == address(0) || to == address(0) || amount == 0) revert InvalidParameters();
-        if (token == address(agiToken)) {
-            if (settlementPaused) revert SettlementPaused();
-            if (!paused()) revert InvalidState();
-            uint256 available = withdrawableAGI();
-            if (amount > available) revert InsufficientWithdrawableBalance();
-            _t(to, amount);
-            emit AGIWithdrawn(to, amount, available - amount);
-            return;
-        }
-        TransferUtils.safeTransfer(token, to, amount);
+    function rescueERC20(address token, uint256 amount) external onlyOwner nonReentrant {
+        if (token == address(0) || amount == 0) revert InvalidParameters();
+        if (token == address(agiToken)) revert InvalidParameters();
+        TransferUtils.safeTransfer(token, owner(), amount);
     }
 
-    function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
-        if (token == address(agiToken)) revert InvalidParameters();
-        (bool ok, bytes memory ret) = token.call(data);
+    function rescueCall(address target, bytes calldata data) external onlyOwner nonReentrant {
+        if (target == address(0) || target == address(agiToken) || target == address(this)) revert InvalidParameters();
+        (bool ok, ) = target.call(data);
         if (!ok) revert TransferFailed();
-        if (ret.length > 0) {
-            if (ret.length != 32) revert TransferFailed();
-            uint256 returned;
-            assembly {
-                returned := mload(add(ret, 32))
-            }
-            if (returned != 1) revert TransferFailed();
-        }
     }
 
 

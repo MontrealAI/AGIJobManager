@@ -70,9 +70,19 @@ library ENSOwnership {
         bytes4 selector,
         bytes32 node
     ) private view returns (bool ok, address result) {
-        bytes memory data;
-        (ok, data) = target.staticcall(abi.encodeWithSelector(selector, node));
-        if (!ok || data.length < 32) return (false, address(0));
-        result = abi.decode(data, (address));
+        bytes memory data = abi.encodeWithSelector(selector, node);
+        assembly {
+            let ptr := mload(0x40)
+            ok := staticcall(gas(), target, add(data, 32), mload(data), 0, 0)
+            let size := returndatasize()
+            if and(ok, iszero(lt(size, 32))) {
+                returndatacopy(ptr, 0, 32)
+                result := and(mload(ptr), 0xffffffffffffffffffffffffffffffffffffffff)
+            }
+            if or(iszero(ok), lt(size, 32)) {
+                ok := 0
+                result := 0
+            }
+        }
     }
 }
