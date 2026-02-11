@@ -76,6 +76,21 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     let issued = receipt.logs.find((l) => l.event === "NFTIssued");
     assert.equal(await manager.tokenURI(issued.args.tokenId), "ipfs://base/QmCompletion");
 
+    const manager3 = await deployManager(token, ens.address, wrapper.address);
+    await manager3.setEnsJobPages(malformed.address, { from: owner });
+    await manager3.setUseEnsJobTokenURI(true, { from: owner });
+    await prepareSimpleSettlement(manager3, token);
+    await malformed.setTokenURIBytes(
+      "0x"
+      + "0".repeat(63) + "20"
+      + "f".repeat(64)
+      + "00".repeat(32),
+      { from: owner }
+    );
+    receipt = await manager3.finalizeJob(0, { from: employer });
+    issued = receipt.logs.find((l) => l.event === "NFTIssued");
+    assert.equal(await manager3.tokenURI(issued.args.tokenId), "ipfs://base/QmCompletion");
+
     const manager2 = await deployManager(token, ens.address, wrapper.address);
     await manager2.setEnsJobPages(malformed.address, { from: owner });
     await manager2.setUseEnsJobTokenURI(true, { from: owner });

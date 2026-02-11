@@ -1143,8 +1143,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(payload);
                 if (ok) {
                     assembly {
+                        let size := mload(data)
                         let len := mload(add(data, 64))
-                        if and(gt(len, 0), and(eq(mload(add(data, 32)), 32), iszero(gt(add(64, len), mload(data))))) {
+                        if and(gt(size, 95), and(eq(mload(add(data, 32)), 32), and(gt(len, 0), iszero(gt(len, sub(size, 64)))))) {
                             tokenUriValue := add(data, 64)
                         }
                     }
