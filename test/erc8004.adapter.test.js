@@ -12,7 +12,7 @@ const MockResolver = artifacts.require('MockResolver');
 const MockERC721 = artifacts.require('MockERC721');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
-const { runExportMetrics } = require('../scripts/erc8004/export_metrics');
+const { runExportMetrics, mergeDisputeResolutionEvents } = require('../scripts/erc8004/export_metrics');
 const { buildInitConfig } = require('./helpers/deploy');
 const { fundValidators, fundAgents } = require('./helpers/bonds');
 
@@ -72,6 +72,49 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await fundAgents(token, manager, [agent], owner);
   });
 
+
+  it('deduplicates legacy and typed dispute events for the same settlement', async () => {
+    const legacy = {
+      event: 'DisputeResolved',
+      transactionHash: '0xabc',
+      blockNumber: 10,
+      logIndex: 1,
+      returnValues: { jobId: '7', resolution: 'employer win' },
+    };
+    const typed = {
+      event: 'DisputeResolvedWithCode',
+      transactionHash: '0xabc',
+      blockNumber: 10,
+      logIndex: 2,
+      returnValues: { jobId: '7', resolutionCode: '2', reason: 'employer win' },
+    };
+    const merged = mergeDisputeResolutionEvents([legacy], [typed]);
+    assert.strictEqual(merged.length, 1, 'same settlement should not be double-counted');
+    assert.strictEqual(merged[0].event, 'DisputeResolvedWithCode', 'typed event should be preferred');
+  });
+
+
+  it('keeps the latest typed dispute event when multiple typed events share tx/job key', async () => {
+    const typedNoAction = {
+      event: 'DisputeResolvedWithCode',
+      transactionHash: '0xdef',
+      blockNumber: 11,
+      logIndex: 3,
+      returnValues: { jobId: '9', resolutionCode: '0', reason: 'no action' },
+    };
+    const typedTerminal = {
+      event: 'DisputeResolvedWithCode',
+      transactionHash: '0xdef',
+      blockNumber: 11,
+      logIndex: 4,
+      returnValues: { jobId: '9', resolutionCode: '2', reason: 'employer win' },
+    };
+
+    const merged = mergeDisputeResolutionEvents([], [typedNoAction, typedTerminal]);
+    assert.strictEqual(merged.length, 1, 'same tx/job should collapse to one typed settlement');
+    assert.strictEqual(merged[0].returnValues.resolutionCode, '2', 'latest typed event should win');
+  });
+
   it('exports deterministic metrics and expected aggregates', async () => {
     const jobId1 = await createJob();
     await manager.applyForJob(jobId1, 'agent', EMPTY_PROOF, { from: agent });
@@ -85,7 +128,14 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId2, 'ipfs-disputed', { from: agent });
     await manager.disapproveJob(jobId2, 'club', EMPTY_PROOF, { from: validator });
-    await manager.resolveDispute(jobId2, 'employer win', { from: moderator });
+    await manager.resolveDisputeWithCode(jobId2, 2, 'employer win', { from: moderator });
+
+    const jobId3 = await createJob();
+    await manager.applyForJob(jobId3, 'agent', EMPTY_PROOF, { from: agent });
+    await manager.requestJobCompletion(jobId3, 'ipfs-no-action', { from: agent });
+    await manager.disapproveJob(jobId3, 'club', EMPTY_PROOF, { from: validator });
+    // NO_ACTION should remain unresolved for win/loss aggregates even if reason text is misleading.
+    await manager.resolveDisputeWithCode(jobId3, 0, 'employer win', { from: moderator });
 
     const toBlock = await web3.eth.getBlockNumber();
     const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'erc8004-'));
@@ -117,17 +167,17 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
 
     const agentKey = agent.toLowerCase();
     assert.ok(metrics.agents[agentKey], 'agent metrics should exist');
-    assert.strictEqual(metrics.agents[agentKey].jobsAssigned, 2);
-    assert.strictEqual(metrics.agents[agentKey].jobsCompletionRequested, 2);
+    assert.strictEqual(metrics.agents[agentKey].jobsAssigned, 3);
+    assert.strictEqual(metrics.agents[agentKey].jobsCompletionRequested, 3);
     assert.strictEqual(metrics.agents[agentKey].jobsCompleted, 1);
-    assert.strictEqual(metrics.agents[agentKey].jobsDisputed, 1);
+    assert.strictEqual(metrics.agents[agentKey].jobsDisputed, 2);
     assert.strictEqual(metrics.agents[agentKey].employerWins, 1);
     assert.strictEqual(metrics.agents[agentKey].agentWins, 0);
-    assert.strictEqual(metrics.agents[agentKey].unknownResolutions, 0);
+    assert.strictEqual(metrics.agents[agentKey].unknownResolutions, 1);
 
     const validatorKey = validator.toLowerCase();
     assert.ok(metrics.validators[validatorKey], 'validator metrics should exist');
     assert.strictEqual(metrics.validators[validatorKey].approvals, 1);
-    assert.strictEqual(metrics.validators[validatorKey].disapprovals, 1);
+    assert.strictEqual(metrics.validators[validatorKey].disapprovals, 2);
   });
 });

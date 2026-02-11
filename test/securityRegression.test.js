@@ -85,7 +85,7 @@ contract("AGIJobManager security regressions", (accounts) => {
       "JobNotFound"
     );
     await expectCustomError(manager.disputeJob.call(999, { from: employer }), "JobNotFound");
-    await expectCustomError(manager.resolveDispute.call(999, "agent win", { from: moderator }), "JobNotFound");
+    await expectCustomError(manager.resolveDisputeWithCode.call(999, 1, "agent win", { from: moderator }), "JobNotFound");
   });
 
   it("blocks double completion and employer-win follow-up", async () => {
@@ -114,7 +114,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.requestJobCompletion(jobIdTwo, "ipfs-done-two", { from: agent });
     await fundDisputeBond(token, manager, employer, payoutTwo, owner);
     await manager.disputeJob(jobIdTwo, { from: employer });
-    await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobIdTwo, 2, "employer win", { from: moderator });
     await expectCustomError(
       manager.validateJob.call(jobIdTwo, "validator", EMPTY_PROOF, { from: validator }),
       "InvalidState"
@@ -138,7 +138,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     const disputeBond = await fundDisputeBond(token, manager, employer, payout, owner);
     await manager.disputeJob(jobId, { from: employer });
     const agentBefore = await token.balanceOf(agent);
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
 
     const agentBalance = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
@@ -192,7 +192,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await fundDisputeBond(token, manager, employer, payout, owner);
     await manager.disputeJob(jobId, { from: employer });
 
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
 
     const job = await manager.getJobCore(jobId);
     const jobValidation = await manager.getJobValidation(jobId);
@@ -213,7 +213,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await time.increase(2);
     await fundDisputeBond(token, manager, employer, payout, owner);
     await manager.disputeJob(jobId, { from: employer });
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
 
     const job = await manager.getJobCore(jobId);
     const jobValidation = await manager.getJobValidation(jobId);
@@ -234,7 +234,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.disputeJob(jobId, { from: employer });
 
     await manager.pause({ from: owner });
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
 
     const job = await manager.getJobCore(jobId);
     const jobValidation = await manager.getJobValidation(jobId);
@@ -289,7 +289,7 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.disputeJob(jobId, { from: employer });
     await expectCustomError(manager.disputeJob.call(jobId, { from: employer }), "InvalidState");
     await expectCustomError(
-      manager.resolveDispute.call(jobId, "agent win", { from: other }),
+      manager.resolveDisputeWithCode.call(jobId, 1, "agent win", { from: other }),
       "NotModerator"
     );
   });
