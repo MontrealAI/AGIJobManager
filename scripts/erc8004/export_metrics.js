@@ -63,6 +63,26 @@ async function fetchEvents(contract, eventName, fromBlock, toBlock, batchSize) {
   });
 }
 
+
+function hasEvent(contract, eventName) {
+  const candidates = [
+    contract?.abi,
+    contract?.constructor?.abi,
+    contract?.constructor?._json?.abi,
+    contract?.contract?._jsonInterface,
+  ];
+  for (const abi of candidates) {
+    if (!Array.isArray(abi)) continue;
+    if (abi.some((entry) => entry?.type === 'event' && entry?.name === eventName)) return true;
+  }
+  return false;
+}
+
+async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, batchSize) {
+  if (!hasEvent(contract, eventName)) return [];
+  return fetchEvents(contract, eventName, fromBlock, toBlock, batchSize);
+}
+
 async function getDeploymentBlock(contract) {
   const txHash = contract.transactionHash || contract.receipt?.transactionHash;
   if (!txHash) return 0;
@@ -183,7 +203,11 @@ async function runExportMetrics(overrides = {}) {
     fetchEvents(contract, 'JobCompletionRequested', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompleted', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobDisputed', fromBlock, toBlock, batchSize),
-    fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize),
+    (async () => {
+      const byCode = await fetchEventsIfPresent(contract, 'DisputeResolvedWithCode', fromBlock, toBlock, batchSize);
+      if (byCode.length > 0) return byCode;
+      return fetchEventsIfPresent(contract, 'DisputeResolved', fromBlock, toBlock, batchSize);
+    })(),
   ]);
 
   let jobValidated = [];
@@ -363,18 +387,33 @@ async function runExportMetrics(overrides = {}) {
 
   for (const ev of disputeResolved) {
     const jobId = ev.returnValues.jobId || ev.returnValues[0];
-    const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
-    const resolution = String(resolutionRaw).toLowerCase();
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
-    if (resolution === 'agent win') {
-      metrics.agentWins += 1;
-    } else if (resolution === 'employer win') {
-      metrics.employerWins += 1;
+
+    const hasResolutionCode = ev.returnValues.resolutionCode !== undefined || ev.returnValues[2] !== undefined;
+    if (hasResolutionCode) {
+      const codeRaw = ev.returnValues.resolutionCode ?? ev.returnValues[2];
+      const code = Number(codeRaw);
+      if (code === 1) {
+        metrics.agentWins += 1;
+      } else if (code === 2) {
+        metrics.employerWins += 1;
+      } else {
+        metrics.unknownResolutions += 1;
+      }
     } else {
-      metrics.unknownResolutions += 1;
+      const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
+      const resolution = String(resolutionRaw).toLowerCase();
+      if (resolution === 'agent win') {
+        metrics.agentWins += 1;
+      } else if (resolution === 'employer win') {
+        metrics.employerWins += 1;
+      } else {
+        metrics.unknownResolutions += 1;
+      }
     }
+
     metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
     addAnchor(agentAnchors, job.assignedAgent, buildAnchor(ev, jobId, chainId, contractAddress));
   }

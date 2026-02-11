@@ -46,6 +46,11 @@ function parseEnvList(value) {
     .filter(Boolean);
 }
 
+
+function hasMethod(instance, methodName) {
+  return typeof instance?.[methodName] === "function";
+}
+
 function loadJsonConfig(configPath) {
   if (!configPath) return {};
   const resolved = path.resolve(process.cwd(), configPath);
@@ -444,79 +449,100 @@ module.exports = async function postdeployConfig(callback) {
       console.warn("additionalAgentPayoutPercentage is deprecated and ignored.");
     }
 
-    await addParamOp({
-      key: "termsAndConditionsIpfsHash",
-      label: "Set termsAndConditionsIpfsHash",
-      currentValue: await instance.termsAndConditionsIpfsHash(),
-      desiredValue: config.termsAndConditionsIpfsHash,
-      send: () =>
-        instance.updateTermsAndConditionsIpfsHash(
-          config.termsAndConditionsIpfsHash,
-          txFrom ? { from: txFrom } : {}
-        ),
-      verify: async () => {
-        const updated = await instance.termsAndConditionsIpfsHash();
-        if (updated !== config.termsAndConditionsIpfsHash) {
-          throw new Error("termsAndConditionsIpfsHash did not update");
-        }
-      },
-    });
+    const hasLegacyMetadata = hasMethod(instance, "termsAndConditionsIpfsHash")
+      && hasMethod(instance, "updateTermsAndConditionsIpfsHash")
+      && hasMethod(instance, "contactEmail")
+      && hasMethod(instance, "updateContactEmail")
+      && hasMethod(instance, "additionalText1")
+      && hasMethod(instance, "updateAdditionalText1")
+      && hasMethod(instance, "additionalText2")
+      && hasMethod(instance, "updateAdditionalText2")
+      && hasMethod(instance, "additionalText3")
+      && hasMethod(instance, "updateAdditionalText3");
 
-    await addParamOp({
-      key: "contactEmail",
-      label: "Set contactEmail",
-      currentValue: await instance.contactEmail(),
-      desiredValue: config.contactEmail,
-      send: () => instance.updateContactEmail(config.contactEmail, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.contactEmail();
-        if (updated !== config.contactEmail) {
-          throw new Error("contactEmail did not update");
-        }
-      },
-    });
+    if (hasLegacyMetadata) {
+      await addParamOp({
+        key: "termsAndConditionsIpfsHash",
+        label: "Set termsAndConditionsIpfsHash",
+        currentValue: await instance.termsAndConditionsIpfsHash(),
+        desiredValue: config.termsAndConditionsIpfsHash,
+        send: () =>
+          instance.updateTermsAndConditionsIpfsHash(
+            config.termsAndConditionsIpfsHash,
+            txFrom ? { from: txFrom } : {}
+          ),
+        verify: async () => {
+          const updated = await instance.termsAndConditionsIpfsHash();
+          if (updated !== config.termsAndConditionsIpfsHash) {
+            throw new Error("termsAndConditionsIpfsHash did not update");
+          }
+        },
+      });
 
-    await addParamOp({
-      key: "additionalText1",
-      label: "Set additionalText1",
-      currentValue: await instance.additionalText1(),
-      desiredValue: config.additionalText1,
-      send: () => instance.updateAdditionalText1(config.additionalText1, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText1();
-        if (updated !== config.additionalText1) {
-          throw new Error("additionalText1 did not update");
-        }
-      },
-    });
+      await addParamOp({
+        key: "contactEmail",
+        label: "Set contactEmail",
+        currentValue: await instance.contactEmail(),
+        desiredValue: config.contactEmail,
+        send: () => instance.updateContactEmail(config.contactEmail, txFrom ? { from: txFrom } : {}),
+        verify: async () => {
+          const updated = await instance.contactEmail();
+          if (updated !== config.contactEmail) {
+            throw new Error("contactEmail did not update");
+          }
+        },
+      });
 
-    await addParamOp({
-      key: "additionalText2",
-      label: "Set additionalText2",
-      currentValue: await instance.additionalText2(),
-      desiredValue: config.additionalText2,
-      send: () => instance.updateAdditionalText2(config.additionalText2, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText2();
-        if (updated !== config.additionalText2) {
-          throw new Error("additionalText2 did not update");
-        }
-      },
-    });
+      await addParamOp({
+        key: "additionalText1",
+        label: "Set additionalText1",
+        currentValue: await instance.additionalText1(),
+        desiredValue: config.additionalText1,
+        send: () => instance.updateAdditionalText1(config.additionalText1, txFrom ? { from: txFrom } : {}),
+        verify: async () => {
+          const updated = await instance.additionalText1();
+          if (updated !== config.additionalText1) {
+            throw new Error("additionalText1 did not update");
+          }
+        },
+      });
 
-    await addParamOp({
-      key: "additionalText3",
-      label: "Set additionalText3",
-      currentValue: await instance.additionalText3(),
-      desiredValue: config.additionalText3,
-      send: () => instance.updateAdditionalText3(config.additionalText3, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText3();
-        if (updated !== config.additionalText3) {
-          throw new Error("additionalText3 did not update");
-        }
-      },
-    });
+      await addParamOp({
+        key: "additionalText2",
+        label: "Set additionalText2",
+        currentValue: await instance.additionalText2(),
+        desiredValue: config.additionalText2,
+        send: () => instance.updateAdditionalText2(config.additionalText2, txFrom ? { from: txFrom } : {}),
+        verify: async () => {
+          const updated = await instance.additionalText2();
+          if (updated !== config.additionalText2) {
+            throw new Error("additionalText2 did not update");
+          }
+        },
+      });
+
+      await addParamOp({
+        key: "additionalText3",
+        label: "Set additionalText3",
+        currentValue: await instance.additionalText3(),
+        desiredValue: config.additionalText3,
+        send: () => instance.updateAdditionalText3(config.additionalText3, txFrom ? { from: txFrom } : {}),
+        verify: async () => {
+          const updated = await instance.additionalText3();
+          if (updated !== config.additionalText3) {
+            throw new Error("additionalText3 did not update");
+          }
+        },
+      });
+    } else if (
+      config.termsAndConditionsIpfsHash !== undefined
+      || config.contactEmail !== undefined
+      || config.additionalText1 !== undefined
+      || config.additionalText2 !== undefined
+      || config.additionalText3 !== undefined
+    ) {
+      console.warn("Legacy metadata config keys were provided but this ABI does not expose metadata setters/getters; skipping.");
+    }
 
     const currentValidatorMerkleRoot = await instance.validatorMerkleRoot();
     const currentAgentMerkleRoot = await instance.agentMerkleRoot();

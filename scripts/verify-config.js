@@ -40,6 +40,11 @@ function parseEnvList(value) {
     .filter(Boolean);
 }
 
+
+function hasMethod(instance, methodName) {
+  return typeof instance?.[methodName] === "function";
+}
+
 function loadJsonConfig(configPath) {
   if (!configPath) return {};
   const resolved = path.resolve(process.cwd(), configPath);
@@ -224,36 +229,36 @@ module.exports = async function verifyConfig(callback) {
         expected: config.disputeReviewPeriod,
         actual: await instance.disputeReviewPeriod(),
       },
-      {
+      ...(hasMethod(instance, "additionalAgentPayoutPercentage") ? [{
         key: "additionalAgentPayoutPercentage",
         expected: config.additionalAgentPayoutPercentage,
         actual: await instance.additionalAgentPayoutPercentage(),
-      },
-      {
+      }] : []),
+      ...(hasMethod(instance, "termsAndConditionsIpfsHash") ? [{
         key: "termsAndConditionsIpfsHash",
         expected: config.termsAndConditionsIpfsHash,
         actual: await instance.termsAndConditionsIpfsHash(),
-      },
-      {
+      }] : []),
+      ...(hasMethod(instance, "contactEmail") ? [{
         key: "contactEmail",
         expected: config.contactEmail,
         actual: await instance.contactEmail(),
-      },
-      {
+      }] : []),
+      ...(hasMethod(instance, "additionalText1") ? [{
         key: "additionalText1",
         expected: config.additionalText1,
         actual: await instance.additionalText1(),
-      },
-      {
+      }] : []),
+      ...(hasMethod(instance, "additionalText2") ? [{
         key: "additionalText2",
         expected: config.additionalText2,
         actual: await instance.additionalText2(),
-      },
-      {
+      }] : []),
+      ...(hasMethod(instance, "additionalText3") ? [{
         key: "additionalText3",
         expected: config.additionalText3,
         actual: await instance.additionalText3(),
-      },
+      }] : []),
       {
         key: "validatorMerkleRoot",
         expected: config.validatorMerkleRoot,
@@ -265,6 +270,29 @@ module.exports = async function verifyConfig(callback) {
         actual: await instance.agentMerkleRoot(),
       },
     ];
+
+    const skippedLegacyChecks = [];
+    if (config.additionalAgentPayoutPercentage !== undefined && !hasMethod(instance, "additionalAgentPayoutPercentage")) {
+      skippedLegacyChecks.push("additionalAgentPayoutPercentage");
+    }
+    if (config.termsAndConditionsIpfsHash !== undefined && !hasMethod(instance, "termsAndConditionsIpfsHash")) {
+      skippedLegacyChecks.push("termsAndConditionsIpfsHash");
+    }
+    if (config.contactEmail !== undefined && !hasMethod(instance, "contactEmail")) {
+      skippedLegacyChecks.push("contactEmail");
+    }
+    if (config.additionalText1 !== undefined && !hasMethod(instance, "additionalText1")) {
+      skippedLegacyChecks.push("additionalText1");
+    }
+    if (config.additionalText2 !== undefined && !hasMethod(instance, "additionalText2")) {
+      skippedLegacyChecks.push("additionalText2");
+    }
+    if (config.additionalText3 !== undefined && !hasMethod(instance, "additionalText3")) {
+      skippedLegacyChecks.push("additionalText3");
+    }
+    if (skippedLegacyChecks.length > 0) {
+      report("WARN", "legacy-config", `skipped unsupported keys: ${skippedLegacyChecks.join(", ")}`);
+    }
 
     for (const check of checks) {
       if (check.expected === undefined) {
