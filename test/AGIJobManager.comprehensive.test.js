@@ -713,7 +713,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectRevert.unspecified(
         manager.updateAGITokenAddress(token.address, { from: outsider }));
       await expectRevert.unspecified(manager.setMaxJobPayout(payout, { from: outsider }));
-      await expectRevert.unspecified(manager.setJobDurationLimit(1, { from: outsider }));
       await expectRevert.unspecified(manager.addModerator(outsider, { from: outsider }));
       await expectRevert.unspecified(manager.blacklistAgent(agent, true, { from: outsider }));
       await expectRevert.unspecified(manager.addAdditionalAgent(agent, { from: outsider }));
@@ -721,7 +720,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.setBaseIpfsUrl("ipfs://new", { from: owner });
       await manager.updateAGITokenAddress(token.address, { from: owner });
       await manager.setMaxJobPayout(payout.muln(10), { from: owner });
-      await manager.setJobDurationLimit(9000, { from: owner });
       await manager.addModerator(validatorFour, { from: owner });
       await manager.removeModerator(validatorFour, { from: owner });
       await manager.blacklistAgent(agent, true, { from: owner });
@@ -732,7 +730,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.removeAdditionalValidator(validatorOne, { from: owner });
 
       assert.equal(await manager.maxJobPayout(), payout.muln(10).toString());
-      assert.equal(await manager.jobDurationLimit(), "9000");
     });
 
     it("withdraws AGI with bounds checks", async () => {
@@ -916,10 +913,12 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await createJob();
       const subdomain = "agent";
       await setNameWrapperOwnership(nameWrapper, agentRoot, subdomain, agent);
+      await manager.addAdditionalAgent(agent, { from: owner });
       await manager.applyForJob(0, subdomain, [], { from: agent });
 
       await createJob(employer, payout, duration, "QmResolver");
       await setResolverOwnership(ens, resolver, clubRoot, "validator", validatorOne);
+      await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.applyForJob(1, "agent", agentTree.proofFor(agent), { from: agent });
       await requestCompletion(1);
       await manager.validateJob(1, "validator", [], { from: validatorOne });

@@ -62,9 +62,13 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
+    await manager.setValidationRewardPercentage(1, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
     await fundAgents(token, manager, [agent, other], owner);
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalAgent(other, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
   });
 
   it("rejects agents with a 0% payout tier", async () => {
