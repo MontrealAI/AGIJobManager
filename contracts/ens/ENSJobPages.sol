@@ -80,6 +80,7 @@ contract ENSJobPages is Ownable {
     function setENSRegistry(address ensAddress) external onlyOwner {
         address old = address(ens);
         if (ensAddress == address(0)) revert InvalidParameters();
+        address old = address(ens);
         ens = IENSRegistry(ensAddress);
         emit ENSRegistryUpdated(old, ensAddress);
     }
@@ -93,6 +94,7 @@ contract ENSJobPages is Ownable {
     function setPublicResolver(address publicResolverAddress) external onlyOwner {
         address old = address(publicResolver);
         if (publicResolverAddress == address(0)) revert InvalidParameters();
+        address old = address(publicResolver);
         publicResolver = IPublicResolver(publicResolverAddress);
         emit PublicResolverUpdated(old, publicResolverAddress);
     }
@@ -102,6 +104,8 @@ contract ENSJobPages is Ownable {
         string memory oldName = jobsRootName;
         if (rootNode == bytes32(0)) revert InvalidParameters();
         if (bytes(rootName).length == 0) revert InvalidParameters();
+        bytes32 oldNode = jobsRootNode;
+        string memory oldName = jobsRootName;
         jobsRootNode = rootNode;
         jobsRootName = rootName;
         emit JobsRootUpdated(oldNode, rootNode, oldName, rootName);
@@ -110,6 +114,7 @@ contract ENSJobPages is Ownable {
     function setJobManager(address manager) external onlyOwner {
         address old = jobManager;
         if (manager == address(0)) revert InvalidParameters();
+        address old = jobManager;
         jobManager = manager;
         emit JobManagerUpdated(old, manager);
     }
