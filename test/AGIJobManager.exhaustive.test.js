@@ -418,7 +418,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
     it("enforces owner-only modifiers and updates config", async () => {
       await expectRevert.unspecified(manager.pause({ from: other }));
       await manager.setBaseIpfsUrl("ipfs://new", { from: owner });
-      assert.equal(await manager.canAccessPremiumFeature(agent), false);
+      assert.equal((await manager.reputation(agent)).lt(await manager.premiumReputationThreshold()), true);
 
       await manager.setPremiumReputationThreshold(1, { from: owner });
       assert.equal(await manager.premiumReputationThreshold(), "1");

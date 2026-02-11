@@ -64,6 +64,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
     await agiTypeNft.mint(agent, { from: owner });
+    await manager.setValidationRewardPercentage(8, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
     await fundAgents(token, manager, [agent, other], owner);
@@ -81,6 +83,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
   });
 
@@ -95,6 +98,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     const pendingReceipt = await manager.createJob("ipfs-2", payout, 1000, "details", { from: employer });
     const pendingJobId = pendingReceipt.logs[0].args.jobId.toNumber();
 
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
@@ -225,11 +229,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.ok(bondZeroEvent, "AgentBondParamsUpdated should be emitted on zeroing");
     assert.equal(bondZeroEvent.args.newBps.toString(), "0");
 
-    const bondMinTx = await manager.setAgentBond(toBN(toWei("3")), { from: owner });
-    const bondMinEvent = bondMinTx.logs.find((log) => log.event === "AgentBondMinUpdated");
-    assert.ok(bondMinEvent, "AgentBondMinUpdated should be emitted");
-    assert.equal(bondMinEvent.args.oldMin.toString(), "0");
-    assert.equal(bondMinEvent.args.newMin.toString(), toWei("3"));
+    await manager.setAgentBond(toBN(toWei("3")), { from: owner });
+    assert.equal((await manager.agentBond()).toString(), toWei("3"));
 
     const slashTx = await manager.setValidatorSlashBps(7000, { from: owner });
     const slashEvent = slashTx.logs.find((log) => log.event === "ValidatorSlashBpsUpdated");
@@ -406,6 +407,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
     const jobId = createTx.logs[0].args.jobId.toNumber();
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 

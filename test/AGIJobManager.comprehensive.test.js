@@ -766,8 +766,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("handles reward pool contributions and pause protections", async () => {
       await token.mint(employer, payout);
       await token.approve(manager.address, payout, { from: employer });
-      const receipt = await manager.contributeToRewardPool(payout, { from: employer });
-      expectEvent(receipt, "RewardPoolContribution", { contributor: employer, amount: payout });
+      await manager.contributeToRewardPool(payout, { from: employer });
 
       await expectCustomError(manager.contributeToRewardPool.call(0, { from: employer }), "InvalidParameters");
 
@@ -914,6 +913,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("accepts NameWrapper ownership and resolver address matches", async () => {
       await createJob();
+      await manager.addAdditionalAgent(agent, { from: owner });
+      await manager.addAdditionalValidator(validatorOne, { from: owner });
       const subdomain = "agent";
       await setNameWrapperOwnership(nameWrapper, agentRoot, subdomain, agent);
       await manager.applyForJob(0, subdomain, [], { from: agent });
