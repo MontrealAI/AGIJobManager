@@ -9,6 +9,10 @@ const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
+const ForceSendETH = artifacts.require("ForceSendETH");
+const MockRescueERC20 = artifacts.require("MockRescueERC20");
+const MockRescueERC721 = artifacts.require("MockRescueERC721");
+const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
@@ -154,5 +158,79 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const core = await manager.getJobCore(0);
     assert.equal(core.completed, true);
   });
+
+  it("rescues forced ETH to owner", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const sender = await ForceSendETH.new({ from: owner, value: web3.utils.toWei("1") });
+
+    await sender.boom(manager.address, { from: owner });
+    const ownerBefore = BigInt(await web3.eth.getBalance(owner));
+    const tx = await manager.rescueETH(web3.utils.toWei("1"), { from: owner });
+    const gasSpent = BigInt(tx.receipt.gasUsed) * BigInt((await web3.eth.getTransaction(tx.tx)).gasPrice);
+    const ownerAfter = BigInt(await web3.eth.getBalance(owner));
+    assert.equal(ownerAfter - ownerBefore + gasSpent, BigInt(web3.utils.toWei("1")));
+  });
+
+  it("rescues non-AGI tokens via calldata and blocks AGI token rescue", async () => {
+    const agi = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(agi, ens.address, wrapper.address);
+
+    const erc20 = await MockRescueERC20.new({ from: owner });
+    const erc721 = await MockRescueERC721.new({ from: owner });
+    const erc1155 = await MockRescueERC1155.new({ from: owner });
+
+    await erc20.mint(manager.address, 7, { from: owner });
+    await erc721.mint(manager.address, 9, { from: owner });
+    await erc1155.mint(manager.address, 11, 13, { from: owner });
+
+    const erc20Data = web3.eth.abi.encodeFunctionCall(
+      { name: "transfer", type: "function", inputs: [
+        { type: "address", name: "to" },
+        { type: "uint256", name: "amount" }
+      ] },
+      [owner, "7"]
+    );
+    await manager.rescueToken(erc20.address, erc20Data, { from: owner });
+    assert.equal((await erc20.balanceOf(owner)).toString(), "7");
+
+    const erc721Data = web3.eth.abi.encodeFunctionCall(
+      { name: "transferFrom", type: "function", inputs: [
+        { type: "address", name: "from" },
+        { type: "address", name: "to" },
+        { type: "uint256", name: "tokenId" }
+      ] },
+      [manager.address, owner, "9"]
+    );
+    await manager.rescueToken(erc721.address, erc721Data, { from: owner });
+    assert.equal(await erc721.ownerOf(9), owner);
+
+    const erc1155Data = web3.eth.abi.encodeFunctionCall(
+      { name: "safeTransferFrom", type: "function", inputs: [
+        { type: "address", name: "from" },
+        { type: "address", name: "to" },
+        { type: "uint256", name: "id" },
+        { type: "uint256", name: "amount" },
+        { type: "bytes", name: "data" }
+      ] },
+      [manager.address, owner, "11", "13", "0x"]
+    );
+    await manager.rescueToken(erc1155.address, erc1155Data, { from: owner });
+    assert.equal((await erc1155.balanceOf(owner, 11)).toString(), "13");
+
+    const agiData = web3.eth.abi.encodeFunctionCall(
+      { name: "transfer", type: "function", inputs: [
+        { type: "address", name: "to" },
+        { type: "uint256", name: "amount" }
+      ] },
+      [owner, "1"]
+    );
+    await expectCustomError(manager.rescueToken.call(agi.address, agiData, { from: owner }), "InvalidParameters");
+  });
+
 
 });
