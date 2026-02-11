@@ -2292,34 +2292,41 @@
       state.nameWrapper = nameWrapper;
 
       let nameWrapperOwner = "—";
-      try {
-        const owner = await nameWrapper.ownerOf(BigInt(subnode));
-        nameWrapperOwner = owner === state.walletAddress ? `${owner} (match)` : owner;
-      } catch (error) {
-        nameWrapperOwner = "NameWrapper lookup failed";
+      if (nameWrapperAddress === ethers.ZeroAddress) {
+        nameWrapperOwner = "NameWrapper not available";
+      } else {
+        try {
+          const owner = await nameWrapper.ownerOf(BigInt(subnode));
+          nameWrapperOwner = owner === state.walletAddress ? `${owner} (match)` : owner;
+        } catch (error) {
+          nameWrapperOwner = "NameWrapper lookup failed";
+        }
       }
       setText("identityNameWrapper", nameWrapperOwner);
 
       let resolverText = "—";
-      try {
-        const resolverAddress = await ens.resolver(subnode);
-        if (resolverAddress === ethers.ZeroAddress) {
-          resolverText = "No resolver";
-        } else {
-          const resolver = new ethers.Contract(resolverAddress, resolverAbi, state.provider);
-          const resolved = await resolver.addr(subnode);
-          resolverText = resolved === state.walletAddress ? `${resolved} (match)` : resolved;
+      if (ensAddress === ethers.ZeroAddress) {
+        resolverText = "ENS not available";
+      } else {
+        try {
+          const resolverAddress = await ens.resolver(subnode);
+          if (resolverAddress === ethers.ZeroAddress) {
+            resolverText = "No resolver";
+          } else {
+            const resolver = new ethers.Contract(resolverAddress, resolverAbi, state.provider);
+            const resolved = await resolver.addr(subnode);
+            resolverText = resolved === state.walletAddress ? `${resolved} (match)` : resolved;
+          }
+        } catch (error) {
+          resolverText = "Resolver lookup failed";
         }
-      } catch (error) {
-        resolverText = "Resolver lookup failed";
       }
       setText("identityResolver", resolverText);
     }
 
     function buildEligibilityMessage(result) {
       if (result.eligible) {
-        const methodLabel = result.method === "nameWrapper" ? "NameWrapper" : result.method;
-        return `Eligible via ${methodLabel}.`;
+        return `Eligible via ${formatMethodLabel(result.method)}.`;
       }
       if (result.method === "blacklisted") {
         return "You are blacklisted for this role; transactions will revert.";
@@ -2333,6 +2340,13 @@
       return "No matching allowlist, Merkle proof, or ENS ownership found.";
     }
 
+    function formatMethodLabel(method) {
+      if (method === "nameWrapper") {
+        return "NameWrapper";
+      }
+      return method;
+    }
+
     function renderEligibility(role, result) {
       const pillId = role === "agent" ? "agentEligibilityPill" : "validatorEligibilityPill";
       const messageId = role === "agent" ? "agentEligibilityMessage" : "validatorEligibilityMessage";
@@ -2341,15 +2355,19 @@
       const messageEl = ids(messageId);
       const fixesEl = ids(fixesId);
 
-      const methodLabel = result.method === "nameWrapper" ? "nameWrapper" : result.method;
       if (result.eligible) {
         pill.className = "pill ok";
-        pill.textContent = `✅ Eligible — via ${methodLabel}`;
+        pill.textContent = `✅ Eligible — via ${formatMethodLabel(result.method)}`;
       } else {
         pill.className = "pill danger";
-        const reason = result.method === "blacklisted"
-          ? "blacklisted"
-          : (result.details.label ? "no match" : "missing label");
+        let reason = "no match";
+        if (result.method === "blacklisted") {
+          reason = "blacklisted";
+        } else if (!result.details.label) {
+          reason = "missing label";
+        } else if (result.details.ensUnavailable) {
+          reason = "ENS/NameWrapper unavailable";
+        }
         pill.textContent = `❌ Not eligible — ${reason}`;
       }
       messageEl.textContent = result.message;
@@ -2449,10 +2467,7 @@
         };
       }
 
-      details.subnode = ethers.solidityPackedKeccak256(
-        ["bytes32", "bytes32"],
-        [rootNode, ethers.id(label)]
-      );
+      details.subnode = computeSubnode(rootNode, label);
 
       const [ensCode, nameWrapperCode] = await Promise.all([
         ensAddress !== ethers.ZeroAddress ? state.provider.getCode(ensAddress) : "0x",
@@ -2481,6 +2496,7 @@
           }
         } catch (error) {
           details.nameWrapperOwner = null;
+          details.ensUnavailable = true;
         }
       }
 
@@ -2495,6 +2511,7 @@
               details.resolverAddrRecord = await resolver.addr(details.subnode);
             } catch (error) {
               details.resolverAddrRecord = null;
+              details.ensUnavailable = true;
             }
             if (details.resolverAddrRecord === user) {
               return {
@@ -2509,6 +2526,7 @@
           }
         } catch (error) {
           details.resolverAddress = null;
+          details.ensUnavailable = true;
         }
       }
 
