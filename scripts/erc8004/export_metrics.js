@@ -63,6 +63,19 @@ async function fetchEvents(contract, eventName, fromBlock, toBlock, batchSize) {
   });
 }
 
+
+async function fetchEventsIfAvailable(contract, eventName, fromBlock, toBlock, batchSize) {
+  try {
+    return await fetchEvents(contract, eventName, fromBlock, toBlock, batchSize);
+  } catch (error) {
+    const message = String(error?.message || error || '');
+    if (message.includes("doesn't exist in this contract") || message.includes('No "'+eventName+'" events')) {
+      return [];
+    }
+    throw error;
+  }
+}
+
 async function getDeploymentBlock(contract) {
   const txHash = contract.transactionHash || contract.receipt?.transactionHash;
   if (!txHash) return 0;
@@ -176,15 +189,22 @@ async function runExportMetrics(overrides = {}) {
     jobCompletionRequested,
     jobCompleted,
     jobDisputed,
-    disputeResolved,
+    disputeResolvedLegacy,
+    disputeResolvedTyped,
   ] = await Promise.all([
     fetchEvents(contract, 'JobCreated', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobApplied', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompletionRequested', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompleted', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobDisputed', fromBlock, toBlock, batchSize),
-    fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize),
+    fetchEventsIfAvailable(contract, 'DisputeResolved', fromBlock, toBlock, batchSize),
+    fetchEventsIfAvailable(contract, 'DisputeResolvedWithCode', fromBlock, toBlock, batchSize),
   ]);
+
+  const disputeResolved = [...disputeResolvedLegacy, ...disputeResolvedTyped].sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
 
   let jobValidated = [];
   let jobDisapproved = [];
@@ -363,8 +383,16 @@ async function runExportMetrics(overrides = {}) {
 
   for (const ev of disputeResolved) {
     const jobId = ev.returnValues.jobId || ev.returnValues[0];
-    const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
-    const resolution = String(resolutionRaw).toLowerCase();
+    let resolution = '';
+    if (ev.event === 'DisputeResolvedWithCode') {
+      const codeRaw = ev.returnValues.resolutionCode || ev.returnValues[2] || 0;
+      const code = Number(codeRaw);
+      if (code === 1) resolution = 'agent win';
+      else if (code === 2) resolution = 'employer win';
+    } else {
+      const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
+      resolution = String(resolutionRaw).toLowerCase();
+    }
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
