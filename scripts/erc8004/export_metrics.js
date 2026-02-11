@@ -4,6 +4,16 @@ const path = require('path');
 
 const ARG_PREFIX = '--';
 const DEFAULT_BATCH_SIZE = 2000;
+const LEGACY_DISPUTE_RESOLVED_EVENT = {
+  anonymous: false,
+  inputs: [
+    { indexed: true, internalType: 'uint256', name: 'jobId', type: 'uint256' },
+    { indexed: true, internalType: 'address', name: 'resolver', type: 'address' },
+    { indexed: false, internalType: 'string', name: 'resolution', type: 'string' },
+  ],
+  name: 'DisputeResolved',
+  type: 'event',
+};
 
 function ensureWeb3() {
   if (typeof web3 !== 'undefined') return web3;
@@ -125,9 +135,47 @@ function hasEvent(contract, eventName) {
   return json.some((item) => item && item.type === 'event' && item.name === eventName);
 }
 
+async function fetchRawLegacyDisputeResolvedEvents(contract, fromBlock, toBlock, batchSize) {
+  const signature = web3.eth.abi.encodeEventSignature(LEGACY_DISPUTE_RESOLVED_EVENT);
+  const events = [];
+  for (let start = fromBlock; start <= toBlock; start += batchSize) {
+    const end = Math.min(toBlock, start + batchSize - 1);
+    // eslint-disable-next-line no-await-in-loop
+    const logs = await web3.eth.getPastLogs({
+      address: contract.address,
+      topics: [signature],
+      fromBlock: start,
+      toBlock: end,
+    });
+    for (const log of logs) {
+      const decoded = web3.eth.abi.decodeLog(
+        LEGACY_DISPUTE_RESOLVED_EVENT.inputs,
+        log.data,
+        log.topics.slice(1),
+      );
+      events.push({
+        event: 'DisputeResolved',
+        returnValues: decoded,
+        transactionHash: log.transactionHash,
+        blockNumber: log.blockNumber,
+        logIndex: log.logIndex,
+      });
+    }
+  }
+  return events.sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
+}
+
 async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, batchSize) {
-  if (!hasEvent(contract, eventName)) return [];
-  return fetchEvents(contract, eventName, fromBlock, toBlock, batchSize);
+  if (hasEvent(contract, eventName)) {
+    return fetchEvents(contract, eventName, fromBlock, toBlock, batchSize);
+  }
+  if (eventName === 'DisputeResolved') {
+    return fetchRawLegacyDisputeResolvedEvents(contract, fromBlock, toBlock, batchSize);
+  }
+  return [];
 }
 
 

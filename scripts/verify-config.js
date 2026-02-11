@@ -188,29 +188,33 @@ module.exports = async function verifyConfig(callback) {
     let failed = false;
 
     const checkSpecs = [
-      ["requiredValidatorApprovals", "requiredValidatorApprovals"],
-      ["requiredValidatorDisapprovals", "requiredValidatorDisapprovals"],
-      ["premiumReputationThreshold", "premiumReputationThreshold"],
-      ["validationRewardPercentage", "validationRewardPercentage"],
-      ["maxJobPayout", "maxJobPayout"],
-      ["jobDurationLimit", "jobDurationLimit"],
-      ["completionReviewPeriod", "completionReviewPeriod"],
-      ["disputeReviewPeriod", "disputeReviewPeriod"],
-      ["additionalAgentPayoutPercentage", "additionalAgentPayoutPercentage"],
-      ["termsAndConditionsIpfsHash", "termsAndConditionsIpfsHash"],
-      ["contactEmail", "contactEmail"],
-      ["additionalText1", "additionalText1"],
-      ["additionalText2", "additionalText2"],
-      ["additionalText3", "additionalText3"],
-      ["validatorMerkleRoot", "validatorMerkleRoot"],
-      ["agentMerkleRoot", "agentMerkleRoot"],
+      ["requiredValidatorApprovals", "requiredValidatorApprovals", false],
+      ["requiredValidatorDisapprovals", "requiredValidatorDisapprovals", false],
+      ["premiumReputationThreshold", "premiumReputationThreshold", false],
+      ["validationRewardPercentage", "validationRewardPercentage", false],
+      ["maxJobPayout", "maxJobPayout", false],
+      ["jobDurationLimit", "jobDurationLimit", false],
+      ["completionReviewPeriod", "completionReviewPeriod", false],
+      ["disputeReviewPeriod", "disputeReviewPeriod", false],
+      ["additionalAgentPayoutPercentage", "additionalAgentPayoutPercentage", true],
+      ["termsAndConditionsIpfsHash", "termsAndConditionsIpfsHash", true],
+      ["contactEmail", "contactEmail", true],
+      ["additionalText1", "additionalText1", true],
+      ["additionalText2", "additionalText2", true],
+      ["additionalText3", "additionalText3", true],
+      ["validatorMerkleRoot", "validatorMerkleRoot", false],
+      ["agentMerkleRoot", "agentMerkleRoot", false],
     ];
 
-    for (const [key, methodName] of checkSpecs) {
+    for (const [key, methodName, optional] of checkSpecs) {
       const expectedValue = config[key];
       if (expectedValue === undefined) continue;
       if (!hasMethod(instance, methodName)) {
-        report("SKIP", key, `method ${methodName}() not in ABI; skipping`);
+        if (optional) {
+          report("SKIP", key, `optional method ${methodName}() not in ABI; skipping`);
+          continue;
+        }
+        failed = report("FAIL", key, `required method ${methodName}() not in ABI`) || failed;
         continue;
       }
       const actualValue = await instance[methodName]();

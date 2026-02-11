@@ -1096,6 +1096,23 @@
 
     let abi = fallbackAbi;
 
+    function ensureEventInAbi(abiArray, eventSignature) {
+      if (!Array.isArray(abiArray)) return abiArray;
+      const signature = eventSignature.trim();
+      const parsed = ethers.Fragment.from(signature);
+      const hasEvent = abiArray.some((entry) => {
+        if (!entry || entry.type !== "event") return false;
+        const nameMatches = entry.name === parsed.name;
+        if (!nameMatches) return false;
+        const inputCount = Array.isArray(entry.inputs) ? entry.inputs.length : 0;
+        return inputCount === parsed.inputs.length;
+      });
+      if (!hasEvent) {
+        abiArray.push(JSON.parse(parsed.format("json")));
+      }
+      return abiArray;
+    }
+
     async function loadAbi() {
       try {
         const response = await fetch("./abi/AGIJobManager.json", { cache: "no-store" });
@@ -1103,10 +1120,12 @@
           throw new Error(`ABI fetch failed with status ${response.status}`);
         }
         const data = await response.json();
-        const fetchedAbi = Array.isArray(data) ? data : data.abi;
+        const fetchedAbi = Array.isArray(data) ? data.slice() : data.abi;
         if (!Array.isArray(fetchedAbi)) {
           throw new Error("ABI payload missing.");
         }
+        ensureEventInAbi(fetchedAbi, "event DisputeResolved(uint256 jobId, address resolver, string resolution)");
+        ensureEventInAbi(fetchedAbi, "event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)");
         abi = fetchedAbi;
         logEvent("External ABI loaded.");
       } catch (error) {
