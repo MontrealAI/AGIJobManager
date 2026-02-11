@@ -956,6 +956,7 @@
       contract: null,
       readContract: null,
       eventSubscribed: false,
+      legacyDisputeListener: null,
       contractDeployed: null,
       contractOwner: null,
       contractPaused: null,
@@ -1000,6 +1001,9 @@
     const defaultIndexLookback = 20000;
     const supportedChainIds = new Set([1n, 11155111n, 1337n]);
     const { sortLogs, applyEventToIndex } = window.AGIJobManagerIndexer;
+    const legacyDisputeResolvedFragment = "event DisputeResolved(uint256 indexed jobId, address indexed resolver, string resolution)";
+    const legacyDisputeResolvedIface = new ethers.Interface([legacyDisputeResolvedFragment]);
+    const legacyDisputeResolvedTopic = ethers.id("DisputeResolved(uint256,address,string)");
     const writeButtonIds = [
       "approveToken",
       "createJob",
@@ -1089,7 +1093,7 @@
       "event JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)",
       "event JobCancelled(uint256 jobId)",
       "event JobDisputed(uint256 jobId, address disputant)",
-      "event DisputeResolved(uint256 jobId, address resolver, string resolution)",
+      "event DisputeResolved(uint256 indexed jobId, address indexed resolver, string resolution)",
       "event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)",
       "event NFTIssued(uint256 tokenId, address employer, string tokenURI)",
     ];
@@ -1955,6 +1959,7 @@
         if (state.readContract) {
           state.readContract.removeAllListeners();
         }
+        clearLegacyDisputeListener();
         state.contract = null;
         state.readContract = null;
         state.eventSubscribed = false;
@@ -1984,6 +1989,7 @@
       if (state.readContract) {
         state.readContract.removeAllListeners();
       }
+      clearLegacyDisputeListener();
       state.eventSubscribed = false;
       state.token = null;
       state.ens = null;
@@ -2008,6 +2014,74 @@
         throw new Error("Provider not ready.");
       }
     }
+
+    function hasContractEvent(contract, eventName) {
+      if (!contract || !contract.interface) return false;
+      try {
+        return !!contract.interface.getEvent(eventName);
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function pushFilterIfPresent(filters, contract, eventName) {
+      if (!hasContractEvent(contract, eventName)) return;
+      const factory = contract.filters[eventName];
+      if (typeof factory === "function") {
+        filters.push(factory());
+      }
+    }
+
+    async function fetchLegacyDisputeResolvedLogs(fromBlock, toBlock) {
+      if (hasContractEvent(state.readContract, "DisputeResolved")) return [];
+      const logs = await state.provider.getLogs({
+        address: state.contractAddress,
+        fromBlock,
+        toBlock,
+        topics: [legacyDisputeResolvedTopic],
+      });
+      return logs.map((log) => {
+        const parsed = legacyDisputeResolvedIface.parseLog(log);
+        return {
+          ...log,
+          eventName: "DisputeResolved",
+          args: parsed.args,
+        };
+      });
+    }
+
+    async function subscribeLegacyDisputeResolved(contract) {
+      if (hasContractEvent(contract, "DisputeResolved")) return;
+      if (state.legacyDisputeListener || !state.provider) return;
+      const filter = {
+        address: state.contractAddress,
+        topics: [legacyDisputeResolvedTopic],
+      };
+      const handler = (log) => {
+        try {
+          const parsed = legacyDisputeResolvedIface.parseLog(log);
+          const jobId = parsed.args?.jobId ?? parsed.args?.[0];
+          const resolver = parsed.args?.resolver ?? parsed.args?.[1];
+          const resolution = parsed.args?.resolution ?? parsed.args?.[2];
+          logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`);
+        } catch (error) {
+          logEvent(`DisputeResolved — decode failed: ${error.message || error}`);
+        }
+      };
+      const provider = state.provider;
+      provider.on(filter, handler);
+      state.legacyDisputeListener = { filter, handler, provider };
+    }
+
+    function clearLegacyDisputeListener() {
+      if (!state.legacyDisputeListener) return;
+      const provider = state.legacyDisputeListener.provider;
+      if (provider) {
+        provider.off(state.legacyDisputeListener.filter, state.legacyDisputeListener.handler);
+      }
+      state.legacyDisputeListener = null;
+    }
+
 
     async function refreshNetwork() {
       const provider = getProvider();
@@ -2475,6 +2549,7 @@
       if (state.readContract) {
         state.readContract.removeAllListeners();
       }
+      clearLegacyDisputeListener();
       state.eventSubscribed = false;
     }
 
@@ -2846,12 +2921,14 @@
         state.readContract.filters.JobApplied(),
         state.readContract.filters.JobCompletionRequested(),
         state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
+      ];
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolved");
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolvedWithCode");
+      filters.push(
         state.readContract.filters.JobCompleted(),
         state.readContract.filters.JobCancelled(),
         state.readContract.filters.NFTIssued(),
-      ];
+      );
 
       let allLogs = [];
       for (const filter of filters) {
@@ -2862,6 +2939,8 @@
         });
         allLogs = allLogs.concat(logs);
       }
+      const legacyDisputeLogs = await fetchLegacyDisputeResolvedLogs(fromBlock, toBlock);
+      allLogs = allLogs.concat(legacyDisputeLogs);
       const ordered = sortLogs(allLogs);
       for (const evt of ordered) {
         applyEventToIndex(state.index, evt);
@@ -3302,16 +3381,20 @@
         state.readContract.filters.JobCompleted(),
         state.readContract.filters.JobCancelled(),
         state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
-        state.readContract.filters.NFTIssued(),
       ];
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolved");
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolvedWithCode");
+      filters.push(state.readContract.filters.NFTIssued());
 
       for (const filter of filters) {
         const events = await state.readContract.queryFilter(filter, fromBlock, toBlock);
         for (const evt of events) {
           logEvent(`${evt.eventName} — block ${evt.blockNumber}`);
         }
+      }
+      const legacyDisputeLogs = await fetchLegacyDisputeResolvedLogs(fromBlock, toBlock);
+      for (const evt of legacyDisputeLogs) {
+        logEvent(`${evt.eventName} — block ${evt.blockNumber}`);
       }
     }
 
@@ -3329,13 +3412,18 @@
       contract.on("JobCompleted", (jobId) => logEvent(`JobCompleted #${jobId}`));
       contract.on("JobCancelled", (jobId) => logEvent(`JobCancelled #${jobId}`));
       contract.on("JobDisputed", (jobId) => logEvent(`JobDisputed #${jobId}`));
-      contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
-      contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
-        const action = formatResolutionCode(resolutionCode);
-        const detail = reason ? ` — ${reason}` : "";
-        logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
-      });
+      if (hasContractEvent(contract, "DisputeResolved")) {
+        contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
+      }
+      if (hasContractEvent(contract, "DisputeResolvedWithCode")) {
+        contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
+          const action = formatResolutionCode(resolutionCode);
+          const detail = reason ? ` — ${reason}` : "";
+          logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
+        });
+      }
       contract.on("NFTIssued", (tokenId) => logEvent(`NFTIssued #${tokenId}`));
+      subscribeLegacyDisputeResolved(contract);
     }
 
     async function loadUiConfig() {

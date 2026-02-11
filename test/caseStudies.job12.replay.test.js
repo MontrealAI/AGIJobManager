@@ -346,7 +346,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     await manager.disputeJob(jobId, { from: employer });
 
     const beforeTokenId = await manager.nextTokenId();
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
     const afterTokenId = await manager.nextTokenId();
 
     assert.equal(afterTokenId.toString(), new BN(beforeTokenId).addn(1).toString());
