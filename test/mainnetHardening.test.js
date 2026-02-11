@@ -1,14 +1,16 @@
-const { time } = require("@openzeppelin/test-helpers");
+const { time, BN } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockERC721 = artifacts.require("MockERC721");
+const MockERC1155Lite = artifacts.require("MockERC1155Lite");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
+const ForceSendETH = artifacts.require("ForceSendETH");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
@@ -136,8 +138,6 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.validateJob(0, "validator", [], { from: validator });
   });
 
-
-
   it("settlement remains live when ENS hook target reverts with ENS URI mode enabled", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
@@ -155,4 +155,65 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     assert.equal(core.completed, true);
   });
 
+  it("rescues force-sent ETH to owner", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    const sender = await ForceSendETH.new({ from: owner, value: web3.utils.toWei("1") });
+    await sender.destroy(manager.address, { from: owner });
+
+    const beforeManagerBalance = new BN(await web3.eth.getBalance(manager.address));
+    assert.equal(beforeManagerBalance.toString(), web3.utils.toWei("1"));
+
+    const tx = await manager.rescueETH(web3.utils.toWei("1"), { from: owner });
+    assert.equal(tx.receipt.status, true);
+
+    const afterManagerBalance = new BN(await web3.eth.getBalance(manager.address));
+    assert.equal(afterManagerBalance.toString(), "0");
+  });
+
+  it("rescues non-AGI tokens via calldata and rejects AGI token rescue", async () => {
+    const agi = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(agi, ens.address, wrapper.address);
+    const erc20 = await MockERC20.new({ from: owner });
+    const erc721 = await MockERC721.new({ from: owner });
+    const erc1155 = await MockERC1155Lite.new({ from: owner });
+
+    await erc20.mint(manager.address, web3.utils.toWei("5"), { from: owner });
+    await erc721.mint(manager.address, { from: owner });
+    await erc1155.mint(manager.address, 7, 3, { from: owner });
+
+    await manager.rescueToken(
+      erc20.address,
+      erc20.contract.methods.transfer(treasury, web3.utils.toWei("2")).encodeABI(),
+      { from: owner }
+    );
+    await manager.rescueToken(
+      erc721.address,
+      erc721.contract.methods.safeTransferFrom(manager.address, treasury, 1).encodeABI(),
+      { from: owner }
+    );
+    await manager.rescueToken(
+      erc1155.address,
+      erc1155.contract.methods.safeTransferFrom(manager.address, treasury, 7, 2, "0x").encodeABI(),
+      { from: owner }
+    );
+
+    assert.equal((await erc20.balanceOf(treasury)).toString(), web3.utils.toWei("2"));
+    assert.equal(await erc721.ownerOf(1), treasury);
+    assert.equal((await erc1155.balanceOf(treasury, 7)).toString(), "2");
+
+    await expectCustomError(
+      manager.rescueToken.call(
+        agi.address,
+        agi.contract.methods.transfer(treasury, 1).encodeABI(),
+        { from: owner }
+      ),
+      "InvalidParameters"
+    );
+  });
 });

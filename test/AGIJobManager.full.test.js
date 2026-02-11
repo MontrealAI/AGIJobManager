@@ -832,20 +832,9 @@ contract("AGIJobManager comprehensive", (accounts) => {
         manager.contributeToRewardPool(web3.utils.toWei("1"), { from: employer }));
     });
 
-    it("updates metadata fields and premium threshold", async () => {
-      await expectRevert.unspecified(manager.updateTermsAndConditionsIpfsHash("hash", { from: other }));
-      await manager.updateTermsAndConditionsIpfsHash("terms", { from: owner });
-      await manager.updateContactEmail("contact@example.com", { from: owner });
-      await manager.updateAdditionalText1("text1", { from: owner });
-      await manager.updateAdditionalText2("text2", { from: owner });
-      await manager.updateAdditionalText3("text3", { from: owner });
+    it("updates premium threshold", async () => {
+      await expectRevert.unspecified(manager.setPremiumReputationThreshold(42, { from: other }));
       await manager.setPremiumReputationThreshold(42, { from: owner });
-
-      assert.equal(await manager.termsAndConditionsIpfsHash(), "terms");
-      assert.equal(await manager.contactEmail(), "contact@example.com");
-      assert.equal(await manager.additionalText1(), "text1");
-      assert.equal(await manager.additionalText2(), "text2");
-      assert.equal(await manager.additionalText3(), "text3");
       assert.equal(await manager.premiumReputationThreshold(), "42");
     });
 
