@@ -1,4 +1,6 @@
 const { time } = require("@openzeppelin/test-helpers");
+const { MerkleTree } = require("merkletreejs");
+const keccak256 = require("keccak256");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -9,7 +11,6 @@ const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
-const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
 const MockRescueERC721 = artifacts.require("MockRescueERC721");
 const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
@@ -142,6 +143,61 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.validateJob(0, "validator", [], { from: validator });
   });
 
+  it("keeps Merkle allowlists functional even when ENS integrations revert", async () => {
+    const agentRootNode = web3.utils.soliditySha3("agent.root.node");
+    const alphaAgentRootNode = web3.utils.soliditySha3("alpha.agent.root.node");
+    const token = await MockERC20.new({ from: owner });
+    const leaf = web3.utils.soliditySha3({ type: "address", value: agent });
+    const tree = new MerkleTree([Buffer.from(leaf.slice(2), "hex")], keccak256, { sortPairs: true });
+    const agentRoot = tree.getHexRoot();
+    const proof = tree.getHexProof(Buffer.from(leaf.slice(2), "hex"));
+
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await RevertingNameWrapper.new({ from: owner });
+    const resolver = await RevertingResolver.new({ from: owner });
+    const manager = await AGIJobManager.new(
+      ...buildInitConfig(
+        token.address,
+        "ipfs://base",
+        ens.address,
+        wrapper.address,
+        ZERO32,
+        agentRootNode,
+        ZERO32,
+        alphaAgentRootNode,
+        ZERO32,
+        agentRoot
+      ),
+      { from: owner }
+    );
+    const nft = await MockERC721.new({ from: owner });
+
+    await ens.setResolverAddress(resolver.address, { from: owner });
+    await ens.setRevertResolver(true, { from: owner });
+    await wrapper.setRevertOwnerOf(true, { from: owner });
+    await resolver.setRevertAddr(true, { from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    await token.mint(employer, web3.utils.toWei("5"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("5"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("5"), 100, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+
+    await expectCustomError(
+      manager.applyForJob.call(0, "agent", [ZERO32], { from: agent }),
+      "NotAuthorized"
+    );
+
+    await manager.applyForJob(0, "agent", proof, { from: agent });
+
+    const core = await manager.getJobCore(0);
+    assert.equal(core.assignedAgent, agent);
+  });
+
 
 
   it("settlement remains live when ENS hook target reverts with ENS URI mode enabled", async () => {
@@ -161,14 +217,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     assert.equal(core.completed, true);
   });
 
-  it("rescues forced ETH to owner", async () => {
+  it("rescues ETH balance to owner", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployManager(token, ens.address, wrapper.address);
-    const sender = await ForceSendETH.new({ from: owner, value: web3.utils.toWei("1") });
-
-    await sender.boom(manager.address, { from: owner });
+    await setAccountBalance(manager.address, web3.utils.toHex(web3.utils.toWei("1")));
     const ownerBefore = BigInt(await web3.eth.getBalance(owner));
     const tx = await manager.rescueETH(web3.utils.toWei("1"), { from: owner });
     const gasSpent = BigInt(tx.receipt.gasUsed) * BigInt((await web3.eth.getTransaction(tx.tx)).gasPrice);
@@ -257,3 +311,20 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
 
 });
+  async function setAccountBalance(account, weiHex) {
+    const provider = web3.currentProvider;
+    const send = (method, params) => new Promise((resolve, reject) => {
+      provider.send(
+        { jsonrpc: "2.0", id: Date.now(), method, params },
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
+    });
+    try {
+      await send("hardhat_setBalance", [account, weiHex]);
+      return;
+    } catch (_) {}
+    await send("evm_setAccountBalance", [account, weiHex]);
+  }
