@@ -64,6 +64,7 @@ interface NameWrapper {
     function ownerOf(uint256 id) external view returns (address);
 }
 
+
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
@@ -1140,10 +1141,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                     mstore(add(payload, 36), jobId)
                 }
                 (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(payload);
-                if (ok && data.length != 0) {
-                    string memory ensUri = abi.decode(data, (string));
-                    if (bytes(ensUri).length != 0) {
-                        tokenUriValue = ensUri;
+                if (ok && data.length > 95) {
+                    uint256 offset;
+                    uint256 strLen;
+                    assembly {
+                        offset := mload(add(data, 32))
+                        strLen := mload(add(data, 64))
+                    }
+                    if (offset == 32 && strLen <= data.length - 64) {
+                        string memory ensUri = abi.decode(data, (string));
+                        if (bytes(ensUri).length != 0) {
+                            tokenUriValue = ensUri;
+                        }
                     }
                 }
             }
@@ -1247,6 +1256,27 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (amount > available) revert InsufficientWithdrawableBalance();
         _t(msg.sender, amount);
         emit AGIWithdrawn(msg.sender, amount, available - amount);
+    }
+
+    function rescueETH(address payable to, uint256 amount) external onlyOwner nonReentrant {
+        (bool ok, ) = to.call{ value: amount }("");
+        if (!ok) revert TransferFailed();
+    }
+
+    function rescueERC20(address token, address to, uint256 amount)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        if (token == address(agiToken)) {
+            if (!paused()) revert InvalidState();
+            if (settlementPaused) revert SettlementPaused();
+            uint256 available = withdrawableAGI();
+            if (amount > available) revert InsufficientWithdrawableBalance();
+            _t(to, amount);
+            return;
+        }
+        TransferUtils.safeTransfer(token, to, amount);
     }
 
     function canAccessPremiumFeature(address user) external view returns (bool) {
