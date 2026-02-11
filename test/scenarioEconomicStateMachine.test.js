@@ -225,7 +225,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
       contract: await token.balanceOf(manager.address),
     };
 
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
     const jobAfterAgentWin = await manager.getJobCore(jobId);
     assert.strictEqual(jobAfterAgentWin.completed, true, "agent-win dispute should complete job");
     assert.strictEqual(jobAfterAgentWin.disputed, false, "dispute flag should clear after resolution");
@@ -265,10 +265,10 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.disapproveJob(jobIdTwo, "validator-b", EMPTY_PROOF, { from: validatorB });
     const disputedJob = await manager.getJobCore(jobIdTwo);
     assert.strictEqual(disputedJob.disputed, true, "job should be disputed after disapprovals");
-    await expectCustomError(manager.resolveDispute.call(jobIdTwo, "agent win", { from: other }), "NotModerator");
+    await expectCustomError(manager.resolveDisputeWithCode.call(jobIdTwo, 1, "agent win", { from: other }), "NotModerator");
 
     const employerBefore = await token.balanceOf(employer);
-    await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobIdTwo, 2, "employer win", { from: moderator });
     const employerAfter = await token.balanceOf(employer);
     const validatorRewardTotal = payoutTwo.mul(await manager.validationRewardPercentage()).divn(100);
     const agentBondTwo = await computeAgentBond(manager, payoutTwo, toBN(3600));
