@@ -3,6 +3,7 @@ const { time } = require("@openzeppelin/test-helpers");
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
 const MockERC721 = artifacts.require("MockERC721");
+const MockLoopingERC721 = artifacts.require("MockLoopingERC721");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
@@ -141,6 +142,38 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
     await manager.validateJob(0, "validator", [], { from: validator });
   });
+
+
+  it("ignores gas-griefing balanceOf calls when computing AGI payout tiers", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const looping = await MockLoopingERC721.new({ from: owner });
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.addAGIType(looping.address, 50, { from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 1000, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("3"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("3"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    await manager.finalizeJob(0, { from: employer });
+
+    assert.equal((await token.balanceOf(agent)).toString(), web3.utils.toWei("12"));
+  });
+
 
 
 

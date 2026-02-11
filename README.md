@@ -157,9 +157,10 @@ flowchart LR
 ### Mainnet token assumptions (production)
 
 - AGIALPHA token address: `0xa61a3b3a130a9c20768eebf97e21515a6046a1fa`.
-- The system expects exact-transfer ERC20 semantics (no fee-on-transfer/rebase behavior).
+- AGIALPHA is assumed to use 18 decimals for payout/bond/reputation tuning.
+- The system expects exact-transfer ERC20 semantics (no fee-on-transfer behavior and no rebasing supply mechanics).
 - AGIALPHA token-level pause must remain unpaused for normal operation.
-- ENS integration is intentionally best-effort; core escrow/settlement correctness does not depend on ENS success.
+- ENS integration is intentionally best-effort; state can diverge from ENS mirrors and core escrow/settlement correctness must not depend on ENS success.
 
 ### Dependency pinning note
 

@@ -226,7 +226,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event MerkleRootsUpdated(bytes32 indexed validatorMerkleRoot, bytes32 indexed agentMerkleRoot);
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
-    event RewardPoolContribution(address indexed contributor, uint256 indexed amount);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 indexed remainingWithdrawable);
@@ -252,10 +251,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 newMin,
         uint256 newMax
     );
-    event AgentBondMinUpdated(uint256 indexed oldMin, uint256 indexed newMin);
     event ValidatorSlashBpsUpdated(uint256 indexed oldBps, uint256 indexed newBps);
     event EnsHookAttempted(uint8 indexed hook, uint256 indexed jobId, address indexed target, bool success);
-    event ConfigUpdated(uint8 indexed key, uint256 value);
 
     uint8 private constant ENS_HOOK_CREATE = 1;
     uint8 private constant ENS_HOOK_ASSIGN = 2;
@@ -778,7 +775,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner {
         maxJobPayout = _maxPayout;
-        emit ConfigUpdated(2, _maxPayout);
     }
     function setJobDurationLimit(uint256 _limit) external onlyOwner {
         jobDurationLimit = _limit;
@@ -828,9 +824,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit AgentBondParamsUpdated(oldBps, oldMin, oldMax, bps, min, max);
     }
     function setAgentBond(uint256 bond) external onlyOwner {
-        uint256 oldMin = agentBond;
         agentBond = bond;
-        emit AgentBondMinUpdated(oldMin, bond);
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
@@ -1145,9 +1139,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
         }
         tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
-        _mint(job.employer, tokenId);
+        try this.safeMintCompletionTo(job.employer, tokenId) {}
+        catch {
+            _mint(job.employer, tokenId);
+        }
         _tokenURIs[tokenId] = tokenUriValue;
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
+    }
+
+    function safeMintCompletionTo(address to, uint256 tokenId) external {
+        if (msg.sender != address(this)) revert NotAuthorized();
+        _safeMint(to, tokenId);
     }
 
     function _refundEmployer(uint256 jobId, Job storage job) internal {
@@ -1279,14 +1281,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
 
-    function canAccessPremiumFeature(address user) external view returns (bool) {
-        return reputation[user] >= premiumReputationThreshold;
-    }
-
     function contributeToRewardPool(uint256 amount) external whenNotPaused nonReentrant {
         if (amount == 0) revert InvalidParameters();
         TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), amount);
-        emit RewardPoolContribution(msg.sender, amount);
     }
 
     function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
@@ -1375,7 +1372,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                     let ptr := mload(0x40)
                     mstore(ptr, 0x70a0823100000000000000000000000000000000000000000000000000000000)
                     mstore(add(ptr, 0x04), agent)
-                    let success := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
+                    let success := staticcall(100000, nftAddress, ptr, 0x24, ptr, 0x20)
                     if and(success, gt(returndatasize(), 0x1f)) {
                         tokenBalance := mload(ptr)
                     }
