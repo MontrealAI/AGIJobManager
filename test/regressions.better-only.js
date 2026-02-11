@@ -50,7 +50,7 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
       ...buildInitConfig(
         tokenAddress,
         "ipfs://base",
-        ZERO_ADDRESS,
+        owner,
         ZERO_ADDRESS,
         rootNode("club-root"),
         rootNode("agent-root"),
