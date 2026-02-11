@@ -256,4 +256,154 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
   });
 
 
+  it("keeps old jobs settleable after validation reward config changes", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.setValidationRewardPercentage(5, { from: owner });
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setValidatorBondParams(0, 0, 0, { from: owner });
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+
+    await manager.addAGIType(nft.address, 95, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 1000, "details", { from: employer });
+
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+    await manager.validateJob(0, "validator", [], { from: validator });
+
+    await manager.addAGIType(nft.address, 10, { from: owner });
+    await manager.setValidationRewardPercentage(80, { from: owner });
+
+    const challengePeriod = await manager.challengePeriodAfterApproval();
+    await time.increase(challengePeriod.addn(1));
+
+    const validatorBefore = await token.balanceOf(validator);
+    const tx = await manager.finalizeJob(0, { from: employer });
+    assert.equal(tx.receipt.status, true);
+    const validatorAfter = await token.balanceOf(validator);
+    assert.equal(validatorAfter.sub(validatorBefore).toString(), web3.utils.toWei("0.5"));
+
+    const core = await manager.getJobCore(0);
+    assert.equal(core.completed, true);
+  });
+
+  it("does not auto-dispute when required disapprovals are disabled", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    await manager.setRequiredValidatorDisapprovals(0, { from: owner });
+    await manager.setValidatorBondParams(0, 0, 0, { from: owner });
+
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 1000, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("3"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("3"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+    await manager.disapproveJob(0, "validator", [], { from: validator });
+
+    const core = await manager.getJobCore(0);
+    assert.equal(core.disputed, false);
+  });
+
+  it("rejects overlong jobSpecURI and completionURI", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const longUri = "Q".repeat(1025);
+
+    const payout = web3.utils.toWei("1");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await expectCustomError(manager.createJob.call(longUri, payout, 100, "details", { from: employer }), "InvalidParameters");
+
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.createJob("ipfs://spec", payout, 100, "details", { from: employer });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await expectCustomError(manager.requestJobCompletion.call(0, longUri, { from: agent }), "InvalidParameters");
+  });
+
+  it("rejects overlong baseIpfsUrl", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    await expectCustomError(manager.setBaseIpfsUrl.call("x".repeat(513), { from: owner }), "InvalidParameters");
+  });
+
+  it("fails fast on zero AGI token and ENS/root misconfiguration", async () => {
+    let failed = false;
+    try {
+      await AGIJobManager.new(
+        ...buildInitConfig(
+          "0x0000000000000000000000000000000000000000",
+          "ipfs://base",
+          "0x0000000000000000000000000000000000000000",
+          "0x0000000000000000000000000000000000000000",
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32
+        ),
+        { from: owner }
+      );
+    } catch (error) {
+      failed = true;
+    }
+    assert.equal(failed, true);
+
+    failed = false;
+    try {
+      await AGIJobManager.new(
+        ...buildInitConfig(
+          owner,
+          "ipfs://base",
+          "0x0000000000000000000000000000000000000000",
+          "0x0000000000000000000000000000000000000000",
+          web3.utils.keccak256("club"),
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32
+        ),
+        { from: owner }
+      );
+    } catch (error) {
+      failed = true;
+    }
+    assert.equal(failed, true);
+  });
+
 });
