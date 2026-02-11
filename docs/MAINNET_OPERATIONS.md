@@ -1,140 +1,192 @@
-# Mainnet Operations Runbook (Business-Operated Deployment)
+# Mainnet Operations (Institutional Runbook)
 
-## Explicit mainnet assumptions
+## Mainnet context (current production assumptions)
 
-- **Production AGI token**: `AGIALPHA` at `0xa61a3b3a130a9c20768eebf97e21515a6046a1fa`.
-- **Token behavior assumption**: OpenZeppelin-standard ERC20 exact transfer semantics (no fee-on-transfer, no rebasing).
-- **Operational dependency**: token-level pause on `AGIALPHA` must be **unpaused** for normal protocol operations.
-- **ENS integration model**: ENS hooks and ENS ownership checks are best-effort mirrors; settlement and escrow correctness must not depend on ENS call success.
+- **AGIALPHA token**: `0xa61a3b3a130a9c20768eebf97e21515a6046a1fa`.
+- **Token semantics**: OpenZeppelin-style ERC20 exact-transfer accounting (no fee-on-transfer, no rebasing).
+- **Operational dependency**: AGIALPHA token-level pause must be **unpaused** for day-to-day create/apply/settlement flows.
+- **ENS posture**: ENS checks and ENS job-page hooks are **best-effort only**. Settlement correctness and liveness must not depend on ENS success.
+- **Completion NFT minting**: uses direct `_mint` to preserve EIP-170 bytecode headroom; contract employers without `IERC721Receiver` support may custody NFTs manually.
 
-## Deploy day sequence
+---
 
-1. Deploy `ENSJobPages`.
-2. Deploy `AGIJobManager` with final constructor config (token + ENS registry + NameWrapper + roots + Merkle roots).
-3. Wire contracts:
-   - `setEnsJobPages(ENSJobPages)`
-   - `setUseEnsJobTokenURI(false)` initially (enable only after hook smoke tests).
-4. Configure governance/ops:
-   - moderators
-   - additional agents/validators (if used)
-   - validator/agent bond parameters
-   - validator threshold parameters
-   - AGI types (ERC721 contracts + payout percentages)
-5. Configure identity gating roots (Merkle and ENS roots).
-6. Smoke test all lifecycle actions with small payout jobs.
-7. Verify contracts on Etherscan + confirm bytecode-size gate.
-8. Transfer ownership to multisig (`transferOwnership`) and archive signer runbook.
-9. Call `lockIdentityConfiguration()` only after ENS / token / root wiring is fully verified.
-10. Unpause rollout:
-    - keep `settlementPaused=false`
-    - `unpause()` execution flows
-    - optionally enable `setUseEnsJobTokenURI(true)` after ENS URI checks.
+## Deploy-day runbook
 
-## Post-deploy verification checklist
+### 1) Deploy and verify prerequisites
 
-- Constructor addresses match signed deployment plan.
-- `withdrawableAGI()` is non-negative and escrow-backed invariants hold.
-- `scripts/check-contract-sizes.js` passes and runtime bytecode is under EIP-170.
-- Ownership is multisig-held and emergency signers tested.
-- ENS hooks produce expected events without blocking settlement.
+1. Deploy (or confirm) ENS dependencies used by your integration (ENS registry, NameWrapper, resolver addresses).
+2. Deploy optional ENS mirror (`ENSJobPages`) if used.
+3. Deploy `AGIJobManager` with constructor args:
+   - `agiTokenAddress`
+   - `baseIpfs`
+   - `[ensAddress, nameWrapperAddress]`
+   - `[clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode]`
+   - `[validatorMerkleRoot, agentMerkleRoot]`
+
+Expected: contract deployment succeeds and emits the standard ERC721 initialization behavior.
+
+### 2) Post-deploy owner configuration calls (in order)
+
+1. `setEnsJobPages(<ensJobPages | 0x0>)`
+2. `setUseEnsJobTokenURI(false)` initially
+3. add operators:
+   - `addModerator(...)`
+   - `addAdditionalAgent(...)` / `addAdditionalValidator(...)` as emergency backstops
+4. economic params:
+   - `setRequiredValidatorApprovals(...)`
+   - `setRequiredValidatorDisapprovals(...)`
+   - `setVoteQuorum(...)`
+   - bond/slash/review period setters as required
+5. identity params:
+   - root-node and Merkle-root setters
+6. `addAGIType(<erc721>, <payoutPct>)`
+7. run smoke test lifecycle (small payout)
+8. if ENS mirror behavior is clean: `setUseEnsJobTokenURI(true)`
+9. transfer ownership to multisig: `transferOwnership(<multisig>)`
+10. permanently freeze identity wiring once validated: `lockIdentityConfiguration()`
+
+### 3) Smoke-test lifecycle checklist
+
+Execute: create -> apply -> request completion -> vote -> finalize, then assert:
+
+- `JobCompleted` and `NFTIssued` are emitted.
+- locked accounting returns to expected post-settlement values.
+- `withdrawableAGI()` remains consistent with `balance - lockedTotals`.
+
+### 4) Release gates before enabling production traffic
+
+- Bytecode size gate passes (`node scripts/check-contract-sizes.js`).
+- Test suite passes (`npm test`).
+- Etherscan verification complete and constructor args archived.
+- Owner is a production multisig (not EOA).
+
+---
+
+## Roles and administrative functions
+
+| Function | Role | Safety posture | Notes |
+| --- | --- | --- | --- |
+| `pause` / `unpause` | Owner | Critical | Pausable controls user entry and vote paths. |
+| `setSettlementPaused` | Owner | Critical | Freezes settlement exits when needed. |
+| `withdrawAGI` | Owner | Paused-only + settlement-not-paused | Withdraws only non-escrow AGI backing (`withdrawableAGI`). |
+| `rescueETH` | Owner | NonReentrant | Recovers forced ETH (e.g., selfdestruct dust). |
+| `rescueERC20` (AGI) | Owner | Same safety posture as treasury path | Enforces pause + settlement-not-paused + `amount <= withdrawableAGI()`. |
+| `rescueERC20` (non-AGI) | Owner | NonReentrant | Recover unrelated ERC20s accidentally sent to contract. |
+| `rescueToken` | Owner | NonReentrant | Generic calldata rescue for non-AGI assets (e.g., ERC721/ERC1155). |
+| `lockIdentityConfiguration` | Owner | One-way | Permanently locks token/ENS/root-node identity wiring. |
+
+---
+
+## Parameter guide (recommended ranges + invariants)
+
+| Parameter | Suggested range | Invariant / rationale |
+| --- | --- | --- |
+| `requiredValidatorApprovals` | 2-5 | Keep validator threshold reachable for liveness. |
+| `requiredValidatorDisapprovals` | 2-5 | Keep symmetric with approvals. |
+| `voteQuorum` | >= max(approvals, disapprovals) | Avoid low-participation finality. |
+| `validationRewardPercentage` | 5-15% | Incentivize validators while preserving agent payout headroom. |
+| `completionReviewPeriod` | 1-7 days | Time for validator participation. |
+| `disputeReviewPeriod` | 3-21 days | Time for moderator evidence review. |
+| Agent/validator bond params | risk-adjusted | Keep participation viable while pricing malicious behavior. |
+
+Hard safety invariant:
+
+`AGI balance >= lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`
+
+---
 
 ## Incident response
 
-### Pause / unpause
+### Pause semantics
 
-- `pause()` for emergency entry freeze and admin-safe treasury actions.
-- Keep `settlementPaused=false` when you need participants to settle/finalize during pause windows.
-- Use `setSettlementPaused(true)` only for full settlement freeze incidents.
-- Recovery order: diagnose root cause -> revert unsafe config -> `setSettlementPaused(false)` -> `unpause()`.
+- `pause()` blocks new user-flow actions.
+- `setSettlementPaused(true)` blocks settlement/finalization paths guarded by `whenSettlementNotPaused`.
+- Use `pause()` alone when you want to freeze ingress but allow settlement exits.
 
-### Rescue functions
+### ENS degradation runbook
 
-- AGI surplus recovery is available on `withdrawAGI(amount)` with pause + settlement-not-paused + withdrawable accounting protections.
-- Generic arbitrary-token/ETH rescue entrypoints are intentionally omitted in the current bytecode-constrained build; forced ETH or unrelated ERC20 transfers should be prevented operationally.
+If ENS mirror or ENS ownership infrastructure degrades:
 
-### Disable AGI types safely
+1. Keep core settlement active unless token economics are at risk.
+2. Disable mirror URI mode: `setUseEnsJobTokenURI(false)`.
+3. Continue operations using allowlists (`additionalAgents`/`additionalValidators`) and/or Merkle roots.
+4. Repair ENS infra off-path; re-enable URI mode only after smoke testing.
 
-- Use `setAGITypeStatus` / AGI type update controls to disable compromised NFT dependencies.
-- Do not change payout percentages in a way that violates validator reward headroom constraints.
+### Rescue procedure
 
-## Admin function safety matrix
+1. Confirm escrow solvency invariant.
+2. For forced ETH dust: call `rescueETH(amount)`.
+3. For non-AGI ERC20: call `rescueERC20(token, to, amount)`.
+4. For AGI treasury recovery: ensure `pause()==true`, `settlementPaused==false`, then call `rescueERC20(agiToken, to, amount)` or `withdrawAGI(amount)`.
+5. For accidentally sent NFTs/multi-tokens: use `rescueToken` with explicit calldata.
 
-| Function | Safe during normal ops | Safe during pause | Notes |
-| --- | --- | --- | --- |
-| `pause` / `unpause` | Yes | Yes | Primary incident toggle. |
-| `setSettlementPaused` | Yes (careful) | Yes | Freezes/unfreezes settlement path. |
-| `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Treasury path for AGI surplus only. |
-| Generic token/ETH rescue | No | No | Not exposed in current contract surface. |
-| `lockIdentityConfiguration` | One-way | One-way | Finalize only after full config verification. |
+---
 
-## Recommended parameter ranges (mainnet)
+## Diagrams
 
-| Parameter | Recommended range | Rationale |
-| --- | --- | --- |
-| `requiredValidatorApprovals` | 2-5 | Small enough for liveness, large enough for confidence. |
-| `requiredValidatorDisapprovals` | 2-5 | Match approvals to reduce asymmetry. |
-| `voteQuorum` | >= max(approvals, disapprovals) | Prevent low-participation outcomes. |
-| `validationRewardPercentage` | 5-15% | Keeps validator incentives healthy without starving agent payout. |
-| `completionReviewPeriod` | 1-7 days | Gives validators reaction window. |
-| `disputeReviewPeriod` | 3-21 days | Moderator liveness + evidence window. |
-| Agent/validator bond bps | 100-2000 bps | Enough economic skin-in-game without hurting participation. |
-
-## Job lifecycle state machine
+### Job lifecycle (state machine)
 
 ```mermaid
 stateDiagram-v2
     [*] --> Created
     Created --> Assigned: applyForJob
     Assigned --> CompletionRequested: requestJobCompletion
-    CompletionRequested --> Completed: finalizeJob / validator threshold
+    CompletionRequested --> Completed: finalizeJob (approval/disapproval path)
     CompletionRequested --> Disputed: disputeJob
     Disputed --> Completed: resolveDispute(agent win)
     Disputed --> Expired: resolveDispute(employer win)
     Assigned --> Expired: expireJob
-    Created --> Deleted: delistJob
+    Created --> Deleted: cancel/delist
 ```
 
-## Funds flow
+### Funds flow
 
 ```mermaid
 flowchart TD
-    E[Employer payout deposit] --> C[(AGIJobManager balance)]
-    A[Agent bond] --> C
-    V[Validator bonds] --> C
-    D[Dispute bond] --> C
+    E[Employer escrow deposit] --> C[(AGIJobManager AGI balance)]
+    AB[Agent bond] --> C
+    VB[Validator bonds] --> C
+    DB[Dispute bond] --> C
     C --> L[Locked backing: escrow + bonds]
-    C --> S[Settlement payouts/refunds]
-    C --> R[Platform retained surplus]
-    R --> W[withdrawAGI under pause safety]
+    C --> P[Settlement payouts/refunds]
+    C --> R[Retained platform remainder]
+    R --> W[withdrawAGI / AGI rescueERC20 under safety guards]
 ```
 
-## ENS hook best-effort flow
+### ENS hook flow (best effort)
 
 ```mermaid
 flowchart LR
-    J[Job completion settlement] --> U{useEnsJobTokenURI?}
-    U -- no --> D[Use jobCompletionURI]
-    U -- yes --> H[Staticcall ENSJobPages.jobEnsURI with gas cap]
-    H --> K{Call + ABI payload valid?}
-    K -- yes --> E[Use ENS URI if non-empty]
-    K -- no --> D
-    E --> M[Mint NFT + settle]
+    S[Settlement path] --> U{useEnsJobTokenURI}
+    U -- false --> D[Use jobCompletionURI]
+    U -- true --> H[Gas-capped staticcall to ensJobPages.jobEnsURI(jobId)]
+    H --> V{ABI payload valid?}
+    V -- yes --> E[Use ENS URI]
+    V -- no --> D
+    E --> M[Mint completion NFT + settle]
     D --> M
 ```
 
-
-## Emergency operations flowchart
+### Emergency operations flow
 
 ```mermaid
 flowchart TD
-    A[Detect incident] --> B{Need full freeze?}
-    B -- Yes --> C[setSettlementPaused(true)]
-    B -- No --> D[pause()]
-    C --> E[Diagnose + patch config]
+    A[Incident detected] --> B{Freeze settlement?}
+    B -- yes --> C[setSettlementPaused(true)]
+    B -- no --> D[pause()]
+    C --> E[Diagnose + remediate]
     D --> E
-    E --> F{Foreign assets trapped?}
-    F -- None/unsupported --> I[Skip rescue]
-    I --> J[Verify escrow solvency + withdrawableAGI]
-    J --> K[setSettlementPaused(false)]
-    K --> L[unpause and monitor]
+    E --> F{Rescue needed?}
+    F -- yes --> G[Run rescue procedure]
+    F -- no --> H[Skip rescue]
+    G --> I[Verify solvency + smoke tests]
+    H --> I
+    I --> J[setSettlementPaused(false)]
+    J --> K[unpause() + monitor]
 ```
+
+---
+
+## Build reproducibility note
+
+`@openzeppelin/contracts` is pinned to `4.9.6` in `package.json` to avoid accidental OpenZeppelin v5 migration breakage (notably Ownable constructor behavior and import path differences).

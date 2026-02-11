@@ -65,6 +65,7 @@ interface NameWrapper {
 }
 
 
+
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
@@ -1239,6 +1240,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (!ok) revert TransferFailed();
     }
 
+    function rescueERC20(address token, address to, uint256 amount) external onlyOwner nonReentrant {
+        if (token == address(0) || to == address(0) || amount == 0) revert InvalidParameters();
+        if (token == address(agiToken)) {
+            if (settlementPaused) revert SettlementPaused();
+            if (!paused()) revert InvalidState();
+            uint256 available = withdrawableAGI();
+            if (amount > available) revert InsufficientWithdrawableBalance();
+            _t(to, amount);
+            emit AGIWithdrawn(to, amount, available - amount);
+            return;
+        }
+        TransferUtils.safeTransfer(token, to, amount);
+    }
+
     function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
         if (token == address(agiToken)) revert InvalidParameters();
         (bool ok, bytes memory ret) = token.call(data);
@@ -1251,6 +1266,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
             if (returned != 1) revert TransferFailed();
         }
+    }
+
+
+    function getActiveJobsByAgent(address agent) external view returns (uint256) {
+        return activeJobsByAgent[agent];
     }
 
     function canAccessPremiumFeature(address user) external view returns (bool) {
