@@ -83,14 +83,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error InsolventEscrowBalance();
     error ConfigLocked();
     error SettlementPaused();
-    error DeprecatedParameter();
 
     /// @notice Canonical dispute resolution codes (numeric ordering is stable; do not reorder).
     /// @dev 0 = NO_ACTION (log only; dispute remains active)
-    // Pre-hashed resolution strings (smaller + cheaper than hashing literals each call)
-    bytes32 private constant RES_AGENT_WIN = 0x6594a8dd3f558fd2dd11fa44c7925f5b9e19868e6d0b4b97d2132fe5e25b5071;
-    bytes32 private constant RES_EMPLOYER_WIN = 0xee31e9f396a85b8517c6d07b02f904858ad9f3456521bedcff02cc14e75ca8ce;
-
     IERC20 public agiToken;
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
@@ -106,8 +101,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public completionReviewPeriod = 7 days;
     uint256 public disputeReviewPeriod = 14 days;
     uint256 internal constant MAX_REVIEW_PERIOD = 365 days;
-    /// @notice Deprecated and unused payout knob.
-    uint256 public additionalAgentPayoutPercentage = 50;
     bool public settlementPaused;
     uint256 internal constant DISPUTE_BOND_BPS = 50;
     uint256 internal constant DISPUTE_BOND_MIN = 1e18;
@@ -139,12 +132,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     /// @notice Total AGI locked as dispute bonds for unsettled disputes.
     uint256 public lockedDisputeBonds;
     uint256 internal constant maxActiveJobsPerAgent = 3;
-
-    string public termsAndConditionsIpfsHash;
-    string public contactEmail;
-    string public additionalText1;
-    string public additionalText2;
-    string public additionalText3;
 
     bytes32 public clubRootNode;
     bytes32 public alphaClubRootNode;
@@ -220,7 +207,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event JobCompleted(uint256 indexed jobId, address indexed agent, uint256 indexed reputationPoints);
     event ReputationUpdated(address user, uint256 newReputation);
     event JobCancelled(uint256 indexed jobId);
-    event DisputeResolved(uint256 indexed jobId, address indexed resolver, string resolution);
     event DisputeResolvedWithCode(
         uint256 indexed jobId,
         address indexed resolver,
@@ -240,10 +226,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event MerkleRootsUpdated(bytes32 indexed validatorMerkleRoot, bytes32 indexed agentMerkleRoot);
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
-    event RewardPoolContribution(address indexed contributor, uint256 indexed amount);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
-    event AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage);
     event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 indexed remainingWithdrawable);
     event PlatformRevenueAccrued(uint256 indexed jobId, uint256 indexed amount);
     event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);
@@ -280,6 +264,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_LOCK_BURN = 6;
     uint256 internal constant ENS_HOOK_GAS_LIMIT = 500_000;
     uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
+    uint256 internal constant MAX_ENS_URI_RETURN_BYTES = 2048;
+    uint256 internal constant MAX_ENS_URI_BYTES = 1024;
 
     constructor(
         address agiTokenAddress,
@@ -639,19 +625,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit JobDisputed(_jobId, msg.sender);
     }
 
-    /// @notice Deprecated: use resolveDisputeWithCode for typed settlement.
-    /// @dev Non-canonical strings map to NO_ACTION (dispute remains active).
-    function resolveDispute(uint256 _jobId, string calldata resolution) external onlyModerator whenSettlementNotPaused nonReentrant {
-        bytes32 r = keccak256(bytes(resolution));
-        uint8 resolutionCode;
-        if (r == RES_AGENT_WIN) {
-            resolutionCode = 1;
-        } else if (r == RES_EMPLOYER_WIN) {
-            resolutionCode = 2;
-        }
-        _resolveDispute(_jobId, resolutionCode, resolution);
-    }
-
     /// @notice Resolve a dispute with a typed action code and freeform reason.
     function resolveDisputeWithCode(
         uint256 _jobId,
@@ -679,11 +652,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         } else {
             revert InvalidParameters();
         }
-        emit DisputeResolved(
-            _jobId,
-            msg.sender,
-            resolutionCode == 1 ? "agent win" : "employer win"
-        );
         emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
     }
 
@@ -861,16 +829,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         challengePeriodAfterApproval = period;
         emit ChallengePeriodAfterApprovalUpdated(oldPeriod, period);
     }
-    /// @notice Deprecated and unused in payout logic.
-    function setAdditionalAgentPayoutPercentage(uint256) external view onlyOwner {
-        revert DeprecatedParameter();
-    }
-    function updateTermsAndConditionsIpfsHash(string calldata _hash) external onlyOwner { termsAndConditionsIpfsHash = _hash; }
-    function updateContactEmail(string calldata _email) external onlyOwner { contactEmail = _email; }
-    function updateAdditionalText1(string calldata _text) external onlyOwner { additionalText1 = _text; }
-    function updateAdditionalText2(string calldata _text) external onlyOwner { additionalText2 = _text; }
-    function updateAdditionalText3(string calldata _text) external onlyOwner { additionalText3 = _text; }
-
     function getJobCore(uint256 jobId)
         external
         view
@@ -1133,39 +1091,65 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
         string memory tokenUriValue = job.jobCompletionURI;
         if (useEnsJobTokenURI) {
-            address target = ensJobPages;
-            if (target != address(0) && target.code.length != 0) {
-                bytes memory payload = new bytes(36);
-                assembly {
-                    mstore(add(payload, 32), 0x751809b400000000000000000000000000000000000000000000000000000000)
-                    mstore(add(payload, 36), jobId)
-                }
-                (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(payload);
-                if (ok) {
-                    assembly {
-                        let size := mload(data)
-                        let len := mload(add(data, 64))
-                        let end := add(64, len)
-                        if and(
-                            gt(len, 0),
-                            and(
-                                eq(mload(add(data, 32)), 32),
-                                and(
-                                    iszero(lt(end, len)),
-                                    iszero(gt(end, size))
-                                )
-                            )
-                        ) {
-                            tokenUriValue := add(data, 64)
-                        }
-                    }
-                }
+            string memory ensURI = _fetchEnsTokenURI(jobId);
+            if (bytes(ensURI).length != 0) {
+                tokenUriValue = ensURI;
             }
         }
         tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
         _mint(job.employer, tokenId);
         _tokenURIs[tokenId] = tokenUriValue;
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
+    }
+
+    function _fetchEnsTokenURI(uint256 jobId) internal view returns (string memory uri) {
+        address target = ensJobPages;
+        if (target == address(0) || target.code.length == 0) {
+            return "";
+        }
+
+        bytes memory data;
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, shl(224, 0x751809b4))
+            mstore(add(ptr, 4), jobId)
+            if staticcall(ENS_URI_GAS_LIMIT, target, ptr, 36, 0, 0) {
+                let size := returndatasize()
+                if and(gt(size, 63), iszero(gt(size, MAX_ENS_URI_RETURN_BYTES))) {
+                    data := mload(0x40)
+                    mstore(data, size)
+                    returndatacopy(add(data, 32), 0, size)
+                    mstore(0x40, and(add(add(data, 64), add(size, 31)), not(31)))
+                }
+            }
+        }
+
+        if (data.length < 64) {
+            return "";
+        }
+
+        uint256 offset;
+        uint256 strLen;
+        assembly {
+            offset := mload(add(data, 32))
+            strLen := mload(add(data, 64))
+        }
+        if (offset != 32 || strLen == 0 || strLen > MAX_ENS_URI_BYTES) {
+            return "";
+        }
+
+        uint256 padded;
+        unchecked {
+            padded = (strLen + 31) & ~uint256(31);
+        }
+        if (64 + padded > data.length) {
+            return "";
+        }
+
+        assembly {
+            uri := add(data, 64)
+            mstore(uri, strLen)
+        }
     }
 
     function _refundEmployer(uint256 jobId, Job storage job) internal {
@@ -1263,14 +1247,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit AGIWithdrawn(msg.sender, amount, available - amount);
     }
 
-    function canAccessPremiumFeature(address user) external view returns (bool) {
-        return reputation[user] >= premiumReputationThreshold;
+    function rescueETH(uint256 amount) external onlyOwner nonReentrant {
+        (bool ok, ) = owner().call{value: amount}("");
+        if (!ok) revert TransferFailed();
     }
 
-    function contributeToRewardPool(uint256 amount) external whenNotPaused nonReentrant {
-        if (amount == 0) revert InvalidParameters();
-        TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), amount);
-        emit RewardPoolContribution(msg.sender, amount);
+    function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
+        if (token == address(agiToken)) revert InvalidParameters();
+        (bool ok, ) = token.call(data);
+        if (!ok) revert TransferFailed();
     }
 
     function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {

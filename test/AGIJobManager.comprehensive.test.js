@@ -324,7 +324,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const tokenIdAfterCompletion = await manager.nextTokenId();
       await expectCustomError(
-        manager.resolveDispute.call(0, "agent win", { from: moderator }),
+        manager.resolveDisputeWithCode.call(0, 1, "agent win", { from: moderator }),
         "InvalidState"
       );
       await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
@@ -343,7 +343,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disputeJob(0, { from: employer });
 
       const employerBalanceBefore = await token.balanceOf(employer);
-      await manager.resolveDispute(0, "employer win", { from: moderator });
+      await manager.resolveDisputeWithCode(0, 2, "employer win", { from: moderator });
       const employerBalanceAfter = await token.balanceOf(employer);
 
       const agentBond = await computeAgentBond(manager, payout, duration);
@@ -359,7 +359,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         "InvalidState"
       );
       await expectCustomError(
-        manager.resolveDispute.call(0, "agent win", { from: moderator }),
+        manager.resolveDisputeWithCode.call(0, 1, "agent win", { from: moderator }),
         "InvalidState"
       );
     });
@@ -376,7 +376,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disputeJob(0, { from: agent });
 
       const agentBalanceBefore = await token.balanceOf(agent);
-      await manager.resolveDispute(0, "agent win", { from: moderator });
+      await manager.resolveDisputeWithCode(0, 1, "agent win", { from: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
 
       const agentBond = await computeAgentBond(manager, payout, duration);
@@ -620,7 +620,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.requestJobCompletion(0, updatedIpfs, { from: agent });
       await altManager.disputeJob(0, { from: agent });
       await expectCustomError(
-        altManager.resolveDispute.call(0, "agent win", { from: moderator }),
+        altManager.resolveDisputeWithCode.call(0, 1, "agent win", { from: moderator }),
         "TransferFailed"
       );
     });
@@ -763,17 +763,14 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectCustomError(manager.setValidationRewardPercentage.call(101, { from: owner }), "InvalidParameters");
     });
 
-    it("handles reward pool contributions and pause protections", async () => {
+    it("handles treasury top-ups and pause protections", async () => {
       await token.mint(employer, payout);
-      await token.approve(manager.address, payout, { from: employer });
-      const receipt = await manager.contributeToRewardPool(payout, { from: employer });
-      expectEvent(receipt, "RewardPoolContribution", { contributor: employer, amount: payout });
-
-      await expectCustomError(manager.contributeToRewardPool.call(0, { from: employer }), "InvalidParameters");
+      await token.transfer(manager.address, payout, { from: employer });
+      assert((await token.balanceOf(manager.address)).gte(payout));
 
       await manager.pause({ from: owner });
       await expectRevert.unspecified(
-        manager.contributeToRewardPool(payout, { from: employer }));
+        manager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer }));
     });
 
     it("blocks most job actions while paused but allows completion requests", async () => {
