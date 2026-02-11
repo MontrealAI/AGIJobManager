@@ -324,7 +324,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const tokenIdAfterCompletion = await manager.nextTokenId();
       await expectCustomError(
-        manager.resolveDispute.call(0, "agent win", { from: moderator }),
+        manager.resolveDisputeWithCode.call(0, 1, "agent win", { from: moderator }),
         "InvalidState"
       );
       await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
@@ -343,7 +343,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disputeJob(0, { from: employer });
 
       const employerBalanceBefore = await token.balanceOf(employer);
-      await manager.resolveDispute(0, "employer win", { from: moderator });
+      await manager.resolveDisputeWithCode(0, 2, "employer win", { from: moderator });
       const employerBalanceAfter = await token.balanceOf(employer);
 
       const agentBond = await computeAgentBond(manager, payout, duration);
@@ -359,7 +359,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         "InvalidState"
       );
       await expectCustomError(
-        manager.resolveDispute.call(0, "agent win", { from: moderator }),
+        manager.resolveDisputeWithCode.call(0, 1, "agent win", { from: moderator }),
         "InvalidState"
       );
     });
@@ -376,7 +376,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.disputeJob(0, { from: agent });
 
       const agentBalanceBefore = await token.balanceOf(agent);
-      await manager.resolveDispute(0, "agent win", { from: moderator });
+      await manager.resolveDisputeWithCode(0, 1, "agent win", { from: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
 
       const agentBond = await computeAgentBond(manager, payout, duration);
@@ -620,7 +620,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.requestJobCompletion(0, updatedIpfs, { from: agent });
       await altManager.disputeJob(0, { from: agent });
       await expectCustomError(
-        altManager.resolveDispute.call(0, "agent win", { from: moderator }),
+        altManager.resolveDisputeWithCode.call(0, 1, "agent win", { from: moderator }),
         "TransferFailed"
       );
     });
