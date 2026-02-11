@@ -15,6 +15,8 @@ interface NameWrapperLike {
 }
 
 library ENSOwnership {
+    uint256 private constant ENS_STATICCALL_GAS_LIMIT = 200_000;
+
     function verifyENSOwnership(
         address ensAddress,
         address nameWrapperAddress,
@@ -70,9 +72,22 @@ library ENSOwnership {
         bytes4 selector,
         bytes32 node
     ) private view returns (bool ok, address result) {
-        bytes memory data;
-        (ok, data) = target.staticcall(abi.encodeWithSelector(selector, node));
-        if (!ok || data.length < 32) return (false, address(0));
-        result = abi.decode(data, (address));
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, shl(224, selector))
+            mstore(add(ptr, 0x04), node)
+
+            ok := staticcall(ENS_STATICCALL_GAS_LIMIT, target, ptr, 0x24, ptr, 0x20)
+            if iszero(ok) {
+                result := 0
+            }
+            if lt(returndatasize(), 0x20) {
+                ok := 0
+                result := 0
+            }
+            if ok {
+                result := mload(ptr)
+            }
+        }
     }
 }

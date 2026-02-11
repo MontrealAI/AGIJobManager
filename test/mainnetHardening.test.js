@@ -15,6 +15,9 @@ const MockRescueERC721 = artifacts.require("MockRescueERC721");
 const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
 const MockRescueERC20False = artifacts.require("MockRescueERC20False");
 const MockRescueMalformedReturn = artifacts.require("MockRescueMalformedReturn");
+const ERC721ReceiverEmployer = artifacts.require("ERC721ReceiverEmployer");
+const NonReceiverEmployer = artifacts.require("NonReceiverEmployer");
+const MockLoopingERC721 = artifacts.require("MockLoopingERC721");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
@@ -421,5 +424,65 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
   });
 
+
+  it("safe-mints to receiver contracts, falls back for non-receivers, and protects relay", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+
+    const receiverEmployer = await ERC721ReceiverEmployer.new(manager.address, token.address, { from: owner });
+    await token.mint(receiverEmployer.address, payout, { from: owner });
+    await receiverEmployer.createJob("ipfs://spec-r", payout, 100, "details", { from: owner });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "QmCompletionR", { from: agent });
+    let reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    await manager.finalizeJob(0, { from: owner });
+    assert.equal((await receiverEmployer.receivedCount()).toString(), "1");
+
+    const nonReceiverEmployer = await NonReceiverEmployer.new(manager.address, token.address, { from: owner });
+    await token.mint(nonReceiverEmployer.address, payout, { from: owner });
+    await nonReceiverEmployer.createJob("ipfs://spec-n", payout, 100, "details", { from: owner });
+    await manager.applyForJob(1, "agent", [], { from: agent });
+    await manager.requestJobCompletion(1, "QmCompletionN", { from: agent });
+    reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    const settleTx = await manager.finalizeJob(1, { from: owner });
+    const issued = settleTx.logs.find((l) => l.event === "NFTIssued");
+    assert.equal(await manager.ownerOf(issued.args.tokenId), nonReceiverEmployer.address);
+
+    await expectCustomError(
+      manager.safeMintCompletionNFTRelay.call(owner, 9999, { from: owner }),
+      "NotAuthorized"
+    );
+  });
+
+  it("treats looping ERC721 balanceOf as not owned instead of bricking applyForJob", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const looping = await MockLoopingERC721.new({ from: owner });
+
+    await manager.addAGIType(looping.address, 90, { from: owner });
+    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+
+    await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
+  });
 
 });
