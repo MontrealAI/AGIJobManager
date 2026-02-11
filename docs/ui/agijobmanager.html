@@ -1096,6 +1096,14 @@
 
     let abi = fallbackAbi;
 
+    function ensureLegacyDisputeEventInAbi(loadedAbi) {
+      const list = Array.isArray(loadedAbi) ? [...loadedAbi] : [];
+      const hasLegacy = list.some((entry) => entry && entry.type === "event" && entry.name === "DisputeResolved");
+      if (hasLegacy) return list;
+      list.push("event DisputeResolved(uint256 jobId, address resolver, string resolution)");
+      return list;
+    }
+
     async function loadAbi() {
       try {
         const response = await fetch("./abi/AGIJobManager.json", { cache: "no-store" });
@@ -1107,10 +1115,10 @@
         if (!Array.isArray(fetchedAbi)) {
           throw new Error("ABI payload missing.");
         }
-        abi = fetchedAbi;
+        abi = ensureLegacyDisputeEventInAbi(fetchedAbi);
         logEvent("External ABI loaded.");
       } catch (error) {
-        abi = fallbackAbi;
+        abi = ensureLegacyDisputeEventInAbi(fallbackAbi);
         logEvent("Fallback ABI used.");
       }
     }
@@ -2009,6 +2017,24 @@
       }
     }
 
+    function hasContractEvent(contract, eventName) {
+      if (!contract || !contract.interface) return false;
+      try {
+        return !!contract.interface.getEvent(eventName);
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function pushFilterIfPresent(filters, contract, eventName) {
+      if (!hasContractEvent(contract, eventName)) return;
+      const factory = contract.filters[eventName];
+      if (typeof factory === "function") {
+        filters.push(factory());
+      }
+    }
+
+
     async function refreshNetwork() {
       const provider = getProvider();
       const network = await provider.getNetwork();
@@ -2846,12 +2872,14 @@
         state.readContract.filters.JobApplied(),
         state.readContract.filters.JobCompletionRequested(),
         state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
+      ];
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolved");
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolvedWithCode");
+      filters.push(
         state.readContract.filters.JobCompleted(),
         state.readContract.filters.JobCancelled(),
         state.readContract.filters.NFTIssued(),
-      ];
+      );
 
       let allLogs = [];
       for (const filter of filters) {
@@ -3302,10 +3330,10 @@
         state.readContract.filters.JobCompleted(),
         state.readContract.filters.JobCancelled(),
         state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
-        state.readContract.filters.NFTIssued(),
       ];
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolved");
+      pushFilterIfPresent(filters, state.readContract, "DisputeResolvedWithCode");
+      filters.push(state.readContract.filters.NFTIssued());
 
       for (const filter of filters) {
         const events = await state.readContract.queryFilter(filter, fromBlock, toBlock);
@@ -3329,12 +3357,16 @@
       contract.on("JobCompleted", (jobId) => logEvent(`JobCompleted #${jobId}`));
       contract.on("JobCancelled", (jobId) => logEvent(`JobCancelled #${jobId}`));
       contract.on("JobDisputed", (jobId) => logEvent(`JobDisputed #${jobId}`));
-      contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
-      contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
-        const action = formatResolutionCode(resolutionCode);
-        const detail = reason ? ` — ${reason}` : "";
-        logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
-      });
+      if (hasContractEvent(contract, "DisputeResolved")) {
+        contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
+      }
+      if (hasContractEvent(contract, "DisputeResolvedWithCode")) {
+        contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
+          const action = formatResolutionCode(resolutionCode);
+          const detail = reason ? ` — ${reason}` : "";
+          logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
+        });
+      }
       contract.on("NFTIssued", (tokenId) => logEvent(`NFTIssued #${tokenId}`));
     }
 
