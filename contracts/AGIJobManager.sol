@@ -1140,10 +1140,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                     mstore(add(payload, 36), jobId)
                 }
                 (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(payload);
-                if (ok && data.length != 0) {
+                if (ok && data.length >= 96) {
+                    uint256 offset;
+                    uint256 strLen;
+                    assembly {
+                        offset := mload(add(data, 32))
+                        strLen := mload(add(data, 64))
+                    }
+                    if (offset == 32 && strLen <= data.length - 64) {
                     string memory ensUri = abi.decode(data, (string));
                     if (bytes(ensUri).length != 0) {
                         tokenUriValue = ensUri;
+                    }
                     }
                 }
             }
@@ -1247,6 +1255,19 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (amount > available) revert InsufficientWithdrawableBalance();
         _t(msg.sender, amount);
         emit AGIWithdrawn(msg.sender, amount, available - amount);
+    }
+
+    function rescue(address token, address payable to, uint256 amount) external onlyOwner nonReentrant {
+        if (to == address(0) || amount == 0) revert InvalidParameters();
+        if (token == address(0)) {
+            (bool sent, ) = to.call{ value: amount }("");
+            if (!sent) revert TransferFailed();
+            return;
+        }
+        if (token == address(agiToken)) {
+            revert InvalidState();
+        }
+        TransferUtils.safeTransfer(token, to, amount);
     }
 
     function canAccessPremiumFeature(address user) external view returns (bool) {
