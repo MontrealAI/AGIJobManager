@@ -51,7 +51,6 @@
     "validateJob": 3,
     "disapproveJob": 3,
     "disputeJob": 1,
-    "resolveDispute": 2,
     "resolveDisputeWithCode": 3
   },
   "events": [
@@ -63,7 +62,6 @@
     "JobCompleted",
     "JobCancelled",
     "JobDisputed",
-    "DisputeResolved",
     "DisputeResolvedWithCode",
     "NFTIssued"
   ],

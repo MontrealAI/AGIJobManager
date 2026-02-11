@@ -4,6 +4,7 @@ const path = require('path');
 
 const ARG_PREFIX = '--';
 const DEFAULT_BATCH_SIZE = 2000;
+const LEGACY_DISPUTE_RESOLVED_SIGNATURE = 'DisputeResolved(uint256,address,string)';
 
 function ensureWeb3() {
   if (typeof web3 !== 'undefined') return web3;
@@ -119,6 +120,103 @@ function sortObjectByKeys(entries) {
   return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
 }
 
+
+function hasEvent(contract, eventName) {
+  const json = contract.constructor?._json?.abi || contract.abi || [];
+  return json.some((item) => item && item.type === 'event' && item.name === eventName);
+}
+
+async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, batchSize) {
+  if (!hasEvent(contract, eventName)) return [];
+  return fetchEvents(contract, eventName, fromBlock, toBlock, batchSize);
+}
+
+async function fetchLegacyDisputeResolvedEvents(contract, fromBlock, toBlock, batchSize) {
+  if (hasEvent(contract, 'DisputeResolved')) {
+    return fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize);
+  }
+
+  const topic0 = web3.utils.keccak256(LEGACY_DISPUTE_RESOLVED_SIGNATURE);
+  const decoded = [];
+  for (let start = fromBlock; start <= toBlock; start += batchSize) {
+    const end = Math.min(toBlock, start + batchSize - 1);
+    // eslint-disable-next-line no-await-in-loop
+    const logs = await web3.eth.getPastLogs({
+      address: contract.address,
+      topics: [topic0],
+      fromBlock: start,
+      toBlock: end,
+    });
+    for (const log of logs) {
+      const parsed = web3.eth.abi.decodeLog(
+        [
+          { indexed: true, name: 'jobId', type: 'uint256' },
+          { indexed: true, name: 'resolver', type: 'address' },
+          { indexed: false, name: 'resolution', type: 'string' },
+        ],
+        log.data,
+        log.topics.slice(1),
+      );
+      decoded.push({
+        event: 'DisputeResolved',
+        blockNumber: Number(log.blockNumber),
+        transactionHash: log.transactionHash,
+        transactionIndex: Number(log.transactionIndex || 0),
+        logIndex: Number(log.logIndex || 0),
+        returnValues: {
+          0: parsed.jobId,
+          1: parsed.resolver,
+          2: parsed.resolution,
+          jobId: parsed.jobId,
+          resolver: parsed.resolver,
+          resolution: parsed.resolution,
+        },
+      });
+    }
+  }
+
+  return decoded.sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
+}
+
+function decodeDisputeResolution(ev) {
+  const hasTypedCode = ev.returnValues
+    && Object.prototype.hasOwnProperty.call(ev.returnValues, 'resolutionCode');
+  if (hasTypedCode) {
+    const code = Number(ev.returnValues.resolutionCode);
+    if (code === 1) return 'agent win';
+    if (code === 2) return 'employer win';
+    // Typed NO_ACTION/unknown codes must not be inferred from freeform reason text.
+    return '';
+  }
+  const resolutionRaw = ev.returnValues.resolution || ev.returnValues.reason || ev.returnValues[2] || '';
+  return String(resolutionRaw).toLowerCase();
+}
+
+function isTypedDisputeResolutionEvent(ev) {
+  if ((ev.event || '') === 'DisputeResolvedWithCode') return true;
+  return ev.returnValues && ev.returnValues.resolutionCode !== undefined;
+}
+
+function mergeDisputeResolutionEvents(legacyEvents, typedEvents) {
+  const byKey = new Map();
+  for (const ev of legacyEvents.concat(typedEvents)) {
+    const jobId = String(ev.returnValues.jobId || ev.returnValues[0] || '');
+    const resolution = decodeDisputeResolution(ev);
+    const key = `${ev.transactionHash || ''}:${jobId}:${resolution}`;
+    const existing = byKey.get(key);
+    if (!existing || (isTypedDisputeResolutionEvent(ev) && !isTypedDisputeResolutionEvent(existing))) {
+      byKey.set(key, ev);
+    }
+  }
+  return Array.from(byKey.values()).sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
+}
+
 function getAGIJobManagerContract() {
   const web3Instance = ensureWeb3();
   if (typeof artifacts !== 'undefined') {
@@ -176,14 +274,16 @@ async function runExportMetrics(overrides = {}) {
     jobCompletionRequested,
     jobCompleted,
     jobDisputed,
-    disputeResolved,
+    disputeResolvedLegacy,
+    disputeResolvedWithCode,
   ] = await Promise.all([
     fetchEvents(contract, 'JobCreated', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobApplied', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompletionRequested', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompleted', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobDisputed', fromBlock, toBlock, batchSize),
-    fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize),
+    fetchLegacyDisputeResolvedEvents(contract, fromBlock, toBlock, batchSize),
+    fetchEventsIfPresent(contract, 'DisputeResolvedWithCode', fromBlock, toBlock, batchSize),
   ]);
 
   let jobValidated = [];
@@ -196,6 +296,8 @@ async function runExportMetrics(overrides = {}) {
       fetchEvents(contract, 'ReputationUpdated', fromBlock, toBlock, batchSize),
     ]);
   }
+
+  const disputeResolved = mergeDisputeResolutionEvents(disputeResolvedLegacy, disputeResolvedWithCode);
 
   const chainId = await web3.eth.getChainId();
   const contractAddress = contract.address;
@@ -363,8 +465,7 @@ async function runExportMetrics(overrides = {}) {
 
   for (const ev of disputeResolved) {
     const jobId = ev.returnValues.jobId || ev.returnValues[0];
-    const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
-    const resolution = String(resolutionRaw).toLowerCase();
+    const resolution = decodeDisputeResolution(ev);
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
@@ -515,3 +616,5 @@ module.exports = function (callback) {
 };
 
 module.exports.runExportMetrics = runExportMetrics;
+
+module.exports.mergeDisputeResolutionEvents = mergeDisputeResolutionEvents;
