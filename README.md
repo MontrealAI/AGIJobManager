@@ -152,6 +152,18 @@ flowchart LR
 - Deployment sequence: [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
 - Day-2 operations and incident playbooks: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
 - Configuration reference for owner-settable knobs: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)
+- Mainnet institutional runbook (deploy + incident + diagrams): [`docs/MAINNET_OPERATIONS.md`](docs/MAINNET_OPERATIONS.md)
+
+### Mainnet token assumptions (production)
+
+- AGIALPHA token address: `0xa61a3b3a130a9c20768eebf97e21515a6046a1fa`.
+- The system expects exact-transfer ERC20 semantics (no fee-on-transfer/rebase behavior).
+- AGIALPHA token-level pause must remain unpaused for normal operation.
+- ENS integration is intentionally best-effort; core escrow/settlement correctness does not depend on ENS success.
+
+### Dependency pinning note
+
+- `@openzeppelin/contracts` is pinned to `4.9.6` to keep v4 import paths and Ownable constructor behavior stable across deterministic builds.
 
 **Compiler note**: `AGIJobManager.sol` declares `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. `viaIR` remains **disabled** to keep runtime bytecode under the EIP‑170 cap; the large job getter is kept internal and covered by targeted read‑model getters, keeping the legacy pipeline stable.
 

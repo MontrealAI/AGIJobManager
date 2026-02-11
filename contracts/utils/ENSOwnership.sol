@@ -47,13 +47,31 @@ library ENSOwnership {
         address claimant,
         bytes32 subnode
     ) private view returns (bool) {
-        ENSRegistryLike registry = ENSRegistryLike(ensAddress);
-        address resolverAddress = registry.resolver(subnode);
+        if (ensAddress == address(0)) return false;
+        (bool ok, address resolverAddress) = _staticcallAddress(
+            ensAddress,
+            ENSRegistryLike.resolver.selector,
+            subnode
+        );
+        if (!ok) return false;
         if (resolverAddress == address(0)) return false;
-        try ResolverLike(resolverAddress).addr(subnode) returns (address payable resolvedAddress) {
-            return resolvedAddress == claimant;
-        } catch {
-            return false;
-        }
+        address resolvedAddress;
+        (ok, resolvedAddress) = _staticcallAddress(
+            resolverAddress,
+            ResolverLike.addr.selector,
+            subnode
+        );
+        return ok && resolvedAddress == claimant;
+    }
+
+    function _staticcallAddress(
+        address target,
+        bytes4 selector,
+        bytes32 node
+    ) private view returns (bool ok, address result) {
+        bytes memory data;
+        (ok, data) = target.staticcall(abi.encodeWithSelector(selector, node));
+        if (!ok || data.length < 32) return (false, address(0));
+        result = abi.decode(data, (address));
     }
 }
