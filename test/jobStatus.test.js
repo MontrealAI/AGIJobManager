@@ -77,7 +77,7 @@ contract("AGIJobManager jobStatus", (accounts) => {
     job = await manager.getJobCore(jobId);
     assert.strictEqual(job.disputed, true, "disputed job should be flagged");
 
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
     job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "resolved job should be completed");
   });
