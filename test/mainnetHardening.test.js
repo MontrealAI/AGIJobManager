@@ -403,6 +403,20 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     } catch (error) {
       assert.include(String(error.message), "could not decode");
     }
+
+    const nameWrapperOnly = buildInitConfig(
+      token.address,
+      "ipfs://base",
+      zeroAddress,
+      owner,
+      "0x" + "22".repeat(32),
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    );
+    await AGIJobManager.new(...nameWrapperOnly, { from: owner });
   });
 
 
