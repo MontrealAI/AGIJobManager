@@ -5,6 +5,7 @@ const path = require('path');
 const ARG_PREFIX = '--';
 const DEFAULT_BATCH_SIZE = 2000;
 const LEGACY_DISPUTE_RESOLVED_SIGNATURE = 'DisputeResolved(uint256,address,string)';
+const LEGACY_DISPUTE_RESOLVED_TOPIC = '0x7b71d2e00379bd165b2750d54298da2414376699827edca2bce2a096c491d2e9';
 
 function ensureWeb3() {
   if (typeof web3 !== 'undefined') return web3;
@@ -136,7 +137,10 @@ async function fetchLegacyDisputeResolvedEvents(contract, fromBlock, toBlock, ba
     return fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize);
   }
 
-  const topic0 = web3.utils.keccak256(LEGACY_DISPUTE_RESOLVED_SIGNATURE);
+  const topic0 = LEGACY_DISPUTE_RESOLVED_TOPIC;
+  if (web3.utils.keccak256(LEGACY_DISPUTE_RESOLVED_SIGNATURE) !== topic0) {
+    throw new Error('Legacy DisputeResolved topic constant mismatch');
+  }
   const decoded = [];
   for (let start = fromBlock; start <= toBlock; start += batchSize) {
     const end = Math.min(toBlock, start + batchSize - 1);
@@ -204,8 +208,7 @@ function mergeDisputeResolutionEvents(legacyEvents, typedEvents) {
   const byKey = new Map();
   for (const ev of legacyEvents.concat(typedEvents)) {
     const jobId = String(ev.returnValues.jobId || ev.returnValues[0] || '');
-    const resolution = decodeDisputeResolution(ev);
-    const key = `${ev.transactionHash || ''}:${jobId}:${resolution}`;
+    const key = `${ev.transactionHash || ''}:${jobId}`;
     const existing = byKey.get(key);
     if (!existing || (isTypedDisputeResolutionEvent(ev) && !isTypedDisputeResolutionEvent(existing))) {
       byKey.set(key, ev);

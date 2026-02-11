@@ -1001,7 +1001,7 @@
     const defaultIndexLookback = 20000;
     const supportedChainIds = new Set([1n, 11155111n, 1337n]);
     const { sortLogs, applyEventToIndex } = window.AGIJobManagerIndexer;
-    const legacyDisputeResolvedFragment = "event DisputeResolved(uint256 jobId, address resolver, string resolution)";
+    const legacyDisputeResolvedFragment = "event DisputeResolved(uint256 indexed jobId, address indexed resolver, string resolution)";
     const legacyDisputeResolvedIface = new ethers.Interface([legacyDisputeResolvedFragment]);
     const legacyDisputeResolvedTopic = ethers.id("DisputeResolved(uint256,address,string)");
     const writeButtonIds = [
@@ -1093,7 +1093,7 @@
       "event JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)",
       "event JobCancelled(uint256 jobId)",
       "event JobDisputed(uint256 jobId, address disputant)",
-      "event DisputeResolved(uint256 jobId, address resolver, string resolution)",
+      "event DisputeResolved(uint256 indexed jobId, address indexed resolver, string resolution)",
       "event DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)",
       "event NFTIssued(uint256 tokenId, address employer, string tokenURI)",
     ];
@@ -2068,13 +2068,15 @@
           logEvent(`DisputeResolved — decode failed: ${error.message || error}`);
         }
       };
-      state.provider.on(filter, handler);
-      state.legacyDisputeListener = { filter, handler };
+      const provider = state.provider;
+      provider.on(filter, handler);
+      state.legacyDisputeListener = { filter, handler, provider };
     }
 
     function clearLegacyDisputeListener() {
-      if (!state.legacyDisputeListener || !state.provider) return;
-      state.provider.off(state.legacyDisputeListener.filter, state.legacyDisputeListener.handler);
+      const active = state.legacyDisputeListener;
+      if (!active) return;
+      active.provider.off(active.filter, active.handler);
       state.legacyDisputeListener = null;
     }
 
