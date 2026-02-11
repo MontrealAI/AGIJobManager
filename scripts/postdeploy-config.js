@@ -126,6 +126,10 @@ function resolveProvider(networkName) {
   throw new Error(`Unable to resolve provider for network: ${networkName}`);
 }
 
+function hasMethod(instance, methodName) {
+  return typeof instance?.[methodName] === "function";
+}
+
 async function loadContract(address, networkName) {
   const provider = resolveProvider(networkName);
   const web3 = new Web3(provider);
@@ -444,79 +448,56 @@ module.exports = async function postdeployConfig(callback) {
       console.warn("additionalAgentPayoutPercentage is deprecated and ignored.");
     }
 
-    await addParamOp({
-      key: "termsAndConditionsIpfsHash",
-      label: "Set termsAndConditionsIpfsHash",
-      currentValue: await instance.termsAndConditionsIpfsHash(),
-      desiredValue: config.termsAndConditionsIpfsHash,
-      send: () =>
-        instance.updateTermsAndConditionsIpfsHash(
-          config.termsAndConditionsIpfsHash,
-          txFrom ? { from: txFrom } : {}
-        ),
-      verify: async () => {
-        const updated = await instance.termsAndConditionsIpfsHash();
-        if (updated !== config.termsAndConditionsIpfsHash) {
-          throw new Error("termsAndConditionsIpfsHash did not update");
-        }
+    const metadataOps = [
+      {
+        key: "termsAndConditionsIpfsHash",
+        getter: "termsAndConditionsIpfsHash",
+        setter: "updateTermsAndConditionsIpfsHash",
       },
-    });
+      {
+        key: "contactEmail",
+        getter: "contactEmail",
+        setter: "updateContactEmail",
+      },
+      {
+        key: "additionalText1",
+        getter: "additionalText1",
+        setter: "updateAdditionalText1",
+      },
+      {
+        key: "additionalText2",
+        getter: "additionalText2",
+        setter: "updateAdditionalText2",
+      },
+      {
+        key: "additionalText3",
+        getter: "additionalText3",
+        setter: "updateAdditionalText3",
+      },
+    ];
 
-    await addParamOp({
-      key: "contactEmail",
-      label: "Set contactEmail",
-      currentValue: await instance.contactEmail(),
-      desiredValue: config.contactEmail,
-      send: () => instance.updateContactEmail(config.contactEmail, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.contactEmail();
-        if (updated !== config.contactEmail) {
-          throw new Error("contactEmail did not update");
-        }
-      },
-    });
-
-    await addParamOp({
-      key: "additionalText1",
-      label: "Set additionalText1",
-      currentValue: await instance.additionalText1(),
-      desiredValue: config.additionalText1,
-      send: () => instance.updateAdditionalText1(config.additionalText1, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText1();
-        if (updated !== config.additionalText1) {
-          throw new Error("additionalText1 did not update");
-        }
-      },
-    });
-
-    await addParamOp({
-      key: "additionalText2",
-      label: "Set additionalText2",
-      currentValue: await instance.additionalText2(),
-      desiredValue: config.additionalText2,
-      send: () => instance.updateAdditionalText2(config.additionalText2, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText2();
-        if (updated !== config.additionalText2) {
-          throw new Error("additionalText2 did not update");
-        }
-      },
-    });
-
-    await addParamOp({
-      key: "additionalText3",
-      label: "Set additionalText3",
-      currentValue: await instance.additionalText3(),
-      desiredValue: config.additionalText3,
-      send: () => instance.updateAdditionalText3(config.additionalText3, txFrom ? { from: txFrom } : {}),
-      verify: async () => {
-        const updated = await instance.additionalText3();
-        if (updated !== config.additionalText3) {
-          throw new Error("additionalText3 did not update");
-        }
-      },
-    });
+    for (const meta of metadataOps) {
+      const desiredValue = config[meta.key];
+      if (desiredValue === undefined) continue;
+      if (!hasMethod(instance, meta.getter) || !hasMethod(instance, meta.setter)) {
+        console.warn(`${meta.key} config provided but contract ABI does not expose ${meta.getter}/${meta.setter}; skipping.`);
+        continue;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await addParamOp({
+        key: meta.key,
+        label: `Set ${meta.key}`,
+        currentValue: await instance[meta.getter](),
+        desiredValue,
+        send: () => instance[meta.setter](desiredValue, txFrom ? { from: txFrom } : {}),
+        verify: async () => {
+          const updated = await instance[meta.getter]();
+          if (updated !== desiredValue) {
+            throw new Error(`${meta.key} did not update`);
+          }
+        },
+      });
+    }
 
     const currentValidatorMerkleRoot = await instance.validatorMerkleRoot();
     const currentAgentMerkleRoot = await instance.agentMerkleRoot();
