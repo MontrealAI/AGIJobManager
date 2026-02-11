@@ -64,6 +64,7 @@ interface NameWrapper {
     function ownerOf(uint256 id) external view returns (address);
 }
 
+
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
@@ -1140,7 +1141,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                     mstore(add(payload, 36), jobId)
                 }
                 (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(payload);
-                if (ok && data.length != 0) {
+                if (ok && data.length != 0 && _isValidSingleStringEncoding(data)) {
                     string memory ensUri = abi.decode(data, (string));
                     if (bytes(ensUri).length != 0) {
                         tokenUriValue = ensUri;
@@ -1152,6 +1153,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _mint(job.employer, tokenId);
         _tokenURIs[tokenId] = tokenUriValue;
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
+    }
+
+    function _isValidSingleStringEncoding(bytes memory data) internal pure returns (bool valid) {
+        assembly {
+            let size := mload(data)
+            if gt(size, 0x5f) {
+                if eq(mload(add(data, 0x20)), 0x20) {
+                    valid := iszero(gt(add(0x40, mload(add(data, 0x40))), size))
+                }
+            }
+        }
     }
 
     function _refundEmployer(uint256 jobId, Job storage job) internal {
@@ -1241,12 +1253,36 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return bal - lockedTotal;
     }
 
-    function withdrawAGI(uint256 amount) external onlyOwner whenSettlementNotPaused whenPaused nonReentrant {
+    function _withdrawAGITo(address to, uint256 amount) internal {
         if (amount == 0) revert InvalidParameters();
         uint256 available = withdrawableAGI();
         if (amount > available) revert InsufficientWithdrawableBalance();
-        _t(msg.sender, amount);
-        emit AGIWithdrawn(msg.sender, amount, available - amount);
+        _t(to, amount);
+        emit AGIWithdrawn(to, amount, available - amount);
+    }
+
+    function withdrawAGI(uint256 amount) external onlyOwner whenSettlementNotPaused whenPaused nonReentrant {
+        _withdrawAGITo(msg.sender, amount);
+    }
+
+    function rescueETH(address payable to, uint256 amount) external onlyOwner whenSettlementNotPaused nonReentrant {
+        (bool ok, ) = to.call{ value: amount }("");
+        if (!ok) revert TransferFailed();
+    }
+
+    function rescueERC20(address token, address to, uint256 amount)
+        external
+        onlyOwner
+        whenSettlementNotPaused
+        nonReentrant
+    {
+        if (amount == 0) revert InvalidParameters();
+        if (token == address(agiToken)) {
+            if (!paused()) revert InvalidState();
+            _withdrawAGITo(to, amount);
+            return;
+        }
+        TransferUtils.safeTransfer(token, to, amount);
     }
 
     function canAccessPremiumFeature(address user) external view returns (bool) {
