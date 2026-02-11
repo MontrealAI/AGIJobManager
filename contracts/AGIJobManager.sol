@@ -1133,17 +1133,23 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         string memory tokenUriValue = job.jobCompletionURI;
         if (useEnsJobTokenURI) {
             address target = ensJobPages;
-            if (target != address(0) && target.code.length != 0) {
+            if (target != address(0)) {
                 bytes memory payload = new bytes(36);
                 assembly {
                     mstore(add(payload, 32), 0x751809b400000000000000000000000000000000000000000000000000000000)
                     mstore(add(payload, 36), jobId)
                 }
                 (bool ok, bytes memory data) = target.staticcall{ gas: ENS_URI_GAS_LIMIT }(payload);
-                if (ok && data.length != 0) {
-                    string memory ensUri = abi.decode(data, (string));
-                    if (bytes(ensUri).length != 0) {
-                        tokenUriValue = ensUri;
+                if (ok && data.length > 95) {
+                    uint256 offset;
+                    assembly {
+                        offset := mload(add(data, 32))
+                    }
+                    if (offset == 32) {
+                        string memory ensUri = abi.decode(data, (string));
+                        if (bytes(ensUri).length != 0) {
+                            tokenUriValue = ensUri;
+                        }
                     }
                 }
             }

@@ -14,7 +14,7 @@
     "ui:abi:check": "node scripts/ui/check_ui_abi.js"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.9.6"
+    "@openzeppelin/contracts": "4.9.6"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.16",
