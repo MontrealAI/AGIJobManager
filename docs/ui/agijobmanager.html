@@ -2810,6 +2810,16 @@
       return logs;
     }
 
+
+    function hasEventFilter(contract, eventName) {
+      return Boolean(contract && contract.filters && typeof contract.filters[eventName] === "function");
+    }
+
+    function addFilterIfSupported(filters, contract, eventName) {
+      if (!hasEventFilter(contract, eventName)) return;
+      filters.push(contract.filters[eventName]());
+    }
+
     async function syncIndex() {
       requireContract();
       const latest = await state.provider.getBlockNumber();
@@ -2841,17 +2851,16 @@
       }
 
       updateIndexStatus("Syncing...");
-      const filters = [
-        state.readContract.filters.JobCreated(),
-        state.readContract.filters.JobApplied(),
-        state.readContract.filters.JobCompletionRequested(),
-        state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
-        state.readContract.filters.JobCompleted(),
-        state.readContract.filters.JobCancelled(),
-        state.readContract.filters.NFTIssued(),
-      ];
+      const filters = [];
+      addFilterIfSupported(filters, state.readContract, "JobCreated");
+      addFilterIfSupported(filters, state.readContract, "JobApplied");
+      addFilterIfSupported(filters, state.readContract, "JobCompletionRequested");
+      addFilterIfSupported(filters, state.readContract, "JobDisputed");
+      addFilterIfSupported(filters, state.readContract, "DisputeResolved");
+      addFilterIfSupported(filters, state.readContract, "DisputeResolvedWithCode");
+      addFilterIfSupported(filters, state.readContract, "JobCompleted");
+      addFilterIfSupported(filters, state.readContract, "JobCancelled");
+      addFilterIfSupported(filters, state.readContract, "NFTIssued");
 
       let allLogs = [];
       for (const filter of filters) {
@@ -3293,19 +3302,18 @@
         throw new Error("From block must be less than or equal to to block.");
       }
 
-      const filters = [
-        state.readContract.filters.JobCreated(),
-        state.readContract.filters.JobApplied(),
-        state.readContract.filters.JobCompletionRequested(),
-        state.readContract.filters.JobValidated(),
-        state.readContract.filters.JobDisapproved(),
-        state.readContract.filters.JobCompleted(),
-        state.readContract.filters.JobCancelled(),
-        state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
-        state.readContract.filters.NFTIssued(),
-      ];
+      const filters = [];
+      addFilterIfSupported(filters, state.readContract, "JobCreated");
+      addFilterIfSupported(filters, state.readContract, "JobApplied");
+      addFilterIfSupported(filters, state.readContract, "JobCompletionRequested");
+      addFilterIfSupported(filters, state.readContract, "JobValidated");
+      addFilterIfSupported(filters, state.readContract, "JobDisapproved");
+      addFilterIfSupported(filters, state.readContract, "JobCompleted");
+      addFilterIfSupported(filters, state.readContract, "JobCancelled");
+      addFilterIfSupported(filters, state.readContract, "JobDisputed");
+      addFilterIfSupported(filters, state.readContract, "DisputeResolved");
+      addFilterIfSupported(filters, state.readContract, "DisputeResolvedWithCode");
+      addFilterIfSupported(filters, state.readContract, "NFTIssued");
 
       for (const filter of filters) {
         const events = await state.readContract.queryFilter(filter, fromBlock, toBlock);
@@ -3329,12 +3337,16 @@
       contract.on("JobCompleted", (jobId) => logEvent(`JobCompleted #${jobId}`));
       contract.on("JobCancelled", (jobId) => logEvent(`JobCancelled #${jobId}`));
       contract.on("JobDisputed", (jobId) => logEvent(`JobDisputed #${jobId}`));
-      contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
-      contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
-        const action = formatResolutionCode(resolutionCode);
-        const detail = reason ? ` — ${reason}` : "";
-        logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
-      });
+      if (hasEventFilter(contract, "DisputeResolved")) {
+        contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
+      }
+      if (hasEventFilter(contract, "DisputeResolvedWithCode")) {
+        contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
+          const action = formatResolutionCode(resolutionCode);
+          const detail = reason ? ` — ${reason}` : "";
+          logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
+        });
+      }
       contract.on("NFTIssued", (tokenId) => logEvent(`NFTIssued #${tokenId}`));
     }
 
