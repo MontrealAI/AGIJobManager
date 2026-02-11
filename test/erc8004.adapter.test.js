@@ -79,7 +79,8 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
       transactionHash: '0xabc',
       blockNumber: 10,
       logIndex: 1,
-      returnValues: { jobId: '7', resolution: 'employer win' },
+      // Truffle event payloads include named fields and positional indexes.
+      returnValues: { jobId: '7', resolution: 'employer win', 0: '7', 1: '0xresolver', 2: 'employer win' },
     };
     const typed = {
       event: 'DisputeResolvedWithCode',

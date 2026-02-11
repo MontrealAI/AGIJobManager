@@ -132,15 +132,16 @@ async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, bat
 
 
 function decodeDisputeResolution(ev) {
-  const resolutionCodeRaw = ev.returnValues.resolutionCode || ev.returnValues[2];
-  if (resolutionCodeRaw !== undefined) {
-    const code = Number(resolutionCodeRaw);
+  const values = ev.returnValues || {};
+  const hasTypedCode = Object.prototype.hasOwnProperty.call(values, 'resolutionCode');
+  if (hasTypedCode) {
+    const code = Number(values.resolutionCode);
     if (code === 1) return 'agent win';
     if (code === 2) return 'employer win';
     // Typed NO_ACTION/unknown codes must not be inferred from freeform reason text.
     return '';
   }
-  const resolutionRaw = ev.returnValues.resolution || ev.returnValues.reason || ev.returnValues[2] || '';
+  const resolutionRaw = values.resolution || values.reason || values[2] || '';
   return String(resolutionRaw).toLowerCase();
 }
 
