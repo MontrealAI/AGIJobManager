@@ -132,6 +132,11 @@ function getAGIJobManagerContract() {
   return AGIJobManager;
 }
 
+function supportsEvent(contract, eventName) {
+  const abi = contract?.abi || contract?.constructor?.abi || [];
+  return abi.some((item) => item.type === 'event' && item.name === eventName);
+}
+
 async function runExportMetrics(overrides = {}) {
   ensureWeb3();
   const AGIJobManager = getAGIJobManagerContract();
@@ -170,21 +175,35 @@ async function runExportMetrics(overrides = {}) {
   const fromBlock = Math.max(0, resolvedFromBlock);
   const toBlock = Math.max(fromBlock, resolvedToBlock);
 
+  const hasLegacyDisputeResolved = supportsEvent(contract, 'DisputeResolved');
+  const hasTypedDisputeResolved = supportsEvent(contract, 'DisputeResolvedWithCode');
+
   const [
     jobCreated,
     jobApplied,
     jobCompletionRequested,
     jobCompleted,
     jobDisputed,
-    disputeResolved,
+    disputeResolvedLegacy,
+    disputeResolvedTyped,
   ] = await Promise.all([
     fetchEvents(contract, 'JobCreated', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobApplied', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompletionRequested', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobCompleted', fromBlock, toBlock, batchSize),
     fetchEvents(contract, 'JobDisputed', fromBlock, toBlock, batchSize),
-    fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize),
+    hasLegacyDisputeResolved
+      ? fetchEvents(contract, 'DisputeResolved', fromBlock, toBlock, batchSize)
+      : Promise.resolve([]),
+    hasTypedDisputeResolved
+      ? fetchEvents(contract, 'DisputeResolvedWithCode', fromBlock, toBlock, batchSize)
+      : Promise.resolve([]),
   ]);
+
+  const disputeResolved = [...disputeResolvedLegacy, ...disputeResolvedTyped].sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
 
   let jobValidated = [];
   let jobDisapproved = [];
@@ -363,17 +382,28 @@ async function runExportMetrics(overrides = {}) {
 
   for (const ev of disputeResolved) {
     const jobId = ev.returnValues.jobId || ev.returnValues[0];
-    const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
-    const resolution = String(resolutionRaw).toLowerCase();
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
-    if (resolution === 'agent win') {
-      metrics.agentWins += 1;
-    } else if (resolution === 'employer win') {
-      metrics.employerWins += 1;
+    if (ev.event === 'DisputeResolvedWithCode') {
+      const resolutionCode = Number(ev.returnValues.resolutionCode || ev.returnValues[2]);
+      if (resolutionCode === 1) {
+        metrics.agentWins += 1;
+      } else if (resolutionCode === 2) {
+        metrics.employerWins += 1;
+      } else {
+        metrics.unknownResolutions += 1;
+      }
     } else {
-      metrics.unknownResolutions += 1;
+      const resolutionRaw = ev.returnValues.resolution || ev.returnValues[2] || '';
+      const resolution = String(resolutionRaw).toLowerCase();
+      if (resolution === 'agent win') {
+        metrics.agentWins += 1;
+      } else if (resolution === 'employer win') {
+        metrics.employerWins += 1;
+      } else {
+        metrics.unknownResolutions += 1;
+      }
     }
     metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
     addAnchor(agentAnchors, job.assignedAgent, buildAnchor(ev, jobId, chainId, contractAddress));

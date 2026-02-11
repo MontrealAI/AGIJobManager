@@ -121,6 +121,10 @@ function resolveProvider(networkName) {
   throw new Error(`Unable to resolve provider for network: ${networkName}`);
 }
 
+function hasMethod(instance, methodName) {
+  return typeof instance?.[methodName] === "function";
+}
+
 async function loadContract(address, networkName) {
   const provider = resolveProvider(networkName);
   const web3 = new Web3(provider);
@@ -183,88 +187,35 @@ module.exports = async function verifyConfig(callback) {
 
     let failed = false;
 
-    const checks = [
-      {
-        key: "requiredValidatorApprovals",
-        expected: config.requiredValidatorApprovals,
-        actual: await instance.requiredValidatorApprovals(),
-      },
-      {
-        key: "requiredValidatorDisapprovals",
-        expected: config.requiredValidatorDisapprovals,
-        actual: await instance.requiredValidatorDisapprovals(),
-      },
-      {
-        key: "premiumReputationThreshold",
-        expected: config.premiumReputationThreshold,
-        actual: await instance.premiumReputationThreshold(),
-      },
-      {
-        key: "validationRewardPercentage",
-        expected: config.validationRewardPercentage,
-        actual: await instance.validationRewardPercentage(),
-      },
-      {
-        key: "maxJobPayout",
-        expected: config.maxJobPayout,
-        actual: await instance.maxJobPayout(),
-      },
-      {
-        key: "jobDurationLimit",
-        expected: config.jobDurationLimit,
-        actual: await instance.jobDurationLimit(),
-      },
-      {
-        key: "completionReviewPeriod",
-        expected: config.completionReviewPeriod,
-        actual: await instance.completionReviewPeriod(),
-      },
-      {
-        key: "disputeReviewPeriod",
-        expected: config.disputeReviewPeriod,
-        actual: await instance.disputeReviewPeriod(),
-      },
-      {
-        key: "additionalAgentPayoutPercentage",
-        expected: config.additionalAgentPayoutPercentage,
-        actual: await instance.additionalAgentPayoutPercentage(),
-      },
-      {
-        key: "termsAndConditionsIpfsHash",
-        expected: config.termsAndConditionsIpfsHash,
-        actual: await instance.termsAndConditionsIpfsHash(),
-      },
-      {
-        key: "contactEmail",
-        expected: config.contactEmail,
-        actual: await instance.contactEmail(),
-      },
-      {
-        key: "additionalText1",
-        expected: config.additionalText1,
-        actual: await instance.additionalText1(),
-      },
-      {
-        key: "additionalText2",
-        expected: config.additionalText2,
-        actual: await instance.additionalText2(),
-      },
-      {
-        key: "additionalText3",
-        expected: config.additionalText3,
-        actual: await instance.additionalText3(),
-      },
-      {
-        key: "validatorMerkleRoot",
-        expected: config.validatorMerkleRoot,
-        actual: await instance.validatorMerkleRoot(),
-      },
-      {
-        key: "agentMerkleRoot",
-        expected: config.agentMerkleRoot,
-        actual: await instance.agentMerkleRoot(),
-      },
+    const checkSpecs = [
+      ["requiredValidatorApprovals", "requiredValidatorApprovals"],
+      ["requiredValidatorDisapprovals", "requiredValidatorDisapprovals"],
+      ["premiumReputationThreshold", "premiumReputationThreshold"],
+      ["validationRewardPercentage", "validationRewardPercentage"],
+      ["maxJobPayout", "maxJobPayout"],
+      ["jobDurationLimit", "jobDurationLimit"],
+      ["completionReviewPeriod", "completionReviewPeriod"],
+      ["disputeReviewPeriod", "disputeReviewPeriod"],
+      ["additionalAgentPayoutPercentage", "additionalAgentPayoutPercentage"],
+      ["termsAndConditionsIpfsHash", "termsAndConditionsIpfsHash"],
+      ["contactEmail", "contactEmail"],
+      ["additionalText1", "additionalText1"],
+      ["additionalText2", "additionalText2"],
+      ["additionalText3", "additionalText3"],
+      ["validatorMerkleRoot", "validatorMerkleRoot"],
+      ["agentMerkleRoot", "agentMerkleRoot"],
     ];
+
+    const checks = [];
+    for (const [key, getter] of checkSpecs) {
+      if (config[key] === undefined) continue;
+      if (!hasMethod(instance, getter)) {
+        console.warn(`SKIP ${key}: contract ABI does not expose ${getter}`);
+        continue;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      checks.push({ key, expected: config[key], actual: await instance[getter]() });
+    }
 
     for (const check of checks) {
       if (check.expected === undefined) {
