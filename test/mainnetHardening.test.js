@@ -144,6 +144,143 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
 
 
+
+  it("keeps old jobs settleable after later validation reward and AGI type changes", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    const payout = web3.utils.toBN(web3.utils.toWei("10"));
+
+    await manager.setValidationRewardPercentage(5, { from: owner });
+    await manager.addAGIType(nft.address, 95, { from: owner });
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    await token.mint(employer, payout.toString(), { from: owner });
+    await token.approve(manager.address, payout.toString(), { from: employer });
+    await manager.createJob("ipfs://spec", payout.toString(), 100, "details", { from: employer });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+
+    await manager.addAGIType(nft.address, 20, { from: owner });
+    await manager.setValidationRewardPercentage(80, { from: owner });
+
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+
+    const employerBefore = web3.utils.toBN(await token.balanceOf(employer));
+    const agentBefore = web3.utils.toBN(await token.balanceOf(agent));
+    await manager.finalizeJob(0, { from: employer });
+    const employerAfter = web3.utils.toBN(await token.balanceOf(employer));
+    const agentAfter = web3.utils.toBN(await token.balanceOf(agent));
+
+    assert.equal(agentAfter.sub(agentBefore).toString(), payout.muln(95).divn(100).toString());
+    assert.equal(employerAfter.sub(employerBefore).toString(), payout.muln(5).divn(100).toString());
+  });
+
+  it("does not auto-dispute on disapproval when required disapprovals is zero", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(0, { from: owner });
+    await manager.setValidatorBondParams(0, 0, 0, { from: owner });
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 100, "details", { from: employer });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+
+    await manager.disapproveJob(0, "validator", [], { from: validator });
+    const core = await manager.getJobCore(0);
+    assert.equal(core.disputed, false);
+  });
+
+  it("rejects overlong URIs and baseIpfsUrl", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    const payout = web3.utils.toWei("1");
+    const longSpec = `ipfs://${"a".repeat(1018)}`;
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await expectCustomError(manager.createJob.call(longSpec, payout, 100, "details", { from: employer }), "InvalidParameters");
+
+    await manager.createJob("ipfs://spec", payout, 100, "details", { from: employer });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    const longCompletion = `ipfs://${"b".repeat(1018)}`;
+    await expectCustomError(manager.requestJobCompletion.call(0, longCompletion, { from: agent }), "InvalidParameters");
+
+    const longBase = `ipfs://${"c".repeat(251)}`;
+    await expectCustomError(manager.setBaseIpfsUrl.call(longBase, { from: owner }), "InvalidParameters");
+  });
+
+  it("fails fast for invalid deployment wiring", async () => {
+    const token = await MockERC20.new({ from: owner });
+
+    try {
+      await AGIJobManager.new(
+        ...buildInitConfig(
+          "0x0000000000000000000000000000000000000000",
+          "ipfs://base",
+          "0x0000000000000000000000000000000000000000",
+          "0x0000000000000000000000000000000000000000",
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32
+        ),
+        { from: owner }
+      );
+      assert.fail("expected deployment to revert");
+    } catch (error) {
+      assert.include(String(error.message), "Custom error");
+    }
+
+    try {
+      await AGIJobManager.new(
+        ...buildInitConfig(
+          token.address,
+          "ipfs://base",
+          "0x0000000000000000000000000000000000000000",
+          "0x0000000000000000000000000000000000000000",
+          "0x" + "11".repeat(32),
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32,
+          ZERO32
+        ),
+        { from: owner }
+      );
+      assert.fail("expected deployment to revert");
+    } catch (error) {
+      assert.include(String(error.message), "Custom error");
+    }
+  });
+
   it("settlement remains live when ENS hook target reverts with ENS URI mode enabled", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });

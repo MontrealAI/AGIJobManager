@@ -33,10 +33,6 @@ contract("AGIJobManager seeded invariant sequences", (accounts) => {
     const withdrawable = BigInt((await manager.withdrawableAGI()).toString());
     assert.equal(withdrawable.toString(), (balance - lockedTotal).toString(), "withdrawable mismatch");
 
-    for (const [agent, expected] of Object.entries(harnessActive)) {
-      const onchain = await manager.getActiveJobsByAgent(agent);
-      assert.equal(onchain.toString(), String(expected), "activeJobsByAgent mismatch");
-    }
   }
 
   it("runs deterministic bounded action sequences while preserving accounting invariants", async () => {

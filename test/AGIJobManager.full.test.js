@@ -860,7 +860,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
     it("tracks premium access based on reputation", async () => {
       await manager.setPremiumReputationThreshold(100000, { from: owner });
-      assert.equal(await manager.canAccessPremiumFeature(agent), false);
+      assert.equal(((await manager.reputation(agent)).gte(await manager.premiumReputationThreshold())), false);
 
       const payout = new BN(web3.utils.toWei("5"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000, "ipfs-7");
@@ -875,7 +875,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       const rep = await manager.reputation(agent);
       await manager.setPremiumReputationThreshold(rep, { from: owner });
-      assert.equal(await manager.canAccessPremiumFeature(agent), true);
+      assert.equal(((await manager.reputation(agent)).gte(await manager.premiumReputationThreshold())), true);
     });
   });
 
