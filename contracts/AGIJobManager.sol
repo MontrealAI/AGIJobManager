@@ -1253,6 +1253,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
+    function rescueERC20(address token, address to, uint256 amount) external onlyOwner whenSettlementNotPaused nonReentrant {
+        if (token == address(0) || to == address(0) || amount == 0) revert InvalidParameters();
+        if (token == address(agiToken)) {
+            if (!paused()) revert InvalidState();
+            uint256 available = withdrawableAGI();
+            if (amount > available) revert InsufficientWithdrawableBalance();
+        }
+        TransferUtils.safeTransfer(token, to, amount);
+    }
+
     function canAccessPremiumFeature(address user) external view returns (bool) {
         return reputation[user] >= premiumReputationThreshold;
     }

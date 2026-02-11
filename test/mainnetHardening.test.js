@@ -66,6 +66,20 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await time.increase(reviewPeriod.addn(1));
   }
 
+  async function prepareLockedEscrowSettlement(manager, token) {
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 100, "details", { from: employer });
+    await token.mint(agent, web3.utils.toWei("3"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("3"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+  }
+
   it("does not allow malformed ENS tokenURI payloads to brick settlement", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
@@ -232,6 +246,33 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       [owner, "1"]
     );
     await expectCustomError(manager.rescueToken.call(agi.address, agiData, { from: owner }), "InvalidParameters");
+  });
+
+  it("rescues ERC20 and enforces AGI withdrawable + pause posture", async () => {
+    const agi = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(agi, ens.address, wrapper.address);
+    const other = await MockRescueERC20.new({ from: owner });
+
+    await other.mint(manager.address, 12, { from: owner });
+    await manager.rescueERC20(other.address, treasury, 12, { from: owner });
+    assert.equal((await other.balanceOf(treasury)).toString(), "12");
+
+    await agi.mint(manager.address, web3.utils.toWei("5"), { from: owner });
+    await expectCustomError(
+      manager.rescueERC20.call(agi.address, treasury, web3.utils.toWei("1"), { from: owner }),
+      "InvalidState"
+    );
+
+    await prepareLockedEscrowSettlement(manager, agi);
+    await manager.pause({ from: owner });
+    await expectCustomError(
+      manager.rescueERC20.call(agi.address, treasury, web3.utils.toWei("6"), { from: owner }),
+      "InsufficientWithdrawableBalance"
+    );
+    await manager.rescueERC20(agi.address, treasury, web3.utils.toWei("5"), { from: owner });
+    assert.equal((await agi.balanceOf(treasury)).toString(), web3.utils.toWei("5"));
   });
 
 
