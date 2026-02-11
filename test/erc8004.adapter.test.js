@@ -12,7 +12,7 @@ const MockResolver = artifacts.require('MockResolver');
 const MockERC721 = artifacts.require('MockERC721');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
-const { runExportMetrics, mergeDisputeResolutionEvents } = require('../scripts/erc8004/export_metrics');
+const { runExportMetrics, mergeDisputeResolutionEvents, decodeDisputeResolution } = require('../scripts/erc8004/export_metrics');
 const { buildInitConfig } = require('./helpers/deploy');
 const { fundValidators, fundAgents } = require('./helpers/bonds');
 
@@ -72,6 +72,22 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await fundAgents(token, manager, [agent], owner);
   });
 
+
+
+  it('treats typed NO_ACTION disputes as unresolved regardless of reason text', async () => {
+    const typedNoAction = {
+      event: 'DisputeResolvedWithCode',
+      transactionHash: '0xdef',
+      blockNumber: 10,
+      logIndex: 1,
+      returnValues: { jobId: '8', resolutionCode: '0', reason: 'agent win' },
+    };
+    assert.strictEqual(
+      decodeDisputeResolution(typedNoAction),
+      'no_action',
+      'resolutionCode=0 must not be classified as a win',
+    );
+  });
 
   it('deduplicates legacy and typed dispute events for the same settlement', async () => {
     const legacy = {

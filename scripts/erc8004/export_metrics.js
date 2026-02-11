@@ -132,11 +132,12 @@ async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, bat
 
 
 function decodeDisputeResolution(ev) {
-  const resolutionCodeRaw = ev.returnValues.resolutionCode || ev.returnValues[2];
-  if (resolutionCodeRaw !== undefined) {
-    const code = Number(resolutionCodeRaw);
+  const hasTypedCode = ev.returnValues && ev.returnValues.resolutionCode !== undefined;
+  if (hasTypedCode) {
+    const code = Number(ev.returnValues.resolutionCode);
     if (code === 1) return 'agent win';
     if (code === 2) return 'employer win';
+    return 'no_action';
   }
   const resolutionRaw = ev.returnValues.resolution || ev.returnValues.reason || ev.returnValues[2] || '';
   return String(resolutionRaw).toLowerCase();
@@ -565,3 +566,5 @@ module.exports = function (callback) {
 module.exports.runExportMetrics = runExportMetrics;
 
 module.exports.mergeDisputeResolutionEvents = mergeDisputeResolutionEvents;
+
+module.exports.decodeDisputeResolution = decodeDisputeResolution;
