@@ -50,7 +50,7 @@
 ### Rescue functions
 
 - AGI surplus recovery is available on `withdrawAGI(amount)` with pause + settlement-not-paused + withdrawable accounting protections.
-- The current production contract does **not** expose generic arbitrary-token/ETH rescue entrypoints; forced ETH or unrelated ERC20 transfers should be prevented operationally.
+- Generic arbitrary-token/ETH rescue entrypoints are intentionally omitted in the current bytecode-constrained build; forced ETH or unrelated ERC20 transfers should be prevented operationally.
 
 ### Disable AGI types safely
 
@@ -63,7 +63,7 @@
 | --- | --- | --- | --- |
 | `pause` / `unpause` | Yes | Yes | Primary incident toggle. |
 | `setSettlementPaused` | Yes (careful) | Yes | Freezes/unfreezes settlement path. |
-| `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Same safety bounds for AGI surplus. |
+| `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Treasury path for AGI surplus only. |
 | Generic token/ETH rescue | No | No | Not exposed in current contract surface. |
 | `lockIdentityConfiguration` | One-way | One-way | Finalize only after full config verification. |
 
@@ -120,4 +120,21 @@ flowchart LR
     K -- no --> D
     E --> M[Mint NFT + settle]
     D --> M
+```
+
+
+## Emergency operations flowchart
+
+```mermaid
+flowchart TD
+    A[Detect incident] --> B{Need full freeze?}
+    B -- Yes --> C[setSettlementPaused(true)]
+    B -- No --> D[pause()]
+    C --> E[Diagnose + patch config]
+    D --> E
+    E --> F{Foreign assets trapped?}
+    F -- None/unsupported --> I[Skip rescue]
+    I --> J[Verify escrow solvency + withdrawableAGI]
+    J --> K[setSettlementPaused(false)]
+    K --> L[unpause and monitor]
 ```
