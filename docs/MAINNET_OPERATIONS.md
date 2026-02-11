@@ -72,7 +72,7 @@ Execute: create -> apply -> request completion -> vote -> finalize, then assert:
 | `rescueETH` | Owner | NonReentrant | Recovers forced ETH (e.g., selfdestruct dust). |
 | `rescueERC20` (AGI) | Owner | Same safety posture as treasury path | Enforces pause + settlement-not-paused + `amount <= withdrawableAGI()`. |
 | `rescueERC20` (non-AGI) | Owner | NonReentrant | Recover unrelated ERC20s accidentally sent to contract. |
-| `rescueToken` | Owner | NonReentrant | Generic calldata rescue for non-AGI assets (e.g., ERC721/ERC1155). |
+| `rescueToken` | Owner | NonReentrant | Generic calldata rescue for non-AGI assets (including ERC721/ERC1155) while preserving bytecode headroom. |
 | `lockIdentityConfiguration` | Owner | One-way | Permanently locks token/ENS/root-node identity wiring. |
 
 ---
@@ -118,7 +118,7 @@ If ENS mirror or ENS ownership infrastructure degrades:
 2. For forced ETH dust: call `rescueETH(amount)`.
 3. For non-AGI ERC20: call `rescueERC20(token, to, amount)`.
 4. For AGI treasury recovery: ensure `pause()==true`, `settlementPaused==false`, then call `rescueERC20(agiToken, to, amount)` or `withdrawAGI(amount)`.
-5. For accidentally sent NFTs/multi-tokens: use `rescueToken` with explicit calldata.
+5. For accidentally sent NFTs/multi-tokens: use `rescueToken` with explicit calldata (chosen to preserve EIP-170 headroom).
 
 ---
 
