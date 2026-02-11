@@ -130,6 +130,45 @@ async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, bat
   return fetchEvents(contract, eventName, fromBlock, toBlock, batchSize);
 }
 
+
+function normalizeDisputeResolution(ev) {
+  const resolutionCodeRaw = ev.returnValues.resolutionCode || ev.returnValues[2];
+  if (resolutionCodeRaw !== undefined) {
+    const code = Number(resolutionCodeRaw);
+    if (code === 1) return 'agent win';
+    if (code === 2) return 'employer win';
+  }
+  const resolutionRaw = ev.returnValues.resolution || ev.returnValues.reason || ev.returnValues[2] || '';
+  return String(resolutionRaw).toLowerCase();
+}
+
+function dedupeDisputeResolvedEvents(legacyEvents, typedEvents) {
+  const byKey = new Map();
+  const all = legacyEvents.concat(typedEvents).sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
+
+  for (const ev of all) {
+    const jobId = String(ev.returnValues.jobId || ev.returnValues[0]);
+    const resolution = normalizeDisputeResolution(ev);
+    const key = `${ev.transactionHash}:${jobId}:${resolution}`;
+    const existing = byKey.get(key);
+    if (!existing) {
+      byKey.set(key, ev);
+      continue;
+    }
+    if (existing.event !== 'DisputeResolvedWithCode' && ev.event === 'DisputeResolvedWithCode') {
+      byKey.set(key, ev);
+    }
+  }
+
+  return Array.from(byKey.values()).sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
+    return (a.logIndex || 0) - (b.logIndex || 0);
+  });
+}
+
 function getAGIJobManagerContract() {
   const web3Instance = ensureWeb3();
   if (typeof artifacts !== 'undefined') {
@@ -210,10 +249,7 @@ async function runExportMetrics(overrides = {}) {
     ]);
   }
 
-  const disputeResolved = disputeResolvedLegacy.concat(disputeResolvedWithCode).sort((a, b) => {
-    if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
-    return (a.logIndex || 0) - (b.logIndex || 0);
-  });
+  const disputeResolved = dedupeDisputeResolvedEvents(disputeResolvedLegacy, disputeResolvedWithCode);
 
   const chainId = await web3.eth.getChainId();
   const contractAddress = contract.address;
@@ -381,17 +417,7 @@ async function runExportMetrics(overrides = {}) {
 
   for (const ev of disputeResolved) {
     const jobId = ev.returnValues.jobId || ev.returnValues[0];
-    const resolutionCodeRaw = ev.returnValues.resolutionCode || ev.returnValues[2];
-    let resolution = '';
-    if (resolutionCodeRaw !== undefined) {
-      const code = Number(resolutionCodeRaw);
-      if (code === 1) resolution = 'agent win';
-      else if (code === 2) resolution = 'employer win';
-    }
-    if (!resolution) {
-      const resolutionRaw = ev.returnValues.resolution || ev.returnValues.reason || ev.returnValues[2] || '';
-      resolution = String(resolutionRaw).toLowerCase();
-    }
+    const resolution = normalizeDisputeResolution(ev);
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
