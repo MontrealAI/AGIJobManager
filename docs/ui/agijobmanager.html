@@ -2810,6 +2810,15 @@
       return logs;
     }
 
+    function contractSupportsEvent(contract, eventName) {
+      return Boolean(contract && contract.filters && typeof contract.filters[eventName] === "function");
+    }
+
+    function getEventFilterIfSupported(contract, eventName) {
+      if (!contractSupportsEvent(contract, eventName)) return null;
+      return contract.filters[eventName]();
+    }
+
     async function syncIndex() {
       requireContract();
       const latest = await state.provider.getBlockNumber();
@@ -2842,16 +2851,16 @@
 
       updateIndexStatus("Syncing...");
       const filters = [
-        state.readContract.filters.JobCreated(),
-        state.readContract.filters.JobApplied(),
-        state.readContract.filters.JobCompletionRequested(),
-        state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
-        state.readContract.filters.JobCompleted(),
-        state.readContract.filters.JobCancelled(),
-        state.readContract.filters.NFTIssued(),
-      ];
+        getEventFilterIfSupported(state.readContract, "JobCreated"),
+        getEventFilterIfSupported(state.readContract, "JobApplied"),
+        getEventFilterIfSupported(state.readContract, "JobCompletionRequested"),
+        getEventFilterIfSupported(state.readContract, "JobDisputed"),
+        getEventFilterIfSupported(state.readContract, "DisputeResolved"),
+        getEventFilterIfSupported(state.readContract, "DisputeResolvedWithCode"),
+        getEventFilterIfSupported(state.readContract, "JobCompleted"),
+        getEventFilterIfSupported(state.readContract, "JobCancelled"),
+        getEventFilterIfSupported(state.readContract, "NFTIssued"),
+      ].filter(Boolean);
 
       let allLogs = [];
       for (const filter of filters) {
@@ -3294,18 +3303,18 @@
       }
 
       const filters = [
-        state.readContract.filters.JobCreated(),
-        state.readContract.filters.JobApplied(),
-        state.readContract.filters.JobCompletionRequested(),
-        state.readContract.filters.JobValidated(),
-        state.readContract.filters.JobDisapproved(),
-        state.readContract.filters.JobCompleted(),
-        state.readContract.filters.JobCancelled(),
-        state.readContract.filters.JobDisputed(),
-        state.readContract.filters.DisputeResolved(),
-        state.readContract.filters.DisputeResolvedWithCode(),
-        state.readContract.filters.NFTIssued(),
-      ];
+        getEventFilterIfSupported(state.readContract, "JobCreated"),
+        getEventFilterIfSupported(state.readContract, "JobApplied"),
+        getEventFilterIfSupported(state.readContract, "JobCompletionRequested"),
+        getEventFilterIfSupported(state.readContract, "JobValidated"),
+        getEventFilterIfSupported(state.readContract, "JobDisapproved"),
+        getEventFilterIfSupported(state.readContract, "JobCompleted"),
+        getEventFilterIfSupported(state.readContract, "JobCancelled"),
+        getEventFilterIfSupported(state.readContract, "JobDisputed"),
+        getEventFilterIfSupported(state.readContract, "DisputeResolved"),
+        getEventFilterIfSupported(state.readContract, "DisputeResolvedWithCode"),
+        getEventFilterIfSupported(state.readContract, "NFTIssued"),
+      ].filter(Boolean);
 
       for (const filter of filters) {
         const events = await state.readContract.queryFilter(filter, fromBlock, toBlock);
@@ -3321,21 +3330,43 @@
       const contract = state.contract || state.readContract;
       if (!contract) throw new Error("Contract not ready.");
       state.eventSubscribed = true;
-      contract.on("JobCreated", (jobId, jobSpecURI) => logEvent(`JobCreated #${jobId} (${jobSpecURI})`));
-      contract.on("JobApplied", (jobId, agent) => logEvent(`JobApplied #${jobId} by ${agent}`));
-      contract.on("JobCompletionRequested", (jobId, agent, jobCompletionURI) => logEvent(`JobCompletionRequested #${jobId} by ${agent} (${jobCompletionURI})`));
-      contract.on("JobValidated", (jobId, validator) => logEvent(`JobValidated #${jobId} by ${validator}`));
-      contract.on("JobDisapproved", (jobId, validator) => logEvent(`JobDisapproved #${jobId} by ${validator}`));
-      contract.on("JobCompleted", (jobId) => logEvent(`JobCompleted #${jobId}`));
-      contract.on("JobCancelled", (jobId) => logEvent(`JobCancelled #${jobId}`));
-      contract.on("JobDisputed", (jobId) => logEvent(`JobDisputed #${jobId}`));
-      contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
-      contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
-        const action = formatResolutionCode(resolutionCode);
-        const detail = reason ? ` — ${reason}` : "";
-        logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
-      });
-      contract.on("NFTIssued", (tokenId) => logEvent(`NFTIssued #${tokenId}`));
+      if (contractSupportsEvent(contract, "JobCreated")) {
+        contract.on("JobCreated", (jobId, jobSpecURI) => logEvent(`JobCreated #${jobId} (${jobSpecURI})`));
+      }
+      if (contractSupportsEvent(contract, "JobApplied")) {
+        contract.on("JobApplied", (jobId, agent) => logEvent(`JobApplied #${jobId} by ${agent}`));
+      }
+      if (contractSupportsEvent(contract, "JobCompletionRequested")) {
+        contract.on("JobCompletionRequested", (jobId, agent, jobCompletionURI) => logEvent(`JobCompletionRequested #${jobId} by ${agent} (${jobCompletionURI})`));
+      }
+      if (contractSupportsEvent(contract, "JobValidated")) {
+        contract.on("JobValidated", (jobId, validator) => logEvent(`JobValidated #${jobId} by ${validator}`));
+      }
+      if (contractSupportsEvent(contract, "JobDisapproved")) {
+        contract.on("JobDisapproved", (jobId, validator) => logEvent(`JobDisapproved #${jobId} by ${validator}`));
+      }
+      if (contractSupportsEvent(contract, "JobCompleted")) {
+        contract.on("JobCompleted", (jobId) => logEvent(`JobCompleted #${jobId}`));
+      }
+      if (contractSupportsEvent(contract, "JobCancelled")) {
+        contract.on("JobCancelled", (jobId) => logEvent(`JobCancelled #${jobId}`));
+      }
+      if (contractSupportsEvent(contract, "JobDisputed")) {
+        contract.on("JobDisputed", (jobId) => logEvent(`JobDisputed #${jobId}`));
+      }
+      if (contractSupportsEvent(contract, "DisputeResolved")) {
+        contract.on("DisputeResolved", (jobId, resolver, resolution) => logEvent(`DisputeResolved #${jobId} by ${resolver}: ${resolution}`));
+      }
+      if (contractSupportsEvent(contract, "DisputeResolvedWithCode")) {
+        contract.on("DisputeResolvedWithCode", (jobId, resolver, resolutionCode, reason) => {
+          const action = formatResolutionCode(resolutionCode);
+          const detail = reason ? ` — ${reason}` : "";
+          logEvent(`DisputeResolvedWithCode #${jobId} by ${resolver}: ${action}${detail}`);
+        });
+      }
+      if (contractSupportsEvent(contract, "NFTIssued")) {
+        contract.on("NFTIssued", (tokenId) => logEvent(`NFTIssued #${tokenId}`));
+      }
     }
 
     async function loadUiConfig() {
