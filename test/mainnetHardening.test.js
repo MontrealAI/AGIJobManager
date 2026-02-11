@@ -13,6 +13,8 @@ const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
 const MockRescueERC721 = artifacts.require("MockRescueERC721");
 const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
+const MockRescueFalseReturn = artifacts.require("MockRescueFalseReturn");
+const MockRescueMalformedReturn = artifacts.require("MockRescueMalformedReturn");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
@@ -230,6 +232,34 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       [owner, "1"]
     );
     await expectCustomError(manager.rescueToken.call(agi.address, agiData, { from: owner }), "InvalidParameters");
+  });
+
+  it("reverts rescueToken when callee returns false or malformed returndata", async () => {
+    const agi = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(agi, ens.address, wrapper.address);
+
+    const falseReturn = await MockRescueFalseReturn.new({ from: owner });
+    const malformedReturn = await MockRescueMalformedReturn.new({ from: owner });
+
+    const falseData = web3.eth.abi.encodeFunctionCall(
+      { name: "nope", type: "function", inputs: [] },
+      []
+    );
+    await expectCustomError(
+      manager.rescueToken.call(falseReturn.address, falseData, { from: owner }),
+      "TransferFailed"
+    );
+
+    const malformedData = web3.eth.abi.encodeFunctionCall(
+      { name: "malformed", type: "function", inputs: [] },
+      []
+    );
+    await expectCustomError(
+      manager.rescueToken.call(malformedReturn.address, malformedData, { from: owner }),
+      "TransferFailed"
+    );
   });
 
 

@@ -56,3 +56,18 @@ contract MockRescueERC1155 {
         }
     }
 }
+
+contract MockRescueFalseReturn {
+    function nope() external pure returns (bool) {
+        return false;
+    }
+}
+
+contract MockRescueMalformedReturn {
+    function malformed() external pure {
+        assembly {
+            mstore(0x00, 0x01)
+            return(0x00, 0x01)
+        }
+    }
+}
