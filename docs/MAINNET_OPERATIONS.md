@@ -49,8 +49,12 @@
 
 ### Rescue functions
 
-- AGI surplus recovery is available on `withdrawAGI(amount)` with pause + settlement-not-paused + withdrawable accounting protections.
-- The current production contract does **not** expose generic arbitrary-token/ETH rescue entrypoints; forced ETH or unrelated ERC20 transfers should be prevented operationally.
+- `rescueETH(to, amount)` is owner-only + nonReentrant + settlement-not-paused; use for forced ETH (e.g., `selfdestruct`).
+- `rescueERC20(token, to, amount)` is owner-only + nonReentrant + settlement-not-paused.
+  - For `token != agiToken`: operational token rescue path.
+  - For `token == agiToken`: same treasury safety posture as `withdrawAGI` is enforced (`paused == true`, `settlementPaused == false`, amount <= `withdrawableAGI()`).
+- NFT rescue entrypoints are intentionally omitted in the current bytecode-constrained build; treat accidental NFT transfers as operator error and avoid sending them to AGIJobManager.
+- **Safety invariant**: none of the rescue functions can extract AGI backing locked escrow/bonds because `withdrawableAGI()` excludes all live obligations.
 
 ### Disable AGI types safely
 
@@ -63,8 +67,10 @@
 | --- | --- | --- | --- |
 | `pause` / `unpause` | Yes | Yes | Primary incident toggle. |
 | `setSettlementPaused` | Yes (careful) | Yes | Freezes/unfreezes settlement path. |
-| `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Same safety bounds for AGI surplus. |
-| Generic token/ETH rescue | No | No | Not exposed in current contract surface. |
+| `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Treasury path for AGI surplus only. |
+| `rescueETH` | Yes | Yes | For forced ETH; does not touch AGI accounting. |
+| `rescueERC20` (`token != agiToken`) | Yes | Yes | Arbitrary ERC20 rescue via safe transfer utility. |
+| `rescueERC20` (`token == agiToken`) | No | Yes (only if settlement not paused) | Same safety constraints as `withdrawAGI`. |
 | `lockIdentityConfiguration` | One-way | One-way | Finalize only after full config verification. |
 
 ## Recommended parameter ranges (mainnet)
@@ -120,4 +126,25 @@ flowchart LR
     K -- no --> D
     E --> M[Mint NFT + settle]
     D --> M
+```
+
+
+## Emergency operations flowchart
+
+```mermaid
+flowchart TD
+    A[Detect incident] --> B{Need full freeze?}
+    B -- Yes --> C[setSettlementPaused(true)]
+    B -- No --> D[pause()]
+    C --> E[Diagnose + patch config]
+    D --> E
+    E --> F{Foreign assets trapped?}
+    F -- ETH --> G[rescueETH]
+    F -- ERC20 --> H[rescueERC20]
+    F -- None --> I[Skip rescue]
+    G --> J[Verify escrow solvency + withdrawableAGI]
+    H --> J
+    I --> J
+    J --> K[setSettlementPaused(false)]
+    K --> L[unpause and monitor]
 ```
