@@ -3,7 +3,6 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
-
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
 
@@ -31,7 +30,10 @@ contract("AGIJobManager rescue hardening", (accounts) => {
     );
   }
 
-  it("rescueERC20 keeps AGI backing safe and follows withdrawAGI pause posture", async () => {
+
+
+
+  it("rescueERC20 rejects AGI token so escrow exits stay on withdrawAGI", async () => {
     const agi = await MockERC20.new({ from: owner });
     const manager = await deployManager(agi);
 
@@ -40,24 +42,8 @@ contract("AGIJobManager rescue hardening", (accounts) => {
     await manager.createJob("ipfs://spec", web3.utils.toWei("10"), 1000, "details", { from: employer });
 
     await expectCustomError(
-      manager.rescueERC20.call(agi.address, owner, web3.utils.toWei("1"), { from: owner }),
-      "InvalidState"
-    );
-
-    await manager.pause({ from: owner });
-    await expectCustomError(
-      manager.rescueERC20.call(agi.address, owner, web3.utils.toWei("1"), { from: owner }),
-      "InsufficientWithdrawableBalance"
-    );
-
-    await agi.mint(manager.address, web3.utils.toWei("4"), { from: owner });
-    await manager.rescueERC20(agi.address, owner, web3.utils.toWei("4"), { from: owner });
-    assert.equal((await agi.balanceOf(owner)).toString(), web3.utils.toWei("4"));
-
-    await manager.setSettlementPaused(true, { from: owner });
-    await expectCustomError(
-      manager.rescueERC20.call(agi.address, owner, "1", { from: owner }),
-      "SettlementPaused"
+      manager.rescueERC20.call(agi.address, "1", { from: owner }),
+      "InvalidParameters"
     );
   });
 
@@ -67,7 +53,9 @@ contract("AGIJobManager rescue hardening", (accounts) => {
     const stray = await MockRescueERC20.new({ from: owner });
 
     await stray.mint(manager.address, 25, { from: owner });
-    await manager.rescueERC20(stray.address, owner, 25, { from: owner });
+    await manager.rescueERC20(stray.address, 25, { from: owner });
     assert.equal((await stray.balanceOf(owner)).toString(), "25");
   });
+
+
 });
