@@ -50,7 +50,11 @@
 ### Rescue functions
 
 - AGI surplus recovery is available on `withdrawAGI(amount)` with pause + settlement-not-paused + withdrawable accounting protections.
-- Generic arbitrary-token/ETH rescue entrypoints are intentionally omitted in the current bytecode-constrained build; forced ETH or unrelated ERC20 transfers should be prevented operationally.
+- Forced ETH recovery: `rescueETH(amount)` (owner-only).
+- Foreign token recovery:
+  - `rescueERC20(token,to,amount)` supports non-standard ERC20 return patterns.
+  - `rescueToken(token,data)` is retained for arbitrary token rescue calls (e.g., ERC721/1155 transfer payloads).
+  - For `token == agiToken`, `rescueERC20` enforces the same treasury safety posture as `withdrawAGI` (`paused == true`, `settlementPaused == false`, and `amount <= withdrawableAGI()`). It cannot bypass escrow or bond backing.
 
 ### Disable AGI types safely
 
@@ -64,7 +68,10 @@
 | `pause` / `unpause` | Yes | Yes | Primary incident toggle. |
 | `setSettlementPaused` | Yes (careful) | Yes | Freezes/unfreezes settlement path. |
 | `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Treasury path for AGI surplus only. |
-| Generic token/ETH rescue | No | No | Not exposed in current contract surface. |
+| `rescueETH` | Yes | Yes | Recovers forced ETH (e.g., selfdestruct sends). |
+| `rescueERC20` (non-AGI) | Yes | Yes | Recover unrelated ERC20 sent by mistake. |
+| `rescueERC20` (`agiToken`) | No | Yes (only if settlement not paused) | Enforced by `withdrawableAGI()`; cannot draw from locked obligations. |
+| `rescueToken` (generic calldata) | Yes | Yes | Use carefully for non-ERC20 assets (e.g., ERC721/1155 transfer payloads). |
 | `lockIdentityConfiguration` | One-way | One-way | Finalize only after full config verification. |
 
 ## Recommended parameter ranges (mainnet)
@@ -133,7 +140,9 @@ flowchart TD
     C --> E[Diagnose + patch config]
     D --> E
     E --> F{Foreign assets trapped?}
-    F -- None/unsupported --> I[Skip rescue]
+    F -- Yes --> H[Use rescueETH / rescueERC20 / rescueToken]
+    F -- No --> I[Skip rescue]
+    H --> I
     I --> J[Verify escrow solvency + withdrawableAGI]
     J --> K[setSettlementPaused(false)]
     K --> L[unpause and monitor]

@@ -176,7 +176,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     assert.equal(ownerAfter - ownerBefore + gasSpent, BigInt(web3.utils.toWei("1")));
   });
 
-  it("rescues non-AGI tokens via calldata and blocks AGI token rescue", async () => {
+  it("rescues non-AGI tokens with typed helper and enforces AGI safety posture", async () => {
     const agi = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
@@ -190,14 +190,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await erc721.mint(manager.address, 9, { from: owner });
     await erc1155.mint(manager.address, 11, 13, { from: owner });
 
-    const erc20Data = web3.eth.abi.encodeFunctionCall(
-      { name: "transfer", type: "function", inputs: [
-        { type: "address", name: "to" },
-        { type: "uint256", name: "amount" }
-      ] },
-      [owner, "7"]
-    );
-    await manager.rescueToken(erc20.address, erc20Data, { from: owner });
+    await manager.rescueERC20(erc20.address, owner, 7, { from: owner });
     assert.equal((await erc20.balanceOf(owner)).toString(), "7");
 
     const erc721Data = web3.eth.abi.encodeFunctionCall(
@@ -223,6 +216,20 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     );
     await manager.rescueToken(erc1155.address, erc1155Data, { from: owner });
     assert.equal((await erc1155.balanceOf(owner, 11)).toString(), "13");
+
+    await agi.mint(manager.address, web3.utils.toWei("5"), { from: owner });
+    await expectCustomError(manager.rescueERC20.call(agi.address, owner, web3.utils.toWei("1"), { from: owner }), "InvalidState");
+
+    await manager.pause({ from: owner });
+    await manager.setSettlementPaused(true, { from: owner });
+    await expectCustomError(manager.rescueERC20.call(agi.address, owner, web3.utils.toWei("1"), { from: owner }), "SettlementPaused");
+    await manager.setSettlementPaused(false, { from: owner });
+
+    await expectCustomError(manager.rescueERC20.call(agi.address, owner, web3.utils.toWei("6"), { from: owner }), "InsufficientWithdrawableBalance");
+    const ownerBefore = BigInt(await agi.balanceOf(owner));
+    await manager.rescueERC20(agi.address, owner, web3.utils.toWei("2"), { from: owner });
+    const ownerAfter = BigInt(await agi.balanceOf(owner));
+    assert.equal(ownerAfter - ownerBefore, BigInt(web3.utils.toWei("2")));
 
     const agiData = web3.eth.abi.encodeFunctionCall(
       { name: "transfer", type: "function", inputs: [
@@ -253,6 +260,35 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     await expectCustomError(manager.rescueToken.call(falseToken.address, transferData, { from: owner }), "TransferFailed");
     await expectCustomError(manager.rescueToken.call(malformedToken.address, transferData, { from: owner }), "TransferFailed");
+  });
+
+  it("prevents AGI rescue from touching locked escrow and locked bond backing", async () => {
+    const agi = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(agi, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await agi.mint(employer, payout, { from: owner });
+    await agi.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 100, "details", { from: employer });
+
+    await agi.mint(agent, web3.utils.toWei("3"), { from: owner });
+    await agi.approve(manager.address, web3.utils.toWei("3"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+
+    await manager.requestJobCompletion(0, "ipfs://done", { from: agent });
+    await manager.addAdditionalValidator(validator, { from: owner });
+    await agi.mint(validator, web3.utils.toWei("20"), { from: owner });
+    await agi.approve(manager.address, web3.utils.toWei("20"), { from: validator });
+    await manager.validateJob(0, "validator", [], { from: validator });
+
+    await manager.pause({ from: owner });
+    await expectCustomError(manager.rescueERC20.call(agi.address, treasury, 1, { from: owner }), "InsufficientWithdrawableBalance");
   });
 
 

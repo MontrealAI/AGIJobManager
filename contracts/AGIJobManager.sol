@@ -1134,9 +1134,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
         }
         tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
-        _mint(job.employer, tokenId);
+        address recipient = job.employer;
+        _mint(recipient, tokenId);
         _tokenURIs[tokenId] = tokenUriValue;
-        emit NFTIssued(tokenId, job.employer, tokenUriValue);
+        emit NFTIssued(tokenId, recipient, tokenUriValue);
     }
 
     function _refundEmployer(uint256 jobId, Job storage job) internal {
@@ -1237,6 +1238,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function rescueETH(uint256 amount) external onlyOwner nonReentrant {
         (bool ok, ) = owner().call{ value: amount }("");
         if (!ok) revert TransferFailed();
+    }
+
+    function rescueERC20(address token, address to, uint256 amount) external onlyOwner nonReentrant {
+        if (token == address(0) || to == address(0) || amount == 0) revert InvalidParameters();
+        if (token == address(agiToken)) {
+            if (settlementPaused) revert SettlementPaused();
+            if (!paused()) revert InvalidState();
+            uint256 available = withdrawableAGI();
+            if (amount > available) revert InsufficientWithdrawableBalance();
+            _t(to, amount);
+            emit AGIWithdrawn(to, amount, available - amount);
+            return;
+        }
+        TransferUtils.safeTransfer(token, to, amount);
     }
 
     function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
