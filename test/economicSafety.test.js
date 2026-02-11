@@ -79,28 +79,6 @@ contract("AGIJobManager economic safety", (accounts) => {
     await expectCustomError(manager.setValidationRewardPercentage.call(30, { from: owner }), "InvalidParameters");
   });
 
-  it("reverts deprecated additional agent payout settings", async () => {
-    const manager = await AGIJobManager.new(...buildInitConfig(
-        token.address,
-        "ipfs://base",
-        ens.address,
-        nameWrapper.address,
-        clubRoot,
-        agentRoot,
-        clubRoot,
-        agentRoot,
-        ZERO_ROOT,
-        ZERO_ROOT,
-      ),
-      { from: owner }
-    );
-
-    await expectCustomError(
-      manager.setAdditionalAgentPayoutPercentage.call(90, { from: owner }),
-      "DeprecatedParameter"
-    );
-  });
-
   it("settles successfully with safe payout configuration", async () => {
     const manager = await AGIJobManager.new(...buildInitConfig(
         token.address,

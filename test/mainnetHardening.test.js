@@ -6,6 +6,8 @@ const MockERC721 = artifacts.require("MockERC721");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
+const MockERC1155 = artifacts.require("MockERC1155");
+const ForceSendETH = artifacts.require("ForceSendETH");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
@@ -153,6 +155,48 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.finalizeJob(0, { from: employer });
     const core = await manager.getJobCore(0);
     assert.equal(core.completed, true);
+  });
+
+  it("rescues forced ETH to owner", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const forceSend = await ForceSendETH.new({ from: owner, value: web3.utils.toWei("1") });
+
+    await forceSend.forceSend(manager.address, { from: owner });
+    assert.equal(await web3.eth.getBalance(manager.address), web3.utils.toWei("1"));
+    await manager.rescueETH(web3.utils.toWei("1"), { from: owner });
+    assert.equal(await web3.eth.getBalance(manager.address), "0");
+  });
+
+  it("rescues arbitrary token calls except AGI", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    const other20 = await MockERC20.new({ from: owner });
+    await other20.mint(manager.address, web3.utils.toWei("5"), { from: owner });
+    const erc20Data = other20.contract.methods.transfer(owner, web3.utils.toWei("5")).encodeABI();
+    await manager.rescueToken(other20.address, erc20Data, { from: owner });
+    assert.equal((await other20.balanceOf(owner)).toString(), web3.utils.toWei("5"));
+
+    const nft = await MockERC721.new({ from: owner });
+    await nft.mint(manager.address, { from: owner });
+    const erc721Data = nft.contract.methods.transferFrom(manager.address, owner, 1).encodeABI();
+    await manager.rescueToken(nft.address, erc721Data, { from: owner });
+    assert.equal(await nft.ownerOf(1), owner);
+
+    const erc1155 = await MockERC1155.new({ from: owner });
+    const erc1155Data = erc1155.contract.methods.mint(owner, 7, 2).encodeABI();
+    await manager.rescueToken(erc1155.address, erc1155Data, { from: owner });
+    assert.equal((await erc1155.balanceOf(owner, 7)).toString(), "2");
+
+    await expectCustomError(
+      manager.rescueToken.call(token.address, erc20Data, { from: owner }),
+      "InvalidParameters"
+    );
   });
 
 });

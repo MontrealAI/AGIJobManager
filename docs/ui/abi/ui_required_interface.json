@@ -20,7 +20,6 @@
     "nextJobId": 0,
     "nextTokenId": 0,
     "reputation": 1,
-    "canAccessPremiumFeature": 1,
     "moderators": 1,
     "additionalAgents": 1,
     "additionalValidators": 1,
@@ -51,7 +50,6 @@
     "validateJob": 3,
     "disapproveJob": 3,
     "disputeJob": 1,
-    "resolveDispute": 2,
     "resolveDisputeWithCode": 3
   },
   "events": [
@@ -63,7 +61,6 @@
     "JobCompleted",
     "JobCancelled",
     "JobDisputed",
-    "DisputeResolved",
     "DisputeResolvedWithCode",
     "NFTIssued"
   ],

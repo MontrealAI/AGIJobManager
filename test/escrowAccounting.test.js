@@ -335,7 +335,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const jobAfterDisapproval = await manager.getJobCore(jobId);
     assert.equal(jobAfterDisapproval.disputed, true, "job should enter dispute at disapproval threshold");
 
-    await manager.resolveDispute(jobId, "employer win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 2, "employer win", { from: moderator });
 
     const validatorAfter = await token.balanceOf(validator);
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
@@ -410,7 +410,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const disputeBond = await fundDisputeBond(token, manager, employer, payout, owner);
     await manager.disputeJob(jobId, { from: employer });
     const employerBefore = await token.balanceOf(employer);
-    await manager.resolveDispute(jobId, "employer win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 2, "employer win", { from: moderator });
     const employerAfter = await token.balanceOf(employer);
     assert.equal(employerAfter.sub(employerBefore).toString(), payout.add(agentBond).add(disputeBond).toString());
 
@@ -451,7 +451,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.requestJobCompletion(disputeJobId, "ipfs-dispute", { from: agent });
     await fundDisputeBond(token, manager, employer, payout, owner);
     await manager.disputeJob(disputeJobId, { from: employer });
-    await manager.resolveDispute(disputeJobId, "employer win", { from: moderator });
+    await manager.resolveDisputeWithCode(disputeJobId, 2, "employer win", { from: moderator });
     assert.equal((await manager.lockedEscrow()).toString(), "0");
 
     const expireJobId = await createJob(payout, 1);
@@ -486,7 +486,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const contribution = toBN(toWei("1"));
     await token.mint(owner, contribution, { from: owner });
     await token.approve(manager.address, contribution, { from: owner });
-    await manager.contributeToRewardPool(contribution, { from: owner });
+    await token.transfer(manager.address, contribution, { from: owner });
 
     const withdrawableAfterContribution = await manager.withdrawableAGI();
     assert.equal(

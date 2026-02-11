@@ -254,7 +254,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.disputeJob(jobId, { from: employer });
       await manager.addModerator(moderator, { from: owner });
 
-      await manager.resolveDispute(jobId, "agent win", { from: moderator });
+      await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
       const tokenId = (await manager.nextTokenId()).toNumber() - 1;
       assert.equal(await manager.ownerOf(tokenId), employer);
     });
@@ -418,7 +418,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
     it("enforces owner-only modifiers and updates config", async () => {
       await expectRevert.unspecified(manager.pause({ from: other }));
       await manager.setBaseIpfsUrl("ipfs://new", { from: owner });
-      assert.equal(await manager.canAccessPremiumFeature(agent), false);
+      assert.equal((await manager.reputation(agent)).toString(), "0");
 
       await manager.setPremiumReputationThreshold(1, { from: owner });
       assert.equal(await manager.premiumReputationThreshold(), "1");
@@ -441,7 +441,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
     it("withdrawAGI respects bounds", async () => {
       await token.approve(manager.address, web3.utils.toWei("5"), { from: employer });
-      await manager.contributeToRewardPool(web3.utils.toWei("5"), { from: employer });
+      await token.transfer(manager.address, web3.utils.toWei("5"), { from: employer });
       await expectRevert.unspecified(manager.withdrawAGI(0, { from: owner }));
       await expectRevert.unspecified(manager.withdrawAGI(web3.utils.toWei("100"), { from: owner }));
       await expectRevert.unspecified(manager.withdrawAGI(web3.utils.toWei("5"), { from: owner }));
