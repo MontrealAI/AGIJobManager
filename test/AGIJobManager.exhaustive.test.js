@@ -254,7 +254,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.disputeJob(jobId, { from: employer });
       await manager.addModerator(moderator, { from: owner });
 
-      await manager.resolveDispute(jobId, "agent win", { from: moderator });
+      await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
       const tokenId = (await manager.nextTokenId()).toNumber() - 1;
       assert.equal(await manager.ownerOf(tokenId), employer);
     });
