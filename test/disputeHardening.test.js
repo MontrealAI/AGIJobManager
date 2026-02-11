@@ -244,7 +244,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
 
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
     const agentBalanceBefore = await token.balanceOf(agent);
-    await manager.resolveDispute(jobId, "agent win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator });
     const agentBalanceAfter = await token.balanceOf(agent);
     const expectedAgentPayout = payout.muln(90).divn(100).add(agentBond).add(disputeBond);
     assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedAgentPayout));
@@ -260,7 +260,7 @@ contract("AGIJobManager dispute hardening", (accounts) => {
     assert(agentBeforeDispute.sub(agentAfterDispute).eq(disputeBondTwo));
 
     const employerBeforeResolve = await token.balanceOf(employer);
-    await manager.resolveDispute(jobIdTwo, "employer win", { from: moderator });
+    await manager.resolveDisputeWithCode(jobIdTwo, 2, "employer win", { from: moderator });
     const employerAfterResolve = await token.balanceOf(employer);
     assert(employerAfterResolve.sub(employerBeforeResolve).eq(payoutTwo.add(agentBondTwo).add(disputeBondTwo)));
   });
