@@ -167,6 +167,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 disputedAt;
         bool expired;
         uint8 agentPayoutPct;
+        uint8 validatorRewardPctSnapshot;
         bool escrowReleased;
         bool validatorApproved;
         uint256 validatorApprovedAt;
@@ -266,6 +267,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
     uint256 internal constant ENS_URI_MAX_RETURN_BYTES = 2048;
     uint256 internal constant ENS_URI_MAX_STRING_BYTES = 1024;
+    uint256 internal constant MAX_JOB_SPEC_URI_BYTES = 1024;
+    uint256 internal constant MAX_JOB_COMPLETION_URI_BYTES = 1024;
+    uint256 internal constant MAX_BASE_IPFS_URL_BYTES = 512;
 
     constructor(
         address agiTokenAddress,
@@ -274,6 +278,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
     ) ERC721("AGIJobs", "Job") {
+        if (
+            ensConfig[0] == address(0)
+            && (
+                rootNodes[0] != bytes32(0)
+                || rootNodes[1] != bytes32(0)
+                || rootNodes[2] != bytes32(0)
+                || rootNodes[3] != bytes32(0)
+            )
+        ) revert InvalidParameters();
         _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
         _initRoots(rootNodes, merkleRoots);
 
@@ -301,6 +314,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         address ensAddress,
         address nameWrapperAddress
     ) internal {
+        if (agiTokenAddress == address(0)) revert InvalidParameters();
         agiToken = IERC20(agiTokenAddress);
         baseIpfsUrl = baseIpfs;
         ens = ENS(ensAddress);
@@ -456,6 +470,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details) external whenNotPaused nonReentrant {
         if (!(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit)) revert InvalidParameters();
+        if (bytes(_jobSpecURI).length > MAX_JOB_SPEC_URI_BYTES) revert InvalidParameters();
         UriUtils.requireValidUri(_jobSpecURI);
         uint256 jobId = nextJobId;
         unchecked {
@@ -485,6 +500,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
         if (snapshotPct == 0) revert IneligibleAgentPayout();
         job.agentPayoutPct = uint8(snapshotPct);
+        job.validatorRewardPctSnapshot = uint8(validationRewardPercentage);
+        if (snapshotPct + job.validatorRewardPctSnapshot > 100) revert InvalidParameters();
         uint256 bond = BondMath.computeAgentBond(
             job.payout,
             job.duration,
@@ -511,7 +528,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external nonReentrant {
         Job storage job = _job(_jobId);
-        if (bytes(_jobCompletionURI).length == 0) revert InvalidParameters();
+        if (bytes(_jobCompletionURI).length > MAX_JOB_COMPLETION_URI_BYTES) revert InvalidParameters();
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
         if (job.completed || job.expired) revert InvalidState();
         if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
@@ -592,7 +609,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             return;
         }
         emit JobDisapproved(_jobId, msg.sender);
-        if (job.validatorDisapprovals >= requiredValidatorDisapprovals) {
+        if (requiredValidatorDisapprovals > 0 && job.validatorDisapprovals >= requiredValidatorDisapprovals) {
             job.disputed = true;
             job.disputedAt = block.timestamp;
             emit JobDisputed(_jobId, msg.sender);
@@ -738,6 +755,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit MerkleRootsUpdated(_validatorMerkleRoot, _agentMerkleRoot);
     }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner {
+        if (bytes(_url).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
         baseIpfsUrl = _url;
     }
     function setRequiredValidatorApprovals(uint256 _approvals) external onlyOwner {
@@ -992,13 +1010,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 agentPayoutPercentage = job.agentPayoutPct;
         uint256 validatorBudget;
         uint256 agentPayout;
-        validatorBudget = (job.payout * validationRewardPercentage) / 100;
+        validatorBudget = (job.payout * job.validatorRewardPctSnapshot) / 100;
         agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        unchecked {
-            if (agentPayoutPercentage + validationRewardPercentage > 100) {
-                revert InvalidParameters();
-            }
-        }
         uint256 retained;
         unchecked {
             retained = job.payout - agentPayout - validatorBudget;
@@ -1064,7 +1077,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             if (correctCount > 0) {
                 perCorrectReward = poolForCorrect / correctCount;
             }
-            validatorReputationGain = (reputationPoints * validationRewardPercentage) / 100;
+            validatorReputationGain = (reputationPoints * job.validatorRewardPctSnapshot) / 100;
         }
         for (uint256 i = 0; i < vCount; ) {
             address validator = job.validators[i];
@@ -1150,7 +1163,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 agentBondPool = _settleAgentBond(job, false, poolToValidators);
         uint256 validatorCount = job.validators.length;
         uint256 escrowValidatorReward = validatorCount > 0
-            ? (job.payout * validationRewardPercentage) / 100
+            ? (job.payout * job.validatorRewardPctSnapshot) / 100
             : 0;
         uint256 employerRefund = escrowValidatorReward > 0 ? job.payout - escrowValidatorReward : job.payout;
         uint256 reputationPoints = ReputationMath.computeReputationPoints(
