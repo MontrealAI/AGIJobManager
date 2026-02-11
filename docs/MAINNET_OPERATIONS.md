@@ -49,8 +49,12 @@
 
 ### Rescue functions
 
-- AGI surplus recovery is available on `withdrawAGI(amount)` with pause + settlement-not-paused + withdrawable accounting protections.
-- Generic arbitrary-token/ETH rescue entrypoints are intentionally omitted in the current bytecode-constrained build; forced ETH or unrelated ERC20 transfers should be prevented operationally.
+- Forced ETH recovery: `rescueETH(amount)` (owner-only, nonReentrant).
+- ERC20 recovery: `rescueERC20(token, to, amount)` (owner-only, nonReentrant).
+  - For `token != agiToken`: callable during normal operations.
+  - For `token == agiToken`: constrained to treasury-surplus posture only (`paused == true`, `settlementPaused == false`, and `amount <= withdrawableAGI()`).
+- NFT recovery is not exposed in the current bytecode-constrained build; avoid transferring ERC721/ERC1155 assets to `AGIJobManager`.
+- Legacy `withdrawAGI(amount)` remains the primary treasury withdrawal path for AGI surplus while paused.
 
 ### Disable AGI types safely
 
@@ -64,7 +68,10 @@
 | `pause` / `unpause` | Yes | Yes | Primary incident toggle. |
 | `setSettlementPaused` | Yes (careful) | Yes | Freezes/unfreezes settlement path. |
 | `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Treasury path for AGI surplus only. |
-| Generic token/ETH rescue | No | No | Not exposed in current contract surface. |
+| `rescueETH` | Yes (owner-only) | Yes | Recover forced ETH (e.g., selfdestruct sends). |
+| `rescueERC20` (non-AGI) | Yes (owner-only) | Yes | Recover unrelated ERC20s accidentally sent to contract. |
+| `rescueERC20` (AGI) | No | Yes (and settlement must be unpaused) | Cannot exceed `withdrawableAGI()`. |
+| `rescueERC721` / `rescueERC1155` | No | No | Not exposed in current bytecode-constrained build. |
 | `lockIdentityConfiguration` | One-way | One-way | Finalize only after full config verification. |
 
 ## Recommended parameter ranges (mainnet)
@@ -133,7 +140,9 @@ flowchart TD
     C --> E[Diagnose + patch config]
     D --> E
     E --> F{Foreign assets trapped?}
-    F -- None/unsupported --> I[Skip rescue]
+    F -- Yes --> G[Use rescueETH / rescueERC20]
+    F -- No --> I[Skip rescue]
+    G --> I
     I --> J[Verify escrow solvency + withdrawableAGI]
     J --> K[setSettlementPaused(false)]
     K --> L[unpause and monitor]
