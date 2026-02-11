@@ -256,4 +256,170 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
   });
 
 
+  it("keeps old jobs settleable after later validation reward config changes", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    const payout = web3.utils.toBN(web3.utils.toWei("10"));
+
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setValidationRewardPercentage(5, { from: owner });
+    await manager.addAGIType(nft.address, 95, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    await token.mint(employer, payout.toString(), { from: owner });
+    await token.approve(manager.address, payout.toString(), { from: employer });
+    await manager.createJob("ipfs://spec", payout.toString(), 100, "details", { from: employer });
+
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
+
+    await manager.disableAGIType(nft.address, { from: owner });
+    await manager.setValidationRewardPercentage(80, { from: owner });
+
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    await manager.finalizeJob(0, { from: employer });
+
+    assert.equal((await token.balanceOf(agent)).toString(), payout.muln(95).divn(100).toString());
+    assert.equal((await token.balanceOf(employer)).toString(), payout.muln(5).divn(100).toString());
+  });
+
+  it("does not auto-dispute when disapproval threshold is disabled", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await manager.setRequiredValidatorDisapprovals(0, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 1000, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+
+    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
+    await manager.disapproveJob(0, "validator", [], { from: validator });
+
+    let core = await manager.getJobCore(0);
+    assert.equal(core.disputed, false);
+
+    await manager.setRequiredValidatorDisapprovals(1, { from: owner });
+
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec-2", payout, 1000, "details", { from: employer });
+    await manager.applyForJob(1, "agent", [], { from: agent });
+    await manager.requestJobCompletion(1, "ipfs://completion-2", { from: agent });
+    await manager.disapproveJob(1, "validator", [], { from: validator });
+
+    core = await manager.getJobCore(1);
+    assert.equal(core.disputed, true);
+  });
+
+  it("rejects overlong URIs and baseIpfsUrl", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    const tooLongSpec = `ipfs://${"a".repeat(2050)}`;
+    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
+    await expectCustomError(
+      manager.createJob.call(tooLongSpec, web3.utils.toWei("1"), 100, "details", { from: employer }),
+      "InvalidParameters"
+    );
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+
+    const tooLongCompletion = `ipfs://${"b".repeat(1030)}`;
+    await expectCustomError(manager.requestJobCompletion.call(0, tooLongCompletion, { from: agent }), "InvalidParameters");
+
+    const tooLongBase = `ipfs://${"c".repeat(520)}`;
+    await expectCustomError(manager.setBaseIpfsUrl.call(tooLongBase, { from: owner }), "InvalidParameters");
+  });
+
+  it("fails fast on invalid constructor wiring", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+    const zeroTokenArgs = buildInitConfig(
+      zeroAddress,
+      "ipfs://base",
+      zeroAddress,
+      zeroAddress,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    );
+    try {
+      await AGIJobManager.new(...zeroTokenArgs, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    const nonZeroRootNoEns = buildInitConfig(
+      token.address,
+      "ipfs://base",
+      zeroAddress,
+      zeroAddress,
+      "0x" + "11".repeat(32),
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    );
+    try {
+      await AGIJobManager.new(...nonZeroRootNoEns, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+
+    const rootWithNameWrapperOnly = buildInitConfig(
+      token.address,
+      "ipfs://base",
+      zeroAddress,
+      owner,
+      "0x" + "22".repeat(32),
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    );
+    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
+    assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+  });
+
+
 });
