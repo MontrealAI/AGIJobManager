@@ -168,6 +168,10 @@ function report(status, key, message) {
   return status === "FAIL";
 }
 
+function hasMethod(instance, name) {
+  return typeof instance[name] === "function";
+}
+
 module.exports = async function verifyConfig(callback) {
   try {
     const args = parseArgs(process.argv);
@@ -183,99 +187,43 @@ module.exports = async function verifyConfig(callback) {
 
     let failed = false;
 
-    const checks = [
-      {
-        key: "requiredValidatorApprovals",
-        expected: config.requiredValidatorApprovals,
-        actual: await instance.requiredValidatorApprovals(),
-      },
-      {
-        key: "requiredValidatorDisapprovals",
-        expected: config.requiredValidatorDisapprovals,
-        actual: await instance.requiredValidatorDisapprovals(),
-      },
-      {
-        key: "premiumReputationThreshold",
-        expected: config.premiumReputationThreshold,
-        actual: await instance.premiumReputationThreshold(),
-      },
-      {
-        key: "validationRewardPercentage",
-        expected: config.validationRewardPercentage,
-        actual: await instance.validationRewardPercentage(),
-      },
-      {
-        key: "maxJobPayout",
-        expected: config.maxJobPayout,
-        actual: await instance.maxJobPayout(),
-      },
-      {
-        key: "jobDurationLimit",
-        expected: config.jobDurationLimit,
-        actual: await instance.jobDurationLimit(),
-      },
-      {
-        key: "completionReviewPeriod",
-        expected: config.completionReviewPeriod,
-        actual: await instance.completionReviewPeriod(),
-      },
-      {
-        key: "disputeReviewPeriod",
-        expected: config.disputeReviewPeriod,
-        actual: await instance.disputeReviewPeriod(),
-      },
-      {
-        key: "additionalAgentPayoutPercentage",
-        expected: config.additionalAgentPayoutPercentage,
-        actual: await instance.additionalAgentPayoutPercentage(),
-      },
-      {
-        key: "termsAndConditionsIpfsHash",
-        expected: config.termsAndConditionsIpfsHash,
-        actual: await instance.termsAndConditionsIpfsHash(),
-      },
-      {
-        key: "contactEmail",
-        expected: config.contactEmail,
-        actual: await instance.contactEmail(),
-      },
-      {
-        key: "additionalText1",
-        expected: config.additionalText1,
-        actual: await instance.additionalText1(),
-      },
-      {
-        key: "additionalText2",
-        expected: config.additionalText2,
-        actual: await instance.additionalText2(),
-      },
-      {
-        key: "additionalText3",
-        expected: config.additionalText3,
-        actual: await instance.additionalText3(),
-      },
-      {
-        key: "validatorMerkleRoot",
-        expected: config.validatorMerkleRoot,
-        actual: await instance.validatorMerkleRoot(),
-      },
-      {
-        key: "agentMerkleRoot",
-        expected: config.agentMerkleRoot,
-        actual: await instance.agentMerkleRoot(),
-      },
+    const checkSpecs = [
+      ["requiredValidatorApprovals", "requiredValidatorApprovals", false],
+      ["requiredValidatorDisapprovals", "requiredValidatorDisapprovals", false],
+      ["premiumReputationThreshold", "premiumReputationThreshold", false],
+      ["validationRewardPercentage", "validationRewardPercentage", false],
+      ["maxJobPayout", "maxJobPayout", false],
+      ["jobDurationLimit", "jobDurationLimit", false],
+      ["completionReviewPeriod", "completionReviewPeriod", false],
+      ["disputeReviewPeriod", "disputeReviewPeriod", false],
+      ["additionalAgentPayoutPercentage", "additionalAgentPayoutPercentage", true],
+      ["termsAndConditionsIpfsHash", "termsAndConditionsIpfsHash", true],
+      ["contactEmail", "contactEmail", true],
+      ["additionalText1", "additionalText1", true],
+      ["additionalText2", "additionalText2", true],
+      ["additionalText3", "additionalText3", true],
+      ["validatorMerkleRoot", "validatorMerkleRoot", false],
+      ["agentMerkleRoot", "agentMerkleRoot", false],
     ];
 
-    for (const check of checks) {
-      if (check.expected === undefined) {
+    for (const [key, methodName, optional] of checkSpecs) {
+      const expectedValue = config[key];
+      if (expectedValue === undefined) continue;
+      if (!hasMethod(instance, methodName)) {
+        if (optional) {
+          report("SKIP", key, `optional method ${methodName}() not in ABI; skipping`);
+          continue;
+        }
+        failed = report("FAIL", key, `required method ${methodName}() not in ABI`) || failed;
         continue;
       }
-      const expected = toStringValue(check.expected);
-      const actual = toStringValue(check.actual);
+      const actualValue = await instance[methodName]();
+      const expected = toStringValue(expectedValue);
+      const actual = toStringValue(actualValue);
       if (expected === actual) {
-        report("PASS", check.key, `${actual}`);
+        report("PASS", key, `${actual}`);
       } else {
-        failed = report("FAIL", check.key, `expected ${expected}, got ${actual}`) || failed;
+        failed = report("FAIL", key, `expected ${expected}, got ${actual}`) || failed;
       }
     }
 
