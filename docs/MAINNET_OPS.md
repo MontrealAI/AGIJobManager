@@ -37,10 +37,11 @@
 
 ### Arbitrary token recovery (ERC721/ERC1155/odd contracts)
 - Use `rescueToken(target, calldata)` as owner with encoded token call data.
-- Guardrails:
-  - target cannot be `agiToken`,
-  - target cannot be `address(this)`,
-  - target cannot be zero address.
+- On-chain guardrail: target cannot be `agiToken` (enforced by `rescueToken`).
+- Operator preflight checks (recommended in runbooks/automation):
+  - reject `address(this)` targets,
+  - reject zero-address targets,
+  - verify calldata selector/args match the intended token standard (ERC721/ERC1155/custom).
 
 ## Emergency controls
 - `pause()` / `unpause()` for broad admin stop/start.
