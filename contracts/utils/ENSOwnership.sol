@@ -73,6 +73,8 @@ library ENSOwnership {
         bytes memory data;
         (ok, data) = target.staticcall(abi.encodeWithSelector(selector, node));
         if (!ok || data.length < 32) return (false, address(0));
-        result = abi.decode(data, (address));
+        assembly {
+            result := and(mload(add(data, 32)), 0xffffffffffffffffffffffffffffffffffffffff)
+        }
     }
 }
