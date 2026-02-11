@@ -51,16 +51,17 @@ and settlement invariants.
 
 ## 3) Pause semantics (blocked vs allowed)
 
-Pausing is intended to stop new risk while preserving exits/settlement.
+Pausing is intended to stop new risk while preserving exits/settlement. The contract
+also has a **separate** `settlementPaused` switch for emergency settlement freezes.
 
-**Blocked while paused**
+**Blocked while paused (intake pause via `pause()`/`unpause()`)**
 | Category | Functions |
 | --- | --- |
 | Job creation & onboarding | `createJob`, `applyForJob` |
 | Validation & dispute entry | `validateJob`, `disapproveJob`, `disputeJob` |
 | Reward pool funding | `contributeToRewardPool` |
 
-**Allowed while paused**
+**Allowed while paused (intake pause)**
 | Category | Functions |
 | --- | --- |
 | Completion submission | `requestJobCompletion` |
@@ -70,8 +71,16 @@ Pausing is intended to stop new risk while preserving exits/settlement.
 | Owner job delist | `delistJob` (owner‑only, unassigned only) |
 | Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
 
-**Rationale**: Pause is used to halt new obligations and risky actions, not to
-trap users or prevent settlement/exit paths.
+**Blocked while settlementPaused (emergency settlement freeze via `setSettlementPaused`)**
+| Category | Functions |
+| --- | --- |
+| Settlement & exits | `finalizeJob`, `cancelJob`, `expireJob` |
+| Dispute resolution | `resolveDispute`, `resolveDisputeWithCode`, `resolveStaleDispute` |
+| Owner job delist | `delistJob` (owner‑only, unassigned only) |
+| Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
+
+**Rationale**: `pause()` halts new obligations and risky actions, while
+`settlementPaused` is a best‑effort freeze on fund‑moving/terminal paths.
 
 ## 4) Identity configuration lock (scope and guarantees)
 
