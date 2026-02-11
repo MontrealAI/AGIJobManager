@@ -11,7 +11,6 @@ const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
-const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
 const MockRescueERC721 = artifacts.require("MockRescueERC721");
 const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
@@ -154,6 +153,8 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const ens = await RevertingENSRegistry.new({ from: owner });
     const wrapper = await RevertingNameWrapper.new({ from: owner });
     const resolver = await RevertingResolver.new({ from: owner });
+    const agentRootNode = web3.utils.soliditySha3("agent.example.eth");
+    const alphaAgentRootNode = web3.utils.soliditySha3("alpha.agent.example.eth");
     const manager = await AGIJobManager.new(
       ...buildInitConfig(
         token.address,
@@ -161,9 +162,9 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
         ens.address,
         wrapper.address,
         ZERO32,
+        agentRootNode,
         ZERO32,
-        ZERO32,
-        ZERO32,
+        alphaAgentRootNode,
         ZERO32,
         agentRoot
       ),
@@ -182,6 +183,11 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await token.mint(employer, web3.utils.toWei("5"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("5"), { from: employer });
     await manager.createJob("ipfs://spec", web3.utils.toWei("5"), 100, "details", { from: employer });
+
+    await expectCustomError(
+      manager.applyForJob.call(0, "agent", [], { from: treasury }),
+      "NotAuthorized"
+    );
 
     await token.mint(agent, web3.utils.toWei("2"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
@@ -215,9 +221,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployManager(token, ens.address, wrapper.address);
-    const sender = await ForceSendETH.new({ from: owner, value: web3.utils.toWei("1") });
-
-    await sender.boom(manager.address, { from: owner });
+    const forceSendInitCode = `0x73${manager.address.slice(2)}ff`;
+    await web3.eth.sendTransaction({
+      from: owner,
+      data: forceSendInitCode,
+      value: web3.utils.toWei("1")
+    });
     const ownerBefore = BigInt(await web3.eth.getBalance(owner));
     const tx = await manager.rescueETH(web3.utils.toWei("1"), { from: owner });
     const gasSpent = BigInt(tx.receipt.gasUsed) * BigInt((await web3.eth.getTransaction(tx.tx)).gasPrice);
