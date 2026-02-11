@@ -13,8 +13,6 @@ const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
 const MockRescueERC721 = artifacts.require("MockRescueERC721");
 const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
-const MockRescueERC20False = artifacts.require("MockRescueERC20False");
-const MockRescueMalformedReturn = artifacts.require("MockRescueMalformedReturn");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
@@ -197,7 +195,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ] },
       [owner, "7"]
     );
-    await manager.rescueToken(erc20.address, erc20Data, { from: owner });
+    await manager.rescueCall(erc20.address, erc20Data, { from: owner });
     assert.equal((await erc20.balanceOf(owner)).toString(), "7");
 
     const erc721Data = web3.eth.abi.encodeFunctionCall(
@@ -208,7 +206,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ] },
       [manager.address, owner, "9"]
     );
-    await manager.rescueToken(erc721.address, erc721Data, { from: owner });
+    await manager.rescueCall(erc721.address, erc721Data, { from: owner });
     assert.equal(await erc721.ownerOf(9), owner);
 
     const erc1155Data = web3.eth.abi.encodeFunctionCall(
@@ -221,7 +219,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ] },
       [manager.address, owner, "11", "13", "0x"]
     );
-    await manager.rescueToken(erc1155.address, erc1155Data, { from: owner });
+    await manager.rescueCall(erc1155.address, erc1155Data, { from: owner });
     assert.equal((await erc1155.balanceOf(owner, 11)).toString(), "13");
 
     const agiData = web3.eth.abi.encodeFunctionCall(
@@ -231,17 +229,17 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ] },
       [owner, "1"]
     );
-    await expectCustomError(manager.rescueToken.call(agi.address, agiData, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.rescueCall.call(agi.address, agiData, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.rescueCall.call(manager.address, erc20Data, { from: owner }), "InvalidParameters");
   });
 
 
-  it("reverts rescueToken when token returns false or malformed returndata", async () => {
+  it("reverts rescueCall when token call fails", async () => {
     const agi = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployManager(agi, ens.address, wrapper.address);
-    const falseToken = await MockRescueERC20False.new({ from: owner });
-    const malformedToken = await MockRescueMalformedReturn.new({ from: owner });
+    const revertToken = await MockRescueERC20.new({ from: owner });
 
     const transferData = web3.eth.abi.encodeFunctionCall(
       { name: "transfer", type: "function", inputs: [
@@ -251,8 +249,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       [owner, "1"]
     );
 
-    await expectCustomError(manager.rescueToken.call(falseToken.address, transferData, { from: owner }), "TransferFailed");
-    await expectCustomError(manager.rescueToken.call(malformedToken.address, transferData, { from: owner }), "TransferFailed");
+    await expectCustomError(manager.rescueCall.call(revertToken.address, transferData, { from: owner }), "TransferFailed");
   });
 
 
