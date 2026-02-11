@@ -5,7 +5,6 @@ const MockERC20 = artifacts.require('MockERC20');
 const MockERC721 = artifacts.require('MockERC721');
 const MockENSRegistry = artifacts.require('MockENSRegistry');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
-const ForceEthSender = artifacts.require('ForceEthSender');
 const MockENSJobPagesReturnData = artifacts.require('MockENSJobPagesReturnData');
 const MockRevertingENSRegistry = artifacts.require('MockRevertingENSRegistry');
 const MockRevertingNameWrapper = artifacts.require('MockRevertingNameWrapper');
@@ -33,29 +32,17 @@ contract('mainnet readiness hardening', (accounts) => {
     );
   }
 
-  it('rescues forced ETH and enforces AGI rescue safety posture', async () => {
+  it('enforces AGI withdrawal safety posture', async () => {
     const token = await MockERC20.new({ from: owner });
     const manager = await deployManager(token, (await MockENSRegistry.new({ from: owner })).address, (await MockNameWrapper.new({ from: owner })).address);
     const nft = await MockERC721.new({ from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent, { from: owner });
 
-    const forced = await ForceEthSender.new({ from: owner, value: web3.utils.toWei('1', 'ether') });
-    await forced.forceSend(manager.address, { from: owner });
-    assert.equal((await web3.eth.getBalance(manager.address)).toString(), web3.utils.toWei('1', 'ether'));
-
-    const ownerEthBefore = new BN(await web3.eth.getBalance(owner));
-    const tx = await manager.rescue('0x0000000000000000000000000000000000000000', owner, web3.utils.toWei('1', 'ether'), { from: owner });
-    const gasUsed = new BN(tx.receipt.gasUsed).mul(new BN((await web3.eth.getTransaction(tx.tx)).gasPrice));
-    const ownerEthAfter = new BN(await web3.eth.getBalance(owner));
-    assert(ownerEthAfter.sub(ownerEthBefore).add(gasUsed).eq(new BN(web3.utils.toWei('1', 'ether'))));
-
     const payout = new BN(web3.utils.toWei('100'));
     await token.mint(employer, payout.mul(new BN('3')), { from: owner });
     await token.approve(manager.address, payout.mul(new BN('3')), { from: employer });
     await manager.createJob('spec', payout, 1000, 'd', { from: employer });
-
-    await expectRevert.unspecified(manager.rescue(token.address, owner, payout, { from: owner }));
 
     await manager.pause({ from: owner });
     await token.mint(manager.address, payout, { from: owner });
@@ -78,8 +65,7 @@ contract('mainnet readiness hardening', (accounts) => {
     const otherToken = await MockERC20.new({ from: owner });
     await otherToken.mint(manager.address, web3.utils.toWei('2'), { from: owner });
     await manager.unpause({ from: owner });
-    await manager.rescue(otherToken.address, other, web3.utils.toWei('1.5'), { from: owner });
-    assert.equal((await otherToken.balanceOf(other)).toString(), web3.utils.toWei('1.5'));
+    await expectRevert.unspecified(manager.withdrawAGI(web3.utils.toWei('1'), { from: owner }));
   });
 
   it('ENS tokenURI hook decode is strictly best effort', async () => {

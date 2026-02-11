@@ -49,9 +49,8 @@
 
 ### Rescue functions
 
-- `rescue(address(0), to, amount)`: recover ETH forcibly sent to the contract.
-- `rescue(token, to, amount)` for non-AGI ERC20: owner-only recovery at any time.
-- AGI surplus recovery remains on `withdrawAGI(amount)` with its existing pause + settlement-not-paused + withdrawable accounting protections.
+- AGI surplus recovery is available through `withdrawAGI(amount)` with pause + settlement-not-paused + withdrawable accounting protections.
+- If ETH is forcibly sent to the contract, treat it as stranded value in current versions and account for it operationally.
 
 ### Disable AGI types safely
 
@@ -65,8 +64,6 @@
 | `pause` / `unpause` | Yes | Yes | Primary incident toggle. |
 | `setSettlementPaused` | Yes (careful) | Yes | Freezes/unfreezes settlement path. |
 | `withdrawAGI` (AGI only) | No | Yes (only if settlement not paused) | Same safety bounds for AGI surplus. |
-| `rescue(token!=agiToken,...)` | Yes | Yes | For accidental non-AGI token transfers. |
-| `rescue(address(0),...)` | Yes | Yes | For forced ETH only. |
 | `lockIdentityConfiguration` | One-way | One-way | Finalize only after full config verification. |
 
 ## Recommended parameter ranges (mainnet)
