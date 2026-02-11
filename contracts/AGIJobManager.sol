@@ -1254,9 +1254,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         TransferUtils.safeTransfer(token, to, amount);
     }
 
-    function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
-        if (token == address(agiToken)) revert InvalidParameters();
-        (bool ok, bytes memory ret) = token.call(data);
+    function rescueCall(address target, bytes calldata data) external onlyOwner nonReentrant {
+        if (target == address(0) || target == address(this) || target == address(agiToken)) revert InvalidParameters();
+        (bool ok, bytes memory ret) = target.call(data);
         if (!ok) revert TransferFailed();
         if (ret.length > 0) {
             if (ret.length != 32) revert TransferFailed();
