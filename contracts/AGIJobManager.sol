@@ -64,6 +64,7 @@ interface NameWrapper {
     function ownerOf(uint256 id) external view returns (address);
 }
 
+
 contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
