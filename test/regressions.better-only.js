@@ -5,6 +5,8 @@ const AGIJobManagerOriginal = artifacts.require("AGIJobManagerOriginal");
 const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
+const MockENS = artifacts.require("MockENS");
+const MockNameWrapper = artifacts.require("MockNameWrapper");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators, fundAgents, fundDisputeBond } = require("./helpers/bonds");
 
@@ -46,12 +48,14 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
   ];
   const merkleArgs = [leaf(validator), leaf(agent)];
   if (Contract.contractName === "AGIJobManager") {
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
     return Contract.new(
       ...buildInitConfig(
         tokenAddress,
         "ipfs://base",
-        owner,
-        ZERO_ADDRESS,
+        ens.address,
+        wrapper.address,
         rootNode("club-root"),
         rootNode("agent-root"),
         rootNode("club-root"),

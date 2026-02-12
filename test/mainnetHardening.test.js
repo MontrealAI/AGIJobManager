@@ -438,8 +438,43 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-    assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+    try {
+      await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    const overlongBase = buildInitConfig(
+      token.address,
+      `ipfs://${"x".repeat(520)}`,
+      zeroAddress,
+      zeroAddress,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    );
+    try {
+      await AGIJobManager.new(...overlongBase, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+  });
+
+
+  it("rejects EOA addresses in critical wiring setters", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    await expectCustomError(manager.updateAGITokenAddress.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateEnsRegistry.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateNameWrapper.call(owner, { from: owner }), "InvalidParameters");
   });
 
   it("uses bounded gas for NFT balance checks", async () => {
@@ -488,7 +523,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     assert.equal(await manager.ownerOf(1), nonReceiverEmployer.address);
 
     await expectCustomError(
-      manager.safeMintCompletionNFT.call(nonReceiverEmployer.address, 999, { from: owner }),
+      manager.__safeMintExternal.call(nonReceiverEmployer.address, 999, { from: owner }),
       "NotAuthorized"
     );
   });

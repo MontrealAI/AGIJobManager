@@ -36,7 +36,7 @@ library ENSOwnership {
         address claimant,
         bytes32 subnode
     ) private view returns (bool) {
-        if (nameWrapperAddress == address(0)) return false;
+        if (nameWrapperAddress == address(0) || nameWrapperAddress.code.length == 0) return false;
         (bool ok, address actualOwner) = _staticcallAddress(
             nameWrapperAddress,
             NameWrapperLike.ownerOf.selector,
@@ -50,14 +50,14 @@ library ENSOwnership {
         address claimant,
         bytes32 subnode
     ) private view returns (bool) {
-        if (ensAddress == address(0)) return false;
+        if (ensAddress == address(0) || ensAddress.code.length == 0) return false;
         (bool ok, address resolverAddress) = _staticcallAddress(
             ensAddress,
             ENSRegistryLike.resolver.selector,
             subnode
         );
         if (!ok) return false;
-        if (resolverAddress == address(0)) return false;
+        if (resolverAddress == address(0) || resolverAddress.code.length == 0) return false;
         address resolvedAddress;
         (ok, resolvedAddress) = _staticcallAddress(
             resolverAddress,
@@ -74,7 +74,7 @@ library ENSOwnership {
     ) private view returns (bool ok, address result) {
         bytes memory data;
         (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(abi.encodeWithSelector(selector, node));
-        if (!ok || data.length < 32) return (false, address(0));
+        if (!ok || data.length != 32) return (false, address(0));
         result = abi.decode(data, (address));
     }
 }

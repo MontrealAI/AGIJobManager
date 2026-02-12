@@ -38,12 +38,30 @@ contract('pausing.accessControl', (accounts) => {
     await manager.unpause({ from: owner });
     await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
+
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.addModerator(owner, { from: owner });
+    await manager.pause({ from: owner });
+    await manager.disputeJob(0, { from: employer });
+    await manager.resolveDisputeWithCode(0, 1, { from: owner });
+
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.unpause({ from: owner });
+    await manager.createJob('Qm2', payout, 5000, 'd2', { from: employer });
+    await manager.applyForJob(1, 'agent', agentTree.proofFor(agent), { from: agent });
+    await manager.requestJobCompletion(1, 'QmDone2', { from: agent });
+    await manager.pause({ from: owner });
     await manager.setCompletionReviewPeriod(1, { from: owner });
     await time.increase(2);
+    await manager.finalizeJob(1, { from: employer });
+
     await manager.setSettlementPaused(true, { from: owner });
-    await expectRevert.unspecified(manager.finalizeJob(0, { from: employer }));
-    await manager.setSettlementPaused(false, { from: owner });
-    await manager.finalizeJob(0, { from: employer });
+    await expectRevert.unspecified(manager.validateJob(1, '', [], { from: owner }));
+    await expectRevert.unspecified(manager.disputeJob(1, { from: employer }));
+    await expectRevert.unspecified(manager.finalizeJob(1, { from: employer }));
+    await expectRevert.unspecified(manager.resolveDisputeWithCode(1, 1, { from: owner }));
   });
 
   it('allows treasury withdrawals only while paused and when settlement is active', async () => {

@@ -229,7 +229,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 indexed remainingWithdrawable);
-    event PlatformRevenueAccrued(uint256 indexed jobId, uint256 indexed amount);
     event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);
     event AgentBlacklisted(address indexed agent, bool indexed status);
     event ValidatorBlacklisted(address indexed validator, bool indexed status);
@@ -278,12 +277,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
     ) ERC721("AGIJobs", "Job") {
-        if (agiTokenAddress == address(0)) revert InvalidParameters();
-        if (
-            ensConfig[0] == address(0)
-                && ensConfig[1] == address(0)
-                && (rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)
-        ) revert InvalidParameters();
+        if (agiTokenAddress == address(0) || agiTokenAddress.code.length == 0) revert InvalidParameters();
+        if (bytes(baseIpfs).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
+        if ((rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
+            if (ensConfig[0] == address(0) || ensConfig[0].code.length == 0) revert InvalidParameters();
+        }
+        if (ensConfig[1] != address(0) && ensConfig[1].code.length == 0) revert InvalidParameters();
         _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
         _initRoots(rootNodes, merkleRoots);
 
@@ -522,7 +521,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _callEnsJobPagesHook(ENS_HOOK_ASSIGN, _jobId);
     }
 
-    function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI) external nonReentrant {
+    function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI)
+        external
+        whenSettlementNotPaused
+        nonReentrant
+    {
         Job storage job = _job(_jobId);
         uint256 uriLength = bytes(_jobCompletionURI).length;
         if (!(uriLength > 0 && uriLength <= MAX_JOB_COMPLETION_URI_BYTES)) revert InvalidParameters();
@@ -538,11 +541,19 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _callEnsJobPagesHook(ENS_HOOK_COMPLETION, _jobId);
     }
 
-    function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
+    function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)
+        external
+        whenSettlementNotPaused
+        nonReentrant
+    {
         _recordValidatorVote(_jobId, subdomain, proof, true);
     }
 
-    function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
+    function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)
+        external
+        whenSettlementNotPaused
+        nonReentrant
+    {
         _recordValidatorVote(_jobId, subdomain, proof, false);
     }
 
@@ -613,7 +624,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-    function disputeJob(uint256 _jobId) external whenNotPaused nonReentrant {
+    function disputeJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         _requireJobUnsettled(job);
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
@@ -704,20 +715,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _setAddressFlag(moderators, _moderator, false);
     }
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable {
-        if (_newTokenAddress == address(0)) revert InvalidParameters();
+        if (_newTokenAddress == address(0) || _newTokenAddress.code.length == 0) revert InvalidParameters();
         _requireEmptyEscrow();
         address oldToken = address(agiToken);
         agiToken = IERC20(_newTokenAddress);
         emit AGITokenAddressUpdated(oldToken, _newTokenAddress);
     }
     function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable {
-        if (_newEnsRegistry == address(0)) revert InvalidParameters();
+        if (_newEnsRegistry == address(0) || _newEnsRegistry.code.length == 0) revert InvalidParameters();
         _requireEmptyEscrow();
         ens = ENS(_newEnsRegistry);
         emit EnsRegistryUpdated(_newEnsRegistry);
     }
     function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable {
-        if (_newNameWrapper == address(0)) revert InvalidParameters();
+        if (_newNameWrapper != address(0) && _newNameWrapper.code.length == 0) revert InvalidParameters();
         _requireEmptyEscrow();
         nameWrapper = NameWrapper(_newNameWrapper);
         emit NameWrapperUpdated(_newNameWrapper);
@@ -767,14 +778,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         requiredValidatorDisapprovals = _disapprovals;
         emit RequiredValidatorDisapprovalsUpdated(oldDisapprovals, _disapprovals);
     }
-    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner {
-        premiumReputationThreshold = _threshold;
-    }
     function setVoteQuorum(uint256 _quorum) external onlyOwner {
         if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
         uint256 oldQuorum = voteQuorum;
         voteQuorum = _quorum;
         emit VoteQuorumUpdated(oldQuorum, _quorum);
+    }
+    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner {
+        premiumReputationThreshold = _threshold;
     }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner {
         maxJobPayout = _maxPayout;
@@ -1013,9 +1024,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             retained = job.payout - agentPayout - validatorBudget;
         }
-        if (retained > 0) {
-            emit PlatformRevenueAccrued(_jobId, retained);
-        }
 
         job.completed = true;
         _decrementActiveJob(job);
@@ -1145,21 +1153,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
         }
         tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
+        _tokenURIs[tokenId] = tokenUriValue;
         if (job.employer.code.length != 0) {
-            try this.safeMintCompletionNFT(job.employer, tokenId) {
+            try this.__safeMintExternal(job.employer, tokenId) {
             } catch {
                 _mint(job.employer, tokenId);
             }
         } else {
             _mint(job.employer, tokenId);
         }
-        _tokenURIs[tokenId] = tokenUriValue;
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
     }
 
-    function safeMintCompletionNFT(address to, uint256 tokenId) external {
+    function __safeMintExternal(address to, uint256 tokenId) external {
         if (msg.sender != address(this)) revert NotAuthorized();
-        if (to.code.length == 0) revert InvalidState();
         _safeMint(to, tokenId);
     }
 
@@ -1350,13 +1357,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 let ptr := mload(0x40)
                 mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
                 mstore(add(ptr, 0x04), shl(224, 0x01ffc9a7))
-                isSupported := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
+                isSupported := staticcall(50000, nftAddress, ptr, 0x24, ptr, 0x20)
                 isSupported := and(isSupported, gt(returndatasize(), 0x1f))
                 isSupported := and(isSupported, iszero(iszero(mload(ptr))))
                 if isSupported {
                     mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
                     mstore(add(ptr, 0x04), shl(224, 0x80ac58cd))
-                    isSupported := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
+                    isSupported := staticcall(50000, nftAddress, ptr, 0x24, ptr, 0x20)
                     isSupported := and(isSupported, gt(returndatasize(), 0x1f))
                     isSupported := and(isSupported, iszero(iszero(mload(ptr))))
                 }
