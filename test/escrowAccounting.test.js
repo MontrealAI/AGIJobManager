@@ -484,9 +484,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     );
 
     const contribution = toBN(toWei("1"));
-    await token.mint(owner, contribution, { from: owner });
-    await token.approve(manager.address, contribution, { from: owner });
-    await manager.contributeToRewardPool(contribution, { from: owner });
+    await token.mint(manager.address, contribution, { from: owner });
 
     const withdrawableAfterContribution = await manager.withdrawableAGI();
     assert.equal(
