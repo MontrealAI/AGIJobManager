@@ -6,9 +6,15 @@ const MockERC721 = artifacts.require("MockERC721");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
+const MockLoopingERC721 = artifacts.require("MockLoopingERC721");
+const ERC721ReceiverEmployer = artifacts.require("ERC721ReceiverEmployer");
+const NonReceiverEmployer = artifacts.require("NonReceiverEmployer");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
+const MalformedENSRegistry = artifacts.require("MalformedENSRegistry");
+const MalformedNameWrapper = artifacts.require("MalformedNameWrapper");
+const MalformedResolver = artifacts.require("MalformedResolver");
 const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
 const MockRescueERC721 = artifacts.require("MockRescueERC721");
@@ -140,6 +146,21 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await token.mint(validator, web3.utils.toWei("20"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
     await manager.validateJob(0, "validator", [], { from: validator });
+  });
+
+  it("treats malformed ENS responses as not-owned without reverting", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MalformedENSRegistry.new({ from: owner });
+    const wrapper = await MalformedNameWrapper.new({ from: owner });
+    const resolver = await MalformedResolver.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    await ens.setResolverAddress(resolver.address, { from: owner });
+
+    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+    await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
   });
 
 
@@ -419,6 +440,57 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     );
     const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
     assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+  });
+
+  it("uses bounded gas for NFT balance checks", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const loopingNft = await MockLoopingERC721.new({ from: owner });
+
+    await manager.addAGIType(loopingNft.address, 90, { from: owner });
+    assert.equal((await manager.getHighestPayoutPercentage(agent)).toString(), "0");
+  });
+
+  it("safe-mints to ERC721 receivers, falls back for non-receivers, and blocks wrapper misuse", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    const receiverEmployer = await ERC721ReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const nonReceiverEmployer = await NonReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const payout = web3.utils.toWei("10");
+
+    await token.mint(receiverEmployer.address, payout, { from: owner });
+    await receiverEmployer.createJob("ipfs://spec-safe", payout, 100, "details", { from: owner });
+    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion-safe", { from: agent });
+    await time.increase((await manager.completionReviewPeriod()).addn(1));
+    await manager.finalizeJob(0, { from: owner });
+    assert.equal((await receiverEmployer.receivedCount()).toString(), "1");
+
+    await token.mint(nonReceiverEmployer.address, payout, { from: owner });
+    await nonReceiverEmployer.createJob("ipfs://spec-unsafe", payout, 100, "details", { from: owner });
+    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await manager.applyForJob(1, "agent", [], { from: agent });
+    await manager.requestJobCompletion(1, "ipfs://completion-unsafe", { from: agent });
+    await time.increase((await manager.completionReviewPeriod()).addn(1));
+    await manager.finalizeJob(1, { from: owner });
+    assert.equal(await manager.ownerOf(1), nonReceiverEmployer.address);
+
+    await expectCustomError(
+      manager.safeMintCompletionNFT.call(nonReceiverEmployer.address, 999, { from: owner }),
+      "NotAuthorized"
+    );
   });
 
 
