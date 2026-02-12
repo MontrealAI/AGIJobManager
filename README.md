@@ -70,7 +70,7 @@ Core operator/integrator/auditor docs:
 ## Quickstart
 
 ```bash
-npm install
+npm ci
 npm run build
 npm run test
 ```
