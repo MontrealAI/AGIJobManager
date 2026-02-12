@@ -866,25 +866,6 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "contributor",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "RewardPoolContribution",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
           "internalType": "bytes32",
           "name": "clubRootNode",
           "type": "bytes32"
@@ -2421,11 +2402,11 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_quorum",
+          "name": "_threshold",
           "type": "uint256"
         }
       ],
-      "name": "setVoteQuorum",
+      "name": "setPremiumReputationThreshold",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -2434,11 +2415,11 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_threshold",
+          "name": "_quorum",
           "type": "uint256"
         }
       ],
-      "name": "setPremiumReputationThreshold",
+      "name": "setVoteQuorum",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -2789,6 +2770,24 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "safeMintCompletionNFT",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
@@ -2933,38 +2932,6 @@
         }
       ],
       "name": "rescueToken",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "canAccessPremiumFeature",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "contributeToRewardPool",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
