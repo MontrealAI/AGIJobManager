@@ -14,36 +14,39 @@ const leafFor = (address) => Buffer.from(web3.utils.soliditySha3({ type: 'addres
 const mkTree = (list) => { const t = new MerkleTree(list.map(leafFor), keccak256, { sortPairs: true }); return { root: t.getHexRoot(), proofFor: (a) => t.getHexProof(leafFor(a)) }; };
 
 contract('pausing.accessControl', (accounts) => {
-  const [owner, employer, agent] = accounts;
+  const [owner, employer, agent, validator] = accounts;
 
-  it('gates create/apply with pause and gates settlement with settlementPaused', async () => {
+  it('pause stops intake only; settlementPaused gates adjudication', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), agentTree.root), { from: owner });
+    const validatorTree = mkTree([validator]);
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
+
     const payout = new BN(web3.utils.toWei('1000'));
     await token.mint(employer, payout);
     await token.mint(agent, payout);
-    await token.approve(manager.address, payout, { from: agent });
-
-    await manager.pause({ from: owner });
+    await token.mint(validator, payout);
     await token.approve(manager.address, payout, { from: employer });
-    await expectRevert.unspecified(manager.createJob('Qm', payout, 5000, 'd', { from: employer }));
-    await manager.unpause({ from: owner });
+    await token.approve(manager.address, payout, { from: agent });
+    await token.approve(manager.address, payout, { from: validator });
 
     await manager.createJob('Qm', payout, 5000, 'd', { from: employer });
-    await manager.pause({ from: owner });
-    await expectRevert.unspecified(manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent }));
-
-    await manager.unpause({ from: owner });
     await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
+
+    await manager.pause({ from: owner });
+    await expectRevert.unspecified(manager.createJob('Qm2', payout, 5000, 'd', { from: employer }));
+    await expectRevert.unspecified(manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent }));
+
+    await manager.validateJob(0, 'validator', validatorTree.proofFor(validator), { from: validator });
     await manager.setCompletionReviewPeriod(1, { from: owner });
     await time.increase(2);
-    await manager.setSettlementPaused(true, { from: owner });
-    await expectRevert.unspecified(manager.finalizeJob(0, { from: employer }));
-    await manager.setSettlementPaused(false, { from: owner });
     await manager.finalizeJob(0, { from: employer });
+
+    await manager.setSettlementPaused(true, { from: owner });
+    await expectRevert.unspecified(manager.requestJobCompletion(0, 'again', { from: agent }));
+    await expectRevert.unspecified(manager.validateJob(0, 'validator', validatorTree.proofFor(validator), { from: validator }));
   });
 
   it('allows treasury withdrawals only while paused and when settlement is active', async () => {

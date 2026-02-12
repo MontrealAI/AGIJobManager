@@ -1,4 +1,4 @@
-const { time } = require("@openzeppelin/test-helpers");
+const { time, expectRevert } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -9,6 +9,10 @@ const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const MockLoopingERC721 = artifacts.require("MockLoopingERC721");
 const ERC721ReceiverEmployer = artifacts.require("ERC721ReceiverEmployer");
 const NonReceiverEmployer = artifacts.require("NonReceiverEmployer");
+const TokenURIReadingReceiverEmployer = artifacts.require("TokenURIReadingReceiverEmployer");
+const GasBurningReceiverEmployer = artifacts.require("GasBurningReceiverEmployer");
+const MockRevertingERC165 = artifacts.require("MockRevertingERC165");
+const MockLoopingERC165 = artifacts.require("MockLoopingERC165");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
@@ -385,6 +389,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
   it("fails fast on invalid constructor wiring", async () => {
     const token = await MockERC20.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
     const zeroAddress = "0x0000000000000000000000000000000000000000";
 
     const zeroTokenArgs = buildInitConfig(
@@ -430,7 +435,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       token.address,
       "ipfs://base",
       zeroAddress,
-      owner,
+      wrapper.address,
       "0x" + "22".repeat(32),
       ZERO32,
       ZERO32,
@@ -438,8 +443,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-    assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+    try {
+      await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
   });
 
   it("uses bounded gas for NFT balance checks", async () => {
@@ -494,4 +503,171 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
   });
 
 
+
+
+  it("keeps adjudication live while paused when settlementPaused is false", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+
+    const payout = web3.utils.toWei("1");
+    await token.mint(employer, payout, { from: owner });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
+
+    await manager.createJob("ipfs://spec", payout, 100, "details", { from: employer });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.pause({ from: owner });
+    await manager.validateJob(0, "validator", [], { from: validator });
+    const period = await manager.completionReviewPeriod();
+    await time.increase(period.addn(1));
+    await manager.finalizeJob(0, { from: employer });
+
+    const core = await manager.getJobCore(0);
+    assert.equal(core.completed, true);
+  });
+
+  it("blocks adjudication actions when settlement is paused", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+
+    const payout = web3.utils.toWei("1");
+    await token.mint(employer, payout, { from: owner });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
+
+    await manager.createJob("ipfs://spec", payout, 100, "details", { from: employer });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+
+    await manager.setSettlementPaused(true, { from: owner });
+    await expectCustomError(manager.validateJob.call(0, "validator", [], { from: validator }), "SettlementPaused");
+    await expectCustomError(manager.disapproveJob.call(0, "validator", [], { from: validator }), "SettlementPaused");
+    await expectCustomError(manager.disputeJob.call(0, { from: employer }), "SettlementPaused");
+    await expectCustomError(manager.finalizeJob.call(0, { from: employer }), "SettlementPaused");
+    await expectCustomError(manager.expireJob.call(0, { from: employer }), "SettlementPaused");
+    await expectCustomError(manager.cancelJob.call(0, { from: employer }), "SettlementPaused");
+  });
+
+  it("safe mints with tokenURI visible during ERC721 receiver callback", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    const receiver = await TokenURIReadingReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const payout = web3.utils.toWei("2");
+    await token.mint(receiver.address, payout, { from: owner });
+    await receiver.createJob("ipfs://spec", payout, 100, "details", { from: owner });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "QmDone", { from: agent });
+    const period = await manager.completionReviewPeriod();
+    await time.increase(period.addn(1));
+    await manager.finalizeJob(0, { from: owner });
+
+    assert.equal(await receiver.observedTokenURI(), "ipfs://base/QmDone");
+  });
+
+  it("falls back to _mint when receiver callback gas-griefs", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    const receiver = await GasBurningReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const payout = web3.utils.toWei("2");
+    await token.mint(receiver.address, payout, { from: owner });
+    await receiver.createJob("ipfs://spec", payout, 100, "details", { from: owner });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "QmDone", { from: agent });
+    const period = await manager.completionReviewPeriod();
+    await time.increase(period.addn(1));
+    await manager.finalizeJob(0, { from: owner });
+
+    assert.equal(await manager.ownerOf(0), receiver.address);
+  });
+
+  it("rejects external safeMintCompletionNFT calls", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    await expectCustomError(manager.safeMintCompletionNFT.call(owner, 999, { from: owner }), "NotAuthorized");
+  });
+
+  it("rejects constructor and setters with non-contract integration addresses", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+
+    for (const cfg of [
+      buildInitConfig(owner, "ipfs://base", ens.address, wrapper.address, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32),
+      buildInitConfig(token.address, "x".repeat(513), ens.address, wrapper.address, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32),
+      buildInitConfig(token.address, "ipfs://base", owner, wrapper.address, "0x" + "01".repeat(32), ZERO32, ZERO32, ZERO32, ZERO32, ZERO32)
+    ]) {
+      try {
+        await AGIJobManager.new(...cfg, { from: owner });
+        assert.fail("expected constructor revert");
+      } catch (error) {
+        assert.include(String(error.message), "could not decode");
+      }
+    }
+
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    await expectCustomError(manager.updateAGITokenAddress.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateEnsRegistry.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateNameWrapper.call(owner, { from: owner }), "InvalidParameters");
+  });
+
+  it("fails addAGIType cleanly on reverting or gas-griefing ERC165 probes", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    const revertingNft = await MockRevertingERC165.new({ from: owner });
+    const loopingNft = await MockLoopingERC165.new({ from: owner });
+
+    await expectCustomError(manager.addAGIType.call(revertingNft.address, 10, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.addAGIType.call(loopingNft.address, 10, { from: owner }), "InvalidParameters");
+  });
 });
