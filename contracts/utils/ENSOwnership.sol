@@ -79,16 +79,33 @@ library ENSOwnership {
     }
 
     function _staticcallAddress(address target, bytes memory payload) private view returns (bool ok, address result) {
-        bytes memory data;
-        (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(payload);
-        if (!ok || data.length != 32) return (false, address(0));
-        result = abi.decode(data, (address));
+        bytes32 word;
+        (ok, word) = _staticcallWord(target, payload);
+        if (!ok) return (false, address(0));
+        result = address(uint160(uint256(word)));
     }
 
     function _staticcallBool(address target, bytes memory payload) private view returns (bool ok, bool result) {
-        bytes memory data;
-        (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(payload);
-        if (!ok || data.length != 32) return (false, false);
-        result = abi.decode(data, (bool));
+        bytes32 word;
+        (ok, word) = _staticcallWord(target, payload);
+        if (!ok) return (false, false);
+        if (word == bytes32(0)) return (true, false);
+        if (word == bytes32(uint256(1))) return (true, true);
+        return (false, false);
+    }
+
+    function _staticcallWord(address target, bytes memory payload) private view returns (bool ok, bytes32 value) {
+        bytes32 returnWord;
+        uint256 returnSize;
+        assembly {
+            ok := staticcall(ENS_STATICCALL_GAS_LIMIT, target, add(payload, 0x20), mload(payload), 0, 0)
+            returnSize := returndatasize()
+            if eq(and(ok, eq(returnSize, 0x20)), 1) {
+                returndatacopy(0, 0, 0x20)
+                returnWord := mload(0)
+            }
+        }
+        if (!ok || returnSize != 32) return (false, bytes32(0));
+        return (true, returnWord);
     }
 }

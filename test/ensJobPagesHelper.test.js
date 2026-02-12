@@ -146,9 +146,12 @@ contract("ENSJobPages helper", (accounts) => {
     );
 
     await expectRevert.unspecified(helper.setENSRegistry(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setENSRegistry("0x0000000000000000000000000000000000000000", { from: owner }));
     await expectRevert.unspecified(helper.setPublicResolver(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setPublicResolver("0x0000000000000000000000000000000000000000", { from: owner }));
     await expectRevert.unspecified(helper.setNameWrapper(owner, { from: owner }));
     await expectRevert.unspecified(helper.setJobManager(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setJobManager("0x0000000000000000000000000000000000000000", { from: owner }));
   });
 
 });
