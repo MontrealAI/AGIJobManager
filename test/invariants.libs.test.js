@@ -9,6 +9,14 @@ const UriUtils = artifacts.require("UriUtils");
 const MockENSRegistry = artifacts.require("MockENSRegistry");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
+const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
+const RevertingResolver = artifacts.require("RevertingResolver");
+const MalformedENSRegistry = artifacts.require("MalformedENSRegistry");
+const MalformedNameWrapper = artifacts.require("MalformedNameWrapper");
+const MalformedResolver = artifacts.require("MalformedResolver");
+const GasGriefENSRegistry = artifacts.require("GasGriefENSRegistry");
+const GasGriefNameWrapper = artifacts.require("GasGriefNameWrapper");
 
 const { rootNode, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 
@@ -149,6 +157,65 @@ contract("Utility library invariants", (accounts) => {
       root
     );
     assert.equal(approved, true, "approved operator should pass ownership check");
+  });
+
+  it("fails closed without reverting when ENS calls revert or return malformed data", async () => {
+    const root = rootNode("club-root");
+
+    const revertingEns = await RevertingENSRegistry.new({ from: owner });
+    const revertingWrapper = await RevertingNameWrapper.new({ from: owner });
+    const revertingResolver = await RevertingResolver.new({ from: owner });
+    await revertingEns.setResolverAddress(revertingResolver.address, { from: owner });
+    await revertingEns.setRevertResolver(true, { from: owner });
+    await revertingWrapper.setRevertOwnerOf(true, { from: owner });
+    await revertingResolver.setRevertAddr(true, { from: owner });
+
+    const revertingOwned = await harness.verifyENSOwnership.call(
+      revertingEns.address,
+      revertingWrapper.address,
+      claimant,
+      "alice",
+      root
+    );
+    assert.equal(revertingOwned, false, "reverting integrations must fail closed");
+
+    const malformedEns = await MalformedENSRegistry.new({ from: owner });
+    const malformedWrapper = await MalformedNameWrapper.new({ from: owner });
+    const malformedResolver = await MalformedResolver.new({ from: owner });
+    await malformedEns.setResolverAddress(malformedResolver.address, { from: owner });
+
+    const malformedOwned = await harness.verifyENSOwnership.call(
+      malformedEns.address,
+      malformedWrapper.address,
+      claimant,
+      "alice",
+      root
+    );
+    assert.equal(malformedOwned, false, "malformed returndata must fail closed");
+  });
+
+  it("fails closed without reverting when ENS integrations gas-grief", async () => {
+    const root = rootNode("club-root");
+    const gasGriefEns = await GasGriefENSRegistry.new({ from: owner });
+    const gasGriefWrapper = await GasGriefNameWrapper.new({ from: owner });
+
+    const wrapperPath = await harness.verifyENSOwnership.call(
+      gasGriefEns.address,
+      gasGriefWrapper.address,
+      claimant,
+      "alice",
+      root
+    );
+    assert.equal(wrapperPath, false, "gas griefing wrapper path must fail closed");
+
+    const resolverPath = await harness.verifyENSOwnership.call(
+      gasGriefEns.address,
+      "0x0000000000000000000000000000000000000000",
+      claimant,
+      "alice",
+      root
+    );
+    assert.equal(resolverPath, false, "gas griefing resolver path must fail closed");
   });
 
 });

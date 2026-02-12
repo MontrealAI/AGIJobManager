@@ -62,6 +62,13 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
       const out = await harness.applyBaseIpfs("bafy/job.json", "");
       assert.equal(out, "bafy/job.json");
     });
+
+    it("handles edge-case baseIpfsUrl values without reverting", async () => {
+      assert.equal(await harness.applyBaseIpfs("QmData", "/"), "//QmData");
+      assert.equal(await harness.applyBaseIpfs("QmData", "ipfs://"), "ipfs:///QmData");
+      assert.equal(await harness.applyBaseIpfs("QmData", "weird://gateway//path/"), "weird://gateway//path//QmData");
+      assert.equal(await harness.applyBaseIpfs("ens://job-1.alpha.jobs.agi.eth", "ipfs://base"), "ens://job-1.alpha.jobs.agi.eth");
+    });
   });
 
   describe("TransferUtils exact-transfer semantics", () => {
