@@ -3,6 +3,11 @@ pragma solidity ^0.8.19;
 
 library ENSOwnership {
     uint256 private constant ENS_STATICCALL_GAS_LIMIT = 35_000;
+    bytes4 private constant OWNER_OF_SELECTOR = 0x6352211e;
+    bytes4 private constant GET_APPROVED_SELECTOR = 0x081812fc;
+    bytes4 private constant IS_APPROVED_FOR_ALL_SELECTOR = 0xe985e9c5;
+    bytes4 private constant RESOLVER_SELECTOR = 0x0178b8bf;
+    bytes4 private constant ADDR_SELECTOR = 0x3b3b57de;
 
     function verifyENSOwnership(
         address ensAddress,
@@ -26,7 +31,7 @@ library ENSOwnership {
         if (nameWrapperAddress == address(0)) return false;
         (bool ok, address owner) = _staticcallAddress(
             nameWrapperAddress,
-            abi.encodeWithSelector(bytes4(keccak256("ownerOf(uint256)")), uint256(subnode))
+            abi.encodeWithSelector(OWNER_OF_SELECTOR, uint256(subnode))
         );
         if (!ok || owner == address(0)) return false;
         if (owner == claimant) return true;
@@ -34,14 +39,14 @@ library ENSOwnership {
         address approved;
         (ok, approved) = _staticcallAddress(
             nameWrapperAddress,
-            abi.encodeWithSelector(bytes4(keccak256("getApproved(uint256)")), uint256(subnode))
+            abi.encodeWithSelector(GET_APPROVED_SELECTOR, uint256(subnode))
         );
         if (ok && approved == claimant) return true;
 
         bool approvedForAll;
         (ok, approvedForAll) = _staticcallBool(
             nameWrapperAddress,
-            abi.encodeWithSelector(bytes4(keccak256("isApprovedForAll(address,address)")), owner, claimant)
+            abi.encodeWithSelector(IS_APPROVED_FOR_ALL_SELECTOR, owner, claimant)
         );
         return ok && approvedForAll;
     }
@@ -54,13 +59,13 @@ library ENSOwnership {
         if (ensAddress == address(0)) return false;
         (bool ok, address resolverAddress) = _staticcallAddress(
             ensAddress,
-            abi.encodeWithSelector(bytes4(keccak256("resolver(bytes32)")), subnode)
+            abi.encodeWithSelector(RESOLVER_SELECTOR, subnode)
         );
         if (!ok || resolverAddress == address(0)) return false;
         address resolvedAddress;
         (ok, resolvedAddress) = _staticcallAddress(
             resolverAddress,
-            abi.encodeWithSelector(bytes4(keccak256("addr(bytes32)")), subnode)
+            abi.encodeWithSelector(ADDR_SELECTOR, subnode)
         );
         return ok && resolvedAddress == claimant;
     }
