@@ -37,3 +37,26 @@ contract MalformedResolver {
         }
     }
 }
+
+contract MalformedApprovalNameWrapper {
+    address public owner;
+
+    function setOwner(address value) external {
+        owner = value;
+    }
+
+    function ownerOf(uint256) external view returns (address) {
+        return owner;
+    }
+
+    function getApproved(uint256) external pure returns (address) {
+        return address(0);
+    }
+
+    function isApprovedForAll(address, address) external pure returns (bool) {
+        assembly {
+            mstore(0x0, 2)
+            return(0x0, 0x20)
+        }
+    }
+}
