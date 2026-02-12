@@ -346,9 +346,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
 
-    function _requireSettlementActiveForDeposits() internal view {
-        if (settlementPaused) revert SettlementPaused();
-    }
     function _releaseEscrow(Job storage job) internal {
         if (job.escrowReleased) return;
         job.escrowReleased = true;
@@ -472,9 +469,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details)
         external
         whenNotPaused
+        whenSettlementNotPaused
         nonReentrant
     {
-        _requireSettlementActiveForDeposits();
         if (!(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit)) revert InvalidParameters();
         if (bytes(_jobSpecURI).length > MAX_JOB_SPEC_URI_BYTES) revert InvalidParameters();
         UriUtils.requireValidUri(_jobSpecURI);
@@ -498,9 +495,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)
         external
         whenNotPaused
+        whenSettlementNotPaused
         nonReentrant
     {
-        _requireSettlementActiveForDeposits();
         Job storage job = _job(_jobId);
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
@@ -851,7 +848,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit AgentBondParamsUpdated(oldBps, oldMin, oldMax, bps, min, max);
     }
     function setAgentBond(uint256 bond) external onlyOwner {
-        if (bond > agentBondMax) revert InvalidParameters();
+        if (agentBondMax == 0) {
+            if (bond != 0) revert InvalidParameters();
+        } else if (bond > agentBondMax) {
+            revert InvalidParameters();
+        }
         uint256 oldMin = agentBond;
         agentBond = bond;
         emit AgentBondMinUpdated(oldMin, bond);

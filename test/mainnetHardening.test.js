@@ -26,6 +26,9 @@ const MockRescueERC721 = artifacts.require("MockRescueERC721");
 const MockRescueERC1155 = artifacts.require("MockRescueERC1155");
 const MockRescueERC20False = artifacts.require("MockRescueERC20False");
 const MockRescueMalformedReturn = artifacts.require("MockRescueMalformedReturn");
+const BoundedReturndataENS = artifacts.require("BoundedReturndataENS");
+const BoundedReturndataNameWrapper = artifacts.require("BoundedReturndataNameWrapper");
+const BoundedReturndataResolver = artifacts.require("BoundedReturndataResolver");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
@@ -196,6 +199,44 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
   });
+
+  it("keeps apply/validate closed and non-bricking across malformed ENS staticcalls", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await BoundedReturndataENS.new({ from: owner });
+    const wrapper = await BoundedReturndataNameWrapper.new({ from: owner });
+    const resolver = await BoundedReturndataResolver.new({ from: owner });
+
+    await ens.setResolverAddress(resolver.address, { from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    await token.mint(employer, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+
+    for (const mode of [1, 2, 3, 4]) {
+      await ens.setMode(mode, { from: owner });
+      await wrapper.setMode(mode, { from: owner });
+      await resolver.setMode(mode, { from: owner });
+      await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
+    }
+
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+
+    for (const mode of [1, 2, 3, 4]) {
+      await ens.setMode(mode, { from: owner });
+      await wrapper.setMode(mode, { from: owner });
+      await resolver.setMode(mode, { from: owner });
+      await expectCustomError(manager.validateJob.call(0, "validator", [], { from: validator }), "NotAuthorized");
+    }
+  });
+
 
   it("settlement remains live when ENS hook target reverts with ENS URI mode enabled", async () => {
     const token = await MockERC20.new({ from: owner });
