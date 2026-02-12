@@ -1,21 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-interface ENSRegistryLike {
-    function owner(bytes32 node) external view returns (address);
-    function resolver(bytes32 node) external view returns (address);
-}
-
-interface ResolverLike {
-    function addr(bytes32 node) external view returns (address payable);
-}
-
-interface NameWrapperLike {
-    function ownerOf(uint256 id) external view returns (address);
-}
-
 library ENSOwnership {
-    uint256 private constant ENS_STATICCALL_GAS_LIMIT = 100_000;
+    uint256 private constant ENS_REGISTRY_GAS_LIMIT = 50_000;
+    uint256 private constant RESOLVER_GAS_LIMIT = 50_000;
+    uint256 private constant NAME_WRAPPER_GAS_LIMIT = 50_000;
 
     function verifyENSOwnership(
         address ensAddress,
@@ -37,11 +26,7 @@ library ENSOwnership {
         bytes32 subnode
     ) private view returns (bool) {
         if (nameWrapperAddress == address(0)) return false;
-        (bool ok, address actualOwner) = _staticcallAddress(
-            nameWrapperAddress,
-            NameWrapperLike.ownerOf.selector,
-            subnode
-        );
+        (bool ok, address actualOwner) = _callAddress(nameWrapperAddress, 0x6352211e, subnode, NAME_WRAPPER_GAS_LIMIT);
         return ok && actualOwner == claimant;
     }
 
@@ -51,30 +36,28 @@ library ENSOwnership {
         bytes32 subnode
     ) private view returns (bool) {
         if (ensAddress == address(0)) return false;
-        (bool ok, address resolverAddress) = _staticcallAddress(
-            ensAddress,
-            ENSRegistryLike.resolver.selector,
-            subnode
-        );
-        if (!ok) return false;
-        if (resolverAddress == address(0)) return false;
+        (bool ok, address resolverAddress) = _callAddress(ensAddress, 0x0178b8bf, subnode, ENS_REGISTRY_GAS_LIMIT);
+        if (!ok || resolverAddress == address(0)) return false;
+
         address resolvedAddress;
-        (ok, resolvedAddress) = _staticcallAddress(
-            resolverAddress,
-            ResolverLike.addr.selector,
-            subnode
-        );
+        (ok, resolvedAddress) = _callAddress(resolverAddress, 0x3b3b57de, subnode, RESOLVER_GAS_LIMIT);
         return ok && resolvedAddress == claimant;
     }
 
-    function _staticcallAddress(
+    function _callAddress(
         address target,
         bytes4 selector,
-        bytes32 node
+        bytes32 node,
+        uint256 gasLimit
     ) private view returns (bool ok, address result) {
-        bytes memory data;
-        (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(abi.encodeWithSelector(selector, node));
-        if (!ok || data.length < 32) return (false, address(0));
-        result = abi.decode(data, (address));
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, shl(224, selector))
+            mstore(add(ptr, 0x04), node)
+            ok := staticcall(gasLimit, target, ptr, 0x24, ptr, 0x20)
+            if and(ok, gt(returndatasize(), 0x1f)) {
+                result := shr(96, mload(ptr))
+            }
+        }
     }
 }

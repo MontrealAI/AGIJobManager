@@ -7,8 +7,10 @@ const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const MockLoopingERC721 = artifacts.require("MockLoopingERC721");
+const MockGasGriefERC165 = artifacts.require("MockGasGriefERC165");
 const ERC721ReceiverEmployer = artifacts.require("ERC721ReceiverEmployer");
 const NonReceiverEmployer = artifacts.require("NonReceiverEmployer");
+const GasGriefReceiverEmployer = artifacts.require("GasGriefReceiverEmployer");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
@@ -425,8 +427,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       assert.include(String(error.message), "could not decode");
     }
 
-
-    const rootWithNameWrapperOnly = buildInitConfig(
+    const rootWithEoaNameWrapper = buildInitConfig(
       token.address,
       "ipfs://base",
       zeroAddress,
@@ -438,8 +439,22 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-    assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+    try {
+      await AGIJobManager.new(...rootWithEoaNameWrapper, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+  });
+
+  it("treats gas-griefing ERC165 contracts as unsupported", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const gasGrief = await MockGasGriefERC165.new({ from: owner });
+
+    await expectCustomError(manager.addAGIType.call(gasGrief.address, 50, { from: owner }), "InvalidParameters");
   });
 
   it("uses bounded gas for NFT balance checks", async () => {
@@ -491,6 +506,107 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       manager.safeMintCompletionNFT.call(nonReceiverEmployer.address, 999, { from: owner }),
       "NotAuthorized"
     );
+  });
+
+
+  it("keeps adjudication outcomes unchanged while paused when settlement remains active", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs://spec", payout, 1000, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+
+    await token.mint(validator, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: validator });
+
+    await token.mint(employer, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: employer });
+
+    await manager.pause({ from: owner });
+    await manager.disputeJob(0, { from: employer });
+    await manager.addModerator(owner, { from: owner });
+    await manager.resolveDisputeWithCode(0, 1, "agent wins", { from: owner });
+
+    const core = await manager.getJobCore(0);
+    assert.equal(core.completed, true);
+  });
+
+  it("uses bounded safe mint gas and falls back to _mint for gas griefing receivers", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    const receiverEmployer = await ERC721ReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const gasGriefEmployer = await GasGriefReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const payout = web3.utils.toWei("10");
+
+    await token.mint(receiverEmployer.address, payout, { from: owner });
+    await receiverEmployer.createJob("ipfs://spec-safe", payout, 100, "details", { from: owner });
+    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "ipfs://completion-safe", { from: agent });
+    await time.increase((await manager.completionReviewPeriod()).addn(1));
+    const receipt1 = await manager.finalizeJob(0, { from: owner });
+    const issued1 = receipt1.logs.find((l) => l.event === "NFTIssued");
+    assert.equal((await receiverEmployer.receivedCount()).toString(), "1");
+    assert.equal(await receiverEmployer.callbackTokenUri(), "ipfs://completion-safe");
+    assert.equal((await receiverEmployer.lastTokenId()).toString(), issued1.args.tokenId.toString());
+
+    await token.mint(gasGriefEmployer.address, payout, { from: owner });
+    await gasGriefEmployer.createJob("ipfs://spec-grief", payout, 100, "details", { from: owner });
+    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await manager.applyForJob(1, "agent", [], { from: agent });
+    await manager.requestJobCompletion(1, "ipfs://completion-grief", { from: agent });
+    await time.increase((await manager.completionReviewPeriod()).addn(1));
+    await manager.finalizeJob(1, { from: owner });
+    assert.equal(await manager.ownerOf(1), gasGriefEmployer.address);
+  });
+
+  it("rejects non-contract addresses in deployment and setters", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+
+    try {
+      await AGIJobManager.new(...buildInitConfig(owner, "ipfs://base", ens.address, wrapper.address, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32), { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+    try {
+      await AGIJobManager.new(...buildInitConfig(token.address, `ipfs://${"x".repeat(520)}`, ens.address, wrapper.address, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32), { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    await expectCustomError(manager.updateAGITokenAddress.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateEnsRegistry.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateNameWrapper.call(owner, { from: owner }), "InvalidParameters");
   });
 
 
