@@ -50,9 +50,9 @@ contract('pausing.accessControl', (accounts) => {
     await manager.disputeJob(0, { from: employer });
 
     await manager.setSettlementPaused(true, { from: owner });
-    await expectRevert.unspecified(manager.validateJob(0, 'validator', [], { from: owner }));
-    await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
     await expectRevert.unspecified(manager.requestJobCompletion(0, 'QmRetry', { from: agent }));
+    await expectRevert.unspecified(manager.validateJob(0, 'validator', [], { from: owner }));
+    await expectRevert.unspecified(manager.disputeJob(0, { from: owner }));
     await expectRevert.unspecified(manager.finalizeJob(0, { from: employer }));
     await expectRevert.unspecified(manager.resolveDisputeWithCode(0, 1, 'x', { from: owner }));
     await expectRevert.unspecified(manager.resolveStaleDispute(0, true, { from: owner }));

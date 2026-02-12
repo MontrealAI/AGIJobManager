@@ -523,7 +523,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI)
         external
-        whenSettlementNotPaused
         nonReentrant
     {
         Job storage job = _job(_jobId);
@@ -543,7 +542,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)
         external
-        whenSettlementNotPaused
         nonReentrant
     {
         _recordValidatorVote(_jobId, subdomain, proof, true);
@@ -551,7 +549,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)
         external
-        whenSettlementNotPaused
         nonReentrant
     {
         _recordValidatorVote(_jobId, subdomain, proof, false);
@@ -624,7 +621,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-    function disputeJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
+    function disputeJob(uint256 _jobId) external nonReentrant {
         Job storage job = _job(_jobId);
         _requireJobUnsettled(job);
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
