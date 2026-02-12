@@ -64,6 +64,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
     await agiTypeNft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
     await fundAgents(token, manager, [agent, other], owner);
@@ -84,7 +86,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
   });
 
-  it("blocks job workflow actions while paused", async () => {
+  it("blocks intake while paused but keeps adjudication actions live", async () => {
     const payout = toBN(toWei("5"));
     const totalPayout = payout.muln(2);
     await token.mint(employer, totalPayout, { from: owner });
@@ -103,15 +105,12 @@ contract("AGIJobManager admin ops", (accounts) => {
     await expectRevert.unspecified(
       manager.applyForJob(pendingJobId, "agent", EMPTY_PROOF, { from: agent })
     );
-    await expectRevert.unspecified(
-      manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator })
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await expectCustomError(
+      manager.disapproveJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
+      "InvalidState"
     );
-    await expectRevert.unspecified(
-      manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator })
-    );
-    await expectRevert.unspecified(
-      manager.disputeJob(jobId, { from: employer })
-    );
+
   });
 
   it("manages allowlists and blacklists", async () => {

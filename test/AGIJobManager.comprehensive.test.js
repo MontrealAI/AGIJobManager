@@ -763,7 +763,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectCustomError(manager.setValidationRewardPercentage.call(101, { from: owner }), "InvalidParameters");
     });
 
-    it("blocks most job actions while paused but allows completion requests", async () => {
+    it("blocks intake while paused but keeps adjudication actions live", async () => {
       await createJob();
       await assignAgentWithProof(0);
 
@@ -772,11 +772,12 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
       const jobValidation = await manager.getJobValidation(0);
       assert.strictEqual(jobValidation.completionRequested, true);
-      await expectRevert.unspecified(
-        manager.validateJob(0, "validator", [], { from: validatorOne }));
-      await expectRevert.unspecified(
-        manager.disapproveJob(0, "validator", [], { from: validatorOne }));
-      await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
+      await manager.validateJob(0, "validator", [], { from: validatorOne });
+      await expectCustomError(
+        manager.disapproveJob.call(0, "validator", [], { from: validatorOne }),
+        "InvalidState"
+      );
+      await manager.disputeJob(0, { from: employer });
     });
 
     it("rejects invalid completion requests while paused", async () => {
