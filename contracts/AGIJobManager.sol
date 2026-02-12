@@ -770,6 +770,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner {
         premiumReputationThreshold = _threshold;
     }
+    function canAccessPremiumFeature(address user) external view returns (bool) {
+        return reputation[user] >= premiumReputationThreshold;
+    }
     function setVoteQuorum(uint256 _quorum) external onlyOwner {
         if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
         uint256 oldQuorum = voteQuorum;
@@ -1159,7 +1162,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function safeMintCompletionNFT(address to, uint256 tokenId) external {
         if (msg.sender != address(this)) revert NotAuthorized();
-        if (to.code.length == 0) revert InvalidState();
         _safeMint(to, tokenId);
     }
 

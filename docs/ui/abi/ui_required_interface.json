@@ -50,7 +50,8 @@
     "disputeJob": 1,
     "resolveDisputeWithCode": 3,
     "premiumReputationThreshold": 0,
-    "setPremiumReputationThreshold": 1
+    "setPremiumReputationThreshold": 1,
+    "canAccessPremiumFeature": 1
   },
   "events": [
     "JobCreated",
