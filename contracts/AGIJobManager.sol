@@ -93,7 +93,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
     uint256 public voteQuorum = 3;
-    uint256 public premiumReputationThreshold = 10000;
     uint256 public validationRewardPercentage = 8;
     uint256 public maxJobPayout = 88888888e18;
     uint256 public jobDurationLimit = 10000000;
@@ -226,7 +225,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event MerkleRootsUpdated(bytes32 indexed validatorMerkleRoot, bytes32 indexed agentMerkleRoot);
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
-    event RewardPoolContribution(address indexed contributor, uint256 indexed amount);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 indexed remainingWithdrawable);
@@ -267,6 +265,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
     uint256 internal constant ENS_URI_MAX_RETURN_BYTES = 2048;
     uint256 internal constant ENS_URI_MAX_STRING_BYTES = 1024;
+    uint256 internal constant NFT_BALANCE_OF_GAS_LIMIT = 100_000;
     uint256 internal constant MAX_JOB_SPEC_URI_BYTES = 2048;
     uint256 internal constant MAX_JOB_COMPLETION_URI_BYTES = 1024;
     uint256 internal constant MAX_BASE_IPFS_URL_BYTES = 512;
@@ -279,11 +278,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32[2] memory merkleRoots
     ) ERC721("AGIJobs", "Job") {
         if (agiTokenAddress == address(0)) revert InvalidParameters();
-        if (
-            ensConfig[0] == address(0)
-                && ensConfig[1] == address(0)
-                && (rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)
-        ) revert InvalidParameters();
+        if (ensConfig[0] == address(0) && (rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
+            revert InvalidParameters();
+        }
         _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
         _initRoots(rootNodes, merkleRoots);
 
@@ -773,9 +770,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         voteQuorum = _quorum;
         emit VoteQuorumUpdated(oldQuorum, _quorum);
     }
-    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner {
-        premiumReputationThreshold = _threshold;
-    }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner {
         maxJobPayout = _maxPayout;
         emit ConfigUpdated(2, _maxPayout);
@@ -1145,9 +1139,22 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
         }
         tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
-        _mint(job.employer, tokenId);
+        if (job.employer.code.length != 0) {
+            try this.safeMintCompletionNFT(job.employer, tokenId) {
+            } catch {
+                _mint(job.employer, tokenId);
+            }
+        } else {
+            _mint(job.employer, tokenId);
+        }
         _tokenURIs[tokenId] = tokenUriValue;
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
+    }
+
+    function safeMintCompletionNFT(address to, uint256 tokenId) external {
+        if (msg.sender != address(this)) revert NotAuthorized();
+        if (to.code.length == 0) revert InvalidState();
+        _safeMint(to, tokenId);
     }
 
     function _refundEmployer(uint256 jobId, Job storage job) internal {
@@ -1278,17 +1285,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-
-    function canAccessPremiumFeature(address user) external view returns (bool) {
-        return reputation[user] >= premiumReputationThreshold;
-    }
-
-    function contributeToRewardPool(uint256 amount) external whenNotPaused nonReentrant {
-        if (amount == 0) revert InvalidParameters();
-        TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), amount);
-        emit RewardPoolContribution(msg.sender, amount);
-    }
-
     function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
         if (!(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100)) revert InvalidParameters();
         if (!_supportsERC721(nftAddress)) {
@@ -1371,11 +1367,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             if (payoutPercentage > highestPercentage) {
                 uint256 tokenBalance;
                 address nftAddress = agiType.nftAddress;
+                uint256 balanceCallGas = NFT_BALANCE_OF_GAS_LIMIT;
                 assembly {
                     let ptr := mload(0x40)
                     mstore(ptr, 0x70a0823100000000000000000000000000000000000000000000000000000000)
                     mstore(add(ptr, 0x04), agent)
-                    let success := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
+                    let success := staticcall(balanceCallGas, nftAddress, ptr, 0x24, ptr, 0x20)
                     if and(success, gt(returndatasize(), 0x1f)) {
                         tokenBalance := mload(ptr)
                     }
