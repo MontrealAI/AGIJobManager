@@ -442,8 +442,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-    assert.equal(await wrapperOnlyManager.nameWrapper(), wrapperOnly.address);
+    try {
+      await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
   });
 
   it("rejects EOA addresses in token/ENS/namewrapper setters", async () => {
