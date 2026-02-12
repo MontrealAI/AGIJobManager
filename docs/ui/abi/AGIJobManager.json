@@ -1666,6 +1666,19 @@
     },
     {
       "inputs": [],
+      "name": "premiumReputationThreshold",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -2394,6 +2407,19 @@
         }
       ],
       "name": "setVoteQuorum",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_threshold",
+          "type": "uint256"
+        }
+      ],
+      "name": "setPremiumReputationThreshold",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
