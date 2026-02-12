@@ -266,6 +266,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 internal constant ENS_URI_MAX_RETURN_BYTES = 2048;
     uint256 internal constant ENS_URI_MAX_STRING_BYTES = 1024;
     uint256 internal constant NFT_BALANCE_OF_GAS_LIMIT = 100_000;
+    uint256 internal constant ERC165_GAS_LIMIT = 50_000;
+    uint256 internal constant SAFE_MINT_GAS_LIMIT = 250_000;
     uint256 internal constant MAX_JOB_SPEC_URI_BYTES = 2048;
     uint256 internal constant MAX_JOB_COMPLETION_URI_BYTES = 1024;
     uint256 internal constant MAX_BASE_IPFS_URL_BYTES = 512;
@@ -280,7 +282,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (agiTokenAddress.code.length == 0) revert InvalidParameters();
         if (bytes(baseIpfs).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
         if ((rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
-            if (ensConfig[0].code.length == 0 && ensConfig[1] == address(0)) revert InvalidParameters();
+            if (ensConfig[0] == address(0) || ensConfig[0].code.length == 0) revert InvalidParameters();
         }
         if (ensConfig[1] != address(0) && ensConfig[1].code.length == 0) revert InvalidParameters();
         _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
@@ -523,6 +525,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI)
         external
+        whenSettlementNotPaused
         nonReentrant
     {
         Job storage job = _job(_jobId);
@@ -542,6 +545,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)
         external
+        whenSettlementNotPaused
         nonReentrant
     {
         _recordValidatorVote(_jobId, subdomain, proof, true);
@@ -549,6 +553,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)
         external
+        whenSettlementNotPaused
         nonReentrant
     {
         _recordValidatorVote(_jobId, subdomain, proof, false);
@@ -621,7 +626,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-    function disputeJob(uint256 _jobId) external nonReentrant {
+    function disputeJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         _requireJobUnsettled(job);
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
@@ -1154,7 +1159,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
         _tokenURIs[tokenId] = tokenUriValue;
         if (job.employer.code.length != 0) {
-            try this.safeMintCompletionNFT{ gas: 250000 }(job.employer, tokenId) {
+            try this.safeMintCompletionNFT{ gas: SAFE_MINT_GAS_LIMIT }(job.employer, tokenId) {
             } catch {
                 _mint(job.employer, tokenId);
             }
@@ -1356,13 +1361,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 let ptr := mload(0x40)
                 mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
                 mstore(add(ptr, 0x04), shl(224, 0x01ffc9a7))
-                isSupported := staticcall(50000, nftAddress, ptr, 0x24, ptr, 0x20)
+                isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
                 isSupported := and(isSupported, gt(returndatasize(), 0x1f))
                 isSupported := and(isSupported, iszero(iszero(mload(ptr))))
                 if isSupported {
                     mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
                     mstore(add(ptr, 0x04), shl(224, 0x80ac58cd))
-                    isSupported := staticcall(50000, nftAddress, ptr, 0x24, ptr, 0x20)
+                    isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
                     isSupported := and(isSupported, gt(returndatasize(), 0x1f))
                     isSupported := and(isSupported, iszero(iszero(mload(ptr))))
                 }
