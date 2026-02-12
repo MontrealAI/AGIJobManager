@@ -3,6 +3,7 @@ const assert = require("assert");
 const AGIJobManager = artifacts.require("AGIJobManager");
 const AGIJobManagerOriginal = artifacts.require("AGIJobManagerOriginal");
 const MockERC20 = artifacts.require("MockERC20");
+const MockENS = artifacts.require("MockENS");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
 const { buildInitConfig } = require("./helpers/deploy");
@@ -46,11 +47,12 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
   ];
   const merkleArgs = [leaf(validator), leaf(agent)];
   if (Contract.contractName === "AGIJobManager") {
+    const ens = await MockENS.new({ from: owner });
     return Contract.new(
       ...buildInitConfig(
         tokenAddress,
         "ipfs://base",
-        owner,
+        ens.address,
         ZERO_ADDRESS,
         rootNode("club-root"),
         rootNode("agent-root"),
