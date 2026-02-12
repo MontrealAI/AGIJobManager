@@ -130,4 +130,25 @@ contract("Utility library invariants", (accounts) => {
     );
     assert.equal(resolverOwned, true, "resolver ownership should be true");
   });
+
+  it("accepts name-wrapper operator approvals without reverting", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const root = rootNode("club-root");
+    const label = "alice";
+    const node = subnode(root, label);
+
+    await nameWrapper.setOwner(web3.utils.toBN(node), other);
+    await nameWrapper.setApprovalForAll(claimant, true, { from: other });
+
+    const approved = await harness.verifyENSOwnership.call(
+      ens.address,
+      nameWrapper.address,
+      claimant,
+      label,
+      root
+    );
+    assert.equal(approved, true, "approved operator should pass ownership check");
+  });
+
 });
