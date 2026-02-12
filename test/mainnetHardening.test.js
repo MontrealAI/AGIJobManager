@@ -7,8 +7,11 @@ const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockENSJobPagesMalformed = artifacts.require("MockENSJobPagesMalformed");
 const MockLoopingERC721 = artifacts.require("MockLoopingERC721");
+const MockGasGriefERC165 = artifacts.require("MockGasGriefERC165");
 const ERC721ReceiverEmployer = artifacts.require("ERC721ReceiverEmployer");
 const NonReceiverEmployer = artifacts.require("NonReceiverEmployer");
+const TokenURIReadingReceiverEmployer = artifacts.require("TokenURIReadingReceiverEmployer");
+const GasGriefingReceiverEmployer = artifacts.require("GasGriefingReceiverEmployer");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
@@ -385,9 +388,20 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
   it("fails fast on invalid constructor wiring", async () => {
     const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
     const zeroAddress = "0x0000000000000000000000000000000000000000";
 
-    const zeroTokenArgs = buildInitConfig(
+    async function expectDeployInvalid(configArgs) {
+      try {
+        await AGIJobManager.new(...configArgs, { from: owner });
+        assert.fail("expected constructor revert");
+      } catch (error) {
+        assert.include(String(error.message), "could not decode");
+      }
+    }
+
+    await expectDeployInvalid(buildInitConfig(
       zeroAddress,
       "ipfs://base",
       zeroAddress,
@@ -398,15 +412,35 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32,
       ZERO32
-    );
-    try {
-      await AGIJobManager.new(...zeroTokenArgs, { from: owner });
-      assert.fail("expected constructor revert");
-    } catch (error) {
-      assert.include(String(error.message), "could not decode");
-    }
+    ));
 
-    const nonZeroRootNoEns = buildInitConfig(
+    await expectDeployInvalid(buildInitConfig(
+      owner,
+      "ipfs://base",
+      zeroAddress,
+      zeroAddress,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    ));
+
+    await expectDeployInvalid(buildInitConfig(
+      token.address,
+      `ipfs://${"x".repeat(520)}`,
+      ens.address,
+      wrapper.address,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    ));
+
+    await expectDeployInvalid(buildInitConfig(
       token.address,
       "ipfs://base",
       zeroAddress,
@@ -417,43 +451,29 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32,
       ZERO32
-    );
-    try {
-      await AGIJobManager.new(...nonZeroRootNoEns, { from: owner });
-      assert.fail("expected constructor revert");
-    } catch (error) {
-      assert.include(String(error.message), "could not decode");
-    }
+    ));
 
-
-    const rootWithNameWrapperOnly = buildInitConfig(
-      token.address,
-      "ipfs://base",
-      zeroAddress,
-      owner,
-      "0x" + "22".repeat(32),
-      ZERO32,
-      ZERO32,
-      ZERO32,
-      ZERO32,
-      ZERO32
-    );
-    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-    assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    await expectCustomError(manager.updateAGITokenAddress.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateEnsRegistry.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateNameWrapper.call(owner, { from: owner }), "InvalidParameters");
   });
 
-  it("uses bounded gas for NFT balance checks", async () => {
+  it("uses bounded gas for external NFT checks", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployManager(token, ens.address, wrapper.address);
     const loopingNft = await MockLoopingERC721.new({ from: owner });
+    const gasGrief165 = await MockGasGriefERC165.new({ from: owner });
 
     await manager.addAGIType(loopingNft.address, 90, { from: owner });
     assert.equal((await manager.getHighestPayoutPercentage(agent)).toString(), "0");
+
+    await expectCustomError(manager.addAGIType.call(gasGrief165.address, 90, { from: owner }), "InvalidParameters");
   });
 
-  it("safe-mints to ERC721 receivers, falls back for non-receivers, and blocks wrapper misuse", async () => {
+  it("safe-mints with callback tokenURI visibility, falls back for non-receivers, and survives gas-grief receivers", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
@@ -463,19 +483,20 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await nft.mint(agent, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
 
-    const receiverEmployer = await ERC721ReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const readingReceiver = await TokenURIReadingReceiverEmployer.new(manager.address, token.address, { from: owner });
     const nonReceiverEmployer = await NonReceiverEmployer.new(manager.address, token.address, { from: owner });
+    const gasGriefReceiver = await GasGriefingReceiverEmployer.new(manager.address, token.address, { from: owner });
     const payout = web3.utils.toWei("10");
 
-    await token.mint(receiverEmployer.address, payout, { from: owner });
-    await receiverEmployer.createJob("ipfs://spec-safe", payout, 100, "details", { from: owner });
+    await token.mint(readingReceiver.address, payout, { from: owner });
+    await readingReceiver.createJob("ipfs://spec-safe", payout, 100, "details", { from: owner });
     await token.mint(agent, web3.utils.toWei("4"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "ipfs://completion-safe", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
     await manager.finalizeJob(0, { from: owner });
-    assert.equal((await receiverEmployer.receivedCount()).toString(), "1");
+    assert.equal(await readingReceiver.seenTokenURI(), "ipfs://completion-safe");
 
     await token.mint(nonReceiverEmployer.address, payout, { from: owner });
     await nonReceiverEmployer.createJob("ipfs://spec-unsafe", payout, 100, "details", { from: owner });
@@ -486,6 +507,16 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await time.increase((await manager.completionReviewPeriod()).addn(1));
     await manager.finalizeJob(1, { from: owner });
     assert.equal(await manager.ownerOf(1), nonReceiverEmployer.address);
+
+    await token.mint(gasGriefReceiver.address, payout, { from: owner });
+    await gasGriefReceiver.createJob("ipfs://spec-grief", payout, 100, "details", { from: owner });
+    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await manager.applyForJob(2, "agent", [], { from: agent });
+    await manager.requestJobCompletion(2, "ipfs://completion-grief", { from: agent });
+    await time.increase((await manager.completionReviewPeriod()).addn(1));
+    await manager.finalizeJob(2, { from: owner });
+    assert.equal(await manager.ownerOf(2), gasGriefReceiver.address);
 
     await expectCustomError(
       manager.safeMintCompletionNFT.call(nonReceiverEmployer.address, 999, { from: owner }),

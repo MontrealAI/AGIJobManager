@@ -267,6 +267,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 internal constant ENS_URI_MAX_RETURN_BYTES = 2048;
     uint256 internal constant ENS_URI_MAX_STRING_BYTES = 1024;
     uint256 internal constant NFT_BALANCE_OF_GAS_LIMIT = 100_000;
+    uint256 internal constant SAFE_MINT_GAS_LIMIT = 250_000;
+    uint256 internal constant ERC165_GAS_LIMIT = 50_000;
     uint256 internal constant MAX_JOB_SPEC_URI_BYTES = 2048;
     uint256 internal constant MAX_JOB_COMPLETION_URI_BYTES = 1024;
     uint256 internal constant MAX_BASE_IPFS_URL_BYTES = 512;
@@ -278,12 +280,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
     ) ERC721("AGIJobs", "Job") {
-        if (agiTokenAddress == address(0)) revert InvalidParameters();
-        if (
-            ensConfig[0] == address(0)
-                && ensConfig[1] == address(0)
-                && (rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)
-        ) revert InvalidParameters();
+        _requireContract(agiTokenAddress);
+        if (bytes(baseIpfs).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
+        if ((rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
+            if (ensConfig[0] == address(0)) revert InvalidParameters();
+            _requireContract(ensConfig[0]);
+        }
+        if (ensConfig[1] != address(0)) _requireContract(ensConfig[1]);
         _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
         _initRoots(rootNodes, merkleRoots);
 
@@ -393,6 +396,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit JobCancelled(jobId);
         _callEnsJobPagesHook(ENS_HOOK_REVOKE, jobId);
         delete jobs[jobId];
+    }
+
+    function _requireContract(address account) internal view {
+        if (account.code.length == 0) revert InvalidParameters();
     }
 
     function _requireEmptyEscrow() internal view {
@@ -538,11 +545,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _callEnsJobPagesHook(ENS_HOOK_COMPLETION, _jobId);
     }
 
-    function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
+    function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenSettlementNotPaused nonReentrant {
         _recordValidatorVote(_jobId, subdomain, proof, true);
     }
 
-    function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenNotPaused nonReentrant {
+    function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof) external whenSettlementNotPaused nonReentrant {
         _recordValidatorVote(_jobId, subdomain, proof, false);
     }
 
@@ -613,7 +620,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-    function disputeJob(uint256 _jobId) external whenNotPaused nonReentrant {
+    function disputeJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         _requireJobUnsettled(job);
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
@@ -704,20 +711,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _setAddressFlag(moderators, _moderator, false);
     }
     function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable {
-        if (_newTokenAddress == address(0)) revert InvalidParameters();
+        _requireContract(_newTokenAddress);
         _requireEmptyEscrow();
         address oldToken = address(agiToken);
         agiToken = IERC20(_newTokenAddress);
         emit AGITokenAddressUpdated(oldToken, _newTokenAddress);
     }
     function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable {
-        if (_newEnsRegistry == address(0)) revert InvalidParameters();
+        _requireContract(_newEnsRegistry);
         _requireEmptyEscrow();
         ens = ENS(_newEnsRegistry);
         emit EnsRegistryUpdated(_newEnsRegistry);
     }
     function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable {
-        if (_newNameWrapper == address(0)) revert InvalidParameters();
+        if (_newNameWrapper != address(0)) _requireContract(_newNameWrapper);
         _requireEmptyEscrow();
         nameWrapper = NameWrapper(_newNameWrapper);
         emit NameWrapperUpdated(_newNameWrapper);
@@ -1145,21 +1152,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             }
         }
         tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
+        _tokenURIs[tokenId] = tokenUriValue;
         if (job.employer.code.length != 0) {
-            try this.safeMintCompletionNFT(job.employer, tokenId) {
+            try this.safeMintCompletionNFT{ gas: SAFE_MINT_GAS_LIMIT }(job.employer, tokenId) {
             } catch {
                 _mint(job.employer, tokenId);
             }
         } else {
             _mint(job.employer, tokenId);
         }
-        _tokenURIs[tokenId] = tokenUriValue;
         emit NFTIssued(tokenId, job.employer, tokenUriValue);
     }
 
     function safeMintCompletionNFT(address to, uint256 tokenId) external {
         if (msg.sender != address(this)) revert NotAuthorized();
-        if (to.code.length == 0) revert InvalidState();
         _safeMint(to, tokenId);
     }
 
@@ -1350,13 +1356,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 let ptr := mload(0x40)
                 mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
                 mstore(add(ptr, 0x04), shl(224, 0x01ffc9a7))
-                isSupported := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
+                isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
                 isSupported := and(isSupported, gt(returndatasize(), 0x1f))
                 isSupported := and(isSupported, iszero(iszero(mload(ptr))))
                 if isSupported {
                     mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
                     mstore(add(ptr, 0x04), shl(224, 0x80ac58cd))
-                    isSupported := staticcall(gas(), nftAddress, ptr, 0x24, ptr, 0x20)
+                    isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
                     isSupported := and(isSupported, gt(returndatasize(), 0x1f))
                     isSupported := and(isSupported, iszero(iszero(mload(ptr))))
                 }

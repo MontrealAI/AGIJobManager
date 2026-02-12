@@ -11,6 +11,64 @@ contract("ENSJobPages helper", (accounts) => {
   const rootName = "alpha.jobs.agi.eth";
   const rootNode = namehash(rootName);
 
+
+  it("rejects EOA wiring in constructor and setters", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+
+    try {
+      await ENSJobPages.new(owner, nameWrapper.address, resolver.address, rootNode, rootName, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    try {
+      await ENSJobPages.new(ens.address, nameWrapper.address, owner, rootNode, rootName, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    try {
+      await helper.setENSRegistry(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    try {
+      await helper.setPublicResolver(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    try {
+      await helper.setNameWrapper(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    try {
+      await helper.setJobManager(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+  });
+
   it("creates job pages and updates resolver records for an unwrapped root", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
