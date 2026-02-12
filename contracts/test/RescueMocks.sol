@@ -5,7 +5,12 @@ contract ForceSendETH {
     constructor() payable {}
 
     function boom(address payable target) external {
-        selfdestruct(target);
+        bytes memory initCode = abi.encodePacked(hex"73", bytes20(address(target)), hex"ff");
+        assembly {
+            if iszero(create(selfbalance(), add(initCode, 32), mload(initCode))) {
+                revert(0, 0)
+            }
+        }
     }
 }
 
