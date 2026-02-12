@@ -51,3 +51,59 @@ contract NonReceiverEmployer {
         manager.createJob(spec, payout, duration, details);
     }
 }
+
+
+interface ITokenUriReader {
+    function tokenURI(uint256 tokenId) external view returns (string memory);
+}
+
+contract TokenURIReaderReceiver is IERC721Receiver {
+    IAGIJobManagerCreateJob public manager;
+    IERC20 public token;
+    string public seenTokenUri;
+
+    constructor(address managerAddress, address tokenAddress) {
+        manager = IAGIJobManagerCreateJob(managerAddress);
+        token = IERC20(tokenAddress);
+    }
+
+    function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
+        token.approve(address(manager), payout);
+        manager.createJob(spec, payout, duration, details);
+    }
+
+    function onERC721Received(address operator, address, uint256 tokenId, bytes calldata)
+        external
+        override
+        returns (bytes4)
+    {
+        seenTokenUri = ITokenUriReader(operator).tokenURI(tokenId);
+        return IERC721Receiver.onERC721Received.selector;
+    }
+}
+
+contract GasGriefingReceiverEmployer is IERC721Receiver {
+    IAGIJobManagerCreateJob public manager;
+    IERC20 public token;
+
+    constructor(address managerAddress, address tokenAddress) {
+        manager = IAGIJobManagerCreateJob(managerAddress);
+        token = IERC20(tokenAddress);
+    }
+
+    function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
+        token.approve(address(manager), payout);
+        manager.createJob(spec, payout, duration, details);
+    }
+
+    function onERC721Received(address, address, uint256, bytes calldata)
+        external
+        pure
+        override
+        returns (bytes4)
+    {
+        while (true) {
+        }
+        return IERC721Receiver.onERC721Received.selector;
+    }
+}
