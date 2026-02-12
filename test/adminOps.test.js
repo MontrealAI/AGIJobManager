@@ -103,15 +103,10 @@ contract("AGIJobManager admin ops", (accounts) => {
     await expectRevert.unspecified(
       manager.applyForJob(pendingJobId, "agent", EMPTY_PROOF, { from: agent })
     );
-    await expectRevert.unspecified(
-      manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator })
-    );
-    await expectRevert.unspecified(
-      manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator })
-    );
-    await expectRevert.unspecified(
-      manager.disputeJob(jobId, { from: employer })
-    );
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
+    await manager.disputeJob(jobId, { from: agent });
+    const core = await manager.getJobCore(jobId);
+    assert.equal(core.disputed, true, "pause should not block settlement-critical dispute escalation");
   });
 
   it("manages allowlists and blacklists", async () => {

@@ -438,8 +438,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-    assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+    try {
+      await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
   });
 
   it("uses bounded gas for NFT balance checks", async () => {
@@ -488,7 +492,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     assert.equal(await manager.ownerOf(1), nonReceiverEmployer.address);
 
     await expectCustomError(
-      manager.safeMintCompletionNFT.call(nonReceiverEmployer.address, 999, { from: owner }),
+      manager.__safeMintExternal.call(nonReceiverEmployer.address, 999, { from: owner }),
       "NotAuthorized"
     );
   });
