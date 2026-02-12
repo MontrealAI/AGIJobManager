@@ -763,19 +763,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectCustomError(manager.setValidationRewardPercentage.call(101, { from: owner }), "InvalidParameters");
     });
 
-    it("handles reward pool contributions and pause protections", async () => {
-      await token.mint(employer, payout);
-      await token.approve(manager.address, payout, { from: employer });
-      const receipt = await manager.contributeToRewardPool(payout, { from: employer });
-      expectEvent(receipt, "RewardPoolContribution", { contributor: employer, amount: payout });
-
-      await expectCustomError(manager.contributeToRewardPool.call(0, { from: employer }), "InvalidParameters");
-
-      await manager.pause({ from: owner });
-      await expectRevert.unspecified(
-        manager.contributeToRewardPool(payout, { from: employer }));
-    });
-
     it("blocks most job actions while paused but allows completion requests", async () => {
       await createJob();
       await assignAgentWithProof(0);

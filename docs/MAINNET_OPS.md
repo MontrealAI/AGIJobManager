@@ -4,6 +4,7 @@
 - **Network**: Ethereum mainnet.
 - **Production AGIALPHA token**: `0xa61a3b3a130a9c20768eebf97e21515a6046a1fa`.
 - **Operational dependency**: AGIALPHA must be **unpaused** for normal escrow, bond, payout, finalize, and dispute settlement flows.
+- **Token accounting assumptions**: AGIALPHA is expected to be 18 decimals, non-fee-on-transfer, and non-rebasing so exact-receipt escrow accounting remains valid.
 
 ## Post-deploy checklist
 1. Verify deployed runtime bytecode is below EIP-170 cap (`< 24575` bytes).
@@ -17,6 +18,7 @@
 ## Settlement liveness model
 - Settlement/finalization paths are designed to remain live even if ENS mirrors are broken, reverting, or out-of-sync.
 - ENS integrations are best-effort indexing/mirroring hooks only.
+- Offchain indexing and operator playbooks must treat ENS mirror state as optional/non-authoritative.
 - Only unavoidable AGIALPHA-level failures (for example token pause or transfer reverts) can block token transfers.
 
 ## ENS degradation playbook

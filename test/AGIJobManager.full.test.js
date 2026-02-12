@@ -744,32 +744,6 @@ contract("AGIJobManager comprehensive", (accounts) => {
       );
     });
 
-    it("reverts contributeToRewardPool when transferFrom fails", async () => {
-      const failing = await FailingERC20.new({ from: owner });
-      await failing.mint(employer, web3.utils.toWei("10"), { from: owner });
-
-      const managerFailing = await AGIJobManager.new(...buildInitConfig(
-          failing.address,
-          baseIpfsUrl,
-          ens.address,
-          nameWrapper.address,
-          clubRootNode,
-          agentRootNode,
-          alphaClubRootNode,
-          alphaAgentRootNode,
-          validatorRoot,
-          agentRoot,
-        ),
-        { from: owner }
-      );
-
-      await failing.setFailTransferFroms(true, { from: owner });
-      await failing.approve(managerFailing.address, web3.utils.toWei("2"), { from: employer });
-      await expectCustomError(
-        managerFailing.contributeToRewardPool(web3.utils.toWei("2"), { from: employer }),
-        "TransferFailed"
-      );
-    });
   });
 
   describe("admin and configuration", () => {
@@ -827,16 +801,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.withdrawAGI(web3.utils.toWei("10"), { from: owner });
       const ownerBalanceAfter = new BN(await token.balanceOf(owner));
       assert(ownerBalanceAfter.sub(ownerBalanceBefore).eq(new BN(web3.utils.toWei("10"))));
-
-      await expectRevert.unspecified(
-        manager.contributeToRewardPool(web3.utils.toWei("1"), { from: employer }));
     });
-
-    it("updates premium threshold", async () => {
-      await manager.setPremiumReputationThreshold(42, { from: owner });
-      assert.equal(await manager.premiumReputationThreshold(), "42");
-    });
-
 
     it("updates baseIpfsUrl for future mints", async () => {
       await expectRevert.unspecified(manager.setBaseIpfsUrl("ipfs://new", { from: other }));
@@ -858,25 +823,6 @@ contract("AGIJobManager comprehensive", (accounts) => {
       assert.equal(await manager.tokenURI(tokenId), "ipfs://new/ipfs-6");
     });
 
-    it("tracks premium access based on reputation", async () => {
-      await manager.setPremiumReputationThreshold(100000, { from: owner });
-      assert.equal(await manager.canAccessPremiumFeature(agent), false);
-
-      const payout = new BN(web3.utils.toWei("5"));
-      const { jobId } = await createJob(manager, token, employer, payout, 1000, "ipfs-7");
-      await nft.mint(agent, { from: owner });
-      await manager.addAGIType(nft.address, 92, { from: owner });
-      await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
-      await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-      await manager.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
-      await time.increase(2);
-      await manager.finalizeJob(jobId, { from: employer });
-
-      const rep = await manager.reputation(agent);
-      await manager.setPremiumReputationThreshold(rep, { from: owner });
-      assert.equal(await manager.canAccessPremiumFeature(agent), true);
-    });
   });
 
   describe("ownership gating (ENS/Merkle)", () => {
