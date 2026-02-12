@@ -143,11 +143,11 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("pauses and unpauses owner-only", async () => {
       await expectRevert.unspecified(manager.pause({ from: outsider }));
-      await manager.pause({ from: owner });
+      await manager.setSettlementPaused(true, { from: owner });
       await expectRevert.unspecified(
         manager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer }));
       assert.equal((await manager.nextJobId()).toString(), "0");
-      await manager.unpause({ from: owner });
+      await manager.setSettlementPaused(false, { from: owner });
       await approveToken(employer);
       await manager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
     });
@@ -763,7 +763,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectCustomError(manager.setValidationRewardPercentage.call(101, { from: owner }), "InvalidParameters");
     });
 
-    it("blocks most job actions while paused but allows completion requests", async () => {
+    it("pause only blocks intake while adjudication remains available", async () => {
       await createJob();
       await assignAgentWithProof(0);
 
@@ -772,34 +772,30 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
       const jobValidation = await manager.getJobValidation(0);
       assert.strictEqual(jobValidation.completionRequested, true);
-      await expectRevert.unspecified(
-        manager.validateJob(0, "validator", [], { from: validatorOne }));
-      await expectRevert.unspecified(
-        manager.disapproveJob(0, "validator", [], { from: validatorOne }));
-      await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
+      await validateWithProof(0, validatorOne);
+      await dispute(0, employer);
     });
 
-    it("rejects invalid completion requests while paused", async () => {
+    it("rejects invalid completion requests while settlementPaused", async () => {
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       await createJob();
       await assignAgentWithProof(0);
 
-      await manager.pause({ from: owner });
+      await manager.setSettlementPaused(true, { from: owner });
       await expectCustomError(
         manager.requestJobCompletion.call(0, "", { from: agent }),
-        "InvalidParameters"
+        "SettlementPaused"
       );
       await expectCustomError(
         manager.requestJobCompletion.call(0, updatedIpfs, { from: outsider }),
-        "NotAuthorized"
+        "SettlementPaused"
       );
-      await manager.requestJobCompletion(0, updatedIpfs, { from: agent });
       await expectCustomError(
-        manager.requestJobCompletion.call(0, "ipfs-again", { from: agent }),
-        "InvalidState"
+        manager.requestJobCompletion.call(0, updatedIpfs, { from: agent }),
+        "SettlementPaused"
       );
 
-      await manager.unpause({ from: owner });
+      await manager.setSettlementPaused(false, { from: owner });
       const completedJob = await createJob();
       const completedJobId = completedJob.logs[0].args.jobId.toNumber();
       await assignAgentWithProof(completedJobId);
@@ -808,22 +804,22 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await time.increase(2);
       await manager.finalizeJob(completedJobId, { from: employer });
 
-      await manager.pause({ from: owner });
+      await manager.setSettlementPaused(true, { from: owner });
       await expectCustomError(
         manager.requestJobCompletion.call(completedJobId, "ipfs-late", { from: agent }),
-        "InvalidState"
+        "SettlementPaused"
       );
 
-      await manager.unpause({ from: owner });
+      await manager.setSettlementPaused(false, { from: owner });
       const shortJob = await createJob(employer, payout, new BN("1"), "ipfs-short");
       const shortJobId = shortJob.logs[0].args.jobId.toNumber();
       await assignAgentWithProof(shortJobId);
       await time.increase(new BN("2"));
 
-      await manager.pause({ from: owner });
+      await manager.setSettlementPaused(true, { from: owner });
       await expectCustomError(
         manager.requestJobCompletion.call(shortJobId, "ipfs-too-late", { from: agent }),
-        "InvalidState"
+        "SettlementPaused"
       );
     });
 
@@ -845,8 +841,10 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       await manager.pause({ from: owner });
 
+      await manager.setSettlementPaused(false, { from: owner });
       await manager.requestJobCompletion(jobAId, "ipfs-complete-paused", { from: agent });
       await manager.requestJobCompletion(jobDId, "ipfs-finalize-paused", { from: agent });
+      await manager.pause({ from: owner });
 
       const cancelReceipt = await manager.cancelJob(jobBId, { from: employer });
       expectEvent(cancelReceipt, "JobCancelled", { jobId: new BN(jobBId) });
