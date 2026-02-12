@@ -137,6 +137,9 @@ contract("AGIJobManager admin ops", (accounts) => {
     await expectCustomError(manager.setValidationRewardPercentage.call(0, { from: owner }), "InvalidParameters");
     await manager.setValidationRewardPercentage(8, { from: owner });
     await manager.setMaxJobPayout(toBN(toWei("5000")), { from: owner });
+    await manager.setJobDurationLimit(12345, { from: owner });
+    assert.equal((await manager.jobDurationLimit()).toString(), "12345");
+    await expectCustomError(manager.setJobDurationLimit.call(0, { from: owner }), "InvalidParameters");
 
     const payout = toBN(toWei("8"));
     const surplus = toBN(toWei("3"));
@@ -268,7 +271,6 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.updateMerkleRoots(clubRoot, agentRoot, { from: owner });
 
     await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
-    await expectCustomError(manager.setJobDurationLimit.call(0, { from: owner }), "InvalidParameters");
     await manager.addModerator(other, { from: owner });
     assert.equal(await manager.moderators(other), true, "moderator should be added after lock");
     await manager.removeModerator(other, { from: owner });
