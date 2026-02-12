@@ -18,6 +18,8 @@ const RevertingResolver = artifacts.require("RevertingResolver");
 const MalformedENSRegistry = artifacts.require("MalformedENSRegistry");
 const MalformedNameWrapper = artifacts.require("MalformedNameWrapper");
 const MalformedResolver = artifacts.require("MalformedResolver");
+const MalformedApprovalNameWrapper = artifacts.require("MalformedApprovalNameWrapper");
+const GasBurnerENS = artifacts.require("GasBurnerENS");
 const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
 const MockRescueERC721 = artifacts.require("MockRescueERC721");
@@ -167,6 +169,33 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
   });
 
 
+
+
+  it("treats malformed name-wrapper approval responses as not-owned without reverting", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MalformedApprovalNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+
+    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+
+    await wrapper.setOwnerValue(employer, { from: owner });
+    await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
+  });
+
+  it("fails ENS ownership checks closed when ENS targets gas-grief", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const gasBurner = await GasBurnerENS.new({ from: owner });
+    const manager = await deployManager(token, gasBurner.address, gasBurner.address);
+
+    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+
+    await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
+  });
 
   it("settlement remains live when ENS hook target reverts with ENS URI mode enabled", async () => {
     const token = await MockERC20.new({ from: owner });
