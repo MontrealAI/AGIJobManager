@@ -17,6 +17,7 @@ const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 const RevertingResolver = artifacts.require("RevertingResolver");
 const MalformedENSRegistry = artifacts.require("MalformedENSRegistry");
 const MalformedNameWrapper = artifacts.require("MalformedNameWrapper");
+const MalformedApprovalNameWrapper = artifacts.require("MalformedApprovalNameWrapper");
 const MalformedResolver = artifacts.require("MalformedResolver");
 const ForceSendETH = artifacts.require("ForceSendETH");
 const MockRescueERC20 = artifacts.require("MockRescueERC20");
@@ -138,6 +139,37 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
 
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+
+    await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
+    await expectCustomError(manager.validateJob.call(0, "validator", [], { from: validator }), "NotAuthorized");
+    await manager.addAdditionalValidator(validator, { from: owner });
+    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
+    await manager.validateJob(0, "validator", [], { from: validator });
+  });
+
+
+  it("treats malformed wrapper approval returndata as not-owned without reverting", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await MalformedApprovalNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+
+    await wrapper.setOwner(validator, { from: owner });
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+
+    await token.mint(employer, web3.utils.toWei("10"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("10"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("10"), 1000, "details", { from: employer });
+
+    await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
     await manager.addAdditionalAgent(agent, { from: owner });
     await token.mint(agent, web3.utils.toWei("2"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });

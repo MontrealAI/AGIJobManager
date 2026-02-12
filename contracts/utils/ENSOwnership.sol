@@ -89,6 +89,11 @@ library ENSOwnership {
         bytes memory data;
         (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(payload);
         if (!ok || data.length != 32) return (false, false);
-        result = abi.decode(data, (bool));
+        uint256 value;
+        assembly {
+            value := mload(add(data, 0x20))
+        }
+        if (value > 1) return (false, false);
+        result = value == 1;
     }
 }
