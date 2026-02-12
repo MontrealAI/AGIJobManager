@@ -214,16 +214,17 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.equal(bondEvent.args.oldBps.toString(), "500");
     assert.equal(bondEvent.args.newBps.toString(), "600");
 
+    await manager.setAgentBond(toBN(toWei("3")), { from: owner });
+    assert.equal((await manager.agentBond()).toString(), toWei("3"));
+
+    await expectCustomError(manager.setAgentBond.call(toBN(toWei("25")), { from: owner }), "InvalidParameters");
+
     const bondZeroTx = await manager.setAgentBondParams(0, 0, 0, { from: owner });
     const bondZeroEvent = bondZeroTx.logs.find((log) => log.event === "AgentBondParamsUpdated");
     assert.ok(bondZeroEvent, "AgentBondParamsUpdated should be emitted on zeroing");
     assert.equal(bondZeroEvent.args.newBps.toString(), "0");
 
-    const bondMinTx = await manager.setAgentBond(toBN(toWei("3")), { from: owner });
-    const bondMinEvent = bondMinTx.logs.find((log) => log.event === "AgentBondMinUpdated");
-    assert.ok(bondMinEvent, "AgentBondMinUpdated should be emitted");
-    assert.equal(bondMinEvent.args.oldMin.toString(), "0");
-    assert.equal(bondMinEvent.args.newMin.toString(), toWei("3"));
+    await expectCustomError(manager.setAgentBond.call(toBN(toWei("3")), { from: owner }), "InvalidParameters");
 
     const slashTx = await manager.setValidatorSlashBps(7000, { from: owner });
     const slashEvent = slashTx.logs.find((log) => log.event === "ValidatorSlashBpsUpdated");
@@ -267,6 +268,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.updateMerkleRoots(clubRoot, agentRoot, { from: owner });
 
     await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
+    await expectCustomError(manager.setJobDurationLimit.call(0, { from: owner }), "InvalidParameters");
     await manager.addModerator(other, { from: owner });
     assert.equal(await manager.moderators(other), true, "moderator should be added after lock");
     await manager.removeModerator(other, { from: owner });

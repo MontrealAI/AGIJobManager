@@ -134,6 +134,8 @@ contract('pausing.accessControl', (accounts) => {
     await time.increase(2);
     await manager.setSettlementPaused(true, { from: owner });
 
+    await expectCustomError(manager.createJob.call('Qm-new', payout, 5000, 'd', { from: employer }), 'SettlementPaused');
+    await expectCustomError(manager.applyForJob.call(2, 'agent', agentTree.proofFor(agent), { from: agent }), 'SettlementPaused');
     await expectCustomError(manager.validateJob.call(0, 'validator', validatorTree.proofFor(validator), { from: validator }), 'SettlementPaused');
     await expectCustomError(manager.disapproveJob.call(0, 'validator', validatorTree.proofFor(validator), { from: validator }), 'SettlementPaused');
     await expectCustomError(manager.disputeJob.call(0, { from: employer }), 'SettlementPaused');
