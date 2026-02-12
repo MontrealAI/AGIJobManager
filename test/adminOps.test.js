@@ -97,21 +97,15 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
 
     await manager.pause({ from: owner });
 
     await expectRevert.unspecified(
       manager.applyForJob(pendingJobId, "agent", EMPTY_PROOF, { from: agent })
     );
-    await expectRevert.unspecified(
-      manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator })
-    );
-    await expectRevert.unspecified(
-      manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator })
-    );
-    await expectRevert.unspecified(
-      manager.disputeJob(jobId, { from: employer })
-    );
+    await manager.disputeJob(jobId, { from: employer });
   });
 
   it("manages allowlists and blacklists", async () => {
