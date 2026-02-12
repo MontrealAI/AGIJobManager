@@ -234,7 +234,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event AgentBlacklisted(address indexed agent, bool indexed status);
     event ValidatorBlacklisted(address indexed validator, bool indexed status);
     event ValidatorBondParamsUpdated(uint256 indexed bps, uint256 indexed min, uint256 indexed max);
+    event AgentBondMinUpdated(uint256 indexed oldMin, uint256 indexed newMin);
     event ChallengePeriodAfterApprovalUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
+    event SettlementPauseSet(address indexed setter, bool indexed paused);
     event AGITokenAddressUpdated(address indexed oldToken, address indexed newToken);
     event EnsJobPagesUpdated(address indexed oldEnsJobPages, address indexed newEnsJobPages);
     event UseEnsJobTokenURIUpdated(bool indexed oldValue, bool indexed newValue);
@@ -347,6 +349,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function _requireSettlementActiveForDeposits() internal view {
         if (settlementPaused) revert SettlementPaused();
     }
+
     function _releaseEscrow(Job storage job) internal {
         if (job.escrowReleased) return;
         job.escrowReleased = true;
@@ -791,6 +794,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         requiredValidatorDisapprovals = _disapprovals;
         emit RequiredValidatorDisapprovalsUpdated(oldDisapprovals, _disapprovals);
     }
+    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner {
+        premiumReputationThreshold = _threshold;
+    }
     function setVoteQuorum(uint256 _quorum) external onlyOwner {
         if (_quorum == 0 || _quorum > MAX_VALIDATORS_PER_JOB) revert InvalidParameters();
         uint256 oldQuorum = voteQuorum;
@@ -849,8 +855,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit AgentBondParamsUpdated(oldBps, oldMin, oldMax, bps, min, max);
     }
     function setAgentBond(uint256 bond) external onlyOwner {
-        if (bond > agentBondMax) revert InvalidParameters();
-        agentBond = bond;
+        if (bond <= agentBondMax) {
+            agentBond = bond;
+        } else {
+            revert InvalidParameters();
+        }
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
