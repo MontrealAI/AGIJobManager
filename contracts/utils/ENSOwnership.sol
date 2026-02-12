@@ -1,21 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-interface ENSRegistryLike {
-    function owner(bytes32 node) external view returns (address);
-    function resolver(bytes32 node) external view returns (address);
-}
-
-interface ResolverLike {
-    function addr(bytes32 node) external view returns (address payable);
-}
-
-interface NameWrapperLike {
-    function ownerOf(uint256 id) external view returns (address);
-}
-
 library ENSOwnership {
-    uint256 private constant ENS_STATICCALL_GAS_LIMIT = 50_000;
+    uint256 private constant ENS_STATICCALL_GAS_LIMIT = 35_000;
 
     function verifyENSOwnership(
         address ensAddress,
@@ -39,7 +26,7 @@ library ENSOwnership {
         if (nameWrapperAddress == address(0)) return false;
         (bool ok, address owner) = _staticcallAddress(
             nameWrapperAddress,
-            abi.encodeWithSelector(NameWrapperLike.ownerOf.selector, uint256(subnode))
+            abi.encodeWithSelector(bytes4(keccak256("ownerOf(uint256)")), uint256(subnode))
         );
         if (!ok || owner == address(0)) return false;
         if (owner == claimant) return true;
@@ -67,39 +54,42 @@ library ENSOwnership {
         if (ensAddress == address(0)) return false;
         (bool ok, address resolverAddress) = _staticcallAddress(
             ensAddress,
-            abi.encodeWithSelector(ENSRegistryLike.resolver.selector, subnode)
+            abi.encodeWithSelector(bytes4(keccak256("resolver(bytes32)")), subnode)
         );
         if (!ok || resolverAddress == address(0)) return false;
         address resolvedAddress;
         (ok, resolvedAddress) = _staticcallAddress(
             resolverAddress,
-            abi.encodeWithSelector(ResolverLike.addr.selector, subnode)
+            abi.encodeWithSelector(bytes4(keccak256("addr(bytes32)")), subnode)
         );
         return ok && resolvedAddress == claimant;
     }
 
     function _staticcallAddress(address target, bytes memory payload) private view returns (bool ok, address result) {
-        bytes memory data;
-        (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(payload);
-        if (!ok || data.length != 32) return (false, address(0));
-
         uint256 decoded;
-        assembly {
-            decoded := mload(add(data, 32))
-        }
+        (ok, decoded) = _staticcallWord(target, payload);
+        if (!ok) return (false, address(0));
         result = address(uint160(decoded));
     }
 
     function _staticcallBool(address target, bytes memory payload) private view returns (bool ok, bool result) {
-        bytes memory data;
-        (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(payload);
-        if (!ok || data.length != 32) return (false, false);
-
         uint256 decoded;
-        assembly {
-            decoded := mload(add(data, 32))
-        }
+        (ok, decoded) = _staticcallWord(target, payload);
+        if (!ok) return (false, false);
         if (decoded > 1) return (false, false);
         result = decoded == 1;
+    }
+
+    function _staticcallWord(address target, bytes memory payload) private view returns (bool ok, uint256 word) {
+        assembly {
+            ok := staticcall(ENS_STATICCALL_GAS_LIMIT, target, add(payload, 0x20), mload(payload), 0x00, 0x20)
+            if lt(returndatasize(), 0x20) {
+                ok := 0
+            }
+            if ok {
+                returndatacopy(0x00, 0x00, 0x20)
+                word := mload(0x00)
+            }
+        }
     }
 }
