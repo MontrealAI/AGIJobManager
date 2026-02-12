@@ -4,6 +4,8 @@ const MockPublicResolver = artifacts.require("MockPublicResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockHookCaller = artifacts.require("MockHookCaller");
 
+const { expectRevert } = require("@openzeppelin/test-helpers");
+
 const { namehash, subnode } = require("./helpers/ens");
 
 contract("ENSJobPages helper", (accounts) => {
@@ -122,4 +124,31 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await nameWrapper.lastLabelhash(), web3.utils.keccak256(`job-${jobId}`), "labelhash should match");
     assert.equal((await nameWrapper.lastChildExpiry()).toString(), web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1).toString(), "expiry should be max uint64");
   });
+
+  it("validates constructor and setters reject EOAs", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+
+    try {
+      await ENSJobPages.new(owner, owner, resolver.address, rootNode, rootName, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "couldn't be stored");
+    }
+
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await expectRevert.unspecified(helper.setENSRegistry(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setPublicResolver(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setNameWrapper(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setJobManager(owner, { from: owner }));
+  });
+
 });

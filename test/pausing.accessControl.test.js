@@ -14,7 +14,7 @@ const leafFor = (address) => Buffer.from(web3.utils.soliditySha3({ type: 'addres
 const mkTree = (list) => { const t = new MerkleTree(list.map(leafFor), keccak256, { sortPairs: true }); return { root: t.getHexRoot(), proofFor: (a) => t.getHexProof(leafFor(a)) }; };
 
 contract('pausing.accessControl', (accounts) => {
-  const [owner, employer, agent] = accounts;
+  const [owner, employer, agent, validator] = accounts;
 
   it('gates create/apply with pause and gates settlement with settlementPaused', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
@@ -36,14 +36,32 @@ contract('pausing.accessControl', (accounts) => {
     await expectRevert.unspecified(manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent }));
 
     await manager.unpause({ from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
+    await token.mint(validator, payout);
+    await token.approve(manager.address, payout, { from: validator });
+
     await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
-    await manager.setCompletionReviewPeriod(1, { from: owner });
-    await time.increase(2);
+
+    await manager.pause({ from: owner });
+    await manager.validateJob(0, 'validator', [], { from: validator });
+    await token.mint(employer, payout);
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.disputeJob(0, { from: employer });
+
     await manager.setSettlementPaused(true, { from: owner });
+    await expectRevert.unspecified(manager.requestJobCompletion(0, 'QmRetry', { from: agent }));
+    await expectRevert.unspecified(manager.validateJob(0, 'validator', [], { from: owner }));
+    await expectRevert.unspecified(manager.disputeJob(0, { from: owner }));
     await expectRevert.unspecified(manager.finalizeJob(0, { from: employer }));
+    await expectRevert.unspecified(manager.resolveDisputeWithCode(0, 1, 'x', { from: owner }));
+    await expectRevert.unspecified(manager.resolveStaleDispute(0, true, { from: owner }));
+    await expectRevert.unspecified(manager.expireJob(0, { from: employer }));
+    await expectRevert.unspecified(manager.delistJob(0, { from: owner }));
+
+    await manager.addModerator(owner, { from: owner });
     await manager.setSettlementPaused(false, { from: owner });
-    await manager.finalizeJob(0, { from: employer });
+    await manager.resolveDisputeWithCode(0, 1, 'x', { from: owner });
   });
 
   it('allows treasury withdrawals only while paused and when settlement is active', async () => {

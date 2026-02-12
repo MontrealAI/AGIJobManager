@@ -70,6 +70,9 @@ contract ENSJobPages is Ownable {
         bytes32 rootNode,
         string memory rootName
     ) {
+        if (ensAddress == address(0) || ensAddress.code.length == 0) revert InvalidParameters();
+        if (publicResolverAddress == address(0) || publicResolverAddress.code.length == 0) revert InvalidParameters();
+        if (nameWrapperAddress != address(0) && nameWrapperAddress.code.length == 0) revert InvalidParameters();
         ens = IENSRegistry(ensAddress);
         nameWrapper = INameWrapper(nameWrapperAddress);
         publicResolver = IPublicResolver(publicResolverAddress);
@@ -79,20 +82,21 @@ contract ENSJobPages is Ownable {
 
     function setENSRegistry(address ensAddress) external onlyOwner {
         address old = address(ens);
-        if (ensAddress == address(0)) revert InvalidParameters();
+        if (ensAddress == address(0) || ensAddress.code.length == 0) revert InvalidParameters();
         ens = IENSRegistry(ensAddress);
         emit ENSRegistryUpdated(old, ensAddress);
     }
 
     function setNameWrapper(address nameWrapperAddress) external onlyOwner {
         address old = address(nameWrapper);
+        if (nameWrapperAddress != address(0) && nameWrapperAddress.code.length == 0) revert InvalidParameters();
         nameWrapper = INameWrapper(nameWrapperAddress);
         emit NameWrapperUpdated(old, nameWrapperAddress);
     }
 
     function setPublicResolver(address publicResolverAddress) external onlyOwner {
         address old = address(publicResolver);
-        if (publicResolverAddress == address(0)) revert InvalidParameters();
+        if (publicResolverAddress == address(0) || publicResolverAddress.code.length == 0) revert InvalidParameters();
         publicResolver = IPublicResolver(publicResolverAddress);
         emit PublicResolverUpdated(old, publicResolverAddress);
     }
@@ -109,7 +113,7 @@ contract ENSJobPages is Ownable {
 
     function setJobManager(address manager) external onlyOwner {
         address old = jobManager;
-        if (manager == address(0)) revert InvalidParameters();
+        if (manager == address(0) || manager.code.length == 0) revert InvalidParameters();
         jobManager = manager;
         emit JobManagerUpdated(old, manager);
     }
