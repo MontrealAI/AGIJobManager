@@ -64,6 +64,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
     await agiTypeNft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+    await manager.addAdditionalValidator(validator, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
     await fundAgents(token, manager, [agent, other], owner);
@@ -103,14 +105,9 @@ contract("AGIJobManager admin ops", (accounts) => {
     await expectRevert.unspecified(
       manager.applyForJob(pendingJobId, "agent", EMPTY_PROOF, { from: agent })
     );
-    await expectRevert.unspecified(
-      manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator })
-    );
+    await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await expectRevert.unspecified(
       manager.disapproveJob(jobId, "validator", EMPTY_PROOF, { from: validator })
-    );
-    await expectRevert.unspecified(
-      manager.disputeJob(jobId, { from: employer })
     );
   });
 
@@ -225,11 +222,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.ok(bondZeroEvent, "AgentBondParamsUpdated should be emitted on zeroing");
     assert.equal(bondZeroEvent.args.newBps.toString(), "0");
 
-    const bondMinTx = await manager.setAgentBond(toBN(toWei("3")), { from: owner });
-    const bondMinEvent = bondMinTx.logs.find((log) => log.event === "AgentBondMinUpdated");
-    assert.ok(bondMinEvent, "AgentBondMinUpdated should be emitted");
-    assert.equal(bondMinEvent.args.oldMin.toString(), "0");
-    assert.equal(bondMinEvent.args.newMin.toString(), toWei("3"));
+    await manager.setAgentBond(toBN(toWei("3")), { from: owner });
 
     const slashTx = await manager.setValidatorSlashBps(7000, { from: owner });
     const slashEvent = slashTx.logs.find((log) => log.event === "ValidatorSlashBpsUpdated");

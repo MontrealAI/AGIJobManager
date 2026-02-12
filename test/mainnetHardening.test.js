@@ -54,6 +54,10 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await nft.mint(agent, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
 
+    await expectCustomError(manager.updateAGITokenAddress.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateEnsRegistry.call(owner, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.updateNameWrapper.call(owner, { from: owner }), "InvalidParameters");
+
     const payout = web3.utils.toWei("10");
     await token.mint(jobCreator, payout, { from: owner });
 
@@ -426,20 +430,43 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     }
 
 
-    const rootWithNameWrapperOnly = buildInitConfig(
-      token.address,
+    const eoaTokenArgs = buildInitConfig(
+      owner,
       "ipfs://base",
       zeroAddress,
-      owner,
-      "0x" + "22".repeat(32),
+      zeroAddress,
+      ZERO32,
       ZERO32,
       ZERO32,
       ZERO32,
       ZERO32,
       ZERO32
     );
-    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-    assert.equal(await wrapperOnlyManager.nameWrapper(), owner);
+    try {
+      await AGIJobManager.new(...eoaTokenArgs, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    const overlongBaseIpfsArgs = buildInitConfig(
+      token.address,
+      `ipfs://${"x".repeat(600)}`,
+      zeroAddress,
+      zeroAddress,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32,
+      ZERO32
+    );
+    try {
+      await AGIJobManager.new(...overlongBaseIpfsArgs, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
   });
 
   it("uses bounded gas for NFT balance checks", async () => {
@@ -488,7 +515,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     assert.equal(await manager.ownerOf(1), nonReceiverEmployer.address);
 
     await expectCustomError(
-      manager.safeMintCompletionNFT.call(nonReceiverEmployer.address, 999, { from: owner }),
+      manager.__safeMintExternal.call(nonReceiverEmployer.address, 999, { from: owner }),
       "NotAuthorized"
     );
   });

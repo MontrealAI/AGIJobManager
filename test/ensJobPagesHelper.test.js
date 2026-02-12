@@ -4,6 +4,7 @@ const MockPublicResolver = artifacts.require("MockPublicResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockHookCaller = artifacts.require("MockHookCaller");
 
+const { expectRevert } = require("@openzeppelin/test-helpers");
 const { namehash, subnode } = require("./helpers/ens");
 
 contract("ENSJobPages helper", (accounts) => {
@@ -122,4 +123,37 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await nameWrapper.lastLabelhash(), web3.utils.keccak256(`job-${jobId}`), "labelhash should match");
     assert.equal((await nameWrapper.lastChildExpiry()).toString(), web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1).toString(), "expiry should be max uint64");
   });
+
+  it("fails fast on non-contract ENS wiring", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+
+    for (const args of [
+      [owner, nameWrapper.address, resolver.address],
+      [ens.address, nameWrapper.address, owner],
+      [ens.address, owner, resolver.address]
+    ]) {
+      try {
+        await ENSJobPages.new(args[0], args[1], args[2], rootNode, rootName, { from: owner });
+        assert.fail("expected constructor revert");
+      } catch (error) {
+        assert.include(String(error.message), "could not decode");
+      }
+    }
+
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await expectRevert.unspecified(helper.setENSRegistry(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setNameWrapper(owner, { from: owner }));
+    await expectRevert.unspecified(helper.setPublicResolver(owner, { from: owner }));
+  });
+
 });

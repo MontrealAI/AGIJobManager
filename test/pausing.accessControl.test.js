@@ -9,6 +9,7 @@ const MockNameWrapper = artifacts.require('MockNameWrapper');
 const MockERC721 = artifacts.require('MockERC721');
 const { buildInitConfig } = require('./helpers/deploy');
 const { rootNode } = require('./helpers/ens');
+const { expectCustomError } = require('./helpers/errors');
 
 const leafFor = (address) => Buffer.from(web3.utils.soliditySha3({ type: 'address', value: address }).slice(2), 'hex');
 const mkTree = (list) => { const t = new MerkleTree(list.map(leafFor), keccak256, { sortPairs: true }); return { root: t.getHexRoot(), proofFor: (a) => t.getHexProof(leafFor(a)) }; };
@@ -44,6 +45,48 @@ contract('pausing.accessControl', (accounts) => {
     await expectRevert.unspecified(manager.finalizeJob(0, { from: employer }));
     await manager.setSettlementPaused(false, { from: owner });
     await manager.finalizeJob(0, { from: employer });
+  });
+
+
+
+  it('pause does not change adjudication outcomes while settlement remains active', async () => {
+    const [ , , , validator] = accounts;
+    const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
+    const agentTree = mkTree([agent]);
+    const validatorTree = mkTree([validator]);
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent);
+
+    const payout = new BN(web3.utils.toWei('10'));
+    await token.mint(employer, payout);
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob('Qm', payout, 1000, 'd', { from: employer });
+
+    const bondFunding = new BN(web3.utils.toWei('10'));
+    await token.mint(agent, bondFunding);
+    await token.approve(manager.address, bondFunding, { from: agent });
+    await token.mint(validator, bondFunding);
+    await token.approve(manager.address, bondFunding, { from: validator });
+
+    await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
+    await manager.requestJobCompletion(0, 'QmDone', { from: agent });
+
+    await manager.pause({ from: owner });
+    await expectRevert.unspecified(manager.createJob('Qm2', payout, 1000, 'd', { from: employer }));
+    await expectRevert.unspecified(manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent }));
+
+    await manager.validateJob(0, 'validator', validatorTree.proofFor(validator), { from: validator });
+    await token.mint(employer, bondFunding);
+    await token.approve(manager.address, bondFunding, { from: employer });
+    await manager.disputeJob(0, { from: employer });
+
+    await manager.setSettlementPaused(true, { from: owner });
+    await expectRevert.unspecified(manager.validateJob(0, 'validator', validatorTree.proofFor(validator), { from: validator }));
+    await expectRevert.unspecified(manager.disapproveJob(0, 'validator', validatorTree.proofFor(validator), { from: validator }));
+    await expectRevert.unspecified(manager.disputeJob(0, { from: employer }));
+    await expectRevert.unspecified(manager.resolveDisputeWithCode(0, 1, 'ok', { from: owner }));
+    await expectRevert.unspecified(manager.finalizeJob(0, { from: employer }));
   });
 
   it('allows treasury withdrawals only while paused and when settlement is active', async () => {

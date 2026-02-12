@@ -58,31 +58,32 @@ contract("AGIJobManager platform revenue", (accounts) => {
     return { jobId, finalizeTx };
   }
 
-  it("emits PlatformRevenueAccrued for retained remainder on agent win", async () => {
+  it("retains settlement remainder in treasury on agent win", async () => {
     const agentPct = 60;
     const { token, manager } = await deployManager(agentPct);
     const payout = web3.utils.toBN(web3.utils.toWei("101"));
 
-    const { jobId, finalizeTx } = await completeJob(manager, token, payout);
+    const managerBalanceBefore = await token.balanceOf(manager.address);
+    const { jobId } = await completeJob(manager, token, payout);
 
     const validationPct = await manager.validationRewardPercentage();
     const expectedRetained = payout
       .sub(payout.muln(agentPct).divn(100))
       .sub(payout.mul(validationPct).divn(100));
 
-    const retainedEvent = finalizeTx.logs.find((log) => log.event === "PlatformRevenueAccrued");
-    assert.ok(retainedEvent, "PlatformRevenueAccrued should be emitted");
-    assert.equal(retainedEvent.args.jobId.toNumber(), jobId, "jobId should match");
-    assert.equal(retainedEvent.args.amount.toString(), expectedRetained.toString(), "retained amount mismatch");
+    assert.equal(jobId, 0, "jobId should match");
+    const managerBalanceAfter = await token.balanceOf(manager.address);
+    assert.equal(managerBalanceAfter.sub(managerBalanceBefore).toString(), expectedRetained.toString(), "retained amount mismatch");
   });
 
-  it("does not emit PlatformRevenueAccrued when retained remainder is zero", async () => {
+  it("does not retain extra treasury balance when retained remainder is zero", async () => {
     const agentPct = 92;
     const { token, manager } = await deployManager(agentPct);
     const payout = web3.utils.toBN(web3.utils.toWei("100"));
 
-    const { finalizeTx } = await completeJob(manager, token, payout);
-    const retainedEvent = finalizeTx.logs.find((log) => log.event === "PlatformRevenueAccrued");
-    assert.ok(!retainedEvent, "PlatformRevenueAccrued should not be emitted");
+    const managerBalanceBefore = await token.balanceOf(manager.address);
+    await completeJob(manager, token, payout);
+    const managerBalanceAfter = await token.balanceOf(manager.address);
+    assert.equal(managerBalanceAfter.sub(managerBalanceBefore).toString(), "0");
   });
 });
