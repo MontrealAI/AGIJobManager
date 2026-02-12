@@ -93,6 +93,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
     uint256 public voteQuorum = 3;
+    uint256 public premiumReputationThreshold = 10000;
     uint256 public validationRewardPercentage = 8;
     uint256 public maxJobPayout = 88888888e18;
     uint256 public jobDurationLimit = 10000000;
@@ -782,6 +783,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 oldQuorum = voteQuorum;
         voteQuorum = _quorum;
         emit VoteQuorumUpdated(oldQuorum, _quorum);
+    }
+    function setPremiumReputationThreshold(uint256 _threshold) external onlyOwner {
+        premiumReputationThreshold = _threshold;
     }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner {
         maxJobPayout = _maxPayout;

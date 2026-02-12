@@ -136,6 +136,11 @@ contract("AGIJobManager admin ops", (accounts) => {
   it("updates parameters and withdraws funds", async () => {
     await expectCustomError(manager.setValidationRewardPercentage.call(0, { from: owner }), "InvalidParameters");
     await manager.setValidationRewardPercentage(8, { from: owner });
+
+    assert.equal((await manager.premiumReputationThreshold()).toString(), "10000");
+    await manager.setPremiumReputationThreshold(12345, { from: owner });
+    assert.equal((await manager.premiumReputationThreshold()).toString(), "12345");
+
     await manager.setMaxJobPayout(toBN(toWei("5000")), { from: owner });
 
     const payout = toBN(toWei("8"));
