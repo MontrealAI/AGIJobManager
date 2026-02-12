@@ -65,6 +65,33 @@ contract('pausing.accessControl', (accounts) => {
     await manager.resolveDisputeWithCode(0, 1, 'x', { from: owner });
   });
 
+
+  it('blocks new escrow/fund-locking positions when settlementPaused is enabled', async () => {
+    const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
+    const agentTree = mkTree([agent]);
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), agentTree.root), { from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent);
+
+    const payout = new BN(web3.utils.toWei('1000'));
+    await token.mint(employer, payout.muln(2));
+    await token.mint(agent, payout);
+    await token.approve(manager.address, payout.muln(2), { from: employer });
+    await token.approve(manager.address, payout, { from: agent });
+
+    await manager.createJob('Qm-live', payout, 5000, 'd', { from: employer });
+    await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
+
+    await manager.setSettlementPaused(true, { from: owner });
+    await expectCustomError(manager.createJob.call('Qm-frozen', payout, 5000, 'd', { from: employer }), 'SettlementPaused');
+    await expectCustomError(manager.applyForJob.call(0, 'agent', agentTree.proofFor(agent), { from: agent }), 'SettlementPaused');
+
+    await manager.pause({ from: owner });
+    await manager.setSettlementPaused(false, { from: owner });
+    await expectRevert.unspecified(manager.createJob('Qm-paused', payout, 5000, 'd', { from: employer }));
+    await expectRevert.unspecified(manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent }));
+  });
+
   it('keeps paused adjudication outcomes identical while settlement remains active', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]);

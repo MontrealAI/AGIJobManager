@@ -197,6 +197,34 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
   });
 
+
+  it("fails closed for validator ENS checks without bricking validate/disapprove", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await RevertingNameWrapper.new({ from: owner });
+    const manager = await deployManager(token, ens.address, wrapper.address);
+    const nft = await MockERC721.new({ from: owner });
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await manager.addAdditionalAgent(agent, { from: owner });
+
+    await token.mint(employer, web3.utils.toWei("10"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("10"), { from: employer });
+    await manager.createJob("ipfs://spec", web3.utils.toWei("10"), 100, "details", { from: employer });
+
+    await token.mint(agent, web3.utils.toWei("3"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("3"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
+
+    await expectCustomError(manager.validateJob.call(0, "validator", [], { from: validator }), "NotAuthorized");
+    await expectCustomError(manager.disapproveJob.call(0, "validator", [], { from: validator }), "NotAuthorized");
+
+    await manager.addAdditionalValidator(validator, { from: owner });
+    await manager.setValidatorBondParams(0, 0, 0, { from: owner });
+    await manager.validateJob(0, "validator", [], { from: validator });
+  });
+
   it("settlement remains live when ENS hook target reverts with ENS URI mode enabled", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });

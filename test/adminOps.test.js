@@ -219,17 +219,29 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.ok(bondZeroEvent, "AgentBondParamsUpdated should be emitted on zeroing");
     assert.equal(bondZeroEvent.args.newBps.toString(), "0");
 
-    const bondMinTx = await manager.setAgentBond(toBN(toWei("3")), { from: owner });
-    const bondMinEvent = bondMinTx.logs.find((log) => log.event === "AgentBondMinUpdated");
-    assert.ok(bondMinEvent, "AgentBondMinUpdated should be emitted");
-    assert.equal(bondMinEvent.args.oldMin.toString(), "0");
-    assert.equal(bondMinEvent.args.newMin.toString(), toWei("3"));
+    await manager.setAgentBondParams(600, toBN(toWei("2")), toBN(toWei("20")), { from: owner });
+    await manager.setAgentBond(toBN(toWei("3")), { from: owner });
+    assert.equal((await manager.agentBond()).toString(), toWei("3"));
 
     const slashTx = await manager.setValidatorSlashBps(7000, { from: owner });
     const slashEvent = slashTx.logs.find((log) => log.event === "ValidatorSlashBpsUpdated");
     assert.ok(slashEvent, "ValidatorSlashBpsUpdated should be emitted");
     assert.equal(slashEvent.args.oldBps.toString(), "8000");
     assert.equal(slashEvent.args.newBps.toString(), "7000");
+  });
+
+
+  it("enforces job duration and agent bond setter invariants", async () => {
+    await expectCustomError(manager.setJobDurationLimit.call(0, { from: owner }), "InvalidParameters");
+
+    await manager.setAgentBondParams(0, 0, 0, { from: owner });
+    await expectCustomError(manager.setAgentBond.call(toBN(toWei("1")), { from: owner }), "InvalidParameters");
+    await manager.setAgentBond(0, { from: owner });
+
+    await manager.setAgentBondParams(500, toBN(toWei("2")), toBN(toWei("5")), { from: owner });
+    await expectCustomError(manager.setAgentBond.call(toBN(toWei("6")), { from: owner }), "InvalidParameters");
+    await manager.setAgentBond(toBN(toWei("3")), { from: owner });
+    assert.equal((await manager.agentBond()).toString(), toWei("3"));
   });
 
   it("reverts withdrawals on failed transfers", async () => {
