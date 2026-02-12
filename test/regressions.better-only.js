@@ -5,6 +5,7 @@ const AGIJobManagerOriginal = artifacts.require("AGIJobManagerOriginal");
 const MockERC20 = artifacts.require("MockERC20");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
+const MockENS = artifacts.require("MockENS");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators, fundAgents, fundDisputeBond } = require("./helpers/bonds");
 
@@ -50,7 +51,7 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
       ...buildInitConfig(
         tokenAddress,
         "ipfs://base",
-        owner,
+        (await MockENS.new({ from: owner })).address,
         ZERO_ADDRESS,
         rootNode("club-root"),
         rootNode("agent-root"),

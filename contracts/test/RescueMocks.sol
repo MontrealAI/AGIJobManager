@@ -5,7 +5,23 @@ contract ForceSendETH {
     constructor() payable {}
 
     function boom(address payable target) external {
-        selfdestruct(target);
+        bytes memory init = new bytes(22);
+        init[0] = 0x73;
+        bytes20 targetBytes = bytes20(address(target));
+        for (uint256 i = 0; i < 20; ) {
+            init[1 + i] = targetBytes[i];
+            unchecked {
+                ++i;
+            }
+        }
+        init[21] = 0xff;
+
+        address deployed;
+        uint256 value = address(this).balance;
+        assembly {
+            deployed := create(value, add(init, 32), 22)
+        }
+        require(deployed != address(0), "deploy");
     }
 }
 
