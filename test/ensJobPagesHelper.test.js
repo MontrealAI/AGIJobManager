@@ -122,4 +122,48 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await nameWrapper.lastLabelhash(), web3.utils.keccak256(`job-${jobId}`), "labelhash should match");
     assert.equal((await nameWrapper.lastChildExpiry()).toString(), web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1).toString(), "expiry should be max uint64");
   });
+
+  it("rejects non-contract integration addresses in constructor and setters", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+
+    try {
+      await ENSJobPages.new(owner, nameWrapper.address, resolver.address, rootNode, rootName, { from: owner });
+      assert.fail("expected constructor revert");
+    } catch (error) {
+      assert.include(String(error.message), "could not decode");
+    }
+
+    const helper = await ENSJobPages.new(ens.address, nameWrapper.address, resolver.address, rootNode, rootName, { from: owner });
+
+    try {
+      await helper.setENSRegistry(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert(error.message.length > 0, error.message);
+    }
+
+    try {
+      await helper.setPublicResolver(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert(error.message.length > 0, error.message);
+    }
+
+    try {
+      await helper.setNameWrapper(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert(error.message.length > 0, error.message);
+    }
+
+    try {
+      await helper.setJobManager(owner, { from: owner });
+      assert.fail("expected setter revert");
+    } catch (error) {
+      assert(error.message.length > 0, error.message);
+    }
+  });
+
 });

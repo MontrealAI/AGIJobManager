@@ -8,6 +8,10 @@ interface IAGIJobManagerCreateJob {
     function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details) external;
 }
 
+interface IAGIJobManagerTokenURI {
+    function tokenURI(uint256 tokenId) external view returns (string memory);
+}
+
 contract ERC721ReceiverEmployer is IERC721Receiver {
     IAGIJobManagerCreateJob public manager;
     IERC20 public token;
@@ -33,6 +37,55 @@ contract ERC721ReceiverEmployer is IERC721Receiver {
             receivedCount++;
         }
         lastTokenId = tokenId;
+        return IERC721Receiver.onERC721Received.selector;
+    }
+}
+
+contract TokenURIReadingReceiverEmployer is IERC721Receiver {
+    IAGIJobManagerCreateJob public manager;
+    IERC20 public token;
+    string public observedTokenURI;
+
+    constructor(address managerAddress, address tokenAddress) {
+        manager = IAGIJobManagerCreateJob(managerAddress);
+        token = IERC20(tokenAddress);
+    }
+
+    function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
+        token.approve(address(manager), payout);
+        manager.createJob(spec, payout, duration, details);
+    }
+
+    function onERC721Received(address operator, address, uint256 tokenId, bytes calldata)
+        external
+        override
+        returns (bytes4)
+    {
+        observedTokenURI = IAGIJobManagerTokenURI(operator).tokenURI(tokenId);
+        return IERC721Receiver.onERC721Received.selector;
+    }
+}
+
+contract GasBurningReceiverEmployer is IERC721Receiver {
+    IAGIJobManagerCreateJob public manager;
+    IERC20 public token;
+
+    constructor(address managerAddress, address tokenAddress) {
+        manager = IAGIJobManagerCreateJob(managerAddress);
+        token = IERC20(tokenAddress);
+    }
+
+    function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
+        token.approve(address(manager), payout);
+        manager.createJob(spec, payout, duration, details);
+    }
+
+    function onERC721Received(address, address, uint256, bytes calldata)
+        external
+        override
+        returns (bytes4)
+    {
+        while (gasleft() > 1000) {}
         return IERC721Receiver.onERC721Received.selector;
     }
 }
