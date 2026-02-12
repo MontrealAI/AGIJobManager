@@ -75,6 +75,8 @@ library ENSOwnership {
         bytes memory data;
         (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(abi.encodeWithSelector(selector, node));
         if (!ok || data.length < 32) return (false, address(0));
-        result = abi.decode(data, (address));
+        assembly {
+            result := shr(96, mload(add(data, 32)))
+        }
     }
 }
