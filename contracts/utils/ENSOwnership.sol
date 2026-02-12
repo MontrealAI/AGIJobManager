@@ -82,13 +82,24 @@ library ENSOwnership {
         bytes memory data;
         (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(payload);
         if (!ok || data.length != 32) return (false, address(0));
-        result = abi.decode(data, (address));
+
+        uint256 decoded;
+        assembly {
+            decoded := mload(add(data, 32))
+        }
+        result = address(uint160(decoded));
     }
 
     function _staticcallBool(address target, bytes memory payload) private view returns (bool ok, bool result) {
         bytes memory data;
         (ok, data) = target.staticcall{ gas: ENS_STATICCALL_GAS_LIMIT }(payload);
         if (!ok || data.length != 32) return (false, false);
-        result = abi.decode(data, (bool));
+
+        uint256 decoded;
+        assembly {
+            decoded := mload(add(data, 32))
+        }
+        if (decoded > 1) return (false, false);
+        result = decoded == 1;
     }
 }
