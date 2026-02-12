@@ -429,11 +429,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     }
 
 
+    const wrapperOnly = await MockNameWrapper.new({ from: owner });
     const rootWithNameWrapperOnly = buildInitConfig(
       token.address,
       "ipfs://base",
       zeroAddress,
-      owner,
+      wrapperOnly.address,
       "0x" + "22".repeat(32),
       ZERO32,
       ZERO32,
@@ -441,12 +442,8 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    try {
-      await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
-      assert.fail("expected constructor revert");
-    } catch (error) {
-      assert.include(String(error.message), "could not decode");
-    }
+    const wrapperOnlyManager = await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
+    assert.equal(await wrapperOnlyManager.nameWrapper(), wrapperOnly.address);
   });
 
   it("rejects EOA addresses in token/ENS/namewrapper setters", async () => {

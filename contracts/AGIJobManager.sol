@@ -280,7 +280,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (agiTokenAddress.code.length == 0) revert InvalidParameters();
         if (bytes(baseIpfs).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
         if ((rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
-            if (ensConfig[0].code.length == 0) revert InvalidParameters();
+            if (ensConfig[0].code.length == 0 && ensConfig[1].code.length == 0) revert InvalidParameters();
         }
         if (ensConfig[1] != address(0) && ensConfig[1].code.length == 0) revert InvalidParameters();
         _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
