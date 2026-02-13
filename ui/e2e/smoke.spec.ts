@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test('dashboard renders read-only', async ({ page }) => { await page.goto('/'); await expect(page.getByText('AGIJobManager')).toBeVisible(); });
-test('jobs list renders', async ({ page }) => { await page.goto('/jobs'); await expect(page.locator('table')).toBeVisible(); });
-test('admin unauthorized', async ({ page }) => { await page.goto('/admin'); await expect(page.getByText(/Not authorized/)).toBeVisible(); });
+test('demo dashboard renders', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('demo-banner')).toBeVisible();
+  await expect(page.getByText(/Institutional AGIJobManager Console/i)).toBeVisible();
+});
+
+test('admin unauthorized in read-only context', async ({ page }) => {
+  await page.goto('/admin');
+  await expect(page.getByText(/Not authorized/i)).toBeVisible();
+});

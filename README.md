@@ -332,3 +332,31 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+
+## UI / Ops Console
+
+[![UI CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml)
+
+Institutional Next.js dapp + operations console with read-only-first UX, deterministic Demo Mode, simulation-first action framework, and hardened link security.
+
+- UI docs: [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md), [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md), [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md), [`docs/ui/TESTING.md`](docs/ui/TESTING.md)
+
+![Dashboard](docs/ui/screenshots/dashboard.svg)
+![Jobs](docs/ui/screenshots/jobs-list.svg)
+![Job detail](docs/ui/screenshots/job-detail.svg)
+
+### Quick start
+
+```bash
+cd ui
+npm ci
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+npm run build
+```
+
+### Security highlights
+
+- Read-only mode works without wallet.
+- Simulation-first write model (prepare → simulate → sign → confirm).
+- Safe outbound URI handling with blocked scheme denylist.
+- RPC degradation banner + retry path.
