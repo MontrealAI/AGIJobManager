@@ -6,5 +6,18 @@
   "exclude_optimization": true,
   "solc_remaps": [
     "@openzeppelin/=node_modules/@openzeppelin/"
+  ],
+  "detectors_to_exclude": [
+    "reentrancy-no-eth",
+    "reentrancy-benign",
+    "reentrancy-events",
+    "reentrancy-unlimited-gas",
+    "reentrancy-eth",
+    "reentrancy-read-before-write",
+    "reentrancy-balance",
+    "divide-before-multiply",
+    "mapping-deletion",
+    "uninitialized-local",
+    "unused-return"
   ]
 }

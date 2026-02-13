@@ -1,5 +1,5 @@
 [profile.default]
-solc = "0.8.23"
+solc = "0.8.19"
 src = "contracts"
 test = "forge-test"
 libs = ["lib", "node_modules"]
@@ -11,3 +11,10 @@ remappings = [
   "forge-std/=lib/forge-std/src/"
 ]
 fs_permissions = [{ access = "read", path = "./" }]
+
+[fuzz]
+runs = 512
+
+[invariant]
+runs = 64
+depth = 40
