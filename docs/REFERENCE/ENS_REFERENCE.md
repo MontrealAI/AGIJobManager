@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Generated at (latest source commit time): 2026-02-12T19:52:02-05:00
+Source fingerprint (sha256, 16 hex): d08224a681e50944
 
 Source files used:
 - `contracts/AGIJobManager.sol`

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import crypto from 'node:crypto';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const argOut = process.argv.find((a) => a.startsWith('--out-dir='));
@@ -55,13 +55,14 @@ const notes = sourceFiles.flatMap((rel) =>
     .map((x) => ({ ...x, text: x.text.replace(/^\/\/\/\s?/, '') }))
 );
 
-const generatedAt = (() => {
-  try {
-    const cmd = `git log -1 --format=%cI -- ${sourceFiles.join(' ')}`;
-    return execSync(cmd, { cwd: root, encoding: 'utf8' }).trim() || 'unknown';
-  } catch {
-    return 'unknown';
+const sourceFingerprint = (() => {
+  const hash = crypto.createHash('sha256');
+  for (const rel of sourceFiles) {
+    hash.update(`FILE:${rel}\n`);
+    hash.update(fs.readFileSync(path.join(root, rel), 'utf8'));
+    hash.update('\n');
   }
+  return hash.digest('hex').slice(0, 16);
 })();
 
 const uniq = (arr) => {
@@ -81,7 +82,7 @@ const toBullet = (x) => `- \`${x.text}\` (${x.file}:${x.line})`;
 const md = [
   '# ENS Reference (Generated)',
   '',
-  `Generated at (latest source commit time): ${generatedAt}`,
+  `Source fingerprint (sha256, 16 hex): ${sourceFingerprint}`,
   '',
   'Source files used:',
   ...sourceFiles.map((f) => `- \`${f}\``),
