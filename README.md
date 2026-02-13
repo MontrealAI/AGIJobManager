@@ -70,7 +70,7 @@ Core operator/integrator/auditor docs:
 ## Quickstart
 
 ```bash
-npm ci
+npm ci  # deterministic install from package-lock.json
 npm run build
 npm run test
 ```

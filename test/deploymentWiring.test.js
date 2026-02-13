@@ -53,4 +53,10 @@ contract("AGIJobManager deployment wiring", (accounts) => {
     const tokenBalance = await token.balanceOf(manager.address);
     assert.equal(tokenBalance.toString(), toBN(0).toString());
   });
+
+  it("ships linked runtime bytecode without unresolved library placeholders", async () => {
+    const deployedBytecode = AGIJobManager._json.deployedBytecode;
+    assert.ok(deployedBytecode && deployedBytecode.length > 2, "expected deployed bytecode");
+    assert.equal(/__\$[0-9a-fA-F]{34}\$__/.test(deployedBytecode), false, "found unresolved library placeholders");
+  });
 });
