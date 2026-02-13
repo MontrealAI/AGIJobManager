@@ -1,53 +1,25 @@
-# Repository-Specific Security Model
+# Security Model
 
-## Threat model summary
+## Threat model
 
-AGIJobManager is a **business-operated, owner-privileged escrow protocol**. It is not a trustless court. Critical assumptions:
-- Owner and moderators are trusted operators.
-- Validator set is permissioned by ENS/Merkle/allowlists.
-- ERC20 token behavior is standard enough for exact-transfer wrappers.
+| Vector | Impact | Mitigation | Residual risk | Operator responsibility |
+| --- | --- | --- | --- | --- |
+| Privileged key compromise | Full admin misuse | Hardware wallets, multisig, pause controls | High if governance weak | Strict key management and signer separation |
+| Validator collusion | Biased outcomes | Bonds, disapproval paths, dispute escalation | Medium | Monitor vote patterns and rotate allowlist |
+| ENS integration failures | Eligibility false negatives | Best-effort checks + explicit allowlists | Medium | Maintain fallback allowlist operations |
+| Metadata abuse (`jobSpecURI`) | Off-chain confusion/phishing | URI validation helpers and policy | Medium | Enforce URI hygiene and content review |
+| Gas griefing / liveness stress | Delayed settlement | Time windows + stale dispute resolution | Medium | Alert on aging jobs/disputes |
+| Owner parameter misconfiguration | Insolvency/liveness degradation | Validation scripts + staged rollout | Medium-High | Change-control checklist |
 
-## Critical risks and mitigations
+## Controls
 
-| Risk | Impact | In-code mitigation | Operational mitigation |
-|---|---|---|---|
-| Owner key compromise | Config abuse, pause abuse, allowlist tampering | Role checks only | Use multisig + hardware keys + restricted signer policy |
-| Moderator compromise | Dispute outcomes manipulated | `onlyModerator`, typed resolution paths | Keep moderator set minimal; monitor resolution events |
-| ERC20 transfer anomalies | Settlement/withdraw revert or unexpected behavior | `TransferUtils.safeTransfer*` and exact transfer checks | Use vetted token contracts; run smoke tests before production |
-| ENS hook failure | Metadata/permissions drift | Best-effort calls + event visibility | Alert on `EnsHookAttempted(false)` and reconcile manually |
-| Misconfigured parameters | Economic imbalance, poor liveness | Input guards and invariant checks | Use staged testnet rollout and parameter review gates |
-| Insolvency state | Treasury withdraw blocked | `withdrawableAGI()` reverts on insolvent balance | Monitor locked totals vs token balance continuously |
+- `pause` for broad emergency containment.
+- `settlementPaused` for controlled lane restriction.
+- `blacklistAgent`/`blacklistValidator` for targeted actor isolation.
+- `lockIdentityConfiguration` to freeze ENS/token wiring permanently.
 
-## Pause and settlement pause semantics
+## Explicit limitations
 
-- `pause()` (`whenNotPaused`) blocks create/apply/vote/dispute and reward-pool contributions.
-- `requestJobCompletion` is intentionally callable while paused (dispute/liveness recovery).
-- `settlementPaused` blocks settlement-sensitive methods using custom guard (`whenSettlementNotPaused`), including finalize/dispute resolution/withdraw/cancel/expire.
-- `withdrawAGI` requires paused mode **and** settlement not paused.
-
-## Role-compromise scenarios
-
-### Owner compromised
-Immediate actions:
-1. Pause contract.
-2. Freeze off-chain integrations.
-3. Rotate owner to secured multisig if possible.
-4. Audit recent config and allowlist changes from events.
-
-### Moderator compromised
-Immediate actions:
-1. Owner removes compromised moderator.
-2. Pause if active disputes are at risk.
-3. Reassign trusted moderator(s) and document incident.
-
-## Operational security recommendations
-
-- Use a multisig as owner from day one.
-- Separate deployer and operator keys.
-- Keep moderator key custody independent from owner signers.
-- Maintain alerts for:
-  - `SettlementPauseSet`, `Paused`, `Unpaused`
-  - config update events
-  - `DisputeResolved*`, `JobDisputed`
-  - `AGIWithdrawn`
-  - `EnsHookAttempted(success=false)`
+- Not a trustless court; moderators and owner are privileged.
+- ENS hooks/tokenURI are convenience integrations.
+- Off-chain metadata availability and quality are out-of-contract guarantees.
