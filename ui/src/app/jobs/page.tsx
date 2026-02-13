@@ -6,8 +6,6 @@ import { useReadContract, useReadContracts } from 'wagmi'
 import { deriveJobStatus } from '@/lib/job'
 import { useMemo, useState } from 'react'
 
-const zero = '0x0000000000000000000000000000000000000000'
-
 export default function JobsPage() {
   const [query, setQuery] = useState('')
   const nextId = useReadContract({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'nextJobId' })
@@ -24,17 +22,26 @@ export default function JobsPage() {
     allowFailure: true
   })
 
-  return <div className="space-y-4"><h1 className="text-xl font-semibold">Jobs</h1><input value={query} onChange={(e) => setQuery(e.target.value)} className="input" placeholder="Search by id/address/status" />
-    <div className="space-y-2">{ids.map((id, i) => {
-      const core = jobs.data?.[i]?.result as any
-      const validation = vals.data?.[i]?.result as any
-      if (!core) return null
-      const status = deriveJobStatus({ ...core }, { ...(validation || { approvals: 0, disapprovals: 0, disputed: false }) }, Math.floor(Date.now() / 1000))
-      const text = `${id} ${core.employer} ${core.agent} ${status}`.toLowerCase()
-      if (query && !text.includes(query.toLowerCase())) return null
-      return <Link key={id.toString()} className="card block" href={`/jobs/${id.toString()}`}>
-        <div className="flex justify-between"><span>Job #{id.toString()}</span><span className="text-xs uppercase">{status}</span></div>
-        <div className="text-sm text-slate-400">Employer: {core.employer.slice(0, 8)}... Agent: {core.agent === zero ? 'unassigned' : core.agent.slice(0, 8)}</div>
-      </Link>
-    })}</div></div>
+  return (
+    <div className="space-y-4">
+      <h1 className="text-3xl">Jobs registry</h1>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} className="input" placeholder="Filter by id/address/status" />
+      <div className="space-y-2">
+        {ids.map((id, i) => {
+          const core = jobs.data?.[i]?.result as any
+          const validation = vals.data?.[i]?.result as any
+          if (!core) return null
+          const status = deriveJobStatus({ ...core }, { ...(validation || { approvals: 0, disapprovals: 0, disputed: false }) }, Math.floor(Date.now() / 1000))
+          const text = `${id} ${core.employer} ${core.agent} ${status}`.toLowerCase()
+          if (query && !text.includes(query.toLowerCase())) return null
+          return (
+            <Link key={id.toString()} className="card block p-4 hover:border-accent/40" href={`/jobs/${id.toString()}`}>
+              <div className="flex justify-between"><span>Job #{id.toString()}</span><span className="rounded-full border border-border px-2 py-0.5 text-xs uppercase">{status}</span></div>
+              <div className="text-sm text-muted-foreground">Employer: {core.employer.slice(0, 8)}... Agent: {core.agent.slice(0, 8)}... Payout: {core.payout?.toString?.() ?? '0'}</div>
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
 }

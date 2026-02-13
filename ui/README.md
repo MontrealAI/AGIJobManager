@@ -8,7 +8,7 @@ Standalone Next.js App Router dapp + ops console for AGIJobManager.
    ```bash
    cp .env.example .env.local
    ```
-2. Install dependencies:
+2. Install dependencies exactly:
    ```bash
    npm ci
    ```
@@ -18,12 +18,14 @@ Standalone Next.js App Router dapp + ops console for AGIJobManager.
 ```bash
 npm run dev
 npm run build
+npm run lint
 npm run test
 npm run test:e2e
-npm run lint
 ```
 
-## Notes
-- Read-only mode works without wallet.
-- Wallet write paths use simulation-first UX.
-- If server RPC URLs are missing, UI falls back to public RPC and displays a degraded RPC banner.
+## Highlights
+
+- Read-only mode works without wallet connection.
+- Wallet writes use preflight and simulation-first `TxButton` interactions.
+- Dark-default ASI Sovereign Purple theme with a user toggle.
+- If server RPC URLs are missing, the UI falls back to public RPC endpoints and displays a degraded RPC banner.
