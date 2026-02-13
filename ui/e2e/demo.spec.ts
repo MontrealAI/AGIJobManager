@@ -7,7 +7,7 @@ test('core pages render in demo mode', async ({ page }) => {
   await expect(page.getByText('Demo mode enabled')).toBeVisible();
   await page.goto('/jobs?scenario=baseline');
   await expect(page.getByTestId('csv-output')).toBeVisible();
-  await page.goto('/admin?scenario=baseline');
+  await page.goto('/admin?scenario=baseline&actor=owner');
   await expect(page.getByText('Safety toggles')).toBeVisible();
   await page.goto('/design');
   await expect(page.getByText('Design System Gallery')).toBeVisible();

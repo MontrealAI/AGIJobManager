@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#14001F"/>
+  <rect x="40" y="24" width="1200" height="56" rx="12" fill="#21093B" stroke="#2E1154"/>
+  <rect x="40" y="104" width="1200" height="120" rx="18" fill="#170226" stroke="#2E1154"/>
+  <rect x="40" y="252" width="380" height="170" rx="14" fill="#21093B" stroke="#2E1154"/>
+  <rect x="450" y="252" width="380" height="170" rx="14" fill="#21093B" stroke="#2E1154"/>
+  <rect x="860" y="252" width="380" height="170" rx="14" fill="#21093B" stroke="#2E1154"/>
+  <rect x="40" y="450" width="1200" height="220" rx="14" fill="#170226" stroke="#2E1154"/>
+  <g font-family="ui-serif, Georgia" fill="#E9DAFF">
+    <text x="64" y="58" font-size="30">AGIJobManager · Sovereign Ops Console</text>
+    <text x="64" y="146" font-size="22">Dashboard / Jobs / Job Detail / Admin</text>
+  </g>
+</svg>

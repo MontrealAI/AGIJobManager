@@ -37,4 +37,4 @@ jobs:
       - run: npm run build
       - run: npm run docs:check
       - run: node scripts/check-contract-drift.mjs
-      - run: node scripts/check-no-binary.mjs
+      - run: node scripts/check-no-binaries.mjs

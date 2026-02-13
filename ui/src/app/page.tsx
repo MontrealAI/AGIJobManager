@@ -5,7 +5,7 @@ import { usePlatformSummary } from '@/lib/web3/queries';
 import { isDemoMode, useDemoScenario } from '@/lib/demo';
 
 export default function Page() {
-  const scenario = useDemoScenario();
+  const { scenario } = useDemoScenario();
   const { data, isError, refetch } = usePlatformSummary(scenario);
   const degraded = isDemoMode ? scenario.degradedRpc : isError;
 

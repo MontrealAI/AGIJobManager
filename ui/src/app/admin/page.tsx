@@ -9,7 +9,7 @@ const confirms = ['PAUSE', 'SETTLEMENT', 'LOCK', 'WITHDRAW'] as const;
 
 export default function Admin() {
   const { address } = useAccount();
-  const scenario = useDemoScenario();
+  const { scenario } = useDemoScenario();
   const { data } = usePlatformSummary(scenario);
   const [typed, setTyped] = useState('');
   const owner = data?.owner?.toLowerCase();
