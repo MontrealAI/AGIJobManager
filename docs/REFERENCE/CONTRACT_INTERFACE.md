@@ -1,5 +1,6 @@
 # AGIJobManager Interface Reference (Generated)
 
+- Generated at (deterministic source fingerprint): `7abbc1716605`.
 - Source snapshot fingerprint: `7abbc1716605`.
 - Source: `contracts/AGIJobManager.sol`.
 
@@ -179,3 +180,7 @@
 
 - ENS ownership checks and ENS Job Pages hooks are integration conveniences, not safety preconditions for escrow accounting.
 - Settlement safety is enforced by AGI token balances, locked accounting buckets, and state transition guards.
+
+## Source files used
+
+- `contracts/AGIJobManager.sol`

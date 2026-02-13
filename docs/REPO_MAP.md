@@ -1,5 +1,6 @@
 # Repository Map (Generated)
 
+- Generated at (deterministic source fingerprint): `e278b3bcd3fe`.
 - Source snapshot fingerprint: `e278b3bcd3fe`.
 
 ## Curated high-signal map
@@ -20,32 +21,34 @@
 | `.github/workflows/docs.yml` | Docs and no-binaries policy workflow | Documentation freshness gate |
 | `docs/` | Institutional documentation and generated references | Read docs/README.md first |
 
-## Top-level inventory
+## Top-level directories
 
-| Entry | Kind |
+| Directory | Purpose signal |
 | --- | --- |
-| `.env.example` | file |
-| `.solhint.json` | file |
-| `CODE_OF_CONDUCT.md` | file |
-| `contracts` | dir |
-| `CONTRIBUTING.md` | file |
-| `docs` | dir |
-| `forge-test` | dir |
-| `foundry.toml` | file |
-| `integrations` | dir |
-| `lib` | dir |
-| `LICENSE` | file |
-| `MAINNET_DEPLOYMENT_CHECKLIST.md` | file |
-| `migrations` | dir |
-| `package-lock.json` | file |
-| `package.json` | file |
-| `presentations` | dir |
-| `README.md` | file |
-| `scripts` | dir |
-| `SECURITY_TESTING.md` | file |
-| `SECURITY.md` | file |
-| `slither.config.json` | file |
-| `test` | dir |
-| `truffle-config.js` | file |
-| `ui` | dir |
-| `ui-tests` | dir |
+| `contracts/` | Project-scoped directory discovered at repository root |
+| `docs/` | Project-scoped directory discovered at repository root |
+| `forge-test/` | Project-scoped directory discovered at repository root |
+| `integrations/` | Project-scoped directory discovered at repository root |
+| `lib/` | Project-scoped directory discovered at repository root |
+| `migrations/` | Project-scoped directory discovered at repository root |
+| `presentations/` | Project-scoped directory discovered at repository root |
+| `scripts/` | Project-scoped directory discovered at repository root |
+| `test/` | Project-scoped directory discovered at repository root |
+| `ui/` | Project-scoped directory discovered at repository root |
+| `ui-tests/` | Project-scoped directory discovered at repository root |
+
+## Key entrypoints
+
+- [`README.md`](../README.md)
+- [`docs/README.md`](../docs/README.md)
+- [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
+- [`test/AGIJobManager.test.js`](../test/AGIJobManager.test.js)
+- [`migrations/2_deploy_contracts.js`](../migrations/2_deploy_contracts.js)
+- [`scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
+- [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
+- [`.github/workflows/docs.yml`](../.github/workflows/docs.yml)
+
+## Source files used
+
+- repository root directory listing
+- curated mapping declared in `scripts/docs/generate-repo-map.mjs`

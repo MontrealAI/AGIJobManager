@@ -5,7 +5,8 @@ const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..',
 const scripts = [
   'scripts/docs/generate-versions.mjs',
   'scripts/docs/generate-contract-interface.mjs',
-  'scripts/docs/generate-repo-map.mjs'
+  'scripts/docs/generate-repo-map.mjs',
+  'scripts/docs/generate-events-errors.mjs'
 ];
 
 for (const script of scripts) {
