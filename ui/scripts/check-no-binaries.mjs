@@ -3,7 +3,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const forbiddenExt = /\.(png|jpg|jpeg|gif|webp|pdf|ico|woff|woff2|ttf|otf|zip|tar|gz|7z)$/i;
-const forbiddenPaths = [/^ui\/node_modules\//, /^ui\/\.next\//, /^ui\/(dist|build)\//i];
+const forbiddenPaths = [
+  /^node_modules\//,
+  /^ui\/node_modules\//,
+  /^\.next\//,
+  /^ui\/\.next\//,
+  /^(dist|build)\//i,
+  /^ui\/(dist|build)\//i
+];
 const repoRoot = path.resolve(process.cwd(), '..');
 
 function run(cmd) {
@@ -42,7 +49,7 @@ function getDiffTarget() {
     if (mergeBase) return mergeBase;
   }
 
-  return run('git rev-parse HEAD~1') || 'HEAD';
+  return run('git merge-base HEAD origin/main') || run('git rev-parse HEAD~1') || 'HEAD';
 }
 
 const base = getDiffTarget();

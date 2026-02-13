@@ -392,3 +392,4 @@ npm run dev
 ![UI wireframe](./docs/ui/assets/ui-wireframe.svg)
 
 Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, strict security headers, and no-binaries enforcement (`npm run check:no-binaries`).
+
