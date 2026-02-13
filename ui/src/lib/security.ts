@@ -1,7 +1,7 @@
-const allowedSchemes = ['https://', 'http://', 'ipfs://', 'ens://']
-
+const blocked = ['javascript:', 'data:', 'file:', 'blob:'];
+const allowed = ['https:', 'http:', 'ipfs:', 'ens:'];
 export function isSafeUri(uri: string) {
-  const value = uri.trim().toLowerCase()
-  if (!value) return false
-  return allowedSchemes.some((scheme) => value.startsWith(scheme))
+  const lower = uri.trim().toLowerCase();
+  if (blocked.some((p) => lower.startsWith(p))) return false;
+  return allowed.some((p) => lower.startsWith(p));
 }

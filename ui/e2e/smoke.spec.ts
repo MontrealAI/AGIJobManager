@@ -1,17 +1,5 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '@playwright/test';
 
-test.setTimeout(90_000)
-
-test('dashboard renders read-only', async ({ page }) => {
-  await page.goto('/')
-  await page.waitForLoadState('domcontentloaded')
-  await expect(page.locator('body')).toContainText('AGIJobManager')
-})
-
-test('jobs and admin pages render', async ({ page }) => {
-  await page.goto('/jobs')
-  await page.waitForLoadState('domcontentloaded')
-  await expect(page.locator('body')).toContainText('Jobs')
-  await page.goto('/admin')
-  await expect(page.locator('body')).toContainText('Not authorized')
-})
+test('dashboard renders read-only', async ({ page }) => { await page.goto('/'); await expect(page.getByText('AGIJobManager')).toBeVisible(); });
+test('jobs list renders', async ({ page }) => { await page.goto('/jobs'); await expect(page.locator('table')).toBeVisible(); });
+test('admin unauthorized', async ({ page }) => { await page.goto('/admin'); await expect(page.getByText(/Not authorized/)).toBeVisible(); });

@@ -1,7 +1,10 @@
 {
-  "name": "agijobmanager-ui",
+  "name": "agi-job-manager-ui",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.11.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,44 +16,36 @@
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",
-    "@rainbow-me/rainbowkit": "2.1.4",
-    "@tanstack/react-query": "5.51.23",
+    "@rainbow-me/rainbowkit": "2.1.7",
+    "@radix-ui/react-label": "2.1.0",
+    "@radix-ui/react-slot": "1.1.0",
+    "@tanstack/react-query": "5.56.2",
     "class-variance-authority": "0.7.0",
     "clsx": "2.1.1",
-    "dompurify": "3.1.6",
-    "encoding": "0.1.13",
-    "lucide-react": "0.427.0",
-    "next": "14.2.5",
-    "pino-pretty": "11.2.2",
-    "postcss": "8.4.41",
+    "lucide-react": "0.445.0",
+    "next": "14.2.15",
+    "next-themes": "0.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-hook-form": "7.52.1",
-    "tailwind-merge": "2.4.0",
-    "tailwindcss": "3.4.9",
-    "viem": "2.17.0",
-    "wagmi": "2.12.7",
-    "zod": "3.23.8",
-    "next-themes": "0.3.0"
+    "react-hook-form": "7.53.0",
+    "tailwind-merge": "2.5.2",
+    "viem": "2.21.12",
+    "wagmi": "2.12.23",
+    "zod": "3.23.8"
   },
   "devDependencies": {
-    "@playwright/test": "1.46.0",
-    "@testing-library/jest-dom": "6.4.8",
-    "@testing-library/react": "16.0.0",
-    "@types/node": "20.14.12",
-    "@types/react": "18.3.3",
+    "@playwright/test": "1.47.2",
+    "@testing-library/react": "16.0.1",
+    "@types/node": "22.7.4",
+    "@types/react": "18.3.9",
     "@types/react-dom": "18.3.0",
-    "@vitest/coverage-v8": "2.0.5",
     "autoprefixer": "10.4.20",
-    "eslint": "8.57.0",
-    "eslint-config-next": "14.2.5",
-    "jsdom": "24.1.1",
-    "playwright": "1.46.0",
-    "prettier": "3.3.3",
-    "typescript": "5.5.4",
-    "vitest": "2.0.5"
-  },
-  "engines": {
-    "node": ">=20.11.0"
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.15",
+    "jsdom": "25.0.1",
+    "postcss": "8.4.47",
+    "tailwindcss": "3.4.13",
+    "typescript": "5.6.2",
+    "vitest": "2.1.1"
   }
 }

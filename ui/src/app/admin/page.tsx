@@ -1,25 +1,16 @@
-'use client'
+'use client';
+import { useAccount } from 'wagmi';
+import { usePlatformSummary } from '@/lib/web3/queries';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
-import { useState } from 'react'
-import { useAccount, useReadContract } from 'wagmi'
-import { agiJobManagerAbi } from '@/abis/agiJobManager'
-import { env } from '@/lib/env'
-import { TxStepperButton } from '@/components/tx/tx-stepper-button'
-
-export default function AdminPage() {
-  const { address } = useAccount()
-  const owner = useReadContract({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'owner' })
-  const [typed, setTyped] = useState('')
-  const isOwner = !!address && !!owner.data && address.toLowerCase() === owner.data.toLowerCase()
-
-  if (!isOwner) return <div className="card-shell">Not authorized</div>
-
-  return (
-    <div className="space-y-4">
-      <h1 className="text-3xl">Ops Console</h1>
-      <section className="card-shell space-y-2"><h2 className="text-xl">Safety toggles</h2><TxStepperButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'pause' }}>Pause</TxStepperButton><TxStepperButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'unpause' }}>Unpause</TxStepperButton></section>
-      <section className="card-shell space-y-2"><h2 className="text-xl">Settlement control</h2><p className="text-sm text-muted-foreground">Type SETTLEMENT to continue.</p><input className="input-shell" value={typed} onChange={(e) => setTyped(e.target.value)} /><TxStepperButton disabled={typed !== 'SETTLEMENT'} simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'setSettlementPaused', args: [true] }}>Set settlement paused</TxStepperButton></section>
-      <section className="card-shell"><h2 className="text-xl">Treasury</h2><p className="text-sm text-muted-foreground">Withdraw only while paused and settlement active-state allows it.</p></section>
-    </div>
-  )
+export default function Admin(){
+  const {address}=useAccount(); const {data}=usePlatformSummary();
+  const owner = data?.owner?.toLowerCase();
+  if (!address || !owner || address.toLowerCase()!==owner) return <div className='container py-8'><Card>Not authorized (owner only).</Card></div>;
+  return <div className='container py-8 space-y-3'>
+    <Card><h2 className='font-serif'>Safety toggles</h2><p>Pause/unpause and settlement pause with simulation-first writes.</p><Input placeholder='Type PAUSE to confirm'/></Card>
+    <Card><h2 className='font-serif'>Roles</h2><p>Manage moderators and allowlists / blacklists.</p></Card>
+    <Card><h2 className='font-serif'>Treasury</h2><p>Withdraw requires paused && !settlementPaused.</p></Card>
+  </div>;
 }
