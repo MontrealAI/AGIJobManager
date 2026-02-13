@@ -2,10 +2,11 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { usePlatformSummary } from '@/lib/web3/queries';
-import { isDemoMode, useDemoScenario } from '@/lib/demo';
+import { isDemoMode, useDemoRoleFlags, useDemoScenario } from '@/lib/demo';
 
 export default function Page() {
   const scenario = useDemoScenario();
+  const { actor } = useDemoRoleFlags();
   const { data, isError, refetch } = usePlatformSummary(scenario);
   const degraded = isDemoMode ? scenario.degradedRpc : isError;
 
@@ -15,7 +16,7 @@ export default function Page() {
         <h1 className="text-5xl font-serif">AGIJobManager · Sovereign Ops Console</h1>
         <p className="text-muted-foreground mt-2">Institutional dApp for escrow lifecycle, dispute governance, and safety-first operations.</p>
       </section>
-      {isDemoMode && <Card>Demo mode enabled: writes disabled.</Card>}
+      {isDemoMode && <Card>Demo mode enabled: writes disabled. Active demo actor: <strong>{actor}</strong>.</Card>}
       {degraded && <Card className="border-destructive">Degraded RPC. <button onClick={() => refetch()}>Retry</button></Card>}
       {data?.paused && <Card>Protocol paused.</Card>}
       {data?.settlementPaused && <Card>Settlement paused.</Card>}

@@ -365,3 +365,28 @@ npm ci
 NEXT_PUBLIC_DEMO_MODE=1 npm run dev
 npm run build
 ```
+
+## UI / Sovereign Ops Console
+
+A standalone institutional Next.js UI lives in [`ui/`](./ui) with deterministic demo fixtures, read-only-first navigation, and simulation-first transaction safety.
+
+### Quick start
+```bash
+cd ui
+npm ci
+npm run dev
+```
+
+### Documentation
+- [docs/ui/README.md](./docs/ui/README.md)
+- [Architecture](./docs/ui/ARCHITECTURE.md)
+- [Job lifecycle](./docs/ui/JOB_LIFECYCLE.md)
+- [Ops runbook](./docs/ui/OPS_RUNBOOK.md)
+- [Security model](./docs/ui/SECURITY_MODEL.md)
+- [Testing](./docs/ui/TESTING.md)
+
+### Text-only graphics
+![Sovereign palette](./docs/ui/assets/palette.svg)
+![UI wireframe](./docs/ui/assets/ui-wireframe.svg)
+
+Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, and strict security headers.

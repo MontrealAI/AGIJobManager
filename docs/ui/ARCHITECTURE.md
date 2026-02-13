@@ -6,20 +6,32 @@ flowchart TD
   B --> C[/jobs/:jobId/]
   A --> D[/admin/]
   A --> E[/design/]
-  A --> F[/demo/]
+  subgraph Clients
+    A
+    B
+    C
+    D
+    E
+  end
+  Clients --> Q[React Query cache]
+  Clients --> W[wagmi + viem]
+  W --> R[(RPC)]
+  W --> X[(Wallet)]
 ```
 
 ```mermaid
 sequenceDiagram
   participant U as User
-  participant UI as UI
-  participant RPC as RPC
-  U->>UI: Click action
-  UI->>UI: Preflight checks (role/state/chain/balance)
+  participant UI as App Router UI
+  participant RQ as React Query
+  participant RPC as JSON-RPC
+  U->>UI: Trigger write action
+  UI->>UI: Preflight (network/role/state/balance)
   UI->>RPC: simulateContract()
-  RPC-->>UI: success/revert + custom error
+  RPC-->>UI: ok or custom error
   UI->>U: Awaiting signature
   UI->>RPC: writeContract()
-  RPC-->>UI: tx hash + receipt
+  RPC-->>RQ: tx hash + receipt
+  RQ-->>UI: refresh state
   UI->>U: Confirmed/Failed + explorer links
 ```

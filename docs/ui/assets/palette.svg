@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="360" viewBox="0 0 980 360">
+  <rect width="980" height="360" fill="#14001F"/>
+  <g font-family="ui-sans-serif, system-ui" font-size="14" fill="#E7E7EA">
+    <text x="24" y="34">ASI Superintelligence Sovereign Purple Palette</text>
+  </g>
+  <g>
+    <rect x="24" y="56" width="140" height="84" fill="#14001F"/><text x="24" y="154" fill="#E7E7EA" font-size="12">ASI Deep #14001F</text>
+    <rect x="184" y="56" width="140" height="84" fill="#1B0B2A"/><text x="184" y="154" fill="#E7E7EA" font-size="12">Sovereign Ink #1B0B2A</text>
+    <rect x="344" y="56" width="140" height="84" fill="#4B1D86"/><text x="344" y="154" fill="#E7E7EA" font-size="12">Imperial Purple #4B1D86</text>
+    <rect x="504" y="56" width="140" height="84" fill="#7A3FF2"/><text x="504" y="154" fill="#E7E7EA" font-size="12">Amethyst #7A3FF2</text>
+    <rect x="664" y="56" width="140" height="84" fill="#E9DAFF"/><text x="664" y="154" fill="#E7E7EA" font-size="12">Orchid Mist #E9DAFF</text>
+    <rect x="824" y="56" width="140" height="84" fill="#A7A7B6"/><text x="824" y="154" fill="#E7E7EA" font-size="12">Slate #A7A7B6</text>
+
+    <rect x="24" y="196" width="140" height="84" fill="#170226"/><text x="24" y="294" fill="#E7E7EA" font-size="12">Night Violet #170226</text>
+    <rect x="184" y="196" width="140" height="84" fill="#21093B"/><text x="184" y="294" fill="#E7E7EA" font-size="12">Deep Panel #21093B</text>
+    <rect x="344" y="196" width="140" height="84" fill="#2E1154"/><text x="344" y="294" fill="#E7E7EA" font-size="12">Panel Border #2E1154</text>
+    <rect x="504" y="196" width="140" height="84" fill="#1FAD7A"/><text x="504" y="294" fill="#E7E7EA" font-size="12">Success #1FAD7A</text>
+    <rect x="664" y="196" width="140" height="84" fill="#D4A017"/><text x="664" y="294" fill="#E7E7EA" font-size="12">Warning #D4A017</text>
+    <rect x="824" y="196" width="140" height="84" fill="#E24A5A"/><text x="824" y="294" fill="#E7E7EA" font-size="12">Danger #E24A5A</text>
+  </g>
+</svg>

@@ -16,9 +16,9 @@
     "test:e2e": "playwright test e2e/demo.spec.ts",
     "test:a11y": "playwright test e2e/a11y.spec.ts",
     "test:headers": "playwright test e2e/headers.spec.ts",
-    "docs:check": "node scripts/docs-check.mjs",
-    "docs:graphics": "node scripts/generate-graphics.mjs",
-    "docs:versions": "node scripts/generate-versions.mjs"
+    "docs:check": "node scripts/docs-check.mjs && node scripts/check-no-binaries.mjs",
+    "docs:versions": "node scripts/generate-versions.mjs",
+    "check:no-binaries": "node scripts/check-no-binaries.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",

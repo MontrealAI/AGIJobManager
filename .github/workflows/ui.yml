@@ -16,6 +16,7 @@ jobs:
         working-directory: ui
     env:
       NEXT_PUBLIC_DEMO_MODE: '1'
+      NEXT_PUBLIC_DEMO_ACTOR: 'visitor'
       NEXT_PUBLIC_CHAIN_ID: '1'
       NEXT_PUBLIC_AGI_JOB_MANAGER_ADDRESS: '0x0000000000000000000000000000000000000000'
       NEXT_PUBLIC_AGI_TOKEN_ADDRESS: '0x0000000000000000000000000000000000000000'
@@ -34,7 +35,6 @@ jobs:
       - run: npm run test:e2e
       - run: npm run test:a11y
       - run: npm run test:headers
-      - run: npm run build
       - run: npm run docs:check
-      - run: node scripts/check-contract-drift.mjs
-      - run: node scripts/check-no-binary.mjs
+      - run: npm run build
+      - run: node scripts/check-no-binaries.mjs

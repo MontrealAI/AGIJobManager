@@ -1,19 +1,24 @@
 # Design System
 
-## Typography
+## Palette + layout assets
+- ![Palette](./assets/palette.svg)
+- ![Wireframe](./assets/ui-wireframe.svg)
 
-| Token | Usage |
+## Token table
+| Token | Role |
 |---|---|
-| ui-serif | Hero and section headings |
-| ui-sans | Body and controls |
+| `--background` | Main canvas |
+| `--card` | Elevated panels |
+| `--primary` | Sovereign action color |
+| `--accent` | Focus / interactive highlight |
+| `--border` | Institutional boundaries |
+| `--muted-foreground` | Secondary text |
 
-## Color tokens
-
-| Token | Light | Dark |
-|---|---|---|
-| ASI Deep | #14001F | #14001F |
-| Imperial Purple | #4B1D86 | #4B1D86 |
-| Amethyst | #7A3FF2 | #7A3FF2 |
-| Orchid Mist | #E9DAFF | #E9DAFF |
-
-Component rules: 14px card radius, 10px inputs, 18px hero; visible focus rings; reduced motion respected.
+## Typography scale
+| Level | Size/Line-height |
+|---|---|
+| H1 | 40/44 |
+| H2 | 32/36 |
+| H3 | 24/30 |
+| Body | 16/24 |
+| Small | 13/20 |

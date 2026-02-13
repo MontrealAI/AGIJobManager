@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="740" viewBox="0 0 1180 740">
+  <rect width="1180" height="740" fill="#14001F"/>
+  <text x="32" y="40" fill="#E7E7EA" font-family="ui-serif,Georgia" font-size="28">AGIJobManager Sovereign Ops Wireframe</text>
+
+  <rect x="32" y="72" width="1116" height="52" rx="14" fill="#1B0B2A" stroke="#2E1154"/>
+  <text x="56" y="104" fill="#E9DAFF" font-size="18">Header: Dashboard · Jobs · Admin · Theme</text>
+
+  <rect x="32" y="148" width="1116" height="120" rx="18" fill="#21093B" stroke="#2E1154"/>
+  <text x="56" y="198" fill="#E9DAFF" font-size="30" font-family="ui-serif,Georgia">Hero: Sovereign Ops Console</text>
+  <text x="56" y="228" fill="#A7A7B6" font-size="16">Read-only first · simulation-first writes · deterministic demo</text>
+
+  <rect x="32" y="292" width="358" height="130" rx="14" fill="#1B0B2A" stroke="#2E1154"/>
+  <rect x="411" y="292" width="358" height="130" rx="14" fill="#1B0B2A" stroke="#2E1154"/>
+  <rect x="790" y="292" width="358" height="130" rx="14" fill="#1B0B2A" stroke="#2E1154"/>
+  <text x="56" y="332" fill="#E9DAFF" font-size="20">Create Job</text>
+  <text x="435" y="332" fill="#E9DAFF" font-size="20">Browse Jobs</text>
+  <text x="814" y="332" fill="#E9DAFF" font-size="20">Platform Config</text>
+
+  <rect x="32" y="448" width="1116" height="118" rx="14" fill="#1B0B2A" stroke="#2E1154"/>
+  <text x="56" y="486" fill="#E9DAFF" font-size="20">Jobs Ledger Table</text>
+  <text x="56" y="518" fill="#A7A7B6" font-size="14">Columns: ID · Status · Payout · Employer · Agent · Next deadline</text>
+
+  <rect x="32" y="590" width="1116" height="100" rx="14" fill="#1B0B2A" stroke="#2E1154"/>
+  <text x="56" y="628" fill="#E9DAFF" font-size="20">Admin Console / Typed confirmations / Safety controls</text>
+</svg>
