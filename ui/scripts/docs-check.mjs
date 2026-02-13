@@ -5,7 +5,20 @@ import { execSync } from 'node:child_process';
 const repoRoot = path.resolve(process.cwd(), '..');
 const docsRoot = path.join(repoRoot, 'docs', 'ui');
 
-const requiredDocs = ['README.md', 'OVERVIEW.md', 'ARCHITECTURE.md', 'JOB_LIFECYCLE.md', 'OPS_RUNBOOK.md', 'SECURITY_MODEL.md', 'DESIGN_SYSTEM.md', 'DEMO.md', 'TESTING.md', 'VERSIONS.md'];
+const requiredDocs = [
+  'README.md',
+  'OVERVIEW.md',
+  'ARCHITECTURE.md',
+  'JOB_LIFECYCLE.md',
+  'OPS_RUNBOOK.md',
+  'SECURITY_MODEL.md',
+  'DESIGN_SYSTEM.md',
+  'DEMO.md',
+  'TESTING.md',
+  'VERSIONS.md',
+  'CONTRACT_INTERFACE.md'
+];
+
 for (const file of requiredDocs) {
   if (!fs.existsSync(path.join(docsRoot, file))) {
     throw new Error(`Missing docs/ui/${file}`);
@@ -36,19 +49,33 @@ for (const asset of ['palette.svg', 'ui-wireframe.svg']) {
   }
 }
 
-const versionsPath = path.join(docsRoot, 'VERSIONS.md');
-const before = fs.readFileSync(versionsPath, 'utf8');
-execSync('node scripts/generate-versions.mjs', { cwd: process.cwd(), stdio: 'pipe' });
-const after = fs.readFileSync(versionsPath, 'utf8');
-
 const normalize = (text) => text.replace(/^\- Generated at: .*$/m, '- Generated at: <normalized>');
-if (normalize(before) !== normalize(after)) {
+
+const versionsPath = path.join(docsRoot, 'VERSIONS.md');
+const versionsBefore = fs.readFileSync(versionsPath, 'utf8');
+execSync('node scripts/generate-versions.mjs', { cwd: process.cwd(), stdio: 'pipe' });
+const versionsAfter = fs.readFileSync(versionsPath, 'utf8');
+if (normalize(versionsBefore) !== normalize(versionsAfter)) {
   throw new Error('docs/ui/VERSIONS.md is stale compared with ui/package.json. Run npm run docs:versions and commit the result.');
 }
 
 for (const pkg of ['next', 'wagmi', 'viem', 'vitest', '@playwright/test']) {
-  if (!after.includes(`| ${pkg} |`)) {
+  if (!versionsAfter.includes(`| ${pkg} |`)) {
     throw new Error(`VERSIONS.md missing ${pkg}`);
+  }
+}
+
+const contractPath = path.join(docsRoot, 'CONTRACT_INTERFACE.md');
+const contractBefore = fs.readFileSync(contractPath, 'utf8');
+execSync('node scripts/generate-contract-interface.mjs', { cwd: process.cwd(), stdio: 'pipe' });
+const contractAfter = fs.readFileSync(contractPath, 'utf8');
+if (normalize(contractBefore) !== normalize(contractAfter)) {
+  throw new Error('docs/ui/CONTRACT_INTERFACE.md is stale compared with ui/src/abis/agiJobManager.ts. Run npm run docs:contract and commit the result.');
+}
+
+for (const section of ['## Functions used by UI', '## Events used by UI', '## Custom errors decoded by UI']) {
+  if (!contractAfter.includes(section)) {
+    throw new Error(`CONTRACT_INTERFACE.md missing section: ${section}`);
   }
 }
 

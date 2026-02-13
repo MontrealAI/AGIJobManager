@@ -37,5 +37,7 @@ export const agiJobManagerAbi = [
   {"type":"event","name":"JobCancelled","inputs":[{"indexed":true,"type":"uint256","name":"jobId"}]},
   {"type":"event","name":"JobExpired","inputs":[{"indexed":true,"type":"uint256","name":"jobId"},{"indexed":true,"type":"address","name":"employer"},{"indexed":false,"type":"address","name":"agent"},{"indexed":true,"type":"uint256","name":"payout"}]},
   {"type":"event","name":"NFTIssued","inputs":[{"indexed":true,"type":"uint256","name":"tokenId"},{"indexed":true,"type":"address","name":"employer"},{"indexed":false,"type":"string","name":"tokenURI"}]},
+  {"type":"event","name":"PlatformRevenueAccrued","inputs":[{"indexed":true,"type":"uint256","name":"jobId"},{"indexed":false,"type":"uint256","name":"platformFee"}]},
+  {"type":"event","name":"EnsHookAttempted","inputs":[{"indexed":true,"type":"uint256","name":"jobId"},{"indexed":false,"type":"bool","name":"success"},{"indexed":false,"type":"string","name":"message"}]},
   {"type":"error","name":"InvalidParameters","inputs":[]},{"type":"error","name":"InvalidState","inputs":[]},{"type":"error","name":"NotAuthorized","inputs":[]},{"type":"error","name":"SettlementPaused","inputs":[]},{"type":"error","name":"JobNotFound","inputs":[]},{"type":"error","name":"Blacklisted","inputs":[]},{"type":"error","name":"NotModerator","inputs":[]}
 ] as const;

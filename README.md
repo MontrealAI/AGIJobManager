@@ -384,9 +384,11 @@ npm run dev
 - [Ops runbook](./docs/ui/OPS_RUNBOOK.md)
 - [Security model](./docs/ui/SECURITY_MODEL.md)
 - [Testing](./docs/ui/TESTING.md)
+- [Contract interface](./docs/ui/CONTRACT_INTERFACE.md)
+- [Pinned versions](./docs/ui/VERSIONS.md)
 
 ### Text-only graphics
 ![Sovereign palette](./docs/ui/assets/palette.svg)
 ![UI wireframe](./docs/ui/assets/ui-wireframe.svg)
 
-Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, and strict security headers.
+Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, strict security headers, and no-binaries enforcement (`npm run check:no-binaries`).
