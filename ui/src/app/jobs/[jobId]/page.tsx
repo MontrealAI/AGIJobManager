@@ -1,47 +1,78 @@
-'use client'
-import { useParams } from 'next/navigation'
-import { useAccount, usePublicClient, useReadContract, useReadContracts } from 'wagmi'
-import { agiJobManagerAbi } from '@/abis/agiJobManager'
-import { env } from '@/lib/env'
-import { computeDeadlines, deriveJobStatus } from '@/lib/job'
-import { TxButton } from '@/components/tx-button'
-import { useMemo } from 'react'
+'use client';
+import { useMemo } from 'react';
+import { useParams } from 'next/navigation';
+import { useReadContracts } from 'wagmi';
+import { agiJobManagerAbi } from '@/abis/agiJobManager';
+import { env } from '@/lib/env';
+import { Card, Badge } from '@/components/ui';
+import { computeDeadlines, deriveJobStatus } from '@/lib/status';
+import { safeUri } from '@/lib/utils';
 
 export default function JobDetailPage() {
-  const { jobId } = useParams<{ jobId: string }>()
-  const id = BigInt(jobId)
-  const { address } = useAccount()
-  const publicClient = usePublicClient()
-  const bundle = useReadContracts({ contracts: [
-    { abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'getJobCore', args: [id] },
-    { abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'getJobValidation', args: [id] },
-    { abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'getJobSpecURI', args: [id] },
-    { abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'getJobCompletionURI', args: [id] },
-    { abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'completionReviewPeriod' },
-    { abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'disputeReviewPeriod' },
-    { abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'challengePeriodAfterApproval' }
-  ] })
-  const logs = useMemo(async () => {
-    if (!publicClient) return []
-    return publicClient.getLogs({ address: env.agiJobManagerAddress as `0x${string}`, fromBlock: 'earliest', toBlock: 'latest' })
-  }, [publicClient])
+  const params = useParams<{ jobId: string }>();
+  const jobId = BigInt(params.jobId ?? '0');
+  const { data } = useReadContracts({
+    contracts: [
+      { abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'getJobCore', args: [jobId] as const },
+      { abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'getJobValidation', args: [jobId] as const },
+      { abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'getJobSpecURI', args: [jobId] as const },
+      { abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'getJobCompletionURI', args: [jobId] as const }
+    ],
+    allowFailure: true
+  });
 
-  const core = bundle.data?.[0]?.result as any
-  const val = bundle.data?.[1]?.result as any
-  if (!core) return <div>Loading...</div>
-  const deadlines = computeDeadlines(core, { completionReview: bundle.data?.[4]?.result as bigint, disputeReview: bundle.data?.[5]?.result as bigint, challengeAfterApproval: bundle.data?.[6]?.result as bigint })
-  const status = deriveJobStatus(core, val, Math.floor(Date.now() / 1000))
+  const core = data?.[0]?.status === 'success' ? (data[0].result as any) : undefined;
+  const status = core
+    ? deriveJobStatus(
+        {
+          assignedAgent: core.assignedAgent,
+          settled: core.settled,
+          disputedAt: BigInt(core.disputedAt),
+          completionRequestedAt: BigInt(core.completionRequestedAt),
+          assignedAt: BigInt(core.assignedAt),
+          deadline: BigInt(core.assignedAt) + BigInt(core.duration)
+        },
+        BigInt(Math.floor(Date.now() / 1000))
+      )
+    : undefined;
 
-  return <div className="space-y-4"><h1 className="text-xl font-semibold">Job #{jobId}</h1>
-    <div className="card space-y-2"><p>Status: {status}</p><p>Spec URI: {String(bundle.data?.[2]?.result || '')}</p><p>Completion URI: {String(bundle.data?.[3]?.result || '')}</p>
-    <p>Expiry: {new Date(Number(deadlines.expiry) * 1000).toUTCString()}</p>
-    <p>Completion review deadline: {new Date(Number(deadlines.completionReviewDeadline) * 1000).toUTCString()}</p>
-    </div>
-    <div className="grid md:grid-cols-2 gap-4">
-      {address === core.employer && <div className="card"><h2>Employer actions</h2><TxButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'cancelJob', args: [id] }}>Cancel job</TxButton></div>}
-      {address && <div className="card"><h2>Agent actions</h2><TxButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'applyForJob', args: [id, []] }}>Apply for job</TxButton></div>}
-      <div className="card"><h2>Timeline</h2><p className="text-sm text-slate-400">On-chain activity feed uses event logs; if completion exists without event, shown as settled (inferred).</p><p className="text-xs">{JSON.stringify(logs).slice(0, 120)}...</p></div>
-      {env.ensJobPagesAddress && <div className="card"><h2>ENS job page</h2><p>job-{jobId}</p><p>ens://job-{jobId}</p></div>}
-    </div>
-  </div>
+  const deadlines = useMemo(() => {
+    if (!core) return null;
+    return computeDeadlines({
+      assignedAt: BigInt(core.assignedAt),
+      duration: BigInt(core.duration),
+      completionRequestedAt: BigInt(core.completionRequestedAt),
+      completionReviewPeriod: 0n,
+      disputedAt: BigInt(core.disputedAt),
+      disputeReviewPeriod: 0n,
+      validatorApprovedAt: BigInt(core.validatorApprovedAt),
+      challengePeriodAfterApproval: 0n
+    });
+  }, [core]);
+
+  const specUri = data?.[2]?.status === 'success' ? data[2].result : '';
+  const completionUri = data?.[3]?.status === 'success' ? data[3].result : '';
+
+  return (
+    <main className="space-y-4">
+      <h1 className="font-serif text-3xl">Job #{jobId.toString()}</h1>
+      <Card>
+        <p>Status: <Badge>{status ?? 'unknown'}</Badge></p>
+        <p className="text-sm">Employer: {core?.employer ?? '—'}</p>
+        <p className="text-sm">Agent: {core?.assignedAgent ?? '—'}</p>
+      </Card>
+      <Card>
+        <h2 className="mb-2 text-xl">Deadlines</h2>
+        <p>Assignment end: {deadlines?.assignmentEndsAt.toString() ?? '—'}</p>
+        <p>Review end: {deadlines?.completionReviewEndsAt.toString() ?? '—'}</p>
+      </Card>
+      <Card>
+        <h2 className="mb-2 text-xl">URIs</h2>
+        <p>Spec: {specUri || '—'}</p>
+        {safeUri(specUri) && <a className="text-accent underline" target="_blank" href={specUri} rel="noreferrer">Open safe link</a>}
+        <p className="mt-2">Completion: {completionUri || '—'}</p>
+      </Card>
+      {env.ensJobPagesAddress && <Card><h2 className="text-xl">ENS job page</h2><p>Contract: {env.ensJobPagesAddress}</p><p>URI: ens://job-{jobId.toString()}</p></Card>}
+    </main>
+  );
 }

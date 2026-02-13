@@ -1,8 +1,21 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '@playwright/test';
 
-for (const path of ['/', '/jobs', '/admin']) {
-  test(`route ${path} responds`, async ({ page }) => {
-    const res = await page.goto(`http://127.0.0.1:3000${path}`)
-    expect(res?.ok()).toBeTruthy()
-  })
-}
+test('dashboard renders read-only', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('ASI Sovereign Operations Console')).toBeVisible();
+});
+
+test('jobs list renders', async ({ page }) => {
+  await page.goto('/jobs');
+  await expect(page.getByText('Jobs')).toBeVisible();
+});
+
+test('job detail renders', async ({ page }) => {
+  await page.goto('/jobs/1');
+  await expect(page.getByText('Job #1')).toBeVisible();
+});
+
+test('admin unauthorized for non-owner', async ({ page }) => {
+  await page.goto('/admin');
+  await expect(page.getByText('Not authorized')).toBeVisible();
+});
