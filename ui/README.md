@@ -20,7 +20,8 @@ npm run test:e2e
 npm run test:a11y
 npm run test:headers
 npm run build
+npm run docs:versions
+npm run docs:contract
 npm run docs:check
-node scripts/check-contract-drift.mjs
-node scripts/check-no-binary.mjs
+npm run check:no-binaries
 ```
