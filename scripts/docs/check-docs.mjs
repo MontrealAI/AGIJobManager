@@ -39,11 +39,21 @@ for (const svgFile of ['docs/assets/palette.svg', 'docs/assets/architecture-wire
   if (!trimmed.startsWith('<svg') || !trimmed.includes('</svg>')) fail(`Invalid SVG XML envelope: ${svgFile}`);
 }
 
-const generators = ['scripts/docs/generate-versions.mjs','scripts/docs/generate-contract-interface.mjs','scripts/docs/generate-repo-map.mjs'];
+const generators = [
+  'scripts/docs/generate-versions.mjs',
+  'scripts/docs/generate-contract-interface.mjs',
+  'scripts/docs/generate-repo-map.mjs',
+  'scripts/docs/generate-events-errors.mjs'
+];
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'agijob-docs-'));
 try {
   for (const g of generators) execFileSync('node', [g, `--out-dir=${tmp}`], { cwd: root, stdio: 'ignore' });
-  for (const genFile of ['docs/REFERENCE/VERSIONS.md','docs/REFERENCE/CONTRACT_INTERFACE.md','docs/REPO_MAP.md']) {
+  for (const genFile of [
+    'docs/REFERENCE/VERSIONS.md',
+    'docs/REFERENCE/CONTRACT_INTERFACE.md',
+    'docs/REPO_MAP.md',
+    'docs/REFERENCE/EVENTS_AND_ERRORS.md'
+  ]) {
     const current = fs.readFileSync(path.join(root, genFile), 'utf8');
     const expected = fs.readFileSync(path.join(tmp, genFile), 'utf8');
     if (current !== expected) fail(`Generated doc is stale: ${genFile}. Run npm run docs:gen`);
@@ -64,6 +74,7 @@ const collect = (dir) => {
 collect(path.join(root, 'docs'));
 
 const linkRegex = /\[[^\]]+\]\(([^)]+)\)/g;
+const languageLintScope = new Set(requiredFiles.filter((f) => f.endsWith('.md')));
 for (const md of mdFiles) {
   const text = fs.readFileSync(md, 'utf8');
   for (const match of text.matchAll(linkRegex)) {
@@ -73,6 +84,44 @@ for (const md of mdFiles) {
     const target = path.resolve(path.dirname(md), clean);
     if (!fs.existsSync(target)) fail(`Broken relative link in ${path.relative(root, md)} -> ${raw}`);
   }
+
+  const relativeMd = path.relative(root, md).replace(/\\/g, '/');
+  if (languageLintScope.has(relativeMd)) {
+    let inFence = false;
+    for (const line of text.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('```')) continue;
+      if (inFence) {
+        inFence = false;
+        continue;
+      }
+      const info = trimmed.slice(3).trim();
+      if (info.length === 0) {
+        fail(`Code fence missing language tag in ${relativeMd}`);
+      } else if (!/^[a-z0-9_+-]+$/i.test(info.split(/\s+/)[0])) {
+        fail(`Invalid code fence language tag in ${relativeMd}: ${info}`);
+      }
+      inFence = true;
+    }
+  }
+}
+
+const quintessential = fs.readFileSync(path.join(root, 'docs/QUINTESSENTIAL_USE_CASE.md'), 'utf8');
+for (const requiredHeading of [
+  '## A) Local walkthrough',
+  '## B) Testnet/Mainnet operator checklist',
+  '### Step table',
+  '### Happy path sequence',
+  '### Lifecycle state map',
+  '### Expected state checkpoints'
+]) {
+  if (!quintessential.includes(requiredHeading)) {
+    fail(`Missing required section in docs/QUINTESSENTIAL_USE_CASE.md: ${requiredHeading}`);
+  }
+}
+
+if (!/\|\s*Step\s*\|\s*Actor\s*\|\s*Function\/Command\s*\|\s*Preconditions\s*\|\s*Expected on-chain outcome\s*\|\s*Events emitted\s*\|\s*What to verify next\s*\|/m.test(quintessential)) {
+  fail('Quintessential use case is missing the required canonical step table columns');
 }
 
 if (process.exitCode) process.exit(process.exitCode);
