@@ -3,50 +3,53 @@
 @tailwind utilities;
 
 :root {
-  --background: 264 55% 96%;
-  --foreground: 273 44% 12%;
+  --background: 270 24% 97%;
+  --foreground: 281 46% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 273 44% 12%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 273 44% 12%;
-  --primary: 267 65% 32%;
-  --primary-foreground: 267 100% 96%;
-  --secondary: 268 48% 90%;
-  --secondary-foreground: 273 44% 12%;
-  --muted: 255 13% 93%;
-  --muted-foreground: 240 10% 45%;
-  --accent: 264 87% 60%;
-  --accent-foreground: 267 100% 96%;
+  --card-foreground: 281 46% 10%;
+  --primary: 265 64% 32%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 265 70% 92%;
+  --secondary-foreground: 281 46% 10%;
+  --muted: 240 9% 92%;
+  --muted-foreground: 240 8% 44%;
+  --accent: 262 87% 60%;
+  --accent-foreground: 0 0% 98%;
   --destructive: 353 72% 59%;
   --destructive-foreground: 0 0% 98%;
-  --border: 252 16% 82%;
-  --input: 252 16% 82%;
-  --ring: 264 87% 60%;
+  --border: 250 11% 82%;
+  --input: 250 11% 82%;
+  --ring: 262 87% 60%;
 }
 
 .dark {
   --background: 278 100% 6%;
-  --foreground: 0 0% 91%;
-  --card: 273 59% 11%;
-  --card-foreground: 0 0% 91%;
-  --popover: 273 59% 11%;
-  --popover-foreground: 0 0% 91%;
-  --primary: 267 65% 32%;
-  --primary-foreground: 0 0% 91%;
-  --secondary: 264 40% 19%;
-  --secondary-foreground: 0 0% 91%;
-  --muted: 264 24% 21%;
+  --foreground: 260 27% 96%;
+  --card: 279 58% 12%;
+  --card-foreground: 260 27% 96%;
+  --primary: 265 64% 32%;
+  --primary-foreground: 260 27% 96%;
+  --secondary: 267 42% 19%;
+  --secondary-foreground: 260 27% 96%;
+  --muted: 263 24% 21%;
   --muted-foreground: 243 13% 68%;
-  --accent: 264 87% 60%;
+  --accent: 262 87% 60%;
   --accent-foreground: 0 0% 98%;
   --destructive: 353 72% 59%;
   --destructive-foreground: 0 0% 98%;
   --border: 269 32% 30%;
   --input: 269 32% 30%;
-  --ring: 264 87% 60%;
+  --ring: 262 87% 60%;
 }
 
-body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: 'tnum' 1; }
-.hero-aura { background: radial-gradient(circle at 20% 10%, rgba(122,63,242,.18), transparent 45%); }
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.font-serif { font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; }
+.hero-aura { background: radial-gradient(circle at 20% 8%, rgba(122,63,242,.18), transparent 45%); }
+
+.container { @apply mx-auto w-full max-w-[1240px] px-5; }
 
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important;} }

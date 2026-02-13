@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const base = path.resolve('../docs/ui');
+const required = ['OVERVIEW.md','ARCHITECTURE.md','JOB_LIFECYCLE.md','SECURITY_MODEL.md','DESIGN_SYSTEM.md','DEMO.md','TESTING.md','RUNBOOK.md','VERSIONS.md'];
+for (const file of required) if (!fs.existsSync(path.join(base,file))) throw new Error(`Missing ${file}`);
+const arch = fs.readFileSync(path.join(base,'ARCHITECTURE.md'),'utf8');
+if (!arch.includes('```mermaid')) throw new Error('ARCHITECTURE missing mermaid');
+const life = fs.readFileSync(path.join(base,'JOB_LIFECYCLE.md'),'utf8');
+if (!life.includes('stateDiagram-v2')) throw new Error('JOB_LIFECYCLE missing state diagram');
+const allDocs = required.map((f)=>fs.readFileSync(path.join(base,f),'utf8')).join('\n');
+if (allDocs.includes('data:image')) throw new Error('Forbidden data:image found');
+if (!fs.existsSync(path.join(base,'graphics/palette-plate.svg'))) throw new Error('missing graphics');

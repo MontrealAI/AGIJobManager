@@ -1,0 +1,33 @@
+name: ui
+on:
+  pull_request:
+    paths:
+      - 'ui/**'
+      - 'docs/ui/**'
+      - '.github/workflows/ui.yml'
+      - 'README.md'
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+      - run: npm run docs:generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run test:e2e
+      - run: npm run test:a11y
+      - run: npm run test:headers
+      - run: npm run build
+      - run: npm run docs:check
+      - run: node scripts/check-contract-drift.mjs
+      - run: node scripts/check-no-binary.mjs
