@@ -56,6 +56,15 @@ Start with the documentation index: [`docs/00_INDEX.md`](docs/00_INDEX.md).
 
 Documentation hub: [`docs/README.md`](docs/README.md).
 
+Institutional docs set (generated + curated) for contracts, operations, security, testing, deployment, and integrations:
+- [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
+- [`docs/CONTRACTS/AGIJobManager.md`](docs/CONTRACTS/AGIJobManager.md)
+- [`docs/OPERATIONS/RUNBOOK.md`](docs/OPERATIONS/RUNBOOK.md)
+- [`docs/SECURITY_MODEL.md`](docs/SECURITY_MODEL.md)
+- [`docs/REFERENCE/CONTRACT_INTERFACE.md`](docs/REFERENCE/CONTRACT_INTERFACE.md)
+
+Documentation graphics are text-only Mermaid/SVG assets. Freshness is enforced through deterministic generators (`npm run docs:gen`) and CI validation (`npm run docs:check`). Binary-file additions are blocked by policy and CI (`node scripts/check-no-binaries.mjs`).
+
 Core operator/integrator/auditor docs:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/PROTOCOL_FLOW.md`](docs/PROTOCOL_FLOW.md)
@@ -363,4 +372,3 @@ NEXT_PUBLIC_DEMO_MODE=1 npm run dev
 ![UI wireframe](./docs/ui/assets/ui-wireframe.svg)
 
 Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, strict security headers, and CI-enforced no-binaries checks (`npm run check:no-binaries`).
-
