@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AGIJobManager">
+  <rect width="128" height="128" rx="24" fill="#14001F"/>
+  <circle cx="64" cy="64" r="44" fill="#4B1D86" opacity="0.75"/>
+  <path d="M36 83 56 36h16l20 47h-13l-4-10H53l-4 10H36Zm21-21h14l-7-18-7 18Z" fill="#E9DAFF"/>
+</svg>

@@ -1,20 +1,23 @@
-import type { BaseError } from 'viem';
-
-const map: Record<string, string> = {
-  InvalidParameters: 'Invalid parameters',
-  InvalidState: 'Action not allowed in current job state',
-  NotAuthorized: 'Not authorized',
-  SettlementPaused: 'Settlement paused',
-  Blacklisted: 'Address is blacklisted',
-  JobNotFound: 'Job not found',
-  NotModerator: 'Only moderator allowed'
-};
-
-export function translateError(errorName?: string) {
-  return errorName ? `${errorName}: ${map[errorName] || 'Transaction reverted'}` : 'Unknown error';
+export function decodeKnownErrorName(message: string) {
+  const known = ['NotAuthorized', 'InvalidState', 'SettlementPaused', 'JobNotFound', 'Blacklisted'];
+  const name = known.find((k) => message.includes(k));
+  return name ?? 'UnknownError';
 }
 
-export function decodeError(error?: BaseError) {
-  const name = ((error as any)?.name as string) || 'Error';
-  return { name, human: map[name] || error?.shortMessage || 'Transaction reverted' };
+export function toUserFacingError(message: string) {
+  const decoded = decodeKnownErrorName(message);
+  if (decoded === 'NotAuthorized') return 'Not authorized for this action.';
+  if (decoded === 'InvalidState') return 'Action blocked by current job state.';
+  if (decoded === 'SettlementPaused') return 'Settlement is paused by governance.';
+  if (decoded === 'JobNotFound') return 'Job not found (deleted slot or invalid id).';
+  if (decoded === 'Blacklisted') return 'Address is blacklisted for this action.';
+  return 'Transaction failed during simulation.';
 }
+
+export function decodeError(error: unknown) {
+  const raw = String((error as { shortMessage?: string; message?: string } | undefined)?.shortMessage || (error as any)?.message || error || '');
+  const name = decodeKnownErrorName(raw);
+  return { name, human: toUserFacingError(raw) };
+}
+
+export const translateError = toUserFacingError;

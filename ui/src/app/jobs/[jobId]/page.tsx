@@ -1,19 +1,61 @@
 'use client';
-import { useParams } from 'next/navigation';
-import { Card } from '@/components/ui/card';
-import { useJob, usePlatformSummary } from '@/lib/web3/queries';
-import { computeDeadlines, deriveStatus } from '@/lib/jobStatus';
-import { fmtTime, fmtToken } from '@/lib/format';
-import { isAllowedUri } from '@/lib/web3/safeUri';
-import { Button } from '@/components/ui/button';
 
-export default function JobDetail(){
-  const params=useParams(); const jobId=BigInt(String(params.jobId));
-  const {data:j}=useJob(jobId); const {data:p}=usePlatformSummary();
-  if(!j||!p) return <div className='container py-8'>Loading...</div>;
-  const status=deriveStatus({assignedAgent:j.core[1],assignedAt:j.core[4],duration:j.core[3],completed:j.core[5],disputed:j.core[6],expired:j.core[7]},{completionRequested:j.val[0],completionRequestedAt:j.val[3],disputedAt:j.val[4]});
-  const d=computeDeadlines({assignedAgent:j.core[1],assignedAt:j.core[4],duration:j.core[3],completed:j.core[5],disputed:j.core[6],expired:j.core[7]},{completionRequested:j.val[0],completionRequestedAt:j.val[3],disputedAt:j.val[4]},{completionReviewPeriod:p.completionReviewPeriod,disputeReviewPeriod:p.disputeReviewPeriod});
-  return <div className='container py-8 space-y-4'><Card><h1 className='font-serif text-2xl'>Job #{String(jobId)} · {status.status}</h1><p>Payout {fmtToken(j.core[2])}</p><p>Expiry {fmtTime(d.expiryTime)}</p><p>Completion review end {fmtTime(d.completionReviewEnd)}</p><p>Dispute review end {fmtTime(d.disputeReviewEnd)}</p></Card>
-  <Card><h2 className='font-serif'>URIs (untrusted)</h2><p className='break-all text-xs'>{j.spec}</p><div className='flex gap-2'><Button variant='outline' onClick={()=>navigator.clipboard.writeText(j.spec)}>Copy</Button><a className={`text-sm ${isAllowedUri(j.spec)?'':'pointer-events-none opacity-50'}`} href={isAllowedUri(j.spec)?j.spec:undefined} target='_blank'>Open link</a></div></Card>
-  <Card><h2 className='font-serif'>Sovereign ledger timeline</h2><p className='text-sm text-muted-foreground'>Event timeline available in production via on-chain logs.</p></Card></div>;
+import { useMemo } from 'react';
+import { useParams, useSearchParams, notFound } from 'next/navigation';
+import { Card } from '@/components/ui/card';
+import { scenarioFromSearch, isDemoMode } from '@/lib/demo';
+import { deriveStatus, computeDeadlines, actionGates } from '@/lib/jobStatus';
+import { fmtTime, fmtToken } from '@/lib/format';
+import { isAllowedUri, toSafeHref } from '@/lib/web3/safeUri';
+
+function UriRow({ value }: { value: string }) {
+  const href = toSafeHref(value);
+  return (
+    <div>
+      <p className="break-all text-xs">{value || '—'}</p>
+      <div className="flex gap-2">
+        <button className="border border-border rounded-md px-2 py-1" onClick={() => navigator.clipboard.writeText(value)}>Copy</button>
+        <a aria-disabled={!href} className={!href ? 'opacity-50 pointer-events-none underline' : 'underline'} href={href ?? undefined} target="_blank" rel="noreferrer">Open link</a>
+      </div>
+    </div>
+  );
+}
+
+export default function JobDetail() {
+  const params = useParams<{ jobId: string }>();
+  const search = useSearchParams();
+  const scenario = useMemo(() => scenarioFromSearch(search.toString()), [search]);
+  const job = scenario.jobs[Number(params.jobId)];
+  if (!job) return notFound();
+
+  const status = deriveStatus({ ...job.core }, { completionRequested: job.validation.completionRequested, completionRequestedAt: job.validation.completionRequestedAt, disputedAt: job.validation.disputedAt });
+  const deadlines = computeDeadlines({ ...job.core }, { completionRequested: job.validation.completionRequested, completionRequestedAt: job.validation.completionRequestedAt, disputedAt: job.validation.disputedAt }, { completionReviewPeriod: scenario.completionReviewPeriod, disputeReviewPeriod: scenario.disputeReviewPeriod });
+  const gates = actionGates(status.status);
+
+  return (
+    <div className="container py-8 space-y-4">
+      {isDemoMode && <Card>Demo mode: writes disabled.</Card>}
+      <Card>
+        <h1 className="font-serif text-3xl">Job #{params.jobId} · {status.status}</h1>
+        <p>Payout {fmtToken(job.core.payout)}</p>
+        <p>Assignment deadline {fmtTime(deadlines.expiryTime)}</p>
+        <p>Completion review end {fmtTime(deadlines.completionReviewEnd)}</p>
+        <p>Dispute review end {fmtTime(deadlines.disputeReviewEnd)}</p>
+      </Card>
+      <Card>
+        <h2 className="font-serif text-2xl">URIs (untrusted)</h2>
+        <UriRow value={job.specUri} />
+        <UriRow value={job.completionUri} />
+        {!isAllowedUri(job.specUri) && <p className="text-xs text-destructive">Blocked non-allowlisted scheme.</p>}
+      </Card>
+      <Card>
+        <h2 className="font-serif text-2xl">Action panels (role gated)</h2>
+        <p className="text-xs">Enabled now → apply:{String(gates.canApply)} completion:{String(gates.canRequestCompletion)} dispute:{String(gates.canDispute)} finalize:{String(gates.canFinalize)}</p>
+      </Card>
+      <Card>
+        <h2 className="font-serif text-2xl">Sovereign ledger timeline</h2>
+        <p className="text-sm">JobCreated → JobApplied → JobCompletionRequested → JobValidated/JobDisapproved → JobDisputed → DisputeResolvedWithCode → JobCompleted/JobCancelled/JobExpired → NFTIssued</p>
+      </Card>
+    </div>
+  );
 }

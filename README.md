@@ -332,3 +332,36 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+
+## UI / Ops Console (Institutional dApp)
+
+The repository now includes a standalone Next.js UI at `ui/` with read-only-first browsing, deterministic demo mode, role-gated ops flows, simulation-first transactions, safe-link handling, strict browser headers, and degraded-RPC signaling.
+
+- UI docs index: [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
+- Architecture: [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- Security model: [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+- Demo mode guide: [`docs/ui/DEMO.md`](docs/ui/DEMO.md)
+
+![ASI palette plate](docs/ui/graphics/palette-plate.svg)
+
+![Dashboard wireframe plate](docs/ui/graphics/dashboard-wireframe.svg)
+
+```mermaid
+flowchart LR
+  User --> Dashboard
+  Dashboard --> Jobs
+  Jobs --> JobDetail
+  Dashboard --> Admin
+  Dashboard --> Design
+```
+
+Quick start:
+
+```bash
+cd ui
+npm ci
+npm run docs:generate
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+```
+
+Security highlights: simulation-first preflight; allowlisted URI opening; CSP + frame denial + nosniff + referrer/permissions policies; degraded RPC banner with retry fallback.
