@@ -170,18 +170,10 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.equal(tokenEvent.args.newToken, newToken.address);
 
     const ensJobPages = await MockENSJobPages.new({ from: owner });
-    const oldEnsJobPages = await manager.ensJobPages();
-    const ensTx = await manager.setEnsJobPages(ensJobPages.address, { from: owner });
-    const ensEvent = ensTx.logs.find((log) => log.event === "EnsJobPagesUpdated");
-    assert.ok(ensEvent, "EnsJobPagesUpdated should be emitted");
-    assert.equal(ensEvent.args.oldEnsJobPages, oldEnsJobPages);
-    assert.equal(ensEvent.args.newEnsJobPages, ensJobPages.address);
+    await manager.setEnsJobPages(ensJobPages.address, { from: owner });
+    assert.equal(await manager.ensJobPages(), ensJobPages.address);
 
-    const useEnsTx = await manager.setUseEnsJobTokenURI(true, { from: owner });
-    const useEnsEvent = useEnsTx.logs.find((log) => log.event === "UseEnsJobTokenURIUpdated");
-    assert.ok(useEnsEvent, "UseEnsJobTokenURIUpdated should be emitted");
-    assert.equal(useEnsEvent.args.oldValue, false);
-    assert.equal(useEnsEvent.args.newValue, true);
+    await manager.setUseEnsJobTokenURI(true, { from: owner });
 
     const oldQuorum = await manager.voteQuorum();
     const quorumTx = await manager.setVoteQuorum(oldQuorum.addn(1), { from: owner });
@@ -418,4 +410,41 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.updateAGITokenAddress(newToken.address, { from: owner });
     assert.equal(await manager.agiToken(), newToken.address, "token should update after settlement");
   });
+
+  it("emits identity/root/merkle/withdraw events and enforces ENS root wiring", async () => {
+    const newEns = await MockENS.new({ from: owner });
+    const ensTx = await manager.updateEnsRegistry(newEns.address, { from: owner });
+    const ensEvt = ensTx.logs.find((log) => log.event === "EnsRegistryUpdated");
+    assert.ok(ensEvt, "EnsRegistryUpdated should be emitted");
+    assert.equal(ensEvt.args.newEnsRegistry, newEns.address);
+
+    const newNameWrapper = await MockNameWrapper.new({ from: owner });
+    const nwTx = await manager.updateNameWrapper(newNameWrapper.address, { from: owner });
+    const nwEvt = nwTx.logs.find((log) => log.event === "NameWrapperUpdated");
+    assert.ok(nwEvt, "NameWrapperUpdated should be emitted");
+    assert.equal(nwEvt.args.newNameWrapper, newNameWrapper.address);
+
+    const rootTx = await manager.updateRootNodes(clubRoot, agentRoot, clubRoot, agentRoot, { from: owner });
+    const rootEvt = rootTx.logs.find((log) => log.event === "RootNodesUpdated");
+    assert.ok(rootEvt, "RootNodesUpdated should be emitted");
+    assert.equal(rootEvt.args.clubRootNode, clubRoot);
+
+    const validatorRoot = rootNode("validator-merkle");
+    const agentMerkle = rootNode("agent-merkle");
+    const merkleTx = await manager.updateMerkleRoots(validatorRoot, agentMerkle, { from: owner });
+    const merkleEvt = merkleTx.logs.find((log) => log.event === "MerkleRootsUpdated");
+    assert.ok(merkleEvt, "MerkleRootsUpdated should be emitted");
+    assert.equal(merkleEvt.args.validatorMerkleRoot, validatorRoot);
+    assert.equal(merkleEvt.args.agentMerkleRoot, agentMerkle);
+
+    const surplus = toBN(toWei("2"));
+    await token.mint(manager.address, surplus, { from: owner });
+    await manager.pause({ from: owner });
+    const withdrawTx = await manager.withdrawAGI(toBN(toWei("1")), { from: owner });
+    const withdrawEvt = withdrawTx.logs.find((log) => log.event === "AGIWithdrawn");
+    assert.ok(withdrawEvt, "AGIWithdrawn should be emitted");
+    assert.equal(withdrawEvt.args.to, owner);
+    assert.equal(withdrawEvt.args.amount.toString(), toWei("1"));
+  });
+
 });

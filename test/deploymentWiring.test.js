@@ -53,4 +53,11 @@ contract("AGIJobManager deployment wiring", (accounts) => {
     const tokenBalance = await token.balanceOf(manager.address);
     assert.equal(tokenBalance.toString(), toBN(0).toString());
   });
+
+  it("keeps ENSOwnership linked in artifacts and prevents unresolved placeholders", async () => {
+    const artifact = AGIJobManager._json;
+    const unresolved = (artifact.deployedBytecode || "").includes("__$");
+    assert.equal(unresolved, false, "deployed bytecode must not contain unresolved library placeholders");
+  });
+
 });

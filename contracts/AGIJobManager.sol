@@ -738,22 +738,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_newEnsRegistry.code.length == 0) revert InvalidParameters();
         _requireEmptyEscrow();
         ens = ENS(_newEnsRegistry);
+        emit EnsRegistryUpdated(_newEnsRegistry);
     }
     function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable {
         if (_newNameWrapper != address(0) && _newNameWrapper.code.length == 0) revert InvalidParameters();
         _requireEmptyEscrow();
         nameWrapper = NameWrapper(_newNameWrapper);
+        emit NameWrapperUpdated(_newNameWrapper);
     }
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
         if (_ensJobPages != address(0) && _ensJobPages.code.length == 0) revert InvalidParameters();
-        address oldEnsJobPages = ensJobPages;
         ensJobPages = _ensJobPages;
-        emit EnsJobPagesUpdated(oldEnsJobPages, _ensJobPages);
     }
     function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
-        bool oldValue = useEnsJobTokenURI;
         useEnsJobTokenURI = enabled;
-        emit UseEnsJobTokenURIUpdated(oldValue, enabled);
     }
     function updateRootNodes(
         bytes32 _clubRootNode,
@@ -766,10 +764,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         agentRootNode = _agentRootNode;
         alphaClubRootNode = _alphaClubRootNode;
         alphaAgentRootNode = _alphaAgentRootNode;
+        emit RootNodesUpdated(_clubRootNode, _agentRootNode, _alphaClubRootNode, _alphaAgentRootNode);
     }
     function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner {
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
+        emit MerkleRootsUpdated(_validatorMerkleRoot, _agentMerkleRoot);
     }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner {
         if (bytes(_url).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
@@ -1279,6 +1279,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 available = withdrawableAGI();
         if (amount > available) revert InsufficientWithdrawableBalance();
         _t(msg.sender, amount);
+        emit AGIWithdrawn(msg.sender, amount, available - amount);
     }
 
     function rescueETH(uint256 amount) external onlyOwner nonReentrant {
@@ -1294,7 +1295,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             uint256 available = withdrawableAGI();
             if (amount > available) revert InsufficientWithdrawableBalance();
             _t(to, amount);
-            emit AGIWithdrawn(to, amount, available - amount);
             return;
         }
         TransferUtils.safeTransfer(token, to, amount);
