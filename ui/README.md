@@ -1,19 +1,20 @@
 # AGIJobManager UI
 
-## Requirements
-- Node >= 20.11.0
+Institutional-grade Next.js dApp + ops console.
 
-## Setup
-- `npm ci`
-- `cp .env.example .env.local`
-- `npm run dev`
+## Quick start
 
-## Commands
-- `npm run build`
-- `npm run lint`
-- `npm run test`
-- `npm run test:e2e`
+```bash
+npm ci
+cp .env.example .env.local
+npm run docs:generate
+npm run dev
+```
 
-## Notes
-- Read-only mode works without wallet connection.
-- Write operations are simulation-first with error decoding.
+## Demo mode
+
+```bash
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+```
+
+Visit `/demo` and launch a scenario.

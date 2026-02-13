@@ -332,3 +332,34 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+
+## UI / Ops Console
+
+A standalone Next.js UI is available in [`ui/`](ui/) with institutional operator docs in [`docs/ui/`](docs/ui/).
+
+- Overview: [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
+- Architecture: [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- Lifecycle: [`docs/ui/JOB_LIFECYCLE.md`](docs/ui/JOB_LIFECYCLE.md)
+- Security model: [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+- Demo mode: [`docs/ui/DEMO.md`](docs/ui/DEMO.md)
+
+![Palette plate](docs/ui/graphics/palette-plate.svg)
+![Dashboard plate](docs/ui/graphics/dashboard-plate.svg)
+
+```mermaid
+flowchart LR
+  ReadOnly[Read-only pages] --> Simulate[simulateContract preflight]
+  Simulate --> Write[writeContract]
+  Write --> Receipt[confirmation + explorer links]
+```
+
+Quick start:
+
+```bash
+cd ui
+npm ci
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+npm run build
+```
+
+Security highlights: simulation-first writes, strict safe-link handling for untrusted on-chain URIs, hardened response headers, and degraded RPC detection with retries.

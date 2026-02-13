@@ -1,20 +1,23 @@
-import type { BaseError } from 'viem';
-
 const map: Record<string, string> = {
-  InvalidParameters: 'Invalid parameters',
-  InvalidState: 'Action not allowed in current job state',
-  NotAuthorized: 'Not authorized',
-  SettlementPaused: 'Settlement paused',
-  Blacklisted: 'Address is blacklisted',
-  JobNotFound: 'Job not found',
-  NotModerator: 'Only moderator allowed'
+  InvalidParameters: 'Invalid parameters.',
+  InvalidState: 'Action not allowed in current job state.',
+  NotAuthorized: 'Address lacks required role.',
+  SettlementPaused: 'Settlement lane is paused.',
+  Blacklisted: 'Address is blacklisted by policy.',
+  JobNotFound: 'Job slot is deleted or unknown.',
+  NotModerator: 'Only moderator may resolve this dispute.'
 };
 
-export function translateError(errorName?: string) {
-  return errorName ? `${errorName}: ${map[errorName] || 'Transaction reverted'}` : 'Unknown error';
+export function mapErrorName(name?: string) {
+  if (!name) return 'Unknown contract error.';
+  return map[name] ?? `${name}: transaction reverted`;
 }
 
-export function decodeError(error?: BaseError) {
-  const name = ((error as any)?.name as string) || 'Error';
+export function translateError(name?: string) {
+  return mapErrorName(name);
+}
+
+export function decodeError(error?: { name?: string; shortMessage?: string }) {
+  const name = error?.name || 'Unknown';
   return { name, human: map[name] || error?.shortMessage || 'Transaction reverted' };
 }
