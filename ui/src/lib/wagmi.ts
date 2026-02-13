@@ -1,15 +1,17 @@
 'use client'
-import { createConfig, fallback, http } from 'wagmi'
-import { injected } from 'wagmi/connectors'
+
+import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { fallback, http } from 'wagmi'
 import { mainnet, sepolia } from 'wagmi/chains'
 import { env } from './env'
 
-export const wagmiConfig = createConfig({
+export const wagmiConfig = getDefaultConfig({
+  appName: 'AGIJobManager UI',
+  projectId: env.walletConnectProjectId,
   chains: [mainnet, sepolia],
-  connectors: [injected()],
+  ssr: false,
   transports: {
     [mainnet.id]: fallback([http(env.rpcMainnetUrl), http()]),
     [sepolia.id]: fallback([http(env.rpcSepoliaUrl), http()])
-  },
-  ssr: false
+  }
 })

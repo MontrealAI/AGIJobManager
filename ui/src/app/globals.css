@@ -2,9 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-slate-950 text-slate-100; }
-.container { @apply max-w-6xl mx-auto px-4; }
-.card { @apply rounded-xl border border-slate-700 bg-slate-900 p-4; }
-.input { @apply w-full rounded border border-slate-600 bg-slate-800 px-3 py-2; }
-.btn { @apply rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50; }
-.btn-danger { @apply rounded bg-red-700 px-3 py-2 text-white disabled:opacity-50; }
+:root {
+  --background: 300 100% 6%;
+  --foreground: 270 20% 92%;
+  --card: 275 58% 11%;
+  --card-foreground: 270 28% 93%;
+  --popover: 275 55% 10%;
+  --popover-foreground: 270 25% 93%;
+  --primary: 265 64% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 272 48% 18%;
+  --secondary-foreground: 270 24% 92%;
+  --muted: 270 30% 17%;
+  --muted-foreground: 240 12% 74%;
+  --accent: 264 87% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 353 72% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 158 70% 40%;
+  --warning: 44 73% 46%;
+  --border: 270 28% 22%;
+  --input: 270 28% 22%;
+  --ring: 264 87% 60%;
+  --radius: 14px;
+}
+
+.light {
+  --background: 270 37% 98%;
+  --foreground: 284 41% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 284 41% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 284 41% 11%;
+  --primary: 265 64% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 274 62% 92%;
+  --secondary-foreground: 284 41% 11%;
+  --muted: 273 45% 94%;
+  --muted-foreground: 243 10% 42%;
+  --accent: 264 87% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 353 72% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 8% 90%;
+  --input: 240 8% 90%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui;
+    font-feature-settings: 'tnum';
+    background-image: radial-gradient(circle at 20% -10%, hsl(var(--accent) / 0.18) 0, transparent 44%), linear-gradient(hsl(var(--background)), hsl(var(--background)));
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif), ui-serif, Georgia;
+    letter-spacing: -0.01em;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0s !important;
+      transition-duration: 0s !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+.container {
+  @apply mx-auto max-w-7xl px-4 md:px-8;
+}
+.card {
+  @apply rounded-[14px] border bg-card/95 text-card-foreground shadow-sm;
+}
+.input {
+  @apply w-full rounded-[10px] border bg-background/40 px-3 py-2 outline-none transition focus-visible:ring-2 focus-visible:ring-ring/80;
+}
+.btn {
+  @apply rounded-[10px] border border-primary/70 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-accent disabled:opacity-50;
+}
+.btn-secondary {
+  @apply rounded-[10px] border bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:bg-secondary/80;
+}
+.btn-danger {
+  @apply rounded-[10px] border border-destructive/60 bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground;
+}
