@@ -1,49 +1,38 @@
 export type JobCore = {
-  employer: `0x${string}`
-  assignedAgent: `0x${string}`
-  payout: bigint
-  duration: bigint
-  assignedAt: bigint
-  completed: boolean
-  disputed: boolean
-  expired: boolean
-  agentPayoutPct: number
-}
-
+  employer?: `0x${string}`;
+  assignedAgent: `0x${string}`;
+  payout?: bigint;
+  duration: bigint;
+  assignedAt: bigint;
+  completed: boolean;
+  disputed: boolean;
+  expired: boolean;
+  agentPayoutPct?: number;
+};
 export type JobValidation = {
-  completionRequested: boolean
-  approvals: number
-  disapprovals: number
-  completionRequestedAt: bigint
-  disputedAt: bigint
+  completionRequested: boolean;
+  approvals?: number;
+  disapprovals?: number;
+  completionRequestedAt: bigint;
+  disputedAt: bigint;
+};
+export type Params = { completionReviewPeriod: bigint; disputeReviewPeriod: bigint; challengePeriodAfterApproval?: bigint };
+export type Status = 'Open' | 'Assigned' | 'Completion Requested' | 'Disputed' | 'Settled' | 'Expired';
+
+export function deriveStatus(core: JobCore, val: JobValidation): { status: Status; terminal: boolean } {
+  if (core.completed) return { status: 'Settled', terminal: true };
+  if (core.expired) return { status: 'Expired', terminal: true };
+  if (core.disputed) return { status: 'Disputed', terminal: false };
+  if (val.completionRequested) return { status: 'Completion Requested', terminal: false };
+  if (core.assignedAgent === '0x0000000000000000000000000000000000000000') return { status: 'Open', terminal: false };
+  return { status: 'Assigned', terminal: false };
 }
+export const deriveJobUiStatus = deriveStatus;
 
-export type GlobalParams = {
-  completionReviewPeriod: bigint
-  disputeReviewPeriod: bigint
-  challengePeriodAfterApproval: bigint
-}
-
-export type JobUiStatus = 'Open' | 'Assigned' | 'Completion Requested' | 'Disputed' | 'Settled' | 'Expired'
-
-const zeroAddress = '0x0000000000000000000000000000000000000000'
-
-export function deriveJobUiStatus(core: JobCore, validation: JobValidation): { status: JobUiStatus; terminal: boolean } {
-  if (core.completed) return { status: 'Settled', terminal: true }
-  if (core.expired) return { status: 'Expired', terminal: true }
-  if (core.disputed || validation.disputedAt > 0n) return { status: 'Disputed', terminal: false }
-  if (validation.completionRequested || validation.completionRequestedAt > 0n) return { status: 'Completion Requested', terminal: false }
-  if (core.assignedAgent.toLowerCase() !== zeroAddress) return { status: 'Assigned', terminal: false }
-  return { status: 'Open', terminal: false }
-}
-
-export function computeDeadlines(core: JobCore, validation: JobValidation, params: GlobalParams) {
-  const expiryTime = core.assignedAt > 0n && core.duration > 0n ? core.assignedAt + core.duration : 0n
-  return {
-    expiryTime,
-    completionReviewEnd:
-      validation.completionRequestedAt > 0n ? validation.completionRequestedAt + params.completionReviewPeriod : 0n,
-    disputeReviewEnd: validation.disputedAt > 0n ? validation.disputedAt + params.disputeReviewPeriod : 0n,
-    challengeEnd: 0n
-  }
+export function computeDeadlines(core: JobCore, val: JobValidation, p: Params) {
+  const expiryTime = core.assignedAt && core.duration ? core.assignedAt + core.duration : 0n;
+  const completionReviewEnd = val.completionRequestedAt ? val.completionRequestedAt + p.completionReviewPeriod : 0n;
+  const disputeReviewEnd = val.disputedAt ? val.disputedAt + p.disputeReviewPeriod : 0n;
+  const challengeEnd = 0n;
+  return { expiryTime, completionReviewEnd, disputeReviewEnd, challengeEnd };
 }
