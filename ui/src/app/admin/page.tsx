@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi';
 import { useState } from 'react';
 import { usePlatformSummary } from '@/lib/web3/queries';
 import { Card } from '@/components/ui/card';
-import { useDemoScenario, isDemoMode } from '@/lib/demo';
+import { useDemoRoleFlags, useDemoScenario, isDemoMode } from '@/lib/demo';
 
 const confirms = ['PAUSE', 'SETTLEMENT', 'LOCK', 'WITHDRAW'] as const;
 
@@ -12,10 +12,12 @@ export default function Admin() {
   const scenario = useDemoScenario();
   const { data } = usePlatformSummary(scenario);
   const [typed, setTyped] = useState('');
+  const { actor, isOwner } = useDemoRoleFlags();
   const owner = data?.owner?.toLowerCase();
-  const demoOwner = isDemoMode;
+  const demoOwner = isDemoMode && isOwner;
   if ((!address || !owner || address.toLowerCase() !== owner) && !demoOwner) return <div className='container-shell py-8'><Card>Not authorized (owner only).</Card></div>;
   return <div className='container-shell py-8 space-y-3'>
+    {isDemoMode && <Card className='text-sm'>Demo actor: <strong>{actor}</strong>. Owner-only console unlocked only for actor=owner.</Card>}
     <Card><h2 className='font-serif'>Safety toggles</h2><p>Pause/unpause and settlement pause with simulation-first writes.</p></Card>
     <Card><h2 className='font-serif'>Roles</h2><p>Manage moderators and allowlists / blacklists.</p></Card>
     <Card><h2 className='font-serif'>Parameters & identity</h2><p>Thresholds, review periods, ENS wiring and lockIdentityConfiguration.</p></Card>

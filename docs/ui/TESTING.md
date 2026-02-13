@@ -1,9 +1,16 @@
-# Testing
+# Testing & CI
 
-- `npm run test`: unit + property tests for status, deadlines, URI sanitizer, error decoding.
-- `npm run test:e2e`: deterministic demo-mode route, banner, CSV checks.
-- `npm run test:a11y`: axe scans across key pages.
-- `npm run test:headers`: verifies CSP, nosniff, frame/referrer/permissions headers.
-- `npm run docs:check`: docs completeness + Mermaid + SVG + stale checks.
-- `node scripts/check-contract-drift.mjs`: UI ABI references remain aligned to Solidity source.
-- `node scripts/check-no-binary.mjs`: enforces text-only assets.
+## Command matrix
+| Layer | Command | Purpose |
+|---|---|---|
+| Lint | `npm run lint` | Next + TS style discipline |
+| Types | `npm run typecheck` | Strict type safety |
+| Unit + property | `npm run test` | Status/deadline/URI/error invariants |
+| E2E | `npm run test:e2e` | Deterministic fixture navigation + role gating |
+| Accessibility | `npm run test:a11y` | Axe checks across key routes |
+| Security headers | `npm run test:headers` | CSP/headers contract |
+| Docs freshness | `npm run docs:check` | Required files, mermaid, assets, versions freshness |
+| Build | `npm run build` | Production build health |
+| No binaries | `node scripts/check-no-binaries.mjs` | Blocks forbidden extensions in added files |
+
+CI workflow: `.github/workflows/ui.yml`.
