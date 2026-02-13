@@ -1,0 +1,16 @@
+[profile.default]
+solc_version = "0.8.19"
+src = "contracts"
+test = "forge-test"
+libs = ["lib"]
+remappings = [
+  "@openzeppelin/=node_modules/@openzeppelin/",
+  "forge-std/=lib/forge-std/src/",
+  "contracts/=contracts/",
+  "forge-test/=forge-test/"
+]
+optimizer = true
+optimizer_runs = 50
+evm_version = "london"
+fuzz = { runs = 512 }
+invariant = { runs = 128, depth = 32 }
