@@ -4,6 +4,8 @@ import { Providers } from '@/components/providers';
 import { Nav } from '@/components/layout/nav';
 import { Footer } from '@/components/layout/footer';
 
+export const metadata = { title: 'AGI Job Manager UI', description: 'Sovereign ops console' };
+
 const inter = Inter({ subsets:['latin'], variable:'--font-inter' });
 const serif = Source_Serif_4({ subsets:['latin'], variable:'--font-serif' });
 
