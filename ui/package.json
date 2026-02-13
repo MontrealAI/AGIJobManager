@@ -1,6 +1,6 @@
 {
   "name": "agi-job-manager-ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "engines": {
     "node": ">=20.11.0"
@@ -10,9 +10,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test e2e/demo.spec.ts",
+    "test:a11y": "playwright test e2e/a11y.spec.ts",
+    "test:headers": "playwright test e2e/headers.spec.ts",
+    "docs:check": "node scripts/docs-check.mjs",
+    "docs:graphics": "node scripts/generate-graphics.mjs",
+    "docs:versions": "node scripts/generate-versions.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",
@@ -34,6 +40,7 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
     "@playwright/test": "1.47.2",
     "@testing-library/react": "16.0.1",
     "@types/node": "22.7.4",
@@ -42,6 +49,7 @@
     "autoprefixer": "10.4.20",
     "eslint": "8.57.1",
     "eslint-config-next": "14.2.15",
+    "fast-check": "3.20.0",
     "jsdom": "25.0.1",
     "postcss": "8.4.47",
     "tailwindcss": "3.4.13",
