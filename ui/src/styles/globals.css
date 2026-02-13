@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 271 70% 98%;
+  --foreground: 276 43% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 276 43% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 276 43% 12%;
+  --primary: 267 64% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 266 70% 93%;
+  --secondary-foreground: 276 43% 12%;
+  --muted: 250 15% 93%;
+  --muted-foreground: 240 10% 50%;
+  --accent: 261 87% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 353 73% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 8% 88%;
+  --input: 240 8% 88%;
+  --ring: 261 87% 60%;
+  --warning: 44 72% 47%;
+  --radius: 14px;
+}
+
+.dark {
+  --background: 279 100% 6%;
+  --foreground: 270 26% 92%;
+  --card: 274 58% 11%;
+  --card-foreground: 270 26% 92%;
+  --popover: 274 58% 11%;
+  --popover-foreground: 270 26% 92%;
+  --primary: 267 64% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 270 40% 18%;
+  --secondary-foreground: 270 26% 92%;
+  --muted: 268 32% 16%;
+  --muted-foreground: 240 10% 70%;
+  --accent: 261 87% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 353 73% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 268 20% 27%;
+  --input: 268 20% 27%;
+  --ring: 261 87% 60%;
+  --warning: 44 72% 47%;
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: 'tnum' 1;
+    background-image: radial-gradient(circle at 5% 0%, hsl(261 87% 60% / 0.12), transparent 35%);
+  }
+  h1,h2,h3 { font-family: var(--font-serif); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+@layer components {
+  .hero { @apply rounded-[18px] border bg-card p-8; }
+  .card-shell { @apply rounded-[14px] border bg-card p-4; }
+  .input-shell { @apply rounded-[10px] border bg-background px-3 py-2; }
+  .btn-primary { @apply rounded-[10px] border border-primary bg-primary px-3 py-2 text-primary-foreground transition hover:bg-accent; }
+  .btn-outline { @apply rounded-[10px] border bg-transparent px-3 py-2 transition hover:bg-muted; }
+}

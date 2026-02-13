@@ -1,6 +1,10 @@
 # AGIJobManager UI
 
-Next.js App Router dapp + ops console for AGIJobManager.
+Next.js + TypeScript App Router dapp and ops console for `AGIJobManager`.
+
+## Requirements
+
+- Node `>=20.11.0`
 
 ## Setup
 
@@ -10,7 +14,7 @@ npm ci
 npm run dev
 ```
 
-## Scripts
+## Commands
 
 ```bash
 npm run build
@@ -19,9 +23,15 @@ npm run test
 npm run test:e2e
 ```
 
-## Notes
+## Implemented pages
 
-- Read-only mode works without a wallet.
-- Transactions are simulation-first (`simulateContract` before writes).
-- URI rendering is scheme-allowlisted (`https://`, `http://`, `ipfs://`, `ens://`).
-- Dark/light ASI Sovereign Purple theme, with dark default and toggle.
+- `/` Dashboard with network/pause/degraded banners and sovereign hero.
+- `/jobs` read-only browse with multicall and filtering.
+- `/jobs/[jobId]` job status, deadlines, timeline, URI safety controls, role actions and token approvals.
+- `/admin` owner-gated ops console with typed confirmations.
+
+## Security highlights
+
+- Simulation-first writes with decoded custom errors.
+- URI scheme allowlist (`https`, `http`, `ipfs`, `ens`) and disabled unsafe links.
+- Strict response headers via `next.config.js` (CSP + frame hardening + policy headers).

@@ -5,55 +5,51 @@ import { useMemo, useState } from 'react'
 import { useReadContract, useReadContracts } from 'wagmi'
 import { agiJobManagerAbi } from '@/abis/agiJobManager'
 import { env } from '@/lib/env'
-import { deriveJobStatus } from '@/lib/job'
-import { formatEther } from 'viem'
+import { deriveJobStatus } from '@/lib/jobStatus'
+import { formatToken, shortAddress } from '@/lib/format'
 
 export default function JobsPage() {
-  const [query, setQuery] = useState('')
-  const nextId = useReadContract({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'nextJobId' })
-
+  const [filter, setFilter] = useState('')
+  const nextJob = useReadContract({ abi: agiJobManagerAbi, address: env.jobManager, functionName: 'nextJobId' })
   const ids = useMemo(() => {
-    const n = Number(nextId.data || 0n)
-    return Array.from({ length: Math.min(n, 50) }, (_, i) => BigInt(n - i - 1))
-  }, [nextId.data])
+    const n = Number(nextJob.data || 0n)
+    return Array.from({ length: Math.min(25, n) }, (_, i) => BigInt(n - 1 - i))
+  }, [nextJob.data])
 
-  const cores = useReadContracts({
-    contracts: ids.map((id) => ({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'getJobCore', args: [id] })),
-    allowFailure: true
-  })
-  const vals = useReadContracts({
-    contracts: ids.map((id) => ({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'getJobValidation', args: [id] })),
+  const bundle = useReadContracts({
+    contracts: ids.flatMap((jobId) => [
+      { abi: agiJobManagerAbi, address: env.jobManager, functionName: 'getJobCore', args: [jobId] as const },
+      { abi: agiJobManagerAbi, address: env.jobManager, functionName: 'getJobValidation', args: [jobId] as const }
+    ]),
     allowFailure: true
   })
 
   return (
     <div className="space-y-4">
-      <h1 className="text-[32px] leading-[36px]">Jobs</h1>
-      <input className="input-shell" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by id, address, or status" />
-      <div className="overflow-hidden rounded-[14px] border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left"><tr><th className="p-3">Job</th><th>Payout</th><th>Status</th><th>Employer</th><th>Agent</th></tr></thead>
-          <tbody>
-            {ids.map((id, i) => {
-              const core = cores.data?.[i]?.result as any
-              const val = vals.data?.[i]?.result as any
-              if (!core) return null
-              const status = deriveJobStatus(core, val || { approvals: 0, disapprovals: 0, disputed: false }, Math.floor(Date.now() / 1000))
-              const haystack = `${id} ${core.employer} ${core.agent} ${status}`.toLowerCase()
-              if (query && !haystack.includes(query.toLowerCase())) return null
-              return (
-                <tr key={id.toString()} className="border-t hover:bg-primary/5">
-                  <td className="p-3"><Link href={`/jobs/${id}`} className="underline">#{id.toString()}</Link></td>
-                  <td>{Number(formatEther(core.payout)).toFixed(4)} AGI</td>
-                  <td><span className="pill">{status}</span></td>
-                  <td>{core.employer.slice(0, 8)}…</td>
-                  <td>{core.agent.slice(0, 8)}…</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+      <h1 className="text-3xl">Jobs</h1>
+      <input value={filter} onChange={(e) => setFilter(e.target.value.toLowerCase())} className="input-shell" placeholder="Filter by id/address/status" />
+      <table className="w-full overflow-hidden rounded-xl border text-sm">
+        <thead><tr className="bg-muted/40 text-left"><th className="p-2">Job</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th></tr></thead>
+        <tbody>
+          {ids.map((id, idx) => {
+            const core = bundle.data?.[idx * 2]?.result as any
+            const validation = bundle.data?.[idx * 2 + 1]?.result as any
+            if (!core || !validation) return null
+            const status = deriveJobStatus(core, validation)
+            const row = `${id} ${core.employer} ${core.assignedAgent} ${status.label}`.toLowerCase()
+            if (filter && !row.includes(filter)) return null
+            return (
+              <tr key={id.toString()} className="border-t hover:bg-muted/30">
+                <td className="p-2"><Link className="underline" href={`/jobs/${id}`}>#{id.toString()}</Link></td>
+                <td>{status.label}</td>
+                <td>{formatToken(core.payout)}</td>
+                <td>{shortAddress(core.employer)}</td>
+                <td>{shortAddress(core.assignedAgent)}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }
