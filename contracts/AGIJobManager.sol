@@ -215,20 +215,20 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     );
     event JobDisputed(uint256 indexed jobId, address indexed disputant);
     event JobExpired(uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout);
-    event EnsRegistryUpdated(address indexed newEnsRegistry);
-    event NameWrapperUpdated(address indexed newNameWrapper);
+    event EnsRegistryUpdated(address newEnsRegistry);
+    event NameWrapperUpdated(address newNameWrapper);
     event RootNodesUpdated(
         bytes32 indexed clubRootNode,
         bytes32 indexed agentRootNode,
         bytes32 indexed alphaClubRootNode,
         bytes32 alphaAgentRootNode
     );
-    event MerkleRootsUpdated(bytes32 indexed validatorMerkleRoot, bytes32 indexed agentMerkleRoot);
+    event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
-    event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 indexed remainingWithdrawable);
+    event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 remainingWithdrawable);
     event PlatformRevenueAccrued(uint256 indexed jobId, uint256 indexed amount);
     event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);
     event AgentBlacklisted(address indexed agent, bool indexed status);
@@ -238,7 +238,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event SettlementPauseSet(address indexed setter, bool indexed paused);
     event AGITokenAddressUpdated(address indexed oldToken, address indexed newToken);
     event EnsJobPagesUpdated(address indexed oldEnsJobPages, address indexed newEnsJobPages);
-    event UseEnsJobTokenURIUpdated(bool indexed oldValue, bool indexed newValue);
     event VoteQuorumUpdated(uint256 indexed oldQuorum, uint256 indexed newQuorum);
     event RequiredValidatorApprovalsUpdated(uint256 indexed oldApprovals, uint256 indexed newApprovals);
     event RequiredValidatorDisapprovalsUpdated(uint256 indexed oldDisapprovals, uint256 indexed newDisapprovals);
@@ -738,11 +737,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_newEnsRegistry.code.length == 0) revert InvalidParameters();
         _requireEmptyEscrow();
         ens = ENS(_newEnsRegistry);
+        emit EnsRegistryUpdated(_newEnsRegistry);
     }
     function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable {
         if (_newNameWrapper != address(0) && _newNameWrapper.code.length == 0) revert InvalidParameters();
         _requireEmptyEscrow();
         nameWrapper = NameWrapper(_newNameWrapper);
+        emit NameWrapperUpdated(_newNameWrapper);
     }
     function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable {
         if (_ensJobPages != address(0) && _ensJobPages.code.length == 0) revert InvalidParameters();
@@ -751,9 +752,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit EnsJobPagesUpdated(oldEnsJobPages, _ensJobPages);
     }
     function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
-        bool oldValue = useEnsJobTokenURI;
         useEnsJobTokenURI = enabled;
-        emit UseEnsJobTokenURIUpdated(oldValue, enabled);
     }
     function updateRootNodes(
         bytes32 _clubRootNode,
@@ -766,10 +765,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         agentRootNode = _agentRootNode;
         alphaClubRootNode = _alphaClubRootNode;
         alphaAgentRootNode = _alphaAgentRootNode;
+        emit RootNodesUpdated(_clubRootNode, _agentRootNode, _alphaClubRootNode, _alphaAgentRootNode);
     }
     function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner {
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
+        emit MerkleRootsUpdated(_validatorMerkleRoot, _agentMerkleRoot);
     }
     function setBaseIpfsUrl(string calldata _url) external onlyOwner {
         if (bytes(_url).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
@@ -1231,7 +1232,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             mstore(add(ptr, 36), jobId)
             success := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
-        emit EnsHookAttempted(hook, jobId, target, success != 0);
     }
 
     function _verifyOwnership(
@@ -1274,11 +1274,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         return bal - lockedTotal;
     }
 
-    function withdrawAGI(uint256 amount) external onlyOwner whenSettlementNotPaused whenPaused nonReentrant {
+    function _withdrawAGITo(address to, uint256 amount) internal {
         if (amount == 0) revert InvalidParameters();
         uint256 available = withdrawableAGI();
         if (amount > available) revert InsufficientWithdrawableBalance();
-        _t(msg.sender, amount);
+        _t(to, amount);
+        emit AGIWithdrawn(to, amount, available - amount);
+    }
+
+    function withdrawAGI(uint256 amount) external onlyOwner whenSettlementNotPaused whenPaused nonReentrant {
+        _withdrawAGITo(msg.sender, amount);
     }
 
     function rescueETH(uint256 amount) external onlyOwner nonReentrant {
@@ -1291,13 +1296,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (token == address(agiToken)) {
             if (settlementPaused) revert SettlementPaused();
             if (!paused()) revert InvalidState();
-            uint256 available = withdrawableAGI();
-            if (amount > available) revert InsufficientWithdrawableBalance();
-            _t(to, amount);
-            emit AGIWithdrawn(to, amount, available - amount);
-            return;
+            _withdrawAGITo(to, amount);
+        } else {
+            TransferUtils.safeTransfer(token, to, amount);
         }
-        TransferUtils.safeTransfer(token, to, amount);
     }
 
     function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {

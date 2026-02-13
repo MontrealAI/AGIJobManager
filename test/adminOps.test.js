@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { expectRevert, time } = require("@openzeppelin/test-helpers");
+const { expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -133,6 +133,53 @@ contract("AGIJobManager admin ops", (accounts) => {
     );
   });
 
+
+
+  it("emits identity and withdrawal observability events", async () => {
+    await manager.pause({ from: owner });
+
+    const ensTx = await manager.updateEnsRegistry(ens.address, { from: owner });
+    expectEvent(ensTx, "EnsRegistryUpdated", { newEnsRegistry: ens.address });
+
+    const nwTx = await manager.updateNameWrapper(nameWrapper.address, { from: owner });
+    expectEvent(nwTx, "NameWrapperUpdated", { newNameWrapper: nameWrapper.address });
+
+    const clubRoot = web3.utils.soliditySha3("club-root-events");
+    const agentRoot = web3.utils.soliditySha3("agent-root-events");
+    const alphaClubRoot = web3.utils.soliditySha3("alpha-club-root-events");
+    const alphaAgentRoot = web3.utils.soliditySha3("alpha-agent-root-events");
+    const rootsTx = await manager.updateRootNodes(clubRoot, agentRoot, alphaClubRoot, alphaAgentRoot, { from: owner });
+    expectEvent(rootsTx, "RootNodesUpdated", {
+      clubRootNode: clubRoot,
+      agentRootNode: agentRoot,
+      alphaClubRootNode: alphaClubRoot,
+      alphaAgentRootNode: alphaAgentRoot,
+    });
+
+    const validatorRoot = web3.utils.soliditySha3("validator-merkle-events");
+    const memberRoot = web3.utils.soliditySha3("agent-merkle-events");
+    const merkleTx = await manager.updateMerkleRoots(validatorRoot, memberRoot, { from: owner });
+    expectEvent(merkleTx, "MerkleRootsUpdated", { validatorMerkleRoot: validatorRoot, agentMerkleRoot: memberRoot });
+
+    const payout = toBN(toWei("8"));
+    const duration = toBN(1000);
+    const surplus = toBN(toWei("3"));
+
+    await manager.unpause({ from: owner });
+    await token.mint(employer, payout, { from: owner });
+    await token.mint(manager.address, surplus, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("spec://events", payout, duration, "", { from: employer });
+
+    await manager.pause({ from: owner });
+    await manager.setSettlementPaused(false, { from: owner });
+    const withdrawTx = await manager.withdrawAGI(surplus, { from: owner });
+    expectEvent(withdrawTx, "AGIWithdrawn", {
+      to: owner,
+      amount: surplus,
+      remainingWithdrawable: toBN(0),
+    });
+  });
   it("updates parameters and withdraws funds", async () => {
     await expectCustomError(manager.setValidationRewardPercentage.call(0, { from: owner }), "InvalidParameters");
     await manager.setValidationRewardPercentage(8, { from: owner });
@@ -177,11 +224,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.equal(ensEvent.args.oldEnsJobPages, oldEnsJobPages);
     assert.equal(ensEvent.args.newEnsJobPages, ensJobPages.address);
 
-    const useEnsTx = await manager.setUseEnsJobTokenURI(true, { from: owner });
-    const useEnsEvent = useEnsTx.logs.find((log) => log.event === "UseEnsJobTokenURIUpdated");
-    assert.ok(useEnsEvent, "UseEnsJobTokenURIUpdated should be emitted");
-    assert.equal(useEnsEvent.args.oldValue, false);
-    assert.equal(useEnsEvent.args.newValue, true);
+    await manager.setUseEnsJobTokenURI(true, { from: owner });
 
     const oldQuorum = await manager.voteQuorum();
     const quorumTx = await manager.setVoteQuorum(oldQuorum.addn(1), { from: owner });
