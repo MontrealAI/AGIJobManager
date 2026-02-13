@@ -9,8 +9,10 @@
 | E2E | `npm run test:e2e` | Deterministic fixture navigation + role gating |
 | Accessibility | `npm run test:a11y` | Axe checks across key routes |
 | Security headers | `npm run test:headers` | CSP/headers contract |
-| Docs freshness | `npm run docs:check` | Required files, mermaid, assets, versions freshness |
+| Docs versions | `npm run docs:versions` | Regenerates pinned dependency report |
+| Docs contract | `npm run docs:contract` | Regenerates ABI interface report |
+| Docs freshness | `npm run docs:check` | Required files, mermaid, assets, generated docs freshness |
 | Build | `npm run build` | Production build health |
-| No binaries | `node scripts/check-no-binaries.mjs` | Blocks forbidden extensions in added files |
+| No binaries | `npm run check:no-binaries` | Blocks forbidden extensions and binary content in added files |
 
 CI workflow: `.github/workflows/ui.yml`.

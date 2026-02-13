@@ -12,6 +12,7 @@ Institutional-grade Next.js dApp + operations console with **read-only first**, 
 - [Demo Mode](./DEMO.md)
 - [Testing & CI](./TESTING.md)
 - [Versions](./VERSIONS.md)
+- [Contract Interface](./CONTRACT_INTERFACE.md)
 
 ## Run locally
 ```bash
@@ -32,4 +33,4 @@ NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
 - Strict security headers and CSP are enforced for all routes.
 
 ## Documentation policy
-This folder is **text-only**. Binary assets are forbidden and CI-enforced.
+This folder is **text-only**. Binary assets are forbidden and CI-enforced by `npm run check:no-binaries` in local checks and CI.
