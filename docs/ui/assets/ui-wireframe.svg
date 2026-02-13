@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
+  <title id="title">AGIJobManager UI Wireframe</title>
+  <desc id="desc">Dashboard, jobs, detail, admin and design page wireframe map.</desc>
+  <rect width="1280" height="820" fill="#14001F"/>
+  <text x="40" y="48" fill="#E9DAFF" font-family="ui-serif, Georgia, serif" font-size="30">AGIJobManager · Institutional UI Wireframe</text>
+  <g stroke="#2E1154" stroke-width="2" fill="#21093B">
+    <rect x="40" y="90" width="580" height="320" rx="18"/>
+    <rect x="660" y="90" width="580" height="320" rx="18"/>
+    <rect x="40" y="450" width="580" height="320" rx="18"/>
+    <rect x="660" y="450" width="580" height="320" rx="18"/>
+  </g>
+  <g fill="#E7E7EA" font-family="ui-sans-serif, system-ui" font-size="20">
+    <text x="60" y="126">/ Dashboard</text>
+    <text x="680" y="126">/jobs</text>
+    <text x="60" y="486">/jobs/[jobId]</text>
+    <text x="680" y="486">/admin + /design</text>
+  </g>
+  <g stroke="#7A3FF2" fill="none" stroke-dasharray="7 6">
+    <rect x="60" y="150" width="540" height="70" rx="14"/>
+    <rect x="60" y="238" width="170" height="150" rx="14"/>
+    <rect x="245" y="238" width="170" height="150" rx="14"/>
+    <rect x="430" y="238" width="170" height="150" rx="14"/>
+
+    <rect x="680" y="150" width="540" height="70" rx="14"/>
+    <rect x="680" y="238" width="540" height="150" rx="14"/>
+
+    <rect x="60" y="510" width="540" height="100" rx="14"/>
+    <rect x="60" y="625" width="540" height="125" rx="14"/>
+
+    <rect x="680" y="510" width="540" height="115" rx="14"/>
+    <rect x="680" y="640" width="540" height="110" rx="14"/>
+  </g>
+  <g fill="#A7A7B6" font-family="ui-monospace, monospace" font-size="14">
+    <text x="72" y="193">hero + network banners + demo mode</text>
+    <text x="72" y="311">create job card</text>
+    <text x="257" y="311">browse jobs card</text>
+    <text x="442" y="311">platform config card</text>
+    <text x="692" y="193">filters: jobId, employer, agent, status</text>
+    <text x="692" y="315">multicall-backed table + pagination + resilient retry</text>
+    <text x="72" y="560">sovereign ledger summary + deadline derivation</text>
+    <text x="72" y="688">safe URI module + timeline + role-gated actions</text>
+    <text x="692" y="560">typed confirmations (PAUSE / SETTLEMENT / LOCK)</text>
+    <text x="692" y="690">design gallery: tokens, typography, contrast tables</text>
+  </g>
+</svg>

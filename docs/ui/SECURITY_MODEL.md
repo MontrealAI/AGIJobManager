@@ -1,11 +1,21 @@
-# Security Model
+# UI Security Model
 
-Threats addressed:
-- Phishing links from untrusted URI fields are blocked unless scheme is allowlisted (`https`, `http`, `ipfs`, `ens`).
-- RPC faults surface degraded banner + retry controls.
-- Wallet failures decode custom errors to human messages.
-- Simulation mismatch is mitigated by simulation-first write path and explicit stepper states.
+## Threat model
+- Phishing links in on-chain URIs.
+- RPC faults, stale reads, and partial outages.
+- User signing unsafe writes without preflight context.
 
-Non-goals / residual risks:
-- No backend custody or required off-chain database.
-- No guarantee against chain reorgs or third-party RPC censorship.
+## Controls
+- **Read-only first**: walletless rendering for all major pages.
+- **Simulation-first writes**: `simulateContract()` before wallet signature.
+- **Untrusted strings**: no `dangerouslySetInnerHTML`; URI allowlist only.
+- **Headers**: CSP, frame-ancestors none, nosniff, strict referrer policy, locked permissions policy.
+- **Resiliency**: react-query retries/backoff + degraded RPC banner.
+
+## Simulation guarantees and limits
+Simulation validates contract behavior for current state and calldata, but cannot guarantee:
+- state unchanged between simulation and inclusion,
+- mempool ordering,
+- chain reorg behavior.
+
+Users still receive explicit failure diagnostics with custom error names and next-step guidance.

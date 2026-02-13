@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">ASI Superintelligence Sovereign Purple Palette</title>
+  <desc id="desc">Color swatches for AGIJobManager institutional theme tokens.</desc>
+  <rect width="1200" height="700" fill="#14001F"/>
+  <text x="48" y="64" font-family="ui-serif, Georgia, serif" font-size="36" fill="#E9DAFF">AGIJobManager · Sovereign Purple Palette</text>
+  <text x="48" y="98" font-family="ui-sans-serif, system-ui" font-size="18" fill="#A7A7B6">Text-only SVG artifact for deterministic documentation.</text>
+  <g font-family="ui-sans-serif, system-ui" font-size="16" fill="#E7E7EA">
+    <rect x="48" y="140" width="210" height="120" rx="16" fill="#14001F" stroke="#2E1154"/>
+    <text x="60" y="190">ASI Deep</text><text x="60" y="216">#14001F</text>
+    <rect x="280" y="140" width="210" height="120" rx="16" fill="#1B0B2A" stroke="#2E1154"/>
+    <text x="292" y="190">Sovereign Ink</text><text x="292" y="216">#1B0B2A</text>
+    <rect x="512" y="140" width="210" height="120" rx="16" fill="#4B1D86" stroke="#7A3FF2"/>
+    <text x="524" y="190">Imperial Purple</text><text x="524" y="216">#4B1D86</text>
+    <rect x="744" y="140" width="210" height="120" rx="16" fill="#7A3FF2" stroke="#E9DAFF"/>
+    <text x="756" y="190">Amethyst</text><text x="756" y="216">#7A3FF2</text>
+    <rect x="976" y="140" width="176" height="120" rx="16" fill="#E9DAFF" stroke="#2E1154"/>
+    <text x="988" y="190" fill="#1B0B2A">Orchid Mist</text><text x="988" y="216" fill="#1B0B2A">#E9DAFF</text>
+
+    <rect x="48" y="290" width="210" height="120" rx="16" fill="#170226" stroke="#2E1154"/>
+    <text x="60" y="340">Night Violet</text><text x="60" y="366">#170226</text>
+    <rect x="280" y="290" width="210" height="120" rx="16" fill="#21093B" stroke="#2E1154"/>
+    <text x="292" y="340">Deep Panel</text><text x="292" y="366">#21093B</text>
+    <rect x="512" y="290" width="210" height="120" rx="16" fill="#2E1154" stroke="#7A3FF2"/>
+    <text x="524" y="340">Panel Border</text><text x="524" y="366">#2E1154</text>
+    <rect x="744" y="290" width="210" height="120" rx="16" fill="#E7E7EA" stroke="#2E1154"/>
+    <text x="756" y="340" fill="#1B0B2A">Platinum</text><text x="756" y="366" fill="#1B0B2A">#E7E7EA</text>
+    <rect x="976" y="290" width="176" height="120" rx="16" fill="#A7A7B6" stroke="#2E1154"/>
+    <text x="988" y="340" fill="#1B0B2A">Slate</text><text x="988" y="366" fill="#1B0B2A">#A7A7B6</text>
+
+    <rect x="48" y="440" width="210" height="120" rx="16" fill="#1FAD7A" stroke="#E9DAFF"/>
+    <text x="60" y="490">Success</text><text x="60" y="516">#1FAD7A</text>
+    <rect x="280" y="440" width="210" height="120" rx="16" fill="#D4A017" stroke="#E9DAFF"/>
+    <text x="292" y="490" fill="#1B0B2A">Warning</text><text x="292" y="516" fill="#1B0B2A">#D4A017</text>
+    <rect x="512" y="440" width="210" height="120" rx="16" fill="#E24A5A" stroke="#E9DAFF"/>
+    <text x="524" y="490">Danger</text><text x="524" y="516">#E24A5A</text>
+  </g>
+</svg>
