@@ -1,19 +1,35 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import { useParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
-import { useJob, usePlatformSummary } from '@/lib/web3/queries';
+import { currentScenario } from '@/lib/demo';
 import { computeDeadlines, deriveStatus } from '@/lib/jobStatus';
-import { fmtTime, fmtToken } from '@/lib/format';
-import { isAllowedUri } from '@/lib/web3/safeUri';
-import { Button } from '@/components/ui/button';
+import { sanitizeUri } from '@/lib/web3/safeUri';
 
-export default function JobDetail(){
-  const params=useParams(); const jobId=BigInt(String(params.jobId));
-  const {data:j}=useJob(jobId); const {data:p}=usePlatformSummary();
-  if(!j||!p) return <div className='container py-8'>Loading...</div>;
-  const status=deriveStatus({assignedAgent:j.core[1],assignedAt:j.core[4],duration:j.core[3],completed:j.core[5],disputed:j.core[6],expired:j.core[7]},{completionRequested:j.val[0],completionRequestedAt:j.val[3],disputedAt:j.val[4]});
-  const d=computeDeadlines({assignedAgent:j.core[1],assignedAt:j.core[4],duration:j.core[3],completed:j.core[5],disputed:j.core[6],expired:j.core[7]},{completionRequested:j.val[0],completionRequestedAt:j.val[3],disputedAt:j.val[4]},{completionReviewPeriod:p.completionReviewPeriod,disputeReviewPeriod:p.disputeReviewPeriod});
-  return <div className='container py-8 space-y-4'><Card><h1 className='font-serif text-2xl'>Job #{String(jobId)} · {status.status}</h1><p>Payout {fmtToken(j.core[2])}</p><p>Expiry {fmtTime(d.expiryTime)}</p><p>Completion review end {fmtTime(d.completionReviewEnd)}</p><p>Dispute review end {fmtTime(d.disputeReviewEnd)}</p></Card>
-  <Card><h2 className='font-serif'>URIs (untrusted)</h2><p className='break-all text-xs'>{j.spec}</p><div className='flex gap-2'><Button variant='outline' onClick={()=>navigator.clipboard.writeText(j.spec)}>Copy</Button><a className={`text-sm ${isAllowedUri(j.spec)?'':'pointer-events-none opacity-50'}`} href={isAllowedUri(j.spec)?j.spec:undefined} target='_blank'>Open link</a></div></Card>
-  <Card><h2 className='font-serif'>Sovereign ledger timeline</h2><p className='text-sm text-muted-foreground'>Event timeline available in production via on-chain logs.</p></Card></div>;
+export default function JobDetailPage() {
+  const params = useParams<{ jobId: string }>();
+  const scenario = currentScenario(typeof window !== "undefined" ? window.location.search : "");
+  const job = scenario.jobs.find((j) => j.id === Number(params.jobId));
+
+  if (!job || job.deleted) return <div className='container py-8'><Card>Job slot deleted or not found.</Card></div>;
+
+  const status = deriveStatus({ assignedAgent: job.agent, assignedAt: job.assignedAt, duration: job.duration, completed: job.completed, disputed: job.disputed, expired: job.expired }, { completionRequested: job.completionRequested, completionRequestedAt: job.completionRequestedAt, disputedAt: job.disputedAt });
+  const deadlines = computeDeadlines({ assignedAgent: job.agent, assignedAt: job.assignedAt, duration: job.duration, completed: job.completed, disputed: job.disputed, expired: job.expired }, { completionRequested: job.completionRequested, completionRequestedAt: job.completionRequestedAt, disputedAt: job.disputedAt }, { completionReviewPeriod: scenario.completionReviewPeriod, disputeReviewPeriod: scenario.disputeReviewPeriod });
+  const safeSpec = sanitizeUri(job.specURI);
+
+  return (
+    <div className='container py-8 space-y-4'>
+      <Card><h1 className='font-serif text-3xl'>Job #{job.id} · {status.status}</h1><p>Expiry: {deadlines.expiryTime.toString()}</p><p>Completion review end: {deadlines.completionReviewEnd.toString()}</p><p>Dispute review end: {deadlines.disputeReviewEnd.toString()}</p></Card>
+      <Card>
+        <h2 className='font-serif text-xl'>URIs (untrusted)</h2>
+        <p className='text-xs break-all'>{job.specURI}</p>
+        <div className='mt-2 flex gap-2'>
+          <button className='rounded border px-3 py-1 text-sm'>Copy</button>
+          <a data-testid='safe-link' className={`rounded border px-3 py-1 text-sm ${safeSpec.safe ? '' : 'pointer-events-none opacity-50'}`} href={safeSpec.safe ? job.specURI : undefined} target='_blank'>Open link</a>
+        </div>
+      </Card>
+      <Card><h2 className='font-serif text-xl'>Sovereign ledger timeline</h2><ul className='list-disc pl-5 text-sm'><li>JobCreated</li><li>JobApplied</li><li>JobCompletionRequested</li><li>JobValidated / JobDisapproved</li><li>JobDisputed / DisputeResolvedWithCode</li><li>JobCompleted / JobCancelled / JobExpired / NFTIssued</li></ul></Card>
+      <Card><h2 className='font-serif text-xl'>Action Panels</h2><p className='text-sm'>Employer/Agent/Validator/Moderator/Owner actions are role-gated and simulation-first. Demo mode disables writes.</p></Card>
+    </div>
+  );
 }

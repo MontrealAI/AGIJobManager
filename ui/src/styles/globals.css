@@ -3,50 +3,59 @@
 @tailwind utilities;
 
 :root {
-  --background: 264 55% 96%;
-  --foreground: 273 44% 12%;
+  --background: 270 45% 97%;
+  --foreground: 275 42% 12%;
   --card: 0 0% 100%;
-  --card-foreground: 273 44% 12%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 273 44% 12%;
-  --primary: 267 65% 32%;
-  --primary-foreground: 267 100% 96%;
-  --secondary: 268 48% 90%;
-  --secondary-foreground: 273 44% 12%;
-  --muted: 255 13% 93%;
-  --muted-foreground: 240 10% 45%;
-  --accent: 264 87% 60%;
-  --accent-foreground: 267 100% 96%;
-  --destructive: 353 72% 59%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 252 16% 82%;
-  --input: 252 16% 82%;
-  --ring: 264 87% 60%;
-}
-
-.dark {
-  --background: 278 100% 6%;
-  --foreground: 0 0% 91%;
-  --card: 273 59% 11%;
-  --card-foreground: 0 0% 91%;
-  --popover: 273 59% 11%;
-  --popover-foreground: 0 0% 91%;
-  --primary: 267 65% 32%;
-  --primary-foreground: 0 0% 91%;
-  --secondary: 264 40% 19%;
-  --secondary-foreground: 0 0% 91%;
-  --muted: 264 24% 21%;
-  --muted-foreground: 243 13% 68%;
-  --accent: 264 87% 60%;
+  --card-foreground: 275 42% 12%;
+  --primary: 269 64% 32%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 268 48% 92%;
+  --secondary-foreground: 275 42% 12%;
+  --muted: 250 16% 93%;
+  --muted-foreground: 247 10% 42%;
+  --accent: 262 87% 60%;
   --accent-foreground: 0 0% 98%;
   --destructive: 353 72% 59%;
   --destructive-foreground: 0 0% 98%;
-  --border: 269 32% 30%;
-  --input: 269 32% 30%;
-  --ring: 264 87% 60%;
+  --border: 260 16% 82%;
+  --input: 260 16% 82%;
+  --ring: 262 87% 60%;
 }
 
-body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: 'tnum' 1; }
-.hero-aura { background: radial-gradient(circle at 20% 10%, rgba(122,63,242,.18), transparent 45%); }
+.dark {
+  --background: 281 100% 6%;
+  --foreground: 0 0% 91%;
+  --card: 275 58% 11%;
+  --card-foreground: 0 0% 91%;
+  --primary: 269 64% 32%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 267 41% 18%;
+  --secondary-foreground: 0 0% 91%;
+  --muted: 263 24% 21%;
+  --muted-foreground: 244 13% 68%;
+  --accent: 262 87% 60%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 353 72% 59%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 270 32% 30%;
+  --input: 270 32% 30%;
+  --ring: 262 87% 60%;
+}
 
-@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important;} }
+* { @apply border-border; }
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-feature-settings: 'tnum' 1;
+}
+.container { @apply mx-auto max-w-6xl px-4; }
+.hero-aura {
+  background: radial-gradient(circle at 28% 10%, rgba(122,63,242,.22), transparent 48%);
+}
+a:focus-visible, button:focus-visible, input:focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

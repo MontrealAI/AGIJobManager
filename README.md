@@ -332,3 +332,35 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+
+## UI / Ops Console (Next.js)
+
+Institutional AGIJobManager UI lives in `ui/` with read-only-first pages, simulation-first writes, safe URI handling, degraded RPC messaging, and hardened security headers.
+
+UI docs:
+- [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
+- [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- [`docs/ui/JOB_LIFECYCLE.md`](docs/ui/JOB_LIFECYCLE.md)
+- [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+- [`docs/ui/DESIGN_SYSTEM.md`](docs/ui/DESIGN_SYSTEM.md)
+- [`docs/ui/DEMO.md`](docs/ui/DEMO.md)
+
+```mermaid
+flowchart LR
+  U[User] --> R[Read-only dashboards]
+  U --> W[Simulation-first writes]
+  W --> S[simulateContract]
+  S --> T[Tx stepper + explorer links]
+```
+
+![Palette plate](docs/ui/graphics/palette-plate.svg)
+![Dashboard wireframe](docs/ui/graphics/dashboard-wireframe.svg)
+
+Quickstart:
+
+```bash
+cd ui
+npm ci
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+npm run build
+```
