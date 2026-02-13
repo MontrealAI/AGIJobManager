@@ -383,10 +383,13 @@ npm run dev
 - [Job lifecycle](./docs/ui/JOB_LIFECYCLE.md)
 - [Ops runbook](./docs/ui/OPS_RUNBOOK.md)
 - [Security model](./docs/ui/SECURITY_MODEL.md)
+- [Contract interface](./docs/ui/CONTRACT_INTERFACE.md)
 - [Testing](./docs/ui/TESTING.md)
+
+UI CI: [![UI CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml)
 
 ### Text-only graphics
 ![Sovereign palette](./docs/ui/assets/palette.svg)
 ![UI wireframe](./docs/ui/assets/ui-wireframe.svg)
 
-Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, and strict security headers.
+Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, strict security headers, and CI-enforced no-binaries checks (`npm run check:no-binaries`).

@@ -20,6 +20,17 @@ flowchart TD
 ```
 
 ```mermaid
+flowchart LR
+  UI[Route component] --> RQ[react-query useQuery]
+  RQ --> MC[multicall batch reads]
+  MC --> RPC[(public RPC or env RPC)]
+  RPC -->|success| CACHE[cache + stale-while-revalidate]
+  RPC -->|error/retry| DEG[degraded RPC banner]
+  DEG --> RETRY[user retry button]
+  RETRY --> RQ
+```
+
+```mermaid
 sequenceDiagram
   participant U as User
   participant UI as App Router UI
@@ -35,3 +46,10 @@ sequenceDiagram
   RQ-->>UI: refresh state
   UI->>U: Confirmed/Failed + explorer links
 ```
+
+| Failure mode | Detection point | UI behavior |
+|---|---|---|
+| RPC unavailable | query error / timeout | Degraded RPC banner, retain last data, show Retry |
+| Chain mismatch | wallet chain id check | network mismatch banner + write disabled |
+| Simulation revert | `simulateContract` throws | decode custom error + remediation guidance |
+| Transaction dropped | receipt timeout | stepper marks failed with explorer link + retry |
