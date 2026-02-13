@@ -1,40 +1,62 @@
-'use client'
-import Link from 'next/link'
-import { agiJobManagerAbi } from '@/abis/agiJobManager'
-import { env } from '@/lib/env'
-import { useReadContract, useReadContracts } from 'wagmi'
-import { deriveJobStatus } from '@/lib/job'
-import { useMemo, useState } from 'react'
+'use client';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { useReadContract, useReadContracts } from 'wagmi';
+import { agiJobManagerAbi } from '@/abis/agiJobManager';
+import { env } from '@/lib/env';
+import { deriveJobStatus } from '@/lib/status';
+import { Badge, Card } from '@/components/ui';
 
-const zero = '0x0000000000000000000000000000000000000000'
+const PAGE_SIZE = 10n;
 
 export default function JobsPage() {
-  const [query, setQuery] = useState('')
-  const nextId = useReadContract({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'nextJobId' })
+  const [page, setPage] = useState(0n);
+  const { data: nextJob } = useReadContract({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'nextJobId' });
+  const start = nextJob && nextJob > 0n ? (nextJob - 1n) - page * PAGE_SIZE : 0n;
   const ids = useMemo(() => {
-    const n = Number(nextId.data || 0n)
-    return Array.from({ length: Math.min(n, 30) }, (_, i) => BigInt(n - i - 1))
-  }, [nextId.data])
-  const jobs = useReadContracts({
-    contracts: ids.map((id) => ({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'getJobCore', args: [id] })),
+    const out: bigint[] = [];
+    for (let i = 0n; i < PAGE_SIZE && start >= i; i++) out.push(start - i);
+    return out;
+  }, [start]);
+  const { data } = useReadContracts({
+    contracts: ids.map((jobId) => ({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'getJobCore', args: [jobId] as const })),
     allowFailure: true
-  })
-  const vals = useReadContracts({
-    contracts: ids.map((id) => ({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'getJobValidation', args: [id] })),
-    allowFailure: true
-  })
+  });
 
-  return <div className="space-y-4"><h1 className="text-xl font-semibold">Jobs</h1><input value={query} onChange={(e) => setQuery(e.target.value)} className="input" placeholder="Search by id/address/status" />
-    <div className="space-y-2">{ids.map((id, i) => {
-      const core = jobs.data?.[i]?.result as any
-      const validation = vals.data?.[i]?.result as any
-      if (!core) return null
-      const status = deriveJobStatus({ ...core }, { ...(validation || { approvals: 0, disapprovals: 0, disputed: false }) }, Math.floor(Date.now() / 1000))
-      const text = `${id} ${core.employer} ${core.agent} ${status}`.toLowerCase()
-      if (query && !text.includes(query.toLowerCase())) return null
-      return <Link key={id.toString()} className="card block" href={`/jobs/${id.toString()}`}>
-        <div className="flex justify-between"><span>Job #{id.toString()}</span><span className="text-xs uppercase">{status}</span></div>
-        <div className="text-sm text-slate-400">Employer: {core.employer.slice(0, 8)}... Agent: {core.agent === zero ? 'unassigned' : core.agent.slice(0, 8)}</div>
-      </Link>
-    })}</div></div>
+  return (
+    <main>
+      <h1 className="mb-4 font-serif text-3xl">Jobs</h1>
+      <Card>
+        <table className="w-full text-sm">
+          <thead><tr className="border-b"><th className="py-2 text-left">Job</th><th>Status</th><th>Payout</th><th>Agent</th></tr></thead>
+          <tbody>
+            {(data ?? []).map((row, index) => {
+              if (row.status !== 'success') return null;
+              const core = row.result as any;
+              const status = deriveJobStatus({
+                assignedAgent: core.assignedAgent,
+                settled: core.settled,
+                disputedAt: BigInt(core.disputedAt),
+                completionRequestedAt: BigInt(core.completionRequestedAt),
+                assignedAt: BigInt(core.assignedAt),
+                deadline: BigInt(core.assignedAt) + BigInt(core.duration)
+              }, BigInt(Math.floor(Date.now() / 1000)));
+              return (
+                <tr key={ids[index].toString()} className="border-b hover:bg-accent/10">
+                  <td className="py-2"><Link href={`/jobs/${ids[index]}`}>#{ids[index].toString()}</Link></td>
+                  <td><Badge>{status}</Badge></td>
+                  <td>{core.payout.toString()}</td>
+                  <td>{core.assignedAgent.slice(0, 6)}...{core.assignedAgent.slice(-4)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div className="mt-3 flex gap-2">
+          <button onClick={() => setPage((p) => (p > 0n ? p - 1n : p))} className="rounded border px-2 py-1">Prev</button>
+          <button onClick={() => setPage((p) => p + 1n)} className="rounded border px-2 py-1">Next</button>
+        </div>
+      </Card>
+    </main>
+  );
 }

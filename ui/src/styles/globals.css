@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 270 40% 98%;
+  --foreground: 275 40% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 275 40% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 275 40% 10%;
+  --primary: 269 64% 32%;
+  --primary-foreground: 280 70% 98%;
+  --secondary: 272 85% 93%;
+  --secondary-foreground: 275 40% 16%;
+  --muted: 260 20% 95%;
+  --muted-foreground: 243 10% 42%;
+  --accent: 262 87% 60%;
+  --accent-foreground: 270 80% 98%;
+  --destructive: 354 72% 59%;
+  --destructive-foreground: 355 100% 97%;
+  --border: 240 7% 91%;
+  --input: 240 7% 91%;
+  --ring: 262 87% 60%;
+}
+
+.dark {
+  --background: 276 100% 6%;
+  --foreground: 273 34% 92%;
+  --card: 275 59% 10%;
+  --card-foreground: 273 34% 92%;
+  --popover: 275 59% 10%;
+  --popover-foreground: 273 34% 92%;
+  --primary: 269 64% 32%;
+  --primary-foreground: 270 80% 98%;
+  --secondary: 274 41% 15%;
+  --secondary-foreground: 273 34% 92%;
+  --muted: 274 28% 16%;
+  --muted-foreground: 242 12% 72%;
+  --accent: 262 87% 60%;
+  --accent-foreground: 270 80% 98%;
+  --destructive: 354 72% 59%;
+  --destructive-foreground: 355 100% 97%;
+  --border: 272 28% 22%;
+  --input: 272 28% 22%;
+  --ring: 262 87% 60%;
+}
+
+* { @apply border-border; }
+body {
+  @apply bg-background text-foreground;
+  font-feature-settings: 'tnum';
+  background-image: radial-gradient(circle at 20% 0%, rgba(122, 63, 242, 0.16), transparent 38%);
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
