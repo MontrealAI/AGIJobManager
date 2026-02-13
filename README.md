@@ -332,3 +332,33 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+
+## UI / Ops Console
+
+Institutional-grade Next.js dapp + operations console with read-only-first UX, simulation-first write safety, and deterministic Demo Mode.
+
+- UI docs: `docs/ui/OVERVIEW.md`, `docs/ui/ARCHITECTURE.md`, `docs/ui/JOB_LIFECYCLE.md`, `docs/ui/SECURITY_MODEL.md`, `docs/ui/DESIGN_SYSTEM.md`, `docs/ui/DEMO.md`, `docs/ui/TESTING.md`, `docs/ui/VERSIONS.md`
+- CI: `.github/workflows/ui.yml`
+
+### Quick start
+
+```bash
+cd ui
+npm ci
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+npm run build
+```
+
+### Security highlights
+
+- Simulation-first transaction workflow
+- Safe outbound link scheme allowlist
+- Read-only mode fully supported without wallet
+- Degraded RPC banner + retry path
+
+### Gallery
+
+![Dashboard](docs/ui/screenshots/dashboard.svg)
+![Jobs List](docs/ui/screenshots/jobs-list.svg)
+![Job Detail](docs/ui/screenshots/job-detail.svg)
+![Admin](docs/ui/screenshots/admin.svg)
