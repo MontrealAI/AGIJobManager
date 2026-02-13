@@ -1,53 +1,21 @@
-# Repository-Specific Security Model
+# Security Model
 
-## Threat model summary
+## Threat model
 
-AGIJobManager is a **business-operated, owner-privileged escrow protocol**. It is not a trustless court. Critical assumptions:
-- Owner and moderators are trusted operators.
-- Validator set is permissioned by ENS/Merkle/allowlists.
-- ERC20 token behavior is standard enough for exact-transfer wrappers.
+| Vector | Impact | Mitigation | Residual risk | Operator responsibility |
+| --- | --- | --- | --- | --- |
+| Privileged key compromise | Parameter abuse / fund governance risk | Owner opsec, multisig, pause controls | High if key custody weak | Strong key management and rotation |
+| Validator collusion | Biased vote outcomes | Bonding, thresholds, disputes | Medium | Curate validator set and monitor vote patterns |
+| ENS integration failure | Eligibility false negatives / metadata failure | Best-effort design, fallback allowlists | Low-Medium | Maintain additional allowlists and comms |
+| Griefing/dispute spam | Operational overload | Dispute bond, moderator workflows | Medium | Enforce runbook + escalation windows |
+| Contract bug | Financial loss or liveness degradation | Tests, invariants, staged rollout | Non-zero | Conservative rollout and rapid response |
 
-## Critical risks and mitigations
+## Operator controls
 
-| Risk | Impact | In-code mitigation | Operational mitigation |
-|---|---|---|---|
-| Owner key compromise | Config abuse, pause abuse, allowlist tampering | Role checks only | Use multisig + hardware keys + restricted signer policy |
-| Moderator compromise | Dispute outcomes manipulated | `onlyModerator`, typed resolution paths | Keep moderator set minimal; monitor resolution events |
-| ERC20 transfer anomalies | Settlement/withdraw revert or unexpected behavior | `TransferUtils.safeTransfer*` and exact transfer checks | Use vetted token contracts; run smoke tests before production |
-| ENS hook failure | Metadata/permissions drift | Best-effort calls + event visibility | Alert on `EnsHookAttempted(false)` and reconcile manually |
-| Misconfigured parameters | Economic imbalance, poor liveness | Input guards and invariant checks | Use staged testnet rollout and parameter review gates |
-| Insolvency state | Treasury withdraw blocked | `withdrawableAGI()` reverts on insolvent balance | Monitor locked totals vs token balance continuously |
+- `pause`: emergency broad stop.
+- `settlementPaused`: settlement-specific stop.
+- Blacklists: actor-level containment.
+- `lockIdentityConfiguration`: permanently freeze identity wiring.
 
-## Pause and settlement pause semantics
-
-- `pause()` (`whenNotPaused`) blocks create/apply/vote/dispute and reward-pool contributions.
-- `requestJobCompletion` is intentionally callable while paused (dispute/liveness recovery).
-- `settlementPaused` blocks settlement-sensitive methods using custom guard (`whenSettlementNotPaused`), including finalize/dispute resolution/withdraw/cancel/expire.
-- `withdrawAGI` requires paused mode **and** settlement not paused.
-
-## Role-compromise scenarios
-
-### Owner compromised
-Immediate actions:
-1. Pause contract.
-2. Freeze off-chain integrations.
-3. Rotate owner to secured multisig if possible.
-4. Audit recent config and allowlist changes from events.
-
-### Moderator compromised
-Immediate actions:
-1. Owner removes compromised moderator.
-2. Pause if active disputes are at risk.
-3. Reassign trusted moderator(s) and document incident.
-
-## Operational security recommendations
-
-- Use a multisig as owner from day one.
-- Separate deployer and operator keys.
-- Keep moderator key custody independent from owner signers.
-- Maintain alerts for:
-  - `SettlementPauseSet`, `Paused`, `Unpaused`
-  - config update events
-  - `DisputeResolved*`, `JobDisputed`
-  - `AGIWithdrawn`
-  - `EnsHookAttempted(success=false)`
+> **Non-goal / limitation**
+> The protocol does not remove trust in operators/moderators; it formalizes and constrains it.

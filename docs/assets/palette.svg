@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="280" viewBox="0 0 980 280">
+  <rect width="980" height="280" fill="#14001F"/>
+  <text x="20" y="30" fill="#E9DAFF" font-family="Arial" font-size="22">ASI Superintelligence Sovereign Purple Palette</text>
+  <g font-family="Arial" font-size="14" fill="#E7E7EA">
+    <rect x="20" y="50" width="140" height="60" fill="#14001F"/><text x="20" y="130">ASI Deep #14001F</text>
+    <rect x="180" y="50" width="140" height="60" fill="#1B0B2A"/><text x="180" y="130">Sovereign Ink #1B0B2A</text>
+    <rect x="340" y="50" width="140" height="60" fill="#4B1D86"/><text x="340" y="130">Imperial Purple #4B1D86</text>
+    <rect x="500" y="50" width="140" height="60" fill="#7A3FF2"/><text x="500" y="130">Amethyst #7A3FF2</text>
+    <rect x="660" y="50" width="140" height="60" fill="#E9DAFF"/><text x="660" y="130">Orchid Mist #E9DAFF</text>
+    <rect x="820" y="50" width="140" height="60" fill="#A7A7B6"/><text x="820" y="130">Slate #A7A7B6</text>
+    <rect x="20" y="170" width="140" height="60" fill="#1FAD7A"/><text x="20" y="250">Success #1FAD7A</text>
+    <rect x="180" y="170" width="140" height="60" fill="#D4A017"/><text x="180" y="250">Warning #D4A017</text>
+    <rect x="340" y="170" width="140" height="60" fill="#E24A5A"/><text x="340" y="250">Danger #E24A5A</text>
+    <rect x="500" y="170" width="140" height="60" fill="#E7E7EA"/><text x="500" y="250">Platinum #E7E7EA</text>
+  </g>
+</svg>
