@@ -1,19 +1,20 @@
-# AGIJobManager UI
+# AGIJobManager UI (Next.js)
 
-## Requirements
-- Node >= 20.11.0
+Institutional dApp + ops console with read-only-first architecture and deterministic Demo Mode.
 
-## Setup
-- `npm ci`
-- `cp .env.example .env.local`
-- `npm run dev`
+## Quick start
+```bash
+npm ci
+cp .env.example .env.local
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+```
 
 ## Commands
-- `npm run build`
 - `npm run lint`
+- `npm run typecheck`
 - `npm run test`
 - `npm run test:e2e`
-
-## Notes
-- Read-only mode works without wallet connection.
-- Write operations are simulation-first with error decoding.
+- `npm run test:a11y`
+- `npm run docs:versions`
+- `npm run docs:check`
+- `npm run docs:screenshots`
