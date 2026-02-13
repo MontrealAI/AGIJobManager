@@ -160,7 +160,7 @@
           "type": "uint256"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "uint256",
           "name": "remainingWithdrawable",
           "type": "uint256"
@@ -442,7 +442,7 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "address",
           "name": "newEnsRegistry",
           "type": "address"
@@ -681,13 +681,13 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "bytes32",
           "name": "validatorMerkleRoot",
           "type": "bytes32"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "bytes32",
           "name": "agentMerkleRoot",
           "type": "bytes32"
@@ -725,7 +725,7 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "address",
           "name": "newNameWrapper",
           "type": "address"
@@ -928,25 +928,6 @@
         }
       ],
       "name": "Unpaused",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bool",
-          "name": "oldValue",
-          "type": "bool"
-        },
-        {
-          "indexed": true,
-          "internalType": "bool",
-          "name": "newValue",
-          "type": "bool"
-        }
-      ],
-      "name": "UseEnsJobTokenURIUpdated",
       "type": "event"
     },
     {

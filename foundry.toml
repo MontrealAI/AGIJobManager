@@ -1,0 +1,13 @@
+[profile.default]
+solc = "0.8.23"
+src = "contracts"
+test = "forge-test"
+libs = ["lib", "node_modules"]
+optimizer = true
+optimizer_runs = 50
+evm_version = "london"
+remappings = [
+  "@openzeppelin/=node_modules/@openzeppelin/",
+  "forge-std/=lib/forge-std/src/"
+]
+fs_permissions = [{ access = "read", path = "./" }]
