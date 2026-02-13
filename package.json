@@ -6,7 +6,9 @@
   "scripts": {
     "build": "truffle compile",
     "size": "node scripts/check-bytecode-size.js",
-    "check:no-binaries": "npm --prefix ui run check:no-binaries",
+    "check:no-binaries": "node scripts/check-no-binaries.mjs",
+    "docs:gen": "node scripts/docs/gen-docs.mjs",
+    "docs:check": "node scripts/docs/check-docs.mjs",
     "docs:interface": "node scripts/generate-interface-doc.js",
     "lint": "solhint \"contracts/**/*.sol\"",
     "test": "truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js && node scripts/check-contract-sizes.js",
