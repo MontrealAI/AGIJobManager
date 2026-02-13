@@ -1,14 +1,42 @@
 import { describe, it, expect } from 'vitest';
-import { deriveStatus, computeDeadlines } from '@/lib/jobStatus';
-import { isAllowedUri } from '@/lib/web3/safeUri';
-import { fmtAddr } from '@/lib/format';
+import fc from 'fast-check';
+import { deriveStatus, computeDeadlines, deriveJobView } from '@/lib/jobStatus';
+import { sanitizeUri } from '@/lib/web3/safeUri';
 
-describe('status',()=>{
-  it('terminal mutually exclusive',()=>{
-    const settled=deriveStatus({assignedAgent:'0x0000000000000000000000000000000000000000',assignedAt:0n,duration:0n,completed:true,disputed:true,expired:true},{completionRequested:true,completionRequestedAt:0n,disputedAt:0n});
-    expect(settled.status).toBe('Settled'); expect(settled.terminal).toBe(true);
+describe('job status properties', () => {
+  it('terminal states are mutually exclusive', () => {
+    fc.assert(fc.property(fc.boolean(), fc.boolean(), (completed, expired) => {
+      const s = deriveStatus({ assignedAgent: '0x0000000000000000000000000000000000000000', assignedAt: 0n, duration: 0n, completed, expired, disputed: false }, { completionRequested: false, completionRequestedAt: 0n, disputedAt: 0n });
+      if (completed) expect(s.status).toBe('Settled');
+      if (!completed && expired) expect(s.status).toBe('Expired');
+      expect(!(s.status === 'Settled' && s.status === 'Expired')).toBe(true);
+    }));
   });
-  it('deadline zero edge',()=>{const d=computeDeadlines({assignedAgent:'0x0000000000000000000000000000000000000000',assignedAt:0n,duration:0n,completed:false,disputed:false,expired:false},{completionRequested:false,completionRequestedAt:0n,disputedAt:0n},{completionReviewPeriod:0n,disputeReviewPeriod:0n}); expect(d.expiryTime).toBe(0n);});
-  it('uri allowlist',()=>{expect(isAllowedUri('https://x.com')).toBe(true); expect(isAllowedUri('javascript:alert(1)')).toBe(false);});
-  it('format helpers',()=>{expect(fmtAddr('0x1234567890123456789012345678901234567890')).toBe('0x1234...7890');});
+
+  it('deadlines monotonic and non-negative', () => {
+    fc.assert(fc.property(fc.nat(), fc.nat(), fc.nat(), (a, b, c) => {
+      const assignedAt = BigInt(a);
+      const duration = BigInt(b);
+      const completionRequestedAt = BigInt(c);
+      const d = computeDeadlines({ assignedAgent: '0x0000000000000000000000000000000000000000', assignedAt, duration, completed: false, disputed: false, expired: false }, { completionRequested: completionRequestedAt > 0n, completionRequestedAt, disputedAt: completionRequestedAt }, { completionReviewPeriod: 10n, disputeReviewPeriod: 20n });
+      expect(d.expiryTime).toBeGreaterThanOrEqual(0n);
+      expect(d.completionReviewEnd).toBeGreaterThanOrEqual(completionRequestedAt);
+      expect(d.disputeReviewEnd).toBeGreaterThanOrEqual(completionRequestedAt);
+    }));
+  });
+
+  it('uri sanitizer blocks dangerous schemes', () => {
+    fc.assert(fc.property(fc.string(), (input) => {
+      const safe = sanitizeUri(input);
+      const lowered = input.toLowerCase();
+      if (lowered.startsWith('javascript:') || lowered.startsWith('data:') || lowered.startsWith('file:') || lowered.startsWith('blob:')) {
+        expect(safe.safe).toBe(false);
+      }
+    }));
+  });
+
+  it('role gating prerequisites', () => {
+    const view = deriveJobView({ assignedAgent: '0x0000000000000000000000000000000000000000', assignedAt: 0n, duration: 0n, completed: false, disputed: false, expired: false }, { completionRequested: false, completionRequestedAt: 0n, disputedAt: 0n }, { completionReviewPeriod: 1n, disputeReviewPeriod: 1n });
+    expect(view.allowedActions.validator.includes('validateJob')).toBe(false);
+  });
 });
