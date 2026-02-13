@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" role="img" aria-labelledby="title desc">
+  <title id="title">ENS Integration Wireframe</title>
+  <desc id="desc">AGIJobManager ENS architecture wireframe with trust boundaries and optional components.</desc>
+  <rect x="0" y="0" width="1100" height="620" fill="#14001F" />
+
+  <rect x="40" y="40" width="640" height="520" fill="none" stroke="#7A3FF2" stroke-width="2" />
+  <text x="52" y="66" fill="#E9DAFF" font-size="16">On-chain enforcement boundary (AGIJobManager domain)</text>
+
+  <rect x="90" y="110" width="250" height="110" fill="#1B0B2A" stroke="#E9DAFF" />
+  <text x="104" y="145" fill="#E9DAFF" font-size="15">AGIJobManager</text>
+  <text x="104" y="168" fill="#A7A7B6" font-size="12">role gating + settlement</text>
+
+  <rect x="430" y="110" width="210" height="110" fill="#1B0B2A" stroke="#E9DAFF" />
+  <text x="444" y="145" fill="#E9DAFF" font-size="15">ENS Registry (external)</text>
+  <text x="444" y="168" fill="#A7A7B6" font-size="12">resolver(node)</text>
+
+  <rect x="430" y="260" width="210" height="110" fill="#1B0B2A" stroke="#E9DAFF" />
+  <text x="444" y="295" fill="#E9DAFF" font-size="15">NameWrapper (external)</text>
+  <text x="444" y="318" fill="#A7A7B6" font-size="12">ownerOf / approvals</text>
+
+  <rect x="90" y="260" width="250" height="110" fill="#1B0B2A" stroke="#E9DAFF" />
+  <text x="104" y="295" fill="#E9DAFF" font-size="15">Optional ENSJobPages</text>
+  <text x="104" y="318" fill="#A7A7B6" font-size="12">handleHook + jobEnsURI</text>
+
+  <line x1="340" y1="165" x2="430" y2="165" stroke="#7A3FF2" stroke-width="2" />
+  <text x="350" y="155" fill="#E9DAFF" font-size="12">resolver fallback</text>
+
+  <line x1="340" y1="305" x2="430" y2="305" stroke="#7A3FF2" stroke-width="2" />
+  <text x="350" y="295" fill="#E9DAFF" font-size="12">wrapper ownership</text>
+
+  <line x1="215" y1="220" x2="215" y2="260" stroke="#7A3FF2" stroke-width="2" />
+  <text x="225" y="246" fill="#E9DAFF" font-size="12">best-effort hooks</text>
+
+  <rect x="730" y="90" width="320" height="220" fill="none" stroke="#A7A7B6" stroke-dasharray="6 4" />
+  <text x="744" y="115" fill="#E9DAFF" font-size="15">Off-chain/operator boundary</text>
+  <text x="744" y="145" fill="#A7A7B6" font-size="12">owners, multisig, UI, monitoring</text>
+  <text x="744" y="168" fill="#A7A7B6" font-size="12">must verify config + incidents</text>
+
+  <line x1="680" y1="180" x2="730" y2="180" stroke="#D4A017" stroke-width="2" />
+  <text x="686" y="170" fill="#D4A017" font-size="12">manual governance actions</text>
+
+  <rect x="730" y="350" width="320" height="170" fill="none" stroke="#E24A5A" stroke-dasharray="6 4" />
+  <text x="744" y="375" fill="#E9DAFF" font-size="15">Risk notes</text>
+  <text x="744" y="404" fill="#A7A7B6" font-size="12">- ENS failures should fail closed for auth</text>
+  <text x="744" y="428" fill="#A7A7B6" font-size="12">- Settlement correctness independent of hooks</text>
+  <text x="744" y="452" fill="#A7A7B6" font-size="12">- lockIdentityConfiguration is irreversible</text>
+</svg>

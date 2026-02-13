@@ -134,5 +134,8 @@ for (const [file, snippets] of requiredSectionSnippets) {
   }
 }
 
+
+execFileSync('node', ['scripts/docs/check-ens-docs.mjs'], { cwd: root, stdio: 'inherit' });
+
 if (process.exitCode) process.exit(process.exitCode);
 ok('Documentation checks passed');
