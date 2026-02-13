@@ -8,8 +8,8 @@ import { erc20Abi } from '@/abis/erc20'
 import { env } from '@/lib/env'
 import { computeDeadlines, deriveJobUiStatus } from '@/lib/jobStatus'
 import { formatTimestamp, formatToken, secondsLeft } from '@/lib/format'
-import { isSafeUri } from '@/lib/security'
 import { TxStepperButton } from '@/components/tx/tx-stepper-button'
+import { SafeUriField } from '@/components/jobs/safe-uri-field'
 
 export default function JobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>()
@@ -55,9 +55,8 @@ export default function JobDetailPage() {
       <p>Payout: {formatToken(core.payout)}</p>
       <p>Expiry: {formatTimestamp(deadlines.expiryTime)} ({secondsLeft(deadlines.expiryTime)})</p>
       <p>Completion review: {formatTimestamp(deadlines.completionReviewEnd)}</p>
-      <p>Spec URI: <span className="break-all">{specUri || '—'}</span></p>
-      <p>Completion URI: <span className="break-all">{completionUri || '—'}</span></p>
-      <div className="flex gap-2">{isSafeUri(specUri) ? <a className="btn-outline" href={specUri} rel="noreferrer" target="_blank">Open link</a> : <button className="btn-outline" disabled>Open link</button>}</div>
+      <SafeUriField label="Spec URI" uri={specUri} />
+      <SafeUriField label="Completion URI" uri={completionUri} />
     </div>
 
     <div className="grid gap-4 md:grid-cols-2">
