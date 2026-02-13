@@ -33,8 +33,22 @@ const sourceFingerprint = crypto
   .update(JSON.stringify(topLevel) + JSON.stringify(curated))
   .digest('hex')
   .slice(0, 12);
+const generatedAt = sourceFingerprint;
 
-const content = `# Repository Map (Generated)\n\n- Source snapshot fingerprint: \`${sourceFingerprint}\`.\n\n## Curated high-signal map\n\n| Path | Purpose | Notes |\n| --- | --- | --- |\n${curated.map((r) => `| \`${r[0]}\` | ${r[1]} | ${r[2]} |`).join('\n')}\n\n## Top-level inventory\n\n| Entry | Kind |\n| --- | --- |\n${topLevel.map((e) => `| \`${e.name}\` | ${e.type} |`).join('\n')}\n`;
+const topLevelDirs = topLevel.filter((e) => e.type === 'dir');
+
+const keyEntrypoints = [
+  'README.md',
+  'docs/README.md',
+  'contracts/AGIJobManager.sol',
+  'test/AGIJobManager.test.js',
+  'migrations/2_deploy_contracts.js',
+  'scripts/postdeploy-config.js',
+  '.github/workflows/ci.yml',
+  '.github/workflows/docs.yml'
+];
+
+const content = `# Repository Map (Generated)\n\n- Generated at (deterministic source fingerprint): \`${generatedAt}\`.\n- Source snapshot fingerprint: \`${sourceFingerprint}\`.\n\n## Curated high-signal map\n\n| Path | Purpose | Notes |\n| --- | --- | --- |\n${curated.map((r) => `| \`${r[0]}\` | ${r[1]} | ${r[2]} |`).join('\n')}\n\n## Top-level directories\n\n| Directory | Purpose signal |\n| --- | --- |\n${topLevelDirs.map((e) => `| \`${e.name}/\` | Project-scoped directory discovered at repository root |`).join('\n')}\n\n## Key entrypoints\n\n${keyEntrypoints.map((entry) => `- [\`${entry}\`](../${entry})`).join('\n')}\n\n## Source files used\n\n- repository root directory listing\n- curated mapping declared in \`scripts/docs/generate-repo-map.mjs\`\n`;
 
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, content);

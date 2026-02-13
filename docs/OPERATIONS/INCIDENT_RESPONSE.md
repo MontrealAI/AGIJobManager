@@ -1,6 +1,7 @@
 # Incident Response
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial","background":"#14001F","primaryColor":"#4B1D86","primaryTextColor":"#E9DAFF","lineColor":"#7A3FF2","tertiaryColor":"#1B0B2A","noteBkgColor":"#1B0B2A","noteTextColor":"#E9DAFF"}}}%%
 flowchart TD
   A[Incident detected] --> B{Active exploit or funds at immediate risk?}
   B -- Yes --> C[Owner calls pause]

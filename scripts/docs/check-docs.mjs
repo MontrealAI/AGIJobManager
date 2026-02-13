@@ -39,11 +39,16 @@ for (const svgFile of ['docs/assets/palette.svg', 'docs/assets/architecture-wire
   if (!trimmed.startsWith('<svg') || !trimmed.includes('</svg>')) fail(`Invalid SVG XML envelope: ${svgFile}`);
 }
 
-const generators = ['scripts/docs/generate-versions.mjs','scripts/docs/generate-contract-interface.mjs','scripts/docs/generate-repo-map.mjs'];
+const generators = [
+  'scripts/docs/generate-versions.mjs',
+  'scripts/docs/generate-contract-interface.mjs',
+  'scripts/docs/generate-repo-map.mjs',
+  'scripts/docs/generate-events-errors.mjs'
+];
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'agijob-docs-'));
 try {
   for (const g of generators) execFileSync('node', [g, `--out-dir=${tmp}`], { cwd: root, stdio: 'ignore' });
-  for (const genFile of ['docs/REFERENCE/VERSIONS.md','docs/REFERENCE/CONTRACT_INTERFACE.md','docs/REPO_MAP.md']) {
+  for (const genFile of ['docs/REFERENCE/VERSIONS.md','docs/REFERENCE/CONTRACT_INTERFACE.md','docs/REPO_MAP.md','docs/REFERENCE/EVENTS_AND_ERRORS.md']) {
     const current = fs.readFileSync(path.join(root, genFile), 'utf8');
     const expected = fs.readFileSync(path.join(tmp, genFile), 'utf8');
     if (current !== expected) fail(`Generated doc is stale: ${genFile}. Run npm run docs:gen`);
@@ -73,6 +78,36 @@ for (const md of mdFiles) {
     const target = path.resolve(path.dirname(md), clean);
     if (!fs.existsSync(target)) fail(`Broken relative link in ${path.relative(root, md)} -> ${raw}`);
   }
+
+  // Enforce explicit code-fence language labels for clarity in core docs.
+  if (requiredFiles.includes(path.relative(root, md))) {
+    let inFence = false;
+    for (const line of text.split('\n')) {
+      if (!line.startsWith('```')) continue;
+      if (!inFence) {
+        const label = line.slice(3).trim();
+        if (!label) fail(`Unlabeled code fence in ${path.relative(root, md)}. Add a language label (e.g., bash, json, solidity, mermaid).`);
+      }
+      inFence = !inFence;
+    }
+  }
+}
+
+const quintessential = fs.readFileSync(path.join(root, 'docs/QUINTESSENTIAL_USE_CASE.md'), 'utf8');
+const requiredHeadings = [
+  '## A) Local dev chain walkthrough',
+  '## B) Testnet/mainnet operator checklist',
+  '### Step table',
+  '### Happy path sequence diagram',
+  '### Lifecycle state diagram',
+  '### Expected state checkpoints'
+];
+for (const heading of requiredHeadings) {
+  if (!quintessential.includes(heading)) fail(`Missing required quintessential heading: ${heading}`);
+}
+const mustIncludeColumns = ['| Step | Actor | Function/Command | Preconditions | Expected on-chain outcome | Events emitted | What to verify next |'];
+for (const row of mustIncludeColumns) {
+  if (!quintessential.includes(row)) fail('Quintessential use case step table is missing required columns');
 }
 
 if (process.exitCode) process.exit(process.exitCode);

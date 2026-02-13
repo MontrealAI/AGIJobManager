@@ -9,6 +9,7 @@ const outFile = path.join(outRoot, 'docs/REFERENCE/CONTRACT_INTERFACE.md');
 const srcPath = path.join(repoRoot, 'contracts/AGIJobManager.sol');
 const src = fs.readFileSync(srcPath, 'utf8');
 const sourceFingerprint = crypto.createHash('sha256').update(src).digest('hex').slice(0, 12);
+const generatedAt = sourceFingerprint;
 
 const clean = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 const body = clean(src);
@@ -38,7 +39,7 @@ const publicVars = [...body.matchAll(/^\s*([\w\[\]()<>., ]+)\s+public\s+(\w+)\s*
   .map((m) => ({ type: m[1].replace(/\s+/g, ' ').trim(), name: m[2] }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
-const content = `# AGIJobManager Interface Reference (Generated)\n\n- Source snapshot fingerprint: \`${sourceFingerprint}\`.\n- Source: \`contracts/AGIJobManager.sol\`.\n\n## Operator-facing interface\n\n### Public state variables\n\n| Variable | Type |\n| --- | --- |\n${publicVars.map((v) => `| \`${v.name}\` | \`${v.type}\` |`).join('\n')}\n\n### External/Public functions\n\n| Signature | Visibility | Mutability | Returns |\n| --- | --- | --- | --- |\n${functions.map((f) => `| \`${f.sig}\` | ${f.visibility} | ${f.mut} | ${f.returns === '—' ? '—' : `\`${f.returns}\``} |`).join('\n')}\n\n## Events index\n\n| Event | Parameters |\n| --- | --- |\n${events.map((e) => `| \`${e.name}\` | \`${e.params}\` |`).join('\n')}\n\n## Errors index\n\n| Error | Parameters |\n| --- | --- |\n${errors.map((e) => `| \`${e.name}\` | ${e.args === '—' ? '—' : `\`${e.args}\``} |`).join('\n')}\n\n## Notes on best-effort integrations\n\n- ENS ownership checks and ENS Job Pages hooks are integration conveniences, not safety preconditions for escrow accounting.\n- Settlement safety is enforced by AGI token balances, locked accounting buckets, and state transition guards.\n`;
+const content = `# AGIJobManager Interface Reference (Generated)\n\n- Generated at (deterministic source fingerprint): \`${generatedAt}\`.\n- Source snapshot fingerprint: \`${sourceFingerprint}\`.\n- Source: \`contracts/AGIJobManager.sol\`.\n\n## Operator-facing interface\n\n### Public state variables\n\n| Variable | Type |\n| --- | --- |\n${publicVars.map((v) => `| \`${v.name}\` | \`${v.type}\` |`).join('\n')}\n\n### External/Public functions\n\n| Signature | Visibility | Mutability | Returns |\n| --- | --- | --- | --- |\n${functions.map((f) => `| \`${f.sig}\` | ${f.visibility} | ${f.mut} | ${f.returns === '—' ? '—' : `\`${f.returns}\``} |`).join('\n')}\n\n## Events index\n\n| Event | Parameters |\n| --- | --- |\n${events.map((e) => `| \`${e.name}\` | \`${e.params}\` |`).join('\n')}\n\n## Errors index\n\n| Error | Parameters |\n| --- | --- |\n${errors.map((e) => `| \`${e.name}\` | ${e.args === '—' ? '—' : `\`${e.args}\``} |`).join('\n')}\n\n## Notes on best-effort integrations\n\n- ENS ownership checks and ENS Job Pages hooks are integration conveniences, not safety preconditions for escrow accounting.\n- Settlement safety is enforced by AGI token balances, locked accounting buckets, and state transition guards.\n\n## Source files used\n\n- \`contracts/AGIJobManager.sol\`\n`;
 
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, content);
