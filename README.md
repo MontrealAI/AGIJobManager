@@ -365,3 +365,33 @@ npm ci
 NEXT_PUBLIC_DEMO_MODE=1 npm run dev
 npm run build
 ```
+
+## UI / Sovereign Ops Console
+
+[![UI CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml)
+
+A standalone Next.js App Router UI lives in [`ui/`](ui/) with read-only-first UX, simulation-first write flows, safe URI handling, and an owner-focused operations console.
+
+Quick start:
+
+```bash
+cd ui
+npm ci
+npm run dev
+```
+
+Documentation set:
+- [`docs/ui/README.md`](docs/ui/README.md)
+- [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- [`docs/ui/JOB_LIFECYCLE.md`](docs/ui/JOB_LIFECYCLE.md)
+- [`docs/ui/OPS_RUNBOOK.md`](docs/ui/OPS_RUNBOOK.md)
+- [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+- [`docs/ui/TESTING.md`](docs/ui/TESTING.md)
+
+Text-only design assets:
+
+![Sovereign purple palette](docs/ui/assets/palette.svg)
+
+![Institutional UI wireframe](docs/ui/assets/ui-wireframe.svg)
+
+Security highlights: read-only without wallet, simulation-first writes, decoded custom errors, explicit safe-link policy, and strict security headers.
