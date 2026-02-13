@@ -12,7 +12,7 @@ import { isDemoMode, useDemoScenario } from '@/lib/demo';
 export default function JobDetail() {
   const params = useParams();
   const jobId = Number(params.jobId);
-  const scenario = useDemoScenario();
+  const { scenario } = useDemoScenario();
   const { data: jobs } = useJobs(scenario);
   const { data: p } = usePlatformSummary(scenario);
   const j: any = (jobs ?? []).find((x: any) => x?.id === jobId);

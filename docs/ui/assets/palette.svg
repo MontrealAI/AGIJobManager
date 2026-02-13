@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="260" viewBox="0 0 1100 260">
+  <rect width="1100" height="260" fill="#14001F"/>
+  <g font-family="ui-sans-serif, system-ui" font-size="14" fill="#E9DAFF">
+    <rect x="20" y="40" width="100" height="100" fill="#14001F" stroke="#2E1154"/><text x="20" y="160">ASI Deep</text>
+    <rect x="140" y="40" width="100" height="100" fill="#1B0B2A" stroke="#2E1154"/><text x="140" y="160">Sovereign Ink</text>
+    <rect x="260" y="40" width="100" height="100" fill="#4B1D86" stroke="#2E1154"/><text x="260" y="160">Imperial Purple</text>
+    <rect x="380" y="40" width="100" height="100" fill="#7A3FF2" stroke="#2E1154"/><text x="380" y="160">Amethyst</text>
+    <rect x="500" y="40" width="100" height="100" fill="#E9DAFF" stroke="#2E1154"/><text x="500" y="160">Orchid Mist</text>
+    <rect x="620" y="40" width="100" height="100" fill="#A7A7B6" stroke="#2E1154"/><text x="620" y="160">Slate</text>
+    <rect x="740" y="40" width="100" height="100" fill="#1FAD7A" stroke="#2E1154"/><text x="740" y="160">Success</text>
+    <rect x="860" y="40" width="100" height="100" fill="#D4A017" stroke="#2E1154"/><text x="860" y="160">Warning</text>
+    <rect x="980" y="40" width="100" height="100" fill="#E24A5A" stroke="#2E1154"/><text x="980" y="160">Danger</text>
+  </g>
+</svg>

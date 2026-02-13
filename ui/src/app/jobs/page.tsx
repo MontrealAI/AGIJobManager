@@ -12,7 +12,7 @@ function toCsv(rows: any[]) {
 }
 
 export default function Jobs() {
-  const scenario = useDemoScenario();
+  const { scenario } = useDemoScenario();
   const { data } = useJobs(scenario);
   const [q, setQ] = useState('');
   const rows = useMemo(() => (data ?? []).map((j: any) => ({ ...j, status: deriveStatus({ assignedAgent: j.agent, assignedAt: j.assignedAt, duration: j.duration, completed: j.completed, disputed: j.disputed, expired: j.expired }, { completionRequested: j.completionRequested, completionRequestedAt: j.completionRequestedAt, disputedAt: j.disputedAt }).status })), [data]);
