@@ -332,3 +332,31 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+
+## UI / Ops Console (Next.js)
+
+[![UI CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml)
+
+Institutional-grade dApp + operations console is available in [`ui/`](ui/) with deterministic Demo Mode, simulation-first transaction UX, safe-link handling, and strict security headers.
+
+**UI docs**
+- [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
+- [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- [`docs/ui/JOB_LIFECYCLE.md`](docs/ui/JOB_LIFECYCLE.md)
+- [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+- [`docs/ui/TESTING.md`](docs/ui/TESTING.md)
+
+**Quick start**
+```bash
+cd ui
+npm ci
+cp .env.example .env.local
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+npm run build
+```
+
+**Gallery**
+![Dashboard](docs/ui/screenshots/dashboard.svg)
+![Jobs](docs/ui/screenshots/jobs.svg)
+![Job Detail](docs/ui/screenshots/job-detail.svg)
+![Admin](docs/ui/screenshots/admin.svg)

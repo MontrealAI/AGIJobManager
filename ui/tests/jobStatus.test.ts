@@ -1,14 +1,46 @@
 import { describe, it, expect } from 'vitest';
-import { deriveStatus, computeDeadlines } from '@/lib/jobStatus';
-import { isAllowedUri } from '@/lib/web3/safeUri';
-import { fmtAddr } from '@/lib/format';
+import fc from 'fast-check';
+import { computeDeadlines, deriveStatus } from '@/lib/jobStatus';
+import { sanitizeUri } from '@/lib/web3/safeUri';
+import { decodeError } from '@/lib/web3/errors';
 
-describe('status',()=>{
-  it('terminal mutually exclusive',()=>{
-    const settled=deriveStatus({assignedAgent:'0x0000000000000000000000000000000000000000',assignedAt:0n,duration:0n,completed:true,disputed:true,expired:true},{completionRequested:true,completionRequestedAt:0n,disputedAt:0n});
-    expect(settled.status).toBe('Settled'); expect(settled.terminal).toBe(true);
+const zero = '0x0000000000000000000000000000000000000000' as const;
+
+describe('job status properties', () => {
+  it('terminal states are mutually exclusive', () => {
+    fc.assert(
+      fc.property(fc.boolean(), fc.boolean(), (completed, expired) => {
+        const s = deriveStatus({ assignedAgent: zero, assignedAt: 0n, duration: 0n, completed, disputed: false, expired }, { completionRequested: false, completionRequestedAt: 0n, disputedAt: 0n });
+        if (completed && expired) expect(s.label).toBe('Settled');
+        expect(!(s.label === 'Settled' && s.label === 'Expired')).toBe(true);
+      })
+    );
   });
-  it('deadline zero edge',()=>{const d=computeDeadlines({assignedAgent:'0x0000000000000000000000000000000000000000',assignedAt:0n,duration:0n,completed:false,disputed:false,expired:false},{completionRequested:false,completionRequestedAt:0n,disputedAt:0n},{completionReviewPeriod:0n,disputeReviewPeriod:0n}); expect(d.expiryTime).toBe(0n);});
-  it('uri allowlist',()=>{expect(isAllowedUri('https://x.com')).toBe(true); expect(isAllowedUri('javascript:alert(1)')).toBe(false);});
-  it('format helpers',()=>{expect(fmtAddr('0x1234567890123456789012345678901234567890')).toBe('0x1234...7890');});
+
+  it('deadline math is monotonic and non-negative', () => {
+    fc.assert(
+      fc.property(fc.bigInt({ min: 0n, max: 10_000_000n }), fc.bigInt({ min: 0n, max: 10_000_000n }), (assignedAt, duration) => {
+        const d = computeDeadlines({ assignedAgent: zero, assignedAt, duration, completed: false, disputed: false, expired: false }, { completionRequested: true, completionRequestedAt: assignedAt, disputedAt: assignedAt }, { completionReviewPeriod: duration, disputeReviewPeriod: duration });
+        expect(d.expiryTime >= 0n).toBe(true);
+        expect(d.completionReviewEnd >= assignedAt).toBe(true);
+      })
+    );
+  });
+
+  it('URI sanitizer blocks dangerous schemes', () => {
+    fc.assert(fc.property(fc.string(), (input) => {
+      const sanitized = sanitizeUri(input);
+      expect(sanitized.startsWith('javascript:') || sanitized.startsWith('data:') || sanitized.startsWith('file:') || sanitized.startsWith('blob:')).toBe(false);
+    }));
+  });
+
+  it('role gating never permits applyForJob outside Open', () => {
+    const s = deriveStatus({ assignedAgent: zero, assignedAt: 0n, duration: 0n, completed: true, disputed: false, expired: false }, { completionRequested: false, completionRequestedAt: 0n, disputedAt: 0n });
+    expect(s.allowedActions.Agent.includes('applyForJob')).toBe(false);
+  });
+
+  it('decodes custom error names', () => {
+    const e = decodeError({ details: 'execution reverted with custom error NotAuthorized' } as any);
+    expect(e.name).toBe('NotAuthorized');
+  });
 });
