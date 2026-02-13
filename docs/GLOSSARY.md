@@ -1,21 +1,10 @@
 # Glossary
 
-- **AGIJobManager**: Core ERC721 + escrow contract implementing job lifecycle and settlement.
-- **ENSJobPages**: Optional ENS helper contract for job page records and permissions.
-- **Escrow (`lockedEscrow`)**: AGI token amount reserved for unsettled job payouts.
-- **Withdrawable AGI**: Treasury balance not reserved by escrow/bond locks.
-- **Agent bond**: Stake posted by assigned agent to align completion incentives.
-- **Validator bond**: Stake posted by each validator vote, slashable on incorrect side.
-- **Dispute bond**: Stake posted by disputant in manual disputes.
-- **Completion review period**: Window for validator voting/disputing after completion request.
-- **Challenge period after approval**: Delay after approval threshold before fast finalize.
-- **Dispute review period**: Timeout before owner can resolve stale disputes.
-- **Vote quorum**: Minimum total votes considered sufficient for deterministic slow-path outcome.
-- **AGI type**: ERC721 collection configured with payout percentage used for agent payout tiering.
-- **Best-effort hook**: External ENS call that emits success/failure but does not revert core flow on failure.
-- **Identity configuration lock**: Irreversible freeze of token/ENS/root/ENSJobPages wiring setters that use `whenIdentityConfigurable`; Merkle roots remain owner-updatable.
-- **Settlement pause**: Dedicated toggle blocking settlement-sensitive methods independently of global pause.
-- **Namespace root node**: ENS node (bytes32) root used for ownership gating (`club`, `agent`, alpha variants).
-- **Merkle root**: Root hash used to verify allowlisted agents/validators via proofs.
-- **NameWrapper**: ENS wrapped-name contract used for wrapped root management and fuse operations.
-- **Fuses**: NameWrapper permission bits; in this repo lock path burns resolver/TTL mutability bits for child names.
+- **Escrow**: Employer-funded AGI held by contract until terminal job outcome.
+- **Agent bond**: Bond posted by agent when applying; returned/slashed by outcome.
+- **Validator bond**: Bond posted per validator vote.
+- **Dispute bond**: Bond associated with dispute path accounting.
+- **Challenge period**: Delay after approval threshold before finalization.
+- **Settlement paused**: Owner-set mode restricting settlement-sensitive actions.
+- **Identity configuration lock**: Irreversible freeze of token/ENS/root wiring.
+- **Best-effort integration**: External call path (ENS hooks/tokenURI) that may fail without breaking escrow guarantees.

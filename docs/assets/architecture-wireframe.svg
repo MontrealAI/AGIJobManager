@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="520" viewBox="0 0 1040 520">
+  <rect width="1040" height="520" fill="#14001F"/>
+  <text x="24" y="36" fill="#E9DAFF" font-family="Arial, sans-serif" font-size="22">AGIJobManager Architecture Wireframe</text>
+
+  <rect x="40" y="80" width="220" height="120" rx="10" fill="#1B0B2A" stroke="#7A3FF2"/>
+  <text x="58" y="114" fill="#E9DAFF" font-family="Arial" font-size="14">Off-chain actors</text>
+  <text x="58" y="138" fill="#A7A7B6" font-family="Arial" font-size="12">Employer / Agent / Validator / Moderator</text>
+
+  <rect x="340" y="70" width="360" height="180" rx="12" fill="#4B1D86" stroke="#E9DAFF"/>
+  <text x="362" y="108" fill="#E9DAFF" font-family="Arial" font-size="16">AGIJobManager Contract</text>
+  <text x="362" y="132" fill="#E7E7EA" font-family="Arial" font-size="12">Escrow • Votes • Disputes • NFT mint</text>
+
+  <rect x="780" y="80" width="220" height="120" rx="10" fill="#1B0B2A" stroke="#7A3FF2"/>
+  <text x="798" y="114" fill="#E9DAFF" font-family="Arial" font-size="14">External systems</text>
+  <text x="798" y="138" fill="#A7A7B6" font-family="Arial" font-size="12">AGI ERC20 / ENS / NameWrapper / ENSJobPages</text>
+
+  <rect x="340" y="300" width="320" height="150" rx="12" fill="#1B0B2A" stroke="#7A3FF2"/>
+  <text x="360" y="338" fill="#E9DAFF" font-family="Arial" font-size="14">Operations and controls</text>
+  <text x="360" y="362" fill="#A7A7B6" font-family="Arial" font-size="12">pause • settlementPaused • blacklist • config lock</text>
+
+  <line x1="260" y1="140" x2="340" y2="140" stroke="#E9DAFF" stroke-width="2"/>
+  <line x1="700" y1="140" x2="780" y2="140" stroke="#E9DAFF" stroke-width="2"/>
+  <line x1="500" y1="250" x2="500" y2="300" stroke="#E9DAFF" stroke-width="2"/>
+</svg>
