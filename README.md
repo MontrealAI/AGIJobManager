@@ -332,3 +332,36 @@ Start here:
   - Quickstart: [`docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](docs/namespace/AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
+
+## UI / Ops Console (Next.js)
+
+An institutional dApp + operations console is available in `ui/` with read-only first behavior, simulation-first transaction flows, strict safe-link handling, RPC degradation banners, and hardened security headers.
+
+UI docs:
+- [docs/ui/OVERVIEW.md](docs/ui/OVERVIEW.md)
+- [docs/ui/ARCHITECTURE.md](docs/ui/ARCHITECTURE.md)
+- [docs/ui/JOB_LIFECYCLE.md](docs/ui/JOB_LIFECYCLE.md)
+- [docs/ui/SECURITY_MODEL.md](docs/ui/SECURITY_MODEL.md)
+- [docs/ui/DESIGN_SYSTEM.md](docs/ui/DESIGN_SYSTEM.md)
+- [docs/ui/DEMO.md](docs/ui/DEMO.md)
+
+```mermaid
+flowchart LR
+  D[Dashboard] --> J[Jobs]
+  J --> JD[Job Detail]
+  D --> A[Admin]
+  D --> DS[Design Gallery]
+  D --> DM[Demo Scenarios]
+```
+
+![Palette plate](docs/ui/graphics/palette-plate.svg)
+![Dashboard wireframe plate](docs/ui/graphics/dashboard-wireframe.svg)
+
+Quick start:
+
+```bash
+cd ui
+npm ci
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+npm run build
+```
