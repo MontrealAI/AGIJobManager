@@ -1,6 +1,6 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Verified against repository state: `79d6495`.
+- Verified against repository state: `b643f85`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
