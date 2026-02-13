@@ -1,74 +1,42 @@
-# Quickstart
+# Quickstart (15–30 minutes)
 
-## Purpose
-Get a contributor from clean checkout to compile/test/size-guard with repository-supported commands.
+## 1) Install
 
-## Audience
-Developers and auditors doing local verification.
-
-## Preconditions / assumptions
-- Node.js + npm installed.
-- No secrets committed; use local environment variables only.
-- Run commands from repo root.
-
-## Install dependencies
 ```bash
 npm ci
 ```
 
-## Build / compile
+## 2) Compile
+
 ```bash
 npm run build
 ```
 
-## Run complete test pipeline
+## 3) Test
+
 ```bash
 npm test
 ```
 
-`npm test` runs:
-- `truffle compile --all`
-- `truffle test --network test`
-- `node test/AGIJobManager.test.js`
-- `node scripts/check-contract-sizes.js`
+## 4) Docs integrity
 
-## Run explicit runtime-size guard
 ```bash
-npm run size
+npm run docs:gen
+npm run docs:check
 ```
 
-## Optional checks
+## 5) Optional UI smoke test
+
 ```bash
-npm run lint
-npm run docs:interface
+npm run test:ui
 ```
 
-## Local deployment (dev/test chain)
-```bash
-truffle migrate --network test --reset
-```
+## Command catalog
 
-## Live-network deployment skeleton
-```bash
-truffle migrate --network <mainnet|sepolia> --reset
-node scripts/postdeploy-config.js --network <mainnet|sepolia> --address <AGIJOBMANAGER_ADDRESS>
-node scripts/verify-config.js --network <mainnet|sepolia> --address <AGIJOBMANAGER_ADDRESS>
-```
-
-## Troubleshooting
-- **`truffle: command not found`**: run `npm ci` and use local binaries via npm scripts.
-- **Provider errors (`Missing RPC URL`, `Missing PRIVATE_KEYS`)**: configure env vars consumed by `truffle-config.js` (`<NETWORK>_RPC_URL` or Alchemy/Infura keys, and `PRIVATE_KEYS`).
-- **`ConfigLocked` reverts**: `lockIdentityConfiguration()` permanently blocks identity wiring setters.
-- **Withdrawal revert while unpaused**: `withdrawAGI()` requires both `whenPaused` and `whenSettlementNotPaused`.
-- **Bytecode size failures**: run `npm run size` and inspect contract growth before deployment.
-
-## Gotchas / failure modes
-- `npm install` can drift lockfile resolution; prefer `npm ci` for reproducibility.
-- `truffle test` on non-`test` network may produce misleading failures due to permissions/funding.
-
-## References
-- [`../package.json`](../package.json)
-- [`../truffle-config.js`](../truffle-config.js)
-- [`../scripts/check-bytecode-size.js`](../scripts/check-bytecode-size.js)
-- [`../scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
-- [`../scripts/verify-config.js`](../scripts/verify-config.js)
+| Command | Outcome | When to use | Common failures |
+| --- | --- | --- | --- |
+| `npm ci` | Deterministic dependency install | Fresh clone / CI | Lockfile mismatch |
+| `npm run build` | Truffle compile and artifacts | Before tests/deploy | Solidity compile errors |
+| `npm test` | Contract + invariant/regression suites | Pre-PR safety gate | Local node/toolchain drift |
+| `node scripts/ops/validate-params.js --help` | Parameter schema guidance | Before owner param changes | Invalid bounds/input format |
+| `npm run docs:check` | Verifies required docs freshness, links, Mermaid, SVG | Pre-PR for docs | Stale generated docs |
