@@ -1,37 +1,53 @@
 'use client'
-import { ReactNode, useState } from 'react'
+
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { BaseError } from 'viem'
-import { useSimulateContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 
-export function TxButton({ children, disabled, simulateConfig }: { children: ReactNode; disabled?: boolean; simulateConfig: any }) {
-  const [started, setStarted] = useState(false)
-  const sim = useSimulateContract({ ...simulateConfig, query: { enabled: started } })
+export function TxButton({ children, disabled, simulateConfig, preflightError }: { children: ReactNode; disabled?: boolean; simulateConfig: any; preflightError?: string }) {
+  const [step, setStep] = useState<'idle' | 'preparing' | 'signature' | 'pending' | 'confirmed' | 'failed'>('idle')
   const write = useWriteContract()
+  const sim = useSimulateContract({ ...simulateConfig, query: { enabled: step === 'preparing' } })
   const wait = useWaitForTransactionReceipt({ hash: write.data })
-  const loading = sim.isPending || write.isPending || wait.isLoading
 
-  const onClick = async () => {
+  const loading = step !== 'idle' && step !== 'confirmed' && step !== 'failed'
+  const txLink = useMemo(() => (write.data ? `https://etherscan.io/tx/${write.data}` : ''), [write.data])
+
+  const run = async () => {
+    if (preflightError) return
     try {
-      setStarted(true)
-      const req = sim.data?.request
-      if (!req) return
-      await write.writeContractAsync(req)
+      setStep('preparing')
+      await sim.refetch()
+      if (!sim.data?.request) {
+        setStep('failed')
+        return
+      }
+      setStep('signature')
+      await write.writeContractAsync(sim.data.request)
+      setStep('pending')
     } catch {
-      // noop, surfaced below
+      setStep('failed')
     }
   }
 
+  useEffect(() => {
+    if (wait.isSuccess && step === 'pending') setStep('confirmed')
+    if (wait.isError && step === 'pending') setStep('failed')
+  }, [wait.isSuccess, wait.isError, step])
+
   const err = (sim.error || write.error || wait.error) as BaseError | undefined
+
   return (
     <div className="space-y-2">
-      <button onClick={onClick} disabled={disabled || loading} className="btn">
-        {loading ? 'Processing...' : children}
+      <button onClick={run} disabled={disabled || !!preflightError || loading} className="btn-primary">
+        {loading ? 'Processing…' : children}
       </button>
-      {sim.isPending && <p>Preparing (simulation)...</p>}
-      {write.isPending && <p>Awaiting signature...</p>}
-      {write.data && !wait.isSuccess && <p>Pending onchain: {write.data.slice(0, 10)}...</p>}
-      {wait.isSuccess && <p className="text-green-400">Confirmed in block {wait.data.blockNumber.toString()}</p>}
-      {err && <p className="text-red-400">Failed: {err.shortMessage}</p>}
+      {preflightError && <p className="text-sm text-yellow-400">Preflight: {preflightError}</p>}
+      {step === 'preparing' && <p className="text-sm">Preparing…</p>}
+      {step === 'signature' && <p className="text-sm">Awaiting signature…</p>}
+      {step === 'pending' && txLink && <p className="text-sm">Pending. <a className="underline" href={txLink} target="_blank">Explorer</a></p>}
+      {step === 'confirmed' && <p className="text-sm text-emerald-400">Confirmed.</p>}
+      {step === 'failed' && <p className="text-sm text-destructive">Failed: {err?.shortMessage || 'simulation error'}</p>}
     </div>
   )
 }

@@ -1,29 +1,27 @@
 # AGIJobManager UI
 
-Standalone Next.js App Router dapp + ops console for AGIJobManager.
+Next.js App Router dapp + ops console for AGIJobManager.
 
 ## Setup
 
-1. Copy env file and configure values:
-   ```bash
-   cp .env.example .env.local
-   ```
-2. Install dependencies:
-   ```bash
-   npm ci
-   ```
+```bash
+cp .env.example .env.local
+npm ci
+npm run dev
+```
 
-## Commands
+## Scripts
 
 ```bash
-npm run dev
 npm run build
+npm run lint
 npm run test
 npm run test:e2e
-npm run lint
 ```
 
 ## Notes
-- Read-only mode works without wallet.
-- Wallet write paths use simulation-first UX.
-- If server RPC URLs are missing, UI falls back to public RPC and displays a degraded RPC banner.
+
+- Read-only mode works without a wallet.
+- Transactions are simulation-first (`simulateContract` before writes).
+- URI rendering is scheme-allowlisted (`https://`, `http://`, `ipfs://`, `ens://`).
+- Dark/light ASI Sovereign Purple theme, with dark default and toggle.

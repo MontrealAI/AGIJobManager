@@ -1,24 +1,22 @@
 'use client'
-import Link from 'next/link'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
 
-export function Header() {
-  const { address, isConnected } = useAccount()
-  const { connect, connectors } = useConnect()
-  const { disconnect } = useDisconnect()
+import Link from 'next/link'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+
+export function Header({ isDark, onToggleTheme, degradedRpc }: { isDark: boolean; onToggleTheme: () => void; degradedRpc: boolean }) {
   return (
-    <header className="border-b border-slate-800">
-      <div className="container flex items-center justify-between py-4">
-        <nav className="flex gap-4">
-          <Link href="/">Dashboard</Link>
+    <header className="border-b border-border/80 bg-background/95 backdrop-blur">
+      <div className="container-shell flex items-center justify-between py-5">
+        <nav className="flex items-center gap-5 text-sm">
+          <Link href="/" className="font-medium">Dashboard</Link>
           <Link href="/jobs">Jobs</Link>
-          <Link href="/admin">Admin</Link>
+          <Link href="/admin">Ops Console</Link>
+          {degradedRpc && <span className="pill border-yellow-500/50 text-yellow-400">Degraded RPC</span>}
         </nav>
-        {isConnected ? (
-          <button className="btn" onClick={() => disconnect()}>{address?.slice(0, 6)}... Disconnect</button>
-        ) : (
-          <button className="btn" onClick={() => connectors[0] && connect({ connector: connectors[0] })}>Connect wallet</button>
-        )}
+        <div className="flex items-center gap-3">
+          <button className="btn-outline" onClick={onToggleTheme}>{isDark ? 'Light' : 'Dark'} mode</button>
+          <ConnectButton showBalance={false} />
+        </div>
       </div>
     </header>
   )

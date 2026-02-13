@@ -7,4 +7,5 @@ describe('uri filter', () => {
     expect(isSafeUri('ipfs://hash')).toBe(true)
   })
   it('blocks javascript', () => expect(isSafeUri('javascript:alert(1)')).toBe(false))
+  it('blocks data uri', () => expect(isSafeUri('data:text/html,hello')).toBe(false))
 })
