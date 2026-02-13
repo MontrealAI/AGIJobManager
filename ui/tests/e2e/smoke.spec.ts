@@ -1,8 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '@playwright/test';
 
-for (const path of ['/', '/jobs', '/jobs/0', '/admin']) {
-  test(`route ${path} responds`, async ({ page }) => {
-    const res = await page.goto(`http://127.0.0.1:3000${path}`)
-    expect(res?.ok()).toBeTruthy()
-  })
-}
+test('dashboard/jobs/admin in demo mode', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('demo-banner')).toBeVisible();
+  await page.goto('/jobs', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('jobs-table')).toBeVisible();
+  await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('admin-not-authorized')).toBeVisible();
+});

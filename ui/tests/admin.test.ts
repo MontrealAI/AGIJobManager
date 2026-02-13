@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
+import { translateError } from '@/lib/web3/errors';
 
-describe('admin gating',()=>{
-  it('owner vs non owner',()=>{
-    const owner='0xabc'; const user='0xdef';
-    expect(owner===user).toBe(false);
+describe('error mapping', () => {
+  it('maps custom errors', () => {
+    expect(translateError('NotAuthorized')).toContain('Not authorized');
+    expect(translateError('SettlementPaused')).toContain('Settlement paused');
   });
 });

@@ -1,3 +1,5 @@
+export type Role = 'Employer' | 'Agent' | 'Validator' | 'Moderator' | 'Owner';
+
 export type JobCore = {
   employer?: `0x${string}`;
   assignedAgent: `0x${string}`;
@@ -9,6 +11,7 @@ export type JobCore = {
   expired: boolean;
   agentPayoutPct?: number;
 };
+
 export type JobValidation = {
   completionRequested: boolean;
   approvals?: number;
@@ -16,23 +19,85 @@ export type JobValidation = {
   completionRequestedAt: bigint;
   disputedAt: bigint;
 };
-export type Params = { completionReviewPeriod: bigint; disputeReviewPeriod: bigint; challengePeriodAfterApproval?: bigint };
+
+export type Params = {
+  completionReviewPeriod: bigint;
+  disputeReviewPeriod: bigint;
+  challengePeriodAfterApproval?: bigint;
+};
+
 export type Status = 'Open' | 'Assigned' | 'Completion Requested' | 'Disputed' | 'Settled' | 'Expired';
 
-export function deriveStatus(core: JobCore, val: JobValidation): { status: Status; terminal: boolean } {
-  if (core.completed) return { status: 'Settled', terminal: true };
-  if (core.expired) return { status: 'Expired', terminal: true };
-  if (core.disputed) return { status: 'Disputed', terminal: false };
-  if (val.completionRequested) return { status: 'Completion Requested', terminal: false };
-  if (core.assignedAgent === '0x0000000000000000000000000000000000000000') return { status: 'Open', terminal: false };
-  return { status: 'Assigned', terminal: false };
-}
-export const deriveJobUiStatus = deriveStatus;
+export type DerivedJobStatus = {
+  label: Status;
+  status: Status;
+  isTerminal: boolean;
+  terminal: boolean;
+  nextDeadline: bigint;
+  allowedActions: Record<Role, string[]>;
+};
+
+const ZERO = '0x0000000000000000000000000000000000000000';
 
 export function computeDeadlines(core: JobCore, val: JobValidation, p: Params) {
-  const expiryTime = core.assignedAt && core.duration ? core.assignedAt + core.duration : 0n;
-  const completionReviewEnd = val.completionRequestedAt ? val.completionRequestedAt + p.completionReviewPeriod : 0n;
-  const disputeReviewEnd = val.disputedAt ? val.disputedAt + p.disputeReviewPeriod : 0n;
+  const expiryTime = core.assignedAt > 0n && core.duration > 0n ? core.assignedAt + core.duration : 0n;
+  const completionReviewEnd = val.completionRequestedAt > 0n ? val.completionRequestedAt + p.completionReviewPeriod : 0n;
+  const disputeReviewEnd = val.disputedAt > 0n ? val.disputedAt + p.disputeReviewPeriod : 0n;
   const challengeEnd = 0n;
   return { expiryTime, completionReviewEnd, disputeReviewEnd, challengeEnd };
 }
+
+export function deriveStatus(core: JobCore, val: JobValidation, p: Params = { completionReviewPeriod: 0n, disputeReviewPeriod: 0n }): DerivedJobStatus {
+  const deadlines = computeDeadlines(core, val, p);
+  let status: Status = 'Open';
+
+  if (core.completed) status = 'Settled';
+  else if (core.expired) status = 'Expired';
+  else if (core.disputed || val.disputedAt > 0n) status = 'Disputed';
+  else if (val.completionRequested) status = 'Completion Requested';
+  else if (core.assignedAgent !== ZERO) status = 'Assigned';
+
+  const isTerminal = status === 'Settled' || status === 'Expired';
+
+  const allowedActions: Record<Role, string[]> = {
+    Employer: [],
+    Agent: [],
+    Validator: [],
+    Moderator: [],
+    Owner: []
+  };
+
+  if (!isTerminal) {
+    if (status === 'Open') {
+      allowedActions.Employer.push('cancelJob');
+      allowedActions.Agent.push('applyForJob');
+    }
+    if (status === 'Assigned') {
+      allowedActions.Agent.push('requestJobCompletion');
+      allowedActions.Employer.push('disputeJob');
+      allowedActions.Agent.push('disputeJob');
+    }
+    if (status === 'Completion Requested') {
+      allowedActions.Validator.push('validateJob', 'disapproveJob');
+      allowedActions.Employer.push('finalizeJob', 'disputeJob');
+      allowedActions.Agent.push('disputeJob');
+    }
+    if (status === 'Disputed') {
+      allowedActions.Moderator.push('resolveDisputeWithCode');
+    }
+    allowedActions.Owner.push('lockJobENS');
+  }
+
+  const nextDeadline =
+    status === 'Assigned'
+      ? deadlines.expiryTime
+      : status === 'Completion Requested'
+      ? deadlines.completionReviewEnd
+      : status === 'Disputed'
+      ? deadlines.disputeReviewEnd
+      : 0n;
+
+  return { label: status, status, isTerminal, terminal: isTerminal, nextDeadline, allowedActions };
+}
+
+export const deriveJobUiStatus = deriveStatus;
