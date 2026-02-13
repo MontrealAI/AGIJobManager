@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560">
+  <rect width="1000" height="560" fill="#14001F"/>
+  <text x="30" y="38" fill="#E9DAFF" font-family="Arial" font-size="24">AGIJobManager Architecture Wireframe</text>
+  <g stroke="#7A3FF2" stroke-width="2" fill="#1B0B2A" font-family="Arial" font-size="14" >
+    <rect x="40" y="90" width="220" height="80" rx="8"/><text x="56" y="130" fill="#E9DAFF">Owner / Moderator</text>
+    <rect x="40" y="220" width="220" height="80" rx="8"/><text x="56" y="260" fill="#E9DAFF">Employer / Agent / Validator</text>
+    <rect x="360" y="150" width="280" height="120" rx="10" fill="#4B1D86"/><text x="390" y="220" fill="#E9DAFF">AGIJobManager Contract</text>
+    <rect x="740" y="90" width="220" height="80" rx="8"/><text x="770" y="130" fill="#E9DAFF">AGI ERC20</text>
+    <rect x="740" y="220" width="220" height="80" rx="8"/><text x="780" y="260" fill="#E9DAFF">ENS / NameWrapper</text>
+    <rect x="740" y="350" width="220" height="80" rx="8"/><text x="776" y="390" fill="#E9DAFF">ENSJobPages (optional)</text>
+    <rect x="360" y="360" width="280" height="80" rx="10"/><text x="392" y="404" fill="#E9DAFF">Off-chain Monitoring/Indexers</text>
+  </g>
+  <g stroke="#A7A7B6" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <line x1="260" y1="130" x2="360" y2="190"/>
+    <line x1="260" y1="260" x2="360" y2="220"/>
+    <line x1="640" y1="205" x2="740" y2="130"/>
+    <line x1="640" y1="220" x2="740" y2="260"/>
+    <line x1="640" y1="235" x2="740" y2="390"/>
+    <line x1="500" y1="270" x2="500" y2="360"/>
+  </g>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#A7A7B6"/>
+    </marker>
+  </defs>
+</svg>

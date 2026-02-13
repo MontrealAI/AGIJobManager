@@ -1,32 +1,32 @@
-# AGIJobManager Documentation Hub
+# AGIJobManager Documentation
 
-Start with the documentation index:
-- [00_INDEX.md](./00_INDEX.md)
+Institutional documentation for operators, developers, auditors, and integrators.
 
-Primary operator/auditor references:
-- [Architecture](./ARCHITECTURE.md)
-- [Protocol Flow](./PROTOCOL_FLOW.md)
-- [Configuration](./CONFIGURATION.md)
-- [Deploy Runbook](./DEPLOY_RUNBOOK.md)
-- [ENS Integration](./ENS_INTEGRATION.md)
-- [Security Model](./SECURITY_MODEL.md)
-- [Troubleshooting](./TROUBLESHOOTING.md)
-- [Glossary](./GLOSSARY.md)
-- [Repository Inventory](./REPOSITORY_INVENTORY.md)
+## Audience map
 
-Implementation sources of truth:
-- `contracts/AGIJobManager.sol`
-- `contracts/ens/ENSJobPages.sol`
-- `migrations/2_deploy_contracts.js`
-- `migrations/deploy-config.js`
-- `scripts/postdeploy-config.js`
-- `scripts/verify-config.js`
-- `package.json`
-- `.github/workflows/ci.yml`
+- **New contributors**: [OVERVIEW.md](./OVERVIEW.md), [QUICKSTART.md](./QUICKSTART.md), [TESTING.md](./TESTING.md)
+- **Operators / SRE**: [QUINTESSENTIAL_USE_CASE.md](./QUINTESSENTIAL_USE_CASE.md), [OPERATIONS/RUNBOOK.md](./OPERATIONS/RUNBOOK.md), [OPERATIONS/INCIDENT_RESPONSE.md](./OPERATIONS/INCIDENT_RESPONSE.md), [OPERATIONS/MONITORING.md](./OPERATIONS/MONITORING.md)
+- **Auditors / security teams**: [SECURITY_MODEL.md](./SECURITY_MODEL.md), [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md), [REFERENCE/CONTRACT_INTERFACE.md](./REFERENCE/CONTRACT_INTERFACE.md)
+- **Integrators**: [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md), [ARCHITECTURE.md](./ARCHITECTURE.md)
 
+## Navigation
 
-## Audience quick links
+- [OVERVIEW.md](./OVERVIEW.md)
+- [REPO_MAP.md](./REPO_MAP.md) _(generated)_
+- [QUICKSTART.md](./QUICKSTART.md)
+- [QUINTESSENTIAL_USE_CASE.md](./QUINTESSENTIAL_USE_CASE.md)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md)
+- [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md)
+- [OPERATIONS/RUNBOOK.md](./OPERATIONS/RUNBOOK.md)
+- [OPERATIONS/INCIDENT_RESPONSE.md](./OPERATIONS/INCIDENT_RESPONSE.md)
+- [OPERATIONS/MONITORING.md](./OPERATIONS/MONITORING.md)
+- [SECURITY_MODEL.md](./SECURITY_MODEL.md)
+- [TESTING.md](./TESTING.md)
+- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+- [GLOSSARY.md](./GLOSSARY.md)
+- [REFERENCE/VERSIONS.md](./REFERENCE/VERSIONS.md) _(generated)_
+- [REFERENCE/CONTRACT_INTERFACE.md](./REFERENCE/CONTRACT_INTERFACE.md) _(generated)_
 
-- **Operators:** [DEPLOY_RUNBOOK.md](./DEPLOY_RUNBOOK.md), [OPERATIONS.md](./OPERATIONS.md), [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
-- **Developers:** [TESTING.md](./TESTING.md), [TEST_PLAN.md](./TEST_PLAN.md), [ARCHITECTURE.md](./ARCHITECTURE.md)
-- **Auditors:** [SECURITY_MODEL.md](./SECURITY_MODEL.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [CONFIGURATION.md](./CONFIGURATION.md)
+> **Operator note**
+> Documentation freshness and structure are validated by `npm run docs:check`.

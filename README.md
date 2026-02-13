@@ -52,20 +52,16 @@ AGI Jobs are standard ERC‑721 NFTs. They can be traded on OpenSea and other ma
 
 ## Documentation
 
-Start with the documentation index: [`docs/00_INDEX.md`](docs/00_INDEX.md).
+Start with the institutional docs landing page: [`docs/README.md`](docs/README.md).
 
-Documentation hub: [`docs/README.md`](docs/README.md).
+Key pages:
+- [Overview](docs/OVERVIEW.md)
+- [Quickstart](docs/QUICKSTART.md)
+- [Quintessential Use Case](docs/QUINTESSENTIAL_USE_CASE.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Security Model](docs/SECURITY_MODEL.md)
 
-Core operator/integrator/auditor docs:
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- [`docs/PROTOCOL_FLOW.md`](docs/PROTOCOL_FLOW.md)
-- [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)
-- [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)
-- [`docs/ENS_INTEGRATION.md`](docs/ENS_INTEGRATION.md)
-- [`docs/SECURITY_MODEL.md`](docs/SECURITY_MODEL.md)
-- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
-- [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
-- [`docs/REPOSITORY_INVENTORY.md`](docs/REPOSITORY_INVENTORY.md)
+Documentation visuals are text-only Mermaid/SVG assets (no binary screenshots). Docs freshness is enforced with `npm run docs:check`; generated reference pages are refreshed via `npm run docs:gen`. Binary file policy enforcement runs via `npm run check:no-binaries`.
 
 ## Quickstart
 
