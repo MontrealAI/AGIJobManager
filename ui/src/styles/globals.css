@@ -3,25 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --background: 264 55% 96%;
-  --foreground: 273 44% 12%;
+  --background: 270 30% 98%;
+  --foreground: 272 43% 12%;
   --card: 0 0% 100%;
-  --card-foreground: 273 44% 12%;
+  --card-foreground: 272 43% 12%;
   --popover: 0 0% 100%;
-  --popover-foreground: 273 44% 12%;
-  --primary: 267 65% 32%;
-  --primary-foreground: 267 100% 96%;
-  --secondary: 268 48% 90%;
-  --secondary-foreground: 273 44% 12%;
-  --muted: 255 13% 93%;
+  --popover-foreground: 272 43% 12%;
+  --primary: 267 64% 32%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 270 37% 93%;
+  --secondary-foreground: 272 43% 12%;
+  --muted: 258 16% 91%;
   --muted-foreground: 240 10% 45%;
   --accent: 264 87% 60%;
-  --accent-foreground: 267 100% 96%;
+  --accent-foreground: 0 0% 98%;
   --destructive: 353 72% 59%;
   --destructive-foreground: 0 0% 98%;
   --border: 252 16% 82%;
   --input: 252 16% 82%;
   --ring: 264 87% 60%;
+  --radius: 14px;
 }
 
 .dark {
@@ -46,7 +47,7 @@
   --ring: 264 87% 60%;
 }
 
-body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: 'tnum' 1; }
-.hero-aura { background: radial-gradient(circle at 20% 10%, rgba(122,63,242,.18), transparent 45%); }
+body { @apply bg-background text-foreground font-sans antialiased; }
+.hero-aura { background: radial-gradient(circle at 20% 10%, rgba(122,63,242,.18), transparent 45%), linear-gradient(180deg, rgba(20,0,31,0.95), rgba(27,11,42,0.98)); }
 
-@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important;} }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

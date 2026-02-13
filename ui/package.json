@@ -1,6 +1,6 @@
 {
   "name": "agi-job-manager-ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "engines": {
     "node": ">=20.11.0"
@@ -10,11 +10,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test --config playwright.config.ts --project=e2e",
+    "test:a11y": "playwright test --config playwright.config.ts --project=a11y",
+    "test:headers": "playwright test --config playwright.config.ts --project=headers",
+    "docs:generate": "node scripts/generate-versions.mjs && node scripts/generate-graphics.mjs",
+    "docs:check": "node scripts/docs-check.mjs"
   },
   "dependencies": {
+    "@axe-core/playwright": "4.10.2",
     "@hookform/resolvers": "3.9.0",
     "@rainbow-me/rainbowkit": "2.1.7",
     "@radix-ui/react-label": "2.1.0",
@@ -35,13 +40,13 @@
   },
   "devDependencies": {
     "@playwright/test": "1.47.2",
-    "@testing-library/react": "16.0.1",
     "@types/node": "22.7.4",
     "@types/react": "18.3.9",
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.20",
     "eslint": "8.57.1",
     "eslint-config-next": "14.2.15",
+    "fast-check": "3.20.0",
     "jsdom": "25.0.1",
     "postcss": "8.4.47",
     "tailwindcss": "3.4.13",
