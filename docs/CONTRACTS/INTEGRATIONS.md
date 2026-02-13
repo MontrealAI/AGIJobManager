@@ -19,7 +19,7 @@ Relevant sources:
 - [`contracts/ens/ENSJobPages.sol`](../../contracts/ens/ENSJobPages.sol)
 - [`contracts/ens/IENSJobPages.sol`](../../contracts/ens/IENSJobPages.sol)
 
-- Hook calls emit `EnsHookAttempted` and tolerate failure.
+- Hook calls are best-effort and tolerate failure (current contract declares `EnsHookAttempted` but does not emit it).
 - `setUseEnsJobTokenURI` toggles URI strategy.
 
 > Safety warning: operators must not treat hook success as a settlement or accounting guarantee.
@@ -29,3 +29,6 @@ Relevant sources:
 - Roots configured by owner (`updateMerkleRoots`).
 - Callers present proof arrays in `applyForJob`, `validateJob`, `disapproveJob`.
 - Additional explicit allowlists (`addAdditionalAgent`, `addAdditionalValidator`) provide emergency/manual overrides.
+
+
+Detailed operator docs: [`docs/INTEGRATIONS/ENS.md`](../INTEGRATIONS/ENS.md).
