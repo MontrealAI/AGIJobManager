@@ -2,9 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-slate-950 text-slate-100; }
-.container { @apply max-w-6xl mx-auto px-4; }
-.card { @apply rounded-xl border border-slate-700 bg-slate-900 p-4; }
-.input { @apply w-full rounded border border-slate-600 bg-slate-800 px-3 py-2; }
-.btn { @apply rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50; }
-.btn-danger { @apply rounded bg-red-700 px-3 py-2 text-white disabled:opacity-50; }
+:root {
+  --radius: 14px;
+  --background: 270 60% 98%;
+  --foreground: 272 40% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 272 40% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 272 40% 13%;
+  --primary: 265 64% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 269 65% 93%;
+  --secondary-foreground: 272 40% 13%;
+  --muted: 270 26% 94%;
+  --muted-foreground: 240 9% 45%;
+  --accent: 261 87% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 353 73% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 261 87% 60%;
+}
+
+.dark {
+  --background: 274 100% 6%;
+  --foreground: 270 36% 94%;
+  --card: 271 58% 11%;
+  --card-foreground: 270 36% 94%;
+  --popover: 271 58% 11%;
+  --popover-foreground: 270 36% 94%;
+  --primary: 265 64% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 268 40% 18%;
+  --secondary-foreground: 270 36% 94%;
+  --muted: 268 38% 17%;
+  --muted-foreground: 240 12% 72%;
+  --accent: 261 87% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 353 73% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 268 26% 27%;
+  --input: 268 26% 27%;
+  --ring: 261 87% 60%;
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "tnum" 1;
+    background-image: radial-gradient(circle at 20% -10%, hsl(265 64% 32% / 0.18), transparent 55%);
+  }
+  h1, h2, h3 { font-family: var(--font-serif); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  .container-shell { @apply mx-auto max-w-7xl px-4 md:px-8; }
+  .hero { @apply rounded-[18px] border bg-card/95 p-8 shadow-sm; }
+  .card-shell { @apply rounded-[14px] border bg-card p-5 shadow-sm; }
+  .input-shell { @apply w-full rounded-[10px] border bg-background px-3 py-2 text-sm; }
+  .btn-primary { @apply rounded-[10px] bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-accent disabled:opacity-50; }
+  .btn-outline { @apply rounded-[10px] border bg-transparent px-4 py-2 text-sm font-medium transition hover:bg-muted; }
+  .pill { @apply inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs; }
+}

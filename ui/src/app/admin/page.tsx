@@ -1,22 +1,36 @@
 'use client'
+
+import { useState } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { agiJobManagerAbi } from '@/abis/agiJobManager'
 import { env } from '@/lib/env'
 import { TxButton } from '@/components/tx-button'
-import { useState } from 'react'
 
 export default function AdminPage() {
   const { address } = useAccount()
-  const owner = useReadContract({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'owner' })
   const [confirm, setConfirm] = useState('')
-  if (!address || !owner.data || address.toLowerCase() !== owner.data.toLowerCase()) return <div className="card">Not authorized.</div>
-  const canDanger = confirm === 'CONFIRM'
+  const owner = useReadContract({ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'owner' })
+  const isOwner = !!address && !!owner.data && address.toLowerCase() === owner.data.toLowerCase()
+
+  if (!isOwner) return <div className="card-shell">Not authorized.</div>
+
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Admin console</h1>
-      <div className="card"><h2>Pausing</h2><TxButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'pause' }}>Pause</TxButton><div className="mt-2"><TxButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'unpause' }}>Unpause</TxButton></div></div>
-      <div className="card border-red-600"><h2>Danger zone</h2><p>Type CONFIRM to enable dangerous writes.</p><input className="input" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-      <TxButton disabled={!canDanger} simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress as `0x${string}`, functionName: 'setSettlementPaused', args: [true] }}>Set settlement paused</TxButton></div>
+      <h1 className="text-[32px] leading-[36px]">Ops Console</h1>
+      <section className="card-shell space-y-3">
+        <h2 className="text-2xl">Pause Controls</h2>
+        <TxButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'pause' }}>Pause</TxButton>
+        <TxButton simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'unpause' }}>Unpause</TxButton>
+      </section>
+
+      <section className="card-shell space-y-3 border-destructive/60">
+        <h2 className="text-2xl">Danger Zone</h2>
+        <p className="text-sm text-muted-foreground">Type SETTLEMENT to enable settlement pause mutation.</p>
+        <input className="input-shell" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="SETTLEMENT" />
+        <TxButton disabled={confirm !== 'SETTLEMENT'} simulateConfig={{ abi: agiJobManagerAbi, address: env.agiJobManagerAddress, functionName: 'setSettlementPaused', args: [true] }}>
+          Set settlement paused
+        </TxButton>
+      </section>
     </div>
   )
 }
