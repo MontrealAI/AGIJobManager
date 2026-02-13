@@ -390,3 +390,39 @@ npm run dev
 ![UI wireframe](./docs/ui/assets/ui-wireframe.svg)
 
 Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, and strict security headers.
+
+## UI / Sovereign Ops Console
+
+AGIJobManager includes a standalone institutional-grade Next.js UI in [`ui/`](ui/) with read-only-first browsing, simulation-first writes, and deterministic demo mode.
+
+**Quick start**
+
+```bash
+cd ui
+npm ci
+cp .env.example .env.local
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
+```
+
+**UI documentation**
+- [UI docs index](docs/ui/README.md)
+- [Architecture](docs/ui/ARCHITECTURE.md)
+- [Ops runbook](docs/ui/OPS_RUNBOOK.md)
+- [Security model](docs/ui/SECURITY_MODEL.md)
+- [Testing matrix](docs/ui/TESTING.md)
+- [Contract interface snapshot](docs/ui/CONTRACT_INTERFACE.md)
+
+**Design previews (text-only SVG assets)**
+
+![Sovereign palette](docs/ui/assets/palette.svg)
+
+![UI wireframe](docs/ui/assets/ui-wireframe.svg)
+
+**Security highlights**
+- Read-only paths work without wallet connection.
+- All writes are simulation-first and show decoded custom errors.
+- Untrusted links are allowlisted (`https://`, `http://`, `ipfs://`, `ens://`) and copy-first.
+- Strict response headers (CSP, frame protections, referrer policy, permissions policy).
+- No-binaries policy is enforced by `npm run check:no-binaries` and the UI CI workflow.
+
+[![UI CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml)
