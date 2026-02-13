@@ -3,48 +3,59 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 
 const root = process.cwd();
-const forbiddenExt = new Set(['.png','.jpg','.jpeg','.gif','.webp','.pdf','.ico','.woff','.woff2','.ttf','.otf','.zip','.tar','.gz','.7z']);
+const forbiddenExt = new Set([
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.pdf', '.ico',
+  '.woff', '.woff2', '.ttf', '.otf',
+  '.zip', '.tar', '.gz', '.7z'
+]);
 
-const q = (cmd) => execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+const run = (cmd) => execSync(cmd, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
 
 function detectBase() {
   const ghBase = process.env.GITHUB_BASE_REF;
-  try {
-    if (ghBase) {
-      const base = q(`git merge-base HEAD origin/${ghBase}`);
-      if (base) return base;
+  const candidates = [
+    ghBase ? `git merge-base HEAD origin/${ghBase}` : null,
+    'git merge-base HEAD origin/main',
+    'git rev-parse HEAD~1',
+    'git rev-list --max-parents=0 HEAD'
+  ].filter(Boolean);
+
+  for (const cmd of candidates) {
+    try {
+      const out = run(cmd);
+      if (out) return out;
+    } catch {
+      // continue
     }
-  } catch {}
-  try {
-    return q('git merge-base HEAD origin/main');
-  } catch {}
-  try {
-    return q('git rev-parse HEAD~1');
-  } catch {
-    return q('git rev-list --max-parents=0 HEAD');
   }
+  throw new Error('Unable to determine git base commit for binary checks.');
 }
 
 const base = detectBase();
-const files = execSync(`git diff --name-only --diff-filter=A ${base}...HEAD`, { encoding: 'utf8' })
-  .split('\n').map((s) => s.trim()).filter(Boolean);
+const files = run(`git diff --name-only --diff-filter=A ${base}...HEAD`)
+  .split('\n')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 const violations = [];
 for (const rel of files) {
   const full = path.join(root, rel);
   const ext = path.extname(rel).toLowerCase();
-  if (forbiddenExt.has(ext)) violations.push(`${rel}: forbidden extension ${ext}`);
-  if (fs.existsSync(full) && fs.statSync(full).isFile()) {
-    const sample = fs.readFileSync(full);
-    if (sample.includes(0)) violations.push(`${rel}: appears binary (NUL byte detected)`);
+  if (forbiddenExt.has(ext)) {
+    violations.push(`${rel}: forbidden extension ${ext}`);
+    continue;
   }
+  if (!fs.existsSync(full) || !fs.statSync(full).isFile()) continue;
+  const data = fs.readFileSync(full);
+  if (data.includes(0)) violations.push(`${rel}: appears binary (NUL byte detected)`);
 }
 
 if (violations.length) {
   console.error('Forbidden binary additions detected:');
+  console.error(`Base commit: ${base}`);
   for (const v of violations) console.error(` - ${v}`);
-  console.error('Remove these files or convert assets to Markdown/Mermaid/SVG text.');
+  console.error('Remediation: remove these files or replace with text-only Markdown/Mermaid/SVG assets.');
   process.exit(1);
 }
 
-console.log(`No forbidden binary additions detected across ${files.length} newly added file(s).`);
+console.log(`No forbidden binary additions detected (base ${base}, checked ${files.length} added file(s)).`);

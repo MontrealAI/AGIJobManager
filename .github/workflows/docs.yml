@@ -28,3 +28,6 @@ jobs:
 
       - name: Check docs freshness/integrity
         run: npm run docs:check
+
+      - name: ENS docs integrity
+        run: npm run docs:ens:check

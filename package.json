@@ -9,6 +9,8 @@
     "check:no-binaries": "node scripts/check-no-binaries.mjs",
     "docs:gen": "node scripts/docs/gen-docs.mjs",
     "docs:check": "node scripts/docs/check-docs.mjs",
+    "docs:ens:gen": "node scripts/docs/generate-ens-reference.mjs",
+    "docs:ens:check": "node scripts/docs/check-ens-docs.mjs",
     "docs:interface": "node scripts/generate-interface-doc.js",
     "lint": "solhint \"contracts/**/*.sol\"",
     "test": "truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js && node scripts/check-contract-sizes.js",

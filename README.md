@@ -66,6 +66,13 @@ Institutional docs set (generated + curated) for contracts, operations, security
 Documentation graphics are text-only Mermaid/SVG assets. Freshness is enforced through deterministic generators (`npm run docs:gen`) and CI validation (`npm run docs:check`). Binary-file additions are blocked by policy and CI (`node scripts/check-no-binaries.mjs`).
 
 Core operator/integrator/auditor docs:
+
+ENS integration docs:
+- [`docs/INTEGRATIONS/ENS.md`](docs/INTEGRATIONS/ENS.md)
+- [`docs/INTEGRATIONS/ENS_ROBUSTNESS.md`](docs/INTEGRATIONS/ENS_ROBUSTNESS.md)
+- [`docs/INTEGRATIONS/ENS_USE_CASE.md`](docs/INTEGRATIONS/ENS_USE_CASE.md)
+- [`docs/REFERENCE/ENS_REFERENCE.md`](docs/REFERENCE/ENS_REFERENCE.md) *(generated)*
+
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/PROTOCOL_FLOW.md`](docs/PROTOCOL_FLOW.md)
 - [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)
