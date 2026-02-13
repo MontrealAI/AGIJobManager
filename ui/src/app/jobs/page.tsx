@@ -1,24 +1,42 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { usePlatformSummary } from '@/lib/web3/queries';
 import { Card } from '@/components/ui/card';
-import { useQuery } from '@tanstack/react-query';
-import { publicClient } from '@/lib/web3/publicClient';
-import { agiJobManagerAbi } from '@/abis/agiJobManager';
-import { CONTRACT_ADDRESS } from '@/lib/constants';
+import { useMemo, useState } from 'react';
+import { currentScenario, toCsv } from '@/lib/demo';
 import { deriveStatus } from '@/lib/jobStatus';
-import { fmtAddr, fmtToken } from '@/lib/format';
 
-export default function Jobs(){
-  const {data:p}=usePlatformSummary();
-  const {data}=useQuery({enabled:!!p,queryKey:['jobs',String(p?.nextJobId)],queryFn:async()=>{
-    const n = Number(p?.nextJobId || 0n);
-    const contracts = Array.from({length:n},(_,i)=>({address:CONTRACT_ADDRESS,abi:agiJobManagerAbi,functionName:'getJobCore' as const,args:[BigInt(i)]}));
-    const vals = Array.from({length:n},(_,i)=>({address:CONTRACT_ADDRESS,abi:agiJobManagerAbi,functionName:'getJobValidation' as const,args:[BigInt(i)]}));
-    const [cores,validations]=await Promise.all([
-      publicClient.multicall({contracts,allowFailure:true}),publicClient.multicall({contracts:vals,allowFailure:true})
-    ]);
-    return cores.map((c,i)=>({c,v:validations[i],i})).filter(x=>x.c.status==='success').map(x=>({id:x.i,core:x.c.result,val:x.v.status==='success'?x.v.result:[false,0n,0n,0n,0n] as const}));
-  }});
-  return <div className='container py-8'><Card><table className='w-full text-sm'><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th></tr></thead><tbody>{data?.map((j:any)=>{const s=deriveStatus({assignedAgent:j.core[1],assignedAt:j.core[4],duration:j.core[3],completed:j.core[5],disputed:j.core[6],expired:j.core[7]},{completionRequested:j.val[0],completionRequestedAt:j.val[3],disputedAt:j.val[4]}); return <tr key={j.id} className='border-t border-border hover:bg-muted/30'><td><Link href={`/jobs/${j.id}`}>{j.id}</Link></td><td>{s.status}</td><td>{fmtToken(j.core[2])}</td><td>{fmtAddr(j.core[0])}</td><td>{fmtAddr(j.core[1])}</td></tr>})}</tbody></table></Card></div>;
+export default function JobsPage() {
+  const scenario = currentScenario(typeof window !== "undefined" ? window.location.search : "");
+  const [search, setSearch] = useState('');
+
+  const jobs = useMemo(() => scenario.jobs.filter((j) => !j.deleted).filter((j) => {
+    const status = deriveStatus({ assignedAgent: j.agent, assignedAt: j.assignedAt, duration: j.duration, completed: j.completed, disputed: j.disputed, expired: j.expired }, { completionRequested: j.completionRequested, completionRequestedAt: j.completionRequestedAt, disputedAt: j.disputedAt }).status;
+    const q = search.toLowerCase();
+    return `${j.id}${j.employer}${j.agent}${status}`.toLowerCase().includes(q);
+  }), [scenario, search]);
+
+  const csv = toCsv(jobs.map((j) => ({ id: j.id, employer: j.employer, agent: j.agent, payout: j.payout.toString() })));
+
+  return (
+    <div className='container py-8 space-y-4'>
+      <Card>
+        <div className='flex items-center justify-between gap-3'>
+          <input aria-label='search-jobs' className='w-full rounded-md border bg-background px-3 py-2' placeholder='Search by id/employer/agent/status' value={search} onChange={(e) => setSearch(e.target.value)} />
+          <button data-testid='csv-export' data-csv={csv} className='rounded-md border px-3 py-2 text-sm'>Export CSV</button>
+        </div>
+      </Card>
+      <Card>
+        <table className='w-full text-sm'>
+          <thead><tr><th>Job ID</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th><th>Next deadline</th></tr></thead>
+          <tbody>
+            {jobs.map((j) => {
+              const status = deriveStatus({ assignedAgent: j.agent, assignedAt: j.assignedAt, duration: j.duration, completed: j.completed, disputed: j.disputed, expired: j.expired }, { completionRequested: j.completionRequested, completionRequestedAt: j.completionRequestedAt, disputedAt: j.disputedAt }).status;
+              return <tr key={j.id} className='border-t border-border/80'><td><Link className='underline' href={`/jobs/${j.id}?scenario=${scenario.key}`}>{j.id}</Link></td><td>{status}</td><td>{j.payout.toString()}</td><td>{j.employer}</td><td>{j.agent}</td><td>{(j.assignedAt + j.duration).toString()}</td></tr>;
+            })}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
 }

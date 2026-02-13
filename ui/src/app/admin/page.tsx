@@ -1,16 +1,20 @@
 'use client';
-import { useAccount } from 'wagmi';
-import { usePlatformSummary } from '@/lib/web3/queries';
+export const dynamic = 'force-dynamic';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { currentScenario } from '@/lib/demo';
 
-export default function Admin(){
-  const {address}=useAccount(); const {data}=usePlatformSummary();
-  const owner = data?.owner?.toLowerCase();
-  if (!address || !owner || address.toLowerCase()!==owner) return <div className='container py-8'><Card>Not authorized (owner only).</Card></div>;
-  return <div className='container py-8 space-y-3'>
-    <Card><h2 className='font-serif'>Safety toggles</h2><p>Pause/unpause and settlement pause with simulation-first writes.</p><Input placeholder='Type PAUSE to confirm'/></Card>
-    <Card><h2 className='font-serif'>Roles</h2><p>Manage moderators and allowlists / blacklists.</p></Card>
-    <Card><h2 className='font-serif'>Treasury</h2><p>Withdraw requires paused && !settlementPaused.</p></Card>
-  </div>;
+export default function AdminPage() {
+  const query = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams('');
+  const scenario = currentScenario(typeof window !== 'undefined' ? window.location.search : '');
+  const asOwner = query.get('asOwner') === '1';
+
+  if (!asOwner) return <div className='container py-8'><Card>Not authorized (owner only).</Card></div>;
+
+  return (
+    <div className='container py-8 space-y-4'>
+      <Card><h2 className='font-serif text-2xl'>Safety toggles</h2><p>pause/unpause, setSettlementPaused with typed confirmations (PAUSE / SETTLEMENT)</p></Card>
+      <Card><h2 className='font-serif text-2xl'>Roles</h2><p>moderators, allowlists, blacklists, additional agents/validators</p></Card>
+      <Card><h2 className='font-serif text-2xl'>Identity & treasury</h2><p>owner: {scenario.owner} · withdrawable + lock identity controls</p></Card>
+    </div>
+  );
 }

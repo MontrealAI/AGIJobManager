@@ -1,14 +1,38 @@
 import { describe, it, expect } from 'vitest';
-import { deriveStatus, computeDeadlines } from '@/lib/jobStatus';
+import fc from 'fast-check';
+import { computeDeadlines, deriveStatus } from '@/lib/jobStatus';
 import { isAllowedUri } from '@/lib/web3/safeUri';
-import { fmtAddr } from '@/lib/format';
+import { decodeError } from '@/lib/web3/errors';
 
-describe('status',()=>{
-  it('terminal mutually exclusive',()=>{
-    const settled=deriveStatus({assignedAgent:'0x0000000000000000000000000000000000000000',assignedAt:0n,duration:0n,completed:true,disputed:true,expired:true},{completionRequested:true,completionRequestedAt:0n,disputedAt:0n});
-    expect(settled.status).toBe('Settled'); expect(settled.terminal).toBe(true);
+const ZERO = '0x0000000000000000000000000000000000000000' as const;
+
+describe('job state invariants', () => {
+  it('terminal states are mutually exclusive in derivation precedence', () => {
+    const result = deriveStatus({ assignedAgent: ZERO, assignedAt: 1n, duration: 2n, completed: true, disputed: true, expired: true }, { completionRequested: true, completionRequestedAt: 1n, disputedAt: 1n });
+    expect(result.status).toBe('Settled');
+    expect(result.terminal).toBe(true);
   });
-  it('deadline zero edge',()=>{const d=computeDeadlines({assignedAgent:'0x0000000000000000000000000000000000000000',assignedAt:0n,duration:0n,completed:false,disputed:false,expired:false},{completionRequested:false,completionRequestedAt:0n,disputedAt:0n},{completionReviewPeriod:0n,disputeReviewPeriod:0n}); expect(d.expiryTime).toBe(0n);});
-  it('uri allowlist',()=>{expect(isAllowedUri('https://x.com')).toBe(true); expect(isAllowedUri('javascript:alert(1)')).toBe(false);});
-  it('format helpers',()=>{expect(fmtAddr('0x1234567890123456789012345678901234567890')).toBe('0x1234...7890');});
+
+  it('deadline math remains monotonic and non-negative', () => {
+    fc.assert(fc.property(fc.bigUintN(32), fc.bigUintN(32), fc.bigUintN(32), (assignedAt, duration, review) => {
+      const d = computeDeadlines({ assignedAgent: ZERO, assignedAt, duration, completed: false, disputed: false, expired: false }, { completionRequested: true, completionRequestedAt: assignedAt, disputedAt: assignedAt }, { completionReviewPeriod: review, disputeReviewPeriod: review });
+      expect(d.expiryTime >= assignedAt).toBe(true);
+      expect(d.completionReviewEnd >= assignedAt).toBe(true);
+      expect(d.disputeReviewEnd >= assignedAt).toBe(true);
+    }));
+  });
+
+  it('URI allowlist fuzzing only accepts allowed schemes', () => {
+    fc.assert(fc.property(fc.string(), (raw) => {
+      const safe = isAllowedUri(raw);
+      if (safe) {
+        expect(/^(https|http|ipfs|ens):/i.test(raw.trim())).toBe(true);
+      }
+    }));
+  });
+
+  it('error decoder maps to human messages', () => {
+    const decoded = decodeError({ name: 'NotAuthorized', shortMessage: 'reverted' } as never);
+    expect(decoded.human.toLowerCase()).toContain('authorized');
+  });
 });
