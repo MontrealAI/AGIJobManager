@@ -333,40 +333,9 @@ Start here:
   - Identity gating appendix: [`docs/namespace/ENS_IDENTITY_GATING.md`](docs/namespace/ENS_IDENTITY_GATING.md)
   - FAQ: [`docs/namespace/FAQ.md`](docs/namespace/FAQ.md)
 
-## UI / Ops Console (Next.js)
-
-An institutional dApp + operations console is available in `ui/` with read-only first behavior, simulation-first transaction flows, strict safe-link handling, RPC degradation banners, and hardened security headers.
-
-UI docs:
-- [docs/ui/OVERVIEW.md](docs/ui/OVERVIEW.md)
-- [docs/ui/ARCHITECTURE.md](docs/ui/ARCHITECTURE.md)
-- [docs/ui/JOB_LIFECYCLE.md](docs/ui/JOB_LIFECYCLE.md)
-- [docs/ui/SECURITY_MODEL.md](docs/ui/SECURITY_MODEL.md)
-- [docs/ui/DESIGN_SYSTEM.md](docs/ui/DESIGN_SYSTEM.md)
-- [docs/ui/DEMO.md](docs/ui/DEMO.md)
-
-```mermaid
-flowchart LR
-  D[Dashboard] --> J[Jobs]
-  J --> JD[Job Detail]
-  D --> A[Admin]
-  D --> DS[Design Gallery]
-  D --> DM[Demo Scenarios]
-```
-
-![Palette plate](docs/ui/graphics/palette-plate.svg)
-![Dashboard wireframe plate](docs/ui/graphics/dashboard-wireframe.svg)
-
-Quick start:
-
-```bash
-cd ui
-npm ci
-NEXT_PUBLIC_DEMO_MODE=1 npm run dev
-npm run build
-```
-
 ## UI / Sovereign Ops Console
+
+[![UI CI](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml/badge.svg)](https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml)
 
 A standalone institutional Next.js UI lives in [`ui/`](./ui) with deterministic demo fixtures, read-only-first navigation, and simulation-first transaction safety.
 
@@ -374,7 +343,7 @@ A standalone institutional Next.js UI lives in [`ui/`](./ui) with deterministic 
 ```bash
 cd ui
 npm ci
-npm run dev
+NEXT_PUBLIC_DEMO_MODE=1 npm run dev
 ```
 
 ### Documentation
@@ -383,13 +352,15 @@ npm run dev
 - [Job lifecycle](./docs/ui/JOB_LIFECYCLE.md)
 - [Ops runbook](./docs/ui/OPS_RUNBOOK.md)
 - [Security model](./docs/ui/SECURITY_MODEL.md)
+- [Design system](./docs/ui/DESIGN_SYSTEM.md)
+- [Demo mode](./docs/ui/DEMO.md)
 - [Testing](./docs/ui/TESTING.md)
 - [Contract interface](./docs/ui/CONTRACT_INTERFACE.md)
 - [Pinned versions](./docs/ui/VERSIONS.md)
 
-### Text-only graphics
+### Text-only graphics (no binary screenshots)
 ![Sovereign palette](./docs/ui/assets/palette.svg)
 ![UI wireframe](./docs/ui/assets/ui-wireframe.svg)
 
-Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, strict security headers, and no-binaries enforcement (`npm run check:no-binaries`).
+Security highlights: read-only mode without wallet, simulation-first write paths, URI allowlisting, strict security headers, and CI-enforced no-binaries checks (`npm run check:no-binaries`).
 
