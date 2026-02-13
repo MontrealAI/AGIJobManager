@@ -110,5 +110,29 @@ for (const row of mustIncludeColumns) {
   if (!quintessential.includes(row)) fail('Quintessential use case step table is missing required columns');
 }
 
+const requiredSectionSnippets = [
+  ['README.md', ['## Documentation', 'docs/README.md', 'docs/QUINTESSENTIAL_USE_CASE.md', 'docs:gen', 'docs:check', 'check-no-binaries']],
+  ['docs/CONTRACTS/AGIJobManager.md', [
+    '| Action | Owner | Moderator | Employer | Agent | Validator | Anyone |',
+    '| Parameter | Purpose | Safe range guidance | Operational note | Where set |',
+    '## Operational invariants',
+    '## Lifecycle'
+  ]],
+  ['docs/SECURITY_MODEL.md', ['## Threat model', '| Vector | Impact | Mitigation | Residual risk | Operator responsibility |']],
+  ['docs/TESTING.md', ['## Test matrix', '| Suite | Purpose | Command | Validates |']],
+  ['docs/OPERATIONS/RUNBOOK.md', ['## Parameter change checklist']],
+  ['docs/OPERATIONS/MONITORING.md', ['## Events catalog']],
+  ['docs/OPERATIONS/INCIDENT_RESPONSE.md', ['active exploit', 'settlementPaused', 'blacklist', 'lockIdentityConfiguration']]
+];
+
+for (const [file, snippets] of requiredSectionSnippets) {
+  const content = fs.readFileSync(path.join(root, file), 'utf8');
+  for (const snippet of snippets) {
+    if (!content.toLowerCase().includes(snippet.toLowerCase())) {
+      fail(`Missing required section snippet in ${file}: ${snippet}`);
+    }
+  }
+}
+
 if (process.exitCode) process.exit(process.exitCode);
 ok('Documentation checks passed');
