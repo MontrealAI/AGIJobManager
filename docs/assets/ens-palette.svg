@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="360" viewBox="0 0 980 360" role="img" aria-labelledby="title desc">
+  <title id="title">ASI Superintelligence Sovereign Purple Palette</title>
+  <desc id="desc">Text-only palette swatches for ENS integration documentation.</desc>
+  <rect x="0" y="0" width="980" height="360" fill="#14001F" />
+  <g fill="#E9DAFF" font-size="16">
+    <text x="24" y="34">ENS Documentation Palette (Sovereign Purple)</text>
+  </g>
+  <g font-size="13" fill="#E7E7EA">
+    <rect x="24" y="56" width="180" height="62" fill="#14001F" stroke="#E9DAFF" />
+    <text x="32" y="92">ASI Deep #14001F</text>
+    <rect x="220" y="56" width="180" height="62" fill="#1B0B2A" stroke="#E9DAFF" />
+    <text x="228" y="92">Sovereign Ink #1B0B2A</text>
+    <rect x="416" y="56" width="180" height="62" fill="#4B1D86" stroke="#E9DAFF" />
+    <text x="424" y="92">Imperial Purple #4B1D86</text>
+    <rect x="612" y="56" width="180" height="62" fill="#7A3FF2" stroke="#E9DAFF" />
+    <text x="620" y="92">Amethyst #7A3FF2</text>
+    <rect x="808" y="56" width="148" height="62" fill="#E9DAFF" stroke="#4B1D86" />
+    <text x="816" y="92" fill="#1B0B2A">Orchid Mist #E9DAFF</text>
+
+    <rect x="24" y="138" width="180" height="62" fill="#E7E7EA" stroke="#4B1D86" />
+    <text x="32" y="174" fill="#1B0B2A">Platinum #E7E7EA</text>
+    <rect x="220" y="138" width="180" height="62" fill="#A7A7B6" stroke="#4B1D86" />
+    <text x="228" y="174" fill="#1B0B2A">Slate #A7A7B6</text>
+    <rect x="416" y="138" width="180" height="62" fill="#1FAD7A" stroke="#E9DAFF" />
+    <text x="424" y="174">Success #1FAD7A</text>
+    <rect x="612" y="138" width="180" height="62" fill="#D4A017" stroke="#E9DAFF" />
+    <text x="620" y="174" fill="#1B0B2A">Warning #D4A017</text>
+    <rect x="808" y="138" width="148" height="62" fill="#E24A5A" stroke="#E9DAFF" />
+    <text x="816" y="174">Danger #E24A5A</text>
+  </g>
+</svg>
