@@ -1,19 +1,19 @@
 import Link from 'next/link'
-import { GlobalBanners } from '@/components/banners'
+import { TopBanners } from '@/components/banners'
 
-export default function HomePage() {
+export default function Dashboard() {
+  const degraded = !process.env.RPC_MAINNET_URL && !process.env.RPC_SEPOLIA_URL
   return (
     <div className="space-y-6">
-      <GlobalBanners />
+      <TopBanners degraded={degraded} />
       <section className="hero">
-        <p className="text-sm text-muted-foreground uppercase tracking-wider">AGIJobManager</p>
-        <h1 className="mt-2 text-[40px] leading-[44px]">Sovereign AGI Work Settlement Console</h1>
-        <p className="mt-3 max-w-2xl text-muted-foreground">Read-only by default. Connect a wallet only to execute role-gated contract actions.</p>
+        <h1 className="text-4xl">ASI Sovereign Job Settlement Console</h1>
+        <p className="mt-2 text-muted-foreground">Read-only friendly dapp + operations console with simulation-first writes.</p>
       </section>
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="card-shell"><h2 className="text-2xl">Create Job</h2><p className="mt-2 text-sm text-muted-foreground">Wallet required. Includes preflight checks and simulation-first execution.</p></div>
-        <div className="card-shell"><h2 className="text-2xl">Browse Jobs</h2><p className="mt-2 text-sm text-muted-foreground">Inspect lifecycle, deadlines, disputes, and completion records.</p><Link href="/jobs" className="btn-primary inline-block mt-3">Open jobs</Link></div>
-        <div className="card-shell"><h2 className="text-2xl">Platform Config</h2><p className="mt-2 text-sm text-muted-foreground">Review settlement windows, voting thresholds, and pause flags.</p></div>
+        <div className="card-shell"><h2 className="text-2xl">Create Job</h2><p className="text-sm text-muted-foreground">Wallet required. Preflight + simulation before send.</p></div>
+        <div className="card-shell"><h2 className="text-2xl">Browse Jobs</h2><Link href="/jobs" className="btn-primary mt-3 inline-block">Open Jobs</Link></div>
+        <div className="card-shell"><h2 className="text-2xl">Platform Summary</h2><p className="text-sm text-muted-foreground">Inspect thresholds, periods, and lock status.</p></div>
       </section>
     </div>
   )
