@@ -7,8 +7,8 @@
 
 | Tool | Version | Source |
 | --- | --- | --- |
-| node | 20.19.6 | runtime |
-| npm | 11.4.2 | runtime |
+| node | not pinned in repository manifests | runtime |
+| npm | not pinned in repository manifests | runtime |
 | truffle | 5.11.5 | package-lock.json |
 | @openzeppelin/contracts | 4.9.6 | package.json |
 

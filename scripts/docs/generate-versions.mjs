@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { execSync } from 'node:child_process';
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const outRootArg = process.argv.find((arg) => arg.startsWith('--out-dir='));
@@ -22,8 +21,8 @@ const sourceFingerprint = crypto
 
 const truffleFromLock = lock.packages?.['node_modules/truffle']?.version ?? rootPkg.devDependencies?.truffle ?? 'n/a';
 const ozVersion = rootPkg.dependencies?.['@openzeppelin/contracts'] ?? 'n/a';
-const nodeVersion = process.version.replace('v', '');
-const npmVersion = execSync('npm --version', { cwd: repoRoot, encoding: 'utf8' }).trim();
+const nodeVersion = rootPkg.engines?.node ?? 'not pinned in repository manifests';
+const npmVersion = rootPkg.packageManager ?? 'not pinned in repository manifests';
 
 const deps = [
   ['@openzeppelin/contracts', ozVersion, 'package.json'],
