@@ -8,6 +8,8 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
+const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
+const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
@@ -88,14 +90,13 @@ contract("ENS label hardening", (accounts) => {
     });
 
     it("keeps Merkle allowlist authorization working with empty subdomain", async () => {
-      const leaf = Buffer.from(leafFor(agent).slice(2), "hex");
-      const tree = new MerkleTree([leaf], keccak256, { sortPairs: true });
-      await manager.updateMerkleRoots(ZERO_ROOT, tree.getHexRoot(), { from: owner });
+      const leaf = leafFor(agent);
+      await manager.updateMerkleRoots(ZERO_ROOT, leaf, { from: owner });
 
       const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
       const jobId = createReceipt.logs[0].args.jobId.toNumber();
 
-      await manager.applyForJob(jobId, "", tree.getHexProof(leaf), { from: agent });
+      await manager.applyForJob(jobId, "", [], { from: agent });
       const job = await manager.getJobCore(jobId);
       assert.equal(job.assignedAgent, agent, "agent should be assigned via Merkle proof");
     });
@@ -144,19 +145,33 @@ contract("ENS label hardening", (accounts) => {
       assert.equal(validation.validatorDisapprovals.toString(), "1", "validator vote should be recorded via additional allowlist");
     });
 
-    it("reverts with InvalidENSLabel when ENS path is attempted with multi-label input", async () => {
-      await manager.updateRootNodes(
-        web3.utils.soliditySha3("club"),
-        web3.utils.soliditySha3("agent"),
-        web3.utils.soliditySha3("alpha-club"),
-        web3.utils.soliditySha3("alpha-agent"),
+    it("reverts with InvalidENSLabel before ENS staticcalls when ENS path is attempted", async () => {
+      const revertingEns = await RevertingENSRegistry.new({ from: owner });
+      const revertingWrapper = await RevertingNameWrapper.new({ from: owner });
+      await revertingEns.setRevertResolver(true, { from: owner });
+      await revertingWrapper.setRevertOwnerOf(true, { from: owner });
+
+      const strictManager = await AGIJobManager.new(
+        ...buildInitConfig(
+          token.address,
+          "ipfs://base",
+          revertingEns.address,
+          revertingWrapper.address,
+          web3.utils.soliditySha3("club"),
+          web3.utils.soliditySha3("agent"),
+          web3.utils.soliditySha3("alpha-club"),
+          web3.utils.soliditySha3("alpha-agent"),
+          ZERO_ROOT,
+          ZERO_ROOT,
+        ),
         { from: owner },
       );
 
-      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      await token.approve(strictManager.address, payout, { from: employer });
+      const createReceipt = await strictManager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
       const jobId = createReceipt.logs[0].args.jobId.toNumber();
 
-      await expectCustomError(manager.applyForJob.call(jobId, "alice.bob", [], { from: outsider }), "InvalidENSLabel");
+      await expectCustomError(strictManager.applyForJob.call(jobId, "alice.bob", [], { from: outsider }), "InvalidENSLabel");
     });
   });
 });
