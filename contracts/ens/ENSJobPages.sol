@@ -379,14 +379,34 @@ contract ENSJobPages is Ownable {
     }
 
     function _requireConfigured() internal view {
-        if (!_isFullyConfigured()) revert ENSNotConfigured();
+        if (address(ens) == address(0)) revert ENSNotConfigured();
+        if (address(publicResolver) == address(0)) revert ENSNotConfigured();
+        if (!_isRootConfigured()) revert ENSNotConfigured();
     }
 
     function _isFullyConfigured() internal view returns (bool) {
         if (address(ens) == address(0)) return false;
         if (address(publicResolver) == address(0)) return false;
         if (!_isRootConfigured()) return false;
-        return true;
+        if (jobManager == address(0) || jobManager.code.length == 0) return false;
+
+        address rootOwner;
+        try ens.owner(jobsRootNode) returns (address owner_) {
+            rootOwner = owner_;
+        } catch {
+            return false;
+        }
+
+        if (rootOwner == address(this)) {
+            return true;
+        }
+
+        address wrapperAddress = address(nameWrapper);
+        if (wrapperAddress == address(0)) {
+            return false;
+        }
+
+        return rootOwner == wrapperAddress;
     }
 
     function _isRootConfigured() internal view returns (bool) {
