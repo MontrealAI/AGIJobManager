@@ -5,6 +5,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const ERC20NoReturn = artifacts.require("ERC20NoReturn");
 const FailingERC20 = artifacts.require("FailingERC20");
 const FeeOnTransferToken = artifacts.require("FeeOnTransferToken");
+const MalformedReturnERC20 = artifacts.require("MalformedReturnERC20");
 const BondMath = artifacts.require("BondMath");
 const ENSOwnership = artifacts.require("ENSOwnership");
 const ReputationMath = artifacts.require("ReputationMath");
@@ -64,16 +65,19 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
     });
     it("handles edge-case baseIpfsUrl values without reverting", async () => {
       let out = await harness.applyBaseIpfs("bafy/job.json", "/");
-      assert.equal(out, "//bafy/job.json");
+      assert.equal(out, "/bafy/job.json");
 
       out = await harness.applyBaseIpfs("bafy/job.json", "ipfs://");
-      assert.equal(out, "ipfs:///bafy/job.json");
+      assert.equal(out, "ipfs://bafy/job.json");
 
       out = await harness.applyBaseIpfs("bafy/job.json", "weird://base?x=1#frag");
       assert.equal(out, "weird://base?x=1#frag/bafy/job.json");
 
       out = await harness.applyBaseIpfs("", "ipfs://base");
       assert.equal(out, "ipfs://base/");
+
+      out = await harness.applyBaseIpfs("https://gateway/ipfs/bafy/job.json", "https://gateway/ipfs");
+      assert.equal(out, "https://gateway/ipfs/bafy/job.json");
     });
   });
 
@@ -119,6 +123,31 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
 
       await expectRevert.unspecified(
         harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("10"), { from: owner })
+      );
+    });
+
+
+    it("rejects non-contract token addresses", async () => {
+      await expectRevert.unspecified(
+        harness.safeTransfer("0x0000000000000000000000000000000000000001", recipient, 1, { from: owner })
+      );
+
+      await expectRevert.unspecified(
+        harness.safeTransferFromExact("0x0000000000000000000000000000000000000001", owner, recipient, 1, { from: owner })
+      );
+    });
+
+    it("reverts on malformed ERC20 return data", async () => {
+      const token = await MalformedReturnERC20.new({ from: owner });
+      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
+      await token.approve(harness.address, web3.utils.toWei("10"), { from: owner });
+
+      await expectRevert.unspecified(
+        harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })
+      );
+
+      await expectRevert.unspecified(
+        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
       );
     });
   });

@@ -30,23 +30,22 @@ contract("ENS label hardening", (accounts) => {
       harness = await EnsLabelUtilsHarness.new({ from: owner });
     });
 
-    it("accepts valid labels and enforces boundary lengths", async () => {
-      await harness.check("alice");
+    it("accepts strict lowercase labels", async () => {
+      for (const label of ["alice", "a", "a-1", "0", "abc123", "z9-a"]) {
+        await harness.check(label);
+      }
 
       const sixtyThree = "a".repeat(63);
       await harness.check(sixtyThree);
-
-      const sixtyFour = "a".repeat(64);
-      await expectCustomError(harness.check(sixtyFour), "InvalidENSLabel");
     });
 
     it("rejects invalid labels", async () => {
-      await expectCustomError(harness.check("alice.bob"), "InvalidENSLabel");
-      await expectCustomError(harness.check(""), "InvalidENSLabel");
-      await expectCustomError(harness.check("A"), "InvalidENSLabel");
-      await expectCustomError(harness.check("a_b"), "InvalidENSLabel");
-      await expectCustomError(harness.check("-a"), "InvalidENSLabel");
-      await expectCustomError(harness.check("a-"), "InvalidENSLabel");
+      for (const label of ["", "alice.bob", "A", "a_b", "-a", "a-", ".", "..", "a..b", "a b", "\n"]) {
+        await expectCustomError(harness.check(label), "InvalidENSLabel");
+      }
+
+      const sixtyFour = "a".repeat(64);
+      await expectCustomError(harness.check(sixtyFour), "InvalidENSLabel");
     });
   });
 

@@ -11,6 +11,8 @@ library EnsLabelUtils {
     bytes1 private constant A = 0x61;
     bytes1 private constant Z = 0x7a;
 
+    /// @dev Strict ASCII label policy for predictable ENS auth routing:
+    /// 1..63 chars, [a-z0-9-], no dots, no leading/trailing dash.
     function requireValidLabel(string memory label) internal pure {
         bytes memory b = bytes(label);
         uint256 len = b.length;

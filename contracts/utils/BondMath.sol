@@ -11,9 +11,7 @@ library BondMath {
         if (bps == 0 && minBond == 0 && maxBond == 0) {
             return 0;
         }
-        unchecked {
-            bond = (payout * bps) / 10_000;
-        }
+        bond = (payout * bps) / 10_000;
         if (bond < minBond) bond = minBond;
         if (bond > maxBond) bond = maxBond;
         if (bond > payout) bond = payout;
@@ -30,14 +28,10 @@ library BondMath {
         if (bps == 0 && minBond == 0 && maxBond == 0) {
             return 0;
         }
-        unchecked {
-            bond = (payout * bps) / 10_000;
-        }
+        bond = (payout * bps) / 10_000;
         if (bond < minBond) bond = minBond;
         if (durationLimit != 0) {
-            unchecked {
-                bond += (bond * duration) / durationLimit;
-            }
+            bond += (bond * duration) / durationLimit;
         }
         if (maxBond != 0 && bond > maxBond) bond = maxBond;
         if (bond > payout) bond = payout;
