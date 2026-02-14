@@ -54,6 +54,7 @@ import "./utils/TransferUtils.sol";
 import "./utils/BondMath.sol";
 import "./utils/ReputationMath.sol";
 import "./utils/ENSOwnership.sol";
+import "./utils/EnsLabelUtils.sol";
 
 interface ENS {
     function resolver(bytes32 node) external view returns (address);
@@ -649,6 +650,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     {
         if (additional[claimant]) return true;
         if (ENSOwnership.verifyMerkleOwnership(claimant, proof, merkleRoot)) return true;
+        EnsLabelUtils.requireValidLabel(subdomain);
         return ENSOwnership.verifyENSOwnership(
             address(ens),
             address(nameWrapper),
