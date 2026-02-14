@@ -19,10 +19,16 @@ library TransferUtils {
     function safeTransferFromExact(address token, address from, address to, uint256 amount) external {
         if (amount == 0) return;
         if (token.code.length == 0) revert TransferFailed();
-        uint256 balanceBefore = IERC20(token).balanceOf(to);
+        uint256 balanceBefore = _balanceOf(token, to);
         _callOptionalReturn(token, abi.encodeWithSelector(IERC20.transferFrom.selector, from, to, amount));
-        uint256 balanceAfter = IERC20(token).balanceOf(to);
+        uint256 balanceAfter = _balanceOf(token, to);
         if (balanceAfter < balanceBefore || balanceAfter - balanceBefore != amount) revert TransferFailed();
+    }
+
+    function _balanceOf(address token, address owner) private view returns (uint256 balance) {
+        (bool success, bytes memory returndata) = token.staticcall(abi.encodeWithSelector(IERC20.balanceOf.selector, owner));
+        if (!success || returndata.length != 32) revert TransferFailed();
+        balance = abi.decode(returndata, (uint256));
     }
 
     function _callOptionalReturn(address token, bytes memory data) private {
