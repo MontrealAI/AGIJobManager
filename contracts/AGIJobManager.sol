@@ -49,7 +49,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./utils/UriUtils.sol";
 import "./utils/TransferUtils.sol";
 import "./utils/BondMath.sol";
@@ -501,7 +500,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
         if (!(additionalAgents[msg.sender]
-            || _verifyOwnership(msg.sender, subdomain, proof, agentMerkleRoot, agentRootNode, alphaAgentRootNode)
+            || ENSOwnership.verifyOwnership(address(ens), address(nameWrapper), msg.sender, subdomain, proof, agentMerkleRoot, agentRootNode, alphaAgentRootNode)
         )) revert NotAuthorized();
         if (activeJobsByAgent[msg.sender] >= maxActiveJobsPerAgent) revert InvalidState();
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
@@ -580,7 +579,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _requireAssignedAgent(job);
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
         if (!(additionalValidators[msg.sender]
-            || _verifyOwnership(msg.sender, subdomain, proof, validatorMerkleRoot, clubRootNode, alphaClubRootNode)
+            || ENSOwnership.verifyOwnership(address(ens), address(nameWrapper), msg.sender, subdomain, proof, validatorMerkleRoot, clubRootNode, alphaClubRootNode)
         )) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
         if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
@@ -1232,24 +1231,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             mstore(add(ptr, 36), jobId)
             success := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
-    }
-
-    function _verifyOwnership(
-        address claimant,
-        string memory subdomain,
-        bytes32[] calldata proof,
-        bytes32 merkleRoot,
-        bytes32 rootNode,
-        bytes32 alphaRootNode
-    ) internal view returns (bool) {
-        if (MerkleProof.verifyCalldata(proof, merkleRoot, keccak256(abi.encodePacked(claimant)))) return true;
-        return _verifyOwnershipByRoot(claimant, subdomain, rootNode)
-            || _verifyOwnershipByRoot(claimant, subdomain, alphaRootNode);
-    }
-
-    function _verifyOwnershipByRoot(address claimant, string memory subdomain, bytes32 rootNode) internal view returns (bool) {
-        return rootNode != bytes32(0)
-            && ENSOwnership.verifyENSOwnership(address(ens), address(nameWrapper), claimant, subdomain, rootNode);
     }
 
     function addAdditionalValidator(address validator) external onlyOwner {

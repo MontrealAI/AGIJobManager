@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./EnsLabelUtils.sol";
 
 library ENSOwnership {
@@ -11,6 +12,37 @@ library ENSOwnership {
     bytes4 private constant RESOLVER_SELECTOR = 0x0178b8bf;
     bytes4 private constant ADDR_SELECTOR = 0x3b3b57de;
 
+
+    function verifyOwnership(
+        address ensAddress,
+        address nameWrapperAddress,
+        address claimant,
+        string memory subdomain,
+        bytes32[] calldata proof,
+        bytes32 merkleRoot,
+        bytes32 rootNode,
+        bytes32 alphaRootNode
+    ) external view returns (bool) {
+        if (MerkleProof.verifyCalldata(proof, merkleRoot, keccak256(abi.encodePacked(claimant)))) return true;
+        EnsLabelUtils.requireValidLabel(subdomain);
+        return _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, rootNode)
+            || _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, alphaRootNode);
+    }
+
+    function _verifyByRoot(
+        address ensAddress,
+        address nameWrapperAddress,
+        address claimant,
+        string memory subdomain,
+        bytes32 rootNode
+    ) private view returns (bool) {
+        if (rootNode == bytes32(0)) return false;
+        bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
+        if (_verifyNameWrapperOwnership(nameWrapperAddress, claimant, subnode)) {
+            return true;
+        }
+        return _verifyResolverOwnership(ensAddress, claimant, subnode);
+    }
     function verifyENSOwnership(
         address ensAddress,
         address nameWrapperAddress,
