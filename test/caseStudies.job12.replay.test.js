@@ -54,7 +54,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
   };
 
   const subdomains = {
-    agent: "888.node.agi.eth",
+    agent: "agent888",
     validatorPrimary: "bluebutterfli",
     validator2: "validator-two",
     validator3: "validator-three",
