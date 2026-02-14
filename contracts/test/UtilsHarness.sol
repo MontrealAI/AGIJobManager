@@ -44,6 +44,14 @@ contract UtilsHarness {
         );
     }
 
+
+    function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)
+        external
+        pure
+        returns (bool)
+    {
+        return ENSOwnership.verifyMerkleOwnership(claimant, proof, merkleRoot);
+    }
     function verifyENSOwnership(
         address ensAddress,
         address nameWrapperAddress,

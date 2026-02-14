@@ -11,6 +11,7 @@ library EnsLabelUtils {
     bytes1 private constant A = 0x61;
     bytes1 private constant Z = 0x7a;
 
+    /// @dev Intentionally narrow policy: [a-z0-9-], 1..63 bytes, no leading/trailing dash, no dots.
     function requireValidLabel(string memory label) internal pure {
         bytes memory b = bytes(label);
         uint256 len = b.length;
