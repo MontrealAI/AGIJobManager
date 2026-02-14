@@ -104,6 +104,40 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     assert.equal(decoded, "ens://job-123.jobs.agi.eth");
   });
 
+
+  it("supports exact low-level calldata shapes used by AGIJobManager", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const caller = await MockHookCaller.new({ from: owner });
+    const rootName = "jobs.agi.eth";
+    const rootNode = namehash(rootName);
+
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+    await pages.setJobManager(caller.address, { from: owner });
+
+    const hookData = web3.eth.abi.encodeFunctionSignature("handleHook(uint8,uint256)")
+      + web3.eth.abi.encodeParameters(["uint8", "uint256"], [6, 321]).slice(2);
+    assert.equal((hookData.length - 2) / 2, 0x44, "hook calldata should be exact 0x44 bytes");
+
+    const hookRes = await web3.eth.call({ to: pages.address, from: caller.address, data: hookData });
+    assert.equal(hookRes, "0x", "hook must return empty bytes");
+
+    const uriData = web3.eth.abi.encodeFunctionSignature("jobEnsURI(uint256)")
+      + web3.eth.abi.encodeParameter("uint256", 321).slice(2);
+    assert.equal((uriData.length - 2) / 2, 0x24, "uri calldata should be exact 0x24 bytes");
+
+    const raw = await web3.eth.call({ to: pages.address, data: uriData });
+    const decoded = web3.eth.abi.decodeParameter("string", raw);
+    assert.equal(decoded, "ens://job-321.jobs.agi.eth");
+
+    const firstWord = web3.utils.toBN(`0x${raw.slice(2, 66)}`);
+    assert.equal(firstWord.toString(), "32", "string ABI offset must be 32");
+    assert.isAtMost(decoded.length, 1024, "URI string should stay below AGIJobManager cap");
+  });
+
   it("uses ENS job URI for completion NFT when enabled", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENSRegistry.new({ from: owner });

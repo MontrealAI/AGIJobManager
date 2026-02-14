@@ -20,6 +20,10 @@ contract MockNameWrapper {
         return owners[id];
     }
 
+    function getApproved(uint256) external pure returns (address) {
+        return address(0);
+    }
+
     function setApprovalForAll(address operator, bool approved) external {
         approvals[msg.sender][operator] = approved;
     }

@@ -220,6 +220,45 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await ens.owner(node), helper.address, "critical subname creation should still succeed");
   });
 
+
+  it("returns empty URI when root config is missing", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "",
+      { from: owner }
+    );
+
+    assert.equal(await helper.jobEnsURI(99), "", "unconfigured helper should not revert on URI lookup");
+  });
+
+  it("locks configuration only after a valid operational setup", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await expectRevert.unspecified(helper.lockConfiguration({ from: owner }));
+
+    const hookCaller = await MockHookCaller.new({ from: owner });
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await helper.lockConfiguration({ from: owner });
+
+    await expectRevert.unspecified(helper.setENSRegistry(ens.address, { from: owner }));
+    await expectRevert.unspecified(helper.setJobsRoot(rootNode, rootName, { from: owner }));
+  });
+
   it("validates constructor and setters reject EOAs", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
