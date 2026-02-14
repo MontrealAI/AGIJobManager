@@ -6,6 +6,7 @@ const ERC20NoReturn = artifacts.require("ERC20NoReturn");
 const FailingERC20 = artifacts.require("FailingERC20");
 const FeeOnTransferToken = artifacts.require("FeeOnTransferToken");
 const MalformedReturnERC20 = artifacts.require("MalformedReturnERC20");
+const BalanceOfMalformedERC20 = artifacts.require("BalanceOfMalformedERC20");
 const BondMath = artifacts.require("BondMath");
 const ENSOwnership = artifacts.require("ENSOwnership");
 const ReputationMath = artifacts.require("ReputationMath");
@@ -134,6 +135,14 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
 
       await expectRevert.unspecified(
         harness.safeTransferFromExact("0x0000000000000000000000000000000000000001", owner, recipient, 1, { from: owner })
+      );
+    });
+
+    it("reverts when balanceOf returns malformed data during exact transfer checks", async () => {
+      const token = await BalanceOfMalformedERC20.new({ from: owner });
+
+      await expectRevert.unspecified(
+        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
       );
     });
 

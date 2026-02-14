@@ -334,4 +334,31 @@ contract("ENSJobPages helper", (accounts) => {
     await helper.lockConfiguration({ from: owner });
   });
 
+
+  it("accepts wrapped-root single-token approvals for configuration and writes", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), owner, { from: owner });
+    await wrapper.setApproved(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await helper.lockConfiguration({ from: owner });
+
+    await helper.createJobPage(15, employer, "ipfs://spec-single-approval", { from: owner });
+    const node = subnode(rootNode, "job-15");
+    assert.equal(await resolver.text(node, "agijobs.spec.public"), "ipfs://spec-single-approval");
+  });
+
 });

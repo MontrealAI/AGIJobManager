@@ -158,7 +158,11 @@ contract ENSJobPages is Ownable {
         return string(abi.encodePacked(jobEnsLabel(jobId), ".", jobsRootName));
     }
 
-    function jobEnsURI(uint256 jobId) public view returns (string memory) {
+    function jobEnsURI(uint256 jobId) external view returns (string memory) {
+        return _jobEnsURI(jobId);
+    }
+
+    function _jobEnsURI(uint256 jobId) internal view returns (string memory) {
         string memory ensName = jobEnsName(jobId);
         if (bytes(ensName).length == 0) return "";
         return string(abi.encodePacked("ens://", ensName));
@@ -367,13 +371,36 @@ contract ENSJobPages is Ownable {
     /* solhint-enable no-empty-blocks */
 
     function _isWrappedRoot() internal view returns (bool) {
-        return address(nameWrapper) != address(0) && ens.owner(jobsRootNode) == address(nameWrapper);
+        if (address(nameWrapper) == address(0)) return false;
+        (bool ok, address rootOwner) = _tryOwner(jobsRootNode);
+        return ok && rootOwner == address(nameWrapper);
     }
 
     function _requireWrapperAuthorization() internal view {
-        address wrappedOwner = nameWrapper.ownerOf(uint256(jobsRootNode));
+        address wrappedOwner;
+        try nameWrapper.ownerOf(uint256(jobsRootNode)) returns (address owner) {
+            wrappedOwner = owner;
+        } catch {
+            revert ENSNotAuthorized();
+        }
         if (wrappedOwner == address(0)) revert ENSNotAuthorized();
-        if (wrappedOwner != address(this) && !nameWrapper.isApprovedForAll(wrappedOwner, address(this))) {
+        if (wrappedOwner == address(this)) return;
+
+        try nameWrapper.getApproved(uint256(jobsRootNode)) returns (address approved) {
+            if (approved == address(this)) {
+                return;
+            }
+        } catch {
+            // fallback to isApprovedForAll check
+        }
+
+        bool approvedForAll;
+        try nameWrapper.isApprovedForAll(wrappedOwner, address(this)) returns (bool approved) {
+            approvedForAll = approved;
+        } catch {
+            approvedForAll = false;
+        }
+        if (!approvedForAll) {
             revert ENSNotAuthorized();
         }
     }
@@ -390,7 +417,8 @@ contract ENSJobPages is Ownable {
         if (!_isRootConfigured()) return false;
         if (jobManager == address(0)) return false;
 
-        address rootOwner = ens.owner(jobsRootNode);
+        (bool ok, address rootOwner) = _tryOwner(jobsRootNode);
+        if (!ok) return false;
         if (rootOwner == address(this)) {
             return true;
         }
@@ -411,6 +439,14 @@ contract ENSJobPages is Ownable {
         if (wrappedOwner == address(0)) return false;
         if (wrappedOwner == address(this)) return true;
 
+        try nameWrapper.getApproved(uint256(jobsRootNode)) returns (address approved) {
+            if (approved == address(this)) {
+                return true;
+            }
+        } catch {
+            // Continue with isApprovedForAll fallback
+        }
+
         try nameWrapper.isApprovedForAll(wrappedOwner, address(this)) returns (bool approved) {
             return approved;
         } catch {
@@ -420,5 +456,13 @@ contract ENSJobPages is Ownable {
 
     function _isRootConfigured() internal view returns (bool) {
         return jobsRootNode != bytes32(0) && bytes(jobsRootName).length != 0;
+    }
+
+    function _tryOwner(bytes32 node) internal view returns (bool ok, address ownerAddress) {
+        try ens.owner(node) returns (address owner) {
+            return (true, owner);
+        } catch {
+            return (false, address(0));
+        }
     }
 }
