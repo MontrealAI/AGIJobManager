@@ -182,8 +182,8 @@ contract ENSJobPages is Ownable {
         bytes32 node = _createSubname(jobId);
         emit JobENSPageCreated(jobId, node);
         _setAuthorisationBestEffort(jobId, node, employer, true);
-        _setTextBestEffort(node, "schema", "agijobmanager/v1");
-        _setTextBestEffort(node, "agijobs.spec.public", specURI);
+        _setTextBestEffort(1, jobId, node, "schema", "agijobmanager/v1");
+        _setTextBestEffort(1, jobId, node, "agijobs.spec.public", specURI);
     }
 
     function handleHook(uint8 hook, uint256 jobId) external onlyJobManager {
@@ -282,7 +282,7 @@ contract ENSJobPages is Ownable {
     function _onCompletionRequested(uint256 jobId, string memory completionURI) internal {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
-        _setTextBestEffort(node, "agijobs.completion.public", completionURI);
+        _setTextBestEffort(3, jobId, node, "agijobs.completion.public", completionURI);
     }
 
     function revokePermissions(uint256 jobId, address employer, address agent) public onlyOwner {
@@ -340,13 +340,15 @@ contract ENSJobPages is Ownable {
         node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
     }
 
-    function _setTextBestEffort(bytes32 node, string memory key, string memory value) internal {
+    function _setTextBestEffort(uint8 hook, uint256 jobId, bytes32 node, string memory key, string memory value)
+        internal
+    {
         if (bytes(value).length == 0) {
             return;
         }
         try publicResolver.setText(node, key, value) {
         } catch {
-            emit ENSHookBestEffortFailure(0, 0, "SET_TEXT");
+            emit ENSHookBestEffortFailure(hook, jobId, "SET_TEXT");
             // solhint-disable-next-line no-empty-blocks
         }
     }
@@ -378,8 +380,11 @@ contract ENSJobPages is Ownable {
     function _requireWrapperAuthorization() internal view {
         address wrappedOwner = nameWrapper.ownerOf(uint256(jobsRootNode));
         if (wrappedOwner == address(0)) revert ENSNotAuthorized();
-        if (wrappedOwner != address(this) && !nameWrapper.isApprovedForAll(wrappedOwner, address(this))) {
-            revert ENSNotAuthorized();
+        if (wrappedOwner != address(this)) {
+            bool approvedForAll = nameWrapper.isApprovedForAll(wrappedOwner, address(this));
+            if (!approvedForAll && nameWrapper.getApproved(uint256(jobsRootNode)) != address(this)) {
+                revert ENSNotAuthorized();
+            }
         }
     }
 
@@ -416,6 +421,14 @@ contract ENSJobPages is Ownable {
         }
         if (wrappedOwner == address(0)) return false;
         if (wrappedOwner == address(this)) return true;
+
+        try nameWrapper.getApproved(uint256(jobsRootNode)) returns (address approved) {
+            if (approved == address(this)) {
+                return true;
+            }
+        } catch {
+            // ignore and continue with operator approval check
+        }
 
         try nameWrapper.isApprovedForAll(wrappedOwner, address(this)) returns (bool approved) {
             return approved;
