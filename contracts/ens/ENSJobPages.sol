@@ -57,6 +57,7 @@ contract ENSJobPages is Ownable {
     event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);
     event ENSHookProcessed(uint8 indexed hook, uint256 indexed jobId, bool configured, bool success);
     event ENSHookSkipped(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed reason);
+    event ENSHookBestEffortFailure(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed operation);
     event ConfigurationLocked(address indexed locker);
 
     IENSRegistry public ens;
@@ -345,6 +346,7 @@ contract ENSJobPages is Ownable {
         }
         try publicResolver.setText(node, key, value) {
         } catch {
+            emit ENSHookBestEffortFailure(0, 0, "SET_TEXT");
             // solhint-disable-next-line no-empty-blocks
         }
     }
@@ -361,13 +363,16 @@ contract ENSJobPages is Ownable {
         try publicResolver.setAuthorisation(node, account, authorised) {
             emit JobENSPermissionsUpdated(jobId, account, authorised);
         } catch {
+            emit ENSHookBestEffortFailure(0, jobId, "SET_AUTH");
             // solhint-disable-next-line no-empty-blocks
         }
     }
     /* solhint-enable no-empty-blocks */
 
     function _isWrappedRoot() internal view returns (bool) {
-        return address(nameWrapper) != address(0) && ens.owner(jobsRootNode) == address(nameWrapper);
+        if (address(nameWrapper) == address(0)) return false;
+        (bool ok, address ownerAddress) = _tryRootOwner();
+        return ok && ownerAddress == address(nameWrapper);
     }
 
     function _requireWrapperAuthorization() internal view {
@@ -390,7 +395,8 @@ contract ENSJobPages is Ownable {
         if (!_isRootConfigured()) return false;
         if (jobManager == address(0)) return false;
 
-        address rootOwner = ens.owner(jobsRootNode);
+        (bool ok, address rootOwner) = _tryRootOwner();
+        if (!ok) return false;
         if (rootOwner == address(this)) {
             return true;
         }
@@ -420,5 +426,13 @@ contract ENSJobPages is Ownable {
 
     function _isRootConfigured() internal view returns (bool) {
         return jobsRootNode != bytes32(0) && bytes(jobsRootName).length != 0;
+    }
+
+    function _tryRootOwner() internal view returns (bool ok, address ownerAddress) {
+        try ens.owner(jobsRootNode) returns (address rootOwner) {
+            return (true, rootOwner);
+        } catch {
+            return (false, address(0));
+        }
     }
 }

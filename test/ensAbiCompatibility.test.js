@@ -9,6 +9,7 @@ const MockHookCaller = artifacts.require("MockHookCaller");
 const MockENSJobPages = artifacts.require("MockENSJobPages");
 const MockERC20 = artifacts.require("MockERC20");
 const MockERC721 = artifacts.require("MockERC721");
+const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { namehash } = require("./helpers/ens");
@@ -113,6 +114,36 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     assert.equal(stringLenWord.toString(), decoded.length.toString(), "ABI string length word should match");
     assert.equal(decoded, "ens://job-123.jobs.agi.eth");
     assert.isAtMost(decoded.length, 1024, "ENS URI should stay within AGIJobManager bounds");
+  });
+
+
+
+  it("marks hook as skipped when ENS registry owner() reverts", async () => {
+    const revertingEns = await RevertingENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const caller = await MockHookCaller.new({ from: owner });
+    const rootName = "jobs.agi.eth";
+    const rootNode = namehash(rootName);
+
+    const pages = await ENSJobPages.new(revertingEns.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+    await pages.setJobManager(caller.address, { from: owner });
+    await revertingEns.setRevertOwner(true, { from: owner });
+
+    const hookReceipt = await caller.callHandleHook(pages.address, 1, 1, { from: owner });
+    await expectEvent.inTransaction(hookReceipt.tx, pages, "ENSHookSkipped", {
+      hook: "1",
+      jobId: "1",
+      reason: web3.utils.padRight(web3.utils.asciiToHex("NOT_CONFIGURED"), 64),
+    });
+    await expectEvent.inTransaction(hookReceipt.tx, pages, "ENSHookProcessed", {
+      hook: "1",
+      jobId: "1",
+      configured: false,
+      success: false,
+    });
   });
 
   it("uses ENS job URI for completion NFT when enabled", async () => {
