@@ -73,6 +73,9 @@ contract ENSJobPages is Ownable {
         if (ensAddress == address(0) || ensAddress.code.length == 0) revert InvalidParameters();
         if (publicResolverAddress == address(0) || publicResolverAddress.code.length == 0) revert InvalidParameters();
         if (nameWrapperAddress != address(0) && nameWrapperAddress.code.length == 0) revert InvalidParameters();
+        bool hasRootNode = rootNode != bytes32(0);
+        bool hasRootName = bytes(rootName).length != 0;
+        if (hasRootNode != hasRootName) revert InvalidParameters();
         ens = IENSRegistry(ensAddress);
         nameWrapper = INameWrapper(nameWrapperAddress);
         publicResolver = IPublicResolver(publicResolverAddress);
@@ -135,7 +138,7 @@ contract ENSJobPages is Ownable {
     }
 
     function jobEnsName(uint256 jobId) public view returns (string memory) {
-        if (bytes(jobsRootName).length == 0) revert ENSNotConfigured();
+        if (!_isRootConfigured()) revert ENSNotConfigured();
         return string(abi.encodePacked(jobEnsLabel(jobId), ".", jobsRootName));
     }
 
@@ -145,6 +148,7 @@ contract ENSJobPages is Ownable {
 
 
     function jobEnsNode(uint256 jobId) public view returns (bytes32) {
+        if (!_isRootConfigured()) revert ENSNotConfigured();
         bytes32 labelHash = keccak256(bytes(jobEnsLabel(jobId)));
         return keccak256(abi.encodePacked(jobsRootNode, labelHash));
     }
@@ -338,6 +342,10 @@ contract ENSJobPages is Ownable {
     function _requireConfigured() internal view {
         if (address(ens) == address(0)) revert ENSNotConfigured();
         if (address(publicResolver) == address(0)) revert ENSNotConfigured();
-        if (jobsRootNode == bytes32(0)) revert ENSNotConfigured();
+        if (!_isRootConfigured()) revert ENSNotConfigured();
+    }
+
+    function _isRootConfigured() internal view returns (bool) {
+        return jobsRootNode != bytes32(0) && bytes(jobsRootName).length != 0;
     }
 }
