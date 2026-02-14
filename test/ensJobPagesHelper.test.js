@@ -198,6 +198,28 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await resolver.text(node, "agijobs.spec.public"), "ipfs://spec-approved");
   });
 
+  it("allows wrapped root updates when ENSJobPages has token approval on wrapped root", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, nameWrapper.address, { from: owner });
+    await nameWrapper.setOwner(web3.utils.toBN(rootNode), owner, { from: owner });
+    await nameWrapper.setApproved(web3.utils.toBN(rootNode), helper.address, { from: owner });
+
+    await helper.createJobPage(113, employer, "ipfs://spec-approved-by-token", { from: owner });
+    const node = subnode(rootNode, "job-113");
+    assert.equal(await resolver.text(node, "agijobs.spec.public"), "ipfs://spec-approved-by-token");
+  });
+
   it("treats resolver writes as best effort and still creates the ENS page", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
@@ -218,6 +240,29 @@ contract("ENSJobPages helper", (accounts) => {
     await helper.createJobPage(14, employer, "ipfs://spec", { from: owner });
     const node = subnode(rootNode, "job-14");
     assert.equal(await ens.owner(node), helper.address, "critical subname creation should still succeed");
+  });
+
+  it("emits hook-aware best-effort failure telemetry from create path", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await resolver.setRevertSetText(true, { from: owner });
+
+    const tx = await helper.createJobPage(44, employer, "ipfs://spec", { from: owner });
+    const bestEffort = tx.logs.find((log) => log.event === "ENSHookBestEffortFailure");
+    assert.ok(bestEffort, "best-effort failure event should be emitted");
+    assert.equal(bestEffort.args.hook.toString(), "1");
+    assert.equal(bestEffort.args.jobId.toString(), "44");
   });
 
   it("validates constructor and setters reject EOAs", async () => {
