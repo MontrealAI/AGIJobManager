@@ -34,9 +34,7 @@ library BondMath {
         if (bond < minBond) bond = minBond;
         if (durationLimit != 0) {
             uint256 durationPremium = Math.mulDiv(bond, duration, durationLimit);
-            unchecked {
-                bond += durationPremium;
-            }
+            bond += durationPremium;
         }
         if (maxBond != 0 && bond > maxBond) bond = maxBond;
         if (bond > payout) bond = payout;

@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: b534704c98cab8f4
+Source fingerprint: 3fab7e9d48b8b7c6
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -20,14 +20,14 @@ Source files used:
 - `NameWrapper public nameWrapper;` (contracts/AGIJobManager.sol:141)
 - `address public ensJobPages;` (contracts/AGIJobManager.sol:142)
 - `bool public lockIdentityConfig;` (contracts/AGIJobManager.sol:145)
-- `IENSRegistry public ens;` (contracts/ens/ENSJobPages.sol:62)
-- `INameWrapper public nameWrapper;` (contracts/ens/ENSJobPages.sol:63)
-- `IPublicResolver public publicResolver;` (contracts/ens/ENSJobPages.sol:64)
-- `bytes32 public jobsRootNode;` (contracts/ens/ENSJobPages.sol:65)
-- `string public jobsRootName;` (contracts/ens/ENSJobPages.sol:66)
-- `address public jobManager;` (contracts/ens/ENSJobPages.sol:67)
-- `bool public useEnsJobTokenURI;` (contracts/ens/ENSJobPages.sol:68)
-- `bool public configLocked;` (contracts/ens/ENSJobPages.sol:69)
+- `IENSRegistry public ens;` (contracts/ens/ENSJobPages.sol:63)
+- `INameWrapper public nameWrapper;` (contracts/ens/ENSJobPages.sol:64)
+- `IPublicResolver public publicResolver;` (contracts/ens/ENSJobPages.sol:65)
+- `bytes32 public jobsRootNode;` (contracts/ens/ENSJobPages.sol:66)
+- `string public jobsRootName;` (contracts/ens/ENSJobPages.sol:67)
+- `address public jobManager;` (contracts/ens/ENSJobPages.sol:68)
+- `bool public useEnsJobTokenURI;` (contracts/ens/ENSJobPages.sol:69)
+- `bool public configLocked;` (contracts/ens/ENSJobPages.sol:70)
 
 ## Config and locks
 
@@ -48,13 +48,13 @@ Source files used:
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:32)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:47)
 - `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:60)
-- `function setENSRegistry(address ensAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:91)
-- `function setNameWrapper(address nameWrapperAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:99)
-- `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` (contracts/ens/ENSJobPages.sol:115)
-- `function lockConfiguration() external onlyOwner` (contracts/ens/ENSJobPages.sol:140)
-- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` (contracts/ens/ENSJobPages.sol:188)
-- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` (contracts/ens/ENSJobPages.sol:298)
-- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` (contracts/ens/ENSJobPages.sol:303)
+- `function setENSRegistry(address ensAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:92)
+- `function setNameWrapper(address nameWrapperAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:100)
+- `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` (contracts/ens/ENSJobPages.sol:116)
+- `function lockConfiguration() external onlyOwner` (contracts/ens/ENSJobPages.sol:141)
+- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` (contracts/ens/ENSJobPages.sol:189)
+- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` (contracts/ens/ENSJobPages.sol:299)
+- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` (contracts/ens/ENSJobPages.sol:304)
 
 ## Events and errors
 
@@ -77,6 +77,7 @@ Source files used:
 - `event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);` (contracts/ens/ENSJobPages.sol:57)
 - `event ENSHookProcessed(uint8 indexed hook, uint256 indexed jobId, bool configured, bool success);` (contracts/ens/ENSJobPages.sol:58)
 - `event ENSHookSkipped(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed reason);` (contracts/ens/ENSJobPages.sol:59)
+- `event ENSHookBestEffortFailure(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed operation);` (contracts/ens/ENSJobPages.sol:60)
 
 ## Notes / caveats from code comments
 
