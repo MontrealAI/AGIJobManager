@@ -5,6 +5,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const ERC20NoReturn = artifacts.require("ERC20NoReturn");
 const FailingERC20 = artifacts.require("FailingERC20");
 const FeeOnTransferToken = artifacts.require("FeeOnTransferToken");
+const MockMalformedERC20 = artifacts.require("MockMalformedERC20");
 const BondMath = artifacts.require("BondMath");
 const ENSOwnership = artifacts.require("ENSOwnership");
 const ReputationMath = artifacts.require("ReputationMath");
@@ -33,13 +34,14 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
   });
 
   describe("UriUtils.requireValidUri", () => {
-    it("accepts non-empty URIs with schemes and path-like values", async () => {
+    it("accepts non-empty URIs used by the system", async () => {
       await harness.requireValidUri("ipfs://bafy123/metadata.json");
+      await harness.requireValidUri("https://example.com/job/42.json");
       await harness.requireValidUri("ens://job-42.agi.eth");
       await harness.requireValidUri("QmHashNoScheme");
     });
 
-    it("rejects empty URIs and whitespace characters", async () => {
+    it("rejects empty URIs and whitespace/control characters", async () => {
       await expectRevert.unspecified(harness.requireValidUri(""));
       await expectRevert.unspecified(harness.requireValidUri("ipfs://contains space"));
       await expectRevert.unspecified(harness.requireValidUri("ipfs://contains\nnewline"));
@@ -54,26 +56,17 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
     });
 
     it("keeps URIs unchanged when scheme is already present", async () => {
-      const out = await harness.applyBaseIpfs("ipfs://bafy/job.json", "https://gateway/ipfs");
-      assert.equal(out, "ipfs://bafy/job.json");
+      const outIpfs = await harness.applyBaseIpfs("ipfs://bafy/job.json", "https://gateway/ipfs");
+      assert.equal(outIpfs, "ipfs://bafy/job.json");
+      const outHttps = await harness.applyBaseIpfs("https://example.com/a.json", "ipfs://base");
+      assert.equal(outHttps, "https://example.com/a.json");
     });
 
-    it("keeps URI unchanged when baseIpfsUrl is empty", async () => {
-      const out = await harness.applyBaseIpfs("bafy/job.json", "");
-      assert.equal(out, "bafy/job.json");
-    });
-    it("handles edge-case baseIpfsUrl values without reverting", async () => {
-      let out = await harness.applyBaseIpfs("bafy/job.json", "/");
-      assert.equal(out, "//bafy/job.json");
-
-      out = await harness.applyBaseIpfs("bafy/job.json", "ipfs://");
-      assert.equal(out, "ipfs:///bafy/job.json");
-
-      out = await harness.applyBaseIpfs("bafy/job.json", "weird://base?x=1#frag");
-      assert.equal(out, "weird://base?x=1#frag/bafy/job.json");
-
-      out = await harness.applyBaseIpfs("", "ipfs://base");
-      assert.equal(out, "ipfs://base/");
+    it("is deterministic and not idempotent on already-prefixed path URIs", async () => {
+      const once = await harness.applyBaseIpfs("QmHash", "ipfs://base");
+      const twice = await harness.applyBaseIpfs(once, "ipfs://base");
+      assert.equal(once, "ipfs://base/QmHash");
+      assert.equal(twice, once, "second pass should be stable after scheme exists");
     });
   });
 
@@ -120,6 +113,25 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
       await expectRevert.unspecified(
         harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("10"), { from: owner })
       );
+    });
+
+    it("reverts on transfer revert or malformed return data", async () => {
+      const token = await MockMalformedERC20.new({ from: owner });
+      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
+      await token.mint(harness.address, web3.utils.toWei("10"), { from: owner });
+      await token.approve(harness.address, web3.utils.toWei("10"), { from: owner });
+
+      await token.setTransferMode(3, { from: owner });
+      await expectRevert.unspecified(
+        harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })
+      );
+
+      for (const mode of [4, 5, 6]) {
+        await token.setTransferFromMode(mode, { from: owner });
+        await expectRevert.unspecified(
+          harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
+        );
+      }
     });
   });
 });

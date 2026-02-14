@@ -17,17 +17,15 @@ library ReputationMath {
         uint256 completionTime = completionRequestedAt > assignedAt
             ? completionRequestedAt - assignedAt
             : 0;
-        unchecked {
-            uint256 payoutUnits = payout / 1e15;
-            uint256 timeBonus;
-            if (duration > completionTime) {
-                timeBonus = (duration - completionTime) / 10000;
-            }
-            uint256 base = Math.log2(1 + payoutUnits);
-            if (timeBonus > base) {
-                timeBonus = base;
-            }
-            reputationPoints = base + timeBonus;
+        uint256 payoutUnits = payout / 1e15;
+        uint256 timeBonus;
+        if (duration > completionTime) {
+            timeBonus = (duration - completionTime) / 10000;
         }
+        uint256 base = Math.log2(1 + payoutUnits);
+        if (timeBonus > base) {
+            timeBonus = base;
+        }
+        reputationPoints = base + timeBonus;
     }
 }

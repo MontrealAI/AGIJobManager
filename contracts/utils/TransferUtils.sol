@@ -13,6 +13,7 @@ library TransferUtils {
 
     function safeTransferFromExact(address token, address from, address to, uint256 amount) external {
         if (amount == 0) return;
+        // Mainnet hardening: exact receive semantics reject fee-on-transfer and rebasing side effects.
         uint256 balanceBefore = IERC20(token).balanceOf(to);
         _callOptionalReturn(token, abi.encodeWithSelector(IERC20.transferFrom.selector, from, to, amount));
         uint256 balanceAfter = IERC20(token).balanceOf(to);

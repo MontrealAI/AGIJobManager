@@ -31,7 +31,9 @@ contract("ENS label hardening", (accounts) => {
     });
 
     it("accepts valid labels and enforces boundary lengths", async () => {
-      await harness.check("alice");
+      for (const label of ["alice", "a", "a-1", "0", "abc123"]) {
+        await harness.check(label);
+      }
 
       const sixtyThree = "a".repeat(63);
       await harness.check(sixtyThree);
@@ -41,12 +43,9 @@ contract("ENS label hardening", (accounts) => {
     });
 
     it("rejects invalid labels", async () => {
-      await expectCustomError(harness.check("alice.bob"), "InvalidENSLabel");
-      await expectCustomError(harness.check(""), "InvalidENSLabel");
-      await expectCustomError(harness.check("A"), "InvalidENSLabel");
-      await expectCustomError(harness.check("a_b"), "InvalidENSLabel");
-      await expectCustomError(harness.check("-a"), "InvalidENSLabel");
-      await expectCustomError(harness.check("a-"), "InvalidENSLabel");
+      for (const label of ["alice.bob", "", "A", "a_b", "-a", "a-", ".", "..", "a..b", "a b", "\n"]) {
+        await expectCustomError(harness.check(label), "InvalidENSLabel");
+      }
     });
   });
 
@@ -282,6 +281,14 @@ contract("ENS label hardening", (accounts) => {
 
       const validation = await manager.getJobValidation(jobId);
       assert.equal(validation.validatorApprovals.toString(), "1", "validator vote should be recorded");
+    });
+
+
+    it("uses ENS verification path for syntactically-valid labels", async () => {
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await expectCustomError(manager.applyForJob.call(jobId, "alice", [], { from: outsider }), "NotAuthorized");
     });
 
     it("reverts with InvalidENSLabel (not NotAuthorized) on ENS path for invalid label", async () => {
