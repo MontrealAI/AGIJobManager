@@ -1,4 +1,4 @@
-const { time } = require("@openzeppelin/test-helpers");
+const { time, expectEvent } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const ENSJobPages = artifacts.require("ENSJobPages");
@@ -53,7 +53,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await time.increase(reviewPeriod.addn(1));
   }
 
-  it("matches required selectors and AGI calldata sizing", async () => {
+  it("matches required selectors, calldata size, and string ABI shape", async () => {
     const expectedHandleSelector = "0x1f76f7a2";
     const expectedJobUriSelector = "0x751809b4";
 
@@ -97,11 +97,21 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     });
     await pages.setJobManager(caller.address, { from: owner });
 
-    await caller.callHandleHook(pages.address, 0, 123, { from: owner });
+    const hookReceipt = await caller.callHandleHook(pages.address, 0, 123, { from: owner });
+    await expectEvent.inTransaction(hookReceipt.tx, pages, "ENSHookSkipped", {
+      hook: "0",
+      jobId: "123",
+      reason: web3.utils.padRight(web3.utils.asciiToHex("UNKNOWN_HOOK"), 64),
+    });
 
     const raw = await web3.eth.call({ to: pages.address, data: jobUriCalldata });
+    const offsetWord = web3.utils.toBN("0x" + raw.slice(2, 66));
+    const stringLenWord = web3.utils.toBN("0x" + raw.slice(66, 130));
     const decoded = web3.eth.abi.decodeParameter("string", raw);
+    assert.equal(offsetWord.toString(), "32", "ABI offset should be 32 for single string return");
+    assert.equal(stringLenWord.toString(), decoded.length.toString(), "ABI string length word should match");
     assert.equal(decoded, "ens://job-123.jobs.agi.eth");
+    assert.isAtMost(decoded.length, 1024, "ENS URI should stay within AGIJobManager bounds");
   });
 
   it("uses ENS job URI for completion NFT when enabled", async () => {
@@ -123,7 +133,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     assert.isAtMost(uri.length, 1024, "ENS URI should stay within AGIJobManager bounds");
   });
 
-  it("keeps AGI job creation live when ENSJobPages reverts on misconfigured root", async () => {
+  it("keeps AGI job creation live when ENSJobPages is present but unconfigured", async () => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENSRegistry.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
