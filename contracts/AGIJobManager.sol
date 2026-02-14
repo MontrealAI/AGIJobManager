@@ -498,8 +498,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         Job storage job = _job(_jobId);
         if (job.assignedAgent != address(0)) revert InvalidState();
         if (blacklistedAgents[msg.sender]) revert Blacklisted();
-        if (!(additionalAgents[msg.sender]
-            || ENSOwnership.verifyOwnership(address(ens), address(nameWrapper), msg.sender, subdomain, proof, agentMerkleRoot, agentRootNode, alphaAgentRootNode)
+        if (!_isAuthorizedByAdditionalOrENS(
+            additionalAgents[msg.sender],
+            subdomain,
+            proof,
+            agentMerkleRoot,
+            agentRootNode,
+            alphaAgentRootNode
         )) revert NotAuthorized();
         if (activeJobsByAgent[msg.sender] >= maxActiveJobsPerAgent) revert InvalidState();
         uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
@@ -577,8 +582,13 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _requireJobUnsettled(job);
         _requireAssignedAgent(job);
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
-        if (!(additionalValidators[msg.sender]
-            || ENSOwnership.verifyOwnership(address(ens), address(nameWrapper), msg.sender, subdomain, proof, validatorMerkleRoot, clubRootNode, alphaClubRootNode)
+        if (!_isAuthorizedByAdditionalOrENS(
+            additionalValidators[msg.sender],
+            subdomain,
+            proof,
+            validatorMerkleRoot,
+            clubRootNode,
+            alphaClubRootNode
         )) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
         if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
@@ -632,6 +642,27 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             job.disputedAt = block.timestamp;
             emit JobDisputed(_jobId, msg.sender);
         }
+    }
+
+    function _isAuthorizedByAdditionalOrENS(
+        bool additionalAuthorized,
+        string memory subdomain,
+        bytes32[] calldata proof,
+        bytes32 merkleRoot,
+        bytes32 rootNode,
+        bytes32 alphaRootNode
+    ) internal view returns (bool) {
+        if (additionalAuthorized) return true;
+        return ENSOwnership.verifyOwnership(
+            address(ens),
+            address(nameWrapper),
+            msg.sender,
+            subdomain,
+            proof,
+            merkleRoot,
+            rootNode,
+            alphaRootNode
+        );
     }
 
     function disputeJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
