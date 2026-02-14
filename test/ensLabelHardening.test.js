@@ -90,6 +90,13 @@ contract("ENS label hardening", (accounts) => {
     });
 
     it("keeps Merkle allowlist authorization working with empty subdomain", async () => {
+      const revertingEns = await RevertingENSRegistry.new({ from: owner });
+      const revertingWrapper = await RevertingNameWrapper.new({ from: owner });
+      await revertingEns.setRevertResolver(true, { from: owner });
+      await revertingWrapper.setRevertOwnerOf(true, { from: owner });
+      await manager.updateEnsRegistry(revertingEns.address, { from: owner });
+      await manager.updateNameWrapper(revertingWrapper.address, { from: owner });
+
       const leaf = leafFor(agent);
       await manager.updateMerkleRoots(ZERO_ROOT, leaf, { from: owner });
 
@@ -172,6 +179,43 @@ contract("ENS label hardening", (accounts) => {
       const jobId = createReceipt.logs[0].args.jobId.toNumber();
 
       await expectCustomError(strictManager.applyForJob.call(jobId, "alice.bob", [], { from: outsider }), "InvalidENSLabel");
+    });
+
+    it("reverts with InvalidENSLabel for validator ENS path before ENS staticcalls", async () => {
+      const revertingEns = await RevertingENSRegistry.new({ from: owner });
+      const revertingWrapper = await RevertingNameWrapper.new({ from: owner });
+      await revertingEns.setRevertResolver(true, { from: owner });
+      await revertingWrapper.setRevertOwnerOf(true, { from: owner });
+
+      const strictManager = await AGIJobManager.new(
+        ...buildInitConfig(
+          token.address,
+          "ipfs://base",
+          revertingEns.address,
+          revertingWrapper.address,
+          web3.utils.soliditySha3("club"),
+          web3.utils.soliditySha3("agent"),
+          web3.utils.soliditySha3("alpha-club"),
+          web3.utils.soliditySha3("alpha-agent"),
+          ZERO_ROOT,
+          ZERO_ROOT,
+        ),
+        { from: owner },
+      );
+
+      await strictManager.addAdditionalAgent(agent, { from: owner });
+      const strictAgiType = await MockERC721.new({ from: owner });
+      await strictAgiType.mint(agent, { from: owner });
+      await strictManager.addAGIType(strictAgiType.address, 50, { from: owner });
+      await token.approve(strictManager.address, payout, { from: employer });
+      await token.approve(strictManager.address, web3.utils.toWei("100"), { from: agent });
+
+      const createReceipt = await strictManager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+      await strictManager.applyForJob(jobId, "", [], { from: agent });
+      await strictManager.requestJobCompletion(jobId, "ipfs-completion", { from: agent });
+
+      await expectCustomError(strictManager.validateJob.call(jobId, "alice.bob", [], { from: validator }), "InvalidENSLabel");
     });
   });
 });
