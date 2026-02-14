@@ -38,6 +38,18 @@ From `AGIJobManager` constants:
 
 `AGIJobManager.lockJobENS(jobId, burnFuses)` is permissionless for terminal jobs, but fuse burning is owner-only.
 
+## Deployment and configuration sequence (mainnet)
+
+1. Deploy `ENSJobPages` with ENS Registry, PublicResolver, optional NameWrapper, `jobsRootNode`, and `jobsRootName`.
+2. Ensure root authority before enabling hooks:
+   - Unwrapped root: `ENS.owner(jobsRootNode) == ENSJobPages`.
+   - Wrapped root: `ENS.owner(jobsRootNode) == NameWrapper` and `ownerOf(uint256(jobsRootNode))` is `ENSJobPages` or has approved it with `setApprovalForAll`.
+3. Call `ENSJobPages.setJobManager(AGIJobManager)`.
+4. Call `AGIJobManager.setEnsJobPages(ENSJobPages)`.
+5. Optionally enable NFT URI override through `AGIJobManager.setUseEnsJobTokenURI(true)`.
+
+Resolver `setText`/`setAuthorisation` writes are intentionally best-effort (try/catch). Large text payloads may exceed hook gas and should be retried directly by authorised actors.
+
 ## Hook execution sequence
 
 ```mermaid

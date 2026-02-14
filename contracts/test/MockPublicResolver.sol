@@ -5,7 +5,19 @@ contract MockPublicResolver {
     mapping(bytes32 => mapping(address => bool)) private authorisations;
     mapping(bytes32 => mapping(bytes32 => string)) private textRecords;
 
+    bool public revertSetAuthorisation;
+    bool public revertSetText;
+
+    function setRevertSetAuthorisation(bool shouldRevert) external {
+        revertSetAuthorisation = shouldRevert;
+    }
+
+    function setRevertSetText(bool shouldRevert) external {
+        revertSetText = shouldRevert;
+    }
+
     function setAuthorisation(bytes32 node, address target, bool authorised) external {
+        if (revertSetAuthorisation) revert();
         authorisations[node][target] = authorised;
     }
 
@@ -14,6 +26,7 @@ contract MockPublicResolver {
     }
 
     function setText(bytes32 node, string calldata key, string calldata value) external {
+        if (revertSetText) revert();
         textRecords[node][keccak256(bytes(key))] = value;
     }
 

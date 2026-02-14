@@ -98,6 +98,22 @@ contract("ENSJobPages helper", (accounts) => {
     );
   });
 
+  it("lock burn path is safe no-op when nameWrapper is unset", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.lockJobENS(5, employer, agent, true, { from: owner });
+  });
+
   it("burns child fuses on hook 6 even when job-manager view calls fail", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
@@ -123,6 +139,85 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await nameWrapper.lastParentNode(), rootNode, "parent node should be jobs root");
     assert.equal(await nameWrapper.lastLabelhash(), web3.utils.keccak256(`job-${jobId}`), "labelhash should match");
     assert.equal((await nameWrapper.lastChildExpiry()).toString(), web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1).toString(), "expiry should be max uint64");
+  });
+
+  it("fails closed on unwrapped root when ENSJobPages does not own the root", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, owner, { from: owner });
+    await expectRevert.unspecified(helper.createJobPage(11, employer, "ipfs://spec", { from: owner }));
+  });
+
+  it("fails closed on wrapped root when wrapper owner is not authorised", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, nameWrapper.address, { from: owner });
+    await nameWrapper.setOwner(web3.utils.toBN(rootNode), owner, { from: owner });
+    await expectRevert.unspecified(helper.createJobPage(12, employer, "ipfs://spec", { from: owner }));
+  });
+
+  it("allows wrapped root updates when wrapper owner approves ENSJobPages", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, nameWrapper.address, { from: owner });
+    await nameWrapper.setOwner(web3.utils.toBN(rootNode), owner, { from: owner });
+    await nameWrapper.setApprovalForAll(helper.address, true, { from: owner });
+
+    await helper.createJobPage(13, employer, "ipfs://spec-approved", { from: owner });
+    const node = subnode(rootNode, "job-13");
+    assert.equal(await resolver.text(node, "agijobs.spec.public"), "ipfs://spec-approved");
+  });
+
+  it("treats resolver writes as best effort and still creates the ENS page", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await resolver.setRevertSetAuthorisation(true, { from: owner });
+    await resolver.setRevertSetText(true, { from: owner });
+
+    await helper.createJobPage(14, employer, "ipfs://spec", { from: owner });
+    const node = subnode(rootNode, "job-14");
+    assert.equal(await ens.owner(node), helper.address, "critical subname creation should still succeed");
   });
 
   it("validates constructor and setters reject EOAs", async () => {
