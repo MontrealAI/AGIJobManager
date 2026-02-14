@@ -246,4 +246,44 @@ contract("ENSJobPages helper", (accounts) => {
     await expectRevert.unspecified(helper.setJobManager(owner, { from: owner }));
   });
 
+  it("locks configuration only when fully configured", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await helper.lockConfiguration({ from: owner });
+    await expectRevert.unspecified(helper.setJobsRoot(namehash("new.jobs.agi.eth"), "new.jobs.agi.eth", { from: owner }));
+  });
+
+  it("emits hook no-op event instead of reverting when not fully configured", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      "0x" + "00".repeat(32),
+      "",
+      { from: owner }
+    );
+
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await hookCaller.callHandleHook(helper.address, 1, 77, { from: owner });
+    const events = await helper.getPastEvents("HookHandled", { fromBlock: 0, toBlock: "latest" });
+    const log = events[events.length - 1];
+    assert.equal(log.args.hook.toString(), "1");
+    assert.equal(log.args.configured, false);
+    assert.equal(log.args.success, false);
+  });
+
 });
