@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: fd6c271c07ca600f
+Source fingerprint: 619da5621f11ffbc
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -45,7 +45,7 @@ Source files used:
 - `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1217)
 - `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1222)
 - `function _verifyOwnershipByRoot(address claimant, string memory subdomain, bytes32 rootNode) internal view returns (bool)` (contracts/AGIJobManager.sol:1250)
-- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:12)
+- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:14)
 - `function setENSRegistry(address ensAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:83)
 - `function setNameWrapper(address nameWrapperAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:90)
 - `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` (contracts/ens/ENSJobPages.sol:104)
