@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./EnsLabelUtils.sol";
-
 library ENSOwnership {
     uint256 private constant ENS_STATICCALL_GAS_LIMIT = 80_000;
     bytes4 private constant OWNER_OF_SELECTOR = 0x6352211e;
@@ -18,7 +16,6 @@ library ENSOwnership {
         string memory subdomain,
         bytes32 rootNode
     ) external view returns (bool) {
-        EnsLabelUtils.requireValidLabel(subdomain);
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
         if (_verifyNameWrapperOwnership(nameWrapperAddress, claimant, subnode)) {
             return true;
