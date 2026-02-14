@@ -11,4 +11,5 @@ interface IENSJobPages {
     function jobEnsName(uint256 jobId) external view returns (string memory);
     function jobEnsURI(uint256 jobId) external view returns (string memory);
     function setUseEnsJobTokenURI(bool enabled) external;
+    function lockConfiguration() external;
 }
