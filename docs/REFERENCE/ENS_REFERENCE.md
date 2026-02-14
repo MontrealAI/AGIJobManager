@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: 19db3749f4c0c003
+Source fingerprint: b534704c98cab8f4
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -45,9 +45,9 @@ Source files used:
 - `function lockJobENS(uint256 jobId, bool burnFuses) external` (contracts/AGIJobManager.sol:1007)
 - `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1243)
 - `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1248)
-- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:31)
-- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:46)
-- `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:59)
+- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:32)
+- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:47)
+- `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:60)
 - `function setENSRegistry(address ensAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:91)
 - `function setNameWrapper(address nameWrapperAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:99)
 - `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` (contracts/ens/ENSJobPages.sol:115)
