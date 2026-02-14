@@ -7,6 +7,7 @@ const FailingERC20 = artifacts.require("FailingERC20");
 const FeeOnTransferToken = artifacts.require("FeeOnTransferToken");
 const MalformedReturnERC20 = artifacts.require("MalformedReturnERC20");
 const RevertingBalanceOfERC20 = artifacts.require("RevertingBalanceOfERC20");
+const InvalidBoolReturnERC20 = artifacts.require("InvalidBoolReturnERC20");
 const BondMath = artifacts.require("BondMath");
 const ENSOwnership = artifacts.require("ENSOwnership");
 const ReputationMath = artifacts.require("ReputationMath");
@@ -147,6 +148,21 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
 
       await expectRevert.unspecified(
         harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("2"), { from: owner })
+      );
+    });
+
+
+    it("reverts on invalid bool word returns (not 0/1)", async () => {
+      const token = await InvalidBoolReturnERC20.new({ from: owner });
+      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
+      await token.approve(harness.address, web3.utils.toWei("10"), { from: owner });
+
+      await expectRevert.unspecified(
+        harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })
+      );
+
+      await expectRevert.unspecified(
+        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
       );
     });
 

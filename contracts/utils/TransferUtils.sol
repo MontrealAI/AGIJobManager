@@ -38,7 +38,11 @@ library TransferUtils {
         if (!success) revert TransferFailed();
         if (returndata.length == 0) return;
         if (returndata.length == 32) {
-            if (!abi.decode(returndata, (bool))) revert TransferFailed();
+            uint256 word;
+            assembly {
+                word := mload(add(returndata, 0x20))
+            }
+            if (word > 1 || word == 0) revert TransferFailed();
             return;
         }
         revert TransferFailed();
