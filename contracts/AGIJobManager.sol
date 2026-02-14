@@ -647,8 +647,11 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         view
         returns (bool)
     {
-        if (additional[claimant]) return true;
-        if (ENSOwnership.verifyMerkleOwnership(claimant, proof, merkleRoot)) return true;
+        if (additional[claimant]) {
+            return true;
+        } else if (ENSOwnership.verifyMerkleOwnership(claimant, proof, merkleRoot)) {
+            return true;
+        }
         return ENSOwnership.verifyENSOwnership(
             address(ens),
             address(nameWrapper),

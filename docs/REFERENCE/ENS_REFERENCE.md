@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: 03e7b654b71484ce
+Source fingerprint: 74c87f6fb834fe47
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -35,15 +35,15 @@ Source files used:
 - `function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:492)
 - `function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:554)
 - `function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:562)
-- `function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:752)
-- `function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:759)
-- `function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:765)
-- `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:771)
-- `function updateRootNodes(` (contracts/AGIJobManager.sol:780)
-- `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner` (contracts/AGIJobManager.sol:793)
-- `function lockJobENS(uint256 jobId, bool burnFuses) external` (contracts/AGIJobManager.sol:1004)
-- `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1240)
-- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1245)
+- `function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:755)
+- `function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:762)
+- `function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:768)
+- `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:774)
+- `function updateRootNodes(` (contracts/AGIJobManager.sol:783)
+- `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner` (contracts/AGIJobManager.sol:796)
+- `function lockJobENS(uint256 jobId, bool burnFuses) external` (contracts/AGIJobManager.sol:1007)
+- `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1243)
+- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1248)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:46)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:61)
 - `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:74)
@@ -80,8 +80,8 @@ Source files used:
 - @notice Total AGI locked as validator bonds for unsettled votes. (contracts/AGIJobManager.sol:128)
 - @notice Total AGI locked as dispute bonds for unsettled disputes. (contracts/AGIJobManager.sol:130)
 - @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled. (contracts/AGIJobManager.sol:144)
-- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. (contracts/AGIJobManager.sol:1002)
-- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. (contracts/AGIJobManager.sol:1003)
-- @dev as long as lockedEscrow/locked*Bonds are fully covered. (contracts/AGIJobManager.sol:1050)
-- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. (contracts/AGIJobManager.sol:1274)
+- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. (contracts/AGIJobManager.sol:1005)
+- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. (contracts/AGIJobManager.sol:1006)
+- @dev as long as lockedEscrow/locked*Bonds are fully covered. (contracts/AGIJobManager.sol:1053)
+- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. (contracts/AGIJobManager.sol:1277)
 
