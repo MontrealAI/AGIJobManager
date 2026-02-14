@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./EnsLabelUtils.sol";
 
 library ENSOwnership {
+    // Legacy note: keep this library limited to deterministic ownership checks used by
+    // AGIJobManager routing (`verifyENSOwnership` + `verifyMerkleOwnership`).
     uint256 private constant ENS_STATICCALL_GAS_LIMIT = 80_000;
     bytes4 private constant OWNER_OF_SELECTOR = 0x6352211e;
     bytes4 private constant GET_APPROVED_SELECTOR = 0x081812fc;

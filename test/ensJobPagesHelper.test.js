@@ -246,4 +246,92 @@ contract("ENSJobPages helper", (accounts) => {
     await expectRevert.unspecified(helper.setJobManager(owner, { from: owner }));
   });
 
+
+  it("returns safe empty URI when root config is absent", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "",
+      { from: owner }
+    );
+
+    const uri = await helper.jobEnsURI(99);
+    assert.equal(uri, "");
+  });
+
+  it("locks configuration only when fully configured", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await helper.lockConfiguration({ from: owner });
+    await expectRevert.unspecified(helper.setJobsRoot(namehash("new.jobs.agi.eth"), "new.jobs.agi.eth", { from: owner }));
+    await expectRevert.unspecified(helper.setJobManager(hookCaller.address, { from: owner }));
+  });
+
+
+  it("cannot lock before job manager is configured", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await expectRevert.unspecified(helper.lockConfiguration({ from: owner }));
+  });
+
+  it("cannot lock wrapped mode unless nameWrapper wiring and authority are ready", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+
+    const missingWrapper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await missingWrapper.setJobManager(hookCaller.address, { from: owner });
+    await expectRevert.unspecified(missingWrapper.lockConfiguration({ from: owner }));
+
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), owner, { from: owner });
+    await expectRevert.unspecified(helper.lockConfiguration({ from: owner }));
+
+    await wrapper.setApprovalForAll(helper.address, true, { from: owner });
+    await helper.lockConfiguration({ from: owner });
+  });
+
 });
