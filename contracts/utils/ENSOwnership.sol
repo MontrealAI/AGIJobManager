@@ -12,23 +12,6 @@ library ENSOwnership {
     bytes4 private constant RESOLVER_SELECTOR = 0x0178b8bf;
     bytes4 private constant ADDR_SELECTOR = 0x3b3b57de;
 
-
-    function verifyOwnership(
-        address ensAddress,
-        address nameWrapperAddress,
-        address claimant,
-        string memory subdomain,
-        bytes32[] calldata proof,
-        bytes32 merkleRoot,
-        bytes32 rootNode,
-        bytes32 alphaRootNode
-    ) external view returns (bool) {
-        if (MerkleProof.verifyCalldata(proof, merkleRoot, keccak256(abi.encodePacked(claimant)))) return true;
-        EnsLabelUtils.requireValidLabel(subdomain);
-        return _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, rootNode)
-            || _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, alphaRootNode);
-    }
-
     function _verifyByRoot(
         address ensAddress,
         address nameWrapperAddress,
