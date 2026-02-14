@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 contract MockNameWrapper {
     mapping(uint256 => address) private owners;
     mapping(address => mapping(address => bool)) private approvals;
+    mapping(uint256 => address) private tokenApprovals;
     mapping(bytes32 => bool) private wrapped;
     mapping(bytes32 => uint32) private burnedFuses;
     uint256 public setChildFusesCalls;
@@ -26,6 +27,14 @@ contract MockNameWrapper {
 
     function isApprovedForAll(address owner, address operator) external view returns (bool) {
         return approvals[owner][operator];
+    }
+
+    function setApproved(uint256 id, address approved) external {
+        tokenApprovals[id] = approved;
+    }
+
+    function getApproved(uint256 id) external view returns (address) {
+        return tokenApprovals[id];
     }
 
     function isWrapped(bytes32 node) external view returns (bool) {

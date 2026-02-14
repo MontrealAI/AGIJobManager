@@ -9,6 +9,7 @@ const UriUtils = artifacts.require("UriUtils");
 const MockENSRegistry = artifacts.require("MockENSRegistry");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
+const InvalidBoolNameWrapper = artifacts.require("InvalidBoolNameWrapper");
 
 const { rootNode, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 
@@ -149,6 +150,42 @@ contract("Utility library invariants", (accounts) => {
       root
     );
     assert.equal(approved, true, "approved operator should pass ownership check");
+  });
+
+
+  it("accepts owner/getApproved/isApprovedForAll authorization modes", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const root = rootNode("club-root");
+    const label = "agent1";
+    const node = subnode(root, label);
+    const nodeId = web3.utils.toBN(node);
+
+    await wrapper.setOwner(nodeId, other);
+    await wrapper.setApproved(nodeId, claimant);
+    let ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, label, root);
+    assert.equal(ok, true, "getApproved claimant should pass");
+
+    await wrapper.setApproved(nodeId, "0x0000000000000000000000000000000000000000");
+    await wrapper.setApprovalForAll(claimant, true, { from: other });
+    ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, label, root);
+    assert.equal(ok, true, "isApprovedForAll claimant should pass");
+
+    await wrapper.setApprovalForAll(claimant, false, { from: other });
+    ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, label, root);
+    assert.equal(ok, false, "non-owner/non-approved claimant should fail");
+  });
+
+  it("fails closed on malformed bool return values from wrappers", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const wrapper = await InvalidBoolNameWrapper.new({ from: owner });
+    const root = rootNode("club-root");
+
+    await wrapper.setOwnerValue(other, { from: owner });
+    await wrapper.setApprovedValue("0x0000000000000000000000000000000000000000", { from: owner });
+
+    const ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, "agent2", root);
+    assert.equal(ok, false, "invalid bool encoding should fail closed");
   });
 
 });
