@@ -58,6 +58,27 @@ library ENSOwnership {
         return _verifyResolverOwnership(ensAddress, claimant, subnode);
     }
 
+    function verifyENSOwnership(
+        address ensAddress,
+        address nameWrapperAddress,
+        address claimant,
+        string memory subdomain,
+        bytes32 rootNode,
+        bytes32 alphaRootNode
+    ) external view returns (bool) {
+        EnsLabelUtils.requireValidLabel(subdomain);
+        return _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, rootNode)
+            || _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, alphaRootNode);
+    }
+
+    function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)
+        external
+        pure
+        returns (bool)
+    {
+        return MerkleProof.verifyCalldata(proof, merkleRoot, keccak256(abi.encodePacked(claimant)));
+    }
+
     function _verifyNameWrapperOwnership(
         address nameWrapperAddress,
         address claimant,
