@@ -34,6 +34,7 @@ contract ENSJobPages is Ownable {
     error ENSNotConfigured();
     error ENSNotAuthorized();
     error InvalidParameters();
+    error ConfigLocked();
 
     // NameWrapper fuses (ENSIP-10).
     uint32 private constant CANNOT_SET_RESOLVER = 1 << 3;
@@ -54,6 +55,9 @@ contract ENSJobPages is Ownable {
     );
     event JobManagerUpdated(address indexed oldJobManager, address indexed newJobManager);
     event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);
+    event ENSHookProcessed(uint8 indexed hook, uint256 indexed jobId, bool configured, bool success);
+    event ENSHookSkipped(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed reason);
+    event ConfigurationLocked(address indexed locker);
 
     IENSRegistry public ens;
     INameWrapper public nameWrapper;
@@ -62,6 +66,7 @@ contract ENSJobPages is Ownable {
     string public jobsRootName;
     address public jobManager;
     bool public useEnsJobTokenURI;
+    bool public configLocked;
 
     constructor(
         address ensAddress,
@@ -84,6 +89,7 @@ contract ENSJobPages is Ownable {
     }
 
     function setENSRegistry(address ensAddress) external onlyOwner {
+        if (configLocked) revert ConfigLocked();
         address old = address(ens);
         if (ensAddress == address(0) || ensAddress.code.length == 0) revert InvalidParameters();
         ens = IENSRegistry(ensAddress);
@@ -91,6 +97,7 @@ contract ENSJobPages is Ownable {
     }
 
     function setNameWrapper(address nameWrapperAddress) external onlyOwner {
+        if (configLocked) revert ConfigLocked();
         address old = address(nameWrapper);
         if (nameWrapperAddress != address(0) && nameWrapperAddress.code.length == 0) revert InvalidParameters();
         nameWrapper = INameWrapper(nameWrapperAddress);
@@ -98,6 +105,7 @@ contract ENSJobPages is Ownable {
     }
 
     function setPublicResolver(address publicResolverAddress) external onlyOwner {
+        if (configLocked) revert ConfigLocked();
         address old = address(publicResolver);
         if (publicResolverAddress == address(0) || publicResolverAddress.code.length == 0) revert InvalidParameters();
         publicResolver = IPublicResolver(publicResolverAddress);
@@ -105,6 +113,7 @@ contract ENSJobPages is Ownable {
     }
 
     function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner {
+        if (configLocked) revert ConfigLocked();
         bytes32 oldNode = jobsRootNode;
         string memory oldName = jobsRootName;
         if (rootNode == bytes32(0)) revert InvalidParameters();
@@ -115,6 +124,7 @@ contract ENSJobPages is Ownable {
     }
 
     function setJobManager(address manager) external onlyOwner {
+        if (configLocked) revert ConfigLocked();
         address old = jobManager;
         if (manager == address(0) || manager.code.length == 0) revert InvalidParameters();
         jobManager = manager;
@@ -125,6 +135,12 @@ contract ENSJobPages is Ownable {
         bool old = useEnsJobTokenURI;
         useEnsJobTokenURI = enabled;
         emit UseEnsJobTokenURIUpdated(old, enabled);
+    }
+
+    function lockConfiguration() external onlyOwner {
+        if (!_isFullyConfigured()) revert ENSNotConfigured();
+        configLocked = true;
+        emit ConfigurationLocked(msg.sender);
     }
 
     modifier onlyJobManager() {
@@ -138,12 +154,14 @@ contract ENSJobPages is Ownable {
     }
 
     function jobEnsName(uint256 jobId) public view returns (string memory) {
-        if (!_isRootConfigured()) revert ENSNotConfigured();
+        if (!_isRootConfigured()) return "";
         return string(abi.encodePacked(jobEnsLabel(jobId), ".", jobsRootName));
     }
 
     function jobEnsURI(uint256 jobId) public view returns (string memory) {
-        return string(abi.encodePacked("ens://", jobEnsName(jobId)));
+        string memory ensName = jobEnsName(jobId);
+        if (bytes(ensName).length == 0) return "";
+        return string(abi.encodePacked("ens://", ensName));
     }
 
 
@@ -168,21 +186,34 @@ contract ENSJobPages is Ownable {
     }
 
     function handleHook(uint8 hook, uint256 jobId) external onlyJobManager {
+        if (!_isFullyConfigured()) {
+            emit ENSHookSkipped(hook, jobId, "NOT_CONFIGURED");
+            emit ENSHookProcessed(hook, jobId, false, false);
+            return;
+        }
+
+        bool success;
         IAGIJobManagerView jobManagerView = IAGIJobManagerView(msg.sender);
         if (hook == 1) {
             string memory specURI = jobManagerView.getJobSpecURI(jobId);
             (address employer, , , , , , , , ) = jobManagerView.getJobCore(jobId);
             _createJobPage(jobId, employer, specURI);
+            success = true;
+            emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 2) {
             (, address agent, , , , , , , ) = jobManagerView.getJobCore(jobId);
             _onAgentAssigned(jobId, agent);
+            success = true;
+            emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 3) {
             string memory completionURI = jobManagerView.getJobCompletionURI(jobId);
             _onCompletionRequested(jobId, completionURI);
+            success = true;
+            emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 4) {
@@ -198,9 +229,12 @@ contract ENSJobPages is Ownable {
                 uint8
             ) {
                 _revokePermissions(jobId, employer, agent);
+                success = true;
             } catch {
                 _revokePermissions(jobId, address(0), address(0));
+                success = true;
             }
+            emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 5 || hook == 6) {
@@ -217,11 +251,16 @@ contract ENSJobPages is Ownable {
                 uint8
             ) {
                 _lockJobENS(jobId, employer, agent, burnFuses);
+                success = true;
             } catch {
                 _lockJobENS(jobId, address(0), address(0), burnFuses);
+                success = true;
             }
+            emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
+        emit ENSHookSkipped(hook, jobId, "UNKNOWN_HOOK");
+        emit ENSHookProcessed(hook, jobId, true, false);
     }
 
     function onAgentAssigned(uint256 jobId, address agent) public onlyOwner {
@@ -343,6 +382,40 @@ contract ENSJobPages is Ownable {
         if (address(ens) == address(0)) revert ENSNotConfigured();
         if (address(publicResolver) == address(0)) revert ENSNotConfigured();
         if (!_isRootConfigured()) revert ENSNotConfigured();
+    }
+
+    function _isFullyConfigured() internal view returns (bool) {
+        if (address(ens) == address(0)) return false;
+        if (address(publicResolver) == address(0)) return false;
+        if (!_isRootConfigured()) return false;
+        if (jobManager == address(0)) return false;
+
+        address rootOwner = ens.owner(jobsRootNode);
+        if (rootOwner == address(this)) {
+            return true;
+        }
+        if (address(nameWrapper) == address(0) || rootOwner != address(nameWrapper)) {
+            return false;
+        }
+
+        return _isWrapperAuthorizationReady();
+    }
+
+    function _isWrapperAuthorizationReady() internal view returns (bool) {
+        address wrappedOwner;
+        try nameWrapper.ownerOf(uint256(jobsRootNode)) returns (address owner) {
+            wrappedOwner = owner;
+        } catch {
+            return false;
+        }
+        if (wrappedOwner == address(0)) return false;
+        if (wrappedOwner == address(this)) return true;
+
+        try nameWrapper.isApprovedForAll(wrappedOwner, address(this)) returns (bool approved) {
+            return approved;
+        } catch {
+            return false;
+        }
     }
 
     function _isRootConfigured() internal view returns (bool) {
