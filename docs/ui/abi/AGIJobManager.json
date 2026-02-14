@@ -63,11 +63,6 @@
     },
     {
       "inputs": [],
-      "name": "InvalidENSLabel",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "InvalidParameters",
       "type": "error"
     },
