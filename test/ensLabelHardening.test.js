@@ -218,4 +218,77 @@ contract("ENS label hardening", (accounts) => {
       await expectCustomError(strictManager.validateJob.call(jobId, "alice.bob", [], { from: validator }), "InvalidENSLabel");
     });
   });
+
+  describe("deterministic routing regressions", () => {
+    let token;
+    let manager;
+
+    const payout = web3.utils.toWei("10");
+
+    beforeEach(async () => {
+      token = await MockERC20.new({ from: owner });
+
+      manager = await AGIJobManager.new(
+        ...buildInitConfig(
+          token.address,
+          "ipfs://base",
+          "0x0000000000000000000000000000000000000000",
+          "0x0000000000000000000000000000000000000000",
+          ZERO_ROOT,
+          ZERO_ROOT,
+          ZERO_ROOT,
+          ZERO_ROOT,
+          ZERO_ROOT,
+          ZERO_ROOT,
+        ),
+        { from: owner },
+      );
+
+      await token.mint(employer, payout, { from: owner });
+      await token.approve(manager.address, payout, { from: employer });
+      await token.mint(agent, web3.utils.toWei("100"), { from: owner });
+      await token.approve(manager.address, web3.utils.toWei("100"), { from: agent });
+      await token.mint(validator, web3.utils.toWei("100"), { from: owner });
+      await token.approve(manager.address, web3.utils.toWei("100"), { from: validator });
+
+      const agiType = await MockERC721.new({ from: owner });
+      await agiType.mint(agent, { from: owner });
+      await manager.addAGIType(agiType.address, 50, { from: owner });
+    });
+
+    it("allows Merkle-authorized agent applyForJob with empty subdomain", async () => {
+      const agentLeaf = leafFor(agent);
+      await manager.updateMerkleRoots(ZERO_ROOT, agentLeaf, { from: owner });
+
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await manager.applyForJob(jobId, "", [], { from: agent });
+      const job = await manager.getJobCore(jobId);
+      assert.equal(job.assignedAgent, agent, "agent should be assigned via Merkle auth");
+    });
+
+    it("allows Merkle-authorized validator validateJob with empty subdomain", async () => {
+      const agentLeaf = leafFor(agent);
+      const validatorLeaf = leafFor(validator);
+      await manager.updateMerkleRoots(validatorLeaf, agentLeaf, { from: owner });
+
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await manager.applyForJob(jobId, "", [], { from: agent });
+      await manager.requestJobCompletion(jobId, "ipfs-completion", { from: agent });
+      await manager.validateJob(jobId, "", [], { from: validator });
+
+      const validation = await manager.getJobValidation(jobId);
+      assert.equal(validation.validatorApprovals.toString(), "1", "validator vote should be recorded");
+    });
+
+    it("reverts with InvalidENSLabel (not NotAuthorized) on ENS path for invalid label", async () => {
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await expectCustomError(manager.applyForJob.call(jobId, "alice.bob", [], { from: outsider }), "InvalidENSLabel");
+    });
+  });
 });
