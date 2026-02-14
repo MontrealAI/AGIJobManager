@@ -246,4 +246,63 @@ contract("ENSJobPages helper", (accounts) => {
     await expectRevert.unspecified(helper.setJobManager(owner, { from: owner }));
   });
 
+
+  it("returns safe empty URI when root config is absent", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "",
+      { from: owner }
+    );
+
+    const uri = await helper.jobEnsURI(99);
+    assert.equal(uri, "");
+  });
+
+  it("locks configuration only when fully configured", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await expectRevert.unspecified(helper.lockConfiguration({ from: owner }));
+
+    await helper.setJobManager(helper.address, { from: owner });
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+
+    await helper.lockConfiguration({ from: owner });
+    await expectRevert.unspecified(helper.setJobsRoot(namehash("new.jobs.agi.eth"), "new.jobs.agi.eth", { from: owner }));
+    await expectRevert.unspecified(helper.setJobManager(owner, { from: owner }));
+  });
+
+
+  it("does not allow lockConfiguration when root is wrapper-owned but wrapper is unset", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await helper.setJobManager(helper.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+
+    await expectRevert.unspecified(helper.lockConfiguration({ from: owner }));
+  });
+
 });
