@@ -17,6 +17,8 @@ contract MockENSJobPages {
     bool public useEnsJobTokenURI;
     bool public useJobEnsUriOverride;
     string public jobEnsUriOverride;
+    bytes4 public lastHandleHookSelector;
+    uint256 public lastHandleHookCalldataLength;
 
     uint256 public createCalls;
     uint256 public assignCalls;
@@ -44,6 +46,8 @@ contract MockENSJobPages {
     }
 
     function handleHook(uint8 hook, uint256 jobId) external {
+        lastHandleHookSelector = msg.sig;
+        lastHandleHookCalldataLength = msg.data.length;
         if (revertHook[hook]) revert("revert hook");
         if (hook == HOOK_CREATE) {
             createCalls += 1;
@@ -125,6 +129,8 @@ contract MockENSJobPages {
     }
 
     function jobEnsURI(uint256 jobId) external view returns (string memory) {
+        require(msg.sig == bytes4(0x751809b4), "bad-selector");
+        require(msg.data.length == 0x24, "bad-calldata");
         if (useJobEnsUriOverride) {
             return jobEnsUriOverride;
         }

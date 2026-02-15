@@ -74,6 +74,8 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
     assert.equal((await ensJobPages.createCalls()).toString(), "1");
+    assert.equal(await ensJobPages.lastHandleHookSelector(), "0x1f76f7a2", "hook selector must match ABI");
+    assert.equal((await ensJobPages.lastHandleHookCalldataLength()).toString(), "68", "hook calldata must be 0x44 bytes");
 
     await token.mint(agent, web3.utils.toWei("2"), { from: owner });
     await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
@@ -200,6 +202,38 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     const tokenUri = await manager.tokenURI(tokenId);
     assert.equal(tokenUri, "ens://job-0.alpha.jobs.agi.eth");
   });
+
+  it("accepts only AGIJobManager exact calldata shapes for hook and ENS URI calls", async () => {
+    const { token, manager } = await deployManager();
+    const nft = await MockERC721.new({ from: owner });
+    const ensJobPages = await MockENSJobPages.new({ from: owner });
+
+    await seedAgentType(manager, nft, agent);
+    await manager.setEnsJobPages(ensJobPages.address, { from: owner });
+    await manager.setUseEnsJobTokenURI(true, { from: owner });
+
+    const payout = web3.utils.toWei("10");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
+    assert.equal(await ensJobPages.lastHandleHookSelector(), "0x1f76f7a2");
+    assert.equal((await ensJobPages.lastHandleHookCalldataLength()).toString(), "68");
+
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.applyForJob(0, "agent", [], { from: agent });
+    await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
+
+    const reviewPeriod = await manager.completionReviewPeriod();
+    await time.increase(reviewPeriod.addn(1));
+    const receipt = await manager.finalizeJob(0, { from: employer });
+    const issued = receipt.logs.find((log) => log.event === "NFTIssued");
+    const tokenId = issued.args.tokenId.toString();
+    const tokenUri = await manager.tokenURI(tokenId);
+    assert.equal(tokenUri, "ens://job-0.alpha.jobs.agi.eth");
+  });
+
 
   it("falls back to completion URI when ENS tokenURI is empty", async () => {
     const { token, manager } = await deployManager("ipfs://base");
