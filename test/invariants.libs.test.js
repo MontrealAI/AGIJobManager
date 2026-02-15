@@ -111,6 +111,15 @@ contract("Utility library invariants", (accounts) => {
     );
     assert.equal(notOwned, false, "unowned records should return false");
 
+    const zeroRoot = await harness.verifyENSOwnership.call(
+      ens.address,
+      nameWrapper.address,
+      claimant,
+      label,
+      "0x" + "00".repeat(32)
+    );
+    assert.equal(zeroRoot, false, "zero root nodes should fail closed");
+
     await setNameWrapperOwnership(nameWrapper, root, label, claimant);
     const wrappedOwned = await harness.verifyENSOwnership.call(
       ens.address,

@@ -37,6 +37,7 @@ library ENSOwnership {
         bytes32 rootNode
     ) external view returns (bool) {
         EnsLabelUtils.requireValidLabel(subdomain);
+        if (rootNode == bytes32(0)) return false;
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
         if (_verifyNameWrapperOwnership(nameWrapperAddress, claimant, subnode)) {
             return true;

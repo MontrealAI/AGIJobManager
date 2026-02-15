@@ -152,6 +152,11 @@ contract ENSJobPages is Ownable {
         _;
     }
 
+    modifier onlySelf() {
+        if (msg.sender != address(this)) revert ENSNotAuthorized();
+        _;
+    }
+
 
     function jobEnsLabel(uint256 jobId) public pure returns (string memory) {
         return string(abi.encodePacked("job-", jobId.toString()));
@@ -199,72 +204,105 @@ contract ENSJobPages is Ownable {
         bool success;
         IAGIJobManagerView jobManagerView = IAGIJobManagerView(msg.sender);
         if (hook == 1) {
-            string memory specURI = jobManagerView.getJobSpecURI(jobId);
-            (address employer, , , , , , , , ) = jobManagerView.getJobCore(jobId);
-            _createJobPage(jobId, employer, specURI);
-            success = true;
+            try this._handleCreateHook(jobManagerView, jobId) {
+                success = true;
+            } catch {
+                emit ENSHookSkipped(hook, jobId, "HOOK_REVERTED");
+            }
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 2) {
-            (, address agent, , , , , , , ) = jobManagerView.getJobCore(jobId);
-            _onAgentAssigned(jobId, agent);
-            success = true;
+            try this._handleAssignHook(jobManagerView, jobId) {
+                success = true;
+            } catch {
+                emit ENSHookSkipped(hook, jobId, "HOOK_REVERTED");
+            }
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 3) {
-            string memory completionURI = jobManagerView.getJobCompletionURI(jobId);
-            _onCompletionRequested(jobId, completionURI);
-            success = true;
+            try this._handleCompletionHook(jobManagerView, jobId) {
+                success = true;
+            } catch {
+                emit ENSHookSkipped(hook, jobId, "HOOK_REVERTED");
+            }
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 4) {
-            try jobManagerView.getJobCore(jobId) returns (
-                address employer,
-                address agent,
-                uint256,
-                uint256,
-                uint256,
-                bool,
-                bool,
-                bool,
-                uint8
-            ) {
-                _revokePermissions(jobId, employer, agent);
+            try this._handleRevokeHook(jobManagerView, jobId) {
                 success = true;
             } catch {
-                _revokePermissions(jobId, address(0), address(0));
-                success = true;
+                emit ENSHookSkipped(hook, jobId, "HOOK_REVERTED");
             }
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         if (hook == 5 || hook == 6) {
             bool burnFuses = hook == 6;
-            try jobManagerView.getJobCore(jobId) returns (
-                address employer,
-                address agent,
-                uint256,
-                uint256,
-                uint256,
-                bool,
-                bool,
-                bool,
-                uint8
-            ) {
-                _lockJobENS(jobId, employer, agent, burnFuses);
+            try this._handleLockHook(jobManagerView, jobId, burnFuses) {
                 success = true;
             } catch {
-                _lockJobENS(jobId, address(0), address(0), burnFuses);
-                success = true;
+                emit ENSHookSkipped(hook, jobId, "HOOK_REVERTED");
             }
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
         emit ENSHookSkipped(hook, jobId, "UNKNOWN_HOOK");
         emit ENSHookProcessed(hook, jobId, true, false);
+    }
+
+    function _handleCreateHook(IAGIJobManagerView managerView, uint256 jobId) external onlySelf {
+        string memory specURI = managerView.getJobSpecURI(jobId);
+        (address employer, , , , , , , , ) = managerView.getJobCore(jobId);
+        _createJobPage(jobId, employer, specURI);
+    }
+
+    function _handleAssignHook(IAGIJobManagerView managerView, uint256 jobId) external onlySelf {
+        (, address agent, , , , , , , ) = managerView.getJobCore(jobId);
+        _onAgentAssigned(jobId, agent);
+    }
+
+    function _handleCompletionHook(IAGIJobManagerView managerView, uint256 jobId) external onlySelf {
+        string memory completionURI = managerView.getJobCompletionURI(jobId);
+        _onCompletionRequested(jobId, completionURI);
+    }
+
+    function _handleRevokeHook(IAGIJobManagerView managerView, uint256 jobId) external onlySelf {
+        try managerView.getJobCore(jobId) returns (
+            address employer,
+            address agent,
+            uint256,
+            uint256,
+            uint256,
+            bool,
+            bool,
+            bool,
+            uint8
+        ) {
+            _revokePermissions(jobId, employer, agent);
+        } catch {
+            _revokePermissions(jobId, address(0), address(0));
+        }
+    }
+
+    function _handleLockHook(IAGIJobManagerView managerView, uint256 jobId, bool burnFuses) external onlySelf {
+        try managerView.getJobCore(jobId) returns (
+            address employer,
+            address agent,
+            uint256,
+            uint256,
+            uint256,
+            bool,
+            bool,
+            bool,
+            uint8
+        ) {
+            _lockJobENS(jobId, employer, agent, burnFuses);
+        } catch {
+            _lockJobENS(jobId, address(0), address(0), burnFuses);
+        }
     }
 
     function onAgentAssigned(uint256 jobId, address agent) public onlyOwner {

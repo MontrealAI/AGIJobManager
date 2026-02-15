@@ -121,6 +121,38 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
 
 
 
+
+  it("keeps hook call non-reverting and observable when hook internals revert", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const caller = await MockHookCaller.new({ from: owner });
+    const rootName = "jobs.agi.eth";
+    const rootNode = namehash(rootName);
+
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+    await pages.setJobManager(caller.address, { from: owner });
+    await ens.setOwner(rootNode, pages.address, { from: owner });
+
+    const ok = await caller.callHandleHookRaw44.call(pages.address, 1, 77, { from: owner });
+    assert.equal(ok, true, "hook should not revert even when inner operations revert");
+
+    const receipt = await caller.callHandleHookRaw44(pages.address, 1, 77, { from: owner });
+    await expectEvent.inTransaction(receipt.tx, pages, "ENSHookSkipped", {
+      hook: "1",
+      jobId: "77",
+      reason: web3.utils.padRight(web3.utils.asciiToHex("HOOK_REVERTED"), 64),
+    });
+    await expectEvent.inTransaction(receipt.tx, pages, "ENSHookProcessed", {
+      hook: "1",
+      jobId: "77",
+      configured: true,
+      success: false,
+    });
+  });
+
   it("marks hook as skipped when ENS registry owner() reverts", async () => {
     const revertingEns = await RevertingENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
