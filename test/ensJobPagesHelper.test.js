@@ -4,7 +4,7 @@ const MockPublicResolver = artifacts.require("MockPublicResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockHookCaller = artifacts.require("MockHookCaller");
 
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 
 const { namehash, subnode } = require("./helpers/ens");
 
@@ -218,6 +218,30 @@ contract("ENSJobPages helper", (accounts) => {
     await helper.createJobPage(14, employer, "ipfs://spec", { from: owner });
     const node = subnode(rootNode, "job-14");
     assert.equal(await ens.owner(node), helper.address, "critical subname creation should still succeed");
+  });
+
+  it("emits contextual best-effort failure metadata for resolver write failures", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nameWrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      nameWrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await resolver.setRevertSetText(true, { from: owner });
+
+    const receipt = await helper.createJobPage(15, employer, "ipfs://spec", { from: owner });
+    expectEvent(receipt, "ENSHookBestEffortFailure", {
+      hook: "1",
+      jobId: "15",
+      operation: web3.utils.padRight(web3.utils.asciiToHex("SET_TEXT"), 64),
+    });
   });
 
   it("validates constructor and setters reject EOAs", async () => {
