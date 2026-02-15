@@ -10,6 +10,7 @@ const MockENSJobPages = artifacts.require("MockENSJobPages");
 const MockERC20 = artifacts.require("MockERC20");
 const MockERC721 = artifacts.require("MockERC721");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
+const GasBurnerENS = artifacts.require("GasBurnerENS");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { namehash } = require("./helpers/ens");
@@ -124,8 +125,6 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
   });
 
 
-
-
   it("keeps hook call non-reverting and observable when hook internals revert", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
@@ -154,6 +153,30 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
       jobId: "77",
       configured: true,
       success: false,
+    });
+  });
+
+  it("treats gas-griefing ENS owner() reads as not-configured without reverting", async () => {
+    const gasBurnerEns = await GasBurnerENS.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const caller = await MockHookCaller.new({ from: owner });
+    const rootName = "jobs.agi.eth";
+    const rootNode = namehash(rootName);
+
+    const pages = await ENSJobPages.new(gasBurnerEns.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+    await pages.setJobManager(caller.address, { from: owner });
+
+    const ok = await caller.callHandleHookRaw44.call(pages.address, 1, 9, { from: owner });
+    assert.equal(ok, true, "hook entrypoint should remain non-reverting under ENS gas griefing");
+
+    const receipt = await caller.callHandleHookRaw44(pages.address, 1, 9, { from: owner });
+    await expectEvent.inTransaction(receipt.tx, pages, "ENSHookSkipped", {
+      hook: "1",
+      jobId: "9",
+      reason: web3.utils.padRight(web3.utils.asciiToHex("NOT_CONFIGURED"), 64),
     });
   });
 

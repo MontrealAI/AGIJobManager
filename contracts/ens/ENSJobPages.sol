@@ -37,6 +37,12 @@ contract ENSJobPages is Ownable {
     error ConfigLocked();
 
     uint256 private constant MAX_ROOT_NAME_LENGTH = 240;
+    uint256 private constant ENS_READ_GAS_LIMIT = 50_000;
+
+    bytes4 private constant ENS_OWNER_SELECTOR = bytes4(keccak256("owner(bytes32)"));
+    bytes4 private constant WRAPPER_OWNER_OF_SELECTOR = bytes4(keccak256("ownerOf(uint256)"));
+    bytes4 private constant WRAPPER_GET_APPROVED_SELECTOR = bytes4(keccak256("getApproved(uint256)"));
+    bytes4 private constant WRAPPER_IS_APPROVED_FOR_ALL_SELECTOR = bytes4(keccak256("isApprovedForAll(address,address)"));
 
     // NameWrapper fuses (ENSIP-10).
     uint32 private constant CANNOT_SET_RESOLVER = 1 << 3;
@@ -422,19 +428,25 @@ contract ENSJobPages is Ownable {
 
     function _requireWrapperAuthorization() internal view {
         uint256 rootTokenId = uint256(jobsRootNode);
-        address wrappedOwner = nameWrapper.ownerOf(rootTokenId);
-        if (wrappedOwner == address(0)) revert ENSNotAuthorized();
+        (bool ok, address wrappedOwner) = _staticcallAddress(
+            address(nameWrapper), abi.encodeWithSelector(WRAPPER_OWNER_OF_SELECTOR, rootTokenId)
+        );
+        if (!ok || wrappedOwner == address(0)) revert ENSNotAuthorized();
         if (wrappedOwner == address(this)) {
             return;
         }
-        try nameWrapper.getApproved(rootTokenId) returns (address approved) {
-            if (approved == address(this)) {
-                return;
-            }
-        } catch {
-            // Continue to operator check for wrappers that do not support token approvals.
+        address approved;
+        (ok, approved) = _staticcallAddress(
+            address(nameWrapper), abi.encodeWithSelector(WRAPPER_GET_APPROVED_SELECTOR, rootTokenId)
+        );
+        if (ok && approved == address(this)) {
+            return;
         }
-        if (!nameWrapper.isApprovedForAll(wrappedOwner, address(this))) {
+        bool approvedForAll;
+        (ok, approvedForAll) = _staticcallBool(
+            address(nameWrapper), abi.encodeWithSelector(WRAPPER_IS_APPROVED_FOR_ALL_SELECTOR, wrappedOwner, address(this))
+        );
+        if (!ok || !approvedForAll) {
             revert ENSNotAuthorized();
         }
     }
@@ -465,28 +477,26 @@ contract ENSJobPages is Ownable {
 
     function _isWrapperAuthorizationReady() internal view returns (bool) {
         uint256 rootTokenId = uint256(jobsRootNode);
-        address wrappedOwner;
-        try nameWrapper.ownerOf(rootTokenId) returns (address owner) {
-            wrappedOwner = owner;
-        } catch {
-            return false;
-        }
+        (bool ok, address wrappedOwner) = _staticcallAddress(
+            address(nameWrapper), abi.encodeWithSelector(WRAPPER_OWNER_OF_SELECTOR, rootTokenId)
+        );
+        if (!ok) return false;
         if (wrappedOwner == address(0)) return false;
         if (wrappedOwner == address(this)) return true;
 
-        try nameWrapper.getApproved(rootTokenId) returns (address approved) {
-            if (approved == address(this)) {
-                return true;
-            }
-        } catch {
-            // Continue to operator check for wrappers that do not support token approvals.
+        address approved;
+        (ok, approved) = _staticcallAddress(
+            address(nameWrapper), abi.encodeWithSelector(WRAPPER_GET_APPROVED_SELECTOR, rootTokenId)
+        );
+        if (ok && approved == address(this)) {
+            return true;
         }
 
-        try nameWrapper.isApprovedForAll(wrappedOwner, address(this)) returns (bool approved) {
-            return approved;
-        } catch {
-            return false;
-        }
+        bool approvedForAll;
+        (ok, approvedForAll) = _staticcallBool(
+            address(nameWrapper), abi.encodeWithSelector(WRAPPER_IS_APPROVED_FOR_ALL_SELECTOR, wrappedOwner, address(this))
+        );
+        return ok && approvedForAll;
     }
 
     function _isRootConfigured() internal view returns (bool) {
@@ -499,10 +509,33 @@ contract ENSJobPages is Ownable {
     }
 
     function _tryRootOwner() internal view returns (bool ok, address ownerAddress) {
-        try ens.owner(jobsRootNode) returns (address rootOwner) {
-            return (true, rootOwner);
-        } catch {
-            return (false, address(0));
+        return _staticcallAddress(address(ens), abi.encodeWithSelector(ENS_OWNER_SELECTOR, jobsRootNode));
+    }
+
+    function _staticcallAddress(address target, bytes memory payload) internal view returns (bool ok, address result) {
+        uint256 decoded;
+        (ok, decoded) = _staticcallWord(target, payload);
+        if (!ok) return (false, address(0));
+        result = address(uint160(decoded));
+    }
+
+    function _staticcallBool(address target, bytes memory payload) internal view returns (bool ok, bool result) {
+        uint256 decoded;
+        (ok, decoded) = _staticcallWord(target, payload);
+        if (!ok || decoded > 1) return (false, false);
+        result = decoded == 1;
+    }
+
+    function _staticcallWord(address target, bytes memory payload) internal view returns (bool ok, uint256 word) {
+        assembly {
+            ok := staticcall(ENS_READ_GAS_LIMIT, target, add(payload, 0x20), mload(payload), 0x00, 0x20)
+            if lt(returndatasize(), 0x20) {
+                ok := 0
+            }
+            if ok {
+                returndatacopy(0x00, 0x00, 0x20)
+                word := mload(0x00)
+            }
         }
     }
 }
