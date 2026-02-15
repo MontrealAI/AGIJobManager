@@ -87,10 +87,23 @@ contract('ensHooks.integration', (accounts) => {
     await token.mint(agent, payout);
     await token.approve(manager.address, payout, { from: agent });
 
-    await seedSettledJob({ manager, token, payout, proof: mkTree([agent]).proofFor(agent) });
+    const node = subnode(rootNodeHash, 'job-0');
+
+    await manager.createJob('QmSpec', payout, 5000, 'd', { from: employer });
+    await manager.applyForJob(0, 'agent', mkTree([agent]).proofFor(agent), { from: agent });
+
+    const employerAuthBeforeLock = await resolver.isAuthorised(node, employer);
+    const agentAuthBeforeLock = await resolver.isAuthorised(node, agent);
+    assert.equal(employerAuthBeforeLock, true, 'CREATE hook should authorize employer');
+    assert.equal(agentAuthBeforeLock, true, 'ASSIGN hook should authorize agent');
+
+    await manager.requestJobCompletion(0, 'QmDone', { from: agent });
+    await manager.setCompletionReviewPeriod(1, { from: owner });
+    await time.increase(2);
+    await manager.finalizeJob(0, { from: employer });
+
     const lockReceipt = await manager.lockJobENS(0, false, { from: owner });
 
-    const node = subnode(rootNodeHash, 'job-0');
     const employerAuth = await resolver.isAuthorised(node, employer);
     const agentAuth = await resolver.isAuthorised(node, agent);
     assert.equal(employerAuth, false, 'employer auth must be revoked at terminal lock');
