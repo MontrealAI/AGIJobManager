@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: c23fca0df3a218fe
+Source fingerprint: cdae230040049531
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -46,15 +46,15 @@ Source files used:
 - `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1243)
 - `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1248)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:32)
-- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:47)
-- `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:60)
+- `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:48)
+- `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:61)
 - `function setENSRegistry(address ensAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:95)
 - `function setNameWrapper(address nameWrapperAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:103)
 - `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` (contracts/ens/ENSJobPages.sol:119)
 - `function lockConfiguration() external onlyOwner` (contracts/ens/ENSJobPages.sol:144)
-- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` (contracts/ens/ENSJobPages.sol:192)
-- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` (contracts/ens/ENSJobPages.sol:302)
-- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` (contracts/ens/ENSJobPages.sol:307)
+- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` (contracts/ens/ENSJobPages.sol:197)
+- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` (contracts/ens/ENSJobPages.sol:340)
+- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` (contracts/ens/ENSJobPages.sol:345)
 
 ## Events and errors
 
