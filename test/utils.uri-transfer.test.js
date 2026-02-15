@@ -8,6 +8,7 @@ const FeeOnTransferToken = artifacts.require("FeeOnTransferToken");
 const MalformedReturnERC20 = artifacts.require("MalformedReturnERC20");
 const RevertingBalanceOfERC20 = artifacts.require("RevertingBalanceOfERC20");
 const InvalidBoolReturnERC20 = artifacts.require("InvalidBoolReturnERC20");
+const RevertingTransferERC20 = artifacts.require("RevertingTransferERC20");
 const BondMath = artifacts.require("BondMath");
 const ENSOwnership = artifacts.require("ENSOwnership");
 const ReputationMath = artifacts.require("ReputationMath");
@@ -54,6 +55,9 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
     it("prefixes baseIpfsUrl when no scheme is present", async () => {
       const out = await harness.applyBaseIpfs("bafy/job.json", "https://gateway/ipfs");
       assert.equal(out, "https://gateway/ipfs/bafy/job.json");
+
+      const twice = await harness.applyBaseIpfs(out, "https://gateway/ipfs");
+      assert.equal(twice, out, "base-prefixed URIs should remain stable across repeated application");
     });
 
     it("keeps URIs unchanged when scheme is already present", async () => {
@@ -173,6 +177,21 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
       const token = await MalformedReturnERC20.new({ from: owner });
       await token.mint(owner, web3.utils.toWei("10"), { from: owner });
       await token.approve(harness.address, web3.utils.toWei("10"), { from: owner });
+
+      await expectRevert.unspecified(
+        harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })
+      );
+
+      await expectRevert.unspecified(
+        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
+      );
+    });
+
+    it("reverts when token transfer paths revert", async () => {
+      const token = await RevertingTransferERC20.new({ from: owner });
+      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
+      await token.mint(harness.address, web3.utils.toWei("10"), { from: owner });
+      await token.approve(harness.address, web3.utils.toWei("3"), { from: owner });
 
       await expectRevert.unspecified(
         harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })

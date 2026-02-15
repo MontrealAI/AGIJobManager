@@ -36,6 +36,7 @@ library ENSOwnership {
         string memory subdomain,
         bytes32 rootNode
     ) external view returns (bool) {
+        // Fail-early input gate: validates the narrow ASCII ENS label policy before any staticcall.
         EnsLabelUtils.requireValidLabel(subdomain);
         if (rootNode == bytes32(0)) return false;
         bytes32 subnode = keccak256(abi.encodePacked(rootNode, keccak256(bytes(subdomain))));
@@ -53,6 +54,7 @@ library ENSOwnership {
         bytes32 rootNode,
         bytes32 alphaRootNode
     ) external view returns (bool) {
+        // Enforce the same fail-early label policy across both roots.
         EnsLabelUtils.requireValidLabel(subdomain);
         return _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, rootNode)
             || _verifyByRoot(ensAddress, nameWrapperAddress, claimant, subdomain, alphaRootNode);
