@@ -308,6 +308,25 @@ contract("ENSJobPages helper", (accounts) => {
   });
 
 
+  it("blocks setUseEnsJobTokenURI after configuration lock", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await helper.lockConfiguration({ from: owner });
+    await expectRevert.unspecified(helper.setUseEnsJobTokenURI(true, { from: owner }));
+  });
+
   it("cannot lock before job manager is configured", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });

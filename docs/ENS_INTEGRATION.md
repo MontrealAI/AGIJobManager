@@ -47,6 +47,9 @@ From `AGIJobManager` constants:
 3. Call `ENSJobPages.setJobManager(AGIJobManager)`.
 4. Call `AGIJobManager.setEnsJobPages(ENSJobPages)`.
 5. Optionally enable NFT URI override through `AGIJobManager.setUseEnsJobTokenURI(true)`.
+6. Optionally call `ENSJobPages.lockConfiguration()` to freeze ENS endpoints/root/job-manager wiring and avoid accidental drift.
+
+> Note: `ENSJobPages.setUseEnsJobTokenURI(...)` is local helper state only; AGIJobManager tokenURI override is controlled by `AGIJobManager.setUseEnsJobTokenURI(...)`.
 
 Resolver `setText`/`setAuthorisation` writes are intentionally best-effort (try/catch). Large text payloads may exceed hook gas and should be retried directly by authorised actors.
 
