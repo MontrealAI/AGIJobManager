@@ -271,6 +271,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 internal constant MAX_JOB_SPEC_URI_BYTES = 2048;
     uint256 internal constant MAX_JOB_COMPLETION_URI_BYTES = 1024;
     uint256 internal constant MAX_BASE_IPFS_URL_BYTES = 512;
+    uint256 internal constant MAX_JOB_DETAILS_BYTES = 2048;
 
     constructor(
         address agiTokenAddress,
@@ -473,6 +474,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     {
         if (!(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit)) revert InvalidParameters();
         if (bytes(_jobSpecURI).length > MAX_JOB_SPEC_URI_BYTES) revert InvalidParameters();
+        if (bytes(_details).length > MAX_JOB_DETAILS_BYTES) revert InvalidParameters();
         UriUtils.requireValidUri(_jobSpecURI);
         uint256 jobId = nextJobId;
         unchecked {
@@ -549,6 +551,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.jobCompletionURI = _jobCompletionURI;
         job.completionRequested = true;
         job.completionRequestedAt = block.timestamp;
+        unchecked {
+            job.validatorBondAmount = BondMath.computeValidatorBond(job.payout, validatorBondBps, validatorBondMin, validatorBondMax) + 1;
+        }
         emit JobCompletionRequested(_jobId, msg.sender, _jobCompletionURI);
         _callEnsJobPagesHook(ENS_HOOK_COMPLETION, _jobId);
     }
@@ -795,7 +800,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         alphaAgentRootNode = _alphaAgentRootNode;
         emit RootNodesUpdated(_clubRootNode, _agentRootNode, _alphaClubRootNode, _alphaAgentRootNode);
     }
-    function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner {
+    function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)
+        external
+        onlyOwner
+        whenIdentityConfigurable
+    {
+        _requireEmptyEscrow();
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
         emit MerkleRootsUpdated(_validatorMerkleRoot, _agentMerkleRoot);
@@ -968,11 +978,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function enforceReputationGrowth(address _user, uint256 _points) internal {
+        if (_points == 0) return;
+        uint256 oldReputation = reputation[_user];
         uint256 newReputation;
         unchecked {
-            newReputation = reputation[_user] + _points;
+            newReputation = oldReputation + _points;
         }
         uint256 diminishedReputation = newReputation / (1 + ((newReputation * newReputation) / (88888 * 88888)));
+
+        if (diminishedReputation < oldReputation) {
+            diminishedReputation = oldReputation;
+        }
 
         if (diminishedReputation > 88888) {
             diminishedReputation = 88888;
@@ -1260,6 +1276,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             mstore(add(ptr, 36), jobId)
             success := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
+        emit EnsHookAttempted(hook, jobId, target, success != 0);
     }
 
     function addAdditionalValidator(address validator) external onlyOwner {
@@ -1314,6 +1331,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
         if (token == address(agiToken)) revert InvalidParameters();
+        if (token.code.length == 0) revert InvalidParameters();
         (bool ok, bytes memory ret) = token.call(data);
         if (!ok) revert TransferFailed();
         if (ret.length > 0) {
