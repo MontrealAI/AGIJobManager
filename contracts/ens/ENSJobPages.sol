@@ -36,6 +36,8 @@ contract ENSJobPages is Ownable {
     error InvalidParameters();
     error ConfigLocked();
 
+    uint256 private constant MAX_ROOT_NAME_LENGTH = 240;
+
     // NameWrapper fuses (ENSIP-10).
     uint32 private constant CANNOT_SET_RESOLVER = 1 << 3;
     uint32 private constant CANNOT_SET_TTL = 1 << 4;
@@ -82,6 +84,7 @@ contract ENSJobPages is Ownable {
         bool hasRootNode = rootNode != bytes32(0);
         bool hasRootName = bytes(rootName).length != 0;
         if (hasRootNode != hasRootName) revert InvalidParameters();
+        if (hasRootName && !_isValidRootName(rootName)) revert InvalidParameters();
         ens = IENSRegistry(ensAddress);
         nameWrapper = INameWrapper(nameWrapperAddress);
         publicResolver = IPublicResolver(publicResolverAddress);
@@ -118,7 +121,7 @@ contract ENSJobPages is Ownable {
         bytes32 oldNode = jobsRootNode;
         string memory oldName = jobsRootName;
         if (rootNode == bytes32(0)) revert InvalidParameters();
-        if (bytes(rootName).length == 0) revert InvalidParameters();
+        if (!_isValidRootName(rootName)) revert InvalidParameters();
         jobsRootNode = rootNode;
         jobsRootName = rootName;
         emit JobsRootUpdated(oldNode, rootNode, oldName, rootName);
@@ -380,9 +383,20 @@ contract ENSJobPages is Ownable {
     }
 
     function _requireWrapperAuthorization() internal view {
-        address wrappedOwner = nameWrapper.ownerOf(uint256(jobsRootNode));
+        uint256 rootTokenId = uint256(jobsRootNode);
+        address wrappedOwner = nameWrapper.ownerOf(rootTokenId);
         if (wrappedOwner == address(0)) revert ENSNotAuthorized();
-        if (wrappedOwner != address(this) && !nameWrapper.isApprovedForAll(wrappedOwner, address(this))) {
+        if (wrappedOwner == address(this)) {
+            return;
+        }
+        try nameWrapper.getApproved(rootTokenId) returns (address approved) {
+            if (approved == address(this)) {
+                return;
+            }
+        } catch {
+            // Continue to operator check for wrappers that do not support token approvals.
+        }
+        if (!nameWrapper.isApprovedForAll(wrappedOwner, address(this))) {
             revert ENSNotAuthorized();
         }
     }
@@ -412,14 +426,23 @@ contract ENSJobPages is Ownable {
     }
 
     function _isWrapperAuthorizationReady() internal view returns (bool) {
+        uint256 rootTokenId = uint256(jobsRootNode);
         address wrappedOwner;
-        try nameWrapper.ownerOf(uint256(jobsRootNode)) returns (address owner) {
+        try nameWrapper.ownerOf(rootTokenId) returns (address owner) {
             wrappedOwner = owner;
         } catch {
             return false;
         }
         if (wrappedOwner == address(0)) return false;
         if (wrappedOwner == address(this)) return true;
+
+        try nameWrapper.getApproved(rootTokenId) returns (address approved) {
+            if (approved == address(this)) {
+                return true;
+            }
+        } catch {
+            // Continue to operator check for wrappers that do not support token approvals.
+        }
 
         try nameWrapper.isApprovedForAll(wrappedOwner, address(this)) returns (bool approved) {
             return approved;
@@ -430,6 +453,11 @@ contract ENSJobPages is Ownable {
 
     function _isRootConfigured() internal view returns (bool) {
         return jobsRootNode != bytes32(0) && bytes(jobsRootName).length != 0;
+    }
+
+    function _isValidRootName(string memory rootName) internal pure returns (bool) {
+        uint256 len = bytes(rootName).length;
+        return len > 0 && len <= MAX_ROOT_NAME_LENGTH;
     }
 
     function _tryRootOwner() internal view returns (bool ok, address ownerAddress) {
