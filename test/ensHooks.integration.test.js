@@ -121,6 +121,39 @@ contract('ensHooks.integration', (accounts) => {
     });
   });
 
+
+  it('does not attempt fuse burning in unwrapped mode even with LOCK_BURN hook', async () => {
+    const token = await MockERC20.new();
+    const ens = await MockENSRegistry.new();
+    const wrapper = await MockNameWrapper.new();
+    const resolver = await MockPublicResolver.new();
+    const nft = await MockERC721.new();
+
+    const rootName = 'jobs.alpha.agi.eth';
+    const rootNodeHash = namehash(rootName);
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNodeHash, rootName, { from: owner });
+    await pages.setJobManager(manager.address, { from: owner });
+    await manager.setEnsJobPages(pages.address, { from: owner });
+    await ens.setOwner(rootNodeHash, pages.address);
+
+    await manager.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent);
+    const payout = new BN(web3.utils.toWei('1000'));
+    await token.mint(employer, payout); await token.approve(manager.address, payout, { from: employer });
+    await token.mint(validator, payout); await token.approve(manager.address, payout, { from: validator });
+    await token.mint(agent, payout); await token.approve(manager.address, payout, { from: agent });
+
+    await seedSettledJob({ manager, token, payout, proof: mkTree([agent]).proofFor(agent) });
+
+    const tx = await manager.lockJobENS(0, true, { from: owner });
+    await expectEvent.inTransaction(tx.tx, pages, 'JobENSLocked', {
+      jobId: new BN(0),
+      fusesBurned: false,
+    });
+    assert.equal((await wrapper.setChildFusesCalls()).toString(), '0', 'unwrapped mode must not call setChildFuses');
+  });
+
   it('keeps AGIJobManager flows live when resolver writes revert (best-effort degradation)', async () => {
     const token = await MockERC20.new();
     const ens = await MockENSRegistry.new();
