@@ -96,13 +96,24 @@ The platform also authorizes the employer on creation and the assigned agent on 
 
 ## ENSJobPages helper wiring (on-chain)
 
-When using the `ENSJobPages` helper contract, complete these wiring steps:
-1. Deploy `ENSJobPages` with the ENS registry, NameWrapper (if any), PublicResolver, root node, and root name.
-2. Ensure `alpha.jobs.agi.eth` is owned by the helper (or wrapped and approved for it).
-3. Call `ENSJobPages.setJobManager(AGIJobManager)` so hooks are accepted.
-4. Call `AGIJobManager.setEnsJobPages(ENSJobPages)` to enable hook callbacks.
+When using the `ENSJobPages` helper contract, complete these wiring steps in order:
+1. Deploy `AGIJobManager` with correct ENS registry, NameWrapper, and root nodes (or call `setAddresses` before jobs are created).
+2. Deploy `ENSJobPages` with the ENS registry, NameWrapper (if any), PublicResolver, root node, and root name.
+3. Ensure `alpha.jobs.agi.eth` is owned by the helper (unwrapped) or wrapped and approved for it.
+4. Call `ENSJobPages.setJobManager(AGIJobManager)` so hooks are accepted.
+5. Call `AGIJobManager.setEnsJobPages(ENSJobPages)` to enable hook callbacks.
+6. Optionally enable ENS-based completion NFT URIs via `AGIJobManager.setUseEnsJobTokenURI(true)`.
+7. Optionally call `ENSJobPages.lockConfiguration()` after wiring is finalized.
 
 These steps keep ENS integration **opt-in** and ensure lifecycle hooks remain best-effort.
+
+### Best-effort vs guaranteed behavior under hook gas bounds
+
+- `AGIJobManager` invokes `ENSJobPages.handleHook` with a bounded gas stipend.
+- Critical ENS authorization checks and subname creation are **fail-closed** inside `ENSJobPages`.
+- Resolver text writes and resolver authorisation updates are **best-effort** (`try/catch`).
+- If the ENS hook path fails, `AGIJobManager` lifecycle actions remain live (job creation, assignment, settlement).
+- Operators can always backfill large text records later using resolver-authorized wallets.
 
 ## Operator checklist
 - Ensure the platform controls `alpha.jobs.agi.eth` and the configured PublicResolver.
