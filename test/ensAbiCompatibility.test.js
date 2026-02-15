@@ -64,6 +64,20 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     assert.equal(actualHandleSelector, expectedHandleSelector);
     assert.equal(actualJobUriSelector, expectedJobUriSelector);
 
+    const handleAbiEntry = ENSJobPages.abi.find(
+      (entry) => entry.type === "function" && entry.name === "handleHook"
+    );
+    const jobUriAbiEntry = ENSJobPages.abi.find(
+      (entry) => entry.type === "function" && entry.name === "jobEnsURI"
+    );
+    assert.ok(handleAbiEntry, "ENSJobPages ABI must include handleHook");
+    assert.ok(jobUriAbiEntry, "ENSJobPages ABI must include jobEnsURI");
+    assert.equal(handleAbiEntry.inputs.length, 2, "handleHook arity mismatch");
+    assert.equal(handleAbiEntry.inputs[0].type, "uint8", "handleHook first arg must be uint8");
+    assert.equal(handleAbiEntry.inputs[1].type, "uint256", "handleHook second arg must be uint256");
+    assert.equal(jobUriAbiEntry.inputs.length, 1, "jobEnsURI arity mismatch");
+    assert.equal(jobUriAbiEntry.inputs[0].type, "uint256", "jobEnsURI argument must be uint256");
+
     const handleCalldata = web3.eth.abi.encodeFunctionCall(
       {
         name: "handleHook",
@@ -224,6 +238,47 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
 
     const uri = await manager.tokenURI(0);
     assert.equal(uri, "ens://job-0.alpha.jobs.agi.eth");
+    assert.isAtMost(uri.length, 1024, "ENS URI should stay within AGIJobManager bounds");
+  });
+
+  it("uses real ENSJobPages.jobEnsURI on completion NFT staticcall path", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENSRegistry.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const nft = await MockERC721.new({ from: owner });
+    const rootName = "jobs.mainnet-ready.agi.eth";
+    const rootNode = namehash(rootName);
+
+    const manager = await AGIJobManager.new(
+      ...buildInitConfig(
+        token.address,
+        "",
+        ens.address,
+        wrapper.address,
+        ZERO32,
+        ZERO32,
+        ZERO32,
+        ZERO32,
+        ZERO32,
+        ZERO32
+      ),
+      { from: owner }
+    );
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+    await pages.setJobManager(manager.address, { from: owner });
+    await ens.setOwner(rootNode, pages.address, { from: owner });
+
+    await manager.setEnsJobPages(pages.address, { from: owner });
+    await manager.setUseEnsJobTokenURI(true, { from: owner });
+
+    await seedSimpleJob(manager, token, nft);
+    await manager.finalizeJob(0, { from: employer });
+
+    const uri = await manager.tokenURI(0);
+    assert.equal(uri, `ens://job-0.${rootName}`);
     assert.isAtMost(uri.length, 1024, "ENS URI should stay within AGIJobManager bounds");
   });
 

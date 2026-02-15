@@ -61,6 +61,21 @@ sequenceDiagram
   end
 ```
 
+
+## Mainnet deployment + configuration sequence
+1. Deploy `ENSJobPages(ens, nameWrapper, publicResolver, jobsRootNode, jobsRootName)`.
+2. Ensure `jobsRootNode` owner is either:
+   - **Unwrapped root:** `ENSJobPages` contract, or
+   - **Wrapped root:** `NameWrapper` with `ENSJobPages` as owner/approved operator for `uint256(jobsRootNode)`.
+3. Call `setJobManager(<AGIJobManager>)` from the ENSJobPages owner.
+4. Call `AGIJobManager.setEnsJobPages(<ENSJobPages>)`, optionally `AGIJobManager.setUseEnsJobTokenURI(true)`.
+5. Optional hardening: call `ENSJobPages.lockConfiguration()` once ownership/approval paths are verified.
+
+### Guarantees vs best-effort behavior
+- **Guaranteed / fail-closed:** subname creation (`ens.setSubnodeRecord` or `nameWrapper.setSubnodeRecord`) and authorization preconditions for wrapped roots.
+- **Best-effort (non-critical):** resolver `setText` and `setAuthorisation` updates run in `try/catch` and emit `ENSHookBestEffortFailure` when they fail.
+- **Operational implication:** large text payloads may exceed hook gas and be skipped; employer/agent can still write these records later if authorized.
+
 ## Gotchas / failure modes
 - Resolver operations are intentionally best-effort (`try/catch`) to avoid blocking core escrow flows.
 - If root ownership/approval is misconfigured, wrapped-root writes revert with `ENSNotAuthorized`.

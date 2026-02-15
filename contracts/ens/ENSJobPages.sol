@@ -142,6 +142,7 @@ contract ENSJobPages is Ownable {
     }
 
     function setUseEnsJobTokenURI(bool enabled) external onlyOwner {
+        if (configLocked) revert ConfigLocked();
         bool old = useEnsJobTokenURI;
         useEnsJobTokenURI = enabled;
         emit UseEnsJobTokenURIUpdated(old, enabled);
