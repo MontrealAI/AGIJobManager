@@ -28,8 +28,14 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
       await harness.check("alice");
     });
 
+    it("accepts other valid labels in the allowed [a-z0-9-] policy", async () => {
+      for (const label of ["a", "a-1", "0", "abc123"]) {
+        await harness.check(label);
+      }
+    });
+
     it("reverts with InvalidENSLabel for known invalid labels", async () => {
-      const invalidLabels = ["alice.bob", "", "A", "a_b", "-a", "a-", "a".repeat(64)];
+      const invalidLabels = ["alice.bob", "", "A", "a_b", "-a", "a-", ".", "..", "a..b", "a".repeat(64)];
       for (const label of invalidLabels) {
         await expectCustomError(harness.check(label), "InvalidENSLabel");
       }
@@ -105,6 +111,13 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
       const jobId = createReceipt.logs[0].args.jobId.toNumber();
 
       await expectCustomError(manager.applyForJob.call(jobId, "alice.bob", [], { from: outsider }), "InvalidENSLabel");
+    });
+
+    it("routes valid ENS labels to ENS ownership verification path", async () => {
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await expectCustomError(manager.applyForJob.call(jobId, "alice", [], { from: outsider }), "NotAuthorized");
     });
   });
 });
