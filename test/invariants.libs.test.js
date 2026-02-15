@@ -1,4 +1,6 @@
 const assert = require("assert");
+const { MerkleTree } = require("merkletreejs");
+const keccak256 = require("keccak256");
 
 const UtilsHarness = artifacts.require("UtilsHarness");
 const BondMath = artifacts.require("BondMath");
@@ -12,6 +14,10 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const InvalidBoolNameWrapper = artifacts.require("InvalidBoolNameWrapper");
 const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
 const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
+const RevertingResolver = artifacts.require("RevertingResolver");
+const MalformedENSRegistry = artifacts.require("MalformedENSRegistry");
+const MalformedNameWrapper = artifacts.require("MalformedNameWrapper");
+const MalformedResolver = artifacts.require("MalformedResolver");
 
 const { rootNode, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
@@ -170,6 +176,20 @@ contract("Utility library invariants", (accounts) => {
     );
   });
 
+  it("verifies merkle ownership for known proofs only", async () => {
+    const leaves = [claimant, other].map((addr) => Buffer.from(web3.utils.soliditySha3(addr).slice(2), "hex"));
+    const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+    const root = tree.getHexRoot();
+    const proof = tree.getHexProof(Buffer.from(web3.utils.soliditySha3(claimant).slice(2), "hex"));
+    const badProof = tree.getHexProof(Buffer.from(web3.utils.soliditySha3(other).slice(2), "hex"));
+
+    const ok = await harness.verifyMerkleOwnership.call(claimant, proof, root);
+    assert.equal(ok, true, "known valid proof should verify");
+
+    const bad = await harness.verifyMerkleOwnership.call(claimant, badProof, root);
+    assert.equal(bad, false, "proof for a different claimant should not verify");
+  });
+
   it("accepts name-wrapper operator approvals without reverting", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
@@ -224,6 +244,98 @@ contract("Utility library invariants", (accounts) => {
 
     const ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, "agent2", root);
     assert.equal(ok, false, "invalid bool encoding should fail closed");
+  });
+
+  it("fails closed (no revert) on reverting ENS/resolver/name-wrapper calls for valid labels", async () => {
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await RevertingNameWrapper.new({ from: owner });
+    const resolver = await RevertingResolver.new({ from: owner });
+    const root = rootNode("club-root");
+
+    await ens.setResolverAddress(resolver.address, { from: owner });
+    await ens.setRevertResolver(true, { from: owner });
+    await wrapper.setRevertOwnerOf(true, { from: owner });
+
+    let ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, "alice", root);
+    assert.equal(ok, false, "reverting ownerOf/resolver should fail closed");
+
+    await ens.setRevertResolver(false, { from: owner });
+    await resolver.setRevertAddr(true, { from: owner });
+    ok = await harness.verifyENSOwnership.call(ens.address, "0x0000000000000000000000000000000000000000", claimant, "alice", root);
+    assert.equal(ok, false, "reverting resolver.addr should fail closed");
+  });
+
+  it("fails closed on malformed ENS/resolver/name-wrapper return data", async () => {
+    const ens = await MalformedENSRegistry.new({ from: owner });
+    const wrapper = await MalformedNameWrapper.new({ from: owner });
+    const resolver = await MalformedResolver.new({ from: owner });
+    const root = rootNode("club-root");
+    await ens.setResolverAddress(resolver.address, { from: owner });
+
+    let ok = await harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, "alice", root);
+    assert.equal(ok, false, "malformed ownerOf return data should fail closed");
+
+    ok = await harness.verifyENSOwnership.call(ens.address, "0x0000000000000000000000000000000000000000", claimant, "alice", root);
+    assert.equal(ok, false, "malformed resolver.addr return data should fail closed");
+  });
+
+  it("keeps bond math monotonic around AGIJobManager-like boundaries", async () => {
+    const payout = toBN(toWei("100"));
+    const bps = toBN("500");
+    const minBond = toBN(toWei("1"));
+    const maxBond = toBN(toWei("25"));
+    const durationLimit = toBN("10000000");
+
+    const zeroPayout = await harness.computeAgentBond.call(0, 1000, bps, minBond, maxBond, durationLimit);
+    assert.equal(zeroPayout.toString(), "0", "payout=0 should never force positive bond");
+
+    const shortDuration = await harness.computeAgentBond.call(payout, 1000, bps, minBond, maxBond, durationLimit);
+    const longDuration = await harness.computeAgentBond.call(payout, 1_000_000, bps, minBond, maxBond, durationLimit);
+    assert.ok(longDuration.gte(shortDuration), "longer duration should not reduce required agent bond");
+
+    const lowPayout = await harness.computeValidatorBond.call(toBN(toWei("10")), bps, minBond, maxBond);
+    const highPayout = await harness.computeValidatorBond.call(toBN(toWei("20")), bps, minBond, maxBond);
+    assert.ok(highPayout.gte(lowPayout), "higher payout should not reduce validator bond");
+  });
+
+  it("keeps reputation math deterministic and bounded on boundary timestamps", async () => {
+    const payout = toBN(toWei("5000"));
+    const duration = toBN("10000000");
+    const assignedAt = toBN("1700000000");
+
+    const ineligible = await harness.computeReputationPoints.call(
+      payout,
+      duration,
+      assignedAt.addn(3600),
+      assignedAt,
+      false
+    );
+    assert.equal(ineligible.toString(), "0", "repEligible=false must always be zero");
+
+    const onTimeA = await harness.computeReputationPoints.call(
+      payout,
+      duration,
+      assignedAt.addn(3600),
+      assignedAt,
+      true
+    );
+    const onTimeB = await harness.computeReputationPoints.call(
+      payout,
+      duration,
+      assignedAt.addn(3600),
+      assignedAt,
+      true
+    );
+    assert.equal(onTimeA.toString(), onTimeB.toString(), "same inputs must produce deterministic reputation");
+
+    const late = await harness.computeReputationPoints.call(
+      payout,
+      duration,
+      assignedAt.add(duration).addn(1),
+      assignedAt,
+      true
+    );
+    assert.ok(onTimeA.gte(late), "slower completion should not increase reputation points");
   });
 
 });

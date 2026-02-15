@@ -54,6 +54,14 @@ contract UtilsHarness {
         return ENSOwnership.verifyENSOwnership(ensAddress, nameWrapperAddress, claimant, subdomain, rootNode);
     }
 
+    function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)
+        external
+        pure
+        returns (bool)
+    {
+        return ENSOwnership.verifyMerkleOwnership(claimant, proof, merkleRoot);
+    }
+
     function requireValidUri(string memory uri) external pure {
         UriUtils.requireValidUri(uri);
     }
