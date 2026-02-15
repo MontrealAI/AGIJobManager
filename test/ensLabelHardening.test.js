@@ -35,7 +35,7 @@ contract("ENS label hardening", (accounts) => {
     });
 
     it("rejects deterministic invalid labels", async () => {
-      for (const label of ["alice.bob", "", "A", "a_b", "-a", "a-"]) {
+      for (const label of ["", "alice.bob", "A", "a_b", "-a", "a-", ".", "..", "a..b", "a b", "\n"]) {
         await expectCustomError(harness.check(label), "InvalidENSLabel");
       }
 
