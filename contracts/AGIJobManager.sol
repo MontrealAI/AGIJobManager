@@ -55,6 +55,8 @@ import "./utils/BondMath.sol";
 import "./utils/ReputationMath.sol";
 import "./utils/ENSOwnership.sol";
 
+// NOTE: keep utility libraries externally linked to avoid EIP-170 bytecode regressions.
+
 interface ENS {
     function resolver(bytes32 node) external view returns (address);
 }

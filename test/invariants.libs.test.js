@@ -10,8 +10,11 @@ const MockENSRegistry = artifacts.require("MockENSRegistry");
 const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const InvalidBoolNameWrapper = artifacts.require("InvalidBoolNameWrapper");
+const RevertingENSRegistry = artifacts.require("RevertingENSRegistry");
+const RevertingNameWrapper = artifacts.require("RevertingNameWrapper");
 
 const { rootNode, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
+const { expectCustomError } = require("./helpers/errors");
 
 const { toBN, toWei } = web3.utils;
 
@@ -46,6 +49,18 @@ contract("Utility library invariants", (accounts) => {
 
     const zeroBond = await harness.computeValidatorBond.call(payout, 0, 0, 0);
     assert.equal(zeroBond.toString(), "0", "zero params should return zero bond");
+  });
+
+
+  it("keeps validator bonds monotonic and overflow-safe at uint256 boundaries", async () => {
+    const maxUint = toBN("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
+    const high = await harness.computeValidatorBond.call(maxUint, 10_000, 0, maxUint);
+    assert.equal(high.toString(), maxUint.toString(), "100% bps should cap at payout even at max uint");
+
+    const low = await harness.computeValidatorBond.call(toBN(toWei("10")), 500, 0, maxUint);
+    const medium = await harness.computeValidatorBond.call(toBN(toWei("10")), 1500, 0, maxUint);
+    assert.ok(medium.gte(low), "higher bps should not reduce validator bond");
   });
 
   it("computes agent bonds within bounds across varied inputs", async () => {
@@ -139,6 +154,20 @@ contract("Utility library invariants", (accounts) => {
       root
     );
     assert.equal(resolverOwned, true, "resolver ownership should be true");
+  });
+
+
+  it("validates ENS labels before any external ENS staticcall", async () => {
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await RevertingNameWrapper.new({ from: owner });
+
+    await ens.setRevertResolver(true, { from: owner });
+    await wrapper.setRevertOwnerOf(true, { from: owner });
+
+    await expectCustomError(
+      harness.verifyENSOwnership(ens.address, wrapper.address, claimant, "alice.bob", rootNode("club-root")),
+      "InvalidENSLabel"
+    );
   });
 
   it("accepts name-wrapper operator approvals without reverting", async () => {
