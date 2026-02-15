@@ -389,8 +389,14 @@ contract ENSJobPages is Ownable {
         if (wrappedOwner == address(this)) {
             return;
         }
-        if (nameWrapper.getApproved(rootTokenId) == address(this)) {
-            return;
+        // Some wrappers can omit token-level approvals or revert on getApproved;
+        // treat that as "not token-approved" and continue to operator approval check.
+        try nameWrapper.getApproved(rootTokenId) returns (address approved) {
+            if (approved == address(this)) {
+                return;
+            }
+        } catch {
+            // continue to isApprovedForAll path
         }
         if (!nameWrapper.isApprovedForAll(wrappedOwner, address(this))) {
             revert ENSNotAuthorized();
@@ -432,12 +438,13 @@ contract ENSJobPages is Ownable {
         if (wrappedOwner == address(0)) return false;
         if (wrappedOwner == address(this)) return true;
 
+        // Gracefully tolerate wrappers that revert on token-level approvals.
         try nameWrapper.getApproved(rootTokenId) returns (address approved) {
             if (approved == address(this)) {
                 return true;
             }
         } catch {
-            return false;
+            // continue to operator approval check
         }
 
         try nameWrapper.isApprovedForAll(wrappedOwner, address(this)) returns (bool approved) {
