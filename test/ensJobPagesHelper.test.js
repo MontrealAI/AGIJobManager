@@ -3,6 +3,7 @@ const MockENSRegistry = artifacts.require("MockENSRegistry");
 const MockPublicResolver = artifacts.require("MockPublicResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockHookCaller = artifacts.require("MockHookCaller");
+const RevertingGetApprovedNameWrapper = artifacts.require("RevertingGetApprovedNameWrapper");
 
 const { expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -356,6 +357,66 @@ contract("ENSJobPages helper", (accounts) => {
 
     await wrapper.setApprovalForAll(helper.address, true, { from: owner });
     await helper.lockConfiguration({ from: owner });
+  });
+
+  it("accepts NameWrapper getApproved authorization for wrapped roots", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), owner, { from: owner });
+    await wrapper.setApproved(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await helper.lockConfiguration({ from: owner });
+    await helper.createJobPage(77, employer, "ipfs://spec77", { from: owner });
+  });
+
+  it("keeps operator-approved wrapped roots live when getApproved reverts", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await RevertingGetApprovedNameWrapper.new({ from: owner });
+
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), owner, { from: owner });
+    await wrapper.setApprovalForAll(helper.address, true, { from: owner });
+
+    await helper.createJobPage(78, employer, "ipfs://spec78", { from: owner });
+  });
+
+  it("rejects oversized root names to keep ENS URIs bounded", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    const tooLongRoot = "a".repeat(241);
+    await expectRevert.unspecified(helper.setJobsRoot(rootNode, tooLongRoot, { from: owner }));
   });
 
 });
