@@ -286,7 +286,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("prevents double completion and late validations", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
@@ -311,7 +310,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("blocks dispute resolution after validator-driven completion", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
@@ -428,7 +426,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("requires assignment and non-completion for votes", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
@@ -453,7 +450,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         "InvalidState"
       );
 
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
@@ -512,7 +508,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("resolves disputes with agent win, employer win, and neutral outcomes", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
@@ -548,7 +543,6 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("prevents disputes after completion", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 

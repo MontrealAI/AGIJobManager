@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `9c35f1fb7406`.
-- Source snapshot fingerprint: `9c35f1fb7406`.
+- Generated at (deterministic source fingerprint): `0e8518e13648`.
+- Source snapshot fingerprint: `0e8518e13648`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -75,6 +75,8 @@
 | `lockJobENS(uint256 jobId, bool burnFuses)` | external | nonpayable | — |
 | `ownerOf(uint256 id)` | external | view | `address` |
 | `pause()` | external | nonpayable | — |
+| `pauseAll()` | external | nonpayable | — |
+| `pauseIntake()` | external | nonpayable | — |
 | `removeAdditionalAgent(address agent)` | external | nonpayable | — |
 | `removeAdditionalValidator(address validator)` | external | nonpayable | — |
 | `removeModerator(address _moderator)` | external | nonpayable | — |
@@ -106,6 +108,8 @@
 | `setVoteQuorum(uint256 _quorum)` | external | nonpayable | — |
 | `tokenURI(uint256 tokenId)` | public | view | `string memory` |
 | `unpause()` | external | nonpayable | — |
+| `unpauseAll()` | external | nonpayable | — |
+| `unpauseIntake()` | external | nonpayable | — |
 | `updateAGITokenAddress(address _newTokenAddress)` | external | nonpayable | — |
 | `updateEnsRegistry(address _newEnsRegistry)` | external | nonpayable | — |
 | `updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` | external | nonpayable | — |
