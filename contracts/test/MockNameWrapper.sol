@@ -12,6 +12,7 @@ contract MockNameWrapper {
     bytes32 public lastLabelhash;
     uint32 public lastChildFuses;
     uint64 public lastChildExpiry;
+    bool public revertGetApproved;
 
     function setOwner(uint256 id, address owner) external {
         owners[id] = owner;
@@ -34,7 +35,12 @@ contract MockNameWrapper {
     }
 
     function getApproved(uint256 id) external view returns (address) {
+        if (revertGetApproved) revert();
         return tokenApprovals[id];
+    }
+
+    function setRevertGetApproved(bool value) external {
+        revertGetApproved = value;
     }
 
     function isWrapped(bytes32 node) external view returns (bool) {
