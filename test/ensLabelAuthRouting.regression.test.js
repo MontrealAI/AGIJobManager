@@ -29,9 +29,15 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
     });
 
     it("reverts with InvalidENSLabel for known invalid labels", async () => {
-      const invalidLabels = ["alice.bob", "", "A", "a_b", "-a", "a-", "a".repeat(64)];
+      const invalidLabels = ["", "alice.bob", "A", "a_b", "-a", "a-", "a".repeat(64), ".", "..", "a..b"];
       for (const label of invalidLabels) {
         await expectCustomError(harness.check(label), "InvalidENSLabel");
+      }
+    });
+
+    it("accepts deterministic valid labels", async () => {
+      for (const label of ["alice", "a", "a-1", "0", "abc123"]) {
+        await harness.check(label);
       }
     });
   });
@@ -100,11 +106,30 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
       assert.equal(validation.validatorApprovals.toString(), "1", "validator Merkle vote should be recorded");
     });
 
+    it("allows additional allowlist path with empty subdomain", async () => {
+      await manager.addAdditionalAgent(agent, { from: owner });
+
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await manager.applyForJob(jobId, "", [], { from: agent });
+
+      const job = await manager.getJobCore(jobId);
+      assert.equal(job.assignedAgent, agent, "agent should be assigned through additional allowlist");
+    });
+
     it("reverts with InvalidENSLabel (not NotAuthorized) for invalid ENS label on ENS path", async () => {
       const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
       const jobId = createReceipt.logs[0].args.jobId.toNumber();
 
       await expectCustomError(manager.applyForJob.call(jobId, "alice.bob", [], { from: outsider }), "InvalidENSLabel");
+    });
+
+    it("routes valid ENS labels to ENS verification and returns NotAuthorized when unowned", async () => {
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await expectCustomError(manager.applyForJob.call(jobId, "alice", [], { from: outsider }), "NotAuthorized");
     });
   });
 });
