@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: f7a94f2710f06afe
+Source fingerprint: cf974314f9c2aa3f
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -51,10 +51,10 @@ Source files used:
 - `function setENSRegistry(address ensAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:101)
 - `function setNameWrapper(address nameWrapperAddress) external onlyOwner` (contracts/ens/ENSJobPages.sol:109)
 - `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` (contracts/ens/ENSJobPages.sol:125)
-- `function lockConfiguration() external onlyOwner` (contracts/ens/ENSJobPages.sol:150)
-- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` (contracts/ens/ENSJobPages.sol:203)
-- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` (contracts/ens/ENSJobPages.sol:346)
-- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` (contracts/ens/ENSJobPages.sol:351)
+- `function lockConfiguration() external onlyOwner` (contracts/ens/ENSJobPages.sol:151)
+- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` (contracts/ens/ENSJobPages.sol:204)
+- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` (contracts/ens/ENSJobPages.sol:347)
+- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` (contracts/ens/ENSJobPages.sol:352)
 
 ## Events and errors
 
