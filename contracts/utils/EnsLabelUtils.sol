@@ -8,8 +8,8 @@ library EnsLabelUtils {
     bytes1 private constant DOT = 0x2e;
     bytes1 private constant ZERO = 0x30;
     bytes1 private constant NINE = 0x39;
-    bytes1 private constant A = 0x61;
-    bytes1 private constant Z = 0x7a;
+    bytes1 private constant LOWER_A = 0x61;
+    bytes1 private constant LOWER_Z = 0x7a;
 
     /// @dev Strict ASCII label policy for predictable ENS auth routing:
     /// 1..63 chars, [a-z0-9-], no dots, no leading/trailing dash.
@@ -24,7 +24,7 @@ library EnsLabelUtils {
             if (c == DOT) revert InvalidENSLabel();
 
             bool isDigit = c >= ZERO && c <= NINE;
-            bool isLower = c >= A && c <= Z;
+            bool isLower = c >= LOWER_A && c <= LOWER_Z;
             if (!(isDigit || isLower || c == DASH)) revert InvalidENSLabel();
 
             unchecked {
