@@ -35,7 +35,20 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
     });
 
     it("reverts with InvalidENSLabel for known invalid labels", async () => {
-      const invalidLabels = ["alice.bob", "", "A", "a_b", "-a", "a-", ".", "..", "a..b", "a".repeat(64)];
+      const invalidLabels = [
+        "",
+        "alice.bob",
+        "A",
+        "a_b",
+        "-a",
+        "a-",
+        ".",
+        "..",
+        "a..b",
+        "a b",
+        "\n",
+        "a".repeat(64),
+      ];
       for (const label of invalidLabels) {
         await expectCustomError(harness.check(label), "InvalidENSLabel");
       }
