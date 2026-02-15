@@ -271,6 +271,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 internal constant MAX_JOB_SPEC_URI_BYTES = 2048;
     uint256 internal constant MAX_JOB_COMPLETION_URI_BYTES = 1024;
     uint256 internal constant MAX_BASE_IPFS_URL_BYTES = 512;
+    uint256 internal constant MAX_JOB_DETAILS_BYTES = 2048;
 
     constructor(
         address agiTokenAddress,
@@ -456,6 +457,18 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
+    function pauseIntake() external onlyOwner { _pause(); }
+    function unpauseIntake() external onlyOwner { _unpause(); }
+    function pauseAll() external onlyOwner {
+        _pause();
+        settlementPaused = true;
+        emit SettlementPauseSet(msg.sender, true);
+    }
+    function unpauseAll() external onlyOwner {
+        _unpause();
+        settlementPaused = false;
+        emit SettlementPauseSet(msg.sender, false);
+    }
     function setSettlementPaused(bool paused) external onlyOwner {
         settlementPaused = paused;
         emit SettlementPauseSet(msg.sender, paused);
@@ -473,6 +486,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     {
         if (!(_payout > 0 && _duration > 0 && _payout <= maxJobPayout && _duration <= jobDurationLimit)) revert InvalidParameters();
         if (bytes(_jobSpecURI).length > MAX_JOB_SPEC_URI_BYTES) revert InvalidParameters();
+        if (bytes(_details).length > MAX_JOB_DETAILS_BYTES) revert InvalidParameters();
         UriUtils.requireValidUri(_jobSpecURI);
         uint256 jobId = nextJobId;
         unchecked {
@@ -795,7 +809,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         alphaAgentRootNode = _alphaAgentRootNode;
         emit RootNodesUpdated(_clubRootNode, _agentRootNode, _alphaClubRootNode, _alphaAgentRootNode);
     }
-    function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner {
+    function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner whenIdentityConfigurable {
+        _requireEmptyEscrow();
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
         emit MerkleRootsUpdated(_validatorMerkleRoot, _agentMerkleRoot);
@@ -968,17 +983,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function enforceReputationGrowth(address _user, uint256 _points) internal {
-        uint256 newReputation;
+        uint256 current = reputation[_user];
+        uint256 updated;
         unchecked {
-            newReputation = reputation[_user] + _points;
+            updated = current + _points;
         }
-        uint256 diminishedReputation = newReputation / (1 + ((newReputation * newReputation) / (88888 * 88888)));
-
-        if (diminishedReputation > 88888) {
-            diminishedReputation = 88888;
+        if (updated < current || updated > 88888) {
+            updated = 88888;
         }
-        reputation[_user] = diminishedReputation;
-        emit ReputationUpdated(_user, diminishedReputation);
+        reputation[_user] = updated;
+        emit ReputationUpdated(_user, updated);
     }
 
     function cancelJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
@@ -1260,6 +1274,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             mstore(add(ptr, 36), jobId)
             success := call(ENS_HOOK_GAS_LIMIT, target, 0, ptr, 0x44, 0, 0)
         }
+        emit EnsHookAttempted(hook, jobId, target, success != 0);
     }
 
     function addAdditionalValidator(address validator) external onlyOwner {
@@ -1313,7 +1328,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
-        if (token == address(agiToken)) revert InvalidParameters();
+        if (token == address(agiToken) || token.code.length == 0) revert InvalidParameters();
         (bool ok, bytes memory ret) = token.call(data);
         if (!ok) revert TransferFailed();
         if (ret.length > 0) {
