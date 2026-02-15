@@ -30,12 +30,14 @@ contract("ENS label hardening", (accounts) => {
       harness = await EnsLabelUtilsHarness.new({ from: owner });
     });
 
-    it("accepts alice", async () => {
-      await harness.check("alice");
+    it("accepts deterministic valid labels", async () => {
+      for (const label of ["alice", "a", "a-1", "0", "abc123"]) {
+        await harness.check(label);
+      }
     });
 
     it("rejects deterministic invalid labels", async () => {
-      for (const label of ["alice.bob", "", "A", "a_b", "-a", "a-"]) {
+      for (const label of ["", "alice.bob", "A", "a_b", "-a", "a-", ".", "..", "a..b", "a b", "\n"]) {
         await expectCustomError(harness.check(label), "InvalidENSLabel");
       }
 
