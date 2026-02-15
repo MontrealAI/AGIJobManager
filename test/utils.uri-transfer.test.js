@@ -59,6 +59,9 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
     it("keeps URIs unchanged when scheme is already present", async () => {
       const out = await harness.applyBaseIpfs("ipfs://bafy/job.json", "https://gateway/ipfs");
       assert.equal(out, "ipfs://bafy/job.json");
+
+      const twice = await harness.applyBaseIpfs(out, "https://gateway/ipfs");
+      assert.equal(twice, "ipfs://bafy/job.json", "scheme-qualified URIs should be idempotent");
     });
 
     it("keeps URI unchanged when baseIpfsUrl is empty", async () => {
