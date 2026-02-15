@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: cf974314f9c2aa3f
+Source fingerprint: 5788bd0f7f47fee9
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -31,20 +31,20 @@ Source files used:
 
 ## Config and locks
 
-- `function _initRoots(bytes32[4] memory rootNodes, bytes32[2] memory merkleRoots) internal` (contracts/AGIJobManager.sol:321)
-- `function lockIdentityConfiguration() external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:463)
-- `function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:494)
-- `function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:556)
-- `function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:564)
-- `function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:757)
-- `function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:764)
-- `function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:770)
-- `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:776)
-- `function updateRootNodes(` (contracts/AGIJobManager.sol:785)
-- `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot) external onlyOwner` (contracts/AGIJobManager.sol:798)
-- `function lockJobENS(uint256 jobId, bool burnFuses) external` (contracts/AGIJobManager.sol:1009)
-- `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1245)
-- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1250)
+- `function _initRoots(bytes32[4] memory rootNodes, bytes32[2] memory merkleRoots) internal` (contracts/AGIJobManager.sol:322)
+- `function lockIdentityConfiguration() external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:480)
+- `function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:512)
+- `function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:574)
+- `function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` (contracts/AGIJobManager.sol:582)
+- `function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:775)
+- `function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:782)
+- `function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:788)
+- `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:794)
+- `function updateRootNodes(` (contracts/AGIJobManager.sol:803)
+- `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` (contracts/AGIJobManager.sol:816)
+- `function lockJobENS(uint256 jobId, bool burnFuses) external` (contracts/AGIJobManager.sol:1038)
+- `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1274)
+- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1279)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:32)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:48)
 - `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:61)
@@ -85,8 +85,8 @@ Source files used:
 - @notice Total AGI locked as validator bonds for unsettled votes. (contracts/AGIJobManager.sol:130)
 - @notice Total AGI locked as dispute bonds for unsettled disputes. (contracts/AGIJobManager.sol:132)
 - @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled. (contracts/AGIJobManager.sol:146)
-- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. (contracts/AGIJobManager.sol:1007)
-- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. (contracts/AGIJobManager.sol:1008)
-- @dev as long as lockedEscrow/locked*Bonds are fully covered. (contracts/AGIJobManager.sol:1055)
-- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. (contracts/AGIJobManager.sol:1279)
+- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. (contracts/AGIJobManager.sol:1036)
+- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. (contracts/AGIJobManager.sol:1037)
+- @dev as long as lockedEscrow/locked*Bonds are fully covered. (contracts/AGIJobManager.sol:1084)
+- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. (contracts/AGIJobManager.sol:1309)
 
