@@ -99,7 +99,10 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await pages.setJobManager(caller.address, { from: owner });
     await ens.setOwner(rootNode, pages.address, { from: owner });
 
-    const hookReceipt = await caller.callHandleHook(pages.address, 0, 123, { from: owner });
+    const rawHook = await caller.callHandleHookRaw44.call(pages.address, 0, 123, { from: owner });
+    assert.equal(rawHook, true, "raw 0x44 calldata hook call should succeed");
+
+    const hookReceipt = await caller.callHandleHookRaw44(pages.address, 0, 123, { from: owner });
     await expectEvent.inTransaction(hookReceipt.tx, pages, "ENSHookSkipped", {
       hook: "0",
       jobId: "123",
