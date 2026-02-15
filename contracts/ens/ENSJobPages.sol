@@ -181,7 +181,7 @@ contract ENSJobPages is Ownable {
         _requireConfigured();
         bytes32 node = _createSubname(jobId);
         emit JobENSPageCreated(jobId, node);
-        _setAuthorisationBestEffort(jobId, node, employer, true);
+        _setAuthorisationBestEffort(1, jobId, node, employer, true);
         _setTextBestEffort(1, jobId, node, "schema", "agijobmanager/v1");
         _setTextBestEffort(1, jobId, node, "agijobs.spec.public", specURI);
     }
@@ -272,7 +272,7 @@ contract ENSJobPages is Ownable {
         if (agent == address(0)) revert InvalidParameters();
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
-        _setAuthorisationBestEffort(jobId, node, agent, true);
+        _setAuthorisationBestEffort(2, jobId, node, agent, true);
     }
 
     function onCompletionRequested(uint256 jobId, string memory completionURI) public onlyOwner {
@@ -292,8 +292,8 @@ contract ENSJobPages is Ownable {
     function _revokePermissions(uint256 jobId, address employer, address agent) internal {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
-        _setAuthorisationBestEffort(jobId, node, employer, false);
-        _setAuthorisationBestEffort(jobId, node, agent, false);
+        _setAuthorisationBestEffort(4, jobId, node, employer, false);
+        _setAuthorisationBestEffort(4, jobId, node, agent, false);
     }
 
     function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner {
@@ -304,8 +304,9 @@ contract ENSJobPages is Ownable {
     function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
-        _setAuthorisationBestEffort(jobId, node, employer, false);
-        _setAuthorisationBestEffort(jobId, node, agent, false);
+        uint8 hook = burnFuses ? 6 : 5;
+        _setAuthorisationBestEffort(hook, jobId, node, employer, false);
+        _setAuthorisationBestEffort(hook, jobId, node, agent, false);
 
         bool fusesBurned = false;
         if (burnFuses && _isWrappedRoot()) {
@@ -313,7 +314,7 @@ contract ENSJobPages is Ownable {
             try nameWrapper.setChildFuses(jobsRootNode, labelhash, LOCK_FUSES, type(uint64).max) {
                 fusesBurned = true;
             } catch {
-                // solhint-disable-next-line no-empty-blocks
+                emit ENSHookBestEffortFailure(hook, jobId, "BURN_FUSES");
             }
         }
         emit JobENSLocked(jobId, node, fusesBurned);
@@ -354,6 +355,7 @@ contract ENSJobPages is Ownable {
     }
 
     function _setAuthorisationBestEffort(
+        uint8 hook,
         uint256 jobId,
         bytes32 node,
         address account,
@@ -365,7 +367,7 @@ contract ENSJobPages is Ownable {
         try publicResolver.setAuthorisation(node, account, authorised) {
             emit JobENSPermissionsUpdated(jobId, account, authorised);
         } catch {
-            emit ENSHookBestEffortFailure(0, jobId, "SET_AUTH");
+            emit ENSHookBestEffortFailure(hook, jobId, "SET_AUTH");
             // solhint-disable-next-line no-empty-blocks
         }
     }
