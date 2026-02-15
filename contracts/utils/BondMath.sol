@@ -13,7 +13,7 @@ library BondMath {
         if (bps == 0 && minBond == 0 && maxBond == 0) {
             return 0;
         }
-        bond = (payout * bps) / 10_000;
+        bond = Math.mulDiv(payout, bps, 10_000);
         if (bond < minBond) bond = minBond;
         if (bond > maxBond) bond = maxBond;
         if (bond > payout) bond = payout;
