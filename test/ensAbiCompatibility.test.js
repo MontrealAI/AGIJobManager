@@ -109,7 +109,11 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
       reason: web3.utils.padRight(web3.utils.asciiToHex("UNKNOWN_HOOK"), 64),
     });
 
-    const raw = await web3.eth.call({ to: pages.address, data: jobUriCalldata });
+    const uriRawCall = await caller.staticcallJobEnsURIRaw24.call(pages.address, 123, { from: owner });
+    assert.equal(uriRawCall.success, true, "raw 0x24 calldata staticcall should succeed");
+    assert.equal((uriRawCall.returndata.length - 2) / 2, 96, "expected bounded ABI return length");
+
+    const raw = uriRawCall.returndata;
     const offsetWord = web3.utils.toBN("0x" + raw.slice(2, 66));
     const stringLenWord = web3.utils.toBN("0x" + raw.slice(66, 130));
     const decoded = web3.eth.abi.decodeParameter("string", raw);
