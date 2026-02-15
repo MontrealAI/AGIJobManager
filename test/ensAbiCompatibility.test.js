@@ -14,6 +14,7 @@ const GasBurnerENS = artifacts.require("GasBurnerENS");
 
 const { buildInitConfig } = require("./helpers/deploy");
 const { namehash } = require("./helpers/ens");
+const { expectCustomError } = require("./helpers/errors");
 
 contract("ENS ABI compatibility + URI path", (accounts) => {
   const [owner, employer, agent] = accounts;
@@ -206,6 +207,65 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
       configured: false,
       success: false,
     });
+  });
+
+
+
+  it("fails closed for unauthorized subname creation while AGIJobManager remains live", async () => {
+    const token = await MockERC20.new({ from: owner });
+    const ens = await MockENSRegistry.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const manager = await deployManager(token, ens, wrapper);
+
+    const rootName = "jobs.agi.eth";
+    const rootNode = namehash(rootName);
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+    await pages.setJobManager(manager.address, { from: owner });
+    await manager.setEnsJobPages(pages.address, { from: owner });
+
+    // Neither wrapped nor unwrapped ownership is delegated to ENSJobPages.
+    await ens.setOwner(rootNode, employer, { from: owner });
+
+    const payout = web3.utils.toWei("1");
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+
+    const tx = await manager.createJob("ipfs://spec.json", payout, 60, "details", { from: employer });
+    assert.equal(tx.logs[0].event, "JobCreated", "AGI job creation must not be bricked by ENS hook failures");
+  });
+
+  it("enforces wrapped-root authorization for direct create and supports operator approvals", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const rootName = "jobs.agi.eth";
+    const rootNode = namehash(rootName);
+
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), employer, { from: owner });
+
+    await expectCustomError(
+      pages.createJobPage.call(222, employer, "ipfs://spec", { from: owner }),
+      "ENSNotAuthorized"
+    );
+
+    await wrapper.setApprovalForAll(pages.address, true, { from: employer });
+    await pages.createJobPage(222, employer, "ipfs://spec", { from: owner });
+
+    const labelHash = web3.utils.keccak256("job-222");
+    const node = web3.utils.soliditySha3({ type: "bytes32", value: rootNode }, { type: "bytes32", value: labelHash });
+    assert.equal(
+      await wrapper.ownerOf(web3.utils.toBN(node)),
+      pages.address,
+      "wrapped subname should be minted once authorization is provided"
+    );
   });
 
   it("uses ENS job URI for completion NFT when enabled", async () => {
