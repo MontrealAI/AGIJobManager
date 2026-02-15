@@ -17,4 +17,15 @@ contract MockHookCaller {
             success := call(gas(), target, 0, add(payload, 0x20), 0x44, 0, 0)
         }
     }
+
+    function staticcallJobEnsURIRaw24(address target, uint256 jobId)
+        external
+        view
+        returns (bool success, bytes memory returndata)
+    {
+        bytes4 selector = bytes4(keccak256("jobEnsURI(uint256)"));
+        bytes memory payload = abi.encodeWithSelector(selector, jobId);
+        require(payload.length == 0x24, "bad-payload");
+        (success, returndata) = target.staticcall(payload);
+    }
 }

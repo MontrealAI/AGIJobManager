@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: cdae230040049531
+Source fingerprint: 19ae15d1e202bb4b
 
 Source files used:
 - `contracts/AGIJobManager.sol`
