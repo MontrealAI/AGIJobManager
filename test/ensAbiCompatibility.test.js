@@ -138,6 +138,24 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     assert.isAtMost(decoded.length, 1024, "ENS URI should stay within AGIJobManager bounds");
   });
 
+  it("keeps hook ID constants fixed to AGIJobManager expectations", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const rootName = "jobs.agi.eth";
+    const rootNode = namehash(rootName);
+    const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, {
+      from: owner,
+    });
+
+    assert.equal((await pages.HOOK_CREATE()).toString(), "1");
+    assert.equal((await pages.HOOK_ASSIGN()).toString(), "2");
+    assert.equal((await pages.HOOK_COMPLETION()).toString(), "3");
+    assert.equal((await pages.HOOK_REVOKE()).toString(), "4");
+    assert.equal((await pages.HOOK_LOCK()).toString(), "5");
+    assert.equal((await pages.HOOK_LOCK_BURN()).toString(), "6");
+  });
+
 
   it("keeps hook call non-reverting and observable when hook internals revert", async () => {
     const ens = await MockENSRegistry.new({ from: owner });

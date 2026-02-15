@@ -31,6 +31,13 @@ interface IAGIJobManagerView {
 contract ENSJobPages is Ownable {
     using Strings for uint256;
 
+    uint8 public constant HOOK_CREATE = 1;
+    uint8 public constant HOOK_ASSIGN = 2;
+    uint8 public constant HOOK_COMPLETION = 3;
+    uint8 public constant HOOK_REVOKE = 4;
+    uint8 public constant HOOK_LOCK = 5;
+    uint8 public constant HOOK_LOCK_BURN = 6;
+
     error ENSNotConfigured();
     error ENSNotAuthorized();
     error InvalidParameters();
@@ -210,7 +217,7 @@ contract ENSJobPages is Ownable {
 
         bool success;
         IAGIJobManagerView jobManagerView = IAGIJobManagerView(msg.sender);
-        if (hook == 1) {
+        if (hook == HOOK_CREATE) {
             try this._handleCreateHook(jobManagerView, jobId) {
                 success = true;
             } catch {
@@ -219,7 +226,7 @@ contract ENSJobPages is Ownable {
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
-        if (hook == 2) {
+        if (hook == HOOK_ASSIGN) {
             try this._handleAssignHook(jobManagerView, jobId) {
                 success = true;
             } catch {
@@ -228,7 +235,7 @@ contract ENSJobPages is Ownable {
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
-        if (hook == 3) {
+        if (hook == HOOK_COMPLETION) {
             try this._handleCompletionHook(jobManagerView, jobId) {
                 success = true;
             } catch {
@@ -237,7 +244,7 @@ contract ENSJobPages is Ownable {
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
-        if (hook == 4) {
+        if (hook == HOOK_REVOKE) {
             try this._handleRevokeHook(jobManagerView, jobId) {
                 success = true;
             } catch {
@@ -246,8 +253,8 @@ contract ENSJobPages is Ownable {
             emit ENSHookProcessed(hook, jobId, true, success);
             return;
         }
-        if (hook == 5 || hook == 6) {
-            bool burnFuses = hook == 6;
+        if (hook == HOOK_LOCK || hook == HOOK_LOCK_BURN) {
+            bool burnFuses = hook == HOOK_LOCK_BURN;
             try this._handleLockHook(jobManagerView, jobId, burnFuses) {
                 success = true;
             } catch {
@@ -352,7 +359,7 @@ contract ENSJobPages is Ownable {
     function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal {
         _requireConfigured();
         bytes32 node = jobEnsNode(jobId);
-        uint8 hook = burnFuses ? 6 : 5;
+        uint8 hook = burnFuses ? HOOK_LOCK_BURN : HOOK_LOCK;
         _setAuthorisationBestEffort(hook, jobId, node, employer, false);
         _setAuthorisationBestEffort(hook, jobId, node, agent, false);
 
