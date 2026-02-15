@@ -3,7 +3,7 @@ const path = require("path");
 
 const MAX_RUNTIME_BYTES = 24575;
 const artifactsDir = path.join(__dirname, "..", "build", "contracts");
-const IGNORED_CONTRACTS = new Set();
+const IGNORED_CONTRACTS = new Set(["ReputationHarness"]);
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =
