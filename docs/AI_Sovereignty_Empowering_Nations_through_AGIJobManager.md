@@ -1,6 +1,6 @@
 # AI Sovereignty: Empowering Nations through AGIJobManager
 
-<img src="AI_Sovereignty_media/media/rId21.png" style="width:5.83333in;height:3.885in" />  
+<img src="media/rId21.png" style="width:5.83333in;height:3.885in" />  
 *The race for AI sovereignty spans the globe, as nations strive not just to consume AI technologies but to* *shape* *and* *control* *them.* Nations around the world are awakening to a stark new reality: in the coming decades, **artificial intelligence** will be as critical to national power and prosperity as armies or economies. The ability to develop and govern AI independently – often called **AI sovereignty** – could determine which countries lead in the 21st century and which become dependent followers. This article explores why AI sovereignty is so vital and how a revolutionary platform, **AGIJobManager**, can help nation-states achieve it.
 
 ## The Stakes of AI Sovereignty
