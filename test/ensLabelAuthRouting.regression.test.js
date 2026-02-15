@@ -92,6 +92,18 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
       assert.equal(job.assignedAgent, agent, "agent should be assigned through Merkle auth");
     });
 
+    it("allows Merkle-authorized agent to applyForJob with garbage subdomain", async () => {
+      await manager.updateMerkleRoots(ZERO_ROOT, singleLeafRoot(agent), { from: owner });
+
+      const createReceipt = await manager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
+      const jobId = createReceipt.logs[0].args.jobId.toNumber();
+
+      await manager.applyForJob(jobId, "not-an-ens-label!!!", [], { from: agent });
+
+      const job = await manager.getJobCore(jobId);
+      assert.equal(job.assignedAgent, agent, "agent should still route through Merkle auth");
+    });
+
     it("allows Merkle-authorized validator to validateJob with empty subdomain", async () => {
       await manager.updateMerkleRoots(singleLeafRoot(validator), singleLeafRoot(agent), { from: owner });
 

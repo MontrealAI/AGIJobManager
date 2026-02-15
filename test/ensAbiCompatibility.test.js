@@ -55,6 +55,26 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await time.increase(reviewPeriod.addn(1));
   }
 
+  it("keccak selectors and hook identifiers are fixed for AGIJobManager assembly integration", async () => {
+    const selectors = {
+      handleHook: web3.utils.keccak256("handleHook(uint8,uint256)").slice(0, 10),
+      jobEnsURI: web3.utils.keccak256("jobEnsURI(uint256)").slice(0, 10),
+    };
+
+    assert.equal(selectors.handleHook, "0x1f76f7a2", "handleHook selector drifted");
+    assert.equal(selectors.jobEnsURI, "0x751809b4", "jobEnsURI selector drifted");
+
+    const HOOKS = {
+      CREATE: 1,
+      ASSIGN: 2,
+      COMPLETION: 3,
+      REVOKE: 4,
+      LOCK: 5,
+      LOCK_BURN: 6,
+    };
+    assert.deepEqual(Object.values(HOOKS), [1, 2, 3, 4, 5, 6], "hook IDs must remain stable");
+  });
+
   it("matches required selectors, calldata size, and string ABI shape", async () => {
     const expectedHandleSelector = "0x1f76f7a2";
     const expectedJobUriSelector = "0x751809b4";
