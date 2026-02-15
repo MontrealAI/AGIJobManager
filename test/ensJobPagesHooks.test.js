@@ -74,6 +74,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
     assert.equal((await ensJobPages.createCalls()).toString(), "1");
+    assert.equal((await ensJobPages.lastHook()).toString(), "1", "CREATE hook id must be 1");
     assert.equal(await ensJobPages.lastHandleHookSelector(), "0x1f76f7a2", "hook selector must match ABI");
     assert.equal((await ensJobPages.lastHandleHookCalldataLength()).toString(), "68", "hook calldata must be 0x44 bytes");
 
@@ -81,17 +82,26 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     assert.equal((await ensJobPages.assignCalls()).toString(), "1");
+    assert.equal((await ensJobPages.lastHook()).toString(), "2", "ASSIGN hook id must be 2");
 
     await manager.requestJobCompletion(0, "ipfs://completion.json", { from: agent });
     assert.equal((await ensJobPages.completionCalls()).toString(), "1");
+    assert.equal((await ensJobPages.lastHook()).toString(), "3", "COMPLETION hook id must be 3");
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
     await manager.finalizeJob(0, { from: employer });
     assert.equal((await ensJobPages.revokeCalls()).toString(), "1");
+    assert.equal((await ensJobPages.lastHook()).toString(), "4", "REVOKE hook id must be 4");
+
+    await manager.lockJobENS(0, false, { from: owner });
+    assert.equal((await ensJobPages.lockCalls()).toString(), "1");
+    assert.equal((await ensJobPages.lastHook()).toString(), "5", "LOCK hook id must be 5");
+    assert.equal(await ensJobPages.lastBurnFuses(), false, "burnFuses should be false for lock-only hook");
 
     await manager.lockJobENS(0, true, { from: owner });
-    assert.equal((await ensJobPages.lockCalls()).toString(), "1");
+    assert.equal((await ensJobPages.lockCalls()).toString(), "2");
+    assert.equal((await ensJobPages.lastHook()).toString(), "6", "LOCK_BURN hook id must be 6");
     assert.equal(await ensJobPages.lastBurnFuses(), true, "burnFuses should pass through");
   });
 

@@ -51,7 +51,7 @@ const timeoutBlocksSepolia = n(process.env.SEPOLIA_TIMEOUT_BLOCKS, 500);
 
 const solcVersion = '0.8.23';
 const solcRuns = 50;
-const solcViaIR = false;
+const solcViaIR = true;
 const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();
 
 const testProvider = ganache.provider({

@@ -32,6 +32,7 @@ contract MockENSJobPages {
     string public lastSpecURI;
     string public lastCompletionURI;
     bool public lastBurnFuses;
+    uint8 public lastHook;
 
     function setRevertHook(uint8 hook, bool shouldRevert) external {
         revertHook[hook] = shouldRevert;
@@ -49,6 +50,7 @@ contract MockENSJobPages {
         lastHandleHookSelector = msg.sig;
         lastHandleHookCalldataLength = msg.data.length;
         if (revertHook[hook]) revert("revert hook");
+        lastHook = hook;
         if (hook == HOOK_CREATE) {
             createCalls += 1;
             lastJobId = jobId;
