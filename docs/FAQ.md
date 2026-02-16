@@ -1,67 +1,42 @@
-# AGIJobManager FAQ (Etherscan-focused)
+# FAQ (Etherscan-first)
 
-## Why do I need to approve first?
+## Why do I need token approval first?
+AGIJobManager uses ERC20 `transferFrom` for escrow and bonds. You must call `approve(spender, amount)` on the AGI token first.
 
-AGIJobManager uses ERC-20 `transferFrom` for escrow and bonds. The contract cannot pull your tokens unless you grant allowance first on the AGI token contract (`approve(spender, amount)`).
+## Should I approve exact amount or unlimited?
+Exact-amount approvals are safer operationally. Approve only the amount needed for the action.
 
-## How do I paste a `bytes32[]` proof into Etherscan?
-
-Use JSON-array syntax in a single input box:
+## How do I paste `bytes32[]` Merkle proofs on Etherscan?
+Use JSON-array syntax in one field:
 
 ```text
-["0xabc...","0xdef..."]
+[]
 ```
 
-Notes:
-- include quotes around each 32-byte hex value,
-- include `0x` prefix,
-- for empty proof use `[]`.
+or
 
-## Why did `finalizeJob` create a dispute instead of paying out?
+```text
+["0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]
+```
 
-At review-window end, `finalizeJob` opens a dispute when votes are tied or total votes are below quorum. This is expected behavior to avoid low-participation settlement.
+## Why did `finalizeJob` open a dispute?
+After review window, finalize opens dispute when votes are tied or under quorum. This is expected safety behavior.
 
 ## What happens if nobody votes?
+After review window, `finalizeJob` takes deterministic no-vote liveness path (agent-win path).
 
-If no validator votes are cast and review window ends, `finalizeJob` settles deterministically in the agent-win path (non-dispute).
+## What is `paused` vs `settlementPaused`?
+- `paused`: intake pause.
+- `settlementPaused`: settlement/dispute/finalization pause for functions guarded by `whenSettlementNotPaused`.
 
-## What does `paused` vs `settlementPaused` mean?
+## Why can fee-on-transfer/deflationary tokens fail?
+Contract accounting expects strict exact-transfer semantics. Fee-on-transfer/rebasing behavior can break accounting and cause reverts.
 
-- `paused`: intake-side pause (new create/apply activity blocked). Voting remains possible unless settlement is also paused.
-- `settlementPaused`: settlement/dispute/finalization paths blocked, and functions using `whenSettlementNotPaused` (including `createJob`/`applyForJob`) are blocked.
+## Why is my action reverting `NotAuthorized`?
+You must pass at least one authorization route:
+1. owner-set additional allowlist,
+2. valid Merkle proof,
+3. valid ENS ownership route.
 
-Operators can use them separately for incident control.
-
-## Why does my ERC-20 transfer revert?
-
-Common causes:
-- insufficient wallet balance,
-- insufficient allowance,
-- token is fee-on-transfer/rebasing/non-standard and fails exact-transfer assumptions,
-- token-level pause or restrictions.
-
-AGIJobManager expects exact-transfer semantics; fee-on-transfer behavior can break accounting and revert.
-
-## Which addresses are authorized as agent/validator?
-
-Authorization succeeds if any of these pass:
-1. direct additional allowlist mapping,
-2. Merkle proof against current root,
-3. ENS ownership path.
-
-If all fail, calls revert `NotAuthorized`.
-
-## What does `resolutionCode` mean in moderator dispute resolution?
-
-For `resolveDisputeWithCode(jobId, resolutionCode, reason)`:
-- `0`: no-op (event only; dispute remains active),
-- `1`: agent-win resolution,
-- `2`: employer-win resolution.
-
-## Can owner withdraw escrowed user funds?
-
-Owner withdrawal is constrained by solvency checks. `withdrawAGI` is limited to `withdrawableAGI()` and only callable while paused. Locked escrow and bond balances are excluded from withdrawable amount.
-
-## Why are numbers so large in Etherscan input fields?
-
-Amounts are raw token base units (`uint256`). Convert human amount by token decimals. With 18 decimals, `1` token equals `1000000000000000000`.
+## Why are amount numbers so large?
+Etherscan takes raw base units (`uint256`). With 18 decimals, 1 token = `1000000000000000000`.
