@@ -21,6 +21,10 @@ function isTrue(value) {
 }
 
 module.exports = async function (deployer, network, accounts) {
+  if (process.env.DEPLOY_FROM_LEGACY_SNAPSHOT === '1') {
+    console.log('[2_deploy_contracts] skipped because DEPLOY_FROM_LEGACY_SNAPSHOT=1');
+    return;
+  }
   await deployer.deploy(BondMath);
   await deployer.deploy(ENSOwnership);
   await deployer.deploy(ReputationMath);
