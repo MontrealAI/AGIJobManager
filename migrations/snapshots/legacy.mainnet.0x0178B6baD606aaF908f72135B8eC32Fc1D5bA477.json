@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-02-16T18:58:02.687Z",
+  "source": {
+    "chainId": "1",
+    "blockNumber": "23050000",
+    "blockTimestamp": "1754096903",
+    "explorerUsed": "blockscout",
+    "legacyAddress": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
+    "proxy": {
+      "detected": false,
+      "etherscanProxyFlag": "0",
+      "etherscanImplementation": null,
+      "eip1967Implementation": "0x0000000000000000000000000000000000000000",
+      "eip1967Admin": "0x0000000000000000000000000000000000000000"
+    }
+  },
+  "addresses": {
+    "owner": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+    "agiToken": "0x2e8Fb54C3eC41F55F06C1F082C081a609EaA4ebe",
+    "ensRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+    "ensJobPages": "0x0000000000000000000000000000000000000000"
+  },
+  "constructor": {
+    "baseIpfsUrl": "https://ipfs.io/ipfs/",
+    "ensConfig": [
+      "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401"
+    ],
+    "rootNodes": [
+      "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+      "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "0x0000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    "merkleRoots": [
+      "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b",
+      "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b"
+    ],
+    "derivedNamehashes": [
+      {
+        "name": "alpha.club.agi.eth",
+        "value": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+        "derived": false
+      },
+      {
+        "name": "alpha.agent.agi.eth",
+        "value": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e",
+        "derived": false
+      }
+    ]
+  },
+  "booleans": {
+    "paused": false,
+    "settlementPaused": false,
+    "lockIdentityConfig": false,
+    "useEnsJobTokenURI": null
+  },
+  "params": {
+    "requiredValidatorApprovals": "8",
+    "requiredValidatorDisapprovals": "10",
+    "voteQuorum": null,
+    "premiumReputationThreshold": "10000",
+    "validationRewardPercentage": "8",
+    "maxJobPayout": "8888000000000000000000",
+    "jobDurationLimit": "10000000",
+    "completionReviewPeriod": null,
+    "disputeReviewPeriod": null,
+    "validatorBondBps": null,
+    "validatorBondMin": null,
+    "validatorBondMax": null,
+    "agentBond": null,
+    "agentBondBps": null,
+    "agentBondMax": null,
+    "validatorSlashBps": null,
+    "challengePeriodAfterApproval": null
+  },
+  "dynamicSets": {
+    "moderators": [
+      {
+        "address": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+        "enabled": true,
+        "source": {
+          "txHash": "0xe06b2dda1d4f7308c924249ee4d595384d0ac9e7378f25b73afdd9894a4d831b",
+          "blockNumber": 20194021,
+          "transactionIndex": 70
+        }
+      }
+    ],
+    "additionalAgents": [],
+    "additionalValidators": [],
+    "blacklistedAgents": [],
+    "blacklistedValidators": []
+  },
+  "agiTypes": [
+    {
+      "nftAddress": "0x1C11AE902e70e20b775c43B60F8ecb1ac17168b2",
+      "payoutPercentage": "80",
+      "enabled": true,
+      "source": [
+        {
+          "txHash": "0x90e6945c39f79fb10d24ebd85f1436604a0e6d519cf5e6b491ad3b8986c19700",
+          "blockNumber": 20193944,
+          "transactionIndex": 73,
+          "logIndex": 183
+        }
+      ]
+    },
+    {
+      "nftAddress": "0x76521F2aacc4EdfC58C837CbE8358EC7D18a4EFb",
+      "payoutPercentage": "80",
+      "enabled": true,
+      "source": [
+        {
+          "txHash": "0x9086f2bf3831e3b36bb8f181e09d6488316f07e56be830cb45d1d934c417e47f",
+          "blockNumber": 20193981,
+          "transactionIndex": 109,
+          "logIndex": 402
+        }
+      ]
+    }
+  ]
+}
