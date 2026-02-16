@@ -50,8 +50,11 @@ const leaves = addresses.map(toLeaf);
 const tree = new MerkleTree(leaves, keccak256, { sortPairs: true, sortLeaves: true });
 
 const proofs = {};
+const etherscanProofArrays = {};
 for (const address of addresses) {
-  proofs[address] = tree.getHexProof(toLeaf(address));
+  const proof = tree.getHexProof(toLeaf(address));
+  proofs[address] = proof;
+  etherscanProofArrays[address] = JSON.stringify(proof);
 }
 
 const output = {
@@ -59,6 +62,7 @@ const output = {
   merkleOptions: { sortPairs: true, sortLeaves: true },
   root: tree.getHexRoot(),
   proofs,
+  etherscanProofArrays,
 };
 
 if (outputPath) {
