@@ -1002,7 +1002,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function enforceReputationGrowth(address _user, uint256 _points) internal {
         uint256 current = reputation[_user];
-        uint256 updated = current + _points;
+        uint256 updated;
+        unchecked {
+            updated = current + _points;
+        }
         if (updated < current || updated > 88888) {
             updated = 88888;
         }
