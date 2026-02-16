@@ -1,67 +1,38 @@
-# AGIJobManager FAQ (Etherscan-focused)
+# AGIJobManager FAQ (Etherscan-first)
 
-## Why do I need to approve first?
+## Why does `approve` matter so much?
+`createJob`, `applyForJob` (bond), `validate/disapprove` (bond), and `disputeJob` (bond) use token `transferFrom`. If allowance is too low, calls revert.
 
-AGIJobManager uses ERC-20 `transferFrom` for escrow and bonds. The contract cannot pull your tokens unless you grant allowance first on the AGI token contract (`approve(spender, amount)`).
+## Should I approve exact amounts?
+Yes, exact-amount approvals reduce exposure to unintended token pulls.
 
-## How do I paste a `bytes32[]` proof into Etherscan?
-
-Use JSON-array syntax in a single input box:
-
+## How do I paste `bytes32[]` proofs in Etherscan?
+Use JSON-like array format:
 ```text
 ["0xabc...","0xdef..."]
 ```
+Generate proofs with:
+`node scripts/merkle/export_merkle_proofs.js --input allowlist.json`
 
-Notes:
-- include quotes around each 32-byte hex value,
-- include `0x` prefix,
-- for empty proof use `[]`.
-
-## Why did `finalizeJob` create a dispute instead of paying out?
-
-At review-window end, `finalizeJob` opens a dispute when votes are tied or total votes are below quorum. This is expected behavior to avoid low-participation settlement.
+## Why can `finalizeJob` open a dispute instead of settling?
+After review window, under-quorum or tie outcomes are pushed into dispute for moderator resolution.
 
 ## What happens if nobody votes?
+After review window, `finalizeJob` follows deterministic no-vote liveness path (agent-win settlement path).
 
-If no validator votes are cast and review window ends, `finalizeJob` settles deterministically in the agent-win path (non-dispute).
+## What is the difference between `paused` and `settlementPaused`?
+- `paused`: intake pause gate (Pausable).
+- `settlementPaused`: settlement gate used by settlement and key lifecycle actions.
+Check both before transacting.
 
-## What does `paused` vs `settlementPaused` mean?
+## Why do fee-on-transfer/deflationary tokens fail?
+The contract expects strict exact transfer semantics for accounting and escrow locks. Non-standard transfer behavior can trigger `TransferFailed`/solvency guard failures.
 
-- `paused`: intake-side pause (new create/apply activity blocked). Voting remains possible unless settlement is also paused.
-- `settlementPaused`: settlement/dispute/finalization paths blocked, and functions using `whenSettlementNotPaused` (including `createJob`/`applyForJob`) are blocked.
-
-Operators can use them separately for incident control.
-
-## Why does my ERC-20 transfer revert?
-
-Common causes:
-- insufficient wallet balance,
-- insufficient allowance,
-- token is fee-on-transfer/rebasing/non-standard and fails exact-transfer assumptions,
-- token-level pause or restrictions.
-
-AGIJobManager expects exact-transfer semantics; fee-on-transfer behavior can break accounting and revert.
-
-## Which addresses are authorized as agent/validator?
-
-Authorization succeeds if any of these pass:
-1. direct additional allowlist mapping,
-2. Merkle proof against current root,
-3. ENS ownership path.
-
-If all fail, calls revert `NotAuthorized`.
-
-## What does `resolutionCode` mean in moderator dispute resolution?
-
-For `resolveDisputeWithCode(jobId, resolutionCode, reason)`:
-- `0`: no-op (event only; dispute remains active),
-- `1`: agent-win resolution,
-- `2`: employer-win resolution.
+## Why did I get `NotAuthorized` as agent or validator?
+You must pass at least one authorization route:
+1) owner direct allowlist,
+2) valid Merkle proof,
+3) valid ENS subdomain ownership under configured roots.
 
 ## Can owner withdraw escrowed user funds?
-
-Owner withdrawal is constrained by solvency checks. `withdrawAGI` is limited to `withdrawableAGI()` and only callable while paused. Locked escrow and bond balances are excluded from withdrawable amount.
-
-## Why are numbers so large in Etherscan input fields?
-
-Amounts are raw token base units (`uint256`). Convert human amount by token decimals. With 18 decimals, `1` token equals `1000000000000000000`.
+`withdrawAGI` is constrained by `withdrawableAGI`, which excludes locked escrow + locked bonds. Withdrawal also requires pause guards.

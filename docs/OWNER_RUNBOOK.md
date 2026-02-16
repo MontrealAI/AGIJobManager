@@ -1,162 +1,96 @@
-# AGIJobManager Owner Runbook (Etherscan-first Operations)
+# AGIJobManager Owner Runbook
 
-This runbook is for business operators running AGIJobManager with Etherscan as the operational control plane.
+Operational guide for low-touch ownership and safe Etherscan-first operations.
 
 ## 1) Deployment checklist
 
-## Toolchain reality (from repo)
+1. Compile with repo defaults (Truffle path):
+   - solc `0.8.23`, optimizer on, runs `50`, `viaIR: true`, `evmVersion: london`, metadata bytecode hash `none`.
+2. Deploy and link external libraries (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`).
+3. Deploy AGIJobManager with final constructor args.
+4. Verify on Etherscan with exact compiler + optimizer + viaIR + library mappings.
+5. Confirm Read tab sanity:
+   - token address,
+   - pause flags,
+   - review windows,
+   - thresholds,
+   - ENS/root configuration.
 
-- Truffle pipeline (`npm run build`, `npm test`) compiles with:
-  - `solc` `0.8.23`
-  - optimizer enabled, runs `50`
-  - `viaIR: true`
-  - metadata bytecode hash `none`
-  - EVM `london` (unless overridden by env)
-- Foundry config also exists and uses `solc 0.8.19` for forge-side tests/harness.
+## 2) Safe defaults + staged rollout
 
-For Etherscan verification of Truffle deployments, use **the exact Truffle compiler settings**.
+Recommended rollout:
+1. Start with lower `maxJobPayout` and conservative review windows.
+2. Start with small validator quorum/thresholds that are reliably reachable.
+3. Enable only initial allowlists first; announce onboarding criteria.
+4. Run pilot jobs.
+5. Scale payout caps and participant set after stable outcomes.
 
-## Pre-deploy checklist
+## 3) Incident playbooks
 
-- Confirm AGI token address and decimals assumptions.
-- Confirm ENS + NameWrapper addresses if using ENS authorization paths.
-- Confirm initial root nodes and Merkle roots.
-- Confirm owner and moderator operational keys.
-- Confirm validator and agent policy docs are ready before go-live.
+## A) Stop intake (keep settlement running)
+1. `pause()`
+2. Publish status update.
+3. Diagnose and patch operations/docs.
+4. `unpause()` only after checks pass.
 
-## External library linking
+## B) Stop settlement (and also gate key intake paths)
+1. `setSettlementPaused(true)`
+2. If broader risk: also `pause()`.
+3. Investigate disputed/active jobs and communicate ETA.
+4. Recover in reverse order: `setSettlementPaused(false)` then `unpause()`.
 
-AGIJobManager uses external libraries (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`).
+## C) Full stop
+1. `pause()`
+2. `setSettlementPaused(true)`
+3. Freeze operator actions except emergency reads and communication.
 
-You must:
-1. Deploy libraries first (or use migration flow that does).
-2. Link library addresses into AGIJobManager bytecode.
-3. Verify with correct library name → address mapping.
+## 4) Revenue withdrawal without harming escrow solvency
 
-## Etherscan verification checklist
-
-- Correct network and deployed address.
-- Correct compiler version (`0.8.23` for Truffle path).
-- Optimizer enabled with runs `50`.
-- `viaIR` must match deployment artifact.
-- Library mapping exactly matches deployed linked addresses.
-- Constructor arguments ABI-encoded exactly as deployed.
-
----
-
-## 2) Safe initial configuration (“good defaults”)
-
-These are operationally conservative principles, not legal/financial advice.
-
-- `maxJobPayout`: start low enough that one failed workflow cannot threaten business solvency.
-- Validator thresholds/quorum:
-  - keep quorum reachable by your active validator set,
-  - avoid thresholds that require near-perfect turnout.
-- Bond parameters:
-  - validator and agent bonds should be meaningful but not so high that participation collapses.
-  - set `validatorSlashBps` conservatively; aggressive slashing can reduce validator willingness.
-- Review windows:
-  - set `completionReviewPeriod` long enough for human review coverage across time zones.
-  - set `challengePeriodAfterApproval` to prevent immediate finalize races.
-
-Operational rule: update risk-sensitive params only while escrow is empty when required by contract guards.
-
----
-
-## 3) Incident response
-
-## “Stop intake” vs “stop settlement”
-
-- Stop intake: `pause()`
-  - prevents new create/apply intake paths (validator voting is governed by `settlementPaused`).
-- Stop settlement: `setSettlementPaused(true)`
-  - freezes settlement progression **and** gates key intake calls (`createJob`, `applyForJob`) that require `whenSettlementNotPaused`.
-
-## Recommended emergency sequence
-
-1. `pause()` immediately.
-2. If issue affects settlement logic, call `setSettlementPaused(true)`.
-3. Announce public status and expected ETA.
-4. Diagnose using Read Contract state + event logs.
-5. Resume in reverse order when safe:
-   - `setSettlementPaused(false)`
-   - `unpause()`
-
----
-
-## 4) Revenue withdrawal without escrow risk
-
-Safe sequence:
-1. `pause()`.
+Always follow:
+1. `pause()` (required by `withdrawAGI`).
 2. Read `withdrawableAGI()`.
-3. Withdraw only `<= withdrawableAGI` via `withdrawAGI(amount)`.
-4. Keep internal ledger entries for accounting/audit.
+3. Withdraw only `amount <= withdrawableAGI()`.
+4. Keep internal accounting record for each withdrawal.
 
-Never assume wallet-visible AGI balance equals withdrawable treasury.
+Never use wallet-visible token balance as solvency source-of-truth.
 
----
+## 5) Allowlist governance and root rotation
 
-## 5) Authorization governance (allowlists + Merkle roots)
+For Merkle root updates:
+1. Build new root offline from approved addresses.
+2. Publish effective date + proof distribution plan.
+3. Ensure escrow is empty (root updates require empty escrow guard).
+4. Call `updateMerkleRoots(validatorRoot, agentRoot)`.
+5. Provide users the exact `bytes32[]` proofs for Etherscan paste.
 
-## Direct allowlists (fast path)
+## 6) ENS operations
 
-- `addAdditionalAgent/removeAdditionalAgent`
-- `addAdditionalValidator/removeAdditionalValidator`
+- Set ENS helper: `setEnsJobPages(address)`.
+- Optional ENS tokenURI path: `setUseEnsJobTokenURI(true/false)`.
+- Configure nodes with `updateRootNodes(...)` (requires empty escrow).
+- Lock permanently with `lockIdentityConfiguration()` only after final review.
 
-Use for urgent exceptions and onboarding/offboarding.
+Meaning of lock: identity wiring setters can no longer change.
 
-## Merkle roots (scalable path)
+## 7) High-risk actions (strict change control)
 
-- Build tree with leaf = `keccak256(abi.encodePacked(address))`.
-- Publish root changes with effective time and communication notice.
-- Update on-chain via `updateMerkleRoots(validatorRoot, agentRoot)`.
+Require dual-review and written rationale before:
+- `rescueToken`, `rescueERC20`, `rescueETH`
+- `lockIdentityConfiguration`
+- risk parameter setters (`set*Bond*`, thresholds, quorum, review windows, payout caps)
+- token address or root updates
 
-## Offline deterministic proof generation
+Recommended process:
+- pre-change checklist,
+- simulation on test deployment,
+- signed operator approval,
+- post-change verification checklist.
 
-- Script: `scripts/merkle/export_merkle_proofs.js`
-- Example:
+## 8) Offline helper tooling for autonomy
+
+- Merkle export (root + proofs):
   - `node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json`
-
-Distribute per-user proof arrays from `proofs.json` for Etherscan copy/paste.
-
----
-
-## 6) Moderator and blacklist operations
-
-- Moderators:
-  - `addModerator(address)`
-  - `removeModerator(address)`
-- Blacklists:
-  - `blacklistAgent(address, bool)`
-  - `blacklistValidator(address, bool)`
-
-Change-management best practice:
-- keep signed change logs,
-- announce user-impacting changes before enforcement when possible.
-
----
-
-## 7) ENS operations
-
-## Configure ENS job pages
-
-- `setEnsJobPages(address)` to set helper contract.
-- `setUseEnsJobTokenURI(bool)` to use ENS-based tokenURI path.
-
-## Identity lock
-
-- `lockIdentityConfiguration()` permanently freezes identity wiring controls.
-- Perform only after:
-  - ENS addresses confirmed,
-  - root nodes/roots finalized,
-  - rollback policy accepted as “none”.
-
----
-
-## 8) Rescue functions (break-glass only)
-
-- `rescueERC20`
-- `rescueToken`
-- `rescueETH`
-
-Use only for accidental transfers/recovery incidents with documented approval from governance/ops leadership.
+- Etherscan input generator:
+  - `node scripts/etherscan/prepare_inputs.js --action createJob ...`
+- Offline state advisor:
+  - `node scripts/advisor/job_state_advisor.js --input state.json`
