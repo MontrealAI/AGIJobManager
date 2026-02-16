@@ -80,16 +80,16 @@ function main() {
   if (state === 'OPEN') actions.push('cancelJob (employer)');
   if (state === 'IN_PROGRESS') {
     actions.push('requestJobCompletion (assigned agent)');
-    if (expireAt > 0n && now >= expireAt) actions.push('expireJob (available once assignedAt + duration has elapsed)');
+    if (expireAt > 0n && now > expireAt) actions.push('expireJob (available once assignedAt + duration has strictly elapsed)');
   }
   if (state === 'COMPLETION_REQUESTED') {
     if (reviewEndsAt > 0n && now <= reviewEndsAt) actions.push('validateJob/disapproveJob (eligible validators)');
-    actions.push('disputeJob (employer or assigned agent, if within allowed window)');
-    if (reviewEndsAt > 0n && now >= reviewEndsAt) actions.push('finalizeJob (may settle or open dispute depending on votes/quorum)');
+    if (reviewEndsAt > 0n && now <= reviewEndsAt) actions.push('disputeJob (employer or assigned agent, within review window)');
+    if (reviewEndsAt > 0n && now > reviewEndsAt) actions.push('finalizeJob (may settle or open dispute depending on votes/quorum)');
   }
   if (state === 'DISPUTED') {
     actions.push('resolveDisputeWithCode (moderator)');
-    if (staleDisputeAt > 0n && now >= staleDisputeAt) actions.push('resolveStaleDispute (owner)');
+    if (staleDisputeAt > 0n && now > staleDisputeAt) actions.push('resolveStaleDispute (owner)');
   }
 
   console.log(`Job ${jobId} advisory (offline)`);
@@ -112,13 +112,13 @@ function main() {
 
   if (state === 'COMPLETION_REQUESTED' && reviewEndsAt > 0n) {
     const earliestFinalize = reviewEndsAt > challengeEndsAt ? reviewEndsAt : challengeEndsAt;
-    console.log(`- Earliest conservative finalize time: ${earliestFinalize}`);
+    console.log(`- Earliest conservative finalize time (strictly after): ${earliestFinalize + 1n}`);
   }
   if (state === 'IN_PROGRESS' && expireAt > 0n) {
-    console.log(`- Earliest expire time: ${expireAt}`);
+    console.log(`- Earliest expire time (strictly after): ${expireAt + 1n}`);
   }
   if (state === 'DISPUTED' && staleDisputeAt > 0n) {
-    console.log(`- Earliest stale-dispute owner resolution time: ${staleDisputeAt}`);
+    console.log(`- Earliest stale-dispute owner resolution time (strictly after): ${staleDisputeAt + 1n}`);
   }
 }
 
