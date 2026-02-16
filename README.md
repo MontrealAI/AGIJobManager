@@ -9,6 +9,37 @@
 
 > **Status / Caution**: Experimental research software. Treat deployments as high-risk until you have performed independent security review, validated parameters, and ensured operational readiness. No public audit report is included in this repository.
 
+
+## Start here (Etherscan-first)
+
+- **Etherscan user guide (all roles):** [`docs/ETHERSCAN_GUIDE.md`](docs/ETHERSCAN_GUIDE.md)
+- **Owner/operator runbook:** [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md)
+- **Verification guide:** [`docs/VERIFY_ON_ETHERSCAN.md`](docs/VERIFY_ON_ETHERSCAN.md)
+
+## Role overview (plain language)
+
+- **Employer**: funds jobs, hires agents, can cancel before assignment, can finalize/dispute after completion request.
+- **Agent**: applies to jobs (allowlist/Merkle/ENS-gated), posts bond when required, submits completion URI.
+- **Validator**: votes approve/disapprove during review window, posts per-vote bond, may earn rewards or be slashed.
+- **Moderator**: resolves active disputes with explicit outcome codes.
+- **Owner**: operates risk controls (pause switches, parameters, allowlists, moderators, ENS wiring, treasury withdrawal of non-escrow funds).
+
+## Trust model (one paragraph)
+
+AGIJobManager is intentionally **owner-operated** rather than trustless: owner and moderators have meaningful operational authority. The owner can pause/unpause intake, pause settlement, adjust core risk parameters (quorum, thresholds, review windows, bond/slash parameters), manage allowlists/blacklists and moderators, manage ENS identity wiring, and withdraw only treasury surplus that remains after escrow and bond locks. Users should treat this as a business-operated escrow system with transparent on-chain controls, not a decentralized court.
+
+## Quick glossary
+
+- **jobId**: numeric identifier for each job.
+- **payout**: escrowed AGI amount for a job (token base units).
+- **duration**: work window in seconds from assignment.
+- **completion review period**: validator voting window after completion request.
+- **dispute review period**: stale-dispute timeout before owner can resolve stale disputes.
+- **quorum**: minimum total validator votes considered sufficient participation.
+- **bond**: AGI amount staked by agents/validators/dispute initiator.
+- **slashing**: penalty reducing bond for incorrect validator side.
+
+
 ## At a glance
 
 **What it is**
