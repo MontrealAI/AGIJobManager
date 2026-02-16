@@ -50,15 +50,18 @@ async function applyNumericParams(manager, owner, numericParams) {
     );
   }
 
+  const agentBondMinValue = numericParams.agentBondMin !== undefined
+    ? numericParams.agentBondMin
+    : numericParams.agentBond;
   const agentBondTuplePresent = (
     numericParams.agentBondBps !== undefined &&
-    numericParams.agentBondMin !== undefined &&
+    agentBondMinValue !== undefined &&
     numericParams.agentBondMax !== undefined
   );
   if (agentBondTuplePresent) {
     await manager.setAgentBondParams(
       numericParams.agentBondBps,
-      numericParams.agentBondMin,
+      agentBondMinValue,
       numericParams.agentBondMax,
       { from: owner }
     );
