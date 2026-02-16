@@ -114,6 +114,12 @@ module.exports = async function (deployer, network, accounts) {
 
   for (const row of SNAPSHOT.agiTypes) {
     if (!row.enabled) {
+      const payout = Number(row.payoutPercentage) > 0 ? row.payoutPercentage : '1';
+      try {
+        await manager.addAGIType(row.nftAddress, payout, { from: owner });
+      } catch (_err) {
+        // Ignore add failures for already-existing rows; disable below is the source-of-truth state.
+      }
       await manager.disableAGIType(row.nftAddress, { from: owner });
     }
   }

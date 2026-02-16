@@ -60,9 +60,23 @@ function getEtherscanSource(address, apiKey) {
 
 function getTxHashes(address, apiKey) {
   if (apiKey) {
-    const url = `${ETHERSCAN_V2}?chainid=1&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${apiKey}`;
-    const parsed = JSON.parse(runCurl(url));
-    if (parsed.status === '1') return parsed.result.map((x) => x.hash.toLowerCase());
+    const hashes = [];
+    const seen = new Set();
+    for (let page = 1; page <= 1000; page += 1) {
+      const url = `${ETHERSCAN_V2}?chainid=1&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=${page}&offset=10000&sort=asc&apikey=${apiKey}`;
+      const parsed = JSON.parse(runCurl(url));
+      if (parsed.status !== '1') break;
+      const rows = parsed.result || [];
+      for (const row of rows) {
+        const hash = String(row.hash || '').toLowerCase();
+        if (hash && !seen.has(hash)) {
+          seen.add(hash);
+          hashes.push(hash);
+        }
+      }
+      if (rows.length < 10000) return hashes;
+    }
+    throw new Error('Etherscan txlist appears truncated after pagination. Refusing partial mutation replay.');
   }
   const html = runCurl(`https://etherscan.io/txs?a=${address}`);
   return [...new Set((html.match(/\/tx\/(0x[0-9a-fA-F]{64})/g) || []).map((x) => x.slice(4).toLowerCase()))];
@@ -193,7 +207,7 @@ async function main() {
     }
   }
 
-  const agiTypes = agiOrder.length ? agiOrder.map((a)=>agiMap.get(a)) : agiTypesOnchain;
+  const agiTypes = agiTypesOnchain;
 
   const snapshot = {
     schemaVersion:'1.0.0',generatedAt:new Date().toISOString(),legacyAddress:checksum(LEGACY_ADDRESS),chainId,
