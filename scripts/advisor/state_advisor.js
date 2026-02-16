@@ -29,6 +29,10 @@ function bool(v) {
   return v === true || v === 'true' || v === 1 || v === '1';
 }
 
+function isProvided(v) {
+  return v !== undefined && v !== null && v !== '';
+}
+
 function loadInput(args) {
   if (args.input) return JSON.parse(fs.readFileSync(args.input, 'utf8'));
   if (args.json) return JSON.parse(args.json);
@@ -56,16 +60,27 @@ function main() {
   const assignedAt = toBig(core.assignedAt);
   const completionRequestedAt = toBig(val.completionRequestedAt ?? core.completionRequestedAt);
   const disputedAt = toBig(val.disputedAt ?? core.disputedAt);
+  const validatorApprovedAt = toBig(data.validatorApprovedAt ?? core.validatorApprovedAt ?? val.validatorApprovedAt);
 
-  // Global protocol-level windows may be provided by user input.
-  const completionReviewPeriod = toBig(data.completionReviewPeriod ?? val.completionReviewPeriod);
-  const disputeReviewPeriod = toBig(data.disputeReviewPeriod ?? val.disputeReviewPeriod);
-  const challengeWindow = toBig(data.challengePeriodAfterApproval ?? val.challengeWindow ?? val.validatorChallengeWindow);
+  // getJobValidation does not include periods; treat missing values as unknown, never as zero.
+  const hasCompletionReviewPeriod = isProvided(data.completionReviewPeriod) || isProvided(val.completionReviewPeriod);
+  const hasDisputeReviewPeriod = isProvided(data.disputeReviewPeriod) || isProvided(val.disputeReviewPeriod);
+  const hasChallengeWindow = isProvided(data.challengePeriodAfterApproval) || isProvided(val.challengeWindow) || isProvided(val.validatorChallengeWindow);
 
-  const reviewEndsAt = completionRequestedAt > 0n ? completionRequestedAt + completionReviewPeriod : 0n;
-  const challengeEndsAt = completionRequestedAt > 0n ? completionRequestedAt + challengeWindow : 0n;
-  const staleDisputeAt = disputedAt > 0n ? disputedAt + disputeReviewPeriod : 0n;
-  const expireAt = assignedAt > 0n ? assignedAt + duration : 0n;
+  const completionReviewPeriod = hasCompletionReviewPeriod ? toBig(data.completionReviewPeriod ?? val.completionReviewPeriod) : null;
+  const disputeReviewPeriod = hasDisputeReviewPeriod ? toBig(data.disputeReviewPeriod ?? val.disputeReviewPeriod) : null;
+  const challengeWindow = hasChallengeWindow ? toBig(data.challengePeriodAfterApproval ?? val.challengeWindow ?? val.validatorChallengeWindow) : null;
+
+  const reviewEndsAt = completionRequestedAt > 0n && completionReviewPeriod !== null
+    ? completionRequestedAt + completionReviewPeriod
+    : null;
+  const challengeEndsAt = validatorApprovedAt > 0n && challengeWindow !== null
+    ? validatorApprovedAt + challengeWindow
+    : null;
+  const staleDisputeAt = disputedAt > 0n && disputeReviewPeriod !== null
+    ? disputedAt + disputeReviewPeriod
+    : null;
+  const expireAt = assignedAt > 0n ? assignedAt + duration : null;
 
   let state = 'OPEN';
   if (employer === '0x0000000000000000000000000000000000000000') state = 'CANCELLED_OR_DELISTED';
@@ -80,44 +95,54 @@ function main() {
   if (state === 'OPEN') actions.push('cancelJob (employer)');
   if (state === 'IN_PROGRESS') {
     actions.push('requestJobCompletion (assigned agent)');
-    if (expireAt > 0n && now > expireAt) actions.push('expireJob (available once assignedAt + duration has elapsed)');
+    if (expireAt !== null && now > expireAt) actions.push('expireJob (available once assignedAt + duration has elapsed)');
   }
   if (state === 'COMPLETION_REQUESTED') {
-    if (reviewEndsAt > 0n && now <= reviewEndsAt) actions.push('validateJob/disapproveJob (eligible validators)');
-    if (reviewEndsAt > 0n && now <= reviewEndsAt) actions.push('disputeJob (employer or assigned agent, if within allowed window)');
-    if (reviewEndsAt > 0n && now > reviewEndsAt) actions.push('finalizeJob (may settle or open dispute depending on votes/quorum)');
+    if (reviewEndsAt !== null && now <= reviewEndsAt) actions.push('validateJob/disapproveJob (eligible validators)');
+    if (reviewEndsAt !== null && now <= reviewEndsAt) actions.push('disputeJob (employer or assigned agent, if within allowed window)');
+
+    if (reviewEndsAt !== null && now > reviewEndsAt) {
+      if (challengeEndsAt === null || now > challengeEndsAt) {
+        actions.push('finalizeJob (may settle or open dispute depending on votes/quorum)');
+      }
+    }
   }
   if (state === 'DISPUTED') {
     actions.push('resolveDisputeWithCode (moderator)');
-    if (staleDisputeAt > 0n && now > staleDisputeAt) actions.push('resolveStaleDispute (owner)');
+    if (staleDisputeAt !== null && now > staleDisputeAt) actions.push('resolveStaleDispute (owner)');
   }
 
   console.log(`Job ${jobId} advisory (offline)`);
   console.log(`- Derived state: ${state}`);
   console.log(`- now: ${now}`);
-  if (expireAt > 0n) console.log(`- expireAt (assignedAt + duration): ${expireAt}`);
-  if (completionRequestedAt > 0n) {
-    console.log(`- reviewEndsAt: ${reviewEndsAt}`);
-    console.log(`- challengeEndsAt: ${challengeEndsAt}`);
-  }
-  if (disputedAt > 0n) console.log(`- staleDisputeAt (disputedAt + disputeReviewPeriod): ${staleDisputeAt}`);
+  if (expireAt !== null) console.log(`- expireAt (assignedAt + duration): ${expireAt}`);
+  if (reviewEndsAt !== null) console.log(`- reviewEndsAt: ${reviewEndsAt}`);
+  if (challengeEndsAt !== null) console.log(`- challengeEndsAt (validatorApprovedAt + challengePeriodAfterApproval): ${challengeEndsAt}`);
+  if (staleDisputeAt !== null) console.log(`- staleDisputeAt (disputedAt + disputeReviewPeriod): ${staleDisputeAt}`);
 
-  if (completionReviewPeriod === 0n || disputeReviewPeriod === 0n) {
-    console.log('- Warning: completion/dispute review periods were not provided in input; timing guidance may be incomplete.');
+  if (completionRequestedAt > 0n && reviewEndsAt === null) {
+    console.log('- Warning: completionReviewPeriod missing; review-window-gated guidance is suppressed.');
+  }
+  if (disputedAt > 0n && staleDisputeAt === null) {
+    console.log('- Warning: disputeReviewPeriod missing; stale-dispute guidance is suppressed.');
+  }
+  if (validatorApprovedAt > 0n && challengeEndsAt === null) {
+    console.log('- Warning: challengePeriodAfterApproval missing; early-approval finalize guidance is conservative.');
   }
 
   console.log('- Valid actions now:');
   if (actions.length === 0) console.log('  - none (terminal state or missing timing inputs)');
   for (const a of actions) console.log(`  - ${a}`);
 
-  if (state === 'COMPLETION_REQUESTED' && reviewEndsAt > 0n) {
-    const earliestFinalize = reviewEndsAt > challengeEndsAt ? reviewEndsAt : challengeEndsAt;
+  if (state === 'COMPLETION_REQUESTED' && reviewEndsAt !== null) {
+    let earliestFinalize = reviewEndsAt;
+    if (challengeEndsAt !== null && challengeEndsAt > earliestFinalize) earliestFinalize = challengeEndsAt;
     console.log(`- Earliest conservative finalize threshold (must be strictly greater than this): ${earliestFinalize}`);
   }
-  if (state === 'IN_PROGRESS' && expireAt > 0n) {
+  if (state === 'IN_PROGRESS' && expireAt !== null) {
     console.log(`- Earliest expire threshold (must be strictly greater than this): ${expireAt}`);
   }
-  if (state === 'DISPUTED' && staleDisputeAt > 0n) {
+  if (state === 'DISPUTED' && staleDisputeAt !== null) {
     console.log(`- Earliest stale-dispute owner threshold (must be strictly greater than this): ${staleDisputeAt}`);
   }
 }
