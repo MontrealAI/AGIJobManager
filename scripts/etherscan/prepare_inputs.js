@@ -48,6 +48,18 @@ function parseDurationToSeconds(input) {
   return (value * scale).toString();
 }
 
+function parseDecimals(input) {
+  const text = String(input).trim();
+  if (!/^\d+$/.test(text)) {
+    throw new Error(`Invalid decimals: ${input}. Use a non-negative integer (for example 18).`);
+  }
+  const decimals = Number(text);
+  if (!Number.isSafeInteger(decimals)) {
+    throw new Error(`Invalid decimals: ${input}. Value is too large.`);
+  }
+  return decimals;
+}
+
 function printBlock(title, lines) {
   console.log(`\n=== ${title} ===`);
   for (const line of lines) console.log(line);
@@ -75,7 +87,7 @@ function asProofArray(input) {
 function run() {
   const args = parseArgs(process.argv);
   const action = args.action || 'help';
-  const decimals = Number(args.decimals || '18');
+  const decimals = parseDecimals(args.decimals || '18');
 
   if (action === 'help' || args.help) {
     console.log('Usage: node scripts/etherscan/prepare_inputs.js --action <action> [options]');

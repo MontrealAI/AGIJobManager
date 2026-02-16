@@ -48,7 +48,7 @@ function main() {
   const args = parseArgs(process.argv);
   const data = loadInput(args);
 
-  const now = toBig(data.currentTimestamp);
+  const now = toBigOrNull(data.currentTimestamp);
   const core = data.getJobCore || {};
   const val = data.getJobValidation || {};
 
@@ -97,22 +97,22 @@ function main() {
   if (state === 'OPEN') actions.push('applyForJob (eligible agent)');
   if (state === 'OPEN') actions.push('cancelJob (employer)');
   if (state === 'IN_PROGRESS') {
-    const completionStillInWindow = !disputed && (expireAt === null || now <= expireAt);
+    const completionStillInWindow = now !== null && !disputed && (expireAt === null || now <= expireAt);
     if (completionStillInWindow) {
       actions.push('requestJobCompletion (assigned agent)');
     }
-    if (expireAt !== null && now > expireAt) actions.push('expireJob (available once assignedAt + duration has elapsed)');
+    if (now !== null && expireAt !== null && now > expireAt) actions.push('expireJob (available once assignedAt + duration has elapsed)');
   }
   if (state === 'COMPLETION_REQUESTED') {
-    if (reviewEndsAt !== null && now <= reviewEndsAt) actions.push('validateJob/disapproveJob (eligible validators)');
-    if (reviewEndsAt !== null && now <= reviewEndsAt) actions.push('disputeJob (employer or assigned agent, if within allowed window)');
+    if (now !== null && reviewEndsAt !== null && now <= reviewEndsAt) actions.push('validateJob/disapproveJob (eligible validators)');
+    if (now !== null && reviewEndsAt !== null && now <= reviewEndsAt) actions.push('disputeJob (employer or assigned agent, if within allowed window)');
 
     // finalizeJob requires review window elapsed and, when validator-approved path is active,
     // challenge period elapsed from validatorApprovedAt.
     const validatorApprovedKnown = validatorApproved === true || validatorApproved === false || validatorApproved === 'true' || validatorApproved === 'false' || validatorApproved === 1 || validatorApproved === 0;
     const validatorApprovedBool = bool(validatorApproved);
-    const reviewElapsed = reviewEndsAt !== null && now > reviewEndsAt;
-    const challengeElapsed = challengeEndsAt !== null && now > challengeEndsAt;
+    const reviewElapsed = now !== null && reviewEndsAt !== null && now > reviewEndsAt;
+    const challengeElapsed = now !== null && challengeEndsAt !== null && now > challengeEndsAt;
 
     if (reviewElapsed) {
       if (validatorApprovedKnown) {
@@ -128,12 +128,12 @@ function main() {
   }
   if (state === 'DISPUTED') {
     actions.push('resolveDisputeWithCode (moderator)');
-    if (staleDisputeAt !== null && now > staleDisputeAt) actions.push('resolveStaleDispute (owner)');
+    if (now !== null && staleDisputeAt !== null && now > staleDisputeAt) actions.push('resolveStaleDispute (owner)');
   }
 
   console.log(`Job ${jobId} advisory (offline)`);
   console.log(`- Derived state: ${state}`);
-  console.log(`- now: ${now}`);
+  console.log(`- now: ${now === null ? 'unknown (provide currentTimestamp)' : now}`);
   if (expireAt !== null) console.log(`- expireAt (assignedAt + duration): ${expireAt}`);
   if (reviewEndsAt !== null) console.log(`- reviewEndsAt: ${reviewEndsAt}`);
   if (challengeEndsAt !== null) {
@@ -142,6 +142,7 @@ function main() {
   if (staleDisputeAt !== null) console.log(`- staleDisputeAt (disputedAt + disputeReviewPeriod): ${staleDisputeAt}`);
 
   const missingTiming = [];
+  if (now === null) missingTiming.push('currentTimestamp');
   if (completionReviewPeriod === null) missingTiming.push('completionReviewPeriod');
   if (disputeReviewPeriod === null) missingTiming.push('disputeReviewPeriod');
   if (challengeWindow === null) missingTiming.push('challengePeriodAfterApproval');
@@ -151,7 +152,7 @@ function main() {
   if (!hasValue(validatorApproved) && challengeWindow !== null) {
     console.log('- Warning: validatorApproved is unknown; finalize advice is conservatively suppressed unless challenge-gate state is provably satisfied from provided inputs.');
   }
-  if (state === 'IN_PROGRESS' && !disputed && expireAt !== null && now > expireAt) {
+  if (now !== null && state === 'IN_PROGRESS' && !disputed && expireAt !== null && now > expireAt) {
     console.log('- Warning: requestJobCompletion is no longer callable after duration elapses for non-disputed jobs. Use expireJob if eligible.');
   }
 
