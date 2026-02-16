@@ -37,6 +37,7 @@ If you have a local mainnet fork endpoint:
 ```bash
 MAINNET_RPC_URL=http://127.0.0.1:8545 \
 PRIVATE_KEYS=<deployer_pk> \
+CONFIRM_MAINNET_DEPLOY=1 \
 truffle migrate --network mainnet --f 2 --to 2
 ```
 

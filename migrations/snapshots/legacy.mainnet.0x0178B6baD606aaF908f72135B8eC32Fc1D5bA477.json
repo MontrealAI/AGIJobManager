@@ -87,6 +87,7 @@
   ],
   "provenance": {
     "derivedBy": "eth_call + constructor metadata",
-    "note": "Dynamic set replay unavailable without complete tx history API key; fields left empty and must be reviewed before mainnet deployment."
+    "note": "Dynamic set replay unavailable without complete tx history API key; fields left empty and must be reviewed before mainnet deployment.",
+    "completeReplay": false
   }
 }
