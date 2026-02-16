@@ -100,6 +100,18 @@ contract('mainnet governance + ops regressions', (accounts) => {
     await expectCustomError(ctx.manager.setValidatorSlashBps.call(100, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setChallengePeriodAfterApproval.call(1, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.updateMerkleRoots.call(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner }), 'InvalidState');
+
+    await time.increase(1001);
+    await ctx.manager.expireJob(0, { from: employer });
+
+    await ctx.manager.setRequiredValidatorApprovals(2, { from: owner });
+    await ctx.manager.setRequiredValidatorDisapprovals(2, { from: owner });
+    await ctx.manager.setVoteQuorum(2, { from: owner });
+    await ctx.manager.setCompletionReviewPeriod(2, { from: owner });
+    await ctx.manager.setDisputeReviewPeriod(2, { from: owner });
+    await ctx.manager.setValidatorSlashBps(100, { from: owner });
+    await ctx.manager.setChallengePeriodAfterApproval(2, { from: owner });
+    await ctx.manager.updateMerkleRoots(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner });
   });
 
   it('enforces MAX_JOB_DETAILS_BYTES during createJob', async () => {
