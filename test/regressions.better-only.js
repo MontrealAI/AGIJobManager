@@ -143,7 +143,6 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await fundDisputeBond(token, current, employer, payout, owner);
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
-    await current.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(current.address, payout, { from: owner });
     await expectRevert(current.validateJob(currentJobId, "validator", EMPTY_PROOF, { from: validator }));
     assert.equal((await current.nextTokenId()).toNumber(), 0, "current should not mint while disputed");
@@ -251,7 +250,6 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await fundDisputeBond(token, current, employer, payout, owner);
     await current.disputeJob(currentJobId, { from: employer });
     await current.addModerator(moderator, { from: owner });
-    await current.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(current.address, payout, { from: owner });
     await current.resolveDisputeWithCode(currentJobId, 2, "employer win", { from: moderator });
     await expectRevert(current.validateJob(currentJobId, "validator", EMPTY_PROOF, { from: validator }));

@@ -161,7 +161,10 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     await manager.applyForJob(jobLarge, "agent-slow", EMPTY_PROOF, { from: agentSlow });
 
-    await manager.setAgentBond(bondSmall.add(toBN(toWei("50"))), { from: owner });
+    await expectCustomError(
+      manager.setAgentBond.call(bondSmall.add(toBN(toWei("50"))), { from: owner }),
+      "InvalidState"
+    );
     await manager.requestJobCompletion(jobSmall, "ipfs-small-complete", { from: agentFast });
     await time.increase(2);
     const beforeFinalize = await token.balanceOf(agentFast);
@@ -352,14 +355,17 @@ contract("AGIJobManager incentive hardening", (accounts) => {
   });
 
   it("supports validator bond disable mode only when bps/min/max are zero", async () => {
+    await expectCustomError(
+      manager.setValidatorBondParams.call(0, 0, 1, { from: owner }),
+      "InvalidParameters"
+    );
     const payout = toBN(toWei("4"));
+    await manager.setValidatorBondParams(0, 0, 0, { from: owner });
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
     const jobId = (await manager.createJob("ipfs-disable-bond", payout, 100, "details", { from: employer })).logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
     await manager.requestJobCompletion(jobId, "ipfs-disable-complete", { from: agentFast });
-
-    await manager.setValidatorBondParams(0, 0, 0, { from: owner });
 
     const validatorBefore = await token.balanceOf(validator);
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
@@ -367,9 +373,5 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     assert(validatorAfter.eq(validatorBefore), "no validator bond should be collected in disable mode");
     assert.equal((await manager.lockedValidatorBonds()).toString(), "0");
 
-    await expectCustomError(
-      manager.setValidatorBondParams.call(0, 0, 1, { from: owner }),
-      "InvalidParameters"
-    );
   });
 });

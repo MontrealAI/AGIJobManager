@@ -27,10 +27,10 @@ contract('validatorVoting.bonds', (accounts) => {
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
     await token.mint(employer, payout); await token.approve(manager.address, payout, { from: employer });
     await fundValidators(token, manager, [v1, v2, v3], owner); await fundAgents(token, manager, [agent], owner);
+    await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.createJob('QmSpec', payout, duration, 'd', { from: employer });
     await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
-    await manager.setRequiredValidatorDisapprovals(2, { from: owner });
 
     await manager.validateJob(0, 'validator', validatorTree.proofFor(v1), { from: v1 });
     await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.validateJob(0, 'validator', validatorTree.proofFor(v1), { from: v1 }));

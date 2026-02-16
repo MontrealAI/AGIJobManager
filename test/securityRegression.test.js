@@ -90,6 +90,7 @@ contract("AGIJobManager security regressions", (accounts) => {
 
   it("blocks double completion and employer-win follow-up", async () => {
     const payout = toBN(toWei("10"));
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
@@ -98,7 +99,6 @@ contract("AGIJobManager security regressions", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-done", { from: agent });
 
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await expectCustomError(
       manager.validateJob.call(jobId, "validator", EMPTY_PROOF, { from: validator }),
@@ -244,6 +244,7 @@ contract("AGIJobManager security regressions", (accounts) => {
 
   it("enforces vote rules and dispute thresholds", async () => {
     const payout = toBN(toWei("30"));
+    await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     await token.mint(employer, payout.muln(2), { from: owner });
 
     await token.approve(manager.address, payout, { from: employer });
@@ -267,7 +268,6 @@ contract("AGIJobManager security regressions", (accounts) => {
     const jobIdTwo = createTxTwo.logs[0].args.jobId.toNumber();
     await manager.applyForJob(jobIdTwo, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobIdTwo, "ipfs-dispute", { from: agent });
-    await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     await manager.disapproveJob(jobIdTwo, "validator", EMPTY_PROOF, { from: validator });
 
     const job = await manager.getJobCore(jobIdTwo);

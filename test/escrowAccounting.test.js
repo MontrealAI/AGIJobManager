@@ -463,10 +463,10 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
   it("treats completion remainder and reward pool contributions as treasury", async () => {
     const payout = toBN(toWei("10"));
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     const jobId = await createJob(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });

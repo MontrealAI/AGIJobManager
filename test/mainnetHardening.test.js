@@ -413,16 +413,27 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     let core = await manager.getJobCore(0);
     assert.equal(core.disputed, false);
 
-    await manager.setRequiredValidatorDisapprovals(1, { from: owner });
+    const strictWrapper = await MockNameWrapper.new({ from: owner });
+    const managerStrict = await deployManager(token, ens.address, strictWrapper.address, "ipfs://");
+    await managerStrict.addAdditionalAgent(agent, { from: owner });
+    await managerStrict.addAdditionalValidator(validator, { from: owner });
+    await managerStrict.addAGIType(nft.address, 90, { from: owner });
+    await nft.mint(agent, { from: owner });
+    await managerStrict.setAgentBondParams(0, 0, 0, { from: owner });
+    await managerStrict.setRequiredValidatorDisapprovals(1, { from: owner });
 
     await token.mint(employer, payout, { from: owner });
-    await token.approve(manager.address, payout, { from: employer });
-    await manager.createJob("ipfs://spec-2", payout, 1000, "details", { from: employer });
-    await manager.applyForJob(1, "agent", [], { from: agent });
-    await manager.requestJobCompletion(1, "ipfs://completion-2", { from: agent });
-    await manager.disapproveJob(1, "validator", [], { from: validator });
+    await token.approve(managerStrict.address, payout, { from: employer });
+    await managerStrict.createJob("ipfs://spec-2", payout, 1000, "details", { from: employer });
+    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
+    await token.approve(managerStrict.address, web3.utils.toWei("2"), { from: agent });
+    await managerStrict.applyForJob(0, "agent", [], { from: agent });
+    await managerStrict.requestJobCompletion(0, "ipfs://completion-2", { from: agent });
+    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
+    await token.approve(managerStrict.address, web3.utils.toWei("20"), { from: validator });
+    await managerStrict.disapproveJob(0, "validator", [], { from: validator });
 
-    core = await manager.getJobCore(1);
+    core = await managerStrict.getJobCore(0);
     assert.equal(core.disputed, true);
   });
 

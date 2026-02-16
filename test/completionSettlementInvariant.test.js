@@ -80,6 +80,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     await manager.addModerator(moderator, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await manager.setDisputeReviewPeriod(100, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
@@ -146,8 +147,6 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
 
   it("mints completion NFTs using the completion metadata URI", async () => {
     const jobId = await createJob(toBN(toWei("9")));
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
-    await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });

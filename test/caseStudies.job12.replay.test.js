@@ -296,7 +296,6 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       from: owner,
     });
 
-    await manager.setRequiredValidatorApprovals(3, { from: owner });
     await manager.validateJob(jobId, subdomains.validator3, EMPTY_PROOF, { from: validator3 });
     const bond = await computeValidatorBond(manager, payout);
     await token.mint(other, bond, { from: owner });
