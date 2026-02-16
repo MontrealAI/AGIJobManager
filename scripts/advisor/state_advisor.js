@@ -97,7 +97,9 @@ function main() {
   if (state === 'OPEN') actions.push('applyForJob (eligible agent)');
   if (state === 'OPEN') actions.push('cancelJob (employer)');
   if (state === 'IN_PROGRESS') {
-    actions.push('requestJobCompletion (assigned agent)');
+    if (expireAt === null || now <= expireAt) {
+      actions.push('requestJobCompletion (assigned agent)');
+    }
     if (expireAt !== null && now > expireAt) actions.push('expireJob (available once assignedAt + duration has elapsed)');
   }
   if (state === 'COMPLETION_REQUESTED') {
