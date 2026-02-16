@@ -20,8 +20,8 @@ This guide is for users who only want to use **Etherscan + wallet** (no CLI requ
 
 Under **Read Contract**, check:
 
-- `paused()` must be `false` for intake actions (`createJob`, `applyForJob`, voting).
-- `settlementPaused()` must be `false` for settlement actions (`requestJobCompletion`, `validateJob`, `finalizeJob`, `disputeJob`, moderator resolution).
+- `paused()` must be `false` for intake actions (`createJob`, `applyForJob`).
+- `settlementPaused()` must be `false` for settlement actions (`requestJobCompletion`, `validateJob`, `disapproveJob`, `finalizeJob`, `disputeJob`, moderator resolution).
 - Your token balance (`balanceOf`) is enough.
 - Your allowance (`allowance(owner, spender)`) is enough for AGIJobManager to pull tokens via `transferFrom`.
 
