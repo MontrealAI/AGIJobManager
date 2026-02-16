@@ -70,7 +70,7 @@ Operational rule: update risk-sensitive params only while escrow is empty when r
 - Stop intake: `pause()`
   - prevents new create/apply intake paths (validator voting is governed by `settlementPaused`).
 - Stop settlement: `setSettlementPaused(true)`
-  - freezes finalize/dispute/settlement progression.
+  - freezes settlement/dispute/finalization **and** also blocks `createJob` / `applyForJob` intake paths gated by `whenSettlementNotPaused`.
 
 ## Recommended emergency sequence
 
