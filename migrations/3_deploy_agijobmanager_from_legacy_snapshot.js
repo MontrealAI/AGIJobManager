@@ -86,23 +86,71 @@ module.exports = async function (deployer, network, accounts) {
   const manager = await AGIJobManager.deployed();
   const owner = accounts[0];
 
-  if (SNAPSHOT.numericParams.validationRewardPercentage) {
-    await manager.setValidationRewardPercentage(SNAPSHOT.numericParams.validationRewardPercentage, { from: owner });
-  }
-  if (SNAPSHOT.numericParams.requiredValidatorApprovals) {
-    await manager.setRequiredValidatorApprovals(SNAPSHOT.numericParams.requiredValidatorApprovals, { from: owner });
-  }
-  if (SNAPSHOT.numericParams.requiredValidatorDisapprovals) {
-    await manager.setRequiredValidatorDisapprovals(SNAPSHOT.numericParams.requiredValidatorDisapprovals, { from: owner });
-  }
-  if (SNAPSHOT.numericParams.premiumReputationThreshold) {
-    await manager.setPremiumReputationThreshold(SNAPSHOT.numericParams.premiumReputationThreshold, { from: owner });
-  }
-  if (SNAPSHOT.numericParams.maxJobPayout) {
-    await manager.setMaxJobPayout(SNAPSHOT.numericParams.maxJobPayout, { from: owner });
-  }
-  if (SNAPSHOT.numericParams.jobDurationLimit) {
-    await manager.setJobDurationLimit(SNAPSHOT.numericParams.jobDurationLimit, { from: owner });
+  const numericSetters = [
+    ['validationRewardPercentage', 'setValidationRewardPercentage'],
+    ['requiredValidatorApprovals', 'setRequiredValidatorApprovals'],
+    ['requiredValidatorDisapprovals', 'setRequiredValidatorDisapprovals'],
+    ['voteQuorum', 'setVoteQuorum'],
+    ['premiumReputationThreshold', 'setPremiumReputationThreshold'],
+    ['maxJobPayout', 'setMaxJobPayout'],
+    ['jobDurationLimit', 'setJobDurationLimit'],
+    ['completionReviewPeriod', 'setCompletionReviewPeriod'],
+    ['disputeReviewPeriod', 'setDisputeReviewPeriod'],
+    ['validatorBondBps', 'setValidatorBondParams'],
+    ['validatorBondMin', 'setValidatorBondParams'],
+    ['validatorBondMax', 'setValidatorBondParams'],
+    ['validatorSlashBps', 'setValidatorSlashBps'],
+    ['challengePeriodAfterApproval', 'setChallengePeriodAfterApproval'],
+    ['agentBond', 'setAgentBond'],
+    ['agentBondBps', 'setAgentBondParams'],
+    ['agentBondMin', 'setAgentBondParams'],
+    ['agentBondMax', 'setAgentBondParams']
+  ];
+
+  let validatorBondParamsSet = false;
+  let agentBondParamsSet = false;
+
+  for (const [key, setter] of numericSetters) {
+    if (!Object.prototype.hasOwnProperty.call(SNAPSHOT.numericParams, key)) continue;
+    if (typeof manager[setter] !== 'function') continue;
+
+    if (setter === 'setValidatorBondParams') {
+      if (
+        !validatorBondParamsSet &&
+        Object.prototype.hasOwnProperty.call(SNAPSHOT.numericParams, 'validatorBondBps') &&
+        Object.prototype.hasOwnProperty.call(SNAPSHOT.numericParams, 'validatorBondMin') &&
+        Object.prototype.hasOwnProperty.call(SNAPSHOT.numericParams, 'validatorBondMax')
+      ) {
+        await manager.setValidatorBondParams(
+          SNAPSHOT.numericParams.validatorBondBps,
+          SNAPSHOT.numericParams.validatorBondMin,
+          SNAPSHOT.numericParams.validatorBondMax,
+          { from: owner }
+        );
+        validatorBondParamsSet = true;
+      }
+      continue;
+    }
+
+    if (setter === 'setAgentBondParams') {
+      if (
+        !agentBondParamsSet &&
+        Object.prototype.hasOwnProperty.call(SNAPSHOT.numericParams, 'agentBondBps') &&
+        Object.prototype.hasOwnProperty.call(SNAPSHOT.numericParams, 'agentBondMin') &&
+        Object.prototype.hasOwnProperty.call(SNAPSHOT.numericParams, 'agentBondMax')
+      ) {
+        await manager.setAgentBondParams(
+          SNAPSHOT.numericParams.agentBondBps,
+          SNAPSHOT.numericParams.agentBondMin,
+          SNAPSHOT.numericParams.agentBondMax,
+          { from: owner }
+        );
+        agentBondParamsSet = true;
+      }
+      continue;
+    }
+
+    await manager[setter](SNAPSHOT.numericParams[key], { from: owner });
   }
 
   if (SNAPSHOT.addresses.ensJobPages && SNAPSHOT.addresses.ensJobPages !== '0x0000000000000000000000000000000000000000') {
@@ -171,12 +219,11 @@ module.exports = async function (deployer, network, accounts) {
   assertEq('alphaAgentRootNode', await manager.alphaAgentRootNode(), SNAPSHOT.roots.alphaAgentRootNode);
   assertEq('validatorMerkleRoot', await manager.validatorMerkleRoot(), SNAPSHOT.merkleRoots.validatorMerkleRoot);
   assertEq('agentMerkleRoot', await manager.agentMerkleRoot(), SNAPSHOT.merkleRoots.agentMerkleRoot);
-  assertEq('requiredValidatorApprovals', await manager.requiredValidatorApprovals(), SNAPSHOT.numericParams.requiredValidatorApprovals);
-  assertEq('requiredValidatorDisapprovals', await manager.requiredValidatorDisapprovals(), SNAPSHOT.numericParams.requiredValidatorDisapprovals);
-  assertEq('premiumReputationThreshold', await manager.premiumReputationThreshold(), SNAPSHOT.numericParams.premiumReputationThreshold);
-  assertEq('validationRewardPercentage', await manager.validationRewardPercentage(), SNAPSHOT.numericParams.validationRewardPercentage);
-  assertEq('maxJobPayout', await manager.maxJobPayout(), SNAPSHOT.numericParams.maxJobPayout);
-  assertEq('jobDurationLimit', await manager.jobDurationLimit(), SNAPSHOT.numericParams.jobDurationLimit);
+  for (const [key, value] of Object.entries(SNAPSHOT.numericParams || {})) {
+    if (typeof manager[key] === 'function') {
+      assertEq(key, await manager[key](), value);
+    }
+  }
   assertEq('paused', await manager.paused(), SNAPSHOT.booleans.paused);
   assertEq('settlementPaused', await manager.settlementPaused(), SNAPSHOT.booleans.settlementPaused);
 
