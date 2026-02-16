@@ -151,6 +151,8 @@ contract('mainnet governance + ops regressions', (accounts) => {
     let receipt = await ctx.manager.createJob('ipfs://hook-ok', payout, 100, 'd', { from: employer });
     let hookLog = receipt.logs.find((l) => l.event === 'EnsHookAttempted');
     assert.equal(hookLog.args.success, true);
+    assert.equal(await happyHook.lastHandleHookSelector(), '0x1f76f7a2', 'AGIJobManager must use handleHook(uint8,uint256) selector');
+    assert.equal((await happyHook.lastHandleHookCalldataLength()).toString(), '68', 'AGIJobManager must send 0x44 bytes to handleHook');
 
     const revertHook = await MockENSJobPagesMalformed.new({ from: owner });
     await revertHook.setRevertOnHook(true, { from: owner });
