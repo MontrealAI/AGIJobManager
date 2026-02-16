@@ -100,6 +100,22 @@ contract('mainnet governance + ops regressions', (accounts) => {
     await expectCustomError(ctx.manager.setValidatorSlashBps.call(100, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setChallengePeriodAfterApproval.call(1, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.updateMerkleRoots.call(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner }), 'InvalidState');
+
+    await ctx.manager.requestJobCompletion(0, 'ipfs://done', { from: agent });
+    const review = await ctx.manager.completionReviewPeriod();
+    await time.increase(review.addn(1));
+    await ctx.manager.finalizeJob(0, { from: employer });
+
+    await ctx.manager.updateMerkleRoots(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner });
+    await ctx.manager.setVoteQuorum((await ctx.manager.voteQuorum()).toString(), { from: owner });
+    await ctx.manager.setRequiredValidatorApprovals((await ctx.manager.requiredValidatorApprovals()).toString(), { from: owner });
+    await ctx.manager.setRequiredValidatorDisapprovals((await ctx.manager.requiredValidatorDisapprovals()).toString(), { from: owner });
+    await ctx.manager.setCompletionReviewPeriod((await ctx.manager.completionReviewPeriod()).toString(), { from: owner });
+    await ctx.manager.setDisputeReviewPeriod((await ctx.manager.disputeReviewPeriod()).toString(), { from: owner });
+    await ctx.manager.setValidatorSlashBps((await ctx.manager.validatorSlashBps()).toString(), { from: owner });
+    await ctx.manager.setChallengePeriodAfterApproval((await ctx.manager.challengePeriodAfterApproval()).toString(), {
+      from: owner,
+    });
   });
 
   it('enforces MAX_JOB_DETAILS_BYTES during createJob', async () => {
