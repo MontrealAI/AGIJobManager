@@ -59,6 +59,7 @@ const output = {
   merkleOptions: { sortPairs: true, sortLeaves: true },
   root: tree.getHexRoot(),
   proofs,
+  etherscanPaste: Object.fromEntries(Object.entries(proofs).map(([addr, proof]) => [addr, JSON.stringify(proof)])),
 };
 
 if (outputPath) {

@@ -1,105 +1,50 @@
-# Verify AGIJobManager on Etherscan (Reproducible)
+# Verify AGIJobManager on Etherscan
 
-Etherscan Read/Write UX depends on correct source verification.
+This repository deploys with Truffle settings. Match them exactly for successful verification.
 
-## 1) Identify the compiler profile used for deployment
+## 1) Compiler settings (authoritative)
 
-This repo has two compiler profiles:
+From `truffle-config.js`:
+- Compiler: `0.8.23`
+- Optimizer: enabled
+- Optimizer runs: `50`
+- `viaIR: true`
+- `evmVersion: london` (or explicit override used during deploy)
+- Metadata hash: `none`
+- Revert strings: `strip`
 
-- **Truffle profile** (deployment/tests in `package.json`):
-  - `solc 0.8.23`
-  - optimizer enabled, runs `50`
-  - `viaIR: true`
-  - metadata bytecode hash `none`
-  - EVM `london`
-- **Foundry profile** (`foundry.toml`):
-  - `solc 0.8.19`
-  - optimizer enabled, runs `50`
+## 2) Linked libraries
 
-For normal repo deployments (`truffle migrate`), verify with the **Truffle profile**.
-
-## 2) Install and compile exactly as CI/deployment expects
-
-```bash
-npm install
-npm run build
-```
-
-Artifacts are produced in `build/contracts/`.
-
-## 3) Linked library requirements
-
-AGIJobManager uses external libraries:
-
+AGIJobManager links external libraries. Verification must include exact name->address mapping used at deployment:
 - `UriUtils`
 - `TransferUtils`
 - `BondMath`
 - `ReputationMath`
 - `ENSOwnership`
 
-Verification must include exact deployed addresses for each linked library.
+If one address is wrong, bytecode mismatch occurs.
 
-## 4) Verification paths
+## 3) Verification steps
 
-## A) Truffle plugin path (preferred for this repo)
+1. Open contract address on Etherscan -> Verify and Publish.
+2. Choose Solidity single-file/multi-file standard input route matching your build artifacts.
+3. Enter exact compiler version and optimizer settings.
+4. Set `viaIR` to match deployment.
+5. Provide constructor arguments exactly as encoded during deployment.
+6. Provide all linked library addresses.
+7. Submit and confirm ABI is visible on Read/Write tabs.
 
-`truffle-config.js` includes `truffle-plugin-verify` and etherscan API settings.
+## 4) Common mismatch causes and fixes
 
-Example mainnet command:
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Bytecode mismatch | Wrong compiler version/runs/viaIR/metadata hash | Use exact Truffle settings above |
+| Bytecode mismatch with libraries | Missing or incorrect library address | Re-check deployment artifact link references |
+| Constructor args mismatch | Wrong order or encoding | Re-encode from migration inputs |
+| Runtime differs only slightly | Different solc patch or EVM setting | Use the same solc + `evmVersion` as deployment |
 
-```bash
-ETHERSCAN_API_KEY=... \
-PRIVATE_KEYS=0x... \
-MAINNET_RPC_URL=https://... \
-npx truffle run verify AGIJobManager --network mainnet
-```
+## 5) Sanity checks after verify
 
-If constructor args are required explicitly, use plugin options for constructor params according to deployment values.
-
-## B) Standard JSON/manual verification
-
-If plugin path fails, use Solidity Standard JSON Input generated from the exact build and submit manually in Etherscan’s “Standard-Json-Input” mode, including library mappings.
-
----
-
-## 5) Common verification failures and fixes
-
-- **Wrong compiler version**
-  - Symptom: bytecode mismatch.
-  - Fix: use `0.8.23` for Truffle deployments.
-
-- **Optimizer runs mismatch**
-  - Symptom: partial bytecode mismatch.
-  - Fix: optimizer enabled + runs `50`.
-
-- **viaIR mismatch**
-  - Symptom: major bytecode mismatch even with same solc.
-  - Fix: ensure `viaIR: true` matches deployment.
-
-- **Metadata hash mismatch**
-  - Symptom: tail-bytecode mismatch.
-  - Fix: compile with `metadata.bytecodeHash = none`.
-
-- **Wrong library addresses**
-  - Symptom: unresolved link references or mismatch.
-  - Fix: supply exact library name/address pairs from deployment.
-
-- **Wrong constructor arguments**
-  - Symptom: creation bytecode mismatch.
-  - Fix: ABI-encode constructor args exactly as deployed.
-
-- **Wrong EVM version**
-  - Symptom: mismatch despite same solc.
-  - Fix: set EVM to `london` (repo default unless overridden at deploy).
-
----
-
-## 6) Post-verification sanity check
-
-On Etherscan contract page:
-
-1. `Read Contract` tab should show named functions and outputs.
-2. `Write Contract` tab should expose typed parameter forms.
-3. Custom errors/events should decode properly in tx details.
-
-If tabs still look raw/minimal, verification likely used mismatched metadata/settings.
+- Confirm `Read Contract` exposes expected getters.
+- Confirm `Write Contract` inputs are human-readable.
+- Test one read path (`getJobCore`) and one safe write on test deployment.

@@ -18,7 +18,9 @@
     "ui:abi": "node scripts/ui/export_abi.js",
     "ui:abi:check": "node scripts/ui/check_ui_abi.js",
     "merkle:proof": "node scripts/merkle/generate_merkle_proof.js",
-    "merkle:export": "node scripts/merkle/export_merkle_proofs.js"
+    "merkle:export": "node scripts/merkle/export_merkle_proofs.js",
+    "etherscan:inputs": "node scripts/etherscan/prepare_inputs.js",
+    "advisor:job": "node scripts/advisor/job_state_advisor.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"
