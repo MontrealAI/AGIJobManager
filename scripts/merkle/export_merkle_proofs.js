@@ -45,13 +45,15 @@ if (!Array.isArray(parsed) || parsed.length === 0) {
   process.exit(1);
 }
 
-const addresses = [...new Set(parsed.map(normalizeAddress))].sort();
+const addresses = parsed.map(normalizeAddress);
 const leaves = addresses.map(toLeaf);
 const tree = new MerkleTree(leaves, keccak256, { sortPairs: true, sortLeaves: true });
 
 const proofs = {};
 for (const address of addresses) {
-  proofs[address] = tree.getHexProof(toLeaf(address));
+  if (!(address in proofs)) {
+    proofs[address] = tree.getHexProof(toLeaf(address));
+  }
 }
 
 const output = {

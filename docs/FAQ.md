@@ -27,8 +27,8 @@ If no validator votes are cast and review window ends, `finalizeJob` settles det
 
 ## What does `paused` vs `settlementPaused` mean?
 
-- `paused`: intake-side pause (new create/apply/vote activity blocked).
-- `settlementPaused`: settlement/dispute/finalization paths blocked.
+- `paused`: intake-side pause (blocks `createJob`/`applyForJob` and other `whenNotPaused` paths). It does **not** stop validator votes by itself.
+- `settlementPaused`: settlement paths including validator voting (`validateJob`/`disapproveJob`), disputes, and finalization are blocked.
 
 Operators can use them separately for incident control.
 
