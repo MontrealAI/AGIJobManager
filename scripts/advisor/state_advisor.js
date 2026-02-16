@@ -45,24 +45,30 @@ function main() {
 
   const jobId = core.jobId ?? data.jobId ?? '?';
   const disputed = bool(core.disputed);
-  const completionRequested = bool(core.completionRequested);
+  const completionRequested = bool(val.completionRequested ?? core.completionRequested);
   const completed = bool(core.completed);
   const cancelled = bool(core.cancelled);
   const expired = bool(core.expired);
   const assignedAgent = core.agent || core.assignedAgent || '0x0000000000000000000000000000000000000000';
 
-  const createdAt = toBig(core.createdAt);
+  const assignedAt = toBig(core.assignedAt);
   const duration = toBig(core.duration);
-  const completionRequestedAt = toBig(core.completionRequestedAt);
+  const completionRequestedAt = toBig(val.completionRequestedAt ?? core.completionRequestedAt);
 
-  const completionReviewPeriod = toBig(val.completionReviewPeriod);
-  const disputeReviewPeriod = toBig(val.disputeReviewPeriod);
-  const challengeWindow = toBig(val.challengeWindow || val.validatorChallengeWindow);
+  const completionReviewPeriod = toBig(val.completionReviewPeriod ?? data.completionReviewPeriod);
+  const disputeReviewPeriod = toBig(val.disputeReviewPeriod ?? data.disputeReviewPeriod);
+  const disputedAt = toBig(val.disputedAt ?? core.disputedAt);
+  const challengeWindow = toBig(
+    val.challengeWindow ??
+    val.validatorChallengeWindow ??
+    data.challengePeriodAfterApproval ??
+    data.challengeWindow
+  );
 
   const reviewEndsAt = completionRequestedAt > 0n ? completionRequestedAt + completionReviewPeriod : 0n;
   const challengeEndsAt = completionRequestedAt > 0n ? completionRequestedAt + challengeWindow : 0n;
-  const staleDisputeAt = completionRequestedAt > 0n ? completionRequestedAt + disputeReviewPeriod : 0n;
-  const expireAt = createdAt + duration;
+  const staleDisputeAt = disputedAt > 0n ? disputedAt + disputeReviewPeriod : 0n;
+  const expireAt = assignedAt > 0n ? assignedAt + duration : 0n;
 
   let state = 'OPEN';
   if (cancelled) state = 'CANCELLED';
@@ -77,7 +83,7 @@ function main() {
   if (state === 'OPEN') actions.push('cancelJob (employer)');
   if (state === 'IN_PROGRESS') {
     actions.push('requestJobCompletion (assigned agent)');
-    if (now >= expireAt) actions.push('expireJob (anyone allowed by contract policy)');
+    if (expireAt > 0n && now >= expireAt) actions.push('expireJob (after assignedAt + duration)');
   }
   if (state === 'COMPLETION_REQUESTED') {
     if (now <= reviewEndsAt) actions.push('validateJob/disapproveJob (eligible validators)');
@@ -93,6 +99,7 @@ function main() {
   console.log(`- Derived state: ${state}`);
   console.log(`- now: ${now}`);
   console.log(`- expireAt: ${expireAt}`);
+  if (disputedAt > 0n) console.log(`- disputedAt: ${disputedAt}`);
   if (completionRequestedAt > 0n) {
     console.log(`- reviewEndsAt: ${reviewEndsAt}`);
     console.log(`- challengeEndsAt: ${challengeEndsAt}`);

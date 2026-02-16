@@ -61,3 +61,17 @@ npm run size
 ```
 
 `npm test` runs: Truffle compile/tests, additional Node tests, and contract size guards.
+
+
+## Documentation
+
+- Main docs index: [`docs/README.md`](docs/README.md)
+- Quintessential end-to-end walkthrough: [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
+
+Doc maintenance commands:
+
+```bash
+npm run docs:gen
+npm run docs:check
+npm run check:no-binaries  # check-no-binaries guard
+```
