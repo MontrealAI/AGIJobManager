@@ -1,6 +1,6 @@
 # ENS Reference (Generated)
 
-Source fingerprint: 5788bd0f7f47fee9
+Source fingerprint: 72c3b81ccb3ea16c
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -42,9 +42,9 @@ Source files used:
 - `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` (contracts/AGIJobManager.sol:794)
 - `function updateRootNodes(` (contracts/AGIJobManager.sol:803)
 - `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` (contracts/AGIJobManager.sol:816)
-- `function lockJobENS(uint256 jobId, bool burnFuses) external` (contracts/AGIJobManager.sol:1038)
-- `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1274)
-- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1279)
+- `function lockJobENS(uint256 jobId, bool burnFuses) external` (contracts/AGIJobManager.sol:1041)
+- `function tokenURI(uint256 tokenId) public view override returns (string memory)` (contracts/AGIJobManager.sol:1277)
+- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` (contracts/AGIJobManager.sol:1282)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:32)
 - `function verifyENSOwnership(` (contracts/utils/ENSOwnership.sol:48)
 - `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` (contracts/utils/ENSOwnership.sol:61)
@@ -85,8 +85,8 @@ Source files used:
 - @notice Total AGI locked as validator bonds for unsettled votes. (contracts/AGIJobManager.sol:130)
 - @notice Total AGI locked as dispute bonds for unsettled disputes. (contracts/AGIJobManager.sol:132)
 - @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled. (contracts/AGIJobManager.sol:146)
-- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. (contracts/AGIJobManager.sol:1036)
-- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. (contracts/AGIJobManager.sol:1037)
-- @dev as long as lockedEscrow/locked*Bonds are fully covered. (contracts/AGIJobManager.sol:1084)
-- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. (contracts/AGIJobManager.sol:1309)
+- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. (contracts/AGIJobManager.sol:1039)
+- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. (contracts/AGIJobManager.sol:1040)
+- @dev as long as lockedEscrow/locked*Bonds are fully covered. (contracts/AGIJobManager.sol:1087)
+- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. (contracts/AGIJobManager.sol:1312)
 
