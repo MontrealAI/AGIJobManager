@@ -169,6 +169,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
 
   it("rejects role violations, blacklists, and invalid state transitions", async () => {
     const payout = toBN(toWei("12"));
+    await manager.setRequiredValidatorApprovals(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
 
     const jobId = await createJob(payout);
@@ -199,7 +200,6 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
 
     await expectCustomError(manager.cancelJob.call(jobId, { from: employer }), "InvalidState");
 
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
     await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
     await expectCustomError(
       manager.disapproveJob.call(jobId, "validator-b", EMPTY_PROOF, { from: validatorB }),

@@ -285,6 +285,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("prevents double completion and late validations", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
@@ -309,6 +310,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("blocks dispute resolution after validator-driven completion", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
+      await manager.setRequiredValidatorApprovals(1, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
@@ -495,13 +497,14 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("marks job disputed once disapproval threshold reached", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.addAdditionalValidator(validatorTwo, { from: owner });
-      await manager.setRequiredValidatorDisapprovals(2, { from: owner });
+      await manager.addAdditionalValidator(validatorThree, { from: owner });
 
       await manager.applyForJob(0, "agent", [], { from: agent });
       await requestCompletion(0);
       await manager.disapproveJob(0, "validator", [], { from: validatorOne });
-      const receipt = await manager.disapproveJob(0, "validator", [], { from: validatorTwo });
-      expectEvent(receipt, "JobDisputed", { jobId: new BN(0), disputant: validatorTwo });
+      await manager.disapproveJob(0, "validator", [], { from: validatorTwo });
+      const receipt = await manager.disapproveJob(0, "validator", [], { from: validatorThree });
+      expectEvent(receipt, "JobDisputed", { jobId: new BN(0), disputant: validatorThree });
       const job = await manager.getJobCore(0);
       assert.equal(job.disputed, true);
     });
@@ -543,12 +546,16 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("prevents disputes after completion", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
+      await manager.addAdditionalValidator(validatorTwo, { from: owner });
+      await manager.addAdditionalValidator(validatorThree, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
 
       await manager.applyForJob(0, "agent", [], { from: agent });
       await requestCompletion(0);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
+      await manager.validateJob(0, "validator", [], { from: validatorTwo });
+      await manager.validateJob(0, "validator", [], { from: validatorThree });
       await time.increase(2);
       await manager.finalizeJob(0, { from: employer });
       await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
@@ -688,10 +695,10 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await fundAgents(failingToken, altManager, [agent], owner);
 
       await failingToken.approve(altManager.address, payout, { from: employer });
+      await altManager.setRequiredValidatorApprovals(1, { from: owner });
       await altManager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
       await altManager.applyForJob(0, "agent", [], { from: agent });
       await altManager.addAdditionalValidator(validatorOne, { from: owner });
-      await altManager.setRequiredValidatorApprovals(1, { from: owner });
       await altManager.requestJobCompletion(0, updatedIpfs, { from: agent });
       const bond = await computeValidatorBond(altManager, payout);
       await failingToken.mint(validatorOne, bond, { from: owner });

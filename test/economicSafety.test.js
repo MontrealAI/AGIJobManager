@@ -99,6 +99,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     await manager.setValidationRewardPercentage(10, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
@@ -117,8 +118,6 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-    await manager.setRequiredValidatorApprovals(1, { from: owner });
-    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     const agentBalanceBefore = await token.balanceOf(agent);
     const validatorBefore = await token.balanceOf(validator);
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });

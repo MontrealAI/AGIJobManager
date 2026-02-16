@@ -20,10 +20,10 @@ contract('ensHooks.integration', (accounts) => {
   const [owner, employer, agent, validator] = accounts;
 
   async function seedSettledJob({ manager, token, payout, proof }) {
+    await manager.setCompletionReviewPeriod(1, { from: owner });
     await manager.createJob('QmSpec', payout, 5000, 'd', { from: employer });
     await manager.applyForJob(0, 'agent', proof, { from: agent });
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
-    await manager.setCompletionReviewPeriod(1, { from: owner });
     await time.increase(2);
     await manager.finalizeJob(0, { from: employer });
   }
@@ -88,6 +88,7 @@ contract('ensHooks.integration', (accounts) => {
     await token.approve(manager.address, payout, { from: agent });
 
     const proof = mkTree([agent]).proofFor(agent);
+    await manager.setCompletionReviewPeriod(1, { from: owner });
     await manager.createJob('QmSpec', payout, 5000, 'd', { from: employer });
 
     const node = subnode(rootNodeHash, 'job-0');
@@ -101,7 +102,6 @@ contract('ensHooks.integration', (accounts) => {
     assert.equal(agentAuthAfterAssign, true, 'ASSIGN hook must authorise agent');
 
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
-    await manager.setCompletionReviewPeriod(1, { from: owner });
     await time.increase(2);
     await manager.finalizeJob(0, { from: employer });
 

@@ -54,6 +54,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     );
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -91,7 +92,6 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
 
     const before = await token.balanceOf(agent);
     await manager.validateJob(jobId, "ignored", tree.getHexProof(validatorLeaf), { from: validator });
-    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });
     const after = await token.balanceOf(agent);

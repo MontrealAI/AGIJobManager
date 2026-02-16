@@ -114,11 +114,11 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
   });
 
   it('exports deterministic metrics and expected aggregates', async () => {
+    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     const jobId1 = await createJob();
     await manager.applyForJob(jobId1, 'agent', EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId1, 'ipfs-complete', { from: agent });
     await manager.validateJob(jobId1, 'club', EMPTY_PROOF, { from: validator });
-    await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await time.increase(2);
     await manager.finalizeJob(jobId1, { from: employer });
 
