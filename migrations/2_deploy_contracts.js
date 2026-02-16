@@ -21,6 +21,10 @@ function isTrue(value) {
 }
 
 module.exports = async function (deployer, network, accounts) {
+  if ((process.env.USE_LEGACY_SNAPSHOT_MIGRATION || '') === '1') {
+    console.log('[default-migration] skipped because USE_LEGACY_SNAPSHOT_MIGRATION=1');
+    return;
+  }
   await deployer.deploy(BondMath);
   await deployer.deploy(ENSOwnership);
   await deployer.deploy(ReputationMath);
