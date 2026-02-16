@@ -1,51 +1,40 @@
-# Verify AGIJobManager on Etherscan (Reproducible)
+# VERIFY_ON_ETHERSCAN
 
-Etherscan Read/Write UX depends on correct source verification.
+Etherscan Read/Write usability depends on successful source verification.
 
-## 1) Identify the compiler profile used for deployment
+## 1) Compiler settings used by this repo
 
-This repo has two compiler profiles:
+From `truffle-config.js` (deployment path used by npm scripts):
+- solc: `0.8.23`
+- optimizer: enabled, `runs: 50`
+- `viaIR: true`
+- EVM version: `london`
+- metadata bytecode hash: `none`
+- revert strings: `strip`
 
-- **Truffle profile** (deployment/tests in `package.json`):
-  - `solc 0.8.23`
-  - optimizer enabled, runs `50`
-  - `viaIR: true`
-  - metadata bytecode hash `none`
-  - EVM `london`
-- **Foundry profile** (`foundry.toml`):
-  - `solc 0.8.19`
-  - optimizer enabled, runs `50`
+Foundry profile in `foundry.toml` exists for forge tests and differs (`solc 0.8.19`). Do not mix profiles when verifying Truffle deployments.
 
-For normal repo deployments (`truffle migrate`), verify with the **Truffle profile**.
-
-## 2) Install and compile exactly as CI/deployment expects
+## 2) Build exactly
 
 ```bash
-npm install
+npm ci
 npm run build
 ```
 
-Artifacts are produced in `build/contracts/`.
+## 3) External library linking (required)
 
-## 3) Linked library requirements
-
-AGIJobManager uses external libraries:
-
+AGIJobManager links external libraries. Provide exact deployed addresses for:
 - `UriUtils`
 - `TransferUtils`
 - `BondMath`
 - `ReputationMath`
 - `ENSOwnership`
 
-Verification must include exact deployed addresses for each linked library.
+If library mapping is wrong, verification will fail.
 
-## 4) Verification paths
+## 4) Verification methods
 
-## A) Truffle plugin path (preferred for this repo)
-
-`truffle-config.js` includes `truffle-plugin-verify` and etherscan API settings.
-
-Example mainnet command:
+### A) Truffle plugin path
 
 ```bash
 ETHERSCAN_API_KEY=... \
@@ -54,52 +43,23 @@ MAINNET_RPC_URL=https://... \
 npx truffle run verify AGIJobManager --network mainnet
 ```
 
-If constructor args are required explicitly, use plugin options for constructor params according to deployment values.
+### B) Standard JSON input
 
-## B) Standard JSON/manual verification
+Use Etherscan Standard JSON mode with the same compiler settings and explicit library mapping.
 
-If plugin path fails, use Solidity Standard JSON Input generated from the exact build and submit manually in Etherscan’s “Standard-Json-Input” mode, including library mappings.
+## 5) Troubleshooting mismatches
 
----
+- Wrong solc version (`0.8.23` expected for Truffle deployment)
+- Wrong optimizer runs (must be 50)
+- Wrong `viaIR` (must match deployment)
+- Wrong EVM version (`london`)
+- Metadata hash mode mismatch (`none` expected)
+- Wrong constructor args
+- Wrong linked library addresses
 
-## 5) Common verification failures and fixes
+## 6) Post-verify checks
 
-- **Wrong compiler version**
-  - Symptom: bytecode mismatch.
-  - Fix: use `0.8.23` for Truffle deployments.
-
-- **Optimizer runs mismatch**
-  - Symptom: partial bytecode mismatch.
-  - Fix: optimizer enabled + runs `50`.
-
-- **viaIR mismatch**
-  - Symptom: major bytecode mismatch even with same solc.
-  - Fix: ensure `viaIR: true` matches deployment.
-
-- **Metadata hash mismatch**
-  - Symptom: tail-bytecode mismatch.
-  - Fix: compile with `metadata.bytecodeHash = none`.
-
-- **Wrong library addresses**
-  - Symptom: unresolved link references or mismatch.
-  - Fix: supply exact library name/address pairs from deployment.
-
-- **Wrong constructor arguments**
-  - Symptom: creation bytecode mismatch.
-  - Fix: ABI-encode constructor args exactly as deployed.
-
-- **Wrong EVM version**
-  - Symptom: mismatch despite same solc.
-  - Fix: set EVM to `london` (repo default unless overridden at deploy).
-
----
-
-## 6) Post-verification sanity check
-
-On Etherscan contract page:
-
-1. `Read Contract` tab should show named functions and outputs.
-2. `Write Contract` tab should expose typed parameter forms.
-3. Custom errors/events should decode properly in tx details.
-
-If tabs still look raw/minimal, verification likely used mismatched metadata/settings.
+On Etherscan:
+1. `Read Contract` shows named methods.
+2. `Write Contract` shows typed fields.
+3. tx details decode custom errors/events cleanly.
