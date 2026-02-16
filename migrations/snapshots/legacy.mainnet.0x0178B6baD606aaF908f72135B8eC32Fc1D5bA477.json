@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-02-16T00:00:00.000Z",
+  "snapshotId": "manual-fallback-no-network",
+  "source": {
+    "chainId": 1,
+    "blockNumber": 22000000,
+    "blockTimestamp": 1740787200,
+    "legacyAddress": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
+    "proxy": {
+      "isProxy": false,
+      "implementationAddress": null,
+      "eip1967Slot": "0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC"
+    },
+    "abiAddressUsed": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
+    "note": "Fallback snapshot committed from repository-known constants because external mainnet RPC/Etherscan access was unavailable in CI container. Regenerate with scripts/snapshotLegacyMainnetConfig.js before mainnet deployment."
+  },
+  "addresses": {
+    "owner": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
+    "agiToken": "0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa",
+    "ensRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+    "ensJobPages": "0x0000000000000000000000000000000000000000"
+  },
+  "strings": {
+    "baseIpfsUrl": "https://ipfs.io/ipfs/"
+  },
+  "roots": {
+    "clubRootNode": "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+    "agentRootNode": "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+    "alphaClubRootNode": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+    "alphaAgentRootNode": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e",
+    "derived": [
+      {
+        "name": "alpha.club.agi.eth",
+        "node": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+        "derived": true
+      },
+      {
+        "name": "alpha.agent.agi.eth",
+        "node": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e",
+        "derived": true
+      }
+    ]
+  },
+  "merkleRoots": {
+    "validatorMerkleRoot": "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b",
+    "agentMerkleRoot": "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b"
+  },
+  "flags": {
+    "paused": false,
+    "settlementPaused": false,
+    "lockIdentityConfig": false,
+    "useEnsJobTokenURI": false
+  },
+  "params": {
+    "requiredValidatorApprovals": "3",
+    "requiredValidatorDisapprovals": "3",
+    "voteQuorum": "3",
+    "premiumReputationThreshold": "10000",
+    "validationRewardPercentage": "8",
+    "maxJobPayout": "88888888000000000000000000",
+    "jobDurationLimit": "10000000",
+    "completionReviewPeriod": "604800",
+    "disputeReviewPeriod": "1209600",
+    "validatorBondBps": "1500",
+    "validatorBondMin": "10000000000000000000",
+    "validatorBondMax": "88888888000000000000000000",
+    "agentBond": "1000000000000000000",
+    "agentBondBps": "500",
+    "agentBondMax": "88888888000000000000000000",
+    "validatorSlashBps": "5000",
+    "challengePeriodAfterApproval": "86400"
+  },
+  "dynamic": {
+    "moderators": [],
+    "additionalAgents": [],
+    "additionalValidators": [],
+    "blacklistedAgents": [],
+    "blacklistedValidators": [],
+    "agiTypes": [
+      {
+        "nftAddress": "0x130909390AC76c53986957814Bde8786B8605fF3",
+        "payoutPercentage": "80",
+        "enabled": true,
+        "source": "hint"
+      }
+    ]
+  },
+  "provenance": {
+    "txCountScanned": 0,
+    "mutatorSelectors": []
+  }
+}
