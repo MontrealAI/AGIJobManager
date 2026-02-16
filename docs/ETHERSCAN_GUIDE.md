@@ -254,6 +254,6 @@ Else -> you are not authorized yet.
 
 Advisor input note (copy from Read Contract outputs):
 - `getJobCore`: include `assignedAt`, `duration`, `completed`, `disputed`, `expired`, `employer`, `assignedAgent`.
-- `getJobValidation`: include `completionRequested`, `completionRequestedAt`, `disputedAt` (and `validatorApprovedAt` if available from your snapshot pipeline).
+- `getJobValidation`: include `completionRequested`, `completionRequestedAt`, `disputedAt`, and `validatorApprovedAt` (required for strict finalize challenge-window advice).
 - also provide current timestamp and protocol windows (`completionReviewPeriod`, `disputeReviewPeriod`, `challengePeriodAfterApproval`) for accurate time-gated advice; if omitted, advisor suppresses dependent actions.
 - Time gates in advisor follow contract-style strict elapsed checks; for finalize/expire/stale resolution, current timestamp must be **strictly greater than** the reported threshold.

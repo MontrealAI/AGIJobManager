@@ -101,7 +101,12 @@ function main() {
   if (state === 'COMPLETION_REQUESTED') {
     if (reviewEndsAt !== null && now <= reviewEndsAt) actions.push('validateJob/disapproveJob (eligible validators)');
     if (reviewEndsAt !== null && now <= reviewEndsAt) actions.push('disputeJob (employer or assigned agent, if within allowed window)');
-    if (reviewEndsAt !== null && now > reviewEndsAt) actions.push('finalizeJob (may settle or open dispute depending on votes/quorum)');
+    const finalizeGate = reviewEndsAt !== null && challengeEndsAt !== null
+      ? (reviewEndsAt > challengeEndsAt ? reviewEndsAt : challengeEndsAt)
+      : null;
+    if (finalizeGate !== null && now > finalizeGate) {
+      actions.push('finalizeJob (may settle or open dispute depending on votes/quorum)');
+    }
   }
   if (state === 'DISPUTED') {
     actions.push('resolveDisputeWithCode (moderator)');
@@ -122,6 +127,7 @@ function main() {
   if (completionReviewPeriod === null) missingTiming.push('completionReviewPeriod');
   if (disputeReviewPeriod === null) missingTiming.push('disputeReviewPeriod');
   if (challengeWindow === null) missingTiming.push('challengePeriodAfterApproval');
+  if (completionRequested && validatorApprovedAt === null) missingTiming.push('validatorApprovedAt');
   if (missingTiming.length > 0) {
     console.log(`- Warning: missing timing inputs (${missingTiming.join(', ')}); advisor suppresses dependent time-gated actions.`);
   }
@@ -130,9 +136,11 @@ function main() {
   if (actions.length === 0) console.log('  - none (terminal state or missing timing inputs)');
   for (const a of actions) console.log(`  - ${a}`);
 
-  if (state === 'COMPLETION_REQUESTED' && reviewEndsAt !== null) {
-    const finalizeGate = challengeEndsAt === null || reviewEndsAt > challengeEndsAt ? reviewEndsAt : challengeEndsAt;
+  if (state === 'COMPLETION_REQUESTED' && reviewEndsAt !== null && challengeEndsAt !== null) {
+    const finalizeGate = reviewEndsAt > challengeEndsAt ? reviewEndsAt : challengeEndsAt;
     console.log(`- Earliest conservative finalize threshold (must be strictly greater than this): ${finalizeGate}`);
+  } else if (state === 'COMPLETION_REQUESTED') {
+    console.log('- Finalize threshold unavailable: provide completionReviewPeriod, challengePeriodAfterApproval, and validatorApprovedAt to avoid early finalize guidance.');
   }
   if (state === 'IN_PROGRESS' && expireAt !== null) {
     console.log(`- Earliest expire threshold (must be strictly greater than this): ${expireAt}`);
