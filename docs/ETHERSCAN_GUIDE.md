@@ -1,354 +1,264 @@
-# AGIJobManager Etherscan Guide (Read/Write Contract)
+# Etherscan Guide (Read/Write Contract)
 
-This guide is for users who only want to use **Etherscan + wallet** (no CLI required).
+This guide is designed for non-technical users who only use:
+- wallet (MetaMask or similar),
+- Etherscan Read/Write tabs.
 
-## Before you start (everyone)
+## A) Before you start
 
-1. Open the deployed contract page on Etherscan.
-2. Confirm the contract is **verified** so the ABI-backed forms appear under **Read Contract** and **Write Contract**.
-3. Connect your wallet in **Write Contract**.
+### 1) Verification matters
+Use this guide only on a contract with **verified source + ABI**. Without verification, Write/Read forms and errors are hard to interpret. See [`docs/VERIFY_ON_ETHERSCAN.md`](VERIFY_ON_ETHERSCAN.md).
 
-### Units you must use
-
-- `payout`, `bond`, and token amounts are in the AGI token's **smallest units** (like wei for ETH).
-  - Example: if token has 18 decimals, `1 token = 1000000000000000000`.
-- `duration`, `completionReviewPeriod`, `disputeReviewPeriod`, and challenge windows are **seconds**.
+### 2) Units and formatting
+- Token amounts are `uint256` **base units**.
+  - 1 token at 18 decimals = `1000000000000000000`.
+- Time values are **seconds**.
   - 1 hour = `3600`
   - 1 day = `86400`
+  - 7 days = `604800`
 
-### Pre-flight checklist (always do this)
+Use helper:
+```bash
+node scripts/etherscan/cli.js --action convert --amount 1.5 --duration 7d
+```
 
-Under **Read Contract**, check:
+### 3) Safety checklist before any write transaction
+- Read `paused()`; if true, intake functions revert.
+- Read `settlementPaused`; if true, settlement-related flows revert.
+- On AGI token, check your wallet balance and allowance.
+- Read `getJobCore(jobId)` and `getJobValidation(jobId)` before acting.
 
-- `paused()` must be `false` for intake actions (`createJob`, `applyForJob`).
-- `settlementPaused()` must be `false` for settlement actions (`requestJobCompletion`, `validateJob`, `finalizeJob`, `disputeJob`, moderator resolution).
-- Your token balance (`balanceOf`) is enough.
-- Your allowance (`allowance(owner, spender)`) is enough for AGIJobManager to pull tokens via `transferFrom`.
+### 4) Common failure modes
 
-`spender` = AGIJobManager contract address.
+| Revert / symptom | Likely cause | Fix |
+|---|---|---|
+| `NotAuthorized` | wrong auth route (allowlist / proof / ENS) | use correct route; verify proof/subdomain |
+| `InvalidState` | wrong job phase or window expired | re-check `getJobCore/getJobValidation` timestamps |
+| `Blacklisted` | owner blacklisted caller role | contact operator |
+| `InvalidParameters` | bad URI/amount/duration/code | validate field values and units |
+| `SettlementPaused` | settlement paused | wait for operator action |
+| ERC20 transfer revert | low balance/allowance or non-standard token behavior | fix allowance/balance; use strict-transfer token |
 
 ---
 
-## Choose your role
+## B) Choose your role
 
 ## Employer flow
 
-### 1) Approve AGI allowance
+### 1) Approve escrow amount on AGI token
+Write on AGI token contract:
+- function: `approve(spender, amount)`
+- spender: AGIJobManager address
+- amount: payout base units
 
-On the AGI ERC-20 token contract (Write tab):
-- `approve(spender, amount)`
-  - `spender`: AGIJobManager address
-  - `amount`: payout in base units
-
-Example:
-- Human: 1,200 AGI
-- Base units (18 decimals): `1200000000000000000000`
+Example helper:
+```bash
+node scripts/etherscan/cli.js --action approve --spender 0xYourManager --amount 250 --decimals 18
+```
 
 ### 2) Create job
+Write on AGIJobManager:
+- function: `createJob(_jobSpecURI, _payout, _duration, _details)`
+- `_jobSpecURI`: URL/IPFS URI
+- `_payout`: base units
+- `_duration`: seconds
+- `_details`: plain text summary
 
-On AGIJobManager (Write tab):
-- `createJob(jobSpecURI, payout, duration, details)`
+Copy/paste example:
+```text
+_jobSpecURI: ipfs://bafybeigdyr.../job-spec.json
+_payout: 250000000000000000000
+_duration: 604800
+_details: Build and test feature X
+```
 
-Example inputs:
-- `jobSpecURI`: `ipfs://bafybeigdyrzt.../jobSpec.v1.json`
-- `payout`: `1200000000000000000000`
-- `duration`: `259200` (3 days)
-- `details`: `Spanish-to-English legal translation, 40 pages`
+### 3) Cancel job (only before assignment)
+- function: `cancelJob(_jobId)`
+- allowed only when no assigned agent and not completed.
 
-### 3) Optional cancel (before assignment only)
+### 4) Finalize job
+- function: `finalizeJob(_jobId)`
+- if approval threshold was reached, must also wait challenge period.
+- after review window:
+  - 0 votes => agent-win path,
+  - tie or under quorum => dispute opened,
+  - approvals > disapprovals => agent-win,
+  - disapprovals > approvals => employer refund.
 
-- `cancelJob(jobId)`
-- Reverts with `InvalidState` after an agent is assigned.
-
-### 4) Finalize after completion request / voting windows
-
-- `finalizeJob(jobId)`
-- If validators approved early and challenge period passed, finalization can succeed before full review window.
-- If review window ends with tie/under-quorum, this call can create a dispute instead of settling.
-
-### 5) Raise dispute if needed
-
-- `disputeJob(jobId)`
-- Employer or assigned agent can call during review period after completion is requested.
-- Requires dispute bond transfer (approve first if needed).
-
-### 6) `delistJob(jobId)` meaning
-
-- `delistJob(jobId)` is **owner-only** emergency/admin cancellation for unassigned jobs.
-- Employers should normally use `cancelJob`.
-
-### 7) Events to track in Etherscan logs
-
-- `JobCreated` → job posted
-- `JobApplied` → agent assigned
-- `JobCompletionRequested` → completion submitted
-- `JobDisputed` → dispute opened
-- `JobCompleted` → settled agent-win path
-- `JobExpired` → expired and refunded to employer
-
-### If employer actions revert
-
-- `NotAuthorized`: wrong caller (not employer for employer-only action).
-- `InvalidState`: wrong lifecycle stage (e.g., cancel after assignment; finalize too early).
-- `SettlementPaused`: settlement actions paused.
-- `TransferFailed`: allowance/balance/token behavior problem.
-
----
+### 5) Dispute
+- function: `disputeJob(_jobId)`
+- callable by employer or assigned agent, only during completion review window.
 
 ## Agent flow
 
-### Agent authorization decision tree
+### Authorization routes
+You are authorized if **any one** succeeds:
+1. `additionalAgents(msg.sender) == true`.
+2. Valid Merkle proof against `agentMerkleRoot`.
+3. ENS ownership under configured agent roots.
 
-An agent can pass authorization if **any one** is true:
+### Apply
+- function: `applyForJob(_jobId, subdomain, proof)`
+- `subdomain`: ENS label if using ENS route; otherwise can be empty string.
+- `proof`: bytes32[] if Merkle route; otherwise `[]`.
 
-1. `additionalAgents(agentAddress) == true` (owner allowlist), or
-2. Agent is in current agent Merkle root with valid proof, or
-3. ENS ownership path validates for the submitted subdomain.
+`bytes32[]` formatting in Etherscan:
+```text
+[]
+```
+or
+```text
+["0xabc...64hex...","0xdef...64hex..."]
+```
 
-If none pass, `applyForJob` reverts `NotAuthorized`.
+Example helper:
+```bash
+node scripts/etherscan/cli.js --action applyForJob --jobId 12 --subdomain agent-label --proof '["0x1111...","0x2222..."]'
+```
 
-### 1) Approve AGI for agent bond (if bond > 0)
+### Request completion
+- function: `requestJobCompletion(_jobId, _jobCompletionURI)`
+- only assigned agent.
 
-- On AGI token: `approve(AGIJobManager, amount)`.
-
-### 2) Apply to a job
-
-- `applyForJob(jobId, subdomain, proof)`
-
-Examples:
-- `jobId`: `42`
-- `subdomain`: `alice-agent`
-- `proof` (Etherscan bytes32[]):
-  - `[]` (if allowlisted directly and not using Merkle)
-  - `[
-    "0x2b5d5b6f8c6f5f7a4fcb89de0d4045ce2f4b56e09a1ce3b7f7a1738ac9f2d103",
-    "0x8f26f0de0efecf7c54a8b44e8d5f8d0617f0af6f94fd5f4d1f4f208f01877d71"
-  ]`
-
-### 3) Submit completion
-
-- `requestJobCompletion(jobId, jobCompletionURI)`
-
-Example:
-- `jobCompletionURI`: `ipfs://bafybeibf.../jobCompletion.v1.json`
-
-### 4) Dispute (if needed)
-
-- `disputeJob(jobId)` during review period.
-
-### If agent actions revert
-
-- `NotAuthorized`: authorization path failed or wrong caller.
-- `Blacklisted`: address is blacklisted.
-- `IneligibleAgentPayout`: agent lacks required AGI type eligibility.
-- `InvalidState`: already assigned/completed/disputed/out-of-window.
-- `TransferFailed`: missing allowance or token transfer failure.
-
----
+### Optional dispute
+- function: `disputeJob(_jobId)`.
 
 ## Validator flow
 
-### Validator authorization decision tree
+### Authorization routes
+Same pattern as agent but uses validator routes:
+1. `additionalValidators(msg.sender)`.
+2. Merkle proof for `validatorMerkleRoot`.
+3. ENS ownership under validator roots.
 
-Validator can vote if **any one** is true:
+### Vote approve/disapprove
+- `validateJob(_jobId, subdomain, proof)`
+- `disapproveJob(_jobId, subdomain, proof)`
 
-1. `additionalValidators(validatorAddress) == true`, or
-2. Included in validator Merkle root with valid proof, or
-3. ENS ownership path validates for submitted subdomain.
-
-### 1) Approve AGI for validator bond
-
-- On AGI token: `approve(AGIJobManager, amount)`.
-
-### 2) Cast vote
-
-- Approve outcome: `validateJob(jobId, subdomain, proof)`
-- Reject outcome: `disapproveJob(jobId, subdomain, proof)`
-
-Proof format for Etherscan:
-
-`["0xabc...","0xdef..."]`
-
-### 3) Practical voting checklist
-
-Vote only when:
-- `completionRequested == true`
-- current time <= `completionRequestedAt + completionReviewPeriod`
-- you have not already voted
-
-Avoid voting when:
-- dispute already active (`disputed == true`)
-- review window passed
-
-Gas note:
-- first validator vote initializes per-job validator bond amount and may cost more gas.
-
-### Slashing (high-level)
-
-- Validators post a bond per vote.
-- Validators on the incorrect side can be partially slashed by `validatorSlashBps`.
-- Correct-side validators share reward pool + slashed amounts.
-
-### How votes affect finalization
-
-- Early approve path: enough approvals sets `validatorApproved`; finalize allowed after challenge period.
-- At review end:
-  - no votes → deterministic agent-win settlement,
-  - tie or under quorum → dispute is opened,
-  - majority approvals → agent-win,
-  - majority disapprovals → employer refund path.
-
-### If validator actions revert
-
-- `NotAuthorized` / `Blacklisted` / `InvalidState` / `TransferFailed`.
-- `ValidatorLimitReached` if max validators per job reached.
-
----
+Outcome meaning:
+- correct-side validators share rewards/slashed pool,
+- incorrect-side validators are partially slashed.
 
 ## Moderator flow
 
-### Resolve dispute
+### Resolve dispute with code
+- function: `resolveDisputeWithCode(_jobId, resolutionCode, reason)`
 
-- `resolveDisputeWithCode(jobId, resolutionCode, reason)`
+Code table:
+- `0` = no-op (event only; dispute remains active)
+- `1` = settle in agent-win path
+- `2` = refund employer path
 
-`resolutionCode` values:
-- `0` = log-only no-op (emits event, dispute remains active)
-- `1` = resolve in favor of agent (`_completeJob` path)
-- `2` = resolve in favor of employer (`_refundEmployer` path)
-
-Reason examples:
-- `"Evidence confirms milestone delivered; agent prevails"`
-- `"Major spec mismatch; employer refunded"`
-
-`reason` is emitted in `DisputeResolvedWithCode` and visible on-chain.
-
----
-
-## Owner/operator flow
-
-### Pause controls
-
-- `pause` / `unpause` (aka intake pause helpers exist too)
-- `setSettlementPaused(bool)` controls settlement actions and also gates calls that require `whenSettlementNotPaused` (including `createJob`/`applyForJob`).
-
-Plain English:
-- `pause=true` blocks new intake actions.
-- `settlementPaused=true` blocks settlement/dispute/finalization paths.
-
-### Treasury withdrawal (safe sequence)
-
-1. `pause()` (required for `withdrawAGI`).
-2. `withdrawableAGI()` (Read) to get max safe amount.
-3. `withdrawAGI(amount)` with `amount <= withdrawableAGI`.
-
-### Manage allowlists / roots
-
-- `updateMerkleRoots(validatorRoot, agentRoot)`
-- `addAdditionalAgent` / `removeAdditionalAgent`
-- `addAdditionalValidator` / `removeAdditionalValidator`
-
-### Moderators / blacklists
-
-- `addModerator` / `removeModerator`
-- `blacklistAgent(address, status)`
-- `blacklistValidator(address, status)`
-
-### ENS configuration
-
-- `setEnsJobPages(address)`
-- `setUseEnsJobTokenURI(bool)`
-- `lockIdentityConfiguration()` (irreversible lock of identity wiring controls)
-
-### Rescue functions (extreme caution)
-
-- `rescueERC20(token, to, amount)`
-- `rescueToken(token, data)`
-- `rescueETH(amount)`
-
-These are emergency tools; misuse can break trust with users. Use formal runbook and sign-off.
-
----
-
-## Time windows and finalization timeline
-
+Reason format (recommended):
 ```text
-assignedAt -------------------- assignedAt + duration
-    |                                   |
-    |<----- agent can work ------------>| (after this, expire path possible if no completion request)
-
-completionRequestedAt ---------------- completionRequestedAt + completionReviewPeriod
-         |                                        |
-         |<----- validators can vote ------------>| finalize may settle or open dispute
-
-validatorApprovedAt ----- validatorApprovedAt + challengePeriodAfterApproval
-         |                               |
-         |<-- early finalize blocked -->| after this, early finalize can settle if approvals > disapprovals
+CASE:<id>|EVIDENCE:<short refs>|RULE:<policy-id>|OUTCOME:<code>|NOTE:<free text>
 ```
 
-### “Can I call finalize now?” checklist
+Example:
+```text
+CASE:42|EVIDENCE:chatlog#9,deliveryHash|RULE:MOD-1|OUTCOME:1|NOTE:milestone met
+```
 
-1. `completionRequested == true`?
-2. If `validatorApproved == true`, has `challengePeriodAfterApproval` elapsed?
-3. If not early path, has `completionReviewPeriod` elapsed?
-4. If tie/under-quorum, expect dispute creation on finalize.
+## Owner/operator flow (high-risk)
 
-If unsure: you can still call `finalizeJob(jobId)`; if too early, it reverts `InvalidState`.
+Use [`docs/OWNER_RUNBOOK.md`](OWNER_RUNBOOK.md). Primary actions:
+- Pauses: `pause/unpause`, `setSettlementPaused`, `pauseAll/unpauseAll`
+- Governance: moderators, additional allowlists, blacklists
+- Parameters: quorum/thresholds/windows/bonds/slash/limits
+- Treasury: `withdrawAGI` (while paused, solvency checked by `withdrawableAGI`)
+- ENS config + lock: `setEnsJobPages`, `setUseEnsJobTokenURI`, roots, `lockIdentityConfiguration`
+- Rescue: `rescueETH`, `rescueERC20`, `rescueToken` (**extreme caution**)
 
 ---
 
-## Read Contract cheat sheet
+## C) Time windows (ASCII timeline)
 
-- `getJobCore(jobId)`
+```text
+assignment
+  |
+  |---- duration ----|   (agent must request completion before expiry, unless disputed)
+  v
+completionRequestedAt
+  |
+  |---- completionReviewPeriod ----|  validators vote / either party may dispute
+  v
+review end
+  |
+  | finalizeJob:
+  |   - if clear majority + quorum => settle
+  |   - tie/under quorum => dispute
+  |   - no votes => deterministic agent-win path
+  v
+if disputed: disputedAt
+  |
+  |---- disputeReviewPeriod ----|  moderator resolution expected
+  v
+owner may resolve stale dispute
+```
+
+### “Can I finalize now?” checklist
+- `completionRequested == true` from `getJobValidation`.
+- job is not `completed/expired/disputed` from `getJobCore`.
+- if `validatorApproved` path already triggered, challenge window must have elapsed.
+- otherwise, `now > completionRequestedAt + completionReviewPeriod`.
+
+If finalize reverts `InvalidState`, re-read timing fields and try again later.
+
+---
+
+## D) Read-contract cheat sheet
+
+- `getJobCore(jobId)`:
   - employer, assignedAgent, payout, duration, assignedAt, completed, disputed, expired, agentPayoutPct.
-- `getJobValidation(jobId)`
-  - completionRequested, validatorApprovals, validatorDisapprovals, completionRequestedAt, disputedAt.
-- `getJobSpecURI(jobId)`
-  - original job spec URI.
-- `getJobCompletionURI(jobId)`
-  - submitted completion URI.
-- `tokenURI(tokenId)`
-  - completion NFT metadata URI.
+- `getJobValidation(jobId)`:
+  - completionRequested, approvals, disapprovals, completionRequestedAt, disputedAt.
+- `getJobSpecURI(jobId)`:
+  - spec URI submitted at create.
+- `getJobCompletionURI(jobId)`:
+  - completion URI submitted by agent.
+- `tokenURI(tokenId)`:
+  - completion NFT metadata URI (optionally ENS-backed depending on config).
 
-State inference examples:
-- `assignedAgent == 0x000...0` and `completed == false` → unassigned/open.
-- `completionRequested == true` and `disputed == false` → in validator review.
-- `completed == true` → settled and NFT minted.
-- `expired == true` → expired path executed.
+Use these to infer state before every write.
 
 ---
 
-## Revert/error decoding for Etherscan users
+## E) Authorization decision tree
 
-Common custom errors and likely fixes:
+```text
+Are you owner-added? (additionalAgents/additionalValidators)
+  ├─ Yes -> pass proof [] and proceed
+  └─ No
+      Are you on Merkle allowlist with proof?
+        ├─ Yes -> pass proof bytes32[] and proceed
+        └─ No
+            Use ENS route:
+              - provide owned subdomain label
+              - proof can be []
+```
 
-- `NotAuthorized`
-  - Caller is wrong role or proof/ENS/allowlist authorization failed.
-- `Blacklisted`
-  - Address is owner-blacklisted.
-- `InvalidParameters`
-  - Bad input value/format (zero or too large period, invalid resolution code, invalid URI length, etc.).
-- `InvalidState`
-  - Right function, wrong timing/lifecycle stage.
-- `SettlementPaused`
-  - settlement toggled off by owner.
-- `TransferFailed`
-  - allowance/balance missing, or token transfer behavior incompatible.
-- `ValidatorLimitReached`
-  - max validators for this job already reached.
-- `InsufficientWithdrawableBalance` / `InsolventEscrowBalance`
-  - attempted treasury withdrawal exceeds safe withdrawable amount.
-
-Tip: Etherscan shows custom error names only if ABI is verified and matched to deployed bytecode.
+ENS subdomain label constraints:
+- lowercase ASCII only,
+- length 1..63,
+- chars `[a-z0-9-]` only,
+- no dots,
+- cannot start/end with `-`.
 
 ---
 
-## Merkle proof helper (offline)
+## Offline helper tools
 
-Use repo helper script (no RPC calls):
+### Merkle root + proofs (Etherscan-ready)
+```bash
+node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addresses.json
+```
 
-- Single address proof:
-  - `node scripts/merkle/generate_merkle_proof.js --input scripts/merkle/sample_addresses.json --address 0x...`
-- Full map (root + proofs for all addresses):
-  - `node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addresses.json --output proofs.json`
+### Paste-ready Etherscan payloads
+```bash
+node scripts/etherscan/cli.js --action createJob --amount 100 --duration 7d --jobSpecURI ipfs://spec --details "Milestone 1"
+```
 
-`proofs.json` output is directly copy/pasteable into Etherscan bytes32[] fields.
+### Offline state advisor (no RPC)
+```bash
+node scripts/advisor/job_state_advisor.js '{"nowTs":1730000000,"jobCore":{"assignedAgent":"0x1111111111111111111111111111111111111111","duration":604800,"assignedAt":1729000000,"completed":false,"disputed":false,"expired":false},"jobValidation":{"completionRequested":true,"validatorApprovals":2,"validatorDisapprovals":1,"completionRequestedAt":1729500000,"disputedAt":0},"config":{"completionReviewPeriod":604800,"disputeReviewPeriod":1209600,"voteQuorum":3}}'
+```

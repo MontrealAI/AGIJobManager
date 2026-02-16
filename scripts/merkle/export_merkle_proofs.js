@@ -45,7 +45,7 @@ if (!Array.isArray(parsed) || parsed.length === 0) {
   process.exit(1);
 }
 
-const addresses = parsed.map(normalizeAddress);
+const addresses = [...new Set(parsed.map(normalizeAddress))].sort();
 const leaves = addresses.map(toLeaf);
 const tree = new MerkleTree(leaves, keccak256, { sortPairs: true, sortLeaves: true });
 
@@ -59,6 +59,9 @@ const output = {
   merkleOptions: { sortPairs: true, sortLeaves: true },
   root: tree.getHexRoot(),
   proofs,
+  etherscanProofs: Object.fromEntries(
+    Object.entries(proofs).map(([addr, proof]) => [addr, JSON.stringify(proof)])
+  )
 };
 
 if (outputPath) {
