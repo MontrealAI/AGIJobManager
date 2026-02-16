@@ -103,9 +103,13 @@ module.exports = async function (deployer, network, accounts) {
   }
 
   for (const row of SNAPSHOT.agiTypes) {
-    if (Number(row.payoutPercentage) > 0) {
+    const addPct = Number(row.payoutPercentage) > 0
+      ? row.payoutPercentage
+      : row.restorePayoutPercentage;
+
+    if (Number(addPct) > 0) {
       try {
-        await manager.addAGIType(row.nftAddress, row.payoutPercentage, { from: owner });
+        await manager.addAGIType(row.nftAddress, addPct, { from: owner });
       } catch (err) {
         throw new Error(`addAGIType failed for ${row.nftAddress}: ${err.message}`);
       }
@@ -113,7 +117,11 @@ module.exports = async function (deployer, network, accounts) {
   }
 
   for (const row of SNAPSHOT.agiTypes) {
-    if (!row.enabled && Number(row.payoutPercentage) > 0) {
+    if (!row.enabled) {
+      const hasRestoreAdd = Number(row.payoutPercentage) > 0 || Number(row.restorePayoutPercentage) > 0;
+      if (!hasRestoreAdd) {
+        throw new Error(`Cannot preserve disabled AGI type ${row.nftAddress}: missing restore payout in snapshot.`);
+      }
       await manager.disableAGIType(row.nftAddress, { from: owner });
     }
   }

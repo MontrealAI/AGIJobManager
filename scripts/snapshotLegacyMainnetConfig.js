@@ -59,25 +59,25 @@ function getEtherscanSource(address, apiKey) {
 }
 
 function getTxHashes(address, apiKey) {
-  if (apiKey) {
-    const all = [];
-    const offset = 10000;
-    for (let page = 1; page <= 100; page += 1) {
-      const url = `${ETHERSCAN_V2}?chainid=1&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=${page}&offset=${offset}&sort=asc&apikey=${apiKey}`;
-      const parsed = JSON.parse(runCurl(url));
-      if (parsed.status !== '1') {
-        if (page === 1) break;
-        throw new Error(`Etherscan txlist pagination failed at page ${page}: ${parsed.message || 'unknown'} / ${parsed.result || 'n/a'}`);
-      }
-      all.push(...parsed.result.map((x) => x.hash.toLowerCase()));
-      if (parsed.result.length < offset) {
-        return [...new Set(all)];
-      }
-    }
-    throw new Error('Etherscan txlist pagination exceeded safety bound; refusing partial replay.');
+  if (!apiKey) {
+    throw new Error('ETHERSCAN_API_KEY is required for complete tx replay. Refusing partial HTML scrape fallback for deterministic snapshot generation.');
   }
-  const html = runCurl(`https://etherscan.io/txs?a=${address}`);
-  return [...new Set((html.match(/\/tx\/(0x[0-9a-fA-F]{64})/g) || []).map((x) => x.slice(4).toLowerCase()))];
+
+  const all = [];
+  const offset = 10000;
+  for (let page = 1; page <= 100; page += 1) {
+    const url = `${ETHERSCAN_V2}?chainid=1&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=${page}&offset=${offset}&sort=asc&apikey=${apiKey}`;
+    const parsed = JSON.parse(runCurl(url));
+    if (parsed.status !== '1') {
+      throw new Error(`Etherscan txlist pagination failed at page ${page}: ${parsed.message || 'unknown'} / ${parsed.result || 'n/a'}`);
+    }
+    all.push(...parsed.result.map((x) => x.hash.toLowerCase()));
+    if (parsed.result.length < offset) {
+      return [...new Set(all)];
+    }
+  }
+
+  throw new Error('Etherscan txlist pagination exceeded safety bound; refusing partial replay.');
 }
 
 function encodeCall(abiEntry, args = []) {
@@ -205,7 +205,25 @@ async function main() {
     }
   }
 
-  const agiTypes = agiTypesOnchain;
+  const agiTypes = agiTypesOnchain.map((row) => {
+    if (row.enabled || Number(row.payoutPercentage) > 0) {
+      return row;
+    }
+
+    const replay = agiMap.get(row.nftAddress);
+    if (replay && Number(replay.payoutPercentage) > 0) {
+      return {
+        ...row,
+        restorePayoutPercentage: String(replay.payoutPercentage),
+        source: {
+          ...row.source,
+          restorePayoutSource: replay.source
+        }
+      };
+    }
+
+    return row;
+  });
 
   const snapshot = {
     schemaVersion:'1.0.0',generatedAt:new Date().toISOString(),legacyAddress:checksum(LEGACY_ADDRESS),chainId,
@@ -225,7 +243,7 @@ async function main() {
       blacklistedValidators:[...maps.blacklistedValidators.entries()].filter(([,v])=>v.enabled).map(([address,v])=>({address,source:v.source}))
     },
     agiTypes,
-    provenance:{derivedBy:'eth_call + transaction input replay',txCountConsidered:txHashes.length,mutationCount:mutations.length,note:'AGI types are sourced from on-chain agiTypes(index) reads; replay data is used for non-enumerable sets only.'}
+    provenance:{derivedBy:'eth_call + transaction input replay',txCountConsidered:txHashes.length,mutationCount:mutations.length,note:'AGI types are sourced from on-chain agiTypes(index) reads; replay data is used for non-enumerable sets and disabled-type restore payout hints.'}
   };
 
   fs.mkdirSync(path.dirname(SNAPSHOT_PATH),{recursive:true});
