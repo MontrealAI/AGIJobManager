@@ -36,6 +36,11 @@ module.exports = async function (deployer, network, accounts) {
     return;
   }
 
+  if (process.env.ENABLE_LEGACY_SNAPSHOT_MIGRATION !== '1') {
+    console.log('Skipping legacy snapshot migration. Set ENABLE_LEGACY_SNAPSHOT_MIGRATION=1 to run this restore path.');
+    return;
+  }
+
   const chainId = Number(await web3.eth.getChainId());
   if (chainId !== Number(SNAPSHOT.chainId)) {
     throw new Error(`Snapshot chainId mismatch: connected=${chainId} snapshot=${SNAPSHOT.chainId}`);
@@ -124,9 +129,13 @@ module.exports = async function (deployer, network, accounts) {
   }
 
   for (const row of SNAPSHOT.agiTypes) {
-    if (Number(row.payoutPercentage) > 0) {
+    const addPayout = Number(row.payoutPercentage) > 0
+      ? String(row.payoutPercentage)
+      : (!row.enabled && Number(row.restorePayoutPercentage || 0) > 0 ? String(row.restorePayoutPercentage) : null);
+
+    if (addPayout) {
       try {
-        await manager.addAGIType(row.nftAddress, row.payoutPercentage, { from: owner });
+        await manager.addAGIType(row.nftAddress, addPayout, { from: owner });
       } catch (err) {
         throw new Error(`addAGIType failed for ${row.nftAddress}: ${err.message}`);
       }

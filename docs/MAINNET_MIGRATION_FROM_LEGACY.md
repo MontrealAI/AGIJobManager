@@ -37,6 +37,7 @@ If you have a local mainnet fork endpoint:
 ```bash
 MAINNET_RPC_URL=http://127.0.0.1:8545 \
 PRIVATE_KEYS=<deployer_pk> \
+ENABLE_LEGACY_SNAPSHOT_MIGRATION=1 \
 CONFIRM_MAINNET_DEPLOY=1 \
 truffle migrate --network mainnet --f 3 --to 3
 ```
@@ -46,6 +47,7 @@ truffle migrate --network mainnet --f 3 --to 3
 ```bash
 MAINNET_RPC_URL=https://<your-mainnet-rpc> \
 PRIVATE_KEYS=<deployer_pk> \
+ENABLE_LEGACY_SNAPSHOT_MIGRATION=1 \
 CONFIRM_MAINNET_DEPLOY=1 \
 truffle migrate --network mainnet --f 3 --to 3
 ```
@@ -53,7 +55,7 @@ truffle migrate --network mainnet --f 3 --to 3
 Optional owner override:
 
 ```bash
-NEW_OWNER=0x... truffle migrate --network mainnet --f 3 --to 3
+ENABLE_LEGACY_SNAPSHOT_MIGRATION=1 NEW_OWNER=0x... truffle migrate --network mainnet --f 3 --to 3
 ```
 
 ## 4) Post-deploy verification checklist

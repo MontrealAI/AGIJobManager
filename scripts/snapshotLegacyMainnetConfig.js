@@ -169,7 +169,7 @@ async function main() {
   mutations.sort((a,b)=>(a.blockNumber-b.blockNumber)||(a.transactionIndex-b.transactionIndex));
 
   const maps = { moderators:new Map(), additionalAgents:new Map(), additionalValidators:new Map(), blacklistedAgents:new Map(), blacklistedValidators:new Map() };
-  const agiMap = new Map(); const agiOrder = []; let baseIpfsUrl = null;
+  const agiMap = new Map(); const agiOrder = []; const replayAgiTypePayouts = new Map(); let baseIpfsUrl = null;
   const put = (map, addr, enabled, src)=>map.set(checksum(addr),{enabled,source:src});
 
   for (const m of mutations) {
@@ -187,6 +187,7 @@ async function main() {
     if (m.functionName==='addAGIType') {
       const nft = checksum(a0); const pct = str(a1);
       if (!agiMap.has(nft)) agiOrder.push(nft);
+      if (Number(pct) > 0) replayAgiTypePayouts.set(nft, pct);
       agiMap.set(nft,{nftAddress:nft,payoutPercentage:pct,enabled:Number(pct)>0,source:src});
     }
     if (m.functionName==='disableAGIType') {
@@ -205,7 +206,13 @@ async function main() {
     }
   }
 
-  const agiTypes = agiTypesOnchain;
+  const agiTypes = agiTypesOnchain.map((row) => {
+    const replayPct = replayAgiTypePayouts.get(row.nftAddress);
+    if (!row.enabled && Number(row.payoutPercentage) === 0 && replayPct && Number(replayPct) > 0) {
+      return { ...row, restorePayoutPercentage: replayPct, source: { ...row.source, restorePayoutSource: 'tx_input_replay' } };
+    }
+    return row;
+  });
 
   const snapshot = {
     schemaVersion:'1.0.0',generatedAt:new Date().toISOString(),legacyAddress:checksum(LEGACY_ADDRESS),chainId,
@@ -225,7 +232,7 @@ async function main() {
       blacklistedValidators:[...maps.blacklistedValidators.entries()].filter(([,v])=>v.enabled).map(([address,v])=>({address,source:v.source}))
     },
     agiTypes,
-    provenance:{derivedBy:'eth_call + transaction input replay',txCountConsidered:txHashes.length,mutationCount:mutations.length,note:'AGI types are sourced from on-chain agiTypes(index) reads; replay data is used for non-enumerable sets only.'}
+    provenance:{derivedBy:'eth_call + transaction input replay',txCountConsidered:txHashes.length,mutationCount:mutations.length,note:'AGI types are sourced from on-chain agiTypes(index) reads; replay data is used for non-enumerable sets and disabled AGI restore payout hints.'}
   };
 
   fs.mkdirSync(path.dirname(SNAPSHOT_PATH),{recursive:true});
