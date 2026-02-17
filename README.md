@@ -40,16 +40,6 @@ Users should assume an operator-managed escrow model with transparent on-chain c
 5. Validators: `validateJob` / `disapproveJob` during review period.
 6. Employer: `finalizeJob(jobId)` when eligible; if contested, `disputeJob(jobId)` and moderator resolves.
 
-## Glossary (Etherscan terms)
-
-- **jobId**: numeric job identifier.
-- **payout**: escrowed amount in token base units.
-- **duration**: job duration in seconds.
-- **review window**: completion voting period after completion request.
-- **quorum**: minimum total validator participation threshold.
-- **bond**: staked token amount for agent/validator/dispute initiation.
-- **slashing**: bond penalty for wrong-side outcomes.
-
 ## Tooling and CI entrypoints
 
 ```bash
@@ -61,7 +51,6 @@ npm run size
 ```
 
 `npm test` runs: Truffle compile/tests, additional Node tests, and contract size guards.
-
 
 ## Documentation
 

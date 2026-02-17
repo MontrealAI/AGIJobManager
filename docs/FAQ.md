@@ -8,6 +8,13 @@ AGIJobManager pulls AGI using `transferFrom`, so your wallet must grant allowanc
 
 Yes for least privilege. Approve exact payout/bond amount when possible.
 
+## How do I convert human token values and durations safely?
+
+Use the offline helper:
+```bash
+node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duration 7d --decimals 18
+```
+
 ## How do I paste `bytes32[]` proofs into Etherscan?
 
 Use a one-line JSON array:
@@ -31,7 +38,7 @@ If finalization conditions indicate contested outcomes (for example under-quorum
 
 ## What happens if nobody votes?
 
-Outcome is deterministic from contract logic and timing. Use `getJobValidation(jobId)` plus timing windows to evaluate whether finalize/dispute path is next.
+Low participation can produce contested/under-quorum outcomes. In that case, finalization may route into dispute and require moderator resolution.
 
 ## What is `paused` vs `settlementPaused`?
 
@@ -43,3 +50,11 @@ They are independent and can be toggled separately.
 ## Why do fee-on-transfer or deflationary ERC20s fail?
 
 AGIJobManager accounting assumes strict transfer amounts. Tokens that burn/skim on transfer can violate accounting expectations and cause reverts (commonly `TransferFailed` or downstream state errors).
+
+## Why does Etherscan show big integers instead of token decimals?
+
+Contract arguments are `uint256` base units. Etherscan does not apply token decimal formatting to write fields automatically.
+
+## Can I use these helper scripts without RPC access?
+
+Yes. `scripts/merkle/*`, `scripts/etherscan/prepare_inputs.js`, and `scripts/advisor/state_advisor.js` are designed to run offline.
