@@ -31,7 +31,7 @@ This runbook is optimized for low-touch operations with Etherscan + offline scri
 |---|---:|---:|---|
 | Normal operation | `false` | `false` | Default production mode |
 | Intake stopped | `true` | `false` | Block new jobs/applications while allowing existing jobs to settle |
-| Settlement stopped | `false` | `true` | Freeze finalize/dispute lane while still allowing intake |
+| Settlement stopped | `false` | `true` | Freeze settlement-gated actions (including create/apply/finalize/dispute) while investigating |
 | Full incident response | `true` | `true` | Suspected severe bug/exploit or unresolved accounting risk |
 
 Execution mapping:
@@ -67,7 +67,7 @@ Recommended sequence:
 
 | Symptom | Immediate checks | Primary action | Rollback / exit criteria |
 |---|---|---|---|
-| Reverts on create/apply spike | `paused()`, token allowance/balance, recent config changes | If uncertain, move to **Intake stopped** (`pause()`) while triaging | `unpause()` only after reproducer resolved and docs/support messaging updated |
+| Reverts on create/apply spike | `paused()`, `settlementPaused()`, token allowance/balance, recent config changes | If uncertain, move to **Intake stopped** (`pause()`) while triaging | `unpause()` only after reproducer resolved and docs/support messaging updated |
 | Finalize/dispute path behaving unexpectedly | `settlementPaused()`, `getJobCore`, `getJobValidation`, timing parameters | Move to **Settlement stopped** (`setSettlementPaused(true)`) while moderators/owner review | `setSettlementPaused(false)` after confirming expected behavior on sampled jobs |
 | Suspected exploit or accounting inconsistency | Contract AGI balance, `withdrawableAGI()`, active disputes/jobs | Move to **Full incident response** (`pauseAll()`) | `unpauseAll()` only after root cause and compensating controls are documented |
 | Authorization complaints (legit users blocked) | Merkle roots, additional allowlists, ENS root config, blacklist state | Keep mode as-is, rotate roots/allowlist with change notice | Confirm affected users can apply/vote with new proofs and archive evidence |

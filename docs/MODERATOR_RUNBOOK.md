@@ -81,7 +81,7 @@ Pre-resolution checklist (must all be true):
 2. selected code matches matrix + evidence bundle
 3. reason string includes ticket/policy references
 4. linked artifacts are immutable (IPFS hash or content hash)
-5. signer is authorized moderator/owner
+5. signer is in `moderators(address) == true` (owner-only is not sufficient unless owner is also a moderator)
 
 ## 6) Quick consistency checklist before submitting resolution tx
 
