@@ -278,8 +278,8 @@ now > max(completionRequestedAt + completionReviewPeriod,
 6. If finalization still routes to dispute, use moderator flow.
 
 ### What if nobody votes?
-- If approvals/disapprovals remain below quorum/thresholds by review end, settlement can move into dispute-oriented outcomes.
-- Practically: expect `finalizeJob` to either settle deterministically per contract logic or transition into a dispute path requiring moderator resolution.
+- Pure no-vote case (`validatorApprovals == 0` and `validatorDisapprovals == 0`): `finalizeJob` settles deterministically (no moderator action required).
+- Dispute-oriented outcomes are for contested low-participation states (for example, some votes but under quorum) or tie conditions, not the strict zero-vote path.
 
 ### Why can `finalizeJob` create a dispute?
 `finalizeJob` is the transition function that evaluates votes, quorum, disapprovals, and timing gates together. If those checks indicate contested/insufficient consensus, it can mark dispute state instead of direct payout.
