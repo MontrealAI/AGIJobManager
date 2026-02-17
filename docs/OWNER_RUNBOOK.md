@@ -37,7 +37,7 @@ This runbook is optimized for low-touch operations with Etherscan + offline scri
 Execution mapping:
 - Normal operation: `unpauseAll()` (or `unpause()` + `setSettlementPaused(false)`)
 - Intake stopped: `pause()` + `setSettlementPaused(false)`
-- Settlement stopped: `unpause()` + `setSettlementPaused(true)`
+- Settlement stopped: `setSettlementPaused(true)` (if currently paused, also call `unpause()` to reach `paused=false`)
 - Full incident response: `pauseAll()`
 
 ### A) Stop intake only (new jobs/applications)
