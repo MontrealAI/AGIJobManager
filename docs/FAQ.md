@@ -43,3 +43,24 @@ They are independent and can be toggled separately.
 ## Why do fee-on-transfer or deflationary ERC20s fail?
 
 AGIJobManager accounting assumes strict transfer amounts. Tokens that burn/skim on transfer can violate accounting expectations and cause reverts (commonly `TransferFailed` or downstream state errors).
+
+
+## How do I convert human values to Etherscan-safe integers?
+
+Use the offline helper:
+
+```bash
+node scripts/etherscan/prepare_inputs.js --action convert --amount 1.25 --duration 7d --decimals 18
+```
+
+This prints base units for token amounts and seconds for durations.
+
+## I am an operator: what is the safe withdraw sequence?
+
+Always run:
+1. read `withdrawableAGI()`
+2. choose `amount <= withdrawableAGI()`
+3. ensure `paused()==true` and `settlementPaused()==false` (or call `pause()` first if safe)
+4. execute `withdrawAGI(amount)`
+
+Do not infer withdrawable capacity from raw ERC20 balance alone because active escrow and bonds must stay solvent.
