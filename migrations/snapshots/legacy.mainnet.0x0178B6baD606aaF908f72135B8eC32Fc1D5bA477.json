@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-02-17T14:27:37.683Z",
+  "legacy": {
+    "address": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
+    "abiSource": "etherscan-html-fallback",
+    "txSource": "etherscan-html-scrape+rpc-unsafe",
+    "proxyImplementation": null,
+    "sourceMeta": {
+      "abiSource": "etherscan-html-fallback"
+    }
+  },
+  "snapshot": {
+    "chainId": "1",
+    "blockNumber": "23200000",
+    "blockTimestamp": "1755906443"
+  },
+  "constructorConfig": {
+    "agiTokenAddress": "0xf0780F43b86c13B3d0681B1Cf6DaeB1499e7f14D",
+    "baseIpfsUrl": "https://ipfs.io/ipfs/",
+    "ensConfig": {
+      "ensRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401"
+    },
+    "rootNodes": {
+      "clubRootNode": "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+      "agentRootNode": "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+      "alphaClubRootNode": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+      "alphaAgentRootNode": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e"
+    },
+    "merkleRoots": {
+      "validatorMerkleRoot": "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b",
+      "agentMerkleRoot": "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b"
+    },
+    "derived": {
+      "alphaClubRootNode": {
+        "name": "alpha.club.agi.eth",
+        "value": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+        "derived": true
+      },
+      "alphaAgentRootNode": {
+        "name": "alpha.agent.agi.eth",
+        "value": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e",
+        "derived": true
+      }
+    }
+  },
+  "runtimeConfig": {
+    "owner": "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+    "paused": false,
+    "settlementPaused": false,
+    "lockIdentityConfig": false,
+    "ensJobPages": "0x0000000000000000000000000000000000000000",
+    "useEnsJobTokenURI": false,
+    "useEnsJobTokenURISource": "legacy-feature-unavailable",
+    "requiredValidatorApprovals": "8",
+    "requiredValidatorDisapprovals": "10",
+    "voteQuorum": "8",
+    "premiumReputationThreshold": "10000",
+    "validationRewardPercentage": "8",
+    "maxJobPayout": "8888000000000000000000",
+    "jobDurationLimit": "10000000",
+    "completionReviewPeriod": "604800",
+    "disputeReviewPeriod": "1209600",
+    "validatorBondBps": "0",
+    "validatorBondMin": "0",
+    "validatorBondMax": "0",
+    "agentBondBps": "0",
+    "agentBondMin": "0",
+    "agentBondMax": "0",
+    "validatorSlashBps": "0",
+    "challengePeriodAfterApproval": "0",
+    "challengePeriodAfterApprovalSource": "legacy-feature-unavailable"
+  },
+  "dynamicSets": {
+    "moderators": [
+      "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201"
+    ],
+    "additionalAgents": [],
+    "additionalValidators": [],
+    "blacklistedAgents": [],
+    "blacklistedValidators": [],
+    "provenance": {
+      "moderators": {
+        "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201": {
+          "txHash": "0xe06b2dda1d4f7308c924249ee4d595384d0ac9e7378f25b73afdd9894a4d831b",
+          "blockNumber": "20194021",
+          "txIndex": "70",
+          "traceId": null,
+          "function": "addModerator"
+        }
+      },
+      "additionalAgents": {},
+      "additionalValidators": {},
+      "blacklistedAgents": {},
+      "blacklistedValidators": {},
+      "baseIpfsUrl": [],
+      "useEnsJobTokenURI": []
+    }
+  },
+  "agiTypes": [
+    {
+      "nftAddress": "0x1C11AE902e70e20b775c43B60F8ecb1ac17168b2",
+      "payoutPercentage": "80",
+      "enabled": true,
+      "source": {
+        "txHash": "0x90e6945c39f79fb10d24ebd85f1436604a0e6d519cf5e6b491ad3b8986c19700",
+        "blockNumber": "20193944",
+        "logIndex": "183"
+      }
+    },
+    {
+      "nftAddress": "0x76521F2aacc4EdfC58C837CbE8358EC7D18a4EFb",
+      "payoutPercentage": "80",
+      "enabled": true,
+      "source": {
+        "txHash": "0x9086f2bf3831e3b36bb8f181e09d6488316f07e56be830cb45d1d934c417e47f",
+        "blockNumber": "20193981",
+        "logIndex": "402"
+      }
+    }
+  ]
+}
