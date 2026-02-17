@@ -21,6 +21,10 @@
     "merkle:export": "node scripts/merkle/export_merkle_proofs.js",
     "etherscan:prep": "node scripts/etherscan/prepare_inputs.js",
     "advisor:job": "node scripts/advisor/state_advisor.js"
+    ,"security:forge:build": "forge build"
+    ,"security:forge:test": "forge test"
+    ,"security:forge:invariant": "forge test --match-path 'forge-test/invariant/*.t.sol'"
+    ,"security:slither": "slither . --config-file slither.config.json --fail-high"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

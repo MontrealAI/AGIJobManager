@@ -40,3 +40,50 @@ jobs:
 
       - name: UI smoke test
         run: npm run test:ui
+
+  security-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Slither
+        run: |
+          python -m pip install --upgrade pip
+          pip install slither-analyzer==0.10.4
+
+      - name: Forge fmt
+        run: forge fmt --check
+
+      - name: Forge build
+        run: FOUNDRY_PROFILE=ci forge build
+
+      - name: Forge tests
+        run: FOUNDRY_PROFILE=ci forge test
+
+      - name: Forge invariants
+        run: FOUNDRY_PROFILE=ci forge test --match-path 'forge-test/invariant/*.t.sol'
+
+      - name: Slither
+        run: npm run security:slither
