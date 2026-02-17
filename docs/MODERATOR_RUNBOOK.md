@@ -1,55 +1,67 @@
 # MODERATOR_RUNBOOK
 
+Goal: produce consistent dispute outcomes with minimal manual judgment.
+
 ## 1) Dispute triage decision tree
 
 ```text
-Is dispute active?
+Is disputed == true?
   no  -> stop (no moderator action)
   yes -> gather evidence bundle
-         |
-         v
-Do facts clearly support one side under policy?
-  no  -> code 0 (NO_ACTION) with reason and escalation note
-  yes -> choose code 1 (AGENT_WIN) or 2 (EMPLOYER_WIN)
+          |
+          v
+Do objective facts satisfy one side under policy?
+  no  -> resolveDisputeWithCode(jobId, 0, reason) and request more evidence
+  yes -> choose 1 (AGENT_WIN) or 2 (EMPLOYER_WIN)
 ```
 
 ## 2) Resolution matrix
 
-| Condition | Suggested code |
+| Situation | Code |
 |---|---|
-| completion evidence valid + obligations met | `1` (AGENT_WIN) |
-| completion invalid/absent + employer claim supported | `2` (EMPLOYER_WIN) |
-| insufficient/conflicting evidence | `0` (NO_ACTION) |
+| Deliverable evidence supports agent obligations completed | `1` (`AGENT_WIN`) |
+| Evidence supports employer claim of non-performance/non-compliance | `2` (`EMPLOYER_WIN`) |
+| Evidence incomplete or contradictory | `0` (`NO_ACTION`) |
 
 ## 3) SOP: `resolveDisputeWithCode(jobId, code, reason)`
 
-### Minimum evidence checklist
+### Minimum evidence checklist (required)
 - `getJobCore(jobId)` snapshot
 - `getJobValidation(jobId)` snapshot
-- `getJobSpecURI(jobId)` and (if present) `getJobCompletionURI(jobId)`
-- dispute claim summary from both parties
-- any off-chain artifacts referenced by URI/hash
+- `getJobSpecURI(jobId)` content reference
+- `getJobCompletionURI(jobId)` content reference (if present)
+- timestamped summary from both sides
+- links/hashes for external evidence
 
-### Reason format (standardize)
+### Standard reason-string format
 
 ```text
-EVIDENCE:v1|summary:<one line>|facts:<key facts>|links:<refs>|policy:<section>|moderator:<id>|ts:<unix>
+EVIDENCE:v1|summary:<one line>|facts:<key facts>|links:<ipfs/urls>|policy:<section>|moderator:<id>|ts:<unix>
 ```
 
 Examples:
-- `EVIDENCE:v1|summary:milestones met|facts:delivery+acceptance logs match|links:ipfs://...|policy:ops-2.1|moderator:mod-07|ts:1736465000`
-- `EVIDENCE:v1|summary:missing deliverable|facts:completion URI invalid|links:ipfs://...|policy:ops-2.3|moderator:mod-03|ts:1736465200`
+- `EVIDENCE:v1|summary:milestones met|facts:delivery hashes match acceptance terms|links:ipfs://...|policy:ops-2.1|moderator:mod-07|ts:1736465000`
+- `EVIDENCE:v1|summary:missing deliverable|facts:completion URI non-conforming|links:ipfs://...|policy:ops-2.3|moderator:mod-03|ts:1736465200`
 
 ### Consistency rules
-- Use the same evidence threshold for similar cases.
-- If uncertain, prefer code `0` and request more evidence.
-- Never resolve based on private side-channel claims without verifiable references.
+- Apply the same evidence threshold for similar disputes.
+- Never use unverifiable private side channels as sole basis.
+- If uncertain, prefer code `0` and ask for clarifying evidence.
+- Keep a structured moderator case log (jobId, code, reason, tx hash).
 
 ## 4) Etherscan-only workflow
 
 1. Read `getJobCore(jobId)`.
 2. Read `getJobValidation(jobId)`.
 3. Read `getJobSpecURI(jobId)` and `getJobCompletionURI(jobId)`.
-4. Confirm dispute is active.
-5. Write `resolveDisputeWithCode(jobId, code, reason)`.
-6. Save tx hash in moderator case log.
+4. Confirm dispute state is active (`disputed == true`).
+5. Use offline helper for reason-template drafting if needed.
+6. Write `resolveDisputeWithCode(jobId, code, reason)`.
+7. Save tx hash and archive evidence bundle.
+
+## 5) Quick consistency checklist before submitting resolution tx
+
+- Is code choice consistent with matrix and prior similar cases?
+- Is reason string complete and parseable?
+- Are all referenced artifacts immutable and retrievable?
+- Is moderator signer authorized?

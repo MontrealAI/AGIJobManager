@@ -1,0 +1,27 @@
+{
+  "jobId": 42,
+  "currentTimestamp": 1737000000,
+  "completionReviewPeriod": 86400,
+  "disputeReviewPeriod": 172800,
+  "challengePeriodAfterApproval": 43200,
+  "validatorApproved": false,
+  "validatorApprovedAt": 0,
+  "getJobCore": {
+    "employer": "0x1111111111111111111111111111111111111111",
+    "assignedAgent": "0x2222222222222222222222222222222222222222",
+    "payout": "1200000000000000000000",
+    "duration": 259200,
+    "assignedAt": 1736500000,
+    "completed": false,
+    "disputed": false,
+    "expired": false,
+    "agentPayoutPct": 80
+  },
+  "getJobValidation": {
+    "completionRequested": true,
+    "validatorApprovals": 2,
+    "validatorDisapprovals": 1,
+    "completionRequestedAt": 1736700000,
+    "disputedAt": 0
+  }
+}
