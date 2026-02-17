@@ -1,7 +1,7 @@
 # Repository Map (Generated)
 
-- Generated at (deterministic source fingerprint): `e278b3bcd3fe`.
-- Source snapshot fingerprint: `e278b3bcd3fe`.
+- Generated at (deterministic source fingerprint): `2d0c6e2cb7e5`.
+- Source snapshot fingerprint: `2d0c6e2cb7e5`.
 
 ## Curated high-signal map
 
@@ -10,7 +10,7 @@
 | `contracts/AGIJobManager.sol` | Primary escrow/settlement contract with role gating and disputes | On-chain source of truth |
 | `contracts/ens/` | ENS and NameWrapper integration interfaces/helpers | Best-effort identity checks |
 | `contracts/utils/` | Math, transfer, URI, and ENS ownership helpers | Used by core contract |
-| `migrations/2_deploy_contracts.js` | Truffle deployment entrypoint | Reads deployment config |
+| `migrations/1_deploy_contracts.js` | Truffle deployment entrypoint | Reads deployment config |
 | `migrations/deploy-config.js` | Network-dependent deployment parameters | Operator-reviewed before deploy |
 | `test/` | Truffle and node-based security/regression suites | Primary CI safety net |
 | `forge-test/` | Foundry fuzz/invariant suites | Optional hardening lane |
@@ -43,7 +43,7 @@
 - [`docs/README.md`](../docs/README.md)
 - [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
 - [`test/AGIJobManager.test.js`](../test/AGIJobManager.test.js)
-- [`migrations/2_deploy_contracts.js`](../migrations/2_deploy_contracts.js)
+- [`migrations/1_deploy_contracts.js`](../migrations/1_deploy_contracts.js)
 - [`scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
 - [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
 - [`.github/workflows/docs.yml`](../.github/workflows/docs.yml)
