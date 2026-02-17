@@ -140,7 +140,8 @@ function parseMutatorTxs({ txs, mutators, blockLimit }) {
     blacklistedAgents: new Map(),
     blacklistedValidators: new Map(),
     baseIpfsUrl: null,
-    provenance: { moderators: {}, additionalAgents: {}, additionalValidators: {}, blacklistedAgents: {}, blacklistedValidators: {}, baseIpfsUrl: [] },
+    useEnsJobTokenURI: null,
+    provenance: { moderators: {}, additionalAgents: {}, additionalValidators: {}, blacklistedAgents: {}, blacklistedValidators: {}, baseIpfsUrl: [], useEnsJobTokenURI: [] },
   };
   const bySelector = new Map();
   mutators.forEach((f) => bySelector.set(Abi.encodeFunctionSignature(f), f));
@@ -182,6 +183,9 @@ function parseMutatorTxs({ txs, mutators, blockLimit }) {
     } else if (fn.name === 'setBaseIpfsUrl') {
       state.baseIpfsUrl = decoded[0];
       state.provenance.baseIpfsUrl.push(src);
+    } else if (fn.name === 'setUseEnsJobTokenURI') {
+      state.useEnsJobTokenURI = Boolean(decoded[0]);
+      state.provenance.useEnsJobTokenURI.push(src);
     }
   }
 
@@ -321,7 +325,7 @@ async function main() {
     }
   }
 
-  const mutatorNames = ['addModerator', 'removeModerator', 'addAdditionalAgent', 'removeAdditionalAgent', 'addAdditionalValidator', 'removeAdditionalValidator', 'blacklistAgent', 'blacklistValidator', 'setBaseIpfsUrl'];
+  const mutatorNames = ['addModerator', 'removeModerator', 'addAdditionalAgent', 'removeAdditionalAgent', 'addAdditionalValidator', 'removeAdditionalValidator', 'blacklistAgent', 'blacklistValidator', 'setBaseIpfsUrl', 'setUseEnsJobTokenURI'];
   const mutators = mutatorNames
     .map((name) => abi.find((x) => x.type === 'function' && x.name === name))
     .filter(Boolean);
@@ -392,7 +396,9 @@ async function main() {
       settlementPaused: Boolean(viewValues.settlementPaused || false),
       lockIdentityConfig: Boolean(viewValues.lockIdentityConfig || false),
       ensJobPages: viewValues.ensJobPages ? toChecksumAddress(viewValues.ensJobPages) : '0x0000000000000000000000000000000000000000',
-      useEnsJobTokenURI: Boolean(viewValues.useEnsJobTokenURI || false),
+      useEnsJobTokenURI: Object.prototype.hasOwnProperty.call(viewValues, 'useEnsJobTokenURI')
+        ? Boolean(viewValues.useEnsJobTokenURI)
+        : (dynamic.useEnsJobTokenURI !== null ? dynamic.useEnsJobTokenURI : false),
       requiredValidatorApprovals: viewValues.requiredValidatorApprovals || '0',
       requiredValidatorDisapprovals: viewValues.requiredValidatorDisapprovals || '0',
       voteQuorum: viewValues.voteQuorum || viewValues.requiredValidatorApprovals || '0',
@@ -420,6 +426,15 @@ async function main() {
       provenance: dynamic.provenance,
     },
     agiTypes,
+  };
+
+  snapshot.runtimeConfigProvenance = {
+    useEnsJobTokenURI:
+      Object.prototype.hasOwnProperty.call(viewValues, 'useEnsJobTokenURI')
+        ? { source: 'getter' }
+        : (dynamic.useEnsJobTokenURI !== null
+          ? { source: 'tx-replay', updates: dynamic.provenance.useEnsJobTokenURI }
+          : { source: 'default-initial-state-no-mutator-calls', defaultValue: false }),
   };
 
   const requiredAddresses = [snapshot.constructorConfig.agiTokenAddress, snapshot.constructorConfig.ensConfig.ensRegistry, snapshot.constructorConfig.ensConfig.nameWrapper, snapshot.runtimeConfig.owner];
@@ -450,6 +465,7 @@ async function main() {
   console.log(`- blacklistedAgents: ${snapshot.dynamicSets.blacklistedAgents.length}`);
   console.log(`- blacklistedValidators: ${snapshot.dynamicSets.blacklistedValidators.length}`);
   console.log(`- agiTypes: ${snapshot.agiTypes.length}`);
+  console.log(`- useEnsJobTokenURI: ${snapshot.runtimeConfig.useEnsJobTokenURI} (source: ${snapshot.runtimeConfigProvenance.useEnsJobTokenURI.source})`);
 
   console.log('Hint comparison:');
   compareHint('AGI token', snapshot.constructorConfig.agiTokenAddress, '0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa');
