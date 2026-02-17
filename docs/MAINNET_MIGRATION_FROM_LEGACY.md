@@ -13,6 +13,7 @@ This runbook deploys `contracts/AGIJobManager.sol` using a deterministic snapsho
 - `PRIVATE_KEYS` (funded deployer private key for Truffle deployment)
 - `CONFIRM_MAINNET_DEPLOY=1` (required safety override only on chainId 1)
 - Optional: `NEW_OWNER` (override transferOwnership target)
+- Optional: `ALLOW_DEFAULT_CHALLENGE_PERIOD=1` (only if snapshot has `challengePeriodAfterApproval = "0"` placeholder and you explicitly accept contract default non-zero value)
 
 ## 1) Generate a deterministic snapshot (pin block)
 

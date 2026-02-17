@@ -95,6 +95,13 @@ module.exports = async function (deployer, network, accounts) {
   await maybeSet(manager, 'setAgentBondParams', [rc.agentBondBps, rc.agentBondMin, rc.agentBondMax], from);
   await maybeSet(manager, 'setValidatorSlashBps', [rc.validatorSlashBps], from);
   const challengePeriod = String(rc.challengePeriodAfterApproval || '0');
+  const allowDefaultChallengePeriod = process.env.ALLOW_DEFAULT_CHALLENGE_PERIOD === '1';
+  if (challengePeriod === '0' && !allowDefaultChallengePeriod) {
+    throw new Error(
+      'Snapshot challengePeriodAfterApproval=0 cannot be applied: AGIJobManager rejects zero. ' +
+      'Set ALLOW_DEFAULT_CHALLENGE_PERIOD=1 to accept contract default challenge period explicitly.'
+    );
+  }
   if (challengePeriod !== '0') {
     await maybeSet(manager, 'setChallengePeriodAfterApproval', [challengePeriod], from);
   }
@@ -166,8 +173,14 @@ module.exports = async function (deployer, network, accounts) {
     ['disputeReviewPeriod', (await manager.disputeReviewPeriod()).toString(), String(rc.disputeReviewPeriod)],
   ];
 
+  const challengePeriodOnchain = (await manager.challengePeriodAfterApproval()).toString();
   if (challengePeriod !== '0') {
-    checks.push(['challengePeriodAfterApproval', (await manager.challengePeriodAfterApproval()).toString(), challengePeriod]);
+    checks.push(['challengePeriodAfterApproval', challengePeriodOnchain, challengePeriod]);
+  } else if (allowDefaultChallengePeriod) {
+    if (challengePeriodOnchain === '0') {
+      throw new Error('Expected non-zero default challengePeriodAfterApproval when accepting default, got 0.');
+    }
+    console.log(`Accepted default challengePeriodAfterApproval=${challengePeriodOnchain} because ALLOW_DEFAULT_CHALLENGE_PERIOD=1.`);
   }
 
   for (const [label, actual, expected] of checks) {
