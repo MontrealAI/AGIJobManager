@@ -31,6 +31,8 @@ This system is **not trustless governance**. The owner is privileged and can:
 
 Users should assume an operator-managed escrow model with transparent on-chain controls.
 
+Operationally: this is best treated as a **business-operated protocol service** where users rely on published policies, transparent on-chain actions, and moderator audit trails.
+
 ## One-screen quickstart (Etherscan)
 
 1. On AGI token contract: `approve(AGIJobManager, amount)`.
@@ -39,6 +41,8 @@ Users should assume an operator-managed escrow model with transparent on-chain c
 4. Agent: `requestJobCompletion(jobId, jobCompletionURI)`.
 5. Validators: `validateJob` / `disapproveJob` during review period.
 6. Employer: `finalizeJob(jobId)` when eligible; if contested, `disputeJob(jobId)` and moderator resolves.
+
+Before every write transaction, run the pre-flight checklist in [`docs/ETHERSCAN_GUIDE.md`](docs/ETHERSCAN_GUIDE.md) to avoid the most common Etherscan mistakes (wrong units, missing approvals, paused lanes, stale job state).
 
 ## Glossary (Etherscan terms)
 
