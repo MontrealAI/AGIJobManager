@@ -170,8 +170,8 @@ contract AGIJobManagerHandler is Test {
     function togglePauses(bool settlePaused, bool globalPaused) external {
         vm.startPrank(manager.owner());
         manager.setSettlementPaused(settlePaused);
-        if (globalPaused) manager.pauseAll();
-        else manager.unpauseAll();
+        if (globalPaused) manager.pause();
+        else manager.unpause();
         vm.stopPrank();
     }
 

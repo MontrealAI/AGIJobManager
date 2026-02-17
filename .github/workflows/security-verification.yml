@@ -25,7 +25,7 @@ jobs:
       - name: Setup Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly-ae2f8f7f95f0d5f4f0f006f31ff0d2507abf7d37
+          version: stable
 
       - name: Forge format check
         run: forge fmt --check forge-test/**/*.sol contracts/test/MaliciousCompletionReceiver.sol
