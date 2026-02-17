@@ -1,40 +1,41 @@
 # VERIFY_ON_ETHERSCAN
 
-Etherscan Read/Write usability depends on successful source verification.
+Etherscan usability (clear Read/Write forms + decoded errors/events) requires successful source verification.
 
-## 1) Compiler settings used by this repo
+## 1) Exact compiler settings used by this repo
 
 From `truffle-config.js` (deployment path used by npm scripts):
-- solc: `0.8.23`
-- optimizer: enabled, `runs: 50`
+- compiler: `solc 0.8.23`
+- optimizer: enabled, `runs=50`
 - `viaIR: true`
 - EVM version: `london`
-- metadata bytecode hash: `none`
+- metadata: `bytecodeHash: none`
 - revert strings: `strip`
 
-Foundry profile in `foundry.toml` exists for forge tests and differs (`solc 0.8.19`). Do not mix profiles when verifying Truffle deployments.
+Foundry (`foundry.toml`) is used for forge tests and uses a different profile (`solc 0.8.19`). Do not verify a Truffle deployment with Foundry compile settings.
 
-## 2) Build exactly
+## 2) Build exactly as CI does
 
 ```bash
 npm ci
 npm run build
 ```
 
-## 3) External library linking (required)
+## 3) External library linking (mandatory)
 
-AGIJobManager links external libraries. Provide exact deployed addresses for:
-- `UriUtils`
-- `TransferUtils`
+`AGIJobManager` is linked against external libraries in migrations.
+You must provide the deployed addresses for:
 - `BondMath`
-- `ReputationMath`
 - `ENSOwnership`
+- `ReputationMath`
+- `TransferUtils`
+- `UriUtils`
 
-If library mapping is wrong, verification will fail.
+If any mapping is wrong, bytecode will not match and verification fails.
 
-## 4) Verification methods
+## 4) Verification options
 
-### A) Truffle plugin path
+### A) Truffle verify plugin
 
 ```bash
 ETHERSCAN_API_KEY=... \
@@ -43,23 +44,28 @@ MAINNET_RPC_URL=https://... \
 npx truffle run verify AGIJobManager --network mainnet
 ```
 
-### B) Standard JSON input
+### B) Etherscan Standard JSON Input
 
-Use Etherscan Standard JSON mode with the same compiler settings and explicit library mapping.
+Use Standard JSON mode and set:
+- exact compiler version
+- optimizer/viaIR/evm settings above
+- library name -> address mappings
+- exact constructor arguments used in deployment
 
-## 5) Troubleshooting mismatches
+## 5) Common mismatch causes + fixes
 
-- Wrong solc version (`0.8.23` expected for Truffle deployment)
-- Wrong optimizer runs (must be 50)
-- Wrong `viaIR` (must match deployment)
-- Wrong EVM version (`london`)
-- Metadata hash mode mismatch (`none` expected)
-- Wrong constructor args
-- Wrong linked library addresses
+- Wrong solc version (must match deployment compiler).
+- Wrong optimizer runs.
+- `viaIR` mismatch.
+- Wrong EVM version.
+- Metadata hash mismatch.
+- Wrong constructor arguments.
+- Wrong linked library addresses.
 
-## 6) Post-verify checks
+## 6) Verification success checklist
 
-On Etherscan:
-1. `Read Contract` shows named methods.
-2. `Write Contract` shows typed fields.
-3. tx details decode custom errors/events cleanly.
+After verification on Etherscan:
+1. `Read Contract` shows named functions with structured output.
+2. `Write Contract` shows readable input fields.
+3. Failed tx pages decode to custom errors (e.g., `InvalidState`, `NotAuthorized`).
+4. Role docs in [`docs/ETHERSCAN_GUIDE.md`](ETHERSCAN_GUIDE.md) can be followed directly with on-screen function names.

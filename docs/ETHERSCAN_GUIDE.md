@@ -1,159 +1,165 @@
 # AGIJobManager Etherscan Guide (Read/Write Contract)
 
-This guide is optimized for non-technical users using only:
-- wallet (e.g., MetaMask)
-- Etherscan `Read Contract` and `Write Contract`
-
-## Choose your role
-- Employer: [Employer flow](#employer-flow)
-- Agent: [Agent flow](#agent-flow)
-- Validator: [validator-flow](#validator-flow)
-- Moderator: [Moderator flow](#moderator-flow)
-- Owner/operator: [Owner/operator flow](#owneroperator-flow)
+This guide is for non-technical users operating only with:
+- a browser wallet (MetaMask or equivalent)
+- Etherscan `Read Contract` / `Write Contract`
 
 ---
 
 ## Before you start
 
-### Verification matters
-Use contracts with **verified source + ABI** on Etherscan. Without this, forms are hard to use and custom errors are not decoded clearly.
+### 1) Verification matters
+Use a **verified AGIJobManager contract** and verified AGI token contract on Etherscan. Verified ABI is required for readable input forms and meaningful custom-error decoding.
 
-### Units
-- Token amounts are `uint256` base units (usually 18 decimals):
-  - `1.5` tokens => `1500000000000000000`
-- Time is seconds:
-  - `12h` => `43200`
-  - `7d` => `604800`
+### 2) Units (copy/paste ready)
+- Token amounts are integer base units (`uint256`).
+  - Example: `1` token at 18 decimals = `1000000000000000000`
+  - Example: `250.5` tokens at 18 decimals = `250500000000000000000`
+- Durations are seconds (`uint256`).
+  - `1h` = `3600`
+  - `7d` = `604800`
 
-Use helper tools:
-- `node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duration 7d`
+Helper converter (offline):
+```bash
+node scripts/etherscan/prepare_inputs.js --action convert --amount 250.5 --duration 7d --decimals 18
+```
 
-### Safety checklist before any transaction
-Read these first:
-- `paused()`
-- `settlementPaused()`
-- `getJobCore(jobId)` and `getJobValidation(jobId)` for job actions
-- AGI token `balanceOf(yourAddress)`
-- AGI token `allowance(yourAddress, AGIJobManager)`
+### 3) Safety checklist before any Write transaction
+1. Read `paused()`.
+2. Read `settlementPaused()`.
+3. For job actions, read `getJobCore(jobId)` and `getJobValidation(jobId)` first.
+4. On AGI token contract, read your `balanceOf` and `allowance(yourAddress, AGIJobManager)`.
+5. Confirm every amount is base units and every duration is seconds.
 
-### Common failure modes
+### 4) Common failure modes
 
-| Error / symptom | Likely cause | Fix |
+| Error/symptom | Typical cause | What to do |
 |---|---|---|
-| `NotAuthorized` | caller lacks role authorization | use additional allowlist, Merkle proof, or ENS auth route |
-| `SettlementPaused` | settlement switch enabled | wait for owner unpause or use only non-settlement reads |
-| `InvalidState` | wrong lifecycle stage | check `getJobCore` + timeline before retry |
-| `TransferFailed` | insufficient allowance/balance or non-standard token behavior | set allowance, verify balance, use exact-transfer ERC20 |
-| finalize opens dispute | tie/under-quorum outcome | moderator resolution required |
+| `NotAuthorized` | Caller is not owner/moderator or not authorized Agent/Validator | Use the right account; verify allowlist/Merkle/ENS authorization path |
+| `Blacklisted` | Address is blacklisted | Owner/moderator must resolve operational policy issue |
+| `SettlementPaused` | Settlement lane is paused | Wait for owner to unpause settlement |
+| `InvalidState` | Action called at wrong lifecycle stage or wrong timestamp window | Re-check `getJobCore` + `getJobValidation` + timeline below |
+| `InvalidParameters` | malformed URI, out-of-range numeric inputs, or invalid resolution code | Re-check field formatting and bounds |
+| `TransferFailed` | AGI balance/allowance too low or non-standard ERC20 behavior | Set exact allowance, ensure sufficient balance, use strict-transfer token |
+| finalize leads to dispute path | Review ended with tie/under-quorum conditions | Call `disputeJob` / moderator resolution flow |
+
+---
+
+## Choose your role
+
+- [Employer flow](#employer-flow)
+- [Agent flow](#agent-flow)
+- [Validator flow](#validator-flow)
+- [Moderator flow](#moderator-flow)
+- [Owner/operator flow](#owneroperator-flow)
 
 ---
 
 ## Employer flow
 
-### 1) Approve escrow pull on AGI token
-Write function: `approve(spender, amount)` (on AGI ERC20)
+### A) Approve escrow amount (AGI token contract)
+Write function: `approve(spender, amount)`
 
-Input meaning:
-- `spender`: AGIJobManager contract address
-- `amount`: payout in base units
+- `spender`: AGIJobManager address
+- `amount`: base units
 
-Copy/paste example:
 ```text
-spender: 0xYourAGIJobManager
-amount: 1200000000000000000000   // 1200 tokens at 18 decimals
+spender: 0xAGIJobManagerAddress
+amount: 1200000000000000000000
 ```
+(= 1200 tokens at 18 decimals)
 
-### 2) Create job
+### B) Create job
 Write function: `createJob(jobSpecURI, payout, duration, details)`
 
-Input meaning:
-- `jobSpecURI`: metadata URI (ipfs/https)
-- `payout`: base-unit token amount
-- `duration`: seconds
-- `details`: short plain text summary
+- `jobSpecURI` (string): URI to spec JSON
+- `payout` (uint256): base units
+- `duration` (uint256): seconds
+- `details` (string): short summary
 
-Example:
 ```text
-jobSpecURI: ipfs://bafy.../job-spec.v1.json
+jobSpecURI: ipfs://bafy.../jobSpec.v1.json
 payout: 1200000000000000000000
 duration: 259200
-details: Translate legal packet EN->ES
+details: Translate legal packet EN->FR
 ```
 
-### 3) Cancel if unassigned
+### C) Cancel (only when unassigned)
 Write function: `cancelJob(jobId)`
 
-### 4) Finalize when eligible
+```text
+jobId: 42
+```
+
+### D) Finalize (when eligible)
 Write function: `finalizeJob(jobId)`
 
-### 5) Open dispute when needed
+```text
+jobId: 42
+```
+
+### E) Dispute (if needed)
 Write function: `disputeJob(jobId)`
+
+```text
+jobId: 42
+```
 
 ---
 
 ## Agent flow
 
-### Authorization decision tree
-Use one route:
-1. owner allowlist (`additionalAgents`) OR
-2. Merkle proof (`agentMerkleRoot`) OR
-3. ENS ownership under configured root node
+### How authorization works
+Before applying, you must pass one of the 3 authorization routes in [Authorization decision tree](#authorization-decision-tree-agentvalidator).
 
-### 1) Approve agent bond if required
-Write function on token: `approve(spender, amount)`
+### A) Approve bond if required (AGI token)
+Write function: `approve(spender, amount)`
 
-### 2) Apply to job
+### B) Apply
 Write function: `applyForJob(jobId, subdomain, proof)`
 
-Input meanings:
-- `jobId`: target job
-- `subdomain`: ENS label used for ENS auth path (or placeholder if using allowlist/merkle)
-- `proof`: bytes32[] merkle proof
+- `jobId` (uint256): target job
+- `subdomain` (string): ENS label (or placeholder if using non-ENS route)
+- `proof` (bytes32[]): Merkle proof, JSON-like format
 
-Proof paste formats:
 ```text
-[]
-```
-```text
-["0xaaa...", "0xbbb..."]
+jobId: 42
+subdomain: alice-agent
+proof: ["0xabc...", "0xdef..."]
 ```
 
-### 3) Submit completion
+### C) Request completion
 Write function: `requestJobCompletion(jobId, jobCompletionURI)`
 
-Example URI:
 ```text
-ipfs://bafy.../completion.v1.json
+jobId: 42
+jobCompletionURI: ipfs://bafy.../completion.v1.json
 ```
 
-### 4) Optional dispute
+### D) Dispute if needed
 Write function: `disputeJob(jobId)`
 
 ---
 
 ## Validator flow
 
-### Authorization decision tree
-Use one route:
-1. owner allowlist (`additionalValidators`) OR
-2. Merkle proof (`validatorMerkleRoot`) OR
-3. ENS ownership under configured root node
+### How authorization works
+Same 3-route authorization model as Agent.
 
-### 1) Approve validator bond
-Token write function: `approve(spender, amount)`
+### A) Approve validator bond if required
+AGI token `approve(spender, amount)`.
 
-### 2) Vote
-- approve: `validateJob(jobId, subdomain, proof)`
-- reject: `disapproveJob(jobId, subdomain, proof)`
+### B) Vote
+- Approve path: `validateJob(jobId, subdomain, proof)`
+- Disapprove path: `disapproveJob(jobId, subdomain, proof)`
 
-Proof paste format:
 ```text
-["0xaaa...", "0xbbb..."]
+jobId: 42
+subdomain: validator-ops
+proof: ["0x111...", "0x222..."]
 ```
 
-Outcome notes:
-- wrong-side validators can be slashed
-- correct-side validators can share rewards
+Outcome reminder: wrong-side validators can be slashed; reward distribution depends on final settlement branch.
 
 ---
 
@@ -162,98 +168,134 @@ Outcome notes:
 Write function: `resolveDisputeWithCode(jobId, resolutionCode, reason)`
 
 Resolution code table:
-- `0` = NO_ACTION (dispute remains)
+- `0` = NO_ACTION (dispute remains active)
 - `1` = AGENT_WIN
 - `2` = EMPLOYER_WIN
 
-Standardized reason format (recommended):
+Standard reason format:
 ```text
-EVIDENCE:v1|summary:<one line>|links:<ipfs/case refs>|policy:<section>|moderator:<id>|ts:<unix>
+EVIDENCE:v1|summary:<one-line>|facts:<facts>|links:<uris>|policy:<section>|moderator:<id>|ts:<unix>
+```
+
+Example:
+```text
+jobId: 42
+resolutionCode: 1
+reason: EVIDENCE:v1|summary:deliverable matched scope|facts:spec hash + acceptance logs|links:ipfs://...|policy:mod-2.1|moderator:mod-07|ts:1736465000
 ```
 
 ---
 
 ## Owner/operator flow
 
-### Pause controls
-- intake only: `pause()` / `unpause()`
-- settlement toggle: `setSettlementPaused(true/false)`
-- full stop: `pauseAll()`
+Use extreme caution. Prioritize checklist-driven operations from [`docs/OWNER_RUNBOOK.md`](OWNER_RUNBOOK.md).
 
-### Governance/admin writes
-- allowlists: `addAdditionalAgent`, `addAdditionalValidator`
+Key functions:
+- pause controls: `pause`, `unpause`, `pauseAll`, `unpauseAll`, `setSettlementPaused`
+- allowlists: `addAdditionalAgent`, `removeAdditionalAgent`, `addAdditionalValidator`, `removeAdditionalValidator`
 - blacklists: `blacklistAgent`, `blacklistValidator`
 - moderators: `addModerator`, `removeModerator`
-- withdrawals: `withdrawableAGI()` (read) then `withdrawAGI(amount)`
-- ENS config: `setEnsJobPages`, `setUseEnsJobTokenURI`, `updateRootNodes`, `updateMerkleRoots`
-- lock identity config: `lockIdentityConfiguration()`
-- rescue/break-glass: `rescueERC20`, `rescueToken` (extreme caution)
+- treasury: `withdrawableAGI` (read), `withdrawAGI`
+- ENS/config: `setEnsJobPages`, `setUseEnsJobTokenURI`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `updateMerkleRoots`, `lockIdentityConfiguration`
+- rescue: `rescueETH`, `rescueERC20`, `rescueToken`
 
 ---
 
-## Time windows
+## Time windows (ASCII timeline)
 
 ```text
-assign --> request completion --> review window --> challenge window --> finalize OR dispute --> resolve
+assign
+  |
+  | (duration)
+  v
+requestJobCompletion
+  |
+  |---- completionReviewPeriod ----|
+  |                                v
+  |                        review closes
+  |                                |
+  |      (if validator-approved branch applies)
+  |---- challengePeriodAfterApproval ----|
+  |                                      v
+  +-------------------------------> finalizeJob OR disputeJob
+                                            |
+                                            v
+                                 resolveDisputeWithCode / resolveStaleDispute
 ```
 
-### Can I finalize now?
-Checklist:
-1. Read `getJobCore(jobId)`: `completionRequested == true`, `disputed == false`, not completed/expired/cancelled.
-2. Read `getJobValidation(jobId)` for vote counters/timing parameters.
-3. Compare `completionRequestedAt + completionReviewPeriod` and challenge period with current timestamp.
-4. If tied/under-quorum at review end, expect dispute path.
+### “Can I finalize now?” checklist
+1. Read `getJobCore(jobId)`: must be completion-requested flow, not already settled/cancelled/expired branch.
+2. Read `getJobValidation(jobId)`.
+3. Compare current wall-clock timestamp to:
+   - `completionRequestedAt + completionReviewPeriod`
+   - `validatorApprovedAt + challengePeriodAfterApproval` (when applicable)
+4. If `finalizeJob` reverts with `InvalidState`, re-check windows and whether dispute is active.
 
 ---
 
-## Read-contract cheat sheet
+## Read Contract cheat sheet
 
-- `getJobCore(jobId)`: canonical lifecycle fields (participants, payout, timestamps, flags).
-- `getJobValidation(jobId)`: review/dispute windows and vote counters/state.
-- `getJobSpecURI(jobId)`: original job metadata URI.
-- `getJobCompletionURI(jobId)`: submitted completion metadata URI.
-- `tokenURI(tokenId)`: final NFT metadata URI after completion.
+- `getJobCore(jobId)`:
+  - participants (`employer`, `assignedAgent`)
+  - economic/timing (`payout`, `duration`, `assignedAt`)
+  - lifecycle flags (`completed`, `disputed`, `expired`)
+- `getJobValidation(jobId)`:
+  - `completionRequested`
+  - vote counts (`validatorApprovals`, `validatorDisapprovals`)
+  - timing anchors (`completionRequestedAt`, `disputedAt`)
+- `getJobSpecURI(jobId)`: source-of-truth job scope URI.
+- `getJobCompletionURI(jobId)`: completion evidence URI.
+- `tokenURI(tokenId)`: completion NFT metadata URI (subject to configured URI behavior).
 
 ---
 
-## Authorization details (especially for Agent/Validator)
+## Authorization (Agent/Validator)
 
-### Route 1: owner additional allowlist
-- Agent: `addAdditionalAgent(address)`
-- Validator: `addAdditionalValidator(address)`
+### 3 authorization routes
+1. Owner-granted mapping
+   - Agents: `additionalAgents[address]`
+   - Validators: `additionalValidators[address]`
+2. Merkle proof allowlist
+   - leaves use `keccak256(abi.encodePacked(address))`
+   - proof is pasted in Etherscan as bytes32[]
+3. ENS subdomain ownership under configured root node(s)
 
-### Route 2: Merkle proof
-- leaf format: `keccak256(abi.encodePacked(address))`
-- proof pasted as Etherscan bytes32[]
-- offline generation script:
-  - `node scripts/merkle/export_merkle_proofs.js --input addresses.json`
+### ENS label constraints
+For `subdomain` strings used in ENS auth route:
+- lowercase ASCII only
+- length `1..63`
+- characters `[a-z0-9-]`
+- **no dots (`.`)**
+- no leading/trailing `-`
 
-### Route 3: ENS subdomain ownership
-Subdomain label constraints:
-- lowercase ASCII
-- length 1..63
-- `[a-z0-9-]` only
-- no dots
-- no leading/trailing dash
+### Authorization decision tree (Agent/Validator)
 
-Decision tree:
 ```text
-If owner allowlisted you -> use [] proof and proceed.
-Else if you have Merkle proof -> paste bytes32[] proof.
-Else if you own valid ENS subdomain under configured root -> use subdomain route.
-Else -> you are not authorized yet.
+Do you have owner additional* entry?
+  yes -> use subdomain placeholder + proof []
+  no  -> Do you have Merkle proof for current root?
+           yes -> paste proof bytes32[]
+           no  -> Do you own valid ENS subdomain under configured root?
+                    yes -> pass subdomain label + proof []
+                    no  -> request authorization before transacting
 ```
 
 ---
 
-## Offline helper scripts
+## Offline helper tools (no RPC required)
 
-- Merkle proofs: `node scripts/merkle/export_merkle_proofs.js --input addresses.json`
-- Etherscan input prep: `node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 3d`
-- Offline state advisor: `node scripts/advisor/state_advisor.js --input sample-job.json`
+### Merkle proofs
+```bash
+node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addresses.json
+```
 
-Advisor input note (copy from Read Contract outputs):
-- `getJobCore`: include `assignedAt`, `duration`, `completed`, `disputed`, `expired`, `employer`, `assignedAgent`.
-- `getJobValidation`: include `completionRequested`, `completionRequestedAt`, `disputedAt`, and (if available from your snapshot pipeline) `validatorApproved` + `validatorApprovedAt`.
-- also provide current timestamp and protocol windows (`completionReviewPeriod`, `disputeReviewPeriod`, `challengePeriodAfterApproval`) for accurate time-gated advice; if omitted, advisor suppresses dependent actions.
-- Time gates in advisor follow contract-style strict elapsed checks; for finalize/expire/stale resolution, current timestamp must be **strictly greater than** the reported threshold.
+### Etherscan input prep
+```bash
+node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 3d --jobSpecURI ipfs://... --details "Translate packet"
+```
+
+### Offline job state advisor
+```bash
+node scripts/advisor/state_advisor.js --input ./job_state.json
+```
+`job_state.json` should contain pasted outputs from `getJobCore` + `getJobValidation` and `currentTimestamp`.

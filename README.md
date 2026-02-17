@@ -1,10 +1,10 @@
 # AGIJobManager
 
-AGIJobManager is an owner-operated on-chain job escrow and settlement contract for employer/agent workflows with validator voting and moderator dispute resolution.
+AGIJobManager is an owner-operated on-chain job escrow contract with validator voting and moderator dispute resolution. It is designed so users can operate directly from Etherscan (`Read Contract` / `Write Contract`) with a browser wallet.
 
 ## Start here
 
-- Etherscan role guide: [`docs/ETHERSCAN_GUIDE.md`](docs/ETHERSCAN_GUIDE.md)
+- Etherscan step-by-step guide: [`docs/ETHERSCAN_GUIDE.md`](docs/ETHERSCAN_GUIDE.md)
 - Owner/operator runbook: [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md)
 - Moderator runbook: [`docs/MODERATOR_RUNBOOK.md`](docs/MODERATOR_RUNBOOK.md)
 - Verification guide: [`docs/VERIFY_ON_ETHERSCAN.md`](docs/VERIFY_ON_ETHERSCAN.md)
@@ -12,43 +12,44 @@ AGIJobManager is an owner-operated on-chain job escrow and settlement contract f
 
 ## Roles (plain language)
 
-- **Employer**: funds jobs, assigns by accepting an applicant flow, can cancel before assignment, can finalize/dispute after completion request.
-- **Agent**: applies to jobs (allowlist/Merkle/ENS authorization), may post a bond, submits completion URI.
-- **Validator**: authorized voter that approves/disapproves completed work during review.
-- **Moderator**: resolves disputes with `resolveDisputeWithCode`.
-- **Owner**: configures risk parameters, pause controls, allowlists/blacklists/moderators, ENS wiring, and treasury withdrawal constrained by solvency.
+- **Employer**: funds jobs, creates jobs, can cancel before assignment, and finalizes/disputes after completion request.
+- **Agent**: authorized worker who applies, may post a bond, and submits completion evidence.
+- **Validator**: authorized reviewer who votes approve/disapprove during review.
+- **Moderator**: resolves active disputes with `resolveDisputeWithCode`.
+- **Owner**: system operator with privileged controls and treasury authority bounded by on-chain solvency checks.
 
-## Trust model (explicit)
+## Explicit trust model
 
-This system is **not trustless governance**. The owner is privileged and can:
+This protocol is **operator-managed, not trustless governance**. The owner can:
 - pause/unpause intake (`pause`, `unpause`, `pauseAll`, `unpauseAll`),
 - pause/unpause settlement (`setSettlementPaused`),
-- change core risk and timing parameters,
-- manage allowlists, Merkle roots, and blacklists,
-- add/remove moderators,
-- change ENS/token identity configuration until `lockIdentityConfiguration()` is used,
-- withdraw only non-escrow AGI via `withdrawAGI` (bounded by `withdrawableAGI`).
+- change core risk/timing params,
+- manage allowlists, Merkle roots, blacklists, moderators,
+- configure ENS integration and tokenURI routing,
+- lock identity config permanently (`lockIdentityConfiguration`),
+- withdraw only non-escrow AGI via `withdrawAGI` constrained by `withdrawableAGI`.
 
-Users should assume an operator-managed escrow model with transparent on-chain controls.
+Users should assume an actively operated escrow system and always read current config in Etherscan before transacting.
 
-## One-screen quickstart (Etherscan)
+## One-screen quickstart (Etherscan only)
 
-1. On AGI token contract: `approve(AGIJobManager, amount)`.
+1. AGI token contract: `approve(AGIJobManager, amount)`.
 2. Employer: `createJob(jobSpecURI, payout, duration, details)`.
 3. Agent: `applyForJob(jobId, subdomain, proof)`.
 4. Agent: `requestJobCompletion(jobId, jobCompletionURI)`.
-5. Validators: `validateJob` / `disapproveJob` during review period.
-6. Employer: `finalizeJob(jobId)` when eligible; if contested, `disputeJob(jobId)` and moderator resolves.
+5. Validators: `validateJob` / `disapproveJob`.
+6. Employer: `finalizeJob(jobId)` when eligible.
+7. If contested: `disputeJob(jobId)` then moderator `resolveDisputeWithCode`.
 
-## Glossary (Etherscan terms)
+## Tiny glossary (Etherscan labels)
 
 - **jobId**: numeric job identifier.
-- **payout**: escrowed amount in token base units.
-- **duration**: job duration in seconds.
-- **review window**: completion voting period after completion request.
-- **quorum**: minimum total validator participation threshold.
-- **bond**: staked token amount for agent/validator/dispute initiation.
-- **slashing**: bond penalty for wrong-side outcomes.
+- **payout**: escrowed token amount in base units.
+- **duration**: seconds allowed from assignment to completion request.
+- **review window**: `completionReviewPeriod` after completion request.
+- **quorum**: minimum validator participation (`voteQuorum`).
+- **bonds**: staked AGI (agent/validator/dispute).
+- **slashing**: bond penalty applied to wrong-side participants.
 
 ## Tooling and CI entrypoints
 
@@ -58,20 +59,7 @@ npm run build
 npm test
 npm run lint
 npm run size
+npm run forge:test
 ```
 
-`npm test` runs: Truffle compile/tests, additional Node tests, and contract size guards.
-
-
-## Documentation
-
-- Main docs index: [`docs/README.md`](docs/README.md)
-- Quintessential end-to-end walkthrough: [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
-
-Documentation maintenance commands:
-
-```bash
-npm run docs:gen
-npm run docs:check
-npm run check:no-binaries  # check-no-binaries
-```
+`npm test` is the canonical repository entrypoint and runs Truffle compile/tests, additional Node tests, and contract size checks.
