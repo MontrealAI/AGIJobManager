@@ -426,7 +426,7 @@ async function main() {
       validatorBondMin: viewValues.validatorBondMin || '0',
       validatorBondMax: viewValues.validatorBondMax || '0',
       agentBondBps: viewValues.agentBondBps || '0',
-      agentBondMin: viewValues.agentBondMin || '0',
+      agentBondMin: viewValues.agentBondMin || viewValues.agentBond || '0',
       agentBondMax: viewValues.agentBondMax || '0',
       validatorSlashBps: viewValues.validatorSlashBps || '0',
       challengePeriodAfterApproval: hasChallengePeriodGetter && typeof viewValues.challengePeriodAfterApproval !== 'undefined'
