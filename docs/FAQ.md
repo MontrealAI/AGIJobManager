@@ -60,6 +60,7 @@ This prints base units for token amounts and seconds for durations.
 Always run:
 1. read `withdrawableAGI()`
 2. choose `amount <= withdrawableAGI()`
-3. execute `withdrawAGI(amount)`
+3. ensure `paused()==true` and `settlementPaused()==false` (or call `pause()` first if safe)
+4. execute `withdrawAGI(amount)`
 
 Do not infer withdrawable capacity from raw ERC20 balance alone because active escrow and bonds must stay solvent.

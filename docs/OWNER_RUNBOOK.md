@@ -37,7 +37,7 @@ This runbook is optimized for low-touch operations with Etherscan + offline scri
 Execution mapping:
 - Normal operation: `unpauseAll()` (or `unpause()` + `setSettlementPaused(false)`)
 - Intake stopped: `pause()`
-- Settlement stopped: `setSettlementPaused(true)`
+- Settlement stopped: `unpause()` + `setSettlementPaused(true)` (sets `paused=false`, `settlementPaused=true` explicitly)
 - Full incident response: `pauseAll()`
 
 ### A) Stop intake only (new jobs/applications)
@@ -68,7 +68,7 @@ Recommended sequence:
 | Symptom | Immediate checks | Primary action | Rollback / exit criteria |
 |---|---|---|---|
 | Reverts on create/apply spike | `paused()`, token allowance/balance, recent config changes | If uncertain, move to **Intake stopped** (`pause()`) while triaging | `unpause()` only after reproducer resolved and docs/support messaging updated |
-| Finalize/dispute path behaving unexpectedly | `settlementPaused()`, `getJobCore`, `getJobValidation`, timing parameters | Move to **Settlement stopped** (`setSettlementPaused(true)`) while moderators/owner review | `setSettlementPaused(false)` after confirming expected behavior on sampled jobs |
+| Finalize/dispute path behaving unexpectedly | `settlementPaused()`, `getJobCore`, `getJobValidation`, timing parameters | Move to **Settlement stopped** (`unpause()` + `setSettlementPaused(true)`) while moderators/owner review | `setSettlementPaused(false)` after confirming expected behavior on sampled jobs |
 | Suspected exploit or accounting inconsistency | Contract AGI balance, `withdrawableAGI()`, active disputes/jobs | Move to **Full incident response** (`pauseAll()`) | `unpauseAll()` only after root cause and compensating controls are documented |
 | Authorization complaints (legit users blocked) | Merkle roots, additional allowlists, ENS root config, blacklist state | Keep mode as-is, rotate roots/allowlist with change notice | Confirm affected users can apply/vote with new proofs and archive evidence |
 | Moderator capacity backlog | count of `disputed==true` jobs and age vs `disputeReviewPeriod` | Add moderators (`addModerator`) and use standardized reason format | Remove temporary moderators when backlog clears |
@@ -79,8 +79,9 @@ Always perform in this order:
 1. Read `withdrawableAGI()`.
 2. Confirm requested `amount <= withdrawableAGI()`.
 3. Confirm no active incident requiring additional buffer.
-4. Call `withdrawAGI(amount)`.
-5. Archive tx hash and rationale.
+4. Confirm `paused()==true` and `settlementPaused()==false` (withdraw is `whenPaused` + `whenSettlementNotPaused`).
+5. Call `withdrawAGI(amount)`.
+6. Archive tx hash and rationale.
 
 Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must remain solvent.
 
