@@ -1,76 +1,102 @@
 # OWNER_RUNBOOK
 
+This runbook is optimized for low-touch operations with Etherscan + offline scripts.
+
 ## 1) Deployment checklist
 
-1. Compile with repo settings (`npm run build`).
-2. Deploy external libraries required by AGIJobManager:
-   - UriUtils
-   - TransferUtils
-   - BondMath
-   - ReputationMath
-   - ENSOwnership
-3. Link libraries exactly in deployment artifacts.
-4. Deploy AGIJobManager with intended constructor config.
-5. Verify on Etherscan with exact compiler/optimizer/viaIR settings and library addresses.
-6. Confirm Read/Write tabs render all expected functions.
+1. Build with repo defaults:
+   ```bash
+   npm ci
+   npm run build
+   npm run size
+   ```
+2. Confirm external libraries are deployed and linked as intended.
+3. Deploy AGIJobManager.
+4. Verify source on Etherscan using exact compiler settings and library mappings (see [`docs/VERIFY_ON_ETHERSCAN.md`](VERIFY_ON_ETHERSCAN.md)).
+5. Post-deploy, read-check critical config values on Etherscan (`token`, review windows, quorum, thresholds, bond amounts).
+6. Record deployment metadata (addresses, tx hashes, compiler settings, linked library addresses).
 
-## 2) Recommended safe defaults and staged rollout
+## 2) Recommended safe defaults + staged rollout
 
-- Start with conservative payout limits and duration limits.
-- Start with higher validator quorum/thresholds and small allowlists.
-- Keep `useEnsJobTokenURI` disabled until ENSJobPages path is validated.
-- Phase rollout: internal pilot -> controlled allowlist -> broader onboarding.
+- Stage 0 (dry run): keep intake paused while verification + docs + proofs are checked.
+- Stage 1 (limited pilot): unpause intake, keep settlement open, use small payouts and short durations.
+- Stage 2 (scale): increase limits only after successful pilot dispute/finalization outcomes.
+- Keep Merkle roots and allowlists small and auditable at first.
 
 ## 3) Incident playbooks
 
-### A) Stop intake (keep settlement open)
-1. `pause()` (or `pauseIntake()`).
-2. Keep `setSettlementPaused(false)`.
-3. Communicate “no new jobs/applications, settlement continues.”
+### A) Stop intake only (new jobs/applications)
+Recommended sequence:
+1. `pause()`
+2. Announce incident status and impact.
+3. Keep settlement open unless actively unsafe.
 
-### B) Stop settlement (freeze completion/dispute lane)
-1. `setSettlementPaused(true)`.
-2. Keep intake policy explicit (optionally still paused).
-3. Investigate and publish operator notice.
+### B) Stop settlement only (finalize/dispute lane)
+Recommended sequence:
+1. `setSettlementPaused(true)`
+2. Keep intake setting unchanged if desired.
+3. Announce expected recovery timeline.
 
 ### C) Full stop
-1. `pauseAll()`.
-2. Verify `paused() == true` and `settlementPaused() == true`.
-3. Run reconciliation before any withdrawals/parameter changes.
+Recommended sequence:
+1. `pauseAll()`
+2. Validate both `paused()==true` and `settlementPaused()==true`.
+3. Announce freeze scope and next update time.
 
-## 4) Revenue withdrawal safety
+### D) Resume
+- Intake only: `unpause()`
+- Settlement only: `setSettlementPaused(false)`
+- Full resume: `unpauseAll()`
 
-Use only while paused and settlement not paused constraints are met by contract guards.
+## 4) Safe revenue withdrawals (solvency-first)
 
-Checklist:
+Always perform in this order:
 1. Read `withdrawableAGI()`.
-2. Ensure requested amount <= `withdrawableAGI()`.
-3. Confirm incident state and solvency rationale are documented.
+2. Confirm requested `amount <= withdrawableAGI()`.
+3. Confirm no active incident requiring additional buffer.
 4. Call `withdrawAGI(amount)`.
+5. Archive tx hash and rationale.
 
-Never assume gross token balance is withdrawable; locked escrow/bonds are excluded by contract accounting.
+Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must remain solvent.
 
-## 5) Allowlist governance + Merkle rotation
+## 5) Allowlist governance and Merkle root rotation
 
-Rotation process:
-1. Build new allowlist JSON offline.
-2. Generate root/proofs with `scripts/merkle/export_merkle_proofs.js`.
-3. Announce effective time and migration window.
-4. Apply `updateMerkleRoots(validatorRoot, agentRoot)`.
-5. Re-publish per-address proofs for users.
+1. Build candidate address list offline.
+2. Generate root/proofs offline:
+   ```bash
+   node scripts/merkle/export_merkle_proofs.js --input addresses.json --output proofs.json
+   ```
+3. Validate output format (proof arrays paste directly into Etherscan).
+4. Publish migration notice with effective timestamp.
+5. Call `updateMerkleRoots(validatorRoot, agentRoot)`.
+6. Distribute new proofs to affected users.
 
 ## 6) ENS operations
 
-- Configure ENS integrations: `setEnsJobPages`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`.
-- Enable ENS-backed tokenURI only when tested: `setUseEnsJobTokenURI(true)`.
-- `lockIdentityConfiguration()` permanently freezes identity config setters.
+Identity/ENS configuration functions:
+- `setEnsJobPages`
+- `setUseEnsJobTokenURI`
+- `updateEnsRegistry`
+- `updateNameWrapper`
+- `updateRootNodes`
+- `updateMerkleRoots`
 
-## 7) High-risk actions (special approval required)
+Guidelines:
+- Enable ENS tokenURI (`setUseEnsJobTokenURI(true)`) only after end-to-end testing.
+- Treat root-node changes as high-risk; coordinate with moderators and support.
+- `lockIdentityConfiguration()` is irreversible. Use only when sure ENS/Merkle configuration is final.
 
+## 7) High-risk actions (dual-review required)
+
+Require explicit change ticket + rollback note before execution:
 - `rescueERC20`
 - `rescueToken`
 - `lockIdentityConfiguration`
-- identity setters (`updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `updateMerkleRoots`, `setEnsJobPages`)
-- economic setters while escrow is empty (quorum/threshold/bond/time params)
+- identity setters listed above
+- major economics setters (thresholds, bond amounts, timing windows)
 
-Require change ticket, rationale, and post-change verification notes.
+## 8) Offline helper tooling for autonomous ops
+
+- Etherscan parameter prep: `node scripts/etherscan/prepare_inputs.js --action <...>`
+- Merkle root/proofs: `node scripts/merkle/export_merkle_proofs.js ...`
+- State decision aid: `node scripts/advisor/state_advisor.js --input <state.json>`
