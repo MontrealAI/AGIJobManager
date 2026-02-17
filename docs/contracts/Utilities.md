@@ -7,7 +7,7 @@ Reference for linked utility libraries used by `AGIJobManager`.
 Auditors and developers reviewing low-level behavior.
 
 ## Preconditions / assumptions
-- Utilities are linked at deployment (`migrations/2_deploy_contracts.js`).
+- Utilities are linked at deployment (`migrations/1_deploy_contracts.js`).
 
 ## `UriUtils`
 - `requireValidUri(string uri)` enforces non-empty URI and rejects whitespace characters (space, tab, LF, CR).
