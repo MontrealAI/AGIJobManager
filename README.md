@@ -62,6 +62,21 @@ npm run size
 
 `npm test` runs: Truffle compile/tests, additional Node tests, and contract size guards.
 
+## Offline helper tooling (Etherscan-first)
+
+- Merkle root + proof export (paste-ready `bytes32[]`):
+  ```bash
+  node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addresses.json --output proofs.json
+  ```
+- Etherscan write-input preparation + unit conversion:
+  ```bash
+  node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 7d --jobSpecURI ipfs://bafy.../job.json --details "Translate legal packet EN->ES"
+  ```
+- Offline state advisor (no RPC required):
+  ```bash
+  node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
+  ```
+
 
 ## Documentation
 
