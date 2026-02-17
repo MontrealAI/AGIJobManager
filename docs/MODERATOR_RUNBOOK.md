@@ -55,13 +55,19 @@ Examples:
 2. Read `getJobValidation(jobId)`.
 3. Read `getJobSpecURI(jobId)` and `getJobCompletionURI(jobId)`.
 4. Confirm dispute state is active (`disputed == true`).
-5. Use offline helper for reason-template drafting if needed.
+5. Optionally run offline advisor on pasted values for timing sanity.
 6. Write `resolveDisputeWithCode(jobId, code, reason)`.
 7. Save tx hash and archive evidence bundle.
 
-## 5) Quick consistency checklist before submitting resolution tx
+## 5) Moderator autonomy checklist (before signing)
 
-- Is code choice consistent with matrix and prior similar cases?
-- Is reason string complete and parseable?
+- Is code choice consistent with resolution matrix and prior similar cases?
+- Is reason string complete, parseable, and ticket-linked?
 - Are all referenced artifacts immutable and retrievable?
-- Is moderator signer authorized?
+- Is signer currently authorized moderator/owner?
+- Is there any conflict of interest that requires reassignment?
+
+Offline helper:
+```bash
+node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
+```

@@ -31,6 +31,15 @@ Use the offline helper:
 node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duration 7d
 ```
 
+### Approvals required before `transferFrom` actions
+You must approve AGIJobManager on the AGI token contract before these writes:
+- `createJob` (escrow payout)
+- `applyForJob` (agent bond when non-zero)
+- `validateJob` / `disapproveJob` (validator bond when non-zero)
+- `disputeJob` (dispute bond when non-zero)
+
+If allowance or balance is too low, the write usually reverts with `TransferFailed`.
+
 ### Safety checklist before any transaction
 1. Read `paused()`.
 2. Read `settlementPaused()`.
@@ -54,6 +63,8 @@ node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duratio
 | `InsolventEscrowBalance` | unsafe owner action while escrow backing would be harmed | wait and reconcile escrow state |
 | `ConfigLocked` | identity configuration already locked | cannot change ENS/Merkle identity settings |
 | Finalize opens dispute | tie/under-quorum or contested outcome at finalize time | moderator must resolve dispute |
+
+`finalizeJob` may revert with `InvalidState` when called too early (before review/challenge gates), after terminal states, or in states that require dispute resolution first.
 
 ---
 
@@ -110,6 +121,11 @@ Example:
 ```text
 jobId: 42
 ```
+
+Decision rule for non-technical users:
+- Wait until review timing gates have elapsed.
+- If validator approval path applies, wait for challenge window too.
+- If in doubt, run the offline advisor with pasted read outputs first.
 
 ### 5) Dispute if needed
 Write function: `disputeJob(jobId)`
@@ -249,9 +265,14 @@ EVIDENCE:v1|summary:<one line>|facts:<facts>|links:<ipfs/urls>|policy:<section>|
 
 ```text
 assign
+  (assignedAt)
+    + duration => earliest expiry threshold
   -> requestJobCompletion
+    (completionRequestedAt)
     -> review window (validator votes)
+      completionRequestedAt + completionReviewPeriod
       -> challenge window (if validator-approved path applies)
+        validatorApprovedAt + challengePeriodAfterApproval
         -> finalizeJob OR disputeJob
           -> moderator resolveDisputeWithCode
 ```
@@ -267,6 +288,12 @@ assign
 4. If validator-approved path is active, also enforce challenge window elapsed.
 5. Use strict elapsed logic: only act once current timestamp is **greater than** required threshold.
 6. If finalization still routes to dispute, use moderator flow.
+
+### What happens if nobody votes?
+If validator participation is too low or outcome is inconclusive at finalize time, the contract can route into dispute so a moderator can resolve.
+
+### Why does finalize sometimes create a dispute?
+This is expected safety behavior in contested/under-quorum outcomes; it prevents automatic payout when validation signal is insufficient.
 
 ---
 

@@ -70,6 +70,7 @@ function checklist(action) {
   ];
   if (action === 'create-job') common.push('- Confirm intake is not paused');
   if (action === 'finalize') common.push('- Confirm review/challenge windows are elapsed or early-approval criteria met');
+  if (action === 'dispute') common.push('- Confirm you are employer or assigned agent and dispute window is still open');
   if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is a moderator/owner');
   return common;
 }
@@ -87,7 +88,7 @@ function run() {
 
   if (action === 'help' || args.help) {
     console.log('Usage: node scripts/etherscan/prepare_inputs.js --action <action> [options]');
-    console.log('Actions: convert, approve, create-job, apply, request-completion, validate, disapprove, resolve-dispute, finalize');
+    console.log('Actions: convert, approve, create-job, apply, request-completion, validate, disapprove, dispute, resolve-dispute, finalize');
     process.exit(0);
   }
 
@@ -151,6 +152,10 @@ function run() {
       `resolutionCode: ${args.code || '1'}  // 0=NO_ACTION, 1=AGENT_WIN, 2=EMPLOYER_WIN`,
       `reason: ${args.reason || 'EVIDENCE:v1|summary:...|links:...|moderator:...|ts:...'} `,
     ]);
+  }
+
+  if (action === 'dispute') {
+    printBlock('Copy/paste into Etherscan: disputeJob(jobId)', [`jobId: ${args.jobId || '0'}`]);
   }
 
   if (action === 'finalize') {

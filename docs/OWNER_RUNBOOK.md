@@ -2,7 +2,7 @@
 
 This runbook is optimized for low-touch operations with Etherscan + offline scripts.
 
-## 1) Deployment checklist
+## 1) Deployment and verification checklist
 
 1. Build with repo defaults:
    ```bash
@@ -23,44 +23,18 @@ This runbook is optimized for low-touch operations with Etherscan + offline scri
 - Stage 2 (scale): increase limits only after successful pilot dispute/finalization outcomes.
 - Keep Merkle roots and allowlists small and auditable at first.
 
-## 3) Incident playbooks
+## 3) Operating modes
 
-### A) Stop intake only (new jobs/applications)
-Recommended sequence:
-1. `pause()`
-2. Announce incident status and impact.
-3. Keep settlement open unless actively unsafe.
+| Mode | Pause setting | Settlement setting | Typical use |
+|---|---|---|---|
+| Normal operation | `paused=false` | `settlementPaused=false` | standard intake + settlement |
+| Intake stopped | `pause()` | unchanged | freeze new jobs/applications while allowing existing settlement |
+| Settlement stopped | unchanged | `setSettlementPaused(true)` | preserve evidence/state while stopping finalize/dispute writes |
+| Full incident response | `pauseAll()` | `pauseAll()` | severe incidents requiring full freeze |
 
-### B) Stop settlement only (finalize/dispute lane)
-Recommended sequence:
-1. `setSettlementPaused(true)`
-2. Keep intake setting unchanged if desired.
-3. Announce expected recovery timeline.
+## 4) Standard procedures
 
-### C) Full stop
-Recommended sequence:
-1. `pauseAll()`
-2. Validate both `paused()==true` and `settlementPaused()==true`.
-3. Announce freeze scope and next update time.
-
-### D) Resume
-- Intake only: `unpause()`
-- Settlement only: `setSettlementPaused(false)`
-- Full resume: `unpauseAll()`
-
-## 4) Safe revenue withdrawals (solvency-first)
-
-Always perform in this order:
-1. Read `withdrawableAGI()`.
-2. Confirm requested `amount <= withdrawableAGI()`.
-3. Confirm no active incident requiring additional buffer.
-4. Call `withdrawAGI(amount)`.
-5. Archive tx hash and rationale.
-
-Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must remain solvent.
-
-## 5) Allowlist governance and Merkle root rotation
-
+### A) Rotating allowlists safely
 1. Build candidate address list offline.
 2. Generate root/proofs offline:
    ```bash
@@ -71,7 +45,28 @@ Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must rem
 5. Call `updateMerkleRoots(validatorRoot, agentRoot)`.
 6. Distribute new proofs to affected users.
 
-## 6) ENS operations
+### B) Adding/removing moderators
+1. Open internal ticket and capture reason.
+2. Execute `addModerator(address)` or `removeModerator(address)`.
+3. Read-check moderator status and archive tx hash.
+
+### C) Blacklisting policy and reversal
+1. Collect objective evidence and ticket.
+2. Execute `blacklistAgent` or `blacklistValidator` only for concrete abuse/risk.
+3. Communicate reason + review path.
+4. Reverse via corresponding unblacklist flow once risk is resolved.
+
+### D) Safe platform withdrawals
+Always perform in this order:
+1. Read `withdrawableAGI()`.
+2. Confirm requested `amount <= withdrawableAGI()`.
+3. Confirm no active incident requiring additional buffer.
+4. Call `withdrawAGI(amount)`.
+5. Archive tx hash and rationale.
+
+Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must remain solvent.
+
+## 5) ENS and identity controls
 
 Identity/ENS configuration functions:
 - `setEnsJobPages`
@@ -86,7 +81,7 @@ Guidelines:
 - Treat root-node changes as high-risk; coordinate with moderators and support.
 - `lockIdentityConfiguration()` is irreversible. Use only when sure ENS/Merkle configuration is final.
 
-## 7) High-risk actions (dual-review required)
+## 6) High-risk actions (dual-review required)
 
 Require explicit change ticket + rollback note before execution:
 - `rescueERC20`
@@ -94,6 +89,15 @@ Require explicit change ticket + rollback note before execution:
 - `lockIdentityConfiguration`
 - identity setters listed above
 - major economics setters (thresholds, bond amounts, timing windows)
+
+## 7) Incident decision table
+
+| Symptom | Checks | Action | Rollback |
+|---|---|---|---|
+| unexpected create/apply failures | `paused()`, allowance, balances | if protocol issue: `pause()` | `unpause()` after fix + notice |
+| finalize/dispute failing globally | `settlementPaused`, review windows, config writes | `setSettlementPaused(true)` while triaging | `setSettlementPaused(false)` |
+| suspicious admin key activity | signer audit + pending tx review | `pauseAll()` and rotate ops keys | `unpauseAll()` after key hygiene |
+| solvency concern | `withdrawableAGI()`, escrow obligations | stop withdrawals, investigate accounting | resume withdrawals only after margin restored |
 
 ## 8) Offline helper tooling for autonomous ops
 
