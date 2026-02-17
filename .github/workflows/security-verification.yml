@@ -1,0 +1,53 @@
+name: Security Verification
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  security-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Forge format check
+        run: forge fmt --check forge-test/**/*.sol contracts/test/MaliciousCompletionReceiver.sol
+
+      - name: Forge build
+        run: FOUNDRY_PROFILE=ci forge build
+
+      - name: Forge unit + fuzz tests
+        run: FOUNDRY_PROFILE=ci forge test --no-match-path "forge-test/invariant/*.t.sol"
+
+      - name: Forge invariants
+        run: FOUNDRY_PROFILE=ci forge test --match-path "forge-test/invariant/*.t.sol"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Slither
+        run: |
+          python -m pip install --upgrade pip
+          pip install slither-analyzer==0.10.4
+
+      - name: Run Slither
+        run: npm run slither
