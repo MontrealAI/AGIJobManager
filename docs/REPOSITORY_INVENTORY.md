@@ -9,7 +9,7 @@ This file documents the current repository surface at HEAD and the canonical loc
 | Core contract | `contracts/AGIJobManager.sol` | Escrow, lifecycle, voting, disputes, NFT issuance, owner controls |
 | ENS integration | `contracts/ens/ENSJobPages.sol` + `contracts/ens/I*.sol` | Optional ENS hook target used by AGIJobManager best-effort calls |
 | Utility libraries | `contracts/utils/*.sol` | `BondMath`, `ReputationMath`, `ENSOwnership`, `TransferUtils`, `UriUtils` |
-| Deployment | `migrations/2_deploy_contracts.js`, `migrations/deploy-config.js` | Truffle deployment + network/environment wiring |
+| Deployment | `migrations/1_deploy_contracts.js`, `migrations/deploy-config.js` | Truffle deployment + network/environment wiring |
 | Post-deploy scripts | `scripts/postdeploy-config.js`, `scripts/verify-config.js` | Configure and verify runtime settings |
 | Bytecode checks | `scripts/check-bytecode-size.js`, `scripts/check-contract-sizes.js` | EIP-170 safety checks |
 | Interface docs generator | `scripts/generate-interface-doc.js` | Re-generates interface documentation |

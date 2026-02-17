@@ -86,7 +86,7 @@ Because contract is non-upgradeable:
 - Do not run treasury withdrawal during launch validation; it requires paused state.
 
 ## References
-- [`../migrations/2_deploy_contracts.js`](../migrations/2_deploy_contracts.js)
+- [`../migrations/1_deploy_contracts.js`](../migrations/1_deploy_contracts.js)
 - [`../scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
 - [`../scripts/verify-config.js`](../scripts/verify-config.js)
 - [`../scripts/ops/validate-params.js`](../scripts/ops/validate-params.js)
