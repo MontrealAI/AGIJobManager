@@ -153,7 +153,7 @@ function parseMutatorTxs({ txs, mutators, blockLimit }) {
     const fn = bySelector.get(selector);
     if (!fn) continue;
     const decoded = Abi.decodeParameters(fn.inputs, `0x${tx.input.slice(10)}`);
-    const src = { txHash: tx.hash, blockNumber: tx.blockNumber.toString(), txIndex: tx.transactionIndex.toString(), function: fn.name };
+    const src = { txHash: tx.hash, blockNumber: tx.blockNumber.toString(), txIndex: tx.transactionIndex.toString(), function: fn.name, txSource: tx.source || 'unknown' };
 
     if (fn.name === 'addModerator' || fn.name === 'removeModerator') {
       const a = toChecksumAddress(decoded[0]);
@@ -244,6 +244,61 @@ function getTxsViaHtmlScrape(rpcUrl, address, blockLimitHex) {
   }
   txs.sort((a, b) => (a.blockNumber === b.blockNumber ? (a.transactionIndex < b.transactionIndex ? -1 : 1) : (a.blockNumber < b.blockNumber ? -1 : 1)));
   return txs;
+}
+
+
+function normalizeTraceIndex(traceId) {
+  if (!traceId || traceId === '') return 0n;
+  const parts = String(traceId).split('_').map((x) => Number(x)).filter((n) => Number.isFinite(n));
+  let acc = 0n;
+  for (const n of parts) {
+    acc = acc * 1000n + BigInt(n);
+  }
+  return acc;
+}
+
+function fetchTxsViaEtherscanApi(address, snapshotBlockHex, etherscanKey) {
+  const endBlock = BigInt(snapshotBlockHex).toString();
+  const topLevel = etherscanGet({ module: 'account', action: 'txlist', address, startblock: '0', endblock: endBlock, sort: 'asc' }, etherscanKey)
+    .filter((tx) => tx.isError === '0')
+    .map((tx) => ({
+      hash: tx.hash,
+      input: tx.input,
+      blockNumber: BigInt(tx.blockNumber),
+      transactionIndex: BigInt(tx.transactionIndex),
+      traceIndex: 0n,
+      source: 'txlist',
+    }));
+
+  const internal = etherscanGet({ module: 'account', action: 'txlistinternal', address, startblock: '0', endblock: endBlock, sort: 'asc' }, etherscanKey)
+    .filter((tx) => (tx.isError === '0' || tx.isError === 0 || tx.isError === undefined))
+    .filter((tx) => tx.to && tx.to.toLowerCase() === address.toLowerCase())
+    .map((tx) => ({
+      hash: tx.hash,
+      input: tx.input || tx.data || '0x',
+      blockNumber: BigInt(tx.blockNumber),
+      transactionIndex: BigInt(tx.transactionIndex || 0),
+      traceIndex: normalizeTraceIndex(tx.traceId),
+      source: 'txlistinternal',
+    }));
+
+  const missingInputInternal = internal.filter((tx) => !tx.input || tx.input === '0x');
+  if (missingInputInternal.length > 0) {
+    throw new Error(
+      `Etherscan txlistinternal returned ${missingInputInternal.length} internal calls to legacy contract without input data; ` +
+      'cannot safely reconstruct admin-mutator history. Retry with a provider/tooling that exposes call input traces.'
+    );
+  }
+
+  const combined = [...topLevel, ...internal];
+  combined.sort((a, b) => {
+    if (a.blockNumber !== b.blockNumber) return a.blockNumber < b.blockNumber ? -1 : 1;
+    if (a.transactionIndex !== b.transactionIndex) return a.transactionIndex < b.transactionIndex ? -1 : 1;
+    if (a.traceIndex !== b.traceIndex) return a.traceIndex < b.traceIndex ? -1 : 1;
+    return a.hash < b.hash ? -1 : (a.hash > b.hash ? 1 : 0);
+  });
+
+  return combined;
 }
 
 function getAgiTypeStateFromLogs(rpcUrl, address, abi, fromBlockHex, toBlockHex) {
@@ -338,11 +393,8 @@ async function main() {
   let txs;
   let txSource;
   if (etherscanKey) {
-    const txResults = etherscanGet({ module: 'account', action: 'txlist', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
-    txs = txResults
-      .filter((tx) => tx.isError === '0')
-      .map((tx) => ({ hash: tx.hash, input: tx.input, blockNumber: BigInt(tx.blockNumber), transactionIndex: BigInt(tx.transactionIndex) }));
-    txSource = 'etherscan-v2-api';
+    txs = fetchTxsViaEtherscanApi(LEGACY_ADDRESS, snapshotBlockHex, etherscanKey);
+    txSource = 'etherscan-v2-api(+txlistinternal)';
   } else {
     txs = getTxsViaHtmlScrape(rpcUrl, LEGACY_ADDRESS, snapshotBlockHex);
     txSource = 'etherscan-html-scrape+rpc';

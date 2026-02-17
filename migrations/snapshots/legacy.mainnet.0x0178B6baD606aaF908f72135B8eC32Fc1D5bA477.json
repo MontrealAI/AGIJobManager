@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-02-17T10:40:24.129Z",
+  "generatedAt": "2026-02-17T14:01:09.876Z",
   "legacy": {
     "address": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
     "abiSource": "etherscan-html-fallback",
@@ -86,7 +86,8 @@
           "txHash": "0xe06b2dda1d4f7308c924249ee4d595384d0ac9e7378f25b73afdd9894a4d831b",
           "blockNumber": "20194021",
           "txIndex": "70",
-          "function": "addModerator"
+          "function": "addModerator",
+          "txSource": "unknown"
         }
       },
       "additionalAgents": {},
