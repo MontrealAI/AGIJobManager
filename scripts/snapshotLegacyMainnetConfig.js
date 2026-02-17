@@ -86,9 +86,9 @@ function tryDeriveBaseFromTokenURI(rpcUrl, address, blockTag) {
     const out = rpcCall(rpcUrl, 'eth_call', [{ to: address, data }, blockTag]);
     const uri = decodeStringResult(out);
     const q = uri.indexOf('/Qm');
-    if (q > 0) return uri.slice(0, q + 1);
+    if (q > 0) return uri.slice(0, q);
     const idx = uri.lastIndexOf('/');
-    if (idx > 10) return uri.slice(0, idx + 1);
+    if (idx > 10) return uri.slice(0, idx);
     return null;
   } catch (_) {
     return null;
@@ -191,14 +191,27 @@ function parseMutatorTxs({ txs, mutators, blockLimit }) {
 function getTxsViaHtmlScrape(rpcUrl, address, blockLimitHex) {
   const cutoff = BigInt(blockLimitHex);
   const txHashes = new Set();
-  for (let p = 1; p <= 10; p += 1) {
+  const MAX_HTML_TX_PAGES = 200;
+  let p = 1;
+  let foundTerminalPage = false;
+  while (p <= MAX_HTML_TX_PAGES) {
     const html = runCurl([`https://etherscan.io/txs?a=${address}&p=${p}`]);
     console.log(`Scanning Etherscan tx page ${p}...`);
     const matches = [...html.matchAll(/\/tx\/(0x[a-fA-F0-9]{64})/g)].map((m) => m[1]);
-    if (matches.length === 0) break;
-    let before = txHashes.size;
+    if (matches.length === 0) {
+      foundTerminalPage = true;
+      break;
+    }
+    const before = txHashes.size;
     matches.forEach((h) => txHashes.add(h));
-    if (txHashes.size === before) break;
+    if (txHashes.size === before) {
+      foundTerminalPage = true;
+      break;
+    }
+    p += 1;
+  }
+  if (!foundTerminalPage) {
+    throw new Error(`HTML tx fallback reached ${MAX_HTML_TX_PAGES} pages without terminal page; refusing potentially incomplete reconstruction.`);
   }
 
   const txs = [];

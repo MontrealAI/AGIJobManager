@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-02-17T00:04:49.890Z",
+  "generatedAt": "2026-02-17T00:26:22.429Z",
   "legacy": {
     "address": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
     "abiSource": "etherscan-html-fallback",
@@ -17,7 +17,7 @@
   },
   "constructorConfig": {
     "agiTokenAddress": "0xf0780F43b86c13B3d0681B1Cf6DaeB1499e7f14D",
-    "baseIpfsUrl": "https://ipfs.io/ipfs//",
+    "baseIpfsUrl": "https://ipfs.io/ipfs/",
     "ensConfig": {
       "ensRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
       "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401"
