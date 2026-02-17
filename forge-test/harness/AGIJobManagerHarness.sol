@@ -48,10 +48,13 @@ contract AGIJobManagerHarness is AGIJobManager {
         return jobs[jobId].assignedAgent;
     }
 
+    function maxActiveJobsPerAgentView() external pure returns (uint256) {
+        return maxActiveJobsPerAgent;
+    }
+
     function jobEmployer(uint256 jobId) external view returns (address) {
         return jobs[jobId].employer;
     }
-
 
     function jobValidatorApprovalState(uint256 jobId) external view returns (bool approved, uint256 approvedAt) {
         Job storage job = jobs[jobId];

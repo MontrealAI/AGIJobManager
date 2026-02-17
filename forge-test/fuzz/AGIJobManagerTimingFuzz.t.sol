@@ -55,7 +55,7 @@ contract AGIJobManagerTimingFuzz is Test {
 
     function testFuzz_completionReviewBoundary(uint256 deltaSeed) external {
         uint256 jobId = _createAssignedJob();
-        (, , , uint256 completionRequestedAt,) = manager.getJobValidation(jobId);
+        (,,, uint256 completionRequestedAt,) = manager.getJobValidation(jobId);
         uint256 boundary = completionRequestedAt + manager.completionReviewPeriod();
         uint256 delta = bound(deltaSeed, 0, 2);
 
@@ -75,7 +75,7 @@ contract AGIJobManagerTimingFuzz is Test {
         uint256 jobId = _createAssignedJob();
         vm.prank(validator);
         manager.validateJob(jobId, "", new bytes32[](0));
-        (,uint256 approvedAt) = manager.jobValidatorApprovalState(jobId);
+        (, uint256 approvedAt) = manager.jobValidatorApprovalState(jobId);
         uint256 challengePeriod = manager.challengePeriodAfterApproval();
 
         vm.warp(approvedAt + challengePeriod - 1);
@@ -93,7 +93,7 @@ contract AGIJobManagerTimingFuzz is Test {
         vm.prank(agent);
         manager.applyForJob(jobId, "", new bytes32[](0));
 
-        (, , , uint256 duration, uint256 assignedAt,,,,) = manager.getJobCore(jobId);
+        (,,, uint256 duration, uint256 assignedAt,,,,) = manager.getJobCore(jobId);
         vm.warp(assignedAt + duration - 1);
         vm.expectRevert();
         manager.expireJob(jobId);
@@ -104,7 +104,7 @@ contract AGIJobManagerTimingFuzz is Test {
 
     function testFuzz_disputeAndStaleResolutionBoundary(uint256 dt) external {
         uint256 jobId = _createAssignedJob();
-        (, , , uint256 completionRequestedAt,) = manager.getJobValidation(jobId);
+        (,,, uint256 completionRequestedAt,) = manager.getJobValidation(jobId);
         uint256 reviewBoundary = completionRequestedAt + manager.completionReviewPeriod();
 
         vm.warp(reviewBoundary + 1);
@@ -114,9 +114,12 @@ contract AGIJobManagerTimingFuzz is Test {
 
         vm.warp(reviewBoundary - 1);
         vm.prank(employer);
-        try manager.disputeJob(jobId) {} catch { return; }
+        try manager.disputeJob(jobId) {}
+        catch {
+            return;
+        }
 
-        (, , , , uint256 disputedAt) = manager.getJobValidation(jobId);
+        (,,,, uint256 disputedAt) = manager.getJobValidation(jobId);
         vm.warp(disputedAt + manager.disputeReviewPeriod() - 1);
         vm.expectRevert();
         manager.resolveStaleDispute(jobId, true);
