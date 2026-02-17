@@ -25,6 +25,21 @@ This runbook is optimized for low-touch operations with Etherscan + offline scri
 
 ## 3) Incident playbooks
 
+### Operating modes (choose explicitly)
+
+| Mode | Intake (`paused`) | Settlement (`settlementPaused`) | When to use |
+|---|---:|---:|---|
+| Normal operation | `false` | `false` | Default production mode |
+| Intake stopped | `true` | `false` | Block new jobs/applications while allowing existing jobs to settle |
+| Settlement stopped | `false` | `true` | Freeze settlement-gated actions (including create/apply/finalize/dispute) while investigating |
+| Full incident response | `true` | `true` | Suspected severe bug/exploit or unresolved accounting risk |
+
+Execution mapping:
+- Normal operation: `unpauseAll()` (or `unpause()` + `setSettlementPaused(false)`)
+- Intake stopped: `pause()`
+- Settlement stopped: `setSettlementPaused(true)`
+- Full incident response: `pauseAll()`
+
 ### A) Stop intake only (new jobs/applications)
 Recommended sequence:
 1. `pause()`
@@ -48,7 +63,17 @@ Recommended sequence:
 - Settlement only: `setSettlementPaused(false)`
 - Full resume: `unpauseAll()`
 
-## 4) Safe revenue withdrawals (solvency-first)
+## 4) Incident decision table (symptom → checks → action → rollback)
+
+| Symptom | Immediate checks | Primary action | Rollback / exit criteria |
+|---|---|---|---|
+| Reverts on create/apply spike | `paused()`, `settlementPaused()`, token allowance/balance, recent config changes | If uncertain, move to **Intake stopped** (`pause()`) while triaging | `unpause()` only after reproducer resolved and docs/support messaging updated |
+| Finalize/dispute path behaving unexpectedly | `settlementPaused()`, `getJobCore`, `getJobValidation`, timing parameters | Move to **Settlement stopped** (`setSettlementPaused(true)`) while moderators/owner review | `setSettlementPaused(false)` after confirming expected behavior on sampled jobs |
+| Suspected exploit or accounting inconsistency | Contract AGI balance, `withdrawableAGI()`, active disputes/jobs | Move to **Full incident response** (`pauseAll()`) | `unpauseAll()` only after root cause and compensating controls are documented |
+| Authorization complaints (legit users blocked) | Merkle roots, additional allowlists, ENS root config, blacklist state | Keep mode as-is, rotate roots/allowlist with change notice | Confirm affected users can apply/vote with new proofs and archive evidence |
+| Moderator capacity backlog | count of `disputed==true` jobs and age vs `disputeReviewPeriod` | Add moderators (`addModerator`) and use standardized reason format | Remove temporary moderators when backlog clears |
+
+## 5) Safe revenue withdrawals (solvency-first)
 
 Always perform in this order:
 1. Read `withdrawableAGI()`.
@@ -59,7 +84,7 @@ Always perform in this order:
 
 Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must remain solvent.
 
-## 5) Allowlist governance and Merkle root rotation
+## 6) Allowlist governance and Merkle root rotation
 
 1. Build candidate address list offline.
 2. Generate root/proofs offline:
@@ -71,7 +96,7 @@ Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must rem
 5. Call `updateMerkleRoots(validatorRoot, agentRoot)`.
 6. Distribute new proofs to affected users.
 
-## 6) ENS operations
+## 7) ENS operations
 
 Identity/ENS configuration functions:
 - `setEnsJobPages`
@@ -86,7 +111,7 @@ Guidelines:
 - Treat root-node changes as high-risk; coordinate with moderators and support.
 - `lockIdentityConfiguration()` is irreversible. Use only when sure ENS/Merkle configuration is final.
 
-## 7) High-risk actions (dual-review required)
+## 8) High-risk actions (dual-review required)
 
 Require explicit change ticket + rollback note before execution:
 - `rescueERC20`
@@ -95,7 +120,7 @@ Require explicit change ticket + rollback note before execution:
 - identity setters listed above
 - major economics setters (thresholds, bond amounts, timing windows)
 
-## 8) Offline helper tooling for autonomous ops
+## 9) Offline helper tooling for autonomous ops
 
 - Etherscan parameter prep: `node scripts/etherscan/prepare_inputs.js --action <...>`
 - Merkle root/proofs: `node scripts/merkle/export_merkle_proofs.js ...`

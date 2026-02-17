@@ -23,6 +23,10 @@ Do objective facts satisfy one side under policy?
 | Evidence supports employer claim of non-performance/non-compliance | `2` (`EMPLOYER_WIN`) |
 | Evidence incomplete or contradictory | `0` (`NO_ACTION`) |
 
+Low-touch policy:
+- If evidence is complete and objectively favors one side, resolve in a single transaction.
+- If evidence is insufficient, always use `0` with a reason string that explicitly names missing artifacts.
+
 ## 3) SOP: `resolveDisputeWithCode(jobId, code, reason)`
 
 ### Minimum evidence checklist (required)
@@ -59,7 +63,27 @@ Examples:
 6. Write `resolveDisputeWithCode(jobId, code, reason)`.
 7. Save tx hash and archive evidence bundle.
 
-## 5) Quick consistency checklist before submitting resolution tx
+## 5) Autonomy tools and pre-resolution checklist
+
+Use offline helper tooling to reduce judgment errors:
+
+```bash
+node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
+```
+
+Paste Etherscan read outputs and current block timestamp into the advisor input, then confirm:
+- state is `DISPUTED`
+- stale-dispute threshold (if relevant) is correctly computed
+- no obvious role/timing contradiction is present
+
+Pre-resolution checklist (must all be true):
+1. dispute exists (`disputed == true`)
+2. selected code matches matrix + evidence bundle
+3. reason string includes ticket/policy references
+4. linked artifacts are immutable (IPFS hash or content hash)
+5. signer is in `moderators(address) == true` (owner-only is not sufficient unless owner is also a moderator)
+
+## 6) Quick consistency checklist before submitting resolution tx
 
 - Is code choice consistent with matrix and prior similar cases?
 - Is reason string complete and parseable?
