@@ -20,7 +20,7 @@ Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 - `contracts/AGIJobManager.sol`
 - `contracts/ens/ENSJobPages.sol`
 - `contracts/utils/*.sol`
-- `migrations/2_deploy_contracts.js`
+- `migrations/1_deploy_contracts.js`
 - `migrations/deploy-config.js`
 - `scripts/postdeploy-config.js`
 - `scripts/verify-config.js`
