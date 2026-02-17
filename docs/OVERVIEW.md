@@ -12,7 +12,7 @@ AGIJobManager is an owner-operated escrow and settlement contract for employer-a
 ## Components
 
 - **Core contract**: [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
-- **Deployment**: [`migrations/2_deploy_contracts.js`](../migrations/2_deploy_contracts.js), [`migrations/deploy-config.js`](../migrations/deploy-config.js)
+- **Deployment**: [`migrations/1_deploy_contracts.js`](../migrations/1_deploy_contracts.js), [`migrations/deploy-config.js`](../migrations/deploy-config.js)
 - **Operational scripts**: [`scripts/ops/validate-params.js`](../scripts/ops/validate-params.js), [`scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
 - **Tests**: [`test/`](../test), [`forge-test/`](../forge-test)
 - **UI**: [`ui/`](../ui)

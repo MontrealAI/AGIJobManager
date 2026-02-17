@@ -175,7 +175,7 @@ npm test
 ```
 
 **Deployment entrypoint**
-- `migrations/2_deploy_contracts.js` (reads values from `migrations/deploy-config.js` + env vars).
+- `migrations/1_deploy_contracts.js` (reads values from `migrations/deploy-config.js` + env vars).
 
 **Mainnet checklist**
 1. Confirm compiler/settings match `truffle-config.js`.
