@@ -9,7 +9,7 @@ This guide is written for non-technical users who only use:
 - Agent: [Agent flow](#agent-flow)
 - Validator: [Validator flow](#validator-flow)
 - Moderator: [Moderator flow](#moderator-flow)
-- Owner/operator: [Owneroperator flow](#owneroperator-flow)
+- Owner/operator: [Owner/operator flow](#owneroperator-flow)
 
 ---
 
@@ -227,7 +227,7 @@ EVIDENCE:v1|summary:<one line>|facts:<facts>|links:<ipfs/urls>|policy:<section>|
 
 ---
 
-## Owneroperator flow
+## Owner/operator flow
 
 ### Pause controls
 - Intake pause: `pause()` / `unpause()`
@@ -335,7 +335,7 @@ Are you owner-allowlisted?
 Leaf format is fixed:
 - `keccak256(abi.encodePacked(address))`
 
-Generate root + proofs offline:
+Generate root + proofs offline (deterministic ordering, duplicate-address guard):
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addresses.json
 ```

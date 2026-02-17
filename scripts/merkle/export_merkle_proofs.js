@@ -46,12 +46,17 @@ if (!Array.isArray(parsed) || parsed.length === 0) {
 }
 
 const addresses = parsed.map(normalizeAddress);
-const leaves = addresses.map(toLeaf);
+const uniqueAddresses = [...new Set(addresses)].sort();
+if (uniqueAddresses.length !== addresses.length) {
+  console.error("Input contains duplicate addresses. Please provide unique addresses only.");
+  process.exit(1);
+}
+const leaves = uniqueAddresses.map(toLeaf);
 const tree = new MerkleTree(leaves, keccak256, { sortPairs: true, sortLeaves: true });
 
 const proofs = {};
 const etherscanProofArrays = {};
-for (const address of addresses) {
+for (const address of uniqueAddresses) {
   const proof = tree.getHexProof(toLeaf(address));
   proofs[address] = proof;
   etherscanProofArrays[address] = JSON.stringify(proof);
