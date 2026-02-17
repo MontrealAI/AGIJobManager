@@ -11,7 +11,7 @@ const curated = [
   ['contracts/AGIJobManager.sol', 'Primary escrow/settlement contract with role gating and disputes', 'On-chain source of truth'],
   ['contracts/ens/', 'ENS and NameWrapper integration interfaces/helpers', 'Best-effort identity checks'],
   ['contracts/utils/', 'Math, transfer, URI, and ENS ownership helpers', 'Used by core contract'],
-  ['migrations/2_deploy_contracts.js', 'Truffle deployment entrypoint', 'Reads deployment config'],
+  ['migrations/1_deploy_contracts.js', 'Truffle deployment entrypoint', 'Reads deployment config'],
   ['migrations/deploy-config.js', 'Network-dependent deployment parameters', 'Operator-reviewed before deploy'],
   ['test/', 'Truffle and node-based security/regression suites', 'Primary CI safety net'],
   ['forge-test/', 'Foundry fuzz/invariant suites', 'Optional hardening lane'],
@@ -42,7 +42,7 @@ const keyEntrypoints = [
   'docs/README.md',
   'contracts/AGIJobManager.sol',
   'test/AGIJobManager.test.js',
-  'migrations/2_deploy_contracts.js',
+  'migrations/1_deploy_contracts.js',
   'scripts/postdeploy-config.js',
   '.github/workflows/ci.yml',
   '.github/workflows/docs.yml'
