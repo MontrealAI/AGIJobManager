@@ -1,6 +1,6 @@
 # Deployment checklist (configure once → operate with minimal governance)
 
-This checklist is a practical, operator-facing guide for deploying **AGIJobManager** with a “configure once, then operate” posture. It assumes Truffle deployments and the environment variables used by `migrations/2_deploy_contracts.js`.
+This checklist is a practical, operator-facing guide for deploying **AGIJobManager** with a “configure once, then operate” posture. It assumes Truffle deployments and the environment variables used by `migrations/1_deploy_contracts.js`.
 
 ## 1) Pre-deploy decisions
 
