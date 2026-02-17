@@ -1,16 +1,16 @@
 # FAQ (Etherscan-first)
 
-## Why do I need approval before create/apply/vote/dispute?
+## Why do I need token approval before create/apply/vote/dispute?
 
-AGIJobManager pulls AGI with `transferFrom`, so allowance on the AGI token is required.
+AGIJobManager pulls AGI using `transferFrom`, so your wallet must grant allowance first.
 
 ## Should I use exact-amount approvals?
 
-For least privilege, yes: approve only the exact amount needed for escrow or bond, then raise if necessary.
+Yes for least privilege. Approve exact payout/bond amount when possible.
 
-## How do I paste `bytes32[]` proofs in Etherscan?
+## How do I paste `bytes32[]` proofs into Etherscan?
 
-Use one-line JSON array:
+Use a one-line JSON array:
 
 ```text
 []
@@ -20,21 +20,26 @@ Use one-line JSON array:
 ["0xabc...", "0xdef..."]
 ```
 
+You can generate proof arrays offline with:
+```bash
+node scripts/merkle/export_merkle_proofs.js --input addresses.json --output proofs.json
+```
+
 ## Why can `finalizeJob` open a dispute instead of settling?
 
-At review end, tie or under-quorum outcomes move to dispute flow by design.
+If finalization conditions indicate contested outcomes (for example under-quorum/tie paths), finalize can route to dispute resolution.
 
-## What if nobody votes?
+## What happens if nobody votes?
 
-At review-end timeout with no validator votes, contract follows deterministic finalize behavior (check `getJobValidation` + `finalizeJob` outcome path).
+Outcome is deterministic from contract logic and timing. Use `getJobValidation(jobId)` plus timing windows to evaluate whether finalize/dispute path is next.
 
 ## What is `paused` vs `settlementPaused`?
 
-- `paused`: intake pause controls (create/apply and related intake lanes)
-- `settlementPaused`: settlement/dispute/finalization lane pause
+- `paused`: intake lane controls.
+- `settlementPaused`: settlement/dispute/finalization lane controls.
 
-Operators can toggle independently for incident response.
+They are independent and can be toggled separately.
 
-## Why do fee-on-transfer/deflationary ERC20 tokens fail?
+## Why do fee-on-transfer or deflationary ERC20s fail?
 
-AGIJobManager accounting expects strict exact-transfer semantics. Fee-on-transfer or deflationary behavior can break invariants and revert with transfer/accounting errors.
+AGIJobManager accounting assumes strict transfer amounts. Tokens that burn/skim on transfer can violate accounting expectations and cause reverts (commonly `TransferFailed` or downstream state errors).
