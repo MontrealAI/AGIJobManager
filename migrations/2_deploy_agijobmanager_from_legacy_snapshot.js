@@ -94,7 +94,18 @@ module.exports = async function (deployer, network, accounts) {
   await maybeSet(manager, 'setValidatorBondParams', [rc.validatorBondBps, rc.validatorBondMin, rc.validatorBondMax], from);
   await maybeSet(manager, 'setAgentBondParams', [rc.agentBondBps, rc.agentBondMin, rc.agentBondMax], from);
   await maybeSet(manager, 'setValidatorSlashBps', [rc.validatorSlashBps], from);
-  await maybeSet(manager, 'setChallengePeriodAfterApproval', [rc.challengePeriodAfterApproval], from);
+
+  const challengePeriodSnapshot = BigInt(String(rc.challengePeriodAfterApproval || '0'));
+  const canReplayChallengePeriod = challengePeriodSnapshot > 0n;
+  if (canReplayChallengePeriod) {
+    await maybeSet(manager, 'setChallengePeriodAfterApproval', [rc.challengePeriodAfterApproval], from);
+  } else {
+    console.log(
+      'Skipping setChallengePeriodAfterApproval because snapshot value is 0 (placeholder/unavailable in legacy); ' +
+      'retaining contract default challengePeriodAfterApproval.'
+    );
+  }
+
   await maybeSet(manager, 'setEnsJobPages', [rc.ensJobPages || ZERO_ADDRESS], from);
   await maybeSet(manager, 'setUseEnsJobTokenURI', [Boolean(rc.useEnsJobTokenURI)], from);
   await maybeSet(manager, 'setBaseIpfsUrl', [cfg.baseIpfsUrl], from);
@@ -162,6 +173,13 @@ module.exports = async function (deployer, network, accounts) {
     ['completionReviewPeriod', (await manager.completionReviewPeriod()).toString(), String(rc.completionReviewPeriod)],
     ['disputeReviewPeriod', (await manager.disputeReviewPeriod()).toString(), String(rc.disputeReviewPeriod)],
   ];
+
+  if (canReplayChallengePeriod) {
+    checks.push(['challengePeriodAfterApproval', (await manager.challengePeriodAfterApproval()).toString(), String(rc.challengePeriodAfterApproval)]);
+  } else {
+    const onchainChallenge = (await manager.challengePeriodAfterApproval()).toString();
+    console.log(`Challenge period assertion skipped (snapshot value 0 placeholder). On-chain default is ${onchainChallenge}.`);
+  }
 
   for (const [label, actual, expected] of checks) {
     if (String(actual).toLowerCase() !== String(expected).toLowerCase()) {
