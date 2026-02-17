@@ -231,7 +231,12 @@ contract AGIJobManagerInvariants is StdInvariant, Test {
         uint256 expectedDisputeBonds;
 
         for (uint256 jobId = 0; jobId < manager.nextJobId(); jobId++) {
-            if (!manager.jobExists(jobId)) continue;
+            if (!manager.jobExists(jobId)) {
+                assertEq(manager.jobAgentBondAmount(jobId), 0);
+                assertEq(manager.jobDisputeBondAmount(jobId), 0);
+                assertEq(manager.jobValidatorsLength(jobId), 0);
+                continue;
+            }
 
             if (!manager.jobEscrowReleased(jobId)) {
                 expectedEscrow += manager.jobPayout(jobId);

@@ -10,6 +10,8 @@ import "contracts/test/MockHookCaller.sol";
 import "contracts/test/MockENSJobPages.sol";
 import "contracts/test/MockENSJobPagesMalformed.sol";
 import "contracts/test/MaliciousCompletionReceiver.sol";
+import "contracts/test/MockNameWrapper.sol";
+import "contracts/test/MockENS.sol";
 
 contract AGIJobManagerSecurityVerificationTest is Test {
     MockERC20 internal token;
@@ -114,6 +116,49 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         assertTrue(manager.jobEscrowReleased(jobId));
     }
 
+    function test_EnsOwnershipPathAndStrictLabelValidation() external {
+        MockNameWrapper wrapper = new MockNameWrapper();
+        MockENS ensRegistry = new MockENS();
+        bytes32 agentRootNode = keccak256("agent-root");
+        bytes32 alphaAgentRootNode = keccak256("alpha-agent-root");
+
+        address[2] memory ensConfig = [address(ensRegistry), address(wrapper)];
+        bytes32[4] memory rootNodes = [bytes32(0), agentRootNode, bytes32(0), alphaAgentRootNode];
+        bytes32[2] memory merkleRoots;
+        AGIJobManagerHarness ensManager =
+            new AGIJobManagerHarness(address(token), "", ensConfig, rootNodes, merkleRoots);
+
+        ensManager.addAGIType(address(agiType), 60);
+        agiType.mint(agent);
+        token.mint(employer, 100 ether);
+        token.mint(agent, 100 ether);
+
+        vm.prank(employer);
+        token.approve(address(ensManager), type(uint256).max);
+        vm.prank(agent);
+        token.approve(address(ensManager), type(uint256).max);
+
+        string memory label = "agent1";
+        bytes32 subnode = keccak256(abi.encodePacked(agentRootNode, keccak256(bytes(label))));
+        wrapper.setOwner(uint256(subnode), agent);
+
+        vm.prank(employer);
+        ensManager.createJob("ipfs://spec", 5 ether, 1 days, "details");
+        uint256 jobId = ensManager.nextJobId() - 1;
+
+        vm.prank(agent);
+        ensManager.applyForJob(jobId, label, new bytes32[](0));
+        assertEq(ensManager.jobAssignedAgent(jobId), agent);
+
+        vm.prank(employer);
+        ensManager.createJob("ipfs://spec-2", 5 ether, 1 days, "details");
+        uint256 badLabelJobId = ensManager.nextJobId() - 1;
+
+        vm.prank(agent);
+        vm.expectRevert();
+        ensManager.applyForJob(badLabelJobId, "bad.label", new bytes32[](0));
+    }
+
     function test_ReentrancyDuringNFTMintCannotDoubleSettle() external {
         MaliciousCompletionReceiver receiver = new MaliciousCompletionReceiver(address(manager), address(token));
 
@@ -144,5 +189,8 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         vm.expectRevert();
         vm.prank(address(receiver));
         receiver.finalize(jobId);
+
+        vm.expectRevert();
+        manager.finalizeJob(jobId);
     }
 }

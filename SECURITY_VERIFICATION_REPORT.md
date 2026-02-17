@@ -6,7 +6,7 @@
 - ENS integration contracts and assembly call compatibility assumptions
 
 ## Tooling Versions
-- Foundry: `forge --version`
+- Foundry: `forge 1.5.1-stable (b0a9dd9ced)`
 - Solidity compiler: `0.8.19` (from `foundry.toml`)
 - Slither: `0.10.4`
 - Echidna: not included (Foundry handler invariants already cover the multi-step state machine with deterministic CI runtime)
@@ -29,6 +29,9 @@ npm run slither
 ## Added Verification Coverage
 
 ### Unit / Regression (Foundry)
+- ENS authorization path regression:
+  - deterministic NameWrapper ownership path succeeds for valid labels
+  - invalid ENS label formatting is rejected deterministically.
 - ENS selector and calldata compatibility checks assert:
   - `handleHook(uint8,uint256)` selector = `0x1f76f7a2`, calldata length `0x44`
   - `jobEnsURI(uint256)` selector = `0x751809b4`, calldata length `0x24`
@@ -45,7 +48,9 @@ npm run slither
 - Boundary fuzz for:
   - payout and duration validity envelope in `createJob`
   - job spec/details/completion URI caps
+  - dispute-bond floor/ceiling behavior (`[1 AGI, 200 AGI]`)
   - validator approvals/disapprovals accounting consistency at threshold/tie edges
+  - hard validator cap enforcement (`MAX_VALIDATORS_PER_JOB = 50`)
 
 ### Invariants (Handler-based)
 Handler actions include:
@@ -60,6 +65,7 @@ Invariants enforced:
 4. **Vote accounting sanity:** `validators.length == approvals + disapprovals` per job.
 5. **Terminal sanity:** mutually exclusive invalid flag combinations are disallowed.
 6. **Agent concurrency cap:** `activeJobsByAgent <= maxActiveJobsPerAgent` for tracked actors.
+7. **Deleted-job accounting sanity:** deleted jobs must carry zero residual bond/validator accounting fields.
 
 ## CI Integration
 - Added `.github/workflows/security-verification.yml` for PR/push:
