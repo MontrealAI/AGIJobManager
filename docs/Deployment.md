@@ -64,7 +64,7 @@ The default `npm test` script compiles with `--all`, runs `truffle test --networ
 
 ## Migration script notes
 
-The deployment script in `migrations/2_deploy_contracts.js` reads constructor parameters from environment variables (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Set these values** before deploying to any production network.
+The deployment script in `migrations/1_deploy_contracts.js` reads constructor parameters from environment variables (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Set these values** before deploying to any production network.
 The constructor now accepts a grouped config tuple (token, base IPFS URL, `[ENS, NameWrapper]`, `[club, agent, alpha club, alpha agent]`, `[validator Merkle, agent Merkle]`), so custom deployments should mirror the migration script’s ordering.
 
 ## Local deployment (Ganache)
