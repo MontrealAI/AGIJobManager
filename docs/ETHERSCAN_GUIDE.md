@@ -9,7 +9,7 @@ This guide is written for non-technical users who only use:
 - Agent: [Agent flow](#agent-flow)
 - Validator: [Validator flow](#validator-flow)
 - Moderator: [Moderator flow](#moderator-flow)
-- Owner/operator: [Owneroperator flow](#owneroperator-flow)
+- Owner/operator: [Owner/operator flow](#owneroperator-flow)
 
 ---
 
@@ -207,6 +207,8 @@ Outcome notes:
 ---
 
 ## Moderator flow
+
+Only addresses in the moderator set can call dispute resolution functions.
 
 Write function: `resolveDisputeWithCode(jobId, resolutionCode, reason)`
 
