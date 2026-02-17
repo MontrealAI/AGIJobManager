@@ -33,7 +33,7 @@ npm run build
 truffle migrate --network <network>
 ```
 
-Repository migration used: `migrations/2_deploy_contracts.js`.
+Repository migration used: `migrations/1_deploy_contracts.js`.
 
 ### Optional ENSJobPages deployment
 If using ENS hooks, deploy `ENSJobPages` separately with:
