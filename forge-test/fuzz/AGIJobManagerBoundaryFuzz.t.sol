@@ -71,6 +71,55 @@ contract AGIJobManagerBoundaryFuzz is Test {
         manager.requestJobCompletion(jobId, string(uri));
     }
 
+    function testFuzz_disputeBondWithinConfiguredBounds(uint96 payoutSeed) external {
+        uint256 payout = bound(uint256(payoutSeed), 1 ether, 100_000 ether);
+        vm.prank(employer);
+        manager.createJob("ipfs://spec", payout, 2 days, "details");
+        uint256 jobId = manager.nextJobId() - 1;
+
+        vm.prank(agent);
+        manager.applyForJob(jobId, "", new bytes32[](0));
+        vm.prank(agent);
+        manager.requestJobCompletion(jobId, "ipfs://done");
+
+        vm.prank(employer);
+        manager.disputeJob(jobId);
+
+        uint256 bond = manager.jobDisputeBondAmount(jobId);
+        assertGe(bond, 1 ether);
+        assertLe(bond, 200 ether);
+    }
+
+    function test_validatorCapIsEnforced() external {
+        manager.setRequiredValidatorDisapprovals(0);
+        manager.setRequiredValidatorApprovals(50);
+
+        vm.prank(employer);
+        manager.createJob("ipfs://spec", 10 ether, 2 days, "details");
+        uint256 jobId = manager.nextJobId() - 1;
+
+        vm.prank(agent);
+        manager.applyForJob(jobId, "", new bytes32[](0));
+        vm.prank(agent);
+        manager.requestJobCompletion(jobId, "ipfs://done");
+
+        for (uint256 i = 0; i < 51; i++) {
+            address validator = address(uint160(0x7000 + i));
+            manager.addAdditionalValidator(validator);
+            token.mint(validator, 1000 ether);
+            vm.prank(validator);
+            token.approve(address(manager), type(uint256).max);
+
+            vm.prank(validator);
+            if (i == 50) {
+                vm.expectRevert();
+            }
+            manager.validateJob(jobId, "", new bytes32[](0));
+        }
+
+        assertEq(manager.jobValidatorsLength(jobId), 50);
+    }
+
     function testFuzz_validatorThresholdTieBoundary(uint8 approvals, uint8 disapprovals) external {
         uint256 a = bound(approvals, 1, 2);
         uint256 d = bound(disapprovals, 1, 2);
