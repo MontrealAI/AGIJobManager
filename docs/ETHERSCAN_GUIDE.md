@@ -248,12 +248,21 @@ EVIDENCE:v1|summary:<one line>|facts:<facts>|links:<ipfs/urls>|policy:<section>|
 ## Time windows
 
 ```text
-assign
-  -> requestJobCompletion
-    -> review window (validator votes)
-      -> challenge window (if validator-approved path applies)
-        -> finalizeJob OR disputeJob
-          -> moderator resolveDisputeWithCode
+assignedAt
+  |-------------------- duration --------------------|  (in-progress window)
+  |                                                   \
+  |                                                    \ if no completion request and now > assignedAt + duration
+  |                                                     -> expireJob path
+  |
+  +--> completionRequestedAt
+        |------ completionReviewPeriod ------|  (validator vote window)
+        |
+        +--> if validator-approved branch is active:
+              |-- challengePeriodAfterApproval --|
+
+Safe finalize gate (conservative):
+now > max(completionRequestedAt + completionReviewPeriod,
+          validatorApprovedAt + challengePeriodAfterApproval [if applicable])
 ```
 
 ### Can I finalize now? checklist
@@ -267,6 +276,13 @@ assign
 4. If validator-approved path is active, also enforce challenge window elapsed.
 5. Use strict elapsed logic: only act once current timestamp is **greater than** required threshold.
 6. If finalization still routes to dispute, use moderator flow.
+
+### What if nobody votes?
+- Exact no-vote case (`approvals = 0`, `disapprovals = 0`): after the review window, `finalizeJob` deterministically completes in the agent-win path (no moderator action required).
+- Dispute routing is for contested low-participation outcomes (for example non-zero but under-quorum votes) or ties, not for pure zero-vote finalization.
+
+### Why can `finalizeJob` create a dispute?
+`finalizeJob` is the transition function that evaluates votes, quorum, disapprovals, and timing gates together. If those checks indicate contested/insufficient consensus, it can mark dispute state instead of direct payout.
 
 ---
 
