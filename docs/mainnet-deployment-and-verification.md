@@ -41,7 +41,7 @@ npx truffle compile
 npx truffle migrate --network mainnet
 ```
 
-The deployment entrypoint is `migrations/2_deploy_contracts.js`. It uses
+The deployment entrypoint is `migrations/1_deploy_contracts.js`. It uses
 `migrations/deploy-config.js` to resolve constructor arguments and optionally
 locks identity configuration if `LOCK_IDENTITY_CONFIG=true` or `LOCK_CONFIG=true`.
 
