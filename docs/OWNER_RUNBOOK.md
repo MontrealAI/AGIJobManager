@@ -100,3 +100,13 @@ Require explicit change ticket + rollback note before execution:
 - Etherscan parameter prep: `node scripts/etherscan/prepare_inputs.js --action <...>`
 - Merkle root/proofs: `node scripts/merkle/export_merkle_proofs.js ...`
 - State decision aid: `node scripts/advisor/state_advisor.js --input <state.json>`
+
+## 9) Incident decision table (symptom -> checks -> action -> rollback)
+
+| Symptom | Checks | Action | Rollback criteria |
+|---|---|---|---|
+| Spike in reverted create/apply txs | `paused()`, AGI allowance docs, recent config changes | If risk event suspected: `pause()` and publish status note | Revert cause understood + test tx succeeds on smallest safe value |
+| Finalize/dispute writes failing broadly | `settlementPaused()`, timing params, moderator availability | `setSettlementPaused(true)` while triaging | Read checks healthy + one successful dry-run settlement tx |
+| Evidence of identity abuse (Sybil/proof leak) | current Merkle roots, recent allowlist additions, blacklist state | rotate roots via `updateMerkleRoots`, optionally blacklist abusive addresses | new proofs distributed and dispute queue stabilized |
+| Unexpected treasury pressure | `withdrawableAGI()`, escrow commitments, active disputes | stop discretionary withdrawals; optionally `pauseAll()` if solvency uncertainty | solvency re-confirmed and on-chain buffer restored |
+| ENS infra outage / resolver issues | ENS registry/wrapper reads, ENS hook events | disable ENS tokenURI (`setUseEnsJobTokenURI(false)`) and continue core settlement | ENS paths recover and hook/read checks pass |

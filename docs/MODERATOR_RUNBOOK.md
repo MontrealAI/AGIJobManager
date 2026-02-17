@@ -65,3 +65,24 @@ Examples:
 - Is reason string complete and parseable?
 - Are all referenced artifacts immutable and retrievable?
 - Is moderator signer authorized?
+
+## 6) Offline autonomy helper for moderators
+
+Use the advisor with pasted Etherscan outputs to reduce manual reasoning:
+
+```bash
+node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
+```
+
+Recommended workflow:
+1. Paste `getJobCore` and `getJobValidation` into the JSON input.
+2. Paste current block timestamp (Etherscan block page).
+3. Paste timing config values from `Read Contract`.
+4. Run advisor and attach output to dispute case notes before resolving.
+
+## 7) Pre-resolution autonomy checklist
+
+- Advisor output agrees with intended resolution path.
+- `disputed == true` is confirmed from fresh read call.
+- Evidence links in `reason` are immutable (IPFS/content hash preferred).
+- Reason string includes ticket ID or incident ID for audit traceability.

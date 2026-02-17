@@ -9,7 +9,7 @@ This guide is written for non-technical users who only use:
 - Agent: [Agent flow](#agent-flow)
 - Validator: [Validator flow](#validator-flow)
 - Moderator: [Moderator flow](#moderator-flow)
-- Owner/operator: [Owneroperator flow](#owneroperator-flow)
+- Owner/operator: [Owner/operator flow](#owneroperator-flow)
 
 ---
 
@@ -122,6 +122,9 @@ Example:
 jobId: 42
 ```
 
+Dispute bond note:
+- `disputeJob` may require a dispute bond (owner-configured). Approve AGI allowance first if bond > 0.
+
 ---
 
 ## Agent flow
@@ -203,6 +206,7 @@ Proof format examples:
 Outcome notes:
 - wrong-side validators can be slashed
 - correct-side validators can receive validation rewards
+- low participation can still force a dispute path at finalize time depending on quorum/approval rules
 
 ---
 
@@ -243,6 +247,15 @@ EVIDENCE:v1|summary:<one line>|facts:<facts>|links:<ipfs/urls>|policy:<section>|
 - Configuration lock: `lockIdentityConfiguration()`
 - Rescue (extreme caution): `rescueERC20`, `rescueToken`
 
+### Operating modes (fast decision model)
+
+| Mode | Write actions | Purpose |
+|---|---|---|
+| Normal operation | `unpause()`, `setSettlementPaused(false)` | all lanes open |
+| Intake stopped | `pause()`, `setSettlementPaused(false)` | freeze new intake; keep settlements progressing |
+| Settlement stopped | optional `unpause()`, `setSettlementPaused(true)` | keep intake, halt settlement/dispute writes |
+| Full incident response | `pauseAll()` | hard freeze all sensitive lanes |
+
 ---
 
 ## Time windows
@@ -267,6 +280,14 @@ assign
 4. If validator-approved path is active, also enforce challenge window elapsed.
 5. Use strict elapsed logic: only act once current timestamp is **greater than** required threshold.
 6. If finalization still routes to dispute, use moderator flow.
+
+### What happens if nobody votes?
+- If approvals/disapprovals participation stays below required thresholds, finalization can route into dispute instead of immediate settlement.
+- In practice: once review/challenge windows are elapsed, call `finalizeJob(jobId)`; if it disputes, moderators complete adjudication.
+
+### Why can finalize create a dispute?
+- `finalizeJob` is the decision point where on-chain voting/timing outcomes are evaluated.
+- If outcome is ambiguous/contested (e.g., low participation, tie-equivalent outcome, or policy conditions requiring review), contract opens dispute for moderator resolution.
 
 ---
 
@@ -353,6 +374,9 @@ Expected input schema (`--input` or `--json`):
 - `completionReviewPeriod`
 - `disputeReviewPeriod`
 - `challengePeriodAfterApproval`
+- `requiredApprovals`
+- `requiredDisapprovals`
+- `voteQuorum`
 - `validatorApproved` (optional but recommended)
 - `validatorApprovedAt` (optional but recommended)
 - `getJobCore` object from Etherscan

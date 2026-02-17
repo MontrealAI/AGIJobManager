@@ -64,3 +64,15 @@ Use standard-json mode with the exact settings above and explicit library name -
 2. Etherscan `Write Contract` input fields are readable and typed.
 3. tx pages decode events and custom errors.
 4. Role-guide examples in [`docs/ETHERSCAN_GUIDE.md`](ETHERSCAN_GUIDE.md) now map to visible function signatures.
+
+## 7) Reproducible local verification prep commands
+
+```bash
+npm ci
+npm run build
+npx truffle compile --all
+```
+
+Then verify against the deployed AGIJobManager address using either plugin or Etherscan Standard JSON input.
+
+Tip: read linked library addresses from deployment artifacts/tx logs and keep exact case-sensitive library names (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`).
