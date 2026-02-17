@@ -1,0 +1,57 @@
+name: Security Verification
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  foundry-and-slither:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Slither
+        run: pip install slither-analyzer==0.11.3
+
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Show versions
+        run: |
+          forge --version
+          cast --version
+          slither --version
+
+      - name: Forge format check
+        run: forge fmt --check
+
+      - name: Forge build
+        run: forge build
+
+      - name: Forge tests (unit + fuzz)
+        run: FOUNDRY_PROFILE=ci forge test
+
+      - name: Forge invariants
+        run: FOUNDRY_PROFILE=ci forge test --match-path 'forge-test/invariant/*.t.sol'
+
+      - name: Slither
+        run: npm run security:slither
