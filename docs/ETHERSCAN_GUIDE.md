@@ -248,12 +248,21 @@ EVIDENCE:v1|summary:<one line>|facts:<facts>|links:<ipfs/urls>|policy:<section>|
 ## Time windows
 
 ```text
-assign
-  -> requestJobCompletion
-    -> review window (validator votes)
-      -> challenge window (if validator-approved path applies)
-        -> finalizeJob OR disputeJob
-          -> moderator resolveDisputeWithCode
+assignedAt
+  |-------------------- duration --------------------|  (in-progress window)
+  |                                                   \
+  |                                                    \ if no completion request and now > assignedAt + duration
+  |                                                     -> expireJob path
+  |
+  +--> completionRequestedAt
+        |------ completionReviewPeriod ------|  (validator vote window)
+        |
+        +--> if validator-approved branch is active:
+              |-- challengePeriodAfterApproval --|
+
+Safe finalize gate (conservative):
+now > max(completionRequestedAt + completionReviewPeriod,
+          validatorApprovedAt + challengePeriodAfterApproval [if applicable])
 ```
 
 ### Can I finalize now? checklist
@@ -267,6 +276,13 @@ assign
 4. If validator-approved path is active, also enforce challenge window elapsed.
 5. Use strict elapsed logic: only act once current timestamp is **greater than** required threshold.
 6. If finalization still routes to dispute, use moderator flow.
+
+### What if nobody votes?
+- Pure no-vote case (`validatorApprovals == 0` and `validatorDisapprovals == 0`): `finalizeJob` settles deterministically (no moderator action required).
+- Dispute-oriented outcomes are for contested low-participation states (for example, some votes but under quorum) or tie conditions, not the strict zero-vote path.
+
+### Why can `finalizeJob` create a dispute?
+`finalizeJob` is the transition function that evaluates votes, quorum, disapprovals, and timing gates together. If those checks indicate contested/insufficient consensus, it can mark dispute state instead of direct payout.
 
 ---
 
