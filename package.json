@@ -20,7 +20,11 @@
     "merkle:proof": "node scripts/merkle/generate_merkle_proof.js",
     "merkle:export": "node scripts/merkle/export_merkle_proofs.js",
     "etherscan:prep": "node scripts/etherscan/prepare_inputs.js",
-    "advisor:job": "node scripts/advisor/state_advisor.js"
+    "advisor:job": "node scripts/advisor/state_advisor.js",
+    "forge:build": "forge build",
+    "forge:test": "forge test",
+    "forge:invariant": "FOUNDRY_PROFILE=ci forge test --match-path forge-test/invariant/*.t.sol",
+    "slither": "./scripts/security/run-slither.sh"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

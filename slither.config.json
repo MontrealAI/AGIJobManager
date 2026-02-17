@@ -18,6 +18,7 @@
     "divide-before-multiply",
     "mapping-deletion",
     "uninitialized-local",
-    "unused-return"
+    "unused-return",
+    "encode-packed-collision"
   ]
 }
