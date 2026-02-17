@@ -6,7 +6,7 @@
 - ENS integration contracts and assembly call compatibility assumptions
 
 ## Tooling Versions
-- Foundry: `forge --version`
+- Foundry: `forge 1.5.1-stable (b0a9dd9ceda36f63e2326ce530c10e6916f4b8a2)`
 - Solidity compiler: `0.8.19` (from `foundry.toml`)
 - Slither: `0.10.4`
 - Echidna: not included (Foundry handler invariants already cover the multi-step state machine with deterministic CI runtime)
@@ -29,6 +29,9 @@ npm run slither
 ## Added Verification Coverage
 
 ### Unit / Regression (Foundry)
+- Deterministic ENS ownership authorization path with strict label enforcement:
+  - valid resolver-backed subdomain authorizes apply flow
+  - invalid labels (e.g. containing dots) revert via strict ENS label validation
 - ENS selector and calldata compatibility checks assert:
   - `handleHook(uint8,uint256)` selector = `0x1f76f7a2`, calldata length `0x44`
   - `jobEnsURI(uint256)` selector = `0x751809b4`, calldata length `0x24`

@@ -10,6 +10,9 @@ import "contracts/test/MockHookCaller.sol";
 import "contracts/test/MockENSJobPages.sol";
 import "contracts/test/MockENSJobPagesMalformed.sol";
 import "contracts/test/MaliciousCompletionReceiver.sol";
+import "contracts/test/MockENSRegistry.sol";
+import "contracts/test/MockNameWrapper.sol";
+import "contracts/test/MockResolver.sol";
 
 contract AGIJobManagerSecurityVerificationTest is Test {
     MockERC20 internal token;
@@ -144,5 +147,50 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         vm.expectRevert();
         vm.prank(address(receiver));
         receiver.finalize(jobId);
+    }
+
+    function test_ENSOwnershipPathAndStrictLabelValidation() external {
+        MockENSRegistry ensRegistry = new MockENSRegistry();
+        MockNameWrapper nameWrapper = new MockNameWrapper();
+        MockResolver resolver = new MockResolver();
+
+        bytes32 agentRootNode = keccak256("agent.root");
+        address[2] memory ensConfig = [address(ensRegistry), address(nameWrapper)];
+        bytes32[4] memory rootNodes = [bytes32(0), agentRootNode, bytes32(0), bytes32(0)];
+        bytes32[2] memory merkleRoots;
+        AGIJobManagerHarness ensManager =
+            new AGIJobManagerHarness(address(token), "", ensConfig, rootNodes, merkleRoots);
+
+        MockERC721 ensAgiType = new MockERC721();
+        ensManager.addAGIType(address(ensAgiType), 60);
+        ensAgiType.mint(agent);
+
+        token.mint(employer, 100 ether);
+        token.mint(agent, 100 ether);
+        vm.prank(employer);
+        token.approve(address(ensManager), type(uint256).max);
+        vm.prank(agent);
+        token.approve(address(ensManager), type(uint256).max);
+
+        vm.prank(employer);
+        ensManager.createJob("ipfs://spec", 10 ether, 1 days, "details");
+        uint256 jobId = ensManager.nextJobId() - 1;
+
+        string memory label = "valid-agent";
+        bytes32 subnode = keccak256(abi.encodePacked(agentRootNode, keccak256(bytes(label))));
+        ensRegistry.setResolver(subnode, address(resolver));
+        resolver.setAddr(subnode, agent);
+
+        vm.prank(agent);
+        ensManager.applyForJob(jobId, label, new bytes32[](0));
+        assertEq(ensManager.jobAssignedAgent(jobId), agent);
+
+        vm.prank(employer);
+        ensManager.createJob("ipfs://spec-2", 10 ether, 1 days, "details");
+        uint256 invalidJobId = ensManager.nextJobId() - 1;
+
+        vm.prank(agent);
+        vm.expectRevert();
+        ensManager.applyForJob(invalidJobId, "bad.label", new bytes32[](0));
     }
 }
