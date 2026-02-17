@@ -241,31 +241,58 @@ function fetchOwnershipTransferLogs(rpcUrl, address, toBlockHex) {
 
 function historicalOwnershipSafety(rpcUrl, address, snapshotBlockHex, currentOwner) {
   const logs = fetchOwnershipTransferLogs(rpcUrl, address, snapshotBlockHex);
-  const owners = [];
+  const snapshotBn = BigInt(snapshotBlockHex);
+  const epochs = [];
 
   if (logs.length === 0) {
-    owners.push({ owner: currentOwner, blockNumber: snapshotBlockHex, source: 'current-owner-no-transfer-events' });
+    epochs.push({ owner: currentOwner, startBlock: snapshotBlockHex, endBlock: snapshotBlockHex, source: 'current-owner-no-transfer-events' });
   } else {
-    for (const log of logs) {
-      owners.push({
-        owner: hexToAddress(log.topics[2]),
-        blockNumber: log.blockNumber,
-        source: 'OwnershipTransferred.newOwner',
+    const firstOldOwner = hexToAddress(logs[0].topics[1]);
+    const firstTransferBlock = BigInt(logs[0].blockNumber);
+    if (firstOldOwner !== '0x0000000000000000000000000000000000000000' && firstTransferBlock > 0n) {
+      epochs.push({
+        owner: firstOldOwner,
+        startBlock: '0x0',
+        endBlock: `0x${(firstTransferBlock - 1n).toString(16)}`,
+        source: 'OwnershipTransferred.initialOldOwnerWindow',
+      });
+    }
+
+    for (let i = 0; i < logs.length; i += 1) {
+      const log = logs[i];
+      const owner = hexToAddress(log.topics[2]);
+      const start = BigInt(log.blockNumber);
+      const next = i + 1 < logs.length ? BigInt(logs[i + 1].blockNumber) : snapshotBn + 1n;
+      const end = next - 1n;
+      if (end < start) continue;
+      epochs.push({
+        owner,
+        startBlock: `0x${start.toString(16)}`,
+        endBlock: `0x${end.toString(16)}`,
+        source: 'OwnershipTransferred.newOwnerWindow',
       });
     }
   }
 
-  for (const rec of owners) {
-    const code = rpcCall(rpcUrl, 'eth_getCode', [rec.owner, rec.blockNumber]);
-    if (code && code !== '0x') {
-      return {
-        safe: false,
-        reason: `Historical owner ${rec.owner} had contract code at block ${BigInt(rec.blockNumber).toString()} (${rec.source}).`,
-      };
+  for (const epoch of epochs) {
+    const checks = [
+      { block: epoch.startBlock, label: 'start' },
+      { block: epoch.endBlock, label: 'end' },
+    ];
+    for (const c of checks) {
+      const code = rpcCall(rpcUrl, 'eth_getCode', [epoch.owner, c.block]);
+      if (code && code !== '0x') {
+        return {
+          safe: false,
+          reason:
+            `Historical owner ${epoch.owner} had contract code at ${c.label} of ownership window ` +
+            `[${BigInt(epoch.startBlock).toString()}..${BigInt(epoch.endBlock).toString()}] (${epoch.source}).`,
+        };
+      }
     }
   }
 
-  return { safe: true, checkedOwners: owners.length };
+  return { safe: true, checkedOwners: epochs.length };
 }
 
 function getTxsViaHtmlScrape(rpcUrl, address, blockLimitHex) {
