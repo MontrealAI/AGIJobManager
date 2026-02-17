@@ -9,7 +9,7 @@ This runbook deploys `contracts/AGIJobManager.sol` using a deterministic snapsho
 ## Prerequisites
 
 - `MAINNET_RPC_URL` (read RPC for snapshot + deploy RPC for migration)
-- `ETHERSCAN_API_KEY` (preferred for ABI + tx list extraction)
+- `ETHERSCAN_API_KEY` (required for deterministic mutator replay via `txlist` + `txlistinternal`)
 - `PRIVATE_KEYS` (funded deployer private key for Truffle deployment)
 - `CONFIRM_MAINNET_DEPLOY=1` (required safety override only on chainId 1)
 - Optional: `NEW_OWNER` (override transferOwnership target)
@@ -26,7 +26,7 @@ node scripts/snapshotLegacyMainnetConfig.js --block 23200000
 
 Notes:
 - The script uses `eth_call` at the specified block tag.
-- If `ETHERSCAN_API_KEY` is missing, it falls back to Etherscan HTML scraping for ABI/tx discovery.
+- `ETHERSCAN_API_KEY` is required: snapshot generation fails closed without it to avoid missing historical internal admin calls.
 - The script records `chainId`, `blockNumber`, and `blockTimestamp`.
 
 ## 2) Review snapshot JSON before deploy

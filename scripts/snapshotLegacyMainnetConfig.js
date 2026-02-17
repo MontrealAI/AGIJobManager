@@ -357,59 +357,54 @@ async function main() {
 
   let txs;
   let txSource;
-  if (etherscanKey) {
-    const txResults = etherscanGet({ module: 'account', action: 'txlist', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
-    const internalResults = etherscanGet({ module: 'account', action: 'txlistinternal', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
-
-    const topLevelTxs = txResults
-      .filter((tx) => tx.isError === '0')
-      .map((tx) => ({
-        hash: tx.hash,
-        input: tx.input,
-        blockNumber: BigInt(tx.blockNumber),
-        transactionIndex: BigInt(tx.transactionIndex),
-        traceOrder: [0n],
-        traceId: null,
-      }));
-
-    const internalsToLegacy = internalResults
-      .filter((tx) => String(tx.isError) === '0')
-      .filter((tx) => (tx.to || '').toLowerCase() === LEGACY_ADDRESS.toLowerCase())
-      .map((tx) => ({
-        hash: tx.hash,
-        input: tx.input || '0x',
-        blockNumber: BigInt(tx.blockNumber),
-        transactionIndex: BigInt(tx.transactionIndex || '0'),
-        traceOrder: parseTraceId(tx.traceId),
-        traceId: tx.traceId || null,
-      }));
-
-    const internalMissingInput = internalsToLegacy.filter((tx) => !tx.input || tx.input === '0x').length;
-    if (internalMissingInput > 0) {
-      throw new Error(
-        `Found ${internalMissingInput} internal calls to legacy contract without calldata in txlistinternal; ` +
-        'cannot deterministically reconstruct internal admin mutators from Etherscan API output.'
-      );
-    }
-
-    const dedup = new Map();
-    for (const tx of [...topLevelTxs, ...internalsToLegacy]) {
-      const key = `${tx.hash}:${tx.traceId || 'top'}`;
-      dedup.set(key, tx);
-    }
-    txs = [...dedup.values()].sort(compareReplayOrder);
-    txSource = 'etherscan-v2-api+txlistinternal';
-  } else {
-    const ownerAddr = viewValues.owner ? toChecksumAddress(viewValues.owner) : null;
-    const ownerCode = ownerAddr ? rpcCall(rpcUrl, 'eth_getCode', [ownerAddr, snapshotBlockHex]) : '0x';
-    if (ownerCode && ownerCode !== '0x') {
-      throw new Error(
-        'ETHERSCAN_API_KEY is required when owner is a contract wallet, because HTML fallback cannot safely reconstruct internal admin calls.'
-      );
-    }
-    txs = getTxsViaHtmlScrape(rpcUrl, LEGACY_ADDRESS, snapshotBlockHex);
-    txSource = 'etherscan-html-scrape+rpc';
+  if (!etherscanKey) {
+    throw new Error(
+      'ETHERSCAN_API_KEY is required for deterministic mutator replay because internal admin calls ' +
+      '(e.g., multisig executions) are only covered by txlistinternal.'
+    );
   }
+
+  const txResults = etherscanGet({ module: 'account', action: 'txlist', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
+  const internalResults = etherscanGet({ module: 'account', action: 'txlistinternal', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
+
+  const topLevelTxs = txResults
+    .filter((tx) => tx.isError === '0')
+    .map((tx) => ({
+      hash: tx.hash,
+      input: tx.input,
+      blockNumber: BigInt(tx.blockNumber),
+      transactionIndex: BigInt(tx.transactionIndex),
+      traceOrder: [0n],
+      traceId: null,
+    }));
+
+  const internalsToLegacy = internalResults
+    .filter((tx) => String(tx.isError) === '0')
+    .filter((tx) => (tx.to || '').toLowerCase() === LEGACY_ADDRESS.toLowerCase())
+    .map((tx) => ({
+      hash: tx.hash,
+      input: tx.input || '0x',
+      blockNumber: BigInt(tx.blockNumber),
+      transactionIndex: BigInt(tx.transactionIndex || '0'),
+      traceOrder: parseTraceId(tx.traceId),
+      traceId: tx.traceId || null,
+    }));
+
+  const internalMissingInput = internalsToLegacy.filter((tx) => !tx.input || tx.input === '0x').length;
+  if (internalMissingInput > 0) {
+    throw new Error(
+      `Found ${internalMissingInput} internal calls to legacy contract without calldata in txlistinternal; ` +
+      'cannot deterministically reconstruct internal admin mutators from Etherscan API output.'
+    );
+  }
+
+  const dedup = new Map();
+  for (const tx of [...topLevelTxs, ...internalsToLegacy]) {
+    const key = `${tx.hash}:${tx.traceId || 'top'}`;
+    dedup.set(key, tx);
+  }
+  txs = [...dedup.values()].sort(compareReplayOrder);
+  txSource = 'etherscan-v2-api+txlistinternal';
 
   const dynamic = parseMutatorTxs({ txs, mutators, blockLimit: BigInt(snapshotBlockHex) });
   const agiTypes = getAgiTypeStateFromLogs(rpcUrl, LEGACY_ADDRESS, abi, '0x0', snapshotBlockHex);
