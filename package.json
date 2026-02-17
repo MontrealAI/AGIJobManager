@@ -20,7 +20,8 @@
     "merkle:proof": "node scripts/merkle/generate_merkle_proof.js",
     "merkle:export": "node scripts/merkle/export_merkle_proofs.js",
     "etherscan:prep": "node scripts/etherscan/prepare_inputs.js",
-    "advisor:job": "node scripts/advisor/state_advisor.js"
+    "advisor:job": "node scripts/advisor/state_advisor.js",
+    "security:slither": "PATH=$HOME/.foundry/bin:$PATH slither . --config-file slither.config.json --fail-high"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"
