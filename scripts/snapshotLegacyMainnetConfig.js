@@ -351,7 +351,7 @@ async function main() {
   const dynamic = parseMutatorTxs({ txs, mutators, blockLimit: BigInt(snapshotBlockHex) });
   const agiTypes = getAgiTypeStateFromLogs(rpcUrl, LEGACY_ADDRESS, abi, '0x0', snapshotBlockHex);
 
-  const baseIpfsUrl = dynamic.baseIpfsUrl || tryDeriveBaseFromTokenURI(rpcUrl, LEGACY_ADDRESS, snapshotBlockHex);
+  const baseIpfsUrl = (dynamic.baseIpfsUrl ?? tryDeriveBaseFromTokenURI(rpcUrl, LEGACY_ADDRESS, snapshotBlockHex));
   if (!baseIpfsUrl) {
     throw new Error('Unable to derive baseIpfsUrl from setter replay or tokenURI introspection. Manual intervention required.');
   }

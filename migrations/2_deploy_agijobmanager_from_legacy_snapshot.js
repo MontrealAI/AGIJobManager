@@ -117,19 +117,21 @@ module.exports = async function (deployer, network, accounts) {
   for (const a of snapshot.dynamicSets.blacklistedAgents) await manager.blacklistAgent(mustAddress(a, 'blacklistedAgent'), true, { from });
   for (const a of snapshot.dynamicSets.blacklistedValidators) await manager.blacklistValidator(mustAddress(a, 'blacklistedValidator'), true, { from });
 
-  const enabledTypes = snapshot.agiTypes.filter((x) => x.enabled && String(x.payoutPercentage) !== '0');
-  const disabledTypes = snapshot.agiTypes.filter((x) => !x.enabled || String(x.payoutPercentage) === '0');
-  for (const t of enabledTypes) {
-    try {
-      await manager.addAGIType(mustAddress(t.nftAddress, 'agiType.nftAddress'), t.payoutPercentage, { from });
-    } catch (e) {
-      throw new Error(`addAGIType failed for ${t.nftAddress} payout=${t.payoutPercentage}: ${e.message}`);
+  for (const t of snapshot.agiTypes) {
+    const nft = mustAddress(t.nftAddress, 'agiType.nftAddress');
+    const enabled = Boolean(t.enabled) && String(t.payoutPercentage) !== '0';
+    if (enabled) {
+      try {
+        await manager.addAGIType(nft, t.payoutPercentage, { from });
+      } catch (e) {
+        throw new Error(`addAGIType failed for ${t.nftAddress} payout=${t.payoutPercentage}: ${e.message}`);
+      }
+      continue;
     }
-  }
-  for (const t of disabledTypes) {
+
     try {
-      await manager.addAGIType(mustAddress(t.nftAddress, 'disabledAgiType.nftAddress'), '1', { from });
-      await manager.disableAGIType(mustAddress(t.nftAddress, 'disabledAgiType.nftAddress'), { from });
+      await manager.addAGIType(nft, '1', { from });
+      await manager.disableAGIType(nft, { from });
     } catch (e) {
       throw new Error(`disableAGIType replay failed for ${t.nftAddress}: ${e.message}`);
     }
