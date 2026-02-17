@@ -1,16 +1,16 @@
 # FAQ (Etherscan-first)
 
-## Why do I need approval before create/apply/vote/dispute?
+## Why do I need ERC20 approval before create/apply/vote/dispute?
 
-AGIJobManager pulls AGI with `transferFrom`, so allowance on the AGI token is required.
+AGIJobManager uses token pulls (`transferFrom`) for escrow and bond flows. Without sufficient allowance and balance, writes revert.
 
 ## Should I use exact-amount approvals?
 
-For least privilege, yes: approve only the exact amount needed for escrow or bond, then raise if necessary.
+For least privilege, yes. Approve only the amount needed for that action, then increase only when needed.
 
-## How do I paste `bytes32[]` proofs in Etherscan?
+## How do I paste `bytes32[]` proofs into Etherscan?
 
-Use one-line JSON array:
+Use one-line JSON-like array syntax:
 
 ```text
 []
@@ -20,21 +20,23 @@ Use one-line JSON array:
 ["0xabc...", "0xdef..."]
 ```
 
-## Why can `finalizeJob` open a dispute instead of settling?
+Tip: use `scripts/merkle/export_merkle_proofs.js` output `etherscanProofArrays` directly.
 
-At review end, tie or under-quorum outcomes move to dispute flow by design.
+## Why can `finalizeJob` end up in dispute flow?
 
-## What if nobody votes?
+`finalizeJob` enforces review/challenge logic. If outcomes are contested, tied, or under threshold conditions, the job can move into dispute handling rather than immediate settlement.
 
-At review-end timeout with no validator votes, contract follows deterministic finalize behavior (check `getJobValidation` + `finalizeJob` outcome path).
+## What happens if nobody votes?
 
-## What is `paused` vs `settlementPaused`?
+The contract still follows deterministic finalize/dispute logic based on configured thresholds and timing windows. Always inspect `getJobValidation(jobId)` and then call `finalizeJob(jobId)` when windows allow.
 
-- `paused`: intake pause controls (create/apply and related intake lanes)
-- `settlementPaused`: settlement/dispute/finalization lane pause
+## What is the difference between `paused` and `settlementPaused`?
 
-Operators can toggle independently for incident response.
+- `paused`: intake lane controls (create/apply and related entry actions).
+- `settlementPaused`: settlement lane controls (finalize/dispute/resolve-like actions).
 
-## Why do fee-on-transfer/deflationary ERC20 tokens fail?
+They are separate to allow targeted incident response.
 
-AGIJobManager accounting expects strict exact-transfer semantics. Fee-on-transfer or deflationary behavior can break invariants and revert with transfer/accounting errors.
+## Why do fee-on-transfer/deflationary ERC20 tokens revert?
+
+The accounting model expects strict exact-transfer semantics. Tokens that burn/tax/skim on transfer can break balance invariants and trigger reverts.
