@@ -85,6 +85,37 @@ npm run size
 - Main docs index: [`docs/README.md`](docs/README.md)
 - Quintessential end-to-end walkthrough: [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
 
+## Sovereign Ops Console UI
+
+The repository includes a standalone, institutional UI under [`ui/`](ui/) with deterministic demo mode and security-first operator workflows.
+
+Run the UI in deterministic demo mode (no chain required):
+
+```bash
+cd ui
+npm ci
+NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
+```
+
+UI documentation set:
+
+- [`docs/ui/README.md`](docs/ui/README.md)
+- [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
+- [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- [`docs/ui/JOB_LIFECYCLE.md`](docs/ui/JOB_LIFECYCLE.md)
+- [`docs/ui/OPS_RUNBOOK.md`](docs/ui/OPS_RUNBOOK.md)
+- [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+- [`docs/ui/DESIGN_SYSTEM.md`](docs/ui/DESIGN_SYSTEM.md)
+- [`docs/ui/DEMO.md`](docs/ui/DEMO.md)
+- [`docs/ui/TESTING.md`](docs/ui/TESTING.md)
+
+Text-only visual assets:
+
+- Palette SVG: [`docs/ui/assets/palette.svg`](docs/ui/assets/palette.svg)
+- Wireframe SVG: [`docs/ui/assets/ui-wireframe.svg`](docs/ui/assets/ui-wireframe.svg)
+
+[![UI CI][ui-ci-badge]][ui-ci-url]
+
 Documentation maintenance commands:
 
 ```bash
@@ -101,3 +132,5 @@ npm run check:no-binaries  # check-no-binaries
 [security-url]: ./SECURITY.md
 [license-badge]: https://img.shields.io/github/license/MontrealAI/AGIJobManager?style=flat-square
 [license-url]: ./LICENSE
+[ui-ci-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/ui.yml?branch=main&style=flat-square&label=UI%20CI
+[ui-ci-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml
