@@ -8,7 +8,7 @@ const ReputationMath = artifacts.require('ReputationMath');
 const TransferUtils = artifacts.require('TransferUtils');
 const UriUtils = artifacts.require('UriUtils');
 
-const SNAPSHOT_PATH = path.join(__dirname, 'legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json');
+const SNAPSHOT_PATH = path.join(__dirname, 'snapshots', 'legacy.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json');
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 function loadSnapshot() {
@@ -24,6 +24,14 @@ function mustAddress(addr, label) {
 async function maybeSet(manager, fnName, args, from) {
   if (typeof manager[fnName] !== 'function') return;
   await manager[fnName](...args, { from });
+}
+
+function assertNoUnresolvedLinks(artifact, name) {
+  const unresolvedPattern = /__\$[a-fA-F0-9]{34}\$__/;
+  const bytecode = String((artifact && (artifact.bytecode || artifact.binary)) || '');
+  if (unresolvedPattern.test(bytecode)) {
+    throw new Error(`Unresolved link references remain for ${name}. Ensure all libraries were linked before deployment.`);
+  }
 }
 
 module.exports = async function (deployer, network, accounts) {
@@ -59,6 +67,7 @@ module.exports = async function (deployer, network, accounts) {
   await deployer.link(ReputationMath, AGIJobManager);
   await deployer.link(TransferUtils, AGIJobManager);
   await deployer.link(UriUtils, AGIJobManager);
+  assertNoUnresolvedLinks(AGIJobManager, 'AGIJobManager');
   console.log('Library deployments:');
   console.log(`- BondMath: ${BondMath.address}`);
   console.log(`- ENSOwnership: ${ENSOwnership.address}`);
