@@ -208,6 +208,8 @@ Outcome notes:
 
 ## Moderator flow
 
+Only addresses in the moderator set can call dispute resolution functions.
+
 Write function: `resolveDisputeWithCode(jobId, resolutionCode, reason)`
 
 Input fields:

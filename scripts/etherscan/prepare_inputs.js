@@ -70,7 +70,7 @@ function checklist(action) {
   ];
   if (action === 'create-job') common.push('- Confirm intake is not paused');
   if (action === 'finalize') common.push('- Confirm review/challenge windows are elapsed or early-approval criteria met');
-  if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is a moderator/owner');
+  if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is in the moderator set');
   return common;
 }
 
