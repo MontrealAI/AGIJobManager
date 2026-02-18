@@ -11,49 +11,54 @@ const sourceFiles = [
   'contracts/utils/ENSOwnership.sol',
   'contracts/ens/ENSJobPages.sol',
   'contracts/ens/IENSJobPages.sol'
-];
+].filter((rel) => fs.existsSync(path.join(root, rel)));
 
-const ensPatterns = /(\bens\b|ENS|nameWrapper|RootNode|rootNode|Merkle|Identity|lock|EnsJobPages|subdomain|tokenURI)/;
+const ENS_PATTERNS = /(\bens\b|ENS|nameWrapper|RootNode|rootNode|Merkle|Identity|lock|EnsJobPages|subdomain|tokenURI)/;
 
-function fileLines(rel) {
-  return fs.readFileSync(path.join(root, rel), 'utf8').split('\n');
-}
+const readLines = (rel) => fs.readFileSync(path.join(root, rel), 'utf8').split('\n');
 
-function pickByRegex(rel, regex) {
-  return fileLines(rel)
-    .map((text, i) => ({ file: rel, line: i + 1, text: text.trim() }))
-    .filter((x) => regex.test(x.text));
-}
+const matches = (rel, regex) => readLines(rel)
+  .map((text, i) => ({ file: rel, line: i + 1, text: text.trim() }))
+  .filter((row) => regex.test(row.text));
 
-function pickFunctions(rel, predicate) {
-  return fileLines(rel)
-    .map((text, i) => ({ file: rel, line: i + 1, text: text.trim() }))
-    .filter((x) => x.text.startsWith('function ') && predicate(x.text))
-    .map((x) => ({ ...x, text: x.text.replace(/\s*\{$/, '') }));
-}
+const functionsFor = (rel, predicate) => readLines(rel)
+  .map((text, i) => ({ file: rel, line: i + 1, text: text.trim() }))
+  .filter((row) => row.text.startsWith('function ') && predicate(row.text))
+  .map((row) => ({ ...row, text: row.text.replace(/\s*\{$/, '') }));
 
 const variables = [
-  ...pickByRegex('contracts/AGIJobManager.sol', /^(ENS|NameWrapper|address|bool|bytes32)\s+public\s+.*(ens|nameWrapper|RootNode|Merkle|lockIdentityConfig|ensJobPages)/i),
-  ...pickByRegex('contracts/ens/ENSJobPages.sol', /^(IENSRegistry|INameWrapper|IPublicResolver|bytes32|string|address|bool)\s+public\s+/)
+  ...matches('contracts/AGIJobManager.sol', /^(ENS|NameWrapper|address|bool|bytes32)\s+public\s+.*(ens|nameWrapper|RootNode|Merkle|lockIdentityConfig|ensJobPages)/i),
+  ...matches('contracts/ens/ENSJobPages.sol', /^(IENSRegistry|INameWrapper|IPublicResolver|bytes32|string|address|bool)\s+public\s+/)
 ];
 
 const functions = [
-  ...pickFunctions('contracts/AGIJobManager.sol', (t) => ensPatterns.test(t)),
-  ...pickFunctions('contracts/utils/ENSOwnership.sol', (t) => ensPatterns.test(t) || t.includes('verifyENSOwnership')),
-  ...pickFunctions('contracts/ens/ENSJobPages.sol', (t) => ensPatterns.test(t) || t.includes('handleHook'))
+  ...functionsFor('contracts/AGIJobManager.sol', (text) => ENS_PATTERNS.test(text)),
+  ...functionsFor('contracts/utils/ENSOwnership.sol', (text) => ENS_PATTERNS.test(text) || text.includes('verifyENSOwnership')),
+  ...functionsFor('contracts/ens/ENSJobPages.sol', (text) => ENS_PATTERNS.test(text) || text.includes('handleHook'))
 ];
 
 const eventsAndErrors = [
-  ...pickByRegex('contracts/AGIJobManager.sol', /^(event|error)\s+.*(Ens|ENS|Root|Merkle|Identity|NotAuthorized|ConfigLocked|InvalidParameters)/),
-  ...pickByRegex('contracts/ens/ENSJobPages.sol', /^(event|error)\s+.*(ENS|Ens|Configured|Authorized|InvalidParameters)/)
+  ...matches('contracts/AGIJobManager.sol', /^(event|error)\s+.*(Ens|ENS|Root|Merkle|Identity|NotAuthorized|ConfigLocked|InvalidParameters)/),
+  ...matches('contracts/ens/ENSJobPages.sol', /^(event|error)\s+.*(ENS|Ens|Configured|Authorized|InvalidParameters)/)
 ];
 
-const notes = sourceFiles.flatMap((rel) =>
-  fileLines(rel)
-    .map((text, i) => ({ file: rel, line: i + 1, text: text.trim() }))
-    .filter((x) => x.text.startsWith('///') && (ensPatterns.test(x.text) || x.text.includes('best-effort') || x.text.includes('irreversible')))
-    .map((x) => ({ ...x, text: x.text.replace(/^\/\/\/\s?/, '') }))
+const notes = sourceFiles.flatMap((rel) => readLines(rel)
+  .map((text, i) => ({ file: rel, line: i + 1, text: text.trim() }))
+  .filter((row) => row.text.startsWith('///') && (ENS_PATTERNS.test(row.text) || row.text.includes('best-effort') || row.text.includes('irreversible')))
+  .map((row) => ({ ...row, text: row.text.replace(/^\/\/\/\s?/, '') }))
 );
+
+const uniqSorted = (arr) => {
+  const seen = new Set();
+  return arr
+    .filter((row) => {
+      const key = `${row.file}:${row.line}:${row.text}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.text.localeCompare(b.text));
+};
 
 const sourceFingerprint = (() => {
   const hash = crypto.createHash('sha256');
@@ -65,43 +70,38 @@ const sourceFingerprint = (() => {
   return hash.digest('hex').slice(0, 16);
 })();
 
-const uniq = (arr) => {
-  const seen = new Set();
-  return arr.filter((x) => {
-    const key = `${x.file}:${x.line}:${x.text}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-};
+const generatedAtUtc = '1970-01-01T00:00:00Z';
 
 const outFile = path.join(outDir, 'docs/REFERENCE/ENS_REFERENCE.md');
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
-const toBullet = (x) => `- \`${x.text}\` (${x.file}:${x.line})`;
+const bullet = (row) => `- \`${row.text}\` ([${row.file}#L${row.line}](../../${row.file}#L${row.line}))`;
+const commentBullet = (row) => `- ${row.text} ([${row.file}#L${row.line}](../../${row.file}#L${row.line}))`;
+
 const md = [
   '# ENS Reference (Generated)',
   '',
+  `Generated at (UTC): ${generatedAtUtc}`,
   `Source fingerprint: ${sourceFingerprint}`,
   '',
   'Source files used:',
-  ...sourceFiles.map((f) => `- \`${f}\``),
+  ...sourceFiles.map((file) => `- \`${file}\``),
   '',
   '## ENS surface area',
   '',
-  ...uniq(variables).map(toBullet),
+  ...uniqSorted(variables).map(bullet),
   '',
   '## Config and locks',
   '',
-  ...uniq(functions).map(toBullet),
+  ...uniqSorted(functions).map(bullet),
   '',
   '## Events and errors',
   '',
-  ...uniq(eventsAndErrors).map(toBullet),
+  ...uniqSorted(eventsAndErrors).map(bullet),
   '',
   '## Notes / caveats from code comments',
   '',
-  ...uniq(notes).map((x) => `- ${x.text} (${x.file}:${x.line})`),
+  ...uniqSorted(notes).map(commentBullet),
   ''
 ];
 
