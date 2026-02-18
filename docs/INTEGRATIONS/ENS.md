@@ -13,6 +13,11 @@ AGIJobManager uses ENS in three explicit paths:
 2. **Best-effort hook integration** to optional `ENSJobPages` via `_callEnsJobPagesHook` and `lockJobENS` in [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
 3. **Best-effort `ens://` token metadata mode** through `setUseEnsJobTokenURI` and guarded staticcall reads in `_mintJobNFT` in [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
 
+Concrete contract entrypoints and storage layout:
+- ENS identity state (`ens`, `nameWrapper`, root nodes, Merkle roots, `ensJobPages`, `lockIdentityConfig`) is declared in [`AGIJobManager.sol` state variables](../../contracts/AGIJobManager.sol#L136-L147).
+- Identity rewiring functions are in the owner-config section: [`updateEnsRegistry`](../../contracts/AGIJobManager.sol#L782-L786), [`updateNameWrapper`](../../contracts/AGIJobManager.sol#L788-L792), [`setEnsJobPages`](../../contracts/AGIJobManager.sol#L794-L798), [`setUseEnsJobTokenURI`](../../contracts/AGIJobManager.sol#L800-L802), [`updateRootNodes`](../../contracts/AGIJobManager.sol#L803-L815), [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol#L480-L483).
+- ENS ownership verification code path is delegated to [`ENSOwnership.verifyENSOwnership`](../../contracts/utils/ENSOwnership.sol#L62-L94).
+
 Core implementation files:
 - [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol)
 - [`contracts/utils/ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol)
@@ -64,6 +69,9 @@ flowchart TD
 > **Safety warning**
 > `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, and `updateRootNodes` all enforce `_requireEmptyEscrow()` before allowing changes. See [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
 
+> **Operator note**
+> `lockIdentityConfiguration()` is not a full governance lock. Merkle roots, allowlists, blocklists, and pause controls remain mutable after lock. See [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L817-L823), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L374-L377), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L430-L433), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L356-L372).
+
 ## Runtime authorization model
 
 ### Contract-enforced algorithm
@@ -79,6 +87,11 @@ For role-gated actions (`applyForJob`, validator vote paths):
    - check NameWrapper path first (`ownerOf`, `getApproved`, `isApprovedForAll`)
    - if wrapper check fails, use ENS resolver fallback (`ens.resolver(subnode)` then `resolver.addr(subnode)`)
 5. Revert with `NotAuthorized` if all authorization paths fail.
+
+Authoritative precedence inside the ENS path:
+- The wrapper path is attempted first via `_verifyOwnership` and `ENSOwnership.verifyENSOwnership` with `NameWrapper.ownerOf/getApproved/isApprovedForAll` checks. [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L684-L706), [`ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol#L71-L83)
+- Resolver fallback is used when wrapper checks are unavailable/negative; ownership is inferred from `ens.resolver(node)` + `resolver.addr(node)` and compared to claimant. [`ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol#L84-L92)
+- If both checks fail (or inputs are invalid), authorization fails closed (`false` → `NotAuthorized` in caller). [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L521-L522), [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L600-L601)
 
 ### What is enforced vs operational vs best-effort
 

@@ -6,6 +6,30 @@ This walkthrough gives a complete setup and verification path for ENS integratio
 
 Local ENS fixtures already exist in this repo test suite (`MockENS`, `MockNameWrapper`, `MockResolver`, optional mock hooks). Use the existing Truffle harness under `test/`.
 
+### Deterministic command bundle (copy/paste)
+
+```bash
+# 1) Generate and validate ENS reference docs (must stay fresh)
+npm run docs:ens:gen
+npm run docs:ens:check
+
+# 2) Run deterministic ENS integration vectors (local Truffle chain)
+npx truffle test --network test test/ensLabelAuthRouting.regression.test.js
+npx truffle test --network test test/ensHooks.integration.test.js
+npx truffle test --network test test/identityConfig.locking.test.js
+
+# 3) Optional hardening vectors for malformed labels and hook behavior
+npx truffle test --network test test/ensLabelHardening.test.js
+npx truffle test --network test test/ensJobPagesHooks.test.js
+```
+
+The command bundle above demonstrates the canonical success/failure expectations required for this guide:
+- **Success path:** authorized ENS/Merkle/allowlist identities can apply and validate.
+- **Failure path:** malformed labels or unauthorized claimants fail with `InvalidENSLabel` / `NotAuthorized`.
+- **Robustness path:** hook failures are best-effort and do not corrupt escrow accounting.
+- **Locking path:** `lockIdentityConfiguration()` prevents further ENS/root rewiring.
+
+
 ### Step table
 
 | Step | Actor | Action (function/script) | Preconditions | Expected outcome | Events/reads to verify |
@@ -90,6 +114,9 @@ flowchart TD
 1. Confirm emitted events: `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, optional `EnsJobPagesUpdated`.
 2. Execute one known-good and one known-bad authorization vector.
 3. If URI mode enabled, verify `NFTIssued` and `tokenURI(tokenId)` against expected behavior.
+4. Confirm lock status before/after change set via `lockIdentityConfig()` read.
+
+Reference read API points for this checklist: [`docs/contract-read-api.md`](../contract-read-api.md) and contract getters in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L136-L147).
 
 ### Robustness checks (before lock)
 

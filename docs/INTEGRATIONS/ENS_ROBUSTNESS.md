@@ -19,6 +19,11 @@ This playbook defines how ENS-linked behavior degrades, how failures surface on-
 | Identity configuration locked too early | cannot rewrite ENS/token/root wiring | guarded setters revert `ConfigLocked` | cannot correct wiring in-place | operate with Merkle/allowlists; plan controlled migration | formal lock checklist with sign-off |
 | RPC / indexer outage | monitoring cannot read ENS state reliably | contract logic unchanged | observability gaps | fail closed operationally, switch providers | multi-provider dashboards + alerts |
 
+Reference implementation anchors:
+- Fail-closed authorization entrypoints: [`applyForJob`](../../contracts/AGIJobManager.sol#L516-L543), [`validateJob`](../../contracts/AGIJobManager.sol#L594-L618), [`disapproveJob`](../../contracts/AGIJobManager.sol#L620-L644).
+- Best-effort ENS hooks and metadata reads: [`_callEnsJobPagesHook`](../../contracts/AGIJobManager.sol#L1282-L1302), [`_mintJobNFT`](../../contracts/AGIJobManager.sol#L1189-L1232), [`ENSJobPages.handleHook`](../../contracts/ens/ENSJobPages.sol#L204-L261).
+- Identity lock and mutable policy controls: [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol#L480-L483), [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L817-L823).
+
 ## Security posture
 
 | Threat vector | Impact | Mitigation in code | Residual risk | Operator responsibilities |
@@ -88,6 +93,11 @@ From optional `ENSJobPages`:
 - `ENSHookProcessed`, `ENSHookSkipped`, `ENSHookBestEffortFailure`
 - `JobENSPageCreated`, `JobENSPermissionsUpdated`, `JobENSLocked`
 
+Suggested alert semantics:
+- Alert **high** when `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, or `IdentityConfigurationLocked` is emitted outside approved change windows.
+- Alert **medium** when `EnsHookAttempted` or `ENSHookProcessed` reports repeated failures, because these indicate metadata drift but not escrow breakage.
+- Alert **critical** when operational test vectors that previously passed begin reverting with `NotAuthorized` for known-good identities.
+
 ### Sanity-check reads
 
 - Identity wiring: `ens()`, `nameWrapper()`, `clubRootNode()`, `agentRootNode()`, `alphaClubRootNode()`, `alphaAgentRootNode()`, `lockIdentityConfig()`.
@@ -112,6 +122,13 @@ From optional `ENSJobPages`:
 3. Rotate Merkle roots / temporary allowlists for continuity.
 4. If unlocked and escrow empty, rotate root nodes and revalidate test vectors.
 5. Publish operator advisory and post-incident report.
+
+Immediate containment transaction set (ordered):
+1. `pause()` / `pauseAll()` as operational policy requires.
+2. `blacklistAgent` / `blacklistValidator` for known compromised addresses.
+3. `updateMerkleRoots` + `addAdditionalAgent`/`addAdditionalValidator` for continuity.
+4. `setUseEnsJobTokenURI(false)` if ENS URI drift is observed.
+5. If safe window exists (unlocked + empty escrow), apply root/address rewiring and re-test.
 
 ### If configuration is locked
 
