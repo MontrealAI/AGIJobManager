@@ -22,7 +22,7 @@ This playbook defines how ENS-linked behavior degrades, how failures surface on-
 Reference implementation anchors:
 - Fail-closed authorization entrypoints: [`applyForJob`](../../contracts/AGIJobManager.sol#L516-L543), [`validateJob`](../../contracts/AGIJobManager.sol#L594-L618), [`disapproveJob`](../../contracts/AGIJobManager.sol#L620-L644).
 - Best-effort ENS hooks and metadata reads: [`_callEnsJobPagesHook`](../../contracts/AGIJobManager.sol#L1282-L1302), [`_mintJobNFT`](../../contracts/AGIJobManager.sol#L1189-L1232), [`ENSJobPages.handleHook`](../../contracts/ens/ENSJobPages.sol#L204-L261).
-- Identity lock and mutable policy controls: [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol#L480-L483), [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L817-L823).
+- Identity lock semantics: [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol#L480-L483) freezes ENS/root/Merkle rewiring via `whenIdentityConfigurable`, including [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L816-L825).
 
 ## Security posture
 
@@ -119,19 +119,19 @@ Suggested alert semantics:
 
 1. Freeze intake paths operationally (front-end + operator runbook controls).
 2. Blacklist confirmed malicious addresses.
-3. Rotate Merkle roots / temporary allowlists for continuity.
+3. If still unlocked and escrow-empty, rotate Merkle roots; otherwise use temporary allowlists for continuity.
 4. If unlocked and escrow empty, rotate root nodes and revalidate test vectors.
 5. Publish operator advisory and post-incident report.
 
 Immediate containment transaction set (ordered):
 1. `pause()` / `pauseAll()` as operational policy requires.
 2. `blacklistAgent` / `blacklistValidator` for known compromised addresses.
-3. `updateMerkleRoots` + `addAdditionalAgent`/`addAdditionalValidator` for continuity.
+3. If unlocked and escrow-empty: `updateMerkleRoots`; otherwise use `addAdditionalAgent`/`addAdditionalValidator` for continuity.
 4. `setUseEnsJobTokenURI(false)` if ENS URI drift is observed.
 5. If safe window exists (unlocked + empty escrow), apply root/address rewiring and re-test.
 
 ### If configuration is locked
 
-- **Still mutable:** Merkle roots, allowlists, blacklists, pause controls, settlement operations.
-- **Frozen:** `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`.
-- **Recovery:** continue with remaining policy levers or execute a controlled contract migration.
+- **Still mutable:** allowlists, blacklists, pause controls, settlement operations.
+- **Frozen:** `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`, `updateMerkleRoots`.
+- **Recovery:** continue with remaining policy levers (allowlists/blacklists/pause) or execute a controlled contract migration.

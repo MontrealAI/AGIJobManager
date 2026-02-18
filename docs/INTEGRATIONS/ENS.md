@@ -61,7 +61,7 @@ flowchart TD
 | `ens` | `ENS public ens` in `AGIJobManager` | `onlyOwner` via `updateEnsRegistry` | `ens()` + `EnsRegistryUpdated` | Blocked by `lockIdentityConfiguration`; requires `_requireEmptyEscrow()` | Must be non-zero contract (`code.length > 0`) |
 | `nameWrapper` | `NameWrapper public nameWrapper` | `onlyOwner` via `updateNameWrapper` | `nameWrapper()` + `NameWrapperUpdated` | Blocked by lock; requires empty escrow | `0x0` disables wrapper path and leaves resolver fallback |
 | Root nodes | `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode` | `onlyOwner` via `updateRootNodes` | root getters + `RootNodesUpdated` | Blocked by lock; requires empty escrow | Misconfigured nodes can deny valid users or admit wrong namespace |
-| Merkle roots | `validatorMerkleRoot`, `agentMerkleRoot` | `onlyOwner` via `updateMerkleRoots` | getters + `MerkleRootsUpdated` | **Not** blocked by identity lock | Main emergency fallback if ENS path degraded |
+| Merkle roots | `validatorMerkleRoot`, `agentMerkleRoot` | `onlyOwner` via `updateMerkleRoots` | getters + `MerkleRootsUpdated` | Blocked by `lockIdentityConfiguration`; requires empty escrow | Primary fallback lever **before** lock; unavailable after lock |
 | ENS hook target | `address public ensJobPages` | `onlyOwner` via `setEnsJobPages` | `ensJobPages()` + `EnsJobPagesUpdated` | Blocked by lock | Hook failures are intentionally non-fatal |
 | ENS URI toggle | `bool private useEnsJobTokenURI` | `onlyOwner` via `setUseEnsJobTokenURI` | Observe `NFTIssued` URI and `tokenURI(tokenId)` | Not blocked by identity lock | Enable only after hook target hardening |
 | Identity lock | `bool public lockIdentityConfig` | `onlyOwner` via `lockIdentityConfiguration` | `lockIdentityConfig()` + `IdentityConfigurationLocked` | Irreversible | Freezes token/ENS/wrapper/root/hook wiring |
@@ -70,7 +70,7 @@ flowchart TD
 > `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, and `updateRootNodes` all enforce `_requireEmptyEscrow()` before allowing changes. See [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
 
 > **Operator note**
-> `lockIdentityConfiguration()` is not a full governance lock. Merkle roots, allowlists, blocklists, and pause controls remain mutable after lock. See [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L817-L823), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L374-L377), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L430-L433), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L356-L372).
+> `lockIdentityConfiguration()` is not a full protocol shutdown, but it **does** freeze identity rewiring and Merkle root updates because those setters use `whenIdentityConfigurable`. After lock, rely on allowlists, blocklists, and pause controls for incident handling. See [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L816-L825), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L374-L377), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L754-L757), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L458-L479).
 
 ## Runtime authorization model
 
