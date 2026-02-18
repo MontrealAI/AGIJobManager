@@ -3,13 +3,13 @@
 This guide documents the exact ENS surface area used by AGIJobManager, with explicit trust boundaries and failure behavior anchored to repository code.
 
 > **Operator note**
-> ENS in AGIJobManager is a role-gating and metadata integration layer. Core escrow accounting and settlement safety do not depend on ENS success.
+> ENS in AGIJobManager is a role-gating and metadata integration layer. Core escrow accounting and settlement safety do not depend on ENS success. See settlement accounting state and solvency checks in [`AGIJobManager`](../../contracts/AGIJobManager.sol).
 
 ## Purpose and scope
 
 AGIJobManager uses ENS in three places:
 
-1. **Identity/authorization gating** for agent application and validator voting via ENS ownership checks, combined with Merkle and owner allowlists (`applyForJob`, `validateJob`, `disapproveJob`, `_verifyOwnership`).
+1. **Identity/authorization gating** for agent application and validator voting via ENS ownership checks, combined with Merkle and owner allowlists (`applyForJob`, `_recordValidatorVote`, `_isAuthorized`).
 2. **Optional ENS job pages hook integration** via `ensJobPages` and `handleHook` calls.
 3. **Optional `ens://` NFT metadata mode** through best-effort `jobEnsURI` reads in `_mintJobNFT`.
 
@@ -61,6 +61,9 @@ flowchart TD
 | ENS tokenURI mode | `useEnsJobTokenURI` (private toggle) | `onlyOwner` via `setUseEnsJobTokenURI` | observe minted `NFTIssued` URI output behavior | Not blocked by identity lock | Keep disabled unless hook target is hardened |
 | Identity wiring lock | `lockIdentityConfig` | `onlyOwner` via `lockIdentityConfiguration` | read `lockIdentityConfig()` + `IdentityConfigurationLocked` | Irreversible | Freeze only after multi-step verification |
 
+Code anchors for configuration and lock controls:
+- [`updateEnsRegistry`](../../contracts/AGIJobManager.sol), [`updateNameWrapper`](../../contracts/AGIJobManager.sol), [`updateRootNodes`](../../contracts/AGIJobManager.sol), [`setEnsJobPages`](../../contracts/AGIJobManager.sol), [`setUseEnsJobTokenURI`](../../contracts/AGIJobManager.sol), [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol).
+
 > **Safety warning**
 > Identity configuration updates (`updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`) require empty escrow/bond state via `_requireEmptyEscrow()`. Plan maintenance windows accordingly.
 
@@ -80,9 +83,9 @@ For agent application and validator vote actions:
 5. If all paths fail, revert `NotAuthorized`.
 
 Code anchors:
-- Role-gated entrypoints: `applyForJob`, `_recordValidatorVote`.  
-- Identity combination logic: `_verifyOwnership`, `_verifyOwnershipByRoot`.  
-- ENS staticcall logic and gas-bounded parsing: `ENSOwnership.verifyENSOwnership`.
+- Role-gated entrypoints: [`applyForJob`](../../contracts/AGIJobManager.sol), [`validateJob`](../../contracts/AGIJobManager.sol), [`disapproveJob`](../../contracts/AGIJobManager.sol), [`_recordValidatorVote`](../../contracts/AGIJobManager.sol).
+- Identity combination logic: [`_isAuthorized`](../../contracts/AGIJobManager.sol).
+- ENS staticcall logic and gas-bounded parsing: [`ENSOwnership.verifyENSOwnership`](../../contracts/utils/ENSOwnership.sol).
 
 ## Runtime sequence (authorized user)
 
@@ -124,7 +127,7 @@ sequenceDiagram
 
 ## Optional ENSJobPages integration
 
-If deployed, `ENSJobPages` can mirror job lifecycle into ENS text records and provide canonical `ens://` names/URIs. `AGIJobManager` interacts through a gas-capped `handleHook(uint8,uint256)` call and optional `jobEnsURI(uint256)` staticcall. See [`contracts/ens/ENSJobPages.sol`](../../contracts/ens/ENSJobPages.sol).
+If deployed, `ENSJobPages` can mirror job lifecycle into ENS text records and provide canonical `ens://` names/URIs. `AGIJobManager` interacts through a gas-capped `handleHook(uint8,uint256)` call and optional `jobEnsURI(uint256)` staticcall. See [`contracts/ens/ENSJobPages.sol`](../../contracts/ens/ENSJobPages.sol) and [`contracts/ens/IENSJobPages.sol`](../../contracts/ens/IENSJobPages.sol).
 
 > **Non-goal / limitation**
 > ENS ownership is not reputation, legal identity, anti-phishing protection, or compromise-proof custody. It is one input to eligibility policy.

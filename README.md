@@ -12,6 +12,13 @@ AGIJobManager is an owner-operated on-chain job escrow and settlement contract f
 - Verification guide: [`docs/VERIFY_ON_ETHERSCAN.md`](docs/VERIFY_ON_ETHERSCAN.md)
 - FAQ: [`docs/FAQ.md`](docs/FAQ.md)
 
+## ENS integration docs
+
+- Integration overview: [`docs/INTEGRATIONS/ENS.md`](docs/INTEGRATIONS/ENS.md)
+- Robustness and runbooks: [`docs/INTEGRATIONS/ENS_ROBUSTNESS.md`](docs/INTEGRATIONS/ENS_ROBUSTNESS.md)
+- End-to-end use case: [`docs/INTEGRATIONS/ENS_USE_CASE.md`](docs/INTEGRATIONS/ENS_USE_CASE.md)
+- Generated ENS reference: [`docs/REFERENCE/ENS_REFERENCE.md`](docs/REFERENCE/ENS_REFERENCE.md)
+
 ## Roles (plain language)
 
 - **Employer**: funds jobs, assigns by accepting an applicant flow, can cancel before assignment, can finalize/dispute after completion request.

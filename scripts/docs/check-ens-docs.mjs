@@ -35,6 +35,39 @@ checkMermaid('docs/INTEGRATIONS/ENS.md', ['flowchart TD', 'sequenceDiagram']);
 checkMermaid('docs/INTEGRATIONS/ENS_ROBUSTNESS.md', ['flowchart TD']);
 checkMermaid('docs/INTEGRATIONS/ENS_USE_CASE.md', ['flowchart TD', 'sequenceDiagram']);
 
+const ensDoc = fs.readFileSync(path.join(root, 'docs/INTEGRATIONS/ENS.md'), 'utf8');
+for (const snippet of [
+  '## Purpose and scope',
+  '## Components and trust boundaries',
+  '## Configuration model',
+  '## Runtime authorization model',
+  '## What is best-effort vs enforced'
+]) {
+  if (!ensDoc.includes(snippet)) fail(`ENS integration doc missing required section: ${snippet}`);
+}
+if (!ensDoc.includes('| Config item | Where stored | Who can change | How to verify | Locking behavior | Safety notes |')) {
+  fail('ENS integration doc missing required configuration model table header');
+}
+
+const robustnessDoc = fs.readFileSync(path.join(root, 'docs/INTEGRATIONS/ENS_ROBUSTNESS.md'), 'utf8');
+for (const snippet of [
+  '## Failure modes and safe handling',
+  '## Security posture',
+  '## Monitoring and observability',
+  '## Runbooks',
+  '### Safe configuration change checklist',
+  '### Incident response: compromised ENS root or namespace',
+  '### If configuration is locked'
+]) {
+  if (!robustnessDoc.includes(snippet)) fail(`ENS robustness doc missing required section: ${snippet}`);
+}
+if (!robustnessDoc.includes('| Failure mode | Symptoms | On-chain behavior | UI/operator impact | Safe remediation | Prevention |')) {
+  fail('ENS robustness doc missing required failure mode table header');
+}
+if (!robustnessDoc.includes('| Threat vector | Impact | Mitigation | Residual risk | Operator responsibilities |')) {
+  fail('ENS robustness doc missing required threat model table header');
+}
+
 for (const rel of ['docs/assets/ens-palette.svg', 'docs/assets/ens-integration-wireframe.svg']) {
   const text = fs.readFileSync(path.join(root, rel), 'utf8');
   const t = text.trim();
@@ -82,6 +115,7 @@ try {
   execFileSync('node', ['scripts/docs/generate-ens-reference.mjs', `--out-dir=${tmp}`], { cwd: root, stdio: 'ignore' });
   const expected = fs.readFileSync(path.join(tmp, 'docs/REFERENCE/ENS_REFERENCE.md'), 'utf8');
   const current = fs.readFileSync(path.join(root, 'docs/REFERENCE/ENS_REFERENCE.md'), 'utf8');
+  if (!current.includes('Generated at (UTC):')) fail('docs/REFERENCE/ENS_REFERENCE.md must include a Generated at (UTC) header');
   if (expected !== current) fail('docs/REFERENCE/ENS_REFERENCE.md is stale. Run npm run docs:ens:gen');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
