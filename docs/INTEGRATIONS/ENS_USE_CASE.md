@@ -10,8 +10,8 @@ Local ENS fixtures already exist in this repo test suite (`MockENS`, `MockNameWr
 
 | Step | Actor | Action (function/script) | Preconditions | Expected outcome | Events/reads to verify |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Operator | `npm test -- test/adminOps.test.js` | Node deps installed; local chain from Truffle test harness | ENS wiring admin controls and lock behavior validated | `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `IdentityConfigurationLocked` assertions |
-| 2 | Operator | `npm test -- test/mainnetHardening.test.js` | Same | ENS hook + URI hardening and best-effort behavior validated | hook/URI assertions pass; no settlement-side regressions |
+| 1 | Operator | `npx truffle test --network test test/adminOps.test.js` | Node deps installed; local chain from Truffle test harness | ENS wiring admin controls and lock behavior validated | `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `IdentityConfigurationLocked` assertions |
+| 2 | Operator | `npx truffle test --network test test/mainnetHardening.test.js` | Same | ENS hook + URI hardening and best-effort behavior validated | hook/URI assertions pass; no settlement-side regressions |
 | 3 | Owner | Deploy AGIJobManager with initial ENS addresses and roots (repo deployment flow) | constructor args prepared | Contract starts with expected identity wiring | reads: `ens()`, `nameWrapper()`, root node getters |
 | 4 | Owner | Optional: `setEnsJobPages(address)` and `setUseEnsJobTokenURI(bool)` | hook target deployed and reviewed | optional ENS pages/URI path enabled | read `ensJobPages()`, observe `NFTIssued` URI semantics |
 | 5 | Eligible actor | `applyForJob(jobId, subdomain, proof)` or validator vote with valid identity | open job + role requirements | successful ENS-eligible action | `JobApplied` / validator vote event |
