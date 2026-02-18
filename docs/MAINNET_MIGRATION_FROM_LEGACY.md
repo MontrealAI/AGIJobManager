@@ -1,113 +1,93 @@
-# Mainnet migration from legacy AGIJobManager snapshot
+# MAINNET_MIGRATION_FROM_LEGACY
 
-This runbook deploys `contracts/AGIJobManager.sol` using a deterministic snapshot of the live legacy contract on mainnet:
+This guide deploys the new `contracts/AGIJobManager.sol` with configuration cloned from the live legacy mainnet contract:
 
-- Legacy address: `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`
-- Snapshot output: `migrations/snapshots/legacy.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json`
-- Migration: `migrations/2_deploy_agijobmanager_from_legacy_snapshot.js`
+- Legacy: `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`
+- Snapshot script: `scripts/snapshotLegacyConfig.mainnet.js`
+- Committed snapshot: `migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1d5bA477.json`
+- Migration: `migrations/2_deploy_agijobmanager_from_legacy_mainnet.js`
 
 ## Prerequisites
 
-- `MAINNET_RPC_URL` (read RPC for snapshot + deploy RPC for migration)
-- `ETHERSCAN_API_KEY` (preferred for ABI + tx list extraction)
-- `PRIVATE_KEYS` (funded deployer private key for Truffle deployment)
-- `CONFIRM_MAINNET_DEPLOY=1` (required safety override only on chainId 1)
-- Optional: `NEW_OWNER` (override transferOwnership target)
+- `MAINNET_RPC_URL` (required)
+- `ETHERSCAN_API_KEY` (required; ABI + tx replay)
+- `PRIVATE_KEYS` (for deploy)
+- Optional: `NEW_OWNER` (overrides snapshot owner transfer target)
 
-## 1) Generate a deterministic snapshot (pin block)
-
-Example (pinned):
+## 1) Generate snapshot from live chain
 
 ```bash
-MAINNET_RPC_URL=https://ethereum-rpc.publicnode.com \
-ETHERSCAN_API_KEY=... \
-node scripts/snapshotLegacyMainnetConfig.js --block 23200000
+MAINNET_RPC_URL=https://your-mainnet-rpc \
+ETHERSCAN_API_KEY=yourKey \
+node scripts/snapshotLegacyConfig.mainnet.js --block latest
 ```
 
-Notes:
-- The script uses `eth_call` at the specified block tag.
-- If `ETHERSCAN_API_KEY` is missing, it falls back to Etherscan HTML scraping for ABI/tx discovery.
-- The script records `chainId`, `blockNumber`, and `blockTimestamp`.
+The script performs:
+- `eth_call` reads for all readable config
+- deterministic tx replay for dynamic mappings (moderators/additional allowlists/blacklists)
+- AGI type reconstruction from `AGITypeUpdated` logs
+- failure on missing unrecoverable values (no guessing)
 
-## 2) Review snapshot JSON before deploy
+It writes:
+- `migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1d5bA477.json`
 
-Inspect and verify:
+Metadata includes chainId, block number, block timestamp, legacy address, ABI source details and ABI SHA-256.
 
-- Constructor config:
-  - `constructorConfig.agiTokenAddress`
-  - `constructorConfig.baseIpfsUrl`
-  - `constructorConfig.ensConfig`
-  - `constructorConfig.rootNodes`
-  - `constructorConfig.merkleRoots`
-- Runtime config:
-  - owner/pause booleans
-  - validator/economic/timing params
-- Dynamic sets:
-  - moderators/additionals/blacklists and provenance
-- AGI types:
-  - ordered list with payout percentages and enabled flags
+## 2) Review snapshot
 
-Recommended manual check:
+Check constructor/runtime/dynamic-set integrity before deploy:
 
 ```bash
-cat migrations/snapshots/legacy.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json
+cat migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1d5bA477.json
 ```
 
-## 3) Dry-run on fork (recommended)
+Review at least:
+- constructor arguments (token, baseIpfsUrl, ENS config, roots, merkle roots)
+- runtime flags/params
+- moderators/additional agents/additional validators/blacklists
+- AGI types ordering and payouts
+- provenance tx hashes
 
-Start fork (example Anvil):
+## 3) Execute guarded migration
 
-```bash
-anvil --fork-url "$MAINNET_RPC_URL" --fork-block-number 23200000
-```
-
-Run migration against local fork:
+Dry-run (recommended):
 
 ```bash
 MIGRATE_FROM_LEGACY_SNAPSHOT=1 \
 truffle migrate --network development --f 2 --to 2
 ```
 
-## 4) Mainnet migration (guarded)
+Mainnet:
 
 ```bash
 MIGRATE_FROM_LEGACY_SNAPSHOT=1 \
 CONFIRM_MAINNET_DEPLOY=1 \
-MAINNET_RPC_URL=... \
-PRIVATE_KEYS=... \
+MAINNET_RPC_URL=https://your-mainnet-rpc \
+PRIVATE_KEYS=0x... \
 truffle migrate --network mainnet --f 2 --to 2
 ```
 
-Optional ownership override:
+Migration behavior:
+- deploys + links `UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`
+- deploys `AGIJobManager` with snapshot constructor config
+- explicitly sets runtime/economic/timing params
+- restores dynamic sets and AGI types
+- re-applies pause/settlement/identity lock state
+- transfers ownership at the end (defaults to legacy owner; optional `NEW_OWNER` override)
+- performs post-deploy readback assertions and reverts on mismatch
 
-```bash
-NEW_OWNER=0xYourSafeAddress ... truffle migrate --network mainnet --f 2 --to 2
-```
+## 4) Post-deploy verification checklist
 
-Safety behavior:
-- Migration aborts on chainId mismatch vs snapshot (except local fork IDs 1337/31337).
-- Migration aborts on mainnet unless `CONFIRM_MAINNET_DEPLOY=1`.
-- Migration performs post-deploy on-chain assertions and fails on mismatch.
-
-## 5) Post-deploy verification checklist (Etherscan Read Contract)
-
-Verify the deployed AGIJobManager:
-
-- core addresses (`agiToken`, `ens`, `nameWrapper`, `owner`)
+From read contract, compare to snapshot:
+- owner / agiToken / ENS addresses
 - root nodes + merkle roots
-- validator/timing/economic parameters
-- pause/settlement flags
-- moderators/additional/blacklisted addresses
-- AGI types array values by index
+- validator thresholds + timing params + bonds/slash
+- paused + settlementPaused
+- dynamic mapping membership checks
+- AGI types by index
 
-Migration output prints deployed library addresses and manager address.
+For private config (`baseIpfsUrl`, `useEnsJobTokenURI`) use migration logs and indirect behavior checks.
 
-## 6) Etherscan verification with linked libraries
+## 5) Etherscan verification with linked libraries
 
-Use existing repository verification flow and include linked library addresses from migration logs.
-
-Typical steps:
-
-1. Compile with repo solc settings (`npm run build`).
-2. Use repo verification tooling (`docs/VERIFY_ON_ETHERSCAN.md`) and provide library addresses exactly as deployed.
-3. Verify AGIJobManager constructor args from snapshot JSON.
+Follow repo process in `docs/VERIFY_ON_ETHERSCAN.md`, providing exact deployed library addresses and constructor args from the snapshot.
