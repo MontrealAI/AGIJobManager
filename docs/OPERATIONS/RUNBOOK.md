@@ -3,7 +3,7 @@
 ## Parameter change checklist
 
 1. Validate intent and blast radius.
-2. Run `node scripts/ops/validate-params.js` with proposed values.
+2. Run `truffle exec scripts/ops/validate-params.js --network <network> --address <AGIJobManager>` against the target deployment.
 3. Stage in testnet and review event output.
 4. Execute owner transaction set.
 5. Confirm events (`*Updated`) and post-change getters.
