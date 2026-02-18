@@ -8,6 +8,7 @@ const requiredFiles = [
   'docs/README.md','docs/OVERVIEW.md','docs/REPO_MAP.md','docs/QUICKSTART.md','docs/QUINTESSENTIAL_USE_CASE.md','docs/ARCHITECTURE.md',
   'docs/CONTRACTS/AGIJobManager.md','docs/CONTRACTS/INTEGRATIONS.md','docs/OPERATIONS/RUNBOOK.md','docs/OPERATIONS/INCIDENT_RESPONSE.md',
   'docs/OPERATIONS/MONITORING.md','docs/SECURITY_MODEL.md','docs/TESTING.md','docs/TROUBLESHOOTING.md','docs/GLOSSARY.md',
+  'docs/DEPLOYMENT_OPERATIONS.md','docs/SCRIPTS_REFERENCE.md',
   'docs/REFERENCE/VERSIONS.md','docs/REFERENCE/CONTRACT_INTERFACE.md','docs/REFERENCE/EVENTS_AND_ERRORS.md',
   'docs/assets/palette.svg','docs/assets/architecture-wireframe.svg'
 ];
@@ -122,7 +123,9 @@ const requiredSectionSnippets = [
   ['docs/TESTING.md', ['## Test matrix', '| Suite | Purpose | Command | Validates |']],
   ['docs/OPERATIONS/RUNBOOK.md', ['## Parameter change checklist']],
   ['docs/OPERATIONS/MONITORING.md', ['## Events catalog']],
-  ['docs/OPERATIONS/INCIDENT_RESPONSE.md', ['active exploit', 'settlementPaused', 'blacklist', 'lockIdentityConfiguration']]
+  ['docs/OPERATIONS/INCIDENT_RESPONSE.md', ['active exploit', 'settlementPaused', 'blacklist', 'lockIdentityConfiguration']],
+  ['docs/DEPLOYMENT_OPERATIONS.md', ['## Deterministic deployment flow', '## Mainnet gate criteria', '## Post-deploy validation checklist']],
+  ['docs/SCRIPTS_REFERENCE.md', ['## Script matrix', '## Script authoring standards', '## Security posture for script execution']]
 ];
 
 for (const [file, snippets] of requiredSectionSnippets) {

@@ -87,6 +87,8 @@ npm run size
 
 - Main docs index: [`docs/README.md`](docs/README.md)
 - Quintessential end-to-end walkthrough: [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
+- Deployment and release operations: [`docs/DEPLOYMENT_OPERATIONS.md`](docs/DEPLOYMENT_OPERATIONS.md)
+- Scripts and automation catalog: [`docs/SCRIPTS_REFERENCE.md`](docs/SCRIPTS_REFERENCE.md)
 
 ## Sovereign Ops Console UI
 
