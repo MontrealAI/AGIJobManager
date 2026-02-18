@@ -17,6 +17,7 @@ const curated = [
   ['forge-test/', 'Foundry fuzz/invariant suites', 'Optional hardening lane'],
   ['scripts/ops/validate-params.js', 'Parameter sanity checker for operations', 'Run before live changes'],
   ['scripts/postdeploy-config.js', 'Post-deploy owner configuration routine', 'Operational setup automation'],
+  ['scripts/check-no-binaries.mjs', 'Repository policy guard against binary additions', 'Docs governance + supply chain hygiene'],
   ['ui/', 'Next.js operator/demo frontend', 'Contains own docs and checks'],
   ['.github/workflows/ci.yml', 'Main build/lint/test workflow', 'PR and main branch gate'],
   ['.github/workflows/docs.yml', 'Docs and no-binaries policy workflow', 'Documentation freshness gate'],
@@ -44,6 +45,8 @@ const keyEntrypoints = [
   'test/AGIJobManager.test.js',
   'migrations/1_deploy_contracts.js',
   'scripts/postdeploy-config.js',
+  'docs/DEPLOYMENT_OPERATIONS.md',
+  'docs/SCRIPTS_REFERENCE.md',
   '.github/workflows/ci.yml',
   '.github/workflows/docs.yml'
 ];
