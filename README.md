@@ -1,6 +1,6 @@
 # AGIJobManager
 
-[![CI][ci-badge]][ci-url] [![Security Scan][security-scan-badge]][security-scan-url] [![Security Policy][security-badge]][security-url] [![License][license-badge]][license-url]
+[![CI][ci-badge]][ci-url] [![Security Verification][security-verification-badge]][security-verification-url] [![Security][security-badge]][security-url] [![License][license-badge]][license-url]
 
 AGIJobManager is an owner-operated on-chain job escrow and settlement contract for employer/agent workflows with validator voting and moderator dispute resolution.
 
@@ -119,8 +119,6 @@ Text-only visual assets:
 - Palette SVG: [`docs/ui/assets/palette.svg`](docs/ui/assets/palette.svg)
 - Wireframe SVG: [`docs/ui/assets/ui-wireframe.svg`](docs/ui/assets/ui-wireframe.svg)
 
-[![UI CI][ui-ci-badge]][ui-ci-url]
-
 Documentation maintenance commands:
 
 ```bash
@@ -131,11 +129,9 @@ npm run check:no-binaries  # check-no-binaries
 
 [ci-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/ci.yml?branch=main&style=flat-square&label=CI
 [ci-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml
-[security-scan-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/security-verification.yml?branch=main&style=flat-square&label=Security%20Scan
-[security-scan-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/security-verification.yml
+[security-verification-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/security-verification.yml?branch=main&style=flat-square&label=Security%20Verification
+[security-verification-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/security-verification.yml
 [security-badge]: https://img.shields.io/badge/Security-Policy-blue?style=flat-square
 [security-url]: ./SECURITY.md
 [license-badge]: https://img.shields.io/github/license/MontrealAI/AGIJobManager?style=flat-square
 [license-url]: ./LICENSE
-[ui-ci-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/ui.yml?branch=main&style=flat-square&label=UI%20CI
-[ui-ci-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/ui.yml
