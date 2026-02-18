@@ -1,6 +1,17 @@
 # AGIJobManager
 
+[![CI][ci-badge]][ci-url] [![Slither][slither-badge]][slither-url] [![License][license-badge]][license-url] [![Security][security-badge]][security-url]
+
 AGIJobManager is an owner-operated on-chain job escrow and settlement contract for employer/agent workflows with validator voting and moderator dispute resolution.
+
+[ci-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/ci.yml?branch=main&style=flat-square&label=CI
+[ci-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml
+[slither-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/security-verification.yml?branch=main&style=flat-square&label=Slither
+[slither-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/security-verification.yml
+[license-badge]: https://img.shields.io/github/license/MontrealAI/AGIJobManager?style=flat-square
+[license-url]: ./LICENSE
+[security-badge]: https://img.shields.io/badge/Security-Policy-blue?style=flat-square
+[security-url]: ./SECURITY.md
 
 ## Start here
 
