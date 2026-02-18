@@ -49,7 +49,7 @@ node scripts/postdeploy-config.js --network development --address <DEPLOYED_AGIJ
 
 | Gate | Requirement | Failure response |
 | --- | --- | --- |
-| Parameter sanity | `node scripts/ops/validate-params.js` passes reviewed config values | Stop rollout; correct config and restart approvals |
+| Parameter sanity | `truffle exec scripts/ops/validate-params.js --network <network> --address <AGIJobManagerAddress>` passes reviewed config values | Stop rollout; correct config and restart approvals |
 | Role assignment | Owner/moderator addresses match signed change request | Halt deployment; investigate signer mix-up |
 | Monitoring readiness | Alerts configured for pause, dispute, withdrawals, and stale jobs | Delay launch until alerts and on-call chain are active |
 | Recovery rehearsal | Team can execute `pause`, `setSettlementPaused`, and blacklist controls safely | Conduct rehearsal on testnet first |

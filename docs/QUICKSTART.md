@@ -40,5 +40,5 @@ npm run test:ui
 | `npm test` | Contract + invariant/regression suites | Pre-PR safety gate | Local node/toolchain drift | Use Node 20 (CI baseline) and run `truffle compile --all` |
 | `truffle migrate --network development --reset` | Local deployment for operator rehearsal | Before local runbooks or Etherscan prep drills | Ganache not running / wrong chain id | Start Ganache first and verify `truffle-config.js` network settings |
 | `node scripts/postdeploy-config.js --network development` | Applies post-deploy owner/operator configuration | After deployment in rehearsals | Missing env values for addresses/roots | Populate only placeholder-safe `.env` values and validate args |
-| `node scripts/ops/validate-params.js --help` | Parameter schema guidance | Before owner param changes | Invalid bounds/input format | Use script presets and reject unsafe values in review |
+| `truffle exec scripts/ops/validate-params.js --network development --address <AGIJobManagerAddress>` | Parameter and wiring sanity checks on deployed instance | Before owner param changes | Missing `--address` / running outside Truffle context | Run via `truffle exec` and provide the deployed contract address |
 | `npm run docs:check` | Verifies required docs freshness, links, Mermaid, SVG | Pre-PR for docs | Stale generated docs | Run `npm run docs:gen`, commit regenerated references |

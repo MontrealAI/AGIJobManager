@@ -10,7 +10,7 @@ This catalog documents operator and maintainer scripts across deployment, operat
 | `npm run docs:check` | Documentation | Validates docs structure, freshness, links, Mermaid, required sections | Maintainer / CI | Fails if generated docs drift |
 | `npm run check:no-binaries` | Policy | Blocks newly added binary assets or NUL-byte files | Maintainer / CI | Enforces text-only docs policy |
 | `node scripts/postdeploy-config.js --network <n> --address <a>` | Operations | Applies post-deploy owner configuration | Owner/operator | Requires explicit reviewed env/config inputs |
-| `node scripts/ops/validate-params.js` | Operations | Checks parameter bounds and safety assumptions | Owner/operator | Run before any on-chain param tx |
+| `truffle exec scripts/ops/validate-params.js --network <network> --address <AGIJobManagerAddress>` | Operations | Checks parameter bounds and safety assumptions against a deployed instance | Owner/operator | Must be executed via Truffle with a concrete contract address |
 | `node scripts/etherscan/prepare_inputs.js --action ...` | Operator UX | Generates Etherscan-safe input payloads | Owner/operator | Reduces manual ABI argument mistakes |
 | `node scripts/merkle/export_merkle_proofs.js --input ... --output ...` | Eligibility | Generates Merkle roots/proofs for allowlists | Ops + integrator | Keep source list auditable |
 | `npm run ui:abi` | UI | Exports contract ABI consumed by UI | UI maintainer | Pair with `npm run ui:abi:check` in PRs |
