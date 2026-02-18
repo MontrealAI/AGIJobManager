@@ -1,7 +1,7 @@
 # Repository Map (Generated)
 
-- Generated at (deterministic source fingerprint): `b16a32b567f3`.
-- Source snapshot fingerprint: `b16a32b567f3`.
+- Generated at (deterministic source fingerprint): `a1358d131aac`.
+- Source snapshot fingerprint: `a1358d131aac`.
 
 ## Curated high-signal map
 
@@ -16,6 +16,7 @@
 | `forge-test/` | Foundry fuzz/invariant suites | Optional hardening lane |
 | `scripts/ops/validate-params.js` | Parameter sanity checker for operations | Run before live changes |
 | `scripts/postdeploy-config.js` | Post-deploy owner configuration routine | Operational setup automation |
+| `scripts/check-no-binaries.mjs` | Repository policy guard against binary additions | Docs governance + supply chain hygiene |
 | `ui/` | Next.js operator/demo frontend | Contains own docs and checks |
 | `.github/workflows/ci.yml` | Main build/lint/test workflow | PR and main branch gate |
 | `.github/workflows/docs.yml` | Docs and no-binaries policy workflow | Documentation freshness gate |
@@ -45,6 +46,8 @@
 - [`test/AGIJobManager.test.js`](../test/AGIJobManager.test.js)
 - [`migrations/1_deploy_contracts.js`](../migrations/1_deploy_contracts.js)
 - [`scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
+- [`docs/DEPLOYMENT_OPERATIONS.md`](../docs/DEPLOYMENT_OPERATIONS.md)
+- [`docs/SCRIPTS_REFERENCE.md`](../docs/SCRIPTS_REFERENCE.md)
 - [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
 - [`.github/workflows/docs.yml`](../.github/workflows/docs.yml)
 
