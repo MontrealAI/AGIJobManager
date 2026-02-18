@@ -126,7 +126,10 @@ Suggested alert semantics:
 Immediate containment transaction set (ordered):
 1. `pause()` / `pauseAll()` as operational policy requires.
 2. `blacklistAgent` / `blacklistValidator` for known compromised addresses.
-3. If **unlocked**, `updateMerkleRoots` and/or root/address rewiring to restore continuity; if **locked**, skip to allowlist/blocklist controls.
+> **Escrow gate reminder**
+> Identity rewiring setters also enforce `_requireEmptyEscrow()` and will revert while escrow/bond locks are non-zero. Confirm lock totals before attempting remediation writes.
+
+3. If **unlocked and escrow/bond locks are zero** (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`), use `updateMerkleRoots` and/or root/address rewiring to restore continuity; if escrow is non-zero or config is locked, skip to allowlist/blocklist + pause controls.
 4. `addAdditionalAgent`/`addAdditionalValidator` (still available post-lock) for continuity.
 5. `setUseEnsJobTokenURI(false)` if ENS URI drift is observed.
 
