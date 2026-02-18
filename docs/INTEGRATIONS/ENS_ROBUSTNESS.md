@@ -1,35 +1,37 @@
-# ENS Robustness, Failure Modes, and Runbooks
+# ENS Robustness, Failure Modes, and Operations
 
-This document focuses on degraded-path behavior, operations, and security posture for ENS-linked functionality.
+This playbook defines how ENS-linked behavior degrades, how failures surface on-chain, and which operator levers remain safe.
 
-## Failure modes and safe handling
+> **Operator note**
+> Authorization is fail-closed (`NotAuthorized`) while hook/metadata integrations are best-effort by design. See [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol) and [`contracts/utils/ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol).
 
-| Failure mode | Symptoms | On-chain behavior | UI/operator impact | Safe remediation | Prevention |
+## Failure modes and remediations
+
+| Failure mode | Symptoms | On-chain behavior | UI / operator impact | Safe remediation | Prevention |
 | --- | --- | --- | --- | --- | --- |
-| Wrong ENS registry address | Valid users fail ENS resolver path | `_verifyOwnershipByRoot` returns false; role action may revert `NotAuthorized` | Eligibility failures | If unlocked and escrow empty, update registry; re-test known identity | Two-person review + pre-prod dry run |
-| Wrong NameWrapper address | Wrapped names not recognized | Wrapper ownership path fails; resolver fallback may still pass | Partial identity failures | Update wrapper if unlocked and escrow empty; verify `ownerOf` path | Maintain chain/address registry |
-| Wrong root node(s) configured | Correct labels fail or wrong namespace accepted | Subnode derived against wrong root | Authorization drift | Update roots (if unlocked + empty escrow) and verify test vectors | Require signed root manifest |
-| Name becomes unwrapped or approvals revoked | Previously eligible account denied | Wrapper path fails; resolver may or may not pass | User access incident | Validate resolver fallback ownership; coordinate ENS owner action | Monitor ownership deltas |
-| Resolver misconfigured or changed | Resolver fallback fails unexpectedly | Resolver path returns false | Access incident when wrapper path also unavailable | Restore resolver records; keep wrapper ownership clean | Monitor resolver address + `addr` records |
-| `ensJobPages` hook contract reverts | Hook side effects absent | `_callEnsJobPagesHook` swallows failure | Missing ENS page updates only | Repair/replace hook target if unlocked; continue settlement | Keep hook logic hardened and tested |
-| `jobEnsURI` malformed/reverting | Unexpected URI source failure | `_mintJobNFT` ignores bad return and retains base URI path | Metadata not using ENS URI | Disable URI mode or fix hook target | Keep `useEnsJobTokenURI` off until proven |
-| Identity config locked too early | Cannot update ENS addresses/roots/token wiring | `ConfigLocked` from guarded setters | No on-chain recovery for locked fields | Operate via Merkle/allowlists; plan migration if necessary | Lock checklist + sign-off gates |
-| RPC/indexer outages | Off-chain checks fail/intermittent | Contract unchanged | Operator blind spots, delayed diagnosis | Fail closed operationally; retry with redundant providers | Multi-provider monitoring |
-| Malicious/invalid label strings | Unexpected mismatches | Namehashing still deterministic; auth usually fails closed | User confusion | Enforce label-only input in UI and runbooks | Strong client-side validation and UX hints |
+| ENS registry misconfigured | valid ENS users fail authorization | resolver path returns false; eventual `NotAuthorized` | admissions friction | if unlocked + escrow empty: `updateEnsRegistry`; otherwise use Merkle/allowlist path | peer-reviewed chain-specific address book |
+| NameWrapper misconfigured/unavailable | wrapped names not recognized | wrapper checks return false; fallback resolver may still pass | partial authorization failures | `updateNameWrapper` when allowed; temporarily rely on resolver + Merkle | staged rollout tests on wrapper + resolver vectors |
+| Wrong root node(s) | legitimate labels rejected or wrong namespace accepted | deterministic subnode mismatch | policy drift risk | rotate roots via `updateRootNodes` (unlocked + empty escrow) | dual-control root constant review |
+| Label input malformed | user submits invalid string label | `EnsLabelUtils.requireValidLabel` path fails and action reverts | user support load | enforce label validation in client and ops runbooks | strict UI input constraints |
+| ENS ownership changed unexpectedly | prior participant loses/changes eligibility | future gating follows new ownership state | onboarding surprises | communicate policy; override with Merkle/allowlist if needed | pre-action ownership checks in operator tooling |
+| Hook target (`ensJobPages`) reverts | hook-related events show failure | `_callEnsJobPagesHook` emits `EnsHookAttempted` and continues | job page state may lag | fix or unset `ensJobPages`; keep settlement live | continuous hook smoke tests |
+| `jobEnsURI` malformed/reverting | expected ENS token URI absent | `_mintJobNFT` keeps base URI when ENS URI call fails/invalid | metadata discrepancy | disable ENS URI mode via `setUseEnsJobTokenURI(false)` | enable only after hardened integration tests |
+| Identity configuration locked too early | cannot rewrite ENS/token/root wiring | guarded setters revert `ConfigLocked` | cannot correct wiring in-place | operate with Merkle/allowlists; plan controlled migration | formal lock checklist with sign-off |
+| RPC / indexer outage | monitoring cannot read ENS state reliably | contract logic unchanged | observability gaps | fail closed operationally, switch providers | multi-provider dashboards + alerts |
 
 ## Security posture
 
-| Threat vector | Impact | Mitigation | Residual risk | Operator responsibilities |
+| Threat vector | Impact | Mitigation in code | Residual risk | Operator responsibilities |
 | --- | --- | --- | --- | --- |
-| ENS key compromise | Attacker may satisfy ENS-gated eligibility | Layer with Merkle roots and allowlist controls; blacklist support | Short-term authorization abuse window | Rotate roots/lists quickly, blacklist attackers, investigate custody hygiene |
-| Misconfiguration by owner | Authorization outage or policy drift | Empty-escrow gate + optional identity lock | Human error remains | Use staged rollout and dual approval |
-| External ENS contract anomalies | False negatives on ownership | Bounded staticcalls + fallback path; fail closed | Legitimate users may be blocked | Keep break-glass allowlists and support playbooks |
-| Hook target compromise | Incorrect ENS page metadata | Hooks are best-effort and not settlement-critical | Off-chain confusion | Disable hook target / ENS URI mode rapidly |
-| Social phishing around ENS names | User-level loss, spoofing | Explicit non-goal and UX warnings | Cannot be solved on-chain | Operator comms and user education |
+| ENS key compromise | attacker may satisfy ENS-based eligibility | multi-path auth (allowlist/Merkle/ENS) + blacklist levers | temporary unauthorized admissions | rotate Merkle roots, blacklist addresses, incident communication |
+| Owner misconfiguration | outage or authorization drift | empty-escrow gate + explicit lock semantics | human error remains | staged deployment procedure and peer review |
+| External contract anomalies | false negatives/instability | gas-bounded staticcalls, conservative decode, false on malformed reads | availability degradation | maintain emergency non-ENS authorization policy |
+| Hook target compromise | corrupted ENS page metadata | best-effort dispatch, non-fatal to settlement | off-chain integrity concerns | disable hook/ENS URI mode and investigate |
+| Phishing/social engineering | user wallet compromise | explicit non-goal; no on-chain anti-phishing guarantees | persistent ecosystem risk | user training and signed operator advisories |
 
 > **Non-goals / limitations**
-> - ENS gating does not attest legal identity or reputation quality.
-> - ENS does not prevent social engineering, phishing, or compromised wallets.
+> - ENS ownership is not legal identity, KYC, or reputation truth.
+> - ENS integration cannot prevent compromised wallets or social recovery abuse.
 > - `lockIdentityConfiguration` is intentionally irreversible.
 
 ## Incident response decision tree
@@ -42,15 +44,15 @@ This document focuses on degraded-path behavior, operations, and security postur
 "noteBkgColor":"#1B0B2A","noteTextColor":"#E9DAFF"
 }}}%%
 flowchart TD
-    A[ENS incident detected] --> B{Config error?}
-    B -->|yes| C{Identity config unlocked and escrow empty?}
-    C -->|yes| D[Update ENS addresses/roots and verify test vectors]
-    C -->|no| E[Use Merkle + allowlist fallback, plan migration]
+    A[ENS issue detected] --> B{Config issue?}
+    B -->|yes| C{Unlocked + empty escrow?}
+    C -->|yes| D[Patch config and re-verify vectors]
+    C -->|no| E[Shift to Merkle/allowlist fallback and plan migration]
     B -->|no| F{Compromise suspected?}
-    F -->|yes| G[Blacklist malicious addresses, rotate roots/lists, disable ENS URI mode]
+    F -->|yes| G[Blacklist + rotate roots/lists + disable ENS URI mode]
     F -->|no| H{Infra outage?}
-    H -->|yes| I[Switch RPC/indexer provider, continue fail-closed ops]
-    H -->|no| J[Escalate for deeper protocol/contract review]
+    H -->|yes| I[Switch provider; continue fail-closed operations]
+    H -->|no| J[Deep protocol review / escalation]
 ```
 
 ## Safe configuration change procedure
@@ -63,50 +65,56 @@ flowchart TD
 "noteBkgColor":"#1B0B2A","noteTextColor":"#E9DAFF"
 }}}%%
 flowchart TD
-    S1[Draft change set] --> S2[Dry-run on local test fixtures]
-    S2 --> S3[Staging verification reads/events]
-    S3 --> S4{Escrow and bonds are zero?}
-    S4 -->|no| S5[Delay change window]
+    S1[Draft and peer-review change set] --> S2[Dry-run in deterministic local tests]
+    S2 --> S3[Verify getters/events on staging]
+    S3 --> S4{Escrow and bonds all zero?}
+    S4 -->|no| S5[Wait for safe window]
     S4 -->|yes| S6[Execute owner tx]
-    S6 --> S7[Post-change eligibility test vectors]
+    S6 --> S7[Run positive and negative auth vectors]
     S7 --> S8{All checks pass?}
     S8 -->|no| S9[Rollback if unlocked]
-    S8 -->|yes| S10[Consider lockIdentityConfiguration]
+    S8 -->|yes| S10[Optional irreversible lock]
 ```
 
 ## Monitoring and observability
 
 ### Events to watch
 
-- `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `MerkleRootsUpdated`, `IdentityConfigurationLocked`, `EnsJobPagesUpdated`, `NFTIssued` from `AGIJobManager`.
-- Optional `ENSJobPages` events for page lifecycle (`JobENSPageCreated`, `JobENSPermissionsUpdated`, `JobENSLocked`).
+From `AGIJobManager`:
+- `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `MerkleRootsUpdated`
+- `IdentityConfigurationLocked`, `EnsJobPagesUpdated`, `EnsHookAttempted`, `NFTIssued`
+
+From optional `ENSJobPages`:
+- `ENSHookProcessed`, `ENSHookSkipped`, `ENSHookBestEffortFailure`
+- `JobENSPageCreated`, `JobENSPermissionsUpdated`, `JobENSLocked`
 
 ### Sanity-check reads
 
-- `ens()`, `nameWrapper()`, `clubRootNode()`, `agentRootNode()`, `alphaClubRootNode()`, `alphaAgentRootNode()`, `validatorMerkleRoot()`, `agentMerkleRoot()`, `lockIdentityConfig()`, `ensJobPages()`.
-- If URI mode expected, validate minted URI values via `tokenURI(tokenId)` and compare with `jobEnsURI` behavior.
+- Identity wiring: `ens()`, `nameWrapper()`, `clubRootNode()`, `agentRootNode()`, `alphaClubRootNode()`, `alphaAgentRootNode()`, `lockIdentityConfig()`.
+- Policy fallback: `validatorMerkleRoot()`, `agentMerkleRoot()`, `additionalAgents(address)`, `additionalValidators(address)`.
+- Hook mode: `ensJobPages()`, `tokenURI(tokenId)` and expected `NFTIssued` URI.
 
 ## Runbooks
 
 ### Safe configuration change checklist
 
-1. Confirm change rationale and blast radius.
-2. Verify escrow/bond balances are zero (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`).
-3. Execute change with owner account/multisig.
-4. Run known-good and known-bad authorization test vectors.
-5. Confirm event emission and getter reads.
-6. If stable, decide whether to call irreversible `lockIdentityConfiguration`.
+1. Confirm change ticket, reviewer approvals, and blast-radius analysis.
+2. Verify `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, and `lockedDisputeBonds` are zero.
+3. Execute one change at a time and inspect emitted events.
+4. Run known-good and known-bad authorization vectors.
+5. Confirm fallback controls (Merkle + allowlist) still operate.
+6. Decide on irreversible lock only after full verification.
 
-### Incident response: compromised ENS root or namespace
+### Incident response: ENS compromised root/namespace
 
-1. Freeze admissions operationally (pause front-end flows if required).
-2. Blacklist malicious addresses where appropriate.
-3. Rotate to emergency Merkle roots and/or owner allowlists.
-4. If identity config remains unlocked and escrow empty, update root nodes.
-5. Communicate user-facing impact and recovery timeline.
+1. Freeze intake paths operationally (front-end + operator runbook controls).
+2. Blacklist confirmed malicious addresses.
+3. Rotate Merkle roots / temporary allowlists for continuity.
+4. If unlocked and escrow empty, rotate root nodes and revalidate test vectors.
+5. Publish operator advisory and post-incident report.
 
 ### If configuration is locked
 
-- **Can still do**: Merkle root updates, allowlist/blacklist management, operational controls, settlement actions.
-- **Cannot do**: `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`.
-- **Recovery path**: operate with remaining policy levers or perform controlled contract migration.
+- **Still mutable:** Merkle roots, allowlists, blacklists, pause controls, settlement operations.
+- **Frozen:** `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`.
+- **Recovery:** continue with remaining policy levers or execute a controlled contract migration.
