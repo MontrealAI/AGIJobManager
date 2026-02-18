@@ -13,6 +13,11 @@ AGIJobManager uses ENS in three explicit paths:
 2. **Best-effort hook integration** to optional `ENSJobPages` via `_callEnsJobPagesHook` and `lockJobENS` in [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
 3. **Best-effort `ens://` token metadata mode** through `setUseEnsJobTokenURI` and guarded staticcall reads in `_mintJobNFT` in [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
 
+Concrete contract entrypoints and storage layout:
+- ENS identity state (`ens`, `nameWrapper`, root nodes, Merkle roots, `ensJobPages`, `lockIdentityConfig`) is declared in [`AGIJobManager.sol` state variables](../../contracts/AGIJobManager.sol#L136-L147).
+- Identity rewiring functions are in the owner-config section: [`updateEnsRegistry`](../../contracts/AGIJobManager.sol#L782-L786), [`updateNameWrapper`](../../contracts/AGIJobManager.sol#L788-L792), [`setEnsJobPages`](../../contracts/AGIJobManager.sol#L794-L798), [`setUseEnsJobTokenURI`](../../contracts/AGIJobManager.sol#L800-L802), [`updateRootNodes`](../../contracts/AGIJobManager.sol#L803-L815), [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol#L480-L483).
+- ENS ownership verification code path is delegated to [`ENSOwnership.verifyENSOwnership`](../../contracts/utils/ENSOwnership.sol#L62-L94).
+
 Core implementation files:
 - [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol)
 - [`contracts/utils/ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol)
@@ -56,13 +61,16 @@ flowchart TD
 | `ens` | `ENS public ens` in `AGIJobManager` | `onlyOwner` via `updateEnsRegistry` | `ens()` + `EnsRegistryUpdated` | Blocked by `lockIdentityConfiguration`; requires `_requireEmptyEscrow()` | Must be non-zero contract (`code.length > 0`) |
 | `nameWrapper` | `NameWrapper public nameWrapper` | `onlyOwner` via `updateNameWrapper` | `nameWrapper()` + `NameWrapperUpdated` | Blocked by lock; requires empty escrow | `0x0` disables wrapper path and leaves resolver fallback |
 | Root nodes | `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode` | `onlyOwner` via `updateRootNodes` | root getters + `RootNodesUpdated` | Blocked by lock; requires empty escrow | Misconfigured nodes can deny valid users or admit wrong namespace |
-| Merkle roots | `validatorMerkleRoot`, `agentMerkleRoot` | `onlyOwner` via `updateMerkleRoots` | getters + `MerkleRootsUpdated` | **Not** blocked by identity lock | Main emergency fallback if ENS path degraded |
+| Merkle roots | `validatorMerkleRoot`, `agentMerkleRoot` | `onlyOwner` via `updateMerkleRoots` | getters + `MerkleRootsUpdated` | Blocked by `lockIdentityConfiguration`; requires empty escrow | Emergency fallback **only before lock**; after lock use allowlists/blocklists + pause controls |
 | ENS hook target | `address public ensJobPages` | `onlyOwner` via `setEnsJobPages` | `ensJobPages()` + `EnsJobPagesUpdated` | Blocked by lock | Hook failures are intentionally non-fatal |
 | ENS URI toggle | `bool private useEnsJobTokenURI` | `onlyOwner` via `setUseEnsJobTokenURI` | Observe `NFTIssued` URI and `tokenURI(tokenId)` | Not blocked by identity lock | Enable only after hook target hardening |
 | Identity lock | `bool public lockIdentityConfig` | `onlyOwner` via `lockIdentityConfiguration` | `lockIdentityConfig()` + `IdentityConfigurationLocked` | Irreversible | Freezes token/ENS/wrapper/root/hook wiring |
 
 > **Safety warning**
 > `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, and `updateRootNodes` all enforce `_requireEmptyEscrow()` before allowing changes. See [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
+
+> **Operator note**
+> `lockIdentityConfiguration()` is not a full governance lock, but it **does** freeze ENS/identity rewiring including Merkle updates because `updateMerkleRoots` is guarded by `whenIdentityConfigurable`. Post-lock, operators still retain allowlist/blocklist and pause controls. See [`whenIdentityConfigurable`](../../contracts/AGIJobManager.sol#L300-L302), [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L816-L825), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L374-L377), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L754-L757), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L458-L478).
 
 ## Runtime authorization model
 
@@ -79,6 +87,11 @@ For role-gated actions (`applyForJob`, validator vote paths):
    - check NameWrapper path first (`ownerOf`, `getApproved`, `isApprovedForAll`)
    - if wrapper check fails, use ENS resolver fallback (`ens.resolver(subnode)` then `resolver.addr(subnode)`)
 5. Revert with `NotAuthorized` if all authorization paths fail.
+
+Authoritative precedence inside the ENS path:
+- The wrapper path is attempted first via `_verifyOwnership` and `ENSOwnership.verifyENSOwnership` with `NameWrapper.ownerOf/getApproved/isApprovedForAll` checks. [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L684-L706), [`ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol#L71-L83)
+- Resolver fallback is used when wrapper checks are unavailable/negative; ownership is inferred from `ens.resolver(node)` + `resolver.addr(node)` and compared to claimant. [`ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol#L84-L92)
+- If both checks fail (or inputs are invalid), authorization fails closed (`false` → `NotAuthorized` in caller). [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L521-L522), [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L600-L601)
 
 ### What is enforced vs operational vs best-effort
 

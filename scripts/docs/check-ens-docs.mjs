@@ -50,6 +50,7 @@ checkSections('docs/INTEGRATIONS/ENS_ROBUSTNESS.md', [
 
 checkSections('docs/INTEGRATIONS/ENS_USE_CASE.md', [
   '## A) Local deterministic walkthrough (no external RPC)',
+  '### Deterministic command bundle (copy/paste)',
   '## B) Testnet/mainnet operator checklist (no secrets)',
   '| Step | Actor | Action (function/script) | Preconditions | Expected outcome | Events/reads to verify |',
   '### Happy path sequence diagram',
