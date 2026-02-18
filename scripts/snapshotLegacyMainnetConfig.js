@@ -52,11 +52,13 @@ function fetchAbiFromEtherscan(address, apiKey) {
   if (!apiKey) {
     throw new Error('ETHERSCAN_API_KEY is required for API-based ABI fetch.');
   }
-  const result = etherscanGet({ module: 'contract', action: 'getsourcecode', address }, apiKey);
-  if (!Array.isArray(result) || !result[0] || !result[0].ABI) throw new Error('Malformed Etherscan source response.');
-  const item = result[0];
+  const abiJson = etherscanGet({ module: 'contract', action: 'getabi', address }, apiKey);
+  const source = etherscanGet({ module: 'contract', action: 'getsourcecode', address }, apiKey);
+  if (!Array.isArray(source) || !source[0]) throw new Error('Malformed Etherscan source response.');
+  const item = source[0];
   return {
-    abi: JSON.parse(item.ABI),
+    abi: JSON.parse(abiJson),
+    abiRaw: abiJson,
     sourceMeta: {
       contractName: item.ContractName,
       compilerVersion: item.CompilerVersion,
@@ -376,8 +378,11 @@ function compareHint(label, actual, expected) {
 }
 
 async function main() {
-  const rpcUrl = (process.env.MAINNET_RPC_URL || 'https://cloudflare-eth.com').trim();
+  const rpcUrl = (process.env.MAINNET_RPC_URL || '').trim();
   const etherscanKey = (process.env.ETHERSCAN_API_KEY || '').trim();
+  if (!rpcUrl) throw new Error('MAINNET_RPC_URL is required.');
+  if (!(process.env.ETHERSCAN_API_KEY || '').trim()) throw new Error('ETHERSCAN_API_KEY is required.');
+  if (!etherscanKey) throw new Error('ETHERSCAN_API_KEY is required.');
   const blockArg = arg('block', 'latest');
 
   const chainIdHex = rpcCall(rpcUrl, 'eth_chainId', []);
@@ -388,16 +393,9 @@ async function main() {
   const block = rpcCall(rpcUrl, 'eth_getBlockByNumber', [snapshotBlockHex, false]);
   if (!block) throw new Error(`Block not found: ${snapshotBlockHex}`);
 
-  let abi;
-  let sourceMeta = { abiSource: 'etherscan-html-fallback' };
-  try {
-    const fetched = fetchAbiFromEtherscan(LEGACY_ADDRESS, etherscanKey);
-    abi = fetched.abi;
-    sourceMeta = { abiSource: 'etherscan-v2-api', ...fetched.sourceMeta };
-  } catch (e) {
-    console.warn(`Warning: ${e.message} Falling back to Etherscan HTML scrape for ABI.`);
-    abi = fallbackFetchAbiFromHtml(LEGACY_ADDRESS);
-  }
+  const fetched = fetchAbiFromEtherscan(LEGACY_ADDRESS, etherscanKey);
+  const abi = fetched.abi;
+  const sourceMeta = { abiSource: 'etherscan-v2-api', abiSourceHash: keccak256(fetched.abiRaw), ...fetched.sourceMeta };
 
   const implSlot = rpcCall(rpcUrl, 'eth_getStorageAt', [LEGACY_ADDRESS, EIP1967_IMPLEMENTATION_SLOT, snapshotBlockHex]);
   const proxyImplementation = implSlot && implSlot !== ZERO32 ? toChecksumAddress(`0x${implSlot.slice(-40)}`) : null;
@@ -424,62 +422,47 @@ async function main() {
 
   let txs;
   let txSource;
-  if (etherscanKey) {
-    const txResults = etherscanGet({ module: 'account', action: 'txlist', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
-    const internalResults = etherscanGet({ module: 'account', action: 'txlistinternal', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
+  const txResults = etherscanGet({ module: 'account', action: 'txlist', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
+  const internalResults = etherscanGet({ module: 'account', action: 'txlistinternal', address: LEGACY_ADDRESS, startblock: '0', endblock: BigInt(snapshotBlockHex).toString(), sort: 'asc' }, etherscanKey);
 
-    const topLevelTxs = txResults
-      .filter((tx) => tx.isError === '0')
-      .map((tx) => ({
-        hash: tx.hash,
-        input: tx.input,
-        blockNumber: BigInt(tx.blockNumber),
-        transactionIndex: BigInt(tx.transactionIndex),
-        traceOrder: [0n],
-        traceId: null,
-      }));
+  const topLevelTxs = txResults
+    .filter((tx) => tx.isError === '0')
+    .map((tx) => ({
+      hash: tx.hash,
+      input: tx.input,
+      blockNumber: BigInt(tx.blockNumber),
+      transactionIndex: BigInt(tx.transactionIndex),
+      traceOrder: [0n],
+      traceId: null,
+    }));
 
-    const internalsToLegacy = internalResults
-      .filter((tx) => String(tx.isError) === '0')
-      .filter((tx) => (tx.to || '').toLowerCase() === LEGACY_ADDRESS.toLowerCase())
-      .map((tx) => ({
-        hash: tx.hash,
-        input: tx.input || '0x',
-        blockNumber: BigInt(tx.blockNumber),
-        transactionIndex: BigInt(tx.transactionIndex || '0'),
-        traceOrder: parseTraceId(tx.traceId),
-        traceId: tx.traceId || null,
-      }));
+  const internalsToLegacy = internalResults
+    .filter((tx) => String(tx.isError) === '0')
+    .filter((tx) => (tx.to || '').toLowerCase() === LEGACY_ADDRESS.toLowerCase())
+    .map((tx) => ({
+      hash: tx.hash,
+      input: tx.input || '0x',
+      blockNumber: BigInt(tx.blockNumber),
+      transactionIndex: BigInt(tx.transactionIndex || '0'),
+      traceOrder: parseTraceId(tx.traceId),
+      traceId: tx.traceId || null,
+    }));
 
-    const internalMissingInput = internalsToLegacy.filter((tx) => !tx.input || tx.input === '0x').length;
-    if (internalMissingInput > 0) {
-      throw new Error(
-        `Found ${internalMissingInput} internal calls to legacy contract without calldata in txlistinternal; ` +
-        'cannot deterministically reconstruct internal admin mutators from Etherscan API output.'
-      );
-    }
-
-    const dedup = new Map();
-    for (const tx of [...topLevelTxs, ...internalsToLegacy]) {
-      const key = `${tx.hash}:${tx.traceId || 'top'}`;
-      dedup.set(key, tx);
-    }
-    txs = [...dedup.values()].sort(compareReplayOrder);
-    txSource = 'etherscan-v2-api+txlistinternal';
-  } else {
-    const ownerAddr = viewValues.owner ? toChecksumAddress(viewValues.owner) : null;
-    if (!ownerAddr) {
-      throw new Error('Cannot validate historical ownership safety without owner() view result. Set ETHERSCAN_API_KEY.');
-    }
-    const safety = historicalOwnershipSafety(rpcUrl, LEGACY_ADDRESS, snapshotBlockHex, ownerAddr);
-    if (!safety.safe) {
-      throw new Error(
-        `ETHERSCAN_API_KEY is required when fallback cannot prove full internal-admin history. ${safety.reason}`
-      );
-    }
-    txs = getTxsViaHtmlScrape(rpcUrl, LEGACY_ADDRESS, snapshotBlockHex);
-    txSource = 'etherscan-html-scrape+rpc+ownership-validated';
+  const internalMissingInput = internalsToLegacy.filter((tx) => !tx.input || tx.input === '0x').length;
+  if (internalMissingInput > 0) {
+    throw new Error(
+      `Found ${internalMissingInput} internal calls to legacy contract without calldata in txlistinternal; ` +
+      'cannot deterministically reconstruct internal admin mutators from Etherscan API output.'
+    );
   }
+
+  const dedup = new Map();
+  for (const tx of [...topLevelTxs, ...internalsToLegacy]) {
+    const key = `${tx.hash}:${tx.traceId || 'top'}`;
+    dedup.set(key, tx);
+  }
+  txs = [...dedup.values()].sort(compareReplayOrder);
+  txSource = 'etherscan-v2-api+txlistinternal';
 
   const dynamic = parseMutatorTxs({ txs, mutators, blockLimit: BigInt(snapshotBlockHex) });
   const agiTypes = getAgiTypeStateFromLogs(rpcUrl, LEGACY_ADDRESS, abi, '0x0', snapshotBlockHex);

@@ -1,19 +1,22 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-02-17T14:59:17.828Z",
+  "generatedAt": "2026-02-18T00:28:13.142Z",
   "legacy": {
     "address": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
     "abiSource": "etherscan-html-fallback",
     "txSource": "etherscan-html-scrape+rpc+ownership-validated",
     "proxyImplementation": null,
     "sourceMeta": {
-      "abiSource": "etherscan-html-fallback"
+      "abiSource": "etherscan-html-fallback",
+      "abiSourceHash": "0x26cb9c5d500f26699442ef645c291b12c573dfde09f6b670da424367f9e2b9bd"
     }
   },
   "snapshot": {
     "chainId": "1",
-    "blockNumber": "23200000",
-    "blockTimestamp": "1755906443"
+    "blockNumber": "24480106",
+    "blockTimestamp": "1771374155",
+    "abiSourceHash": "0x26cb9c5d500f26699442ef645c291b12c573dfde09f6b670da424367f9e2b9bd",
+    "legacyAddress": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477"
   },
   "constructorConfig": {
     "agiTokenAddress": "0xf0780F43b86c13B3d0681B1Cf6DaeB1499e7f14D",

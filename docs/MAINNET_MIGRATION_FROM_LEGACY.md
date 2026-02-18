@@ -1,67 +1,76 @@
 # Mainnet migration from legacy AGIJobManager snapshot
 
-This workflow deploys `contracts/AGIJobManager.sol` using a deterministic, committed snapshot of the live legacy mainnet contract:
+This runbook deploys `contracts/AGIJobManager.sol` from a deterministic, committed snapshot of the live legacy mainnet contract `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`.
 
-- Legacy: `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`
-- Snapshot script: `scripts/snapshotLegacyConfig.mainnet.js`
-- Snapshot output: `migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json`
-- Migration: `migrations/2_deploy_agijobmanager_from_legacy_mainnet.js`
+Artifacts in this repo:
+
+- Snapshot extractor: `scripts/snapshotLegacyMainnetConfig.js`
+- Committed snapshot: `migrations/snapshots/legacy.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json`
+- Hardcoded migration: `migrations/2_deploy_agijobmanager_from_legacy_snapshot.js`
 
 ## 1) Prerequisites
 
-Required env vars:
+Required environment variables:
 
-- `MAINNET_RPC_URL` (read RPC)
-- `ETHERSCAN_API_KEY` (ABI + tx reconstruction)
-- `PRIVATE_KEYS` (for deployment)
+- `MAINNET_RPC_URL` (read-only snapshot RPC; migration RPC is from Truffle network config)
+- `ETHERSCAN_API_KEY` (ABI/source + tx/event reconstruction)
+- `PRIVATE_KEYS` (funded deployer key for Truffle mainnet network)
 
-Optional env vars:
+Safety gates:
 
-- `CONFIRM_MAINNET_DEPLOY=1` (mandatory safety acknowledgement on chainId 1)
-- `NEW_OWNER=0x...` (owner override; default keeps legacy owner)
+- `CONFIRM_MAINNET_DEPLOY=1` is mandatory when `chainId == 1`.
+- Optional owner override: `NEW_OWNER=0x...` (checksummed address).
 
-## 2) Generate snapshot
+## 2) Generate deterministic snapshot (pin a block)
+
+Example pinned extraction:
 
 ```bash
 MAINNET_RPC_URL=https://ethereum-rpc.publicnode.com \
 ETHERSCAN_API_KEY=... \
-node scripts/snapshotLegacyConfig.mainnet.js --block latest
+node scripts/snapshotLegacyMainnetConfig.js --block 24480106
 ```
 
-The snapshot includes:
+Default block is `latest` if `--block` is omitted.
 
-- block metadata (`chainId`, `blockNumber`, `blockTimestamp`)
-- ABI source hash (`snapshot.abiSourceHash`)
-- constructor config (token, base IPFS URL, ENS/nameWrapper, root nodes, merkle roots)
-- runtime flags and economic/timing parameters
-- dynamic sets (`moderators`, additional allowlists, blacklists) with provenance tx hashes
-- AGI type state reconstructed from `AGITypeUpdated` logs
+The snapshot records:
 
-If a required value cannot be recovered deterministically, the script throws and exits.
+- `schemaVersion`, `generatedAt`
+- `snapshot.chainId`, `snapshot.blockNumber`, `snapshot.blockTimestamp`
+- constructor config (token/baseIpfs/ENS/nameWrapper/root nodes/merkle roots)
+- runtime config (owner, paused/settlementPaused/lockIdentityConfig, economic + timing params)
+- dynamic sets (moderators/additionals/blacklists) with provenance
+- AGI types as `{ nftAddress, payoutPercentage, enabled, source }`
 
-## 3) Review snapshot
+If any required state cannot be recovered deterministically, the script exits with a hard error.
+
+## 3) Review snapshot before deploy
 
 ```bash
-cat migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json
+cat migrations/snapshots/legacy.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json
 ```
 
-Operator review checklist:
+Review at minimum:
 
-- owner and token/ENS addresses
-- pause flags and lock state
-- thresholds, quorum, reward percentages, timing windows
-- allowlists/blacklists and AGI type list
+- owner + core addresses (`agiToken`, ENS, NameWrapper)
+- root nodes + merkle roots
+- paused/settlement/identity lock booleans
+- validator threshold/quorum/reward/bond/slash/timing params
+- dynamic set counts and members
+- AGI type ordering and payout percentages
 
-## 4) Deploy from committed snapshot
+## 4) Migration dry-run on a fork/local chain (recommended)
 
-Recommended fork dry-run first:
+If you have a local fork configured as `development`/`test`, run migration step 2 only:
 
 ```bash
 MIGRATE_FROM_LEGACY_SNAPSHOT=1 \
 truffle migrate --network development --f 2 --to 2
 ```
 
-Mainnet:
+Expected output includes library addresses, deployed `AGIJobManager` address, and `All assertions passed for mainnet legacy parity.`
+
+## 5) Mainnet deploy from committed snapshot
 
 ```bash
 MIGRATE_FROM_LEGACY_SNAPSHOT=1 \
@@ -71,25 +80,32 @@ PRIVATE_KEYS=... \
 truffle migrate --network mainnet --f 2 --to 2
 ```
 
-The migration does **not** call mainnet/Etherscan. It only reads the committed snapshot file.
+Notes:
 
-## 5) Post-deploy verification checklist
+- Migration uses **no runtime RPC/Etherscan lookups** for configuration replay.
+- It restores constructor config, runtime params, dynamic sets, AGI types, pause flags, identity lock, then ownership.
+- It executes post-deploy read-back assertions and fails loudly on mismatch.
 
-Verify deployment logs include:
+## 6) Post-deploy verification checklist (Etherscan Read Contract)
 
-- all library addresses (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`)
-- final `AGIJobManager` address
-- `All assertions passed for mainnet legacy parity.`
+Confirm:
 
-Then compare read methods on the deployed contract to snapshot values:
+- `owner`, `agiToken`, `ens`, `nameWrapper`
+- `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode`
+- `validatorMerkleRoot`, `agentMerkleRoot`
+- `paused`, `settlementPaused`, `lockIdentityConfig`
+- `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `voteQuorum`
+- `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`
+- `completionReviewPeriod`, `disputeReviewPeriod`
+- `validatorBondBps/min/max`, `agentBondBps/min/max`, `validatorSlashBps`
+- dynamic set membership via public mappings
+- `agiTypes(i)` entries by index and payout
 
-- ownership and core addresses
-- root nodes and merkle roots
-- pause/settlement/lock states
-- validator thresholds/quorum/economic params
-- moderators, additional agents/validators, blacklists
-- AGI types by index and payout
+Known getter limitation: `baseIpfsUrl` and `useEnsJobTokenURI` are not directly readable from public getters.
 
-## 6) Etherscan verification with linked libraries
+## 7) Etherscan verification with linked libraries
 
-Use the repo verification process and provide constructor args + exact linked library addresses emitted by migration logs.
+Use the repository’s standard verification flow and pass:
+
+- the exact constructor args used in deployment
+- the linked library addresses printed by migration logs (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`)
