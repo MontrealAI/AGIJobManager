@@ -22,8 +22,8 @@ const generatedAt = sourceFingerprint;
 
 const truffleFromLock = lock.packages?.['node_modules/truffle']?.version ?? rootPkg.devDependencies?.truffle ?? 'n/a';
 const ozVersion = rootPkg.dependencies?.['@openzeppelin/contracts'] ?? 'n/a';
-const nodeVersion = rootPkg.engines?.node ?? 'not pinned in repository manifests';
-const npmVersion = rootPkg.packageManager ?? 'not pinned in repository manifests';
+const nodeVersion = rootPkg.engines?.node ?? 'recommended: Node 20.x (CI baseline)';
+const npmVersion = rootPkg.packageManager ?? 'recommended: npm 10.x (paired with Node 20.x)';
 
 const deps = [
   ['@openzeppelin/contracts', ozVersion, 'package.json'],
