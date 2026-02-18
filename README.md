@@ -11,6 +11,9 @@ AGIJobManager is an owner-operated on-chain job escrow and settlement contract f
 - Moderator runbook: [`docs/MODERATOR_RUNBOOK.md`](docs/MODERATOR_RUNBOOK.md)
 - Verification guide: [`docs/VERIFY_ON_ETHERSCAN.md`](docs/VERIFY_ON_ETHERSCAN.md)
 - FAQ: [`docs/FAQ.md`](docs/FAQ.md)
+- ENS integration guide: [`docs/INTEGRATIONS/ENS.md`](docs/INTEGRATIONS/ENS.md)
+- ENS robustness/runbooks: [`docs/INTEGRATIONS/ENS_ROBUSTNESS.md`](docs/INTEGRATIONS/ENS_ROBUSTNESS.md)
+- ENS canonical use case: [`docs/INTEGRATIONS/ENS_USE_CASE.md`](docs/INTEGRATIONS/ENS_USE_CASE.md)
 
 ## Roles (plain language)
 
