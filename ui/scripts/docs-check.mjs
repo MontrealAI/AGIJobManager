@@ -47,6 +47,26 @@ for (const asset of ['palette.svg', 'ui-wireframe.svg']) {
   if (!content.includes('<svg')) {
     throw new Error(`${asset} invalid SVG`);
   }
+
+  const tags = [...content.matchAll(/<\/?([a-zA-Z][\w:-]*)(?:\s[^>]*)?>/g)];
+  const stack = [];
+  for (const tagMatch of tags) {
+    const full = tagMatch[0];
+    const name = tagMatch[1];
+    if (!name) continue;
+    if (full.endsWith('/>')) continue;
+    if (full.startsWith('</')) {
+      const last = stack.pop();
+      if (last !== name) {
+        throw new Error(`${asset} has malformed XML structure around </${name}>`);
+      }
+      continue;
+    }
+    stack.push(name);
+  }
+  if (stack.length) {
+    throw new Error(`${asset} has unclosed XML tags: ${stack.join(', ')}`);
+  }
 }
 
 const normalize = (text) => text.replace(/^\- Generated at: .*$/m, '- Generated at: <normalized>');
