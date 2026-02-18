@@ -76,7 +76,8 @@ for (const rel of ['docs/assets/ens-palette.svg', 'docs/assets/ens-integration-w
   if (text.includes('\u0000')) fail(`${rel} contains NUL bytes`);
   if (!trimmed.startsWith('<svg') || !trimmed.includes('</svg>')) fail(`${rel} is not a valid SVG envelope`);
   if (!trimmed.includes('xmlns="http://www.w3.org/2000/svg"')) fail(`${rel} missing SVG namespace`);
-  if (/(<script|xlink:href=|href="https?:)/i.test(trimmed)) fail(`${rel} must not embed scripts or external references`);
+  const hasExternalRef = /(<script\b|(?:xlink:href|href)\s*=\s*(?:['\"]?\s*(?:https?:|\/\/)))/i.test(trimmed);
+  if (hasExternalRef) fail(`${rel} must not embed scripts or external references`);
 }
 
 const mdFiles = [];
