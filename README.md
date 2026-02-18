@@ -1,6 +1,6 @@
 # AGIJobManager
 
-[![CI][ci-badge]][ci-url] [![Security Verification][security-verification-badge]][security-verification-url] [![Security][security-badge]][security-url] [![License][license-badge]][license-url]
+[![CI][ci-badge]][ci-url] [![Security Verification][security-verification-badge]][security-verification-url] [![Docs Integrity][docs-badge]][docs-url] [![Security Policy][security-badge]][security-url] [![License][license-badge]][license-url]
 
 AGIJobManager is an owner-operated on-chain job escrow and settlement contract for employer/agent workflows with validator voting and moderator dispute resolution.
 
@@ -131,6 +131,8 @@ npm run check:no-binaries  # check-no-binaries
 [ci-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml
 [security-verification-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/security-verification.yml?branch=main&style=flat-square&label=Security%20Verification
 [security-verification-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/security-verification.yml
+[docs-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/docs.yml?branch=main&style=flat-square&label=Docs%20Integrity
+[docs-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/docs.yml
 [security-badge]: https://img.shields.io/badge/Security-Policy-blue?style=flat-square
 [security-url]: ./SECURITY.md
 [license-badge]: https://img.shields.io/github/license/MontrealAI/AGIJobManager?style=flat-square
