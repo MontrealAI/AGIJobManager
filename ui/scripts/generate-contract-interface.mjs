@@ -17,12 +17,23 @@ const toSection = (title, values) => {
   return `## ${title}\n\n${list.map((v) => `- \`${v}\``).join('\n')}\n`;
 };
 
+const getSafeISOStringFromEpoch = (sourceDateEpoch) => {
+  const epoch = Number(sourceDateEpoch);
+  if (!Number.isFinite(epoch) || epoch < 0) return null;
+
+  const epochMs = epoch * 1000;
+  if (!Number.isFinite(epochMs)) return null;
+
+  const date = new Date(epochMs);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date.toISOString();
+};
+
 const getGeneratedStamp = () => {
   if (process.env.SOURCE_DATE_EPOCH) {
-    const epoch = Number(process.env.SOURCE_DATE_EPOCH);
-    if (Number.isFinite(epoch) && epoch > 0) {
-      return new Date(epoch * 1000).toISOString();
-    }
+    const stampFromEpoch = getSafeISOStringFromEpoch(process.env.SOURCE_DATE_EPOCH);
+    if (stampFromEpoch) return stampFromEpoch;
   }
 
   try {
