@@ -27,10 +27,14 @@ const getGeneratedStamp = () => {
   }
 
   try {
-    return execSync('git log -1 --format=%cI', { cwd: repoRoot, encoding: 'utf8' }).trim();
+    const epoch = Number(execSync('git log -1 --format=%ct', { cwd: repoRoot, encoding: 'utf8' }).trim());
+    const stampFromGit = getSafeISOStringFromEpoch(epoch);
+    if (stampFromGit) return stampFromGit;
   } catch {
-    return new Date().toISOString();
+    // fall through to wall-clock fallback
   }
+
+  return new Date().toISOString();
 };
 
 const stamp = getGeneratedStamp();
