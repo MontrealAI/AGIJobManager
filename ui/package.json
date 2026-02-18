@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test e2e/demo.spec.ts",
+    "test:e2e": "playwright test e2e/demo.spec.ts e2e/smoke.spec.ts",
     "test:a11y": "playwright test e2e/a11y.spec.ts",
     "test:headers": "playwright test e2e/headers.spec.ts",
     "docs:check": "node scripts/docs-check.mjs && node scripts/check-no-binaries.mjs",
