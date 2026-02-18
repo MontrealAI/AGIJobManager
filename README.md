@@ -86,7 +86,11 @@ npm run size
 ## Documentation
 
 - Main docs index: [`docs/README.md`](docs/README.md)
+- Deployment and configuration guide: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 - Quintessential end-to-end walkthrough: [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
+- Diagrams are Mermaid plus text-only SVG assets under [`docs/assets/`](docs/assets/)
+- Documentation freshness is enforced by deterministic generators (`docs:gen`) and CI checks (`docs:check`)
+- No-binaries policy is enforced in CI via `check:no-binaries`
 
 ## Sovereign Ops Console UI
 

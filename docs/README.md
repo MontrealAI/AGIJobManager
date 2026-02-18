@@ -18,6 +18,7 @@ Institutional documentation for operators, integrators, contributors, and audito
 - [QUICKSTART.md](./QUICKSTART.md)
 - [QUINTESSENTIAL_USE_CASE.md](./QUINTESSENTIAL_USE_CASE.md)
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [DEPLOYMENT.md](./DEPLOYMENT.md)
 - [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md)
 - [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md)
 - [INTEGRATIONS/ENS.md](./INTEGRATIONS/ENS.md)
@@ -42,3 +43,10 @@ Institutional documentation for operators, integrators, contributors, and audito
 
 - [assets/palette.svg](./assets/palette.svg)
 - [assets/architecture-wireframe.svg](./assets/architecture-wireframe.svg)
+
+## Operational and CI assurances
+
+- Deterministic generators: `npm run docs:gen` updates generated references.
+- Freshness/integrity gate: `npm run docs:check` validates links, required sections, Mermaid, SVG, and generated drift.
+- No-binaries enforcement: `npm run check:no-binaries` blocks new binary files in PRs.
+- CI enforcement workflow: [`.github/workflows/docs.yml`](../.github/workflows/docs.yml).

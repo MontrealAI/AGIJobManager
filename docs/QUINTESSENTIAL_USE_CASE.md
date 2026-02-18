@@ -19,6 +19,12 @@ npx ganache --wallet.totalAccounts 10 --wallet.defaultBalance 1000 --chain.chain
 truffle migrate --network development --reset
 ```
 
+Optional: open Truffle console for direct function execution during the walkthrough.
+
+```bash
+truffle console --network development
+```
+
 ### Step table
 
 | Step | Actor | Function/Command | Preconditions | Expected on-chain outcome | Events emitted | What to verify next |
@@ -95,3 +101,21 @@ stateDiagram-v2
 7. **Control rehearsals**: rehearse `pause`, `setSettlementPaused`, blacklist actions, and stale-dispute owner recovery path.
 8. **Mainnet go/no-go gate**: proceed only after configuration parity checks and operator sign-off.
 9. **Post-launch verification**: continuously reconcile locked totals (`lockedEscrow`, `locked*Bonds`) against treasury withdrawals.
+
+
+### Production-oriented verification checklist
+
+| Checkpoint | Testnet expectation | Mainnet expectation | Verification method |
+| --- | --- | --- | --- |
+| Chain identity | Approved testnet chain ID (e.g., Sepolia `11155111`) | Ethereum Mainnet `1` | RPC `eth_chainId` + explorer network label |
+| Deployment bytecode parity | Matches CI-compiled artifact hash | Matches audited/tagged artifact hash | Compare artifact metadata + on-chain code hash |
+| Role roster parity | Moderators/allowlists mirror approved test plan | Moderators/allowlists match signed production change request | Getter reads + emitted role events |
+| Parameter envelope | Conservative, low-risk values for rehearsal | Production values signed off in change ticket | `scripts/ops/validate-params.js` + getter readback |
+| Monitoring readiness | Alerts tested with synthetic events | Alerts active with pager routing | Event indexer dashboards and alert test logs |
+
+### Operator notes for canonical steps
+
+- **Step 2 (configuration):** run owner configuration in tightly scoped batches and verify each tx by event before sending the next tx.
+- **Step 6 (validation outcomes):** explicitly rehearse both approval and disapproval quorum outcomes on testnet before production launch.
+- **Step 8 (dispute path):** enforce moderator rationale discipline (`reason` strings must map to case ticket IDs).
+- **Step 10 (observability):** maintain a per-job reconciliation ledger linking event stream, getter snapshots, and accounting sanity checks.
