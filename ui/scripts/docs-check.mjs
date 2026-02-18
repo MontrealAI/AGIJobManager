@@ -48,21 +48,21 @@ for (const asset of ['palette.svg', 'ui-wireframe.svg']) {
     throw new Error(`${asset} invalid SVG`);
   }
 
-  const tags = [...content.matchAll(/<\/?([a-zA-Z][\w:-]*)(\s[^>]*)?>/g)].map((m) => m[0]);
+  const tags = [...content.matchAll(/<\/?([a-zA-Z][\w:-]*)(?:\s[^>]*)?>/g)];
   const stack = [];
-  for (const tag of tags) {
-    if (tag.startsWith('<?') || tag.startsWith('<!')) continue;
-    if (tag.endsWith('/>')) continue;
-    if (tag.startsWith('</')) {
-      const name = tag.slice(2, -1).trim();
+  for (const tagMatch of tags) {
+    const full = tagMatch[0];
+    const name = tagMatch[1];
+    if (!name) continue;
+    if (full.endsWith('/>')) continue;
+    if (full.startsWith('</')) {
       const last = stack.pop();
       if (last !== name) {
         throw new Error(`${asset} has malformed XML structure around </${name}>`);
       }
       continue;
     }
-    const openName = tag.slice(1, tag.indexOf(' ') > -1 ? tag.indexOf(' ') : -1).replace('>', '');
-    stack.push(openName);
+    stack.push(name);
   }
   if (stack.length) {
     throw new Error(`${asset} has unclosed XML tags: ${stack.join(', ')}`);
