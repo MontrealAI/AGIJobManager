@@ -86,8 +86,8 @@ const generatedAtUtc = (() => {
 const outFile = path.join(outDir, 'docs/REFERENCE/ENS_REFERENCE.md');
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
-const bullet = (row) => `- \`${row.text}\` ([${row.file}#L${row.line}](../../${row.file}))`;
-const commentBullet = (row) => `- ${row.text} ([${row.file}#L${row.line}](../../${row.file}))`;
+const bullet = (row) => `- \`${row.text}\` ([${row.file}#L${row.line}](../../${row.file}#L${row.line}))`;
+const commentBullet = (row) => `- ${row.text} ([${row.file}#L${row.line}](../../${row.file}#L${row.line}))`;
 
 const md = [
   '# ENS Reference (Generated)',
