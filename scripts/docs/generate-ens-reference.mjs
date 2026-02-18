@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const argOut = process.argv.find((a) => a.startsWith('--out-dir='));
@@ -71,17 +70,7 @@ const sourceFingerprint = (() => {
   return hash.digest('hex').slice(0, 16);
 })();
 
-const generatedAtUtc = (() => {
-  for (const rel of sourceFiles) {
-    try {
-      const stamp = execFileSync('git', ['log', '-1', '--format=%cI', '--', rel], { cwd: root, encoding: 'utf8' }).trim();
-      if (stamp) return stamp;
-    } catch {
-      // no git metadata; fall back to deterministic sentinel
-    }
-  }
-  return '1970-01-01T00:00:00Z';
-})();
+const generatedAtUtc = '1970-01-01T00:00:00Z';
 
 const outFile = path.join(outDir, 'docs/REFERENCE/ENS_REFERENCE.md');
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
