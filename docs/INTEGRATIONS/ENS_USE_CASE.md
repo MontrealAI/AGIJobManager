@@ -1,22 +1,22 @@
-# ENS Integration Use Case (Canonical)
+# ENS Integration Use Case (Canonical, Deterministic)
 
-This is a deterministic operator walkthrough for ENS wiring, verification, and safe failure validation.
+This walkthrough gives a complete setup and verification path for ENS integration with deterministic local execution plus production checklist discipline.
 
 ## A) Local deterministic walkthrough (no external RPC)
 
-This repository already contains deterministic local ENS fixtures in tests (`MockENSRegistry`, `MockNameWrapper`, `MockResolver`) and helper utilities.
+Local ENS fixtures already exist in this repo test suite (`MockENS`, `MockNameWrapper`, `MockResolver`, optional mock hooks). Use the existing Truffle harness under `test/`.
 
 ### Step table
 
 | Step | Actor | Action (function/script) | Preconditions | Expected outcome | Events/reads to verify |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Operator | `truffle test test/invariants.libs.test.js` | Local toolchain ready | ENS ownership library paths validated | Test assertions for wrapper + resolver ownership pass |
-| 2 | Operator | `truffle test test/mainnetHardening.test.js` | Same | ENS degradation paths validated | URI fallback and malformed/reverting target protections pass |
-| 3 | Owner | Deploy `AGIJobManager` with ENS config and roots | Constructor params prepared | Contract initialized with ENS references | `ens()`, `nameWrapper()`, root getters |
-| 4 | Owner | Optional `setEnsJobPages(address)` then `setUseEnsJobTokenURI(true/false)` | Hook target deployed | Hook target and URI mode configured | `ensJobPages()`, minted URI behavior |
-| 5 | Eligible agent | `applyForJob(jobId,label,proof)` | Job open; identity conditions met | Agent assignment succeeds | `JobApplied` |
-| 6 | Ineligible agent | `applyForJob(jobId,badLabel,proof)` | Same job conditions | Revert `NotAuthorized` | Failed tx with expected reason/error |
-| 7 | Owner | (Optional) `lockIdentityConfiguration()` | All identity wiring verified | Identity config permanently frozen | `lockIdentityConfig()==true`, `IdentityConfigurationLocked` |
+| 1 | Operator | `npx truffle test --network test test/adminOps.test.js` | Node deps installed; local chain from Truffle test harness | ENS wiring admin controls and lock behavior validated | `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `IdentityConfigurationLocked` assertions |
+| 2 | Operator | `npx truffle test --network test test/mainnetHardening.test.js` | Same | ENS hook + URI hardening and best-effort behavior validated | hook/URI assertions pass; no settlement-side regressions |
+| 3 | Owner | Deploy AGIJobManager with initial ENS addresses and roots (repo deployment flow) | constructor args prepared | Contract starts with expected identity wiring | reads: `ens()`, `nameWrapper()`, root node getters |
+| 4 | Owner | Optional: `setEnsJobPages(address)` and `setUseEnsJobTokenURI(bool)` | hook target deployed and reviewed | optional ENS pages/URI path enabled | read `ensJobPages()`, observe `NFTIssued` URI semantics |
+| 5 | Eligible actor | `applyForJob(jobId, subdomain, proof)` or validator vote with valid identity | open job + role requirements | successful ENS-eligible action | `JobApplied` / validator vote event |
+| 6 | Ineligible actor | same action with wrong label/ownership/proof | same business-state preconditions | fail-closed authorization | revert `NotAuthorized` |
+| 7 | Owner | Optional `lockIdentityConfiguration()` | all wiring and negative tests complete | identity wiring permanently frozen | `lockIdentityConfig()==true`, `IdentityConfigurationLocked` |
 
 ### Happy path sequence diagram
 
@@ -30,15 +30,15 @@ This repository already contains deterministic local ENS fixtures in tests (`Moc
 sequenceDiagram
     participant O as Owner
     participant M as AGIJobManager
-    participant E as Mock ENS stack
-    participant A as Agent
+    participant E as ENS stack (mock or live)
+    participant A as Agent/Validator
 
     O->>M: updateEnsRegistry / updateNameWrapper / updateRootNodes
-    O->>M: setEnsJobPages (optional)
-    A->>M: applyForJob(jobId,label,proof)
-    M->>E: verify wrapper/resolver ownership when needed
+    O->>M: optional setEnsJobPages + setUseEnsJobTokenURI
+    A->>M: applyForJob(jobId, label, proof)
+    M->>E: wrapper + resolver ownership checks (if fallback needed)
     E-->>M: authorization result
-    M-->>A: JobApplied or NotAuthorized
+    M-->>A: success event or NotAuthorized
 ```
 
 ### Configuration and verification flow
@@ -51,53 +51,59 @@ sequenceDiagram
 "noteBkgColor":"#1B0B2A","noteTextColor":"#E9DAFF"
 }}}%%
 flowchart TD
-    A[Deploy local fixtures + AGIJobManager] --> B[Configure ENS addresses and roots]
-    B --> C[Run eligible actor action]
-    C --> D{Success?}
-    D -->|yes| E[Run ineligible actor action]
-    D -->|no| F[Inspect getters/events and fixture ownership]
-    E --> G{Unauthorized failure observed?}
-    G -->|yes| H[Configuration verified]
-    G -->|no| I[Fix root/label/proof and rerun]
+    A[Deploy fixtures + AGIJobManager] --> B[Configure ENS addresses and root nodes]
+    B --> C[Run positive auth vector]
+    C --> D{Pass?}
+    D -->|no| E[Inspect getter/event deltas and fixture ownership]
+    D -->|yes| F[Run negative auth vector]
+    F --> G{Fails with NotAuthorized?}
+    G -->|no| H[Fix config and retest]
+    G -->|yes| I[Optional irreversible lock]
 ```
 
 ### Expected state checkpoints
 
-1. **Post-deploy**: identity fields equal constructor inputs.
-2. **Post-config**: getter values and update events match expected addresses/nodes.
-3. **Authorization-pass**: eligible actor can execute ENS-gated action.
-4. **Authorization-fail**: non-owner/non-proof actor reverts with `NotAuthorized`.
-5. **Post-lock (optional)**: guarded setters revert with `ConfigLocked`.
+1. **Checkpoint 1 (post-deploy):** `ens`, `nameWrapper`, root nodes match deployment parameters.
+2. **Checkpoint 2 (post-config):** update events emitted and getter values match signed change set.
+3. **Checkpoint 3 (positive auth):** eligible ENS owner succeeds in ENS-gated action.
+4. **Checkpoint 4 (negative auth):** ineligible actor fails with `NotAuthorized`.
+5. **Checkpoint 5 (optional lock):** identity rewiring setters revert due to `ConfigLocked`.
 
 ## B) Testnet/mainnet operator checklist (no secrets)
 
-### Preflight
+### Preflight checklist
 
-1. Confirm chain ID, contract addresses, and multisig ownership.
-2. Validate ENS Registry + NameWrapper contract addresses for target chain.
-3. Precompute and peer-review root node constants and Merkle roots.
-4. Confirm maintenance window where identity-config updates are safe (empty escrow required).
+1. Confirm chain ID, contract addresses, and owner/multisig controls.
+2. Confirm ENS Registry and NameWrapper addresses for target network.
+3. Verify root node constants and Merkle roots in a signed change request.
+4. Confirm empty-escrow maintenance window for identity rewiring functions.
+5. Prepare rollback plan (if unlocked) and fallback plan (Merkle + allowlists).
 
-### Execution checklist
+### Configuration steps
 
-1. Read current state (`ens`, `nameWrapper`, roots, merkle roots, lock flag).
-2. If needed, submit owner transactions: `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `setEnsJobPages`.
-3. Run positive/negative role-gating checks with known addresses.
-4. If using ENS URI mode, mint/settle a sample job and verify `NFTIssued` URI output.
-5. Only then consider `lockIdentityConfiguration`.
+1. Read current state: `ens`, `nameWrapper`, root node getters, Merkle roots, `lockIdentityConfig`, `ensJobPages`.
+2. Submit owner txs in minimal batches: `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, optional `setEnsJobPages`.
+3. If enabling ENS URI mode, call `setUseEnsJobTokenURI(true)` only after hook target validation.
 
-### Robustness checks (required before lock)
+### Verification steps
 
-- Intentionally test a misconfigured label/root and confirm safe `NotAuthorized` failure.
-- Validate that settlement flows remain operational even if ENS hook target is unavailable.
-- Confirm fallback policy (Merkle and allowlists) can admit intended participants.
+1. Confirm emitted events: `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, optional `EnsJobPagesUpdated`.
+2. Execute one known-good and one known-bad authorization vector.
+3. If URI mode enabled, verify `NFTIssued` and `tokenURI(tokenId)` against expected behavior.
 
-### Locking checklist
+### Robustness checks (before lock)
 
-- All identity addresses and root nodes verified on-chain.
-- Emergency policy path (Merkle/allowlists/blacklists) tested.
-- Stakeholders sign-off complete.
-- Irreversibility acknowledged.
+- Intentionally test a wrong label/root scenario and confirm `NotAuthorized`.
+- Validate settlement flow remains live when hook target is unset/reverting.
+- Validate Merkle/allowlist fallback can onboard intended actors.
 
-> **Operator note**
-> Keep ENS integration as a policy enhancement, not a single point of operational liveness.
+### Locking checklist (irreversible action)
+
+- All identity wiring reads confirmed on-chain.
+- Positive/negative authorization vectors pass as expected.
+- Emergency fallback controls tested and documented.
+- Multisig governance sign-off recorded.
+- Execute `lockIdentityConfiguration()` only after explicit acknowledgement of irreversibility.
+
+> **Safety warning**
+> If locked too early, identity wiring cannot be modified in-place. Maintain a migration runbook before locking.
