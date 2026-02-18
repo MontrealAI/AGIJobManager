@@ -17,6 +17,7 @@ Required env vars:
 
 Optional env vars:
 
+- `MIGRATE_FROM_LEGACY_SNAPSHOT=1` (required to run migration #2; otherwise it is skipped)
 - `CONFIRM_MAINNET_DEPLOY=1` (mandatory safety acknowledgement on chainId 1)
 - `NEW_OWNER=0x...` (owner override; default keeps legacy owner)
 - `ALLOW_UNKNOWN_NETWORK=1` (override migration network guard)
@@ -58,12 +59,13 @@ Operator review checklist:
 Recommended fork dry-run first:
 
 ```bash
-truffle migrate --network development --f 2 --to 2
+MIGRATE_FROM_LEGACY_SNAPSHOT=1 truffle migrate --network development --f 2 --to 2
 ```
 
 Mainnet:
 
 ```bash
+MIGRATE_FROM_LEGACY_SNAPSHOT=1 \
 CONFIRM_MAINNET_DEPLOY=1 \
 MAINNET_RPC_URL=... \
 PRIVATE_KEYS=... \

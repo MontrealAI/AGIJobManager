@@ -27,12 +27,18 @@ async function maybeSet(manager, fnName, args, from) {
 }
 
 module.exports = async function (deployer, network, accounts) {
-  const allowedNetworks = new Set(['mainnet', 'mainnet-fork', 'development', 'test']);
-  if (!allowedNetworks.has(network) && process.env.ALLOW_UNKNOWN_NETWORK !== '1') {
-    throw new Error(`Refusing to run on unknown network ${network}. Set ALLOW_UNKNOWN_NETWORK=1 to override.`);
+  if (process.env.MIGRATE_FROM_LEGACY_SNAPSHOT !== '1') {
+    console.log('Skipping legacy snapshot migration (set MIGRATE_FROM_LEGACY_SNAPSHOT=1 to enable).');
+    return;
   }
 
-    const snapshot = loadSnapshot();
+  const allowedNetworks = new Set(['mainnet', 'mainnet-fork', 'development', 'test']);
+  if (!allowedNetworks.has(network) && process.env.ALLOW_UNKNOWN_NETWORK !== '1') {
+    console.log(`Skipping legacy snapshot migration on network ${network}. Set ALLOW_UNKNOWN_NETWORK=1 to force.`);
+    return;
+  }
+
+  const snapshot = loadSnapshot();
   const chainId = Number(await web3.eth.getChainId());
   const intendedChainId = Number(snapshot.snapshot.chainId);
   if (chainId !== intendedChainId && chainId !== 1337 && chainId !== 31337) {
