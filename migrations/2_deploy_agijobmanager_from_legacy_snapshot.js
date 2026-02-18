@@ -27,6 +27,11 @@ async function maybeSet(manager, fnName, args, from) {
   await manager[fnName](...args, { from });
 }
 
+async function maybeRead(manager, fnName) {
+  if (typeof manager[fnName] !== 'function') return null;
+  return manager[fnName]();
+}
+
 function assertNoUnresolvedLinks(artifact, name) {
   const unresolvedPattern = /__\$[a-fA-F0-9]{34}\$__/;
   const bytecode = String((artifact && (artifact.bytecode || artifact.binary)) || '');
@@ -192,7 +197,24 @@ module.exports = async function (deployer, network, accounts) {
     ['jobDurationLimit', (await manager.jobDurationLimit()).toString(), String(rc.jobDurationLimit)],
     ['completionReviewPeriod', (await manager.completionReviewPeriod()).toString(), String(rc.completionReviewPeriod)],
     ['disputeReviewPeriod', (await manager.disputeReviewPeriod()).toString(), String(rc.disputeReviewPeriod)],
+    ['validatorBondBps', (await manager.validatorBondBps()).toString(), String(rc.validatorBondBps)],
+    ['validatorBondMin', (await manager.validatorBondMin()).toString(), String(rc.validatorBondMin)],
+    ['validatorBondMax', (await manager.validatorBondMax()).toString(), String(rc.validatorBondMax)],
+    ['agentBondBps', (await manager.agentBondBps()).toString(), String(rc.agentBondBps)],
+    ['agentBondMin', (await manager.agentBondMin()).toString(), String(rc.agentBondMin)],
+    ['agentBondMax', (await manager.agentBondMax()).toString(), String(rc.agentBondMax)],
+    ['validatorSlashBps', (await manager.validatorSlashBps()).toString(), String(rc.validatorSlashBps)],
+    ['lockIdentityConfig', String(await manager.lockIdentityConfig()), String(Boolean(rc.lockIdentityConfig))],
   ];
+
+  const ensJobPages = await maybeRead(manager, 'ensJobPages');
+  if (ensJobPages !== null) {
+    checks.push(['ensJobPages', ensJobPages.toString(), mustAddress(rc.ensJobPages || ZERO_ADDRESS, 'runtimeConfig.ensJobPages')]);
+  }
+  const useEnsJobTokenURI = await maybeRead(manager, 'useEnsJobTokenURI');
+  if (useEnsJobTokenURI !== null) {
+    checks.push(['useEnsJobTokenURI', String(useEnsJobTokenURI), String(Boolean(rc.useEnsJobTokenURI))]);
+  }
 
   if (challengePeriod !== '0') {
     checks.push(['challengePeriodAfterApproval', (await manager.challengePeriodAfterApproval()).toString(), challengePeriod]);
@@ -236,5 +258,5 @@ module.exports = async function (deployer, network, accounts) {
 
   console.log(`AGIJobManager deployed at: ${manager.address}`);
   console.log('All assertions passed for mainnet legacy parity.');
-  console.log('Note: baseIpfsUrl/useEnsJobTokenURI cannot be asserted directly because they have no public getters.');
+  console.log('Note: baseIpfsUrl cannot be asserted directly because it has no public getter.');
 };

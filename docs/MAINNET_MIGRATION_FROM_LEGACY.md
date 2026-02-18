@@ -101,7 +101,8 @@ Confirm:
 - dynamic set membership via public mappings
 - `agiTypes(i)` entries by index and payout
 
-Known getter limitation: `baseIpfsUrl` and `useEnsJobTokenURI` are not directly readable from public getters.
+Known getter limitation: `baseIpfsUrl` is not directly readable from a public getter.
+`useEnsJobTokenURI` / `ensJobPages` are asserted when their getters exist in the deployed bytecode.
 
 ## 7) Etherscan verification with linked libraries
 
