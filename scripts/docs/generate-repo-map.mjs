@@ -17,10 +17,13 @@ const curated = [
   ['forge-test/', 'Foundry fuzz/invariant suites', 'Optional hardening lane'],
   ['scripts/ops/validate-params.js', 'Parameter sanity checker for operations', 'Run before live changes'],
   ['scripts/postdeploy-config.js', 'Post-deploy owner configuration routine', 'Operational setup automation'],
+  ['scripts/docs/', 'Deterministic documentation generators and integrity gates', 'Maintains docs freshness in CI'],
+  ['scripts/check-no-binaries.mjs', 'PR-time binary policy enforcement', 'Blocks forbidden binary additions'],
   ['ui/', 'Next.js operator/demo frontend', 'Contains own docs and checks'],
   ['.github/workflows/ci.yml', 'Main build/lint/test workflow', 'PR and main branch gate'],
   ['.github/workflows/docs.yml', 'Docs and no-binaries policy workflow', 'Documentation freshness gate'],
-  ['docs/', 'Institutional documentation and generated references', 'Read docs/README.md first']
+  ['docs/', 'Institutional documentation and generated references', 'Read docs/README.md first'],
+  ['docs/DEPLOYMENT.md', 'Deployment/configuration and operator acceptance checks', 'Use before testnet/mainnet rollout']
 ];
 
 const topLevel = fs.readdirSync(repoRoot, { withFileTypes: true })
@@ -40,6 +43,7 @@ const topLevelDirs = topLevel.filter((e) => e.type === 'dir');
 const keyEntrypoints = [
   'README.md',
   'docs/README.md',
+  'docs/DEPLOYMENT.md',
   'contracts/AGIJobManager.sol',
   'test/AGIJobManager.test.js',
   'migrations/1_deploy_contracts.js',

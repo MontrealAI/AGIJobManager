@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const requiredFiles = [
-  'docs/README.md','docs/OVERVIEW.md','docs/REPO_MAP.md','docs/QUICKSTART.md','docs/QUINTESSENTIAL_USE_CASE.md','docs/ARCHITECTURE.md',
+  'docs/README.md','docs/OVERVIEW.md','docs/REPO_MAP.md','docs/QUICKSTART.md','docs/QUINTESSENTIAL_USE_CASE.md','docs/ARCHITECTURE.md','docs/DEPLOYMENT.md',
   'docs/CONTRACTS/AGIJobManager.md','docs/CONTRACTS/INTEGRATIONS.md','docs/OPERATIONS/RUNBOOK.md','docs/OPERATIONS/INCIDENT_RESPONSE.md',
   'docs/OPERATIONS/MONITORING.md','docs/SECURITY_MODEL.md','docs/TESTING.md','docs/TROUBLESHOOTING.md','docs/GLOSSARY.md',
   'docs/REFERENCE/VERSIONS.md','docs/REFERENCE/CONTRACT_INTERFACE.md','docs/REFERENCE/EVENTS_AND_ERRORS.md',
@@ -22,7 +22,8 @@ for (const file of requiredFiles) {
 const mermaidChecks = [
   ['docs/ARCHITECTURE.md', ['flowchart', 'Repo architecture']],
   ['docs/CONTRACTS/AGIJobManager.md', ['stateDiagram-v2', 'sequenceDiagram']],
-  ['docs/OPERATIONS/INCIDENT_RESPONSE.md', ['flowchart', 'settlementPaused']]
+  ['docs/OPERATIONS/INCIDENT_RESPONSE.md', ['flowchart', 'settlementPaused']],
+  ['docs/QUINTESSENTIAL_USE_CASE.md', ['sequenceDiagram', 'stateDiagram-v2']]
 ];
 for (const [file, snippets] of mermaidChecks) {
   const text = fs.readFileSync(path.join(root, file), 'utf8');
@@ -121,6 +122,7 @@ const requiredSectionSnippets = [
   ['docs/SECURITY_MODEL.md', ['## Threat model', '| Vector | Impact | Mitigation | Residual risk | Operator responsibility |']],
   ['docs/TESTING.md', ['## Test matrix', '| Suite | Purpose | Command | Validates |']],
   ['docs/OPERATIONS/RUNBOOK.md', ['## Parameter change checklist']],
+  ['docs/DEPLOYMENT.md', ['## Deployment entrypoints', '## Preflight checklist (no secrets in repo)', '| Stage | Entrypoint | Purpose | Source of truth |']],
   ['docs/OPERATIONS/MONITORING.md', ['## Events catalog']],
   ['docs/OPERATIONS/INCIDENT_RESPONSE.md', ['active exploit', 'settlementPaused', 'blacklist', 'lockIdentityConfiguration']]
 ];
