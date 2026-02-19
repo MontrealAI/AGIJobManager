@@ -68,10 +68,27 @@ function checklist(action) {
     '- Check wallet AGI balance and ERC20 allowance',
     '- Confirm you are using token base units and seconds',
   ];
-  if (action === 'create-job') common.push('- Confirm intake is not paused');
-  if (action === 'finalize') common.push('- Confirm review/challenge windows are elapsed or early-approval criteria met');
-  if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is in moderators(address)');
-  return common;
+
+  const perAction = {
+    approve: ['- Verify spender address is the AGIJobManager contract you intend to use'],
+    'create-job': [
+      '- Confirm intake is not paused',
+      '- Confirm payout and duration match your intended job terms exactly',
+    ],
+    apply: [
+      '- Confirm authorization route (allowlist / merkle / ens) before signing',
+      '- If using merkle route, ensure proof array is not empty',
+    ],
+    'request-completion': ['- Confirm caller is the assigned agent and job is still in progress'],
+    validate: ['- Confirm review window is still open and caller is validator-authorized'],
+    disapprove: ['- Confirm review window is still open and caller is validator-authorized'],
+    finalize: ['- Confirm review/challenge windows are elapsed or early-approval criteria met'],
+    'dispute-job': ['- Confirm dispute window eligibility from getJobCore/getJobValidation'],
+    'cancel-job': ['- Confirm job is still cancellable (not assigned/terminal)'],
+    'resolve-dispute': ['- Confirm disputed=true and your address is in moderators(address)'],
+  };
+
+  return [...common, ...(perAction[action] || [])];
 }
 
 function asProofArray(input) {
@@ -95,7 +112,7 @@ function run() {
 
   if (action === 'help' || args.help) {
     console.log('Usage: node scripts/etherscan/prepare_inputs.js --action <action> [options]');
-    console.log('Actions: convert, approve, create-job, apply, request-completion, validate, disapprove, resolve-dispute, finalize');
+    console.log('Actions: convert, approve, create-job, apply, request-completion, validate, disapprove, finalize, dispute-job, cancel-job, resolve-dispute');
     console.log('Routing options for apply/validate/disapprove: --route ens|merkle|allowlist (default: ens)');
     process.exit(0);
   }
@@ -174,6 +191,14 @@ function run() {
 
   if (action === 'finalize') {
     printBlock('Copy/paste into Etherscan: finalizeJob(jobId)', [`jobId: ${args.jobId || '0'}`]);
+  }
+
+  if (action === 'dispute-job') {
+    printBlock('Copy/paste into Etherscan: disputeJob(jobId)', [`jobId: ${args.jobId || '0'}`]);
+  }
+
+  if (action === 'cancel-job') {
+    printBlock('Copy/paste into Etherscan: cancelJob(jobId)', [`jobId: ${args.jobId || '0'}`]);
   }
 
   printBlock(`Pre-flight checklist for action=${action}`, checklist(action));
