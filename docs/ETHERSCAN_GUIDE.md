@@ -376,9 +376,11 @@ node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addres
 ```bash
 node scripts/etherscan/prepare_inputs.js --action approve --spender 0xYourAGIJobManager --amount 1200
 node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 3d --jobSpecURI ipfs://bafy.../job.json --details "Translate legal packet EN->ES"
-node scripts/etherscan/prepare_inputs.js --action apply --jobId 42 --subdomain alice-agent --proof "0xaaa...,0xbbb..."
+node scripts/etherscan/prepare_inputs.js --action apply --auth-route merkle --jobId 42 --proof "0xaaa...,0xbbb..."
+node scripts/etherscan/prepare_inputs.js --action apply --auth-route ens --jobId 42 --subdomain alice-agent --proof "[]"
 node scripts/etherscan/prepare_inputs.js --action request-completion --jobId 42 --jobCompletionURI ipfs://bafy.../completion.json
-node scripts/etherscan/prepare_inputs.js --action validate --jobId 42 --subdomain val-1 --proof "[]"
+node scripts/etherscan/prepare_inputs.js --action validate --auth-route ens --jobId 42 --subdomain val-1 --proof "[]"
+node scripts/etherscan/prepare_inputs.js --action disapprove --auth-route merkle --jobId 42 --proof "0xaaa...,0xbbb..."
 node scripts/etherscan/prepare_inputs.js --action resolve-dispute --jobId 42 --code 1 --reason "EVIDENCE:v1|summary:milestones met|facts:...|links:ipfs://...|policy:ops-2.1|moderator:mod-07|ts:1736465000"
 ```
 

@@ -80,6 +80,7 @@ npm run size
 - Etherscan write-input preparation + unit conversion:
   ```bash
   node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 7d --jobSpecURI ipfs://bafy.../job.json --details "Translate legal packet EN->ES"
+  node scripts/etherscan/prepare_inputs.js --action apply --auth-route merkle --jobId 42 --proof "0xaaa...,0xbbb..."
   ```
 - Offline state advisor (no RPC required):
   ```bash

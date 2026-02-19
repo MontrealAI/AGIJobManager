@@ -74,6 +74,31 @@ function checklist(action) {
   return common;
 }
 
+function authChecklist(route) {
+  if (route === 'owner-allowlist') {
+    return [
+      '- Auth route: owner additional allowlist (additionalAgents/additionalValidators)',
+      '- Use your allowlisted wallet, set proof to []',
+      '- subdomain can be empty if you are not using ENS route',
+    ];
+  }
+  if (route === 'merkle') {
+    return [
+      '- Auth route: Merkle proof',
+      '- Confirm proof leaf is keccak256(abi.encodePacked(address))',
+      '- For Merkle-only auth use subdomain as empty string and paste proof bytes32[]',
+    ];
+  }
+  if (route === 'ens') {
+    return [
+      '- Auth route: ENS subdomain ownership',
+      '- subdomain must be label-only (no dots), lowercase [a-z0-9-], 1..63 chars',
+      '- If not combining with Merkle, proof should be []',
+    ];
+  }
+  return [];
+}
+
 function asProofArray(input) {
   if (!input) return '[]';
   if (input.trim().startsWith('[')) return input;
@@ -123,11 +148,16 @@ function run() {
   }
 
   if (action === 'apply') {
+    const route = args['auth-route'] || 'merkle';
     printBlock('Copy/paste into Etherscan: applyForJob(jobId, subdomain, proof)', [
       `jobId: ${args.jobId || '0'}`,
-      `subdomain: ${args.subdomain || 'alice-agent'}`,
-      `proof: ${asProofArray(args.proof)}`,
+      `subdomain: ${args.subdomain || (route === 'ens' ? 'alice-agent' : '')}`,
+      `proof: ${asProofArray(args.proof || (route === 'merkle' ? '0xaaa...,0xbbb...' : '[]'))}`,
     ]);
+    const routeChecklist = authChecklist(route);
+    if (routeChecklist.length > 0) {
+      printBlock(`Auth checklist (${route})`, routeChecklist);
+    }
   }
 
   if (action === 'request-completion') {
@@ -138,11 +168,16 @@ function run() {
   }
 
   if (action === 'validate' || action === 'disapprove') {
+    const route = args['auth-route'] || 'merkle';
     printBlock(`Copy/paste into Etherscan: ${action === 'validate' ? 'validateJob' : 'disapproveJob'}(jobId, subdomain, proof)`, [
       `jobId: ${args.jobId || '0'}`,
-      `subdomain: ${args.subdomain || 'validator-1'}`,
-      `proof: ${asProofArray(args.proof)}`,
+      `subdomain: ${args.subdomain || (route === 'ens' ? 'validator-1' : '')}`,
+      `proof: ${asProofArray(args.proof || (route === 'merkle' ? '0xaaa...,0xbbb...' : '[]'))}`,
     ]);
+    const routeChecklist = authChecklist(route);
+    if (routeChecklist.length > 0) {
+      printBlock(`Auth checklist (${route})`, routeChecklist);
+    }
   }
 
   if (action === 'resolve-dispute') {
