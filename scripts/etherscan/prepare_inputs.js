@@ -70,7 +70,7 @@ function checklist(action) {
   ];
   if (action === 'create-job') common.push('- Confirm intake is not paused');
   if (action === 'finalize') common.push('- Confirm review/challenge windows are elapsed or early-approval criteria met');
-  if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is a moderator/owner');
+  if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is in moderators(address)');
   return common;
 }
 
@@ -123,10 +123,14 @@ function run() {
   }
 
   if (action === 'apply') {
+    const route = (args.route || 'ens').toLowerCase();
+    const subdomain = args.subdomain || (route === 'ens' ? 'alice-agent' : '');
+    const proof = asProofArray(args.proof || '[]');
     printBlock('Copy/paste into Etherscan: applyForJob(jobId, subdomain, proof)', [
       `jobId: ${args.jobId || '0'}`,
-      `subdomain: ${args.subdomain || 'alice-agent'}`,
-      `proof: ${asProofArray(args.proof)}`,
+      `subdomain: ${subdomain}`,
+      `proof: ${proof}`,
+      ...(route === 'merkle' && !args.proof ? ['note: replace [] with your real bytes32[] proof from scripts/merkle/export_merkle_proofs.js'] : []),
     ]);
   }
 
@@ -138,10 +142,14 @@ function run() {
   }
 
   if (action === 'validate' || action === 'disapprove') {
+    const route = (args.route || 'ens').toLowerCase();
+    const subdomain = args.subdomain || (route === 'ens' ? 'validator-1' : '');
+    const proof = asProofArray(args.proof || '[]');
     printBlock(`Copy/paste into Etherscan: ${action === 'validate' ? 'validateJob' : 'disapproveJob'}(jobId, subdomain, proof)`, [
       `jobId: ${args.jobId || '0'}`,
-      `subdomain: ${args.subdomain || 'validator-1'}`,
-      `proof: ${asProofArray(args.proof)}`,
+      `subdomain: ${subdomain}`,
+      `proof: ${proof}`,
+      ...(route === 'merkle' && !args.proof ? ['note: replace [] with your real bytes32[] proof from scripts/merkle/export_merkle_proofs.js'] : []),
     ]);
   }
 
