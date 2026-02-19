@@ -1,66 +1,29 @@
 # FAQ (Etherscan-first)
 
-## Why do I need token approval before create/apply/vote/dispute?
+## Why does `approve` matter, and should I use exact amounts?
+AGIJobManager pulls tokens with `transferFrom`, so you must approve enough allowance first. Exact-amount approvals reduce risk versus unlimited approvals.
 
-AGIJobManager pulls AGI using `transferFrom`, so your wallet must grant allowance first.
+## How do I paste `bytes32[]` proofs in Etherscan?
+Use JSON-like syntax in one line:
+- empty: `[]`
+- non-empty: `["0xabc...","0xdef..."]`
+Each item must be `0x` + 64 hex chars.
 
-## Should I use exact-amount approvals?
-
-Yes for least privilege. Approve exact payout/bond amount when possible.
-
-## How do I paste `bytes32[]` proofs into Etherscan?
-
-Use a one-line JSON array:
-
-```text
-[]
-```
-
-```text
-["0xabc...", "0xdef..."]
-```
-
-You can generate proof arrays offline with:
+Generate proofs offline:
 ```bash
-node scripts/merkle/export_merkle_proofs.js --input addresses.json --output proofs.json
+node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json
 ```
 
 ## Why can `finalizeJob` open a dispute instead of settling?
-
-If finalization conditions indicate contested outcomes (for example under-quorum/tie paths), finalize can route to dispute resolution.
+If validator signals/quorum do not satisfy a clean settlement path at finalize time, the protocol can move into dispute resolution for moderator handling.
 
 ## What happens if nobody votes?
+After the review window, `finalizeJob` has a dedicated no-vote path (`totalVotes == 0`) that settles directly to completion without requiring dispute moderation.
 
-If approvals and disapprovals are both zero, then after the review window `finalizeJob(jobId)` deterministically settles to the agent-win completion path (not moderator dispute resolution).
+## What is the difference between `paused` and `settlementPaused`?
+- `paused`: intake/write-path pause lane (job creation/application lifecycle controls).
+- `settlementPaused`: settlement/dispute/finalization lane pause.
+Owner can pause one lane without pausing the other.
 
-## What is `paused` vs `settlementPaused`?
-
-- `paused`: intake lane controls.
-- `settlementPaused`: settlement/dispute/finalization lane controls.
-
-They are independent and can be toggled separately.
-
-## Why do fee-on-transfer or deflationary ERC20s fail?
-
-AGIJobManager accounting assumes strict transfer amounts. Tokens that burn/skim on transfer can violate accounting expectations and cause reverts (commonly `TransferFailed` or downstream state errors).
-
-
-## How do I convert human values to Etherscan-safe integers?
-
-Use the offline helper:
-
-```bash
-node scripts/etherscan/prepare_inputs.js --action convert --amount 1.25 --duration 7d --decimals 18
-```
-
-This prints base units for token amounts and seconds for durations.
-
-## I am an operator: what is the safe withdraw sequence?
-
-Always run:
-1. read `withdrawableAGI()`
-2. choose `amount <= withdrawableAGI()`
-3. ensure pause posture for withdrawal: `paused() == true` and `settlementPaused() == false` (if needed: `pause()` then `setSettlementPaused(false)`)
-4. execute `withdrawAGI(amount)`
-
-Do not infer withdrawable capacity from raw ERC20 balance alone because active escrow and bonds must stay solvent.
+## Why do fee-on-transfer/deflationary ERC20 tokens fail?
+AGIJobManager expects strict transfer semantics and accounting consistency. Tokens that reduce transferred amount or apply transfer-side mechanics can trigger `TransferFailed` or solvency checks.
