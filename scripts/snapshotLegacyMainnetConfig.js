@@ -52,13 +52,16 @@ function fetchAbiFromEtherscan(address, apiKey) {
   if (!apiKey) {
     throw new Error('ETHERSCAN_API_KEY is required for API-based ABI fetch.');
   }
-  const abiJson = etherscanGet({ module: 'contract', action: 'getabi', address }, apiKey);
   const source = etherscanGet({ module: 'contract', action: 'getsourcecode', address }, apiKey);
   if (!Array.isArray(source) || !source[0]) throw new Error('Malformed Etherscan source response.');
   const item = source[0];
+  let abiRaw = (item.ABI || '').trim();
+  if (!abiRaw || abiRaw === 'Contract source code not verified') {
+    abiRaw = etherscanGet({ module: 'contract', action: 'getabi', address }, apiKey);
+  }
   return {
-    abi: JSON.parse(abiJson),
-    abiRaw: abiJson,
+    abi: JSON.parse(abiRaw),
+    abiRaw,
     sourceMeta: {
       contractName: item.ContractName,
       compilerVersion: item.CompilerVersion,
@@ -381,7 +384,6 @@ async function main() {
   const rpcUrl = (process.env.MAINNET_RPC_URL || '').trim();
   const etherscanKey = (process.env.ETHERSCAN_API_KEY || '').trim();
   if (!rpcUrl) throw new Error('MAINNET_RPC_URL is required.');
-  if (!(process.env.ETHERSCAN_API_KEY || '').trim()) throw new Error('ETHERSCAN_API_KEY is required.');
   if (!etherscanKey) throw new Error('ETHERSCAN_API_KEY is required.');
   const blockArg = arg('block', 'latest');
 
