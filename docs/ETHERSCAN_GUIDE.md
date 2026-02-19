@@ -206,10 +206,10 @@ assignment (assignedAt)
 
 ### “Can I finalize now?” checklist
 - `settlementPaused() == false`
-- `getJobCore(jobId).completionRequested == true`
+- `getJobValidation(jobId).completionRequested == true`
 - `getJobCore(jobId).disputed == false`
 - now > `completionRequestedAt + completionReviewPeriod`
-- if validator-approved path used, also now > `validatorApprovedAt + challengePeriodAfterApproval`
+- challenge-period gating exists when validator-approved path is active; `validatorApprovedAt` is not exposed by read getters, so use conservative timing and/or advisor inputs before finalizing
 - if revert still occurs, re-read `getJobValidation(jobId)` and check quorum/threshold state
 
 ---
@@ -218,8 +218,8 @@ assignment (assignedAt)
 
 Use these reads before any write:
 
-- `getJobCore(jobId)` for ownership, assignment, completion/dispute/terminal flags, and timestamps.
-- `getJobValidation(jobId)` for approvals/disapprovals, validator-approved flag/time, and challenge-window context.
+- `getJobCore(jobId)` for ownership, assignment, payout/duration/assignedAt, and completed/disputed/expired flags.
+- `getJobValidation(jobId)` for `completionRequested`, approvals/disapprovals, `completionRequestedAt`, and `disputedAt`.
 - `getJobSpecURI(jobId)` to confirm expected job payload.
 - `getJobCompletionURI(jobId)` to verify submitted completion evidence.
 - `tokenURI(tokenId)` for NFT metadata URI (base or ENS job pages path, depending on configuration).
