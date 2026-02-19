@@ -39,6 +39,18 @@ node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duratio
 5. On AGI token contract, read `allowance(yourAddress, AGIJobManagerAddress)`.
 6. Confirm all numeric inputs are base units / seconds.
 
+Quick action pre-flight (minimum reads):
+
+| If you are about to call | Minimum read checks first |
+|---|---|
+| `createJob` | `paused()==false`, token `balanceOf`, token `allowance` |
+| `applyForJob` | `paused()==false`, `getJobCore`, authorization route ready (allowlist / proof / ENS label) |
+| `validateJob` / `disapproveJob` | `settlementPaused()==false`, `getJobCore`, authorization route ready (allowlist / proof / ENS label) |
+| `requestJobCompletion` | `getJobCore` confirms caller is assigned agent and job not expired/disputed/completed |
+| `finalizeJob` | `settlementPaused()==false`, `getJobCore`, `getJobValidation`, time gates elapsed |
+| `disputeJob` | `settlementPaused()==false`, `getJobCore`, `getJobValidation`, dispute window still open |
+| `resolveDisputeWithCode` | `settlementPaused()==false`, `getJobCore.disputed==true`, moderator authorization |
+
 ### Common failure modes (custom errors)
 
 | Error / symptom | Likely cause | Fix |
