@@ -21,8 +21,8 @@ This runbook is optimized for autonomous, checklist-driven operations and Ethers
 ## 2) Safe defaults + staged rollout
 
 - Phase 0: `pauseAll` enabled; configure params/roles.
-- Phase 1: open intake only (`unpause`, keep `settlementPaused=true`) for controlled job intake.
-- Phase 2: enable settlement (`setSettlementPaused(false)`) once moderators/validators are ready.
+- Phase 1: open intake with settlement live (`unpause` and `setSettlementPaused(false)`) for controlled job intake.
+- Phase 2: scale validator/moderator participation and thresholds once operations are stable.
 - Use conservative thresholds/quorum first; ratchet only after observing production behavior.
 
 ## 3) Incident playbooks

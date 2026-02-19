@@ -18,7 +18,7 @@ node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proo
 If validator signals/quorum do not satisfy a clean settlement path at finalize time, the protocol can move into dispute resolution for moderator handling.
 
 ## What happens if nobody votes?
-If no sufficient validator outcome is available by finalize conditions, resolution may depend on dispute path and moderator/owner stale-dispute handling, not automatic happy-path settlement.
+If total validator votes are zero and the review window has elapsed, `finalizeJob` follows a direct no-vote completion path (no moderator dispute step required for that case).
 
 ## What is the difference between `paused` and `settlementPaused`?
 - `paused`: intake/write-path pause lane (job creation/application lifecycle controls).

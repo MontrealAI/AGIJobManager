@@ -7,10 +7,13 @@ This guide captures repository-accurate compile settings and linked-library veri
 Primary build path is Truffle (`npm run build` -> `truffle compile`).
 
 From `truffle-config.js`:
-- Solidity compiler: `0.8.30`
+- Solidity compiler: `0.8.23`
 - Optimizer: enabled
-- Optimizer runs: `200`
-- EVM version: `paris`
+- Optimizer runs: `50`
+- EVM version: `london`
+- `viaIR`: `true`
+- metadata bytecode hash: `none`
+- revert strings: `strip`
 
 Foundry profile also exists for security verification/testing (`foundry.toml`), but deployment verification should match the production compile artifact used for deployment.
 
