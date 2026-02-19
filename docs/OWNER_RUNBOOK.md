@@ -1,128 +1,84 @@
-# OWNER_RUNBOOK
+# OWNER RUNBOOK (Low-touch operations)
 
-This runbook is optimized for low-touch operations with Etherscan + offline scripts.
+This runbook is optimized for autonomous, checklist-driven operations and Etherscan-first control.
 
 ## 1) Deployment checklist
 
-1. Build with repo defaults:
-   ```bash
-   npm ci
-   npm run build
-   npm run size
-   ```
-2. Confirm external libraries are deployed and linked as intended.
-3. Deploy AGIJobManager.
-4. Verify source on Etherscan using exact compiler settings and library mappings (see [`docs/VERIFY_ON_ETHERSCAN.md`](VERIFY_ON_ETHERSCAN.md)).
-5. Post-deploy, read-check critical config values on Etherscan (`token`, review windows, quorum, thresholds, bond amounts).
-6. Record deployment metadata (addresses, tx hashes, compiler settings, linked library addresses).
+1. Compile with repository defaults (Truffle + optimizer settings from `truffle-config.js`).
+2. Link external libraries exactly as deployment scripts/Truffle artifacts require.
+3. Deploy constructor args carefully:
+   - AGI token address,
+   - base IPFS URL,
+   - ENS config addresses,
+   - root nodes,
+   - initial Merkle roots.
+4. Verify AGIJobManager and linked libraries on Etherscan (see [`VERIFY_ON_ETHERSCAN.md`](VERIFY_ON_ETHERSCAN.md)).
+5. Verify ENSJobPages and ensure selector compatibility tests pass:
+   - `handleHook(uint8,uint256)` -> `0x1f76f7a2` / calldata `0x44`
+   - `jobEnsURI(uint256)` -> `0x751809b4` / calldata `0x24`
+6. Run post-deploy sanity reads: `paused`, `settlementPaused`, Merkle roots, root nodes, token address.
 
-## 2) Recommended safe defaults + staged rollout
+## 2) Safe defaults + staged rollout
 
-- Stage 0 (dry run): keep intake paused while verification + docs + proofs are checked.
-- Stage 1 (limited pilot): unpause intake, keep settlement open, use small payouts and short durations.
-- Stage 2 (scale): increase limits only after successful pilot dispute/finalization outcomes.
-- Keep Merkle roots and allowlists small and auditable at first.
+- Phase 0: `pauseAll` enabled; configure params/roles.
+- Phase 1: keep settlement paused (`unpause` + `setSettlementPaused(true)`) for a controlled read-only warm-up; note this also blocks `createJob`/`applyForJob` writes because they require `whenSettlementNotPaused`.
+- Phase 2: enable live operations (`setSettlementPaused(false)`) once moderators/validators are ready; this opens both intake and settlement paths.
+- Use conservative thresholds/quorum first; ratchet only after observing production behavior.
 
 ## 3) Incident playbooks
 
-### Operating modes (choose explicitly)
+## A) Stop intake only (allow settlements to finish)
+1. `pause()` (or `pauseIntake()`).
+2. Keep `setSettlementPaused(false)`.
+3. Communicate: no new jobs, active jobs continue.
 
-| Mode | Intake (`paused`) | Settlement (`settlementPaused`) | When to use |
-|---|---:|---:|---|
-| Normal operation | `false` | `false` | Default production mode |
-| Intake stopped | `true` | `false` | Block new jobs/applications while allowing existing jobs to settle |
-| Settlement stopped | `false` | `true` | Freeze settlement-gated actions (including create/apply/finalize/dispute) for investigation |
-| Full incident response | `true` | `true` | Suspected severe bug/exploit or unresolved accounting risk |
+## B) Stop settlement lane (also blocks create/apply writes)
+1. `setSettlementPaused(true)`.
+2. Expect settlement actions **and** `createJob`/`applyForJob` writes to be paused by `whenSettlementNotPaused`.
+3. Keep `paused()` state unchanged so read/observability remains available.
+4. Communicate expected resume timing and that new intake writes are temporarily unavailable.
 
-Execution mapping:
-- Normal operation: `unpauseAll()` (or `unpause()` + `setSettlementPaused(false)`)
-- Intake stopped: `pause()` + `setSettlementPaused(false)`
-- Settlement stopped: if `paused()==true`, run `unpause()` first; then run `setSettlementPaused(true)`
-- Full incident response: `pauseAll()`
+## C) Full stop
+1. `pauseAll()`.
+2. Verify both lanes paused (`paused==true`, `settlementPaused==true`).
+3. Publish incident bulletin + next decision checkpoint.
 
-### A) Stop intake only (new jobs/applications)
-Recommended sequence:
-1. `pause()`
-2. Announce incident status and impact.
-3. Keep settlement open unless actively unsafe.
+## 4) Revenue withdrawals without escrow risk
 
-### B) Stop settlement only (finalize/dispute lane)
-Recommended sequence:
-1. `setSettlementPaused(true)`
-2. Keep intake setting unchanged if desired.
-3. Announce expected recovery timeline.
-
-### C) Full stop
-Recommended sequence:
-1. `pauseAll()`
-2. Validate both `paused()==true` and `settlementPaused()==true`.
-3. Announce freeze scope and next update time.
-
-### D) Resume
-- Intake only: `unpause()`
-- Settlement only: `setSettlementPaused(false)`
-- Full resume: `unpauseAll()`
-
-## 4) Incident decision table (symptom → checks → action → rollback)
-
-| Symptom | Immediate checks | Primary action | Rollback / exit criteria |
-|---|---|---|---|
-| Reverts on create/apply spike | `paused()`, token allowance/balance, recent config changes | If uncertain, move to **Intake stopped** (`pause()`) while triaging | `unpause()` only after reproducer resolved and docs/support messaging updated |
-| Finalize/dispute path behaving unexpectedly | `settlementPaused()`, `getJobCore`, `getJobValidation`, timing parameters | Move to **Settlement stopped** (`setSettlementPaused(true)`) while moderators/owner review | `setSettlementPaused(false)` after confirming expected behavior on sampled jobs |
-| Suspected exploit or accounting inconsistency | Contract AGI balance, `withdrawableAGI()`, active disputes/jobs | Move to **Full incident response** (`pauseAll()`) | `unpauseAll()` only after root cause and compensating controls are documented |
-| Authorization complaints (legit users blocked) | Merkle roots, additional allowlists, ENS root config, blacklist state | Keep mode as-is, rotate roots/allowlist with change notice | Confirm affected users can apply/vote with new proofs and archive evidence |
-| Moderator capacity backlog | count of `disputed==true` jobs and age vs `disputeReviewPeriod` | Add moderators (`addModerator`) and use standardized reason format | Remove temporary moderators when backlog clears |
-
-## 5) Safe revenue withdrawals (solvency-first)
-
-Always perform in this order:
+Before `withdrawAGI(amount)`:
 1. Read `withdrawableAGI()`.
-2. Confirm requested `amount <= withdrawableAGI()`.
-3. Confirm no active incident requiring additional buffer.
-4. Use the recommended pause posture for treasury actions: `paused()==true` and `settlementPaused()==false`.
-5. Call `withdrawAGI(amount)`.
-6. Archive tx hash and rationale.
+2. Ensure `amount <= withdrawableAGI()`.
+3. Confirm protocol is paused for withdrawals (`withdrawAGI` requires `whenPaused` and settlement not paused).
+4. Execute withdrawal in small chunks when uncertain.
 
-Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must remain solvent.
+Never bypass solvency checks via rescue functions for AGI escrow assets.
 
-## 6) Allowlist governance and Merkle root rotation
+## 5) Allowlist governance (Merkle roots)
 
-1. Build candidate address list offline.
-2. Generate root/proofs offline:
-   ```bash
-   node scripts/merkle/export_merkle_proofs.js --input addresses.json --output proofs.json
-   ```
-3. Validate output format (proof arrays paste directly into Etherscan).
-4. Publish migration notice with effective timestamp.
-5. Call `updateMerkleRoots(validatorRoot, agentRoot)`.
-6. Distribute new proofs to affected users.
+Rotation procedure:
+1. Build root + proofs offline from canonical address list.
+2. Peer-review generated root/proofs.
+3. Announce effective block/time and grace period.
+4. Call `updateMerkleRoots(validatorRoot, agentRoot)`.
+5. Publish proof file and rollback plan.
 
-## 7) ENS operations
+Use deterministic scripts:
+```bash
+node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json
+```
 
-Identity/ENS configuration functions:
-- `setEnsJobPages`
-- `setUseEnsJobTokenURI`
-- `updateEnsRegistry`
-- `updateNameWrapper`
-- `updateRootNodes`
-- `updateMerkleRoots`
+## 6) ENS operations
 
-Guidelines:
-- Enable ENS tokenURI (`setUseEnsJobTokenURI(true)`) only after end-to-end testing.
-- Treat root-node changes as high-risk; coordinate with moderators and support.
-- `lockIdentityConfiguration()` is irreversible. Use only when sure ENS/Merkle configuration is final.
+- Configure ENS via `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`.
+- Point job pages with `setEnsJobPages`.
+- Enable/disable ENS-backed token URI path via `setUseEnsJobTokenURI`.
+- Lock identity config permanently with `lockIdentityConfiguration` only after full validation.
 
-## 8) High-risk actions (dual-review required)
+`lockIdentityConfiguration` is irreversible. Delay until final addresses/nodes are battle-tested.
 
-Require explicit change ticket + rollback note before execution:
-- `rescueERC20`
-- `rescueToken`
-- `lockIdentityConfiguration`
-- identity setters listed above
-- major economics setters (thresholds, bond amounts, timing windows)
+## 7) High-risk actions (operator warnings)
 
-## 9) Offline helper tooling for autonomous ops
-
-- Etherscan parameter prep: `node scripts/etherscan/prepare_inputs.js --action <...>`
-- Merkle root/proofs: `node scripts/merkle/export_merkle_proofs.js ...`
-- State decision aid: `node scripts/advisor/state_advisor.js --input <state.json>`
+- `rescueERC20`, `rescueToken`: emergency-only, must not violate escrow solvency assumptions.
+- `updateAGITokenAddress`: identity-critical; only before lock.
+- `updateEnsRegistry`/`updateNameWrapper`/`updateRootNodes`/`setEnsJobPages`: identity-critical; only before lock.
+- Parameter setters affecting incentives (`setValidatorBondParams`, `setAgentBondParams`, `setValidatorSlashBps`, `setVoteQuorum`, etc.) should use change tickets and announced effective times.
