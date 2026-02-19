@@ -70,7 +70,7 @@ function checklist(action) {
   ];
   if (action === 'create-job') common.push('- Confirm intake is not paused');
   if (action === 'finalize') common.push('- Confirm review/challenge windows are elapsed or early-approval criteria met');
-  if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is a moderator/owner');
+  if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is in moderators(address)');
   return common;
 }
 
@@ -78,6 +78,14 @@ function asProofArray(input) {
   if (!input) return '[]';
   if (input.trim().startsWith('[')) return input;
   return JSON.stringify(input.split(',').map((x) => x.trim()).filter(Boolean));
+}
+
+function parseRoute(input) {
+  const route = String(input || 'ens').trim().toLowerCase();
+  if (route !== 'ens' && route !== 'merkle' && route !== 'allowlist') {
+    throw new Error(`Invalid route: ${input}. Use ens, merkle, or allowlist`);
+  }
+  return route;
 }
 
 function run() {
@@ -88,6 +96,7 @@ function run() {
   if (action === 'help' || args.help) {
     console.log('Usage: node scripts/etherscan/prepare_inputs.js --action <action> [options]');
     console.log('Actions: convert, approve, create-job, apply, request-completion, validate, disapprove, resolve-dispute, finalize');
+    console.log('Routing options for apply/validate/disapprove: --route ens|merkle|allowlist (default: ens)');
     process.exit(0);
   }
 
@@ -123,10 +132,15 @@ function run() {
   }
 
   if (action === 'apply') {
+    const route = parseRoute(args.route);
+    const subdomain = args.subdomain || (route === 'ens' ? 'alice-agent' : '');
+    const proof = asProofArray(args.proof || '[]');
     printBlock('Copy/paste into Etherscan: applyForJob(jobId, subdomain, proof)', [
       `jobId: ${args.jobId || '0'}`,
-      `subdomain: ${args.subdomain || 'alice-agent'}`,
-      `proof: ${asProofArray(args.proof)}`,
+      `route: ${route}`,
+      `subdomain: ${subdomain}`,
+      `proof: ${proof}`,
+      route === 'merkle' && proof === '[]' ? 'note: replace [] with your real bytes32[] Merkle proof before submitting' : 'note: proof format must be bytes32[] values (0x + 64 hex chars each)',
     ]);
   }
 
@@ -138,10 +152,15 @@ function run() {
   }
 
   if (action === 'validate' || action === 'disapprove') {
+    const route = parseRoute(args.route);
+    const subdomain = args.subdomain || (route === 'ens' ? 'validator-1' : '');
+    const proof = asProofArray(args.proof || '[]');
     printBlock(`Copy/paste into Etherscan: ${action === 'validate' ? 'validateJob' : 'disapproveJob'}(jobId, subdomain, proof)`, [
       `jobId: ${args.jobId || '0'}`,
-      `subdomain: ${args.subdomain || 'validator-1'}`,
-      `proof: ${asProofArray(args.proof)}`,
+      `route: ${route}`,
+      `subdomain: ${subdomain}`,
+      `proof: ${proof}`,
+      route === 'merkle' && proof === '[]' ? 'note: replace [] with your real bytes32[] Merkle proof before submitting' : 'note: proof format must be bytes32[] values (0x + 64 hex chars each)',
     ]);
   }
 
