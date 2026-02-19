@@ -55,6 +55,14 @@ node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duratio
 | `ConfigLocked` | identity configuration already locked | cannot change ENS/Merkle identity settings |
 | Finalize opens dispute | tie/under-quorum or contested outcome at finalize time | moderator must resolve dispute |
 
+### Etherscan input formatting quick rules
+- `bytes32`: always `0x` + 64 hex chars (66 chars total).
+- `bytes32[]`: paste as JSON-like array in one line, for example:
+  - empty proof: `[]`
+  - two items: `["0x1111111111111111111111111111111111111111111111111111111111111111","0x2222222222222222222222222222222222222222222222222222222222222222"]`
+- `string` URI fields: plain text (no surrounding quotes in Etherscan inputs).
+- `uint256`: base-10 integer only (no commas, no decimals, no scientific notation).
+
 ---
 
 ## Employer flow
@@ -155,6 +163,8 @@ subdomain: alice-agent
 proof: ["0xaaa...", "0xbbb..."]
 ```
 
+Tip: If you are using Merkle auth and not ENS auth for this tx, keep `subdomain` empty and only provide `proof`.
+
 ### 3) Request completion
 Write function: `requestJobCompletion(jobId, jobCompletionURI)`
 
@@ -203,6 +213,7 @@ Proof format examples:
 Outcome notes:
 - wrong-side validators can be slashed
 - correct-side validators can receive validation rewards
+- if you are voting through Merkle allowlist (not ENS), use empty `subdomain` and paste only `proof`
 
 ---
 

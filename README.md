@@ -45,6 +45,10 @@ Users should assume an operator-managed escrow model with transparent on-chain c
 5. Validators: `validateJob` / `disapproveJob` during review period.
 6. Employer: `finalizeJob(jobId)` when eligible; if contested, `disputeJob(jobId)` and moderator resolves.
 
+Notes for Etherscan forms:
+- Merkle allowlist route: usually `subdomain = ""` and `proof = ["0x...", ...]`.
+- ENS route: provide `subdomain` (label only, no dots) and usually `proof = []`.
+
 ## Glossary (Etherscan terms)
 
 - **jobId**: numeric job identifier.
