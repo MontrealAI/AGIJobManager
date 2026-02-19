@@ -47,6 +47,11 @@ function assertNoUnresolvedLinks(artifact, name) {
 }
 
 module.exports = async function (deployer, network, accounts) {
+  if (process.env.LEGACY_SNAPSHOT_MIGRATION_ALREADY_RAN === '1') {
+    console.log('Skipping legacy snapshot migration: already executed in this Truffle run.');
+    return;
+  }
+
   if (process.env.MIGRATE_FROM_LEGACY_SNAPSHOT !== '1') {
     console.log('Skipping legacy snapshot migration (set MIGRATE_FROM_LEGACY_SNAPSHOT=1 to enable).');
     return;
@@ -273,4 +278,5 @@ module.exports = async function (deployer, network, accounts) {
   console.log(`AGIJobManager deployed at: ${manager.address}`);
   console.log('All assertions passed for mainnet legacy parity.');
   console.log('Note: baseIpfsUrl cannot be asserted directly because it has no public getter.');
+  process.env.LEGACY_SNAPSHOT_MIGRATION_ALREADY_RAN = '1';
 };
