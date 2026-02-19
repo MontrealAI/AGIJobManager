@@ -31,7 +31,7 @@ If finalization conditions indicate contested outcomes (for example under-quorum
 
 ## What happens if nobody votes?
 
-Outcome is deterministic from contract logic and timing. Use `getJobValidation(jobId)` plus timing windows to evaluate whether finalize/dispute path is next.
+If approvals and disapprovals are both zero, then after the review window `finalizeJob(jobId)` deterministically settles to the agent-win completion path (not moderator dispute resolution).
 
 ## What is `paused` vs `settlementPaused`?
 
