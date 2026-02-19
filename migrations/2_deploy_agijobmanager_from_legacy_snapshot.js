@@ -22,6 +22,12 @@ function mustAddress(addr, label) {
   return toChecksumAddress(addr);
 }
 
+function mustChecksummedAddress(addr, label) {
+  const checksummed = mustAddress(addr, label);
+  if (addr !== checksummed) throw new Error(`${label} must be EIP-55 checksummed: expected ${checksummed}, got ${addr}`);
+  return checksummed;
+}
+
 async function maybeSet(manager, fnName, args, from) {
   if (typeof manager[fnName] !== 'function') return;
   await manager[fnName](...args, { from });
@@ -161,16 +167,18 @@ module.exports = async function (deployer, network, accounts) {
 
   if (rc.paused) {
     await maybeSet(manager, 'pauseIntake', [], from);
+  } else if (typeof manager.paused === 'function' && await manager.paused()) {
+    await maybeSet(manager, 'unpauseIntake', [], from);
   }
-  if (rc.settlementPaused) {
-    await maybeSet(manager, 'setSettlementPaused', [true], from);
-  }
+  await maybeSet(manager, 'setSettlementPaused', [Boolean(rc.settlementPaused)], from);
 
   if (rc.lockIdentityConfig) {
     await maybeSet(manager, 'lockIdentityConfiguration', [], from);
   }
 
-  const newOwner = process.env.NEW_OWNER ? mustAddress(process.env.NEW_OWNER, 'NEW_OWNER') : mustAddress(rc.owner, 'runtimeConfig.owner');
+  const newOwner = process.env.NEW_OWNER
+    ? mustChecksummedAddress(process.env.NEW_OWNER, 'NEW_OWNER')
+    : mustAddress(rc.owner, 'runtimeConfig.owner');
   if (newOwner.toLowerCase() !== from.toLowerCase()) {
     await manager.transferOwnership(newOwner, { from });
   }
@@ -242,6 +250,18 @@ module.exports = async function (deployer, network, accounts) {
   }
   for (const a of snapshot.dynamicSets.blacklistedValidators) {
     if (!(await manager.blacklistedValidators(a))) throw new Error(`Blacklisted validator assertion failed for ${a}`);
+  }
+
+  const agiTypeCount = snapshot.agiTypes.length;
+  if (agiTypeCount > 0) {
+    try {
+      await manager.agiTypes(agiTypeCount);
+      throw new Error(`AGI types length mismatch: expected exactly ${agiTypeCount} entries but index ${agiTypeCount} is readable.`);
+    } catch (e) {
+      if (!String(e.message || '').toLowerCase().includes('revert')) {
+        throw e;
+      }
+    }
   }
 
   for (let i = 0; i < snapshot.agiTypes.length; i += 1) {

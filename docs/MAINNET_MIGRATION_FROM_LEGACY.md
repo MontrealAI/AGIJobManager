@@ -19,7 +19,7 @@ Required environment variables:
 Safety gates:
 
 - `CONFIRM_MAINNET_DEPLOY=1` is mandatory when `chainId == 1`.
-- Optional owner override: `NEW_OWNER=0x...` (checksummed address).
+- Optional owner override: `NEW_OWNER=0x...` (must already be EIP-55 checksummed; migration rejects non-checksummed input).
 
 ## 2) Generate deterministic snapshot (pin a block)
 
