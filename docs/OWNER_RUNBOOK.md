@@ -79,8 +79,9 @@ Always perform in this order:
 1. Read `withdrawableAGI()`.
 2. Confirm requested `amount <= withdrawableAGI()`.
 3. Confirm no active incident requiring additional buffer.
-4. Call `withdrawAGI(amount)`.
-5. Archive tx hash and rationale.
+4. Use the recommended pause posture for treasury actions: `paused()==true` and `settlementPaused()==false`.
+5. Call `withdrawAGI(amount)`.
+6. Archive tx hash and rationale.
 
 Never rely on raw ERC20 balance as withdrawable value; escrow and bonds must remain solvent.
 
