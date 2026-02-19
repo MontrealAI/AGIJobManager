@@ -28,10 +28,12 @@ Example pinned extraction:
 ```bash
 MAINNET_RPC_URL=https://ethereum-rpc.publicnode.com \
 ETHERSCAN_API_KEY=... \
-node scripts/snapshotLegacyMainnetConfig.js --block 24480106
+npm run snapshot:legacy:mainnet -- --block 24480106
 ```
 
 Default block is `latest` if `--block` is omitted.
+
+Equivalent direct invocation: `node scripts/snapshotLegacyMainnetConfig.js --block 24480106`.
 
 The snapshot records:
 
