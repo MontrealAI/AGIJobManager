@@ -379,8 +379,12 @@ node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --dur
 node scripts/etherscan/prepare_inputs.js --action apply --jobId 42 --subdomain alice-agent --proof "0xaaa...,0xbbb..."
 node scripts/etherscan/prepare_inputs.js --action request-completion --jobId 42 --jobCompletionURI ipfs://bafy.../completion.json
 node scripts/etherscan/prepare_inputs.js --action validate --jobId 42 --subdomain val-1 --proof "[]"
+node scripts/etherscan/prepare_inputs.js --action dispute-job --jobId 42
+node scripts/etherscan/prepare_inputs.js --action cancel-job --jobId 42
 node scripts/etherscan/prepare_inputs.js --action resolve-dispute --jobId 42 --code 1 --reason "EVIDENCE:v1|summary:milestones met|facts:...|links:ipfs://...|policy:ops-2.1|moderator:mod-07|ts:1736465000"
 ```
+
+Each action output includes a pre-flight checklist tailored to that action (for example: merkle-proof reminder for apply/vote routes, dispute-state reminder for moderator resolution).
 
 ### C) Offline state advisor
 ```bash
