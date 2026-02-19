@@ -42,6 +42,8 @@ The snapshot records:
 - dynamic sets (moderators/additionals/blacklists) with provenance
 - AGI types as `{ nftAddress, payoutPercentage, enabled, source }`
 
+Implementation note: the extractor resolves ABI from Etherscan `getsourcecode` first ("Read as Proxy" compatible metadata path), then falls back to `getabi` only if needed.
+
 If any required state cannot be recovered deterministically, the script exits with a hard error.
 
 ## 3) Review snapshot before deploy
