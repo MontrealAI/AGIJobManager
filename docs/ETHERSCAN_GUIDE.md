@@ -43,10 +43,10 @@ Quick action pre-flight (minimum reads):
 
 | If you are about to call | Minimum read checks first |
 |---|---|
-| `createJob` | `paused()==false`, token `balanceOf`, token `allowance` |
+| `createJob` | `paused()==false`, `settlementPaused()==false`, token `balanceOf`, token `allowance` |
 | `applyForJob` | `paused()==false`, `settlementPaused()==false`, `getJobCore`, authorization route ready (allowlist / proof / ENS label) |
 | `validateJob` / `disapproveJob` | `settlementPaused()==false`, `getJobCore`, `getJobValidation`, authorization route ready (allowlist / proof / ENS label) |
-| `requestJobCompletion` | `getJobCore` confirms caller is assigned agent and job not expired/disputed/completed |
+| `requestJobCompletion` | `settlementPaused()==false`, `getJobCore` confirms caller is assigned agent and job not expired/disputed/completed |
 | `finalizeJob` | `settlementPaused()==false`, `getJobCore`, `getJobValidation`, time gates elapsed |
 | `disputeJob` | `settlementPaused()==false`, `getJobCore`, `getJobValidation`, dispute window still open |
 | `resolveDisputeWithCode` | `settlementPaused()==false`, `getJobCore.disputed==true`, moderator authorization |
