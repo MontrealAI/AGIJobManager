@@ -14,6 +14,12 @@ From `truffle-config.js` deployment path:
 
 Foundry settings in `foundry.toml` are for forge tests and are not the canonical truffle deployment profile.
 
+Foundry profile details (for test parity and reproducibility):
+- compiler: `solc 0.8.19`
+- optimizer: enabled, `runs = 50`
+- EVM version: `london`
+- source dir: `contracts`, test dir: `forge-test`, libs: `lib,node_modules`
+
 ## 2) Build exactly as CI/deploy path
 
 ```bash

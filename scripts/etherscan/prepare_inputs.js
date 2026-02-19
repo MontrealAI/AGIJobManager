@@ -69,6 +69,19 @@ function checklist(action) {
     '- Confirm you are using token base units and seconds',
   ];
   if (action === 'create-job') common.push('- Confirm intake is not paused');
+  if (action === 'apply') {
+    common.push('- Confirm target job is OPEN (no assigned agent, not completed/disputed/expired)');
+    common.push('- Confirm auth route now: owner allowlist OR Merkle proof OR ENS subdomain ownership');
+  }
+  if (action === 'request-completion') {
+    common.push('- Confirm caller is the assigned agent and current time is before assignedAt + duration');
+  }
+  if (action === 'validate' || action === 'disapprove') {
+    common.push('- Confirm completionRequested == true and review window is still open');
+    common.push('- Confirm validator auth route now: owner allowlist OR Merkle proof OR ENS subdomain ownership');
+  }
+  if (action === 'approve') common.push('- Confirm spender is the AGIJobManager contract address');
+  if (action === 'dispute') common.push('- Confirm dispute window is currently open for this job');
   if (action === 'finalize') common.push('- Confirm review/challenge windows are elapsed or early-approval criteria met');
   if (action === 'resolve-dispute') common.push('- Confirm disputed=true and your address is a moderator/owner');
   return common;
@@ -87,7 +100,7 @@ function run() {
 
   if (action === 'help' || args.help) {
     console.log('Usage: node scripts/etherscan/prepare_inputs.js --action <action> [options]');
-    console.log('Actions: convert, approve, create-job, apply, request-completion, validate, disapprove, resolve-dispute, finalize');
+    console.log('Actions: convert, approve, create-job, apply, request-completion, validate, disapprove, dispute, resolve-dispute, finalize');
     process.exit(0);
   }
 
@@ -155,6 +168,10 @@ function run() {
 
   if (action === 'finalize') {
     printBlock('Copy/paste into Etherscan: finalizeJob(jobId)', [`jobId: ${args.jobId || '0'}`]);
+  }
+
+  if (action === 'dispute') {
+    printBlock('Copy/paste into Etherscan: disputeJob(jobId)', [`jobId: ${args.jobId || '0'}`]);
   }
 
   printBlock(`Pre-flight checklist for action=${action}`, checklist(action));
