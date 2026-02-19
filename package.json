@@ -24,7 +24,8 @@
     "forge:build": "forge build",
     "forge:test": "forge test",
     "forge:invariant": "FOUNDRY_PROFILE=ci forge test --match-path forge-test/invariant/*.t.sol",
-    "slither": "./scripts/security/run-slither.sh"
+    "slither": "./scripts/security/run-slither.sh",
+    "snapshot:legacy:mainnet": "node scripts/snapshotLegacyMainnetConfig.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"
