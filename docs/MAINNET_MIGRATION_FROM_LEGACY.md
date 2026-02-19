@@ -4,9 +4,9 @@ This runbook deploys `contracts/AGIJobManager.sol` from a deterministic, committ
 
 Artifacts in this repo:
 
-- Snapshot extractor: `scripts/snapshotLegacyMainnetConfig.js`
-- Committed snapshot: `migrations/snapshots/legacy.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json`
-- Hardcoded migration: `migrations/2_deploy_agijobmanager_from_legacy_snapshot.js`
+- Snapshot extractor: `scripts/snapshotLegacyConfig.mainnet.js`
+- Committed snapshot: `migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json`
+- Hardcoded migration: `migrations/2_deploy_agijobmanager_from_legacy_mainnet.js`
 
 ## 1) Prerequisites
 
@@ -28,7 +28,7 @@ Example pinned extraction:
 ```bash
 MAINNET_RPC_URL=https://ethereum-rpc.publicnode.com \
 ETHERSCAN_API_KEY=... \
-node scripts/snapshotLegacyMainnetConfig.js --block 24480106
+node scripts/snapshotLegacyConfig.mainnet.js --block 24480106
 ```
 
 Default block is `latest` if `--block` is omitted.
@@ -49,7 +49,7 @@ If any required state cannot be recovered deterministically, the script exits wi
 ## 3) Review snapshot before deploy
 
 ```bash
-cat migrations/snapshots/legacy.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json
+cat migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json
 ```
 
 Review at minimum:
