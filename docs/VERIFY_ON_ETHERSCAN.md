@@ -16,6 +16,22 @@ Foundry settings in `foundry.toml` are for forge tests and are not the canonical
 
 ## 2) Build exactly as CI/deploy path
 
+
+## 2.1) Exact Truffle compiler stanza
+
+`truffle-config.js` uses:
+
+```js
+version: "0.8.23",
+settings: {
+  optimizer: { enabled: true, runs: 50 },
+  evmVersion: "london",
+  viaIR: true,
+  metadata: { bytecodeHash: "none" },
+  debug: { revertStrings: "strip" }
+}
+```
+
 ```bash
 npm ci
 npm run build

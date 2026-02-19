@@ -74,6 +74,7 @@ Quick action pre-flight (minimum reads):
   - two items: `["0x1111111111111111111111111111111111111111111111111111111111111111","0x2222222222222222222222222222222222222222222222222222222222222222"]`
 - `string` URI fields: plain text (no surrounding quotes in Etherscan inputs).
 - `uint256`: base-10 integer only (no commas, no decimals, no scientific notation).
+- Tip: if Etherscan rejects a `bytes32[]`, remove spaces and keep each element exactly 66 chars (`0x` + 64 hex).
 
 ---
 
@@ -172,7 +173,7 @@ proof: []
 ```text
 jobId: 42
 subdomain: alice-agent
-proof: ["0xaaa...", "0xbbb..."]
+proof: ["0x1111111111111111111111111111111111111111111111111111111111111111","0x2222222222222222222222222222222222222222222222222222222222222222"]
 ```
 
 Tip: If you are using Merkle auth and not ENS auth for this tx, keep `subdomain` empty and only provide `proof`.
@@ -219,7 +220,7 @@ Proof format examples:
 []
 ```
 ```text
-["0xaaa...", "0xbbb..."]
+["0x1111111111111111111111111111111111111111111111111111111111111111","0x2222222222222222222222222222222222222222222222222222222222222222"]
 ```
 
 Outcome notes:
@@ -376,7 +377,7 @@ node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addres
 ```bash
 node scripts/etherscan/prepare_inputs.js --action approve --spender 0xYourAGIJobManager --amount 1200
 node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 3d --jobSpecURI ipfs://bafy.../job.json --details "Translate legal packet EN->ES"
-node scripts/etherscan/prepare_inputs.js --action apply --jobId 42 --subdomain alice-agent --proof "0xaaa...,0xbbb..."
+node scripts/etherscan/prepare_inputs.js --action apply --jobId 42 --subdomain alice-agent --proof "0x1111111111111111111111111111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222222222222222222222222222"
 node scripts/etherscan/prepare_inputs.js --action request-completion --jobId 42 --jobCompletionURI ipfs://bafy.../completion.json
 node scripts/etherscan/prepare_inputs.js --action validate --jobId 42 --subdomain val-1 --proof "[]"
 node scripts/etherscan/prepare_inputs.js --action dispute-job --jobId 42
