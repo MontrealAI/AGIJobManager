@@ -21,8 +21,8 @@ This runbook is optimized for autonomous, checklist-driven operations and Ethers
 ## 2) Safe defaults + staged rollout
 
 - Phase 0: `pauseAll` enabled; configure params/roles.
-- Phase 1: open intake only (`unpause` + `setSettlementPaused(false)`) for controlled job intake while moderators are on call.
-- Phase 2: enable settlement (`setSettlementPaused(false)`) once moderators/validators are ready.
+- Phase 1: **no true intake-only mode exists in current ABI** (intake writes are also guarded by `whenSettlementNotPaused`). Keep `pauseAll` until moderators/validators are staffed.
+- Phase 2: go live by calling `unpauseAll()` (or `unpause` + `setSettlementPaused(false)`) once settlement responders are ready.
 - Use conservative thresholds/quorum first; ratchet only after observing production behavior.
 
 ## 3) Incident playbooks
@@ -32,10 +32,10 @@ This runbook is optimized for autonomous, checklist-driven operations and Ethers
 2. Keep `setSettlementPaused(false)`.
 3. Communicate: no new jobs, active jobs continue.
 
-## B) Stop settlement only (allow intake to remain visible)
+## B) Stop settlement lane (also halts intake writes in current ABI)
 1. `setSettlementPaused(true)`.
-2. Keep intake state unchanged.
-3. Communicate expected resume timing.
+2. Expect `createJob`/`applyForJob`/`requestJobCompletion` and settlement writes to revert while this is active.
+3. Communicate this as a temporary **write freeze** (reads remain available).
 
 ## C) Full stop
 1. `pauseAll()`.
