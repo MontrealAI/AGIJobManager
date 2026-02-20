@@ -61,6 +61,20 @@ node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duratio
 - `string`: plain text (no wrapping quotes in field box).
 - `uint256`: base-10 integer only.
 
+### Offline helper scripts (recommended)
+- Merkle proofs (paste-ready `bytes32[]`):
+  ```bash
+  node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addresses.json --output proofs.json
+  ```
+- Etherscan parameter blocks + checklists:
+  ```bash
+  node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 7d --jobSpecURI ipfs://bafy.../job.json --details "Translate legal packet EN->ES"
+  ```
+- Offline state advisor from pasted Read Contract outputs:
+  ```bash
+  node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
+  ```
+
 ---
 
 ## B) Core role flows
@@ -87,6 +101,11 @@ jobSpecURI: ipfs://bafy.../job-spec.v1.json
 payout: 1200000000000000000000
 duration: 259200
 details: Translate legal packet EN->ES
+```
+
+Prepare this block automatically:
+```bash
+node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 3d --jobSpecURI ipfs://bafy.../job-spec.v1.json --details "Translate legal packet EN->ES"
 ```
 
 ### 3) Cancel job (only when allowed)
@@ -121,6 +140,11 @@ subdomain: alice-agent
 proof: []
 ```
 
+Generate a copy/paste payload:
+```bash
+node scripts/etherscan/prepare_inputs.js --action apply --route merkle --jobId 42 --proof '["0x111...","0x222..."]'
+```
+
 ### 2) Bond approval (if required by current params)
 Write on AGI token: `approve(spender, amount)`.
 
@@ -148,8 +172,16 @@ Write on AGI token: `approve(spender, amount)`.
 ### 2) Vote approve
 Write: `validateJob(jobId, subdomain, proof)`
 
+```bash
+node scripts/etherscan/prepare_inputs.js --action validate --route merkle --jobId 42 --proof '["0x111...","0x222..."]'
+```
+
 ### 3) Vote disapprove
 Write: `disapproveJob(jobId, subdomain, proof)`
+
+```bash
+node scripts/etherscan/prepare_inputs.js --action disapprove --route merkle --jobId 42 --proof '["0x111...","0x222..."]'
+```
 
 Outcomes can trigger:
 - direct completion,
@@ -168,6 +200,11 @@ Resolution code table:
 Standardized reason format (recommended):
 ```text
 EVIDENCE:v1|job:42|code:1|summary:Delivered spec v1|links:ipfs://...|moderator:0x...|ts:1735689600
+```
+
+Prepare moderator inputs:
+```bash
+node scripts/etherscan/prepare_inputs.js --action resolve-dispute --jobId 42 --code 1 --reason "EVIDENCE:v1|job:42|code:1|summary:Delivered spec v1|links:ipfs://...|moderator:0x...|ts:1735689600"
 ```
 
 ## Owner/operator flow
