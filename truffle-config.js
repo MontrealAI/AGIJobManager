@@ -50,16 +50,16 @@ const timeoutBlocksMainnet = n(process.env.MAINNET_TIMEOUT_BLOCKS, 500);
 const timeoutBlocksSepolia = n(process.env.SEPOLIA_TIMEOUT_BLOCKS, 500);
 
 const solcVersion = '0.8.23';
-const solcRuns = 50;
-const solcViaIR = true;
-const evmVersion = (process.env.SOLC_EVM_VERSION || 'london').trim();
+const solcRuns = 40;
+const solcViaIR = false;
+const evmVersion = (process.env.SOLC_EVM_VERSION || 'shanghai').trim();
 
 const testProvider = ganache.provider({
   wallet: {
     mnemonic: process.env.GANACHE_MNEMONIC || "test test test test test test test test test test test junk",
   },
   logging: { quiet: true },
-  chain: { chainId: 1337, networkId: 1337, hardfork: "london", allowUnlimitedContractSize: true },
+  chain: { chainId: 1337, networkId: 1337, hardfork: "shanghai", allowUnlimitedContractSize: true },
   miner: { blockGasLimit: 100_000_000 },
 });
 
