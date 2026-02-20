@@ -94,6 +94,13 @@ function validateConfig(config, web3) {
   validateAddressList('roles.blacklistedAgents', config.roles.blacklistedAgents);
   validateAddressList('roles.blacklistedValidators', config.roles.blacklistedValidators);
 
+  const validationRewardPercentage = Number(config.parameters.validationRewardPercentage ?? 8);
+  assert(
+    Number.isInteger(validationRewardPercentage) && validationRewardPercentage >= 0 && validationRewardPercentage <= 100,
+    'parameters.validationRewardPercentage must be an integer in [0,100].'
+  );
+  const maxAgiTypePayout = 100 - validationRewardPercentage;
+
   assert(Array.isArray(config.agiTypes), 'agiTypes must be an array.');
   config.agiTypes.forEach((entry, i) => {
     assert(typeof entry === 'object' && entry !== null, `agiTypes[${i}] must be an object.`);
@@ -101,6 +108,10 @@ function validateConfig(config, web3) {
     validateAddressField(`agiTypes[${i}].nftAddress`, entry.nftAddress, web3);
     validateUint(`agiTypes[${i}].payoutPercentage`, entry.payoutPercentage);
     assert(entry.payoutPercentage > 0 && entry.payoutPercentage <= 100, `agiTypes[${i}].payoutPercentage must be in (0,100].`);
+    assert(
+      Number(entry.payoutPercentage) <= maxAgiTypePayout,
+      `agiTypes[${i}].payoutPercentage must be <= ${maxAgiTypePayout} when validationRewardPercentage is ${validationRewardPercentage}.`
+    );
   });
 
   validateOptionalAddressField('postDeployIdentity.ensJobPages', config.postDeployIdentity.ensJobPages, web3, { allowZero: true });

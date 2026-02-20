@@ -52,6 +52,15 @@ function assertEqual(label, actual, expected) {
 }
 
 module.exports = async function (deployer, network, accounts) {
+  const configPathHint = process.env.DEPLOY_CONFIG_PATH || process.env.AGI_DEPLOY_CONFIG_PATH || null;
+  const isEphemeralNetwork = network === 'test' || network === 'development';
+  if (isEphemeralNetwork && !configPathHint && process.env.DEPLOY_FORCE_PRODUCTION_MIGRATION !== '1') {
+    console.log(
+      'Skipping production migration on ephemeral network without DEPLOY_CONFIG_PATH. Set DEPLOY_FORCE_PRODUCTION_MIGRATION=1 to force.'
+    );
+    return;
+  }
+
   const chainId = await web3.eth.getChainId();
   const deployerAddress = accounts[0];
   const deployerBalanceWei = await web3.eth.getBalance(deployerAddress);

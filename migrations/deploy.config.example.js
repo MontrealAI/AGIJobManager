@@ -12,7 +12,7 @@ module.exports = {
     mainnet: {
       // Legacy-derived defaults (VERIFY BEFORE MAINNET)
       identity: {
-        agiTokenAddress: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa',
+        agiTokenAddress: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA',
         baseIpfsUrl: 'https://ipfs.io/ipfs/',
         ensRegistry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
         nameWrapper: '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401',

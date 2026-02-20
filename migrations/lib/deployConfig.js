@@ -8,7 +8,7 @@ const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND';
 
 const DEFAULTS = {
   identity: {
-    agiTokenAddress: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa',
+    agiTokenAddress: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA',
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
     ensRegistry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
     nameWrapper: '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401',
@@ -159,12 +159,11 @@ function applyEnvOverrides(config) {
     alphaAgentRootNode: process.env.AGI_ALPHA_AGENT_ROOT_NODE,
   };
   if (Object.values(rootsEnv).some(Boolean)) {
-    out.authRoots.rootNodes = {
-      clubRootNode: envOr(rootsEnv.clubRootNode, out.authRoots.rootNodes?.clubRootNode || ZERO_BYTES32),
-      agentRootNode: envOr(rootsEnv.agentRootNode, out.authRoots.rootNodes?.agentRootNode || ZERO_BYTES32),
-      alphaClubRootNode: envOr(rootsEnv.alphaClubRootNode, out.authRoots.rootNodes?.alphaClubRootNode || ZERO_BYTES32),
-      alphaAgentRootNode: envOr(rootsEnv.alphaAgentRootNode, out.authRoots.rootNodes?.alphaAgentRootNode || ZERO_BYTES32),
-    };
+    out.authRoots.rootNodes = { ...(out.authRoots.rootNodes || {}) };
+    if (rootsEnv.clubRootNode) out.authRoots.rootNodes.clubRootNode = rootsEnv.clubRootNode;
+    if (rootsEnv.agentRootNode) out.authRoots.rootNodes.agentRootNode = rootsEnv.agentRootNode;
+    if (rootsEnv.alphaClubRootNode) out.authRoots.rootNodes.alphaClubRootNode = rootsEnv.alphaClubRootNode;
+    if (rootsEnv.alphaAgentRootNode) out.authRoots.rootNodes.alphaAgentRootNode = rootsEnv.alphaAgentRootNode;
   }
 
   const n = (k) => {
@@ -257,21 +256,20 @@ function resolveNetworkConfig(rawConfig, network, chainId) {
 }
 
 function resolveRootNodes(config, web3) {
-  if (config.authRoots.rootNodes) {
-    return {
-      clubRootNode: config.authRoots.rootNodes.clubRootNode,
-      agentRootNode: config.authRoots.rootNodes.agentRootNode,
-      alphaClubRootNode: config.authRoots.rootNodes.alphaClubRootNode,
-      alphaAgentRootNode: config.authRoots.rootNodes.alphaAgentRootNode,
-    };
-  }
-
   const roots = config.authRoots.roots || {};
-  return {
+  const defaultRoots = {
     clubRootNode: namehash(roots.club, web3),
     agentRootNode: namehash(roots.agent, web3),
     alphaClubRootNode: namehash(roots.alphaClub, web3),
     alphaAgentRootNode: namehash(roots.alphaAgent, web3),
+  };
+
+  const configuredRootNodes = config.authRoots.rootNodes || {};
+  return {
+    clubRootNode: configuredRootNodes.clubRootNode || defaultRoots.clubRootNode,
+    agentRootNode: configuredRootNodes.agentRootNode || defaultRoots.agentRootNode,
+    alphaClubRootNode: configuredRootNodes.alphaClubRootNode || defaultRoots.alphaClubRootNode,
+    alphaAgentRootNode: configuredRootNodes.alphaAgentRootNode || defaultRoots.alphaAgentRootNode,
   };
 }
 
@@ -284,6 +282,42 @@ function stableSortObject(value) {
   }, {});
 }
 
+
+function checksumAddress(addressValue, web3, { allowZero = false } = {}) {
+  if (addressValue === null || addressValue === undefined || addressValue === '') return addressValue;
+  const value = String(addressValue);
+  const checksum = web3.utils.toChecksumAddress(value);
+  if (allowZero || checksum.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) return checksum;
+  return checksum;
+}
+
+function normalizeAddressFields(config, web3) {
+  const out = deepClone(config);
+
+  out.identity.agiTokenAddress = checksumAddress(out.identity.agiTokenAddress, web3);
+  out.identity.ensRegistry = checksumAddress(out.identity.ensRegistry, web3, { allowZero: true });
+  out.identity.nameWrapper = checksumAddress(out.identity.nameWrapper, web3, { allowZero: true });
+
+  out.roles.moderators = (out.roles.moderators || []).map((x) => checksumAddress(x, web3));
+  out.roles.additionalAgents = (out.roles.additionalAgents || []).map((x) => checksumAddress(x, web3));
+  out.roles.additionalValidators = (out.roles.additionalValidators || []).map((x) => checksumAddress(x, web3));
+  out.roles.blacklistedAgents = (out.roles.blacklistedAgents || []).map((x) => checksumAddress(x, web3));
+  out.roles.blacklistedValidators = (out.roles.blacklistedValidators || []).map((x) => checksumAddress(x, web3));
+
+  out.postDeployIdentity.ensJobPages = checksumAddress(out.postDeployIdentity.ensJobPages, web3, { allowZero: true });
+  out.ownership.transferTo = checksumAddress(out.ownership.transferTo, web3);
+
+  out.agiTypes = (out.agiTypes || []).map((entry) => {
+    if (!entry || entry.enabled === false) return entry;
+    return {
+      ...entry,
+      nftAddress: checksumAddress(entry.nftAddress, web3),
+    };
+  });
+
+  return out;
+}
+
 function buildResolvedConfig({ network, chainId, web3 }) {
   const defaultConfig = deepClone(DEFAULTS);
   const configPath = process.env.DEPLOY_CONFIG_PATH || process.env.AGI_DEPLOY_CONFIG_PATH || '';
@@ -293,6 +327,7 @@ function buildResolvedConfig({ network, chainId, web3 }) {
   let merged = deepMerge(defaultConfig, fileConfig || {});
   merged = applyEnvOverrides(merged);
   merged = normalizeDurations(merged);
+  merged = normalizeAddressFields(merged, web3);
 
   const rootNodes = resolveRootNodes(merged, web3);
 

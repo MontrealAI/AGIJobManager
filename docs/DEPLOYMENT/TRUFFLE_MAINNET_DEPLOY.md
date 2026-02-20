@@ -74,4 +74,5 @@ Receipt includes chain metadata, config hash + expanded config, addresses, tx ha
 ## Notes
 
 - `useEnsJobTokenURI` and `baseIpfsUrl` do not expose public getters, so migration reports this as a verification note.
+- On `test`/`development`, this migration skips by default unless `DEPLOY_CONFIG_PATH` is set (or `DEPLOY_FORCE_PRODUCTION_MIGRATION=1`), to avoid accidental use of mainnet defaults in CI.
 - Keep `DEPLOY_CONFIRM_MAINNET` unset in CI unless explicitly intended.
