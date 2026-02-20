@@ -2,11 +2,6 @@ const { BN, time, expectRevert } = require('@openzeppelin/test-helpers');
 
 const AGIJobManager = artifacts.require('AGIJobManager');
 const ReputationHarness = artifacts.require('ReputationHarness');
-const BondMath = artifacts.require('BondMath');
-const ENSOwnership = artifacts.require('ENSOwnership');
-const ReputationMath = artifacts.require('ReputationMath');
-const TransferUtils = artifacts.require('TransferUtils');
-const UriUtils = artifacts.require('UriUtils');
 const HookGasBurner = artifacts.require('HookGasBurner');
 const MockERC20 = artifacts.require('MockERC20');
 const MockENS = artifacts.require('MockENS');
@@ -51,25 +46,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
   }
 
   it('keeps reputation monotone and capped at 88888', async () => {
-    const token = await MockERC20.new({ from: owner });
-    const ens = await MockENS.new({ from: owner });
-    const wrapper = await MockNameWrapper.new({ from: owner });
-    const bondMath = await BondMath.new({ from: owner });
-    const ensOwnership = await ENSOwnership.new({ from: owner });
-    const reputationMath = await ReputationMath.new({ from: owner });
-    const transferUtils = await TransferUtils.new({ from: owner });
-    const uriUtils = await UriUtils.new({ from: owner });
-
-    await ReputationHarness.link(BondMath, bondMath.address);
-    await ReputationHarness.link(ENSOwnership, ensOwnership.address);
-    await ReputationHarness.link(ReputationMath, reputationMath.address);
-    await ReputationHarness.link(TransferUtils, transferUtils.address);
-    await ReputationHarness.link(UriUtils, uriUtils.address);
-
-    const harness = await ReputationHarness.new(
-      ...buildInitConfig(token.address, 'ipfs://base', ens.address, wrapper.address, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32, ZERO32),
-      { from: owner }
-    );
+    const harness = await ReputationHarness.new({ from: owner });
 
     const increments = [1, 2, 7, 13, 144, 999, 5000, 20000, 70000];
     let prev = new BN('0');
