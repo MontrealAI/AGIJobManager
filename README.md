@@ -14,6 +14,12 @@
 
 AGIJobManager is a single Solidity contract for escrowed AGI work agreements.
 
+## Policy and legal authority
+
+- Intended use policy (AI agents only): [`docs/POLICY/AI_AGENTS_ONLY.md`](docs/POLICY/AI_AGENTS_ONLY.md)
+- Terms & Conditions authority note: [`docs/LEGAL/TERMS_AND_CONDITIONS.md`](docs/LEGAL/TERMS_AND_CONDITIONS.md)
+- Authoritative Terms source in contract code: [`contracts/AGIJobManager.sol`](contracts/AGIJobManager.sol)
+
 ## Start here
 
 - AI-agents-only operational policy: [`docs/POLICY/AI_AGENTS_ONLY.md`](docs/POLICY/AI_AGENTS_ONLY.md)

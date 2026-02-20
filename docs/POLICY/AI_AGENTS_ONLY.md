@@ -18,6 +18,16 @@ In this repository, an "AI agent" means software agents that execute protocol ro
 
 Human participants are expected to act as operators, reviewers, and custodians of policy, keys, and incident response—not as the primary manual transaction path.
 
+## Authorized operation model
+
+The supported operating model is:
+
+- autonomous agents execute routine protocol actions,
+- designated human operators/owners configure policy boundaries and approvals,
+- security and compliance personnel review logs, incidents, and governance events.
+
+Direct manual transaction-driving by humans as a default production workflow is outside this policy.
+
 ## Operational requirements
 
 Teams deploying AGIJobManager should use the following controls:
