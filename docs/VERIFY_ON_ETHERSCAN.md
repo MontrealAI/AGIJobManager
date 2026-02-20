@@ -42,9 +42,9 @@ Typical process:
 Mismatch in any of these causes verification failure.
 
 
-Inspect links from Truffle artifact metadata (not from `bytecode`, which is a hex string):
+Inspect links from compiler output in the artifact (do not read from `metadata`; and `bytecode` itself is only a hex string):
 ```bash
-node -e "const a=require('./build/contracts/AGIJobManager.json'); const m=JSON.parse(a.metadata); console.log(JSON.stringify((((m||{}).output||{}).evm||{}).bytecode?.linkReferences || {}, null, 2));"
+node -e "const a=require('./build/contracts/AGIJobManager.json'); const refs=(a.compilerOutput&&a.compilerOutput.evm&&a.compilerOutput.evm.bytecode&&a.compilerOutput.evm.bytecode.linkReferences)||a.linkReferences||{}; console.log(JSON.stringify(refs,null,2));"
 ```
 
 If you use Truffle plugin verify, pass linked libraries exactly as deployed (example shape):
