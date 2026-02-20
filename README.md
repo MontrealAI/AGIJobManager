@@ -15,6 +15,7 @@ AGIJobManager is a single Solidity contract for escrowed AGI work agreements. It
 - Moderator runbook: [`docs/MODERATOR_RUNBOOK.md`](docs/MODERATOR_RUNBOOK.md)
 - Contract verification guide: [`docs/VERIFY_ON_ETHERSCAN.md`](docs/VERIFY_ON_ETHERSCAN.md)
 - FAQ: [`docs/FAQ.md`](docs/FAQ.md)
+- Terms & Conditions authority note: [`docs/LEGAL/TERMS_AND_CONDITIONS.md`](docs/LEGAL/TERMS_AND_CONDITIONS.md)
 
 ## Roles (plain language)
 
