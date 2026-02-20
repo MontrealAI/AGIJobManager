@@ -33,6 +33,7 @@ Institutional documentation for operators, integrators, contributors, and audito
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 - [GLOSSARY.md](./GLOSSARY.md)
 - [LEGAL/TERMS_AND_CONDITIONS.md](./LEGAL/TERMS_AND_CONDITIONS.md)
+- [POLICY/AI_AGENTS_ONLY.md](./POLICY/AI_AGENTS_ONLY.md)
 
 ## Generated references
 

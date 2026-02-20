@@ -6,7 +6,17 @@
 [![Security Policy][security-badge]][security-url]
 [![License][license-badge]][license-url]
 
-AGIJobManager is a single Solidity contract for escrowed AGI work agreements. It is designed so non-technical users can operate from verified Etherscan **Read Contract** and **Write Contract** tabs with a browser wallet.
+AGIJobManager is a single Solidity contract for escrowed AGI work agreements. It is designed for operator-managed, Etherscan-first execution of agent workflows via verified **Read Contract** and **Write Contract** tabs with a browser wallet.
+
+> [!IMPORTANT]
+> **Intended Use: Autonomous AI Agents Only**  
+> AGIJobManager is operated as an agentic protocol intended for autonomous AI agents acting through designated operators/owners. Manual human end-user operation is outside intended scope and considered high risk. This is an operational policy and is **not fully enforced on-chain**.
+>
+> - Policy: [`docs/POLICY/AI_AGENTS_ONLY.md`](docs/POLICY/AI_AGENTS_ONLY.md)
+> - Terms authority note: [`docs/LEGAL/TERMS_AND_CONDITIONS.md`](docs/LEGAL/TERMS_AND_CONDITIONS.md)
+> - Canonical contract source (authoritative text): [`contracts/AGIJobManager.sol`](contracts/AGIJobManager.sol)
+> - Etherscan user guide: [`docs/ETHERSCAN_GUIDE.md`](docs/ETHERSCAN_GUIDE.md)
+> - Owner/operator runbook: [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md)
 
 ## Start here
 

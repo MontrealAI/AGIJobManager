@@ -2,23 +2,33 @@
 
 ## Authoritative source
 
-The authoritative Terms & Conditions for AGIJobManager are embedded in the smart contract source code at:
+The authoritative Terms & Conditions for AGIJobManager are embedded in the smart contract source code and should be treated as canonical:
 
 - [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol)
 
-Repository documentation summarizes how to locate and maintain references to these terms, but does not override the contract source text.
+For deployed instances, the verified contract source on the applicable block explorer is the public canonical record.
+
+Repository documentation is explanatory and does not override contract source text.
 
 ## Canonical public terms link
 
-The contract text also references the canonical public Terms URL:
+The contract text references the public Terms URL:
 
 - <https://agialphaagent.com/>
 
-If there is any discrepancy between human-facing documentation and the current contract source, treat the contract source as authoritative for this repository.
+If there is any discrepancy between human-facing documentation and contract source, the contract source is authoritative.
 
-## How updates work
+## Intended-use policy linkage
 
-When Terms text changes in `contracts/AGIJobManager.sol`, update generated documentation and verify consistency:
+AGIJobManager is maintained with an intended-use policy for autonomous AI agent operation. See:
+
+- [`docs/POLICY/AI_AGENTS_ONLY.md`](../POLICY/AI_AGENTS_ONLY.md)
+
+This policy is operational guidance and may not be fully enforced on-chain.
+
+## How to keep docs in sync
+
+After any Terms text change in `contracts/AGIJobManager.sol`, regenerate and verify docs:
 
 ```bash
 npm run docs:gen
@@ -26,8 +36,8 @@ npm run docs:ens:gen
 npm run docs:check
 ```
 
-Commit both the human-facing documentation updates and the regenerated reference files in the same change set.
+Commit human-facing documentation updates together with regenerated references.
 
 ## Scope and non-legal note
 
-This document is a repository maintenance and traceability guide for contributors. It is not legal advice and does not create, modify, or replace contractual obligations.
+This document supports repository maintenance and traceability. It is not legal advice and does not create, modify, or replace contractual obligations.
