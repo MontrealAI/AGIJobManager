@@ -42,10 +42,13 @@ Typical process:
 Mismatch in any of these causes verification failure.
 
 
-Inspect links from artifact:
+Inspect linked-library mappings from artifact metadata/deployment fields (not `artifact.bytecode`, which is a hex string):
 ```bash
-node -e "const a=require('./build/contracts/AGIJobManager.json'); console.log(JSON.stringify(a.bytecode.linkReferences || {}, null, 2));"
+node -e "const a=require('./build/contracts/AGIJobManager.json'); const md=JSON.parse(a.metadata||'{}'); const deployedLinks=Object.fromEntries(Object.entries(a.networks||{}).map(([id,n])=>[id,n.links||{}])); console.log(JSON.stringify({metadataLibraries: md.settings?.libraries || {}, deployedLinksByNetwork: deployedLinks}, null, 2));"
 ```
+
+- `metadataLibraries`: compile-time library map (usually empty unless explicitly configured).
+- `deployedLinksByNetwork`: the addresses Truffle recorded for each deployed network; use these exact addresses when verifying linked builds.
 
 If you use Truffle plugin verify, pass linked libraries exactly as deployed (example shape):
 ```bash
