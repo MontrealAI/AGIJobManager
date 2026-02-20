@@ -249,11 +249,43 @@ function normalizeDurations(config) {
   return out;
 }
 
+function resolveNetworkAliasByChainId(chainId) {
+  const aliases = {
+    1: ['mainnet', 'homestead'],
+    11155111: ['sepolia'],
+    5: ['goerli'],
+    137: ['polygon', 'matic'],
+    80001: ['mumbai'],
+    10: ['optimism'],
+    42161: ['arbitrum', 'arbitrumOne'],
+    8453: ['base'],
+    31337: ['hardhat', 'development', 'test'],
+    1337: ['development', 'test', 'ganache']
+  };
+  return aliases[Number(chainId)] || [];
+}
+
 function resolveNetworkConfig(rawConfig, network, chainId) {
-  if (rawConfig.networks && rawConfig.networks[network]) return rawConfig.networks[network];
-  if (rawConfig.networks && rawConfig.networks[String(chainId)]) return rawConfig.networks[String(chainId)];
-  if (rawConfig[network]) return rawConfig[network];
-  if (rawConfig[String(chainId)]) return rawConfig[String(chainId)];
+  const networkKey = String(network);
+  const chainIdKey = String(chainId);
+
+  if (rawConfig.networks && typeof rawConfig.networks === 'object') {
+    if (rawConfig.networks[networkKey]) return rawConfig.networks[networkKey];
+    if (rawConfig.networks[chainIdKey]) return rawConfig.networks[chainIdKey];
+
+    const aliases = resolveNetworkAliasByChainId(chainId);
+    for (const alias of aliases) {
+      if (rawConfig.networks[alias]) return rawConfig.networks[alias];
+    }
+
+    throw new Error(
+      `[deploy-config] No config profile found for network="${networkKey}" chainId=${chainIdKey}. ` +
+        `Expected one of networks.${networkKey}, networks.${chainIdKey}, or known chain aliases (${aliases.join(', ') || 'none'}).`
+    );
+  }
+
+  if (rawConfig[networkKey]) return rawConfig[networkKey];
+  if (rawConfig[chainIdKey]) return rawConfig[chainIdKey];
   return rawConfig;
 }
 

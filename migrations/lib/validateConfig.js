@@ -172,6 +172,12 @@ async function validateConfig(config, web3) {
   });
 
   validateOptionalAddressField('postDeployIdentity.ensJobPages', config.postDeployIdentity.ensJobPages, web3, { allowZero: true });
+  if (
+    config.postDeployIdentity.ensJobPages &&
+    config.postDeployIdentity.ensJobPages.toLowerCase() !== ZERO_ADDRESS.toLowerCase()
+  ) {
+    await assertAddressHasCode('postDeployIdentity.ensJobPages', config.postDeployIdentity.ensJobPages, web3);
+  }
   if (config.postDeployIdentity.useEnsJobTokenURI !== null) {
     assert(typeof config.postDeployIdentity.useEnsJobTokenURI === 'boolean', 'postDeployIdentity.useEnsJobTokenURI must be boolean or null.');
   }
