@@ -25,6 +25,7 @@ npm run build
 ```
 2. Confirm deployed bytecode matches local artifact network + constructor args.
 3. Confirm external library addresses used at deployment.
+4. Extract `linkReferences` from `build/contracts/AGIJobManager.json` and pre-fill library mappings before opening Etherscan.
 
 ## 3) Linked library verification
 
@@ -39,6 +40,17 @@ Typical process:
    - exact linked library map.
 
 Mismatch in any of these causes verification failure.
+
+
+Inspect links from Truffle artifact metadata (not from `bytecode`, which is a hex string):
+```bash
+node -e "const a=require('./build/contracts/AGIJobManager.json'); const m=JSON.parse(a.metadata); console.log(JSON.stringify((((m||{}).output||{}).evm||{}).bytecode?.linkReferences || {}, null, 2));"
+```
+
+If you use Truffle plugin verify, pass linked libraries exactly as deployed (example shape):
+```bash
+truffle run verify AGIJobManager@0xYourManager --network mainnet --forceConstructorArgs string:$(cat ctor-args.txt)
+```
 
 ## 4) ENS compatibility checks (must hold)
 
