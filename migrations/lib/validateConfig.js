@@ -78,6 +78,46 @@ function validateConfig(config, web3) {
   validateUint('parameters.agentBondMax', config.parameters.agentBondMax);
   validateUint('parameters.agentBond', config.parameters.agentBond);
 
+  const toBig = (value, fallback) => BigInt(value === null || value === undefined ? fallback : String(value));
+
+  const vbps = config.parameters.validatorBondBps;
+  const vmin = config.parameters.validatorBondMin;
+  const vmax = config.parameters.validatorBondMax;
+  if (vbps !== null || vmin !== null || vmax !== null) {
+    const bps = Number(vbps === null || vbps === undefined ? 1500 : vbps);
+    const min = toBig(vmin, '10000000000000000000');
+    const max = toBig(vmax, '88888888000000000000000000');
+    assert(min <= max, 'parameters.validatorBondMin must be <= parameters.validatorBondMax.');
+    if (bps === 0 && min === 0n) {
+      assert(max === 0n, 'parameters.validatorBondMax must be 0 when validatorBondBps=0 and validatorBondMin=0.');
+    } else {
+      assert(max > 0n, 'parameters.validatorBondMax must be > 0 unless validator bonds are fully disabled.');
+      assert(!(bps > 0 && min === 0n), 'parameters.validatorBondMin must be > 0 when validatorBondBps > 0.');
+    }
+  }
+
+  const abps = config.parameters.agentBondBps;
+  const amin = config.parameters.agentBondMin;
+  const amax = config.parameters.agentBondMax;
+  if (abps !== null || amin !== null || amax !== null) {
+    const bps = Number(abps === null || abps === undefined ? 500 : abps);
+    const min = toBig(amin, '1000000000000000000');
+    const max = toBig(amax, '88888888000000000000000000');
+    assert(min <= max, 'parameters.agentBondMin must be <= parameters.agentBondMax.');
+    if (bps === 0 && min === 0n && max === 0n) {
+      // valid fully-disabled mode
+    } else {
+      assert(max > 0n, 'parameters.agentBondMax must be > 0 unless agent bonds are fully disabled.');
+    }
+  }
+
+  if (config.parameters.agentBond !== null && config.parameters.agentBondMax !== null) {
+    assert(
+      toBig(config.parameters.agentBond, '0') <= toBig(config.parameters.agentBondMax, '0'),
+      'parameters.agentBond must be <= parameters.agentBondMax when both are specified.'
+    );
+  }
+
   const approvals = config.parameters.requiredValidatorApprovals;
   const disapprovals = config.parameters.requiredValidatorDisapprovals;
   if (approvals !== null && disapprovals !== null) {

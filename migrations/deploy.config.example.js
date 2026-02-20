@@ -99,11 +99,12 @@ module.exports = {
         nameWrapper: '0x0000000000000000000000000000000000000000',
       },
       authRoots: {
+        // Keep roots empty when ENS registry is zero so this sample passes validation as-is.
         roots: {
-          club: 'club.example.eth',
-          agent: 'agent.example.eth',
-          alphaClub: 'alpha.club.example.eth',
-          alphaAgent: 'alpha.agent.example.eth',
+          club: '',
+          agent: '',
+          alphaClub: '',
+          alphaAgent: '',
         },
         rootNodes: null,
       },
