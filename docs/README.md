@@ -32,6 +32,7 @@ Institutional documentation for operators, integrators, contributors, and audito
 - [TESTING.md](./TESTING.md)
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 - [GLOSSARY.md](./GLOSSARY.md)
+- [LEGAL/TERMS_AND_CONDITIONS.md](./LEGAL/TERMS_AND_CONDITIONS.md)
 
 ## Generated references
 
