@@ -314,10 +314,13 @@ module.exports = async function (deployer, network, accounts) {
     await ownerTx(manager, deployerAddress, receipt, `setSettlementPaused(${f.settlementPaused})`, () => manager.setSettlementPaused(f.settlementPaused, { from: deployerAddress }));
   }
   if (f.paused !== null && f.paused !== undefined) {
-    if (f.paused) {
+    const currentlyPaused = await manager.paused();
+    if (f.paused && !currentlyPaused) {
       await ownerTx(manager, deployerAddress, receipt, 'pause', () => manager.pause({ from: deployerAddress }));
-    } else {
+    } else if (!f.paused && currentlyPaused) {
       await ownerTx(manager, deployerAddress, receipt, 'unpause', () => manager.unpause({ from: deployerAddress }));
+    } else {
+      console.log(`  - paused already ${currentlyPaused}; no paused state tx needed.`);
     }
   }
 
