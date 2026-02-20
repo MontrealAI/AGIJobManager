@@ -61,7 +61,9 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
   if (identity.nameWrapper.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) {
     await assertAddressHasCode(web3, 'identity.nameWrapper', identity.nameWrapper);
   }
-  if (identity.ensJobPages) await warnIfNoCode(web3, 'identity.ensJobPages', identity.ensJobPages, warnings);
+  if (identity.ensJobPages && identity.ensJobPages.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) {
+    await assertAddressHasCode(web3, 'identity.ensJobPages', identity.ensJobPages);
+  }
 
   Object.entries(constructorArgs.resolvedRootNodes).forEach(([key, value]) => {
     assert(isBytes32(value), `authorizationRoots.${key} must resolve to bytes32.`);
@@ -137,7 +139,7 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
     const pct = Number(agiType.payoutPercentage);
     assert(Number.isInteger(pct) && pct >= 1 && pct <= 100, `agiTypes[${i}].payoutPercentage must be 1..100.`);
     assert(pct <= maxPayoutPct, `agiTypes[${i}].payoutPercentage must be <= ${maxPayoutPct}.`);
-    await warnIfNoCode(web3, `agiTypes[${i}].nftAddress`, agiType.nftAddress, warnings);
+    await assertAddressHasCode(web3, `agiTypes[${i}].nftAddress`, agiType.nftAddress);
   }
 
   const validateAddressArray = (label, values) => {
