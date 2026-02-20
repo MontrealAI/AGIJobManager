@@ -83,6 +83,40 @@ function assertEq(label, actual, expected) {
   }
 }
 
+async function applyValidatorThresholdUpdates(manager, deployerAddress, receipt, protocolParameters) {
+  const currentApprovals = Number((await manager.requiredValidatorApprovals()).toString());
+  const currentDisapprovals = Number((await manager.requiredValidatorDisapprovals()).toString());
+  const targetApprovals = Number(protocolParameters.requiredValidatorApprovals ?? currentApprovals);
+  const targetDisapprovals = Number(protocolParameters.requiredValidatorDisapprovals ?? currentDisapprovals);
+
+  if (targetApprovals + targetDisapprovals > 50) {
+    throw new Error(
+      `Invalid validator thresholds after resolution: approvals=${targetApprovals}, disapprovals=${targetDisapprovals}, total=${targetApprovals + targetDisapprovals}.`
+    );
+  }
+
+  const intermediateDisapprovals = Math.min(currentDisapprovals, targetDisapprovals);
+  if (intermediateDisapprovals !== currentDisapprovals) {
+    await ownerTx(manager, deployerAddress, receipt, 'setRequiredValidatorDisapprovals(intermediate)', () =>
+      manager.setRequiredValidatorDisapprovals(intermediateDisapprovals, { from: deployerAddress })
+    );
+  }
+
+  const latestApprovals = Number((await manager.requiredValidatorApprovals()).toString());
+  if (targetApprovals !== latestApprovals) {
+    await ownerTx(manager, deployerAddress, receipt, 'setRequiredValidatorApprovals', () =>
+      manager.setRequiredValidatorApprovals(targetApprovals, { from: deployerAddress })
+    );
+  }
+
+  const latestDisapprovals = Number((await manager.requiredValidatorDisapprovals()).toString());
+  if (targetDisapprovals !== latestDisapprovals) {
+    await ownerTx(manager, deployerAddress, receipt, 'setRequiredValidatorDisapprovals', () =>
+      manager.setRequiredValidatorDisapprovals(targetDisapprovals, { from: deployerAddress })
+    );
+  }
+}
+
 module.exports = async function (deployer, network, accounts) {
   if (!ensureEnabled()) return;
 
@@ -186,11 +220,8 @@ module.exports = async function (deployer, network, accounts) {
   if (p.validationRewardPercentage !== null) {
     await ownerTx(manager, deployerAddress, receipt, 'setValidationRewardPercentage', () => manager.setValidationRewardPercentage(p.validationRewardPercentage, { from: deployerAddress }));
   }
-  if (p.requiredValidatorApprovals !== null) {
-    await ownerTx(manager, deployerAddress, receipt, 'setRequiredValidatorApprovals', () => manager.setRequiredValidatorApprovals(p.requiredValidatorApprovals, { from: deployerAddress }));
-  }
-  if (p.requiredValidatorDisapprovals !== null) {
-    await ownerTx(manager, deployerAddress, receipt, 'setRequiredValidatorDisapprovals', () => manager.setRequiredValidatorDisapprovals(p.requiredValidatorDisapprovals, { from: deployerAddress }));
+  if (p.requiredValidatorApprovals !== null || p.requiredValidatorDisapprovals !== null) {
+    await applyValidatorThresholdUpdates(manager, deployerAddress, receipt, p);
   }
   if (p.voteQuorum !== null) {
     await ownerTx(manager, deployerAddress, receipt, 'setVoteQuorum', () => manager.setVoteQuorum(p.voteQuorum, { from: deployerAddress }));

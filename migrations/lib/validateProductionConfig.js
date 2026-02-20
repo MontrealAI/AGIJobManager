@@ -74,9 +74,18 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
     assert(Number(approvals) + Number(disapprovals) <= 50, 'approvals + disapprovals must be <= 50.');
   }
 
+  const effectiveApprovals = Number(approvals ?? 3);
+  const effectiveDisapprovals = Number(disapprovals ?? 3);
+  assert(effectiveApprovals + effectiveDisapprovals <= 50, 'effective approvals + disapprovals must be <= 50 (including defaults).');
+
   if (protocolParameters.voteQuorum !== null && protocolParameters.voteQuorum !== undefined) {
     const quorum = Number(protocolParameters.voteQuorum);
     assert(Number.isInteger(quorum) && quorum >= 1 && quorum <= 50, 'protocolParameters.voteQuorum must be 1..50.');
+  }
+
+  if (protocolParameters.jobDurationLimit !== null && protocolParameters.jobDurationLimit !== undefined) {
+    const limit = Number(protocolParameters.jobDurationLimit);
+    assert(Number.isInteger(limit) && limit > 0, 'protocolParameters.jobDurationLimit must be a positive integer.');
   }
 
   ['completionReviewPeriod', 'disputeReviewPeriod', 'challengePeriodAfterApproval'].forEach((key) => {
@@ -113,7 +122,7 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
   }
 
   const valPct = Number(protocolParameters.validationRewardPercentage ?? 8);
-  assert(Number.isInteger(valPct) && valPct >= 0 && valPct <= 100, 'protocolParameters.validationRewardPercentage must be 0..100.');
+  assert(Number.isInteger(valPct) && valPct > 0 && valPct <= 100, 'protocolParameters.validationRewardPercentage must be 1..100.');
   const maxPayoutPct = 100 - valPct;
   assert(Array.isArray(config.agiTypes), 'agiTypes must be an array.');
   for (let i = 0; i < config.agiTypes.length; i += 1) {
