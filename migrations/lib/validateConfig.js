@@ -39,7 +39,12 @@ function validateUint(label, value) {
   assert(isNonNegativeInteger(value), `${label} must be a non-negative integer.`);
 }
 
-function validateConfig(config, web3) {
+async function assertHasBytecode(label, address, web3) {
+  const code = await web3.eth.getCode(address);
+  assert(code && code !== '0x', `${label} must be a deployed contract address. Received: ${address}`);
+}
+
+async function validateConfig(config, web3) {
   validateAddressField('identity.agiTokenAddress', config.identity.agiTokenAddress, web3);
   validateAddressField('identity.ensRegistry', config.identity.ensRegistry, web3, { allowZero: true });
   validateAddressField('identity.nameWrapper', config.identity.nameWrapper, web3, { allowZero: true });
@@ -172,6 +177,14 @@ function validateConfig(config, web3) {
       config.identity.ensRegistry.toLowerCase() !== ZERO_ADDRESS.toLowerCase(),
       'identity.ensRegistry must be non-zero when any root node is non-zero.'
     );
+  }
+
+  await assertHasBytecode('identity.agiTokenAddress', config.identity.agiTokenAddress, web3);
+  if (anyNonZeroRoot) {
+    await assertHasBytecode('identity.ensRegistry', config.identity.ensRegistry, web3);
+  }
+  if (config.identity.nameWrapper.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) {
+    await assertHasBytecode('identity.nameWrapper', config.identity.nameWrapper, web3);
   }
 
   return true;

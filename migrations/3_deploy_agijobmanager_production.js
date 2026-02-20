@@ -61,7 +61,7 @@ module.exports = async function (deployer, network, accounts) {
   const deployerBalanceWei = await web3.eth.getBalance(deployerAddress);
 
   const config = buildResolvedConfig({ network, chainId, web3 });
-  validateConfig(config, web3);
+  await validateConfig(config, web3);
 
   const summary = {
     metadata: {
