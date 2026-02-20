@@ -28,13 +28,20 @@ cp migrations/deploy.config.example.js migrations/deploy.config.mainnet.js
 ## 2) Dry-run config review (no chain writes)
 
 ```bash
-RUN_PRODUCTION_MIGRATION=1 DEPLOY_CONFIG_PATH=migrations/deploy.config.mainnet.js DEPLOY_DRY_RUN=1 npx truffle migrate --network mainnet --f 3 --to 3
+RUN_PRODUCTION_MIGRATION=1 DEPLOY_CONFIG_PATH=migrations/deploy.config.mainnet.js DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND DEPLOY_DRY_RUN=1 npx truffle migrate --network mainnet --f 3 --to 3
 ```
 
 ## 3) Deploy to local/dev network
 
+Create a local config profile first (example):
+
 ```bash
-RUN_PRODUCTION_MIGRATION=1 DEPLOY_CONFIG_PATH=migrations/deploy.config.mainnet.js npx truffle migrate --network development --f 3 --to 3
+cp migrations/deploy.config.example.js migrations/deploy.config.dev.js
+# add networks.development (or networks.1337) with local mock addresses before deploy
+```
+
+```bash
+RUN_PRODUCTION_MIGRATION=1 DEPLOY_CONFIG_PATH=migrations/deploy.config.dev.js npx truffle migrate --network development --f 3 --to 3
 ```
 
 ## 4) Deploy to Ethereum mainnet (guarded)

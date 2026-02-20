@@ -286,7 +286,7 @@ module.exports = async function (deployer, network, accounts) {
     );
   }
 
-  if (post.ensJobPages !== null && post.ensJobPages !== undefined) {
+  if (post.ensJobPages !== null && post.ensJobPages !== undefined && post.ensJobPages !== '') {
     await runOwnerTx(manager, receipt.actions, `setEnsJobPages:${post.ensJobPages}`, () =>
       manager.setEnsJobPages(post.ensJobPages, { from: deployerAddress })
     );
