@@ -52,8 +52,8 @@ function assertEqual(label, actual, expected) {
 }
 
 module.exports = async function (deployer, network, accounts) {
-  if (network === 'test' && process.env.RUN_PRODUCTION_MIGRATION !== '1') {
-    console.log('Skipping 3_deploy_agijobmanager_production.js on test network (set RUN_PRODUCTION_MIGRATION=1 to enable).');
+  if (process.env.RUN_PRODUCTION_MIGRATION !== '1') {
+    console.log('Skipping 3_deploy_agijobmanager_production.js (set RUN_PRODUCTION_MIGRATION=1 to enable).');
     return;
   }
   const chainId = await web3.eth.getChainId();

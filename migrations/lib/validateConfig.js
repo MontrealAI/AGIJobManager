@@ -57,6 +57,13 @@ function validateConfig(config, web3) {
   validateUint('parameters.requiredValidatorDisapprovals', config.parameters.requiredValidatorDisapprovals);
   validateUint('parameters.voteQuorum', config.parameters.voteQuorum);
   validateUint('parameters.validationRewardPercentage', config.parameters.validationRewardPercentage);
+  if (config.parameters.validationRewardPercentage !== null && config.parameters.validationRewardPercentage !== undefined) {
+    const validationRewardPctValue = Number(config.parameters.validationRewardPercentage);
+    assert(
+      validationRewardPctValue > 0 && validationRewardPctValue <= 100,
+      'parameters.validationRewardPercentage must be in (0,100].'
+    );
+  }
   validateUint('parameters.premiumReputationThreshold', config.parameters.premiumReputationThreshold);
   validateUint('parameters.maxJobPayout', config.parameters.maxJobPayout);
   validateUint('parameters.jobDurationLimit', config.parameters.jobDurationLimit);
