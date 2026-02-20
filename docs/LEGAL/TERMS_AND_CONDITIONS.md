@@ -5,6 +5,7 @@
 The authoritative Terms & Conditions for AGIJobManager are embedded in the smart contract source code and verified deployment source:
 
 - [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol)
+- Verified deployed source on the relevant block explorer (for example, Etherscan), when available for the target network.
 
 Repository documentation is explanatory and operational. It does not override the contract source text.
 
