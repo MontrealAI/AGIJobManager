@@ -115,9 +115,11 @@ function validateConfig(config, web3) {
 
   const approvals = config.parameters.requiredValidatorApprovals;
   const disapprovals = config.parameters.requiredValidatorDisapprovals;
-  if (approvals !== null && disapprovals !== null) {
-    assert(Number(approvals) + Number(disapprovals) <= 50, 'requiredValidatorApprovals + requiredValidatorDisapprovals must be <= 50.');
-  }
+  const effectiveApprovals = Number(approvals === null || approvals === undefined ? 3 : approvals);
+  const effectiveDisapprovals = Number(disapprovals === null || disapprovals === undefined ? 3 : disapprovals);
+  assert(effectiveApprovals <= 50, 'parameters.requiredValidatorApprovals must be <= 50.');
+  assert(effectiveDisapprovals <= 50, 'parameters.requiredValidatorDisapprovals must be <= 50.');
+  assert(effectiveApprovals + effectiveDisapprovals <= 50, 'requiredValidatorApprovals + requiredValidatorDisapprovals must be <= 50.');
   if (config.parameters.voteQuorum !== null) {
     assert(Number(config.parameters.voteQuorum) > 0 && Number(config.parameters.voteQuorum) <= 50, 'parameters.voteQuorum must be 1..50.');
   }

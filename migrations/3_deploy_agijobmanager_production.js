@@ -156,15 +156,51 @@ module.exports = async function (deployer, network, accounts) {
       manager.setValidationRewardPercentage(p.validationRewardPercentage, { from: deployerAddress })
     );
   }
-  if (p.requiredValidatorApprovals !== null) {
-    await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorApprovals', () =>
-      manager.setRequiredValidatorApprovals(p.requiredValidatorApprovals, { from: deployerAddress })
-    );
-  }
-  if (p.requiredValidatorDisapprovals !== null) {
-    await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorDisapprovals', () =>
-      manager.setRequiredValidatorDisapprovals(p.requiredValidatorDisapprovals, { from: deployerAddress })
-    );
+  if (p.requiredValidatorApprovals !== null && p.requiredValidatorDisapprovals !== null) {
+    const targetApprovals = Number(p.requiredValidatorApprovals);
+    const targetDisapprovals = Number(p.requiredValidatorDisapprovals);
+    const currentApprovals = Number((await manager.requiredValidatorApprovals()).toString());
+    const currentDisapprovals = Number((await manager.requiredValidatorDisapprovals()).toString());
+
+    const canSetApprovalsFirst = targetApprovals + currentDisapprovals <= 50;
+    const canSetDisapprovalsFirst = currentApprovals + targetDisapprovals <= 50;
+
+    if (canSetApprovalsFirst) {
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorApprovals', () =>
+        manager.setRequiredValidatorApprovals(targetApprovals, { from: deployerAddress })
+      );
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorDisapprovals', () =>
+        manager.setRequiredValidatorDisapprovals(targetDisapprovals, { from: deployerAddress })
+      );
+    } else if (canSetDisapprovalsFirst) {
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorDisapprovals', () =>
+        manager.setRequiredValidatorDisapprovals(targetDisapprovals, { from: deployerAddress })
+      );
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorApprovals', () =>
+        manager.setRequiredValidatorApprovals(targetApprovals, { from: deployerAddress })
+      );
+    } else {
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorApprovals:temp0', () =>
+        manager.setRequiredValidatorApprovals(0, { from: deployerAddress })
+      );
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorDisapprovals', () =>
+        manager.setRequiredValidatorDisapprovals(targetDisapprovals, { from: deployerAddress })
+      );
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorApprovals', () =>
+        manager.setRequiredValidatorApprovals(targetApprovals, { from: deployerAddress })
+      );
+    }
+  } else {
+    if (p.requiredValidatorDisapprovals !== null) {
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorDisapprovals', () =>
+        manager.setRequiredValidatorDisapprovals(p.requiredValidatorDisapprovals, { from: deployerAddress })
+      );
+    }
+    if (p.requiredValidatorApprovals !== null) {
+      await runOwnerTx(manager, receipt.actions, 'setRequiredValidatorApprovals', () =>
+        manager.setRequiredValidatorApprovals(p.requiredValidatorApprovals, { from: deployerAddress })
+      );
+    }
   }
   if (p.voteQuorum !== null) {
     await runOwnerTx(manager, receipt.actions, 'setVoteQuorum', () => manager.setVoteQuorum(p.voteQuorum, { from: deployerAddress }));
