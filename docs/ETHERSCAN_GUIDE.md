@@ -61,6 +61,12 @@ node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duratio
 - `string`: plain text (no wrapping quotes in field box).
 - `uint256`: base-10 integer only.
 
+Copy/paste examples:
+```text
+bytes32: 0x4f9d5f7a16f4f0f8307f57ca53f2d5000f2f4a1ec2a0b5f30c0f0e8f2ddaa9ce
+bytes32[]: ["0x1111111111111111111111111111111111111111111111111111111111111111","0x2222222222222222222222222222222222222222222222222222222222222222"]
+```
+
 ### Offline helper scripts (recommended)
 - Merkle proofs (paste-ready `bytes32[]`):
   ```bash
@@ -110,12 +116,27 @@ node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --dur
 
 ### 3) Cancel job (only when allowed)
 Write: `cancelJob(jobId)`
+- `jobId`: numeric ID from `JobCreated` event / `totalJobs`
+
+```text
+jobId: 42
+```
 
 ### 4) Finalize after windows
 Write: `finalizeJob(jobId)`
+- `jobId`: numeric ID to settle
+
+```text
+jobId: 42
+```
 
 ### 5) Dispute when needed
 Write: `disputeJob(jobId)`
+- `jobId`: numeric ID under active review/challenge conditions
+
+```text
+jobId: 42
+```
 
 ## Agent flow
 
@@ -191,6 +212,9 @@ Outcomes can trigger:
 ## Moderator flow
 
 Write: `resolveDisputeWithCode(jobId, resolutionCode, reason)`
+- `jobId`: disputed job ID
+- `resolutionCode`: `0` no-op, `1` agent wins, `2` employer wins
+- `reason`: standardized evidence string (plain UTF-8 text)
 
 Resolution code table:
 - `0`: no-op bookkeeping (keeps dispute active)
@@ -275,12 +299,15 @@ For ENS route, `subdomain` must be:
 - no leading/trailing dash.
 
 ### Which route are you using?
-1. **Owner allowlist route?**
-   - If your address is in `additionalAgents`/`additionalValidators`, set `proof = []`.
-2. **Merkle route?**
-   - Paste `bytes32[]` proof from `scripts/merkle/export_merkle_proofs.js`; subdomain can be empty.
-3. **ENS route?**
-   - Provide valid label in `subdomain`; usually `proof = []`.
+```text
+Start
+ ├─ Is your address in additionalAgents/additionalValidators?
+ │   └─ Yes → route=allowlist, proof=[]
+ ├─ Do you have an owner-published Merkle proof for your address?
+ │   └─ Yes → route=merkle, paste proof bytes32[]
+ └─ Otherwise use ENS ownership route
+     └─ route=ens, set valid subdomain label, proof=[]
+```
 
 Helper commands:
 ```bash
