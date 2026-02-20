@@ -315,9 +315,9 @@ module.exports = async function (deployer, network, accounts) {
   }
   if (f.paused !== null && f.paused !== undefined) {
     if (f.paused) {
-      await ownerTx(manager, deployerAddress, receipt, 'pauseAll', () => manager.pauseAll({ from: deployerAddress }));
+      await ownerTx(manager, deployerAddress, receipt, 'pause', () => manager.pause({ from: deployerAddress }));
     } else {
-      await ownerTx(manager, deployerAddress, receipt, 'unpauseAll', () => manager.unpauseAll({ from: deployerAddress }));
+      await ownerTx(manager, deployerAddress, receipt, 'unpause', () => manager.unpause({ from: deployerAddress }));
     }
   }
 

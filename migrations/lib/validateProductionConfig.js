@@ -33,6 +33,11 @@ async function warnIfNoCode(web3, label, address, warnings) {
   if (!code || code === '0x') warnings.push(`${label} (${address}) has no bytecode. VERIFY BEFORE MAINNET.`);
 }
 
+async function assertHasCode(web3, label, address) {
+  const code = await web3.eth.getCode(address);
+  assert(code && code !== '0x', `${label} (${address}) has no bytecode.`);
+}
+
 async function validateProductionConfig({ config, constructorArgs, chainId, web3 }) {
   const warnings = [];
   const identity = config.identity || {};
@@ -48,9 +53,13 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
   assert(typeof identity.baseIpfsUrl === 'string', 'identity.baseIpfsUrl must be a string.');
   assert(Buffer.byteLength(identity.baseIpfsUrl, 'utf8') <= 512, 'identity.baseIpfsUrl must be <= 512 bytes.');
 
-  await warnIfNoCode(web3, 'identity.agiTokenAddress', identity.agiTokenAddress, warnings);
-  await warnIfNoCode(web3, 'identity.ensRegistry', identity.ensRegistry, warnings);
-  await warnIfNoCode(web3, 'identity.nameWrapper', identity.nameWrapper, warnings);
+  await assertHasCode(web3, 'identity.agiTokenAddress', identity.agiTokenAddress);
+  if (identity.ensRegistry.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) {
+    await assertHasCode(web3, 'identity.ensRegistry', identity.ensRegistry);
+  }
+  if (identity.nameWrapper.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) {
+    await assertHasCode(web3, 'identity.nameWrapper', identity.nameWrapper);
+  }
   if (identity.ensJobPages) await warnIfNoCode(web3, 'identity.ensJobPages', identity.ensJobPages, warnings);
 
   Object.entries(constructorArgs.resolvedRootNodes).forEach(([key, value]) => {
