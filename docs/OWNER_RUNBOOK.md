@@ -18,6 +18,12 @@ This runbook is optimized for autonomous, checklist-driven operations and Ethers
    - `jobEnsURI(uint256)` -> `0x751809b4` / calldata `0x24`
 6. Run post-deploy sanity reads: `paused`, `settlementPaused`, Merkle roots, root nodes, token address.
 
+Use deterministic offline helpers before any write:
+```bash
+node scripts/etherscan/prepare_inputs.js --action approve --spender 0xAGIJobManagerAddress --amount 1200
+node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
+```
+
 ## 2) Safe defaults + staged rollout
 
 - Phase 0: `pauseAll` enabled; configure params/roles.
@@ -50,6 +56,7 @@ Before `withdrawAGI(amount)`:
 2. Ensure `amount <= withdrawableAGI()`.
 3. Confirm protocol is paused for withdrawals (`withdrawAGI` requires `whenPaused` and settlement not paused).
 4. Execute withdrawal in small chunks when uncertain.
+5. Save transaction hash in operations log and re-check `withdrawableAGI()` after each chunk.
 
 Never bypass solvency checks via rescue functions for AGI escrow assets.
 

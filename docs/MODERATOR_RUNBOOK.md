@@ -51,9 +51,16 @@ Consistency rules:
 - avoid freeform emotional language,
 - include at least one immutable evidence URI.
 
+
+Offline prep (recommended before writing):
+```bash
+node scripts/etherscan/prepare_inputs.js --action resolve-dispute --jobId 42 --code 1 --reason "EVIDENCE:v1|job:42|code:1|summary:All acceptance criteria met|links:ipfs://bafy...|moderator:0x1234...|ts:1735689600"
+```
+
 ## 5) Etherscan-only workflow
 
 1. In **Read Contract**: `getJobCore`, `getJobValidation`, `getJobSpecURI`, `getJobCompletionURI`.
 2. Verify you are an active moderator (`moderators(yourAddress) == true`).
 3. In **Write Contract** call `resolveDisputeWithCode` with standardized reason.
 4. Confirm emitted `DisputeResolvedWithCode` event and archive tx hash.
+5. Store one-line disposition note in your moderator log: `jobId -> code -> reason hash`.
