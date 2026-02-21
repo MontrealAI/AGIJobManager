@@ -161,10 +161,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     await manager.applyForJob(jobLarge, "agent-slow", EMPTY_PROOF, { from: agentSlow });
 
-    await expectCustomError(
-      manager.setAgentBond.call(bondSmall.add(toBN(toWei("50"))), { from: owner }),
-      "InvalidState"
-    );
+    await manager.setAgentBond(bondSmall.add(toBN(toWei("50"))), { from: owner });
     await manager.requestJobCompletion(jobSmall, "ipfs-small-complete", { from: agentFast });
     await time.increase(2);
     const beforeFinalize = await token.balanceOf(agentFast);

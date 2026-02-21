@@ -1,6 +1,6 @@
 # Events and Errors Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `29091418f23a`.
+- Generated at (deterministic source fingerprint): `d24e414eb2c3`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Events catalog
@@ -30,6 +30,7 @@
 | `JobDisputed` | `uint256 indexed jobId, address indexed disputant` | Dispute lane entered | Page moderator operations queue |
 | `JobExpired` | `uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout` | Job missed deadline and expired | Track employer protection triggers |
 | `JobValidated` | `uint256 indexed jobId, address indexed validator` | Validator approval vote | Track validator participation and threshold trajectory |
+| `MaxActiveJobsPerAgentUpdated` | `uint256 oldValue, uint256 newValue` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `MerkleRootsUpdated` | `bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `NameWrapperUpdated` | `address newNameWrapper` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `NFTIssued` | `uint256 indexed tokenId, address indexed employer, string tokenURI` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
