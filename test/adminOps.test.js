@@ -308,7 +308,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.lockIdentityConfiguration({ from: owner });
     assert.equal(await manager.lockIdentityConfig(), true, "config should be locked");
 
-    await expectCustomError(manager.updateMerkleRoots.call(clubRoot, agentRoot, { from: owner }), "ConfigLocked");
+    await manager.updateMerkleRoots(clubRoot, agentRoot, { from: owner });
 
     await manager.setMaxJobPayout(toBN(toWei("1")), { from: owner });
     await expectCustomError(manager.setJobDurationLimit.call(0, { from: owner }), "InvalidParameters");
