@@ -682,6 +682,25 @@
       "inputs": [
         {
           "indexed": false,
+          "internalType": "uint256",
+          "name": "oldValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "MaxActiveJobsPerAgentUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
           "internalType": "bytes32",
           "name": "validatorMerkleRoot",
           "type": "bytes32"
@@ -1487,6 +1506,19 @@
     {
       "inputs": [],
       "name": "lockedValidatorBonds",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "maxActiveJobsPerAgent",
       "outputs": [
         {
           "internalType": "uint256",
@@ -2436,6 +2468,19 @@
         }
       ],
       "name": "setJobDurationLimit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMaxActiveJobsPerAgent",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
