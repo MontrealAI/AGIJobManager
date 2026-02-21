@@ -160,7 +160,7 @@ Preferred dry-run supported by migration #6:
 
 What you do:
 ```bash
-AGIJOBMANAGER_DEPLOY=1 DEPLOY_DRY_RUN=1 npx truffle migrate --network mainnet --f 6 --to 6
+AGIJOBMANAGER_DEPLOY=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET DEPLOY_DRY_RUN=1 npx truffle migrate --network mainnet --f 6 --to 6
 ```
 
 What you should see:
