@@ -12,7 +12,7 @@ cp migrations/config/agijobmanager.config.example.js migrations/config/agijobman
 Edit `migrations/config/agijobmanager.config.js` and verify every placeholder value before mainnet.
 
 > Migration `6_deploy_agijobmanager_production_operator.js` is the canonical production migration. Migration `#5` remains available for historical reproducibility.
-> Safety guard: migration `#6` skips automatically if `AGIJobManager` is already recorded on the target network. Set `AGIJOBMANAGER_ALLOW_REDEPLOY=1` only when you intentionally want a second deployment.
+> Safety guard: migration `#6` skips automatically only when an artifact-recorded `AGIJobManager` address also has on-chain bytecode on the target network. Set `AGIJOBMANAGER_ALLOW_REDEPLOY=1` only when you intentionally want a second deployment.
 
 Optional: use a different path via `AGIJOBMANAGER_CONFIG_PATH=/abs/or/relative/path.js`.
 

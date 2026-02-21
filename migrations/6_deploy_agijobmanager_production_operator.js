@@ -139,11 +139,19 @@ module.exports = async function (deployer, network, accounts) {
 
   const existingDeployment = AGIJobManager.networks?.[String(deployer.network_id)]?.address;
   if (existingDeployment && process.env.AGIJOBMANAGER_ALLOW_REDEPLOY !== '1') {
+    const existingCode = await web3.eth.getCode(existingDeployment);
+    if (existingCode && existingCode !== '0x') {
+      console.log(
+        `Skipping migration #6 because AGIJobManager is already deployed on network ${deployer.network_id} at ${existingDeployment}. `
+        + 'Set AGIJOBMANAGER_ALLOW_REDEPLOY=1 to force a second deployment.'
+      );
+      return;
+    }
+
     console.log(
-      `Skipping migration #6 because AGIJobManager is already recorded on network ${deployer.network_id} at ${existingDeployment}. `
-      + 'Set AGIJOBMANAGER_ALLOW_REDEPLOY=1 to force a second deployment.'
+      `Found stale artifact deployment record for AGIJobManager at ${existingDeployment} (no on-chain bytecode). `
+      + 'Proceeding with deployment.'
     );
-    return;
   }
 
   const chainId = await web3.eth.getChainId();
