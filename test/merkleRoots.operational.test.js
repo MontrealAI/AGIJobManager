@@ -45,6 +45,7 @@ contract('merkleRoots.operational', (accounts) => {
 
   it('updates merkle roots even while escrow is active', async () => {
     await manager.createJob('ipfs-job', payout, 3600, 'details', { from: employer });
+    assert.equal((await manager.lockedEscrow()).toString(), payout);
 
     const newValidatorRoot = web3.utils.soliditySha3('validator-root-v2');
     const newAgentRoot = web3.utils.soliditySha3('agent-root-v2');
@@ -57,7 +58,7 @@ contract('merkleRoots.operational', (accounts) => {
     assert.equal(await manager.agentMerkleRoot(), newAgentRoot);
   });
 
-  it('updates merkle roots after identity lock while other locked config remains blocked', async () => {
+  it('updates merkle roots after identity lock', async () => {
     await manager.lockIdentityConfiguration({ from: owner });
 
     const newValidatorRoot = web3.utils.soliditySha3('validator-root-v3');
@@ -66,6 +67,10 @@ contract('merkleRoots.operational', (accounts) => {
 
     assert.equal(await manager.validatorMerkleRoot(), newValidatorRoot);
     assert.equal(await manager.agentMerkleRoot(), newAgentRoot);
+  });
+
+  it('keeps other identity-locked updates blocked after lock', async () => {
+    await manager.lockIdentityConfiguration({ from: owner });
 
     await expectCustomError(
       manager.updateRootNodes.call(rootNode('club2'), rootNode('agent2'), rootNode('club3'), rootNode('agent3'), { from: owner }),
