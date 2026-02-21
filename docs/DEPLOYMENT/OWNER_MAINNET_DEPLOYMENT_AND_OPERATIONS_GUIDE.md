@@ -110,6 +110,19 @@ npx truffle compile
 cp migrations/config/agijobmanager.config.example.js migrations/config/agijobmanager.config.js
 ```
 
+### 6.3 Edit deployment config before any migration
+
+Open `migrations/config/agijobmanager.config.js` and set approved values before running dry-run or mainnet migration.
+
+Minimum required edits for mainnet:
+- `ownership.finalOwner` must be a real address (not `null`),
+- keep `ownership.requireFinalOwnerOnMainnet: true`,
+- confirm `identity` fields (token/ENS/nameWrapper/base URL),
+- confirm `merkleRoots`, `authorizationRoots`/`rootNodes`,
+- confirm `protocolParameters`, `dynamicLists`, and `agiTypes`.
+
+If `finalOwner` is unset on mainnet, validation will fail before deployment.
+
 Set environment variables:
 
 ```bash
