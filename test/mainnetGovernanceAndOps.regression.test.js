@@ -72,8 +72,9 @@ contract('mainnet governance + ops regressions', (accounts) => {
     await expectCustomError(ctx.manager.setVoteQuorum.call(1, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setCompletionReviewPeriod.call(1, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setDisputeReviewPeriod.call(1, { from: owner }), 'InvalidState');
-    await expectCustomError(ctx.manager.setValidatorBondParams.call(100, 1, 1, { from: owner }), 'InvalidState');
-    await expectCustomError(ctx.manager.setAgentBondParams.call(100, 1, 1, { from: owner }), 'InvalidState');
+    await ctx.manager.setValidatorBondParams(100, 1, 1, { from: owner });
+    await ctx.manager.setAgentBondParams(100, 1, 1, { from: owner });
+    await ctx.manager.setAgentBond(1, { from: owner });
     await expectCustomError(ctx.manager.setValidatorSlashBps.call(100, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setChallengePeriodAfterApproval.call(1, { from: owner }), 'InvalidState');
     const inFlightValidatorRoot = web3.utils.randomHex(32);
