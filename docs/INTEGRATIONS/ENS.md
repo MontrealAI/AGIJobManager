@@ -1,5 +1,8 @@
 # ENS Integration (AGIJobManager)
 
+> **Intended operations model: AI agents exclusively.** Human operators provide governance and oversight; routine protocol participation is for autonomous AI agents.
+
+
 This guide documents the **actual ENS integration surface** of AGIJobManager and separates on-chain enforcement from off-chain operator duties.
 
 > **Operator note**
@@ -61,7 +64,7 @@ flowchart TD
 | `ens` | `ENS public ens` in `AGIJobManager` | `onlyOwner` via `updateEnsRegistry` | `ens()` + `EnsRegistryUpdated` | Blocked by `lockIdentityConfiguration`; requires `_requireEmptyEscrow()` | Must be non-zero contract (`code.length > 0`) |
 | `nameWrapper` | `NameWrapper public nameWrapper` | `onlyOwner` via `updateNameWrapper` | `nameWrapper()` + `NameWrapperUpdated` | Blocked by lock; requires empty escrow | `0x0` disables wrapper path and leaves resolver fallback |
 | Root nodes | `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode` | `onlyOwner` via `updateRootNodes` | root getters + `RootNodesUpdated` | Blocked by lock; requires empty escrow | Misconfigured nodes can deny valid users or admit wrong namespace |
-| Merkle roots | `validatorMerkleRoot`, `agentMerkleRoot` | `onlyOwner` via `updateMerkleRoots` | getters + `MerkleRootsUpdated` | Blocked by `lockIdentityConfiguration`; requires empty escrow | Emergency fallback **only before lock**; after lock use allowlists/blocklists + pause controls |
+| Merkle roots | `validatorMerkleRoot`, `agentMerkleRoot` | `onlyOwner` via `updateMerkleRoots` | getters + `MerkleRootsUpdated` | Always owner-updateable (not blocked by lock or escrow) | Primary long-lived allowlist governance lever; preserve prior authorized AI agents/validators unless intentionally removing access |
 | ENS hook target | `address public ensJobPages` | `onlyOwner` via `setEnsJobPages` | `ensJobPages()` + `EnsJobPagesUpdated` | Blocked by lock | Hook failures are intentionally non-fatal |
 | ENS URI toggle | `bool private useEnsJobTokenURI` | `onlyOwner` via `setUseEnsJobTokenURI` | Observe `NFTIssued` URI and `tokenURI(tokenId)` | Not blocked by identity lock | Enable only after hook target hardening |
 | Identity lock | `bool public lockIdentityConfig` | `onlyOwner` via `lockIdentityConfiguration` | `lockIdentityConfig()` + `IdentityConfigurationLocked` | Irreversible | Freezes token/ENS/wrapper/root/hook wiring |
@@ -70,7 +73,7 @@ flowchart TD
 > `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, and `updateRootNodes` all enforce `_requireEmptyEscrow()` before allowing changes. See [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
 
 > **Operator note**
-> `lockIdentityConfiguration()` is not a full governance lock, but it **does** freeze ENS/identity rewiring including Merkle updates because `updateMerkleRoots` is guarded by `whenIdentityConfigurable`. Post-lock, operators still retain allowlist/blocklist and pause controls. See [`whenIdentityConfigurable`](../../contracts/AGIJobManager.sol#L300-L302), [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L816-L825), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L374-L377), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L754-L757), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L458-L478).
+> `lockIdentityConfiguration()` is not a full governance lock. It freezes ENS/identity rewiring guarded by `whenIdentityConfigurable`, but `updateMerkleRoots` remains intentionally owner-callable for long-lived AI-agent allowlist operations even after lock and during active escrow. See [`whenIdentityConfigurable`](../../contracts/AGIJobManager.sol#L558-L561), [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L1074-L1082), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L951-L954), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L1011-L1014), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L705-L721).
 
 ## Runtime authorization model
 
