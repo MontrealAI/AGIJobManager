@@ -389,7 +389,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public lockedValidatorBonds;
     /// @notice Total AGI locked as dispute bonds for unsettled disputes.
     uint256 public lockedDisputeBonds;
-    uint256 internal constant maxActiveJobsPerAgent = 3;
+    uint256 public maxActiveJobsPerAgent = 3;
 
     bytes32 public clubRootNode;
     bytes32 public alphaClubRootNode;
@@ -510,6 +510,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 newMax
     );
     event AgentBondMinUpdated(uint256 indexed oldMin, uint256 indexed newMin);
+    event MaxActiveJobsPerAgentUpdated(uint256 oldValue, uint256 newValue);
     event ValidatorSlashBpsUpdated(uint256 indexed oldBps, uint256 indexed newBps);
     event EnsHookAttempted(uint8 indexed hook, uint256 indexed jobId, address indexed target, bool success);
 
@@ -1114,12 +1115,16 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_limit == 0) revert InvalidParameters();
         jobDurationLimit = _limit;
     }
+    function setMaxActiveJobsPerAgent(uint256 value) external onlyOwner {
+        if (!(value > 0 && value <= 10_000)) revert InvalidParameters();
+        emit MaxActiveJobsPerAgentUpdated(maxActiveJobsPerAgent, value);
+        maxActiveJobsPerAgent = value;
+    }
     function setCompletionReviewPeriod(uint256 _period) external onlyOwner {
         _requireEmptyEscrow();
         _requireValidReviewPeriod(_period);
-        uint256 oldPeriod = completionReviewPeriod;
+        emit CompletionReviewPeriodUpdated(completionReviewPeriod, _period);
         completionReviewPeriod = _period;
-        emit CompletionReviewPeriodUpdated(oldPeriod, _period);
     }
     function setDisputeReviewPeriod(uint256 _period) external onlyOwner {
         _requireEmptyEscrow();
@@ -1129,7 +1134,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
     function setValidatorBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
-        _requireEmptyEscrow();
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
         if (bps == 0 && min == 0) {
@@ -1143,49 +1147,41 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit ValidatorBondParamsUpdated(bps, min, max);
     }
     function setAgentBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
-        _requireEmptyEscrow();
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
-        uint256 oldBps = agentBondBps;
-        uint256 oldMin = agentBond;
-        uint256 oldMax = agentBondMax;
         if (bps == 0 && min == 0 && max == 0) {
+            emit AgentBondParamsUpdated(agentBondBps, agentBond, agentBondMax, 0, 0, 0);
             agentBondBps = 0;
             agentBond = 0;
             agentBondMax = 0;
-            emit AgentBondParamsUpdated(oldBps, oldMin, oldMax, 0, 0, 0);
             return;
         }
         if (max == 0) revert InvalidParameters();
+        emit AgentBondParamsUpdated(agentBondBps, agentBond, agentBondMax, bps, min, max);
         agentBondBps = bps;
         agentBond = min;
         agentBondMax = max;
-        emit AgentBondParamsUpdated(oldBps, oldMin, oldMax, bps, min, max);
     }
     function setAgentBond(uint256 bond) external onlyOwner {
-        _requireEmptyEscrow();
         if (agentBondMax == 0) {
             if (bond != 0) revert InvalidParameters();
         } else if (bond > agentBondMax) {
             revert InvalidParameters();
         }
-        uint256 oldMin = agentBond;
+        emit AgentBondMinUpdated(agentBond, bond);
         agentBond = bond;
-        emit AgentBondMinUpdated(oldMin, bond);
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         _requireEmptyEscrow();
         if (bps > 10_000) revert InvalidParameters();
-        uint256 oldBps = validatorSlashBps;
+        emit ValidatorSlashBpsUpdated(validatorSlashBps, bps);
         validatorSlashBps = bps;
-        emit ValidatorSlashBpsUpdated(oldBps, bps);
     }
     function setChallengePeriodAfterApproval(uint256 period) external onlyOwner {
         _requireEmptyEscrow();
         _requireValidReviewPeriod(period);
-        uint256 oldPeriod = challengePeriodAfterApproval;
+        emit ChallengePeriodAfterApprovalUpdated(challengePeriodAfterApproval, period);
         challengePeriodAfterApproval = period;
-        emit ChallengePeriodAfterApprovalUpdated(oldPeriod, period);
     }
     function getJobCore(uint256 jobId)
         external

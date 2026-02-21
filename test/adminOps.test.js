@@ -438,6 +438,69 @@ contract("AGIJobManager admin ops", (accounts) => {
     );
   });
 
+  it("allows owner to increase per-agent active job concurrency", async () => {
+    const payout = toBN(toWei("1"));
+    await token.mint(employer, payout.muln(4), { from: owner });
+    await token.approve(manager.address, payout.muln(4), { from: employer });
+
+    const jobIds = [];
+    for (let i = 0; i < 4; i += 1) {
+      const createTx = await manager.createJob(`ipfs-${i}`, payout, 1000, "details", { from: employer });
+      jobIds.push(createTx.logs[0].args.jobId.toNumber());
+    }
+
+    await manager.applyForJob(jobIds[0], "agent", EMPTY_PROOF, { from: agent });
+    await manager.applyForJob(jobIds[1], "agent", EMPTY_PROOF, { from: agent });
+    await manager.applyForJob(jobIds[2], "agent", EMPTY_PROOF, { from: agent });
+    await expectCustomError(
+      manager.applyForJob.call(jobIds[3], "agent", EMPTY_PROOF, { from: agent }),
+      "InvalidState"
+    );
+
+    await expectCustomError(manager.setMaxActiveJobsPerAgent.call(0, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.setMaxActiveJobsPerAgent.call(10_001, { from: owner }), "InvalidParameters");
+
+    const updateTx = await manager.setMaxActiveJobsPerAgent(4, { from: owner });
+    expectEvent(updateTx, "MaxActiveJobsPerAgentUpdated", { oldValue: toBN("3"), newValue: toBN("4") });
+    await manager.applyForJob(jobIds[3], "agent", EMPTY_PROOF, { from: agent });
+  });
+
+  it("allows bond parameter updates while escrow is locked for active jobs", async () => {
+    // Pre-change regression: these setters reverted with InvalidState while lockedEscrow > 0.
+    const payout = toBN(toWei("2"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+    assert.equal((await manager.lockedEscrow()).toString(), payout.toString(), "escrow should be locked");
+
+    await manager.setAgentBondParams(600, toBN(toWei("2")), toBN(toWei("30")), { from: owner });
+    await manager.setAgentBond(toBN(toWei("4")), { from: owner });
+    await manager.setValidatorBondParams(1800, toBN(toWei("3")), toBN(toWei("40")), { from: owner });
+
+    assert.equal((await manager.agentBondBps()).toString(), "600", "agent bond bps should update");
+    assert.equal((await manager.agentBond()).toString(), toWei("4"), "agent bond min should update");
+    assert.equal((await manager.agentBondMax()).toString(), toWei("30"), "agent bond max should update");
+    assert.equal((await manager.validatorBondBps()).toString(), "1800", "validator bond bps should update");
+    assert.equal((await manager.validatorBondMin()).toString(), toWei("3"), "validator bond min should update");
+    assert.equal((await manager.validatorBondMax()).toString(), toWei("40"), "validator bond max should update");
+  });
+
+
+  it("keeps merkle root updates available during active escrow and after identity lock", async () => {
+    const payout = toBN(toWei("1"));
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
+    await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
+
+    await manager.lockIdentityConfiguration({ from: owner });
+    const validatorRoot = web3.utils.soliditySha3("validator-root-live");
+    const agentRootLive = web3.utils.soliditySha3("agent-root-live");
+    await manager.updateMerkleRoots(validatorRoot, agentRootLive, { from: owner });
+
+    assert.equal(await manager.validatorMerkleRoot(), validatorRoot, "validator root should update");
+    assert.equal(await manager.agentMerkleRoot(), agentRootLive, "agent root should update");
+  });
+
   it("allows identity config updates after all obligations settle", async () => {
     const payout = toBN(toWei("3"));
     await token.mint(employer, payout, { from: owner });

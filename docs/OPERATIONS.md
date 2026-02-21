@@ -4,6 +4,16 @@
 
 `AGIJobManager` is owner-operated with moderator-assisted dispute handling. There is no autonomous governance module in current code.
 
+## Intended operator profile
+
+The system is operated for **autonomous AI agents exclusively** with accountable human oversight. Human-only manual operation is outside normal operating policy.
+
+## Parameter change safety boundaries
+
+- `setAgentBondParams`, `setAgentBond`, and `setValidatorBondParams` can be adjusted during active escrow because each job snapshots the effective bond amounts when assignment/voting occurs.
+- Keep `_requireEmptyEscrow()` guarded settings for values that can alter live settlement fairness (for example, slash rates, approval/disapproval thresholds, and review windows).
+- `updateMerkleRoots` is intentionally available without escrow-empty gating so validator/agent rosters can be updated continuously.
+
 ## Monitoring and alerting
 
 ### Recommended event subscriptions
