@@ -1074,9 +1074,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)
         external
         onlyOwner
-        whenIdentityConfigurable
     {
-        _requireEmptyEscrow();
         validatorMerkleRoot = _validatorMerkleRoot;
         agentMerkleRoot = _agentMerkleRoot;
         emit MerkleRootsUpdated(_validatorMerkleRoot, _agentMerkleRoot);
