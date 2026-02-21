@@ -136,16 +136,23 @@ async function applyValidatorThresholdUpdates(manager, deployerAddress, receipt,
 module.exports = async function (deployer, network, accounts) {
   console.log('AGIJobManager production migration #6 (operator) starting...');
   if (!ensureEnabled()) return;
+  const dryRun = process.env.DEPLOY_DRY_RUN === '1';
 
   const existingDeployment = AGIJobManager.networks?.[String(deployer.network_id)]?.address;
   if (existingDeployment && process.env.AGIJOBMANAGER_ALLOW_REDEPLOY !== '1') {
     const code = await web3.eth.getCode(existingDeployment);
     if (code && code !== '0x') {
+      if (dryRun) {
+        console.log(
+          `Existing deployment detected at ${existingDeployment} on network ${deployer.network_id}, but continuing because DEPLOY_DRY_RUN=1 for validation-only execution.`
+        );
+      } else {
       console.log(
         `Skipping migration #6 because AGIJobManager is already deployed on-chain at ${existingDeployment} for network ${deployer.network_id}. `
         + 'Set AGIJOBMANAGER_ALLOW_REDEPLOY=1 to force a second deployment.'
       );
       return;
+      }
     }
 
     console.log(
@@ -164,7 +171,6 @@ module.exports = async function (deployer, network, accounts) {
 
   const deployerAddress = accounts[0];
   const deployerBalance = await web3.eth.getBalance(deployerAddress);
-  const dryRun = process.env.DEPLOY_DRY_RUN === '1';
 
   const loaded = loadConfig({ network, chainId, web3 });
   const { config, constructorArgs } = loaded;
