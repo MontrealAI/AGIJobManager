@@ -57,6 +57,11 @@ function getNetworkOverride(configModule, network, chainId) {
 
 function applyEnvOverrides(config) {
   const out = deepClone(config);
+  out.identity = isObject(out.identity) ? out.identity : {};
+  out.merkleRoots = isObject(out.merkleRoots) ? out.merkleRoots : {};
+  out.protocolParameters = isObject(out.protocolParameters) ? out.protocolParameters : {};
+  out.ownership = isObject(out.ownership) ? out.ownership : {};
+  out.operationalFlags = isObject(out.operationalFlags) ? out.operationalFlags : {};
   out.authorizationRoots = out.authorizationRoots || {};
   const rootNodeEnvVars = [
     process.env.AGIJOBMANAGER_ROOT_CLUB_NODE,
