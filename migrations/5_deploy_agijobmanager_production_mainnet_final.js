@@ -39,6 +39,10 @@ function ensureEnabled() {
     console.log('Skipping AGIJobManager production migration (disabled). Set AGIJOBMANAGER_DEPLOY=1 to enable.');
     return false;
   }
+  if (process.env.AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_5 !== '1') {
+    console.log('Skipping legacy AGIJobManager migration #5. Set AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_5=1 to run it explicitly.');
+    return false;
+  }
   return true;
 }
 

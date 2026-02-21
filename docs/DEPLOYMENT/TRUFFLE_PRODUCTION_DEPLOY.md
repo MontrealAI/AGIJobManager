@@ -11,7 +11,7 @@ cp migrations/config/agijobmanager.config.example.js migrations/config/agijobman
 ```
 Edit `migrations/config/agijobmanager.config.js` and verify every placeholder value before mainnet.
 
-> Migration `6_deploy_agijobmanager_production_operator.js` is the canonical production migration. Migration `#5` remains available for historical reproducibility.
+> Migration `6_deploy_agijobmanager_production_operator.js` is the canonical production migration. Migration `#5` is legacy-only and skipped unless `AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_5=1` is explicitly set.
 
 Optional: use a different path via `AGIJOBMANAGER_CONFIG_PATH=/abs/or/relative/path.js`.
 
