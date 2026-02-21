@@ -129,15 +129,13 @@ function applyEnvOverrides(config) {
 }
 
 function resolveRootNodes(authRoots, web3) {
-  if (authRoots.rootNodes) {
-    return authRoots.rootNodes;
-  }
+  const explicitNodes = authRoots.rootNodes || {};
   const roots = authRoots.roots || {};
   return {
-    clubRootNode: namehash(roots.clubName || roots.club || '', web3),
-    agentRootNode: namehash(roots.agentName || roots.agent || '', web3),
-    alphaClubRootNode: namehash(roots.alphaClubName || roots.alphaClub || '', web3),
-    alphaAgentRootNode: namehash(roots.alphaAgentName || roots.alphaAgent || '', web3),
+    clubRootNode: explicitNodes.clubRootNode || namehash(roots.clubName || roots.club || '', web3),
+    agentRootNode: explicitNodes.agentRootNode || namehash(roots.agentName || roots.agent || '', web3),
+    alphaClubRootNode: explicitNodes.alphaClubRootNode || namehash(roots.alphaClubName || roots.alphaClub || '', web3),
+    alphaAgentRootNode: explicitNodes.alphaAgentRootNode || namehash(roots.alphaAgentName || roots.alphaAgent || '', web3),
   };
 }
 
