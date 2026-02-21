@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -13,6 +14,7 @@ const { validateProductionConfig } = require('./lib/validateProductionConfig');
 const { pretty, formatEthWei, redactAddress } = require('./lib/format');
 
 const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET';
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const DEFAULT_ONCHAIN = {
   requiredValidatorApprovals: '3',
   requiredValidatorDisapprovals: '3',
@@ -39,8 +41,8 @@ function ensureEnabled() {
     console.log('Skipping AGIJobManager production migration (disabled). Set AGIJOBMANAGER_DEPLOY=1 to enable.');
     return false;
   }
-  if (process.env.AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_5 !== '1') {
-    console.log('Skipping legacy AGIJobManager migration #5. Set AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_5=1 to run it explicitly.');
+  if (process.env.AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_5 === '1') {
+    console.log('Skipping AGIJobManager migration #6 because AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_5=1 (legacy deployment explicitly selected).');
     return false;
   }
   return true;
@@ -86,7 +88,6 @@ function assertEq(label, actual, expected) {
     throw new Error(`Verification failed for ${label}. expected=${expected}, actual=${actual}`);
   }
 }
-
 
 function isValidThresholdPair(approvals, disapprovals) {
   const a = Number(approvals);
@@ -135,15 +136,18 @@ async function applyValidatorThresholdUpdates(manager, deployerAddress, receipt,
     await ownerTx(manager, deployerAddress, receipt, 'setRequiredValidatorDisapprovals', () => manager.setRequiredValidatorDisapprovals(targetDisapprovals, { from: deployerAddress }));
   }
 }
+
 module.exports = async function (deployer, network, accounts) {
-  console.log('AGIJobManager production migration #5 (final) starting...');
+  console.log('AGIJobManager production migration #6 (operator) starting...');
   if (!ensureEnabled()) return;
 
   const chainId = await web3.eth.getChainId();
   if (Number(chainId) === 1 && process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
-    throw new Error(
-      `Mainnet deployment blocked. Set DEPLOY_CONFIRM_MAINNET=${MAINNET_CONFIRMATION_VALUE} and re-run.`
-    );
+    throw new Error(`Mainnet deployment blocked. Set DEPLOY_CONFIRM_MAINNET=${MAINNET_CONFIRMATION_VALUE} and re-run.`);
+  }
+
+  if (Number(chainId) !== 1) {
+    console.log(`WARNING: deploying to non-mainnet chainId=${chainId} network=${network}.`);
   }
 
   const deployerAddress = accounts[0];
@@ -154,6 +158,8 @@ module.exports = async function (deployer, network, accounts) {
   const { config, constructorArgs } = loaded;
   const validation = await validateProductionConfig({ config, constructorArgs, chainId, web3 });
 
+  const configHash = crypto.createHash('sha256').update(JSON.stringify(config)).digest('hex');
+
   const summary = {
     network,
     chainId,
@@ -161,6 +167,7 @@ module.exports = async function (deployer, network, accounts) {
     deployer: redactAddress(deployerAddress),
     deployerBalanceEth: formatEthWei(deployerBalance, web3),
     configPath: loaded.configPath,
+    configHash,
     constructorArgs,
     protocolParameters: config.protocolParameters,
     dynamicLists: {
@@ -189,6 +196,7 @@ module.exports = async function (deployer, network, accounts) {
     chainId,
     deployerAddress,
     configPath: loaded.configPath,
+    configHash,
     resolvedConfig: config,
     constructorArgs,
     warnings: validation.warnings,
@@ -338,10 +346,11 @@ module.exports = async function (deployer, network, accounts) {
   const expected = resolveExpectedParameters(config.protocolParameters);
 
   const checks = [
+    ['owner', (await manager.owner()).toString(), config.ownership.finalOwner || deployerAddress],
     ['agiToken', (await manager.agiToken()).toString(), config.identity.agiTokenAddress],
     ['ens', (await manager.ens()).toString(), config.identity.ensRegistry],
     ['nameWrapper', (await manager.nameWrapper()).toString(), config.identity.nameWrapper],
-    ['ensJobPages', (await manager.ensJobPages()).toString(), config.identity.ensJobPages || '0x0000000000000000000000000000000000000000'],
+    ['ensJobPages', (await manager.ensJobPages()).toString(), config.identity.ensJobPages || ZERO_ADDRESS],
     ['clubRootNode', await manager.clubRootNode(), constructorArgs.resolvedRootNodes.clubRootNode],
     ['agentRootNode', await manager.agentRootNode(), constructorArgs.resolvedRootNodes.agentRootNode],
     ['alphaClubRootNode', await manager.alphaClubRootNode(), constructorArgs.resolvedRootNodes.alphaClubRootNode],
