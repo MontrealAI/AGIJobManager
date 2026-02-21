@@ -54,4 +54,31 @@ contract('agiTypes.safety', (accounts) => {
 
     await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.disableAGIType(agent, { from: owner }));
   });
+
+  it('reuses disabled AGI type slots when max capacity is reached', async () => {
+    const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
+    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
+
+    const maxTypes = (await manager.MAX_AGI_TYPES()).toNumber();
+    const agiTypes = [];
+    for (let i = 0; i < maxTypes; i += 1) {
+      const agiType = await MockERC721.new();
+      agiTypes.push(agiType);
+      await manager.addAGIType(agiType.address, 1, { from: owner });
+    }
+
+    const reusableIndex = 7;
+    await manager.disableAGIType(agiTypes[reusableIndex].address, { from: owner });
+
+    const replacement = await MockERC721.new();
+    await manager.addAGIType(replacement.address, 2, { from: owner });
+
+    const slot = await manager.agiTypes(reusableIndex);
+    assert.equal(slot.nftAddress, replacement.address);
+    assert.equal(slot.payoutPercentage.toString(), '2');
+
+    const overflow = await MockERC721.new();
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType(overflow.address, 1, { from: owner }));
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType(overflow.address, 93, { from: owner }));
+  });
 });

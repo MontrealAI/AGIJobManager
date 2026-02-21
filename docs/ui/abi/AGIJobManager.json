@@ -682,25 +682,6 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "oldValue",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "newValue",
-          "type": "uint256"
-        }
-      ],
-      "name": "MaxActiveJobsPerAgentUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
           "internalType": "bytes32",
           "name": "validatorMerkleRoot",
           "type": "bytes32"
