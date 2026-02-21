@@ -80,6 +80,11 @@ function applyEnvOverrides(config) {
   setIf(['authorizationRoots', 'roots', 'agentName'], process.env.AGIJOBMANAGER_ROOT_AGENT_NAME);
   setIf(['authorizationRoots', 'roots', 'alphaClubName'], process.env.AGIJOBMANAGER_ROOT_ALPHA_CLUB_NAME);
   setIf(['authorizationRoots', 'roots', 'alphaAgentName'], process.env.AGIJOBMANAGER_ROOT_ALPHA_AGENT_NAME);
+
+  if (!out.authorizationRoots.rootNodes || typeof out.authorizationRoots.rootNodes !== 'object') {
+    out.authorizationRoots.rootNodes = {};
+  }
+
   setIf(['authorizationRoots', 'rootNodes', 'clubRootNode'], process.env.AGIJOBMANAGER_ROOT_CLUB_NODE);
   setIf(['authorizationRoots', 'rootNodes', 'agentRootNode'], process.env.AGIJOBMANAGER_ROOT_AGENT_NODE);
   setIf(['authorizationRoots', 'rootNodes', 'alphaClubRootNode'], process.env.AGIJOBMANAGER_ROOT_ALPHA_CLUB_NODE);
