@@ -13,7 +13,6 @@ const { validateProductionConfig } = require('./lib/validateProductionConfig');
 const { pretty, formatEthWei, redactAddress } = require('./lib/format');
 
 const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET';
-const ENABLE_LEGACY_MIGRATION_4 = process.env.AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_4 === '1';
 const DEFAULT_ONCHAIN = {
   requiredValidatorApprovals: '3',
   requiredValidatorDisapprovals: '3',
@@ -133,11 +132,7 @@ async function applyValidatorThresholdUpdates(manager, deployerAddress, receipt,
   }
 }
 module.exports = async function (deployer, network, accounts) {
-  if (!ENABLE_LEGACY_MIGRATION_4) {
-    console.log('Skipping legacy migration #4. Use migration #5 for production deployment, or set AGIJOBMANAGER_ENABLE_LEGACY_MIGRATION_4=1 to run migration #4 explicitly.');
-    return;
-  }
-
+  console.log('AGIJobManager production migration #5 (final) starting...');
   if (!ensureEnabled()) return;
 
   const chainId = await web3.eth.getChainId();
