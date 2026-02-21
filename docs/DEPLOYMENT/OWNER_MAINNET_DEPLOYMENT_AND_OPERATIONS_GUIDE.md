@@ -209,7 +209,7 @@ Ensure deployed library addresses in verification metadata match migration outpu
 
 Check and record:
 - `owner()`
-- token/ENS fields (`agiToken`, `ens`, `nameWrapper`, `baseIpfsUrl`)
+- token/ENS fields (`agiToken`, `ens`, `nameWrapper`)
 - root nodes and Merkle roots
 - validator thresholds and quorum
 - review periods
@@ -253,10 +253,11 @@ For multisig owners:
 
 - `address`: `0x1234...abcd` (40 hex chars)
 - `bytes32`: `0x` + 64 hex chars
-- `bytes32[]` (proof): `["0xabc...", "0xdef..."]`
+- `bytes32[]` (proof, exact Etherscan input format): `["0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]`
 - `string` URI: `ipfs://...` or `https://...`
 - `bool`: `true` or `false`
 - `uint256`: decimal integer string (`1000000000000000000` for 1 token at 18 decimals)
+- For array inputs, use double quotes around each element and comma-separated values inside square brackets. Do not use single quotes or trailing commas.
 
 ### 8.3 Permissions + preconditions matrix
 
@@ -325,12 +326,13 @@ sequenceDiagram
   participant Contract as AGIJobManager
   participant Agent
   participant Validators
+  participant AnyActor
 
   Employer->>Contract: createJob(jobSpecURI, payout, duration, details)
   Agent->>Contract: applyForJob(jobId, subdomain, proof)
   Agent->>Contract: requestJobCompletion(jobId, completionURI)
   Validators->>Contract: validateJob/disapproveJob during review
-  Employer->>Contract: finalizeJob(jobId)
+  AnyActor->>Contract: finalizeJob(jobId)
   Contract-->>Employer: completion NFT + settlement outcomes
 ```
 
