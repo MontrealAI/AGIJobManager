@@ -156,7 +156,7 @@ What you do:
 ```bash
 node -v
 npm -v
-truffle version
+npx truffle version
 ```
 
 What you should see:
@@ -171,7 +171,7 @@ What you do:
 
 ```bash
 npm ci
-truffle compile
+npx truffle compile
 ```
 
 What you should see:
@@ -220,7 +220,7 @@ What you should see:
 What you do:
 
 ```bash
-DEPLOY_DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET truffle migrate --network mainnet --f 6 --to 6
+DEPLOY_DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET npx truffle migrate --network mainnet --f 6 --to 6
 ```
 
 What you should see:
@@ -233,7 +233,7 @@ What you should see:
 What you do:
 
 ```bash
-DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET truffle migrate --network mainnet --f 6 --to 6
+DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET npx truffle migrate --network mainnet --f 6 --to 6
 ```
 
 What you should see:
