@@ -1,313 +1,224 @@
-# Ethereum Mainnet Deployment & Operations Guide (Owner-Facing, Etherscan-First)
+# Ethereum Mainnet Deployment & Operations Guide
 
-This guide is written for contract owners and owner-appointed operators.
+This guide is for contract owners and owner-appointed operators.
 
-AGIJobManager is intended for autonomous AI agents as day-to-day participants. Human stakeholders supervise, configure, and govern operations, but manual human usage is out of scope as a normal operating mode.
+AGIJobManager is intended for **AI agents exclusively** in day-to-day protocol usage. Humans (owner and operators) supervise policy, security, and escalations.
+
+The authoritative Terms & Conditions are embedded in `contracts/AGIJobManager.sol`. This guide summarizes operational implications only.
 
 ## 1. Executive Summary
 
-AGIJobManager is a single-contract protocol for escrowed AI work agreements between Employers, Agents, Validators, and Moderators, with owner governance controls.
+AGIJobManager is an on-chain protocol for escrowed AI work agreements between Employers, Agents, Validators, and Moderators.
 
-The protocol is intended for AI-agent execution, not manual human workflow. Human owners set policy, safety controls, and escalation decisions.
+Important policy statement (operational): this protocol is for autonomous AI agents as the intended active participants. Human owners govern risk controls and configuration.
 
-Owner responsibilities include:
-- deploying the contract,
-- confirming post-deployment correctness,
-- assigning moderator and authorization policy,
-- managing pause controls and incident response,
-- managing constrained treasury withdrawals,
-- maintaining a complete audit trail.
+Owner responsibilities:
+- deploy and verify the contract,
+- configure authorization and safety controls,
+- supervise incidents and pausing,
+- maintain institutional records and audit trail.
 
-Core owner risk is governance risk: owner actions can materially change system behavior. Secondary risks include contract risk, key compromise risk, and operational errors.
-
-Authoritative Terms & Conditions are embedded in the contract source. Use the legal summary document for context, but treat `contracts/AGIJobManager.sol` as authoritative.
+High-level risks:
+- smart-contract risk,
+- governance/key-management risk,
+- operational execution risk,
+- irreversible on-chain transaction risk.
 
 ## 2. Roles & Responsibilities
 
-| Role | Primary responsibility | Typical actions |
+| Role | Main responsibility | Typical actions |
 | --- | --- | --- |
-| Owner | Governance and safety control | Deploy, verify, configure roots/lists/parameters, pause, withdraw constrained surplus, appoint moderators |
-| Moderator | Dispute resolution authority | Resolve disputes with explicit resolution code |
-| Employer | Funds work and receives completion NFT | Create jobs, finalize or dispute |
-| Agent | Performs work | Apply, complete, respond to dispute flow |
-| Validator | Validation voting | Validate/disapprove jobs during review windows |
+| Owner | Governance and security control | Deploy, configure, pause/unpause, assign moderators, update allowlists/roots |
+| Moderator | Dispute resolver | Resolve disputed jobs via moderator function |
+| Employer | Work requester and payer | Create jobs, finalize, dispute |
+| Agent (AI) | Work performer | Apply, complete work |
+| Validator (AI) | Outcome reviewer | Validate/disapprove during review windows |
 
 ### Owner vs Operator
 
-- **Owner**: legal/accountable signer (preferably multisig) approving governance decisions.
-- **Operator**: executes approved procedures (Truffle commands, Etherscan checks, records, reports).
-
-The protocol remains AI-agent-first in operation. Owner and operator functions are supervisory and administrative.
+- **Owner**: approves policy decisions and signs high-risk governance transactions (recommended: multisig).
+- **Operator**: executes approved procedures, runs scripts, prepares calldata and records.
 
 ## 3. Pre-Deployment Decisions (Owner checklist)
 
-Before deployment, approve the following in writing:
-
 - [ ] Final owner address (recommended: multisig)
-- [ ] Deployer address (temporary signer)
-- [ ] Token address (`$AGIALPHA` default in this repo: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`)
-- [ ] ENS usage decision (enabled/disabled)
-- [ ] Authorization strategy:
-  - [ ] additional allowlists (`additionalAgents`, `additionalValidators`)
-  - [ ] Merkle roots (`agentMerkleRoot`, `validatorMerkleRoot`)
-  - [ ] ENS authorization (`rootNodes`, ENS registry/name wrapper)
-- [ ] Moderator policy (who, rotation, emergency backup)
-- [ ] Initial parameter policy (approvals/disapprovals/quorum, review periods, bond/slash, payout cap)
+- [ ] Temporary deployer address
+- [ ] Settlement token address (default in this repo: `$AGIALPHA` `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`)
+- [ ] ENS usage: enabled or disabled at launch
+- [ ] Authorization strategy: additional lists / Merkle / ENS-based / hybrid
+- [ ] Moderator policy and backup moderators
+- [ ] Initial protocol parameters (thresholds, windows, bonds, payout caps)
 - [ ] Identity lock timing (`lockIdentityConfiguration`)
 
-Decisions that must normally be finalized before go-live:
-- owner address,
-- token address,
-- root-node and allowlist policy,
-- incident response policy,
-- withdrawal policy and authority limits.
+Owner re-decision fields (cannot be auto-chosen): final owner multisig, final Merkle roots, ENS namespace policy, lock timing.
 
 ## 4. Safety First: Wallet & Key Handling
 
-1. Use hardware wallets for all owner/deployer signers.
-2. Separate deployer and final owner accounts.
-3. Keep deployer ETH-funded for deployment and post-deploy setup gas.
-4. Remove deployer privileges after ownership transfer.
-5. Keep an immutable deployment record package:
-   - config file used,
-   - command transcript,
-   - tx hashes,
-   - receipt JSON,
-   - final verification checklist.
-
-Institutional baseline: owner as multisig, deployer as short-lived operator key.
+- Use hardware wallets for deployer and owner signers.
+- Separate deployer (temporary) from owner (long-term governance).
+- Fund deployer with ETH for deployment and post-deploy setup.
+- Transfer ownership to final owner promptly.
+- Keep immutable records: config file hash, receipts, tx hashes, verification settings, approval log.
 
 ## 5. Deployment Overview Diagram
 
 ```mermaid
 flowchart TD
-  A[Prepare owner decisions] --> B[Configure production migration file]
-  B --> C[Dry-run config validation]
-  C --> D[Mainnet deploy via migration 6]
-  D --> E[Etherscan verification and receipt archive]
-  E --> F[Transfer ownership to final owner]
-  F --> G[Post-deploy config and role setup]
+  A[Prepare decisions] --> B[Configure migration and env]
+  B --> C[Dry-run validation]
+  C --> D[Deploy on mainnet]
+  D --> E[Verify on Etherscan]
+  E --> F[Transfer/confirm owner]
+  F --> G[Configure moderators and allowlists]
   G --> H{ENS enabled?}
-  H -- Yes --> H1[Set ENS registry, nameWrapper, root nodes]
-  H -- No --> H2[Keep ENS fields neutral]
+  H -- Yes --> H1[Set ENS addresses and root nodes]
+  H -- No --> H2[Leave ENS as chosen defaults]
   H1 --> I{Merkle enabled?}
   H2 --> I
   I -- Yes --> I1[Publish deterministic roots/proofs]
-  I -- No --> I2[Use additional address lists]
-  I1 --> J{Identity lock now?}
+  I -- No --> I2[Use additional lists]
+  I1 --> J{Lock identity config now?}
   I2 --> J
-  J -- Yes --> J1[Call lockIdentityConfiguration]
-  J -- No --> J2[Keep controlled change window]
-  J1 --> K[Go-live]
-  J2 --> K
+  J -- Yes --> K[Call lockIdentityConfiguration]
+  J -- No --> L[Operate with controlled change window]
+  K --> M[Go-live]
+  L --> M
 ```
 
 ## 6. Step-by-Step: Mainnet Deployment via Truffle Migration
 
-Production migration file in this repository:
+Production migration file:
 - `migrations/6_deploy_agijobmanager_production_operator.js`
 
-Primary config template:
+Config template:
 - `migrations/config/agijobmanager.config.example.js`
-- local working copy (do not commit secrets): `migrations/config/agijobmanager.config.js`
+- working copy: `migrations/config/agijobmanager.config.js`
 
 ### 6.1 Prerequisites
 
-- Node.js 20.x (CI baseline)
+- Node.js 20 (CI baseline)
 - npm
-- Truffle (`npx truffle`)
-- Mainnet RPC endpoint
-- Deployer private key in environment variable
+- `npx truffle`
+- Mainnet RPC URL
+- Deployer private key via environment variable
 
-### 6.2 Install and compile
+### 6.2 Commands
 
 ```bash
 npm ci
 npx truffle compile
-```
-
-### 6.3 Create and edit deployment config
-
-```bash
 cp migrations/config/agijobmanager.config.example.js migrations/config/agijobmanager.config.js
 ```
 
-Set approved values in:
-- `identity` (token, ENS addresses, IPFS base URL, identity lock flag)
-- `authorizationRoots`/`rootNodes`
-- `merkleRoots`
-- `protocolParameters`
-- `dynamicLists`
-- `ownership.finalOwner`
-
-### 6.4 Set environment variables (operator terminal)
+Set environment variables:
 
 ```bash
 export PRIVATE_KEYS="<deployer_private_key_or_csv>"
-export MAINNET_RPC_URL="https://<approved-provider>"
+export MAINNET_RPC_URL="https://<provider>"
 export AGIJOBMANAGER_DEPLOY=1
-```
-
-Mainnet guard phrase (required by migration):
-
-```bash
 export DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET
 ```
 
-Optional dry-run validation mode:
-
-```bash
-export DEPLOY_DRY_RUN=1
-```
-
-### 6.5 Dry-run (recommended)
+Optional dry-run validation:
 
 ```bash
 DEPLOY_DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET npx truffle migrate --network mainnet --f 6 --to 6
 ```
 
-Expected result:
-- config validated,
-- deployment skipped explicitly due to dry-run flag.
-
-### 6.6 Mainnet deployment command
+Mainnet deployment:
 
 ```bash
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET npx truffle migrate --network mainnet --f 6 --to 6
 ```
 
-Expected result:
-- library deploy/link,
-- AGIJobManager deployment,
-- configured owner actions,
-- receipt JSON written under `deployments/mainnet/AGIJobManager.<chainId>.<blockNumber>.json`.
-
-Archive the receipt JSON and config snapshot immediately.
+What you should see:
+- deployment summary,
+- libraries deployed and linked,
+- AGIJobManager deployed,
+- owner actions applied,
+- JSON receipt under `deployments/mainnet/`.
 
 ## 7. Post-Deployment Verification & Security Checklist
 
-Use Etherscan first.
-
-### 7.1 Verify compilation settings
-
-Match:
-- Solidity `0.8.23`
-- optimizer enabled, runs `40`
-- EVM version `shanghai`
-- metadata bytecode hash `none`
-
-### 7.2 Verify linked libraries
-
-Ensure deployed library addresses in verification metadata match migration output:
-- `UriUtils`
-- `TransferUtils`
-- `BondMath`
-- `ReputationMath`
-- `ENSOwnership`
-
-### 7.3 Confirm critical state (`Read Contract`)
-
-Check and record:
-- `owner()`
-- token/ENS fields (`agiToken`, `ens`, `nameWrapper`)
-- root nodes and Merkle roots
-- validator thresholds and quorum
-- review periods
-- bond/slash parameters
-- `paused()` and `settlementPaused()`
-- `lockIdentityConfig()`
-
-### 7.4 Validate emergency controls
-
-In a controlled maintenance window, test:
-- `pause`/`unpause`
-- `pauseAll`/`unpauseAll`
-- `setSettlementPaused(true/false)`
-
-### 7.5 Preserve records
-
-Store:
-- deployment address,
-- tx hashes,
-- block numbers,
-- signed config package,
-- verification screenshots/export,
-- final owner acknowledgment.
+1. Verify source on Etherscan with exact settings:
+   - Solidity `0.8.23`
+   - optimizer enabled, runs `40`
+   - EVM `shanghai`
+   - metadata bytecode hash `none`
+2. Confirm linked library addresses match deployment receipt.
+3. In Etherscan `Read Contract`, confirm:
+   - `owner()`
+   - token/ENS addresses and roots
+   - validator thresholds and periods
+   - pause flags
+4. Confirm emergency controls in controlled maintenance window.
+5. Archive addresses, tx hashes, block numbers, config hash, and sign-off notes.
 
 ## 8. Owner Operations Runbook (Etherscan-first)
 
-### 8.1 How to use Etherscan to interact with the contract
+### How to use Etherscan operationally
 
-1. Open the verified contract page.
-2. Use `Read Contract` for view functions.
-3. Use `Write Contract` and click **Connect to Web3** for state-changing functions.
-4. Confirm wallet is on Ethereum Mainnet.
-5. Review gas estimate and wallet confirmation details.
-6. Submit tx and wait for confirmations.
+- Open verified contract page on Ethereum Mainnet.
+- Use **Read Contract** for checks.
+- Use **Write Contract** + **Connect to Web3** for transactions.
+- `Connect to Web3` means your wallet signs from browser wallet or wallet bridge.
+- Check gas and nonce before submitting.
+- Wait for confirmations and verify emitted events in tx logs.
 
-For multisig owners:
-- Use Etherscan for read state and ABI reference.
-- Execute writes through your multisig web UI using matching ABI/calldata.
+If owner is multisig:
+- use Etherscan for read-only checks and ABI/calldata reference,
+- execute writes through the multisig web UI.
 
-### 8.2 Etherscan input formats
+### Input formatting examples
 
-- `address`: `0x1234...abcd` (40 hex chars)
-- `bytes32`: `0x` + 64 hex chars
-- `bytes32[]` (proof): `["0xabc...", "0xdef..."]`
-- `address[]`: `["0x1111111111111111111111111111111111111111", "0x2222222222222222222222222222222222222222"]`
-- `string` URI: `ipfs://...` or `https://...`
-- `bool`: `true` or `false`
-- `uint256`: decimal integer string (`1000000000000000000` for 1 token at 18 decimals)
+- `address`: `0x1234567890abcdef1234567890abcdef12345678`
+- `bytes32`: `0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- `bytes32[]`: `["0xaaa...", "0xbbb..."]`
+- `string`: `ipfs://bafy.../job.json`
+- `bool`: `true` / `false`
+- `uint256`: decimal integer, e.g. `1000000000000000000`
 
-Array formatting rule for Etherscan write fields:
-- Use exact JSON-like list syntax with square brackets, comma separation, and quoted hex strings.
-- No trailing commas.
-- Example accepted empty array: `[]`.
+### Permissions + preconditions matrix
 
-### 8.3 Permissions + preconditions matrix
-
-| Action | Who can call | Preconditions | What changes | Key risk/footgun | Etherscan path |
+| Action | Who | Preconditions | State impact | Key risk | Etherscan path |
 | --- | --- | --- | --- | --- | --- |
-| `addModerator` / `removeModerator` | Owner | None | Moderator permissions | Wrong moderator can resolve disputes | Write Contract -> function |
-| `addAdditionalAgent` / `removeAdditionalAgent` | Owner | None | Direct agent allowlist | Over-permissive onboarding | Write Contract -> function |
-| `addAdditionalValidator` / `removeAdditionalValidator` | Owner | None | Direct validator allowlist | Weak validation set | Write Contract -> function |
-| `blacklistAgent` / `blacklistValidator` | Owner | None | Blocks role participation | Accidental denial of service | Write Contract -> function |
-| `updateMerkleRoots` | Owner | None | Replaces Merkle authorization roots | Bad root can lock out all participants | Write Contract -> function |
-| `updateEnsRegistry` | Owner | identity unlocked + no locked escrow/bonds | ENS registry source | Misroute identity checks | Write Contract -> function |
-| `updateNameWrapper` | Owner | identity unlocked + no locked escrow/bonds | NameWrapper source | Broken ownership resolution | Write Contract -> function |
-| `updateRootNodes` | Owner | identity unlocked + no locked escrow/bonds | ENS authorization namespaces | Incorrect node blocks valid agents/validators | Write Contract -> function |
-| `setEnsJobPages` | Owner | identity unlocked | ENS hook target | Hook integration side effects | Write Contract -> function |
-| `updateAGITokenAddress` | Owner | identity unlocked + no locked escrow/bonds | Payment token contract | Severe economic/governance change | Write Contract -> function |
-| `setRequiredValidatorApprovals` / `setRequiredValidatorDisapprovals` | Owner | no locked escrow/bonds | completion/dispute thresholds | Mis-set values can stall settlement | Write Contract -> function |
-| `setVoteQuorum` | Owner | no locked escrow/bonds | minimum validator participation | Impossible quorum stalls jobs | Write Contract -> function |
-| `setCompletionReviewPeriod` / `setDisputeReviewPeriod` / `setChallengePeriodAfterApproval` | Owner | no locked escrow/bonds | time windows | Too short/long windows harm fairness | Write Contract -> function |
-| `setValidatorBondParams` / `setAgentBondParams` / `setAgentBond` / `setValidatorSlashBps` | Owner | no locked escrow/bonds | staking economics | Incorrect values distort incentives | Write Contract -> function |
-| `setMaxJobPayout` / `setJobDurationLimit` / `setPremiumReputationThreshold` / `setValidationRewardPercentage` | Owner | function-specific validation | operational bounds/incentives | Operational policy drift | Write Contract -> function |
-| `pause` / `unpause` | Owner | None | intake pause state | Incorrect toggles during incidents | Write Contract -> function |
-| `pauseAll` / `unpauseAll` | Owner | None | intake + settlement pause | Can stop all settlement | Write Contract -> function |
-| `setSettlementPaused` | Owner | None | settlement lane only | Blocks finalize/dispute settlement | Write Contract -> function |
-| `withdrawAGI` | Owner | **paused == true** and **settlementPaused == false** and withdrawable balance > 0 | withdraws only non-locked AGI | Misinterpreting withdrawable amount | Write Contract -> function |
-| `rescueETH` / `rescueERC20` / `rescueToken` | Owner | function-specific checks | emergency asset recovery | Should be rare; high misuse risk | Write Contract -> function |
-| `lockIdentityConfiguration` | Owner | identity currently unlocked | permanently disables identity-configurable setters | irreversible if done too early | Write Contract -> function |
+| `addModerator/removeModerator` | Owner | None | Dispute authority set | Wrong moderator | Write Contract |
+| `add/removeAdditionalAgent` | Owner | None | Direct agent allowlist | Overbroad access | Write Contract |
+| `add/removeAdditionalValidator` | Owner | None | Direct validator allowlist | Weak validation quality | Write Contract |
+| `blacklistAgent/blacklistValidator` | Owner | None | Blocks actor | Accidental denial | Write Contract |
+| `updateMerkleRoots` | Owner | None | Replaces Merkle roots | Can lock out all AI actors | Write Contract |
+| `updateEnsRegistry/updateNameWrapper/updateRootNodes` | Owner | `lockIdentityConfig == false` and no locked escrow/bonds | Changes ENS auth substrate | Misconfigured identity path | Write Contract |
+| `setEnsJobPages` | Owner | `lockIdentityConfig == false` | Changes ENS hook target | Hook misrouting | Write Contract |
+| `updateAGITokenAddress` | Owner | `lockIdentityConfig == false` and no locked escrow/bonds | Changes payment token | Severe economic impact | Write Contract |
+| `setRequiredValidatorApprovals/Disapprovals` | Owner | no locked escrow/bonds | Voting thresholds | Jobs can become unresolvable if bad values | Write Contract |
+| `setVoteQuorum`, period setters, bond setters, slash setter | Owner | no locked escrow/bonds | Settlement mechanics | Frozen operations if mis-set | Write Contract |
+| `setMaxJobPayout/setJobDurationLimit` | Owner | validation checks | New policy caps | Business-policy mismatch | Write Contract |
+| `pause/unpause` | Owner | None | Intake pause | Operational disruption | Write Contract |
+| `pauseAll/unpauseAll` | Owner | None | Intake + settlement pause | Full protocol stop | Write Contract |
+| `setSettlementPaused` | Owner | None | Settlement lane pause | Finalization blocked | Write Contract |
+| `withdrawAGI` | Owner | `paused == true`, `settlementPaused == false`, `withdrawableAGI() > 0` | Withdraws non-locked AGI only | Misreading withdrawable amount | Write Contract |
+| `rescueETH/rescueERC20/rescueToken` | Owner | Function-specific checks | Emergency recovery | Should be rare; high governance risk | Write Contract |
+| `lockIdentityConfiguration` | Owner | `lockIdentityConfig == false` | Permanently disables identity-config setters | Irreversible | Write Contract |
 
-Operational note: many governance setters will revert with `InvalidState` if any escrow or bonds are currently locked.
+What owner cannot do casually:
+- cannot override locked escrow/bonds protections in setters,
+- cannot bypass identity lock once set,
+- should not use rescue functions except emergency recovery.
 
-### 8.4 Incident response flow
+### Incident response
 
 ```mermaid
 flowchart TD
-  A[Suspicious activity detected] --> B[Owner executes pauseAll]
-  B --> C[Check lockedEscrow and locked bond totals]
-  C --> D[Assess blast radius and affected jobs]
-  D --> E[Communicate status to stakeholders]
-  E --> F{Can safely resume?}
-  F -- Yes --> G[Apply targeted fixes and unpause in stages]
-  F -- No --> H[Keep paused, rotate controls, prepare remediation]
+  A[Suspicious behavior or exploit signal] --> B[Owner triggers pauseAll]
+  B --> C[Measure lockedEscrow and locked bonds]
+  C --> D[Classify impact and affected jobs]
+  D --> E[Communicate freeze and next update time]
+  E --> F{Safe to resume?}
+  F -- Yes --> G[Apply controlled fixes, unpause stepwise]
+  F -- No --> H[Remain paused, rotate controls, legal/ops escalation]
 ```
 
 ## 9. How the Protocol Works (Owner-level understanding)
-
-### 9.1 Job lifecycle
 
 ```mermaid
 stateDiagram-v2
@@ -315,162 +226,136 @@ stateDiagram-v2
   Created --> Assigned: applyForJob
   Assigned --> CompletionRequested: requestJobCompletion
   CompletionRequested --> Validation: validator votes
-  Validation --> Completed: finalize/resolve approval path
-  Validation --> Disputed: disputeJob or disapproval threshold
-  Assigned --> Expired: duration elapsed
-  Created --> Cancelled: cancel/delist before assignment
-  Disputed --> Completed: moderator resolution agent wins
-  Disputed --> Cancelled: moderator resolution employer wins/refund
+  Validation --> Completed: finalize success path
+  Validation --> Disputed: dispute/disapproval path
+  Assigned --> Expired: duration exceeded
+  Created --> Cancelled: pre-assignment cancellation
+  Disputed --> Completed: moderator agent-win
+  Disputed --> Cancelled: moderator employer-win/refund
 ```
-
-### 9.2 Happy-path sequence
 
 ```mermaid
 sequenceDiagram
   participant Employer
-  participant Contract as AGIJobManager
+  participant Contract
   participant Agent
-  participant Validators
+  participant Validator
+  participant Moderator
 
-  Employer->>Contract: createJob(jobSpecURI, payout, duration, details)
+  Employer->>Contract: createJob(...)
   Agent->>Contract: applyForJob(jobId, subdomain, proof)
-  Agent->>Contract: requestJobCompletion(jobId, completionURI)
-  Validators->>Contract: validateJob/disapproveJob during review
-  Any actor->>Contract: finalizeJob(jobId)
-  Contract-->>Employer: completion NFT + settlement outcomes
+  Agent->>Contract: requestJobCompletion(jobId, uri)
+  Validator->>Contract: validateJob/disapproveJob
+  Employer->>Contract: finalizeJob OR disputeJob
+  Moderator->>Contract: resolveDisputeWithCode (if disputed)
 ```
 
-Plain-language mechanics:
-- Employer funds escrow at job creation.
-- Agent may lock a bond at assignment.
-- Validators may lock bonds when voting.
-- If thresholds and timing conditions are met, anyone can call `finalizeJob`; settlement does not depend on employer liveness.
-- Disputes route to moderator resolution.
+Plain-language economics:
+- employer escrow funds the job,
+- agent/validators may post bonds,
+- thresholds and timing windows determine normal settlement,
+- disputes route to moderators,
+- owner can pause but cannot rewrite settled outcomes.
 
 ## 10. Allowlisting & Adding New AI Agents/Validators Over Time
 
-AGIJobManager supports three authorization paths:
+Three authorization paths:
+1. `additionalAgents` / `additionalValidators` direct owner lists,
+2. Merkle allowlists (`updateMerkleRoots`),
+3. ENS-based authorization via configured root nodes.
 
-1. **Additional lists** (`additionalAgents`, `additionalValidators`) managed directly by owner.
-2. **Merkle allowlists** using on-chain roots + per-user proofs.
-3. **ENS-based authorization** through configured ENS root nodes and claimant ownership checks.
+Merkle proof format (from `contracts/utils/ENSOwnership.sol`):
+- leaf is `keccak256(abi.encodePacked(claimant))`,
+- proof verified by `MerkleProof.verifyCalldata(proof, merkleRoot, leaf)`.
 
-Merkle details (authoritative implementation):
-- Leaf format: `keccak256(abi.encodePacked(address))`
-- Proof verification: OpenZeppelin `MerkleProof.verifyCalldata`
-- Deterministic script already included:
+Deterministic helper already exists:
 
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input <addresses.json> --output proofs.json
 ```
 
-Determinism details from script:
-- lowercase address normalization,
-- duplicate rejection,
-- lexical sorting,
-- `sortLeaves: true`, `sortPairs: true`.
-
-Update roots in Etherscan:
-1. Compute and review root/proof package offline.
-2. Open `Write Contract` -> `updateMerkleRoots(bytes32 validator, bytes32 agent)`.
-3. Paste both roots and submit tx.
-4. Confirm `MerkleRootsUpdated` event and read-back values.
+Etherscan root update process:
+1. Generate roots/proofs offline.
+2. Open `Write Contract` -> `updateMerkleRoots`.
+3. Paste validator root and agent root (`bytes32`, both).
+4. Submit and verify emitted update event + `Read Contract` values.
 
 ## 11. Legacy Defaults & Recommended Defaults
 
-Reference legacy deployment:
-- `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477` (Etherscan verified)
+Legacy reference contract:
+- `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477`
 
-### 11.1 Legacy defaults extracted from Etherscan
+### 11.1 Legacy defaults (constructor + runtime checks)
 
 | Parameter | Legacy value | Source |
 | --- | --- | --- |
-| Constructor token (`_agiTokenAddress`) | `0xf0780F43b86c13B3d0681B1Cf6DaeB1499e7f14D` | Etherscan constructor decoded args |
-| Constructor base IPFS URL | `https://ipfs.io/ipfs/` | Etherscan constructor decoded args |
-| Constructor ENS registry | `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` | Etherscan constructor decoded args |
-| Constructor NameWrapper | `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401` | Etherscan constructor decoded args |
-| Constructor club root node | `0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16` | Etherscan constructor decoded args |
-| Constructor agent root node | `0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d` | Etherscan constructor decoded args |
-| Constructor validator Merkle root | `0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b` | Etherscan constructor decoded args |
-| Constructor agent Merkle root | `0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b` | Etherscan constructor decoded args |
-| `requiredValidatorApprovals` | `3` | Legacy verified source initialization |
-| `requiredValidatorDisapprovals` | `3` | Legacy verified source initialization |
-| `premiumReputationThreshold` | `10000` | Legacy verified source initialization |
-| `validationRewardPercentage` | `8` | Legacy verified source initialization |
-| `maxJobPayout` | `4888e18` | Legacy verified source initialization |
-| `jobDurationLimit` | `10000000` | Legacy verified source initialization |
-| Other runtime parameters | **VERIFY ON ETHERSCAN (Read Contract)** | read current values directly before final sign-off |
+| `_agiTokenAddress` | `0xf0780F43b86c13B3d0681B1Cf6DaeB1499e7f14D` | Etherscan constructor decoded args |
+| `_baseIpfsUrl` | `https://ipfs.io/ipfs/` | Etherscan constructor decoded args |
+| `_ensAddress` | `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` | Etherscan constructor decoded args |
+| `_nameWrapperAddress` | `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401` | Etherscan constructor decoded args |
+| `_clubRootNode` | `0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16` | Etherscan constructor decoded args |
+| `_agentRootNode` | `0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d` | Etherscan constructor decoded args |
+| `_validatorMerkleRoot` | `0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b` | Etherscan constructor decoded args |
+| `_agentMerkleRoot` | `0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b` | Etherscan constructor decoded args |
+| `requiredValidatorApprovals()` | `8` | On-chain `eth_call` |
+| `requiredValidatorDisapprovals()` | `10` | On-chain `eth_call` |
+| `premiumReputationThreshold()` | `10000` | On-chain `eth_call` |
+| `validationRewardPercentage()` | `8` | On-chain `eth_call` |
+| `maxJobPayout()` | `8888000000000000000000` | On-chain `eth_call` |
+| `jobDurationLimit()` | `10000000` | On-chain `eth_call` |
+| New-version-only parameters (vote quorum, settlement pause flag, bond bps/min/max, slash bps, challenge period) | **VERIFY ON ETHERSCAN / NOT IN LEGACY ABI** | Legacy contract ABI differs |
 
 ### 11.2 Recommended defaults for this deployment
 
-New deployment token default in this repository/version:
-- `$AGIALPHA` token: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`
-
-| Parameter | Recommended default | Rationale |
-| --- | --- | --- |
-| Token address | `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa` | repo production config default |
-| Base IPFS URL | `https://ipfs.io/ipfs/` | legacy-compatible default in config |
-| ENS registry | `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` | Ethereum mainnet ENS registry |
-| NameWrapper | `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401` | Ethereum mainnet NameWrapper |
-| Validator approvals/disapprovals | `3 / 3` | legacy + current contract default |
-| Vote quorum | `3` | current contract default |
-| Review periods | `7d / 14d / 1d challenge` | current contract default |
-| Validator bond params | `1500 bps, 10e18 min, 88888888e18 max` | current contract default |
-| Agent bond params | `500 bps, 1e18 min, 88888888e18 max` | current contract default |
-| Validator slash bps | `8000` | current contract default |
-| Max payout | `88888888e18` | current contract default (higher than legacy) |
-| Job duration limit | `10000000` | contract/legacy-aligned |
-| Final owner address | **OWNER MUST CHOOSE** | governance-critical |
-| Initial Merkle roots | **OWNER MUST CHOOSE** | must match approved address sets |
-| ENS root nodes | **OWNER MUST CHOOSE / VERIFY** | namespace policy decision |
-| Identity lock timing | **OWNER MUST CHOOSE** | irreversible control decision |
+| Parameter | Recommended default |
+| --- | --- |
+| Settlement token | `$AGIALPHA` `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa` |
+| Base IPFS URL | `https://ipfs.io/ipfs/` |
+| ENS registry | `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` |
+| NameWrapper | `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401` |
+| Validator approvals/disapprovals | `3 / 3` (new contract default) |
+| Vote quorum | `3` |
+| Completion/dispute/challenge windows | `7 days / 14 days / 1 day` |
+| Validator bond config | `1500 bps`, min `10e18`, max `88888888e18` |
+| Agent bond config | `500 bps`, min `1e18`, max `88888888e18` |
+| Validator slash bps | `8000` |
+| `maxJobPayout` | `88888888e18` |
+| `jobDurationLimit` | `10000000` |
+| Final owner address | **OWNER MUST CHOOSE** |
+| Final root nodes and Merkle roots | **OWNER MUST CHOOSE** |
+| Identity lock timing | **OWNER MUST CHOOSE** |
 
 ## 12. Parameter Catalog
 
-| Parameter | Meaning | Default source | Change path | Preconditions |
+| Parameter | Meaning | Default basis | Change method | Preconditions |
 | --- | --- | --- | --- | --- |
-| `requiredValidatorApprovals` | approvals needed before approval state | contract default 3 / legacy 3 | `setRequiredValidatorApprovals` | empty escrow/bonds |
-| `requiredValidatorDisapprovals` | disapprovals that can trigger dispute | contract default 3 / legacy 3 | `setRequiredValidatorDisapprovals` | empty escrow/bonds |
-| `voteQuorum` | minimum validator participation for non-dispute path | contract default 3 | `setVoteQuorum` | empty escrow/bonds |
-| `completionReviewPeriod` | validator review window | contract default 7 days | `setCompletionReviewPeriod` | empty escrow/bonds |
-| `disputeReviewPeriod` | moderator dispute window | contract default 14 days | `setDisputeReviewPeriod` | empty escrow/bonds |
-| `challengePeriodAfterApproval` | post-approval dispute/challenge window | contract default 1 day | `setChallengePeriodAfterApproval` | empty escrow/bonds |
-| `validatorBondBps/min/max` | validator bond curve | contract defaults | `setValidatorBondParams` | empty escrow/bonds |
-| `agentBondBps/min/max` | agent bond curve | contract defaults | `setAgentBondParams` / `setAgentBond` | empty escrow/bonds |
-| `validatorSlashBps` | validator slash percentage on wrong side | contract default 8000 | `setValidatorSlashBps` | empty escrow/bonds |
-| `maxJobPayout` | per-job payout cap | contract default 88888888e18 | `setMaxJobPayout` | function validation |
-| `jobDurationLimit` | max duration cap | contract default 10000000 | `setJobDurationLimit` | non-zero |
-| `premiumReputationThreshold` | premium tier threshold | contract default 10000 / legacy 10000 | `setPremiumReputationThreshold` | none |
-| `validationRewardPercentage` | escrow share to validators | contract default 8 / legacy 8 | `setValidationRewardPercentage` | percentage bounds |
-| `agentMerkleRoot` / `validatorMerkleRoot` | Merkle allowlist roots | owner policy | `updateMerkleRoots` | owner only |
-| `clubRootNode` / `agentRootNode` (+ alpha roots) | ENS allowlist namespaces | owner policy | `updateRootNodes` | identity unlocked + empty escrow/bonds |
-| `agiToken` | settlement token | repo default `$AGIALPHA` | `updateAGITokenAddress` | identity unlocked + empty escrow/bonds |
+| `requiredValidatorApprovals` | Approvals required for success path | New default 3 | `setRequiredValidatorApprovals` | no locked escrow/bonds |
+| `requiredValidatorDisapprovals` | Disapprovals threshold | New default 3 | `setRequiredValidatorDisapprovals` | no locked escrow/bonds |
+| `voteQuorum` | Minimum validator participation | New default 3 | `setVoteQuorum` | no locked escrow/bonds |
+| `completionReviewPeriod` | Validation window | New default 7d | `setCompletionReviewPeriod` | no locked escrow/bonds |
+| `disputeReviewPeriod` | Moderator review window | New default 14d | `setDisputeReviewPeriod` | no locked escrow/bonds |
+| `challengePeriodAfterApproval` | Post-approval challenge period | New default 1d | `setChallengePeriodAfterApproval` | no locked escrow/bonds |
+| `validatorBond...` | Validator bond policy | New defaults from migration | `setValidatorBondParams` | no locked escrow/bonds |
+| `agentBond...` | Agent bond policy | New defaults from migration | `setAgentBondParams`/`setAgentBond` | no locked escrow/bonds |
+| `validatorSlashBps` | Slash percentage | New default 8000 | `setValidatorSlashBps` | no locked escrow/bonds |
+| `maxJobPayout` | Per-job payout cap | New default `88888888e18` | `setMaxJobPayout` | function checks |
+| `jobDurationLimit` | Maximum job duration | `10000000` | `setJobDurationLimit` | function checks |
+| `premiumReputationThreshold` | Premium threshold | default 10000 | `setPremiumReputationThreshold` | owner only |
+| `validationRewardPercentage` | Validator reward percent | default 8 | `setValidationRewardPercentage` | bounds checks |
 
 ## 13. Troubleshooting
 
-| Symptom | Likely cause | How to fix |
+| Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Cannot change thresholds/periods/bond params | active escrow or bonds exist | wait until all jobs settle and locked totals are zero |
-| No one can apply/validate | allowlist roots or ENS roots misconfigured | verify roots, regenerate proofs, check additional lists |
-| `withdrawAGI` fails | not paused, settlement paused, or withdrawable amount is zero | set required pause mode and confirm `withdrawableAGI()` |
-| Etherscan verification mismatch | wrong compiler/settings/libraries | re-verify with exact `0.8.23`, optimizer 40, correct library addresses |
-| Mainnet deploy blocked in migration | missing confirmation env var | set exact `DEPLOY_CONFIRM_MAINNET` phrase and rerun |
+| Parameter setters revert | active locked escrow/bonds | wait until all locked totals are zero |
+| No one can apply/validate | wrong allowlist roots/ENS roots | regenerate proofs, verify roots, test readbacks |
+| `withdrawAGI` fails | wrong pause mode or zero withdrawable | set `paused=true`, `settlementPaused=false`, check `withdrawableAGI()` |
+| Verification mismatch | compiler/settings/library mismatch | use exact `0.8.23`, optimizer 40, shanghai, correct libraries |
+| Migration guard blocks deploy | missing mainnet confirmation env var | set exact `DEPLOY_CONFIRM_MAINNET` phrase |
 
 ## 14. Compliance & Terms
 
-- Authoritative Terms & Conditions are embedded in: `contracts/AGIJobManager.sol`.
-- Legal summary and authority note: `docs/LEGAL/TERMS_AND_CONDITIONS.md`.
-- This guide is operational documentation, not legal advice.
-- AGIJobManager is intended for AI-agent use; humans supervise and govern.
-
----
-
-## Appendix: VERIFY ON ETHERSCAN procedure for unresolved legacy values
-
-When a value is marked `VERIFY ON ETHERSCAN`:
-
-1. Open legacy address `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477`.
-2. Go to `Read Contract`.
-3. Query the exact getter.
-4. Record value + block timestamp in your deployment packet.
-5. Add operator initials and date.
+- Authoritative terms are embedded in `contracts/AGIJobManager.sol`.
+- Legal summary note: `docs/LEGAL/TERMS_AND_CONDITIONS.md`.
+- This document is operational guidance, not legal advice.
+- AGIJobManager is intended for AI agents exclusively, with human owner oversight.
