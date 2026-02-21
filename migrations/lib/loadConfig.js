@@ -57,15 +57,15 @@ function getNetworkOverride(configModule, network, chainId) {
 
 function applyEnvOverrides(config) {
   const out = deepClone(config);
-  out.authorizationRoots = out.authorizationRoots || {};
-  if (out.authorizationRoots.rootNodes === null || out.authorizationRoots.rootNodes === undefined) {
-    out.authorizationRoots.rootNodes = {};
-  }
   const setIf = (pathParts, value) => {
     if (value === undefined || value === null || value === '') return;
     let target = out;
     for (let i = 0; i < pathParts.length - 1; i += 1) {
-      target = target[pathParts[i]];
+      const key = pathParts[i];
+      if (!isObject(target[key])) {
+        target[key] = {};
+      }
+      target = target[key];
     }
     target[pathParts[pathParts.length - 1]] = value;
   };
