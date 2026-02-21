@@ -57,7 +57,7 @@ contract('merkleRoots.operational', (accounts) => {
     assert.equal(await manager.agentMerkleRoot(), newAgentRoot);
   });
 
-  it('updates merkle roots after identity lock while other locked config remains blocked', async () => {
+  it('updates merkle roots after identity lock', async () => {
     await manager.lockIdentityConfiguration({ from: owner });
 
     const newValidatorRoot = web3.utils.soliditySha3('validator-root-v3');
@@ -66,6 +66,10 @@ contract('merkleRoots.operational', (accounts) => {
 
     assert.equal(await manager.validatorMerkleRoot(), newValidatorRoot);
     assert.equal(await manager.agentMerkleRoot(), newAgentRoot);
+  });
+
+  it('keeps identity-locked setters blocked after lockIdentityConfiguration', async () => {
+    await manager.lockIdentityConfiguration({ from: owner });
 
     await expectCustomError(
       manager.updateRootNodes.call(rootNode('club2'), rootNode('agent2'), rootNode('club3'), rootNode('agent3'), { from: owner }),
