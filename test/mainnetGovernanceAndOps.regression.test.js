@@ -63,7 +63,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
     assert.equal(capped.toString(), '88888');
   });
 
-  it('locks governance knobs and merkle roots while funds are in-flight', async () => {
+  it('locks governance knobs while merkle roots remain operational during in-flight funds', async () => {
     const ctx = await deployManager();
     await seedAssignedJob(ctx);
 
@@ -76,7 +76,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
     await expectCustomError(ctx.manager.setAgentBondParams.call(100, 1, 1, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setValidatorSlashBps.call(100, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setChallengePeriodAfterApproval.call(1, { from: owner }), 'InvalidState');
-    await expectCustomError(ctx.manager.updateMerkleRoots.call(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner }), 'InvalidState');
+    await ctx.manager.updateMerkleRoots(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner });
 
     await time.increase(1001);
     await ctx.manager.expireJob(0, { from: employer });
@@ -162,9 +162,9 @@ contract('mainnet governance + ops regressions', (accounts) => {
     assert.equal(hookLog.args.success, false);
   });
 
-  it('includes merkle roots in identity lock', async () => {
+  it('keeps merkle roots operational after identity lock', async () => {
     const ctx = await deployManager();
     await ctx.manager.lockIdentityConfiguration({ from: owner });
-    await expectCustomError(ctx.manager.updateMerkleRoots.call(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner }), 'ConfigLocked');
+    await ctx.manager.updateMerkleRoots(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner });
   });
 });
