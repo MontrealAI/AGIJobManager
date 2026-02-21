@@ -389,7 +389,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public lockedValidatorBonds;
     /// @notice Total AGI locked as dispute bonds for unsettled disputes.
     uint256 public lockedDisputeBonds;
-    uint256 internal constant maxActiveJobsPerAgent = 3;
+    uint256 public maxActiveJobsPerAgent = 3;
 
     bytes32 public clubRootNode;
     bytes32 public alphaClubRootNode;
@@ -484,6 +484,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     );
     event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
+    event MaxActiveJobsPerAgentUpdated(uint256 oldValue, uint256 newValue);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
@@ -1114,6 +1115,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (_limit == 0) revert InvalidParameters();
         jobDurationLimit = _limit;
     }
+    function setMaxActiveJobsPerAgent(uint256 value) external onlyOwner {
+        unchecked {
+            if (value - 1 >= 10_000) revert InvalidParameters();
+        }
+        uint256 oldValue = maxActiveJobsPerAgent;
+        maxActiveJobsPerAgent = value;
+        emit MaxActiveJobsPerAgentUpdated(oldValue, value);
+    }
     function setCompletionReviewPeriod(uint256 _period) external onlyOwner {
         _requireEmptyEscrow();
         _requireValidReviewPeriod(_period);
@@ -1129,7 +1138,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit DisputeReviewPeriodUpdated(oldPeriod, _period);
     }
     function setValidatorBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
-        _requireEmptyEscrow();
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
         if (bps == 0 && min == 0) {
@@ -1143,7 +1151,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit ValidatorBondParamsUpdated(bps, min, max);
     }
     function setAgentBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
-        _requireEmptyEscrow();
         if (bps > 10_000) revert InvalidParameters();
         if (min > max) revert InvalidParameters();
         uint256 oldBps = agentBondBps;
@@ -1163,12 +1170,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         emit AgentBondParamsUpdated(oldBps, oldMin, oldMax, bps, min, max);
     }
     function setAgentBond(uint256 bond) external onlyOwner {
-        _requireEmptyEscrow();
-        if (agentBondMax == 0) {
-            if (bond != 0) revert InvalidParameters();
-        } else if (bond > agentBondMax) {
-            revert InvalidParameters();
-        }
+        if ((agentBondMax == 0 && bond != 0) || bond > agentBondMax) revert InvalidParameters();
         uint256 oldMin = agentBond;
         agentBond = bond;
         emit AgentBondMinUpdated(oldMin, bond);

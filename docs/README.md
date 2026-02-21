@@ -42,6 +42,7 @@ Institutional documentation for operators, integrators, contributors, and audito
 - [REFERENCE/CONTRACT_INTERFACE.md](./REFERENCE/CONTRACT_INTERFACE.md)
 - [REFERENCE/EVENTS_AND_ERRORS.md](./REFERENCE/EVENTS_AND_ERRORS.md)
 - [REFERENCE/ENS_REFERENCE.md](./REFERENCE/ENS_REFERENCE.md)
+- [REFERENCE/OPERATIONAL_LIMITS.md](./REFERENCE/OPERATIONAL_LIMITS.md)
 
 ## Design assets (text-only)
 
