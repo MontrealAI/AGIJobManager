@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `29091418f23a`.
-- Source snapshot fingerprint: `29091418f23a`.
+- Generated at (deterministic source fingerprint): `f3122a317e45`.
+- Source snapshot fingerprint: `f3122a317e45`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -31,6 +31,7 @@
 | `lockedEscrow` | `uint256` |
 | `lockedValidatorBonds` | `uint256` |
 | `lockIdentityConfig` | `bool` |
+| `maxActiveJobsPerAgent` | `uint256` |
 | `maxJobPayout` | `uint256` |
 | `nameWrapper` | `NameWrapper` |
 | `nextJobId` | `uint256` |
@@ -96,6 +97,7 @@
 | `setDisputeReviewPeriod(uint256 _period)` | external | nonpayable | — |
 | `setEnsJobPages(address _ensJobPages)` | external | nonpayable | — |
 | `setJobDurationLimit(uint256 _limit)` | external | nonpayable | — |
+| `setMaxActiveJobsPerAgent(uint256 value)` | external | nonpayable | — |
 | `setMaxJobPayout(uint256 _maxPayout)` | external | nonpayable | — |
 | `setPremiumReputationThreshold(uint256 _threshold)` | external | nonpayable | — |
 | `setRequiredValidatorApprovals(uint256 _approvals)` | external | nonpayable | — |
@@ -146,6 +148,7 @@
 | `JobDisputed` | `uint256 indexed jobId, address indexed disputant` |
 | `JobExpired` | `uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout` |
 | `JobValidated` | `uint256 indexed jobId, address indexed validator` |
+| `MaxActiveJobsPerAgentUpdated` | `uint256 oldValue, uint256 newValue` |
 | `MerkleRootsUpdated` | `bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot` |
 | `NameWrapperUpdated` | `address newNameWrapper` |
 | `NFTIssued` | `uint256 indexed tokenId, address indexed employer, string tokenURI` |

@@ -18,6 +18,7 @@ The following `public` state variables have auto‑generated getter functions:
 - `validatorVotedJobs(address, index)`
 - `blacklistedAgents(address)`, `blacklistedValidators(address)`
 - `agiTypes(index)`
+- `maxActiveJobsPerAgent()`
 
 Explicit job accessors:
 - `getJobCore(jobId)`, `getJobValidation(jobId)`
@@ -84,6 +85,12 @@ Sets approval/disapproval thresholds.
 ### `setValidationRewardPercentage(uint256)`
 Sets validator reward percentage (1‑100).
 
+### `setValidatorBondParams(uint256 bps, uint256 min, uint256 max)`
+Updates validator bond parameters for future votes. Existing jobs keep their snapshotted validator bond amount.
+
+### `setAgentBondParams(uint256 bps, uint256 min, uint256 max)` / `setAgentBond(uint256 bond)`
+Updates agent bond configuration for future assignments. Existing jobs keep their snapshotted agent bond amount.
+
 ### `setPremiumReputationThreshold(uint256)`
 Sets the reputation required for premium feature access.
 
@@ -92,6 +99,9 @@ Sets max payout allowed.
 
 ### `setJobDurationLimit(uint256)`
 Sets max job duration allowed.
+
+### `setMaxActiveJobsPerAgent(uint256)`
+Owner control for concurrent active jobs per agent. Must be in `(0, 10_000]`. Impacts only future intake checks in `applyForJob`.
 
 ### `updateTermsAndConditionsIpfsHash(string)`
 ### `updateContactEmail(string)`
