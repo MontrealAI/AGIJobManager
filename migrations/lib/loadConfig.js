@@ -58,6 +58,7 @@ function getNetworkOverride(configModule, network, chainId) {
 function applyEnvOverrides(config) {
   const out = deepClone(config);
   out.authorizationRoots = out.authorizationRoots || {};
+  out.authorizationRoots.roots = out.authorizationRoots.roots || {};
   const rootNodeEnvVars = [
     process.env.AGIJOBMANAGER_ROOT_CLUB_NODE,
     process.env.AGIJOBMANAGER_ROOT_AGENT_NODE,
