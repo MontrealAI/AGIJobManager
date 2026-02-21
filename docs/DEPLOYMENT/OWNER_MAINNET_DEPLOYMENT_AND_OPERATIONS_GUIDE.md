@@ -347,7 +347,7 @@ What you should see:
 
 Proof format expectations:
 - Input list should be normalized addresses.
-- Script normalizes lowercase, de-duplicates, sorts, hashes address bytes, builds sorted-pair+sorted-leaf Merkle tree.
+- Script normalizes lowercase, rejects duplicate addresses with an explicit error, sorts unique addresses, hashes address bytes, and builds a sorted-pair+sorted-leaf Merkle tree.
 - Use resulting root for `updateMerkleRoots` and corresponding proof array for participation calls.
 
 ## 11) Parameter Catalog
@@ -357,10 +357,10 @@ Proof format expectations:
 | requiredValidatorApprovals (`requiredValidatorApprovals`, `setRequiredValidatorApprovals`) | Approvals needed for approve-side threshold | Contract default | Requires empty escrow/bonds |
 | requiredValidatorDisapprovals (`requiredValidatorDisapprovals`, `setRequiredValidatorDisapprovals`) | Disapprovals needed for reject-side threshold | Contract default | Requires empty escrow/bonds |
 | voteQuorum (`voteQuorum`, `setVoteQuorum`) | Minimum validator participation target | Contract default | Requires empty escrow/bonds |
-| validationRewardPercentage (`validationRewardPercentage`, `setValidationRewardPercentage`) | Validator reward split policy | Contract default | Requires empty escrow/bonds |
-| premiumReputationThreshold (`premiumReputationThreshold`, `setPremiumReputationThreshold`) | Reputation threshold for premium logic | Contract default | Requires empty escrow/bonds |
-| maxJobPayout (`maxJobPayout`, `setMaxJobPayout`) | Upper payout limit per job | Contract default | Requires empty escrow/bonds |
-| jobDurationLimit (`jobDurationLimit`, `setJobDurationLimit`) | Maximum allowed job duration | Contract default | Requires empty escrow/bonds |
+| validationRewardPercentage (`validationRewardPercentage`, `setValidationRewardPercentage`) | Validator reward split policy | Contract default | Changeable by owner (does not require empty escrow) |
+| premiumReputationThreshold (`premiumReputationThreshold`, `setPremiumReputationThreshold`) | Reputation threshold for premium logic | Contract default | Changeable by owner (does not require empty escrow) |
+| maxJobPayout (`maxJobPayout`, `setMaxJobPayout`) | Upper payout limit per job | Contract default | Changeable by owner (does not require empty escrow) |
+| jobDurationLimit (`jobDurationLimit`, `setJobDurationLimit`) | Maximum allowed job duration | Contract default | Changeable by owner (does not require empty escrow) |
 | completionReviewPeriod (`completionReviewPeriod`, `setCompletionReviewPeriod`) | Validator review window after completion request | Contract default | Requires empty escrow/bonds |
 | disputeReviewPeriod (`disputeReviewPeriod`, `setDisputeReviewPeriod`) | Dispute review window | Contract default | Requires empty escrow/bonds |
 | challengePeriodAfterApproval (`challengePeriodAfterApproval`, `setChallengePeriodAfterApproval`) | Challenge window after approval path | Contract default | Requires empty escrow/bonds |
