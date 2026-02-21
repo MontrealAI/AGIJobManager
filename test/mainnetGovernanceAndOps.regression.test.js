@@ -63,7 +63,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
     assert.equal(capped.toString(), '88888');
   });
 
-  it('locks governance knobs and merkle roots while funds are in-flight', async () => {
+  it('locks governance knobs while allowing merkle roots while funds are in-flight', async () => {
     const ctx = await deployManager();
     await seedAssignedJob(ctx);
 
@@ -76,7 +76,11 @@ contract('mainnet governance + ops regressions', (accounts) => {
     await expectCustomError(ctx.manager.setAgentBondParams.call(100, 1, 1, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setValidatorSlashBps.call(100, { from: owner }), 'InvalidState');
     await expectCustomError(ctx.manager.setChallengePeriodAfterApproval.call(1, { from: owner }), 'InvalidState');
-    await expectCustomError(ctx.manager.updateMerkleRoots.call(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner }), 'InvalidState');
+    const inFlightValidatorRoot = web3.utils.randomHex(32);
+    const inFlightAgentRoot = web3.utils.randomHex(32);
+    await ctx.manager.updateMerkleRoots(inFlightValidatorRoot, inFlightAgentRoot, { from: owner });
+    assert.equal(await ctx.manager.validatorMerkleRoot(), inFlightValidatorRoot);
+    assert.equal(await ctx.manager.agentMerkleRoot(), inFlightAgentRoot);
 
     await time.increase(1001);
     await ctx.manager.expireJob(0, { from: employer });
@@ -162,9 +166,13 @@ contract('mainnet governance + ops regressions', (accounts) => {
     assert.equal(hookLog.args.success, false);
   });
 
-  it('includes merkle roots in identity lock', async () => {
+  it('keeps merkle roots updateable after identity lock', async () => {
     const ctx = await deployManager();
     await ctx.manager.lockIdentityConfiguration({ from: owner });
-    await expectCustomError(ctx.manager.updateMerkleRoots.call(web3.utils.randomHex(32), web3.utils.randomHex(32), { from: owner }), 'ConfigLocked');
+    const lockedValidatorRoot = web3.utils.randomHex(32);
+    const lockedAgentRoot = web3.utils.randomHex(32);
+    await ctx.manager.updateMerkleRoots(lockedValidatorRoot, lockedAgentRoot, { from: owner });
+    assert.equal(await ctx.manager.validatorMerkleRoot(), lockedValidatorRoot);
+    assert.equal(await ctx.manager.agentMerkleRoot(), lockedAgentRoot);
   });
 });
