@@ -484,7 +484,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     );
     event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
-    event MaxActiveJobsPerAgentUpdated(uint256 oldValue, uint256 newValue);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
@@ -1119,9 +1118,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             if (value - 1 >= 10_000) revert InvalidParameters();
         }
-        uint256 oldValue = maxActiveJobsPerAgent;
         maxActiveJobsPerAgent = value;
-        emit MaxActiveJobsPerAgentUpdated(oldValue, value);
     }
     function setCompletionReviewPeriod(uint256 _period) external onlyOwner {
         _requireEmptyEscrow();
@@ -1148,7 +1145,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         validatorBondBps = bps;
         validatorBondMin = min;
         validatorBondMax = max;
-        emit ValidatorBondParamsUpdated(bps, min, max);
     }
     function setAgentBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();
@@ -1171,9 +1167,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function setAgentBond(uint256 bond) external onlyOwner {
         if ((agentBondMax == 0 && bond != 0) || bond > agentBondMax) revert InvalidParameters();
-        uint256 oldMin = agentBond;
         agentBond = bond;
-        emit AgentBondMinUpdated(oldMin, bond);
     }
     function setValidatorSlashBps(uint256 bps) external onlyOwner {
         _requireEmptyEscrow();
@@ -1641,13 +1635,27 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
                 ++i;
             }
         }
-        if ((!exists && length >= MAX_AGI_TYPES) || maxPct > 100 - validationRewardPercentage) {
+        if (maxPct > 100 - validationRewardPercentage) {
             revert InvalidParameters();
         }
         if (exists) {
             _updateAgiTypePayout(nftAddress, payoutPercentage);
-        } else {
+        } else if (length < MAX_AGI_TYPES) {
             agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
+        } else {
+            for (uint256 i = 0; i < length; ) {
+                AGIType storage agiType = agiTypes[i];
+                if (agiType.payoutPercentage == 0) {
+                    agiType.nftAddress = nftAddress;
+                    agiType.payoutPercentage = payoutPercentage;
+                    emit AGITypeUpdated(nftAddress, payoutPercentage);
+                    return;
+                }
+                unchecked {
+                    ++i;
+                }
+            }
+            revert InvalidParameters();
         }
         emit AGITypeUpdated(nftAddress, payoutPercentage);
     }

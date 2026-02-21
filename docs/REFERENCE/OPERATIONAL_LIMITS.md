@@ -19,7 +19,13 @@ The bond setters above only impact future bond computations and do not retroacti
 ## AGI type capacity durability
 
 - `MAX_AGI_TYPES` remains capped at 32 to bound loops and gas.
-- Disabled AGI types (`payoutPercentage == 0`) remain disabled for eligibility, but do not currently shrink array length.
+- Disabled AGI type slots (`payoutPercentage == 0`) are reusable by `addAGIType` when capacity is full.
+- This prevents permanent slot exhaustion while keeping the hard cap intact for settlement safety.
+
+## Allowlist rotation durability
+
+- `updateMerkleRoots(bytes32 validatorRoot, bytes32 agentRoot)` remains owner-callable at any time (including during active escrow and after identity lock).
+- During root rotation, operators should typically include previously authorized AI agents/validators unless intentionally removing them.
 
 ## Safety-critical limits to keep conservative
 

@@ -50,10 +50,7 @@ contract('operational durability', (accounts) => {
     await manager.applyForJob(2, 'agent', EMPTY_PROOF, { from: agent });
     await expectCustomError(manager.applyForJob.call(3, 'agent', EMPTY_PROOF, { from: agent }), 'InvalidState');
 
-    const tx = await manager.setMaxActiveJobsPerAgent(4, { from: owner });
-    const evt = tx.logs.find((log) => log.event === 'MaxActiveJobsPerAgentUpdated');
-    assert.equal(evt.args.oldValue.toString(), '3');
-    assert.equal(evt.args.newValue.toString(), '4');
+    await manager.setMaxActiveJobsPerAgent(4, { from: owner });
     assert.equal((await manager.maxActiveJobsPerAgent()).toString(), '4');
 
     await manager.applyForJob(3, 'agent', EMPTY_PROOF, { from: agent });
