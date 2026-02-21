@@ -57,6 +57,17 @@ function getNetworkOverride(configModule, network, chainId) {
 
 function applyEnvOverrides(config) {
   const out = deepClone(config);
+  out.authorizationRoots = out.authorizationRoots || {};
+  const rootNodeEnvVars = [
+    process.env.AGIJOBMANAGER_ROOT_CLUB_NODE,
+    process.env.AGIJOBMANAGER_ROOT_AGENT_NODE,
+    process.env.AGIJOBMANAGER_ROOT_ALPHA_CLUB_NODE,
+    process.env.AGIJOBMANAGER_ROOT_ALPHA_AGENT_NODE,
+  ];
+  const hasRootNodeEnvOverride = rootNodeEnvVars.some((v) => v !== undefined && v !== null && v !== '');
+  if (hasRootNodeEnvOverride && (out.authorizationRoots.rootNodes === null || out.authorizationRoots.rootNodes === undefined)) {
+    out.authorizationRoots.rootNodes = {};
+  }
   const setIf = (pathParts, value) => {
     if (value === undefined || value === null || value === '') return;
     let target = out;
@@ -71,8 +82,42 @@ function applyEnvOverrides(config) {
   setIf(['identity', 'ensRegistry'], process.env.AGIJOBMANAGER_ENS_REGISTRY);
   setIf(['identity', 'nameWrapper'], process.env.AGIJOBMANAGER_NAME_WRAPPER);
   setIf(['identity', 'ensJobPages'], process.env.AGIJOBMANAGER_ENS_JOB_PAGES);
+  const useEnsJobTokenURI = parseBoolean(process.env.AGIJOBMANAGER_USE_ENS_JOB_TOKEN_URI);
+  if (useEnsJobTokenURI !== null) out.identity.useEnsJobTokenURI = useEnsJobTokenURI;
+  const lockIdentityConfiguration = parseBoolean(process.env.AGIJOBMANAGER_LOCK_IDENTITY_CONFIGURATION);
+  if (lockIdentityConfiguration !== null) out.identity.lockIdentityConfiguration = lockIdentityConfiguration;
+
+  setIf(['authorizationRoots', 'roots', 'clubName'], process.env.AGIJOBMANAGER_ROOT_CLUB_NAME);
+  setIf(['authorizationRoots', 'roots', 'agentName'], process.env.AGIJOBMANAGER_ROOT_AGENT_NAME);
+  setIf(['authorizationRoots', 'roots', 'alphaClubName'], process.env.AGIJOBMANAGER_ROOT_ALPHA_CLUB_NAME);
+  setIf(['authorizationRoots', 'roots', 'alphaAgentName'], process.env.AGIJOBMANAGER_ROOT_ALPHA_AGENT_NAME);
+  setIf(['authorizationRoots', 'rootNodes', 'clubRootNode'], process.env.AGIJOBMANAGER_ROOT_CLUB_NODE);
+  setIf(['authorizationRoots', 'rootNodes', 'agentRootNode'], process.env.AGIJOBMANAGER_ROOT_AGENT_NODE);
+  setIf(['authorizationRoots', 'rootNodes', 'alphaClubRootNode'], process.env.AGIJOBMANAGER_ROOT_ALPHA_CLUB_NODE);
+  setIf(['authorizationRoots', 'rootNodes', 'alphaAgentRootNode'], process.env.AGIJOBMANAGER_ROOT_ALPHA_AGENT_NODE);
+
   setIf(['merkleRoots', 'validatorMerkleRoot'], process.env.AGIJOBMANAGER_VALIDATOR_MERKLE_ROOT);
   setIf(['merkleRoots', 'agentMerkleRoot'], process.env.AGIJOBMANAGER_AGENT_MERKLE_ROOT);
+
+  setIf(['protocolParameters', 'requiredValidatorApprovals'], process.env.AGIJOBMANAGER_REQUIRED_VALIDATOR_APPROVALS);
+  setIf(['protocolParameters', 'requiredValidatorDisapprovals'], process.env.AGIJOBMANAGER_REQUIRED_VALIDATOR_DISAPPROVALS);
+  setIf(['protocolParameters', 'voteQuorum'], process.env.AGIJOBMANAGER_VOTE_QUORUM);
+  setIf(['protocolParameters', 'validationRewardPercentage'], process.env.AGIJOBMANAGER_VALIDATION_REWARD_PERCENTAGE);
+  setIf(['protocolParameters', 'premiumReputationThreshold'], process.env.AGIJOBMANAGER_PREMIUM_REPUTATION_THRESHOLD);
+  setIf(['protocolParameters', 'maxJobPayout'], process.env.AGIJOBMANAGER_MAX_JOB_PAYOUT);
+  setIf(['protocolParameters', 'jobDurationLimit'], process.env.AGIJOBMANAGER_JOB_DURATION_LIMIT);
+  setIf(['protocolParameters', 'completionReviewPeriod'], process.env.AGIJOBMANAGER_COMPLETION_REVIEW_PERIOD);
+  setIf(['protocolParameters', 'disputeReviewPeriod'], process.env.AGIJOBMANAGER_DISPUTE_REVIEW_PERIOD);
+  setIf(['protocolParameters', 'challengePeriodAfterApproval'], process.env.AGIJOBMANAGER_CHALLENGE_PERIOD_AFTER_APPROVAL);
+  setIf(['protocolParameters', 'validatorBondBps'], process.env.AGIJOBMANAGER_VALIDATOR_BOND_BPS);
+  setIf(['protocolParameters', 'validatorBondMin'], process.env.AGIJOBMANAGER_VALIDATOR_BOND_MIN);
+  setIf(['protocolParameters', 'validatorBondMax'], process.env.AGIJOBMANAGER_VALIDATOR_BOND_MAX);
+  setIf(['protocolParameters', 'validatorSlashBps'], process.env.AGIJOBMANAGER_VALIDATOR_SLASH_BPS);
+  setIf(['protocolParameters', 'agentBondBps'], process.env.AGIJOBMANAGER_AGENT_BOND_BPS);
+  setIf(['protocolParameters', 'agentBondMin'], process.env.AGIJOBMANAGER_AGENT_BOND_MIN);
+  setIf(['protocolParameters', 'agentBondMax'], process.env.AGIJOBMANAGER_AGENT_BOND_MAX);
+  setIf(['protocolParameters', 'agentBondMinOverride'], process.env.AGIJOBMANAGER_AGENT_BOND_MIN_OVERRIDE);
+
   setIf(['ownership', 'finalOwner'], process.env.AGIJOBMANAGER_FINAL_OWNER);
 
   const paused = parseBoolean(process.env.AGIJOBMANAGER_PAUSED);
@@ -84,15 +129,24 @@ function applyEnvOverrides(config) {
 }
 
 function resolveRootNodes(authRoots, web3) {
-  if (authRoots.rootNodes) {
-    return authRoots.rootNodes;
-  }
   const roots = authRoots.roots || {};
-  return {
+  const derived = {
     clubRootNode: namehash(roots.clubName || roots.club || '', web3),
     agentRootNode: namehash(roots.agentName || roots.agent || '', web3),
     alphaClubRootNode: namehash(roots.alphaClubName || roots.alphaClub || '', web3),
     alphaAgentRootNode: namehash(roots.alphaAgentName || roots.alphaAgent || '', web3),
+  };
+
+  const explicit = authRoots.rootNodes;
+  if (!explicit || !isObject(explicit)) {
+    return derived;
+  }
+
+  return {
+    clubRootNode: explicit.clubRootNode || derived.clubRootNode,
+    agentRootNode: explicit.agentRootNode || derived.agentRootNode,
+    alphaClubRootNode: explicit.alphaClubRootNode || derived.alphaClubRootNode,
+    alphaAgentRootNode: explicit.alphaAgentRootNode || derived.alphaAgentRootNode,
   };
 }
 
