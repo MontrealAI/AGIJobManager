@@ -37,6 +37,16 @@ module.exports = async function readLegacyDefaults(callback) {
     ];
 
     const c = new web3.eth.Contract(abi, legacyAddress);
+    const optionalUnavailable = [];
+
+    async function optionalCall(label, fn) {
+      try {
+        return await fn();
+      } catch (_) {
+        optionalUnavailable.push(label);
+        return null;
+      }
+    }
 
     const out = {
       source: {
@@ -53,7 +63,10 @@ module.exports = async function readLegacyDefaults(callback) {
         voteQuorum: String(await c.methods.voteQuorum().call()),
         completionReviewPeriod: String(await c.methods.completionReviewPeriod().call()),
         disputeReviewPeriod: String(await c.methods.disputeReviewPeriod().call()),
-        challengePeriodAfterApproval: String(await c.methods.challengePeriodAfterApproval().call()),
+        challengePeriodAfterApproval: await optionalCall(
+          'challengePeriodAfterApproval',
+          async () => String(await c.methods.challengePeriodAfterApproval().call()),
+        ),
         validatorMerkleRoot: await c.methods.validatorMerkleRoot().call(),
         agentMerkleRoot: await c.methods.agentMerkleRoot().call(),
         ens: await c.methods.ens().call(),
@@ -64,6 +77,9 @@ module.exports = async function readLegacyDefaults(callback) {
         alphaAgentRootNode: await c.methods.alphaAgentRootNode().call(),
         ensJobPages: await c.methods.ensJobPages().call(),
         withdrawableAGI: String(await c.methods.withdrawableAGI().call()),
+      },
+      warnings: {
+        optionalGettersUnavailable: optionalUnavailable,
       },
     };
 
