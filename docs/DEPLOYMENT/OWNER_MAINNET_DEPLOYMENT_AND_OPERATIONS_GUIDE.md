@@ -288,7 +288,7 @@ Etherscan form layout can change. Array values must still be valid `bytes32[]` i
 #### 9.11 AGI type management
 - Functions: `addAGIType(address,uint256)`, `disableAGIType(address)`.
 - Allowed: owner only; payout compatibility and ERC-721 checks enforced.
-- Success check: confirm the `AGITypeUpdated` event for your `nftAddress`, then read `agiTypes(0)` through `agiTypes(31)` and match the row whose `nftAddress` equals your target address (the contract maximum is 32 AGI types). Confirm the matched row's payout percentage equals the intended value.
+- Success check: confirm the `AGITypeUpdated` event for your `nftAddress`, then read `agiTypes(0)`, `agiTypes(1)`, and continue upward until the first out-of-bounds revert (that revert means you reached `agiTypes.length`). Within the successful rows, match the entry whose `nftAddress` equals your target address and confirm its payout percentage equals the intended value.
 
 ## 10) Human-Usable Full Protocol Walkthrough (Web-Only)
 
