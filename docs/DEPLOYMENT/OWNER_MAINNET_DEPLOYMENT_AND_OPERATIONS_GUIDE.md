@@ -311,7 +311,7 @@ Etherscan field styling can change. Provide arrays in valid `bytes32[]` format.
 - Function: `setBaseIpfsUrl(string)`
 - Allowed when: always (owner only)
 - Inputs: base URI string (length-limited by contract)
-- Success signal: transaction succeeds (status = Success) and subsequent `tokenURI` outputs reflect the new base URL path
+- Success signal: transaction succeeds (status = Success). `tokenURI` may change only for relative URIs; absolute-scheme URIs (for example `ipfs://...` or `https://...`) and ENS-derived absolute URIs can remain unchanged even when the owner write succeeded.
 - Safety note: set to stable, immutable storage URI strategy
 
 ### 9.7 Update thresholds, periods, bonds, slash, payout caps
