@@ -71,7 +71,7 @@ sequenceDiagram
 
     alt agent wins
         Contract->>Contract: _mintCompletionNFT(jobId)
-        Contract-->>Employer: NFTIssued(tokenId, tokenURI)
+        Contract-->>Employer: NFTIssued(tokenId, employer, tokenURI)
     else employer wins
         Contract-->>Employer: escrow refunded (no NFT)
     end
