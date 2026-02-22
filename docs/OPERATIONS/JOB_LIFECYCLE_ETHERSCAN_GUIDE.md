@@ -56,7 +56,7 @@ sequenceDiagram
     participant Mgr as AGIJobManager
 
     Agent->>Mgr: requestJobCompletion
-    Employer->>Mgr: previewDisputeBondForJob(jobId)
+    Employer->>Mgr: calculate dispute bond off-chain
     Employer->>Mgr: disputeJob(jobId)
     Moderator->>Mgr: resolveDisputeWithCode(jobId, code, reason)
     Mgr-->>Employer: JobRefunded (employer-win) OR
@@ -106,7 +106,7 @@ flowchart TD
 ### 5) Disputes
 - Calculate dispute bond from payout and configured min/max caps, approve, then call `disputeJob(jobId)`.
 - Moderator path: `resolveDisputeWithCode(jobId, code, reason)`.
-- Owner stale fallback: `resolveStaleDispute(jobId)`.
+- Owner stale fallback: `resolveStaleDispute(jobId, employerWins)` where `employerWins=true` refunds employer and `false` settles in agent-win direction.
 
 ### 6) ENS hooks / ENS job pages
 - Set helper with `setEnsJobPages(address)`.
@@ -114,9 +114,10 @@ flowchart TD
 - `lockJobENS(jobId, burnFuses)` can be called after terminal states (`completed` or `expired`); burn-fuses remains owner-only.
 
 ### 7) Completion NFT verification
-- `completionTokenIdByJob(jobId)` gives completion token (returns 0 when none).
-- `jobIdByCompletionToken(tokenId)` resolves reverse mapping.
-- `tokenURI(tokenId)` returns final completion metadata URI.
+- Open AGIJobManager **Events** and find `NFTIssued(tokenId, employer, tokenURI)` emitted for your `jobId` transaction.
+- Cross-check ERC-721 `Transfer` event (mint from `0x000...000` to employer) in the same transaction.
+- Use `ownerOf(tokenId)` and `tokenURI(tokenId)` on Etherscan Read Contract to verify ownership and metadata.
+- Note: this contract does not expose direct `jobId -> tokenId` or `tokenId -> jobId` read mappings.
 
 ## Permissions matrix
 
