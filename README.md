@@ -118,6 +118,7 @@ npm run docs:ens:check
 ## Documentation
 
 - Main index: [`docs/README.md`](docs/README.md)
+- URI operations reference (job spec/completion): [`docs/REFERENCE/URIS_JOBSPEC_AND_COMPLETION.md`](docs/REFERENCE/URIS_JOBSPEC_AND_COMPLETION.md)
 - Quintessential walkthrough: [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
 
 Maintenance commands:
