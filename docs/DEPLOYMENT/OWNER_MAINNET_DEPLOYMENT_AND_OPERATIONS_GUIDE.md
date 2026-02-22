@@ -288,7 +288,7 @@ Etherscan form layout can change. Array values must still be valid `bytes32[]` i
 #### 9.11 AGI type management
 - Functions: `addAGIType(address,uint256)`, `disableAGIType(address)`.
 - Allowed: owner only; payout compatibility and ERC-721 checks enforced.
-- Success check: `AGITypeUpdated` event and `getAGITypes()` readback.
+- Success check: `AGITypeUpdated` event and indexed readback via `agiTypes(uint256)` for the updated slot (use recent `AGITypeUpdated` logs to identify the changed NFT/type).
 
 ## 10) Human-Usable Full Protocol Walkthrough (Web-Only)
 
