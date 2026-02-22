@@ -25,7 +25,16 @@ function parseArgs(argv) {
 }
 
 function normalizeJobIds(value) {
-  return value.split(",").map((s) => s.trim()).filter(Boolean).map((s) => Number(s));
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => {
+      if (!/^\d+$/.test(s)) {
+        throw new Error(`Invalid job id: ${s}`);
+      }
+      return s;
+    });
 }
 
 function stableMetadata({ jobId, chainId, managerAddress, employer, assignedAgent, payout, assignedAt, completionRequestedAt, jobSpecURI, jobCompletionURI, imageURI, externalUrl }) {
@@ -54,7 +63,13 @@ function stableMetadata({ jobId, chainId, managerAddress, employer, assignedAgen
 const args = parseArgs(process.argv);
 const rpcUrl = args.rpc || process.env.RPC_URL;
 const managerAddress = args.manager;
-const jobIds = normalizeJobIds(args.jobs || "");
+let jobIds = [];
+try {
+  jobIds = normalizeJobIds(args.jobs || "");
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const outDir = args.out || "./artifacts/job-nft-metadata";
 const imageURI = args.image || DEFAULT_IMAGE_IPFS;
 const externalUrlBase = args["external-url-base"] || "";

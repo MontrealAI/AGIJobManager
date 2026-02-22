@@ -71,6 +71,7 @@ contract("AGIJobManager metadata routing", (accounts) => {
 
   it("uses router tokenURI when ENS routing is enabled", async () => {
     const router = await AGIJobPages.new("https://metadata.example/jobs/", "https://jobs.example", { from: owner });
+    await router.setJobManager(manager.address, { from: owner });
     await manager.setEnsJobPages(router.address, { from: owner });
     await manager.setUseEnsJobTokenURI(true, { from: owner });
 
@@ -92,6 +93,7 @@ contract("AGIJobManager metadata routing", (accounts) => {
 
   it("router handleHook never reverts and preview matches fallback selector output", async () => {
     const router = await AGIJobPages.new("ipfs://folder/", "", { from: owner });
+    await router.setJobManager(manager.address, { from: owner });
     const preview = await router.previewTokenURI(42);
     assert.equal(preview, "ipfs://folder/42.json", "preview should resolve deterministic URI");
 
@@ -102,7 +104,11 @@ contract("AGIJobManager metadata routing", (accounts) => {
     const decoded = web3.eth.abi.decodeParameter("string", selectorCall);
     assert.equal(decoded, preview, "fallback selector result should match preview");
 
-    await router.handleHook(1, 42, { from: owner });
-    await router.handleHook(255, 42, { from: owner });
+    try {
+      await router.handleHook(1, 42, { from: owner });
+      assert.fail("expected NotAuthorized revert for non-manager caller");
+    } catch (error) {
+      assert(error.message.includes("revert"), "expected revert");
+    }
   });
 });

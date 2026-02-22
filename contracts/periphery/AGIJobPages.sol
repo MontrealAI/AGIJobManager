@@ -8,17 +8,20 @@ contract AGIJobPages is Ownable {
     using Strings for uint256;
 
     error InvalidParameters();
+    error NotAuthorized();
 
     event HookObserved(uint8 indexed hook, uint256 indexed jobId, address indexed caller);
     event BaseMetadataURIUpdated(string oldValue, string newValue);
     event DefaultImageURIUpdated(string oldValue, string newValue);
     event ExternalUrlBaseUpdated(string oldValue, string newValue);
     event UseJobIdJsonSuffixUpdated(bool oldValue, bool newValue);
+    event JobManagerUpdated(address indexed oldValue, address indexed newValue);
 
     string public baseMetadataURI;
     string public defaultImageURI;
     string public externalUrlBase;
     bool public useJobIdJsonSuffix;
+    address public jobManager;
 
     constructor(string memory baseMetadataURI_, string memory externalUrlBase_) {
         baseMetadataURI = baseMetadataURI_;
@@ -52,7 +55,16 @@ contract AGIJobPages is Ownable {
         emit UseJobIdJsonSuffixUpdated(oldValue, enabled);
     }
 
+
+    function setJobManager(address newValue) external onlyOwner {
+        if (newValue != address(0) && newValue.code.length == 0) revert InvalidParameters();
+        address oldValue = jobManager;
+        jobManager = newValue;
+        emit JobManagerUpdated(oldValue, newValue);
+    }
+
     function handleHook(uint8 hook, uint256 jobId) external {
+        if (msg.sender != jobManager) revert NotAuthorized();
         emit HookObserved(hook, jobId, msg.sender);
     }
 
