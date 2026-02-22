@@ -6,6 +6,17 @@ function parseArg(flag, fallback = null) {
   return process.argv[idx + 1];
 }
 
+
+function isLikelyRevertError(err) {
+  const message = String(err?.message || '').toLowerCase();
+  const nested = String(err?.data?.message || '').toLowerCase();
+  const payload = `${message} ${nested}`;
+  return payload.includes('execution reverted')
+    || payload.includes('invalid opcode')
+    || payload.includes('vm exception')
+    || payload.includes('revert');
+}
+
 async function callOptionalUintGetter({ contractAddress, getterName }) {
   const selector = web3.eth.abi.encodeFunctionSignature(`${getterName}()`);
   let raw;
@@ -13,6 +24,9 @@ async function callOptionalUintGetter({ contractAddress, getterName }) {
   try {
     raw = await web3.eth.call({ to: contractAddress, data: selector });
   } catch (err) {
+    // Only revert-like EVM call failures can indicate a missing legacy getter.
+    if (!isLikelyRevertError(err)) throw err;
+
     // Legacy-unavailable getter path may revert instead of returning empty data.
     const code = await web3.eth.getCode(contractAddress);
     const hasSelectorInBytecode = typeof code === 'string' && code.toLowerCase().includes(selector.slice(2).toLowerCase());
