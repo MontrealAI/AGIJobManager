@@ -2,8 +2,14 @@
 
 function parseArg(flag, fallback = null) {
   const idx = process.argv.indexOf(flag);
-  if (idx === -1 || idx + 1 >= process.argv.length) return fallback;
-  return process.argv[idx + 1];
+  if (idx === -1) return fallback;
+
+  const next = process.argv[idx + 1];
+  if (!next || next.startsWith('--')) {
+    throw new Error(`Missing value for ${flag}`);
+  }
+
+  return next;
 }
 
 
