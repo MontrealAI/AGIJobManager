@@ -8,12 +8,12 @@ function parseArg(flag, fallback = null) {
 
 
 
-async function callOptionalUint(method, fallback = null) {
-  try {
-    return String(await method().call());
-  } catch (_err) {
+async function callOptionalUint({ to, data, fallback = null }) {
+  const raw = await web3.eth.call({ to, data });
+  if (!raw || raw === '0x') {
     return fallback;
   }
+  return web3.eth.abi.decodeParameter('uint256', raw).toString();
 }
 
 module.exports = async function readLegacyDefaults(callback) {
@@ -63,7 +63,10 @@ module.exports = async function readLegacyDefaults(callback) {
         voteQuorum: String(await c.methods.voteQuorum().call()),
         completionReviewPeriod: String(await c.methods.completionReviewPeriod().call()),
         disputeReviewPeriod: String(await c.methods.disputeReviewPeriod().call()),
-        challengePeriodAfterApproval: await callOptionalUint(() => c.methods.challengePeriodAfterApproval()),
+        challengePeriodAfterApproval: await callOptionalUint({
+          to: legacyAddress,
+          data: c.methods.challengePeriodAfterApproval().encodeABI(),
+        }),
         validatorMerkleRoot: await c.methods.validatorMerkleRoot().call(),
         agentMerkleRoot: await c.methods.agentMerkleRoot().call(),
         ens: await c.methods.ens().call(),

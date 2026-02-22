@@ -337,7 +337,7 @@ npx truffle exec scripts/ops/read_legacy_defaults.js --network mainnet --legacy 
 ```
 3) Compare to new deployment receipt and new contract read outputs.
 
-Note: if a legacy getter is not present (for example `challengePeriodAfterApproval()` on older deployments), the helper outputs `null` for that field instead of failing.
+Note: if a legacy getter is not present (for example `challengePeriodAfterApproval()` on older deployments), the helper outputs `null` for that field. Other RPC/call errors are surfaced and fail the script so operators do not get a false-success snapshot.
 
 | Parameter | Legacy read location | New contract getter/setter |
 | --- | --- | --- |
