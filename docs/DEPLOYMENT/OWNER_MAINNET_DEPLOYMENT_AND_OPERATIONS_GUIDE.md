@@ -512,7 +512,7 @@ A participant can be authorized if they control the configured subdomain via Nam
 | Premium reputation threshold | `premiumReputationThreshold()` | `setPremiumReputationThreshold` | `10000` | No special gate | Low-risk, but still document |
 | Max payout per job | `maxJobPayout()` | `setMaxJobPayout` | `88888888000000000000000000` | No special gate | Use staged increases |
 | Max job duration | `jobDurationLimit()` | `setJobDurationLimit` | `10000000` | Must be non-zero | Keep aligned with ops timelines |
-| Max active jobs per agent | `maxActiveJobsPerAgent()` | `setMaxActiveJobsPerAgent` | `20` | Range guard in setter | Increase carefully to avoid concentration |
+| Max active jobs per agent | `maxActiveJobsPerAgent()` | `setMaxActiveJobsPerAgent` | `3` | Range guard in setter | Increase carefully to avoid concentration |
 | AGI token address | `agiToken()` | `updateAGITokenAddress` | Constructor input | Identity unlocked + empty escrow/bonds + contract address | Treat as major migration event |
 | ENS registry | `ens()` | `updateEnsRegistry` | Constructor input | Identity unlocked + empty escrow/bonds + contract address | Change only with full namespace validation |
 | ENS name wrapper | `nameWrapper()` | `updateNameWrapper` | Constructor input | Identity unlocked + empty escrow/bonds + zero/contract | Validate wrapper ownership model |
