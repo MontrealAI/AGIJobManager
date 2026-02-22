@@ -127,3 +127,23 @@ When `burnFuses` is true and the name is wrapped, `ENSJobPages` attempts to burn
 
 These minimal fuses prevent resolver/TTL changes without burning all fuses, reducing the risk of accidental lockouts.
 Fuse burning is optional and does **not** affect settlement or withdrawals if it fails.
+
+
+## Metadata router mode (Etherscan-friendly default)
+
+`ENSJobPages` also supports deterministic completion NFT metadata routing for `AGIJobManager` via selector `0x751809b4`.
+
+Recommended owner configuration:
+- `setBaseMetadataURI("ipfs://<cid>/")`
+- `setUseJobIdJsonSuffix(true)`
+- optional: `setExternalUrlBase("https://...")`
+- optional: `setDefaultImageURI("ipfs://Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1")`
+
+Preview before enabling on the manager:
+- `previewTokenURI(jobId)`
+
+Then wire AGIJobManager:
+- `setEnsJobPages(<router>)`
+- `setUseEnsJobTokenURI(true)`
+
+If the router call reverts or returns malformed data, AGIJobManager falls back to `jobCompletionURI` during minting/settlement.

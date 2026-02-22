@@ -63,6 +63,10 @@ contract ENSJobPages is Ownable {
     );
     event JobManagerUpdated(address indexed oldJobManager, address indexed newJobManager);
     event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);
+    event BaseMetadataURIUpdated(string oldValue, string newValue);
+    event DefaultImageURIUpdated(string oldValue, string newValue);
+    event ExternalUrlBaseUpdated(string oldValue, string newValue);
+    event UseJobIdJsonSuffixUpdated(bool oldValue, bool newValue);
     event ENSHookProcessed(uint8 indexed hook, uint256 indexed jobId, bool configured, bool success);
     event ENSHookSkipped(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed reason);
     event ENSHookBestEffortFailure(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed operation);
@@ -76,6 +80,13 @@ contract ENSJobPages is Ownable {
     address public jobManager;
     bool public useEnsJobTokenURI;
     bool public configLocked;
+    string public baseMetadataURI;
+    string public defaultImageURI;
+    string public externalUrlBase;
+    bool public useJobIdJsonSuffix;
+
+    bytes4 private constant TOKEN_URI_HOOK_SELECTOR = 0x751809b4;
+    string private constant DEFAULT_IMAGE_URI = "ipfs://Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1";
 
     constructor(
         address ensAddress,
@@ -96,6 +107,31 @@ contract ENSJobPages is Ownable {
         publicResolver = IPublicResolver(publicResolverAddress);
         jobsRootNode = rootNode;
         jobsRootName = rootName;
+        defaultImageURI = DEFAULT_IMAGE_URI;
+    }
+
+    function setBaseMetadataURI(string calldata uri) external onlyOwner {
+        string memory old = baseMetadataURI;
+        baseMetadataURI = uri;
+        emit BaseMetadataURIUpdated(old, uri);
+    }
+
+    function setDefaultImageURI(string calldata uri) external onlyOwner {
+        string memory old = defaultImageURI;
+        defaultImageURI = uri;
+        emit DefaultImageURIUpdated(old, uri);
+    }
+
+    function setExternalUrlBase(string calldata base) external onlyOwner {
+        string memory old = externalUrlBase;
+        externalUrlBase = base;
+        emit ExternalUrlBaseUpdated(old, base);
+    }
+
+    function setUseJobIdJsonSuffix(bool enabled) external onlyOwner {
+        bool old = useJobIdJsonSuffix;
+        useJobIdJsonSuffix = enabled;
+        emit UseJobIdJsonSuffixUpdated(old, enabled);
     }
 
     function setENSRegistry(address ensAddress) external onlyOwner {
@@ -154,6 +190,10 @@ contract ENSJobPages is Ownable {
         emit ConfigurationLocked(msg.sender);
     }
 
+    function previewTokenURI(uint256 jobId) external view returns (string memory) {
+        return _resolvedTokenURI(jobId);
+    }
+
     modifier onlyJobManager() {
         if (msg.sender != jobManager) revert ENSNotAuthorized();
         _;
@@ -175,6 +215,10 @@ contract ENSJobPages is Ownable {
     }
 
     function jobEnsURI(uint256 jobId) external view returns (string memory) {
+        string memory routed = _resolvedTokenURI(jobId);
+        if (bytes(routed).length != 0) {
+            return routed;
+        }
         string memory ensName = jobEnsName(jobId);
         if (bytes(ensName).length == 0) return "";
         return string(abi.encodePacked("ens://", ensName));
@@ -258,6 +302,34 @@ contract ENSJobPages is Ownable {
         }
         emit ENSHookSkipped(hook, jobId, "UNKNOWN_HOOK");
         emit ENSHookProcessed(hook, jobId, true, false);
+    }
+
+    fallback() external {
+        if (msg.sig != TOKEN_URI_HOOK_SELECTOR) {
+            return;
+        }
+        if (msg.data.length != 36) {
+            return;
+        }
+
+        uint256 jobId;
+        assembly {
+            jobId := calldataload(4)
+        }
+        string memory uri = _resolvedTokenURI(jobId);
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, 0x20)
+            let strLen := mload(uri)
+            mstore(add(ptr, 0x20), strLen)
+            let src := add(uri, 0x20)
+            let dst := add(ptr, 0x40)
+            for { let i := 0 } lt(i, strLen) { i := add(i, 0x20) } {
+                mstore(add(dst, i), mload(add(src, i)))
+            }
+            let paddedLen := and(add(strLen, 0x1f), not(0x1f))
+            return(ptr, add(0x40, paddedLen))
+        }
     }
 
     function _handleCreateHook(IAGIJobManagerView managerView, uint256 jobId) external onlySelf {
@@ -425,6 +497,16 @@ contract ENSJobPages is Ownable {
         if (address(nameWrapper) == address(0)) return false;
         (bool ok, address ownerAddress) = _tryRootOwner();
         return ok && ownerAddress == address(nameWrapper);
+    }
+
+    function _resolvedTokenURI(uint256 jobId) internal view returns (string memory) {
+        if (bytes(baseMetadataURI).length == 0) {
+            return "";
+        }
+        if (useJobIdJsonSuffix) {
+            return string(abi.encodePacked(baseMetadataURI, jobId.toString(), ".json"));
+        }
+        return string(abi.encodePacked(baseMetadataURI, jobId.toString()));
     }
 
     function _requireWrapperAuthorization() internal view {
