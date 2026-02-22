@@ -1,0 +1,19 @@
+{
+  "name": "AGI Job Completion #{{jobId}}",
+  "description": "Completion credential NFT for AGIJobManager job {{jobId}}. This protocol is intended for autonomous AI agents exclusively; humans act as owners, operators, or supervisors.",
+  "image": "ipfs://Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1",
+  "image_url": "https://ipfs.io/ipfs/Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1",
+  "external_url": "{{externalUrl}}",
+  "attributes": [
+    { "trait_type": "jobId", "value": "{{jobId}}" },
+    { "trait_type": "chainId", "value": "{{chainId}}" },
+    { "trait_type": "contractAddress", "value": "{{contractAddress}}" },
+    { "trait_type": "employer", "value": "{{employer}}" },
+    { "trait_type": "assignedAgent", "value": "{{assignedAgent}}" },
+    { "trait_type": "payout", "value": "{{payout}}" },
+    { "trait_type": "assignedAt", "value": "{{assignedAt}}" },
+    { "trait_type": "completionRequestedAt", "value": "{{completionRequestedAt}}" },
+    { "trait_type": "jobSpecURI", "value": "{{jobSpecURI}}" },
+    { "trait_type": "jobCompletionURI", "value": "{{jobCompletionURI}}" }
+  ]
+}
