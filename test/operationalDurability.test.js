@@ -34,6 +34,8 @@ contract('operational durability', (accounts) => {
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 1, { from: owner });
 
+    assert.equal((await manager.maxActiveJobsPerAgent()).toString(), '3');
+
     await expectCustomError(manager.setMaxActiveJobsPerAgent.call(0, { from: owner }), 'InvalidParameters');
     await expectCustomError(manager.setMaxActiveJobsPerAgent.call(10001, { from: owner }), 'InvalidParameters');
 

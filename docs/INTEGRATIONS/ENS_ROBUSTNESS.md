@@ -1,5 +1,8 @@
 # ENS Robustness, Failure Modes, and Operations
 
+> **Intended operations model: AI agents exclusively.** Human operators provide governance and oversight; routine protocol participation is for autonomous AI agents.
+
+
 This playbook defines how ENS-linked behavior degrades, how failures surface on-chain, and which operator levers remain safe.
 
 > **Operator note**
@@ -22,7 +25,7 @@ This playbook defines how ENS-linked behavior degrades, how failures surface on-
 Reference implementation anchors:
 - Fail-closed authorization entrypoints: [`applyForJob`](../../contracts/AGIJobManager.sol#L516-L543), [`validateJob`](../../contracts/AGIJobManager.sol#L594-L618), [`disapproveJob`](../../contracts/AGIJobManager.sol#L620-L644).
 - Best-effort ENS hooks and metadata reads: [`_callEnsJobPagesHook`](../../contracts/AGIJobManager.sol#L1282-L1302), [`_mintJobNFT`](../../contracts/AGIJobManager.sol#L1189-L1232), [`ENSJobPages.handleHook`](../../contracts/ens/ENSJobPages.sol#L204-L261).
-- Identity lock boundaries: [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol#L480-L483) freezes identity rewiring functions guarded by [`whenIdentityConfigurable`](../../contracts/AGIJobManager.sol#L300-L302), including [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L816-L825).
+- Identity lock boundaries: [`lockIdentityConfiguration`](../../contracts/AGIJobManager.sol#L738-L741) freezes identity rewiring functions guarded by [`whenIdentityConfigurable`](../../contracts/AGIJobManager.sol#L558-L561). `updateMerkleRoots` remains separately owner-callable for ongoing allowlist operations.
 
 ## Security posture
 
@@ -50,9 +53,9 @@ Reference implementation anchors:
 }}}%%
 flowchart TD
     A[ENS issue detected] --> B{Config issue?}
-    B -->|yes| C{Unlocked + empty escrow?}
+    B -->|yes| C{Identity rewiring needed?}
     C -->|yes| D[Patch config and re-verify vectors]
-    C -->|no| E[Shift to Merkle/allowlist fallback and plan migration]
+    C -->|no| E[Rotate Merkle roots and/or use allowlist fallback]
     B -->|no| F{Compromise suspected?}
     F -->|yes| G[Blacklist + rotate roots/lists + disable ENS URI mode]
     F -->|no| H{Infra outage?}
@@ -119,19 +122,19 @@ Suggested alert semantics:
 
 1. Freeze intake paths operationally (front-end + operator runbook controls).
 2. Blacklist confirmed malicious addresses.
-3. If **unlocked and escrow is empty**, rotate Merkle roots; otherwise use temporary allowlists for continuity.
+3. Rotate Merkle roots immediately for continuity and blacklist compromised addresses.
 4. If unlocked and escrow empty, rotate root nodes and revalidate test vectors.
 5. Publish operator advisory and post-incident report.
 
 Immediate containment transaction set (ordered):
 1. `pause()` / `pauseAll()` as operational policy requires.
 2. `blacklistAgent` / `blacklistValidator` for known compromised addresses.
-3. If **unlocked and escrow is empty** (required by `_requireEmptyEscrow()`), use `updateMerkleRoots` and/or root/address rewiring; otherwise skip to allowlist/blocklist controls.
+3. Use `updateMerkleRoots` at any time as needed; reserve root/address rewiring for unlocked + empty-escrow windows.
 4. `addAdditionalAgent`/`addAdditionalValidator` (still available post-lock) for continuity.
 5. `setUseEnsJobTokenURI(false)` if ENS URI drift is observed.
 
 ### If configuration is locked
 
 - **Still mutable:** allowlists, blacklists, pause controls, settlement operations.
-- **Frozen:** `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`, `updateMerkleRoots`.
+- **Frozen:** `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`.
 - **Recovery:** continue with remaining policy levers or execute a controlled contract migration.
