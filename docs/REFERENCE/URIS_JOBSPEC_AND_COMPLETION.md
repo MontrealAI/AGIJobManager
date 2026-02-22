@@ -37,7 +37,9 @@ The contract stores URI strings on-chain. The underlying files are off-chain unl
 | `applyForJob(jobId, ...)` | Authorized agent | Job must be unassigned and caller authorized | No URI write. |
 | `requestJobCompletion(jobId, _jobCompletionURI)` | Assigned agent only | Must be in valid state and not already completion-requested; blocked after non-disputed timeout | Stores `jobCompletionURI`; emits `JobCompletionRequested`. |
 | `validateJob` / `disapproveJob` | Authorized validator | During review window | No URI write. |
-| `finalizeJob` / dispute resolution path | Employer/moderator depending on path | Settlement windows and state checks | Mints NFT. Token URI source is `jobCompletionURI` unless ENS override returns a valid URI. |
+| `finalizeJob` | Any caller (no caller-role restriction) | Settlement windows and state checks | Settles job. Mints NFT only on agent-win branches; employer-refund branches do not mint. |
+| `resolveDisputeWithCode` | Moderator only | Job must be disputed and unresolved | Agent-win branch mints NFT; employer-win branch refunds employer without NFT mint. |
+| `resolveStaleDispute` | Owner only | Stale-dispute timing and unresolved checks | Agent-win branch mints NFT; employer-win branch refunds employer without NFT mint. |
 
 ### Sequence diagram
 
@@ -69,9 +71,15 @@ sequenceDiagram
         M->>C: resolveDisputeWithCode(jobId, code, reason)
     end
 
-    C-->>C: _mintCompletionNFT(jobId)
-    C-->>E: NFTIssued(tokenId, employer, tokenURI)
+    alt agent-win settlement branch
+        C-->>C: _mintCompletionNFT(jobId)
+        C-->>E: NFTIssued(tokenId, employer, tokenURI)
+    else employer-refund settlement branch
+        C-->>E: No NFT mint event
+    end
 ```
+
+Note: settlement is terminal in both branches, but `NFTIssued` is emitted only for agent-win settlement paths.
 
 ### State diagram
 
@@ -86,7 +94,8 @@ stateDiagram-v2
     CompletionRequested --> Disputed: disapprove threshold or disputeJob
     Approved --> Finalized: finalizeJob
     Disputed --> Finalized: resolveDisputeWithCode / stale resolve
-    Finalized --> NFTMinted: _mintCompletionNFT
+    Finalized --> NFTMinted: agent-win branch
+    Finalized --> RefundedNoNFT: employer-win branch
 ```
 
 ## 4) Validation rules (on-chain enforced)
