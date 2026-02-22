@@ -394,7 +394,7 @@ If your proof is empty, Etherscan usually accepts:
 2. Employer calls `createJob(jobSpecURI,payout,duration,details)`.
    - Should see: `JobCreated` and escrow increase.
 3. Agent calls `applyForJob(jobId,subdomain,proof)`.
-   - Should see: `JobAssigned` and optional agent bond transfer.
+   - Should see: `JobApplied` and optional agent bond transfer.
 4. Agent calls `requestJobCompletion(jobId,jobCompletionURI)`.
    - Should see: `JobCompletionRequested` and review window start.
 5. Validators call `validateJob` or `disapproveJob` during review period.
@@ -505,7 +505,7 @@ A participant can be authorized if they control the configured subdomain via Nam
 | Dispute review period | `disputeReviewPeriod()` | `setDisputeReviewPeriod` | `14 days` | Empty escrow/bonds; valid review period bound | Keep enough time for moderator SLA |
 | Challenge period after approval | `challengePeriodAfterApproval()` | `setChallengePeriodAfterApproval` | `1 day` | Empty escrow/bonds; valid review period bound | Change only with policy update |
 | Validator bond params | `validatorBondBps()`, `validatorBondMin()`, `validatorBondMax()` | `setValidatorBondParams` | `1500`, `10e18`, high cap | Bounds checked in function | Test on rehearsal network first |
-| Agent bond params | `agentBondBps()`, `agentBondMin()`, `agentBondMax()` | `setAgentBondParams` | `500`, `1e18`, high cap | Bounds checked in function | Coordinate with agent onboarding |
+| Agent bond params | `agentBondBps()`, `agentBond()`, `agentBondMax()` | `setAgentBondParams` | `500`, `1e18`, high cap | Bounds checked in function | Coordinate with agent onboarding |
 | Agent bond absolute value | `agentBond()` | `setAgentBond` | `1e18` | Must satisfy configured limits | Communicate before enforcing increase |
 | Validator slash BPS | `validatorSlashBps()` | `setValidatorSlashBps` | `8000` | Empty escrow/bonds; bounded | Update only after risk review |
 | Validation reward percentage | `validationRewardPercentage()` | `setValidationRewardPercentage` | `8` | Must remain compatible with AGI type payout percentages | Re-validate AGI type matrix |
