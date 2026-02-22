@@ -33,7 +33,7 @@ function normalizeJobIds(value) {
       if (!/^\d+$/.test(s)) {
         throw new Error(`Invalid jobId: ${s}`);
       }
-      return s;
+      return BigInt(s).toString(10);
     });
 }
 
