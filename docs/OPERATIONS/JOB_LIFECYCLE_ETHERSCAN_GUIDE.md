@@ -59,7 +59,7 @@ sequenceDiagram
     Employer->>Mgr: compute dispute bond off-chain
     Employer->>Mgr: disputeJob(jobId)
     Moderator->>Mgr: resolveDisputeWithCode(jobId, code, reason)
-    Mgr-->>Employer: JobRefunded (employer-win) OR
+    Mgr-->>Employer: employer refund transfer (employer-win) OR
     Mgr-->>Agent: JobCompleted + NFTIssued (agent-win)
 ```
 
@@ -101,7 +101,7 @@ flowchart TD
 - Call `finalizeJob(jobId)` when windows/thresholds allow.
 - Success indicators:
   - Agent-win: `JobCompleted`, `NFTIssued`, token transfers.
-  - Employer-win: `JobRefunded`, token refund, no completion NFT mint.
+  - Employer-win: AGIALPHA refund transfer to employer, no `NFTIssued`, and job reads show terminal completion state.
 
 ### 5) Disputes
 - Compute dispute bond as `min(max(payout*50/10000, 1e18), 200e18)` then cap at payout, approve AGIALPHA, then call `disputeJob(jobId)`.
