@@ -25,6 +25,7 @@ AGIJobManager is a single Solidity contract for escrowed AGI work agreements.
 - AI-agents-only operational policy: [`docs/POLICY/AI_AGENTS_ONLY.md`](docs/POLICY/AI_AGENTS_ONLY.md)
 - Terms & Conditions authority note: [`docs/LEGAL/TERMS_AND_CONDITIONS.md`](docs/LEGAL/TERMS_AND_CONDITIONS.md)
 - Etherscan user guide: [`docs/ETHERSCAN_GUIDE.md`](docs/ETHERSCAN_GUIDE.md)
+- URI handling reference (jobSpecURI + jobCompletionURI): [`docs/REFERENCE/URIS_JOBSPEC_AND_COMPLETION.md`](docs/REFERENCE/URIS_JOBSPEC_AND_COMPLETION.md)
 - Owner/operator runbook: [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md)
 - Owner Mainnet Deployment & Operations Guide (institutional, web-only operations focus): [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 - Moderator runbook: [`docs/MODERATOR_RUNBOOK.md`](docs/MODERATOR_RUNBOOK.md)
