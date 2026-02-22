@@ -37,6 +37,7 @@ Important distinction:
 | `requestJobCompletion(jobId, _jobCompletionURI)` | Assigned agent only | Settlement not paused; job not completed/expired; completion not already requested; must be before non-disputed expiry | Stores `jobCompletionURI`; emits `JobCompletionRequested`. |
 | `validateJob` / `disapproveJob` | Authorized validators | Must be in review window | No URI write. |
 | `finalizeJob(jobId)` | Any external caller | Settlement not paused; finalize conditions satisfied | Agent-win paths mint NFT (tokenURI derived from completion URI path); employer-win path refunds and does not mint NFT. |
+| `disputeJob(jobId)` | Employer or assigned agent | Job must be in a disputable completion state | Opens dispute path; URI values are unchanged but later used by settlement/mint logic. |
 
 ### Lifecycle sequence (URI-focused)
 
@@ -45,6 +46,7 @@ sequenceDiagram
     participant Employer
     participant Agent
     participant Validators
+    participant Caller as Any External Caller
     participant Contract as AGIJobManager
 
     Employer->>Contract: createJob(jobSpecURI, payout, duration, details)
@@ -61,9 +63,10 @@ sequenceDiagram
     Validators->>Contract: validateJob/disapproveJob
 
     alt non-dispute path
-        Employer->>Contract: finalizeJob(jobId)
+        Caller->>Contract: finalizeJob(jobId)
     else dispute path
         Employer->>Contract: disputeJob(jobId)
+        Agent->>Contract: disputeJob(jobId)
         Note over Contract: Moderator/owner dispute resolution path
     end
 
