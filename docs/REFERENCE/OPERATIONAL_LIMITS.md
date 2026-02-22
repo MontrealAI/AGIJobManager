@@ -4,6 +4,12 @@
 
 This note classifies major protocol limits into safety-critical controls vs. operator-tunable controls.
 
+## Safety-critical vs operational limits (audit note)
+
+- **Safety-critical (kept escrow-gated):** validator thresholds/quorum, review/challenge periods, and validator slashing parameters because they can change in-flight settlement outcomes.
+- **Operational limits (relaxed for continuity):** agent/validator bond sizing and per-agent concurrency caps because these are snapshotted or applied only at future intake points.
+
+
 ## Owner-tunable without empty escrow
 
 - `setMaxActiveJobsPerAgent(uint256 value)`
