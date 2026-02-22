@@ -6,11 +6,31 @@ function parseArg(flag, fallback = null) {
   return process.argv[idx + 1];
 }
 
+
+function hasLikelyMissingMethodError(err) {
+  const message = String(err?.message || '').toLowerCase();
+  const data = String(err?.data || err?.receipt?.revertReason || '').toLowerCase();
+  const combined = `${message} ${data}`;
+
+  return (
+    combined.includes('execution reverted')
+    || combined.includes('function selector was not recognized')
+    || combined.includes('invalid opcode')
+    || combined.includes('revert')
+  );
+}
+
 async function callOptionalUintGetter({ contractAddress, getterName }) {
   const selector = web3.eth.abi.encodeFunctionSignature(`${getterName}()`);
-  const raw = await web3.eth.call({ to: contractAddress, data: selector });
+  let raw;
+  try {
+    raw = await web3.eth.call({ to: contractAddress, data: selector });
+  } catch (err) {
+    if (hasLikelyMissingMethodError(err)) return null;
+    throw err;
+  }
 
-  // Missing getter path on legacy deployments commonly returns empty data.
+  // Missing getter path on legacy deployments can return empty data.
   if (!raw || raw === '0x') return null;
 
   // A valid uint256 ABI return should be 32 bytes (0x + 64 hex chars).
