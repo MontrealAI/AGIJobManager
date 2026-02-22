@@ -311,7 +311,7 @@ Etherscan field styling can change. Provide arrays in valid `bytes32[]` format.
 - Function: `setBaseIpfsUrl(string)`
 - Allowed when: always (owner only)
 - Inputs: base URI string (length-limited by contract)
-- Success signal: `BaseIpfsUrlUpdated` event
+- Success signal: transaction succeeds. This setter emits no event and has no direct public getter; validate via controlled `tokenURI` behavior checks on a known token.
 - Safety note: set to stable, immutable storage URI strategy
 
 ### 9.7 Update thresholds, periods, bonds, slash, payout caps
@@ -518,7 +518,7 @@ A participant can be authorized if they control the configured subdomain via Nam
 | ENS name wrapper | `nameWrapper()` | `updateNameWrapper` | Constructor input | Identity unlocked + empty escrow/bonds + zero/contract | Validate wrapper ownership model |
 | ENS root nodes | `clubRootNode()`, `agentRootNode()`, `alphaClubRootNode()`, `alphaAgentRootNode()` | `updateRootNodes` | Constructor inputs | Identity unlocked + empty escrow/bonds | Update during intake pause window |
 | ENS job pages hook | `ensJobPages()` | `setEnsJobPages` | Constructor/config action | Identity unlocked; zero/contract address | Test hook on a single job first |
-| ENS tokenURI toggle | `useEnsJobTokenURI()` | `setUseEnsJobTokenURI` | `false` unless set | No special gate | Toggle only with metadata readiness |
+| ENS tokenURI toggle | no public getter (write-only flag) | `setUseEnsJobTokenURI` | `false` unless set | No special gate | Toggle only with metadata readiness; verify via `tokenURI` behavior on a known token |
 | Base IPFS URL | no public getter (event-driven) | `setBaseIpfsUrl` | Constructor input | Length bound | Track value in release ledger |
 | Merkle roots | `validatorMerkleRoot()`, `agentMerkleRoot()` | `updateMerkleRoots` | Constructor input | No special gate | Publish proofs before updates |
 
