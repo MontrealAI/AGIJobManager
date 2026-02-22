@@ -28,6 +28,7 @@ AGIJobManager is a single Solidity contract for escrowed AGI work agreements.
 - URI handling reference (jobSpecURI + jobCompletionURI): [`docs/REFERENCE/URIS_JOBSPEC_AND_COMPLETION.md`](docs/REFERENCE/URIS_JOBSPEC_AND_COMPLETION.md)
 - Owner/operator runbook: [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md)
 - Owner Mainnet Deployment & Operations Guide (institutional, web-only operations focus): [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
+- Ethereum Mainnet deployment/verification/ownership transfer guide (Truffle migrations): [`docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md`](docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)
 - Moderator runbook: [`docs/MODERATOR_RUNBOOK.md`](docs/MODERATOR_RUNBOOK.md)
 - Contract verification guide: [`docs/VERIFY_ON_ETHERSCAN.md`](docs/VERIFY_ON_ETHERSCAN.md)
 - FAQ: [`docs/FAQ.md`](docs/FAQ.md)
