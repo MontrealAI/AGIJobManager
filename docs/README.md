@@ -7,7 +7,7 @@ Institutional documentation for operators, integrators, contributors, and audito
 | Audience | Start here | Then read |
 | --- | --- | --- |
 | New contributor | [QUICKSTART.md](./QUICKSTART.md) | [TESTING.md](./TESTING.md), [REPO_MAP.md](./REPO_MAP.md) |
-| Protocol operator | [OVERVIEW.md](./OVERVIEW.md) | [DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md](./DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md), [OPERATIONS/RUNBOOK.md](./OPERATIONS/RUNBOOK.md), [OPERATIONS/INCIDENT_RESPONSE.md](./OPERATIONS/INCIDENT_RESPONSE.md) |
+| Protocol operator | [OVERVIEW.md](./OVERVIEW.md) | [DEPLOYMENT/README.md](./DEPLOYMENT/README.md), [OPERATIONS/RUNBOOK.md](./OPERATIONS/RUNBOOK.md), [OPERATIONS/INCIDENT_RESPONSE.md](./OPERATIONS/INCIDENT_RESPONSE.md) |
 | Contract owner (non-technical) | [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) | [OWNER_RUNBOOK.md](./OWNER_RUNBOOK.md), [ETHERSCAN_GUIDE.md](./ETHERSCAN_GUIDE.md) |
 | Security reviewer | [SECURITY_MODEL.md](./SECURITY_MODEL.md) | [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md), [REFERENCE/EVENTS_AND_ERRORS.md](./REFERENCE/EVENTS_AND_ERRORS.md) |
 | Integrator | [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md) | [REFERENCE/CONTRACT_INTERFACE.md](./REFERENCE/CONTRACT_INTERFACE.md) |
@@ -20,6 +20,8 @@ Institutional documentation for operators, integrators, contributors, and audito
 - [QUINTESSENTIAL_USE_CASE.md](./QUINTESSENTIAL_USE_CASE.md)
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [DEPLOYMENT_OPERATIONS.md](./DEPLOYMENT_OPERATIONS.md)
+- [Deployment Documentation Index (Hardhat recommended, Truffle legacy)](./DEPLOYMENT/README.md)
+- [Ethereum Mainnet Beta Deployment Record](./DEPLOYMENT/MAINNET_BETA_DEPLOYMENT_RECORD.md)
 - [Owner Mainnet Deployment & Operations Guide](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) (institutional, web-only owner operations)
 - [Ethereum Mainnet Deployment, Verification & Ownership Transfer Guide (Truffle)](./DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)
 - [SCRIPTS_REFERENCE.md](./SCRIPTS_REFERENCE.md)
