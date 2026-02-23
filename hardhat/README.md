@@ -78,6 +78,7 @@ Deployment script verifies contracts sequentially via `@nomicfoundation/hardhat-
 - libraries verified first, then `AGIJobManager`
 - deterministic delay between verify calls for RPC/Etherscan friendliness
 - handles "already verified" safely
+- does **not** block ownership handoff on verification API/transient failures
 - prints compact operator summary
 
 ## 6) Ownership transfer behavior
@@ -87,6 +88,8 @@ The script performs exactly one post-deploy on-chain admin action:
 - `transferOwnership(FINAL_OWNER)`
 
 No additional `set*` configuration calls are broadcast by this script.
+
+If verification fails for one or more contracts, statuses are recorded in the receipt and the script exits non-zero **after** ownership transfer and receipt write.
 
 For manual post-deploy operations (pause posture, AGI types, validator thresholds), use the deployment record runbook:
 

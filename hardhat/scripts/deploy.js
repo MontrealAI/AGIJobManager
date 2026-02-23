@@ -74,11 +74,12 @@ async function verifySequential({ name, address, constructorArguments = [], libr
     const message = String(error?.message || error);
     if (message.toLowerCase().includes('already verified')) {
       verification[name] = { status: 'already_verified', address };
-      return;
+      return true;
     }
     verification[name] = { status: 'failed', address, error: message };
-    throw error;
+    return false;
   }
+  return true;
 }
 
 async function main() {
@@ -97,14 +98,19 @@ async function main() {
   if (!finalOwner) {
     throw new Error('FINAL_OWNER is required on mainnet.');
   }
+  if (!ethers.isAddress(finalOwner)) {
+    throw new Error(`Invalid FINAL_OWNER address: ${finalOwner}`);
+  }
 
   const deployments = {};
   const verification = {};
+  const verificationFailures = [];
 
   for (const libName of LIBRARIES) {
     const deployed = await deployContract(libName);
     deployments[libName] = deployed;
-    await verifySequential({ name: libName, address: deployed.address, verification });
+    const ok = await verifySequential({ name: libName, address: deployed.address, verification });
+    if (!ok) verificationFailures.push(libName);
   }
 
   const linkedLibraries = {
@@ -129,13 +135,14 @@ async function main() {
   });
   deployments.AGIJobManager = agiJobManager;
 
-  await verifySequential({
+  const managerVerifyOk = await verifySequential({
     name: 'AGIJobManager',
     address: agiJobManager.address,
     constructorArguments: managerArgs,
     libraries: linkedLibraries,
     verification,
   });
+  if (!managerVerifyOk) verificationFailures.push('AGIJobManager');
 
   const manager = await ethers.getContractAt('AGIJobManager', agiJobManager.address, deployer);
   const transferTx = await manager.transferOwnership(finalOwner);
@@ -180,6 +187,11 @@ async function main() {
   console.log(`ownership transfer -> ${finalOwner} (tx: ${transferTx.hash})`);
   console.log(`configHash: ${configHash}`);
   console.log(`receipt: ${filePath}`);
+
+  if (verificationFailures.length > 0) {
+    console.warn(`verification issues for: ${verificationFailures.join(', ')}`);
+    process.exitCode = 2;
+  }
 }
 
 main().catch((error) => {
