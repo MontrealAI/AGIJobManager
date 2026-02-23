@@ -41,6 +41,12 @@ function requireAddress(label, value) {
   }
 }
 
+function requireAddressAllowZero(label, value) {
+  if (!ethers.isAddress(value)) {
+    throw new Error(`${label} must be a valid address (zero allowed). Received: ${String(value)}`);
+  }
+}
+
 function requireBytes32(label, value) {
   if (!ethers.isHexString(value, 32)) {
     throw new Error(`${label} must be a bytes32 hex string. Received: ${String(value)}`);
@@ -58,7 +64,8 @@ function validateConstructorArgs(args) {
   if (!Array.isArray(args.ensConfig) || args.ensConfig.length !== 2) {
     throw new Error('ensConfig must be an array with [ensRegistry, nameWrapper].');
   }
-  args.ensConfig.forEach((value, idx) => requireAddress(`ensConfig[${idx}]`, value));
+  requireAddress('ensConfig[0]', args.ensConfig[0]);
+  requireAddressAllowZero('ensConfig[1]', args.ensConfig[1]);
 
   if (!Array.isArray(args.rootNodes) || args.rootNodes.length !== 4) {
     throw new Error('rootNodes must be an array of 4 bytes32 values.');
