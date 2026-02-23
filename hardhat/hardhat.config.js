@@ -4,13 +4,16 @@ require('@nomicfoundation/hardhat-verify');
 
 const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
+function networkConfig(rpcUrl) {
+  if (!rpcUrl || !PRIVATE_KEY) return undefined;
+  return { url: rpcUrl, accounts: [PRIVATE_KEY] };
+}
+
 const networks = {};
-if (SEPOLIA_RPC_URL && PRIVATE_KEY) {
-  networks.sepolia = { url: SEPOLIA_RPC_URL, accounts: [PRIVATE_KEY] };
-}
-if (MAINNET_RPC_URL && PRIVATE_KEY) {
-  networks.mainnet = { url: MAINNET_RPC_URL, accounts: [PRIVATE_KEY] };
-}
+const mainnet = networkConfig(MAINNET_RPC_URL);
+const sepolia = networkConfig(SEPOLIA_RPC_URL);
+if (mainnet) networks.mainnet = mainnet;
+if (sepolia) networks.sepolia = sepolia;
 
 module.exports = {
   solidity: {

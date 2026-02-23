@@ -3,8 +3,9 @@ const path = require('path');
 const { ethers, network, run } = require('hardhat');
 
 const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_MAINNET_DEPLOYMENT';
-const VERIFY_DELAY_MS = 3500;
-const VERIFY_RETRIES = 3;
+const DEFAULT_VERIFY_DELAY_MS = 3500;
+const DEFAULT_VERIFY_RETRIES = 3;
+const DEFAULT_CONFIRMATIONS = 3;
 
 const FQNS = {
   AGIJobManager: 'contracts/AGIJobManager.sol:AGIJobManager',
@@ -40,6 +41,15 @@ function getExplorerBase(chainId) {
   return null;
 }
 
+function parsePositiveInt(value, label, fallback, minValue = 0) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < minValue) {
+    throw new Error(`${label} must be an integer >= ${minValue}. Received: ${value}`);
+  }
+  return parsed;
+}
+
 function validateAddress(label, value, { allowZero = false } = {}) {
   if (!ethers.isAddress(value)) throw new Error(`${label} must be a valid address: ${String(value)}`);
   if (!allowZero && value.toLowerCase() === ethers.ZeroAddress.toLowerCase()) {
@@ -51,84 +61,62 @@ function validateBytes32(label, value) {
   if (!ethers.isHexString(value, 32)) throw new Error(`${label} must be bytes32: ${String(value)}`);
 }
 
-function parseOptionalOverrides() {
-  const env = process.env;
-  const overrides = {};
-
-  if (env.AGI_TOKEN_ADDRESS) overrides.agiTokenAddress = env.AGI_TOKEN_ADDRESS;
-  if (env.BASE_IPFS_URL) overrides.baseIpfsUrl = env.BASE_IPFS_URL;
-  if (env.ENS_REGISTRY) overrides.ensRegistry = env.ENS_REGISTRY;
-  if (env.NAME_WRAPPER) overrides.nameWrapper = env.NAME_WRAPPER;
-  if (env.VALIDATOR_MERKLE_ROOT) overrides.validatorMerkleRoot = env.VALIDATOR_MERKLE_ROOT;
-  if (env.AGENT_MERKLE_ROOT) overrides.agentMerkleRoot = env.AGENT_MERKLE_ROOT;
-
-  return overrides;
-}
-
 function loadDeployConfig() {
-  const customPath = process.env.DEPLOY_CONFIG;
-  if (!customPath) {
-    throw new Error(
-      'DEPLOY_CONFIG is required. Copy deploy.config.example.js to a local config file (from within hardhat/) and set DEPLOY_CONFIG=<path>.'
-    );
-  }
+  const configPath = process.env.DEPLOY_CONFIG
+    ? path.resolve(process.cwd(), process.env.DEPLOY_CONFIG)
+    : path.resolve(__dirname, '..', 'deploy.config.example.js');
 
-  const configPath = path.resolve(process.cwd(), customPath);
   if (!fs.existsSync(configPath)) {
     throw new Error(`Deployment config file not found: ${configPath}`);
   }
 
+  delete require.cache[configPath];
   // eslint-disable-next-line global-require, import/no-dynamic-require
   const config = require(configPath);
   return { config, configPath };
 }
 
-function resolveConstructor(networkName, profile, overrides) {
+function resolveConstructor(networkName, profile) {
   if (!profile || typeof profile !== 'object') {
     throw new Error(`Missing deployment profile for network "${networkName}".`);
   }
 
   const constructorArgs = {
-    agiTokenAddress: overrides.agiTokenAddress || profile.agiTokenAddress,
-    baseIpfsUrl: overrides.baseIpfsUrl || profile.baseIpfsUrl,
-    ensConfig: [
-      overrides.ensRegistry || profile.ensConfig?.ensRegistry,
-      overrides.nameWrapper || profile.ensConfig?.nameWrapper,
-    ],
-    rootNodes: [
-      profile.rootNodes?.clubRootNode,
-      profile.rootNodes?.agentRootNode,
-      profile.rootNodes?.alphaClubRootNode,
-      profile.rootNodes?.alphaAgentRootNode,
-    ],
-    merkleRoots: [
-      overrides.validatorMerkleRoot || profile.merkleRoots?.validatorMerkleRoot,
-      overrides.agentMerkleRoot || profile.merkleRoots?.agentMerkleRoot,
-    ],
+    agiTokenAddress: profile.agiTokenAddress,
+    baseIpfsUrl: profile.baseIpfsUrl,
+    ensConfig: profile.ensConfig,
+    rootNodes: profile.rootNodes,
+    merkleRoots: profile.merkleRoots,
   };
-
-  const finalOwner = process.env.FINAL_OWNER || profile.finalOwner || '';
 
   validateAddress('agiTokenAddress', constructorArgs.agiTokenAddress);
   if (typeof constructorArgs.baseIpfsUrl !== 'string' || constructorArgs.baseIpfsUrl.trim() === '') {
     throw new Error('baseIpfsUrl must be a non-empty string.');
   }
-  validateAddress('ensConfig[0]', constructorArgs.ensConfig[0]);
-  validateAddress('ensConfig[1]', constructorArgs.ensConfig[1], { allowZero: true });
-  constructorArgs.rootNodes.forEach((v, i) => validateBytes32(`rootNodes[${i}]`, v));
-  constructorArgs.merkleRoots.forEach((v, i) => validateBytes32(`merkleRoots[${i}]`, v));
+  if (!Array.isArray(constructorArgs.ensConfig) || constructorArgs.ensConfig.length !== 2) {
+    throw new Error('ensConfig must be an array of exactly 2 addresses.');
+  }
+  if (!Array.isArray(constructorArgs.rootNodes) || constructorArgs.rootNodes.length !== 4) {
+    throw new Error('rootNodes must be an array of exactly 4 bytes32 values.');
+  }
+  if (!Array.isArray(constructorArgs.merkleRoots) || constructorArgs.merkleRoots.length !== 2) {
+    throw new Error('merkleRoots must be an array of exactly 2 bytes32 values.');
+  }
 
-  if (finalOwner) validateAddress('finalOwner', finalOwner);
+  constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value, { allowZero: index === 1 }));
+  constructorArgs.rootNodes.forEach((value, index) => validateBytes32(`rootNodes[${index}]`, value));
+  constructorArgs.merkleRoots.forEach((value, index) => validateBytes32(`merkleRoots[${index}]`, value));
 
-  return { constructorArgs, finalOwner };
+  return constructorArgs;
 }
 
-async function deployContract(name, args = [], options = {}) {
+async function deployContract(name, args = [], options = {}, confirmations = DEFAULT_CONFIRMATIONS) {
   const factory = await ethers.getContractFactory(name, options);
   const contract = await factory.deploy(...args);
   await contract.waitForDeployment();
   const tx = contract.deploymentTransaction();
-  const receipt = await tx.wait();
+  const receipt = await tx.wait(confirmations);
+
   return {
     name,
     address: await contract.getAddress(),
@@ -138,7 +126,7 @@ async function deployContract(name, args = [], options = {}) {
   };
 }
 
-async function verifyWithRetry(params) {
+async function verifyWithRetry(params, verifyDelayMs) {
   const { name, record } = params;
   const verificationEntry = {
     contract: name,
@@ -147,7 +135,7 @@ async function verifyWithRetry(params) {
     error: null,
   };
 
-  for (let attempt = 1; attempt <= VERIFY_RETRIES; attempt += 1) {
+  for (let attempt = 1; attempt <= DEFAULT_VERIFY_RETRIES; attempt += 1) {
     verificationEntry.attempts = attempt;
     try {
       await run('verify:verify', {
@@ -161,14 +149,15 @@ async function verifyWithRetry(params) {
       return verificationEntry;
     } catch (error) {
       const message = String(error?.message || error);
-      if (message.toLowerCase().includes('already verified')) {
+      const lowered = message.toLowerCase();
+      if (lowered.includes('already verified') || lowered.includes('already been verified')) {
         verificationEntry.status = 'already_verified';
         verificationEntry.error = null;
         return verificationEntry;
       }
       verificationEntry.error = message;
-      if (attempt < VERIFY_RETRIES) {
-        await sleep(VERIFY_DELAY_MS);
+      if (attempt < DEFAULT_VERIFY_RETRIES) {
+        await sleep(verifyDelayMs);
       }
     }
   }
@@ -177,15 +166,49 @@ async function verifyWithRetry(params) {
   return verificationEntry;
 }
 
+function getLatestBuildInfoPath() {
+  const buildInfoDir = path.resolve(__dirname, '..', 'artifacts', 'build-info');
+  if (!fs.existsSync(buildInfoDir)) {
+    throw new Error(`Build info directory not found: ${buildInfoDir}. Run \`npx hardhat compile\` first.`);
+  }
+  const candidates = fs
+    .readdirSync(buildInfoDir)
+    .filter((fileName) => fileName.endsWith('.json'))
+    .map((fileName) => {
+      const fullPath = path.join(buildInfoDir, fileName);
+      return { fullPath, mtimeMs: fs.statSync(fullPath).mtimeMs };
+    })
+    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+  if (!candidates.length) {
+    throw new Error(`No build-info JSON files found in ${buildInfoDir}.`);
+  }
+  return candidates[0].fullPath;
+}
+
+function copySolcInput(outDir) {
+  const latestBuildInfoPath = getLatestBuildInfoPath();
+  const buildInfo = JSON.parse(fs.readFileSync(latestBuildInfoPath, 'utf8'));
+  const solcInputPath = path.join(outDir, 'solc-input.json');
+  fs.writeFileSync(solcInputPath, `${JSON.stringify(buildInfo.input, null, 2)}\n`, 'utf8');
+  return solcInputPath;
+}
+
 async function main() {
+  const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', DEFAULT_CONFIRMATIONS, 1);
+  const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS);
   const [deployer] = await ethers.getSigners();
   const providerNetwork = await ethers.provider.getNetwork();
   const chainId = Number(providerNetwork.chainId);
+  const explorerBase = getExplorerBase(chainId);
 
   const { config, configPath } = loadDeployConfig();
-  const overrides = parseOptionalOverrides();
   const profile = config[network.name];
-  const { constructorArgs, finalOwner } = resolveConstructor(network.name, profile, overrides);
+  const constructorArgs = resolveConstructor(network.name, profile);
+  const resolvedFinalOwner = process.env.FINAL_OWNER || profile.finalOwner || deployer.address;
+  const dryRun = process.env.DRY_RUN === '1';
+
+  validateAddress('finalOwner', resolvedFinalOwner);
 
   if (chainId === 1) {
     if (process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
@@ -196,22 +219,20 @@ async function main() {
     }
   }
 
-  const resolvedFinalOwner = finalOwner || deployer.address;
-  const dryRun = process.env.DRY_RUN === '1';
-  const explorerBase = getExplorerBase(chainId);
-
   const plan = {
     network: network.name,
     chainId,
-    configPath,
     deployer: deployer.address,
     finalOwner: resolvedFinalOwner,
+    configPath,
+    confirmations,
+    verifyDelayMs,
     constructorArgs,
-    overrides,
+    libraries: LIBRARIES,
     dryRun,
   };
 
-  console.log('=== DEPLOYMENT PLAN ===');
+  console.log('=== Deployment Plan ===');
   console.log(JSON.stringify(plan, null, 2));
 
   if (dryRun) {
@@ -223,7 +244,7 @@ async function main() {
   const verificationResults = {};
 
   for (const libName of LIBRARIES) {
-    const result = await deployContract(libName);
+    const result = await deployContract(libName, [], {}, confirmations);
     deployments[libName] = result;
     console.log(`[deployed] ${libName} ${result.address} tx=${result.txHash}`);
   }
@@ -244,74 +265,99 @@ async function main() {
     constructorArgs.merkleRoots,
   ];
 
-  const managerDeployment = await deployContract('AGIJobManager', managerArgs, { libraries: linkedLibraries });
+  const managerDeployment = await deployContract('AGIJobManager', managerArgs, { libraries: linkedLibraries }, confirmations);
   deployments.AGIJobManager = managerDeployment;
   console.log(`[deployed] AGIJobManager ${managerDeployment.address} tx=${managerDeployment.txHash}`);
 
   const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
-  let ownershipTransfer = null;
+  let ownershipTransfer = {
+    executed: false,
+    txHash: null,
+    blockNumber: null,
+    reason: 'deployer_is_final_owner',
+  };
   if (deployer.address.toLowerCase() !== resolvedFinalOwner.toLowerCase()) {
     const tx = await manager.transferOwnership(resolvedFinalOwner);
-    const receipt = await tx.wait();
-    ownershipTransfer = { txHash: tx.hash, blockNumber: receipt.blockNumber, executed: true };
+    const transferReceipt = await tx.wait(confirmations);
+    ownershipTransfer = {
+      executed: true,
+      txHash: tx.hash,
+      blockNumber: transferReceipt.blockNumber,
+      reason: null,
+    };
     console.log(`[owner] transferOwnership(${resolvedFinalOwner}) tx=${tx.hash}`);
   } else {
-    ownershipTransfer = { txHash: null, blockNumber: null, executed: false, reason: 'deployer_is_final_owner' };
     console.log('[owner] transferOwnership skipped (deployer is final owner).');
   }
 
   for (const libName of LIBRARIES) {
-    await sleep(VERIFY_DELAY_MS);
-    verificationResults[libName] = await verifyWithRetry({ name: libName, record: deployments[libName] });
+    await sleep(verifyDelayMs);
+    verificationResults[libName] = await verifyWithRetry({ name: libName, record: deployments[libName] }, verifyDelayMs);
   }
-  await sleep(VERIFY_DELAY_MS);
-  verificationResults.AGIJobManager = await verifyWithRetry({
-    name: 'AGIJobManager',
-    record: managerDeployment,
-    constructorArguments: managerArgs,
-    libraries: linkedLibraries,
-  });
+  await sleep(verifyDelayMs);
+  verificationResults.AGIJobManager = await verifyWithRetry(
+    {
+      name: 'AGIJobManager',
+      record: managerDeployment,
+      constructorArguments: managerArgs,
+      libraries: linkedLibraries,
+    },
+    verifyDelayMs
+  );
 
-  const stablePayload = stableObject({
-    constructorArgs,
-    libraries: linkedLibraries,
-    finalOwner: resolvedFinalOwner,
-  });
+  const stablePayload = stableObject({ constructorArgs, libraries: linkedLibraries, finalOwner: resolvedFinalOwner });
   const configHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(stablePayload)));
+
+  const outDir = path.join(__dirname, '..', 'deployments', network.name);
+  fs.mkdirSync(outDir, { recursive: true });
 
   const record = {
     chainId,
     network: network.name,
+    timestamp: new Date().toISOString(),
     deployer: deployer.address,
     finalOwner: resolvedFinalOwner,
     contracts: Object.fromEntries(
-      Object.entries(deployments).map(([name, d]) => [name, { address: d.address, txHash: d.txHash, blockNumber: d.blockNumber }])
+      Object.entries(deployments).map(([name, deployment]) => [name, {
+        address: deployment.address,
+        txHash: deployment.txHash,
+        blockNumber: deployment.blockNumber,
+      }])
     ),
     constructorArgs,
     libraries: linkedLibraries,
     ownershipTransfer,
     verification: verificationResults,
-    timestamp: new Date().toISOString(),
     configHash,
   };
 
-  const outDir = path.join(__dirname, '..', 'deployments', network.name);
-  fs.mkdirSync(outDir, { recursive: true });
-  const outFile = path.join(outDir, `deployment.${chainId}.${managerDeployment.blockNumber}.json`);
-  fs.writeFileSync(outFile, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  const receiptPath = path.join(outDir, `deployment.${chainId}.${managerDeployment.blockNumber}.json`);
+  fs.writeFileSync(receiptPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
 
-  console.log('\n=== DEPLOYMENT RESULT ===');
-  Object.entries(record.contracts).forEach(([name, data]) => {
-    const explorer = explorerBase ? ` ${explorerBase}${data.address}` : '';
-    console.log(`${name}: ${data.address}${explorer}`);
+  const solcInputPath = copySolcInput(outDir);
+  const verifyTargetsPath = path.join(outDir, 'verify-targets.json');
+  const verifyTargets = {
+    network: network.name,
+    chainId,
+    targets: Object.entries(record.contracts).map(([name, contract]) => ({
+      name,
+      fqn: FQNS[name],
+      address: contract.address,
+    })),
+  };
+  fs.writeFileSync(verifyTargetsPath, `${JSON.stringify(verifyTargets, null, 2)}\n`, 'utf8');
+
+  console.log('\n=== Deployment Summary ===');
+  Object.entries(record.contracts).forEach(([name, contract]) => {
+    const explorerLink = explorerBase ? ` ${explorerBase}${contract.address}` : '';
+    const verifyStatus = verificationResults[name]?.status || 'not_attempted';
+    console.log(`${name}: ${contract.address}${explorerLink} [verify=${verifyStatus}]`);
   });
-  console.log(`receipt: ${outFile}`);
-  console.log(`configHash: ${configHash}`);
-  console.log('\nManual verify fallback commands:');
-  LIBRARIES.forEach((libName) => {
-    console.log(`npx hardhat verify --network ${network.name} ${record.contracts[libName].address}`);
-  });
-  console.log(`AGIJobManager args JSON: ${JSON.stringify(managerArgs)}`);
+  console.log(`receipt: ${receiptPath}`);
+  console.log(`solc-input: ${solcInputPath}`);
+  console.log(`verify-targets: ${verifyTargetsPath}`);
+  console.log('Post-deploy on-chain actions performed: deployment + optional transferOwnership(finalOwner) only.');
+  console.log('All other operational configuration is manual via Etherscan runbook.');
 }
 
 main().catch((error) => {
