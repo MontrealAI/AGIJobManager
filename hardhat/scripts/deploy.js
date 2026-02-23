@@ -154,6 +154,7 @@ async function verifyWithRetry(params) {
         contract: FQNS[name],
       });
       verificationEntry.status = 'verified';
+      verificationEntry.error = null;
       return verificationEntry;
     } catch (error) {
       const message = String(error?.message || error);
