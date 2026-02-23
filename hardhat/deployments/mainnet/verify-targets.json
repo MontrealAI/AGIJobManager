@@ -1,0 +1,62 @@
+{
+  "network": "mainnet",
+  "chainId": 1,
+  "contracts": [
+    {
+      "name": "UriUtils",
+      "fullyQualifiedName": "contracts/utils/UriUtils.sol:UriUtils",
+      "address": "0x2c6359D42173aaC73Ea053b37c411f7Da44d4706"
+    },
+    {
+      "name": "TransferUtils",
+      "fullyQualifiedName": "contracts/utils/TransferUtils.sol:TransferUtils",
+      "address": "0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f"
+    },
+    {
+      "name": "BondMath",
+      "fullyQualifiedName": "contracts/utils/BondMath.sol:BondMath",
+      "address": "0x0c2a50a9C1db998707662db2A13B93175c3E7394"
+    },
+    {
+      "name": "ReputationMath",
+      "fullyQualifiedName": "contracts/utils/ReputationMath.sol:ReputationMath",
+      "address": "0x4F64e44a3693489289B1F20D55CF56130fE66C0b"
+    },
+    {
+      "name": "ENSOwnership",
+      "fullyQualifiedName": "contracts/utils/ENSOwnership.sol:ENSOwnership",
+      "address": "0x6852a13650F5c90342663c9fF7555f97F62515c8"
+    },
+    {
+      "name": "AGIJobManager",
+      "fullyQualifiedName": "contracts/AGIJobManager.sol:AGIJobManager",
+      "address": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+      "constructorArgs": {
+        "agiTokenAddress": "0xa61a3b3a130a9c20768eebf97e21515a6046a1fa",
+        "baseIpfsUrl": "https://ipfs.io/ipfs/",
+        "ensConfig": [
+          "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+          "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401"
+        ],
+        "rootNodes": [
+          "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+          "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+          "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+          "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e"
+        ],
+        "merkleRoots": [
+          "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b",
+          "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b"
+        ]
+      },
+      "libraries": {
+        "contracts/utils/UriUtils.sol:UriUtils": "0x2c6359D42173aaC73Ea053b37c411f7Da44d4706",
+        "contracts/utils/TransferUtils.sol:TransferUtils": "0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f",
+        "contracts/utils/BondMath.sol:BondMath": "0x0c2a50a9C1db998707662db2A13B93175c3E7394",
+        "contracts/utils/ReputationMath.sol:ReputationMath": "0x4F64e44a3693489289B1F20D55CF56130fE66C0b",
+        "contracts/utils/ENSOwnership.sol:ENSOwnership": "0x6852a13650F5c90342663c9fF7555f97F62515c8"
+      }
+    }
+  ],
+  "ownershipTransferTx": "0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436"
+}
