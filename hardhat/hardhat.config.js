@@ -6,35 +6,27 @@ const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = pro
 
 const networks = {};
 if (SEPOLIA_RPC_URL && PRIVATE_KEY) {
-  networks.sepolia = {
-    url: SEPOLIA_RPC_URL,
-    accounts: [PRIVATE_KEY],
-  };
+  networks.sepolia = { url: SEPOLIA_RPC_URL, accounts: [PRIVATE_KEY] };
 }
 if (MAINNET_RPC_URL && PRIVATE_KEY) {
-  networks.mainnet = {
-    url: MAINNET_RPC_URL,
-    accounts: [PRIVATE_KEY],
-  };
+  networks.mainnet = { url: MAINNET_RPC_URL, accounts: [PRIVATE_KEY] };
 }
 
 module.exports = {
   solidity: {
     version: '0.8.23',
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 40,
-      },
+      optimizer: { enabled: true, runs: 40 },
       evmVersion: 'shanghai',
       viaIR: false,
-      metadata: {
-        bytecodeHash: 'none',
-      },
-      debug: {
-        revertStrings: 'strip',
-      },
+      metadata: { bytecodeHash: 'none' },
+      debug: { revertStrings: 'strip' },
     },
+  },
+  paths: {
+    sources: './contracts',
+    artifacts: './artifacts',
+    cache: './cache',
   },
   networks,
   etherscan: {
