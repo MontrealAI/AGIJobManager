@@ -64,6 +64,19 @@ merkleRoots: [
 ]
 ```
 
+
+## 4.1) Default profile reconciliation (Truffle migration #6 vs Hardhat defaults)
+
+`migrations/6_deploy_agijobmanager_production_operator.js` constructs deployment inputs from config and deploys the same five libraries (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`) before deploying `AGIJobManager` with:
+
+- `agiTokenAddress`
+- `baseIpfsUrl`
+- `ensConfig` (`[ensRegistry, nameWrapper]`)
+- `rootNodes` (`[clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode]`)
+- `merkleRoots` (`[validatorMerkleRoot, agentMerkleRoot]`)
+
+The canonical Mainnet Beta constructor defaults listed in this document are the defaults implemented in `hardhat/deploy.config.example.js` and align with the verified Mainnet Beta deployment profile.
+
 ## 5) What happened during deployment
 
 - Deployment transaction set (libraries + AGIJobManager) was executed successfully using the production operator migration.
