@@ -2,4 +2,10 @@ node_modules/
 artifacts/
 cache/
 deployments/
+!deployments/
+!deployments/mainnet/
+!deployments/mainnet/README.md
+!deployments/mainnet/deployment.1.24522684.json
+!deployments/mainnet/solc-input.json
+!deployments/mainnet/verify-targets.json
 .env
