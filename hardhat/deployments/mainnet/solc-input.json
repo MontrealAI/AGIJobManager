@@ -1,0 +1,27 @@
+{
+  "language": "Solidity",
+  "note": "Canonical compiler settings record for official mainnet deployment. Source unit content is versioned in repository source files.",
+  "sourcesReference": [
+    "contracts/AGIJobManager.sol",
+    "contracts/utils/UriUtils.sol",
+    "contracts/utils/TransferUtils.sol",
+    "contracts/utils/BondMath.sol",
+    "contracts/utils/ReputationMath.sol",
+    "contracts/utils/ENSOwnership.sol"
+  ],
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 40
+    },
+    "evmVersion": "shanghai",
+    "viaIR": false,
+    "metadata": {
+      "bytecodeHash": "none"
+    },
+    "debug": {
+      "revertStrings": "strip"
+    }
+  },
+  "compilerVersion": "0.8.23"
+}
