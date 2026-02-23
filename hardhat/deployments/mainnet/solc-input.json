@@ -1,0 +1,27 @@
+{
+  "language": "Solidity",
+  "metadata": {
+    "note": "Canonical compiler settings and constructor context for official mainnet verification."
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 40
+    },
+    "evmVersion": "shanghai",
+    "viaIR": false,
+    "metadata": {
+      "bytecodeHash": "none"
+    },
+    "debug": {
+      "revertStrings": "strip"
+    }
+  },
+  "compiler": {
+    "version": "0.8.23"
+  },
+  "sourceIntegrity": {
+    "note": "Use this with repository sources and verify-targets.json for Etherscan Standard JSON Input workflows.",
+    "paths": "Repository-relative only. No local absolute paths."
+  }
+}
