@@ -65,11 +65,18 @@ function parseOptionalOverrides() {
   return overrides;
 }
 
+function isExampleConfigPath(configPath) {
+  return path.basename(configPath) === 'deploy.config.example.js';
+}
+
 function loadDeployConfig() {
   const customPath = process.env.DEPLOY_CONFIG;
+  const defaultConfigPath = path.resolve(__dirname, '..', 'deploy.config.js');
+  const exampleConfigPath = path.resolve(__dirname, '..', 'deploy.config.example.js');
+
   const configPath = customPath
     ? path.resolve(process.cwd(), customPath)
-    : path.resolve(__dirname, '..', 'deploy.config.example.js');
+    : (fs.existsSync(defaultConfigPath) ? defaultConfigPath : exampleConfigPath);
 
   if (!fs.existsSync(configPath)) {
     throw new Error(`Deployment config file not found: ${configPath}`);
@@ -196,6 +203,13 @@ async function main() {
   const resolvedFinalOwner = finalOwner || deployer.address;
   const dryRun = process.env.DRY_RUN === '1';
   const explorerBase = getExplorerBase(chainId);
+
+  if (!dryRun && isExampleConfigPath(configPath)) {
+    throw new Error(
+      'Refusing to deploy from deploy.config.example.js. Copy it to hardhat/deploy.config.js '
+      + 'or set DEPLOY_CONFIG to a non-placeholder config file.'
+    );
+  }
 
   const plan = {
     network: network.name,

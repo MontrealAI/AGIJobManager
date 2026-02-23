@@ -33,11 +33,19 @@ DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT
 
 ## 3) Deployment config
 
-Default config file:
+Create an operator config from the template before any real deployment:
 
-- `hardhat/deploy.config.example.js`
+```bash
+cp deploy.config.example.js deploy.config.js
+```
 
-Mainnet defaults are pinned to migration #6 constructor values and the verified Mainnet Beta profile.
+- Default runtime config file (if present): `hardhat/deploy.config.js`
+- Template file: `hardhat/deploy.config.example.js`
+- Optional explicit override: `DEPLOY_CONFIG=/absolute/or/relative/path/to/config.js`
+
+`deploy.config.example.js` is treated as a template only; non-dry-run deployments intentionally refuse to use it directly.
+
+Mainnet defaults in the template are pinned to migration #6 constructor values and the verified Mainnet Beta profile.
 
 ## 4) Compile
 
