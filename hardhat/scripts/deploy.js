@@ -7,6 +7,15 @@ const DEFAULT_VERIFY_DELAY_MS = 3500;
 const DEFAULT_VERIFY_RETRIES = 3;
 const DEFAULT_CONFIRMATIONS = 3;
 
+const COMPILER_SETTINGS = {
+  version: '0.8.23',
+  optimizer: { enabled: true, runs: 40 },
+  evmVersion: 'shanghai',
+  viaIR: false,
+  metadata: { bytecodeHash: 'none' },
+  debug: { revertStrings: 'strip' },
+};
+
 const FQNS = {
   AGIJobManager: 'contracts/AGIJobManager.sol:AGIJobManager',
   UriUtils: 'contracts/utils/UriUtils.sol:UriUtils',
@@ -35,9 +44,15 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getExplorerBase(chainId) {
+function getExplorerAddressBase(chainId) {
   if (chainId === 1) return 'https://etherscan.io/address/';
   if (chainId === 11155111) return 'https://sepolia.etherscan.io/address/';
+  return null;
+}
+
+function getExplorerBase(chainId) {
+  if (chainId === 1) return 'https://etherscan.io';
+  if (chainId === 11155111) return 'https://sepolia.etherscan.io';
   return null;
 }
 
@@ -103,11 +118,20 @@ function resolveConstructor(networkName, profile) {
     throw new Error('merkleRoots must be an array of exactly 2 bytes32 values.');
   }
 
-  constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value, { allowZero: index === 1 }));
+  constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value));
   constructorArgs.rootNodes.forEach((value, index) => validateBytes32(`rootNodes[${index}]`, value));
   constructorArgs.merkleRoots.forEach((value, index) => validateBytes32(`merkleRoots[${index}]`, value));
 
   return constructorArgs;
+}
+
+function resolveFinalOwner(profile) {
+  const finalOwner = process.env.FINAL_OWNER || profile.finalOwner;
+  if (!finalOwner) {
+    throw new Error('Unable to resolve finalOwner. Set FINAL_OWNER or config.finalOwner.');
+  }
+  validateAddress('finalOwner', finalOwner);
+  return finalOwner;
 }
 
 async function deployContract(name, args = [], options = {}, confirmations = DEFAULT_CONFIRMATIONS) {
@@ -122,7 +146,6 @@ async function deployContract(name, args = [], options = {}, confirmations = DEF
     address: await contract.getAddress(),
     txHash: tx.hash,
     blockNumber: receipt.blockNumber,
-    contract,
   };
 }
 
@@ -196,26 +219,25 @@ function copySolcInput(outDir) {
 
 async function main() {
   const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', DEFAULT_CONFIRMATIONS, 1);
-  const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS);
+  const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS, 0);
   const [deployer] = await ethers.getSigners();
   const providerNetwork = await ethers.provider.getNetwork();
   const chainId = Number(providerNetwork.chainId);
   const explorerBase = getExplorerBase(chainId);
+  const explorerAddressBase = getExplorerAddressBase(chainId);
 
   const { config, configPath } = loadDeployConfig();
   const profile = config[network.name];
   const constructorArgs = resolveConstructor(network.name, profile);
-  const resolvedFinalOwner = process.env.FINAL_OWNER || profile.finalOwner || deployer.address;
+  const resolvedFinalOwner = resolveFinalOwner(profile);
   const dryRun = process.env.DRY_RUN === '1';
-
-  validateAddress('finalOwner', resolvedFinalOwner);
 
   if (chainId === 1) {
     if (process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
       throw new Error(`Mainnet deployment blocked. Set DEPLOY_CONFIRM_MAINNET=${MAINNET_CONFIRMATION_VALUE}.`);
     }
-    if (!process.env.FINAL_OWNER) {
-      throw new Error('FINAL_OWNER is required on mainnet.');
+    if (resolvedFinalOwner.toLowerCase() === ethers.ZeroAddress.toLowerCase()) {
+      throw new Error('Mainnet deployment requires a non-zero finalOwner.');
     }
   }
 
@@ -229,6 +251,7 @@ async function main() {
     verifyDelayMs,
     constructorArgs,
     libraries: LIBRARIES,
+    compiler: COMPILER_SETTINGS,
     dryRun,
   };
 
@@ -269,6 +292,21 @@ async function main() {
   deployments.AGIJobManager = managerDeployment;
   console.log(`[deployed] AGIJobManager ${managerDeployment.address} tx=${managerDeployment.txHash}`);
 
+  for (const libName of LIBRARIES) {
+    await sleep(verifyDelayMs);
+    verificationResults[libName] = await verifyWithRetry({ name: libName, record: deployments[libName] }, verifyDelayMs);
+  }
+  await sleep(verifyDelayMs);
+  verificationResults.AGIJobManager = await verifyWithRetry(
+    {
+      name: 'AGIJobManager',
+      record: managerDeployment,
+      constructorArguments: managerArgs,
+      libraries: linkedLibraries,
+    },
+    verifyDelayMs
+  );
+
   const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
   let ownershipTransfer = {
     executed: false,
@@ -290,21 +328,6 @@ async function main() {
     console.log('[owner] transferOwnership skipped (deployer is final owner).');
   }
 
-  for (const libName of LIBRARIES) {
-    await sleep(verifyDelayMs);
-    verificationResults[libName] = await verifyWithRetry({ name: libName, record: deployments[libName] }, verifyDelayMs);
-  }
-  await sleep(verifyDelayMs);
-  verificationResults.AGIJobManager = await verifyWithRetry(
-    {
-      name: 'AGIJobManager',
-      record: managerDeployment,
-      constructorArguments: managerArgs,
-      libraries: linkedLibraries,
-    },
-    verifyDelayMs
-  );
-
   const stablePayload = stableObject({ constructorArgs, libraries: linkedLibraries, finalOwner: resolvedFinalOwner });
   const configHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(stablePayload)));
 
@@ -314,6 +337,7 @@ async function main() {
   const record = {
     chainId,
     network: network.name,
+    explorerBaseUrl: explorerBase,
     timestamp: new Date().toISOString(),
     deployer: deployer.address,
     finalOwner: resolvedFinalOwner,
@@ -349,7 +373,7 @@ async function main() {
 
   console.log('\n=== Deployment Summary ===');
   Object.entries(record.contracts).forEach(([name, contract]) => {
-    const explorerLink = explorerBase ? ` ${explorerBase}${contract.address}` : '';
+    const explorerLink = explorerAddressBase ? ` ${explorerAddressBase}${contract.address}` : '';
     const verifyStatus = verificationResults[name]?.status || 'not_attempted';
     console.log(`${name}: ${contract.address}${explorerLink} [verify=${verifyStatus}]`);
   });
