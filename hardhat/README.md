@@ -88,9 +88,6 @@ Copy/paste command flow:
 cd hardhat && npm ci
 cp .env.example .env
 # Edit .env: set MAINNET_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY
-DRY_RUN=1 npm run deploy:mainnet
-
-# On mainnet, include the confirmation gate even for dry-run plan output
 DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 ```
