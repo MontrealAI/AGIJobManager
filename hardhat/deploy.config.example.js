@@ -16,10 +16,10 @@ module.exports = {
       '0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b',
       '0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b',
     ],
-    finalOwner: '',
+    finalOwner: '0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201',
   },
   sepolia: {
-    // TODO: Replace with Sepolia-safe values before deployment.
+    // TODO: Replace all placeholders before deploying to Sepolia.
     agiTokenAddress: '0x0000000000000000000000000000000000000001',
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
     ensConfig: [
@@ -36,6 +36,7 @@ module.exports = {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0000000000000000000000000000000000000000000000000000000000000000',
     ],
-    finalOwner: '',
+    // TODO: set operator final owner for this test deployment.
+    finalOwner: '0x1111111111111111111111111111111111111111',
   },
 };
