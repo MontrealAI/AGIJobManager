@@ -2,6 +2,8 @@ require('dotenv').config();
 require('@nomicfoundation/hardhat-ethers');
 require('@nomicfoundation/hardhat-verify');
 
+const path = require('path');
+
 const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
 function networkConfig(rpcUrl) {
@@ -27,9 +29,10 @@ module.exports = {
     },
   },
   paths: {
-    sources: './contracts',
-    artifacts: './artifacts',
-    cache: './cache',
+    root: path.resolve(__dirname, '..'),
+    sources: 'contracts',
+    artifacts: 'hardhat/artifacts',
+    cache: 'hardhat/cache',
   },
   networks,
   etherscan: {
