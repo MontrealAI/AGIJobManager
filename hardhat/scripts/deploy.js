@@ -160,7 +160,8 @@ async function verifyWithRetry(params) {
       const message = String(error?.message || error);
       if (message.toLowerCase().includes('already verified')) {
         verificationEntry.status = 'already_verified';
-        verificationEntry.error = message;
+        verificationEntry.error = null;
+        verificationEntry.note = message;
         return verificationEntry;
       }
       verificationEntry.error = message;
