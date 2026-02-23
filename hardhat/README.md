@@ -80,7 +80,7 @@ Dry-run plan only:
 
 ```bash
 cd hardhat
-DRY_RUN=1 npm run deploy:mainnet
+DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT FINAL_OWNER=0xYourFinalOwnerAddress npm run deploy:mainnet
 ```
 
 Execute mainnet deployment:
