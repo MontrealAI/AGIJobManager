@@ -127,19 +127,29 @@ Then confirm:
 - `isValidAGIType(0x3e70227D9c1d02F48CA5c90DFf7a6cAbFb5934f3) == true`
 
 ### 7.3 Recommended validator and governance parameters
-Set only these targets for beta hardening:
+Target values for beta operations:
+
+- approvals = `5`
+- disapprovals = `5`
+- voteQuorum = `7`
+- validationRewardPercentage = `8`
+- validatorBondBps = `1500`
+- validatorSlashBps = `8000`
+- validatorBondMin = `100e18` (`100000000000000000000`)
+
+Write-contract calls (owner):
 
 - `setRequiredValidatorApprovals(5)`
 - `setRequiredValidatorDisapprovals(5)`
 - `setVoteQuorum(7)`
 - `setValidationRewardPercentage(8)`
-- `setValidatorBondParams(1500, 100000000000000000000, <retain_current_or_policy_max>)`
+- `setValidatorBondParams(1500, 100000000000000000000, <current_or_policy_max>)`
 - `setValidatorSlashBps(8000)`
 
 Notes:
-- `validatorBondMin=100e18` = `100000000000000000000`.
 - `setValidatorBondParams` requires `(bps, min, max)` and enforces range checks.
-- If threshold updates revert, confirm intermediate values respect contract invariants.
+- Keep `max` at current/policy value if you are not intentionally changing the ceiling.
+- If threshold updates revert, apply approvals/disapprovals stepwise while preserving valid intermediate pairs.
 
 ### 7.4 Ownership finalization
 After all intended owner-only writes are complete, call:
