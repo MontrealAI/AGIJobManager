@@ -21,7 +21,7 @@ Institutional documentation for operators, integrators, contributors, and audito
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [DEPLOYMENT_OPERATIONS.md](./DEPLOYMENT_OPERATIONS.md)
 - [Owner Mainnet Deployment & Operations Guide](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) (institutional, web-only owner operations)
-- [DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md](./DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)
+- [Ethereum Mainnet Deployment, Verification & Ownership Transfer Guide (Truffle)](./DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)
 - [SCRIPTS_REFERENCE.md](./SCRIPTS_REFERENCE.md)
 - [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md)
 - [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md)
