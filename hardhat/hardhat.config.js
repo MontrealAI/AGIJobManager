@@ -1,0 +1,43 @@
+require('dotenv').config();
+require('@nomicfoundation/hardhat-ethers');
+require('@nomicfoundation/hardhat-verify');
+
+const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
+
+const networks = {};
+if (SEPOLIA_RPC_URL && PRIVATE_KEY) {
+  networks.sepolia = {
+    url: SEPOLIA_RPC_URL,
+    accounts: [PRIVATE_KEY],
+  };
+}
+if (MAINNET_RPC_URL && PRIVATE_KEY) {
+  networks.mainnet = {
+    url: MAINNET_RPC_URL,
+    accounts: [PRIVATE_KEY],
+  };
+}
+
+module.exports = {
+  solidity: {
+    version: '0.8.23',
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 40,
+      },
+      evmVersion: 'shanghai',
+      viaIR: false,
+      metadata: {
+        bytecodeHash: 'none',
+      },
+      debug: {
+        revertStrings: 'strip',
+      },
+    },
+  },
+  networks,
+  etherscan: {
+    apiKey: ETHERSCAN_API_KEY || '',
+  },
+};

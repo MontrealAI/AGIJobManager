@@ -1,5 +1,7 @@
 # Ethereum Mainnet Deployment, Verification & Ownership Transfer Guide (Truffle Migrations)
 
+> **Legacy-but-supported path:** Truffle remains supported for backward compatibility and historical reproducibility. For new deployments, use the recommended Hardhat workflow in `hardhat/README.md`.
+
 ## 1) Executive Summary
 
 This guide is the production runbook for deploying AGIJobManager to Ethereum mainnet using this repository’s Truffle migration flow, then verifying contracts on Etherscan and transferring ownership to the approved final owner.
