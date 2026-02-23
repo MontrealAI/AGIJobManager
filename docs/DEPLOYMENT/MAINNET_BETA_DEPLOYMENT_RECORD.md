@@ -49,6 +49,13 @@ merkleRoots (bytes32[2]):
   0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b
 ```
 
+
+## Default final owner (beta standard)
+
+Unless explicitly overridden for a controlled handoff, the beta default final owner is:
+
+- `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` (`club.agi.eth`)
+
 ### Reconciliation note with migration #6 defaults
 
 Migration #6 defaults and beta constructor defaults are functionally aligned. The AGI token appears with checksum-casing in migration config (`0xA61a...1fA`) and lowercase in this beta profile (`0xa61a...1fa`), but both normalize to the same address value.

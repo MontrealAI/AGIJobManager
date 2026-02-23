@@ -6,6 +6,14 @@ const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_MAINNET_DEPLOYMENT';
 const DEFAULT_VERIFY_DELAY_MS = 3500;
 const DEFAULT_VERIFY_RETRIES = 3;
 const DEFAULT_CONFIRMATIONS = 3;
+const COMPILER_SETTINGS = {
+  version: '0.8.23',
+  optimizer: { enabled: true, runs: 40 },
+  evmVersion: 'shanghai',
+  viaIR: false,
+  metadata: { bytecodeHash: 'none' },
+  debug: { revertStrings: 'strip' },
+};
 
 const FQNS = {
   AGIJobManager: 'contracts/AGIJobManager.sol:AGIJobManager',
@@ -103,11 +111,28 @@ function resolveConstructor(networkName, profile) {
     throw new Error('merkleRoots must be an array of exactly 2 bytes32 values.');
   }
 
-  constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value, { allowZero: index === 1 }));
+  constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value));
   constructorArgs.rootNodes.forEach((value, index) => validateBytes32(`rootNodes[${index}]`, value));
   constructorArgs.merkleRoots.forEach((value, index) => validateBytes32(`merkleRoots[${index}]`, value));
 
   return constructorArgs;
+}
+
+function resolveFinalOwner(profile, deployerAddress, chainId) {
+  const envFinalOwner = process.env.FINAL_OWNER ? process.env.FINAL_OWNER.trim() : '';
+  const configFinalOwner = profile.finalOwner ? String(profile.finalOwner).trim() : '';
+
+  let finalOwner = envFinalOwner || configFinalOwner;
+  if (!finalOwner) {
+    if (chainId === 1) {
+      throw new Error('Unable to resolve finalOwner on mainnet. Set FINAL_OWNER or config.finalOwner.');
+    }
+    finalOwner = deployerAddress;
+    console.log('[warning] FINAL_OWNER and config.finalOwner missing; falling back to deployer for non-mainnet network.');
+  }
+
+  validateAddress('finalOwner', finalOwner);
+  return finalOwner;
 }
 
 async function deployContract(name, args = [], options = {}, confirmations = DEFAULT_CONFIRMATIONS) {
@@ -122,7 +147,6 @@ async function deployContract(name, args = [], options = {}, confirmations = DEF
     address: await contract.getAddress(),
     txHash: tx.hash,
     blockNumber: receipt.blockNumber,
-    contract,
   };
 }
 
@@ -167,7 +191,7 @@ async function verifyWithRetry(params, verifyDelayMs) {
 }
 
 function getLatestBuildInfoPath() {
-  const buildInfoDir = path.resolve(__dirname, '..', 'artifacts', 'build-info');
+  const buildInfoDir = path.resolve(__dirname, '..', '..', 'hardhat', 'artifacts', 'build-info');
   if (!fs.existsSync(buildInfoDir)) {
     throw new Error(`Build info directory not found: ${buildInfoDir}. Run \`npx hardhat compile\` first.`);
   }
@@ -196,7 +220,7 @@ function copySolcInput(outDir) {
 
 async function main() {
   const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', DEFAULT_CONFIRMATIONS, 1);
-  const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS);
+  const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS, 0);
   const [deployer] = await ethers.getSigners();
   const providerNetwork = await ethers.provider.getNetwork();
   const chainId = Number(providerNetwork.chainId);
@@ -205,18 +229,11 @@ async function main() {
   const { config, configPath } = loadDeployConfig();
   const profile = config[network.name];
   const constructorArgs = resolveConstructor(network.name, profile);
-  const resolvedFinalOwner = process.env.FINAL_OWNER || profile.finalOwner || deployer.address;
+  const resolvedFinalOwner = resolveFinalOwner(profile, deployer.address, chainId);
   const dryRun = process.env.DRY_RUN === '1';
 
-  validateAddress('finalOwner', resolvedFinalOwner);
-
-  if (chainId === 1) {
-    if (process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
-      throw new Error(`Mainnet deployment blocked. Set DEPLOY_CONFIRM_MAINNET=${MAINNET_CONFIRMATION_VALUE}.`);
-    }
-    if (!process.env.FINAL_OWNER) {
-      throw new Error('FINAL_OWNER is required on mainnet.');
-    }
+  if (chainId === 1 && process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
+    throw new Error(`Mainnet deployment blocked. Set DEPLOY_CONFIRM_MAINNET=${MAINNET_CONFIRMATION_VALUE}.`);
   }
 
   const plan = {
@@ -229,6 +246,7 @@ async function main() {
     verifyDelayMs,
     constructorArgs,
     libraries: LIBRARIES,
+    compilerSettings: COMPILER_SETTINGS,
     dryRun,
   };
 
@@ -314,6 +332,7 @@ async function main() {
   const record = {
     chainId,
     network: network.name,
+    explorerBaseUrl: explorerBase,
     timestamp: new Date().toISOString(),
     deployer: deployer.address,
     finalOwner: resolvedFinalOwner,

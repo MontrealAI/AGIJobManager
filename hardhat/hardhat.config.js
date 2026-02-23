@@ -27,9 +27,10 @@ module.exports = {
     },
   },
   paths: {
-    sources: './contracts',
-    artifacts: './artifacts',
-    cache: './cache',
+    root: '..',
+    sources: 'contracts',
+    artifacts: 'hardhat/artifacts',
+    cache: 'hardhat/cache',
   },
   networks,
   etherscan: {
