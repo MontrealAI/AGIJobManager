@@ -40,8 +40,8 @@ Template config file:
 Create a local operator config (do not edit the template in place) and point `DEPLOY_CONFIG` to it:
 
 ```bash
-cp hardhat/deploy.config.example.js hardhat/deploy.config.local.js
-DEPLOY_CONFIG=hardhat/deploy.config.local.js npm run deploy:sepolia
+cp deploy.config.example.js deploy.config.local.js
+DEPLOY_CONFIG=deploy.config.local.js npm run deploy:sepolia
 ```
 
 Mainnet defaults in the template are pinned to migration #6 constructor values and the verified Mainnet Beta profile; review and adjust your local file before deploying.
@@ -65,19 +65,19 @@ Compiler settings are pinned to verified beta settings:
 Sepolia:
 
 ```bash
-DEPLOY_CONFIG=hardhat/deploy.config.local.js npm run deploy:sepolia
+DEPLOY_CONFIG=deploy.config.local.js npm run deploy:sepolia
 ```
 
 Mainnet:
 
 ```bash
-DEPLOY_CONFIG=hardhat/deploy.config.local.js DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
+DEPLOY_CONFIG=deploy.config.local.js DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 ```
 
 Dry run (plan only, no txs):
 
 ```bash
-DRY_RUN=1 DEPLOY_CONFIG=hardhat/deploy.config.local.js npm run deploy:sepolia
+DRY_RUN=1 DEPLOY_CONFIG=deploy.config.local.js npm run deploy:sepolia
 ```
 
 ## 6) Verification
