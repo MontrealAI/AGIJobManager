@@ -2,21 +2,7 @@ require('dotenv').config();
 require('@nomicfoundation/hardhat-ethers');
 require('@nomicfoundation/hardhat-verify');
 
-const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
-
-const networks = {};
-if (SEPOLIA_RPC_URL && PRIVATE_KEY) {
-  networks.sepolia = {
-    url: SEPOLIA_RPC_URL,
-    accounts: [PRIVATE_KEY],
-  };
-}
-if (MAINNET_RPC_URL && PRIVATE_KEY) {
-  networks.mainnet = {
-    url: MAINNET_RPC_URL,
-    accounts: [PRIVATE_KEY],
-  };
-}
+const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [];
 
 module.exports = {
   solidity: {
@@ -36,8 +22,20 @@ module.exports = {
       },
     },
   },
-  networks,
+  paths: {
+    sources: './contracts',
+  },
+  networks: {
+    mainnet: {
+      url: process.env.MAINNET_RPC_URL || '',
+      accounts,
+    },
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL || '',
+      accounts,
+    },
+  },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY || '',
+    apiKey: process.env.ETHERSCAN_API_KEY || '',
   },
 };
