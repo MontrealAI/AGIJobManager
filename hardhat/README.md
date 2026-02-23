@@ -54,6 +54,21 @@ npx hardhat run scripts/deploy.js --network sepolia
 
 If `FINAL_OWNER` is not set on testnets, deployer address is used.
 
+For non-mainnet deployment, constructor wiring must be provided via env vars:
+
+- `AGI_TOKEN_ADDRESS`
+- `BASE_IPFS_URL` (optional; defaults to `https://ipfs.io/ipfs/`)
+- `ENS_REGISTRY_ADDRESS`
+- `NAME_WRAPPER_ADDRESS`
+- `ROOT_NODE_CLUB`
+- `ROOT_NODE_AGENT`
+- `ROOT_NODE_ALPHA_CLUB`
+- `ROOT_NODE_ALPHA_AGENT`
+- `MERKLE_ROOT_VALIDATOR`
+- `MERKLE_ROOT_AGENT`
+
+On mainnet, the script enforces canonical constructor defaults for the published beta config and rejects constructor override env vars.
+
 ## 4) Deploy to Mainnet (confirmation-gated)
 
 Mainnet deploy is blocked unless:

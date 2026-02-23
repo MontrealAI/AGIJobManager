@@ -5,7 +5,7 @@ const { ethers, network, run } = require('hardhat');
 const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET';
 const VERIFY_DELAY_MS = 7000;
 
-const CONSTRUCTOR_ARGS = {
+const DEFAULT_MAINNET_CONSTRUCTOR_ARGS = {
   agiTokenAddress: '0xa61a3b3a130a9c20768eebf97e21515a6046a1fa',
   baseIpfsUrl: 'https://ipfs.io/ipfs/',
   ensConfig: ['0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e', '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401'],
@@ -45,6 +45,72 @@ function stableObject(value) {
 function computeConfigHash(payload) {
   const canonical = JSON.stringify(stableObject(payload));
   return ethers.keccak256(ethers.toUtf8Bytes(canonical));
+}
+
+function requireAddress(name, value) {
+  if (!value || !ethers.isAddress(value) || value === ethers.ZeroAddress) {
+    throw new Error(`${name} must be a valid non-zero address. Received: ${String(value)}`);
+  }
+  return value;
+}
+
+function requireBytes32(name, value) {
+  if (!value || !ethers.isHexString(value, 32)) {
+    throw new Error(`${name} must be a valid bytes32 hex string. Received: ${String(value)}`);
+  }
+  return value;
+}
+
+function getConstructorArgs(chainId) {
+  const env = process.env;
+  const allOverrideKeys = [
+    'AGI_TOKEN_ADDRESS',
+    'BASE_IPFS_URL',
+    'ENS_REGISTRY_ADDRESS',
+    'NAME_WRAPPER_ADDRESS',
+    'ROOT_NODE_CLUB',
+    'ROOT_NODE_AGENT',
+    'ROOT_NODE_ALPHA_CLUB',
+    'ROOT_NODE_ALPHA_AGENT',
+    'MERKLE_ROOT_VALIDATOR',
+    'MERKLE_ROOT_AGENT',
+  ];
+  const hasAnyOverride = allOverrideKeys.some((k) => Boolean(env[k]));
+
+  if (chainId === 1 && hasAnyOverride) {
+    throw new Error('Mainnet deployment uses canonical constructor defaults only; remove constructor override env vars.');
+  }
+
+  if (chainId === 1) {
+    return { ...DEFAULT_MAINNET_CONSTRUCTOR_ARGS };
+  }
+
+  if (!hasAnyOverride) {
+    throw new Error(
+      'Non-mainnet deployment requires explicit constructor env vars: AGI_TOKEN_ADDRESS, BASE_IPFS_URL, ENS_REGISTRY_ADDRESS, NAME_WRAPPER_ADDRESS, ROOT_NODE_CLUB, ROOT_NODE_AGENT, ROOT_NODE_ALPHA_CLUB, ROOT_NODE_ALPHA_AGENT, MERKLE_ROOT_VALIDATOR, MERKLE_ROOT_AGENT.'
+    );
+  }
+
+  const args = {
+    agiTokenAddress: requireAddress('AGI_TOKEN_ADDRESS', env.AGI_TOKEN_ADDRESS),
+    baseIpfsUrl: env.BASE_IPFS_URL || DEFAULT_MAINNET_CONSTRUCTOR_ARGS.baseIpfsUrl,
+    ensConfig: [
+      requireAddress('ENS_REGISTRY_ADDRESS', env.ENS_REGISTRY_ADDRESS),
+      requireAddress('NAME_WRAPPER_ADDRESS', env.NAME_WRAPPER_ADDRESS),
+    ],
+    rootNodes: [
+      requireBytes32('ROOT_NODE_CLUB', env.ROOT_NODE_CLUB),
+      requireBytes32('ROOT_NODE_AGENT', env.ROOT_NODE_AGENT),
+      requireBytes32('ROOT_NODE_ALPHA_CLUB', env.ROOT_NODE_ALPHA_CLUB),
+      requireBytes32('ROOT_NODE_ALPHA_AGENT', env.ROOT_NODE_ALPHA_AGENT),
+    ],
+    merkleRoots: [
+      requireBytes32('MERKLE_ROOT_VALIDATOR', env.MERKLE_ROOT_VALIDATOR),
+      requireBytes32('MERKLE_ROOT_AGENT', env.MERKLE_ROOT_AGENT),
+    ],
+  };
+
+  return args;
 }
 
 async function deployContract(name, options = {}) {
@@ -102,6 +168,8 @@ async function main() {
     throw new Error(`FINAL_OWNER must be a valid non-zero address. Received: ${String(finalOwner)}`);
   }
 
+  const constructorArgs = getConstructorArgs(chainId);
+
   const deployments = {};
   const verification = {};
 
@@ -120,11 +188,11 @@ async function main() {
   };
 
   const managerArgs = [
-    CONSTRUCTOR_ARGS.agiTokenAddress,
-    CONSTRUCTOR_ARGS.baseIpfsUrl,
-    CONSTRUCTOR_ARGS.ensConfig,
-    CONSTRUCTOR_ARGS.rootNodes,
-    CONSTRUCTOR_ARGS.merkleRoots,
+    constructorArgs.agiTokenAddress,
+    constructorArgs.baseIpfsUrl,
+    constructorArgs.ensConfig,
+    constructorArgs.rootNodes,
+    constructorArgs.merkleRoots,
   ];
 
   const agiJobManager = await deployContract('AGIJobManager', {
@@ -145,7 +213,7 @@ async function main() {
     verification,
   });
 
-  const configHash = computeConfigHash({ constructorArgs: CONSTRUCTOR_ARGS, libraries: linkedLibraries });
+  const configHash = computeConfigHash({ constructorArgs, libraries: linkedLibraries });
 
   const output = {
     chainId,
@@ -159,7 +227,7 @@ async function main() {
         blockNumber: data.blockNumber,
       }])
     ),
-    constructorArgs: CONSTRUCTOR_ARGS,
+    constructorArgs,
     libraries: linkedLibraries,
     ownershipTransfer: {
       finalOwner,
