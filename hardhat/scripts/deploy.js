@@ -118,7 +118,7 @@ function resolveConstructor(networkName, profile) {
     throw new Error('merkleRoots must be an array of exactly 2 bytes32 values.');
   }
 
-  constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value));
+  constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value, { allowZero: index === 1 }));
   constructorArgs.rootNodes.forEach((value, index) => validateBytes32(`rootNodes[${index}]`, value));
   constructorArgs.merkleRoots.forEach((value, index) => validateBytes32(`merkleRoots[${index}]`, value));
 

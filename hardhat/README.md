@@ -92,6 +92,12 @@ DRY_RUN=1 npm run deploy:mainnet
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 ```
 
+Because the script enforces the mainnet safety gate before sending any transaction, include the confirmation phrase for a mainnet dry run as well:
+
+```bash
+DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
+```
+
 Optional override if you need a different owner than the default:
 
 ```bash
