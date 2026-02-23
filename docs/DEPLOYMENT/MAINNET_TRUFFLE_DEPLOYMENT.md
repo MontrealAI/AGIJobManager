@@ -2,98 +2,111 @@
 
 ## 1) Executive Summary
 
-This guide is the production runbook for deploying AGIJobManager to Ethereum mainnet with this repository’s Truffle migration flow, verifying contracts on Etherscan, and transferring ownership to the approved final owner.
+This guide is the production runbook for deploying AGIJobManager to Ethereum mainnet using this repository’s Truffle migration flow, then verifying contracts on Etherscan and transferring ownership to the approved final owner.
 
 ### What is being deployed
 
-Deployment includes:
-- linked Solidity libraries: `UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`, and
-- the main `AGIJobManager` contract deployed by migration `migrations/6_deploy_agijobmanager_production_operator.js`.
+The production deployment consists of:
 
-### Critical policy: AI agents only
+- linked libraries: `UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`
+- main contract: `AGIJobManager`
+- deployment automation: `migrations/6_deploy_agijobmanager_production_operator.js`
 
-AGIJobManager is intended for **autonomous AI agents as active protocol participants**. Human participants are supervisors/operators/owners, not the intended day-to-day counterparties.
+### Critical intended-use policy (must be understood before deployment)
 
-The authoritative Terms & Conditions text is embedded in the header comment of `contracts/AGIJobManager.sol`. This guide provides an operational summary only.
+AGIJobManager is intended to be used by **autonomous AI agents exclusively** for normal protocol participation. Humans are supervisors/operators/owners.
 
-### Owner vs Operator responsibilities
+- Human **Owner**: decision authority and risk owner
+- Human **Operator**: executes deployment steps exactly as approved
+- Human manual day-to-day protocol operation is out of scope for intended use
 
-- **Owner (decision authority):** approves deployment decisions (token, ENS posture, allowlisting model, final ownership, locking policy), signs off mainnet go/no-go, and receives final ownership.
-- **Operator (execution authority):** executes commands, captures evidence, verifies bytecode, and performs ownership transfer exactly as approved.
+Authoritative Terms & Conditions are in the header comment of `contracts/AGIJobManager.sol`. This guide summarizes operations and does not reproduce legal text.
+
+### Responsibilities: Owner vs Operator
+
+| Role | Responsibilities | Must approve/sign |
+| --- | --- | --- |
+| Owner | chooses final owner address, token, ENS posture, allowlisting model, lock policy, go-live posture | pre-deployment decisions, mainnet go/no-go, final ownership acceptance |
+| Operator | prepares environment, runs migrations, captures receipts/logs, performs verification and ownership transfer | execution evidence package and completion checklist |
 
 ### Highest-risk irreversible mistakes
 
-1. Deploying to wrong chain/network.
-2. Using wrong migration file/range.
-3. Deploying with wrong constructor/config values.
-4. Locking identity configuration too early.
+1. Deploying to the wrong network/chain.
+2. Running the wrong migration number/range.
+3. Using wrong config values for constructor and owner-controlled settings.
+4. Locking identity configuration before all identity fields are confirmed.
 5. Transferring ownership to the wrong address.
-6. Failing verification due to wrong compiler/library/constructor settings.
+6. Proceeding without successful verification evidence.
 
-**Stop condition:** if any approved value differs from what is shown in dry-run output, rehearsal output, or on-chain state, halt and re-approve before proceeding.
+**Do not proceed if any owner-approved value differs from rehearsal evidence, migration output, deployment receipt, or Etherscan readback.**
 
 ---
 
 ## 2) Pre-Deployment Decisions (Owner checklist)
 
-Use this checklist for explicit owner approval before any mainnet transaction.
+Complete and sign this checklist before any mainnet transaction.
 
 - [ ] **Final owner address approved** (recommended: multisig).
-  - Deployer EOA can be temporary; final owner should be institutional custody.
-- [ ] **RPC provider class approved** (availability, rate limits, nonce behavior, key management).
-  - This guide does not endorse a specific vendor.
-- [ ] **Gas strategy approved** (EIP-1559 policy and replacement policy).
-  - Define who can bump transactions and how nonce collisions are prevented.
-- [ ] **Token address approved.**
-  - Legacy default — verify: AGIALPHA mainnet `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`.
-- [ ] **ENS feature posture approved** (enabled now vs neutral/off now).
-  - ENS choices affect identity authorization behavior and governance actions.
-- [ ] **Allowlisting model approved.**
-  - Choose direct lists (`additionalAgents`, `additionalValidators`) and/or Merkle roots and/or ENS ownership checks.
-- [ ] **Identity lock policy approved** (`lockIdentityConfiguration`).
-  - Lock is one-way; after lock, identity setters are unavailable.
-- [ ] **Legacy defaults policy approved.**
-  - Policy: start from legacy values, then intentionally adjust.
+  - Deployer EOA is temporary; final owner should be durable institutional custody.
+- [ ] **RPC provider strategy approved** (availability/rate limits/nonce behavior/key custody).
+  - No specific vendor is endorsed by this guide.
+- [ ] **Gas strategy approved** (EIP-1559 policy).
+  - Define how max fee / priority fee are chosen and who can replace stuck transactions.
+- [ ] **Token address approved**.
+  - Legacy default — verify: AGIALPHA `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`.
+- [ ] **ENS feature posture approved** (enable now vs neutral/off).
+  - ENS choices affect identity and eligibility checks.
+- [ ] **Allowlisting model approved**.
+  - Decide how to combine direct lists, Merkle roots, and ENS ownership checks.
+- [ ] **Identity lock decision approved** (`lockIdentityConfiguration`).
+  - Lock is one-way and freezes identity-config setters.
+- [ ] **Legacy defaults policy approved**.
+  - Policy: start with legacy state as a suggested baseline, then intentionally adjust.
 
-### Legacy defaults — verify (suggested starting point only)
+### Legacy defaults — verify (suggested starting point, not auto-truth)
 
-Reference legacy deployment:
-- AGIJobManager: `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477`.
+Legacy AGIJobManager reference: `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477`.
 
-Never copy values from memory. Use:
-1. Etherscan `Read Contract`, and/or
-2. deterministic on-chain extraction script:
+You must not guess legacy values. Obtain them from:
+
+1. Etherscan → legacy contract → **Read Contract**, and/or
+2. deterministic script:
 
 ```bash
 npx truffle exec scripts/ops/read_legacy_defaults.js --network mainnet --legacy 0x0178b6bad606aaf908f72135b8ec32fc1d5ba477
 ```
 
-Treat extracted values as a **suggested starting point** and explicitly re-approve each value for the new deployment.
+Treat outputs as proposed defaults only, then explicitly approve each final mainnet value.
 
 ---
 
 ## 3) Environment Setup (Operator steps)
 
-### Node/npm alignment
+### Node/npm version alignment
 
-CI workflows use **Node.js 20**. Use Node 20 locally for parity.
+CI workflows use Node.js 20. Use Node.js 20 locally for parity before compiling or deploying.
 
-### Install and compile
+### Install dependencies
 
 ```bash
 npm ci
+```
+
+### Compile
+
+```bash
 npx truffle compile
 ```
 
 ### Where deployment configuration lives
 
-- Template: `migrations/config/agijobmanager.config.example.js`
-- Active file: `migrations/config/agijobmanager.config.js`
-- Optional override path: `AGIJOBMANAGER_CONFIG_PATH`
+- template: `migrations/config/agijobmanager.config.example.js`
+- local active config: `migrations/config/agijobmanager.config.js`
+- optional override path env var: `AGIJOBMANAGER_CONFIG_PATH`
 
-### Set environment variables safely
+### Safe environment variable handling
 
-Never commit secrets. Use terminal/session secrets only.
+Never commit secrets. Export credentials only in secure operator shells.
 
 ```bash
 export MAINNET_RPC_URL="https://<your-mainnet-rpc>"
@@ -103,13 +116,13 @@ export DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET
 export ETHERSCAN_API_KEY="<etherscan-api-key>"
 ```
 
-**Stop condition:** do not proceed if `git diff` contains private keys, API keys, or RPC credentials.
+**Do not proceed if secrets appear in tracked files (`git diff`, shell history policy, CI logs, or docs).**
 
 ---
 
 ## 4) Mainnet Dry-Run / Rehearsal (Required)
 
-### A. Dry-run config validation (no chain writes)
+### A. Dry-run validation (no chain writes)
 
 What you do:
 
@@ -118,12 +131,13 @@ AGIJOBMANAGER_DEPLOY=1 DEPLOY_DRY_RUN=1 npx truffle migrate --network sepolia --
 ```
 
 What you should see:
-- deployment summary with network/chain/deployer/config hash,
-- constructor argument summary,
-- warning list (if any),
-- message: `DEPLOY_DRY_RUN=1 detected: config validated, deployment skipped.`
 
-### B. Full rehearsal on supported test network
+- deployment summary with network, chainId, deployer, config path/hash
+- constructor argument summary
+- warning list (if any)
+- `DEPLOY_DRY_RUN=1 detected: config validated, deployment skipped.`
+
+### B. Full rehearsal using the same migration/config shape
 
 What you do:
 
@@ -131,16 +145,17 @@ What you do:
 AGIJOBMANAGER_DEPLOY=1 npx truffle migrate --network sepolia --f 6 --to 6
 ```
 
-What you should capture for owner sign-off:
-- chainId and network,
-- deployer address,
-- deployed library addresses,
-- deployed `AGIJobManager` address,
-- tx hashes and final block number,
-- config path and config hash,
-- generated receipt path (`deployments/<network>/AGIJobManager.<chainId>.<blockNumber>.json`).
+Capture evidence package:
 
-**Stop condition:** do not schedule mainnet deployment until rehearsal evidence is complete and approved.
+- chainId and network
+- deployer address
+- library addresses
+- AGIJobManager address
+- tx hashes and block number
+- config path and config hash
+- generated receipt path (`deployments/<network>/AGIJobManager.<chainId>.<blockNumber>.json`)
+
+**Do not proceed to mainnet until owner signs off on rehearsal evidence.**
 
 ---
 
@@ -155,18 +170,18 @@ flowchart TD
     E -->|No| B
     E -->|Yes| F[Mainnet deploy with guard]
     F --> G[Verify libraries and AGIJobManager]
-    G --> H{Ownership transfer in migration config?}
-    H -->|Yes| I[Confirm owner()]
+    G --> H{Transfer ownership in migration config?}
+    H -->|Yes| I[Confirm owner() on Etherscan]
     H -->|No| J[Manual transferOwnership on Etherscan]
-    I --> K{ENS enabled now?}
+    I --> K{ENS enabled?}
     J --> K
-    K -->|Yes| L[Validate ENS fields]
-    K -->|No| M[Validate neutral ENS posture]
-    L --> N{Merkle roots set now?}
+    K -->|Yes| L[Confirm ENS fields]
+    K -->|No| M[Confirm neutral ENS posture]
+    L --> N{Set Merkle roots now?}
     M --> N
-    N -->|Now| O[Validate roots]
-    N -->|Later| P[Track deferred owner action]
-    O --> Q[Post-deploy sanity checks]
+    N -->|Now| O[Confirm roots]
+    N -->|Later| P[Record deferred owner action]
+    O --> Q[Post-deployment sanity checks]
     P --> Q
     Q --> R[Go-live]
 ```
@@ -175,51 +190,71 @@ flowchart TD
 
 ## 6) Step-by-Step: Ethereum Mainnet Deployment via Truffle Migrations
 
-### Production migration file and range
+### Production migration to use
 
-Use migration:
-- **File:** `migrations/6_deploy_agijobmanager_production_operator.js`
-- **Range:** `--f 6 --to 6`
+Use exactly:
 
-### Mainnet operator procedure
+- migration number: `6`
+- file: `migrations/6_deploy_agijobmanager_production_operator.js`
+- command range: `--f 6 --to 6`
 
-1) Prepare active config file:
+### Mainnet guard and operator gate
+
+The migration enforces a mainnet confirmation guard. For chainId 1, deployment is blocked unless:
+
+```text
+DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET
+```
+
+### Operator execution steps
+
+1. Prepare local config from template.
 
 ```bash
 cp migrations/config/agijobmanager.config.example.js migrations/config/agijobmanager.config.js
 ```
 
-2) Dry-run validation on mainnet config (no writes):
+2. Dry-run against mainnet configuration (no writes).
 
 ```bash
 AGIJOBMANAGER_DEPLOY=1 DEPLOY_DRY_RUN=1 npx truffle migrate --network mainnet --f 6 --to 6
 ```
 
-3) Mainnet deploy with explicit guard confirmation:
+3. Owner sign-off checkpoint (manual, mandatory):
+
+- [ ] dry-run summary reviewed
+- [ ] constructor arguments reviewed
+- [ ] final owner address reviewed
+- [ ] token address reviewed
+- [ ] ENS and Merkle posture reviewed
+
+**Do not proceed if any item is unapproved.**
+
+4. Run mainnet deployment.
 
 ```bash
 AGIJOBMANAGER_DEPLOY=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET npx truffle migrate --network mainnet --f 6 --to 6
 ```
 
-### Mainnet guard behavior
+### What you should see
 
-Migration #6 blocks chainId 1 deployment unless `DEPLOY_CONFIRM_MAINNET` matches exactly. This is an intentional anti-footgun guard.
+- deployment summary section
+- library deployment addresses and tx hashes
+- AGIJobManager deployment address and tx hash
+- post-deploy owner action tx hashes
+- final line with receipt location
 
-### What you should see in console output
+### Deployment receipt location
 
-- a deployment summary block,
-- deployment logs for each linked library,
-- deployed `AGIJobManager` address,
-- owner action tx hashes for post-deploy setters,
-- final receipt path.
+Successful migration writes:
 
-### Receipt location
+```text
+deployments/<network>/AGIJobManager.<chainId>.<blockNumber>.json
+```
 
-On successful deployment, a JSON receipt is written to:
+Receipt contains chainId/network/deployer, linked library addresses, AGIJobManager address, tx hashes, constructor args, config hash, and verification checks.
 
-- `deployments/<network>/AGIJobManager.<chainId>.<blockNumber>.json`
-
-**Stop condition:** if receipt is missing or incomplete, do not continue to verification/ownership transfer.
+**Do not proceed to Etherscan verification if receipt is missing or incomplete.**
 
 ---
 
@@ -227,16 +262,13 @@ On successful deployment, a JSON receipt is written to:
 
 ### Why linked libraries matter
 
-`AGIJobManager` bytecode is linked against deployed library addresses. If any library address is wrong during verification, Etherscan cannot match bytecode.
+AGIJobManager bytecode is linked against deployed library addresses. If library addresses provided to verification are incorrect, Etherscan bytecode matching fails.
 
-### Path A — Truffle plugin verification (recommended when available)
+### Path A: Truffle plugin verification (configured in repo)
 
-This repository configures `truffle-plugin-verify` in `truffle-config.js`.
+Prerequisite: `ETHERSCAN_API_KEY` set in environment.
 
-Prerequisite:
-- `ETHERSCAN_API_KEY` is set.
-
-Run:
+Verify deployed addresses from your deployment receipt (never from memory):
 
 ```bash
 npx truffle run verify UriUtils@<uriUtilsAddress> --network mainnet
@@ -247,134 +279,156 @@ npx truffle run verify ENSOwnership@<ensOwnershipAddress> --network mainnet
 npx truffle run verify AGIJobManager@<managerAddress> --network mainnet
 ```
 
-Use addresses from the deployment receipt JSON, not from memory.
+### Path B: Manual Etherscan verification
 
-### Path B — Manual Etherscan verification
-
-1) Open the contract page on Etherscan → `Contract` → `Verify and Publish`.
-2) Set compiler exactly from artifacts / Truffle config:
-   - Solidity version: `0.8.23`
-   - Optimizer: enabled
-   - Runs: `40`
-   - EVM version: `shanghai` (unless your build explicitly set another value)
+1. Open contract on Etherscan → `Contract` tab → `Verify and Publish`.
+2. Use exact compiler settings from local build artifacts (`build/contracts/AGIJobManager.json`) and Truffle config:
+   - compiler version: `0.8.23`
+   - optimization: enabled
+   - optimizer runs: `40`
+   - EVM version: `shanghai` (unless intentionally overridden during deploy build)
    - `viaIR`: disabled
-3) Provide linked library addresses exactly as deployed.
-4) Provide constructor arguments:
-   - Source of truth: `constructorArgs` in deployment receipt JSON.
-   - Deterministic encoder helper:
+3. Provide the exact deployed linked library addresses.
+4. Provide constructor arguments:
+   - source of truth: `constructorArgs` in deployment receipt JSON
+   - deterministic encoding helper:
 
 ```bash
 node scripts/ops/encode_constructor_args.js --receipt deployments/mainnet/AGIJobManager.<chainId>.<blockNumber>.json
 ```
 
-Paste output into Etherscan constructor args field (hex without `0x`).
+Paste resulting hex into Etherscan constructor-args field (without `0x`).
 
 ### Common verification failures
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Immediate bytecode mismatch | Wrong compiler version | Read `build/contracts/AGIJobManager.json` and match exactly |
-| Metadata mismatch | Wrong optimizer setting/runs | Use optimizer enabled with runs `40` |
-| Unresolved library placeholders | Wrong library addresses | Copy library addresses from deployment receipt |
-| Constructor mismatch | Wrong argument order/value encoding | Re-encode from receipt using helper script |
-| “Similar match” only | Build artifacts differ from deployed build | Rebuild deterministically (`npx truffle compile --all`) and retry |
+| Bytecode mismatch | wrong compiler version | read exact compiler from `build/contracts/AGIJobManager.json` and retry |
+| Metadata mismatch | wrong optimizer/runs | set optimizer enabled, runs `40` |
+| Unlinked library placeholders | wrong library addresses | copy libraries from deployment receipt |
+| Constructor arg mismatch | wrong encoding/order/value | regenerate with `encode_constructor_args.js` from receipt |
+| Similar match only | artifacts not from deploy build | clean/compile deterministically (`npx truffle compile --all`) and retry |
 
 ---
 
 ## 8) Ownership Transfer to Final Owner (Must include Etherscan web flow)
 
-Best practice: deploy from an operator EOA, then transfer ownership to the owner-approved multisig.
+Best practice: deploy with operator EOA, then transfer ownership to the owner-approved multisig.
 
-### Path A — ownership transferred automatically in migration
+### Path A: Automatic ownership transfer in migration
 
-If config includes `ownership.finalOwner`, migration #6 calls `transferOwnership(finalOwner)`.
+If config sets `ownership.finalOwner`, migration #6 executes `transferOwnership(finalOwner)`.
 
-Owner confirmation:
-- Etherscan `Read Contract` → `owner()` must equal the approved final owner.
+Confirm in Etherscan `Read Contract`:
 
-### Path B — manual transfer in Etherscan
+- `owner()` equals approved final owner address.
 
-1) Open deployed AGIJobManager contract on Etherscan.
-2) Go to `Write Contract`.
-3) Connect the **current owner** wallet.
-4) Execute `transferOwnership(newOwner)`.
-5) Wait for transaction success.
-6) Confirm in `Read Contract` via `owner()`.
+### Path B: Manual ownership transfer on Etherscan
+
+1. Open deployed AGIJobManager in Etherscan.
+2. Go to `Write Contract`.
+3. Connect wallet for **current owner** address.
+4. Call `transferOwnership(newOwner)` with approved final owner.
+5. Wait for transaction success.
+6. Confirm `owner()` in `Read Contract`.
 
 ### Do not proceed if …
 
-- owner-approved address does not exactly match transfer target,
-- `owner()` is still the deployer when final owner must be multisig,
-- contract is not verified on Etherscan.
+- final owner address differs from owner-approved address
+- `owner()` is still deployer when multisig ownership was required
+- contract is not verified on Etherscan
 
 ---
 
 ## 9) Post-Deployment Sanity Checks (Owner-friendly, Etherscan-based)
 
-Use Etherscan `Read Contract` and validate:
+Perform these reads on Etherscan and compare against the signed owner decision sheet.
 
-| Getter | What to verify |
+| Getter | What to check |
 | --- | --- |
-| `owner()` | Approved final owner (usually multisig) |
-| `agiToken()` | Approved token address (legacy default start point: AGIALPHA `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`) |
-| `paused()` and `settlementPaused()` | Match launch control policy |
-| `requiredValidatorApprovals()`, `requiredValidatorDisapprovals()`, `voteQuorum()` | Match approved voting thresholds |
-| `completionReviewPeriod()`, `disputeReviewPeriod()`, `challengePeriodAfterApproval()` | Match approved governance windows |
-| `validatorMerkleRoot()`, `agentMerkleRoot()` | Match approved root values |
-| `ens()`, `nameWrapper()`, `clubRootNode()`, `agentRootNode()`, `alphaClubRootNode()`, `alphaAgentRootNode()`, `ensJobPages()` | Match ENS posture decision |
-| `withdrawableAGI()` | Owner-withdrawable non-escrow AGI balance (not user escrow pool) |
+| `owner()` | final owner is correct |
+| `agiToken()` | token address is owner-approved (legacy default start point: AGIALPHA `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`) |
+| `paused()` | intake pause posture matches rollout plan |
+| `settlementPaused()` | settlement pause posture matches rollout plan |
+| `requiredValidatorApprovals()` | approved threshold |
+| `requiredValidatorDisapprovals()` | approved threshold |
+| `voteQuorum()` | approved quorum |
+| `completionReviewPeriod()` | approved review window |
+| `disputeReviewPeriod()` | approved dispute window |
+| `challengePeriodAfterApproval()` | approved challenge window |
+| `validatorMerkleRoot()` | approved validator root |
+| `agentMerkleRoot()` | approved agent root |
+| `ens()` | ENS registry posture |
+| `nameWrapper()` | ENS name wrapper posture |
+| `clubRootNode()` / `agentRootNode()` / `alphaClubRootNode()` / `alphaAgentRootNode()` | approved root nodes |
+| `ensJobPages()` | approved ENS pages contract address |
+| `withdrawableAGI()` | owner-withdrawable non-escrow AGI (not user escrow pool) |
 
-### Owner permissions: what can be changed now vs conditionally
+### Owner controls: what can be changed immediately vs conditionally
 
-Owner-restricted controls include `pause`, `unpause`, `pauseAll`, `unpauseAll`, `setSettlementPaused`, `addModerator`, `removeModerator`, `updateMerkleRoots`, and `withdrawAGI`.
+Owner-gated controls include `pause`, `unpause`, `pauseAll`, `unpauseAll`, `setSettlementPaused`, `addModerator`, `removeModerator`, `updateMerkleRoots`, `transferOwnership`, and `withdrawAGI`.
 
-Identity setters (`updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `setEnsJobPages`) are gated by identity-configurable state and become unavailable after `lockIdentityConfiguration`.
+Identity setters are owner-gated and become unavailable after lock via `lockIdentityConfiguration`:
 
-Some parameter changes are guarded by escrow/bond safety conditions (`whenNoActiveEscrowOrBond`), such as validator threshold updates and quorum/review-period updates (`setRequiredValidatorApprovals`, `setRequiredValidatorDisapprovals`, `setVoteQuorum`, `setCompletionReviewPeriod`, `setDisputeReviewPeriod`, `setChallengePeriodAfterApproval`).
+- `updateAGITokenAddress`
+- `updateEnsRegistry`
+- `updateNameWrapper`
+- `updateRootNodes`
+- `setEnsJobPages`
+
+Some parameter setters are additionally guarded by no-active-escrow/bond conditions (`whenNoActiveEscrowOrBond`), including:
+
+- `setRequiredValidatorApprovals`
+- `setRequiredValidatorDisapprovals`
+- `setVoteQuorum`
+- `setCompletionReviewPeriod`
+- `setDisputeReviewPeriod`
+- `setChallengePeriodAfterApproval`
 
 ---
 
 ## 10) Minimal Go-Live Configuration (Optional but useful)
 
-Conservative initial sequence:
+Conservative initial sequence (favor reversible actions first):
 
-1. Add only required moderators.
-2. Set allowlisting policy for initial jobs (direct lists and/or Merkle roots).
-3. Confirm `baseIpfsUrl` posture.
-4. Confirm `paused()` and `settlementPaused()` match rollout plan.
-5. Delay `lockIdentityConfiguration` until owner has reviewed all identity fields.
+1. add only required moderators
+2. set allowlisting policy (additional lists and/or Merkle roots)
+3. confirm `baseIpfsUrl` posture
+4. confirm `paused()` and `settlementPaused()` match launch posture
+5. delay identity lock until owner confirms all identity fields
 
 ---
 
 ## 11) Appendix: Legacy Defaults (How to Compare Against Legacy Contract)
 
-Legacy reference:
-- `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477`
+Legacy reference contract: `0x0178b6bad606aaf908f72135b8ec32fc1d5ba477`.
 
-Comparison procedure:
-1) Read legacy values in Etherscan `Read Contract`.
-2) Optionally extract deterministically:
+Comparison process:
+
+1. Read legacy values on Etherscan (`Read Contract`).
+2. Optionally export deterministic JSON:
 
 ```bash
 npx truffle exec scripts/ops/read_legacy_defaults.js --network mainnet --legacy 0x0178b6bad606aaf908f72135b8ec32fc1d5ba477
 ```
 
-3) Compare with:
-- new deployment receipt values, and
-- new contract `Read Contract` values.
+3. Compare legacy values to:
+   - deployment receipt (`deployments/mainnet/...json`)
+   - new contract Etherscan `Read Contract`
 
-Do not assume one-to-one equality by default; treat as baseline for explicit owner decisions.
+Do not assume legacy equivalence. Treat as baseline for explicit owner confirmation.
 
-| Parameter | Legacy read location | New contract getter/setter |
+| Parameter | Legacy read location | New getter / setter |
 | --- | --- | --- |
-| Owner | Etherscan `owner()` | `owner()` / `transferOwnership(address)` |
-| AGI token | Etherscan `agiToken()` | `agiToken()` / `updateAGITokenAddress(address)` |
-| Pause posture | Etherscan `paused()`, `settlementPaused()` | same getters / pause setters |
-| Validator thresholds | Etherscan approvals/disapprovals getters | `requiredValidatorApprovals()`, `requiredValidatorDisapprovals()` + setters |
-| Vote quorum | Etherscan `voteQuorum()` | `voteQuorum()` / `setVoteQuorum(uint256)` |
-| Review/challenge periods | Etherscan period getters | same getters + setters |
-| Merkle roots | Etherscan root getters | same getters / `updateMerkleRoots(bytes32,bytes32)` |
-| ENS fields | Etherscan ENS getters + root node getters | same getters + ENS/root-node setters |
+| Owner | `owner()` | `owner()` / `transferOwnership(address)` |
+| AGI token | `agiToken()` | `agiToken()` / `updateAGITokenAddress(address)` |
+| Pause posture | `paused()`, `settlementPaused()` | same getters + pause setters |
+| Validator thresholds | `requiredValidatorApprovals()`, `requiredValidatorDisapprovals()` | same getters + setters |
+| Vote quorum | `voteQuorum()` | `voteQuorum()` / `setVoteQuorum(uint256)` |
+| Review periods | `completionReviewPeriod()`, `disputeReviewPeriod()` | same getters + setters |
+| Challenge period | `challengePeriodAfterApproval()` | same getter + setter |
+| Merkle roots | `validatorMerkleRoot()`, `agentMerkleRoot()` | same getters / `updateMerkleRoots(bytes32,bytes32)` |
+| ENS fields | ENS/root-node getters | same getters + ENS/root-node setters |
 
 ---
 
@@ -382,12 +436,12 @@ Do not assume one-to-one equality by default; treat as baseline for explicit own
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Mainnet migration blocked by guard | Missing/wrong `DEPLOY_CONFIRM_MAINNET` | Set exact confirmation string and rerun |
-| Migration appears skipped | `AGIJOBMANAGER_DEPLOY` not set to `1` | Export `AGIJOBMANAGER_DEPLOY=1` |
-| Verification mismatch | Wrong compiler/options/libraries/args | Re-check receipt + build artifacts, then retry |
-| Ownership transfer reverted | Caller is not current owner | Submit transfer from current owner address |
-| Deployment on wrong chainId/network | Wrong RPC URL or `--network` selection | Halt rollout, document incident, redeploy with approved settings |
-| Insufficient gas funds | Deployer ETH balance too low | Fund deployer and re-run with controlled gas policy |
-| RPC throttling/nonce drift | Provider rate limits or parallel signers | Use single operator, serialized tx flow, backoff retries |
+| Mainnet migration blocked | `DEPLOY_CONFIRM_MAINNET` missing/incorrect | set exact guard value and rerun |
+| Migration skipped | `AGIJOBMANAGER_DEPLOY` not `1` or existing deployment guard triggered | set `AGIJOBMANAGER_DEPLOY=1`; check existing deployment message and `AGIJOBMANAGER_ALLOW_REDEPLOY` policy |
+| Verification mismatch | compiler/options/library/args mismatch | use receipt + artifact settings; re-encode constructor args |
+| Ownership transfer fails | caller is not current owner | execute transfer from current owner address |
+| Wrong chain/network | RPC URL or `--network` mismatch | halt, document, redeploy with approved network settings |
+| Insufficient ETH for gas | deployer underfunded | fund deployer and rerun with approved fee strategy |
+| RPC rate limits / nonce issues | provider throttling or parallel signers | serialize tx sender, backoff, and avoid concurrent signing |
 
-**Final stop condition:** if any approved checklist item does not match observed on-chain state, pause go-live and obtain explicit owner re-approval.
+Final safety gate: if any owner-approved item does not match chain state, pause go-live and obtain explicit owner re-approval.
