@@ -57,6 +57,15 @@ For release documentation context, the AGIALPHA token used in this repo version 
 
 - `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`
 
+
+## Default FINAL_OWNER for recommended deployments
+
+The default final owner used by the official Hardhat mainnet profile and `.env.example` is:
+
+- `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` (`club.agi.eth`)
+
+Operators can override this intentionally, but doing nothing keeps this default owner.
+
 ## Deployment narrative
 
 - Mainnet deployment completed for libraries + AGIJobManager.
