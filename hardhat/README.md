@@ -64,8 +64,10 @@ I_UNDERSTAND_MAINNET_DEPLOYMENT
 ```bash
 cd hardhat && npm ci
 cp .env.example .env
+cp deploy.config.example.js deploy.config.sepolia.js
+# Edit deploy.config.sepolia.js: replace all Sepolia TODO placeholders with real values
 npx hardhat compile
-npm run deploy:sepolia
+DEPLOY_CONFIG=deploy.config.sepolia.js npm run deploy:sepolia
 ```
 
 ## Quick start (Mainnet) using Beta defaults

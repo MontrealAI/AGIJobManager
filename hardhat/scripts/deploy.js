@@ -41,11 +41,11 @@ function getExplorerBase(chainId) {
   return null;
 }
 
-function parsePositiveInt(value, label, fallback) {
+function parsePositiveInt(value, label, fallback, minValue = 0) {
   if (value === undefined || value === null || value === '') return fallback;
   const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed < 0) {
-    throw new Error(`${label} must be a non-negative integer. Received: ${value}`);
+  if (!Number.isInteger(parsed) || parsed < minValue) {
+    throw new Error(`${label} must be an integer >= ${minValue}. Received: ${value}`);
   }
   return parsed;
 }
@@ -195,7 +195,7 @@ function copySolcInput(outDir) {
 }
 
 async function main() {
-  const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', DEFAULT_CONFIRMATIONS);
+  const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', DEFAULT_CONFIRMATIONS, 1);
   const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS);
   const [deployer] = await ethers.getSigners();
   const providerNetwork = await ethers.provider.getNetwork();
