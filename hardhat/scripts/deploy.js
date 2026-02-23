@@ -69,7 +69,7 @@ function loadDeployConfig() {
   const customPath = process.env.DEPLOY_CONFIG;
   if (!customPath) {
     throw new Error(
-      'DEPLOY_CONFIG is required. Copy hardhat/deploy.config.example.js to a local config file and set DEPLOY_CONFIG=<path>.'
+      'DEPLOY_CONFIG is required. Copy deploy.config.example.js to a local config file and set DEPLOY_CONFIG=<path>.'
     );
   }
 
