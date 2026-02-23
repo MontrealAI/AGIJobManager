@@ -1,5 +1,7 @@
 # Deployment guide (Truffle)
 
+> Truffle deployment is fully supported for legacy operations. The recommended official deployment path is now Hardhat: [`docs/DEPLOYMENT/HARDHAT_DEPLOYMENT.md`](DEPLOYMENT/HARDHAT_DEPLOYMENT.md).
+
 This guide documents the deployment and verification workflow defined in `truffle-config.js` and the migration scripts in `migrations/`.
 For the **configure-once, minimal-governance** deployment profile, see [`docs/DEPLOYMENT_PROFILE.md`](DEPLOYMENT_PROFILE.md).
 
