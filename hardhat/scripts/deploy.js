@@ -2,103 +2,23 @@ const fs = require('fs');
 const path = require('path');
 const { ethers, network, run } = require('hardhat');
 
-const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET';
-const VERIFY_DELAY_MS = 7000;
+const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_MAINNET_DEPLOYMENT';
+const VERIFY_DELAY_MS = 3500;
+const VERIFY_RETRIES = 3;
 
-const MAINNET_CONSTRUCTOR_ARGS = {
-  agiTokenAddress: '0xa61a3b3a130a9c20768eebf97e21515a6046a1fa',
-  baseIpfsUrl: 'https://ipfs.io/ipfs/',
-  ensConfig: ['0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e', '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401'],
-  rootNodes: [
-    '0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16',
-    '0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d',
-    '0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e',
-    '0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e',
-  ],
-  merkleRoots: [
-    '0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b',
-    '0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b',
-  ],
+const FQNS = {
+  AGIJobManager: 'contracts/AGIJobManager.sol:AGIJobManager',
+  UriUtils: 'contracts/utils/UriUtils.sol:UriUtils',
+  TransferUtils: 'contracts/utils/TransferUtils.sol:TransferUtils',
+  BondMath: 'contracts/utils/BondMath.sol:BondMath',
+  ReputationMath: 'contracts/utils/ReputationMath.sol:ReputationMath',
+  ENSOwnership: 'contracts/utils/ENSOwnership.sol:ENSOwnership',
 };
 
 const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership'];
 
-function parseConstructorConfigFromEnv() {
-  const raw = process.env.CONSTRUCTOR_CONFIG_JSON;
-  if (!raw) {
-    return null;
-  }
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    throw new Error(`Invalid CONSTRUCTOR_CONFIG_JSON: ${String(error?.message || error)}`);
-  }
-}
-
-function requireAddress(label, value) {
-  if (!ethers.isAddress(value) || value === ethers.ZeroAddress) {
-    throw new Error(`${label} must be a valid non-zero address. Received: ${String(value)}`);
-  }
-}
-
-function requireAddressAllowZero(label, value) {
-  if (!ethers.isAddress(value)) {
-    throw new Error(`${label} must be a valid address (zero allowed). Received: ${String(value)}`);
-  }
-}
-
-function requireBytes32(label, value) {
-  if (!ethers.isHexString(value, 32)) {
-    throw new Error(`${label} must be a bytes32 hex string. Received: ${String(value)}`);
-  }
-}
-
-function validateConstructorArgs(args) {
-  if (!args || typeof args !== 'object') {
-    throw new Error('constructor args must be an object.');
-  }
-  requireAddress('agiTokenAddress', args.agiTokenAddress);
-  if (typeof args.baseIpfsUrl !== 'string' || args.baseIpfsUrl.length === 0) {
-    throw new Error('baseIpfsUrl must be a non-empty string.');
-  }
-  if (!Array.isArray(args.ensConfig) || args.ensConfig.length !== 2) {
-    throw new Error('ensConfig must be an array with [ensRegistry, nameWrapper].');
-  }
-  requireAddress('ensConfig[0]', args.ensConfig[0]);
-  requireAddressAllowZero('ensConfig[1]', args.ensConfig[1]);
-
-  if (!Array.isArray(args.rootNodes) || args.rootNodes.length !== 4) {
-    throw new Error('rootNodes must be an array of 4 bytes32 values.');
-  }
-  args.rootNodes.forEach((value, idx) => requireBytes32(`rootNodes[${idx}]`, value));
-
-  if (!Array.isArray(args.merkleRoots) || args.merkleRoots.length !== 2) {
-    throw new Error('merkleRoots must be an array of 2 bytes32 values.');
-  }
-  args.merkleRoots.forEach((value, idx) => requireBytes32(`merkleRoots[${idx}]`, value));
-
-  return args;
-}
-
-function resolveConstructorArgs(chainId) {
-  const override = parseConstructorConfigFromEnv();
-  if (chainId === 1) {
-    return validateConstructorArgs(override || MAINNET_CONSTRUCTOR_ARGS);
-  }
-  if (!override) {
-    throw new Error('Non-mainnet deployment requires CONSTRUCTOR_CONFIG_JSON to be set.');
-  }
-  return validateConstructorArgs(override);
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function stableObject(value) {
-  if (Array.isArray(value)) {
-    return value.map(stableObject);
-  }
+  if (Array.isArray(value)) return value.map(stableObject);
   if (value && typeof value === 'object') {
     return Object.keys(value)
       .sort()
@@ -110,152 +30,289 @@ function stableObject(value) {
   return value;
 }
 
-function computeConfigHash(payload) {
-  const canonical = JSON.stringify(stableObject(payload));
-  return ethers.keccak256(ethers.toUtf8Bytes(canonical));
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function deployContract(name, options = {}) {
+function getExplorerBase(chainId) {
+  if (chainId === 1) return 'https://etherscan.io/address/';
+  if (chainId === 11155111) return 'https://sepolia.etherscan.io/address/';
+  return null;
+}
+
+function validateAddress(label, value, { allowZero = false } = {}) {
+  if (!ethers.isAddress(value)) throw new Error(`${label} must be a valid address: ${String(value)}`);
+  if (!allowZero && value.toLowerCase() === ethers.ZeroAddress.toLowerCase()) {
+    throw new Error(`${label} must be non-zero: ${String(value)}`);
+  }
+}
+
+function validateBytes32(label, value) {
+  if (!ethers.isHexString(value, 32)) throw new Error(`${label} must be bytes32: ${String(value)}`);
+}
+
+function parseOptionalOverrides() {
+  const env = process.env;
+  const overrides = {};
+
+  if (env.AGI_TOKEN_ADDRESS) overrides.agiTokenAddress = env.AGI_TOKEN_ADDRESS;
+  if (env.BASE_IPFS_URL) overrides.baseIpfsUrl = env.BASE_IPFS_URL;
+  if (env.ENS_REGISTRY) overrides.ensRegistry = env.ENS_REGISTRY;
+  if (env.NAME_WRAPPER) overrides.nameWrapper = env.NAME_WRAPPER;
+  if (env.VALIDATOR_MERKLE_ROOT) overrides.validatorMerkleRoot = env.VALIDATOR_MERKLE_ROOT;
+  if (env.AGENT_MERKLE_ROOT) overrides.agentMerkleRoot = env.AGENT_MERKLE_ROOT;
+
+  return overrides;
+}
+
+function loadDeployConfig() {
+  const customPath = process.env.DEPLOY_CONFIG;
+  const configPath = customPath
+    ? path.resolve(process.cwd(), customPath)
+    : path.resolve(__dirname, '..', 'deploy.config.example.js');
+
+  if (!fs.existsSync(configPath)) {
+    throw new Error(`Deployment config file not found: ${configPath}`);
+  }
+
+  // eslint-disable-next-line global-require, import/no-dynamic-require
+  const config = require(configPath);
+  return { config, configPath };
+}
+
+function resolveConstructor(networkName, profile, overrides) {
+  if (!profile || typeof profile !== 'object') {
+    throw new Error(`Missing deployment profile for network "${networkName}".`);
+  }
+
+  const constructorArgs = {
+    agiTokenAddress: overrides.agiTokenAddress || profile.agiTokenAddress,
+    baseIpfsUrl: overrides.baseIpfsUrl || profile.baseIpfsUrl,
+    ensConfig: [
+      overrides.ensRegistry || profile.ensConfig?.ensRegistry,
+      overrides.nameWrapper || profile.ensConfig?.nameWrapper,
+    ],
+    rootNodes: [
+      profile.rootNodes?.clubRootNode,
+      profile.rootNodes?.agentRootNode,
+      profile.rootNodes?.alphaClubRootNode,
+      profile.rootNodes?.alphaAgentRootNode,
+    ],
+    merkleRoots: [
+      overrides.validatorMerkleRoot || profile.merkleRoots?.validatorMerkleRoot,
+      overrides.agentMerkleRoot || profile.merkleRoots?.agentMerkleRoot,
+    ],
+  };
+
+  const finalOwner = process.env.FINAL_OWNER || profile.finalOwner || '';
+
+  validateAddress('agiTokenAddress', constructorArgs.agiTokenAddress);
+  if (typeof constructorArgs.baseIpfsUrl !== 'string' || constructorArgs.baseIpfsUrl.trim() === '') {
+    throw new Error('baseIpfsUrl must be a non-empty string.');
+  }
+  validateAddress('ensConfig[0]', constructorArgs.ensConfig[0]);
+  validateAddress('ensConfig[1]', constructorArgs.ensConfig[1], { allowZero: true });
+  constructorArgs.rootNodes.forEach((v, i) => validateBytes32(`rootNodes[${i}]`, v));
+  constructorArgs.merkleRoots.forEach((v, i) => validateBytes32(`merkleRoots[${i}]`, v));
+
+  if (finalOwner) validateAddress('finalOwner', finalOwner);
+
+  return { constructorArgs, finalOwner };
+}
+
+async function deployContract(name, args = [], options = {}) {
   const factory = await ethers.getContractFactory(name, options);
-  const contract = await factory.deploy(...(options.args || []));
+  const contract = await factory.deploy(...args);
   await contract.waitForDeployment();
   const tx = contract.deploymentTransaction();
   const receipt = await tx.wait();
   return {
-    contract,
+    name,
     address: await contract.getAddress(),
     txHash: tx.hash,
     blockNumber: receipt.blockNumber,
+    contract,
   };
 }
 
-async function verifySequential({ name, address, constructorArguments = [], libraries, verification }) {
-  await sleep(VERIFY_DELAY_MS);
-  try {
-    await run('verify:verify', {
-      address,
-      constructorArguments,
-      libraries,
-    });
-    verification[name] = { status: 'verified', address };
-    return verification[name];
-  } catch (error) {
-    const message = String(error?.message || error);
-    if (message.toLowerCase().includes('already verified')) {
-      verification[name] = { status: 'already_verified', address };
-      return verification[name];
+async function verifyWithRetry(params) {
+  const { name, record } = params;
+  const verificationEntry = {
+    contract: name,
+    status: 'pending',
+    attempts: 0,
+    error: null,
+  };
+
+  for (let attempt = 1; attempt <= VERIFY_RETRIES; attempt += 1) {
+    verificationEntry.attempts = attempt;
+    try {
+      await run('verify:verify', {
+        address: record.address,
+        constructorArguments: params.constructorArguments || [],
+        libraries: params.libraries,
+        contract: FQNS[name],
+      });
+      verificationEntry.status = 'verified';
+      verificationEntry.error = null;
+      return verificationEntry;
+    } catch (error) {
+      const message = String(error?.message || error);
+      if (message.toLowerCase().includes('already verified')) {
+        verificationEntry.status = 'already_verified';
+        verificationEntry.error = null;
+        verificationEntry.note = message;
+        return verificationEntry;
+      }
+      verificationEntry.error = message;
+      if (attempt < VERIFY_RETRIES) {
+        await sleep(VERIFY_DELAY_MS);
+      }
     }
-    verification[name] = { status: 'failed', address, error: message };
-    return verification[name];
   }
+
+  verificationEntry.status = 'failed';
+  return verificationEntry;
 }
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const providerNetwork = await ethers.provider.getNetwork();
   const chainId = Number(providerNetwork.chainId);
-  const constructorArgsConfig = resolveConstructorArgs(chainId);
 
-  if (chainId === 1 && process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
-    throw new Error(`Mainnet deployment blocked. Set DEPLOY_CONFIRM_MAINNET=${MAINNET_CONFIRMATION_VALUE}.`);
+  const { config, configPath } = loadDeployConfig();
+  const overrides = parseOptionalOverrides();
+  const profile = config[network.name];
+  const { constructorArgs, finalOwner } = resolveConstructor(network.name, profile, overrides);
+
+  if (chainId === 1) {
+    if (process.env.DEPLOY_CONFIRM_MAINNET !== MAINNET_CONFIRMATION_VALUE) {
+      throw new Error(`Mainnet deployment blocked. Set DEPLOY_CONFIRM_MAINNET=${MAINNET_CONFIRMATION_VALUE}.`);
+    }
+    if (!process.env.FINAL_OWNER) {
+      throw new Error('FINAL_OWNER is required on mainnet.');
+    }
   }
 
-  const finalOwner = chainId === 1
-    ? process.env.FINAL_OWNER
-    : (process.env.FINAL_OWNER || deployer.address);
+  const resolvedFinalOwner = finalOwner || deployer.address;
+  const dryRun = process.env.DRY_RUN === '1';
+  const explorerBase = getExplorerBase(chainId);
 
-  if (!finalOwner) {
-    throw new Error('FINAL_OWNER is required on mainnet.');
-  }
-  if (!ethers.isAddress(finalOwner) || finalOwner === ethers.ZeroAddress) {
-    throw new Error(`FINAL_OWNER must be a valid non-zero address. Received: ${String(finalOwner)}`);
+  const plan = {
+    network: network.name,
+    chainId,
+    configPath,
+    deployer: deployer.address,
+    finalOwner: resolvedFinalOwner,
+    constructorArgs,
+    overrides,
+    dryRun,
+  };
+
+  console.log('=== DEPLOYMENT PLAN ===');
+  console.log(JSON.stringify(plan, null, 2));
+
+  if (dryRun) {
+    console.log('DRY_RUN=1 set; no transactions were broadcast.');
+    return;
   }
 
   const deployments = {};
-  const verification = {};
+  const verificationResults = {};
 
   for (const libName of LIBRARIES) {
-    const deployed = await deployContract(libName);
-    deployments[libName] = deployed;
-    await verifySequential({ name: libName, address: deployed.address, verification });
+    const result = await deployContract(libName);
+    deployments[libName] = result;
+    console.log(`[deployed] ${libName} ${result.address} tx=${result.txHash}`);
   }
 
   const linkedLibraries = {
-    'contracts/utils/UriUtils.sol:UriUtils': deployments.UriUtils.address,
-    'contracts/utils/TransferUtils.sol:TransferUtils': deployments.TransferUtils.address,
-    'contracts/utils/BondMath.sol:BondMath': deployments.BondMath.address,
-    'contracts/utils/ReputationMath.sol:ReputationMath': deployments.ReputationMath.address,
-    'contracts/utils/ENSOwnership.sol:ENSOwnership': deployments.ENSOwnership.address,
+    [FQNS.UriUtils]: deployments.UriUtils.address,
+    [FQNS.TransferUtils]: deployments.TransferUtils.address,
+    [FQNS.BondMath]: deployments.BondMath.address,
+    [FQNS.ReputationMath]: deployments.ReputationMath.address,
+    [FQNS.ENSOwnership]: deployments.ENSOwnership.address,
   };
 
   const managerArgs = [
-    constructorArgsConfig.agiTokenAddress,
-    constructorArgsConfig.baseIpfsUrl,
-    constructorArgsConfig.ensConfig,
-    constructorArgsConfig.rootNodes,
-    constructorArgsConfig.merkleRoots,
+    constructorArgs.agiTokenAddress,
+    constructorArgs.baseIpfsUrl,
+    constructorArgs.ensConfig,
+    constructorArgs.rootNodes,
+    constructorArgs.merkleRoots,
   ];
 
-  const agiJobManager = await deployContract('AGIJobManager', {
-    libraries: linkedLibraries,
-    args: managerArgs,
-  });
-  deployments.AGIJobManager = agiJobManager;
+  const managerDeployment = await deployContract('AGIJobManager', managerArgs, { libraries: linkedLibraries });
+  deployments.AGIJobManager = managerDeployment;
+  console.log(`[deployed] AGIJobManager ${managerDeployment.address} tx=${managerDeployment.txHash}`);
 
-  const manager = await ethers.getContractAt('AGIJobManager', agiJobManager.address, deployer);
-  const transferTx = await manager.transferOwnership(finalOwner);
-  const transferReceipt = await transferTx.wait();
+  const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
+  let ownershipTransfer = null;
+  if (deployer.address.toLowerCase() !== resolvedFinalOwner.toLowerCase()) {
+    const tx = await manager.transferOwnership(resolvedFinalOwner);
+    const receipt = await tx.wait();
+    ownershipTransfer = { txHash: tx.hash, blockNumber: receipt.blockNumber, executed: true };
+    console.log(`[owner] transferOwnership(${resolvedFinalOwner}) tx=${tx.hash}`);
+  } else {
+    ownershipTransfer = { txHash: null, blockNumber: null, executed: false, reason: 'deployer_is_final_owner' };
+    console.log('[owner] transferOwnership skipped (deployer is final owner).');
+  }
 
-  await verifySequential({
+  for (const libName of LIBRARIES) {
+    await sleep(VERIFY_DELAY_MS);
+    verificationResults[libName] = await verifyWithRetry({ name: libName, record: deployments[libName] });
+  }
+  await sleep(VERIFY_DELAY_MS);
+  verificationResults.AGIJobManager = await verifyWithRetry({
     name: 'AGIJobManager',
-    address: agiJobManager.address,
+    record: managerDeployment,
     constructorArguments: managerArgs,
     libraries: linkedLibraries,
-    verification,
   });
 
-  const configHash = computeConfigHash({ constructorArgs: constructorArgsConfig, libraries: linkedLibraries });
+  const stablePayload = stableObject({
+    constructorArgs,
+    libraries: linkedLibraries,
+    finalOwner: resolvedFinalOwner,
+  });
+  const configHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(stablePayload)));
 
-  const output = {
+  const record = {
     chainId,
     network: network.name,
     deployer: deployer.address,
-    deployedAtBlock: agiJobManager.blockNumber,
+    finalOwner: resolvedFinalOwner,
     contracts: Object.fromEntries(
-      Object.entries(deployments).map(([name, data]) => [name, {
-        address: data.address,
-        txHash: data.txHash,
-        blockNumber: data.blockNumber,
-      }])
+      Object.entries(deployments).map(([name, d]) => [name, { address: d.address, txHash: d.txHash, blockNumber: d.blockNumber }])
     ),
-    constructorArgs: constructorArgsConfig,
+    constructorArgs,
     libraries: linkedLibraries,
-    ownershipTransfer: {
-      finalOwner,
-      txHash: transferTx.hash,
-      blockNumber: transferReceipt.blockNumber,
-    },
-    verification,
+    ownershipTransfer,
+    verification: verificationResults,
+    timestamp: new Date().toISOString(),
     configHash,
   };
 
-  const dir = path.join(__dirname, '..', 'deployments', network.name);
-  fs.mkdirSync(dir, { recursive: true });
-  const filePath = path.join(dir, `deployment.${chainId}.${agiJobManager.blockNumber}.json`);
-  fs.writeFileSync(filePath, `${JSON.stringify(output, null, 2)}\n`, 'utf8');
+  const outDir = path.join(__dirname, '..', 'deployments', network.name);
+  fs.mkdirSync(outDir, { recursive: true });
+  const outFile = path.join(outDir, `deployment.${chainId}.${managerDeployment.blockNumber}.json`);
+  fs.writeFileSync(outFile, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
 
-  console.log('\n=== Deployment Summary ===');
-  console.log(`network: ${network.name} (chainId=${chainId})`);
-  console.log(`deployer: ${deployer.address}`);
-  Object.entries(output.contracts).forEach(([name, c]) => {
-    console.log(`${name}: ${c.address} (tx: ${c.txHash})`);
+  console.log('\n=== DEPLOYMENT RESULT ===');
+  Object.entries(record.contracts).forEach(([name, data]) => {
+    const explorer = explorerBase ? ` ${explorerBase}${data.address}` : '';
+    console.log(`${name}: ${data.address}${explorer}`);
   });
-  console.log(`ownership transfer -> ${finalOwner} (tx: ${transferTx.hash})`);
+  console.log(`receipt: ${outFile}`);
   console.log(`configHash: ${configHash}`);
-  console.log(`receipt: ${filePath}`);
+  console.log('\nManual verify fallback commands:');
+  LIBRARIES.forEach((libName) => {
+    console.log(`npx hardhat verify --network ${network.name} ${record.contracts[libName].address}`);
+  });
+  console.log(`AGIJobManager args JSON: ${JSON.stringify(managerArgs)}`);
 }
 
 main().catch((error) => {
   console.error(error);
-  process.exitCode = 1;
+  process.exit(1);
 });
