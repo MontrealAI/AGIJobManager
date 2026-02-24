@@ -1,4 +1,4 @@
-import { OFFICIAL_DEPLOYMENT } from '@/lib/constants';
+import { OFFICIAL_DEPLOYMENT } from '@/generated/deployment';
 
 function Row({ label, value }: { label: string; value: string | number }) {
   return (
@@ -24,6 +24,7 @@ export default function DeploymentPage() {
           <Row label='Deployment block' value={OFFICIAL_DEPLOYMENT.deploymentBlock} />
           <Row label='Deployer' value={OFFICIAL_DEPLOYMENT.deployer} />
           <Row label='Final owner' value={OFFICIAL_DEPLOYMENT.finalOwner} />
+          <Row label='Release URL' value={OFFICIAL_DEPLOYMENT.releaseUrl} />
           {Object.entries(OFFICIAL_DEPLOYMENT.addresses).map(([name, address]) => (
             <Row key={name} label={name} value={address} />
           ))}
