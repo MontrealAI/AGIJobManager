@@ -18,23 +18,27 @@ const html = fs.readFileSync(indexPath, 'utf8');
 
 function parseTagAttributes(tagText) {
   const attrs = new Map();
-  const attrRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
-  for (const match of tagText.matchAll(attrRegex)) {
+
+  const valuedAttrRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]*))/g;
+  for (const match of tagText.matchAll(valuedAttrRegex)) {
     const key = match[1].toLowerCase();
     const value = match[2] ?? match[3] ?? match[4] ?? '';
     attrs.set(key, value);
   }
+
+  const valuelessAttrRegex = /\s([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?=\s|=|>|\/)/g;
+  for (const match of tagText.matchAll(valuelessAttrRegex)) {
+    const key = match[1].toLowerCase();
+    if (!attrs.has(key)) attrs.set(key, '');
+  }
+
   return attrs;
 }
 
 const scriptSrcMatches = [];
 for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
-  const tagText = match[0];
-  const attrs = parseTagAttributes(tagText);
-  const hasValuedSrc = attrs.has('src');
-  const hasValuelessSrc = /\ssrc\b(?:\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s\"'=<>`]*)?)?(?=\s|>|\/)/i.test(tagText);
-
-  if (hasValuedSrc || hasValuelessSrc) {
+  const attrs = parseTagAttributes(match[0]);
+  if (attrs.has('src')) {
     const src = attrs.get('src') ?? '';
     scriptSrcMatches.push(src);
   }
