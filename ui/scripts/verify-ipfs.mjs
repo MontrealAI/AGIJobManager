@@ -32,7 +32,7 @@ for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
   const tagText = match[0];
   const attrs = parseTagAttributes(tagText);
   const hasValuedSrc = attrs.has('src');
-  const hasValuelessSrc = /\ssrc\b(?=\s|>|\/)/i.test(tagText);
+  const hasValuelessSrc = /\ssrc\b(?:\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s\"'=<>`]*)?)?(?=\s|>|\/)/i.test(tagText);
 
   if (hasValuedSrc || hasValuelessSrc) {
     const src = attrs.get('src') ?? '';
