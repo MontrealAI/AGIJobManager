@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run build:ipfs",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -21,7 +21,10 @@
     "check:no-binaries": "node scripts/check-no-binaries.mjs",
     "docs:contract": "node scripts/generate-contract-interface.mjs",
     "docs:deployment": "node scripts/sync-deployment.mjs && node scripts/generate-deployment-docs.mjs",
-    "sync:deployment": "node scripts/sync-deployment.mjs"
+    "sync:deployment": "node scripts/sync-deployment.mjs",
+    "test:security": "node scripts/verify-ipfs.mjs",
+    "build:ipfs": "node scripts/build-ipfs.mjs",
+    "verify:ipfs": "node scripts/verify-ipfs.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",
