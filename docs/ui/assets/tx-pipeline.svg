@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 220" role="img" aria-labelledby="title desc">
+  <title id="title">Simulation-first transaction pipeline</title>
+  <desc id="desc">Prepare, simulate, sign, pending, confirmed with failure decode feedback loop.</desc>
+  <rect width="980" height="220" fill="#13001E" rx="16"/>
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="14" fill="#E9DAFF">
+    <text x="20" y="28">AGIJobManager Sovereign Ops Console · simulation-first write pipeline</text>
+  </g>
+  <g>
+    <rect x="20" y="60" width="160" height="80" rx="10" fill="#1F0737" stroke="#7A3FF2"/>
+    <text x="40" y="95" fill="#E7E7EA" font-family="system-ui" font-size="14">1. Prepare</text>
+    <text x="40" y="114" fill="#A9A0B4" font-family="system-ui" font-size="12">Role checks + inputs</text>
+
+    <rect x="210" y="60" width="160" height="80" rx="10" fill="#1F0737" stroke="#7A3FF2"/>
+    <text x="232" y="95" fill="#E7E7EA" font-family="system-ui" font-size="14">2. Simulate</text>
+    <text x="232" y="114" fill="#A9A0B4" font-family="system-ui" font-size="12">decode custom errors</text>
+
+    <rect x="400" y="60" width="160" height="80" rx="10" fill="#1F0737" stroke="#7A3FF2"/>
+    <text x="448" y="95" fill="#E7E7EA" font-family="system-ui" font-size="14">3. Sign</text>
+    <text x="422" y="114" fill="#A9A0B4" font-family="system-ui" font-size="12">wallet confirmation</text>
+
+    <rect x="590" y="60" width="160" height="80" rx="10" fill="#1F0737" stroke="#7A3FF2"/>
+    <text x="627" y="95" fill="#E7E7EA" font-family="system-ui" font-size="14">4. Pending</text>
+    <text x="616" y="114" fill="#A9A0B4" font-family="system-ui" font-size="12">broadcast + explorer</text>
+
+    <rect x="780" y="60" width="180" height="80" rx="10" fill="#1F0737" stroke="#1FAD7A"/>
+    <text x="813" y="95" fill="#E7E7EA" font-family="system-ui" font-size="14">5. Confirmed</text>
+    <text x="805" y="114" fill="#A9A0B4" font-family="system-ui" font-size="12">state revalidated</text>
+
+    <path d="M180 100 H206 M370 100 H396 M560 100 H586 M750 100 H776" stroke="#7A3FF2" stroke-width="2"/>
+    <path d="M560 150 C560 190 370 190 370 150" fill="none" stroke="#E24A5A" stroke-width="2"/>
+    <text x="398" y="198" fill="#E24A5A" font-family="system-ui" font-size="12">on failure: decode error + remediation guidance</text>
+  </g>
+</svg>
