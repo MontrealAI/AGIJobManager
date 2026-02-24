@@ -22,3 +22,8 @@
 | H3 | 24/30 |
 | Body | 16/24 |
 | Small | 13/20 |
+
+
+## Transaction pipeline visual
+
+![Simulation-first transaction pipeline](./assets/tx-pipeline.svg)
