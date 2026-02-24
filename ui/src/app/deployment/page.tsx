@@ -34,12 +34,22 @@ export default function DeploymentPage() {
         <h2 className='text-xl font-semibold'>Verification settings</h2>
         <div className='mt-4 rounded-lg border border-border/70 p-4'>
           <Row label='solc' value={OFFICIAL_DEPLOYMENT.compiler.version} />
-          <Row label='optimizer enabled/runs' value={`true / ${OFFICIAL_DEPLOYMENT.compiler.optimizerRuns}`} />
+          <Row label='optimizer enabled/runs' value={`${OFFICIAL_DEPLOYMENT.compiler.optimizerEnabled} / ${OFFICIAL_DEPLOYMENT.compiler.optimizerRuns}`} />
           <Row label='evmVersion' value={OFFICIAL_DEPLOYMENT.compiler.evmVersion} />
           <Row label='viaIR' value={String(OFFICIAL_DEPLOYMENT.compiler.viaIR)} />
           <Row label='metadata.bytecodeHash' value={OFFICIAL_DEPLOYMENT.compiler.metadataBytecodeHash} />
           <Row label='debug.revertStrings' value={OFFICIAL_DEPLOYMENT.compiler.revertStrings} />
         </div>
+        <a className='mt-4 inline-flex text-sm text-primary underline underline-offset-4' href={OFFICIAL_DEPLOYMENT.releaseUrl} target='_blank' rel='noreferrer'>
+          View official release tag
+        </a>
+      </section>
+
+      <section className='rounded-xl border border-border bg-card p-6'>
+        <h2 className='text-xl font-semibold'>Constructor arguments</h2>
+        <pre className='mt-4 overflow-x-auto rounded-lg border border-border/70 bg-muted/30 p-4 text-xs'>
+          {JSON.stringify(OFFICIAL_DEPLOYMENT.constructorArgs, null, 2)}
+        </pre>
       </section>
     </main>
   );

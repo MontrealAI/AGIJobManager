@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 240" role="img" aria-labelledby="title desc">
+  <title id="title">Sovereign Ops transaction safety pipeline</title>
+  <desc id="desc">Prepare, Simulate, Sign, Pending, Confirmed or Failed transaction stages with security checks.</desc>
+  <rect width="960" height="240" fill="#13001E"/>
+  <g font-family="system-ui, sans-serif" font-size="14" fill="#E9DAFF" text-anchor="middle">
+    <rect x="40" y="80" width="150" height="80" rx="10" fill="#1F0737" stroke="#2F1256"/>
+    <text x="115" y="112">Prepare</text>
+    <text x="115" y="132" font-size="11">role + inputs</text>
+
+    <rect x="220" y="80" width="150" height="80" rx="10" fill="#1F0737" stroke="#2F1256"/>
+    <text x="295" y="112">Simulate</text>
+    <text x="295" y="132" font-size="11">decode errors</text>
+
+    <rect x="400" y="80" width="150" height="80" rx="10" fill="#1F0737" stroke="#2F1256"/>
+    <text x="475" y="112">Sign</text>
+    <text x="475" y="132" font-size="11">wallet consent</text>
+
+    <rect x="580" y="80" width="150" height="80" rx="10" fill="#1F0737" stroke="#2F1256"/>
+    <text x="655" y="112">Pending</text>
+    <text x="655" y="132" font-size="11">hash + explorer</text>
+
+    <rect x="760" y="40" width="160" height="50" rx="10" fill="#1FAD7A"/>
+    <text x="840" y="70" fill="#13001E">Confirmed</text>
+
+    <rect x="760" y="150" width="160" height="50" rx="10" fill="#E24A5A"/>
+    <text x="840" y="180" fill="#13001E">Failed (decoded)</text>
+  </g>
+
+  <g stroke="#7A3FF2" stroke-width="3" fill="none" marker-end="url(#arrow)">
+    <path d="M190 120H220"/>
+    <path d="M370 120H400"/>
+    <path d="M550 120H580"/>
+    <path d="M730 120H760"/>
+    <path d="M840 120V90"/>
+    <path d="M840 120V150"/>
+  </g>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#7A3FF2"/>
+    </marker>
+  </defs>
+</svg>
