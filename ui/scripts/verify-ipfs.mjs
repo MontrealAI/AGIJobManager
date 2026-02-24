@@ -26,9 +26,22 @@ if (stylesheetLinks.length > 0) {
   throw new Error(`External stylesheet references found: ${stylesheetLinks.map((m) => m[1]).join(', ')}`);
 }
 
-const localRefs = [...html.matchAll(/(?:src|href)=["'](\.\/|\/)([^"']+)["']/gi)].map((m) => m[0]);
+const htmlWithoutScriptBlocks = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+
+const assetAttrs = [...htmlWithoutScriptBlocks.matchAll(/<[^>]+\b(?:src|href)=[\"']([^\"']+)[\"'][^>]*>/gi)].map((m) => m[1]);
+const isAllowedInlineOrRemote = (value) => {
+  const lowered = value.toLowerCase();
+  if (lowered.startsWith('#')) return true;
+  if (lowered.startsWith('data:')) return true;
+  if (lowered.startsWith('http://') || lowered.startsWith('https://')) return true;
+  if (lowered.startsWith('ipfs://') || lowered.startsWith('ens://')) return true;
+  if (lowered.startsWith('mailto:') || lowered.startsWith('tel:')) return true;
+  return false;
+};
+
+const localRefs = assetAttrs.filter((value) => !isAllowedInlineOrRemote(value));
 if (localRefs.length > 0) {
-  throw new Error(`Relative asset references found: ${localRefs.slice(0, 5).join(', ')}`);
+  throw new Error(`Relative/local asset references found: ${localRefs.slice(0, 5).join(', ')}`);
 }
 
 if (!html.includes('http-equiv="Content-Security-Policy"')) {
