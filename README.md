@@ -79,6 +79,31 @@ Users should verify owner actions on-chain and assume privileged operations are 
 - **bond**: agent/validator/dispute stake amount.
 - **slashing**: bond haircut for incorrect validator side.
 
+
+## Sovereign Ops Console UI
+
+A security-minded, read-only-first operations console is available under `ui/` with deterministic demo fixtures.
+
+Run locally in demo mode:
+
+```bash
+cd ui
+NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
+```
+
+UI docs:
+- [`docs/ui/README.md`](docs/ui/README.md)
+- [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
+- [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- [`docs/ui/OPS_RUNBOOK.md`](docs/ui/OPS_RUNBOOK.md)
+- [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+
+Text-only visual references:
+- ![Sovereign palette](docs/ui/assets/palette.svg)
+- ![Sovereign UI wireframe](docs/ui/assets/ui-wireframe.svg)
+
+UI CI workflow: [`UI CI`](.github/workflows/ui.yml)
+
 ## Local setup and CI-equivalent entrypoints
 
 ```bash

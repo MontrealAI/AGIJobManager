@@ -1,0 +1,45 @@
+[
+  {
+    "key": "baseline",
+    "title": "Baseline lifecycle coverage",
+    "paused": false,
+    "settlementPaused": false,
+    "degradedRpc": false,
+    "owner": "0x1111111111111111111111111111111111111111",
+    "nextJobId": "6",
+    "completionReviewPeriod": "86400",
+    "disputeReviewPeriod": "172800",
+    "voteQuorum": "2",
+    "requiredValidatorApprovals": "2",
+    "requiredValidatorDisapprovals": "2",
+    "withdrawableAGI": "1000000000000000000",
+    "jobs": [
+      { "id": 0, "employer": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "agent": "0x0000000000000000000000000000000000000000", "payout": "50000000000000000000", "duration": "86400", "assignedAt": "0", "completed": false, "disputed": false, "expired": false, "completionRequested": false, "completionRequestedAt": "0", "disputedAt": "0", "specUri": "https://example.com/spec/0", "completionUri": "" },
+      { "id": 1, "employer": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "agent": "0xcccccccccccccccccccccccccccccccccccccccc", "payout": "75000000000000000000", "duration": "172800", "assignedAt": "1700000000", "completed": false, "disputed": false, "expired": false, "completionRequested": false, "completionRequestedAt": "0", "disputedAt": "0", "specUri": "ipfs://QmAgentTask", "completionUri": "" },
+      { "id": 2, "employer": "0xdddddddddddddddddddddddddddddddddddddddd", "agent": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "payout": "40000000000000000000", "duration": "86400", "assignedAt": "1700000000", "completed": false, "disputed": false, "expired": false, "completionRequested": true, "completionRequestedAt": "1700100000", "disputedAt": "0", "specUri": "ens://jobs/2", "completionUri": "https://example.com/completion/2" },
+      { "id": 3, "employer": "0xffffffffffffffffffffffffffffffffffffffff", "agent": "0x1212121212121212121212121212121212121212", "payout": "99000000000000000000", "duration": "86400", "assignedAt": "1700000000", "completed": false, "disputed": true, "expired": false, "completionRequested": true, "completionRequestedAt": "1700200000", "disputedAt": "1700250000", "specUri": "javascript:alert(1)", "completionUri": "data:text/plain,bad" },
+      { "id": 4, "employer": "0x3434343434343434343434343434343434343434", "agent": "0x4545454545454545454545454545454545454545", "payout": "1000000000000000000000000000", "duration": "1", "assignedAt": "1700000000", "completed": true, "disputed": false, "expired": false, "completionRequested": true, "completionRequestedAt": "1700000200", "disputedAt": "0", "specUri": "http://example.org/huge", "completionUri": "https://example.com/completion/4" },
+      { "id": 5, "employer": "0x5656565656565656565656565656565656565656", "agent": "0x6767676767676767676767676767676767676767", "payout": "1200000000000000000", "duration": "10", "assignedAt": "1700000000", "completed": false, "disputed": false, "expired": true, "completionRequested": false, "completionRequestedAt": "0", "disputedAt": "0", "specUri": "file:///tmp/nope", "completionUri": "" }
+    ]
+  },
+  {
+    "key": "degraded-paused",
+    "title": "Degraded RPC + paused settlement",
+    "paused": true,
+    "settlementPaused": true,
+    "degradedRpc": true,
+    "owner": "0x1111111111111111111111111111111111111111",
+    "nextJobId": "3",
+    "completionReviewPeriod": "400",
+    "disputeReviewPeriod": "800",
+    "voteQuorum": "3",
+    "requiredValidatorApprovals": "2",
+    "requiredValidatorDisapprovals": "2",
+    "withdrawableAGI": "0",
+    "jobs": [
+      { "id": 0, "employer": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "agent": "0x0000000000000000000000000000000000000000", "payout": "1", "duration": "1", "assignedAt": "0", "completed": false, "disputed": false, "expired": false, "completionRequested": false, "completionRequestedAt": "0", "disputedAt": "0", "specUri": "https://example.com/ok", "completionUri": "" },
+      null,
+      { "id": 2, "employer": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "agent": "0xcccccccccccccccccccccccccccccccccccccccc", "payout": "2", "duration": "3", "assignedAt": "1", "completed": false, "disputed": false, "expired": false, "completionRequested": true, "completionRequestedAt": "3", "disputedAt": "0", "specUri": "blob:https://bad", "completionUri": "" }
+    ]
+  }
+]
