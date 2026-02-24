@@ -30,8 +30,10 @@ function parseTagAttributes(tagText) {
 const scriptSrcMatches = [];
 for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
   const attrs = parseTagAttributes(match[0]);
-  const src = attrs.get('src');
-  if (src) scriptSrcMatches.push(src);
+  if (attrs.has('src')) {
+    const src = attrs.get('src') ?? '';
+    scriptSrcMatches.push(src);
+  }
 }
 if (scriptSrcMatches.length > 0) {
   throw new Error(`External script references found: ${scriptSrcMatches.join(', ')}`);
@@ -84,8 +86,17 @@ if (!html.includes('name="referrer"')) {
   throw new Error('Referrer policy meta tag is missing from IPFS artifact.');
 }
 
-if (/\son[a-z]+\s*=\s*["'][^"']*["']/i.test(html)) {
-  throw new Error('Inline event handlers detected in built HTML.');
+const inlineHandlers = [];
+for (const match of htmlWithoutScripts.matchAll(/<[a-zA-Z][^>]*>/g)) {
+  const attrs = parseTagAttributes(match[0]);
+  for (const key of attrs.keys()) {
+    if (key.startsWith('on')) {
+      inlineHandlers.push(key);
+    }
+  }
+}
+if (inlineHandlers.length > 0) {
+  throw new Error(`Inline event handlers detected in built HTML: ${inlineHandlers.slice(0, 5).join(', ')}`);
 }
 
 console.log('IPFS artifact verified: single-file, no external local assets, security metas present.');
