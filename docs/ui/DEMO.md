@@ -16,6 +16,6 @@ NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
 Use `?actor=visitor|employer|agent|validator|moderator|owner` to deterministically show role-gated UI.
 
 ## Adding fixtures
-1. Extend `ui/src/demo/fixtures/scenarios.ts`.
+1. Extend `ui/src/demo/fixtures/scenarios.json` (fixture payload) and keep parsing in `ui/src/demo/fixtures/scenarios.ts`.
 2. Add matching e2e assertion in `ui/e2e/demo.spec.ts`.
 3. Run `npm run test:e2e`.
