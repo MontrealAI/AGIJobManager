@@ -22,6 +22,7 @@ Institutional documentation for operators, integrators, contributors, and audito
 - [DEPLOYMENT_OPERATIONS.md](./DEPLOYMENT_OPERATIONS.md)
 - [Deployment Documentation Index (Hardhat recommended, Truffle legacy)](./DEPLOYMENT/README.md)
 - [Ethereum Mainnet Beta Deployment Record](./DEPLOYMENT/MAINNET_BETA_DEPLOYMENT_RECORD.md)
+- [Official Mainnet Deployment Record](./DEPLOYMENT/MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md)
 - [Owner Mainnet Deployment & Operations Guide](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) (institutional, web-only owner operations)
 - [Ethereum Mainnet Deployment, Verification & Ownership Transfer Guide (Truffle)](./DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)
 - [SCRIPTS_REFERENCE.md](./SCRIPTS_REFERENCE.md)
