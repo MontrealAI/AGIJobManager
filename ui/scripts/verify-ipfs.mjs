@@ -82,11 +82,11 @@ if (localRefs.length > 0) {
   throw new Error(`Relative or unsupported asset references found: ${localRefs.slice(0, 5).join(', ')}`);
 }
 
-if (!/http-equiv=["']content-security-policy["']/i.test(html)) {
+if (!/http-equiv\s*=\s*(?:"content-security-policy"|'content-security-policy'|content-security-policy)(?=\s|>)/i.test(html)) {
   throw new Error('CSP meta tag is missing from IPFS artifact.');
 }
 
-if (!/name=["']referrer["']/i.test(html)) {
+if (!/name\s*=\s*(?:"referrer"|'referrer'|referrer)(?=\s|>)/i.test(html)) {
   throw new Error('Referrer policy meta tag is missing from IPFS artifact.');
 }
 

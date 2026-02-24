@@ -39,6 +39,16 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).not.toThrow();
   });
 
+
+  it('passes when CSP and referrer meta attributes are unquoted', () => {
+    const html = `<!doctype html><html><head>
+<meta http-equiv=Content-Security-Policy content="default-src 'self'; frame-ancestors 'none'">
+<meta name=referrer content=no-referrer>
+</head><body><h1>ok</h1></body></html>`;
+    const run = runVerifierWithHtml(html);
+    expect(run).not.toThrow();
+  });
+
   it('fails when script uses valueless src attribute', () => {
     const run = runVerifierWithHtml(`${secureHtml}<script src></script>`);
     expect(run).toThrow(/External script references found/);
