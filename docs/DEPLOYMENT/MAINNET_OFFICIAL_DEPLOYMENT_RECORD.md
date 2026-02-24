@@ -2,46 +2,68 @@
 
 ## 1) Executive overview
 
-This file is the canonical record for the official `AGIJobManager` deployment on Ethereum Mainnet (`chainId = 1`).
+This document is the canonical record for the official AGIJobManager deployment on Ethereum Mainnet (`chainId = 1`).
 
 What was deployed:
-- 1 primary contract: `AGIJobManager`
-- 5 linked libraries: `UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`
+- One primary contract: `AGIJobManager`
+- Five linked Solidity libraries: `UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, and `ENSOwnership`
 
-Why there are 6 contracts:
-- Solidity external libraries are deployed separately, then linked into the final `AGIJobManager` bytecode.
-- This keeps logic modular and supports deterministic verification.
+What “official” means in practice:
+- The addresses in this record are the only canonical mainnet deployment addresses for the official MontrealAI/AGIJobManager release.
+- Any different address should be treated as non-official unless this record is superseded in-repo.
 
-**Prominent intended-use statement: this system is intended for AI agents exclusively. Humans act as owners, operators, and supervisors.**
+**Intended-use statement (prominent): this system is intended for AI agents exclusively. Humans are owners, operators, and supervisors.**
 
-Legal notice: Terms are embedded in [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol). This document is an operational deployment record only.
+Legal notice pointer:
+- Terms are embedded in the source header of [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
+- This record is an operations and audit document. It does not replace those Terms.
 
-## 2) Quick links
+## 2) What you can trust (anti-phishing)
 
-Etherscan code links (all 6 contracts, one line): [UriUtils](https://etherscan.io/address/0x2c6359D42173aaC73Ea053b37c411f7Da44d4706#code) | [TransferUtils](https://etherscan.io/address/0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f#code) | [BondMath](https://etherscan.io/address/0x0c2a50a9C1db998707662db2A13B93175c3E7394#code) | [ReputationMath](https://etherscan.io/address/0x4F64e44a3693489289B1F20D55CF56130fE66C0b#code) | [ENSOwnership](https://etherscan.io/address/0x6852a13650F5c90342663c9fF7555f97F62515c8#code) | [AGIJobManager](https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code)
+These are the only official Ethereum Mainnet addresses for this release.
 
-Token context: [AGIALPHA ERC-20](https://etherscan.io/address/0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa)
+How to detect impostors quickly:
+- Wrong chain: if the page is not Ethereum Mainnet (`chainId = 1`), stop.
+- Wrong address: if any contract address differs from this record, stop.
+- Proxy mismatch: this deployment is not documented as a proxy deployment. If a proxy pattern appears where this record expects a direct verified contract, investigate before taking action.
 
-## 3) Contract registry table
+Why library contracts exist:
+- Solidity libraries were deployed separately and linked into `AGIJobManager` at compile/link time.
+- They are support components. End users and owners normally interact with `AGIJobManager`, not the library contracts directly.
 
-Network: Ethereum Mainnet (`chainId = 1`)
+## 3) Quick links
 
-Deployer:
+- UriUtils: https://etherscan.io/address/0x2c6359D42173aaC73Ea053b37c411f7Da44d4706#code
+- TransferUtils: https://etherscan.io/address/0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f#code
+- BondMath: https://etherscan.io/address/0x0c2a50a9C1db998707662db2A13B93175c3E7394#code
+- ReputationMath: https://etherscan.io/address/0x4F64e44a3693489289B1F20D55CF56130fE66C0b#code
+- ENSOwnership: https://etherscan.io/address/0x6852a13650F5c90342663c9fF7555f97F62515c8#code
+- AGIJobManager: https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code
+- AGIALPHA token context: https://etherscan.io/address/0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa
+
+## 4) Contract registry table
+
+Network:
+- Ethereum Mainnet (`chainId = 1`)
+
+Deployer (EOA):
 - `0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E`
+- ENS label (informational): `deployer.agi.eth`
 
-Final owner (after transferOwnership):
-- `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` (`club.agi.eth`)
+Final owner (after `transferOwnership`):
+- `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201`
+- ENS label (informational): `club.agi.eth`
 
-| Contract | Address | Deployment tx hash | Etherscan link | Purpose |
-|---|---|---|---|---|
-| UriUtils | `0x2c6359D42173aaC73Ea053b37c411f7Da44d4706` | [`0xce685b91e190938d7508af861c48d9482cc8d8e53530e42ec143940f838ac4a1`](https://etherscan.io/tx/0xce685b91e190938d7508af861c48d9482cc8d8e53530e42ec143940f838ac4a1) | https://etherscan.io/address/0x2c6359D42173aaC73Ea053b37c411f7Da44d4706#code | URI validation and URI composition helper logic linked into AGIJobManager. |
-| TransferUtils | `0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f` | [`0x4847d58a96191427c5cb2b89622fee4882f03bad4e85eff5fc1a55fc5c7fe4c3`](https://etherscan.io/tx/0x4847d58a96191427c5cb2b89622fee4882f03bad4e85eff5fc1a55fc5c7fe4c3) | https://etherscan.io/address/0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f#code | Safe ERC-20 transfer wrapper logic linked into AGIJobManager. |
-| BondMath | `0x0c2a50a9C1db998707662db2A13B93175c3E7394` | [`0xbc42f0859c75fd06b62a9aa69a809b5632114b4c3711e9a45efb3f585ca02672`](https://etherscan.io/tx/0xbc42f0859c75fd06b62a9aa69a809b5632114b4c3711e9a45efb3f585ca02672) | https://etherscan.io/address/0x0c2a50a9C1db998707662db2A13B93175c3E7394#code | Bond and escrow math logic linked into AGIJobManager. |
-| ReputationMath | `0x4F64e44a3693489289B1F20D55CF56130fE66C0b` | [`0x4ee07dcfdf8d8e4d163a9eb4c7d4f23ebd1b732516809c0c204e3f04ece6c426`](https://etherscan.io/tx/0x4ee07dcfdf8d8e4d163a9eb4c7d4f23ebd1b732516809c0c204e3f04ece6c426) | https://etherscan.io/address/0x4F64e44a3693489289B1F20D55CF56130fE66C0b#code | Reputation scoring math logic linked into AGIJobManager. |
-| ENSOwnership | `0x6852a13650F5c90342663c9fF7555f97F62515c8` | [`0x0755aacc84ed3cbbf5f1177a1e7dd23abd358ba292d7b61090788efe2f164b44`](https://etherscan.io/tx/0x0755aacc84ed3cbbf5f1177a1e7dd23abd358ba292d7b61090788efe2f164b44) | https://etherscan.io/address/0x6852a13650F5c90342663c9fF7555f97F62515c8#code | ENS ownership check logic linked into AGIJobManager. |
-| AGIJobManager | `0xB3AAeb69b630f0299791679c063d68d6687481d1` | [`0x5b99dc902229561d52b0f0daa7207372f12866befbdbe03a701a07c7e2690995`](https://etherscan.io/tx/0x5b99dc902229561d52b0f0daa7207372f12866befbdbe03a701a07c7e2690995) | https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code | Primary contract for job escrow, assignment, validation, dispute handling, and settlement. |
+| Contract | Address (checksummed) | ENS label (if applicable) | Deployment tx hash | Etherscan #code link | Purpose | Do I ever call this? |
+|---|---|---|---|---|---|---|
+| UriUtils | `0x2c6359D42173aaC73Ea053b37c411f7Da44d4706` | N/A | [`0xce685b91e190938d7508af861c48d9482cc8d8e53530e42ec143940f838ac4a1`](https://etherscan.io/tx/0xce685b91e190938d7508af861c48d9482cc8d8e53530e42ec143940f838ac4a1) | https://etherscan.io/address/0x2c6359D42173aaC73Ea053b37c411f7Da44d4706#code | URI helper logic linked into AGIJobManager. | No |
+| TransferUtils | `0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f` | N/A | [`0x4847d58a96191427c5cb2b89622fee4882f03bad4e85eff5fc1a55fc5c7fe4c3`](https://etherscan.io/tx/0x4847d58a96191427c5cb2b89622fee4882f03bad4e85eff5fc1a55fc5c7fe4c3) | https://etherscan.io/address/0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f#code | Safe transfer helper logic linked into AGIJobManager. | No |
+| BondMath | `0x0c2a50a9C1db998707662db2A13B93175c3E7394` | N/A | [`0xbc42f0859c75fd06b62a9aa69a809b5632114b4c3711e9a45efb3f585ca02672`](https://etherscan.io/tx/0xbc42f0859c75fd06b62a9aa69a809b5632114b4c3711e9a45efb3f585ca02672) | https://etherscan.io/address/0x0c2a50a9C1db998707662db2A13B93175c3E7394#code | Bond and escrow arithmetic linked into AGIJobManager. | No |
+| ReputationMath | `0x4F64e44a3693489289B1F20D55CF56130fE66C0b` | N/A | [`0x4ee07dcfdf8d8e4d163a9eb4c7d4f23ebd1b732516809c0c204e3f04ece6c426`](https://etherscan.io/tx/0x4ee07dcfdf8d8e4d163a9eb4c7d4f23ebd1b732516809c0c204e3f04ece6c426) | https://etherscan.io/address/0x4F64e44a3693489289B1F20D55CF56130fE66C0b#code | Reputation arithmetic linked into AGIJobManager. | No |
+| ENSOwnership | `0x6852a13650F5c90342663c9fF7555f97F62515c8` | N/A | [`0x0755aacc84ed3cbbf5f1177a1e7dd23abd358ba292d7b61090788efe2f164b44`](https://etherscan.io/tx/0x0755aacc84ed3cbbf5f1177a1e7dd23abd358ba292d7b61090788efe2f164b44) | https://etherscan.io/address/0x6852a13650F5c90342663c9fF7555f97F62515c8#code | ENS ownership checks linked into AGIJobManager. | No |
+| AGIJobManager | `0xB3AAeb69b630f0299791679c063d68d6687481d1` | N/A | [`0x5b99dc902229561d52b0f0daa7207372f12866befbdbe03a701a07c7e2690995`](https://etherscan.io/tx/0x5b99dc902229561d52b0f0daa7207372f12866befbdbe03a701a07c7e2690995) | https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code | Primary job escrow, validation, dispute, and settlement contract. | Yes |
 
-## 4) Build + verification settings (verbatim)
+## 5) Build + verification settings (verbatim)
 
 - solc 0.8.23
 - optimizer enabled, runs = 40
@@ -50,11 +72,11 @@ Final owner (after transferOwnership):
 - settings.metadata.bytecodeHash = "none"
 - settings.debug.revertStrings = "strip"
 
-Why matching settings matters:
-- Etherscan recompiles contract bytecode during verification.
-- Any mismatch can cause verification failure even when source files are correct.
+Why this matters:
+- Etherscan verifies by recompiling bytecode.
+- If any setting differs, Etherscan can show “not verified” or a bytecode mismatch even with correct source files.
 
-## 5) AGIJobManager constructor arguments (verbatim)
+## 6) AGIJobManager constructor arguments (verbatim)
 
 - agiTokenAddress: 0xa61a3b3a130a9c20768eebf97e21515a6046a1fa
 - baseIpfsUrl: https://ipfs.io/ipfs/
@@ -70,113 +92,133 @@ Why matching settings matters:
   0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b
 
 Plain-language meaning:
-- `agiTokenAddress`: payout and bond token reference for AGIJobManager. Token context is AGIALPHA ERC-20 at `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`.
-- `baseIpfsUrl`: base URL for IPFS-hosted metadata references.
-- `ensConfig`: ENS Registry and ENS Name Wrapper addresses used by identity checks.
-- `rootNodes`: ENS root namespace anchors used for namespace policy.
-- `merkleRoots`: allowlist Merkle roots used by identity gating logic.
+- `agiTokenAddress`: sets the AGIALPHA ERC-20 token used for escrow, payouts, and bonds.
+- `baseIpfsUrl`: base HTTP gateway prefix used to build and resolve IPFS metadata links.
+- `ensConfig`: ENS core contract addresses used for ENS-based ownership checks.
+- `rootNodes`: approved ENS root namespaces checked at identity-gating boundaries.
+- `merkleRoots`: allowlist roots used for Merkle-proof based access checks.
 
-## 6) Ownership / control state (verifiable on Etherscan)
+Token context (constructor argument unchanged):
+- AGIALPHA ERC-20: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`
 
-Expected state:
-- `owner()` must return `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201`.
-- Ownership transfer transaction: `0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436`
+## 7) Ownership and roles (verifiable on Etherscan)
 
-Owner vs deployer:
-- Deployer broadcasted deployment transactions.
-- Owner controls owner-only functions after `transferOwnership(finalOwner)`.
+Role split:
+- Deployer (`deployer.agi.eth`): `0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E` (broadcast deployment transactions)
+- Final owner (`club.agi.eth`): `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` (controls owner-only functions)
 
-What to do:
-1. Open `https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#readContract`.
-2. Call `owner()`.
-3. Open transfer tx `https://etherscan.io/tx/0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436`.
+Single post-deploy ownership transfer:
+- `transferOwnership(finalOwner)` tx: `0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436`
 
-What you should see:
-- `owner()` equals `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201`.
-- Transfer transaction exists and sets the final owner.
+What you do / What you should see:
 
-## 7) Verification checklist (Etherscan, non-technical)
+1) Verify owner control
+- What you do: Open `https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#readContract` and call `owner()`.
+- What you should see: `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201`.
 
-1. Confirm this is a contract page (not a token-only tracker page and not a proxy indirection).
-   - What to do: Open the AGIJobManager address page and click `Contract`.
-   - What you should see: contract tabs with source and ABI.
-2. Confirm source verification status.
-   - What to do: On `Contract` tab, read status.
-   - What you should see: `Contract Source Code Verified`.
-3. Confirm constructor arguments.
-   - What to do: Open constructor arguments / verification metadata.
-   - What you should see: exact values from Section 5.
-4. Confirm linked library addresses.
-   - What to do: Review linked libraries in AGIJobManager verification details.
-   - What you should see:
-     - `contracts/utils/UriUtils.sol:UriUtils` -> `0x2c6359D42173aaC73Ea053b37c411f7Da44d4706`
-     - `contracts/utils/TransferUtils.sol:TransferUtils` -> `0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f`
-     - `contracts/utils/BondMath.sol:BondMath` -> `0x0c2a50a9C1db998707662db2A13B93175c3E7394`
-     - `contracts/utils/ReputationMath.sol:ReputationMath` -> `0x4F64e44a3693489289B1F20D55CF56130fE66C0b`
-     - `contracts/utils/ENSOwnership.sol:ENSOwnership` -> `0x6852a13650F5c90342663c9fF7555f97F62515c8`
-5. Confirm ownership and token references.
-   - What to do: In `Read Contract`, call `owner()` and `agiToken()`.
-   - What you should see:
-     - `owner() = 0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201`
-     - `agiToken() = 0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`
+2) Verify token binding
+- What you do: On the same `Read Contract` page, call `agiToken()`.
+- What you should see: `0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa`.
 
-## 8) Operational pointers
+3) Verify ownership transfer event
+- What you do: Open `https://etherscan.io/tx/0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436`.
+- What you should see: a successful ownership transfer to the final owner address above.
 
-What deployment did not do:
-- No post-deploy parameter mutations are part of the deployment record, except ownership transfer.
-- Ongoing configuration and actions are owner/operator tasks.
+Note:
+- ENS labels are helpful for humans.
+- Addresses are authoritative for security and operations.
 
-Where to operate safely:
-- Owner/operator runbook: [`docs/OWNER_RUNBOOK.md`](../OWNER_RUNBOOK.md)
-- Operations runbook: [`docs/OPERATIONS_RUNBOOK.md`](../OPERATIONS_RUNBOOK.md)
-- Etherscan guide: [`docs/ETHERSCAN_GUIDE.md`](../ETHERSCAN_GUIDE.md)
+## 8) Etherscan verification checklist (step-by-step)
 
-Day-to-day owner/operator actions are expected via Etherscan `Write Contract`, following the runbooks.
+1) Confirm network
+- What you do: Check network header and URL.
+- What you should see: Ethereum Mainnet (`chainId = 1`).
 
-## 9) Architecture diagram (Mermaid, text-only)
+2) Confirm direct contract page
+- What you do: Open AGIJobManager address and select `Contract` tab.
+- What you should see: Contract page, not a token-only page, and no unexpected proxy indirection pattern.
+
+3) Confirm verified source
+- What you do: Read verification status in the `Contract` tab.
+- What you should see: `Contract Source Code Verified`.
+
+4) Confirm constructor arguments
+- What you do: Inspect constructor arguments in verification details.
+- What you should see: exact match with Section 6 values.
+
+5) Confirm linked libraries
+- What you do: Inspect linked libraries for AGIJobManager in verification details.
+- What you should see these exact mappings:
+  - `contracts/utils/UriUtils.sol:UriUtils` -> `0x2c6359D42173aaC73Ea053b37c411f7Da44d4706`
+  - `contracts/utils/TransferUtils.sol:TransferUtils` -> `0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f`
+  - `contracts/utils/BondMath.sol:BondMath` -> `0x0c2a50a9C1db998707662db2A13B93175c3E7394`
+  - `contracts/utils/ReputationMath.sol:ReputationMath` -> `0x4F64e44a3693489289B1F20D55CF56130fE66C0b`
+  - `contracts/utils/ENSOwnership.sol:ENSOwnership` -> `0x6852a13650F5c90342663c9fF7555f97F62515c8`
+
+6) Confirm creator transactions
+- What you do: Open each contract page and inspect creator transaction.
+- What you should see:
+  - UriUtils: `0xce685b91e190938d7508af861c48d9482cc8d8e53530e42ec143940f838ac4a1`
+  - TransferUtils: `0x4847d58a96191427c5cb2b89622fee4882f03bad4e85eff5fc1a55fc5c7fe4c3`
+  - BondMath: `0xbc42f0859c75fd06b62a9aa69a809b5632114b4c3711e9a45efb3f585ca02672`
+  - ReputationMath: `0x4ee07dcfdf8d8e4d163a9eb4c7d4f23ebd1b732516809c0c204e3f04ece6c426`
+  - ENSOwnership: `0x0755aacc84ed3cbbf5f1177a1e7dd23abd358ba292d7b61090788efe2f164b44`
+  - AGIJobManager: `0x5b99dc902229561d52b0f0daa7207372f12866befbdbe03a701a07c7e2690995`
+
+7) Confirm ownership finalization
+- What you do: Open ownership transfer tx and call `owner()` in `Read Contract`.
+- What you should see: transfer tx exists (`0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436`) and `owner()` equals final owner.
+
+## 9) Architecture diagram (text-only Mermaid)
 
 ```mermaid
-flowchart TD
-    Owner[Humans: Owner/Operator/Supervisor]
-    Agent[Autonomous AI Agents]
-    AJM[AGIJobManager\n0xB3AA...81d1]
+flowchart LR
+    Owner[Human owners/operators/supervisors]
+    Agents[Autonomous AI agents]
 
-    subgraph Libs[Linked Libraries]
-      U[UriUtils\n0x2c63...4706]
-      T[TransferUtils\n0x1e26...970f]
-      B[BondMath\n0x0c2a...7394]
-      R[ReputationMath\n0x4F64...6C0b]
-      E[ENSOwnership\n0x6852...15c8]
+    AJM[AGIJobManager\n0xB3AAeb69b630f0299791679c063d68d6687481d1]
+
+    subgraph LinkedLibraries[Linked libraries]
+      U[UriUtils\n0x2c6359D42173aaC73Ea053b37c411f7Da44d4706]
+      T[TransferUtils\n0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f]
+      B[BondMath\n0x0c2a50a9C1db998707662db2A13B93175c3E7394]
+      R[ReputationMath\n0x4F64e44a3693489289B1F20D55CF56130fE66C0b]
+      E[ENSOwnership\n0x6852a13650F5c90342663c9fF7555f97F62515c8]
     end
 
-    Token[AGIALPHA ERC-20\n0xA61a...a1Fa]
+    Token[AGIALPHA ERC-20\n0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa]
     ENSReg[ENS Registry\n0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e]
     ENSWrap[ENS Name Wrapper\n0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401]
 
-    Agent --> AJM
+    Agents --> AJM
     Owner --> AJM
-    AJM --> U
-    AJM --> T
-    AJM --> B
-    AJM --> R
-    AJM --> E
+
+    AJM --- U
+    AJM --- T
+    AJM --- B
+    AJM --- R
+    AJM --- E
+
     AJM --> Token
     AJM --> ENSReg
     AJM --> ENSWrap
 ```
 
-## 10) Long-term recordkeeping best practices
+## 10) Long-term recordkeeping and reproducibility
 
-Official, committed deployment artifacts (repo-relative paths):
+Committed official artifacts (repo-relative paths only):
 - `hardhat/deployments/mainnet/deployment.1.24522684.json`
 - `hardhat/deployments/mainnet/solc-input.json`
 - `hardhat/deployments/mainnet/verify-targets.json`
 
-Why these files matter:
-- `deployment.1.24522684.json`: auditable receipt of addresses, tx hashes, constructor args, libraries, and ownership transfer.
-- `solc-input.json`: Solidity Standard JSON Input for future re-verification, including manual Etherscan workflows.
-- `verify-targets.json`: deterministic mapping from contract names/FQNs to mainnet addresses.
+Why these files are committed:
+- `deployment.1.24522684.json` preserves addresses, tx hashes, constructor args, linked libraries, and ownership transfer as an auditable receipt.
+- `solc-input.json` preserves full Solidity Standard JSON Input for manual Etherscan verification and bytecode reproduction.
+- `verify-targets.json` preserves deterministic name/FQN-to-address mapping for verification tooling and future audits.
 
-These files make independent re-verification possible years later.
+Operational benefit:
+- If plugin-based verification tooling breaks in the future, operators can still verify manually on Etherscan using `solc-input.json` and the recorded library/constructor values.
 
-Do not rely on private local machine paths. Keep records in repository-relative form only.
+Recordkeeping rule:
+- Do not rely on private local absolute paths.
+- Use repository-relative paths in all long-lived operational and audit documentation.
