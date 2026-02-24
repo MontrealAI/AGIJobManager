@@ -16,7 +16,8 @@ const requiredDocs = [
   'DEMO.md',
   'TESTING.md',
   'VERSIONS.md',
-  'CONTRACT_INTERFACE.md'
+  'CONTRACT_INTERFACE.md',
+  'DEPLOYMENT_MAINNET.md'
 ];
 
 for (const file of requiredDocs) {
@@ -92,6 +93,20 @@ if (normalize(contractBefore) !== normalize(contractAfter)) {
   throw new Error('docs/ui/CONTRACT_INTERFACE.md is stale compared with ui/src/abis/agiJobManager.ts. Run npm run docs:contract and commit the result.');
 }
 
+
+const deploymentPath = path.join(docsRoot, 'DEPLOYMENT_MAINNET.md');
+const deploymentBefore = fs.readFileSync(deploymentPath, 'utf8');
+execSync('node scripts/generate-deployment-docs.mjs', { cwd: process.cwd(), stdio: 'pipe' });
+const deploymentAfter = fs.readFileSync(deploymentPath, 'utf8');
+if (normalize(deploymentBefore) !== normalize(deploymentAfter)) {
+  throw new Error('docs/ui/DEPLOYMENT_MAINNET.md is stale compared with hardhat/deployments/mainnet artifacts. Run npm run docs:deployment and commit the result.');
+}
+
+for (const section of ['## Official release', '## Constructor arguments', '## Verification']) {
+  if (!deploymentAfter.includes(section)) {
+    throw new Error(`DEPLOYMENT_MAINNET.md missing section: ${section}`);
+  }
+}
 for (const section of ['## Functions used by UI', '## Events used by UI', '## Custom errors decoded by UI']) {
   if (!contractAfter.includes(section)) {
     throw new Error(`CONTRACT_INTERFACE.md missing section: ${section}`);
