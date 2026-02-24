@@ -22,13 +22,10 @@ Legal notice: Terms are embedded in the header of [`contracts/AGIJobManager.sol`
 
 ## 3) Quick links
 
-- UriUtils: https://etherscan.io/address/0x2c6359D42173aaC73Ea053b37c411f7Da44d4706#code
-- TransferUtils: https://etherscan.io/address/0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f#code
-- BondMath: https://etherscan.io/address/0x0c2a50a9C1db998707662db2A13B93175c3E7394#code
-- ReputationMath: https://etherscan.io/address/0x4F64e44a3693489289B1F20D55CF56130fE66C0b#code
-- ENSOwnership: https://etherscan.io/address/0x6852a13650F5c90342663c9fF7555f97F62515c8#code
-- AGIJobManager: https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code
-- AGIALPHA token (context): https://etherscan.io/address/0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa
+Code pages (one-line):
+`UriUtils` https://etherscan.io/address/0x2c6359D42173aaC73Ea053b37c411f7Da44d4706#code | `TransferUtils` https://etherscan.io/address/0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f#code | `BondMath` https://etherscan.io/address/0x0c2a50a9C1db998707662db2A13B93175c3E7394#code | `ReputationMath` https://etherscan.io/address/0x4F64e44a3693489289B1F20D55CF56130fE66C0b#code | `ENSOwnership` https://etherscan.io/address/0x6852a13650F5c90342663c9fF7555f97F62515c8#code | `AGIJobManager` https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code
+
+AGIALPHA token (context): https://etherscan.io/address/0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa
 
 ## 4) Contract registry table
 
@@ -126,7 +123,30 @@ ENS labels help human readability. Addresses are authoritative.
    - What you do: Open ownership transfer tx [`0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436`](https://etherscan.io/tx/0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436), then call `owner()` in `Read Contract`.
    - What you should see: transfer exists and `owner()` equals `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201`.
 
-## 9) Architecture diagram (text-only; Mermaid)
+## 9) Operational pointers
+
+What deployment did:
+
+- Deployed five linked libraries.
+- Deployed `AGIJobManager` with the constructor arguments listed in this record.
+- Verified all six contracts on Etherscan.
+- Transferred ownership from deployer to final owner.
+
+What deployment did **not** do:
+
+- No post-deploy owner parameter edits.
+- No post-deploy policy toggles.
+- No production day-to-day operational actions.
+
+Owner/operator runbooks:
+
+- Main owner operations: [`docs/OWNER_RUNBOOK.md`](../OWNER_RUNBOOK.md)
+- Mainnet owner deployment and operations guide: [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](./OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
+- Etherscan interaction guide: [`docs/ETHERSCAN_GUIDE.md`](../ETHERSCAN_GUIDE.md)
+
+Day-to-day configuration and actions are performed on Etherscan in `Write Contract`, following the runbooks above.
+
+## 10) Architecture diagram (text-only; Mermaid)
 
 ```mermaid
 flowchart TD
@@ -151,7 +171,7 @@ flowchart TD
     ENSWrapper[ENS Name Wrapper\n0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401] --> AJM
 ```
 
-## 10) Long-term recordkeeping and reproducibility
+## 11) Long-term recordkeeping and reproducibility
 
 Committed, repo-relative deployment artifacts:
 
