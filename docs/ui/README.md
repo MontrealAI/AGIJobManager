@@ -13,6 +13,7 @@ Institutional-grade Next.js dApp + operations console with **read-only first**, 
 - [Testing & CI](./TESTING.md)
 - [Versions](./VERSIONS.md)
 - [Contract Interface](./CONTRACT_INTERFACE.md)
+- [Mainnet Deployment Registry](./DEPLOYMENT_MAINNET.md)
 
 ## Run locally
 ```bash
