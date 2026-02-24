@@ -57,29 +57,31 @@ if (stylesheetLinks.length > 0) {
 }
 
 const htmlWithoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-const attributeRefs = [...htmlWithoutScripts.matchAll(/<(?:a|img|script|link|source|iframe|audio|video|track|embed|object)[^>]+(?:src|href)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))[^>]*>/gi)]
-  .map((m) => m[1] ?? m[2] ?? m[3] ?? '');
+const refMatches = [...htmlWithoutScripts.matchAll(/<(a|img|script|link|source|iframe|audio|video|track|embed|object)\b[^>]*(src|href)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))[^>]*>/gi)]
+  .map((m) => ({ tag: m[1].toLowerCase(), attr: m[2].toLowerCase(), url: (m[3] ?? m[4] ?? m[5] ?? '').trim() }));
 
-const isAllowedUrl = (url) => {
+const isAllowedReference = ({ tag, attr, url }) => {
   const lower = url.toLowerCase();
-  if (
-    lower.startsWith('#') ||
-    lower.startsWith('data:') ||
-    lower.startsWith('http://') ||
-    lower.startsWith('https://') ||
-    lower.startsWith('ipfs://') ||
-    lower.startsWith('ens://') ||
-    lower.startsWith('mailto:') ||
-    lower.startsWith('tel:')
-  ) {
-    return true;
+
+  if (tag === 'a' && attr === 'href') {
+    return (
+      lower.startsWith('#') ||
+      lower.startsWith('http://') ||
+      lower.startsWith('https://') ||
+      lower.startsWith('ipfs://') ||
+      lower.startsWith('ens://') ||
+      lower.startsWith('mailto:') ||
+      lower.startsWith('tel:')
+    );
   }
-  return false;
+
+  return lower.startsWith('data:');
 };
 
-const localRefs = attributeRefs.filter((url) => !isAllowedUrl(url));
-if (localRefs.length > 0) {
-  throw new Error(`Relative or unsupported asset references found: ${localRefs.slice(0, 5).join(', ')}`);
+const disallowedRefs = refMatches.filter((ref) => !isAllowedReference(ref));
+if (disallowedRefs.length > 0) {
+  const preview = disallowedRefs.slice(0, 5).map((ref) => `${ref.tag}[${ref.attr}]=${ref.url || '(empty)'}`);
+  throw new Error(`Relative, external, or unsupported asset references found: ${preview.join(', ')}`);
 }
 
 const metaTags = [...htmlWithoutScripts.matchAll(/<meta\b[^>]*>/gi)].map((m) => parseTagAttributes(m[0]));
