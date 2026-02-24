@@ -18,8 +18,11 @@ const html = fs.readFileSync(indexPath, 'utf8');
 
 function parseTagAttributes(tagText) {
   const attrs = new Map();
-  const attrRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
-  for (const match of tagText.matchAll(attrRegex)) {
+  const tagBody = tagText
+    .replace(/^<\s*\/?\s*[^\s>]+/, '')
+    .replace(/\/?>\s*$/, '');
+  const attrRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+  for (const match of tagBody.matchAll(attrRegex)) {
     const key = match[1].toLowerCase();
     const value = match[2] ?? match[3] ?? match[4] ?? '';
     attrs.set(key, value);
