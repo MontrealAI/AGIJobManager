@@ -102,6 +102,7 @@ UI docs:
 Text-only visual references:
 - ![Sovereign palette](docs/ui/assets/palette.svg)
 - ![Sovereign UI wireframe](docs/ui/assets/ui-wireframe.svg)
+- ![Simulation-first transaction pipeline](docs/ui/assets/tx-pipeline.svg)
 
 UI CI workflow: [`UI CI`](.github/workflows/ui.yml)
 
