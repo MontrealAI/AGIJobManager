@@ -97,6 +97,7 @@ UI docs:
 - [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
 - [`docs/ui/OPS_RUNBOOK.md`](docs/ui/OPS_RUNBOOK.md)
 - [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
+- [`docs/ui/DEPLOYMENT_MAINNET.md`](docs/ui/DEPLOYMENT_MAINNET.md)
 
 Text-only visual references:
 - ![Sovereign palette](docs/ui/assets/palette.svg)
