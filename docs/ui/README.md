@@ -14,12 +14,20 @@ Institutional-grade Next.js dApp + operations console with **read-only first**, 
 - [Versions](./VERSIONS.md)
 - [Contract Interface](./CONTRACT_INTERFACE.md)
 - [Mainnet Deployment Registry](./DEPLOYMENT_MAINNET.md)
+- [IPFS Deployment](./IPFS_DEPLOYMENT.md)
 
 ## Run locally
 ```bash
 cd ui
 npm ci
 npm run dev
+```
+
+## Build the single-file IPFS artifact
+```bash
+cd ui
+npm run build:ipfs
+npm run verify:ipfs
 ```
 
 ## Demo mode
