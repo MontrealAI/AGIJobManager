@@ -7,6 +7,7 @@ on:
       - 'docs/ui/**'
       - '.github/workflows/ui.yml'
       - 'README.md'
+      - 'hardhat/deployments/mainnet/**'
 
 jobs:
   ui:
