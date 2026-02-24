@@ -43,7 +43,7 @@ for (const [file, needle] of mustContain) {
   }
 }
 
-for (const asset of ['palette.svg', 'ui-wireframe.svg']) {
+for (const asset of ['palette.svg', 'ui-wireframe.svg', 'tx-pipeline.svg']) {
   const content = fs.readFileSync(path.join(docsRoot, 'assets', asset), 'utf8');
   if (!content.includes('<svg')) {
     throw new Error(`${asset} invalid SVG`);
@@ -93,6 +93,17 @@ if (normalize(contractBefore) !== normalize(contractAfter)) {
   throw new Error('docs/ui/CONTRACT_INTERFACE.md is stale compared with ui/src/abis/agiJobManager.ts. Run npm run docs:contract and commit the result.');
 }
 
+
+const deploymentTsPath = path.join(process.cwd(), 'src', 'generated', 'deployment.ts');
+if (!fs.existsSync(deploymentTsPath)) {
+  throw new Error('ui/src/generated/deployment.ts missing; run npm run sync:deployment.');
+}
+const deploymentTsBefore = fs.readFileSync(deploymentTsPath, 'utf8');
+execSync('node scripts/sync-deployment.mjs', { cwd: process.cwd(), stdio: 'pipe' });
+const deploymentTsAfter = fs.readFileSync(deploymentTsPath, 'utf8');
+if (deploymentTsBefore !== deploymentTsAfter) {
+  throw new Error('ui/src/generated/deployment.ts is stale compared with hardhat/deployments/mainnet artifacts. Run npm run sync:deployment and commit the result.');
+}
 
 const deploymentPath = path.join(docsRoot, 'DEPLOYMENT_MAINNET.md');
 const deploymentBefore = fs.readFileSync(deploymentPath, 'utf8');
