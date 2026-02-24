@@ -19,11 +19,12 @@ npm run typecheck
 npm run test
 npm run test:e2e
 npm run test:a11y
-npm run test:headers
+npm run test:security
 npm run docs:versions
 npm run docs:contract
 npm run docs:check
-npm run build
+npm run build:ipfs
+npm run verify:ipfs
 ```
 
 ## Notes

@@ -17,7 +17,8 @@ const requiredDocs = [
   'TESTING.md',
   'VERSIONS.md',
   'CONTRACT_INTERFACE.md',
-  'DEPLOYMENT_MAINNET.md'
+  'DEPLOYMENT_MAINNET.md',
+  'IPFS_DEPLOYMENT.md'
 ];
 
 for (const file of requiredDocs) {

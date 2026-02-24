@@ -98,6 +98,7 @@ UI docs:
 - [`docs/ui/OPS_RUNBOOK.md`](docs/ui/OPS_RUNBOOK.md)
 - [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
 - [`docs/ui/DEPLOYMENT_MAINNET.md`](docs/ui/DEPLOYMENT_MAINNET.md)
+- [`docs/ui/IPFS_DEPLOYMENT.md`](docs/ui/IPFS_DEPLOYMENT.md)
 
 Text-only visual references:
 - ![Sovereign palette](docs/ui/assets/palette.svg)
