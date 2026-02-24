@@ -11,6 +11,7 @@
 | Security headers | `npm run test:headers` | CSP/headers contract |
 | Docs versions | `npm run docs:versions` | Regenerates pinned dependency report |
 | Docs contract | `npm run docs:contract` | Regenerates ABI interface report |
+| Docs deployment | `npm run docs:deployment` | Regenerates official mainnet deployment registry report |
 | Docs freshness | `npm run docs:check` | Required files, mermaid, assets, generated docs freshness |
 | Build | `npm run build` | Production build health |
 | No binaries | `npm run check:no-binaries` | Blocks forbidden extensions and binary content in added files |
