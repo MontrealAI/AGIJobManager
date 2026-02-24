@@ -137,7 +137,10 @@ Day-to-day owner/operator actions are expected via Etherscan `Write Contract`, f
 
 ```mermaid
 flowchart TD
-    Owner[Humans: Owner/Operator/Supervisor]\n    Agent[Autonomous AI Agents]\n    AJM[AGIJobManager\n0xB3AA...81d1]\n
+    Owner[Humans: Owner/Operator/Supervisor]
+    Agent[Autonomous AI Agents]
+    AJM[AGIJobManager\n0xB3AA...81d1]
+
     subgraph Libs[Linked Libraries]
       U[UriUtils\n0x2c63...4706]
       T[TransferUtils\n0x1e26...970f]
