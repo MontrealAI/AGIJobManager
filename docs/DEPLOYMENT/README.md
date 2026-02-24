@@ -4,6 +4,7 @@
 
 - [Hardhat Deployment & Verification README](../../hardhat/README.md)
 - [Ethereum Mainnet Beta Deployment Record](./MAINNET_BETA_DEPLOYMENT_RECORD.md)
+- [Official Mainnet Deployment Record](./MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md)
 
 ## 2) Truffle (legacy / supported)
 
