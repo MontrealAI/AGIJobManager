@@ -16,25 +16,53 @@ if (entries.length !== 1 || entries[0] !== 'index.html') {
 
 const html = fs.readFileSync(indexPath, 'utf8');
 
-const scriptSrcMatches = [...html.matchAll(/<script[^>]*\ssrc=["']([^"']+)["'][^>]*>/gi)];
-if (scriptSrcMatches.length > 0) {
-  throw new Error(`External script references found: ${scriptSrcMatches.map((m) => m[1]).join(', ')}`);
+const extractAttributes = (tagMarkup) => {
+  const attrs = {};
+  const attrPattern = /([:\w-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'`=<>]+)))?/g;
+  let match;
+  while ((match = attrPattern.exec(tagMarkup)) !== null) {
+    const name = match[1].toLowerCase();
+    if (name === 'script' || name === 'link') continue;
+    const value = match[2] ?? match[3] ?? match[4] ?? '';
+    attrs[name] = value;
+  }
+  return attrs;
+};
+
+const scriptRefs = [...html.matchAll(/<script\b[^>]*>/gi)]
+  .map((m) => extractAttributes(m[0]).src)
+  .filter(Boolean);
+if (scriptRefs.length > 0) {
+  throw new Error(`External script references found: ${scriptRefs.join(', ')}`);
 }
 
-const stylesheetLinks = [...html.matchAll(/<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)];
+const stylesheetLinks = [...html.matchAll(/<link\b[^>]*>/gi)]
+  .map((m) => extractAttributes(m[0]))
+  .filter((attrs) => (attrs.rel || '').toLowerCase().split(/\s+/).includes('stylesheet'))
+  .map((attrs) => attrs.href)
+  .filter(Boolean);
 if (stylesheetLinks.length > 0) {
-  throw new Error(`External stylesheet references found: ${stylesheetLinks.map((m) => m[1]).join(', ')}`);
+  throw new Error(`External stylesheet references found: ${stylesheetLinks.join(', ')}`);
 }
 
 const htmlWithoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-const attributeRefs = [...htmlWithoutScripts.matchAll(/<(?:a|img|script|link|source|iframe|audio|video|track|embed|object)[^>]+(?:src|href)=["']([^"']+)["'][^>]*>/gi)].map((m) => m[1]);
+const attributeRefs = [...htmlWithoutScripts.matchAll(/<(?:a|img|script|link|source|iframe|audio|video|track|embed|object)\b[^>]*>/gi)]
+  .map((m) => extractAttributes(m[0]))
+  .flatMap((attrs) => [attrs.src, attrs.href])
+  .filter(Boolean);
+
 const isAllowedUrl = (url) => {
   const lower = url.toLowerCase();
-  if (lower.startsWith('#') || lower.startsWith('data:') || lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('ipfs://') || lower.startsWith('ens://') || lower.startsWith('mailto:') || lower.startsWith('tel:')) {
-    return true;
-  }
-  return false;
+  return lower.startsWith('#')
+    || lower.startsWith('data:')
+    || lower.startsWith('http://')
+    || lower.startsWith('https://')
+    || lower.startsWith('ipfs://')
+    || lower.startsWith('ens://')
+    || lower.startsWith('mailto:')
+    || lower.startsWith('tel:');
 };
+
 const localRefs = attributeRefs.filter((url) => !isAllowedUrl(url));
 if (localRefs.length > 0) {
   throw new Error(`Relative or unsupported asset references found: ${localRefs.slice(0, 5).join(', ')}`);
