@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 const repoRoot = path.resolve(process.cwd(), '..');
 const deploymentPath = path.join(repoRoot, 'hardhat/deployments/mainnet/deployment.1.24522684.json');
@@ -11,7 +12,42 @@ const deployment = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
 const verifyTargets = JSON.parse(fs.readFileSync(verifyTargetsPath, 'utf8'));
 const solcInput = JSON.parse(fs.readFileSync(solcInputPath, 'utf8'));
 
-const generatedAt = new Date().toISOString();
+const getSafeISOStringFromEpoch = (sourceDateEpoch) => {
+  const epoch = Number(sourceDateEpoch);
+  if (!Number.isFinite(epoch) || epoch < 0) return null;
+
+  const epochMs = epoch * 1000;
+  if (!Number.isFinite(epochMs)) return null;
+
+  const date = new Date(epochMs);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date.toISOString();
+};
+
+const getGeneratedStamp = () => {
+  if (process.env.SOURCE_DATE_EPOCH) {
+    const stampFromEpoch = getSafeISOStringFromEpoch(process.env.SOURCE_DATE_EPOCH);
+    if (stampFromEpoch) return stampFromEpoch;
+  }
+
+  try {
+    const epoch = Number(execSync('git log -1 --format=%ct', { cwd: repoRoot, encoding: 'utf8' }).trim());
+    const stampFromGit = getSafeISOStringFromEpoch(epoch);
+    if (stampFromGit) return stampFromGit;
+  } catch {
+    // fall through to artifact timestamp fallback
+  }
+
+  if (typeof deployment.timestamp === 'string') {
+    const parsed = new Date(deployment.timestamp);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+  }
+
+  return new Date().toISOString();
+};
+
+const generatedAt = getGeneratedStamp();
 
 const lines = [
   '# Mainnet Deployment Registry',
