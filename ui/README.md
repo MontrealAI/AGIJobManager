@@ -19,11 +19,12 @@ npm run typecheck
 npm run test
 npm run test:e2e
 npm run test:a11y
-npm run test:headers
+npm run test:security
 npm run docs:versions
 npm run docs:contract
 npm run docs:check
-npm run build
+npm run build:ipfs
+npm run verify:ipfs
 ```
 
 ## Notes
@@ -31,3 +32,7 @@ npm run build
 - Read-only mode works without wallet connectivity.
 - Write actions are simulation-first and can be fully demonstrated in deterministic demo mode.
 - WalletConnect remains optional; the UI gracefully degrades when `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is not configured.
+
+
+Single-file IPFS artifact:
+- `ui/dist-ipfs/index.html`
