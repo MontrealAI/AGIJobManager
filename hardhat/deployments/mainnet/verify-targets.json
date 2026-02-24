@@ -1,0 +1,36 @@
+{
+  "network": "mainnet",
+  "chainId": 1,
+  "targets": [
+    {
+      "name": "UriUtils",
+      "fqn": "contracts/utils/UriUtils.sol:UriUtils",
+      "address": "0x2c6359D42173aaC73Ea053b37c411f7Da44d4706"
+    },
+    {
+      "name": "TransferUtils",
+      "fqn": "contracts/utils/TransferUtils.sol:TransferUtils",
+      "address": "0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f"
+    },
+    {
+      "name": "BondMath",
+      "fqn": "contracts/utils/BondMath.sol:BondMath",
+      "address": "0x0c2a50a9C1db998707662db2A13B93175c3E7394"
+    },
+    {
+      "name": "ReputationMath",
+      "fqn": "contracts/utils/ReputationMath.sol:ReputationMath",
+      "address": "0x4F64e44a3693489289B1F20D55CF56130fE66C0b"
+    },
+    {
+      "name": "ENSOwnership",
+      "fqn": "contracts/utils/ENSOwnership.sol:ENSOwnership",
+      "address": "0x6852a13650F5c90342663c9fF7555f97F62515c8"
+    },
+    {
+      "name": "AGIJobManager",
+      "fqn": "contracts/AGIJobManager.sol:AGIJobManager",
+      "address": "0xB3AAeb69b630f0299791679c063d68d6687481d1"
+    }
+  ]
+}
