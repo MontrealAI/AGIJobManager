@@ -41,6 +41,10 @@ Why library contracts exist:
 - AGIJobManager: https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code
 - AGIALPHA token context: https://etherscan.io/address/0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa
 
+Canonical identities:
+- Deployer EOA: `0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E` (`deployer.agi.eth`, informational)
+- Final owner EOA: `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` (`club.agi.eth`, informational)
+
 ## 4) Contract registry table
 
 Network:
@@ -222,3 +226,78 @@ Operational benefit:
 Recordkeeping rule:
 - Do not rely on private local absolute paths.
 - Use repository-relative paths in all long-lived operational and audit documentation.
+
+## Appendix A) Canonical source data snapshot (verbatim)
+
+Network:
+- Ethereum Mainnet (chainId = 1)
+
+Deployer (EOA):
+- 0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E
+ENS label (informational):
+- deployer.agi.eth
+
+Final owner (after transferOwnership):
+- 0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201
+ENS label (informational):
+- club.agi.eth
+
+Compiler / verification settings:
+- solc 0.8.23
+- optimizer enabled, runs = 40
+- evmVersion = shanghai
+- viaIR = false
+- settings.metadata.bytecodeHash = "none"
+- settings.debug.revertStrings = "strip"
+
+Constructor args used for AGIJobManager:
+- agiTokenAddress: 0xa61a3b3a130a9c20768eebf97e21515a6046a1fa
+- baseIpfsUrl: https://ipfs.io/ipfs/
+- ensConfig (address[2]):
+  [0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e, 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401]
+- rootNodes (bytes32[4]):
+  0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16
+  0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d
+  0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e
+  0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e
+- merkleRoots (bytes32[2]):
+  0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b
+  0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b
+
+Token context:
+- AGIALPHA ERC-20: 0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa
+
+Deployed contracts:
+- UriUtils:
+  - address: 0x2c6359D42173aaC73Ea053b37c411f7Da44d4706
+  - tx: 0xce685b91e190938d7508af861c48d9482cc8d8e53530e42ec143940f838ac4a1
+  - etherscan: https://etherscan.io/address/0x2c6359D42173aaC73Ea053b37c411f7Da44d4706#code
+- TransferUtils:
+  - address: 0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f
+  - tx: 0x4847d58a96191427c5cb2b89622fee4882f03bad4e85eff5fc1a55fc5c7fe4c3
+  - etherscan: https://etherscan.io/address/0x1e26d8F8E2E4957a06d38Ab046CF64E5d308970f#code
+- BondMath:
+  - address: 0x0c2a50a9C1db998707662db2A13B93175c3E7394
+  - tx: 0xbc42f0859c75fd06b62a9aa69a809b5632114b4c3711e9a45efb3f585ca02672
+  - etherscan: https://etherscan.io/address/0x0c2a50a9C1db998707662db2A13B93175c3E7394#code
+- ReputationMath:
+  - address: 0x4F64e44a3693489289B1F20D55CF56130fE66C0b
+  - tx: 0x4ee07dcfdf8d8e4d163a9eb4c7d4f23ebd1b732516809c0c204e3f04ece6c426
+  - etherscan: https://etherscan.io/address/0x4F64e44a3693489289B1F20D55CF56130fE66C0b#code
+- ENSOwnership:
+  - address: 0x6852a13650F5c90342663c9fF7555f97F62515c8
+  - tx: 0x0755aacc84ed3cbbf5f1177a1e7dd23abd358ba292d7b61090788efe2f164b44
+  - etherscan: https://etherscan.io/address/0x6852a13650F5c90342663c9fF7555f97F62515c8#code
+- AGIJobManager:
+  - address: 0xB3AAeb69b630f0299791679c063d68d6687481d1
+  - tx: 0x5b99dc902229561d52b0f0daa7207372f12866befbdbe03a701a07c7e2690995
+  - etherscan: https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code
+
+Ownership transfer:
+- transferOwnership(finalOwner) tx:
+  0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436
+
+Deployment artifacts produced:
+- hardhat/deployments/mainnet/deployment.1.24522684.json
+- hardhat/deployments/mainnet/solc-input.json
+- hardhat/deployments/mainnet/verify-targets.json
