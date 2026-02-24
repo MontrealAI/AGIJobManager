@@ -7,6 +7,7 @@ on:
       - 'docs/ui/**'
       - '.github/workflows/ui.yml'
       - 'README.md'
+      - 'hardhat/deployments/mainnet/**'
 
 jobs:
   ui:
@@ -40,5 +41,6 @@ jobs:
       - run: npm run test:headers
       - run: npm run docs:versions
       - run: npm run docs:contract
+      - run: npm run docs:deployment
       - run: npm run docs:check
       - run: npm run build
