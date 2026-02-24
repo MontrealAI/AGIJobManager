@@ -13,6 +13,7 @@ Institutional-grade Next.js dApp + operations console with **read-only first**, 
 - [Testing & CI](./TESTING.md)
 - [Versions](./VERSIONS.md)
 - [Contract Interface](./CONTRACT_INTERFACE.md)
+- [Mainnet Deployment Registry](./DEPLOYMENT_MAINNET.md)
 
 ## Run locally
 ```bash
@@ -22,6 +23,8 @@ npm run dev
 ```
 
 ## Demo mode
+
+`.env.example` is prefilled with the official `v0.1.0-mainnet-beta` Ethereum mainnet deployment defaults.
 ```bash
 NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
 ```

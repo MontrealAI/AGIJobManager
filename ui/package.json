@@ -19,7 +19,8 @@
     "docs:check": "node scripts/docs-check.mjs && node scripts/check-no-binaries.mjs",
     "docs:versions": "node scripts/generate-versions.mjs",
     "check:no-binaries": "node scripts/check-no-binaries.mjs",
-    "docs:contract": "node scripts/generate-contract-interface.mjs"
+    "docs:contract": "node scripts/generate-contract-interface.mjs",
+    "docs:deployment": "node scripts/generate-deployment-docs.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",
