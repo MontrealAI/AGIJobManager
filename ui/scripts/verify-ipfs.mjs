@@ -15,6 +15,7 @@ if (entries.length !== 1 || entries[0] !== 'index.html') {
 }
 
 const html = fs.readFileSync(indexPath, 'utf8');
+const htmlWithoutScriptBlocks = html.replace(/<script[\s\S]*?<\/script>/gi, '');
 
 function parseTagAttributes(tagText) {
   const attrs = new Map();
@@ -26,6 +27,18 @@ function parseTagAttributes(tagText) {
   }
   return attrs;
 }
+
+function hasMetaTagWithAttribute(attrName, expectedValue) {
+  for (const match of htmlWithoutScriptBlocks.matchAll(/<meta\b[^>]*>/gi)) {
+    const attrs = parseTagAttributes(match[0]);
+    const value = attrs.get(attrName);
+    if (value && value.toLowerCase() === expectedValue) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 const scriptSrcMatches = [];
 for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
@@ -82,15 +95,14 @@ if (localRefs.length > 0) {
   throw new Error(`Relative or unsupported asset references found: ${localRefs.slice(0, 5).join(', ')}`);
 }
 
-if (!/http-equiv\s*=\s*(?:"content-security-policy"|'content-security-policy'|content-security-policy)/i.test(html)) {
+if (!hasMetaTagWithAttribute('http-equiv', 'content-security-policy')) {
   throw new Error('CSP meta tag is missing from IPFS artifact.');
 }
 
-if (!/name\s*=\s*(?:"referrer"|'referrer'|referrer)/i.test(html)) {
+if (!hasMetaTagWithAttribute('name', 'referrer')) {
   throw new Error('Referrer policy meta tag is missing from IPFS artifact.');
 }
 
-const htmlWithoutScriptBlocks = html.replace(/<script[\s\S]*?<\/script>/gi, '');
 if (/<[^>]+\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(htmlWithoutScriptBlocks)) {
   throw new Error('Inline event handlers detected in built HTML.');
 }

@@ -48,4 +48,12 @@ describe('verify-ipfs script src attribute hardening', () => {
     const run = runVerifierWithHtml(`${secureHtml}<script src=></script>`);
     expect(run).toThrow(/External script references found/);
   });
+
+  it('fails when only script literals mention CSP/referrer meta attributes', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head></head><body><script>
+      const csp = '<meta http-equiv="Content-Security-Policy" content="x">';
+      const ref = '<meta name="referrer" content="no-referrer">';
+    </script></body></html>`);
+    expect(run).toThrow(/CSP meta tag is missing/);
+  });
 });
