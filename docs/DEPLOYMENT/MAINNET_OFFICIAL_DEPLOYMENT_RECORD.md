@@ -36,6 +36,16 @@ Legal Terms are embedded in the header of `contracts/AGIJobManager.sol`. Read th
 - AGIJobManager: https://etherscan.io/address/0xB3AAeb69b630f0299791679c063d68d6687481d1#code
 - AGIALPHA token context: https://etherscan.io/address/0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa
 
+Deployment transactions:
+
+- UriUtils deployment tx: https://etherscan.io/tx/0xce685b91e190938d7508af861c48d9482cc8d8e53530e42ec143940f838ac4a1
+- TransferUtils deployment tx: https://etherscan.io/tx/0x4847d58a96191427c5cb2b89622fee4882f03bad4e85eff5fc1a55fc5c7fe4c3
+- BondMath deployment tx: https://etherscan.io/tx/0xbc42f0859c75fd06b62a9aa69a809b5632114b4c3711e9a45efb3f585ca02672
+- ReputationMath deployment tx: https://etherscan.io/tx/0x4ee07dcfdf8d8e4d163a9eb4c7d4f23ebd1b732516809c0c204e3f04ece6c426
+- ENSOwnership deployment tx: https://etherscan.io/tx/0x0755aacc84ed3cbbf5f1177a1e7dd23abd358ba292d7b61090788efe2f164b44
+- AGIJobManager deployment tx: https://etherscan.io/tx/0x5b99dc902229561d52b0f0daa7207372f12866befbdbe03a701a07c7e2690995
+- ownership transfer tx: https://etherscan.io/tx/0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436
+
 ---
 
 ## 4) Contract registry table
@@ -70,6 +80,8 @@ Why this matters:
 
 Etherscan compares compiled bytecode against deployed bytecode. If any compiler setting differs, verification can fail with "not verified" or "bytecode mismatch" even when source code is otherwise correct.
 
+If linked library addresses differ, verification can also fail with bytecode mismatch for AGIJobManager.
+
 ---
 
 ## 6) AGIJobManager constructor arguments (verbatim)
@@ -103,6 +115,8 @@ Plain-language meaning:
 - Final owner (owner-only control): `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` (`club.agi.eth`, informational)
 - Ownership transfer transaction:
   - `0xbabede7945b7e926cf0ea4a66561bf5db9952648425290608c02f970dcab5436`
+
+There was one post-deploy ownership update. The deployer transferred ownership once to the final owner address above.
 
 What you do / What you should see:
 
