@@ -27,7 +27,14 @@ html = html.replace(scriptRegex, (full, relPath) => {
 if (!html.includes('http-equiv="Content-Security-Policy"')) {
   html = html.replace(
     '</head>',
-    '  <meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: https:; connect-src \'self\' https:; frame-ancestors \'none\'; base-uri \'none\'; form-action \'self\'">\n  <meta name="referrer" content="no-referrer">\n</head>'
+    '  <meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: https:; connect-src \'self\' https:; frame-ancestors \'none\'; base-uri \'none\'; form-action \'self\'">\n</head>'
+  );
+}
+
+if (!html.includes('name="referrer"')) {
+  html = html.replace(
+    '</head>',
+    '  <meta name="referrer" content="no-referrer">\n</head>'
   );
 }
 
