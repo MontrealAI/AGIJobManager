@@ -57,7 +57,22 @@ if (stylesheetLinks.length > 0) {
 }
 
 const htmlWithoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-const attributeRefs = [...htmlWithoutScripts.matchAll(/<([a-zA-Z][a-zA-Z0-9:-]*)[^>]+\b(src|href|srcset)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))[^>]*>/g)]
+
+const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+const localFetchRefs = scriptBodies.flatMap((body) => {
+  const refs = [];
+  for (const match of body.matchAll(/\bfetch\(\s*(?:"([^"]+)"|'([^']+)')/gi)) {
+    const value = (match[1] ?? match[2] ?? '').trim();
+    if (value.startsWith('./') || value.startsWith('../') || value.startsWith('/')) refs.push(value);
+  }
+  return refs;
+});
+if (localFetchRefs.length > 0) {
+  throw new Error(`Local fetch references found in script bodies: ${localFetchRefs.slice(0, 5).join(', ')}`);
+}
+
+const htmlWithoutScriptsAndStyles = htmlWithoutScripts.replace(/<style[\s\S]*?<\/style>/gi, '');
+const attributeRefs = [...htmlWithoutScriptsAndStyles.matchAll(/<(a|img|source|iframe|audio|video|track|embed|object|link)\b[^>]*?\b(src|href|srcset)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))[^>]*>/gi)]
   .map((m) => ({
     tag: m[1].toLowerCase(),
     attr: m[2].toLowerCase(),
@@ -70,6 +85,9 @@ const isAllowedUrl = ({ tag, attr, url }) => {
   if (tag === 'a' && attr === 'href') {
     return (
       lower.startsWith('#') ||
+      lower.startsWith('/') ||
+      lower.startsWith('./') ||
+      lower.startsWith('../') ||
       lower.startsWith('http://') ||
       lower.startsWith('https://') ||
       lower.startsWith('ipfs://') ||
