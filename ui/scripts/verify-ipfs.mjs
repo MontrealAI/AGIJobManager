@@ -144,6 +144,14 @@ if (!cspContent.includes("frame-ancestors 'none'")) {
   throw new Error("CSP meta content must include frame-ancestors 'none'.");
 }
 
+if (cspContent.includes("'unsafe-eval'")) {
+  throw new Error("CSP meta content must not include 'unsafe-eval'.");
+}
+
+if (!cspContent.includes("object-src 'none'")) {
+  throw new Error("CSP meta content must include object-src 'none'.");
+}
+
 const referrerMeta = metaTags.find((attrs) => (attrs.get('name') || '').toLowerCase() === 'referrer');
 if (!referrerMeta) {
   throw new Error('Referrer policy meta tag is missing from IPFS artifact.');
@@ -236,6 +244,22 @@ for (const body of scriptBodies) {
 }
 if (localScriptFetches.length > 0) {
   throw new Error(`Local sidecar fetches detected in script bodies: ${localScriptFetches.slice(0, 5).join(', ')}`);
+}
+
+const hasBootstrapRouteScript = scriptBodies.some((body) =>
+  /window\.__IPFS_BOOTSTRAP_ROUTE__\s*=/.test(body) &&
+  /history\.replaceState\(history\.state,\s*'',\s*bootstrapUrl\)/.test(body) &&
+  /window\.location\.hash\s*\|\|/.test(body)
+);
+
+const hasHashRoutingShimScript = scriptBodies.some((body) =>
+  /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body) &&
+  /history\.(?:pushState|replaceState)\.bind\(history\)/.test(body) &&
+  /navigateHashRoute\(/.test(body)
+);
+
+if (!hasBootstrapRouteScript || !hasHashRoutingShimScript) {
+  throw new Error('Hash routing guard is missing from single-file artifact.');
 }
 
 console.log('IPFS artifact verified: single-file, no external local assets, security metas present.');
