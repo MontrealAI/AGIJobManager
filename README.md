@@ -114,7 +114,10 @@ Build single-file IPFS artifact:
 cd ui
 npm run build:ipfs
 npm run verify:singlefile
+npm run verify:committed-html
 ```
+
+Ready-to-pin artifact committed at repo root: [`agijobmanager.html`](agijobmanager.html).
 
 ## Local setup and CI-equivalent entrypoints
 
