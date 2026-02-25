@@ -1,0 +1,11 @@
+{
+  "network": "mainnet",
+  "chainId": 1,
+  "targets": [
+    {
+      "name": "ENSJobPages",
+      "fqn": "contracts/ens/ENSJobPages.sol:ENSJobPages",
+      "address": "0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94"
+    }
+  ]
+}
