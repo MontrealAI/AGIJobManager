@@ -32,7 +32,7 @@ for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
   const tagText = match[0];
   const attrs = parseTagAttributes(tagText);
   const hasValuedSrc = attrs.has('src');
-  const hasValuelessSrc = /\ssrc\b(?:\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s\"'=<>`]*)?)?(?=\s|>|\/)/i.test(tagText);
+  const hasValuelessSrc = /\ssrc\b(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]*)?)?(?=\s|>|\/)/i.test(tagText);
 
   if (hasValuedSrc || hasValuelessSrc) {
     const src = attrs.get('src') ?? '';
@@ -57,46 +57,97 @@ if (stylesheetLinks.length > 0) {
 }
 
 const htmlWithoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-const attributeRefs = [...htmlWithoutScripts.matchAll(/<([a-zA-Z][a-zA-Z0-9:-]*)[^>]+\b(src|href)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))[^>]*>/g)]
+const attributeRefs = [...htmlWithoutScripts.matchAll(/<([a-zA-Z][a-zA-Z0-9:-]*)[^>]+\b(src|href|srcset)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))[^>]*>/g)]
   .map((m) => ({
     tag: m[1].toLowerCase(),
     attr: m[2].toLowerCase(),
-    url: (m[3] ?? m[4] ?? m[5] ?? '').trim()
+    value: (m[3] ?? m[4] ?? m[5] ?? '').trim()
   }));
 
-const isAllowedUrl = ({ tag, attr, url }) => {
+const isAllowedNavigationUrl = (url) => {
   const lower = url.toLowerCase();
-
-  if (tag === 'a' && attr === 'href') {
-    return (
-      lower.startsWith('#') ||
-      lower.startsWith('http://') ||
-      lower.startsWith('https://') ||
-      lower.startsWith('ipfs://') ||
-      lower.startsWith('ens://') ||
-      lower.startsWith('mailto:') ||
-      lower.startsWith('tel:')
-    );
-  }
-
-  return lower.startsWith('data:');
+  return (
+    lower.startsWith('#') ||
+    lower.startsWith('http://') ||
+    lower.startsWith('https://') ||
+    lower.startsWith('ipfs://') ||
+    lower.startsWith('ens://') ||
+    lower.startsWith('mailto:') ||
+    lower.startsWith('tel:')
+  );
 };
 
-const disallowedRefs = attributeRefs.filter((entry) => !isAllowedUrl(entry));
+const isAllowedAssetUrl = (url) => url.toLowerCase().startsWith('data:');
+
+const extractSrcsetUrls = (srcsetValue) =>
+  srcsetValue
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((candidate) => candidate.split(/\s+/)[0])
+    .filter(Boolean);
+
+const disallowedRefs = [];
+for (const entry of attributeRefs) {
+  if (entry.attr === 'srcset') {
+    const urls = extractSrcsetUrls(entry.value);
+    for (const url of urls) {
+      if (!isAllowedAssetUrl(url)) {
+        disallowedRefs.push(`${entry.tag}[srcset]=${url}`);
+      }
+    }
+    continue;
+  }
+
+  if (entry.tag === 'a' && entry.attr === 'href') {
+    if (!isAllowedNavigationUrl(entry.value)) {
+      disallowedRefs.push(`${entry.tag}[${entry.attr}]=${entry.value}`);
+    }
+    continue;
+  }
+
+  if (!isAllowedAssetUrl(entry.value)) {
+    disallowedRefs.push(`${entry.tag}[${entry.attr}]=${entry.value}`);
+  }
+}
+
 if (disallowedRefs.length > 0) {
-  const sample = disallowedRefs.slice(0, 5).map((entry) => `${entry.tag}[${entry.attr}]=${entry.url}`);
-  throw new Error(`Relative or unsupported asset references found: ${sample.join(', ')}`);
+  throw new Error(`Relative or unsupported asset references found: ${disallowedRefs.slice(0, 5).join(', ')}`);
 }
 
 const metaTags = [...htmlWithoutScripts.matchAll(/<meta\b[^>]*>/gi)].map((m) => parseTagAttributes(m[0]));
-const hasCspMeta = metaTags.some((attrs) => (attrs.get('http-equiv') || '').toLowerCase() === 'content-security-policy');
-if (!hasCspMeta) {
+const cspMeta = metaTags.find((attrs) => (attrs.get('http-equiv') || '').toLowerCase() === 'content-security-policy');
+if (!cspMeta) {
   throw new Error('CSP meta tag is missing from IPFS artifact.');
 }
 
-const hasReferrerMeta = metaTags.some((attrs) => (attrs.get('name') || '').toLowerCase() === 'referrer');
-if (!hasReferrerMeta) {
+const cspContent = (cspMeta.get('content') || '').toLowerCase();
+const cspDirectives = Object.fromEntries(
+  cspContent
+    .split(';')
+    .map((directive) => directive.trim())
+    .filter(Boolean)
+    .map((directive) => {
+      const [name, ...rest] = directive.split(/\s+/);
+      return [name, rest.join(' ')];
+    })
+);
+
+if (!cspDirectives['frame-ancestors'] || !cspDirectives['frame-ancestors'].includes("'none'")) {
+  throw new Error('CSP meta tag must include frame-ancestors \'none\'.');
+}
+
+if (!cspDirectives['default-src'] || !cspDirectives['default-src'].includes("'self'") || /\*/.test(cspDirectives['default-src'])) {
+  throw new Error('CSP meta tag must include restrictive default-src (self, no wildcard).');
+}
+
+const referrerMeta = metaTags.find((attrs) => (attrs.get('name') || '').toLowerCase() === 'referrer');
+if (!referrerMeta) {
   throw new Error('Referrer policy meta tag is missing from IPFS artifact.');
+}
+
+if ((referrerMeta.get('content') || '').toLowerCase() !== 'no-referrer') {
+  throw new Error('Referrer policy meta tag must set content=no-referrer.');
 }
 
 const htmlWithoutScriptBlocks = html.replace(/<script[\s\S]*?<\/script>/gi, '');

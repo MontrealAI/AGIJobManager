@@ -59,4 +59,29 @@ describe('verify-ipfs script src attribute hardening', () => {
     const run = runVerifierWithHtml(`${secureHtml}<img src="https://cdn.example.com/logo.svg">`);
     expect(run).toThrow(/Relative or unsupported asset references found/);
   });
+
+  it('fails when srcset contains remote assets', () => {
+    const run = runVerifierWithHtml(`${secureHtml}<img srcset="https://cdn.example.com/a.png 1x, data:image/png;base64,AA== 2x">`);
+    expect(run).toThrow(/Relative or unsupported asset references found/);
+  });
+
+
+  it('fails when CSP policy is weak', () => {
+    const html = `<!doctype html><html><head>
+<meta http-equiv="Content-Security-Policy" content="default-src *; frame-ancestors 'none'">
+<meta name="referrer" content="no-referrer">
+</head><body><h1>ok</h1></body></html>`;
+    const run = runVerifierWithHtml(html);
+    expect(run).toThrow(/restrictive default-src/);
+  });
+
+  it('fails when referrer policy is not no-referrer', () => {
+    const html = `<!doctype html><html><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'">
+<meta name="referrer" content="unsafe-url">
+</head><body><h1>ok</h1></body></html>`;
+    const run = runVerifierWithHtml(html);
+    expect(run).toThrow(/content=no-referrer/);
+  });
+
 });
