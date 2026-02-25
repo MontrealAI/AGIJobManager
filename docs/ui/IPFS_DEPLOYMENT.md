@@ -10,17 +10,17 @@ From repository root:
 cd ui
 npm ci
 npm run build:ipfs
-npm run verify:ipfs
+npm run verify:singlefile
 ```
 
 Expected output:
 
-- `ui/dist-ipfs/index.html`
+- `ui/dist-ipfs/agijobmanager.html`
 
 ## Publish
 
 ```bash
-ipfs add ui/dist-ipfs/index.html
+ipfs add ui/dist-ipfs/agijobmanager.html
 ```
 
 Use the returned CID with a gateway URL:
