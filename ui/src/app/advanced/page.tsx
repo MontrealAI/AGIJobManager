@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { AbiFunction } from 'viem';
 import { Card } from '@/components/ui/card';
 import { agiJobManagerAbi } from '@/abis/agiJobManager';
 import { publicClient } from '@/lib/web3/publicClient';
 import { decodeError } from '@/lib/web3/errors';
-import { OFFICIAL_DEPLOYMENT } from '@/generated/deployment';
 import { useAccount, useWalletClient } from 'wagmi';
+import { CONTRACT_ADDRESS, EXPLORER } from '@/lib/constants';
 
 type CallState = {
   phase: 'idle' | 'prepare' | 'simulate' | 'sign' | 'pending' | 'confirmed' | 'failed';
@@ -20,6 +20,11 @@ const fnAbi = agiJobManagerAbi.filter((entry) => entry.type === 'function') as r
 
 function stringify(value: unknown) {
   return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
+}
+
+
+function isInFlight(state?: CallState) {
+  return state ? ['prepare', 'simulate', 'sign', 'pending'].includes(state.phase) : false;
 }
 
 function parseArgs(raw: string): unknown[] {
@@ -35,6 +40,7 @@ export default function AdvancedPage() {
   const { data: walletClient } = useWalletClient();
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [states, setStates] = useState<Record<string, CallState>>({});
+  const inFlightRef = useRef<Record<string, boolean>>({});
 
   const functions = useMemo(() => fnAbi, []);
 
@@ -44,12 +50,14 @@ export default function AdvancedPage() {
 
   const runRead = async (fn: AbiFunction) => {
     const key = `${fn.name}-read`;
+    if (inFlightRef.current[key] || isInFlight(states[key])) return;
+    inFlightRef.current[key] = true;
     try {
       updateState(key, { phase: 'prepare', error: undefined });
       const args = parseArgs(inputs[key] || '[]');
       updateState(key, { phase: 'pending' });
       const value = await (publicClient as any).readContract({
-        address: OFFICIAL_DEPLOYMENT.addresses.AGIJobManager,
+        address: CONTRACT_ADDRESS,
         abi: agiJobManagerAbi,
         functionName: fn.name,
         args
@@ -58,11 +66,15 @@ export default function AdvancedPage() {
     } catch (error) {
       const decoded = decodeError(error);
       updateState(key, { phase: 'failed', error: `${decoded.name}: ${decoded.human}` });
+    } finally {
+      inFlightRef.current[key] = false;
     }
   };
 
   const runWrite = async (fn: AbiFunction) => {
     const key = `${fn.name}-write`;
+    if (inFlightRef.current[key] || isInFlight(states[key])) return;
+    inFlightRef.current[key] = true;
     try {
       updateState(key, { phase: 'prepare', error: undefined, txHash: undefined });
       const args = parseArgs(inputs[key] || '[]');
@@ -72,7 +84,7 @@ export default function AdvancedPage() {
       }
       updateState(key, { phase: 'simulate' });
       const simulation = await (publicClient as any).simulateContract({
-        address: OFFICIAL_DEPLOYMENT.addresses.AGIJobManager,
+        address: CONTRACT_ADDRESS,
         abi: agiJobManagerAbi,
         functionName: fn.name,
         args,
@@ -86,6 +98,8 @@ export default function AdvancedPage() {
     } catch (error) {
       const decoded = decodeError(error);
       updateState(key, { phase: 'failed', error: `${decoded.name}: ${decoded.human}` });
+    } finally {
+      inFlightRef.current[key] = false;
     }
   };
 
@@ -113,11 +127,17 @@ export default function AdvancedPage() {
               aria-label={`${fn.name} args`}
             />
             <div className="mt-3 flex items-center gap-3">
-              <button className="rounded border border-border px-3 py-1 text-sm" onClick={() => (isRead ? runRead(fn) : runWrite(fn))} data-testid={`advanced-run-${fn.name}`}>
+              <button
+                className="rounded border border-border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => (isRead ? runRead(fn) : runWrite(fn))}
+                data-testid={`advanced-run-${fn.name}`}
+                disabled={Boolean(inFlightRef.current[key]) || isInFlight(state)}
+                aria-busy={Boolean(inFlightRef.current[key]) || isInFlight(state)}
+              >
                 {isRead ? 'Run read' : 'Simulate → Sign'}
               </button>
               <span className="text-xs text-muted-foreground">Phase: {state?.phase ?? 'idle'}</span>
-              {state?.txHash && <a href={`https://etherscan.io/tx/${state.txHash}`} target="_blank" rel="noreferrer" className="text-xs underline">Explorer</a>}
+              {state?.txHash && <a href={`${EXPLORER}/tx/${state.txHash}`} target="_blank" rel="noreferrer" className="text-xs underline">Explorer</a>}
             </div>
             {state?.result && <pre className="mt-3 overflow-x-auto text-xs">{state.result}</pre>}
             {state?.error && <p className="mt-3 text-sm text-red-400">{state.error}</p>}
