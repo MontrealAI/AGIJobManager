@@ -102,8 +102,6 @@ if (!/name=["']referrer["']/i.test(html)) {
   insertBeforeHeadClose('  <meta name="referrer" content="no-referrer">');
 }
 
-html = html.replace(/<script\b[\s\S]*?<\/script>/gi, '');
-
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html);
