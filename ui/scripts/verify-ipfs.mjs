@@ -175,6 +175,7 @@ const scriptInjectionPatterns = [
 const localPathVariablePattern = /\b(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\2/g;
 const localPathMemberPattern = /\b([a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*)+)\s*=\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\2/g;
 const objectMemberLocalPathPattern = /\b(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*\{[\s\S]*?\b([a-zA-Z_$][\w$]*)\s*:\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\3[\s\S]*?\}/g;
+const variableAssignmentPattern = /\b(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*([^;\n]+)/g;
 
 const localScriptFetches = [];
 for (const body of scriptBodies) {
@@ -198,14 +199,34 @@ for (const body of scriptBodies) {
       ...objectMemberSymbols
     ]);
 
+    const variableAssignments = [...body.matchAll(variableAssignmentPattern)];
+    let expanded = true;
+    while (expanded) {
+      expanded = false;
+      for (const assignment of variableAssignments) {
+        const name = assignment[1];
+        const expr = assignment[2] || '';
+        if (localPathSymbols.has(name)) continue;
+
+        for (const symbol of localPathSymbols) {
+          const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          if (new RegExp(`\\b${escapedSymbol}\\b`).test(expr)) {
+            localPathSymbols.add(name);
+            expanded = true;
+            break;
+          }
+        }
+      }
+    }
+
     for (const symbol of localPathSymbols) {
       const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const srcDirectPattern = new RegExp(`\\.src\\s*=\\s*${escapedSymbol}\\b`, 'g');
-      const srcComputedPattern = new RegExp(`\\.src\\s*=\\s*[^;\\n]*\\b${escapedSymbol}\\b[^;\\n]*`, 'g');
-      const setAttributeDirectPattern = new RegExp(`\\.setAttribute\\(\\s*(["'])src\\1\\s*,\\s*${escapedSymbol}\\b`, 'g');
-      const setAttributeComputedPattern = new RegExp(`\\.setAttribute\\(\\s*(["'])src\\1\\s*,\\s*[^)]*\\b${escapedSymbol}\\b[^)]*\\)`, 'g');
+      const srcDirectPattern = new RegExp(`\\.src\\s*=\\s*${escapedSymbol}\\s*(?:[;\\n]|$)`, 'g');
+      const srcConcatPattern = new RegExp(`\\.src\\s*=\\s*${escapedSymbol}\\s*\\+`, 'g');
+      const setAttributeDirectPattern = new RegExp(`\\.setAttribute\\(\\s*(["'])src\\1\\s*,\\s*${escapedSymbol}\\s*(?:\\)|,)`, 'g');
+      const setAttributeConcatPattern = new RegExp(`\\.setAttribute\\(\\s*(["'])src\\1\\s*,\\s*${escapedSymbol}\\s*\\+`, 'g');
 
-      for (const pattern of [srcDirectPattern, srcComputedPattern, setAttributeDirectPattern, setAttributeComputedPattern]) {
+      for (const pattern of [srcDirectPattern, srcConcatPattern, setAttributeDirectPattern, setAttributeConcatPattern]) {
         for (const match of body.matchAll(pattern)) {
           localScriptFetches.push(match[0]);
         }
