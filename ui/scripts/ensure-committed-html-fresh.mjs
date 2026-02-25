@@ -17,14 +17,16 @@ if (!fs.existsSync(committedHtml)) {
 
 const built = fs.readFileSync(builtHtml);
 const committed = fs.readFileSync(committedHtml);
+const builtHash = createHash('sha256').update(built).digest('hex');
+const committedHash = createHash('sha256').update(committed).digest('hex');
 
 if (Buffer.compare(built, committed) !== 0) {
-  const builtHash = createHash('sha256').update(built).digest('hex');
-  const committedHash = createHash('sha256').update(committed).digest('hex');
   throw new Error(
     `agijobmanager.html is stale (built sha256=${builtHash}, committed sha256=${committedHash}). Run ` +
       '`cd ui && npm run build:ipfs && cp dist-ipfs/agijobmanager.html ../agijobmanager.html` and commit.'
   );
 }
 
-console.log('Committed agijobmanager.html matches ui/dist-ipfs/agijobmanager.html.');
+console.log(
+  `Committed agijobmanager.html matches ui/dist-ipfs/agijobmanager.html (sha256=${builtHash}, bytes=${built.length}).`
+);
