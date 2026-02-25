@@ -99,6 +99,7 @@ UI docs:
 - [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
 - [`docs/ui/DEPLOYMENT_MAINNET.md`](docs/ui/DEPLOYMENT_MAINNET.md)
 - [`docs/ui/IPFS_DEPLOYMENT.md`](docs/ui/IPFS_DEPLOYMENT.md)
+- [`docs/ui/GITHUB_PAGES.md`](docs/ui/GITHUB_PAGES.md)
 
 Text-only visual references:
 - ![Sovereign palette](docs/ui/assets/palette.svg)
@@ -106,12 +107,13 @@ Text-only visual references:
 - ![Simulation-first transaction pipeline](docs/ui/assets/tx-pipeline.svg)
 
 UI CI workflow: [`UI CI`](.github/workflows/ui.yml)
+GitHub Pages autopublish workflow: [`UI Pages Deploy`](.github/workflows/pages.yml) -> `https://montrealai.github.io/AGIJobManager/` and `https://montrealai.github.io/AGIJobManager/agijobmanager.html`.
 
 Build single-file IPFS artifact:
 ```bash
 cd ui
 npm run build:ipfs
-npm run verify:ipfs
+npm run verify:singlefile
 ```
 
 ## Local setup and CI-equivalent entrypoints

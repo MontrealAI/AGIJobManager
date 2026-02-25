@@ -37,3 +37,9 @@ NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
 
 ## Documentation policy
 This folder is **text-only**. Binary assets are forbidden and CI-enforced by `npm run check:no-binaries` in local checks and CI.
+
+
+## Deployment references
+
+- [IPFS single-file deployment](./IPFS_DEPLOYMENT.md)
+- [GitHub Pages autopublish](./GITHUB_PAGES.md)

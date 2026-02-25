@@ -3,18 +3,18 @@ import path from 'node:path';
 
 const uiRoot = process.cwd();
 const distDir = path.join(uiRoot, 'dist-ipfs');
-const indexPath = path.join(distDir, 'index.html');
+const artifactPath = path.join(distDir, 'agijobmanager.html');
 
 if (!fs.existsSync(distDir)) {
   throw new Error('dist-ipfs directory missing. Run npm run build:ipfs first.');
 }
 
 const entries = fs.readdirSync(distDir);
-if (entries.length !== 1 || entries[0] !== 'index.html') {
-  throw new Error(`dist-ipfs must contain exactly one file (index.html). Found: ${entries.join(', ')}`);
+if (entries.length !== 1 || entries[0] !== 'agijobmanager.html') {
+  throw new Error(`dist-ipfs must contain exactly one file (agijobmanager.html). Found: ${entries.join(', ')}`);
 }
 
-const html = fs.readFileSync(indexPath, 'utf8');
+const html = fs.readFileSync(artifactPath, 'utf8');
 
 function parseTagAttributes(tagText) {
   const attrs = new Map();
