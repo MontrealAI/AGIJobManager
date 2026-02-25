@@ -8,6 +8,8 @@ const forbiddenExt = new Set([
   '.woff', '.woff2', '.ttf', '.otf',
   '.zip', '.tar', '.gz', '.7z'
 ]);
+const sourceTextExt = new Set(['.html', '.htm', '.css', '.mjs', '.cjs', '.js', '.jsx', '.ts', '.tsx']);
+const forbiddenDataUri = /data:(image|font)\//i;
 
 const run = (cmd) => execSync(cmd, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
 
@@ -47,7 +49,20 @@ for (const rel of files) {
   }
   if (!fs.existsSync(full) || !fs.statSync(full).isFile()) continue;
   const data = fs.readFileSync(full);
-  if (data.includes(0)) violations.push(`${rel}: appears binary (NUL byte detected)`);
+  if (data.includes(0)) {
+    violations.push(`${rel}: appears binary (NUL byte detected)`);
+    continue;
+  }
+
+  if (sourceTextExt.has(ext)) {
+    const text = data.toString('utf8');
+    const searchable = ext === '.html' || ext === '.htm'
+      ? text.replace(/<script\b[\s\S]*?<\/script>/gi, '')
+      : text;
+    if (forbiddenDataUri.test(searchable)) {
+      violations.push(`${rel}: forbidden data:image/* or data:font/* URI found`);
+    }
+  }
 }
 
 if (violations.length) {
