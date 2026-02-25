@@ -94,6 +94,50 @@ html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (ful
   return `<a${before} href="${hashHref}"${after}>`;
 });
 
+
+const hashRoutingShim = `<script>(function(){
+  function toHashUrl(input){
+    try {
+      var parsed = new URL(String(input), window.location.origin);
+      if (parsed.origin !== window.location.origin) return input;
+      if (!parsed.pathname.startsWith('/')) return input;
+      var hashPath = '#' + parsed.pathname + parsed.search + parsed.hash;
+      return hashPath;
+    } catch (_) {
+      if (typeof input === 'string' && input.startsWith('/') && !input.startsWith('//')) {
+        return '#' + input;
+      }
+      return input;
+    }
+  }
+
+  var rawPushState = history.pushState.bind(history);
+  var rawReplaceState = history.replaceState.bind(history);
+
+  history.pushState = function(state, title, url){
+    var nextUrl = typeof url === 'string' ? toHashUrl(url) : url;
+    return rawPushState(state, title, nextUrl);
+  };
+
+  history.replaceState = function(state, title, url){
+    var nextUrl = typeof url === 'string' ? toHashUrl(url) : url;
+    return rawReplaceState(state, title, nextUrl);
+  };
+
+  document.addEventListener('click', function(event){
+    var target = event.target;
+    if (!target) return;
+    var anchor = target.closest ? target.closest('a[href]') : null;
+    if (!anchor) return;
+    var href = anchor.getAttribute('href') || '';
+    if (!href || !href.startsWith('/') || href.startsWith('//')) return;
+    event.preventDefault();
+    window.location.hash = href;
+  }, true);
+})();</script>`;
+
+insertBeforeHeadClose(hashRoutingShim);
+
 if (!/http-equiv=["']Content-Security-Policy["']/i.test(html)) {
   insertBeforeHeadClose('  <meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: https:; connect-src \'self\' https:; frame-ancestors \'none\'; base-uri \'none\'; form-action \'self\'">');
 }

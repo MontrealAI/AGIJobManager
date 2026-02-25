@@ -23,7 +23,7 @@
     "docs:deployment": "node scripts/sync-deployment.mjs && node scripts/generate-deployment-docs.mjs",
     "sync:deployment": "node scripts/sync-deployment.mjs",
     "test:security": "npm run build:ipfs && node scripts/verify-ipfs.mjs",
-    "build:ipfs": "node scripts/build-ipfs.mjs",
+    "build:ipfs": "npm run build && node scripts/build-ipfs.mjs",
     "verify:ipfs": "node scripts/verify-ipfs.mjs"
   },
   "dependencies": {
