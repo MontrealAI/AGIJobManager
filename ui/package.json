@@ -25,11 +25,13 @@
     "docs:deployment": "node scripts/sync-deployment.mjs && node scripts/generate-deployment-docs.mjs",
     "docs:check": "node scripts/docs-check.mjs && node scripts/check-no-binaries.mjs",
     "sync:deployment": "node scripts/sync-deployment.mjs",
-    "sync:deployments": "node scripts/sync-deployment.mjs",
-    "sync:deployments:check": "node scripts/sync-deployment.mjs --check",
+    "sync:deployments": "node scripts/sync-deployments.mjs",
+    "sync:deployments:check": "node scripts/sync-deployments.mjs --check",
     "build:ipfs": "npm run build && node scripts/build-ipfs.mjs",
     "verify:ipfs": "npm run verify:singlefile",
-    "verify:singlefile": "node scripts/verify-singlefile.mjs"
+    "verify:singlefile": "node scripts/verify-singlefile.mjs",
+    "verify:deterministic-build": "node scripts/verify-deterministic-build.mjs",
+    "inject:csp": "node scripts/inject-csp.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",
