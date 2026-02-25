@@ -12,6 +12,7 @@ const csp = [
 ].join('; ');
 
 const nextConfig = {
+  generateBuildId: async () => 'agijobmanager-ipfs-v1',
   async headers() {
     return [
       {
