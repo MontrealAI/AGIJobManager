@@ -29,7 +29,8 @@
     "sync:deployments:check": "node scripts/sync-deployment.mjs --check",
     "build:ipfs": "npm run build && node scripts/build-ipfs.mjs",
     "verify:ipfs": "npm run verify:singlefile",
-    "verify:singlefile": "node scripts/verify-singlefile.mjs"
+    "verify:singlefile": "node scripts/verify-singlefile.mjs",
+    "verify:committed-html": "node scripts/ensure-committed-html-fresh.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",
