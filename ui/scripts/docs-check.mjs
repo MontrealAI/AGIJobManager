@@ -97,15 +97,15 @@ if (normalize(contractBefore) !== normalize(contractAfter)) {
 }
 
 
-const deploymentTsPath = path.join(process.cwd(), 'src', 'generated', 'deployment.ts');
+const deploymentTsPath = path.join(process.cwd(), 'src', 'generated', 'deployments.ts');
 if (!fs.existsSync(deploymentTsPath)) {
-  throw new Error('ui/src/generated/deployment.ts missing; run npm run sync:deployment and commit the result.');
+  throw new Error('ui/src/generated/deployments.ts missing; run npm run sync:deployment and commit the result.');
 }
 const deploymentTsBefore = fs.readFileSync(deploymentTsPath, 'utf8');
-execSync('node scripts/sync-deployment.mjs', { cwd: process.cwd(), stdio: 'pipe' });
+execSync('node scripts/sync-deployments.mjs', { cwd: process.cwd(), stdio: 'pipe' });
 const deploymentTsAfter = fs.readFileSync(deploymentTsPath, 'utf8');
 if (deploymentTsBefore !== deploymentTsAfter) {
-  throw new Error('ui/src/generated/deployment.ts is stale compared with hardhat/deployments/mainnet artifacts. Run npm run sync:deployment and commit the result.');
+  throw new Error('ui/src/generated/deployments.ts is stale compared with hardhat/deployments/mainnet artifacts. Run npm run sync:deployment and commit the result.');
 }
 
 const deploymentPath = path.join(docsRoot, 'DEPLOYMENT_MAINNET.md');
