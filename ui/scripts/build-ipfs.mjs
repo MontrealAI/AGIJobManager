@@ -105,12 +105,21 @@ if (!/name=["']referrer["']/i.test(html)) {
   insertBeforeHeadClose('  <meta name="referrer" content="no-referrer">');
 }
 
-insertBeforeBodyClose(`<script>(function(){
+insertBeforeHeadClose(`<script>(function(){
   const toHashRoute = (input) => {
     if (typeof input !== 'string') return null;
     if (!input.startsWith('/') || input.startsWith('//')) return null;
-    return "#" + input;
+    return '#' + input;
   };
+
+  const bootstrapFromHash = () => {
+    const hash = window.location.hash || '';
+    if (!hash.startsWith('#/')) return;
+    const route = hash.slice(1);
+    history.replaceState(history.state, document.title, route);
+  };
+
+  bootstrapFromHash();
 
   const rewriteHistory = (method) => {
     const original = history[method];
