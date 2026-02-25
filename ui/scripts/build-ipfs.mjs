@@ -143,6 +143,9 @@ insertBeforeBodyClose(`<script>(function(){
   };
 
   const gatewayBase = detectGatewayBase(window.location.pathname);
+  const originalPushState = history.pushState.bind(history);
+  const originalReplaceState = history.replaceState.bind(history);
+
   const stripGatewayBase = (pathname) => {
     if (gatewayBase !== '/') {
       if (pathname === gatewayBase) return '/';
@@ -156,19 +159,30 @@ insertBeforeBodyClose(`<script>(function(){
   const toHashRoute = (input) => {
     if (typeof input !== 'string') return null;
     if (!input.startsWith('/') || input.startsWith('//')) return null;
-    return "#" + input;
+    return '#' + input;
+  };
+
+  const navigateFromHash = (rawHash) => {
+    if (typeof rawHash !== 'string' || !rawHash.startsWith('#/')) return;
+    const routePath = rawHash.slice(1);
+    const targetPath = gatewayBase === '/' ? routePath : (gatewayBase + routePath);
+    const targetUrl = targetPath + window.location.search;
+    originalReplaceState(history.state, '', targetUrl);
+    window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+    const hashUrl = gatewayBase + window.location.search + rawHash;
+    originalReplaceState(history.state, '', hashUrl);
   };
 
   const rewriteHistory = (method) => {
-    const original = history[method];
+    const original = method === 'pushState' ? originalPushState : originalReplaceState;
     history[method] = function(state, title, url) {
       if (typeof url === 'string') {
         const hashRoute = toHashRoute(url);
         if (hashRoute) {
-          return original.call(this, state, title, hashRoute);
+          return original(state, title, hashRoute);
         }
       }
-      return original.call(this, state, title, url);
+      return original(state, title, url);
     };
   };
 
@@ -179,9 +193,13 @@ insertBeforeBodyClose(`<script>(function(){
     const routePath = stripGatewayBase(window.location.pathname);
     if (routePath !== '/' && routePath !== '') {
       const hashUrl = gatewayBase + window.location.search + '#' + routePath;
-      history.replaceState(history.state, '', hashUrl);
+      originalReplaceState(history.state, '', hashUrl);
     }
   }
+
+  window.addEventListener('hashchange', () => {
+    navigateFromHash(window.location.hash || '');
+  });
 
   document.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
@@ -190,7 +208,11 @@ insertBeforeBodyClose(`<script>(function(){
     const hashRoute = toHashRoute(href);
     if (!hashRoute) return;
     event.preventDefault();
-    history.pushState({}, '', hashRoute);
+    if (window.location.hash === hashRoute) {
+      navigateFromHash(hashRoute);
+      return;
+    }
+    window.location.hash = hashRoute;
   }, true);
 })();</script>`);
 
