@@ -144,7 +144,9 @@ insertBeforeBodyClose(`<script>(function(){
 
   const gatewayBase = detectGatewayBase(window.location.pathname);
   const stripGatewayBase = (pathname) => {
-    if (gatewayBase !== '/' && pathname.startsWith(gatewayBase + '/')) {
+    if (gatewayBase === '/') return pathname;
+    if (pathname === gatewayBase) return '/';
+    if (pathname.startsWith(gatewayBase + '/')) {
       return pathname.slice(gatewayBase.length);
     }
     return pathname;
