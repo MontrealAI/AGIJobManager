@@ -8,6 +8,7 @@ on:
       - '.github/workflows/ui.yml'
       - 'README.md'
       - 'hardhat/deployments/mainnet/**'
+      - 'agijobmanager.html'
 
 jobs:
   ui:
