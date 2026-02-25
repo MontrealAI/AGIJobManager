@@ -99,6 +99,7 @@ UI docs:
 - [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
 - [`docs/ui/DEPLOYMENT_MAINNET.md`](docs/ui/DEPLOYMENT_MAINNET.md)
 - [`docs/ui/IPFS_DEPLOYMENT.md`](docs/ui/IPFS_DEPLOYMENT.md)
+- [`docs/ui/GITHUB_PAGES.md`](docs/ui/GITHUB_PAGES.md)
 
 Text-only visual references:
 - ![Sovereign palette](docs/ui/assets/palette.svg)
@@ -106,6 +107,10 @@ Text-only visual references:
 - ![Simulation-first transaction pipeline](docs/ui/assets/tx-pipeline.svg)
 
 UI CI workflow: [`UI CI`](.github/workflows/ui.yml)
+
+GitHub Pages (autopublished):
+- https://montrealai.github.io/AGIJobManager/
+- https://montrealai.github.io/AGIJobManager/agijobmanager.html
 
 Build single-file IPFS artifact:
 ```bash
