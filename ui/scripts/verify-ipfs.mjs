@@ -371,7 +371,8 @@ const stripCommentsAndStrings = (code) => {
 const normalizedScriptBodies = scriptBodies.map(stripCommentsAndStrings);
 const hasHashAccess = normalizedScriptBodies.some((body) => /\bwindow\.location\.hash\b/.test(body));
 const hasPushStateLogic = normalizedScriptBodies.some((body) => /\bhistory\.pushState\b/.test(body));
-const hasRoutingHook = normalizedScriptBodies.some((body) => /\baddEventListener\s*\(\s*['"]hashchange['"]/.test(body) || /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
+const hasRoutingHook = scriptBodies.some((body) => /\baddEventListener\s*\(\s*(["'`])hashchange\1/.test(body))
+  || normalizedScriptBodies.some((body) => /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
 
 if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');

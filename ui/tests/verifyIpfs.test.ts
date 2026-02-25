@@ -148,6 +148,11 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Hash routing guard is missing/);
   });
 
+  it('passes when routing uses hashchange listener without bootstrap sentinel variable', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>window.addEventListener('hashchange',()=>{if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}});</script></body></html>`);
+    expect(run).not.toThrow();
+  });
+
   it('fails when hash routing bootstrap logic is absent', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>ok</body></html>`);
     expect(run).toThrow(/Hash routing guard is missing/);
