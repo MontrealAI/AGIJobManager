@@ -5,6 +5,7 @@ const repoRoot = path.resolve(process.cwd(), '..');
 const deploymentPath = path.join(repoRoot, 'hardhat/deployments/mainnet/deployment.1.24522684.json');
 const solcInputPath = path.join(repoRoot, 'hardhat/deployments/mainnet/solc-input.json');
 const outputPath = path.join(process.cwd(), 'src/generated/deployment.ts');
+const checkMode = process.argv.includes('--check');
 
 const deployment = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
 const solcInput = JSON.parse(fs.readFileSync(solcInputPath, 'utf8'));
@@ -29,5 +30,15 @@ const payload = {
 };
 
 const content = `export const OFFICIAL_DEPLOYMENT = ${JSON.stringify(payload, null, 2)} as const;\n`;
-fs.writeFileSync(outputPath, content);
-console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
+if (checkMode) {
+  const current = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, 'utf8') : '';
+  if (current !== content) {
+    throw new Error(
+      `Generated deployment metadata is stale: ${path.relative(repoRoot, outputPath)}. Run npm run sync:deployment and commit the result.`
+    );
+  }
+  console.log(`Deployment metadata is up-to-date: ${path.relative(repoRoot, outputPath)}`);
+} else {
+  fs.writeFileSync(outputPath, content);
+  console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
+}
