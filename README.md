@@ -95,6 +95,7 @@ UI docs:
 - [`docs/ui/README.md`](docs/ui/README.md)
 - [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
 - [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
+- [`docs/ui/IDENTITY_LAYER.md`](docs/ui/IDENTITY_LAYER.md)
 - [`docs/ui/OPS_RUNBOOK.md`](docs/ui/OPS_RUNBOOK.md)
 - [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
 - [`docs/ui/DEPLOYMENT_MAINNET.md`](docs/ui/DEPLOYMENT_MAINNET.md)
@@ -114,6 +115,7 @@ Build single-file IPFS artifact:
 cd ui
 npm run build:ipfs
 npm run verify:singlefile
+npm run check:deterministic-build
 ```
 
 ## Local setup and CI-equivalent entrypoints
