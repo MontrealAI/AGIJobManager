@@ -127,8 +127,11 @@ insertBeforeHeadClose(`<script>(function(){
   }, { once: true });
 })();</script>`);
 
-if (!/http-equiv=["']Content-Security-Policy["']/i.test(html)) {
-  insertBeforeHeadClose('  <meta http-equiv="Content-Security-Policy" content="default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: https:; connect-src \'self\' https:; frame-ancestors \'none\'; base-uri \'none\'; form-action \'self\'">');
+const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+if (/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i.test(html)) {
+  html = html.replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/gi, `  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
+} else {
+  insertBeforeHeadClose(`  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
 }
 
 if (!/name=["']referrer["']/i.test(html)) {

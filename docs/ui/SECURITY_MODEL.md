@@ -8,7 +8,7 @@
 ## Controls
 - **simulation-first** write flow with explicit preflight checks.
 - URI allowlist (`https://`, `http://`, `ipfs://`, `ens://`) and blocked dangerous schemes.
-- Strict security headers (CSP, frame-ancestors none, nosniff, strict referrer policy, locked permissions policy).
+- Strict security headers and IPFS-safe meta policy (CSP with `object-src 'none'`, `frame-ancestors 'none'`, no `unsafe-eval`, plus nosniff, strict referrer policy, locked permissions policy).
 - Degraded RPC banner + retry path while preserving read-only navigation.
 
 ## Limits

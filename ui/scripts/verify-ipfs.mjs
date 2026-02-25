@@ -144,6 +144,14 @@ if (!cspContent.includes("frame-ancestors 'none'")) {
   throw new Error("CSP meta content must include frame-ancestors 'none'.");
 }
 
+if (cspContent.includes("'unsafe-eval'")) {
+  throw new Error("CSP meta content must not include 'unsafe-eval'.");
+}
+
+if (!cspContent.includes("object-src 'none'")) {
+  throw new Error("CSP meta content must include object-src 'none'.");
+}
+
 const referrerMeta = metaTags.find((attrs) => (attrs.get('name') || '').toLowerCase() === 'referrer');
 if (!referrerMeta) {
   throw new Error('Referrer policy meta tag is missing from IPFS artifact.');
@@ -236,6 +244,141 @@ for (const body of scriptBodies) {
 }
 if (localScriptFetches.length > 0) {
   throw new Error(`Local sidecar fetches detected in script bodies: ${localScriptFetches.slice(0, 5).join(', ')}`);
+}
+
+const stripCommentsAndStrings = (code) => {
+  let result = '';
+  let i = 0;
+  let state = 'normal';
+
+  while (i < code.length) {
+    const ch = code[i];
+    const next = code[i + 1] ?? '';
+
+    if (state === 'normal') {
+      if (ch === '/' && next === '/') {
+        state = 'line-comment';
+        result += '  ';
+        i += 2;
+        continue;
+      }
+      if (ch === '/' && next === '*') {
+        state = 'block-comment';
+        result += '  ';
+        i += 2;
+        continue;
+      }
+      if (ch === "'") {
+        state = 'single-quote';
+        result += ' ';
+        i += 1;
+        continue;
+      }
+      if (ch === '"') {
+        state = 'double-quote';
+        result += ' ';
+        i += 1;
+        continue;
+      }
+      if (ch === '`') {
+        state = 'template';
+        result += ' ';
+        i += 1;
+        continue;
+      }
+      result += ch;
+      i += 1;
+      continue;
+    }
+
+    if (state === 'line-comment') {
+      if (ch === '\n') {
+        state = 'normal';
+        result += '\n';
+      } else {
+        result += ' ';
+      }
+      i += 1;
+      continue;
+    }
+
+    if (state === 'block-comment') {
+      if (ch === '*' && next === '/') {
+        state = 'normal';
+        result += '  ';
+        i += 2;
+      } else {
+        result += ch === '\n' ? '\n' : ' ';
+        i += 1;
+      }
+      continue;
+    }
+
+    if (state === 'single-quote') {
+      if (ch === '\\') {
+        result += '  ';
+        i += 2;
+        continue;
+      }
+      if (ch === "'") {
+        state = 'normal';
+        result += ' ';
+        i += 1;
+        continue;
+      }
+      result += ch === '\n' ? '\n' : ' ';
+      i += 1;
+      continue;
+    }
+
+    if (state === 'double-quote') {
+      if (ch === '\\') {
+        result += '  ';
+        i += 2;
+        continue;
+      }
+      if (ch === '"') {
+        state = 'normal';
+        result += ' ';
+        i += 1;
+        continue;
+      }
+      result += ch === '\n' ? '\n' : ' ';
+      i += 1;
+      continue;
+    }
+
+    if (state === 'template') {
+      if (ch === '\\') {
+        result += '  ';
+        i += 2;
+        continue;
+      }
+      if (ch === '`') {
+        state = 'normal';
+        result += ' ';
+        i += 1;
+        continue;
+      }
+      result += ch === '\n' ? '\n' : ' ';
+      i += 1;
+    }
+  }
+
+  return result;
+};
+
+const normalizedScriptBodies = scriptBodies.map(stripCommentsAndStrings);
+const uncommentedScriptBodies = scriptBodies.map((body) => body
+  .replace(/\/\*[\s\S]*?\*\//g, ' ')
+  .replace(/(^|[^:])\/\/.*$/gm, '$1 '));
+const hasHashAccess = normalizedScriptBodies.some((body) => /\bwindow\.location\.hash\b/.test(body));
+const hasPushStateLogic = normalizedScriptBodies.some((body) => /\bhistory\.pushState\b/.test(body));
+const hasRoutingHook = uncommentedScriptBodies.some((body) => /\baddEventListener\s*\(\s*(["'`])hashchange\1/.test(body))
+  || normalizedScriptBodies.some((body) => /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
+
+if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
+  throw new Error('Hash routing guard is missing from single-file artifact.');
 }
 
 console.log('IPFS artifact verified: single-file, no external local assets, security metas present.');
