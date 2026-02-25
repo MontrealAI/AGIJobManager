@@ -6,6 +6,7 @@ Institutional-grade Next.js dApp + operations console with **read-only first**, 
 - [Overview](./OVERVIEW.md)
 - [Architecture](./ARCHITECTURE.md)
 - [Job Lifecycle](./JOB_LIFECYCLE.md)
+- [ENS Identity Layer](./IDENTITY_LAYER.md)
 - [Ops Runbook](./OPS_RUNBOOK.md)
 - [Security Model](./SECURITY_MODEL.md)
 - [Design System](./DESIGN_SYSTEM.md)

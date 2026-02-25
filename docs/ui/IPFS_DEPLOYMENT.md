@@ -11,6 +11,7 @@ cd ui
 npm ci
 npm run build:ipfs
 npm run verify:singlefile
+npm run check:deterministic-build
 ```
 
 Expected output:
@@ -30,6 +31,10 @@ https://ipfs.io/ipfs/<CID>
 ```
 
 Hash-based navigation is used, so routes like `#/jobs/1` are gateway-safe.
+
+## Determinism note
+
+`npm run check:deterministic-build` performs two consecutive builds. Because Next.js injects a per-build `buildId` into bootstrap payloads, the script computes both raw hashes and a normalized stable hash with only `buildId` redacted. The normalized hash must match.
 
 ## Security controls in artifact
 
