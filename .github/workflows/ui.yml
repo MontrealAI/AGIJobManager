@@ -36,7 +36,8 @@ jobs:
       - run: npm run test:e2e
       - run: npm run test:a11y
       - run: npm run test:headers
-      - run: npm run build:ipfs
+      - run: node -e "require('node:fs').rmSync('.next', { recursive: true, force: true })"
+      - run: env -u NEXT_PUBLIC_DEMO_MODE -u NEXT_PUBLIC_DEMO_ACTOR -u NEXT_PUBLIC_CHAIN_ID -u NEXT_PUBLIC_AGI_JOB_MANAGER_ADDRESS -u NEXT_PUBLIC_AGI_TOKEN_ADDRESS npm run build:ipfs
       - run: npm run test:security
       - run: npm run docs:check
       - run: npm run verify:singlefile
