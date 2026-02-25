@@ -7,6 +7,7 @@ on:
       - 'docs/ui/**'
       - '.github/workflows/ui.yml'
       - 'README.md'
+      - 'agijobmanager.html'
       - 'hardhat/deployments/mainnet/**'
 
 jobs:
@@ -27,7 +28,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.19.6
           cache: npm
           cache-dependency-path: ui/package-lock.json
       - run: npm ci
@@ -45,4 +46,5 @@ jobs:
       - run: npm run test:security
       - run: npm run docs:check
       - run: npm run verify:singlefile
-      - run: npm run check:deterministic-build
+      - run: npm run verify:deterministic
+      - run: npm run verify:committed-html
