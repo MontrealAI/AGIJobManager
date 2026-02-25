@@ -116,6 +116,18 @@ npm run build:ipfs
 npm run verify:singlefile
 ```
 
+Immediate single-file artifact (IPFS-ready):
+- `agijobmanager.html` (repo root)
+
+Refresh committed artifact (use Node `20.11.0` from `ui/.nvmrc` for reproducible output):
+```bash
+cd ui
+nvm use || true
+npm run build:ipfs
+cp dist-ipfs/agijobmanager.html ../agijobmanager.html
+npm run verify:committed-html
+```
+
 ## Local setup and CI-equivalent entrypoints
 
 ```bash
