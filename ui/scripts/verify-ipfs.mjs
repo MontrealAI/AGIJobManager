@@ -246,7 +246,19 @@ if (localScriptFetches.length > 0) {
   throw new Error(`Local sidecar fetches detected in script bodies: ${localScriptFetches.slice(0, 5).join(', ')}`);
 }
 
-if (!html.includes('window.location.hash') || !html.includes('history.pushState')) {
+const hasBootstrapRouteScript = scriptBodies.some((body) =>
+  /window\.__IPFS_BOOTSTRAP_ROUTE__\s*=/.test(body) &&
+  /history\.replaceState\(history\.state,\s*'',\s*bootstrapUrl\)/.test(body) &&
+  /window\.location\.hash\s*\|\|/.test(body)
+);
+
+const hasHashRoutingShimScript = scriptBodies.some((body) =>
+  /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body) &&
+  /history\.(?:pushState|replaceState)\.bind\(history\)/.test(body) &&
+  /navigateHashRoute\(/.test(body)
+);
+
+if (!hasBootstrapRouteScript || !hasHashRoutingShimScript) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
 }
 

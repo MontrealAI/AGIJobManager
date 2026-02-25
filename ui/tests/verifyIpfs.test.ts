@@ -25,7 +25,7 @@ function runVerifierWithHtml(html: string) {
 const secureHtml = `<!doctype html><html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="no-referrer">
-</head><body><h1>ok</h1><script>if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}</script></body></html>`;
+</head><body><h1>ok</h1><script>const rawHash=window.location.hash||'';const bootstrapUrl='/ok';window.__IPFS_BOOTSTRAP_ROUTE__='/ok';history.replaceState(history.state,'',bootstrapUrl);</script><script>const rawPushState=history.pushState.bind(history);const rawReplaceState=history.replaceState.bind(history);function navigateHashRoute(path){return path;}window.addEventListener('hashchange',()=>{navigateHashRoute(window.location.hash.slice(1));rawReplaceState(history.state,'','#/ok');});</script></body></html>`;
 
 afterEach(() => {
   for (const root of tmpRoots.splice(0)) {
@@ -144,6 +144,11 @@ describe('verify-ipfs script src attribute hardening', () => {
 
   it('fails when hash routing bootstrap logic is absent', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>ok</body></html>`);
+    expect(run).toThrow(/Hash routing guard is missing/);
+  });
+
+  it('fails when routing tokens exist only as inert strings', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>const a='window.location.hash'; const b='history.pushState';</script></body></html>`);
     expect(run).toThrow(/Hash routing guard is missing/);
   });
 
