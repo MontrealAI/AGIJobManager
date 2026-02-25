@@ -6,12 +6,14 @@ flowchart TD
   B --> C[/jobs/:jobId/]
   A --> D[/admin/]
   A --> E[/design/]
+  A --> F[/advanced/]
   subgraph Clients
     A
     B
     C
     D
     E
+    F
   end
   Clients --> Q[React Query cache]
   Clients --> W[wagmi + viem]

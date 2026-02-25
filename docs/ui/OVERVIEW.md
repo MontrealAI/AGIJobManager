@@ -4,6 +4,7 @@ The Sovereign Ops Console targets three audiences:
 1. **Read-only observers** (no wallet)
 2. **Operational actors** (employer/agent/validator/moderator)
 3. **Owner administrators** (pause, policy, treasury)
+4. **Advanced contract operators** (full ABI access with simulation-first writes)
 
 ## Modes
 | Mode | Wallet Required | Capabilities |
@@ -16,3 +17,10 @@ The Sovereign Ops Console targets three audiences:
 - Treat all strings and URIs as adversarial inputs.
 - Validate network + role before writes.
 - Use degraded-RPC indicators to avoid stale operational decisions.
+
+## Console routes
+- `#/` Dashboard
+- `#/jobs` and `#/jobs/:jobId`
+- `#/admin`
+- `#/advanced` full ABI console (read + simulate-first write)
+- `#/deployment` and `#/design`
