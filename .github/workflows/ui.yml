@@ -43,8 +43,8 @@ jobs:
       - run: npm run test:a11y
       - run: npm run test:headers
       - run: npm run build:ipfs
+      - run: npm run verify:committed-html
       - run: npm run test:security
       - run: npm run docs:check
       - run: npm run verify:singlefile
       - run: npm run verify:deterministic
-      - run: npm run verify:committed-html
