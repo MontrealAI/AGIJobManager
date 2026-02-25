@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.19.6
           cache: npm
           cache-dependency-path: ui/package-lock.json
 
@@ -50,6 +50,7 @@ jobs:
           mkdir -p ../.pages-dist
           cp dist-ipfs/agijobmanager.html ../.pages-dist/index.html
           cp dist-ipfs/agijobmanager.html ../.pages-dist/agijobmanager.html
+          touch ../.pages-dist/.nojekyll
 
       - name: Publish to gh-pages
         working-directory: .pages-dist
@@ -58,7 +59,7 @@ jobs:
           git checkout -b gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html agijobmanager.html
+          git add index.html agijobmanager.html .nojekyll
           git commit -m "Deploy Sovereign Ops Console"
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin gh-pages
