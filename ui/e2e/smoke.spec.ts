@@ -14,3 +14,9 @@ test('admin unauthorized', async ({ page }) => {
   await page.goto('/admin');
   await expect(page.getByText(/Not authorized/)).toBeVisible();
 });
+
+
+test('advanced console renders', async ({ page }) => {
+  await page.goto('/advanced');
+  await expect(page.getByTestId('advanced-console')).toBeVisible();
+});
