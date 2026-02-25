@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const checkMode = process.argv.includes('--check');
 const repoRoot = path.resolve(process.cwd(), '..');
 const deploymentPath = path.join(repoRoot, 'hardhat/deployments/mainnet/deployment.1.24522684.json');
 const solcInputPath = path.join(repoRoot, 'hardhat/deployments/mainnet/solc-input.json');
@@ -29,5 +30,21 @@ const payload = {
 };
 
 const content = `export const OFFICIAL_DEPLOYMENT = ${JSON.stringify(payload, null, 2)} as const;\n`;
-fs.writeFileSync(outputPath, content);
-console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
+
+if (checkMode) {
+  if (!fs.existsSync(outputPath)) {
+    throw new Error(`Missing generated file: ${path.relative(repoRoot, outputPath)}. Run npm run sync:deployment.`);
+  }
+
+  const current = fs.readFileSync(outputPath, 'utf8');
+  if (current !== content) {
+    throw new Error(
+      `${path.relative(repoRoot, outputPath)} is stale versus hardhat/deployments/mainnet artifacts. Run npm run sync:deployment and commit the result.`
+    );
+  }
+
+  console.log(`Verified ${path.relative(repoRoot, outputPath)} is up to date.`);
+} else {
+  fs.writeFileSync(outputPath, content);
+  console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
+}
