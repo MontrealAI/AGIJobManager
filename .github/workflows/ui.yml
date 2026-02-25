@@ -45,4 +45,5 @@ jobs:
       - run: npm run test:security
       - run: npm run docs:check
       - run: npm run verify:singlefile
-      - run: npm run check:deterministic-build
+      - run: npm run verify:deterministic
+      - run: npm run verify:committed-html
