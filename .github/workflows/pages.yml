@@ -13,6 +13,11 @@ on:
 permissions:
   contents: write
 
+
+concurrency:
+  group: pages-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy-pages:
     runs-on: ubuntu-latest
