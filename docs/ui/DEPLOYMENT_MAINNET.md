@@ -1,21 +1,26 @@
 # Mainnet Deployment Registry
 
-- Generated at: 2026-02-23T22:52:37.680Z
+- Generated at: 2026-02-25T03:47:11.000Z
 - Source artifacts:
   - hardhat/deployments/mainnet/deployment.1.24522684.json
+  - hardhat/deployments/mainnet/ens-job-pages/deployment.1.24531331.json
   - hardhat/deployments/mainnet/verify-targets.json
   - hardhat/deployments/mainnet/solc-input.json
 
 ## Official release
 
-- Release tag: v0.1.0-mainnet-beta
+- AGIJobManager: v0.1.0-mainnet-beta
+- ENSJobPages: v0.2.0-mainnet-identity-layer
 - Chain ID: 1
-- Deployer: 0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E
-- Final owner: 0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201
+- Explorer: https://etherscan.io
+- AGIJobManager deployer: 0x6c8B8897Fb6b08B4070387233B89b3E9A94eD00E
+- AGIJobManager final owner: 0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201
 - AGIJobManager: 0xB3AAeb69b630f0299791679c063d68d6687481d1
-- Deployment block: 24522684
+- AGIJobManager deployment block: 24522684
+- ENSJobPages: 0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94
+- ENSJobPages deployment block: 24531331
 
-## Linked libraries
+## Linked libraries (AGIJobManager)
 
 | Library | Address |
 | --- | --- |
@@ -25,7 +30,7 @@
 | ReputationMath | 0x4F64e44a3693489289B1F20D55CF56130fE66C0b |
 | ENSOwnership | 0x6852a13650F5c90342663c9fF7555f97F62515c8 |
 
-## Constructor arguments
+## Constructor arguments (AGIJobManager)
 
 ```json
 {
@@ -46,6 +51,63 @@
     "0x0effa6c54d4c4866ca6e9f4fc7426ba49e70e8f6303952e04c8f0218da68b99b"
   ]
 }
+```
+
+## Constructor arguments (ENSJobPages)
+
+```json
+{
+  "ENSJobPages": {
+    "ensAddress": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    "nameWrapperAddress": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+    "publicResolverAddress": "0xF29100983E058B709F3D539b0c765937B804AC15",
+    "rootNode": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690",
+    "rootName": "alpha.jobs.agi.eth"
+  }
+}
+```
+
+## Identity wiring calls (ENS deployment artifact calls[])
+
+```json
+[
+  {
+    "contract": "ENSJobPages",
+    "address": "0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94",
+    "function": "setJobManager(address)",
+    "args": {
+      "jobManager": "0xB3AAeb69b630f0299791679c063d68d6687481d1"
+    },
+    "txHash": "0xac2fd0dae7a1bc312eeb44b86734f73f61422d602b1194f862fb1d84a89f631b",
+    "blockNumber": 24531335,
+    "timestamp": "2026-02-25T03:47:59.000Z"
+  },
+  {
+    "contract": "NameWrapper",
+    "address": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+    "function": "setApprovalForAll(address,bool)",
+    "args": {
+      "operator": "0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94",
+      "approved": true
+    },
+    "txHash": "0x2079a282e0cba9505f5e51e1495f2113e4ca2bfa5cb52324a89247174ecf41b4",
+    "blockNumber": 24531401,
+    "timestamp": "2026-02-25T04:01:11.000Z",
+    "note": "Required only when the jobs root is wrapped in the ENS NameWrapper; authorizes ENSJobPages to create subnames under the wrapped root."
+  },
+  {
+    "contract": "AGIJobManager",
+    "address": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+    "function": "setEnsJobPages(address)",
+    "args": {
+      "ensJobPages": "0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94"
+    },
+    "txHash": "0x1df147a640999d4c4406f6d1007571ebf1cc1379a5ae53250394d86608d65e6b",
+    "blockNumber": 24531440,
+    "timestamp": "2026-02-25T04:08:59.000Z",
+    "note": "Executed by the AGIJobManager owner to wire ENS job pages into the mainnet beta deployment."
+  }
+]
 ```
 
 ## Verification
