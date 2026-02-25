@@ -106,4 +106,10 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Local sidecar fetches detected in script bodies/);
   });
 
+
+  it('fails when script body assigns local script src through a variable', () => {
+    const run = runVerifierWithHtml(`${secureHtml}<script>const p='/_next/chunk.js'; const s=document.createElement('script'); s.src=p; document.body.appendChild(s);</script>`);
+    expect(run).toThrow(/Local sidecar fetches detected in script bodies/);
+  });
+
 });

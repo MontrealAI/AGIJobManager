@@ -172,6 +172,12 @@ const scriptInjectionPatterns = [
   /\.setAttribute\(\s*(["'])src\1\s*,\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\2\s*\)/gi
 ];
 
+const localUrlVarPattern = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(["'`])((?:\.{1,2}\/|\/)[^"'`]*)\2\s*;?/gi;
+const variableSrcPatterns = [
+  /\.src\s*=\s*([A-Za-z_$][\w$]*)/gi,
+  /\.setAttribute\(\s*(["'])src\1\s*,\s*([A-Za-z_$][\w$]*)\s*\)/gi
+];
+
 const localScriptFetches = [];
 for (const body of scriptBodies) {
   for (const pattern of scriptPatterns) {
@@ -184,6 +190,18 @@ for (const body of scriptBodies) {
     for (const pattern of scriptInjectionPatterns) {
       for (const match of body.matchAll(pattern)) {
         localScriptFetches.push(match[0]);
+      }
+    }
+
+    const localUrlVars = new Set([...body.matchAll(localUrlVarPattern)].map((m) => m[1]));
+    if (localUrlVars.size > 0) {
+      for (const pattern of variableSrcPatterns) {
+        for (const match of body.matchAll(pattern)) {
+          const varName = match[1] ?? match[2];
+          if (varName && localUrlVars.has(varName)) {
+            localScriptFetches.push(match[0]);
+          }
+        }
       }
     }
   }
