@@ -23,9 +23,9 @@ function runVerifierWithHtml(html: string) {
 }
 
 const secureHtml = `<!doctype html><html><head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="no-referrer">
-</head><body><h1>ok</h1></body></html>`;
+</head><body><h1>ok</h1><script>if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}</script></body></html>`;
 
 afterEach(() => {
   for (const root of tmpRoots.splice(0)) {
@@ -71,8 +71,20 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/frame-ancestors 'none'/);
   });
 
+  it('fails when CSP allows unsafe-eval', () => {
+    const weakCsp = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-eval'"><meta name="referrer" content="no-referrer"></head><body><script>if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}</script></body></html>`;
+    const run = runVerifierWithHtml(weakCsp);
+    expect(run).toThrow(/must not include 'unsafe-eval'/);
+  });
+
+  it('fails when CSP is missing object-src none', () => {
+    const weakCsp = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}</script></body></html>`;
+    const run = runVerifierWithHtml(weakCsp);
+    expect(run).toThrow(/must include object-src 'none'/);
+  });
+
   it('fails when referrer policy is unsafe', () => {
-    const unsafeReferrer = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'"><meta name="referrer" content="unsafe-url"></head><body>ok</body></html>`;
+    const unsafeReferrer = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="unsafe-url"></head><body><script>if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}</script></body></html>`;
     const run = runVerifierWithHtml(unsafeReferrer);
     expect(run).toThrow(/Referrer policy meta content must be no-referrer/);
   });
@@ -128,6 +140,11 @@ describe('verify-ipfs script src attribute hardening', () => {
   it('fails when script body injects local script src via intermediate variable', () => {
     const run = runVerifierWithHtml(`${secureHtml}<script>const base='/_next/'; const file='chunk.js'; const url=base+file; const s=document.createElement('script'); s.src=url; document.body.appendChild(s);</script>`);
     expect(run).toThrow(/Local sidecar fetches detected in script bodies/);
+  });
+
+  it('fails when hash routing bootstrap logic is absent', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>ok</body></html>`);
+    expect(run).toThrow(/Hash routing guard is missing/);
   });
 
 });
