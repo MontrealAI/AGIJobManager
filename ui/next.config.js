@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  generateBuildId: async () => "agijobmanager-ipfs-v1",
   webpack: (config) => {
     config.resolve = config.resolve || {}
     config.resolve.alias = {
