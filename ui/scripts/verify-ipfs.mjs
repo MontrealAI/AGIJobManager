@@ -152,7 +152,9 @@ const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
 const scriptPatterns = [
   /\bfetch\(\s*(["'])(\.?\/|\/)[^"']*\1/gi,
   /\bimportScripts\(\s*(["'])(\.?\/|\/)[^"']*\1/gi,
-  /\bimport\(\s*(["'])(\.?\/|\/)[^"']*\1\s*\)/gi
+  /\bimport\(\s*(["'])(\.?\/|\/)[^"']*\1\s*\)/gi,
+  /\.src\s*=\s*(["'])(\.?\/|\/)[^"']*\1/gi,
+  /\bsetAttribute\(\s*(["'])src\1\s*,\s*(["'])(\.?\/|\/)[^"']*\2\s*\)/gi
 ];
 
 const localScriptFetches = [];

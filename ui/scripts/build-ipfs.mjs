@@ -103,13 +103,18 @@ insertBeforeHeadClose(`<script>(function(){
 
   const targetPath = rawHash.slice(1);
   const normalized = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
-  history.replaceState(history.state, '', normalized);
+
+  const gatewayMatch = window.location.pathname.match(/^\/(ipfs|ipns)\/[^/]+/i);
+  const gatewayBase = gatewayMatch ? gatewayMatch[0] : '';
+  const bootstrapPath = gatewayBase + normalized;
+
+  history.replaceState(history.state, '', bootstrapPath + window.location.search);
   window.__IPFS_BOOTSTRAP_ROUTE__ = normalized;
 
   window.addEventListener('DOMContentLoaded', () => {
-    const current = window.location.pathname + window.location.search;
-    if (current === normalized) {
-      history.replaceState(history.state, '', '#' + normalized);
+    const currentPath = window.location.pathname;
+    if (currentPath === bootstrapPath) {
+      history.replaceState(history.state, '', gatewayBase + window.location.search + '#' + normalized);
     }
   }, { once: true });
 })();</script>`);
@@ -146,7 +151,12 @@ insertBeforeBodyClose(`<script>(function(){
   rewriteHistory('replaceState');
 
   if (!window.location.hash && window.location.pathname !== '/' && !window.location.pathname.startsWith('/_next')) {
-    history.replaceState(history.state, '', '#' + window.location.pathname + window.location.search);
+    const gatewayMatch = window.location.pathname.match(/^\/(ipfs|ipns)\/[^/]+/i);
+    const gatewayBase = gatewayMatch ? gatewayMatch[0] : '';
+    const appPath = gatewayBase && window.location.pathname.startsWith(gatewayBase)
+      ? window.location.pathname.slice(gatewayBase.length) || '/'
+      : window.location.pathname;
+    history.replaceState(history.state, '', gatewayBase + window.location.search + '#' + appPath);
   }
 
   document.addEventListener('click', (event) => {
