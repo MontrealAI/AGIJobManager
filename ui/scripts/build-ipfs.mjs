@@ -47,7 +47,8 @@ html = html.replace(/<script\b[^>]*\ssrc=(?:"([^"]+)"|'([^']+)')\s*[^>]*><\/scri
     throw new Error(`Referenced script not found: ${src}`);
   }
   const scriptBody = fs.readFileSync(localPath, 'utf8');
-  return `<script>\n${scriptBody}\n</script>`;
+  const safeScriptBody = scriptBody.replace(/<\/script/gi, '<\\/script');
+  return `<script>\n${safeScriptBody}\n</script>`;
 });
 
 for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
@@ -246,11 +247,24 @@ insertBeforeBodyClose(`<script>(function(){
   });
 
   document.addEventListener('click', (event) => {
+    if (event.defaultPrevented) return;
+    if (event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
     const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
     if (!target) return;
+    if (target.hasAttribute('download')) return;
+
+    const rel = (target.getAttribute('rel') || '').toLowerCase();
+    if (rel.split(/\s+/).includes('external')) return;
+
+    const linkTarget = (target.getAttribute('target') || '').toLowerCase();
+    if (linkTarget && linkTarget !== '_self') return;
+
     const href = target.getAttribute('href') || '';
     const hashRoute = toHashRoute(href);
     if (!hashRoute) return;
+
     event.preventDefault();
     navigateHashRoute(hashRoute.slice(1), 'push');
   }, true);
