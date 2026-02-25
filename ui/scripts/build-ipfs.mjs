@@ -112,7 +112,7 @@ insertBeforeHeadClose(`<script>(function(){
   const normalized = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
   const gatewayBase = detectGatewayBase(window.location.pathname);
   const bootstrapPath = gatewayBase === '/' ? normalized : (gatewayBase + normalized);
-  const bootstrapUrl = bootstrapPath + window.location.search;
+  const bootstrapUrl = bootstrapPath;
 
   history.replaceState(history.state, '', bootstrapUrl);
   window.__IPFS_BOOTSTRAP_ROUTE__ = normalized;
@@ -120,7 +120,7 @@ insertBeforeHeadClose(`<script>(function(){
   window.addEventListener('DOMContentLoaded', () => {
     const current = window.location.pathname + window.location.search;
     if (current === bootstrapUrl) {
-      const hashUrl = gatewayBase + window.location.search + '#' + normalized;
+      const hashUrl = gatewayBase + '#' + normalized;
       history.replaceState(history.state, '', hashUrl);
     }
   }, { once: true });

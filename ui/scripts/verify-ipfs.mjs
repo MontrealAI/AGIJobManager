@@ -162,14 +162,14 @@ if (/<[^>]+\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(htmlWithoutScript
 
 const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
 const scriptPatterns = [
-  /\bfetch\(\s*(["'])(\.?\/|\/)[^"']*\1/gi,
-  /\bimportScripts\(\s*(["'])(\.?\/|\/)[^"']*\1/gi,
-  /\bimport\(\s*(["'])(\.?\/|\/)[^"']*\1\s*\)/gi
+  /\bfetch\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
+  /\bimportScripts\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
+  /\bimport\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1\s*\)/gi
 ];
 
 const scriptInjectionPatterns = [
-  /\.src\s*=\s*(["'])(\.?\/|\/)[^"']*\1/gi,
-  /\.setAttribute\(\s*(["'])src\1\s*,\s*(["'])(\.?\/|\/)[^"']*\2\s*\)/gi
+  /\.src\s*=\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
+  /\.setAttribute\(\s*(["'`])src\1\s*,\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\2\s*\)/gi
 ];
 
 const localScriptFetches = [];

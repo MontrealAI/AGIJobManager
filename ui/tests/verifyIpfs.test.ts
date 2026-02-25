@@ -95,6 +95,12 @@ describe('verify-ipfs script src attribute hardening', () => {
 
 
 
+
+  it('fails when script body fetches parent-directory sidecar with backticks', () => {
+    const run = runVerifierWithHtml(`${secureHtml}<script>fetch(\`../abi/AGIJobManager.json\`)</script>`);
+    expect(run).toThrow(/Local sidecar fetches detected in script bodies/);
+  });
+
   it('fails when script body injects local script src via DOM APIs', () => {
     const run = runVerifierWithHtml(`${secureHtml}<script>const s=document.createElement('script'); s.src='/_next/chunk.js'; document.body.appendChild(s);</script>`);
     expect(run).toThrow(/Local sidecar fetches detected in script bodies/);
