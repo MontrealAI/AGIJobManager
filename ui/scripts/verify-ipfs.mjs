@@ -96,6 +96,33 @@ if (disallowedRefs.length > 0) {
   throw new Error(`Relative or unsupported asset references found: ${sample.join(', ')}`);
 }
 
+
+const cssUrlMatches = [];
+for (const styleTag of htmlWithoutScripts.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
+  const css = styleTag[1] ?? '';
+  for (const urlMatch of css.matchAll(/url\(([^)]+)\)/gi)) {
+    const raw = (urlMatch[1] ?? '').trim().replace(/^['"]|['"]$/g, '').trim();
+    if (raw) cssUrlMatches.push(raw);
+  }
+}
+
+for (const styleAttrTag of htmlWithoutScripts.matchAll(/<[^>]+\bstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))[^>]*>/gi)) {
+  const styleValue = (styleAttrTag[1] ?? styleAttrTag[2] ?? styleAttrTag[3] ?? '').trim();
+  for (const urlMatch of styleValue.matchAll(/url\(([^)]+)\)/gi)) {
+    const raw = (urlMatch[1] ?? '').trim().replace(/^['"]|['"]$/g, '').trim();
+    if (raw) cssUrlMatches.push(raw);
+  }
+}
+
+const disallowedCssUrls = cssUrlMatches.filter((url) => {
+  const lower = url.toLowerCase();
+  return !(lower.startsWith('data:') || lower.startsWith('#'));
+});
+
+if (disallowedCssUrls.length > 0) {
+  throw new Error(`External CSS url() references found: ${disallowedCssUrls.slice(0, 5).join(', ')}`);
+}
+
 const metaTags = [...htmlWithoutScripts.matchAll(/<meta\b[^>]*>/gi)].map((m) => parseTagAttributes(m[0]));
 const cspMeta = metaTags.find((attrs) => (attrs.get('http-equiv') || '').toLowerCase() === 'content-security-policy');
 if (!cspMeta) {

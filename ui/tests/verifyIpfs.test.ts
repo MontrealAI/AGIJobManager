@@ -76,4 +76,11 @@ describe('verify-ipfs script src attribute hardening', () => {
     const run = runVerifierWithHtml(unsafeReferrer);
     expect(run).toThrow(/Referrer policy meta content must be no-referrer/);
   });
+
+
+  it('fails when inline style tag uses remote css url()', () => {
+    const html = `${secureHtml}<style>body{background-image:url(https://cdn.example.com/bg.png)}</style>`;
+    const run = runVerifierWithHtml(html);
+    expect(run).toThrow(/External CSS url\(\) references found/);
+  });
 });
