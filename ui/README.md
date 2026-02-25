@@ -24,7 +24,7 @@ npm run docs:versions
 npm run docs:contract
 npm run docs:check
 npm run build:ipfs
-npm run verify:ipfs
+npm run verify:singlefile
 ```
 
 ## Notes

@@ -24,7 +24,8 @@
     "sync:deployment": "node scripts/sync-deployment.mjs",
     "test:security": "npm run build:ipfs && node scripts/verify-ipfs.mjs",
     "build:ipfs": "npm run build && node scripts/build-ipfs.mjs",
-    "verify:ipfs": "node scripts/verify-ipfs.mjs"
+    "verify:ipfs": "node scripts/verify-ipfs.mjs",
+    "verify:singlefile": "node scripts/verify-singlefile.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.0",
