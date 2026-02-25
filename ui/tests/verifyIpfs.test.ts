@@ -12,7 +12,7 @@ function runVerifierWithHtml(html: string) {
   tmpRoots.push(root);
   const dist = path.join(root, 'dist-ipfs');
   fs.mkdirSync(dist, { recursive: true });
-  fs.writeFileSync(path.join(dist, 'index.html'), html, 'utf8');
+  fs.writeFileSync(path.join(dist, 'agijobmanager.html'), html, 'utf8');
 
   return () =>
     execFileSync(process.execPath, [verifierPath], {

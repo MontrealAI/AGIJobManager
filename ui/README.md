@@ -24,7 +24,7 @@ npm run docs:versions
 npm run docs:contract
 npm run docs:check
 npm run build:ipfs
-npm run verify:ipfs
+npm run verify:singlefile
 ```
 
 ## Notes
@@ -35,4 +35,4 @@ npm run verify:ipfs
 
 
 Single-file IPFS artifact:
-- `ui/dist-ipfs/index.html`
+- `ui/dist-ipfs/agijobmanager.html`

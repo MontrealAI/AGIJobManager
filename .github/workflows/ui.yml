@@ -43,4 +43,4 @@ jobs:
       - run: npm run build:ipfs
       - run: npm run test:security
       - run: npm run docs:check
-      - run: npm run verify:ipfs
+      - run: npm run verify:singlefile
