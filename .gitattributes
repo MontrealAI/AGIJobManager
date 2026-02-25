@@ -1,0 +1,16 @@
+# Enforce deterministic line endings for reproducible single-file artifact verification.
+agijobmanager.html text eol=lf
+ui/dist-ipfs/agijobmanager.html text eol=lf
+
+# Keep other repo text files normalized as LF where possible.
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.svg text eol=lf
