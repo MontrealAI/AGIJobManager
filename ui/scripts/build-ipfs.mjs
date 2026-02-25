@@ -162,9 +162,24 @@ insertBeforeBodyClose(`<script>(function(){
     return '#' + input;
   };
 
-  const toGatewayPath = (routePath) => gatewayBase === '/' ? routePath : gatewayBase + routePath;
+  const parseRouteTarget = (routePath) => {
+    const [rawPath, ...queryParts] = routePath.split('?');
+    const normalizedPath = rawPath && rawPath.startsWith('/') ? rawPath : '/';
+    const queryFromRoute = queryParts.length > 0 ? '?' + queryParts.join('?') : '';
+    const search = queryFromRoute || window.location.search;
+    return { normalizedPath, search };
+  };
 
-  const toHashUrl = (routePath) => gatewayBase + window.location.search + '#' + routePath;
+  const toGatewayPath = (routePath) => {
+    const { normalizedPath, search } = parseRouteTarget(routePath);
+    const basePath = gatewayBase === '/' ? normalizedPath : gatewayBase + normalizedPath;
+    return basePath + search;
+  };
+
+  const toHashUrl = (routePath) => {
+    const { normalizedPath, search } = parseRouteTarget(routePath);
+    return gatewayBase + search + '#' + normalizedPath;
+  };
 
   let suppressRewrite = false;
   const rewriteHistory = (method) => {
@@ -190,7 +205,7 @@ insertBeforeBodyClose(`<script>(function(){
   const navigateHashRoute = (routePath, mode) => {
     if (!routePath || !routePath.startsWith('/')) return;
 
-    const pathUrl = toGatewayPath(routePath) + window.location.search;
+    const pathUrl = toGatewayPath(routePath);
     suppressRewrite = true;
     if (mode === 'replace') {
       rawReplaceState(history.state, '', pathUrl);

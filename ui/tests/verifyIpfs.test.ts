@@ -82,6 +82,12 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Unsupported CSS url\(\) references found/);
   });
 
+
+  it('fails when inline style attributes contain remote url() references', () => {
+    const run = runVerifierWithHtml(`${secureHtml}<div style="background-image:url(https://cdn.example.com/a.png)">x</div>`);
+    expect(run).toThrow(/Unsupported CSS url\(\) references found/);
+  });
+
   it('fails when script body performs local sidecar fetches', () => {
     const run = runVerifierWithHtml(`${secureHtml}<script>fetch("./abi/AGIJobManager.json")</script>`);
     expect(run).toThrow(/Local sidecar fetches detected in script bodies/);

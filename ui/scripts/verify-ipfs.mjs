@@ -116,7 +116,15 @@ const cssUrlRefs = [...htmlWithoutScripts.matchAll(/<style\b[^>]*>([\s\S]*?)<\/s
   .flatMap((m) => [...m[1].matchAll(/url\(\s*(["']?)(.*?)\1\s*\)/gi)].map((x) => (x[2] || '').trim()))
   .filter(Boolean);
 
-const disallowedCssUrls = cssUrlRefs.filter((url) => !url.toLowerCase().startsWith('data:'));
+const inlineStyleAttrUrls = [...htmlWithoutScriptsAndStyles.matchAll(/<([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*>/g)]
+  .flatMap((m) => {
+    const attrs = parseTagAttributes(m[0]);
+    const style = attrs.get('style') || '';
+    return [...style.matchAll(/url\(\s*(["']?)(.*?)\1\s*\)/gi)].map((x) => (x[2] || '').trim());
+  })
+  .filter(Boolean);
+
+const disallowedCssUrls = [...cssUrlRefs, ...inlineStyleAttrUrls].filter((url) => !url.toLowerCase().startsWith('data:'));
 if (disallowedCssUrls.length > 0) {
   throw new Error(`Unsupported CSS url() references found: ${disallowedCssUrls.slice(0, 5).join(', ')}`);
 }
