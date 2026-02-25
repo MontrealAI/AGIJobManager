@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const checkMode = process.argv.includes('--check');
+
 const repoRoot = path.resolve(process.cwd(), '..');
 const deploymentPath = path.join(repoRoot, 'hardhat/deployments/mainnet/deployment.1.24522684.json');
 const solcInputPath = path.join(repoRoot, 'hardhat/deployments/mainnet/solc-input.json');
@@ -29,5 +31,14 @@ const payload = {
 };
 
 const content = `export const OFFICIAL_DEPLOYMENT = ${JSON.stringify(payload, null, 2)} as const;\n`;
-fs.writeFileSync(outputPath, content);
-console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
+
+if (checkMode) {
+  const existing = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, 'utf8') : '';
+  if (existing !== content) {
+    throw new Error('ui/src/generated/deployment.ts is stale. Run npm run sync:deployments and commit the generated file.');
+  }
+  console.log(`Deployment metadata is in sync: ${path.relative(repoRoot, outputPath)}`);
+} else {
+  fs.writeFileSync(outputPath, content);
+  console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
+}
