@@ -4,7 +4,7 @@ import path from 'node:path';
 const uiRoot = process.cwd();
 const sourcePath = path.join(uiRoot, '.next/server/app/index.html');
 const outDir = path.join(uiRoot, 'dist-ipfs');
-const outPath = path.join(outDir, 'index.html');
+const outPath = path.join(outDir, 'agijobmanager.html');
 
 if (!fs.existsSync(sourcePath)) {
   throw new Error(`Next build output not found at ${sourcePath}. Run npm run build first.`);
