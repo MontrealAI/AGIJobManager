@@ -173,6 +173,9 @@ const scriptInjectionPatterns = [
 ];
 
 const localPathVariablePattern = /\b(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\2/g;
+const localMemberPathPattern = /\b([a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]+)+)\s*=\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\2/g;
+const computedSrcLiteralPattern = /\.src\s*=\s*[^;\n]*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/g;
+const computedSetAttributeLiteralPattern = /\.setAttribute\(\s*(["'])src\1\s*,\s*[^\)]*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\2[^\)]*\)/g;
 
 const localScriptFetches = [];
 for (const body of scriptBodies) {
@@ -189,8 +192,16 @@ for (const body of scriptBodies) {
       }
     }
 
+    for (const match of body.matchAll(computedSrcLiteralPattern)) {
+      localScriptFetches.push(match[0]);
+    }
+    for (const match of body.matchAll(computedSetAttributeLiteralPattern)) {
+      localScriptFetches.push(match[0]);
+    }
+
     const localPathVariables = new Set([...body.matchAll(localPathVariablePattern)].map((m) => m[1]));
-    for (const variableName of localPathVariables) {
+    const localMemberVariables = new Set([...body.matchAll(localMemberPathPattern)].map((m) => m[1]));
+    for (const variableName of [...localPathVariables, ...localMemberVariables]) {
       const escapedName = variableName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const srcVariablePattern = new RegExp(`\\.src\\s*=\\s*${escapedName}\\b`, 'g');
       const setAttributeVariablePattern = new RegExp(`\\.setAttribute\\(\\s*(["'])src\\1\\s*,\\s*${escapedName}\\b`, 'g');
