@@ -39,6 +39,6 @@ jobs:
       - run: npm run build:ipfs
       - run: npm run test:security
       - run: npm run docs:check
-      - run: npm run verify:singlefile
+      - run: npm run verify:ipfs
       - run: npm run verify:deterministic
       - run: env -u NEXT_PUBLIC_DEMO_MODE -u NEXT_PUBLIC_DEMO_ACTOR -u NEXT_PUBLIC_CHAIN_ID -u NEXT_PUBLIC_AGI_JOB_MANAGER_ADDRESS -u NEXT_PUBLIC_AGI_TOKEN_ADDRESS npm run verify:committed-html
