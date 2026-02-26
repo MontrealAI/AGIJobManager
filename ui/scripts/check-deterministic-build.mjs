@@ -11,7 +11,13 @@ const cleanPaths = [
 ];
 
 function run(cmd) {
-  execSync(cmd, { cwd: uiRoot, stdio: 'inherit', env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' } });
+  const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
+  for (const key of Object.keys(env)) {
+    if (key.startsWith('NEXT_PUBLIC_')) {
+      delete env[key];
+    }
+  }
+  execSync(cmd, { cwd: uiRoot, stdio: 'inherit', env });
 }
 
 function cleanBuildState() {
