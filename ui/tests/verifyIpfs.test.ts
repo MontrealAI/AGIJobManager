@@ -46,8 +46,9 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 }
 
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
-  const marker = `const ${constName}`;
-  const markerIndex = html.indexOf(marker);
+  const markerPattern = new RegExp(`\\bconst\\s+${constName}\\s*=\\s*\\(`);
+  const markerMatch = markerPattern.exec(html);
+  const markerIndex = markerMatch?.index ?? -1;
   if (markerIndex < 0) return null;
 
   const scriptOpenIndex = html.lastIndexOf('<script', markerIndex);
