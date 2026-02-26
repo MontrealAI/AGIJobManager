@@ -279,6 +279,39 @@ insertIntoBody(`<script>(function(){
   }, true);
 })();</script>`);
 
+
+const extractArrowFunctionBody = (source, constName) => {
+  const marker = `const ${constName}`;
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) return null;
+
+  const openingBraceIndex = source.indexOf('{', markerIndex);
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
+};
+
+const navigateHashRouteBody = extractArrowFunctionBody(html, 'navigateHashRoute');
+if (!navigateHashRouteBody) {
+  throw new Error('Generated artifact is missing a parseable navigateHashRoute helper.');
+}
+
+if (/\brawHash\b/.test(navigateHashRouteBody)) {
+  throw new Error('Generated artifact has out-of-scope rawHash reference in navigateHashRoute.');
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html);
