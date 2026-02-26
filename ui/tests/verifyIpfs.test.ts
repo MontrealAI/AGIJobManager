@@ -252,7 +252,32 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Unable to parse navigateHashRoute body/);
   });
 
+  it('fails when navigateHashRoute bootstrap is split across script tags', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
+      <script>
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+      </script><script>
+        } else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      </script>
+    </body></html>`);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body|IPFS bootstrap script is incomplete or malformed/);
+  });
+
   it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {
+
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const navigateHashRoute = (routePath, mode) => {
         if (!routePath || !routePath.startsWith('/')) return;
