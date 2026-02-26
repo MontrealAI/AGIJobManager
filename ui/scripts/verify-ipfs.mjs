@@ -169,6 +169,11 @@ if (/<[^>]+\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(htmlWithoutScript
 
 
 const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+const cspMetaInsideScript = scriptBodies.some((body) => /<meta\b[^>]*http-equiv\s*=\s*["']Content-Security-Policy["'][^>]*>/i.test(body));
+if (cspMetaInsideScript) {
+  throw new Error('Detected Content-Security-Policy meta markup inside an inline <script> body.');
+}
+
 const scriptPatterns = [
   /\bfetch\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
   /\bimportScripts\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
