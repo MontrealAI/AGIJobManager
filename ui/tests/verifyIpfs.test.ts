@@ -163,4 +163,25 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Hash routing guard is missing/);
   });
 
+
+
+describe('build-ipfs router regression guard', () => {
+  it('keeps mode-based history updates in navigateHashRoute', () => {
+    const source = fs.readFileSync(path.resolve(__dirname, '../scripts/build-ipfs.mjs'), 'utf8');
+    const startToken = 'const navigateHashRoute = (routePath, mode) => {';
+    const endToken = "\n  };\n\n  if (!window.location.hash";
+    const blockStart = source.indexOf(startToken);
+    const blockEnd = source.indexOf(endToken);
+
+    expect(blockStart, 'navigateHashRoute block start must exist').toBeGreaterThanOrEqual(0);
+    expect(blockEnd, 'navigateHashRoute block end must exist').toBeGreaterThan(blockStart);
+
+    const block = source.slice(blockStart, blockEnd);
+    expect(block).toContain("if (mode === 'replace') {");
+    expect(block).toContain("rawReplaceState(history.state, '', pathUrl);");
+    expect(block).toContain("rawPushState(history.state, '', pathUrl);");
+    expect(block).not.toContain('rawHash.startsWith');
+  });
+});
+
 });
