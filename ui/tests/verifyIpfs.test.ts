@@ -30,10 +30,10 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
   const openingBraceIndex = source.indexOf('{', markerIndex);
   if (openingBraceIndex < 0) return null;
 
-  const preferredEndMarker = '\n\n  if (!window.location.hash && !window.location.pathname.startsWith(\'/_next\')) {';
-  const preferredEndIndex = source.indexOf(preferredEndMarker, openingBraceIndex);
-  if (preferredEndIndex > openingBraceIndex) {
-    const prefix = source.slice(openingBraceIndex + 1, preferredEndIndex);
+  const remainder = source.slice(openingBraceIndex + 1);
+  const preferredEndMatch = remainder.match(/\n\s*if \(!window\.location\.hash && !window\.location\.pathname\.startsWith\('\/_next'\)\) \{/);
+  if (preferredEndMatch && preferredEndMatch.index !== undefined) {
+    const prefix = remainder.slice(0, preferredEndMatch.index);
     return prefix.replace(/\n\s*};\s*$/, '');
   }
 
@@ -254,7 +254,13 @@ describe('verify-ipfs script src attribute hardening', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
     const scriptBlocks = [...artifactHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
-    const routeScript = scriptBlocks.find((body) => body.includes('const navigateHashRoute = (routePath, mode) => {'));
+    const routeScript = scriptBlocks.find((body) =>
+      body.includes('const navigateHashRoute = (routePath, mode) => {')
+      && body.includes("rewriteHistory('pushState')")
+      && body.includes("rewriteHistory('replaceState')")
+      && body.includes("document.addEventListener('click'")
+      && !body.includes('self.__next_f.push(')
+    );
 
     expect(routeScript, 'navigateHashRoute script block should exist in committed artifact').toBeTruthy();
 
