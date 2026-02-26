@@ -49,6 +49,7 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const candidates = scriptBodies
     .filter((body) => body.includes(`const ${constName} = (`))
+    .filter((body) => /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(body))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
