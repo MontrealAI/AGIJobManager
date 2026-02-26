@@ -20,3 +20,9 @@ test('advanced console renders', async ({ page }) => {
   await page.goto('/advanced');
   await expect(page.getByTestId('advanced-console')).toBeVisible();
 });
+
+
+test('identity console renders', async ({ page }) => {
+  await page.goto('/identity');
+  await expect(page.getByTestId('identity-console')).toBeVisible();
+});
