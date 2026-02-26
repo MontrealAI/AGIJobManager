@@ -72,24 +72,31 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
     continue;
   }
 
-  if (rel === 'icon' && href.startsWith('/')) {
-    const localPath = resolveLocalAsset(href);
-    if (!localPath || !fs.existsSync(localPath)) {
-      throw new Error(`Referenced icon not found: ${href}`);
-    }
-    const svg = fs.readFileSync(localPath, 'utf8');
-    const encoded = encodeURIComponent(svg).replace(/'/g, '%27').replace(/"/g, '%22');
-    html = html.replace(fullTag, `<link rel="icon" href="data:image/svg+xml,${encoded}" type="image/svg+xml" sizes="any"/>`);
+  if (rel === 'icon' || rel === 'apple-touch-icon' || rel === 'manifest') {
+    html = html.replace(fullTag, '');
   }
 }
 
-const insertBeforeHeadClose = (snippet) => {
-  html = html.replace('</head>', `${snippet}\n</head>`);
-};
+function createTagInsertionPoint(tagName) {
+  const openTagPattern = new RegExp(`<${tagName}\\b[^>]*>`, 'i');
+  let cursor = null;
 
-const insertBeforeBodyClose = (snippet) => {
-  html = html.replace('</body>', `${snippet}\n</body>`);
-};
+  return (snippet) => {
+    if (cursor === null) {
+      const match = openTagPattern.exec(html);
+      if (!match || match.index === undefined) {
+        throw new Error(`Unable to locate opening <${tagName}> tag in built HTML.`);
+      }
+      cursor = match.index + match[0].length;
+    }
+
+    html = `${html.slice(0, cursor)}${snippet}\n${html.slice(cursor)}`;
+    cursor += snippet.length + 1;
+  };
+}
+
+const insertIntoHead = createTagInsertionPoint('head');
+const insertIntoBody = createTagInsertionPoint('body');
 
 html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
   const href = h1 ?? h2 ?? '';
@@ -98,12 +105,12 @@ html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (ful
   return `<a${before} href="${hashHref}"${after}>`;
 });
 
-insertBeforeHeadClose(`<script>(function(){
+insertIntoHead(`<script>(function(){
   const detectGatewayBase = (pathname) => {
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return pathname === '/' ? '/' : pathname.replace(/\/+$/, '');
+    return pathname === '/' ? '/' : pathname.replace(/\\/+$/, '');
   };
 
   const rawHash = window.location.hash || '';
@@ -127,18 +134,18 @@ insertBeforeHeadClose(`<script>(function(){
   }, { once: true });
 })();</script>`);
 
-const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: ipfs:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 if (/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i.test(html)) {
   html = html.replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/gi, `  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
 } else {
-  insertBeforeHeadClose(`  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
+  insertIntoHead(`  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
 }
 
 if (!/name=["']referrer["']/i.test(html)) {
-  insertBeforeHeadClose('  <meta name="referrer" content="no-referrer">');
+  insertIntoHead('  <meta name="referrer" content="no-referrer">');
 }
 
-insertBeforeBodyClose(`<script>(function(){
+insertIntoBody(`<script>(function(){
   const detectGatewayBase = (pathname) => {
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
