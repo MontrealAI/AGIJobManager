@@ -169,6 +169,10 @@ if (/<[^>]+\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(htmlWithoutScript
 
 
 const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+if (scriptBodies.some((body) => /<meta\b[^>]*http-equiv\s*=\s*["']content-security-policy["']/i.test(body))) {
+  throw new Error('CSP meta tag markup detected inside an inline <script> body.');
+}
+
 const scriptPatterns = [
   /\bfetch\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
   /\bimportScripts\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
