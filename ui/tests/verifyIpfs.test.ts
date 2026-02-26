@@ -31,14 +31,81 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
   if (openingBraceIndex < 0) return null;
 
   let depth = 0;
+  let state: 'normal' | 'line-comment' | 'block-comment' | 'single-quote' | 'double-quote' | 'template' = 'normal';
   for (let i = openingBraceIndex; i < source.length; i += 1) {
     const ch = source[i];
-    if (ch === '{') depth += 1;
-    if (ch === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        return source.slice(openingBraceIndex + 1, i);
+    const next = source[i + 1] ?? '';
+
+    if (state === 'normal') {
+      if (ch === '/' && next === '/') {
+        state = 'line-comment';
+        i += 1;
+        continue;
       }
+      if (ch === '/' && next === '*') {
+        state = 'block-comment';
+        i += 1;
+        continue;
+      }
+      if (ch === "'") {
+        state = 'single-quote';
+        continue;
+      }
+      if (ch === '"') {
+        state = 'double-quote';
+        continue;
+      }
+      if (ch === '`') {
+        state = 'template';
+        continue;
+      }
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          return source.slice(openingBraceIndex + 1, i);
+        }
+      }
+      continue;
+    }
+
+    if (state === 'line-comment') {
+      if (ch === '\n') state = 'normal';
+      continue;
+    }
+
+    if (state === 'block-comment') {
+      if (ch === '*' && next === '/') {
+        state = 'normal';
+        i += 1;
+      }
+      continue;
+    }
+
+    if (state === 'single-quote') {
+      if (ch === '\\') {
+        i += 1;
+        continue;
+      }
+      if (ch === "'") state = 'normal';
+      continue;
+    }
+
+    if (state === 'double-quote') {
+      if (ch === '\\') {
+        i += 1;
+        continue;
+      }
+      if (ch === '"') state = 'normal';
+      continue;
+    }
+
+    if (state === 'template') {
+      if (ch === '\\') {
+        i += 1;
+        continue;
+      }
+      if (ch === '`') state = 'normal';
     }
   }
 
