@@ -78,11 +78,23 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
 }
 
 const insertBeforeHeadClose = (snippet) => {
-  html = html.replace('</head>', `${snippet}\n</head>`);
+  const bodyIndex = html.search(/<body\b/i);
+  const searchEnd = bodyIndex >= 0 ? bodyIndex : html.length;
+  const headCloseIndex = html.toLowerCase().lastIndexOf('</head>', searchEnd);
+  if (headCloseIndex < 0) {
+    throw new Error('Unable to locate head close tag before <body>.');
+  }
+
+  html = `${html.slice(0, headCloseIndex)}${snippet}\n</head>${html.slice(headCloseIndex + '</head>'.length)}`;
 };
 
 const insertBeforeBodyClose = (snippet) => {
-  html = html.replace('</body>', `${snippet}\n</body>`);
+  const bodyCloseIndex = html.toLowerCase().lastIndexOf('</body>');
+  if (bodyCloseIndex < 0) {
+    throw new Error('Unable to locate body close tag.');
+  }
+
+  html = `${html.slice(0, bodyCloseIndex)}${snippet}\n</body>${html.slice(bodyCloseIndex + '</body>'.length)}`;
 };
 
 html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
@@ -122,8 +134,12 @@ insertBeforeHeadClose(`<script>(function(){
 })();</script>`);
 
 const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: ipfs:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
-if (/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i.test(html)) {
-  html = html.replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/gi, `  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
+const bodyStartIndex = html.search(/<body\b/i);
+const headSliceEnd = bodyStartIndex >= 0 ? bodyStartIndex : html.length;
+const headSlice = html.slice(0, headSliceEnd);
+if (/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i.test(headSlice)) {
+  const updatedHeadSlice = headSlice.replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/gi, `  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
+  html = `${updatedHeadSlice}${html.slice(headSliceEnd)}`;
 } else {
   insertBeforeHeadClose(`  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
 }
