@@ -169,6 +169,15 @@ if (/<[^>]+\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(htmlWithoutScript
 
 
 const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+const navigateHelperMarker = 'const navigateHashRoute = (routePath, mode) => {';
+const navigateHelperMarkerIndex = html.indexOf(navigateHelperMarker);
+if (navigateHelperMarkerIndex >= 0) {
+  const navigateHelperWindow = html.slice(navigateHelperMarkerIndex, navigateHelperMarkerIndex + 1600);
+  if (/<\/script>\s*<script/i.test(navigateHelperWindow)) {
+    throw new Error('navigateHashRoute helper is split across script boundaries.');
+  }
+}
+
 const scriptPatterns = [
   /\bfetch\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
   /\bimportScripts\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,

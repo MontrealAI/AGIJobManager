@@ -240,6 +240,14 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Unable to parse navigateHashRoute body/);
   });
 
+  it('fails when navigateHashRoute is split across script boundaries', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
+      <script>const navigateHashRoute = (routePath, mode) => { if (!routePath) return; </script>
+      <script>window.addEventListener('hashchange',()=>{});</script>
+    </body></html>`);
+    expect(run).toThrow(/split across script boundaries/);
+  });
+
   it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const navigateHashRoute = (routePath, mode) => {
