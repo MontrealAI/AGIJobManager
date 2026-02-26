@@ -251,12 +251,21 @@ describe('verify-ipfs script src attribute hardening', () => {
 
     expect(routeScript, 'navigateHashRoute script block should exist in committed artifact').toBeTruthy();
 
-    const navigateBody = routeScript ? extractArrowFunctionBody(routeScript, 'navigateHashRoute') : null;
-    expect(navigateBody, 'navigateHashRoute body should be parseable in committed artifact').not.toBeNull();
+    const functionStart = routeScript?.indexOf('const navigateHashRoute = (routePath, mode) => {') ?? -1;
+    const hashListenerStart = routeScript?.indexOf("window.addEventListener('hashchange'", functionStart) ?? -1;
 
-    const body = navigateBody ?? '';
-    expect(body).not.toContain('</script>');
-    expect(body).not.toMatch(/\brawHash\b/);
+    expect(functionStart, 'navigateHashRoute declaration should exist in committed artifact script block').toBeGreaterThanOrEqual(0);
+    expect(hashListenerStart, 'hashchange listener should exist after navigateHashRoute declaration').toBeGreaterThan(functionStart);
+
+    const helperSection = functionStart >= 0 && hashListenerStart > functionStart
+      ? routeScript?.slice(functionStart, hashListenerStart) ?? ''
+      : '';
+
+    expect(helperSection).not.toContain('</script>');
+    expect(helperSection).not.toMatch(/\brawHash\b/);
+    expect(helperSection).toContain("if (mode === 'replace')");
+    expect(helperSection).toMatch(/\brawReplaceState\b/);
+    expect(helperSection).toMatch(/\brawPushState\b/);
   });
 
   it('passes when navigateHashRoute only uses its own inputs', () => {
