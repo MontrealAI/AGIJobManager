@@ -8,8 +8,18 @@ const repoRoot = path.resolve(uiRoot, '..');
 const builtHtml = path.join(uiRoot, 'dist-ipfs', 'agijobmanager.html');
 const committedHtml = path.join(repoRoot, 'agijobmanager.html');
 
+function createDeterministicBuildEnv() {
+  const sanitized = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
+  for (const key of Object.keys(sanitized)) {
+    if (key.startsWith('NEXT_PUBLIC_')) {
+      delete sanitized[key];
+    }
+  }
+  return sanitized;
+}
+
 // Always rebuild from the current environment to avoid stale artifacts from earlier workflow steps.
-execSync('npm run build:ipfs', { cwd: uiRoot, stdio: 'inherit', env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' } });
+execSync('npm run build:ipfs', { cwd: uiRoot, stdio: 'inherit', env: createDeterministicBuildEnv() });
 
 if (!fs.existsSync(builtHtml)) {
   throw new Error(`Missing build artifact ${path.relative(repoRoot, builtHtml)} after build:ipfs.`);
