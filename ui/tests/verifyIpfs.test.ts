@@ -23,7 +23,7 @@ function runVerifierWithHtml(html: string) {
 }
 
 function extractArrowFunctionBody(source: string, constName: string): string | null {
-  const declarationPattern = new RegExp(`\\bconst\\s+${constName}\\s*=\\s*\\(`);
+  const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
   const markerMatch = declarationPattern.exec(source);
   const markerIndex = markerMatch?.index ?? -1;
   if (markerIndex < 0) return null;
@@ -47,7 +47,7 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 }
 
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
-  const declarationPattern = new RegExp(`\\bconst\\s+${constName}\\s*=\\s*\\(`);
+  const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const candidates = scriptBodies
     .filter((body) => declarationPattern.test(body))
@@ -305,6 +305,25 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\bmode\b/);
     expect(body).toMatch(/\brawReplaceState\b/);
     expect(body).toMatch(/\brawPushState\b/);
+  });
+
+
+  it('passes when navigateHashRoute uses let declaration', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      let navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { rawReplaceState(history.state, '', routePath); }
+        else { rawPushState(history.state, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`);
+    expect(run).not.toThrow();
   });
 
   it('passes when navigateHashRoute only uses its own inputs', () => {
