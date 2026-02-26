@@ -163,6 +163,12 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Hash routing guard is missing/);
   });
 
+
+  it('fails when hash bootstrap script is prematurely terminated before Next flight scripts', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>if (!rawHash.startsWith('#/')) return;</script><script>(self.__next_f=self.__next_f||[]).push([0]);</script></body></html>`);
+    expect(run).toThrow(/prematurely terminated/);
+  });
+
   it('fails when navigateHashRoute references rawHash from the hashchange scope', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const navigateHashRoute = (routePath, mode) => {

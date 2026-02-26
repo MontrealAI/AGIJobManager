@@ -16,6 +16,11 @@ if (entries.length !== 1 || entries[0] !== 'agijobmanager.html') {
 
 const html = fs.readFileSync(artifactPath, 'utf8');
 
+
+if (/if\s*\(!rawHash\.startsWith\(['"`]#\/['"`]\)\)\s*return;\s*<\/script>\s*<script>\(self\.__next_f/m.test(html)) {
+  throw new Error('Hash-routing bootstrap script is prematurely terminated before Next flight scripts.');
+}
+
 function parseTagAttributes(tagText) {
   const attrs = new Map();
   const attrRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
