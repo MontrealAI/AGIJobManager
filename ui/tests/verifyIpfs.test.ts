@@ -163,4 +163,108 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Hash routing guard is missing/);
   });
 
+
+  it('fails when bootstrap hash script is prematurely terminated', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
+      <script>(function(){const detectGatewayBase=(pathname)=>pathname;const rawHash=window.location.hash||'';if(!rawHash.startsWith('#/')) return;</script>
+      <script>window.addEventListener('hashchange',()=>{if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}});</script>
+    </body></html>`);
+    expect(run).toThrow(/IPFS bootstrap script is incomplete or malformed/);
+  });
+
+  it('fails when navigateHashRoute references rawHash from the hashchange scope', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).toThrow(/references rawHash inside navigateHashRoute/);
+  });
+
+
+  it('fails when navigateHashRoute is present but unparseable', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+      // truncated body intentionally (missing closing brace)
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        history.pushState({}, '', rawHash.slice(1));
+      });
+    </script></body></html>`);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body/);
+  });
+
+  it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).toThrow(/missing required push\/replace history rewrite logic/);
+  });
+
+
+  it('committed artifact keeps rawHash out of navigateHashRoute helper', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+    const marker = 'const navigateHashRoute = (routePath, mode) => {';
+    const markerIndex = artifactHtml.indexOf(marker);
+    expect(markerIndex, 'navigateHashRoute should exist in committed artifact').toBeGreaterThanOrEqual(0);
+
+    const bodyStart = artifactHtml.indexOf('{', markerIndex);
+    expect(bodyStart, 'navigateHashRoute opening brace should exist').toBeGreaterThanOrEqual(0);
+
+    let depth = 0;
+    let bodyEnd = -1;
+    for (let i = bodyStart; i < artifactHtml.length; i += 1) {
+      const ch = artifactHtml[i];
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          bodyEnd = i;
+          break;
+        }
+      }
+    }
+
+    expect(bodyEnd, 'navigateHashRoute body should be parseable in committed artifact').toBeGreaterThan(bodyStart);
+
+    const navigateBody = artifactHtml.slice(bodyStart + 1, bodyEnd);
+    expect(navigateBody).not.toContain('</script>');
+    expect(navigateBody).not.toMatch(/\brawHash\b/);
+  });
+
+  it('passes when navigateHashRoute only uses its own inputs', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).not.toThrow();
+  });
+
 });
