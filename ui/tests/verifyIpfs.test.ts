@@ -163,4 +163,52 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Hash routing guard is missing/);
   });
 
+  it('fails when navigateHashRoute references rawHash from the hashchange scope', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).toThrow(/references rawHash inside navigateHashRoute/);
+  });
+
+  it('passes when navigateHashRoute only uses its own inputs', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).not.toThrow();
+  });
+
+  it('fails when navigateHashRoute exists but its body is unparseable/truncated', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+      
+    </script><script>
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        history.pushState({}, '', rawHash.slice(1));
+      });
+    </script></body></html>`);
+    expect(run).toThrow(/unparseable navigateHashRoute body/);
+  });
+
 });
