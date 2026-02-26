@@ -169,6 +169,22 @@ if (/<[^>]+\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(htmlWithoutScript
 
 
 const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+
+const bootstrapScriptBody = scriptBodies.find((body) => body.includes('__IPFS_BOOTSTRAP_ROUTE__'));
+if (bootstrapScriptBody) {
+  const bootstrapInvariants = [
+    "history.replaceState(history.state, '', bootstrapUrl);",
+    "window.addEventListener('DOMContentLoaded'",
+    "history.replaceState(history.state, '', hashUrl);"
+  ];
+
+  for (const invariant of bootstrapInvariants) {
+    if (!bootstrapScriptBody.includes(invariant)) {
+      throw new Error(`IPFS bootstrap script appears truncated or malformed (missing: ${invariant}).`);
+    }
+  }
+}
+
 const scriptPatterns = [
   /\bfetch\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
   /\bimportScripts\(\s*(["'`])(?:\.{1,2}\/|\/)[^"'`]*\1/gi,
@@ -376,6 +392,44 @@ const hasHashAccess = normalizedScriptBodies.some((body) => /\bwindow\.location\
 const hasPushStateLogic = normalizedScriptBodies.some((body) => /\bhistory\.pushState\b/.test(body));
 const hasRoutingHook = uncommentedScriptBodies.some((body) => /\baddEventListener\s*\(\s*(["'`])hashchange\1/.test(body))
   || normalizedScriptBodies.some((body) => /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
+
+const extractArrowFunctionBody = (source, constName) => {
+  const marker = `const ${constName}`;
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) return null;
+
+  const openingBraceIndex = source.indexOf('{', markerIndex);
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
+};
+
+for (const body of normalizedScriptBodies) {
+  const hasNavigateHashRoute = body.includes('const navigateHashRoute');
+  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+
+  if (hasNavigateHashRoute && !navigateHashRouteBody) {
+    throw new Error('Unable to parse navigateHashRoute body in single-file artifact.');
+  }
+
+  if (!navigateHashRouteBody) continue;
+
+  if (/\brawHash\b/.test(navigateHashRouteBody)) {
+    throw new Error('Hash routing guard references rawHash inside navigateHashRoute, which can break history rewrites.');
+  }
+}
 
 if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
