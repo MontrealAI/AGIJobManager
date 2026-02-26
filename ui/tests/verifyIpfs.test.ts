@@ -22,6 +22,60 @@ function runVerifierWithHtml(html: string) {
     });
 }
 
+function extractArrowFunctionBody(source: string, constName: string): string | null {
+  const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
+  const functionPattern = new RegExp(`\\bfunction\\s+${constName}\\s*\\(`);
+  const markerMatches = [declarationPattern.exec(source), functionPattern.exec(source)].filter((match) => Boolean(match));
+  const markerIndex = markerMatches.length > 0 ? Math.min(...markerMatches.map((match) => match.index)) : -1;
+  if (markerIndex < 0) return null;
+
+  const openingBraceIndex = source.indexOf('{', markerIndex);
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
+  const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
+  const functionPattern = new RegExp(`\\bfunction\\s+${constName}\\s*\\(`);
+  const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  const candidates = scriptBodies
+    .filter((body) => declarationPattern.test(body) || functionPattern.test(body))
+    .filter((body) => /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(body))
+    .map((body) => extractArrowFunctionBody(body, constName))
+    .filter((body): body is string => Boolean(body));
+
+  if (candidates.length === 0) {
+    const declarationMatch = declarationPattern.exec(html);
+    const functionMatch = functionPattern.exec(html);
+    const markerIndex = [declarationMatch, functionMatch]
+      .filter((match): match is RegExpExecArray => Boolean(match))
+      .map((match) => match.index)
+      .sort((a, b) => a - b)[0] ?? -1;
+    if (markerIndex < 0) return null;
+
+    const nearby = html.slice(Math.max(0, markerIndex - 512), markerIndex + 4096);
+    if (!/\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(nearby)) return null;
+
+    return extractArrowFunctionBody(html, constName);
+  }
+
+  const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
+  return strongestCandidate ?? candidates[0];
+}
+
 const secureHtml = `<!doctype html><html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="no-referrer">
@@ -161,6 +215,118 @@ describe('verify-ipfs script src attribute hardening', () => {
   it('fails when hash routing bootstrap logic is absent', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>ok</body></html>`);
     expect(run).toThrow(/Hash routing guard is missing/);
+  });
+
+
+  it('fails when bootstrap hash script is prematurely terminated', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
+      <script>(function(){const detectGatewayBase=(pathname)=>pathname;const rawHash=window.location.hash||'';if(!rawHash.startsWith('#/')) return;</script>
+      <script>window.addEventListener('hashchange',()=>{if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}});</script>
+    </body></html>`);
+    expect(run).toThrow(/IPFS bootstrap script is incomplete or malformed/);
+  });
+
+  it('fails when navigateHashRoute references rawHash from the hashchange scope', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).toThrow(/references rawHash inside navigateHashRoute/);
+  });
+
+
+  it('fails when navigateHashRoute is present but unparseable', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+      // truncated body intentionally (missing closing brace)
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        history.pushState({}, '', rawHash.slice(1));
+      });
+    </script></body></html>`);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body/);
+  });
+
+  it('fails when navigateHashRoute bootstrap is split across script tags', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
+      <script>
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+      </script><script>
+        } else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      </script>
+    </body></html>`);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body|IPFS bootstrap script is incomplete or malformed/);
+  });
+
+  it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {
+
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).toThrow(/missing required push\/replace history rewrite logic/);
+  });
+
+
+  it('committed artifact keeps rawHash out of navigateHashRoute helper', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+    const navigateBody = extractArrowFunctionBodyFromHtml(artifactHtml, 'navigateHashRoute');
+    expect(navigateBody, 'navigateHashRoute body should be parseable in committed artifact').not.toBeNull();
+
+    const body = navigateBody ?? '';
+    expect(body).not.toContain('</script>');
+    expect(body).not.toMatch(/\brawHash\b/);
+    expect(body).toMatch(/\bmode\b/);
+    expect(body).toMatch(/\brawReplaceState\b/);
+    expect(body).toMatch(/\brawPushState\b/);
+  });
+
+  it('passes when navigateHashRoute only uses its own inputs', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).not.toThrow();
   });
 
 });
