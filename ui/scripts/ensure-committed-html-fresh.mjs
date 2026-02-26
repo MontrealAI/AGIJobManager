@@ -9,7 +9,7 @@ const builtHtml = path.join(uiRoot, 'dist-ipfs', 'agijobmanager.html');
 const committedHtml = path.join(repoRoot, 'agijobmanager.html');
 
 // Always rebuild from the current environment to avoid stale artifacts from earlier workflow steps.
-execSync('npm run build:ipfs', { cwd: uiRoot, stdio: 'inherit' });
+execSync('npm run build:ipfs', { cwd: uiRoot, stdio: 'inherit', env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' } });
 
 if (!fs.existsSync(builtHtml)) {
   throw new Error(`Missing build artifact ${path.relative(repoRoot, builtHtml)} after build:ipfs.`);

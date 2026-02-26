@@ -11,7 +11,7 @@ const cleanPaths = [
 ];
 
 function run(cmd) {
-  execSync(cmd, { cwd: uiRoot, stdio: 'inherit' });
+  execSync(cmd, { cwd: uiRoot, stdio: 'inherit', env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' } });
 }
 
 function cleanBuildState() {
