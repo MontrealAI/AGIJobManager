@@ -79,17 +79,14 @@ for (const file of added) {
 
   if (sourceTextExt.test(file)) {
     const text = blob.toString('utf8');
-    const searchable = file.toLowerCase().endsWith('.html') || file.toLowerCase().endsWith('.htm')
-      ? text.replace(/<script\b[\s\S]*?<\/script>/gi, '')
-      : text;
-    if (forbiddenDataUri.test(searchable)) {
+    if (forbiddenDataUri.test(text)) {
       offenders.push(`${file} (forbidden data:image/* or data:font/* URI)`);
     }
   }
 }
 
 if (offenders.length) {
-  throw new Error(`Forbidden binary files detected in added files:\n${offenders.map((f) => `- ${f}`).join('\n')}`);
+  throw new Error(`Forbidden binary/data URI policy violations:\n${offenders.map((f) => `- ${f}`).join('\n')}`);
 }
 
 console.log(`No forbidden binaries detected in ${added.length} added file(s) from ${base}...HEAD.`);
