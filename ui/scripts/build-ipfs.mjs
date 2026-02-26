@@ -77,23 +77,46 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   }
 }
 
-function getHeadCloseIndex() {
+function findStructuralCloseTagIndex(tagName) {
   const lower = html.toLowerCase();
-  const bodyStart = lower.indexOf('<body');
-  const closeTag = '</head>';
-  const searchEnd = bodyStart >= 0 ? bodyStart : lower.length;
-  const closeIndex = lower.lastIndexOf(closeTag, searchEnd);
+  const openTag = `<${tagName.toLowerCase()}`;
+  const closeTag = `</${tagName.toLowerCase()}>`;
+  const rawTextTags = ['script', 'style', 'title', 'textarea'];
 
-  if (closeIndex < 0) {
-    throw new Error('Unable to locate </head> in built HTML.');
+  const openIndex = lower.indexOf(openTag);
+  if (openIndex < 0) {
+    throw new Error(`Unable to locate ${openTag} in built HTML.`);
   }
 
-  return closeIndex;
+  let i = openIndex;
+  while (i < lower.length) {
+    const lt = lower.indexOf('<', i);
+    if (lt < 0) break;
+
+    if (lower.startsWith(closeTag, lt)) {
+      return lt;
+    }
+
+    const currentRawTag = rawTextTags.find((name) => lower.startsWith(`<${name}`, lt));
+    if (currentRawTag) {
+      const rawClose = `</${currentRawTag}>`;
+      const rawCloseIndex = lower.indexOf(rawClose, lt + currentRawTag.length + 1);
+      if (rawCloseIndex < 0) {
+        throw new Error(`Malformed HTML: missing ${rawClose} while scanning for ${closeTag}.`);
+      }
+      i = rawCloseIndex + rawClose.length;
+      continue;
+    }
+
+    i = lt + 1;
+  }
+
+  throw new Error(`Unable to locate structural ${closeTag} in built HTML.`);
 }
 
 const insertBeforeHeadClose = (snippet) => {
   const closeTag = '</head>';
-  const closeIndex = getHeadCloseIndex();
+  const closeIndex = findStructuralCloseTagIndex('head');
   html = `${html.slice(0, closeIndex)}${snippet}\n${closeTag}${html.slice(closeIndex + closeTag.length)}`;
 };
 
