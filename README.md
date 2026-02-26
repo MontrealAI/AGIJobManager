@@ -124,7 +124,6 @@ Refresh committed artifact (use Node `20.19.6` from `ui/.nvmrc` for reproducible
 cd ui
 nvm use || true
 npm run build:ipfs
-cp dist-ipfs/agijobmanager.html ../agijobmanager.html
 npm run verify:committed-html
 ```
 

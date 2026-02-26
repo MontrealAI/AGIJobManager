@@ -27,7 +27,7 @@ const committedHash = createHash('sha256').update(committed).digest('hex');
 if (Buffer.compare(built, committed) !== 0) {
   throw new Error(
     `agijobmanager.html is stale (built sha256=${builtHash}, committed sha256=${committedHash}). Run ` +
-      '`cd ui && npm run build:ipfs && cp dist-ipfs/agijobmanager.html ../agijobmanager.html` and commit.'
+      '`cd ui && npm run build:ipfs` and commit the synchronized repository artifact.'
   );
 }
 
