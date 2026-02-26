@@ -271,7 +271,7 @@ describe('verify-ipfs script src attribute hardening', () => {
       });
       </script>
     </body></html>`);
-    expect(run).toThrow(/Unable to parse navigateHashRoute body|IPFS bootstrap script is incomplete or malformed/);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body|navigateHashRoute body contains a script boundary|IPFS bootstrap script is incomplete or malformed/);
   });
 
   it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {
