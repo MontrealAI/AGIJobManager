@@ -401,7 +401,11 @@ const extractArrowFunctionBody = (source, constName) => {
 };
 
 for (const body of normalizedScriptBodies) {
+  const hasNavigateHashRoute = body.includes('const navigateHashRoute');
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+  if (hasNavigateHashRoute && !navigateHashRouteBody) {
+    throw new Error('Hash routing guard is malformed: unable to parse navigateHashRoute body.');
+  }
   if (!navigateHashRouteBody) continue;
   if (/\brawHash\b/.test(navigateHashRouteBody)) {
     throw new Error('Hash routing guard references rawHash inside navigateHashRoute, which can break history rewrites.');
