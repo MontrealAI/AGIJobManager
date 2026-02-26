@@ -22,6 +22,29 @@ function runVerifierWithHtml(html: string) {
     });
 }
 
+function extractArrowFunctionBody(source: string, constName: string): string | null {
+  const marker = `const ${constName}`;
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) return null;
+
+  const openingBraceIndex = source.indexOf('{', markerIndex);
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
+}
+
 const secureHtml = `<!doctype html><html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="no-referrer">
@@ -228,12 +251,12 @@ describe('verify-ipfs script src attribute hardening', () => {
 
     expect(routeScript, 'navigateHashRoute script block should exist in committed artifact').toBeTruthy();
 
-    const match = routeScript?.match(/const navigateHashRoute = \(routePath, mode\) => \{([\s\S]*?)\n\s*\};/);
-    expect(match, 'navigateHashRoute body should be parseable in committed artifact').not.toBeNull();
+    const navigateBody = routeScript ? extractArrowFunctionBody(routeScript, 'navigateHashRoute') : null;
+    expect(navigateBody, 'navigateHashRoute body should be parseable in committed artifact').not.toBeNull();
 
-    const navigateBody = match?.[1] ?? '';
-    expect(navigateBody).not.toContain('</script>');
-    expect(navigateBody).not.toMatch(/\brawHash\b/);
+    const safeNavigateBody = navigateBody ?? '';
+    expect(safeNavigateBody).not.toContain('</script>');
+    expect(safeNavigateBody).not.toMatch(/\brawHash\b/);
   });
 
   it('passes when navigateHashRoute only uses its own inputs', () => {
