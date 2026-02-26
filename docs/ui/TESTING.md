@@ -14,6 +14,6 @@
 | Docs deployment | `npm run docs:deployment` | Regenerates official mainnet deployment registry report |
 | Docs freshness | `npm run docs:check` | Required files, mermaid, assets, generated docs freshness |
 | Build | `npm run build` | Production build health |
-| No binaries | `npm run check:no-binaries` | Blocks forbidden extensions and binary content in added files |
+| No binaries | `npm run check:no-binaries` | Blocks forbidden extensions and binary content in added files and rejects `data:image/*` / `data:font/*` in tracked HTML/CSS/JS/TS sources |
 
 CI workflow: `.github/workflows/ui.yml`.
