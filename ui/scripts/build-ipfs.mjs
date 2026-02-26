@@ -2,9 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const uiRoot = process.cwd();
+const repoRoot = path.resolve(uiRoot, '..');
 const sourcePath = path.join(uiRoot, '.next/server/app/index.html');
 const outDir = path.join(uiRoot, 'dist-ipfs');
 const outPath = path.join(outDir, 'agijobmanager.html');
+const repoArtifactPath = path.join(repoRoot, 'agijobmanager.html');
 
 if (!fs.existsSync(sourcePath)) {
   throw new Error(`Next build output not found at ${sourcePath}. Run npm run build first.`);
@@ -280,5 +282,7 @@ insertIntoBody(`<script>(function(){
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html);
+fs.writeFileSync(repoArtifactPath, html);
 
 console.log(`Built single-file IPFS artifact: ${path.relative(uiRoot, outPath)}`);
+console.log(`Synchronized repository artifact: ${path.relative(repoRoot, repoArtifactPath)}`);
