@@ -61,6 +61,10 @@ const added = output
   .map((line) => line.trim().split(/\s+/))
   .filter((parts) => parts.length >= 2)
   .map((parts) => parts[1]);
+const trackedTextSources = run('git ls-files ui/src ui/app ui/tests')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line && sourceTextExt.test(line));
 
 const offenders = [];
 for (const file of added) {
@@ -82,6 +86,15 @@ for (const file of added) {
     if (forbiddenDataUri.test(text)) {
       offenders.push(`${file} (forbidden data:image/* or data:font/* URI)`);
     }
+  }
+}
+
+for (const file of trackedTextSources) {
+  const absolute = path.join(repoRoot, file);
+  if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
+  const text = fs.readFileSync(absolute, 'utf8');
+  if (forbiddenDataUri.test(text)) {
+    offenders.push(`${file} (forbidden data:image/* or data:font/* URI in tracked source)`);
   }
 }
 
