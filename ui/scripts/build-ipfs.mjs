@@ -147,6 +147,10 @@ if (!/name=["']referrer["']/i.test(html)) {
   insertIntoHead('  <meta name="referrer" content="no-referrer">');
 }
 
+if (!/http-equiv=["']Permissions-Policy["']/i.test(html)) {
+  insertIntoHead('  <meta http-equiv="Permissions-Policy" content="accelerometer=(), autoplay=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()">');
+}
+
 insertIntoBody(`<script>(function(){
   const detectGatewayBase = (pathname) => {
     const segments = pathname.split('/').filter(Boolean);
