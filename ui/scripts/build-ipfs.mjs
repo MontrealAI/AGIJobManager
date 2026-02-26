@@ -72,23 +72,45 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
     continue;
   }
 
-  if (rel === 'icon' && href.startsWith('/')) {
-    const localPath = resolveLocalAsset(href);
-    if (!localPath || !fs.existsSync(localPath)) {
-      throw new Error(`Referenced icon not found: ${href}`);
-    }
-    const svg = fs.readFileSync(localPath, 'utf8');
-    const encoded = encodeURIComponent(svg).replace(/'/g, '%27').replace(/"/g, '%22');
-    html = html.replace(fullTag, `<link rel="icon" href="data:image/svg+xml,${encoded}" type="image/svg+xml" sizes="any"/>`);
+  if (rel === 'icon' || rel === 'apple-touch-icon' || rel === 'manifest') {
+    html = html.replace(fullTag, '');
   }
 }
 
+function getHeadCloseIndex() {
+  const lower = html.toLowerCase();
+  const headOpenMatch = lower.match(/<head\b[^>]*>/i);
+  if (!headOpenMatch || typeof headOpenMatch.index !== 'number') {
+    throw new Error('Unable to locate <head> in built HTML.');
+  }
+
+  const headContentStart = headOpenMatch.index + headOpenMatch[0].length;
+  const closeTag = '</head>';
+  const closeIndex = lower.indexOf(closeTag, headContentStart);
+
+  if (closeIndex < 0) {
+    throw new Error('Unable to locate </head> in built HTML.');
+  }
+
+  return closeIndex;
+}
+
 const insertBeforeHeadClose = (snippet) => {
-  html = html.replace('</head>', `${snippet}\n</head>`);
+  const closeTag = '</head>';
+  const closeIndex = getHeadCloseIndex();
+  html = `${html.slice(0, closeIndex)}${snippet}\n${closeTag}${html.slice(closeIndex + closeTag.length)}`;
 };
 
 const insertBeforeBodyClose = (snippet) => {
-  html = html.replace('</body>', `${snippet}\n</body>`);
+  const lower = html.toLowerCase();
+  const closeTag = '</body>';
+  const closeIndex = lower.lastIndexOf(closeTag);
+
+  if (closeIndex < 0) {
+    throw new Error('Unable to locate </body> in built HTML.');
+  }
+
+  html = `${html.slice(0, closeIndex)}${snippet}\n${closeTag}${html.slice(closeIndex + closeTag.length)}`;
 };
 
 html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
@@ -127,7 +149,7 @@ insertBeforeHeadClose(`<script>(function(){
   }, { once: true });
 })();</script>`);
 
-const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: ipfs:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 if (/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i.test(html)) {
   html = html.replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/gi, `  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
 } else {
