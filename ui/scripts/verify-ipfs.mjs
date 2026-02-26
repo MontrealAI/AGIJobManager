@@ -386,8 +386,12 @@ const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
 });
 const extractArrowFunctionBody = (source, constName) => {
   const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
-  const markerMatch = declarationPattern.exec(source);
-  const markerIndex = markerMatch?.index ?? -1;
+  const functionPattern = new RegExp(`\\bfunction\\s+${constName}\\s*\\(`);
+  const markerMatches = [declarationPattern.exec(source), functionPattern.exec(source)]
+    .filter((match) => Boolean(match));
+  const markerIndex = markerMatches.length > 0
+    ? Math.min(...markerMatches.map((match) => match.index))
+    : -1;
   if (markerIndex < 0) return null;
 
   const openingBraceIndex = source.indexOf('{', markerIndex);
@@ -409,7 +413,8 @@ const extractArrowFunctionBody = (source, constName) => {
 };
 
 for (const body of normalizedScriptBodies) {
-  const hasNavigateHashRoute = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\(/.test(body);
+  const hasNavigateHashRoute = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\(/.test(body)
+    || /\bfunction\s+navigateHashRoute\s*\(/.test(body);
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
 
   if (hasNavigateHashRoute && !navigateHashRouteBody) {

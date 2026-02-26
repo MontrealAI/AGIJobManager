@@ -24,8 +24,9 @@ function runVerifierWithHtml(html: string) {
 
 function extractArrowFunctionBody(source: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
-  const markerMatch = declarationPattern.exec(source);
-  const markerIndex = markerMatch?.index ?? -1;
+  const functionPattern = new RegExp(`\\bfunction\\s+${constName}\\s*\\(`);
+  const markerMatches = [declarationPattern.exec(source), functionPattern.exec(source)].filter((match) => Boolean(match));
+  const markerIndex = markerMatches.length > 0 ? Math.min(...markerMatches.map((match) => match.index)) : -1;
   if (markerIndex < 0) return null;
 
   const openingBraceIndex = source.indexOf('{', markerIndex);
@@ -48,16 +49,21 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
+  const functionPattern = new RegExp(`\\bfunction\\s+${constName}\\s*\\(`);
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const candidates = scriptBodies
-    .filter((body) => declarationPattern.test(body))
+    .filter((body) => declarationPattern.test(body) || functionPattern.test(body))
     .filter((body) => /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(body))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
   if (candidates.length === 0) {
-    const markerMatch = declarationPattern.exec(html);
-    const markerIndex = markerMatch?.index ?? -1;
+    const declarationMatch = declarationPattern.exec(html);
+    const functionMatch = functionPattern.exec(html);
+    const markerIndex = [declarationMatch, functionMatch]
+      .filter((match): match is RegExpExecArray => Boolean(match))
+      .map((match) => match.index)
+      .sort((a, b) => a - b)[0] ?? -1;
     if (markerIndex < 0) return null;
 
     const nearby = html.slice(Math.max(0, markerIndex - 512), markerIndex + 4096);
