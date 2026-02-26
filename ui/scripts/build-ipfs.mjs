@@ -72,23 +72,64 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
     continue;
   }
 
-  if (rel === 'icon' && href.startsWith('/')) {
-    const localPath = resolveLocalAsset(href);
-    if (!localPath || !fs.existsSync(localPath)) {
-      throw new Error(`Referenced icon not found: ${href}`);
-    }
-    const svg = fs.readFileSync(localPath, 'utf8');
-    const encoded = encodeURIComponent(svg).replace(/'/g, '%27').replace(/"/g, '%22');
-    html = html.replace(fullTag, `<link rel="icon" href="data:image/svg+xml,${encoded}" type="image/svg+xml" sizes="any"/>`);
+  if (rel === 'icon' || rel === 'apple-touch-icon' || rel === 'manifest') {
+    html = html.replace(fullTag, '');
   }
 }
 
+function findStructuralCloseTagIndex(tagName) {
+  const lower = html.toLowerCase();
+  const openTag = `<${tagName.toLowerCase()}`;
+  const closeTag = `</${tagName.toLowerCase()}>`;
+  const rawTextTags = ['script', 'style', 'title', 'textarea'];
+
+  const openIndex = lower.indexOf(openTag);
+  if (openIndex < 0) {
+    throw new Error(`Unable to locate ${openTag} in built HTML.`);
+  }
+
+  let i = openIndex;
+  while (i < lower.length) {
+    const lt = lower.indexOf('<', i);
+    if (lt < 0) break;
+
+    if (lower.startsWith(closeTag, lt)) {
+      return lt;
+    }
+
+    const currentRawTag = rawTextTags.find((name) => lower.startsWith(`<${name}`, lt));
+    if (currentRawTag) {
+      const rawClose = `</${currentRawTag}>`;
+      const rawCloseIndex = lower.indexOf(rawClose, lt + currentRawTag.length + 1);
+      if (rawCloseIndex < 0) {
+        throw new Error(`Malformed HTML: missing ${rawClose} while scanning for ${closeTag}.`);
+      }
+      i = rawCloseIndex + rawClose.length;
+      continue;
+    }
+
+    i = lt + 1;
+  }
+
+  throw new Error(`Unable to locate structural ${closeTag} in built HTML.`);
+}
+
 const insertBeforeHeadClose = (snippet) => {
-  html = html.replace('</head>', `${snippet}\n</head>`);
+  const closeTag = '</head>';
+  const closeIndex = findStructuralCloseTagIndex('head');
+  html = `${html.slice(0, closeIndex)}${snippet}\n${closeTag}${html.slice(closeIndex + closeTag.length)}`;
 };
 
 const insertBeforeBodyClose = (snippet) => {
-  html = html.replace('</body>', `${snippet}\n</body>`);
+  const lower = html.toLowerCase();
+  const closeTag = '</body>';
+  const closeIndex = lower.lastIndexOf(closeTag);
+
+  if (closeIndex < 0) {
+    throw new Error('Unable to locate </body> in built HTML.');
+  }
+
+  html = `${html.slice(0, closeIndex)}${snippet}\n${closeTag}${html.slice(closeIndex + closeTag.length)}`;
 };
 
 html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
@@ -127,7 +168,7 @@ insertBeforeHeadClose(`<script>(function(){
   }, { once: true });
 })();</script>`);
 
-const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: ipfs:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 if (/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i.test(html)) {
   html = html.replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/gi, `  <meta http-equiv=\"Content-Security-Policy\" content=\"${enforcedCsp}\">`);
 } else {

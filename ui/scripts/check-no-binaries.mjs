@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const forbiddenExt = /\.(png|jpg|jpeg|gif|webp|pdf|ico|woff|woff2|ttf|otf|zip|tar|gz|7z|mp4|mov|webm|avi|mkv|trace)$/i;
+const sourceTextExt = /\.(html?|css|mjs|cjs|js|jsx|ts|tsx)$/i;
+const forbiddenDataUri = /data:(image|font)\//i;
 const forbiddenPaths = [
   /^node_modules\//,
   /^ui\/node_modules\//,
@@ -72,6 +74,17 @@ for (const file of added) {
   const blob = fs.readFileSync(absolute);
   if (isProbablyBinary(blob)) {
     offenders.push(`${file} (binary-like content)`);
+    continue;
+  }
+
+  if (sourceTextExt.test(file)) {
+    const text = blob.toString('utf8');
+    const searchable = file.toLowerCase().endsWith('.html') || file.toLowerCase().endsWith('.htm')
+      ? text.replace(/<script\b[\s\S]*?<\/script>/gi, '')
+      : text;
+    if (forbiddenDataUri.test(searchable)) {
+      offenders.push(`${file} (forbidden data:image/* or data:font/* URI)`);
+    }
   }
 }
 
