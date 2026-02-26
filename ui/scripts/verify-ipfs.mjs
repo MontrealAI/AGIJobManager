@@ -16,6 +16,11 @@ if (entries.length !== 1 || entries[0] !== 'agijobmanager.html') {
 
 const html = fs.readFileSync(artifactPath, 'utf8');
 
+
+if (/if\s*\(!rawHash\.startsWith\(['"`]#\/['"`]\)\)\s*return;\s*<\/script>\s*<script>\(self\.__next_f/m.test(html)) {
+  throw new Error('Hash-routing bootstrap script is prematurely terminated before Next flight scripts.');
+}
+
 function parseTagAttributes(tagText) {
   const attrs = new Map();
   const attrRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
@@ -376,6 +381,44 @@ const hasHashAccess = normalizedScriptBodies.some((body) => /\bwindow\.location\
 const hasPushStateLogic = normalizedScriptBodies.some((body) => /\bhistory\.pushState\b/.test(body));
 const hasRoutingHook = uncommentedScriptBodies.some((body) => /\baddEventListener\s*\(\s*(["'`])hashchange\1/.test(body))
   || normalizedScriptBodies.some((body) => /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
+
+const extractArrowFunctionBody = (source, constName) => {
+  const marker = `const ${constName}`;
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) return null;
+
+  const openingBraceIndex = source.indexOf('{', markerIndex);
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
+};
+
+for (const body of normalizedScriptBodies) {
+  const hasNavigateHashRoute = body.includes('const navigateHashRoute');
+  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+
+  if (hasNavigateHashRoute && !navigateHashRouteBody) {
+    throw new Error('Unable to parse navigateHashRoute body in single-file artifact.');
+  }
+
+  if (!navigateHashRouteBody) continue;
+
+  if (/\brawHash\b/.test(navigateHashRouteBody)) {
+    throw new Error('Hash routing guard references rawHash inside navigateHashRoute, which can break history rewrites.');
+  }
+}
 
 if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
