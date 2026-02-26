@@ -162,6 +162,18 @@ if (referrerContent !== 'no-referrer') {
   throw new Error('Referrer policy meta content must be no-referrer.');
 }
 
+const permissionsMeta = metaTags.find((attrs) => (attrs.get('http-equiv') || '').toLowerCase() === 'permissions-policy');
+if (!permissionsMeta) {
+  throw new Error('Permissions-Policy meta tag is missing from IPFS artifact.');
+}
+
+const permissionsContent = (permissionsMeta.get('content') || '').toLowerCase();
+for (const requiredDirective of ['camera=()', 'microphone=()', 'geolocation=()']) {
+  if (!permissionsContent.includes(requiredDirective)) {
+    throw new Error(`Permissions-Policy meta must include ${requiredDirective}.`);
+  }
+}
+
 const htmlWithoutScriptBlocks = html.replace(/<script[\s\S]*?<\/script>/gi, '');
 if (/<[^>]+\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(htmlWithoutScriptBlocks)) {
   throw new Error('Inline event handlers detected in built HTML.');
