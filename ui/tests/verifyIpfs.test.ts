@@ -60,8 +60,7 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
     const markerIndex = markerMatch?.index ?? -1;
     if (markerIndex < 0) return null;
 
-    const nearby = html.slice(Math.max(0, markerIndex - 512), markerIndex + 4096);
-    if (!/\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(nearby)) return null;
+    if (!/\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(html)) return null;
 
     return extractArrowFunctionBody(html, constName);
   }
