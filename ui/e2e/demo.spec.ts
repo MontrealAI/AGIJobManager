@@ -7,8 +7,12 @@ test('core pages render in demo mode', async ({ page }) => {
   await expect(page.getByText('Demo mode enabled')).toBeVisible();
   await page.goto('/jobs');
   await expect(page).toHaveURL(/\/jobs$/);
+  await page.goto('/identity');
+  await expect(page).toHaveURL(/\/identity$/);
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/admin$/);
+  await page.goto('/jobs/2');
+  await expect(page).toHaveURL(/\/jobs\/2$/);
   await page.goto('/design');
   await expect(page).toHaveURL(/\/design$/);
   await page.goto('/demo');
@@ -16,6 +20,8 @@ test('core pages render in demo mode', async ({ page }) => {
 });
 
 test('design route renders gallery heading', async ({ page }) => {
+  await page.goto('/jobs/2');
+  await expect(page).toHaveURL(/\/jobs\/2$/);
   await page.goto('/design');
   await expect(page.getByText('Design System Gallery')).toBeVisible();
 });

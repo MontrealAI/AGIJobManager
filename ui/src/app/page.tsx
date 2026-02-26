@@ -10,6 +10,8 @@ export default function Page() {
   const { data, isError, refetch } = usePlatformSummary(scenario);
   const degraded = isDemoMode ? scenario.degradedRpc : isError;
 
+  const fileOrigin = typeof window !== 'undefined' && window.location.protocol === 'file:';
+
   return (
     <div className="container-shell py-8 space-y-4">
       <section className="hero border border-border bg-card/80">
@@ -17,6 +19,7 @@ export default function Page() {
         <p className="text-muted-foreground mt-2">Institutional dApp for escrow lifecycle, dispute governance, and safety-first operations.</p>
       </section>
       {isDemoMode && <Card>Demo mode enabled: writes disabled. Active demo actor: <strong>{actor}</strong>.</Card>}
+      {fileOrigin && <Card className="border-warning">Read-only may work on <code>file://</code>; for wallet writes use GitHub Pages or an IPFS gateway over <code>https://</code>.</Card>}
       {degraded && <Card className="border-destructive">Degraded RPC. <button onClick={() => refetch()}>Retry</button></Card>}
       {data?.paused && <Card>Protocol paused.</Card>}
       {data?.settlementPaused && <Card>Settlement paused.</Card>}
