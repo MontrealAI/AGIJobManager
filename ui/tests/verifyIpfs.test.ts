@@ -30,21 +30,6 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
   const openingBraceIndex = source.indexOf('{', markerIndex);
   if (openingBraceIndex < 0) return null;
 
-  const preferredEndMarkers = [
-    '\n\n  if (!window.location.hash && !window.location.pathname.startsWith(\'/_next\')) {',
-    '\n\n  window.addEventListener(\'hashchange\'',
-    '\n\n  document.addEventListener(\'click\''
-  ];
-  const preferredEndCandidates = preferredEndMarkers
-    .map((marker) => source.indexOf(marker, openingBraceIndex))
-    .filter((idx) => idx > openingBraceIndex)
-    .sort((a, b) => a - b);
-
-  if (preferredEndCandidates.length > 0) {
-    const prefix = source.slice(openingBraceIndex + 1, preferredEndCandidates[0]);
-    return prefix.replace(/\n\s*};\s*$/, '').trimEnd();
-  }
-
   let depth = 0;
   for (let i = openingBraceIndex; i < source.length; i += 1) {
     const ch = source[i];
