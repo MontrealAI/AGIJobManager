@@ -25,7 +25,20 @@ function runVerifierWithHtml(html: string) {
 const secureHtml = `<!doctype html><html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="no-referrer">
-</head><body><h1>ok</h1><script>window.__IPFS_BOOTSTRAP_ROUTE__='/jobs';window.addEventListener('hashchange',()=>{if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}});</script></body></html>`;
+</head><body><h1>ok</h1><script>
+const rawHash = window.location.hash || '';
+if (rawHash.startsWith('#/')) {
+  const targetPath = rawHash.slice(1);
+  const bootstrapUrl = targetPath;
+  history.replaceState(history.state, '', bootstrapUrl);
+  window.__IPFS_BOOTSTRAP_ROUTE__ = targetPath;
+  window.addEventListener('DOMContentLoaded', () => {
+    const hashUrl = '#'+targetPath;
+    history.replaceState(history.state, '', hashUrl);
+  }, { once: true });
+}
+window.addEventListener('hashchange',()=>{if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}});
+</script></body></html>`;
 
 afterEach(() => {
   for (const root of tmpRoots.splice(0)) {
@@ -143,6 +156,21 @@ describe('verify-ipfs script src attribute hardening', () => {
   });
 
 
+  it('fails when IPFS bootstrap script is truncated before route restoration', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const rawHash = window.location.hash || '';
+      if (!rawHash.startsWith('#/')) return;
+      const targetPath = rawHash.slice(1);
+      const bootstrapUrl = targetPath;
+      history.replaceState(history.state, '', bootstrapUrl);
+      window.__IPFS_BOOTSTRAP_ROUTE__ = targetPath;
+      // missing DOMContentLoaded restore block
+    </script><script>
+      window.addEventListener('hashchange',()=>{if(window.location.hash){history.pushState({},'',window.location.hash.slice(1));}});
+    </script></body></html>`);
+    expect(run).toThrow(/bootstrap script appears truncated or malformed/);
+  });
+
   it('fails when routing tokens appear only inside string literals', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>const a='window.location.hash'; const b='history.pushState'; const c='hashchange';</script></body></html>`);
     expect(run).toThrow(/Hash routing guard is missing/);
@@ -161,6 +189,53 @@ describe('verify-ipfs script src attribute hardening', () => {
   it('fails when hash routing bootstrap logic is absent', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>ok</body></html>`);
     expect(run).toThrow(/Hash routing guard is missing/);
+  });
+
+  it('fails when navigateHashRoute references rawHash from the hashchange scope', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).toThrow(/references rawHash inside navigateHashRoute/);
+  });
+
+
+  it('fails when navigateHashRoute is present but unparseable', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (!rawHash.startsWith('#/')) return;
+      // truncated body intentionally (missing closing brace)
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        history.pushState({}, '', rawHash.slice(1));
+      });
+    </script></body></html>`);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body/);
+  });
+  it('passes when navigateHashRoute only uses its own inputs', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).not.toThrow();
   });
 
 });
