@@ -377,6 +377,37 @@ const hasPushStateLogic = normalizedScriptBodies.some((body) => /\bhistory\.push
 const hasRoutingHook = uncommentedScriptBodies.some((body) => /\baddEventListener\s*\(\s*(["'`])hashchange\1/.test(body))
   || normalizedScriptBodies.some((body) => /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
 
+const extractArrowFunctionBody = (source, constName) => {
+  const marker = `const ${constName}`;
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) return null;
+
+  const openingBraceIndex = source.indexOf('{', markerIndex);
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
+};
+
+for (const body of normalizedScriptBodies) {
+  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+  if (!navigateHashRouteBody) continue;
+  if (/\brawHash\b/.test(navigateHashRouteBody)) {
+    throw new Error('Hash routing guard references rawHash inside navigateHashRoute, which can break history rewrites.');
+  }
+}
+
 if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
 }
