@@ -46,10 +46,13 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 }
 
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
+  const declarationPattern = new RegExp(`\\bconst\\s+${constName}\\s*=\\s*\\(`);
+  const hashchangePattern = /\bwindow\.addEventListener\(\s*['"]hashchange['"]/;
+
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const candidates = scriptBodies
-    .filter((body) => body.includes(`const ${constName} = (`))
-    .filter((body) => /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(body))
+    .filter((body) => declarationPattern.test(body))
+    .filter((body) => hashchangePattern.test(body))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
