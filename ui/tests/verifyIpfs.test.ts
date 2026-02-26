@@ -46,10 +46,11 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 }
 
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
+  const hashchangeHookPattern = /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]/;
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const candidates = scriptBodies
     .filter((body) => body.includes(`const ${constName} = (`))
-    .filter((body) => /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(body))
+    .filter((body) => hashchangeHookPattern.test(body))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
@@ -58,8 +59,8 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
     const markerIndex = html.indexOf(marker);
     if (markerIndex < 0) return null;
 
-    const nearby = html.slice(Math.max(0, markerIndex - 512), markerIndex + 4096);
-    if (!/\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(nearby)) return null;
+    const nearby = html.slice(Math.max(0, markerIndex - 2048), markerIndex + 16384);
+    if (!hashchangeHookPattern.test(nearby)) return null;
 
     return extractArrowFunctionBody(html, constName);
   }
