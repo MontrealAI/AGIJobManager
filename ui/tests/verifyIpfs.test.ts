@@ -27,10 +27,14 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
     new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`),
     new RegExp(`\\bfunction\\s+${constName}\\s*\\(`)
   ];
-  const markerIndex = declarationPatterns
+  const markerIndexFromDeclaration = declarationPatterns
     .map((pattern) => pattern.exec(source)?.index ?? -1)
     .filter((index) => index >= 0)
     .sort((a, b) => a - b)[0] ?? -1;
+
+  const markerIndex = markerIndexFromDeclaration >= 0
+    ? markerIndexFromDeclaration
+    : (new RegExp(`\b${constName}\b`).exec(source)?.index ?? -1);
   if (markerIndex < 0) return null;
 
   const openingBraceIndex = source.indexOf('{', markerIndex);
