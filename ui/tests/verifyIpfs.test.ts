@@ -25,7 +25,7 @@ function runVerifierWithHtml(html: string) {
 
 function stripKnownNextScriptInterleave(source: string): string | null {
   if (!source.includes('</script>')) return source;
-  const hasNextMarkers = /__next_f|_next\/static|buildId/.test(source);
+  const hasNextMarkers = /__next_f|_next\/static|buildId|webpackChunk_N_E|_N_E=/.test(source);
   if (!hasNextMarkers) return null;
 
   const withoutScriptTags = source.replace(/<\/?script[^>]*>/gi, '');
@@ -35,6 +35,7 @@ function stripKnownNextScriptInterleave(source: string): string | null {
 function normalizeKnownNextInterleaves(source: string): string {
   if (!source.includes('</script>')) return source;
   return source
+    .replace(/<script\b[^>]*>\s*\(self\.webpackChunk_N_E=self\.webpackChunk_N_E\|\|\[\]\)\.push\([\s\S]*?<\/script>/gi, '')
     .replace(/<script\b[^>]*>\s*self\.__next_f\.push\([\s\S]*?<\/script>/gi, '')
     .replace(/<script\b[^>]*>\s*\(self\.__next_f=self\.__next_f\|\|\[\]\)\.push\(\[0\]\);self\.__next_f\.push\(\[2,null\]\)\s*<\/script>/gi, '')
     .replace(/<\/script>\s*<script\b[^>]*>/gi, '');
