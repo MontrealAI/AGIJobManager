@@ -14,6 +14,46 @@ if (!fs.existsSync(sourcePath)) {
 
 let html = fs.readFileSync(sourcePath, 'utf8');
 
+function extractFunctionBodyFromHtml(source, functionName) {
+  const scriptBodies = [...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  const declarationPatterns = [
+    new RegExp(`\\b(?:const|let|var)\\s+${functionName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`),
+    new RegExp(`\\bfunction\\s+${functionName}\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${functionName}\\s*=\\s*function\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${functionName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`)
+  ];
+
+  const extractFromSource = (scriptSource) => {
+    const matchedDeclaration = declarationPatterns
+      .map((pattern) => pattern.exec(scriptSource))
+      .filter(Boolean)
+      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))[0];
+    if (!matchedDeclaration) return null;
+    const openingBraceIndex = (matchedDeclaration.index ?? 0) + matchedDeclaration[0].lastIndexOf('{');
+    if (openingBraceIndex < 0) return null;
+
+    let depth = 0;
+    for (let i = openingBraceIndex; i < scriptSource.length; i += 1) {
+      const ch = scriptSource[i];
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          return scriptSource.slice(openingBraceIndex + 1, i);
+        }
+      }
+    }
+    return null;
+  };
+
+  for (const scriptBody of scriptBodies) {
+    const body = extractFromSource(scriptBody);
+    if (body) return body;
+  }
+
+  return null;
+}
+
 function parseTagAttributes(tagText) {
   const attrs = new Map();
   const attrRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
@@ -278,6 +318,19 @@ insertIntoBody(`<script>(function(){
     navigateHashRoute(hashRoute.slice(1), 'push');
   }, true);
 })();</script>`);
+
+const navigateHashRouteBody = extractFunctionBodyFromHtml(html, 'navigateHashRoute');
+if (!navigateHashRouteBody) {
+  throw new Error('Failed to build stable single-file artifact: navigateHashRoute body is not parseable.');
+}
+if (/\brawHash\b/.test(navigateHashRouteBody)) {
+  throw new Error('Failed to build single-file artifact safely: navigateHashRoute must not reference rawHash.');
+}
+if (!/\bmode\b/.test(navigateHashRouteBody)
+  || !/\brawReplaceState\b|\bhistory\.replaceState\b/.test(navigateHashRouteBody)
+  || !/\brawPushState\b|\bhistory\.pushState\b/.test(navigateHashRouteBody)) {
+  throw new Error('Failed to build stable single-file artifact: navigateHashRoute is missing push/replace rewrite logic.');
+}
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
