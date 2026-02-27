@@ -396,7 +396,7 @@ const stripKnownNextScriptInterleave = (source) => {
 const normalizeKnownNextInterleaves = (source) => {
   if (!source.includes('</script>')) return source;
   return source
-    .replace(/<script\b[^>]*>\s*(?:["']use strict["']\s*;\s*)?[-!;]*\s*\(self\.webpackChunk_N_E=self\.webpackChunk_N_E\|\|\[\]\)\.push\([\s\S]*?<\/script>/gi, '')
+    .replace(/<script\b[^>]*>\s*(?:["']use strict["']\s*;\s*)?[-!;]*\s*\(self\.webpackChunk_N_E\s*=\s*self\.webpackChunk_N_E\s*\|\|\s*\[\]\)\.push\([\s\S]*?<\/script>/gi, '')
     .replace(/<script\b[^>]*>\s*self\.__next_f\.push\([\s\S]*?<\/script>/gi, '')
     .replace(/<script\b[^>]*>\s*\(self\.__next_f\s*=\s*self\.__next_f\s*\|\|\s*\[\]\)\.push\(\[0\]\)\s*;\s*self\.__next_f\.push\(\[2\s*,\s*null\]\)\s*<\/script>/gi, '')
     .replace(/<\/script>\s*<script\b[^>]*>/gi, '');

@@ -35,7 +35,7 @@ function stripKnownNextScriptInterleave(source: string): string | null {
 function normalizeKnownNextInterleaves(source: string): string {
   if (!source.includes('</script>')) return source;
   return source
-    .replace(/<script\b[^>]*>\s*(?:["']use strict["']\s*;\s*)?[-!;]*\s*\(self\.webpackChunk_N_E=self\.webpackChunk_N_E\|\|\[\]\)\.push\([\s\S]*?<\/script>/gi, '')
+    .replace(/<script\b[^>]*>\s*(?:["']use strict["']\s*;\s*)?[-!;]*\s*\(self\.webpackChunk_N_E\s*=\s*self\.webpackChunk_N_E\s*\|\|\s*\[\]\)\.push\([\s\S]*?<\/script>/gi, '')
     .replace(/<script\b[^>]*>\s*self\.__next_f\.push\([\s\S]*?<\/script>/gi, '')
     .replace(/<script\b[^>]*>\s*\(self\.__next_f\s*=\s*self\.__next_f\s*\|\|\s*\[\]\)\.push\(\[0\]\)\s*;\s*self\.__next_f\.push\(\[2\s*,\s*null\]\)\s*<\/script>/gi, '')
     .replace(/<\/script>\s*<script\b[^>]*>/gi, '');
@@ -589,6 +589,37 @@ describe('verify-ipfs script src attribute hardening', () => {
       if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
     </script></body></html>`);
     expect(run).not.toThrow();
+  });
+
+  it('extracts helper despite strict-mode-prefixed webpack interleave', () => {
+    const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
+      <script>
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+        } else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      </script>
+      <script>"use strict";-(self.webpackChunk_N_E = self.webpackChunk_N_E || []).push([[1],{}]);</script>
+      <script>
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      </script>
+    </body></html>`;
+
+    const navigateBody = extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute');
+    expect(navigateBody).not.toBeNull();
+    expect(navigateBody ?? '').not.toMatch(/\brawHash\b/);
+    expect(navigateBody ?? '').toMatch(/\brawReplaceState\b/);
+    expect(navigateBody ?? '').toMatch(/\brawPushState\b/);
   });
 
 });
