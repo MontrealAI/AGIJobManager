@@ -279,6 +279,37 @@ insertIntoBody(`<script>(function(){
   }, true);
 })();</script>`);
 
+
+
+function assertParseableNavigateHashRoute(singleFileHtml) {
+  const hasHashListener = /\b(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/.test(singleFileHtml);
+  if (!hasHashListener) {
+    throw new Error('IPFS artifact lost hashchange listener required for hash routing.');
+  }
+
+  const declaration = 'const navigateHashRoute = (routePath, mode) => {';
+  const declarationIndex = singleFileHtml.indexOf(declaration);
+  if (declarationIndex < 0) {
+    throw new Error('Unable to locate stable navigateHashRoute declaration in generated single-file artifact.');
+  }
+
+  const hashchangeIndex = singleFileHtml.indexOf("window.addEventListener('hashchange'", declarationIndex);
+  const windowEnd = hashchangeIndex > declarationIndex
+    ? hashchangeIndex
+    : Math.min(singleFileHtml.length, declarationIndex + 5000);
+  const helperWindow = singleFileHtml.slice(declarationIndex, windowEnd);
+
+  if (/\brawHash\b/.test(helperWindow)) {
+    throw new Error('navigateHashRoute helper window must not reference rawHash in single-file artifact.');
+  }
+
+  if (!/\bmode\b/.test(helperWindow) || !/\brawPushState\b/.test(helperWindow) || !/\brawReplaceState\b/.test(helperWindow)) {
+    throw new Error('navigateHashRoute helper window is missing mode/rawPushState/rawReplaceState logic.');
+  }
+}
+
+assertParseableNavigateHashRoute(html);
+
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html);
