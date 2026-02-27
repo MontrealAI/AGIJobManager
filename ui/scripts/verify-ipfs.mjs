@@ -393,6 +393,14 @@ const stripKnownNextScriptInterleave = (source) => {
   return withoutScriptTags.replace(/self\.__next_f[^\n]*(?:\n|$)/g, '');
 };
 
+const normalizeKnownNextInterleaves = (source) => {
+  if (!source.includes('</script>')) return source;
+  return source
+    .replace(/<script\b[^>]*>\s*self\.__next_f\.push\([\s\S]*?<\/script>/gi, '')
+    .replace(/<script\b[^>]*>\s*\(self\.__next_f=self\.__next_f\|\|\[\]\)\.push\(\[0\]\);self\.__next_f\.push\(\[2,null\]\)\s*<\/script>/gi, '')
+    .replace(/<\/script>\s*<script\b[^>]*>/gi, '');
+};
+
 const extractArrowFunctionBody = (source, constName) => {
   const declarationPatterns = [
     new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`),
@@ -442,7 +450,43 @@ const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
   }
 };
 
+
+const extractStableNavigateHashRouteBody = (htmlSource) => {
+  const stableDeclaration = 'const navigateHashRoute = (routePath, mode) => {';
+  const declarationIndex = htmlSource.indexOf(stableDeclaration);
+  if (declarationIndex < 0) return null;
+
+  const openingBraceIndex = declarationIndex + stableDeclaration.lastIndexOf('{');
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < htmlSource.length; i += 1) {
+    const ch = htmlSource[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        const body = htmlSource.slice(openingBraceIndex + 1, i);
+        if (
+          !body.includes('</script>')
+          && !/\brawHash\b/.test(body)
+          && /\bmode\b/.test(body)
+          && /\brawReplaceState\b/.test(body)
+          && /\brawPushState\b/.test(body)
+        ) {
+          return body;
+        }
+        return null;
+      }
+    }
+  }
+
+  return null;
+};
 const extractNavigateHashRouteFromHtml = (htmlSource) => {
+  const stableBody = extractStableNavigateHashRouteBody(htmlSource);
+  if (stableBody) return stableBody;
+
   const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+navigateHashRoute\s*\([^)]*\)\s*\{/g;
   const hashchangePattern = /(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/g;
 
@@ -466,6 +510,20 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
       }
 
       return candidateBody;
+    }
+  }
+
+  const normalizedHtml = stripKnownNextScriptInterleave(normalizeKnownNextInterleaves(htmlSource));
+  if (normalizedHtml) {
+    const directBody = extractArrowFunctionBody(normalizedHtml, 'navigateHashRoute');
+    if (
+      directBody
+      && !/\brawHash\b/.test(directBody)
+      && /\bmode\b/.test(directBody)
+      && /\brawReplaceState\b/.test(directBody)
+      && /\brawPushState\b/.test(directBody)
+    ) {
+      return directBody;
     }
   }
 
