@@ -49,14 +49,14 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
-  const hasHashchangeListener = /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(html);
 
   const candidates = scriptBodies
     .filter((body) => declarationPattern.test(body))
+    .filter((body) => /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(body))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
-  if (candidates.length === 0 || !hasHashchangeListener) {
+  if (candidates.length === 0) {
     return null;
   }
 
