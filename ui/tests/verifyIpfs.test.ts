@@ -65,13 +65,33 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
-  if (candidates.length === 0 || !hasHashchangeListener) {
+  if (!hasHashchangeListener) {
     return null;
   }
 
   const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
-  return strongestCandidate ?? candidates[0];
+  if (strongestCandidate) return strongestCandidate;
+  if (candidates[0]) return candidates[0];
+
+  const stableDeclaration = `const ${constName} = (routePath, mode) => {`;
+  const declarationIndex = html.indexOf(stableDeclaration);
+  if (declarationIndex < 0) {
+    return null;
+  }
+
+  const hashchangeIndex = html.indexOf("window.addEventListener('hashchange'", declarationIndex);
+  const helperWindow = hashchangeIndex > declarationIndex
+    ? html.slice(declarationIndex, hashchangeIndex)
+    : html.slice(declarationIndex, declarationIndex + 5000);
+
+  const fallbackBody = extractArrowFunctionBody(helperWindow, constName);
+  if (!fallbackBody || fallbackBody.includes('</script>')) {
+    return null;
+  }
+
+  return fallbackBody;
 }
+
 
 const secureHtml = `<!doctype html><html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'">
