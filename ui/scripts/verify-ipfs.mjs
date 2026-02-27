@@ -386,11 +386,14 @@ const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
 });
 const stripKnownNextScriptInterleave = (source) => {
   if (!source.includes('</script>')) return source;
-  const hasNextMarkers = /__next_f|_next\/static|buildId/.test(source);
+  const hasNextMarkers = /__next_f|webpackChunk_N_E|_next\/static|buildId/.test(source);
   if (!hasNextMarkers) return null;
 
   const withoutScriptTags = source.replace(/<\/?script[^>]*>/gi, '');
-  return withoutScriptTags.replace(/self\.__next_f[^\n]*(?:\n|$)/g, '');
+  return withoutScriptTags
+    .replace(/self\.__next_f[^\n]*(?:\n|$)/g, '')
+    .replace(/self\.webpackChunk_N_E[^\n]*(?:\n|$)/g, '')
+    .replace(/\(self\.webpackChunk_N_E[^\n]*(?:\n|$)/g, '');
 };
 
 const extractArrowFunctionBody = (source, constName) => {

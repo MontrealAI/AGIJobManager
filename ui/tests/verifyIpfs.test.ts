@@ -25,11 +25,14 @@ function runVerifierWithHtml(html: string) {
 
 function stripKnownNextScriptInterleave(source: string): string | null {
   if (!source.includes('</script>')) return source;
-  const hasNextMarkers = /__next_f|_next\/static|buildId/.test(source);
+  const hasNextMarkers = /__next_f|webpackChunk_N_E|_next\/static|buildId/.test(source);
   if (!hasNextMarkers) return null;
 
   const withoutScriptTags = source.replace(/<\/?script[^>]*>/gi, '');
-  return withoutScriptTags.replace(/self\.__next_f[^\n]*(?:\n|$)/g, '');
+  return withoutScriptTags
+    .replace(/self\.__next_f[^\n]*(?:\n|$)/g, '')
+    .replace(/self\.webpackChunk_N_E[^\n]*(?:\n|$)/g, '')
+    .replace(/\(self\.webpackChunk_N_E[^\n]*(?:\n|$)/g, '');
 }
 
 function extractArrowFunctionBody(source: string, constName: string): string | null {
@@ -426,6 +429,37 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).not.toContain('</script>');
     expect(body).not.toMatch(/\brawHash\b/);
     expect(body).toMatch(/\bmode\b/);
+    expect(body).toMatch(/\brawReplaceState\b/);
+    expect(body).toMatch(/\brawPushState\b/);
+  });
+
+
+  it('parses helper window when webpack chunk bootstrap scripts interleave the helper window', () => {
+    const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+        }
+      </script><script>(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[1744],{46811:function(e,n,t){}}]);</script><script>
+        else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`;
+
+    const navigateBody = extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute');
+    expect(navigateBody).not.toBeNull();
+    const body = navigateBody ?? '';
+    expect(body).not.toContain('</script>');
+    expect(body).not.toMatch(/\brawHash\b/);
     expect(body).toMatch(/\brawReplaceState\b/);
     expect(body).toMatch(/\brawPushState\b/);
   });
