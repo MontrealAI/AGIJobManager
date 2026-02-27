@@ -65,12 +65,21 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
-  if (candidates.length === 0 || !hasHashchangeListener) {
+  if (!hasHashchangeListener) {
     return null;
   }
 
   const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
-  return strongestCandidate ?? candidates[0];
+  if (strongestCandidate) return strongestCandidate;
+  if (candidates.length > 0) return candidates[0];
+
+  // Fallback for malformed script boundaries in committed artifacts:
+  // parse from full HTML while rejecting stitched multi-script bodies.
+  const fallbackBody = extractArrowFunctionBody(html, constName);
+  if (!fallbackBody || fallbackBody.includes('</script>')) {
+    return null;
+  }
+  return fallbackBody;
 }
 
 const secureHtml = `<!doctype html><html><head>
