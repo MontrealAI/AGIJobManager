@@ -65,12 +65,45 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
-  if (candidates.length === 0 || !hasHashchangeListener) {
+  if (!hasHashchangeListener) {
     return null;
   }
 
   const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
-  return strongestCandidate ?? candidates[0];
+  if (strongestCandidate) return strongestCandidate;
+  if (candidates.length > 0) return candidates[0];
+
+  // Fallback for malformed script boundaries in committed artifacts:
+  // parse from full HTML, but never allow crossing a closing </script> boundary.
+  const fallbackBody = extractArrowFunctionBody(html, constName);
+  if (fallbackBody && !fallbackBody.includes('</script>')) {
+    return fallbackBody;
+  }
+
+  const declaration = `const ${constName} = (routePath, mode) => {`;
+  const declarationIndex = html.indexOf(declaration);
+  if (declarationIndex < 0) {
+    return null;
+  }
+
+  const openingBraceIndex = declarationIndex + declaration.lastIndexOf('{');
+  let depth = 0;
+  for (let i = openingBraceIndex; i < html.length; i += 1) {
+    if (html.startsWith('</script>', i)) {
+      return null;
+    }
+
+    const ch = html[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return html.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
 }
 
 const secureHtml = `<!doctype html><html><head>
