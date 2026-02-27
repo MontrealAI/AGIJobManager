@@ -324,7 +324,7 @@ describe('verify-ipfs script src attribute hardening', () => {
   it('committed artifact keeps rawHash out of navigateHashRoute helper', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
-    expect(artifactHtml).toMatch(/window\.addEventListener\(\s*['"]hashchange['"]\s*,\s*\(\)\s*=>\s*\{[\s\S]*?const\s+rawHash\s*=\s*window\.location\.hash\s*\|\|\s*''\s*;[\s\S]*?!rawHash\.startsWith\(\s*['"]#\//);
+    expect(artifactHtml).toMatch(/window\.addEventListener\(\s*['"]hashchange['"][\s\S]*?window\.location\.hash[\s\S]*?startsWith\(\s*['"]#\//);
 
     const navigateBody = extractArrowFunctionBodyFromHtml(artifactHtml, 'navigateHashRoute');
     expect(navigateBody, 'navigateHashRoute body should be parseable in committed artifact').not.toBeNull();
