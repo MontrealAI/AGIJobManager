@@ -56,13 +56,7 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
-  if (candidates.length === 0) {
-    const markerMatch = declarationPattern.exec(html);
-    const markerIndex = markerMatch?.index ?? -1;
-    if (markerIndex < 0 || !hasHashchangeListener) return null;
-
-    return extractArrowFunctionBody(html, constName);
-  }
+  if (candidates.length === 0) return null;
 
   const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
   return strongestCandidate ?? (hasHashchangeListener ? candidates[0] : null);
