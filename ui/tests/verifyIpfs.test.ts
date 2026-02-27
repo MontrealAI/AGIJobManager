@@ -23,9 +23,14 @@ function runVerifierWithHtml(html: string) {
 }
 
 function extractArrowFunctionBody(source: string, constName: string): string | null {
-  const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
-  const markerMatch = declarationPattern.exec(source);
-  const markerIndex = markerMatch?.index ?? -1;
+  const declarationPatterns = [
+    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`),
+    new RegExp(`\\bfunction\\s+${constName}\\s*\\(`)
+  ];
+  const markerIndex = declarationPatterns
+    .map((pattern) => pattern.exec(source)?.index ?? -1)
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b)[0] ?? -1;
   if (markerIndex < 0) return null;
 
   const openingBraceIndex = source.indexOf('{', markerIndex);
@@ -47,12 +52,15 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 }
 
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
-  const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
+  const declarationPatterns = [
+    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`),
+    new RegExp(`\\bfunction\\s+${constName}\\s*\\(`)
+  ];
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const hasHashchangeListener = /\bwindow\.addEventListener\(\s*['"]hashchange['"]/.test(html);
 
   const candidates = scriptBodies
-    .filter((body) => declarationPattern.test(body))
+    .filter((body) => declarationPatterns.some((pattern) => pattern.test(body)))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 

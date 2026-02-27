@@ -385,9 +385,14 @@ const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
     && /\bbootstrapUrl\b/.test(body);
 });
 const extractArrowFunctionBody = (source, constName) => {
-  const declarationPattern = new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`);
-  const markerMatch = declarationPattern.exec(source);
-  const markerIndex = markerMatch?.index ?? -1;
+  const declarationPatterns = [
+    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`),
+    new RegExp(`\\bfunction\\s+${constName}\\s*\\(`)
+  ];
+  const markerIndex = declarationPatterns
+    .map((pattern) => pattern.exec(source)?.index ?? -1)
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b)[0] ?? -1;
   if (markerIndex < 0) return null;
 
   const openingBraceIndex = source.indexOf('{', markerIndex);
@@ -409,7 +414,7 @@ const extractArrowFunctionBody = (source, constName) => {
 };
 
 for (const body of normalizedScriptBodies) {
-  const hasNavigateHashRoute = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\(/.test(body);
+  const hasNavigateHashRoute = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\(|\bfunction\s+navigateHashRoute\s*\(/.test(body);
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
 
   if (hasNavigateHashRoute && !navigateHashRouteBody) {
