@@ -32,6 +32,14 @@ function stripKnownNextScriptInterleave(source: string): string | null {
   return withoutScriptTags.replace(/self\.__next_f[^\n]*(?:\n|$)/g, '');
 }
 
+function normalizeKnownNextInterleaves(source: string): string {
+  if (!source.includes('</script>')) return source;
+  return source
+    .replace(/<script\b[^>]*>\s*self\.__next_f\.push\([\s\S]*?<\/script>/gi, '')
+    .replace(/<script\b[^>]*>\s*\(self\.__next_f=self\.__next_f\|\|\[\]\)\.push\(\[0\]\);self\.__next_f\.push\(\[2,null\]\)\s*<\/script>/gi, '')
+    .replace(/<\/script>\s*<script\b[^>]*>/gi, '');
+}
+
 function extractArrowFunctionBody(source: string, constName: string): string | null {
   const declarationPatterns = [
     new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`),
@@ -64,7 +72,46 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
   return null;
 }
 
+
+function extractStableNavigateHashRouteBody(html: string): string | null {
+  const stableDeclaration = 'const navigateHashRoute = (routePath, mode) => {';
+  const declarationIndex = html.indexOf(stableDeclaration);
+  if (declarationIndex < 0) return null;
+
+  const openingBraceIndex = declarationIndex + stableDeclaration.lastIndexOf('{');
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < html.length; i += 1) {
+    const ch = html[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        const body = html.slice(openingBraceIndex + 1, i);
+        if (
+          !body.includes('</script>')
+          && !/\brawHash\b/.test(body)
+          && /\bmode\b/.test(body)
+          && /\brawReplaceState\b/.test(body)
+          && /\brawPushState\b/.test(body)
+        ) {
+          return body;
+        }
+        return null;
+      }
+    }
+  }
+
+  return null;
+}
+
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
+  if (constName === 'navigateHashRoute') {
+    const stableBody = extractStableNavigateHashRouteBody(html);
+    if (stableBody) return stableBody;
+  }
+
   const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const hasHashchangeListener = /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]/.test(html);
@@ -115,6 +162,21 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
       ) {
         return candidateBody;
       }
+    }
+  }
+
+  const normalizedHtml = stripKnownNextScriptInterleave(normalizeKnownNextInterleaves(html));
+  if (normalizedHtml) {
+    const directBody = extractArrowFunctionBody(normalizedHtml, constName);
+    if (
+      directBody
+      && !directBody.includes('</script>')
+      && !/\brawHash\b/.test(directBody)
+      && /\bmode\b/.test(directBody)
+      && /\brawReplaceState\b/.test(directBody)
+      && /\brawPushState\b/.test(directBody)
+    ) {
+      return directBody;
     }
   }
 
