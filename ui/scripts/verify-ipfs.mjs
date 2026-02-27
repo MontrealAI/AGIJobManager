@@ -530,18 +530,21 @@ let sawNavigateDeclaration = false;
 let parsedNavigateBody = false;
 for (const body of normalizedScriptBodies) {
   const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
-  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+  const navigateHashRouteBodies = extractArrowFunctionBodies(body, 'navigateHashRoute');
 
-  if (!hasNavigateHashRoute && !navigateHashRouteBody) continue;
+  if (!hasNavigateHashRoute && navigateHashRouteBodies.length === 0) continue;
 
   sawNavigateDeclaration ||= hasNavigateHashRoute;
 
-  if (!navigateHashRouteBody) {
+  if (navigateHashRouteBodies.length === 0) {
     continue;
   }
 
-  parsedNavigateBody = true;
-  validateNavigateHashRouteBody(navigateHashRouteBody);
+  for (const navigateHashRouteBody of navigateHashRouteBodies) {
+    if (!navigateHashRouteBody) continue;
+    parsedNavigateBody = true;
+    validateNavigateHashRouteBody(navigateHashRouteBody);
+  }
 }
 
 if (sawNavigateDeclaration && !parsedNavigateBody) {

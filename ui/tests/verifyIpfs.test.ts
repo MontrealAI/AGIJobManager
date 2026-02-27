@@ -114,7 +114,7 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
   const candidates = scriptBodies
     .filter((body) => declarationPattern.test(body))
     .filter((body) => /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]|\brawPushState\b|\brawReplaceState\b/.test(body))
-    .map((body) => extractArrowFunctionBody(body, constName))
+    .flatMap((body) => extractArrowFunctionBodies(body, constName))
     .filter((body): body is string => Boolean(body));
 
   const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
