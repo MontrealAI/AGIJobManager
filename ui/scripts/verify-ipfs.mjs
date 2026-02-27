@@ -386,17 +386,18 @@ const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
 });
 const extractArrowFunctionBody = (source, constName) => {
   const declarationPatterns = [
-    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`),
-    new RegExp(`\\bfunction\\s+${constName}\\s*\\(`),
-    new RegExp(`\\b${constName}\\s*=\\s*(?![=>])`)
+    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`),
+    new RegExp(`\\bfunction\\s+${constName}\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${constName}\\s*=\\s*function\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`)
   ];
-  const markerIndex = declarationPatterns
-    .map((pattern) => pattern.exec(source)?.index ?? -1)
-    .filter((index) => index >= 0)
-    .sort((a, b) => a - b)[0] ?? -1;
-  if (markerIndex < 0) return null;
+  const matchedDeclaration = declarationPatterns
+    .map((pattern) => pattern.exec(source))
+    .filter(Boolean)
+    .sort((a, b) => a.index - b.index)[0];
+  if (!matchedDeclaration) return null;
 
-  const openingBraceIndex = source.indexOf('{', markerIndex);
+  const openingBraceIndex = matchedDeclaration.index + matchedDeclaration[0].lastIndexOf('{');
   if (openingBraceIndex < 0) return null;
 
   let depth = 0;
@@ -415,7 +416,7 @@ const extractArrowFunctionBody = (source, constName) => {
 };
 
 for (const body of normalizedScriptBodies) {
-  const hasNavigateHashRoute = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\(|\bfunction\s+navigateHashRoute\s*\(|\bnavigateHashRoute\s*=\s*(?![=>])/.test(body);
+  const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
 
   if (hasNavigateHashRoute && !navigateHashRouteBody) {

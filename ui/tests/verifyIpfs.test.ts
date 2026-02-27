@@ -24,17 +24,19 @@ function runVerifierWithHtml(html: string) {
 
 function extractArrowFunctionBody(source: string, constName: string): string | null {
   const declarationPatterns = [
-    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`),
-    new RegExp(`\\bfunction\\s+${constName}\\s*\\(`),
-    new RegExp(`\\b${constName}\\s*=\\s*(?![=>])`)
+    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`),
+    new RegExp(`\\bfunction\\s+${constName}\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${constName}\\s*=\\s*function\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`)
   ];
-  const markerIndex = declarationPatterns
-    .map((pattern) => pattern.exec(source)?.index ?? -1)
-    .filter((index) => index >= 0)
-    .sort((a, b) => a - b)[0] ?? -1;
-  if (markerIndex < 0) return null;
+  const matchedDeclaration = declarationPatterns
+    .map((pattern) => pattern.exec(source))
+    .filter((match): match is RegExpExecArray => Boolean(match))
+    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))[0];
+  if (!matchedDeclaration) return null;
 
-  const openingBraceIndex = source.indexOf('{', markerIndex);
+  const openingBraceIndex = (matchedDeclaration.index ?? 0)
+    + matchedDeclaration[0].lastIndexOf('{');
   if (openingBraceIndex < 0) return null;
 
   let depth = 0;
@@ -53,16 +55,13 @@ function extractArrowFunctionBody(source: string, constName: string): string | n
 }
 
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
-  const declarationPatterns = [
-    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\(`),
-    new RegExp(`\\bfunction\\s+${constName}\\s*\\(`),
-    new RegExp(`\\b${constName}\\s*=\\s*(?![=>])`)
-  ];
+  const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const hasHashchangeListener = /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]/.test(html);
 
   const candidates = scriptBodies
-    .filter((body) => declarationPatterns.some((pattern) => pattern.test(body)))
+    .filter((body) => declarationPattern.test(body))
+    .filter((body) => /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]|\brawPushState\b|\brawReplaceState\b/.test(body))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
