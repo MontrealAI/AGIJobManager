@@ -77,7 +77,26 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
   // parse from full HTML while rejecting stitched multi-script bodies.
   const fallbackBody = extractArrowFunctionBody(html, constName);
   if (!fallbackBody || fallbackBody.includes('</script>')) {
-    return null;
+    const declaration = `const ${constName} = (routePath, mode) => {`;
+    const declarationIndex = html.indexOf(declaration);
+    if (declarationIndex < 0) {
+      return null;
+    }
+
+    const hashchangeIndex = html.indexOf("window.addEventListener('hashchange'", declarationIndex);
+    const windowEnd = hashchangeIndex > declarationIndex
+      ? hashchangeIndex
+      : Math.min(html.length, declarationIndex + 5000);
+    const helperWindow = html.slice(declarationIndex, windowEnd);
+    if (!helperWindow.length) {
+      return null;
+    }
+
+    if (helperWindow.includes('</script>') && !/__next_f|_next\/static|buildId/.test(helperWindow)) {
+      return null;
+    }
+
+    return helperWindow;
   }
   return fallbackBody;
 }
