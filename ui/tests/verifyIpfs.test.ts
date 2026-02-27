@@ -85,21 +85,29 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
 
   // Deterministic fallback for committed artifacts:
   // inspect each declaration window and only accept a clean helper body.
-  const declaration = `const ${constName} = (routePath, mode) => {`;
-  let declarationIndex = html.indexOf(declaration);
+  const fallbackDeclarationPattern = new RegExp(
+    String.raw`(?:const|let|var)\s+${constName}\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+${constName}\s*\([^)]*\)\s*\{`,
+    'g'
+  );
+  const hashchangePattern = /(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/g;
 
-  while (declarationIndex >= 0) {
-    const hashchangeIndex = html.indexOf("window.addEventListener('hashchange'", declarationIndex);
-    if (hashchangeIndex < 0) {
-      return null;
-    }
+  for (const declarationMatch of html.matchAll(fallbackDeclarationPattern)) {
+    const declarationIndex = declarationMatch.index ?? -1;
+    if (declarationIndex < 0) continue;
 
-    const helperWindow = html.slice(declarationIndex, hashchangeIndex);
-    const normalizedWindow = stripKnownNextScriptInterleave(helperWindow);
-    if (normalizedWindow) {
+    hashchangePattern.lastIndex = declarationIndex;
+    for (let hashMatch = hashchangePattern.exec(html); hashMatch; hashMatch = hashchangePattern.exec(html)) {
+      const hashchangeIndex = hashMatch.index;
+      if (hashchangeIndex <= declarationIndex) continue;
+
+      const helperWindow = html.slice(declarationIndex, hashchangeIndex);
+      const normalizedWindow = stripKnownNextScriptInterleave(helperWindow);
+      if (!normalizedWindow) continue;
+
       const candidateBody = extractArrowFunctionBody(normalizedWindow, constName);
       if (
         candidateBody
+        && !candidateBody.includes('</script>')
         && !/\brawHash\b/.test(candidateBody)
         && /\bmode\b/.test(candidateBody)
         && /\brawReplaceState\b/.test(candidateBody)
@@ -108,8 +116,6 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
         return candidateBody;
       }
     }
-
-    declarationIndex = html.indexOf(declaration, declarationIndex + declaration.length);
   }
 
   return null;
@@ -373,6 +379,56 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute')).toBeNull();
   });
 
+
+
+  it('fallback parses minified helper declaration across known Next interleave', () => {
+    const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute=(routePath,mode)=>{if(!routePath||!routePath.startsWith('/'))return;if(mode==='replace'){rawReplaceState(history.state,'',routePath);}else{rawPushState(history.state,'',routePath);}}
+      </script><script>(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])</script><script>self.__next_f.push([1,"buildId:_next/static __next_f"])</script><script>
+      ;window.addEventListener("hashchange",()=>{const rawHash=window.location.hash||'';if(!rawHash.startsWith('#/'))return;navigateHashRoute(rawHash.slice(1),'replace');});
+    </script></body></html>`;
+
+    const navigateBody = extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute');
+    expect(navigateBody).not.toBeNull();
+    const body = navigateBody ?? '';
+    expect(body).not.toContain('</script>');
+    expect(body).not.toMatch(/\brawHash\b/);
+    expect(body).toMatch(/\bmode\b/);
+    expect(body).toMatch(/\brawReplaceState\b/);
+    expect(body).toMatch(/\brawPushState\b/);
+  });
+
+  it('fallback skips earlier hashchange markers and finds parseable helper window', () => {
+    const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+      </script><script>(self.__next_f=self.__next_f||[]).push([1,"hashchange buildId _next/static __next_f"])</script><script>
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+        } else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`;
+
+    const navigateBody = extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute');
+    expect(navigateBody).not.toBeNull();
+    const body = navigateBody ?? '';
+    expect(body).not.toContain('</script>');
+    expect(body).not.toMatch(/\brawHash\b/);
+    expect(body).toMatch(/\bmode\b/);
+    expect(body).toMatch(/\brawReplaceState\b/);
+    expect(body).toMatch(/\brawPushState\b/);
+  });
 
   it('parses helper window when only known next script interleave is present', () => {
     const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>

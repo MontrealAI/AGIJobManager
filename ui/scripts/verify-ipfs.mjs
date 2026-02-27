@@ -384,6 +384,15 @@ const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
     && /\bhistory\.replaceState\b/.test(body)
     && /\bbootstrapUrl\b/.test(body);
 });
+const stripKnownNextScriptInterleave = (source) => {
+  if (!source.includes('</script>')) return source;
+  const hasNextMarkers = /__next_f|_next\/static|buildId/.test(source);
+  if (!hasNextMarkers) return null;
+
+  const withoutScriptTags = source.replace(/<\/?script[^>]*>/gi, '');
+  return withoutScriptTags.replace(/self\.__next_f[^\n]*(?:\n|$)/g, '');
+};
+
 const extractArrowFunctionBody = (source, constName) => {
   const declarationPatterns = [
     new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`),
@@ -415,16 +424,7 @@ const extractArrowFunctionBody = (source, constName) => {
   return null;
 };
 
-for (const body of normalizedScriptBodies) {
-  const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
-  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
-
-  if (hasNavigateHashRoute && !navigateHashRouteBody) {
-    throw new Error('Unable to parse navigateHashRoute body in single-file artifact.');
-  }
-
-  if (!navigateHashRouteBody) continue;
-
+const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
   if (navigateHashRouteBody.includes('</script>')) {
     throw new Error('navigateHashRoute body appears split by a closing script tag, indicating malformed bootstrap code.');
   }
@@ -440,6 +440,62 @@ for (const body of normalizedScriptBodies) {
   if (!hasModeBranch || !hasReplaceRewrite || !hasPushRewrite) {
     throw new Error('navigateHashRoute is missing required push/replace history rewrite logic.');
   }
+};
+
+const extractNavigateHashRouteFromHtml = (htmlSource) => {
+  const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+navigateHashRoute\s*\([^)]*\)\s*\{/g;
+  const hashchangePattern = /(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/g;
+
+  for (const declarationMatch of htmlSource.matchAll(declarationPattern)) {
+    const declarationIndex = declarationMatch.index ?? -1;
+    if (declarationIndex < 0) continue;
+
+    hashchangePattern.lastIndex = declarationIndex;
+
+    for (let hashMatch = hashchangePattern.exec(htmlSource); hashMatch; hashMatch = hashchangePattern.exec(htmlSource)) {
+      const helperWindow = htmlSource.slice(declarationIndex, hashMatch.index);
+      const normalizedWindow = stripKnownNextScriptInterleave(helperWindow);
+      if (!normalizedWindow) continue;
+
+      const candidateBody = extractArrowFunctionBody(normalizedWindow, 'navigateHashRoute');
+      if (!candidateBody) continue;
+
+      if (/\brawHash\b/.test(candidateBody)) continue;
+      if (!/\bmode\b/.test(candidateBody) || !/\brawReplaceState\b/.test(candidateBody) || !/\brawPushState\b/.test(candidateBody)) {
+        continue;
+      }
+
+      return candidateBody;
+    }
+  }
+
+  return null;
+};
+
+let sawNavigateDeclaration = false;
+let parsedNavigateBody = false;
+for (const body of normalizedScriptBodies) {
+  const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
+  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+
+  if (!hasNavigateHashRoute && !navigateHashRouteBody) continue;
+
+  sawNavigateDeclaration ||= hasNavigateHashRoute;
+
+  if (!navigateHashRouteBody) {
+    continue;
+  }
+
+  parsedNavigateBody = true;
+  validateNavigateHashRouteBody(navigateHashRouteBody);
+}
+
+if (sawNavigateDeclaration && !parsedNavigateBody) {
+  const fallbackNavigateBody = extractNavigateHashRouteFromHtml(html);
+  if (!fallbackNavigateBody) {
+    throw new Error('Unable to parse navigateHashRoute body in single-file artifact.');
+  }
+  validateNavigateHashRouteBody(fallbackNavigateBody);
 }
 
 if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
