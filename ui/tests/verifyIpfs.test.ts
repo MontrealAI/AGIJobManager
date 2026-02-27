@@ -59,19 +59,47 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const hasHashchangeListener = /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]/.test(html);
 
+  if (!hasHashchangeListener) {
+    return null;
+  }
+
   const candidates = scriptBodies
     .filter((body) => declarationPattern.test(body))
     .filter((body) => /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]|\brawPushState\b|\brawReplaceState\b/.test(body))
     .map((body) => extractArrowFunctionBody(body, constName))
     .filter((body): body is string => Boolean(body));
 
-  if (candidates.length === 0 || !hasHashchangeListener) {
+  const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
+  if (strongestCandidate) return strongestCandidate;
+  if (candidates.length > 0) return candidates[0];
+
+  // Deterministic fallback for committed artifacts:
+  // scope to declaration -> hashchange window and reject stitched script boundaries.
+  const declarationMatch = new RegExp(
+    `\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`,
+    'm'
+  ).exec(html);
+  const declarationIndex = declarationMatch?.index ?? -1;
+  if (declarationIndex < 0) {
     return null;
   }
 
-  const strongestCandidate = candidates.find((body) => /\brawReplaceState\b/.test(body) && /\brawPushState\b/.test(body));
-  return strongestCandidate ?? candidates[0];
+  const hashchangeRegex = /\b(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/;
+  const hashchangeSlice = html.slice(declarationIndex);
+  const hashchangeMatch = hashchangeRegex.exec(hashchangeSlice);
+  if (!hashchangeMatch || hashchangeMatch.index === undefined) {
+    return null;
+  }
+
+  const hashchangeIndex = declarationIndex + hashchangeMatch.index;
+  const helperWindow = html.slice(declarationIndex, hashchangeIndex);
+  if (helperWindow.includes('</script>')) {
+    return null;
+  }
+
+  return extractArrowFunctionBody(helperWindow, constName);
 }
+
 
 const secureHtml = `<!doctype html><html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'">
