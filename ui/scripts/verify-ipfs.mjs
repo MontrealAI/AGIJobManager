@@ -377,8 +377,79 @@ const hasPushStateLogic = normalizedScriptBodies.some((body) => /\bhistory\.push
 const hasRoutingHook = uncommentedScriptBodies.some((body) => /\baddEventListener\s*\(\s*(["'`])hashchange\1/.test(body))
   || normalizedScriptBodies.some((body) => /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
 
+const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
+  if (!/\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body)) return false;
+  return /\bwindow\.location\.hash\b/.test(body)
+    && /\.startsWith\s*\(/.test(body)
+    && /\bhistory\.replaceState\b/.test(body)
+    && /\bbootstrapUrl\b/.test(body);
+});
+const extractArrowFunctionBody = (source, constName) => {
+  const declarationPatterns = [
+    new RegExp(`\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`),
+    new RegExp(`\\bfunction\\s+${constName}\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${constName}\\s*=\\s*function\\s*\\([^)]*\\)\\s*\\{`),
+    new RegExp(`\\b${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`)
+  ];
+  const matchedDeclaration = declarationPatterns
+    .map((pattern) => pattern.exec(source))
+    .filter(Boolean)
+    .sort((a, b) => a.index - b.index)[0];
+  if (!matchedDeclaration) return null;
+
+  const openingBraceIndex = matchedDeclaration.index + matchedDeclaration[0].lastIndexOf('{');
+  if (openingBraceIndex < 0) return null;
+
+  let depth = 0;
+  for (let i = openingBraceIndex; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
+};
+
+for (const body of normalizedScriptBodies) {
+  const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
+  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+
+  if (hasNavigateHashRoute && !navigateHashRouteBody) {
+    throw new Error('Unable to parse navigateHashRoute body in single-file artifact.');
+  }
+
+  if (!navigateHashRouteBody) continue;
+
+  if (navigateHashRouteBody.includes('</script>')) {
+    throw new Error('navigateHashRoute body appears split by a closing script tag, indicating malformed bootstrap code.');
+  }
+
+  if (/\brawHash\b/.test(navigateHashRouteBody)) {
+    throw new Error('Hash routing guard references rawHash inside navigateHashRoute, which can break history rewrites.');
+  }
+
+  const hasModeBranch = /\bmode\b/.test(navigateHashRouteBody);
+  const hasReplaceRewrite = /\b(?:rawReplaceState|history\.replaceState)\b/.test(navigateHashRouteBody);
+  const hasPushRewrite = /\b(?:rawPushState|history\.pushState)\b/.test(navigateHashRouteBody);
+
+  if (!hasModeBranch || !hasReplaceRewrite || !hasPushRewrite) {
+    throw new Error('navigateHashRoute is missing required push/replace history rewrite logic.');
+  }
+}
+
 if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
+}
+
+const hasBootstrapCandidate = normalizedScriptBodies.some((body) => /\bconst\s+detectGatewayBase\b/.test(body) && /\bwindow\.location\.hash\b/.test(body));
+
+if (hasBootstrapCandidate && !hasBootstrapScriptIntegrity) {
+  throw new Error('IPFS bootstrap script is incomplete or malformed.');
 }
 
 console.log('IPFS artifact verified: single-file, no external local assets, security metas present.');
