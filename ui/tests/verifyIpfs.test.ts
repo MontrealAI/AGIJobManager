@@ -74,31 +74,36 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
   if (candidates.length > 0) return candidates[0];
 
   // Fallback for malformed script boundaries in committed artifacts:
-  // parse from full HTML while rejecting stitched multi-script bodies.
+  // parse from full HTML, but never allow crossing a closing </script> boundary.
   const fallbackBody = extractArrowFunctionBody(html, constName);
-  if (!fallbackBody || fallbackBody.includes('</script>')) {
-    const declaration = `const ${constName} = (routePath, mode) => {`;
-    const declarationIndex = html.indexOf(declaration);
-    if (declarationIndex < 0) {
-      return null;
-    }
-
-    const hashchangeIndex = html.indexOf("window.addEventListener('hashchange'", declarationIndex);
-    const windowEnd = hashchangeIndex > declarationIndex
-      ? hashchangeIndex
-      : Math.min(html.length, declarationIndex + 5000);
-    const helperWindow = html.slice(declarationIndex, windowEnd);
-    if (!helperWindow.length) {
-      return null;
-    }
-
-    if (helperWindow.includes('</script>') && !/__next_f|_next\/static|buildId/.test(helperWindow)) {
-      return null;
-    }
-
-    return helperWindow;
+  if (fallbackBody && !fallbackBody.includes('</script>')) {
+    return fallbackBody;
   }
-  return fallbackBody;
+
+  const declaration = `const ${constName} = (routePath, mode) => {`;
+  const declarationIndex = html.indexOf(declaration);
+  if (declarationIndex < 0) {
+    return null;
+  }
+
+  const openingBraceIndex = declarationIndex + declaration.lastIndexOf('{');
+  let depth = 0;
+  for (let i = openingBraceIndex; i < html.length; i += 1) {
+    if (html.startsWith('</script>', i)) {
+      return null;
+    }
+
+    const ch = html[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return html.slice(openingBraceIndex + 1, i);
+      }
+    }
+  }
+
+  return null;
 }
 
 const secureHtml = `<!doctype html><html><head>
