@@ -451,22 +451,22 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
     if (declarationIndex < 0) continue;
 
     hashchangePattern.lastIndex = declarationIndex;
-    const hashMatch = hashchangePattern.exec(htmlSource);
-    if (!hashMatch) continue;
 
-    const helperWindow = htmlSource.slice(declarationIndex, hashMatch.index);
-    const normalizedWindow = stripKnownNextScriptInterleave(helperWindow);
-    if (!normalizedWindow) continue;
+    for (let hashMatch = hashchangePattern.exec(htmlSource); hashMatch; hashMatch = hashchangePattern.exec(htmlSource)) {
+      const helperWindow = htmlSource.slice(declarationIndex, hashMatch.index);
+      const normalizedWindow = stripKnownNextScriptInterleave(helperWindow);
+      if (!normalizedWindow) continue;
 
-    const candidateBody = extractArrowFunctionBody(normalizedWindow, 'navigateHashRoute');
-    if (!candidateBody) continue;
+      const candidateBody = extractArrowFunctionBody(normalizedWindow, 'navigateHashRoute');
+      if (!candidateBody) continue;
 
-    if (/\brawHash\b/.test(candidateBody)) continue;
-    if (!/\bmode\b/.test(candidateBody) || !/\brawReplaceState\b/.test(candidateBody) || !/\brawPushState\b/.test(candidateBody)) {
-      continue;
+      if (/\brawHash\b/.test(candidateBody)) continue;
+      if (!/\bmode\b/.test(candidateBody) || !/\brawReplaceState\b/.test(candidateBody) || !/\brawPushState\b/.test(candidateBody)) {
+        continue;
+      }
+
+      return candidateBody;
     }
-
-    return candidateBody;
   }
 
   return null;
