@@ -414,7 +414,7 @@ const extractArrowFunctionBody = (source, constName) => {
 };
 
 for (const body of normalizedScriptBodies) {
-  const hasNavigateHashRoute = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\(|\bfunction\s+navigateHashRoute\s*\(|\bnavigateHashRoute\s*=\s*\(/.test(body);
+  const hasNavigateHashRoute = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\(|\bfunction\s+navigateHashRoute\s*\(|\bnavigateHashRoute\s*=\s*\(|\bnavigateHashRoute\s*=\s*function\s*\(/.test(body);
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
 
   if (hasNavigateHashRoute && !navigateHashRouteBody) {
