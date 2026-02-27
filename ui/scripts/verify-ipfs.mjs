@@ -433,6 +433,35 @@ const extractArrowFunctionBody = (source, constName) => {
   return null;
 };
 
+const extractArrowFunctionBodies = (source, constName) => {
+  const declarationPattern = new RegExp(
+    `\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{|\\bfunction\\s+${constName}\\s*\\([^)]*\\)\\s*\\{|\\b${constName}\\s*=\\s*function\\s*\\([^)]*\\)\\s*\\{|\\b${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`,
+    'g'
+  );
+
+  const bodies = [];
+  for (const declarationMatch of source.matchAll(declarationPattern)) {
+    const openingBraceIndex = (declarationMatch.index ?? 0)
+      + declarationMatch[0].lastIndexOf('{');
+    if (openingBraceIndex < 0) continue;
+
+    let depth = 0;
+    for (let i = openingBraceIndex; i < source.length; i += 1) {
+      const ch = source[i];
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          bodies.push(source.slice(openingBraceIndex + 1, i));
+          break;
+        }
+      }
+    }
+  }
+
+  return bodies;
+};
+
 const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
   if (navigateHashRouteBody.includes('</script>')) {
     throw new Error('navigateHashRoute body appears split by a closing script tag, indicating malformed bootstrap code.');
@@ -480,15 +509,17 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
 
   const normalizedHtml = stripKnownNextScriptInterleave(normalizeKnownNextInterleaves(htmlSource));
   if (normalizedHtml) {
-    const directBody = extractArrowFunctionBody(normalizedHtml, 'navigateHashRoute');
-    if (
-      directBody
-      && !/\brawHash\b/.test(directBody)
-      && /\bmode\b/.test(directBody)
-      && /\brawReplaceState\b/.test(directBody)
-      && /\brawPushState\b/.test(directBody)
-    ) {
-      return directBody;
+    const directBodies = extractArrowFunctionBodies(normalizedHtml, 'navigateHashRoute');
+    for (const directBody of directBodies) {
+      if (
+        directBody
+        && !/\brawHash\b/.test(directBody)
+        && /\bmode\b/.test(directBody)
+        && /\brawReplaceState\b/.test(directBody)
+        && /\brawPushState\b/.test(directBody)
+      ) {
+        return directBody;
+      }
     }
   }
 
