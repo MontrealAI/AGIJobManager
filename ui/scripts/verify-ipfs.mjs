@@ -386,11 +386,20 @@ const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
 });
 const stripKnownNextScriptInterleave = (source) => {
   if (!source.includes('</script>')) return source;
-  const hasNextMarkers = /__next_f|_next\/static|buildId/.test(source);
+  const hasNextMarkers = /__next_f|_next\/static|buildId|webpackChunk_N_E|_N_E=/.test(source);
   if (!hasNextMarkers) return null;
 
   const withoutScriptTags = source.replace(/<\/?script[^>]*>/gi, '');
   return withoutScriptTags.replace(/self\.__next_f[^\n]*(?:\n|$)/g, '');
+};
+
+const normalizeKnownNextInterleaves = (source) => {
+  if (!source.includes('</script>')) return source;
+  return source
+    .replace(/<script\b[^>]*>\s*\(self\.webpackChunk_N_E=self\.webpackChunk_N_E\|\|\[\]\)\.push\([\s\S]*?<\/script>/gi, '')
+    .replace(/<script\b[^>]*>\s*self\.__next_f\.push\([\s\S]*?<\/script>/gi, '')
+    .replace(/<script\b[^>]*>\s*\(self\.__next_f=self\.__next_f\|\|\[\]\)\.push\(\[0\]\);self\.__next_f\.push\(\[2,null\]\)\s*<\/script>/gi, '')
+    .replace(/<\/script>\s*<script\b[^>]*>/gi, '');
 };
 
 const extractArrowFunctionBody = (source, constName) => {
@@ -422,6 +431,35 @@ const extractArrowFunctionBody = (source, constName) => {
   }
 
   return null;
+};
+
+const extractArrowFunctionBodies = (source, constName) => {
+  const declarationPattern = new RegExp(
+    `\\b(?:const|let|var)\\s+${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{|\\bfunction\\s+${constName}\\s*\\([^)]*\\)\\s*\\{|\\b${constName}\\s*=\\s*function\\s*\\([^)]*\\)\\s*\\{|\\b${constName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{`,
+    'g'
+  );
+
+  const bodies = [];
+  for (const declarationMatch of source.matchAll(declarationPattern)) {
+    const openingBraceIndex = (declarationMatch.index ?? 0)
+      + declarationMatch[0].lastIndexOf('{');
+    if (openingBraceIndex < 0) continue;
+
+    let depth = 0;
+    for (let i = openingBraceIndex; i < source.length; i += 1) {
+      const ch = source[i];
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          bodies.push(source.slice(openingBraceIndex + 1, i));
+          break;
+        }
+      }
+    }
+  }
+
+  return bodies;
 };
 
 const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
@@ -469,6 +507,22 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
     }
   }
 
+  const normalizedHtml = stripKnownNextScriptInterleave(normalizeKnownNextInterleaves(htmlSource));
+  if (normalizedHtml) {
+    const directBodies = extractArrowFunctionBodies(normalizedHtml, 'navigateHashRoute');
+    for (const directBody of directBodies) {
+      if (
+        directBody
+        && !/\brawHash\b/.test(directBody)
+        && /\bmode\b/.test(directBody)
+        && /\brawReplaceState\b/.test(directBody)
+        && /\brawPushState\b/.test(directBody)
+      ) {
+        return directBody;
+      }
+    }
+  }
+
   return null;
 };
 
@@ -476,18 +530,21 @@ let sawNavigateDeclaration = false;
 let parsedNavigateBody = false;
 for (const body of normalizedScriptBodies) {
   const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
-  const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
+  const navigateHashRouteBodies = extractArrowFunctionBodies(body, 'navigateHashRoute');
 
-  if (!hasNavigateHashRoute && !navigateHashRouteBody) continue;
+  if (!hasNavigateHashRoute && navigateHashRouteBodies.length === 0) continue;
 
   sawNavigateDeclaration ||= hasNavigateHashRoute;
 
-  if (!navigateHashRouteBody) {
+  if (navigateHashRouteBodies.length === 0) {
     continue;
   }
 
-  parsedNavigateBody = true;
-  validateNavigateHashRouteBody(navigateHashRouteBody);
+  for (const navigateHashRouteBody of navigateHashRouteBodies) {
+    if (!navigateHashRouteBody) continue;
+    parsedNavigateBody = true;
+    validateNavigateHashRouteBody(navigateHashRouteBody);
+  }
 }
 
 if (sawNavigateDeclaration && !parsedNavigateBody) {
