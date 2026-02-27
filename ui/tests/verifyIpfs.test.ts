@@ -75,17 +75,23 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
 
   // Deterministic fallback for committed artifacts:
   // scope to declaration -> hashchange window and reject stitched script boundaries.
-  const declaration = `const ${constName} = (routePath, mode) => {`;
-  const declarationIndex = html.indexOf(declaration);
+  const declarationMatch = new RegExp(
+    `\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`,
+    'm'
+  ).exec(html);
+  const declarationIndex = declarationMatch?.index ?? -1;
   if (declarationIndex < 0) {
     return null;
   }
 
-  const hashchangeIndex = html.indexOf("window.addEventListener('hashchange'", declarationIndex);
-  if (hashchangeIndex < 0) {
+  const hashchangeRegex = /\b(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/;
+  const hashchangeSlice = html.slice(declarationIndex);
+  const hashchangeMatch = hashchangeRegex.exec(hashchangeSlice);
+  if (!hashchangeMatch || hashchangeMatch.index === undefined) {
     return null;
   }
 
+  const hashchangeIndex = declarationIndex + hashchangeMatch.index;
   const helperWindow = html.slice(declarationIndex, hashchangeIndex);
   if (helperWindow.includes('</script>')) {
     return null;
