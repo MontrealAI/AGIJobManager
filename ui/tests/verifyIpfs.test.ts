@@ -83,25 +83,33 @@ function extractArrowFunctionBodyFromHtml(html: string, constName: string): stri
   if (candidates.length > 0) return candidates[0];
 
   // Deterministic fallback for committed artifacts:
-  // scope to declaration -> hashchange window and reject stitched script boundaries.
+  // scan declaration->hashchange windows and only accept clean parseable helpers.
   const declaration = `const ${constName} = (routePath, mode) => {`;
-  const declarationIndex = html.indexOf(declaration);
-  if (declarationIndex < 0) {
-    return null;
+  let searchFrom = 0;
+  while (searchFrom < html.length) {
+    const declarationIndex = html.indexOf(declaration, searchFrom);
+    if (declarationIndex < 0) {
+      return null;
+    }
+
+    const hashchangeIndex = html.indexOf("window.addEventListener('hashchange'", declarationIndex);
+    if (hashchangeIndex < 0) {
+      return null;
+    }
+
+    const helperWindow = html.slice(declarationIndex, hashchangeIndex);
+    const normalizedWindow = stripKnownNextScriptInterleave(helperWindow);
+    if (normalizedWindow) {
+      const parsed = extractArrowFunctionBody(normalizedWindow, constName);
+      if (parsed && !/\brawHash\b/.test(parsed)) {
+        return parsed;
+      }
+    }
+
+    searchFrom = declarationIndex + declaration.length;
   }
 
-  const hashchangeIndex = html.indexOf("window.addEventListener('hashchange'", declarationIndex);
-  if (hashchangeIndex < 0) {
-    return null;
-  }
-
-  const helperWindow = html.slice(declarationIndex, hashchangeIndex);
-  const normalizedWindow = stripKnownNextScriptInterleave(helperWindow);
-  if (!normalizedWindow) {
-    return null;
-  }
-
-  return extractArrowFunctionBody(normalizedWindow, constName);
+  return null;
 }
 
 
