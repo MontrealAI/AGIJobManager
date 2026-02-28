@@ -462,6 +462,12 @@ const extractArrowFunctionBodies = (source, constName) => {
   return bodies;
 };
 
+const extractNavigateBodyFromMarkers = (htmlSource) => {
+  const markerMatch = htmlSource.match(/\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//);
+  if (!markerMatch) return null;
+  return extractArrowFunctionBody(markerMatch[1], 'navigateHashRoute');
+};
+
 const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
   if (navigateHashRouteBody.includes('</script>')) {
     throw new Error('navigateHashRoute body appears split by a closing script tag, indicating malformed bootstrap code.');
@@ -481,6 +487,9 @@ const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
 };
 
 const extractNavigateHashRouteFromHtml = (htmlSource) => {
+  const markedBody = extractNavigateBodyFromMarkers(htmlSource);
+  if (markedBody) return markedBody;
+
   const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+navigateHashRoute\s*\([^)]*\)\s*\{/g;
   const hashchangePattern = /(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/g;
 

@@ -102,8 +102,16 @@ function extractArrowFunctionBodies(source: string, constName: string): string[]
   return bodies;
 }
 
+function extractArrowFunctionBodyFromMarkers(html: string, constName: string): string | null {
+  const markerMatch = html.match(/\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//);
+  if (!markerMatch) return null;
+  return extractArrowFunctionBody(markerMatch[1], constName);
+}
+
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
+  const markerBody = extractArrowFunctionBodyFromMarkers(html, constName);
+  if (markerBody) return markerBody;
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const hasHashchangeListener = /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]/.test(html);
 

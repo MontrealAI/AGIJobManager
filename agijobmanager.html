@@ -128,6 +128,8 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     return basePath + parsed.search;
   };
 
+  /* navigateHashRoute:start */
+  /* navigateHashRoute:end */
   const toHashUrl = (routeInput) => {
     const parsed = parseRouteInput(routeInput);
     if (!parsed) return null;
