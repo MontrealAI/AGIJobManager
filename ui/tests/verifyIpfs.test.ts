@@ -102,8 +102,26 @@ function extractArrowFunctionBodies(source: string, constName: string): string[]
   return bodies;
 }
 
+function extractArrowFunctionBodyFromMarkers(html: string, constName: string): string | null {
+  const markerMatches = [...html.matchAll(/\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//g)];
+
+  for (const markerMatch of markerMatches) {
+    const markerBody = markerMatch[1] ?? '';
+    if (!new RegExp(`\\bconst\\s+${constName}\\b|\\bfunction\\s+${constName}\\b`).test(markerBody)) {
+      continue;
+    }
+
+    const extracted = extractArrowFunctionBody(markerBody, constName);
+    if (extracted) return extracted;
+  }
+
+  return null;
+}
+
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
+  const markerBody = extractArrowFunctionBodyFromMarkers(html, constName);
+  if (markerBody) return markerBody;
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const hasHashchangeListener = /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]/.test(html);
 
@@ -365,6 +383,44 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/references rawHash inside navigateHashRoute/);
   });
 
+  it('fails when marker region does not wrap navigateHashRoute helper', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      /* navigateHashRoute:start */
+      const unrelated = 1;
+      /* navigateHashRoute:end */
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { rawReplaceState(history.state, '', routePath); } else { rawPushState(history.state, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`);
+    expect(run).toThrow(/marker region must wrap navigateHashRoute helper/);
+  });
+
+  it('fails when only one navigateHashRoute marker is present', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      /* navigateHashRoute:start */
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { rawReplaceState(history.state, '', routePath); } else { rawPushState(history.state, '', routePath); }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`);
+    expect(run).toThrow(/markers are incomplete/);
+  });
+
 
   it('fails when navigateHashRoute is present but unparseable', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
@@ -431,6 +487,29 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\brawReplaceState\b/);
     expect(body).toMatch(/\brawPushState\b/);
     expect(body).not.toMatch(/\brawHash\b/);
+  });
+
+  it('prefers marker block that actually wraps navigateHashRoute helper', () => {
+    const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      /* navigateHashRoute:start */const placeholder = true;/* navigateHashRoute:end */
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      /* navigateHashRoute:start */
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { rawReplaceState(history.state, '', routePath); } else { rawPushState(history.state, '', routePath); }
+      };
+      /* navigateHashRoute:end */
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`;
+
+    const navigateBody = extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute');
+    expect(navigateBody).not.toBeNull();
+    expect(navigateBody ?? '').toMatch(/\bmode\b/);
   });
 
 
@@ -595,6 +674,10 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\bmode\b/);
     expect(body).toMatch(/\brawReplaceState\b/);
     expect(body).toMatch(/\brawPushState\b/);
+
+    const markerMatches = [...artifactHtml.matchAll(/\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//g)];
+    expect(markerMatches).toHaveLength(1);
+    expect(markerMatches[0][1] ?? '').toContain('const navigateHashRoute = (routePath, mode) => {');
   });
 
   it('passes when navigateHashRoute only uses its own inputs', () => {
