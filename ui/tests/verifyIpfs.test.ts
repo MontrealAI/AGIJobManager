@@ -597,6 +597,27 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\brawPushState\b/);
   });
 
+
+  it('committed artifact includes functional top navigation hash routes', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const expectedTabs = [
+      ['Dashboard', '#/'],
+      ['Jobs', '#/jobs'],
+      ['Identity', '#/identity'],
+      ['Admin', '#/admin'],
+      ['Advanced', '#/advanced'],
+      ['Design', '#/design'],
+      ['Deployment', '#/deployment']
+    ] as const;
+
+    for (const [label, href] of expectedTabs) {
+      expect(artifactHtml).toContain(`>${label}<`);
+      expect(artifactHtml).toContain(`href="${href}"`);
+    }
+  });
+
   it('passes when navigateHashRoute only uses its own inputs', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const navigateHashRoute = (routePath, mode) => {

@@ -10,6 +10,7 @@ export function Header({ isDark, onToggleTheme, degradedRpc }: { isDark: boolean
         <nav className="flex items-center gap-5 text-sm">
           <Link href="/" className="font-medium">Dashboard</Link>
           <Link href="/jobs">Jobs</Link>
+          <Link href="/identity">Identity</Link>
           <Link href="/admin">Ops Console</Link>
           {degradedRpc && <span className="pill border-yellow-500/50 text-yellow-400">Degraded RPC</span>}
         </nav>
