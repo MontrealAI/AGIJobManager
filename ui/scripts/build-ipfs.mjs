@@ -392,6 +392,12 @@ function assertRouterBootstrapCoherence(singleFileHtml) {
   if (routerScript.includes('</script><script>') || routerScript.includes('<script>')) {
     throw new Error('Router bootstrap script appears interleaved with script tag boundaries in single-file artifact.');
   }
+
+  const hashUrlDeclarationIndex = routerScript.indexOf('const hashUrl = toHashUrl(routePath);');
+  const hashUrlGuardIndex = routerScript.indexOf('if (!hashUrl) return;');
+  if (hashUrlGuardIndex >= 0 && (hashUrlDeclarationIndex < 0 || hashUrlDeclarationIndex > hashUrlGuardIndex)) {
+    throw new Error('Router bootstrap hashUrl guard is out of scope or appears before hashUrl declaration in single-file artifact.');
+  }
 }
 
 function assertParseableNavigateHashRoute(singleFileHtml) {

@@ -613,4 +613,34 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).not.toThrow();
   });
 
+
+  it('fails when router bootstrap guard references hashUrl before declaration', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const normalizeHashHref = (input) => input;
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        const pathUrl = routePath;
+        const hashUrl = routePath;
+        if (!pathUrl || !hashUrl) return;
+        if (mode === 'replace') { history.replaceState({}, '', pathUrl); } else { history.pushState({}, '', pathUrl); }
+      };
+      if (!hashUrl) return;
+      const hashUrl = '/jobs';
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        if (!target) return;
+        const href = target.getAttribute('href') || '';
+        const hashRoute = normalizeHashHref(href);
+        if (!hashRoute) return;
+        navigateHashRoute(hashRoute.slice(1), 'push');
+      }, true);
+    </script></body></html>`);
+    expect(run).toThrow(/hashUrl guard before hashUrl declaration/);
+  });
+
 });
