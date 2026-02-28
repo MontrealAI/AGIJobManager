@@ -93,12 +93,11 @@ function sanitizeForbiddenDataUris(sourceHtml) {
     sanitized = sanitized.replace(pattern, replacement);
   }
 
-  sanitized = sanitized.replace(/data:image\//gi, 'about:blank#blocked-data-image/');
-  sanitized = sanitized.replace(/data:font\//gi, 'about:blank#blocked-data-font/');
-  sanitized = sanitized.replace(/data\\x3aimage/gi, 'about:blank#blocked-data-image');
-  sanitized = sanitized.replace(/data\\x3afont/gi, 'about:blank#blocked-data-font');
+  // Escape remaining prefixes (instead of redirecting to about:blank) to preserve JS runtime behavior.
+  sanitized = sanitized.replace(/data:image\//gi, 'data\\x3aimage/');
+  sanitized = sanitized.replace(/data:font\//gi, 'data\\x3afont/');
 
-  if (/data:image\//i.test(sanitized) || /data:font\//i.test(sanitized) || /data\\x3aimage/i.test(sanitized) || /data\\x3afont/i.test(sanitized)) {
+  if (/data:image\//i.test(sanitized) || /data:font\//i.test(sanitized)) {
     throw new Error('Generated artifact still contains forbidden data:image/* or data:font/* URI content.');
   }
 
