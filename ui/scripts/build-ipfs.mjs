@@ -79,6 +79,32 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   }
 }
 
+
+function sanitizeForbiddenDataUris(sourceHtml) {
+  const replacements = [
+    { pattern: /data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi, replacement: 'about:blank#blocked-data-image-base64' },
+    { pattern: /data:image\/[a-z0-9.+-]+,[^"'\s)]+/gi, replacement: 'about:blank#blocked-data-image' },
+    { pattern: /data:font\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi, replacement: 'about:blank#blocked-data-font-base64' },
+    { pattern: /data:font\/[a-z0-9.+-]+,[^"'\s)]+/gi, replacement: 'about:blank#blocked-data-font' }
+  ];
+
+  let sanitized = sourceHtml;
+  for (const { pattern, replacement } of replacements) {
+    sanitized = sanitized.replace(pattern, replacement);
+  }
+
+  sanitized = sanitized.replace(/data:image\//gi, 'about:blank#blocked-data-image/');
+  sanitized = sanitized.replace(/data:font\//gi, 'about:blank#blocked-data-font/');
+  sanitized = sanitized.replace(/data\\x3aimage/gi, 'about:blank#blocked-data-image');
+  sanitized = sanitized.replace(/data\\x3afont/gi, 'about:blank#blocked-data-font');
+
+  if (/data:image\//i.test(sanitized) || /data:font\//i.test(sanitized) || /data\\x3aimage/i.test(sanitized) || /data\\x3afont/i.test(sanitized)) {
+    throw new Error('Generated artifact still contains forbidden data:image/* or data:font/* URI content.');
+  }
+
+  return sanitized;
+}
+
 function createTagInsertionPoint(tagName) {
   const openTagPattern = new RegExp(`<${tagName}\\b[^>]*>`, 'i');
   let cursor = null;
@@ -173,6 +199,19 @@ insertIntoBody(`<script>(function(){
     if (typeof input !== 'string') return null;
     if (!input.startsWith('/') || input.startsWith('//')) return null;
     return '#' + input;
+  };
+
+  const normalizeHashHref = (input) => {
+    if (typeof input !== 'string' || !input) return null;
+
+    if (input.startsWith('#/')) return input;
+
+    const hashIndex = input.indexOf('#/');
+    if (hashIndex >= 0) {
+      return input.slice(hashIndex);
+    }
+
+    return toHashRoute(input);
   };
 
   const parseRouteInput = (routeInput) => {
@@ -271,7 +310,7 @@ insertIntoBody(`<script>(function(){
     if (targetAttr && targetAttr !== '_self') return;
 
     const href = target.getAttribute('href') || '';
-    const hashRoute = toHashRoute(href);
+    const hashRoute = normalizeHashHref(href);
     if (!hashRoute) return;
 
     event.preventDefault();
@@ -280,6 +319,13 @@ insertIntoBody(`<script>(function(){
 })();</script>`);
 
 
+
+function assertHashRoutingBootstrapClosed(singleFileHtml) {
+  const hasClosedBootstrap = /navigateHashRoute\(hashRoute\.slice\(1\), 'push'\);\s*\}, true\);\s*\}\)\(\);<\/script>/.test(singleFileHtml);
+  if (!hasClosedBootstrap) {
+    throw new Error('Hash routing bootstrap script appears unclosed or malformed in single-file artifact.');
+  }
+}
 
 function assertParseableNavigateHashRoute(singleFileHtml) {
   const hasHashListener = /\b(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/.test(singleFileHtml);
@@ -308,6 +354,8 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
   }
 }
 
+html = sanitizeForbiddenDataUris(html);
+assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
