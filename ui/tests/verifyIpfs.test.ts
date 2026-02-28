@@ -421,6 +421,26 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/markers are incomplete/);
   });
 
+  it('fails when navigateHashRoute marker region appears more than once', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      /* navigateHashRoute:start */const decoy = true;/* navigateHashRoute:end */
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      /* navigateHashRoute:start */
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') { rawReplaceState(history.state, '', routePath); } else { rawPushState(history.state, '', routePath); }
+      };
+      /* navigateHashRoute:end */
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`);
+    expect(run).toThrow(/must appear exactly once/);
+  });
+
 
   it('fails when navigateHashRoute is present but unparseable', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>

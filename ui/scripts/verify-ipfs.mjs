@@ -477,21 +477,21 @@ const extractNavigateBodyFromMarkers = (htmlSource) => {
     throw new Error('navigateHashRoute marker region is malformed in single-file artifact.');
   }
 
-  for (const markerMatch of markerMatches) {
-    const markerBody = markerMatch[1] ?? '';
-    if (!/\bconst\s+navigateHashRoute\b|\bfunction\s+navigateHashRoute\b/.test(markerBody)) {
-      continue;
-    }
-
-    const extractedBody = extractArrowFunctionBody(markerBody, 'navigateHashRoute');
-    if (!extractedBody) {
-      throw new Error('Unable to parse navigateHashRoute body from marker region.');
-    }
-
-    return extractedBody;
+  if (markerMatches.length !== 1) {
+    throw new Error('navigateHashRoute marker region must appear exactly once in single-file artifact.');
   }
 
-  throw new Error('navigateHashRoute marker region must wrap navigateHashRoute helper body.');
+  const markerBody = markerMatches[0][1] ?? '';
+  if (!/\bconst\s+navigateHashRoute\b|\bfunction\s+navigateHashRoute\b/.test(markerBody)) {
+    throw new Error('navigateHashRoute marker region must wrap navigateHashRoute helper body.');
+  }
+
+  const extractedBody = extractArrowFunctionBody(markerBody, 'navigateHashRoute');
+  if (!extractedBody) {
+    throw new Error('Unable to parse navigateHashRoute body from marker region.');
+  }
+
+  return extractedBody;
 };
 
 const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
