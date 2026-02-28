@@ -28,4 +28,17 @@ describe('committed single-file hash navigation', () => {
     expect(html).toContain('window.addEventListener(\'hashchange\'');
     expect(html).toContain('const normalizeHashHref = (input) => {');
   });
+
+
+  it('does not contain premature document close before routing/bootstrap scripts complete', () => {
+    const html = fs.readFileSync(artifactPath, 'utf8');
+    expect((html.match(/<\/html>/gi) || []).length).toBe(1);
+    expect((html.match(/<\/body>/gi) || []).length).toBe(1);
+    expect(html).not.toMatch(/<\/body>\s*<\/html>\s*<script/gi);
+
+    const closeIndex = html.toLowerCase().lastIndexOf('</body></html>');
+    const navHelperIndex = html.indexOf('const navigateHashRoute = (routePath, mode) => {');
+    expect(navHelperIndex).toBeGreaterThan(-1);
+    expect(navHelperIndex).toBeLessThan(closeIndex);
+  });
 });
