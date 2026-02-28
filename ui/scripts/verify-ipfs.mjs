@@ -577,10 +577,25 @@ if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
 }
 
-const hasBootstrapCandidate = normalizedScriptBodies.some((body) => /\bconst\s+detectGatewayBase\b/.test(body) && /\bwindow\.location\.hash\b/.test(body));
+const hasBootstrapCandidate = uncommentedScriptBodies.some((body) => /\bconst\s+detectGatewayBase\b/.test(body) && /\bwindow\.location\.hash\b/.test(body));
+
+const hasRouterBootstrapCandidate = uncommentedScriptBodies.some((body) => (
+  /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
+));
+
+const hasRouterBootstrapCoherence = uncommentedScriptBodies.some((body) => (
+  /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
+  && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
+  && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
+  && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
+));
 
 if (hasBootstrapCandidate && !hasBootstrapScriptIntegrity) {
   throw new Error('IPFS bootstrap script is incomplete or malformed.');
+}
+
+if (hasRouterBootstrapCandidate && !hasRouterBootstrapCoherence) {
+  throw new Error('Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click/hash handlers in one parseable script body.');
 }
 
 console.log('IPFS artifact verified: single-file, no external local assets, security metas present.');
