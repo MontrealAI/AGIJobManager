@@ -102,8 +102,19 @@ function extractArrowFunctionBodies(source: string, constName: string): string[]
   return bodies;
 }
 
+function extractArrowFunctionBodyFromMarkers(
+  html: string,
+  constName: string
+): { hasMarkers: boolean; body: string | null } {
+  const markerMatch = html.match(/\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//);
+  if (!markerMatch) return { hasMarkers: false, body: null };
+  return { hasMarkers: true, body: extractArrowFunctionBody(markerMatch[1], constName) };
+}
+
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
+  const markerExtraction = extractArrowFunctionBodyFromMarkers(html, constName);
+  if (markerExtraction.hasMarkers) return markerExtraction.body;
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const hasHashchangeListener = /\b(?:window\.)?addEventListener\(\s*['"]hashchange['"]/.test(html);
 
@@ -381,6 +392,30 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(run).toThrow(/Unable to parse navigateHashRoute body/);
   });
 
+  it('fails when markers exist but do not contain a parseable navigateHashRoute', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      /* navigateHashRoute:start */
+      /* navigateHashRoute:end */
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+        } else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      if (window.location.hash) { history.pushState({}, '', window.location.hash.slice(1)); }
+    </script></body></html>`);
+    expect(run).toThrow(/markers found but helper body is not parseable/);
+  });
+
   it('fails when navigateHashRoute bootstrap is split across script tags', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
       <script>
@@ -456,6 +491,28 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute')).toBeNull();
   });
 
+
+  it('returns null when markers are present but helper is outside marker bounds', () => {
+    const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      /* navigateHashRoute:start */
+      /* navigateHashRoute:end */
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          history.replaceState(history.state, '', routePath);
+        } else {
+          history.pushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+    </script></body></html>`;
+
+    expect(extractArrowFunctionBodyFromHtml(html, 'navigateHashRoute')).toBeNull();
+  });
 
 
   it('fallback parses minified helper declaration across known Next interleave', () => {

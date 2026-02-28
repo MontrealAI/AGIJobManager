@@ -462,6 +462,15 @@ const extractArrowFunctionBodies = (source, constName) => {
   return bodies;
 };
 
+const extractNavigateBodyFromMarkers = (htmlSource) => {
+  const markerPattern = /\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//;
+  const markerMatch = htmlSource.match(markerPattern);
+  if (!markerMatch) return { hasMarkers: false, body: null };
+
+  const body = extractArrowFunctionBody(markerMatch[1], 'navigateHashRoute');
+  return { hasMarkers: true, body };
+};
+
 const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
   if (navigateHashRouteBody.includes('</script>')) {
     throw new Error('navigateHashRoute body appears split by a closing script tag, indicating malformed bootstrap code.');
@@ -481,6 +490,14 @@ const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
 };
 
 const extractNavigateHashRouteFromHtml = (htmlSource) => {
+  const markerExtraction = extractNavigateBodyFromMarkers(htmlSource);
+  if (markerExtraction.hasMarkers) {
+    if (!markerExtraction.body) {
+      throw new Error('navigateHashRoute markers found but helper body is not parseable.');
+    }
+    return markerExtraction.body;
+  }
+
   const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+navigateHashRoute\s*\([^)]*\)\s*\{/g;
   const hashchangePattern = /(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/g;
 
@@ -549,6 +566,17 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
 
 let sawNavigateDeclaration = false;
 let parsedNavigateBody = false;
+const markerExtraction = extractNavigateBodyFromMarkers(html);
+
+if (markerExtraction.hasMarkers) {
+  sawNavigateDeclaration = true;
+  if (!markerExtraction.body) {
+    throw new Error('navigateHashRoute markers found but helper body is not parseable.');
+  }
+  parsedNavigateBody = true;
+  validateNavigateHashRouteBody(markerExtraction.body);
+}
+
 for (const body of normalizedScriptBodies) {
   const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
