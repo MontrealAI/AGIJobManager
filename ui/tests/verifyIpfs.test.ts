@@ -665,6 +665,14 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(artifactHtml).toContain("addEventListener('hashchange'");
     expect(artifactHtml).toContain("startsWith('#/')");
 
+    const markerPattern = /\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//g;
+    const markerMatches = [...artifactHtml.matchAll(markerPattern)];
+    expect(markerMatches.length).toBeGreaterThan(0);
+    expect(
+      markerMatches.some((match) => /\bconst\s+navigateHashRoute\b|\bfunction\s+navigateHashRoute\b/.test(match[1] ?? '')),
+      'committed marker region must wrap navigateHashRoute declaration'
+    ).toBe(true);
+
     const navigateBody = extractArrowFunctionBodyFromHtml(artifactHtml, 'navigateHashRoute');
     expect(navigateBody, 'navigateHashRoute body should be parseable in committed artifact').not.toBeNull();
 
