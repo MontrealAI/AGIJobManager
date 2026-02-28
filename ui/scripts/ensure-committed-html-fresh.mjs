@@ -18,8 +18,14 @@ function createDeterministicBuildEnv() {
   return sanitized;
 }
 
-// Always rebuild from the current environment to avoid stale artifacts from earlier workflow steps.
-execSync('npm run build:ipfs', { cwd: uiRoot, stdio: 'inherit', env: createDeterministicBuildEnv() });
+// Rebuild dist artifact without mutating committed root artifact; freshness must compare against currently committed bytes.
+const deterministicEnv = createDeterministicBuildEnv();
+execSync('npm run build', { cwd: uiRoot, stdio: 'inherit', env: deterministicEnv });
+execSync('node scripts/build-ipfs.mjs', {
+  cwd: uiRoot,
+  stdio: 'inherit',
+  env: { ...deterministicEnv, BUILD_IPFS_SKIP_ROOT_SYNC: '1' }
+});
 
 if (!fs.existsSync(builtHtml)) {
   throw new Error(`Missing build artifact ${path.relative(repoRoot, builtHtml)} after build:ipfs.`);
@@ -68,13 +74,53 @@ function assertNavigateHashRouteParseable(html, label) {
   }
 }
 
+function assertSingleTerminalClose(html, label) {
+  const source = html.toString('utf8');
+  const closeTag = '</body></html>';
+  const firstClose = source.indexOf(closeTag);
+  const lastClose = source.lastIndexOf(closeTag);
+
+  if (firstClose < 0) {
+    throw new Error(`${label}: terminal ${closeTag} marker missing.`);
+  }
+  if (firstClose !== lastClose) {
+    throw new Error(`${label}: duplicate ${closeTag} marker detected.`);
+  }
+  if (source.slice(firstClose + closeTag.length).trim().length > 0) {
+    throw new Error(`${label}: unexpected trailing content after terminal ${closeTag}.`);
+  }
+}
+
+function assertRouterBootstrapScript(html, label) {
+  const source = html.toString('utf8');
+  const scripts = [...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+
+  const routerScript = scripts.find((body) =>
+    body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes("window.addEventListener('hashchange'")
+  );
+
+  if (!routerScript) {
+    throw new Error(`${label}: router bootstrap script with normalizeHashHref/navigateHashRoute/hashchange was not found.`);
+  }
+  if (routerScript.includes('<script') || routerScript.includes('</script><script>')) {
+    throw new Error(`${label}: router bootstrap script appears interleaved with script tags.`);
+  }
+}
+
 assertNavigateHashRouteParseable(built, 'dist-ipfs/agijobmanager.html');
 assertNavigateHashRouteParseable(committed, 'agijobmanager.html');
+
+assertSingleTerminalClose(built, 'dist-ipfs/agijobmanager.html');
+assertSingleTerminalClose(committed, 'agijobmanager.html');
+assertRouterBootstrapScript(built, 'dist-ipfs/agijobmanager.html');
+assertRouterBootstrapScript(committed, 'agijobmanager.html');
 
 if (Buffer.compare(built, committed) !== 0) {
   throw new Error(
     `agijobmanager.html is stale (built sha256=${builtHash}, committed sha256=${committedHash}). Run ` +
-      '`cd ui && npm run build:ipfs` and commit the synchronized repository artifact.'
+      '`cd ui && npm run build:ipfs` to sync root artifact and commit the result.'
   );
 }
 

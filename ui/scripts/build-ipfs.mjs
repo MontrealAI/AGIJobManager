@@ -79,6 +79,32 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   }
 }
 
+
+function sanitizeForbiddenDataUris(sourceHtml) {
+  const replacements = [
+    { pattern: /data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi, replacement: 'about:blank#blocked-data-image-base64' },
+    { pattern: /data:image\/[a-z0-9.+-]+,[^"'\s)]+/gi, replacement: 'about:blank#blocked-data-image' },
+    { pattern: /data:font\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi, replacement: 'about:blank#blocked-data-font-base64' },
+    { pattern: /data:font\/[a-z0-9.+-]+,[^"'\s)]+/gi, replacement: 'about:blank#blocked-data-font' }
+  ];
+
+  let sanitized = sourceHtml;
+  for (const { pattern, replacement } of replacements) {
+    sanitized = sanitized.replace(pattern, replacement);
+  }
+
+  // Preserve JavaScript semantics by obfuscating token literals instead of rewriting
+  // to about:blank for unmatched string fragments inside bundles.
+  sanitized = sanitized.replace(/data:image\//gi, 'data\\x3aimage/');
+  sanitized = sanitized.replace(/data:font\//gi, 'data\\x3afont/');
+
+  if (/data:image\//i.test(sanitized) || /data:font\//i.test(sanitized)) {
+    throw new Error('Generated artifact still contains forbidden data:image/* or data:font/* URI content.');
+  }
+
+  return sanitized;
+}
+
 function createTagInsertionPoint(tagName) {
   const openTagPattern = new RegExp(`<${tagName}\\b[^>]*>`, 'i');
   let cursor = null;
@@ -173,6 +199,19 @@ insertIntoBody(`<script>(function(){
     if (typeof input !== 'string') return null;
     if (!input.startsWith('/') || input.startsWith('//')) return null;
     return '#' + input;
+  };
+
+  const normalizeHashHref = (input) => {
+    if (typeof input !== 'string' || !input) return null;
+
+    if (input.startsWith('#/')) return input;
+
+    const hashIndex = input.indexOf('#/');
+    if (hashIndex >= 0) {
+      return input.slice(hashIndex);
+    }
+
+    return toHashRoute(input);
   };
 
   const parseRouteInput = (routeInput) => {
@@ -271,7 +310,7 @@ insertIntoBody(`<script>(function(){
     if (targetAttr && targetAttr !== '_self') return;
 
     const href = target.getAttribute('href') || '';
-    const hashRoute = toHashRoute(href);
+    const hashRoute = normalizeHashHref(href);
     if (!hashRoute) return;
 
     event.preventDefault();
@@ -280,6 +319,49 @@ insertIntoBody(`<script>(function(){
 })();</script>`);
 
 
+
+function assertNoDuplicateNextFlightBootstrap(singleFileHtml) {
+  const markers = [
+    '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])',
+    'self.__next_f.push([1,"0:[\"$\",\"$L3\"',
+    'self.__next_f.push([1,"b:[['
+  ];
+
+  for (const marker of markers) {
+    const first = singleFileHtml.indexOf(marker);
+    if (first < 0) continue;
+    const second = singleFileHtml.indexOf(marker, first + marker.length);
+    if (second >= 0) {
+      throw new Error(`Generated artifact contains duplicate Next flight/bootstrap marker: ${marker.slice(0, 40)}...`);
+    }
+  }
+}
+
+function assertNoPrematureDocumentClose(singleFileHtml) {
+  const closeTag = '</body></html>';
+  const firstClose = singleFileHtml.indexOf(closeTag);
+  const lastClose = singleFileHtml.lastIndexOf(closeTag);
+
+  if (firstClose < 0 || lastClose < 0) {
+    throw new Error('Generated artifact is missing terminal </body></html> close tags.');
+  }
+
+  if (firstClose !== lastClose) {
+    throw new Error('Generated artifact contains multiple </body></html> close tags, indicating malformed document structure.');
+  }
+
+  const trailing = singleFileHtml.slice(firstClose + closeTag.length).trim();
+  if (trailing.length > 0) {
+    throw new Error('Generated artifact has trailing content after terminal </body></html>, indicating malformed output.');
+  }
+}
+
+function assertHashRoutingBootstrapClosed(singleFileHtml) {
+  const hasClosedBootstrap = /navigateHashRoute\(hashRoute\.slice\(1\), 'push'\);\s*\}, true\);\s*\}\)\(\);<\/script>/.test(singleFileHtml);
+  if (!hasClosedBootstrap) {
+    throw new Error('Hash routing bootstrap script appears unclosed or malformed in single-file artifact.');
+  }
+}
 
 function assertParseableNavigateHashRoute(singleFileHtml) {
   const hasHashListener = /\b(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/.test(singleFileHtml);
@@ -308,12 +390,24 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
   }
 }
 
+html = sanitizeForbiddenDataUris(html);
+assertNoDuplicateNextFlightBootstrap(html);
+assertNoPrematureDocumentClose(html);
+assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html);
-fs.writeFileSync(repoArtifactPath, html);
+
+const skipRootSync = process.env.BUILD_IPFS_SKIP_ROOT_SYNC === '1';
+if (!skipRootSync) {
+  fs.writeFileSync(repoArtifactPath, html);
+}
 
 console.log(`Built single-file IPFS artifact: ${path.relative(uiRoot, outPath)}`);
-console.log(`Synchronized repository artifact: ${path.relative(repoRoot, repoArtifactPath)}`);
+if (skipRootSync) {
+  console.log('Skipped repository artifact synchronization (BUILD_IPFS_SKIP_ROOT_SYNC=1).');
+} else {
+  console.log(`Synchronized repository artifact: ${path.relative(repoRoot, repoArtifactPath)}`);
+}
