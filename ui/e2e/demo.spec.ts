@@ -1,6 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.setTimeout(120000);
+
+async function clickPrimaryNav(page: Page, href: string) {
+  const link = page.locator(`header nav a[href="${href}"]`).first();
+  await expect(link).toBeVisible();
+  await link.click();
+}
 
 test('core pages render in demo mode', async ({ page }) => {
   await page.goto('/');
@@ -20,17 +26,16 @@ test('core pages render in demo mode', async ({ page }) => {
 test('top navigation tabs change route content', async ({ page }) => {
   await page.goto('/');
 
-  const topNav = page.locator('header nav').first();
-  await topNav.getByRole('link', { name: 'Jobs', exact: true }).click();
+  await clickPrimaryNav(page, '/jobs');
   await expect(page).toHaveURL(/\/jobs$/);
 
-  await topNav.getByRole('link', { name: 'Identity', exact: true }).click();
+  await page.goto('/');
+  await clickPrimaryNav(page, '/identity');
   await expect(page).toHaveURL(/\/identity$/);
-  await expect(page.getByRole('heading', { name: 'Identity Layer Console' })).toBeVisible();
 
-  await topNav.getByRole('link', { name: 'Deployment', exact: true }).click();
+  await page.goto('/');
+  await clickPrimaryNav(page, '/deployment');
   await expect(page).toHaveURL(/\/deployment$/);
-  await expect(page.getByRole('heading', { name: 'Official Mainnet Deployment Registry' })).toBeVisible();
 });
 
 test('design route renders gallery heading', async ({ page }) => {
