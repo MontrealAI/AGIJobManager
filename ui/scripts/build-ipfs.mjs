@@ -373,6 +373,33 @@ function assertHashRoutingBootstrapClosed(singleFileHtml) {
   }
 }
 
+function assertRouterBootstrapCoherence(singleFileHtml) {
+  const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  const routerScript = scriptBodies.find((body) => (
+    body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes("window.addEventListener('hashchange'")
+  ));
+
+  if (!routerScript) {
+    throw new Error('Router bootstrap script with normalizeHashHref/navigateHashRoute/hashchange was not found in single-file artifact.');
+  }
+
+  if (!routerScript.includes('const hashRoute = normalizeHashHref(href);')) {
+    throw new Error('Router bootstrap click interception no longer uses normalizeHashHref(href) in single-file artifact.');
+  }
+
+  if (routerScript.includes('</script><script>') || routerScript.includes('<script>')) {
+    throw new Error('Router bootstrap script appears interleaved with script tag boundaries in single-file artifact.');
+  }
+
+  const hashUrlDeclarationIndex = routerScript.indexOf('const hashUrl = toHashUrl(routePath);');
+  const hashUrlGuardIndex = routerScript.indexOf('if (!hashUrl) return;');
+  if (hashUrlGuardIndex >= 0 && (hashUrlDeclarationIndex < 0 || hashUrlDeclarationIndex > hashUrlGuardIndex)) {
+    throw new Error('Router bootstrap hashUrl guard is out of scope or appears before hashUrl declaration in single-file artifact.');
+  }
+}
+
 function assertParseableNavigateHashRoute(singleFileHtml) {
   const hasHashListener = /\b(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/.test(singleFileHtml);
   if (!hasHashListener) {
@@ -405,6 +432,7 @@ assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
+assertRouterBootstrapCoherence(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
