@@ -339,6 +339,24 @@ function assertNoPrematureDocumentClose(singleFileHtml) {
   }
 }
 
+function assertHashBootstrapPlacement(singleFileHtml) {
+  const bootstrapStart = '</script></head><body><script>(function(){';
+  const startIndex = singleFileHtml.indexOf(bootstrapStart);
+  if (startIndex < 0) {
+    throw new Error('Hash routing bootstrap opening script is missing or malformed in single-file artifact.');
+  }
+
+  const preBootstrap = singleFileHtml.slice(0, startIndex);
+  if (/\bconst\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(preBootstrap)) {
+    throw new Error('normalizeHashHref appears before hash bootstrap script, indicating script interleaving corruption.');
+  }
+
+  const normalizeCount = (singleFileHtml.match(/\bconst\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/g) || []).length;
+  if (normalizeCount !== 1) {
+    throw new Error(`Expected exactly one normalizeHashHref helper in artifact, found ${normalizeCount}.`);
+  }
+}
+
 function assertHashRoutingBootstrapClosed(singleFileHtml) {
   const hasClosedBootstrap = /navigateHashRoute\(hashRoute\.slice\(1\), 'push'\);\s*\}, true\);\s*\}\)\(\);<\/script>/.test(singleFileHtml);
   if (!hasClosedBootstrap) {
@@ -375,6 +393,7 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
 
 html = sanitizeForbiddenDataUris(html);
 assertNoPrematureDocumentClose(html);
+assertHashBootstrapPlacement(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 

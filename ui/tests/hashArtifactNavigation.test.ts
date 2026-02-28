@@ -40,4 +40,19 @@ describe('committed single-file hash navigation', () => {
     expect(html.slice(firstClose + closeTag.length).trim()).toBe('');
   });
 
+
+  it('starts hash bootstrap as a dedicated body script without pre-bootstrap helper interleaving', () => {
+    const html = fs.readFileSync(artifactPath, 'utf8');
+    const bootstrapStart = '</script></head><body><script>(function(){';
+    const startIndex = html.indexOf(bootstrapStart);
+
+    expect(startIndex).toBeGreaterThan(0);
+
+    const preBootstrap = html.slice(0, startIndex);
+    expect(preBootstrap).not.toMatch(/\bconst\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/);
+
+    const normalizeCount = (html.match(/\bconst\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/g) || []).length;
+    expect(normalizeCount).toBe(1);
+  });
+
 });
