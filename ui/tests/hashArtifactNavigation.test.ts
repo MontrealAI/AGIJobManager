@@ -3,8 +3,16 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
 
 describe('committed single-file hash navigation', () => {
+
+  it('keeps repo root artifact byte-identical to ui/dist-ipfs artifact', () => {
+    const rootHtml = fs.readFileSync(artifactPath, 'utf8');
+    const distHtml = fs.readFileSync(distArtifactPath, 'utf8');
+    expect(rootHtml).toBe(distHtml);
+  });
+
   it('contains top navigation hash routes for all primary tabs', () => {
     const html = fs.readFileSync(artifactPath, 'utf8');
     const expectedRoutes = [
