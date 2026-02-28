@@ -81,6 +81,13 @@ describe('committed single-file hash navigation', () => {
       expect(routerScript, `${label} missing router bootstrap script`).toBeTruthy();
       expect(routerScript, `${label} has nested script marker`).not.toContain('<script');
       expect(routerScript, `${label} has interleaved script boundary`).not.toContain('</script><script>');
+      expect(
+        routerScript,
+        `${label} has leaked click-handler statement into navigateHashRoute scope`
+      ).not.toContain("rawReplaceState(history.state, '', hashUrl);\n    const hashRoute = normalizeHashHref(href);");
+
+      const navigateDeclarationCount = (routerScript?.match(/const navigateHashRoute = \(routePath, mode\) => \{/g) ?? []).length;
+      expect(navigateDeclarationCount, `${label} should declare navigateHashRoute exactly once`).toBe(1);
     }
   });
   it('does not contain duplicated Next flight bootstrap markers', () => {
