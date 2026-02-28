@@ -34,6 +34,43 @@ const committed = fs.readFileSync(committedHtml);
 const builtHash = createHash('sha256').update(built).digest('hex');
 const committedHash = createHash('sha256').update(committed).digest('hex');
 
+function assertNavigateHashRouteParseable(html, label) {
+  const source = html.toString('utf8');
+  const declaration = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+navigateHashRoute\s*\([^)]*\)\s*\{/;
+  const declarationMatch = declaration.exec(source);
+  if (!declarationMatch) {
+    throw new Error(`${label}: navigateHashRoute declaration missing from artifact.`);
+  }
+
+  const start = declarationMatch.index + declarationMatch[0].lastIndexOf('{');
+  let depth = 0;
+  let body = '';
+  for (let i = start; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') depth -= 1;
+    if (depth === 0) {
+      body = source.slice(start + 1, i);
+      break;
+    }
+  }
+
+  if (!body) {
+    throw new Error(`${label}: navigateHashRoute body is not parseable.`);
+  }
+
+  if (!/\bmode\b/.test(body) || !/\brawPushState\b/.test(body) || !/\brawReplaceState\b/.test(body)) {
+    throw new Error(`${label}: navigateHashRoute body is missing mode/rawPushState/rawReplaceState invariants.`);
+  }
+
+  if (/\brawHash\b/.test(body)) {
+    throw new Error(`${label}: navigateHashRoute body unexpectedly references rawHash.`);
+  }
+}
+
+assertNavigateHashRouteParseable(built, 'dist-ipfs/agijobmanager.html');
+assertNavigateHashRouteParseable(committed, 'agijobmanager.html');
+
 if (Buffer.compare(built, committed) !== 0) {
   throw new Error(
     `agijobmanager.html is stale (built sha256=${builtHash}, committed sha256=${committedHash}). Run ` +
