@@ -74,4 +74,19 @@ describe('committed single-file hash navigation', () => {
       expect(routerScript, `${label} has interleaved script boundary`).not.toContain('</script><script>');
     }
   });
+  it('places router bootstrap script before terminal document close', () => {
+    const closeTag = '</body></html>';
+    const bootstrapMarker = 'const navigateHashRoute = (routePath, mode) => {';
+
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const closeIndex = html.lastIndexOf(closeTag);
+      const bootstrapIndex = html.indexOf(bootstrapMarker);
+
+      expect(bootstrapIndex, `${label} missing router bootstrap marker`).toBeGreaterThan(0);
+      expect(closeIndex, `${label} missing terminal close`).toBeGreaterThan(bootstrapIndex);
+      expect(html.indexOf(bootstrapMarker, bootstrapIndex + 1), `${label} has duplicated router bootstrap marker`).toBe(-1);
+    }
+  });
+
 });
