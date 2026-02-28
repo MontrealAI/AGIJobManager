@@ -83,6 +83,30 @@ describe('committed single-file hash navigation', () => {
       expect(routerScript, `${label} has interleaved script boundary`).not.toContain('</script><script>');
     }
   });
+
+  it('keeps hashUrl guard scoped inside navigateHashRoute helper', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+      const routerScript = scripts.find((body) =>
+        body.includes('const normalizeHashHref = (input) => {')
+        && body.includes('const navigateHashRoute = (routePath, mode) => {')
+        && body.includes("window.addEventListener('hashchange'")
+      );
+
+      expect(routerScript, `${label} missing router bootstrap script`).toBeTruthy();
+
+      const body = routerScript ?? '';
+      const declarationIndex = body.indexOf('const navigateHashRoute = (routePath, mode) => {');
+      expect(declarationIndex, `${label} missing navigateHashRoute declaration in router script`).toBeGreaterThan(-1);
+
+      const hashGuardIndex = body.indexOf('if (!hashUrl) return;');
+      if (hashGuardIndex >= 0) {
+        expect(hashGuardIndex, `${label} has hashUrl guard before navigateHashRoute declaration`).toBeGreaterThan(declarationIndex);
+      }
+    }
+  });
+
   it('does not contain duplicated Next flight bootstrap markers', () => {
     const markers = [
       '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])',
