@@ -679,7 +679,7 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(markerMatches.length).toBeGreaterThan(0);
     const helperMarkerMatches = markerMatches.filter((match) => {
       const markerBody = match[1] ?? '';
-      return extractArrowFunctionBody(markerBody, 'navigateHashRoute') !== null;
+      return /\bnavigateHashRoute\s*=\s*\(/.test(markerBody) || /\bfunction\s+navigateHashRoute\s*\(/.test(markerBody);
     });
     expect(helperMarkerMatches).toHaveLength(1);
   });
