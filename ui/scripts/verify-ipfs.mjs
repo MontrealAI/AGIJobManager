@@ -480,6 +480,45 @@ const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
   }
 };
 
+
+const extractNavigateHashRouteBounds = (scriptBody) => {
+  const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/;
+  const match = declarationPattern.exec(scriptBody);
+  if (!match) return null;
+
+  const braceStart = scriptBody.indexOf('{', match.index);
+  if (braceStart < 0) return null;
+
+  let depth = 0;
+  for (let i = braceStart; i < scriptBody.length; i += 1) {
+    const ch = scriptBody[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return { start: match.index, end: i + 1 };
+      }
+    }
+  }
+
+  return null;
+};
+
+
+const hasOrphanHashUrlGuard = (source) => {
+  const guardPattern = /if\s*\(\s*!hashUrl\s*\)\s*return\s*;/g;
+  for (const match of source.matchAll(guardPattern)) {
+    const idx = match.index ?? -1;
+    if (idx < 0) continue;
+    const contextStart = Math.max(0, idx - 160);
+    const context = source.slice(contextStart, idx);
+    if (!/(?:const|let|var)\s+hashUrl\s*=/.test(context)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const extractNavigateHashRouteFromHtml = (htmlSource) => {
   const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+navigateHashRoute\s*\([^)]*\)\s*\{/g;
   const hashchangePattern = /(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/g;
@@ -549,13 +588,16 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
 
 let sawNavigateDeclaration = false;
 let parsedNavigateBody = false;
+let sawNavigateInvocation = false;
 for (const body of normalizedScriptBodies) {
   const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
+  const hasNavigateCall = /\bnavigateHashRoute\s*\(/.test(body);
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
 
   if (!hasNavigateHashRoute && !navigateHashRouteBody) continue;
 
   sawNavigateDeclaration ||= hasNavigateHashRoute;
+  sawNavigateInvocation ||= hasNavigateCall;
 
   if (!navigateHashRouteBody) {
     continue;
@@ -563,6 +605,10 @@ for (const body of normalizedScriptBodies) {
 
   parsedNavigateBody = true;
   validateNavigateHashRouteBody(navigateHashRouteBody);
+}
+
+if (sawNavigateInvocation && !sawNavigateDeclaration) {
+  throw new Error('Hash routing handlers call navigateHashRoute but helper declaration is missing from single-file artifact.');
 }
 
 if (sawNavigateDeclaration && !parsedNavigateBody) {
@@ -577,10 +623,46 @@ if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
 }
 
-const hasBootstrapCandidate = normalizedScriptBodies.some((body) => /\bconst\s+detectGatewayBase\b/.test(body) && /\bwindow\.location\.hash\b/.test(body));
+const hasBootstrapCandidate = uncommentedScriptBodies.some((body) => /\bconst\s+detectGatewayBase\b/.test(body) && /\bwindow\.location\.hash\b/.test(body));
+
+const hasRouterBootstrapCandidate = uncommentedScriptBodies.some((body) => (
+  /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
+));
+
+const hasRouterBootstrapCoherence = uncommentedScriptBodies.some((body) => (
+  /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
+  && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
+  && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
+  && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
+));
 
 if (hasBootstrapCandidate && !hasBootstrapScriptIntegrity) {
   throw new Error('IPFS bootstrap script is incomplete or malformed.');
+}
+
+if (hasRouterBootstrapCandidate && !hasRouterBootstrapCoherence) {
+  throw new Error('Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click/hash handlers in one parseable script body.');
+}
+
+if (hasRouterBootstrapCoherence) {
+  const coherentBody = uncommentedScriptBodies.find((body) => (
+    /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
+    && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
+    && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
+    && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
+  ));
+
+  if (coherentBody) {
+    const navigateBounds = extractNavigateHashRouteBounds(coherentBody);
+    if (!navigateBounds) {
+      throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper.');
+    }
+
+    const outsideNavigate = coherentBody.slice(0, navigateBounds.start) + coherentBody.slice(navigateBounds.end);
+    if (hasOrphanHashUrlGuard(outsideNavigate)) {
+      throw new Error('Router bootstrap leaked orphan `if (!hashUrl) return;` outside navigateHashRoute wrapper.');
+    }
+  }
 }
 
 console.log('IPFS artifact verified: single-file, no external local assets, security metas present.');
