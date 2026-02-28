@@ -74,4 +74,15 @@ describe('committed single-file hash navigation', () => {
       expect(routerScript, `${label} has interleaved script boundary`).not.toContain('</script><script>');
     }
   });
+
+  it('does not duplicate Next flight payload bootstrap block', () => {
+    const marker = 'self.__next_f.push([1,"0:[';
+
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const occurrences = html.split(marker).length - 1;
+      expect(occurrences, `${label} has duplicated Next flight payload bootstrap block`).toBe(1);
+    }
+  });
+
 });

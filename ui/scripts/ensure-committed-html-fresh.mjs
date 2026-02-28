@@ -85,6 +85,16 @@ function assertSingleTerminalClose(html, label) {
   }
 }
 
+
+function assertSingleFlightPayloadBootstrap(html, label) {
+  const source = html.toString('utf8');
+  const marker = 'self.__next_f.push([1,"0:[';
+  const occurrences = source.split(marker).length - 1;
+  if (occurrences !== 1) {
+    throw new Error(`${label}: expected exactly one Next flight payload bootstrap block, found ${occurrences}.`);
+  }
+}
+
 function assertRouterBootstrapScript(html, label) {
   const source = html.toString('utf8');
   const scripts = [...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
@@ -110,6 +120,8 @@ assertSingleTerminalClose(built, 'dist-ipfs/agijobmanager.html');
 assertSingleTerminalClose(committed, 'agijobmanager.html');
 assertRouterBootstrapScript(built, 'dist-ipfs/agijobmanager.html');
 assertRouterBootstrapScript(committed, 'agijobmanager.html');
+assertSingleFlightPayloadBootstrap(built, 'dist-ipfs/agijobmanager.html');
+assertSingleFlightPayloadBootstrap(committed, 'agijobmanager.html');
 
 if (Buffer.compare(built, committed) !== 0) {
   throw new Error(
