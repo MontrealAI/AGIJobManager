@@ -399,7 +399,15 @@ assertParseableNavigateHashRoute(html);
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html);
-fs.writeFileSync(repoArtifactPath, html);
+
+const skipRootSync = process.env.SKIP_ROOT_ARTIFACT_SYNC === '1';
+if (!skipRootSync) {
+  fs.writeFileSync(repoArtifactPath, html);
+}
 
 console.log(`Built single-file IPFS artifact: ${path.relative(uiRoot, outPath)}`);
-console.log(`Synchronized repository artifact: ${path.relative(repoRoot, repoArtifactPath)}`);
+if (skipRootSync) {
+  console.log('Skipped repository artifact sync (SKIP_ROOT_ARTIFACT_SYNC=1).');
+} else {
+  console.log(`Synchronized repository artifact: ${path.relative(repoRoot, repoArtifactPath)}`);
+}

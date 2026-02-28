@@ -19,7 +19,11 @@ function createDeterministicBuildEnv() {
 }
 
 // Always rebuild from the current environment to avoid stale artifacts from earlier workflow steps.
-execSync('npm run build:ipfs', { cwd: uiRoot, stdio: 'inherit', env: createDeterministicBuildEnv() });
+execSync('npm run build:ipfs', {
+  cwd: uiRoot,
+  stdio: 'inherit',
+  env: { ...createDeterministicBuildEnv(), SKIP_ROOT_ARTIFACT_SYNC: '1' }
+});
 
 if (!fs.existsSync(builtHtml)) {
   throw new Error(`Missing build artifact ${path.relative(repoRoot, builtHtml)} after build:ipfs.`);
