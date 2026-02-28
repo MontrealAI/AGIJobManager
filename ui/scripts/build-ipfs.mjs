@@ -219,6 +219,7 @@ insertIntoBody(`<script>(function(){
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
   };
 
+  /* navigateHashRoute:start */
   const navigateHashRoute = (routePath, mode) => {
     if (!routePath || !routePath.startsWith('/')) return;
 
@@ -239,6 +240,7 @@ insertIntoBody(`<script>(function(){
     rawReplaceState(history.state, '', hashUrl);
     suppressRewrite = false;
   };
+  /* navigateHashRoute:end */
 
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
@@ -287,17 +289,28 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
     throw new Error('IPFS artifact lost hashchange listener required for hash routing.');
   }
 
+  const startMarker = '/* navigateHashRoute:start */';
+  const endMarker = '/* navigateHashRoute:end */';
   const declaration = 'const navigateHashRoute = (routePath, mode) => {';
-  const declarationIndex = singleFileHtml.indexOf(declaration);
-  if (declarationIndex < 0) {
-    throw new Error('Unable to locate stable navigateHashRoute declaration in generated single-file artifact.');
-  }
 
-  const hashchangeIndex = singleFileHtml.indexOf("window.addEventListener('hashchange'", declarationIndex);
-  const windowEnd = hashchangeIndex > declarationIndex
-    ? hashchangeIndex
-    : Math.min(singleFileHtml.length, declarationIndex + 5000);
-  const helperWindow = singleFileHtml.slice(declarationIndex, windowEnd);
+  const startMarkerIndex = singleFileHtml.indexOf(startMarker);
+  const endMarkerIndex = singleFileHtml.indexOf(endMarker, startMarkerIndex >= 0 ? startMarkerIndex : 0);
+
+  let helperWindow = '';
+  if (startMarkerIndex >= 0 && endMarkerIndex > startMarkerIndex) {
+    helperWindow = singleFileHtml.slice(startMarkerIndex, endMarkerIndex);
+  } else {
+    const declarationIndex = singleFileHtml.indexOf(declaration);
+    if (declarationIndex < 0) {
+      throw new Error('Unable to locate stable navigateHashRoute declaration in generated single-file artifact.');
+    }
+
+    const hashchangeIndex = singleFileHtml.indexOf("window.addEventListener('hashchange'", declarationIndex);
+    const windowEnd = hashchangeIndex > declarationIndex
+      ? hashchangeIndex
+      : Math.min(singleFileHtml.length, declarationIndex + 5000);
+    helperWindow = singleFileHtml.slice(declarationIndex, windowEnd);
+  }
 
   if (/\brawHash\b/.test(helperWindow)) {
     throw new Error('navigateHashRoute helper window must not reference rawHash in single-file artifact.');
