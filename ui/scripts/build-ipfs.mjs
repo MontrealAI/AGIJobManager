@@ -175,6 +175,19 @@ insertIntoBody(`<script>(function(){
     return '#' + input;
   };
 
+  const normalizeHashHref = (input) => {
+    if (typeof input !== 'string' || !input) return null;
+
+    if (input.startsWith('#/')) return input;
+
+    const hashIndex = input.indexOf('#/');
+    if (hashIndex >= 0) {
+      return input.slice(hashIndex);
+    }
+
+    return toHashRoute(input);
+  };
+
   const parseRouteInput = (routeInput) => {
     if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
     const hashIndex = routeInput.indexOf('#');
@@ -271,7 +284,7 @@ insertIntoBody(`<script>(function(){
     if (targetAttr && targetAttr !== '_self') return;
 
     const href = target.getAttribute('href') || '';
-    const hashRoute = toHashRoute(href);
+    const hashRoute = normalizeHashHref(href);
     if (!hashRoute) return;
 
     event.preventDefault();
