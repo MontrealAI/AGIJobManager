@@ -41,6 +41,8 @@ describe('committed single-file hash navigation', () => {
       expect(html, `${label} missing navigateHashRoute`).toContain('const navigateHashRoute = (routePath, mode) => {');
       expect(html, `${label} missing hashchange listener`).toContain('window.addEventListener(\'hashchange\'');
       expect(html, `${label} missing normalizeHashHref`).toContain('const normalizeHashHref = (input) => {');
+      expect(html, `${label} missing external URL scheme guard`).toContain('/^[a-zA-Z][a-zA-Z\\d+.-]*:/.test(input) || input.startsWith(\'//\')');
+      expect(html, `${label} missing cross-origin guard`).toContain('if (parsed.origin !== window.location.origin) {');
     }
   });
 

@@ -206,9 +206,23 @@ insertIntoBody(`<script>(function(){
 
     if (input.startsWith('#/')) return input;
 
-    const hashIndex = input.indexOf('#/');
-    if (hashIndex >= 0) {
-      return input.slice(hashIndex);
+    if (/^[a-zA-Z][a-zA-Z\\d+.-]*:/.test(input) || input.startsWith('//')) {
+      let parsed;
+      try {
+        parsed = new URL(input, window.location.href);
+      } catch {
+        return null;
+      }
+
+      if (parsed.origin !== window.location.origin) {
+        return null;
+      }
+
+      if (parsed.hash && parsed.hash.startsWith('#/')) {
+        return parsed.hash;
+      }
+
+      return toHashRoute(parsed.pathname + parsed.search);
     }
 
     return toHashRoute(input);
