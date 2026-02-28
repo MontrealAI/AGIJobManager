@@ -462,6 +462,38 @@ const extractArrowFunctionBodies = (source, constName) => {
   return bodies;
 };
 
+const extractNavigateBodyFromMarkers = (htmlSource) => {
+  const startMarker = /\/\*\s*navigateHashRoute:start\s*\*\//.test(htmlSource);
+  const endMarker = /\/\*\s*navigateHashRoute:end\s*\*\//.test(htmlSource);
+
+  if (!startMarker && !endMarker) return null;
+  if (!startMarker || !endMarker) {
+    throw new Error('navigateHashRoute markers are incomplete in single-file artifact.');
+  }
+
+  const markerPattern = /\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//g;
+  const markerMatches = [...htmlSource.matchAll(markerPattern)];
+  if (markerMatches.length === 0) {
+    throw new Error('navigateHashRoute marker region is malformed in single-file artifact.');
+  }
+
+  if (markerMatches.length !== 1) {
+    throw new Error('navigateHashRoute marker region must appear exactly once in single-file artifact.');
+  }
+
+  const markerBody = markerMatches[0][1] ?? '';
+  if (!/\bconst\s+navigateHashRoute\b|\bfunction\s+navigateHashRoute\b/.test(markerBody)) {
+    throw new Error('navigateHashRoute marker region must wrap navigateHashRoute helper body.');
+  }
+
+  const extractedBody = extractArrowFunctionBody(markerBody, 'navigateHashRoute');
+  if (!extractedBody) {
+    throw new Error('Unable to parse navigateHashRoute body from marker region.');
+  }
+
+  return extractedBody;
+};
+
 const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
   if (navigateHashRouteBody.includes('</script>')) {
     throw new Error('navigateHashRoute body appears split by a closing script tag, indicating malformed bootstrap code.');
@@ -481,6 +513,9 @@ const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
 };
 
 const extractNavigateHashRouteFromHtml = (htmlSource) => {
+  const markedBody = extractNavigateBodyFromMarkers(htmlSource);
+  if (markedBody) return markedBody;
+
   const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|function\s+navigateHashRoute\s*\([^)]*\)\s*\{/g;
   const hashchangePattern = /(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/g;
 
@@ -546,6 +581,11 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
 
   return null;
 };
+
+const markerNavigateBody = extractNavigateBodyFromMarkers(html);
+if (markerNavigateBody) {
+  validateNavigateHashRouteBody(markerNavigateBody);
+}
 
 let sawNavigateDeclaration = false;
 let parsedNavigateBody = false;
