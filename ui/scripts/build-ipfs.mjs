@@ -175,6 +175,19 @@ insertIntoBody(`<script>(function(){
     return '#' + input;
   };
 
+  const normalizeHashHref = (input) => {
+    if (typeof input !== 'string' || !input) return null;
+
+    if (input.startsWith('#/')) return input;
+
+    const hashIndex = input.indexOf('#/');
+    if (hashIndex >= 0) {
+      return input.slice(hashIndex);
+    }
+
+    return toHashRoute(input);
+  };
+
   const parseRouteInput = (routeInput) => {
     if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
     const hashIndex = routeInput.indexOf('#');
@@ -271,7 +284,7 @@ insertIntoBody(`<script>(function(){
     if (targetAttr && targetAttr !== '_self') return;
 
     const href = target.getAttribute('href') || '';
-    const hashRoute = toHashRoute(href);
+    const hashRoute = normalizeHashHref(href);
     if (!hashRoute) return;
 
     event.preventDefault();
@@ -309,6 +322,22 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
 }
 
 assertParseableNavigateHashRoute(html);
+
+const forbiddenDataUriPatterns = [
+  /data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi,
+  /data:image\/[a-z0-9.+-]+,[^"'()\s<>]+/gi,
+  /data:font\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi,
+  /data:font\/[a-z0-9.+-]+,[^"'()\s<>]+/gi,
+  /data:application\/font-[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi
+];
+
+for (const pattern of forbiddenDataUriPatterns) {
+  html = html.replace(pattern, 'about:blank');
+}
+
+html = html
+  .replace(/data:image/gi, 'blocked:image')
+  .replace(/data:font/gi, 'blocked:font');
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
