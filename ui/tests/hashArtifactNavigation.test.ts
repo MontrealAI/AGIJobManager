@@ -63,4 +63,25 @@ describe('committed single-file hash navigation', () => {
     expect(routerScript).not.toContain('</script><script>');
   });
 
+  it('keeps router bootstrap before Next flight marker and free of document close tags', () => {
+    const html = fs.readFileSync(artifactPath, 'utf8');
+    const routerStart = html.indexOf('const normalizeHashHref = (input) => {');
+    expect(routerStart).toBeGreaterThan(0);
+
+    const routerScriptOpen = html.lastIndexOf('<script', routerStart);
+    const routerScriptClose = html.indexOf('</script>', routerStart);
+    expect(routerScriptOpen).toBeGreaterThan(-1);
+    expect(routerScriptClose).toBeGreaterThan(routerStart);
+
+    const routerScriptBody = html.slice(routerScriptOpen, routerScriptClose);
+    expect(routerScriptBody).not.toContain('</body>');
+    expect(routerScriptBody).not.toContain('</html>');
+
+    const flightMarkerIndex = html.indexOf('(self.__next_f=self.__next_f||[]).push([0]);');
+    if (flightMarkerIndex > -1) {
+      expect(routerScriptClose).toBeLessThan(flightMarkerIndex);
+    }
+  });
+
+
 });

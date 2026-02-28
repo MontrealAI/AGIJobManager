@@ -320,6 +320,29 @@ insertIntoBody(`<script>(function(){
 
 
 
+function assertRouterBootstrapPlacement(singleFileHtml) {
+  const routerStart = singleFileHtml.indexOf('const normalizeHashHref = (input) => {');
+  if (routerStart < 0) {
+    throw new Error('Router bootstrap missing normalizeHashHref helper in single-file artifact.');
+  }
+
+  const routerScriptOpen = singleFileHtml.lastIndexOf('<script', routerStart);
+  const routerScriptClose = singleFileHtml.indexOf('</script>', routerStart);
+  if (routerScriptOpen < 0 || routerScriptClose < 0 || routerScriptClose < routerStart) {
+    throw new Error('Router bootstrap helper appears outside a valid script block in single-file artifact.');
+  }
+
+  const routerScriptBody = singleFileHtml.slice(routerScriptOpen, routerScriptClose);
+  if (routerScriptBody.includes('</body>') || routerScriptBody.includes('</html>')) {
+    throw new Error('Router bootstrap script contains premature document close markers.');
+  }
+
+  const flightMarkerIndex = singleFileHtml.indexOf('(self.__next_f=self.__next_f||[]).push([0]);');
+  if (flightMarkerIndex > -1 && routerScriptClose > flightMarkerIndex) {
+    throw new Error('Router bootstrap script is interleaved after Next flight bootstrap markers.');
+  }
+}
+
 function assertNoPrematureDocumentClose(singleFileHtml) {
   const closeTag = '</body></html>';
   const firstClose = singleFileHtml.indexOf(closeTag);
@@ -375,6 +398,7 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
 
 html = sanitizeForbiddenDataUris(html);
 assertNoPrematureDocumentClose(html);
+assertRouterBootstrapPlacement(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 
