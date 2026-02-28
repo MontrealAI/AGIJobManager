@@ -296,16 +296,17 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
     throw new Error('Expected a single navigateHashRoute marker region in generated single-file artifact.');
   }
 
-  const declaration = 'const navigateHashRoute = (routePath, mode) => {';
+  const declarationPattern = /\bconst\s+navigateHashRoute\s*=\s*\(\s*routePath\s*,\s*mode\s*\)\s*=>\s*\{/;
 
   let helperWindow = '';
   if (markerMatches.length === 1) {
     helperWindow = markerMatches[0][1] ?? '';
-    if (!helperWindow.includes(declaration)) {
+    if (!declarationPattern.test(helperWindow)) {
       throw new Error('navigateHashRoute marker region must wrap navigateHashRoute declaration in generated single-file artifact.');
     }
   } else {
-    const declarationIndex = singleFileHtml.indexOf(declaration);
+    const declarationMatch = declarationPattern.exec(singleFileHtml);
+    const declarationIndex = declarationMatch?.index ?? -1;
     if (declarationIndex < 0) {
       throw new Error('Unable to locate stable navigateHashRoute declaration in generated single-file artifact.');
     }

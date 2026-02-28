@@ -677,7 +677,7 @@ describe('verify-ipfs script src attribute hardening', () => {
 
     const markerMatches = [...artifactHtml.matchAll(/\/\*\s*navigateHashRoute:start\s*\*\/([\s\S]*?)\/\*\s*navigateHashRoute:end\s*\*\//g)];
     expect(markerMatches.length).toBeGreaterThan(0);
-    const helperMarkerMatches = markerMatches.filter((match) => /\bconst\s+navigateHashRoute\s*=\s*\(routePath,\s*mode\)\s*=>\s*\{/.test(match[1] ?? ''));
+    const helperMarkerMatches = markerMatches.filter((match) => /\bconst\s+navigateHashRoute\s*=\s*\(\s*routePath\s*,\s*mode\s*\)\s*=>\s*\{/.test(match[1] ?? ''));
     expect(helperMarkerMatches).toHaveLength(1);
   });
 
