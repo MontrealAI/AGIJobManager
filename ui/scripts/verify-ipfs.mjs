@@ -588,13 +588,16 @@ const extractNavigateHashRouteFromHtml = (htmlSource) => {
 
 let sawNavigateDeclaration = false;
 let parsedNavigateBody = false;
+let sawNavigateInvocation = false;
 for (const body of normalizedScriptBodies) {
   const hasNavigateHashRoute = /\b(?:const|let|var|function)\s+navigateHashRoute\b|\bnavigateHashRoute\s*=\s*(?:function|\()/.test(body);
+  const hasNavigateCall = /\bnavigateHashRoute\s*\(/.test(body);
   const navigateHashRouteBody = extractArrowFunctionBody(body, 'navigateHashRoute');
 
   if (!hasNavigateHashRoute && !navigateHashRouteBody) continue;
 
   sawNavigateDeclaration ||= hasNavigateHashRoute;
+  sawNavigateInvocation ||= hasNavigateCall;
 
   if (!navigateHashRouteBody) {
     continue;
@@ -602,6 +605,10 @@ for (const body of normalizedScriptBodies) {
 
   parsedNavigateBody = true;
   validateNavigateHashRouteBody(navigateHashRouteBody);
+}
+
+if (sawNavigateInvocation && !sawNavigateDeclaration) {
+  throw new Error('Hash routing handlers call navigateHashRoute but helper declaration is missing from single-file artifact.');
 }
 
 if (sawNavigateDeclaration && !parsedNavigateBody) {

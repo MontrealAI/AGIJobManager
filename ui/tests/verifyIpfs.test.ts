@@ -424,7 +424,7 @@ describe('verify-ipfs script src attribute hardening', () => {
       }, true);
     </script></body></html>`);
 
-    expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing/);
+    expect(run).toThrow(/Hash routing handlers call navigateHashRoute but helper declaration is missing|Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing/);
   });
 
   it('fails when a leaked hashUrl guard appears at top-level near click interception code', () => {
