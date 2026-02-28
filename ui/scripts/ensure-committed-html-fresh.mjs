@@ -107,6 +107,10 @@ function assertRouterBootstrapScript(html, label) {
   if (routerScript.includes('<script') || routerScript.includes('</script><script>')) {
     throw new Error(`${label}: router bootstrap script appears interleaved with script tags.`);
   }
+
+  if (!routerScript.includes('const hashRoute = normalizeHashHref(href);')) {
+    throw new Error(`${label}: click interception no longer uses normalizeHashHref(href) in router bootstrap script.`);
+  }
 }
 
 assertNavigateHashRouteParseable(built, 'dist-ipfs/agijobmanager.html');
