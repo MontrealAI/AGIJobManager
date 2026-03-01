@@ -57,7 +57,7 @@ describe('committed single-file hash navigation', () => {
   it('does not hijack external hash-router URLs in link interception', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
-      expect(html, `${label} missing URL parsing guard in normalizeHashHref`).toContain('parsed = new URL(input, window.location.href);');
+      expect(html, `${label} missing URL parsing guard in normalizeHashHref`).toContain('parsed = new URL(hrefInput, window.location.href);');
       expect(html, `${label} missing same-origin guard in normalizeHashHref`).toContain('if (parsed.origin !== window.location.origin) return null;');
       expect(html, `${label} missing normalizeHashHref click interception`).toContain('const hashRoute = normalizeHashHref(href);');
     }

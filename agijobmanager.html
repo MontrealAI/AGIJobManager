@@ -91,9 +91,11 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     return '/';
   };
 
+    const hrefInput = input;
+
     let parsed;
     try {
-      parsed = new URL(input, window.location.href);
+      parsed = new URL(hrefInput, window.location.href);
     } catch {
       return null;
 
