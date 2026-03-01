@@ -63,6 +63,47 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+  it('keeps normalizeHashHref free of duplicate parsed redeclarations', () => {
+    const declaration = 'const normalizeHashHref = (input) => {';
+
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+      const routerScript = scripts.find((body) => body.includes(declaration));
+      expect(routerScript, `${label} missing normalizeHashHref helper`).toBeTruthy();
+
+      const scriptBody = routerScript ?? '';
+      const declarationIndex = scriptBody.indexOf(declaration);
+      expect(declarationIndex, `${label} missing normalizeHashHref declaration index`).toBeGreaterThan(-1);
+
+      const openBraceIndex = scriptBody.indexOf('{', declarationIndex);
+      expect(openBraceIndex, `${label} missing normalizeHashHref opening brace`).toBeGreaterThan(-1);
+
+      let depth = 0;
+      let closeBraceIndex = -1;
+      for (let i = openBraceIndex; i < scriptBody.length; i += 1) {
+        const ch = scriptBody[i];
+        if (ch === '{') depth += 1;
+        if (ch === '}') {
+          depth -= 1;
+          if (depth === 0) {
+            closeBraceIndex = i;
+            break;
+          }
+        }
+      }
+
+      expect(closeBraceIndex, `${label} normalizeHashHref wrapper should be parseable`).toBeGreaterThan(-1);
+      const normalizeBody = scriptBody.slice(openBraceIndex + 1, closeBraceIndex);
+
+      const parsedDeclarations = normalizeBody.match(/\b(?:const|let|var)\s+parsed\b/g) ?? [];
+      expect(
+        parsedDeclarations.length,
+        `${label} normalizeHashHref redeclares parsed and can become a parse-time SyntaxError`
+      ).toBeLessThanOrEqual(1);
+    }
+  });
+
   it('contains a single terminal document close marker without trailing content', () => {
     const closeTag = '</body></html>';
 
