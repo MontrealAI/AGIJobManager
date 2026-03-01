@@ -799,9 +799,14 @@ describe('verify-ipfs script src attribute hardening', () => {
       ['Deployment', '#/deployment']
     ] as const;
 
+    const anchors = [...artifactHtml.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)]
+      .map(([, href, inner]) => ({
+        href,
+        label: inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+      }));
+
     for (const [label, hashHref] of requiredTabs) {
-      expect(artifactHtml).toContain(`>${label}</a>`);
-      expect(artifactHtml).toContain(`href="${hashHref}"`);
+      expect(anchors).toContainEqual({ href: hashHref, label });
     }
   });
 
