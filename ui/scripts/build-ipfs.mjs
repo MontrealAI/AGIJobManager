@@ -235,16 +235,16 @@ insertIntoBody(`<script>(function(){
   };
 
   const toGatewayUrl = (routeInput) => {
-    const parsed = parseRouteInput(routeInput);
-    if (!parsed) return null;
-    const basePath = gatewayBase === '/' ? parsed.pathname : gatewayBase + parsed.pathname;
-    return basePath + parsed.search;
+    const routeParts = parseRouteInput(routeInput);
+    if (!routeParts) return null;
+    const basePath = gatewayBase === '/' ? routeParts.pathname : gatewayBase + routeParts.pathname;
+    return basePath + routeParts.search;
   };
 
   const toHashUrl = (routeInput) => {
-    const parsed = parseRouteInput(routeInput);
-    if (!parsed) return null;
-    return gatewayBase + '#' + parsed.routeInput;
+    const routeParts = parseRouteInput(routeInput);
+    if (!routeParts) return null;
+    return gatewayBase + '#' + routeParts.routeInput;
   };
 
   let suppressRewrite = false;
