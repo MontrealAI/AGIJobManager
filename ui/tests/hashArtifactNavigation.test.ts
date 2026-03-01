@@ -132,6 +132,12 @@ describe('committed single-file hash navigation', () => {
 
       const hasLocalDeclaration = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+navigateHashRoute\s*\(/.test(scriptBody);
       expect(hasLocalDeclaration, `${label} invokes navigateHashRoute but lacks local navigateHashRoute declaration`).toBe(true);
+
+      expect(scriptBody, `${label} leaked detached routePath guard outside hashchange handler`).not.toContain(`if (routePath === stripGatewayBase(window.location.pathname)) return;
+  window.addEventListener('popstate'`);
+
+      const hashchangePattern = /window\.addEventListener\('hashchange', \(\) => \{[\s\S]*?const routePath = rawHash\.slice\(1\);\s*if \(routePath === stripGatewayBase\(window\.location\.pathname\)\) return;\s*navigateHashRoute\(routePath, 'replace'\);\s*\}\);/;
+      expect(hashchangePattern.test(scriptBody), `${label} hashchange handler missing in-handler routePath guard`).toBe(true);
     }
   });
 
