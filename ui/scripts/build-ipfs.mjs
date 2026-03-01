@@ -557,6 +557,17 @@ function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
   if (/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/.test(singleFileHtml)) {
     throw new Error('Router bootstrap must avoid reusing `parsed` for parseRouteInput(routeInput) to prevent parser ambiguity/regressions.');
   }
+  if (/\bconst\s+parsedGatewayRoute\s*=\s*parseRouteInput\(routeInput\)\s*;/.test(helperBody)) {
+    throw new Error('normalizeHashHref must not contain parseRouteInput(routeInput) blocks from toGatewayUrl.');
+  }
+
+  if (/\bconst\s+basePath\s*=/.test(helperBody)) {
+    throw new Error('normalizeHashHref must not declare basePath; toGatewayUrl logic leaked into normalizeHashHref.');
+  }
+
+  if (/\bconst\s+basePath\s*=.*\bconst\s+basePath\s*=/s.test(singleFileHtml)) {
+    throw new Error('Router bootstrap appears to contain duplicate basePath declarations, indicating malformed script concatenation.');
+  }
 }
 
 function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
