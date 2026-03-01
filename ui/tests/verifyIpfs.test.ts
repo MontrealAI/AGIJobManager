@@ -654,6 +654,22 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\brawPushState\b/);
   });
 
+
+
+  it('committed artifact router bootstrap script is syntactically valid', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const scriptBodies = [...artifactHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+    const routerBootstrap = scriptBodies.find((body) => (
+      body.includes('const normalizeHashHref = (input) => {')
+      && body.includes("addEventListener('hashchange'")
+      && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    ));
+
+    expect(routerBootstrap, 'router bootstrap script should exist in committed artifact').toBeTruthy();
+    expect(() => new Function(routerBootstrap ?? '')).not.toThrow();
+  });
   it('passes when navigateHashRoute only uses its own inputs', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const navigateHashRoute = (routePath, mode) => {
