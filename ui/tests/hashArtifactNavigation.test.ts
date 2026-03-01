@@ -132,6 +132,50 @@ describe('committed single-file hash navigation', () => {
 
       const hasLocalDeclaration = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+navigateHashRoute\s*\(/.test(scriptBody);
       expect(hasLocalDeclaration, `${label} invokes navigateHashRoute but lacks local navigateHashRoute declaration`).toBe(true);
+
+      expect(scriptBody, `${label} leaked detached routePath guard outside hashchange handler`).not.toContain(`if (routePath === stripGatewayBase(window.location.pathname)) return;
+  window.addEventListener('popstate'`);
+
+      const hashchangePattern = /window\.addEventListener\('hashchange', \(\) => \{[\s\S]*?const routePath = rawHash\.slice\(1\);\s*if \(routePath === stripGatewayBase\(window\.location\.pathname\)\) return;\s*navigateHashRoute\(routePath, 'replace'\);\s*\}\);/;
+      expect(hashchangePattern.test(scriptBody), `${label} hashchange handler missing in-handler routePath guard`).toBe(true);
+    }
+  });
+
+
+  it('keeps normalizeHashHref parseable with a single parsed binding', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const declaration = 'const normalizeHashHref = (input) => {';
+      const declarationIndex = html.indexOf(declaration);
+
+      expect(declarationIndex, `${label} missing normalizeHashHref declaration`).toBeGreaterThan(-1);
+
+      const openBraceIndex = html.indexOf('{', declarationIndex);
+      expect(openBraceIndex, `${label} missing normalizeHashHref opening brace`).toBeGreaterThan(-1);
+
+      let depth = 0;
+      let closeBraceIndex = -1;
+      for (let i = openBraceIndex; i < html.length; i += 1) {
+        const ch = html[i];
+        if (ch === '{') depth += 1;
+        if (ch === '}') {
+          depth -= 1;
+          if (depth === 0) {
+            closeBraceIndex = i;
+            break;
+          }
+        }
+      }
+
+      expect(closeBraceIndex, `${label} normalizeHashHref body should be parseable`).toBeGreaterThan(-1);
+
+      const helperBody = html.slice(openBraceIndex + 1, closeBraceIndex);
+      expect(helperBody, `${label} missing let parsed declaration`).toMatch(/\blet\s+parsed\s*;/);
+      expect(helperBody, `${label} normalizeHashHref must not redeclare parsed with parseRouteInput(routeInput)`).not.toMatch(/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/);
+      expect(helperBody, `${label} normalizeHashHref must not leak parsedGatewayRoute declaration`).not.toMatch(/\bconst\s+parsedGatewayRoute\s*=\s*parseRouteInput\(routeInput\)\s*;/);
+      expect(helperBody, `${label} normalizeHashHref must not leak basePath declaration`).not.toMatch(/\bconst\s+basePath\s*=/);
+      expect(html, `${label} router bootstrap must avoid const parsed=parseRouteInput(routeInput) entirely`).not.toMatch(/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/);
+      expect(html, `${label} router bootstrap should not contain duplicated basePath declarations`).not.toMatch(/\bconst\s+basePath\s*=.*\bconst\s+basePath\s*=/s);
     }
   });
 
