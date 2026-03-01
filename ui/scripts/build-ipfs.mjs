@@ -373,6 +373,76 @@ function assertHashRoutingBootstrapClosed(singleFileHtml) {
   }
 }
 
+
+function extractNavigateHashRouteBounds(scriptBody) {
+  const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/;
+  const match = declarationPattern.exec(scriptBody);
+  if (!match) return null;
+
+  const braceStart = scriptBody.indexOf('{', match.index);
+  if (braceStart < 0) return null;
+
+  let depth = 0;
+  for (let i = braceStart; i < scriptBody.length; i += 1) {
+    const ch = scriptBody[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return { start: match.index, end: i + 1 };
+      }
+    }
+  }
+
+  return null;
+}
+
+
+function hasOrphanHashUrlGuard(source) {
+  const guardPattern = /if\s*\(\s*!hashUrl\s*\)\s*return\s*;/g;
+  for (const match of source.matchAll(guardPattern)) {
+    const idx = match.index ?? -1;
+    if (idx < 0) continue;
+    const contextStart = Math.max(0, idx - 160);
+    const context = source.slice(contextStart, idx);
+    if (!/(?:const|let|var)\s+hashUrl\s*=/.test(context)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function assertRouterBootstrapCoherence(singleFileHtml) {
+  const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  const routerScript = scriptBodies.find((body) => (
+    body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes("window.addEventListener('hashchange'")
+  ));
+
+  if (!routerScript) {
+    throw new Error('Router bootstrap script with normalizeHashHref/navigateHashRoute/hashchange was not found in single-file artifact.');
+  }
+
+  if (!routerScript.includes('const hashRoute = normalizeHashHref(href);')) {
+    throw new Error('Router bootstrap click interception no longer uses normalizeHashHref(href) in single-file artifact.');
+  }
+
+  if (routerScript.includes('</script><script>') || routerScript.includes('<script>')) {
+    throw new Error('Router bootstrap script appears interleaved with script tag boundaries in single-file artifact.');
+  }
+
+  const navigateBounds = extractNavigateHashRouteBounds(routerScript);
+  if (!navigateBounds) {
+    throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper in single-file artifact.');
+  }
+
+  const outsideNavigate = routerScript.slice(0, navigateBounds.start) + routerScript.slice(navigateBounds.end);
+  if (hasOrphanHashUrlGuard(outsideNavigate)) {
+    throw new Error('Router bootstrap leaked orphan `if (!hashUrl) return;` outside navigateHashRoute wrapper.');
+  }
+}
+
 function assertParseableNavigateHashRoute(singleFileHtml) {
   const hasHashListener = /\b(?:window\.)?addEventListener\(\s*['"`]hashchange['"`]/.test(singleFileHtml);
   if (!hasHashListener) {
@@ -400,11 +470,26 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
   }
 }
 
+function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
+  const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  for (const body of scriptBodies) {
+    const invokesNavigate = /\bnavigateHashRoute\s*\(/.test(body);
+    if (!invokesNavigate) continue;
+
+    const hasDeclaration = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+navigateHashRoute\s*\(/.test(body);
+    if (!hasDeclaration) {
+      throw new Error('Router bootstrap invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body.');
+    }
+  }
+}
+
 html = sanitizeForbiddenDataUris(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
+assertRouterBootstrapCoherence(html);
+assertNoNavigateInvocationWithoutDeclaration(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });

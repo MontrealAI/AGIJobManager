@@ -81,8 +81,69 @@ describe('committed single-file hash navigation', () => {
       expect(routerScript, `${label} missing router bootstrap script`).toBeTruthy();
       expect(routerScript, `${label} has nested script marker`).not.toContain('<script');
       expect(routerScript, `${label} has interleaved script boundary`).not.toContain('</script><script>');
+
+      const scriptBody = routerScript ?? '';
+      const declaration = 'const navigateHashRoute = (routePath, mode) => {';
+      const declarationIndex = scriptBody.indexOf(declaration);
+      expect(declarationIndex, `${label} missing navigateHashRoute declaration inside router bootstrap script`).toBeGreaterThan(-1);
+
+      const openBraceIndex = scriptBody.indexOf('{', declarationIndex);
+      expect(openBraceIndex, `${label} missing navigateHashRoute opening brace`).toBeGreaterThan(-1);
+
+      let depth = 0;
+      let closeBraceIndex = -1;
+      for (let i = openBraceIndex; i < scriptBody.length; i += 1) {
+        const ch = scriptBody[i];
+        if (ch === '{') depth += 1;
+        if (ch === '}') {
+          depth -= 1;
+          if (depth === 0) {
+            closeBraceIndex = i;
+            break;
+          }
+        }
+      }
+
+      expect(closeBraceIndex, `${label} navigateHashRoute wrapper should be parseable in router bootstrap script`).toBeGreaterThan(-1);
+
+      const outsideNavigate = scriptBody.slice(0, declarationIndex) + scriptBody.slice(closeBraceIndex + 1);
+      const guardPattern = /if\s*\(\s*!hashUrl\s*\)\s*return\s*;/g;
+      for (const match of outsideNavigate.matchAll(guardPattern)) {
+        const idx = match.index ?? -1;
+        expect(idx, `${label} leaked unscoped hashUrl guard index missing`).toBeGreaterThan(-1);
+        const context = outsideNavigate.slice(Math.max(0, idx - 160), idx);
+        expect(context, `${label} leaked top-level hashUrl guard outside navigateHashRoute`).toMatch(/(?:const|let|var)\s+hashUrl\s*=/);
+      }
     }
   });
+
+  it('declares navigateHashRoute before hash/click handlers invoke it', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+
+      const routerScript = scripts.find((body) =>
+        body.includes('const normalizeHashHref = (input) => {')
+        && body.includes("window.addEventListener('hashchange'")
+        && body.includes("document.addEventListener('click'")
+      );
+
+      expect(routerScript, `${label} missing router bootstrap script`).toBeTruthy();
+      const scriptBody = routerScript ?? '';
+
+      const declarationIndex = scriptBody.indexOf('const navigateHashRoute = (routePath, mode) => {');
+      expect(declarationIndex, `${label} missing navigateHashRoute declaration in router bootstrap`).toBeGreaterThan(-1);
+
+      const hashInvoke = scriptBody.indexOf("navigateHashRoute(routePath, 'replace')");
+      const clickInvoke = scriptBody.indexOf("navigateHashRoute(hashRoute.slice(1), 'push')");
+      expect(hashInvoke, `${label} missing hashchange navigateHashRoute invocation`).toBeGreaterThan(-1);
+      expect(clickInvoke, `${label} missing click-handler navigateHashRoute invocation`).toBeGreaterThan(-1);
+
+      expect(declarationIndex, `${label} declares navigateHashRoute after hashchange invocation`).toBeLessThan(hashInvoke);
+      expect(declarationIndex, `${label} declares navigateHashRoute after click invocation`).toBeLessThan(clickInvoke);
+    }
+  });
+
   it('does not contain duplicated Next flight bootstrap markers', () => {
     const markers = [
       '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])',
