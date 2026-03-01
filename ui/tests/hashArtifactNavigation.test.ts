@@ -173,6 +173,8 @@ describe('committed single-file hash navigation', () => {
       expect(helperBody, `${label} missing let parsed declaration`).toMatch(/\blet\s+parsed\s*;/);
       expect(helperBody, `${label} normalizeHashHref must not redeclare parsed with parseRouteInput(routeInput)`).not.toMatch(/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/);
       expect(html, `${label} router bootstrap must avoid const parsed=parseRouteInput(routeInput) entirely`).not.toMatch(/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/);
+      expect(helperBody, `${label} normalizeHashHref must not contain parsedRoute helper declarations`).not.toMatch(/\bconst\s+parsedRoute\s*=\s*parseRouteInput\(routeInput\)\s*;/);
+      expect(html, `${label} router bootstrap contains parsedRoute redeclaration sequence`).not.toMatch(/return\s+basePath\s*\+\s*parsedRoute\.search\s*;\s*const\s+parsedRoute\s*=\s*parseRouteInput\(routeInput\)\s*;/);
     }
   });
 

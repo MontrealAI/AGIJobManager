@@ -559,6 +559,40 @@ function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
   }
 }
 
+
+function assertNoParsedRouteRedeclarationSequence(singleFileHtml) {
+  const invalidSequence = /return\s+basePath\s*\+\s*parsedRoute\.search\s*;\s*const\s+parsedRoute\s*=\s*parseRouteInput\(routeInput\)\s*;/;
+  if (invalidSequence.test(singleFileHtml)) {
+    throw new Error('Router bootstrap contains a parsedRoute redeclaration sequence that breaks script parseability.');
+  }
+
+  const normalizeDecl = 'const normalizeHashHref = (input) => {';
+  const normalizeStart = singleFileHtml.indexOf(normalizeDecl);
+  if (normalizeStart >= 0) {
+    const open = singleFileHtml.indexOf('{', normalizeStart);
+    let depth = 0;
+    let close = -1;
+    for (let i = open; i < singleFileHtml.length; i += 1) {
+      const ch = singleFileHtml[i];
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          close = i;
+          break;
+        }
+      }
+    }
+
+    if (open >= 0 && close > open) {
+      const normalizeBody = singleFileHtml.slice(open + 1, close);
+      if (/const\s+parsedRoute\s*=\s*parseRouteInput\(routeInput\)\s*;/.test(normalizeBody)) {
+        throw new Error('normalizeHashHref must not include parsedRoute declarations from route-input helpers.');
+      }
+    }
+  }
+}
+
 function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
   const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
   for (const body of scriptBodies) {
@@ -580,6 +614,7 @@ assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 assertRouterBootstrapCoherence(html);
 assertNormalizeHashHrefParsedBinding(html);
+assertNoParsedRouteRedeclarationSequence(html);
 assertNoNavigateInvocationWithoutDeclaration(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
