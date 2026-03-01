@@ -81,11 +81,34 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
 
 
 function sanitizeForbiddenDataUris(sourceHtml) {
-  // Keep sanitizer non-destructive for inlined bundles: only obfuscate forbidden
-  // URI scheme tokens to satisfy static checks without mutating surrounding code.
+  const tokenPattern = /data:(image|font)\//i;
+  const terminatorPattern = /[\s"'`<>()]/;
+
   let sanitized = sourceHtml;
-  sanitized = sanitized.replace(/data:image\//gi, 'data\\x3aimage/');
-  sanitized = sanitized.replace(/data:font\//gi, 'data\\x3afont/');
+  let safetyCounter = 0;
+
+  while (true) {
+    const match = tokenPattern.exec(sanitized);
+    if (!match || match.index === undefined) break;
+
+    const kind = (match[1] || '').toLowerCase();
+    const replacement = kind === 'font'
+      ? 'about:blank#blocked-data-font'
+      : 'about:blank#blocked-data-image';
+
+    const start = match.index;
+    let end = start;
+    while (end < sanitized.length && !terminatorPattern.test(sanitized[end])) {
+      end += 1;
+    }
+
+    sanitized = `${sanitized.slice(0, start)}${replacement}${sanitized.slice(end)}`;
+
+    safetyCounter += 1;
+    if (safetyCounter > 10000) {
+      throw new Error('Data URI sanitization exceeded safety threshold.');
+    }
+  }
 
   if (/data:image\//i.test(sanitized) || /data:font\//i.test(sanitized)) {
     throw new Error('Generated artifact still contains forbidden data:image/* or data:font/* URI content.');
