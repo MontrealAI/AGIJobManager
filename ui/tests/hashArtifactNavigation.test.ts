@@ -63,6 +63,23 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+  it('keeps normalizeHashHref parseable with a single parsed binding', () => {
+    const normalizeBlockPattern = /const normalizeHashHref = \(input\) => \{([\s\S]*?)\n\s*\};/;
+
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const match = normalizeBlockPattern.exec(html);
+      expect(match, `${label} missing normalizeHashHref block`).toBeTruthy();
+
+      const body = match?.[1] ?? '';
+      const parsedBindings = body.match(/\b(?:let|const)\s+parsed\b/g) ?? [];
+      expect(parsedBindings.length, `${label} normalizeHashHref should declare parsed exactly once`).toBe(1);
+      expect(body, `${label} normalizeHashHref contains accidental parseRouteInput redeclaration`).not.toContain('const parsed = parseRouteInput(routeInput);');
+      expect(body, `${label} normalizeHashHref lost URL parsing behavior`).toContain('parsed = new URL(input, window.location.href);');
+      expect(body, `${label} normalizeHashHref lost same-origin guard`).toContain('if (parsed.origin !== window.location.origin) return null;');
+    }
+  });
+
   it('contains a single terminal document close marker without trailing content', () => {
     const closeTag = '</body></html>';
 
