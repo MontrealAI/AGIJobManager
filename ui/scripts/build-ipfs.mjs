@@ -268,6 +268,20 @@ insertIntoBody(`<script>(function(){
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
   };
 
+  const syncHashWithPath = (mode) => {
+    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
+    const hashUrl = toHashUrl(routePath);
+    if (!hashUrl) return;
+
+    suppressRewrite = true;
+    if (mode === 'push') {
+      rawPushState(history.state, '', hashUrl);
+    } else {
+      rawReplaceState(history.state, '', hashUrl);
+    }
+    suppressRewrite = false;
+  };
+
   const navigateHashRoute = (routePath, mode) => {
     if (!routePath || !routePath.startsWith('/')) return;
 
@@ -283,10 +297,11 @@ insertIntoBody(`<script>(function(){
     suppressRewrite = false;
 
     dispatchRouteUpdate(history.state);
-
-    suppressRewrite = true;
-    rawReplaceState(history.state, '', hashUrl);
-    suppressRewrite = false;
+    queueMicrotask(() => {
+      suppressRewrite = true;
+      rawReplaceState(history.state, '', hashUrl);
+      suppressRewrite = false;
+    });
   };
 
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
@@ -304,7 +319,13 @@ insertIntoBody(`<script>(function(){
     const rawHash = window.location.hash || '';
     if (!rawHash.startsWith('#/')) return;
     const routePath = rawHash.slice(1);
+    if (routePath === stripGatewayBase(window.location.pathname)) return;
     navigateHashRoute(routePath, 'replace');
+  });
+
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
   });
 
   document.addEventListener('click', (event) => {
