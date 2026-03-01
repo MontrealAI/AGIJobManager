@@ -113,6 +113,21 @@ function assertRouterBootstrapScript(html, label) {
   }
 }
 
+function assertNoNavigateInvocationWithoutLocalDeclaration(html, label) {
+  const source = html.toString('utf8');
+  const scripts = [...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+
+  for (const body of scripts) {
+    const invokesNavigate = /\bnavigateHashRoute\s*\(/.test(body);
+    if (!invokesNavigate) continue;
+
+    const hasDeclaration = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+navigateHashRoute\s*\(/.test(body);
+    if (!hasDeclaration) {
+      throw new Error(`${label}: script invokes navigateHashRoute(...) without declaring navigateHashRoute in the same script body.`);
+    }
+  }
+}
+
 assertNavigateHashRouteParseable(built, 'dist-ipfs/agijobmanager.html');
 assertNavigateHashRouteParseable(committed, 'agijobmanager.html');
 
@@ -120,6 +135,8 @@ assertSingleTerminalClose(built, 'dist-ipfs/agijobmanager.html');
 assertSingleTerminalClose(committed, 'agijobmanager.html');
 assertRouterBootstrapScript(built, 'dist-ipfs/agijobmanager.html');
 assertRouterBootstrapScript(committed, 'agijobmanager.html');
+assertNoNavigateInvocationWithoutLocalDeclaration(built, 'dist-ipfs/agijobmanager.html');
+assertNoNavigateInvocationWithoutLocalDeclaration(committed, 'agijobmanager.html');
 
 if (Buffer.compare(built, committed) !== 0) {
   throw new Error(
