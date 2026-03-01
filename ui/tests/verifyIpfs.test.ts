@@ -637,6 +637,22 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\brawPushState\b/);
   });
 
+
+  it('committed router bootstrap script is syntactically valid JavaScript', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+    const scriptBodies = [...artifactHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+
+    const routerBootstrap = scriptBodies.find((body) => (
+      body.includes('const normalizeHashHref = (input) => {')
+      && body.includes("addEventListener('hashchange'")
+      && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    ));
+
+    expect(routerBootstrap, 'router bootstrap script should exist in committed artifact').toBeTruthy();
+    expect(() => new Function(routerBootstrap ?? '')).not.toThrow();
+  });
+
   it('committed artifact keeps rawHash out of navigateHashRoute helper', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
