@@ -118,33 +118,33 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     if (input.startsWith('/')) return toHashRoute(input);
     if (input.startsWith('//')) return null;
 
-    let parsed;
-    try {
-      parsed = new URL(input, window.location.href);
-    } catch {
-      return null;
+    const parsedGatewayRoute = parseRouteInput(routeInput);
+    if (!parsedGatewayRoute) return null;
+    const gatewayPathname = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
+    return gatewayPathname + parsedGatewayRoute.search;
+    const parsedHashRoute = parseRouteInput(routeInput);
+    if (!parsedHashRoute) return null;
+    return gatewayBase + '#' + parsedHashRoute.routeInput;
+  const syncHashWithPath = (mode) => {
+    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
+    const hashUrl = toHashUrl(routePath);
+    if (!hashUrl) return;
+
+    suppressRewrite = true;
+    if (mode === 'push') {
+      rawPushState(history.state, '', hashUrl);
+    } else {
+      rawReplaceState(history.state, '', hashUrl);
     }
-
-    if (parsed.origin !== window.location.origin) return null;
-
-    if (parsed.hash && parsed.hash.startsWith('#/')) {
-      return parsed.hash;
-    }
-
-    return toHashRoute(parsed.pathname + parsed.search);
+    suppressRewrite = false;
   };
 
-  const parseRouteInput = (routeInput) => {
-    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
-    const hashIndex = routeInput.indexOf('#');
-    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
-    const queryIndex = withoutHash.indexOf('?');
-    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
-    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
-    return { pathname, search, routeInput: withoutHash };
-  };
+    if (routePath === stripGatewayBase(window.location.pathname)) return;
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
+  });
 
-  const toGatewayUrl = (routeInput) => {
     const parsed = parseRouteInput(routeInput);
     if (!parsed) return null;
     const basePath = gatewayBase === '/' ? parsed.pathname : gatewayBase + parsed.pathname;
