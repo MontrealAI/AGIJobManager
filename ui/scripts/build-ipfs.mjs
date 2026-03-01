@@ -314,7 +314,9 @@ insertIntoBody(`<script>(function(){
     }
   }
 
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('hashchange', handleHashChange);
+
+  function handleHashChange() {
     const rawHash = window.location.hash || '';
     if (!rawHash.startsWith('#/')) return;
 
@@ -323,7 +325,7 @@ insertIntoBody(`<script>(function(){
     if (routePath === currentRoutePath) return;
 
     navigateHashRoute(routePath, 'replace');
-  });
+  }
 
   window.addEventListener('popstate', () => {
     if (window.location.hash.startsWith('#/')) return;

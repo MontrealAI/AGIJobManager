@@ -197,8 +197,10 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
   rewriteHistory('pushState');
   rewriteHistory('replaceState');
 
-  const dispatchRouteUpdate = (state) => {
-    window.dispatchEvent(new PopStateEvent('popstate', { state }));
+  window.addEventListener('hashchange', handleHashChange);
+
+  function handleHashChange() {
+  }
   };
 
   const navigateHashRoute = (routePath, mode) => {
