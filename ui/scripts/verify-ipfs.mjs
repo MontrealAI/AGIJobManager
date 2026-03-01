@@ -604,6 +604,10 @@ for (const body of normalizedScriptBodies) {
 
   if (!hasNavigateHashRoute && !navigateHashRouteBody) continue;
 
+  if (hasNavigateHashRoute && /<\s*(?:script|style|div|main|header|footer|nav|section)\b/i.test(body)) {
+    throw new Error('Router bootstrap script contains leaked HTML/script markup and is malformed.');
+  }
+
   sawNavigateDeclaration ||= hasNavigateHashRoute;
 
   if (!navigateHashRouteBody) {
@@ -656,6 +660,10 @@ if (hasRouterBootstrapCoherence) {
   ));
 
   if (coherentBody) {
+    if (/<\s*(?:script|style|div|main|header|footer|nav|section)\b/i.test(coherentBody)) {
+      throw new Error('Router bootstrap script contains leaked HTML/script markup and is malformed.');
+    }
+
     const navigateBounds = extractNavigateHashRouteBounds(coherentBody);
     if (!navigateBounds) {
       throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper.');

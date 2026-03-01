@@ -408,7 +408,10 @@ describe('verify-ipfs script src attribute hardening', () => {
 
   it('fails when router handlers call navigateHashRoute but helper declaration is missing', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
-      const normalizeHashHref = (input) => input?.startsWith('#/') ? input : null;
+      const normalizeHashHref = (input) => {
+        if (typeof input !== 'string') return null;
+        return input.startsWith('#/') ? input : null;
+      };
       window.addEventListener('hashchange', () => {
         const rawHash = window.location.hash || '';
         if (!rawHash.startsWith('#/')) return;
@@ -425,6 +428,36 @@ describe('verify-ipfs script src attribute hardening', () => {
     </script></body></html>`);
 
     expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing|invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
+  });
+
+  it('fails when router bootstrap script is tainted with leaked HTML markup', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const normalizeHashHref = (input) => input?.startsWith('#/') ? input : null;
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+        } else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      document.addEventListener('click', (event) => {
+        const href = event.target?.getAttribute?.('href') || '';
+        const hashRoute = normalizeHashHref(href);
+        if (!hashRoute) return;
+        navigateHashRoute(hashRoute.slice(1), 'push');
+      });
+      <div data-rk=""></div>
+    </script></body></html>`);
+
+    expect(run).toThrow(/Router bootstrap script contains leaked HTML\/script markup and is malformed/);
   });
 
   it('fails when navigateHashRoute is invoked in a script body without local declaration', () => {
