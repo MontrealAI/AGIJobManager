@@ -116,6 +116,34 @@ describe('committed single-file hash navigation', () => {
       }
     }
   });
+
+  it('declares navigateHashRoute before hash/click handlers invoke it', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+
+      const routerScript = scripts.find((body) =>
+        body.includes('const normalizeHashHref = (input) => {')
+        && body.includes("window.addEventListener('hashchange'")
+        && body.includes("document.addEventListener('click'")
+      );
+
+      expect(routerScript, `${label} missing router bootstrap script`).toBeTruthy();
+      const scriptBody = routerScript ?? '';
+
+      const declarationIndex = scriptBody.indexOf('const navigateHashRoute = (routePath, mode) => {');
+      expect(declarationIndex, `${label} missing navigateHashRoute declaration in router bootstrap`).toBeGreaterThan(-1);
+
+      const hashInvoke = scriptBody.indexOf("navigateHashRoute(routePath, 'replace')");
+      const clickInvoke = scriptBody.indexOf("navigateHashRoute(hashRoute.slice(1), 'push')");
+      expect(hashInvoke, `${label} missing hashchange navigateHashRoute invocation`).toBeGreaterThan(-1);
+      expect(clickInvoke, `${label} missing click-handler navigateHashRoute invocation`).toBeGreaterThan(-1);
+
+      expect(declarationIndex, `${label} declares navigateHashRoute after hashchange invocation`).toBeLessThan(hashInvoke);
+      expect(declarationIndex, `${label} declares navigateHashRoute after click invocation`).toBeLessThan(clickInvoke);
+    }
+  });
+
   it('does not contain duplicated Next flight bootstrap markers', () => {
     const markers = [
       '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])',
