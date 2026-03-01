@@ -102,6 +102,16 @@ function extractArrowFunctionBodies(source: string, constName: string): string[]
   return bodies;
 }
 
+
+function extractRouterBootstrapScript(html: string): string | null {
+  const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  return scriptBodies.find((body) => (
+    body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes("addEventListener('hashchange'")
+  )) ?? null;
+}
+
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
@@ -635,6 +645,54 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\bmode\b/);
     expect(body).toMatch(/\brawReplaceState\b/);
     expect(body).toMatch(/\brawPushState\b/);
+  });
+
+
+  it('fails when router bootstrap script body has malformed catch block syntax', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const normalizeHashHref = (input) => {
+        const href = input;
+        let parsed;
+        try {
+          parsed = new URL(href, window.location.href);
+        } catch (_error) {
+          return null;
+        if (parsed.origin !== window.location.origin) return null;
+      };
+      const rawPushState = history.pushState.bind(history);
+      const rawReplaceState = history.replaceState.bind(history);
+      const navigateHashRoute = (routePath, mode) => {
+        if (!routePath || !routePath.startsWith('/')) return;
+        if (mode === 'replace') {
+          rawReplaceState(history.state, '', routePath);
+        } else {
+          rawPushState(history.state, '', routePath);
+        }
+      };
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        if (!target) return;
+        const href = target.getAttribute('href') || '';
+        const hashRoute = normalizeHashHref(href);
+        if (!hashRoute) return;
+      });
+    </script></body></html>`);
+
+    expect(run).toThrow(/Router bootstrap script is not syntactically valid/);
+  });
+
+  it('committed artifact router bootstrap script remains syntactically parseable', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const routerScript = extractRouterBootstrapScript(artifactHtml);
+    expect(routerScript, 'router bootstrap script should exist in committed artifact').not.toBeNull();
+    expect(() => new Function(routerScript ?? '')).not.toThrow();
   });
 
   it('committed artifact keeps rawHash out of navigateHashRoute helper', () => {

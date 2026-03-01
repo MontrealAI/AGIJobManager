@@ -655,7 +655,27 @@ if (hasRouterBootstrapCoherence) {
     && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
   ));
 
+  const coherentRawBody = scriptBodies.find((body) => (
+    /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
+    && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
+    && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
+    && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
+  ));
+
   if (coherentBody) {
+    if (coherentRawBody) {
+      try {
+        // Parse-only syntax guard for the entire router bootstrap script body.
+        // This catches malformed try/catch or brace regressions that can still
+        // pass narrower helper extraction checks.
+        // eslint-disable-next-line no-new-func
+        new Function(coherentRawBody);
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new Error(`Router bootstrap script is not syntactically valid: ${reason}`);
+      }
+    }
+
     const navigateBounds = extractNavigateHashRouteBounds(coherentBody);
     if (!navigateBounds) {
       throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper.');
