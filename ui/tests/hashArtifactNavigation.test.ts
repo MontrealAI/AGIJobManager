@@ -39,8 +39,18 @@ describe('committed single-file hash navigation', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
       expect(html, `${label} missing navigateHashRoute`).toContain('const navigateHashRoute = (routePath, mode) => {');
+      expect(html, `${label} missing dispatchRouteUpdate`).toContain("window.dispatchEvent(new PopStateEvent('popstate', { state }));");
       expect(html, `${label} missing hashchange listener`).toContain('window.addEventListener(\'hashchange\'');
       expect(html, `${label} missing normalizeHashHref`).toContain('const normalizeHashHref = (input) => {');
+    }
+  });
+
+  it('keeps deep-link conversion logic for static-hosting direct loads', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      expect(html, `${label} missing initial-load rewrite guard`).toContain("if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {");
+      expect(html, `${label} missing gateway-path normalization`).toContain('const routePath = stripGatewayBase(window.location.pathname);');
+      expect(html, `${label} missing initial hash rewrite`).toContain("rawReplaceState(history.state, '', hashUrl);");
     }
   });
 
