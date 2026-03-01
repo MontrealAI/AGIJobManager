@@ -151,6 +151,26 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     return basePath + parsed.search;
   };
 
+  const syncHashWithPath = (mode) => {
+    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
+    const hashUrl = toHashUrl(routePath);
+    if (!hashUrl) return;
+
+    suppressRewrite = true;
+    if (mode === 'push') {
+      rawPushState(history.state, '', hashUrl);
+    } else {
+      rawReplaceState(history.state, '', hashUrl);
+    }
+    suppressRewrite = false;
+  };
+
+    if (routePath === stripGatewayBase(window.location.pathname)) return;
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
+  });
+
   const toHashUrl = (routeInput) => {
     const parsed = parseRouteInput(routeInput);
     if (!parsed) return null;
