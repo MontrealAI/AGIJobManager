@@ -4,6 +4,7 @@ import path from 'node:path';
 const uiRoot = process.cwd();
 const distDir = path.join(uiRoot, 'dist-ipfs');
 const artifactPath = path.join(distDir, 'agijobmanager.html');
+const repoArtifactPath = path.join(path.resolve(uiRoot, '..'), 'agijobmanager.html');
 
 if (!fs.existsSync(distDir)) {
   throw new Error('dist-ipfs directory missing. Run npm run build:ipfs first.');
@@ -15,6 +16,13 @@ if (entries.length !== 1 || entries[0] !== 'agijobmanager.html') {
 }
 
 const html = fs.readFileSync(artifactPath, 'utf8');
+
+if (fs.existsSync(repoArtifactPath)) {
+  const committedHtml = fs.readFileSync(repoArtifactPath, 'utf8');
+  if (committedHtml !== html) {
+    throw new Error('Repository agijobmanager.html is stale. Run npm run build:ipfs from ui/ to refresh both artifacts.');
+  }
+}
 
 function parseTagAttributes(tagText) {
   const attrs = new Map();
