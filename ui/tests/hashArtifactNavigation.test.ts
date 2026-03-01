@@ -93,6 +93,7 @@ describe('committed single-file hash navigation', () => {
       expect(routerScript, `${label} has interleaved script boundary`).not.toContain('</script><script>');
 
       const scriptBody = routerScript ?? '';
+      expect(() => Function(scriptBody), `${label} router bootstrap script should be valid JavaScript`).not.toThrow();
       expect(scriptBody, `${label} has injected DOM markup inside router bootstrap script`).not.toContain('<div data-rk');
       expect(scriptBody.trimEnd(), `${label} router bootstrap script should terminate as an IIFE`).toMatch(/\}\)\(\);$/);
       const declaration = 'const navigateHashRoute = (routePath, mode) => {';
