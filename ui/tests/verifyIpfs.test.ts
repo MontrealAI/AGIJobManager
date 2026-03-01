@@ -670,6 +670,21 @@ describe('verify-ipfs script src attribute hardening', () => {
 
 
 
+
+  it('committed artifacts keep normalizeHashHref and parseRouteInput declaration boundaries intact', () => {
+    const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
+
+    for (const artifactPath of [rootArtifactPath, distArtifactPath]) {
+      const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+      const routerScript = extractRouterBootstrapScript(artifactHtml);
+      expect(routerScript).toBeTruthy();
+
+      expect(routerScript).toMatch(/catch \(_error\) \{\n\s*return null;\n\s*\}\n\n\s*if \(parsed\.origin !== window\.location\.origin\) return null;/);
+      expect(routerScript).toMatch(/const parseRouteInput = \(routeInput\) => \{[\s\S]*?return \{ pathname, search, routeInput: withoutHash \};\n\s*\};\n\n\s*const toGatewayUrl = \(routeInput\) => \{/);
+    }
+  });
+
   it('committed artifacts do not contain malformed catch-to-if pattern in normalizeHashHref', () => {
     const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
