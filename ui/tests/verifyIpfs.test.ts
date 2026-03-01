@@ -669,6 +669,20 @@ describe('verify-ipfs script src attribute hardening', () => {
 
 
 
+
+  it('committed root and dist artifacts never contain unterminated catch->parsed.origin sequence', () => {
+    const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
+    const malformedSequence = 'catch (_error) {\n      return null;\n    if (parsed.origin !== window.location.origin) return null;';
+    const expectedClosedSequence = 'catch (_error) {\n      return null;\n    }\n\n    if (parsed.origin !== window.location.origin) return null;';
+
+    for (const artifactPath of [rootArtifactPath, distArtifactPath]) {
+      const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+      expect(artifactHtml).not.toContain(malformedSequence);
+      expect(artifactHtml).toContain(expectedClosedSequence);
+    }
+  });
+
   it('committed artifacts keep normalizeHashHref outside detectGatewayBase and available to click handler', () => {
     const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
