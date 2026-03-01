@@ -191,15 +191,13 @@ insertIntoBody(`<script>(function(){
 
   const normalizeHashHref = (input) => {
     if (typeof input !== 'string' || !input) return null;
-    const href = input;
-
-    if (href.startsWith('#/')) return href;
-    if (href.startsWith('/')) return toHashRoute(href);
-    if (href.startsWith('//')) return null;
+    if (input.startsWith('#/')) return input;
+    if (input.startsWith('/')) return toHashRoute(input);
+    if (input.startsWith('//')) return null;
 
     let parsed;
     try {
-      parsed = new URL(href, window.location.href);
+      parsed = new URL(input, window.location.href);
     } catch (_error) {
       return null;
     }
