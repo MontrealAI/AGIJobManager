@@ -268,6 +268,20 @@ insertIntoBody(`<script>(function(){
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
   };
 
+  const syncHashWithPath = (mode) => {
+    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
+    const hashUrl = toHashUrl(routePath);
+    if (!hashUrl) return;
+
+    suppressRewrite = true;
+    if (mode === 'push') {
+      rawPushState(history.state, '', hashUrl);
+    } else {
+      rawReplaceState(history.state, '', hashUrl);
+    }
+    suppressRewrite = false;
+  };
+
   const navigateHashRoute = (routePath, mode) => {
     if (!routePath || !routePath.startsWith('/')) return;
 
@@ -303,8 +317,17 @@ insertIntoBody(`<script>(function(){
   window.addEventListener('hashchange', () => {
     const rawHash = window.location.hash || '';
     if (!rawHash.startsWith('#/')) return;
+
     const routePath = rawHash.slice(1);
+    const currentRoutePath = stripGatewayBase(window.location.pathname);
+    if (routePath === currentRoutePath) return;
+
     navigateHashRoute(routePath, 'replace');
+  });
+
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
   });
 
   document.addEventListener('click', (event) => {
