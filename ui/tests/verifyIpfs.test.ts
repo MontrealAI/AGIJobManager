@@ -785,6 +785,47 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\brawPushState\b/);
   });
 
+  it('committed artifact includes required top navigation hash routes', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const requiredTabs = [
+      ['Dashboard', '#/'],
+      ['Jobs', '#/jobs'],
+      ['Identity', '#/identity'],
+      ['Admin', '#/admin'],
+      ['Advanced', '#/advanced'],
+      ['Design', '#/design'],
+      ['Deployment', '#/deployment']
+    ] as const;
+
+    const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    for (const [label, hashHref] of requiredTabs) {
+      const pairedAnchorPattern = new RegExp(
+        `<a\\b[^>]*\\bhref=["']${escapeRegExp(hashHref)}["'][^>]*>\\s*${escapeRegExp(label)}\\s*<\\/a>`,
+        'i'
+      );
+      expect(artifactHtml).toMatch(pairedAnchorPattern);
+    }
+  });
+
+  it('committed artifact router bootstrap keeps click/hash/popstate handling for deep-link and history navigation', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+    const routerScript = extractRouterBootstrapScript(artifactHtml);
+    expect(routerScript).toBeTruthy();
+
+    const body = routerScript ?? '';
+    expect(body).toContain("document.addEventListener('click'");
+    expect(body).toContain('const hashRoute = normalizeHashHref(href);');
+    expect(body).toContain("navigateHashRoute(hashRoute.slice(1), 'push');");
+    expect(body).toContain("window.addEventListener('hashchange', () => {");
+    expect(body).toContain("navigateHashRoute(routePath, 'replace');");
+    expect(body).toContain("window.addEventListener('popstate', () => {");
+    expect(body).toContain("syncHashWithPath('replace');");
+  });
+
   it('passes when navigateHashRoute only uses its own inputs', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const navigateHashRoute = (routePath, mode) => {
