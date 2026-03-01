@@ -134,6 +134,18 @@ describe('committed single-file hash navigation', () => {
       expect(hasLocalDeclaration, `${label} invokes navigateHashRoute but lacks local navigateHashRoute declaration`).toBe(true);
     }
   });
+
+  it('contains only syntactically parseable inline scripts', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+
+      for (const [index, scriptBody] of scriptBodies.entries()) {
+        expect(() => new Function(scriptBody), `${label} script #${index + 1} is not parseable`).not.toThrow();
+      }
+    }
+  });
+
   it('does not contain duplicated Next flight bootstrap markers', () => {
     const markers = [
       '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])',
