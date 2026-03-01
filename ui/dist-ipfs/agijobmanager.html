@@ -86,42 +86,37 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 </script></head><body><script>(function(){
   const detectGatewayBase = (pathname) => {
     const segments = pathname.split('/').filter(Boolean);
-    if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
-    if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return '/';
-  };
+    const href = input;
+    if (href.startsWith('#/')) return href;
+    if (href.startsWith('/')) return toHashRoute(href);
+    if (href.startsWith('//')) return null;
+    let parsed;
+    try {
+      parsed = new URL(href, window.location.href);
+    } catch (_error) {
+      return null;
+    if (parsed.origin !== window.location.origin) return null;
 
-  const gatewayBase = detectGatewayBase(window.location.pathname);
-  const rawPushState = history.pushState.bind(history);
-  const rawReplaceState = history.replaceState.bind(history);
-
-  const stripGatewayBase = (pathname) => {
-    if (gatewayBase !== '/') {
-      if (pathname === gatewayBase) return '/';
-      if (pathname.startsWith(gatewayBase + '/')) {
-        return pathname.slice(gatewayBase.length);
-      }
+    if (parsed.hash && parsed.hash.startsWith('#/')) {
+      return parsed.hash;
     }
-    return pathname;
-  };
-
-  const toHashRoute = (input) => {
-    if (typeof input !== 'string') return null;
-    if (!input.startsWith('/') || input.startsWith('//')) return null;
-    return '#' + input;
-  };
-
-  const normalizeHashHref = (input) => {
-    if (typeof input !== 'string' || !input) return null;
-
-    if (input.startsWith('#/')) return input;
-    if (input.startsWith('/')) return toHashRoute(input);
-    if (input.startsWith('//')) return null;
-
+    return toHashRoute(parsed.pathname + parsed.search);
+  }; // end normalizeHashHref
+  const parseRouteInput = (routeInput) => {
+    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
+    const hashIndex = routeInput.indexOf('#');
+    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
+    const queryIndex = withoutHash.indexOf('?');
+    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
+    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
+    return { pathname, search, routeInput: withoutHash };
+  }; // end parseRouteInput
+  const toGatewayUrl = (routeInput) => {
     const parsedGatewayRoute = parseRouteInput(routeInput);
     if (!parsedGatewayRoute) return null;
     const gatewayPathname = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
     return gatewayPathname + parsedGatewayRoute.search;
+  };
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
     return gatewayBase + '#' + parsedHashRoute.routeInput;
@@ -138,6 +133,12 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     }
     suppressRewrite = false;
   };
+
+    if (routePath === stripGatewayBase(window.location.pathname)) return;
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
+  });
 
     if (routePath === stripGatewayBase(window.location.pathname)) return;
   window.addEventListener('popstate', () => {
