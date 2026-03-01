@@ -180,7 +180,9 @@ describe('committed single-file hash navigation', () => {
       const routerScriptEnd = html.indexOf('</script>', routerScriptStart);
       const routerWindow = routerScriptEnd > routerScriptStart ? html.slice(routerScriptStart, routerScriptEnd) : html.slice(routerScriptStart);
       const basePathDeclarations = routerWindow.match(/\bconst\s+basePath\s*=/g) ?? [];
-      expect(basePathDeclarations.length, `${label} router bootstrap should declare basePath exactly once`).toBe(1);
+      expect(basePathDeclarations.length, `${label} router bootstrap should not declare basePath`).toBe(0);
+      const gatewayPathnameDeclarations = routerWindow.match(/\bconst\s+gatewayPathname\s*=/g) ?? [];
+      expect(gatewayPathnameDeclarations.length, `${label} router bootstrap should declare gatewayPathname exactly once`).toBe(1);
     }
   });
 

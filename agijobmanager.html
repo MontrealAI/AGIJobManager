@@ -120,8 +120,8 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
     const parsedGatewayRoute = parseRouteInput(routeInput);
     if (!parsedGatewayRoute) return null;
-    const basePath = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
-    return basePath + parsedGatewayRoute.search;
+    const gatewayPathname = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
+    return gatewayPathname + parsedGatewayRoute.search;
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
     return gatewayBase + '#' + parsedHashRoute.routeInput;

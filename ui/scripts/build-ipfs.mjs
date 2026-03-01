@@ -237,8 +237,8 @@ insertIntoBody(`<script>(function(){
   const toGatewayUrl = (routeInput) => {
     const parsedGatewayRoute = parseRouteInput(routeInput);
     if (!parsedGatewayRoute) return null;
-    const basePath = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
-    return basePath + parsedGatewayRoute.search;
+    const gatewayPathname = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
+    return gatewayPathname + parsedGatewayRoute.search;
   };
 
   const toHashUrl = (routeInput) => {
@@ -571,9 +571,14 @@ function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
   const routerWindow = routerScriptEnd > routerScriptStart
     ? singleFileHtml.slice(routerScriptStart, routerScriptEnd)
     : singleFileHtml.slice(routerScriptStart);
-  const basePathDeclarations = routerWindow.match(/\bconst\s+basePath\s*=/g) ?? [];
-  if (basePathDeclarations.length !== 1) {
-    throw new Error(`Router bootstrap must declare basePath exactly once; found ${basePathDeclarations.length}.`);
+
+  if (/\bconst\s+basePath\s*=/.test(routerWindow)) {
+    throw new Error('Router bootstrap must not declare basePath; use a unique helper-local pathname binding to avoid parse-collision regressions.');
+  }
+
+  const gatewayPathnameDeclarations = routerWindow.match(/\bconst\s+gatewayPathname\s*=/g) ?? [];
+  if (gatewayPathnameDeclarations.length !== 1) {
+    throw new Error(`Router bootstrap must declare gatewayPathname exactly once; found ${gatewayPathnameDeclarations.length}.`);
   }
 }
 
