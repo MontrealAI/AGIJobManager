@@ -235,16 +235,16 @@ insertIntoBody(`<script>(function(){
   };
 
   const toGatewayUrl = (routeInput) => {
-    const parsed = parseRouteInput(routeInput);
-    if (!parsed) return null;
-    const basePath = gatewayBase === '/' ? parsed.pathname : gatewayBase + parsed.pathname;
-    return basePath + parsed.search;
+    const routeParts = parseRouteInput(routeInput);
+    if (!routeParts) return null;
+    const basePath = gatewayBase === '/' ? routeParts.pathname : gatewayBase + routeParts.pathname;
+    return basePath + routeParts.search;
   };
 
   const toHashUrl = (routeInput) => {
-    const parsed = parseRouteInput(routeInput);
-    if (!parsed) return null;
-    return gatewayBase + '#' + parsed.routeInput;
+    const routeParts = parseRouteInput(routeInput);
+    if (!routeParts) return null;
+    return gatewayBase + '#' + routeParts.routeInput;
   };
 
   let suppressRewrite = false;
@@ -432,6 +432,22 @@ function hasOrphanHashUrlGuard(source) {
   return false;
 }
 
+function repairRouterBootstrap(singleFileHtml) {
+  let repaired = singleFileHtml;
+
+  repaired = repaired.replace(
+    /\n\s*if \(routePath === stripGatewayBase\(window\.location\.pathname\)\) return;\n\s*window\.addEventListener\('popstate'/,
+    "\n  window.addEventListener('popstate'"
+  );
+
+  repaired = repaired.replace(
+    /(window\.addEventListener\('hashchange', \(\) => \{\s*const rawHash = window\.location\.hash \|\| '';\s*if \(!rawHash\.startsWith\('#\/'\)\) return;\s*const routePath = rawHash\.slice\(1\);)(\s*navigateHashRoute\(routePath, 'replace'\);)/,
+    "$1\n    if (routePath === stripGatewayBase(window.location.pathname)) return;$2"
+  );
+
+  return repaired;
+}
+
 function assertRouterBootstrapCoherence(singleFileHtml) {
   const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
   const routerScript = scriptBodies.find((body) => (
@@ -498,6 +514,47 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
   }
 }
 
+
+function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
+  const declaration = 'const normalizeHashHref = (input) => {';
+  const start = singleFileHtml.indexOf(declaration);
+  if (start < 0) {
+    throw new Error('Unable to locate normalizeHashHref declaration in generated single-file artifact.');
+  }
+
+  const openBrace = singleFileHtml.indexOf('{', start);
+  if (openBrace < 0) {
+    throw new Error('normalizeHashHref declaration is missing an opening brace.');
+  }
+
+  let depth = 0;
+  let closeBrace = -1;
+  for (let i = openBrace; i < singleFileHtml.length; i += 1) {
+    const ch = singleFileHtml[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        closeBrace = i;
+        break;
+      }
+    }
+  }
+
+  if (closeBrace < 0) {
+    throw new Error('Unable to parse normalizeHashHref body in generated single-file artifact.');
+  }
+
+  const helperBody = singleFileHtml.slice(openBrace + 1, closeBrace);
+  if (!/\blet\s+parsed\s*;/.test(helperBody)) {
+    throw new Error('normalizeHashHref must declare `let parsed;` in generated single-file artifact.');
+  }
+
+  if (/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/.test(helperBody)) {
+    throw new Error('normalizeHashHref contains a conflicting `const parsed` declaration and will fail to parse.');
+  }
+}
+
 function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
   const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
   for (const body of scriptBodies) {
@@ -512,11 +569,13 @@ function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
 }
 
 html = sanitizeForbiddenDataUris(html);
+html = repairRouterBootstrap(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 assertRouterBootstrapCoherence(html);
+assertNormalizeHashHrefParsedBinding(html);
 assertNoNavigateInvocationWithoutDeclaration(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });

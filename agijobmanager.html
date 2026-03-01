@@ -118,35 +118,35 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     if (input.startsWith('/')) return toHashRoute(input);
     if (input.startsWith('//')) return null;
 
-    let parsed;
-    try {
-      parsed = new URL(input, window.location.href);
-    } catch {
-      return null;
-    }
-
-    if (parsed.origin !== window.location.origin) return null;
-
-    if (parsed.hash && parsed.hash.startsWith('#/')) {
-      return parsed.hash;
-    }
-
-    return toHashRoute(parsed.pathname + parsed.search);
-  };
-
-  const parseRouteInput = (routeInput) => {
-    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
-    const hashIndex = routeInput.indexOf('#');
-    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
-    const queryIndex = withoutHash.indexOf('?');
-    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
-    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
-    return { pathname, search, routeInput: withoutHash };
-  };
-
-  const toGatewayUrl = (routeInput) => {
+    const routeParts = parseRouteInput(routeInput);
+    if (!routeParts) return null;
+    const basePath = gatewayBase === '/' ? routeParts.pathname : gatewayBase + routeParts.pathname;
+    return basePath + routeParts.search;
+    const routeParts = parseRouteInput(routeInput);
+    if (!routeParts) return null;
+    return gatewayBase + '#' + routeParts.routeInput;
     const parsed = parseRouteInput(routeInput);
     if (!parsed) return null;
+  const syncHashWithPath = (mode) => {
+    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
+    const hashUrl = toHashUrl(routePath);
+    if (!hashUrl) return;
+
+    suppressRewrite = true;
+    if (mode === 'push') {
+      rawPushState(history.state, '', hashUrl);
+    } else {
+      rawReplaceState(history.state, '', hashUrl);
+    }
+    suppressRewrite = false;
+  };
+
+    if (routePath === stripGatewayBase(window.location.pathname)) return;
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
+  });
+
     const basePath = gatewayBase === '/' ? parsed.pathname : gatewayBase + parsed.pathname;
     return basePath + parsed.search;
   };
