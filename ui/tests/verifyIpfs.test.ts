@@ -104,6 +104,14 @@ function extractArrowFunctionBodies(source: string, constName: string): string[]
 
 
 
+
+function extractExecutableScriptBodies(html: string): string[] {
+  return [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .filter((m) => !/type=["']application\/(?:ld\+json|json)["']/i.test(m[1] ?? ''))
+    .map((m) => m[2])
+    .filter((body) => body.trim().length > 0);
+}
+
 function extractBootstrapScripts(html: string): string[] {
   return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
     .map((m) => m[1])
@@ -654,6 +662,19 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\brawPushState\b/);
   });
 
+
+
+  it('committed artifact executable inline scripts are syntactically parseable', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const scripts = extractExecutableScriptBodies(artifactHtml);
+    expect(scripts.length).toBeGreaterThan(0);
+
+    for (const body of scripts) {
+      expect(() => new Function(body)).not.toThrow();
+    }
+  });
 
   it('committed bootstrap scripts keep normalizeHashHref catch block structurally closed', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
