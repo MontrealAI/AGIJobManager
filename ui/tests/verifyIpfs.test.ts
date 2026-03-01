@@ -7,12 +7,18 @@ import { afterEach, describe, expect, it } from 'vitest';
 const verifierPath = path.resolve(__dirname, '../scripts/verify-ipfs.mjs');
 const tmpRoots: string[] = [];
 
-function runVerifierWithHtml(html: string) {
+function runVerifierWithHtml(html: string, options?: { rootHtml?: string; writeRoot?: boolean }) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-ipfs-'));
   tmpRoots.push(root);
   const dist = path.join(root, 'dist-ipfs');
   fs.mkdirSync(dist, { recursive: true });
   fs.writeFileSync(path.join(dist, 'agijobmanager.html'), html, 'utf8');
+
+  const writeRoot = options?.writeRoot ?? true;
+  if (writeRoot) {
+    const rootHtml = options?.rootHtml ?? html;
+    fs.writeFileSync(path.join(path.resolve(root, '..'), 'agijobmanager.html'), rootHtml, 'utf8');
+  }
 
   return () =>
     execFileSync(process.execPath, [verifierPath], {
@@ -259,6 +265,16 @@ describe('verify-ipfs script src attribute hardening', () => {
     const html = `<!doctype html><html><head></head><body><script>const a="http-equiv=content-security-policy"; const b="name=referrer";</script></body></html>`;
     const run = runVerifierWithHtml(html);
     expect(run).toThrow(/CSP meta tag is missing/);
+  });
+
+  it('passes when repository agijobmanager.html matches dist artifact', () => {
+    const run = runVerifierWithHtml(secureHtml, { rootHtml: secureHtml });
+    expect(run).not.toThrow();
+  });
+
+  it('fails when repository agijobmanager.html is stale', () => {
+    const run = runVerifierWithHtml(secureHtml, { rootHtml: `${secureHtml}\n<!-- stale -->` });
+    expect(run).toThrow(/Repository agijobmanager\.html is stale/);
   });
 
   it('fails when non-anchor tags reference remote http(s) assets', () => {
