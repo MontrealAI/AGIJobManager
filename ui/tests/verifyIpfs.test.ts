@@ -402,7 +402,64 @@ describe('verify-ipfs script src attribute hardening', () => {
       });
       </script>
     </body></html>`);
-    expect(run).toThrow(/Unable to parse navigateHashRoute body|IPFS bootstrap script is incomplete or malformed/);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body|IPFS bootstrap script is incomplete or malformed|invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
+  });
+
+
+  it('fails when router handlers call navigateHashRoute but helper declaration is missing', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const normalizeHashHref = (input) => input?.startsWith('#/') ? input : null;
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        if (!target) return;
+        const href = target.getAttribute('href') || '';
+        const hashRoute = normalizeHashHref(href);
+        if (!hashRoute) return;
+        navigateHashRoute(hashRoute.slice(1), 'push');
+      }, true);
+    </script></body></html>`);
+
+    expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing|invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
+  });
+
+  it('fails when navigateHashRoute is invoked in a script body without local declaration', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      history.pushState({}, '', '/jobs');
+    </script></body></html>`);
+
+    expect(run).toThrow(/invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
+  });
+
+  it('fails when a leaked hashUrl guard appears at top-level near click interception code', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      const normalizeHashHref = (input) => input?.startsWith('#/') ? input : null;
+      const rawReplaceState = history.replaceState.bind(history);
+
+      if (!hashUrl) return;
+      suppressRewrite = true;
+      rawReplaceState(history.state, '', hashUrl);
+
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        if (!target) return;
+        const href = target.getAttribute('href') || '';
+        const hashRoute = normalizeHashHref(href);
+        if (!hashRoute) return;
+        navigateHashRoute(hashRoute.slice(1), 'push');
+      }, true);
+    </script></body></html>`);
+
+    expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing|invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
   });
 
   it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {
