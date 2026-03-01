@@ -91,37 +91,32 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     return '/';
   };
 
-  const gatewayBase = detectGatewayBase(window.location.pathname);
-  const rawPushState = history.pushState.bind(history);
-  const rawReplaceState = history.replaceState.bind(history);
+    let parsed;
+    try {
+      parsed = new URL(input, window.location.href);
+    } catch {
+      return null;
 
-  const stripGatewayBase = (pathname) => {
-    if (gatewayBase !== '/') {
-      if (pathname === gatewayBase) return '/';
-      if (pathname.startsWith(gatewayBase + '/')) {
-        return pathname.slice(gatewayBase.length);
-      }
+    if (parsed.origin !== window.location.origin) return null;
+    if (parsed.hash && parsed.hash.startsWith('#/')) {
+      return parsed.hash;
     }
-    return pathname;
+    return toHashRoute(parsed.pathname + parsed.search);
   };
-
-  const toHashRoute = (input) => {
-    if (typeof input !== 'string') return null;
-    if (!input.startsWith('/') || input.startsWith('//')) return null;
-    return '#' + input;
-  };
-
-  const normalizeHashHref = (input) => {
-    if (typeof input !== 'string' || !input) return null;
-
-    if (input.startsWith('#/')) return input;
-    if (input.startsWith('/')) return toHashRoute(input);
-    if (input.startsWith('//')) return null;
-
+  const parseRouteInput = (routeInput) => {
+    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
+    const hashIndex = routeInput.indexOf('#');
+    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
+    const queryIndex = withoutHash.indexOf('?');
+    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
+    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
+    return { pathname, search, routeInput: withoutHash };
+  const toGatewayUrl = (routeInput) => {
     const parsedGatewayRoute = parseRouteInput(routeInput);
     if (!parsedGatewayRoute) return null;
     const gatewayPathname = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
     return gatewayPathname + parsedGatewayRoute.search;
+  };
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
     return gatewayBase + '#' + parsedHashRoute.routeInput;
@@ -140,6 +135,11 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
   };
 
     if (routePath === stripGatewayBase(window.location.pathname)) return;
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
+  });
+
   window.addEventListener('popstate', () => {
     if (window.location.hash.startsWith('#/')) return;
     syncHashWithPath('replace');
