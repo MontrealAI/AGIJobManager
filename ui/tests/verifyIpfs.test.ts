@@ -402,7 +402,7 @@ describe('verify-ipfs script src attribute hardening', () => {
       });
       </script>
     </body></html>`);
-    expect(run).toThrow(/Unable to parse navigateHashRoute body|IPFS bootstrap script is incomplete or malformed/);
+    expect(run).toThrow(/Unable to parse navigateHashRoute body|IPFS bootstrap script is incomplete or malformed|invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
   });
 
 
@@ -424,7 +424,20 @@ describe('verify-ipfs script src attribute hardening', () => {
       }, true);
     </script></body></html>`);
 
-    expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing/);
+    expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing|invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
+  });
+
+  it('fails when navigateHashRoute is invoked in a script body without local declaration', () => {
+    const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
+      window.addEventListener('hashchange', () => {
+        const rawHash = window.location.hash || '';
+        if (!rawHash.startsWith('#/')) return;
+        navigateHashRoute(rawHash.slice(1), 'replace');
+      });
+      history.pushState({}, '', '/jobs');
+    </script></body></html>`);
+
+    expect(run).toThrow(/invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
   });
 
   it('fails when a leaked hashUrl guard appears at top-level near click interception code', () => {
@@ -446,7 +459,7 @@ describe('verify-ipfs script src attribute hardening', () => {
       }, true);
     </script></body></html>`);
 
-    expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing/);
+    expect(run).toThrow(/Router bootstrap script must keep normalizeHashHref, navigateHashRoute, and click\/hash handlers in one parseable script body|Hash routing guard is missing|invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body/);
   });
 
   it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {

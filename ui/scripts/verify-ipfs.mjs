@@ -384,6 +384,16 @@ const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
     && /\bhistory\.replaceState\b/.test(body)
     && /\bbootstrapUrl\b/.test(body);
 });
+
+for (const body of uncommentedScriptBodies) {
+  const invokesNavigate = /\bnavigateHashRoute\s*\(/.test(body);
+  if (!invokesNavigate) continue;
+
+  const hasDeclaration = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+navigateHashRoute\s*\(/.test(body);
+  if (!hasDeclaration) {
+    throw new Error('Router bootstrap invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body.');
+  }
+}
 const stripKnownNextScriptInterleave = (source) => {
   if (!source.includes('</script>')) return source;
   const hasNextMarkers = /__next_f|_next\/static|buildId|webpackChunk_N_E|_N_E=/.test(source);

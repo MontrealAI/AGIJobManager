@@ -470,12 +470,26 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
   }
 }
 
+function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
+  const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  for (const body of scriptBodies) {
+    const invokesNavigate = /\bnavigateHashRoute\s*\(/.test(body);
+    if (!invokesNavigate) continue;
+
+    const hasDeclaration = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+navigateHashRoute\s*\(/.test(body);
+    if (!hasDeclaration) {
+      throw new Error('Router bootstrap invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body.');
+    }
+  }
+}
+
 html = sanitizeForbiddenDataUris(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 assertRouterBootstrapCoherence(html);
+assertNoNavigateInvocationWithoutDeclaration(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
