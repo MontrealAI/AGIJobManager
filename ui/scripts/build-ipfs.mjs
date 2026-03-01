@@ -432,6 +432,14 @@ function assertRouterBootstrapCoherence(singleFileHtml) {
     throw new Error('Router bootstrap script appears interleaved with script tag boundaries in single-file artifact.');
   }
 
+  if (routerScript.includes('<div data-rk')) {
+    throw new Error('Router bootstrap script contains leaked DOM markup (<div data-rk>) and is malformed.');
+  }
+
+  if (!/\}\)\(\);\s*$/.test(routerScript.trimEnd())) {
+    throw new Error('Router bootstrap script must terminate as a closed IIFE (})();).');
+  }
+
   const navigateBounds = extractNavigateHashRouteBounds(routerScript);
   if (!navigateBounds) {
     throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper in single-file artifact.');
