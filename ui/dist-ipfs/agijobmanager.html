@@ -151,6 +151,29 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     return basePath + parsed.search;
   };
 
+  const syncHashWithPath = (mode) => {
+    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
+    const hashUrl = toHashUrl(routePath);
+    if (!hashUrl) return;
+
+    suppressRewrite = true;
+    if (mode === 'push') {
+      rawPushState(history.state, '', hashUrl);
+    } else {
+      rawReplaceState(history.state, '', hashUrl);
+    }
+    suppressRewrite = false;
+  };
+
+
+    const currentRoutePath = stripGatewayBase(window.location.pathname);
+    if (routePath === currentRoutePath) return;
+
+  window.addEventListener('popstate', () => {
+    if (window.location.hash.startsWith('#/')) return;
+    syncHashWithPath('replace');
+  });
+
   const toHashUrl = (routeInput) => {
     const parsed = parseRouteInput(routeInput);
     if (!parsed) return null;
@@ -174,8 +197,10 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
   rewriteHistory('pushState');
   rewriteHistory('replaceState');
 
-  const dispatchRouteUpdate = (state) => {
-    window.dispatchEvent(new PopStateEvent('popstate', { state }));
+  window.addEventListener('hashchange', handleHashChange);
+
+  function handleHashChange() {
+  }
   };
 
   const navigateHashRoute = (routePath, mode) => {
