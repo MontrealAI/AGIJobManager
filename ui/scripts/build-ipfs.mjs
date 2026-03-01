@@ -81,22 +81,34 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
 
 
 function sanitizeForbiddenDataUris(sourceHtml) {
-  const replacements = [
-    { pattern: /data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi, replacement: 'about:blank#blocked-data-image-base64' },
-    { pattern: /data:image\/[a-z0-9.+-]+,[^"'\s)]+/gi, replacement: 'about:blank#blocked-data-image' },
-    { pattern: /data:font\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi, replacement: 'about:blank#blocked-data-font-base64' },
-    { pattern: /data:font\/[a-z0-9.+-]+,[^"'\s)]+/gi, replacement: 'about:blank#blocked-data-font' }
-  ];
+  const tokenPattern = /data:(image|font)\//i;
+  const terminatorPattern = /[\s"'`<>()]/;
 
   let sanitized = sourceHtml;
-  for (const { pattern, replacement } of replacements) {
-    sanitized = sanitized.replace(pattern, replacement);
-  }
+  let safetyCounter = 0;
 
-  // Preserve JavaScript semantics by obfuscating token literals instead of rewriting
-  // to about:blank for unmatched string fragments inside bundles.
-  sanitized = sanitized.replace(/data:image\//gi, 'data\\x3aimage/');
-  sanitized = sanitized.replace(/data:font\//gi, 'data\\x3afont/');
+  while (true) {
+    const match = tokenPattern.exec(sanitized);
+    if (!match || match.index === undefined) break;
+
+    const kind = (match[1] || '').toLowerCase();
+    const replacement = kind === 'font'
+      ? 'about:blank#blocked-data-font'
+      : 'about:blank#blocked-data-image';
+
+    const start = match.index;
+    let end = start;
+    while (end < sanitized.length && !terminatorPattern.test(sanitized[end])) {
+      end += 1;
+    }
+
+    sanitized = `${sanitized.slice(0, start)}${replacement}${sanitized.slice(end)}`;
+
+    safetyCounter += 1;
+    if (safetyCounter > 10000) {
+      throw new Error('Data URI sanitization exceeded safety threshold.');
+    }
+  }
 
   if (/data:image\//i.test(sanitized) || /data:font\//i.test(sanitized)) {
     throw new Error('Generated artifact still contains forbidden data:image/* or data:font/* URI content.');
