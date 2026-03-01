@@ -102,6 +102,35 @@ function extractArrowFunctionBodies(source: string, constName: string): string[]
   return bodies;
 }
 
+
+
+
+function assertInlineScriptsParseable(html: string): void {
+  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+  for (const match of scripts) {
+    const attrs = match[1] ?? '';
+    const body = match[2] ?? '';
+    if (/type=["']application\/(?:ld\+json|json)["']/i.test(attrs)) continue;
+    if (/id=["']__NEXT_DATA__["']/i.test(attrs)) continue;
+    expect(() => new Function(body)).not.toThrow();
+  }
+}
+
+function extractBootstrapScripts(html: string): string[] {
+  return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
+    .map((m) => m[1])
+    .filter((body) => body.includes('const detectGatewayBase = (pathname) => {'));
+}
+
+function extractRouterBootstrapScript(html: string): string | null {
+  const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  return scriptBodies.find((body) => (
+    body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes("addEventListener('hashchange'")
+  )) ?? null;
+}
+
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
@@ -635,6 +664,91 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\bmode\b/);
     expect(body).toMatch(/\brawReplaceState\b/);
     expect(body).toMatch(/\brawPushState\b/);
+  });
+
+
+
+
+
+  it('committed root and dist artifacts never contain unterminated catch->parsed.origin sequence', () => {
+    const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
+    const malformedSequence = 'catch (_error) {\n      return null;\n    if (parsed.origin !== window.location.origin) return null;';
+    const expectedClosedSequence = 'catch (_error) {\n      return null;\n    }\n\n    if (parsed.origin !== window.location.origin) return null;';
+
+    for (const artifactPath of [rootArtifactPath, distArtifactPath]) {
+      const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+      expect(artifactHtml).not.toContain(malformedSequence);
+      expect(artifactHtml).toContain(expectedClosedSequence);
+    }
+  });
+
+  it('committed artifacts keep normalizeHashHref outside detectGatewayBase and available to click handler', () => {
+    const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
+
+    for (const artifactPath of [rootArtifactPath, distArtifactPath]) {
+      const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+      const scripts = extractBootstrapScripts(artifactHtml);
+      expect(scripts.length).toBeGreaterThan(0);
+
+      const routerScript = scripts.find((body) => body.includes('const normalizeHashHref = (input) => {'));
+      expect(routerScript).toBeTruthy();
+
+      const detectBaseMatch = (routerScript ?? '').match(/const detectGatewayBase = \(pathname\) => \{([\s\S]*?)\n  \};/);
+      const detectBaseBody = detectBaseMatch?.[1] ?? '';
+      expect(detectBaseBody).not.toContain('const href = input;');
+      expect(detectBaseBody).not.toContain('normalizeHashHref');
+
+      const normalizeIndex = (routerScript ?? '').indexOf('const normalizeHashHref = (input) => {');
+      const clickUseIndex = (routerScript ?? '').indexOf('const hashRoute = normalizeHashHref(href);');
+      expect(normalizeIndex).toBeGreaterThanOrEqual(0);
+      expect(clickUseIndex).toBeGreaterThan(normalizeIndex);
+    }
+  });
+
+  it('committed root and dist artifacts keep router bootstrap catch block closed and scripts parseable', () => {
+    const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
+    const rootArtifactHtml = fs.readFileSync(rootArtifactPath, 'utf8');
+    const distArtifactHtml = fs.readFileSync(distArtifactPath, 'utf8');
+
+    for (const [label, artifactHtml] of [['root', rootArtifactHtml], ['dist', distArtifactHtml]] as const) {
+      const bootstrapScripts = extractBootstrapScripts(artifactHtml);
+      expect(bootstrapScripts.length, `${label} artifact should include bootstrap scripts`).toBeGreaterThan(0);
+
+      const routerScript = bootstrapScripts.find((body) => body.includes('const normalizeHashHref = (input) => {'));
+      expect(routerScript, `${label} artifact router bootstrap should exist`).toBeTruthy();
+      expect(routerScript).toContain('if (parsed.origin !== window.location.origin) return null;');
+      expect(routerScript).toContain("if (parsed.hash && parsed.hash.startsWith('#/')) {");
+      expect(routerScript).toMatch(/catch \(_error\) \{\n\s*return null;\n\s*\}\n\n\s*if \(parsed\.origin !== window\.location\.origin\) return null;/);
+    }
+
+    assertInlineScriptsParseable(rootArtifactHtml);
+    assertInlineScriptsParseable(distArtifactHtml);
+  });
+
+  it('committed bootstrap scripts keep normalizeHashHref catch block structurally closed', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const bootstrapScripts = extractBootstrapScripts(artifactHtml);
+    expect(bootstrapScripts.length).toBeGreaterThan(0);
+
+    const routerScript = bootstrapScripts.find((body) => body.includes('const normalizeHashHref = (input) => {'));
+    expect(routerScript, 'router bootstrap script should exist in committed artifact').toBeTruthy();
+    expect(routerScript).toContain("} catch (_error) {");
+    expect(routerScript).toMatch(/return null;\n\s*}\n\n\s*if \(parsed\.origin !== window\.location\.origin\) return null;/);
+    expect(() => new Function(routerScript ?? '')).not.toThrow();
+  });
+
+  it('committed artifact router bootstrap script remains syntactically parseable', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const routerScript = extractRouterBootstrapScript(artifactHtml);
+    expect(routerScript, 'router bootstrap script should exist in committed artifact').not.toBeNull();
+    expect(() => new Function(routerScript ?? '')).not.toThrow();
   });
 
   it('committed artifact keeps rawHash out of navigateHashRoute helper', () => {
