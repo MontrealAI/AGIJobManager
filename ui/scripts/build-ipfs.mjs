@@ -208,9 +208,11 @@ insertIntoBody(`<script>(function(){
     if (input.startsWith('/')) return toHashRoute(input);
     if (input.startsWith('//')) return null;
 
+    const hrefInput = input;
+
     let parsed;
     try {
-      parsed = new URL(input, window.location.href);
+      parsed = new URL(hrefInput, window.location.href);
     } catch {
       return null;
     }
