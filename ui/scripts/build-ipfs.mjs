@@ -461,6 +461,15 @@ function assertRouterBootstrapCoherence(singleFileHtml) {
     throw new Error('Router bootstrap script must terminate as a closed IIFE (})();).');
   }
 
+  try {
+    // Guard against malformed insertions that can leave dangling braces/semicolons
+    // in the emitted committed artifact.
+    // eslint-disable-next-line no-new-func
+    Function(routerScript);
+  } catch (error) {
+    throw new Error(`Router bootstrap script is syntactically invalid: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
   const navigateBounds = extractNavigateHashRouteBounds(routerScript);
   if (!navigateBounds) {
     throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper in single-file artifact.');
