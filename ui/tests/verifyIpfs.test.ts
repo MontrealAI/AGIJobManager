@@ -668,6 +668,30 @@ describe('verify-ipfs script src attribute hardening', () => {
 
 
 
+
+  it('committed root and dist artifacts keep normalizeHashHref declared in router bootstrap scope', () => {
+    const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
+    const rootArtifactHtml = fs.readFileSync(rootArtifactPath, 'utf8');
+    const distArtifactHtml = fs.readFileSync(distArtifactPath, 'utf8');
+
+    for (const [label, artifactHtml] of [['root', rootArtifactHtml], ['dist', distArtifactHtml]] as const) {
+      const routerScript = extractRouterBootstrapScript(artifactHtml);
+      expect(routerScript, `${label} artifact router bootstrap script should exist`).toBeTruthy();
+
+      const body = routerScript ?? '';
+      expect(body).toContain('const normalizeHashHref = (input) => {');
+      expect(body).toContain('const hashRoute = normalizeHashHref(href);');
+
+      const detectGatewayBaseDecl = body.indexOf('const detectGatewayBase = (pathname) => {');
+      const detectGatewayBaseClose = body.indexOf('};', detectGatewayBaseDecl);
+      const normalizeDecl = body.indexOf('const normalizeHashHref = (input) => {');
+      expect(detectGatewayBaseDecl).toBeGreaterThanOrEqual(0);
+      expect(detectGatewayBaseClose).toBeGreaterThan(detectGatewayBaseDecl);
+      expect(normalizeDecl).toBeGreaterThan(detectGatewayBaseClose);
+    }
+  });
+
   it('committed root and dist artifacts keep router bootstrap catch block closed and scripts parseable', () => {
     const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
