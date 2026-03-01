@@ -102,6 +102,16 @@ function extractArrowFunctionBodies(source: string, constName: string): string[]
   return bodies;
 }
 
+
+function extractRouterBootstrapScript(html: string): string | null {
+  const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  return scriptBodies.find((body) => (
+    body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes("addEventListener('hashchange'")
+  )) ?? null;
+}
+
 function extractArrowFunctionBodyFromHtml(html: string, constName: string): string | null {
   const declarationPattern = new RegExp(`\\b(?:const|let|var|function)\\s+${constName}\\b|\\b${constName}\\s*=\\s*(?:function|\\()`, 'm');
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
@@ -635,6 +645,15 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toMatch(/\bmode\b/);
     expect(body).toMatch(/\brawReplaceState\b/);
     expect(body).toMatch(/\brawPushState\b/);
+  });
+
+  it('committed artifact router bootstrap script remains syntactically parseable', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const routerScript = extractRouterBootstrapScript(artifactHtml);
+    expect(routerScript, 'router bootstrap script should exist in committed artifact').not.toBeNull();
+    expect(() => new Function(routerScript ?? '')).not.toThrow();
   });
 
   it('committed artifact keeps rawHash out of navigateHashRoute helper', () => {
