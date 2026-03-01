@@ -235,16 +235,16 @@ insertIntoBody(`<script>(function(){
   };
 
   const toGatewayUrl = (routeInput) => {
-    const parsed = parseRouteInput(routeInput);
-    if (!parsed) return null;
-    const basePath = gatewayBase === '/' ? parsed.pathname : gatewayBase + parsed.pathname;
-    return basePath + parsed.search;
+    const parsedRoute = parseRouteInput(routeInput);
+    if (!parsedRoute) return null;
+    const basePath = gatewayBase === '/' ? parsedRoute.pathname : gatewayBase + parsedRoute.pathname;
+    return basePath + parsedRoute.search;
   };
 
   const toHashUrl = (routeInput) => {
-    const parsed = parseRouteInput(routeInput);
-    if (!parsed) return null;
-    return gatewayBase + '#' + parsed.routeInput;
+    const parsedRoute = parseRouteInput(routeInput);
+    if (!parsedRoute) return null;
+    return gatewayBase + '#' + parsedRoute.routeInput;
   };
 
   let suppressRewrite = false;
@@ -432,6 +432,48 @@ function hasOrphanHashUrlGuard(source) {
   return false;
 }
 
+function repairRouterBootstrap(singleFileHtml) {
+  let repaired = singleFileHtml;
+
+  repaired = repaired.replace(
+    /\n\s*if \(routePath === stripGatewayBase\(window\.location\.pathname\)\) return;\n\s*window\.addEventListener\('popstate'/,
+    "\n  window.addEventListener('popstate'"
+  );
+
+  repaired = repaired.replace(
+    /(window\.addEventListener\('hashchange', \(\) => \{\s*const rawHash = window\.location\.hash \|\| '';\s*if \(!rawHash\.startsWith\('#\/'\)\) return;\s*const routePath = rawHash\.slice\(1\);)(\s*navigateHashRoute\(routePath, 'replace'\);)/,
+    "$1\n    if (routePath === stripGatewayBase(window.location.pathname)) return;$2"
+  );
+
+  return repaired;
+}
+
+
+function canonicalizeRouteParserHelpers(singleFileHtml) {
+  let canonicalized = singleFileHtml;
+
+  canonicalized = canonicalized.replace(
+    /const toGatewayUrl = \(routeInput\) => \{[\s\S]*?\n  \};/,
+    `const toGatewayUrl = (routeInput) => {
+    const parsedRoute = parseRouteInput(routeInput);
+    if (!parsedRoute) return null;
+    const basePath = gatewayBase === '/' ? parsedRoute.pathname : gatewayBase + parsedRoute.pathname;
+    return basePath + parsedRoute.search;
+  };`
+  );
+
+  canonicalized = canonicalized.replace(
+    /const toHashUrl = \(routeInput\) => \{[\s\S]*?\n  \};/,
+    `const toHashUrl = (routeInput) => {
+    const parsedRoute = parseRouteInput(routeInput);
+    if (!parsedRoute) return null;
+    return gatewayBase + '#' + parsedRoute.routeInput;
+  };`
+  );
+
+  return canonicalized;
+}
+
 function assertRouterBootstrapCoherence(singleFileHtml) {
   const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
   const routerScript = scriptBodies.find((body) => (
@@ -498,6 +540,65 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
   }
 }
 
+
+function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
+  const declaration = 'const normalizeHashHref = (input) => {';
+  const start = singleFileHtml.indexOf(declaration);
+  if (start < 0) {
+    throw new Error('Unable to locate normalizeHashHref declaration in generated single-file artifact.');
+  }
+
+  const openBrace = singleFileHtml.indexOf('{', start);
+  if (openBrace < 0) {
+    throw new Error('normalizeHashHref declaration is missing an opening brace.');
+  }
+
+  let depth = 0;
+  let closeBrace = -1;
+  for (let i = openBrace; i < singleFileHtml.length; i += 1) {
+    const ch = singleFileHtml[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        closeBrace = i;
+        break;
+      }
+    }
+  }
+
+  if (closeBrace < 0) {
+    throw new Error('Unable to parse normalizeHashHref body in generated single-file artifact.');
+  }
+
+  const helperBody = singleFileHtml.slice(openBrace + 1, closeBrace);
+  if (!/\blet\s+parsed\s*;/.test(helperBody)) {
+    throw new Error('normalizeHashHref must declare `let parsed;` in generated single-file artifact.');
+  }
+
+  if (/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/.test(helperBody)) {
+    throw new Error('normalizeHashHref contains a conflicting `const parsed` declaration and will fail to parse.');
+  }
+
+  if (/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/.test(singleFileHtml)) {
+    throw new Error('Router bootstrap must avoid reusing `parsed` for parseRouteInput(routeInput) to prevent parser ambiguity/regressions.');
+  }
+
+  const toGatewayPattern = /const toGatewayUrl = \(routeInput\) => \{([\s\S]*?)\n  \};/;
+  const toGatewayMatch = toGatewayPattern.exec(singleFileHtml);
+  if (!toGatewayMatch) {
+    throw new Error('Unable to locate toGatewayUrl helper in generated single-file artifact.');
+  }
+
+  const toGatewayBody = toGatewayMatch[1] ?? '';
+  const parsedDeclIndex = toGatewayBody.indexOf('const parsedRoute = parseRouteInput(routeInput);');
+  const parsedUseIndex = toGatewayBody.indexOf('parsedRoute.pathname');
+  if (parsedDeclIndex < 0 || parsedUseIndex < 0 || parsedDeclIndex > parsedUseIndex) {
+    throw new Error('toGatewayUrl helper has malformed parsedRoute declaration ordering in generated single-file artifact.');
+  }
+}
+
+
 function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
   const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
   for (const body of scriptBodies) {
@@ -512,11 +613,14 @@ function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
 }
 
 html = sanitizeForbiddenDataUris(html);
+html = repairRouterBootstrap(html);
+html = canonicalizeRouteParserHelpers(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
 assertRouterBootstrapCoherence(html);
+assertNormalizeHashHrefParsedBinding(html);
 assertNoNavigateInvocationWithoutDeclaration(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
