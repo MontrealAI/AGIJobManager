@@ -203,15 +203,16 @@ insertIntoBody(`<script>(function(){
 
   const normalizeHashHref = (input) => {
     if (typeof input !== 'string' || !input) return null;
+    const href = input;
 
-    if (input.startsWith('#/')) return input;
-    if (input.startsWith('/')) return toHashRoute(input);
-    if (input.startsWith('//')) return null;
+    if (href.startsWith('#/')) return href;
+    if (href.startsWith('/')) return toHashRoute(href);
+    if (href.startsWith('//')) return null;
 
     let parsed;
     try {
-      parsed = new URL(input, window.location.href);
-    } catch {
+      parsed = new URL(href, window.location.href);
+    } catch (_error) {
       return null;
     }
 
@@ -222,7 +223,7 @@ insertIntoBody(`<script>(function(){
     }
 
     return toHashRoute(parsed.pathname + parsed.search);
-  };
+  }; // end normalizeHashHref
 
   const parseRouteInput = (routeInput) => {
     if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
@@ -232,7 +233,7 @@ insertIntoBody(`<script>(function(){
     const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
     const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
     return { pathname, search, routeInput: withoutHash };
-  };
+  }; // end parseRouteInput
 
   const toGatewayUrl = (routeInput) => {
     const parsedGatewayRoute = parseRouteInput(routeInput);
