@@ -41,6 +41,26 @@ const bootRouter = (initialUrl: string) => {
 };
 
 describe('single-file hash router runtime behavior', () => {
+  it('intercepts all primary hash routes used by top navigation tabs', () => {
+    const routes = ['#/', '#/jobs', '#/identity', '#/admin', '#/advanced', '#/design', '#/deployment'];
+    const { dom, calls } = bootRouter('https://example.com/agijobmanager.html#/');
+
+    for (const route of routes) {
+      const before = { ...calls };
+      const anchor = dom.window.document.createElement('a');
+      anchor.setAttribute('href', route);
+      dom.window.document.body.appendChild(anchor);
+
+      const clickEvent = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+      const dispatchResult = anchor.dispatchEvent(clickEvent);
+
+      expect(dispatchResult, `route ${route} should be intercepted`).toBe(false);
+      expect(clickEvent.defaultPrevented, `route ${route} should prevent native navigation`).toBe(true);
+      expect(calls.pushState, `route ${route} should push history state`).toBeGreaterThan(before.pushState);
+      expect(dom.window.location.hash, `route ${route} should become current hash route`).toBe(route);
+    }
+  });
+
   it('handles top-nav hash clicks via router interception', () => {
     const { dom, calls } = bootRouter('https://example.com/agijobmanager.html#/');
     const before = { ...calls };
