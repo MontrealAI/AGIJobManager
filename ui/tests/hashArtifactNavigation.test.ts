@@ -32,6 +32,35 @@ describe('committed single-file hash navigation', () => {
       for (const route of expectedRoutes) {
         expect(html, `${label} missing ${route}`).toContain(`href="${route}"`);
       }
+
+      const hasDemoTab = html.includes('href="#/demo"');
+      if (hasDemoTab) {
+        expect(html, `${label} includes Demo tab but not hash route href`).toContain('href="#/demo"');
+      }
+    }
+  });
+
+  it('keeps top-nav tab hrefs unique to avoid dead-tab collisions', () => {
+    const tabLabelToRoute = new Map([
+      ['Dashboard', '#/'],
+      ['Jobs', '#/jobs'],
+      ['Identity', '#/identity'],
+      ['Admin', '#/admin'],
+      ['Advanced', '#/advanced'],
+      ['Design', '#/design'],
+      ['Deployment', '#/deployment']
+    ]);
+
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const navMatch = html.match(/<nav\b[^>]*>([\s\S]*?)<\/nav>/i);
+      expect(navMatch?.[1], `${label} missing top nav`).toBeTruthy();
+
+      const navHtml = navMatch?.[1] ?? '';
+      for (const [tabLabel, route] of tabLabelToRoute) {
+        const exactAnchor = new RegExp(`<a[^>]*href=\"${route.replace('/', '\\/')}\"[^>]*>${tabLabel}<\\/a>`);
+        expect(exactAnchor.test(navHtml), `${label} ${tabLabel} tab should map uniquely to ${route}`).toBe(true);
+      }
     }
   });
 
