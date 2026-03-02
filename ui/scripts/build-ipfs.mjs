@@ -576,7 +576,6 @@ function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
 }
 
 html = sanitizeForbiddenDataUris(html);
-html = repairRouterBootstrap(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);
