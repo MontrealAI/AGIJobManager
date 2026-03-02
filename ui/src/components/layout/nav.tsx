@@ -2,8 +2,18 @@
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Button } from '../ui/button';
+
+const HASH_ROUTING = process.env.NEXT_PUBLIC_HASH_ROUTING === '1';
+
+function RouteLink({ href, children }: { href: string; children: ReactNode }) {
+  if (HASH_ROUTING) {
+    return <a href={`#${href}`}>{children}</a>;
+  }
+
+  return <Link href={href}>{children}</Link>;
+}
 
 export function Nav() {
   const { theme, setTheme } = useTheme();
@@ -18,7 +28,7 @@ export function Nav() {
       <div className="container-shell flex h-16 items-center justify-between">
         <div className="font-serif text-3xl">AGIJobManager</div>
         <nav className="flex gap-4 text-sm">
-          <Link href='/'>Dashboard</Link><Link href='/jobs'>Jobs</Link><Link href='/identity'>Identity</Link><Link href='/admin'>Admin</Link><Link href='/advanced'>Advanced</Link><Link href='/design'>Design</Link><Link href='/deployment'>Deployment</Link><Link href='/demo'>Demo</Link>
+          <RouteLink href='/'>Dashboard</RouteLink><RouteLink href='/jobs'>Jobs</RouteLink><RouteLink href='/identity'>Identity</RouteLink><RouteLink href='/admin'>Admin</RouteLink><RouteLink href='/advanced'>Advanced</RouteLink><RouteLink href='/design'>Design</RouteLink><RouteLink href='/deployment'>Deployment</RouteLink><RouteLink href='/demo'>Demo</RouteLink>
         </nav>
         <div className='flex items-center gap-2'><Button variant='outline' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>Theme</Button><ConnectButton showBalance={false} /></div>
       </div>

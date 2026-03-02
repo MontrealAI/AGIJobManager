@@ -26,7 +26,7 @@
     "sync:deployment": "node scripts/sync-deployments.mjs",
     "sync:deployments": "node scripts/sync-deployments.mjs",
     "sync:deployments:check": "node scripts/sync-deployments.mjs --check",
-    "build:ipfs": "npm run build && node scripts/build-ipfs.mjs",
+    "build:ipfs": "NEXT_PUBLIC_HASH_ROUTING=1 npm run build && node scripts/build-ipfs.mjs",
     "verify:ipfs": "npm run verify:singlefile",
     "verify:singlefile": "node scripts/verify-singlefile.mjs",
     "verify:deterministic": "node scripts/verify-deterministic-build.mjs",

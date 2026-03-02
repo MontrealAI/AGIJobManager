@@ -15,6 +15,7 @@ function createDeterministicBuildEnv() {
       delete sanitized[key];
     }
   }
+  sanitized.NEXT_PUBLIC_HASH_ROUTING = '1';
   return sanitized;
 }
 
