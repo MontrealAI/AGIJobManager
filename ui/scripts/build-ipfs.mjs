@@ -240,7 +240,14 @@ insertIntoBody(`<script>(function(){
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
   };
 
+  const isDocumentLikePath = (pathname) => {
+    const stripped = stripGatewayBase(pathname || '');
+    const leaf = stripped.split('/').filter(Boolean).pop() || '';
+    return leaf.toLowerCase().endsWith('.html');
+  };
+
   const syncHashWithPath = (mode) => {
+    if (isDocumentLikePath(window.location.pathname)) return;
     const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
     const hashUrl = toHashUrl(routePath);
     if (!hashUrl) return;
@@ -257,28 +264,24 @@ insertIntoBody(`<script>(function(){
   const navigateHashRoute = (routePath, mode) => {
     if (!routePath || !routePath.startsWith('/')) return;
 
-    const pathUrl = toGatewayUrl(routePath);
     const hashUrl = toHashUrl(routePath);
-    if (!pathUrl || !hashUrl) return;
+    if (!hashUrl) return;
+
     suppressRewrite = true;
     if (mode === 'replace') {
-      rawReplaceState(history.state, '', pathUrl);
+      rawReplaceState(history.state, '', hashUrl);
     } else {
-      rawPushState(history.state, '', pathUrl);
+      rawPushState(history.state, '', hashUrl);
     }
     suppressRewrite = false;
 
     dispatchRouteUpdate(history.state);
-
-    suppressRewrite = true;
-    rawReplaceState(history.state, '', hashUrl);
-    suppressRewrite = false;
   };
 
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
-    if (routePath !== '/' && routePath !== '') {
-      const hashUrl = toHashUrl(routePath);
+    if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {
+      const hashUrl = toHashUrl(routePath + window.location.search);
       if (!hashUrl) return;
       suppressRewrite = true;
       rawReplaceState(history.state, '', hashUrl);
