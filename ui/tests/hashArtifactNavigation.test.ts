@@ -42,6 +42,17 @@ describe('committed single-file hash navigation', () => {
       expect(html, `${label} missing dispatchRouteUpdate`).toContain("window.dispatchEvent(new PopStateEvent('popstate', { state }));");
       expect(html, `${label} missing hashchange listener`).toContain('window.addEventListener(\'hashchange\'');
       expect(html, `${label} missing normalizeHashHref`).toContain('const normalizeHashHref = (input) => {');
+      expect(html, `${label} missing popstate listener`).toContain("window.addEventListener('popstate'");
+    }
+  });
+
+  it('keeps deep-link + history back/forward bootstrap guards', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      expect(html, `${label} missing initial path-to-hash bootstrap`).toContain("if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {");
+      expect(html, `${label} missing hashchange route update`).toContain("navigateHashRoute(routePath, 'replace');");
+      expect(html, `${label} missing popstate hash sync`).toContain("syncHashWithPath('replace');");
+      expect(html, `${label} missing hash click navigation push`).toContain("navigateHashRoute(hashRoute.slice(1), 'push');");
     }
   });
 
