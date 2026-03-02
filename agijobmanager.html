@@ -113,7 +113,7 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
     if (parsed.origin !== window.location.origin) return null;
 
-    if (parsed.hash && parsed.hash.startsWith('#/')) {
+    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
       return parsed.hash;
     }
 

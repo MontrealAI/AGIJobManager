@@ -215,7 +215,7 @@ insertIntoBody(`<script>(function(){
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
     const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const hashBaseUrl = isContentAddressedGateway ? gatewayBase + documentSearch : documentUrl;
+    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
     return hashBaseUrl + '#' + parsedHashRoute.routeInput;
   };
 
