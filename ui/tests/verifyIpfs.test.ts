@@ -837,7 +837,8 @@ describe('verify-ipfs script src attribute hardening', () => {
 
     const body = routerScript ?? '';
     expect(body).toContain('const documentUrl = documentPath + documentSearch;');
-    expect(body).toContain("return documentUrl + '#' + parsedHashRoute.routeInput;");
+    expect(body).toContain("const hashBase = isContentAddressedGateway ? gatewayBase : documentUrl;");
+    expect(body).toContain("return hashBase + '#' + parsedHashRoute.routeInput;");
     expect(body).not.toContain("return '/#' + parsedHashRoute.routeInput;");
     expect(body).not.toContain('/#/#/');
   });

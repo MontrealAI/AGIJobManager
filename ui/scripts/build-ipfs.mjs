@@ -214,7 +214,9 @@ insertIntoBody(`<script>(function(){
   const toHashUrl = (routeInput) => {
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
-    return documentUrl + '#' + parsedHashRoute.routeInput;
+    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
+    const hashBase = isContentAddressedGateway ? gatewayBase : documentUrl;
+    return hashBase + '#' + parsedHashRoute.routeInput;
   };
 
   let suppressRewrite = false;
