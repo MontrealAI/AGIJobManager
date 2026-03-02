@@ -20,7 +20,8 @@ const excludedTextScanPaths = [
   /^scripts\//,
   /^ui\/scripts\//,
   /^ui\/tests\//,
-  /^tests\//
+  /^tests\//,
+  /^test\//
 ];
 const repoRoot = path.resolve(process.cwd(), '..');
 
