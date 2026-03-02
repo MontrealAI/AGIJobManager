@@ -151,16 +151,29 @@ insertIntoBody(`<script>(function(){
   const documentSearch = window.location.search;
   const documentUrl = documentPath + documentSearch;
   const gatewayBase = detectGatewayBase(documentPath);
+  const appBasePath = (() => {
+    if (gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/')) {
+      return gatewayBase;
+    }
+
+    if (documentPath.endsWith('.html')) {
+      const slashIndex = documentPath.lastIndexOf('/');
+      return slashIndex <= 0 ? '/' : documentPath.slice(0, slashIndex);
+    }
+
+    if (documentPath === '/') return '/';
+    return documentPath.replace(/\\/+$/, '') || '/';
+  })();
 
   const rawPushState = history.pushState.bind(history);
   const rawReplaceState = history.replaceState.bind(history);
 
   const stripGatewayBase = (pathname) => {
-    if (gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/')) {
-      if (pathname === gatewayBase) return '/';
-      if (pathname.startsWith(gatewayBase + '/')) return pathname.slice(gatewayBase.length);
-    }
-    return pathname;
+    if (typeof pathname !== 'string' || !pathname.startsWith('/')) return null;
+    if (pathname === appBasePath || pathname === appBasePath + '/') return '/';
+    if (appBasePath === '/') return pathname;
+    if (pathname.startsWith(appBasePath + '/')) return pathname.slice(appBasePath.length);
+    return null;
   };
 
   const toHashRoute = (input) => {
@@ -204,19 +217,16 @@ insertIntoBody(`<script>(function(){
   const toGatewayUrl = (routeInput) => {
     const parsedGatewayRoute = parseRouteInput(routeInput);
     if (!parsedGatewayRoute) return null;
-    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const gatewayPathname = isContentAddressedGateway
-      ? gatewayBase + parsedGatewayRoute.pathname
-      : parsedGatewayRoute.pathname;
+    const gatewayPathname = appBasePath === '/'
+      ? parsedGatewayRoute.pathname
+      : appBasePath + parsedGatewayRoute.pathname;
     return gatewayPathname + parsedGatewayRoute.search;
   };
 
   const toHashUrl = (routeInput) => {
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
-    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
-    return hashBaseUrl + '#' + parsedHashRoute.routeInput;
+    return documentUrl + '#' + parsedHashRoute.routeInput;
   };
 
   let suppressRewrite = false;
@@ -242,6 +252,7 @@ insertIntoBody(`<script>(function(){
 
   const syncHashWithPath = (mode) => {
     const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
+    if (!routePath || !routePath.startsWith('/')) return;
     const hashUrl = toHashUrl(routePath);
     if (!hashUrl) return;
 
@@ -277,7 +288,7 @@ insertIntoBody(`<script>(function(){
 
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
-    if (routePath !== '/' && routePath !== '') {
+    if (routePath && routePath !== '/') {
       const hashUrl = toHashUrl(routePath);
       if (!hashUrl) return;
       suppressRewrite = true;
@@ -290,7 +301,8 @@ insertIntoBody(`<script>(function(){
     const rawHash = window.location.hash || '';
     if (!rawHash.startsWith('#/')) return;
     const routePath = rawHash.slice(1);
-    if (routePath === stripGatewayBase(window.location.pathname)) return;
+    const currentRoute = stripGatewayBase(window.location.pathname);
+    if (routePath === currentRoute) return;
     navigateHashRoute(routePath, 'replace');
   });
 
