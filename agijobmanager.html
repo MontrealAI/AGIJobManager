@@ -214,7 +214,13 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
-    if (routePath !== '/' && routePath !== '') {
+    const eventTarget = event.target;
+    const targetElement = eventTarget instanceof Element
+      ? eventTarget
+      : eventTarget instanceof Node
+        ? eventTarget.parentElement
+        : null;
+    const target = targetElement ? targetElement.closest('a[href]') : null;
       const hashUrl = toHashUrl(routePath);
       if (!hashUrl) return;
       suppressRewrite = true;

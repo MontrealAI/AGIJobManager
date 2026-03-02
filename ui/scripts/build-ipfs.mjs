@@ -319,7 +319,13 @@ insertIntoBody(`<script>(function(){
     if (event.button !== 0) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
-    const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+    const eventTarget = event.target;
+    const targetElement = eventTarget instanceof Element
+      ? eventTarget
+      : eventTarget instanceof Node
+        ? eventTarget.parentElement
+        : null;
+    const target = targetElement ? targetElement.closest('a[href]') : null;
     if (!target) return;
     if (target.hasAttribute('download')) return;
 

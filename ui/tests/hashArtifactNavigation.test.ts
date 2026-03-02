@@ -226,6 +226,16 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+  it('keeps click interception resilient when event targets are text nodes', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      expect(html, `${label} missing eventTarget extraction`).toContain('const eventTarget = event.target;');
+      expect(html, `${label} missing text-node parent fallback`).toContain('eventTarget instanceof Node');
+      expect(html, `${label} missing closest lookup via targetElement`).toContain("const target = targetElement ? targetElement.closest('a[href]') : null;");
+    }
+  });
+
+
   it('contains only syntactically parseable inline scripts', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
