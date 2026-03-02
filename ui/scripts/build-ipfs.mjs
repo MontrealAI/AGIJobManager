@@ -126,7 +126,16 @@ insertIntoHead(`<script>(function(){
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return pathname === '/' ? '/' : pathname.replace(/\\/+$/, '');
+
+    const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\\/+$/, '');
+    if (normalizedPath === '/') return '/';
+
+    if (/\.html?$/i.test(normalizedPath)) {
+      const lastSlash = normalizedPath.lastIndexOf('/');
+      return lastSlash <= 0 ? '/' : normalizedPath.slice(0, lastSlash);
+    }
+
+    return normalizedPath;
   };
 
   const rawHash = window.location.hash || '';
@@ -135,6 +144,7 @@ insertIntoHead(`<script>(function(){
   const targetPath = rawHash.slice(1);
   const normalized = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
   const gatewayBase = detectGatewayBase(window.location.pathname);
+  const canonicalHashBase = window.location.pathname + window.location.search;
   const bootstrapPath = gatewayBase === '/' ? normalized : (gatewayBase + normalized);
   const bootstrapUrl = bootstrapPath + window.location.search;
 
@@ -144,7 +154,7 @@ insertIntoHead(`<script>(function(){
   window.addEventListener('DOMContentLoaded', () => {
     const current = window.location.pathname + window.location.search;
     if (current === bootstrapUrl) {
-      const hashUrl = gatewayBase + '#' + normalized;
+      const hashUrl = canonicalHashBase + '#' + normalized;
       history.replaceState(history.state, '', hashUrl);
     }
   }, { once: true });
@@ -166,10 +176,20 @@ insertIntoBody(`<script>(function(){
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return '/';
+
+    const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\\/+$/, '');
+    if (normalizedPath === '/') return '/';
+
+    if (/\.html?$/i.test(normalizedPath)) {
+      const lastSlash = normalizedPath.lastIndexOf('/');
+      return lastSlash <= 0 ? '/' : normalizedPath.slice(0, lastSlash);
+    }
+
+    return normalizedPath;
   };
 
   const gatewayBase = detectGatewayBase(window.location.pathname);
+  const canonicalHashBase = window.location.pathname + window.location.search;
   const rawPushState = history.pushState.bind(history);
   const rawReplaceState = history.replaceState.bind(history);
 
@@ -231,7 +251,7 @@ insertIntoBody(`<script>(function(){
   const toHashUrl = (routeInput) => {
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
-    return gatewayBase + '#' + parsedHashRoute.routeInput;
+    return canonicalHashBase + '#' + parsedHashRoute.routeInput;
   };
 
   let suppressRewrite = false;
