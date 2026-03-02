@@ -13,6 +13,16 @@ const forbiddenPaths = [
   /^(dist|build)\//i,
   /^ui\/(dist|build)\//i
 ];
+
+const excludedTextScanPaths = [
+  /^docs\//,
+  /^ui\/docs\//,
+  /^scripts\//,
+  /^ui\/scripts\//,
+  /^ui\/tests\//,
+  /^tests\//,
+  /^test\//
+];
 const repoRoot = path.resolve(process.cwd(), '..');
 
 function run(cmd) {
@@ -61,10 +71,13 @@ const added = output
   .map((line) => line.trim().split(/\s+/))
   .filter((parts) => parts.length >= 2)
   .map((parts) => parts[1]);
-const trackedTextSources = run('git ls-files ui/src ui/app ui/tests')
+const trackedTextSources = run('git ls-files')
   .split('\n')
   .map((line) => line.trim())
-  .filter((line) => line && sourceTextExt.test(line));
+  .filter((line) => line)
+  .filter((line) => sourceTextExt.test(line))
+  .filter((line) => !forbiddenPaths.some((re) => re.test(line)))
+  .filter((line) => !excludedTextScanPaths.some((re) => re.test(line)));
 
 const offenders = [];
 for (const file of added) {
