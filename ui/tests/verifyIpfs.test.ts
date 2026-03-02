@@ -824,6 +824,22 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toContain("navigateHashRoute(routePath, 'replace');");
     expect(body).toContain("window.addEventListener('popstate', () => {");
     expect(body).toContain("syncHashWithPath('replace');");
+    expect(body).toContain('const routePath = stripGatewayBase(window.location.pathname) + window.location.search;');
+    expect(body).toContain('window.dispatchEvent(new PopStateEvent(\'popstate\', { state }));');
+  });
+
+  it('committed artifact supports deep-link job detail route tokens', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const routerScript = extractRouterBootstrapScript(artifactHtml);
+    expect(routerScript).toBeTruthy();
+
+    const body = routerScript ?? '';
+    expect(body).toContain('if (!routePath || !routePath.startsWith(\'/\')) return;');
+    expect(body).toContain('const queryIndex = withoutHash.indexOf(\'?\');');
+    expect(body).toContain('const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;');
+    expect(body).toContain('const hashUrl = toHashUrl(routePath);');
   });
 
   it('passes when navigateHashRoute only uses its own inputs', () => {
