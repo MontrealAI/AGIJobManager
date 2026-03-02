@@ -828,6 +828,20 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toContain('window.dispatchEvent(new PopStateEvent(\'popstate\', { state }));');
   });
 
+
+  it('committed artifact hash URLs preserve current pathname and avoid root-level hash corruption', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+    const routerScript = extractRouterBootstrapScript(artifactHtml);
+    expect(routerScript).toBeTruthy();
+
+    const body = routerScript ?? '';
+    expect(body).toContain('const documentUrl = documentPath + documentSearch;');
+    expect(body).toContain("const hashBase = isContentAddressedGateway ? gatewayBase : documentUrl;");
+    expect(body).toContain("return hashBase + '#' + parsedHashRoute.routeInput;");
+    expect(body).not.toContain("return '/#' + parsedHashRoute.routeInput;");
+    expect(body).not.toContain('/#/#/');
+  });
   it('committed artifact supports deep-link job detail route tokens', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const artifactHtml = fs.readFileSync(artifactPath, 'utf8');

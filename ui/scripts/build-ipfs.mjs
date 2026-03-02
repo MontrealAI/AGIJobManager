@@ -122,32 +122,10 @@ html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (ful
 });
 
 insertIntoHead(`<script>(function(){
-  const detectGatewayBase = (pathname) => {
-    const segments = pathname.split('/').filter(Boolean);
-    if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
-    if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return pathname === '/' ? '/' : pathname.replace(/\\/+$/, '');
-  };
-
   const rawHash = window.location.hash || '';
   if (!rawHash.startsWith('#/')) return;
-
   const targetPath = rawHash.slice(1);
-  const normalized = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
-  const gatewayBase = detectGatewayBase(window.location.pathname);
-  const bootstrapPath = gatewayBase === '/' ? normalized : (gatewayBase + normalized);
-  const bootstrapUrl = bootstrapPath + window.location.search;
-
-  history.replaceState(history.state, '', bootstrapUrl);
-  window.__IPFS_BOOTSTRAP_ROUTE__ = normalized;
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const current = window.location.pathname + window.location.search;
-    if (current === bootstrapUrl) {
-      const hashUrl = gatewayBase + '#' + normalized;
-      history.replaceState(history.state, '', hashUrl);
-    }
-  }, { once: true });
+  window.__IPFS_BOOTSTRAP_ROUTE__ = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
 })();</script>`);
 
 const enforcedCsp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: ipfs:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
@@ -166,19 +144,21 @@ insertIntoBody(`<script>(function(){
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return '/';
+    return pathname;
   };
 
-  const gatewayBase = detectGatewayBase(window.location.pathname);
+  const documentPath = window.location.pathname;
+  const documentSearch = window.location.search;
+  const documentUrl = documentPath + documentSearch;
+  const gatewayBase = detectGatewayBase(documentPath);
+
   const rawPushState = history.pushState.bind(history);
   const rawReplaceState = history.replaceState.bind(history);
 
   const stripGatewayBase = (pathname) => {
-    if (gatewayBase !== '/') {
+    if (gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/')) {
       if (pathname === gatewayBase) return '/';
-      if (pathname.startsWith(gatewayBase + '/')) {
-        return pathname.slice(gatewayBase.length);
-      }
+      if (pathname.startsWith(gatewayBase + '/')) return pathname.slice(gatewayBase.length);
     }
     return pathname;
   };
@@ -224,14 +204,19 @@ insertIntoBody(`<script>(function(){
   const toGatewayUrl = (routeInput) => {
     const parsedGatewayRoute = parseRouteInput(routeInput);
     if (!parsedGatewayRoute) return null;
-    const gatewayPathname = gatewayBase === '/' ? parsedGatewayRoute.pathname : gatewayBase + parsedGatewayRoute.pathname;
+    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
+    const gatewayPathname = isContentAddressedGateway
+      ? gatewayBase + parsedGatewayRoute.pathname
+      : parsedGatewayRoute.pathname;
     return gatewayPathname + parsedGatewayRoute.search;
   };
 
   const toHashUrl = (routeInput) => {
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
-    return gatewayBase + '#' + parsedHashRoute.routeInput;
+    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
+    const hashBase = isContentAddressedGateway ? gatewayBase : documentUrl;
+    return hashBase + '#' + parsedHashRoute.routeInput;
   };
 
   let suppressRewrite = false;
@@ -293,7 +278,7 @@ insertIntoBody(`<script>(function(){
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
     if (routePath !== '/' && routePath !== '') {
-      const hashUrl = toHashUrl(routePath);
+      const hashUrl = toHashUrl(routePath + window.location.search);
       if (!hashUrl) return;
       suppressRewrite = true;
       rawReplaceState(history.state, '', hashUrl);
@@ -333,6 +318,11 @@ insertIntoBody(`<script>(function(){
     event.preventDefault();
     navigateHashRoute(hashRoute.slice(1), 'push');
   }, true);
+
+  const startupHash = window.location.hash || '';
+  if (startupHash.startsWith('#/')) {
+    navigateHashRoute(startupHash.slice(1), 'replace');
+  }
 })();</script>`);
 
 
@@ -374,7 +364,7 @@ function assertNoPrematureDocumentClose(singleFileHtml) {
 }
 
 function assertHashRoutingBootstrapClosed(singleFileHtml) {
-  const hasClosedBootstrap = /navigateHashRoute\(hashRoute\.slice\(1\), 'push'\);\s*\}, true\);\s*\}\)\(\);<\/script>/.test(singleFileHtml);
+  const hasClosedBootstrap = /navigateHashRoute\(hashRoute\.slice\(1\), 'push'\);[\s\S]*?\}\)\(\);<\/script>/.test(singleFileHtml);
   if (!hasClosedBootstrap) {
     throw new Error('Hash routing bootstrap script appears unclosed or malformed in single-file artifact.');
   }
