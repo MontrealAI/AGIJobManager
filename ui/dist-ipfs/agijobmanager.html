@@ -82,41 +82,34 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
       if (pathname === gatewayBase) return '/';
       if (pathname.startsWith(gatewayBase + '/')) return pathname.slice(gatewayBase.length);
     }
-    return pathname;
-  };
-
-  const toHashRoute = (input) => {
-    if (typeof input !== 'string') return null;
-    if (!input.startsWith('/') || input.startsWith('//')) return null;
-    return '#' + input;
-  };
-
-  const normalizeHashHref = (input) => {
-    if (typeof input !== 'string' || !input) return null;
-    if (input.startsWith('#/')) return input;
-    if (input.startsWith('/')) return toHashRoute(input);
-    if (input.startsWith('//')) return null;
-
-    let parsed;
-    try {
-      parsed = new URL(input, window.location.href);
-    } catch (_error) {
-      return null;
     }
 
-    if (parsed.origin !== window.location.origin) return null;
+    return toHashRoute(parsed.pathname + parsed.search);
+  }; // end normalizeHashHref
 
-    if (parsed.hash && parsed.hash.startsWith('#/')) {
-      return parsed.hash;
-    if (!parsedHashRoute) return null;
+  const parseRouteInput = (routeInput) => {
+    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
+    const hashIndex = routeInput.indexOf('#');
+    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
+    const queryIndex = withoutHash.indexOf('?');
+    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
+    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
+    return { pathname, search, routeInput: withoutHash };
+  }; // end parseRouteInput
+
+  const toGatewayUrl = (routeInput) => {
+    const parsedGatewayRoute = parseRouteInput(routeInput);
+    if (!parsedGatewayRoute) return null;
     const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
-    return hashBaseUrl + '#' + parsedHashRoute.routeInput;
+    const gatewayPathname = isContentAddressedGateway
+      ? gatewayBase + parsedGatewayRoute.pathname
+      : parsedGatewayRoute.pathname;
+    return gatewayPathname + parsedGatewayRoute.search;
+  };
 
-  let suppressRewrite = false;
-  const rewriteHistory = (method) => {
-    const original = history[method];
-    history[method] = function(state, title, url) {
+  const toHashUrl = (routeInput) => {
+    const parsedHashRoute = parseRouteInput(routeInput);
+  };
   const isDocumentLikePath = (pathname) => {
     const stripped = stripGatewayBase(pathname || '');
     const leaf = stripped.split('/').filter(Boolean).pop() || '';
@@ -125,6 +118,13 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
     if (isDocumentLikePath(window.location.pathname)) return;
     if (!hashUrl) return;
+
+      rawReplaceState(history.state, '', hashUrl);
+      rawPushState(history.state, '', hashUrl);
+  };
+
+    if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {
+      const hashUrl = toHashUrl(routePath + window.location.search);
 
       rawReplaceState(history.state, '', hashUrl);
       rawPushState(history.state, '', hashUrl);
