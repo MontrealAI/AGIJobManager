@@ -273,6 +273,17 @@ insertIntoBody(`<script>(function(){
     suppressRewrite = false;
   };
 
+  if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
+    const routePath = stripGatewayBase(window.location.pathname);
+    if (routePath !== '/' && routePath !== '' && routePath !== documentPath) {
+      const hashUrl = toHashUrl(routePath);
+      if (!hashUrl) return;
+      suppressRewrite = true;
+      rawReplaceState(history.state, '', hashUrl);
+      suppressRewrite = false;
+    }
+  }
+
   window.addEventListener('hashchange', () => {
     const rawHash = window.location.hash || '';
     if (!rawHash.startsWith('#/')) return;
