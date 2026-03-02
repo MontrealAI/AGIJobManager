@@ -126,6 +126,14 @@ insertIntoHead(`<script>(function(){
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
+    if (pathname.endsWith('/agijobmanager.html')) {
+      const basePath = pathname.slice(0, -'/agijobmanager.html'.length);
+      return basePath || '/';
+    }
+    if (pathname.endsWith('/index.html')) {
+      const basePath = pathname.slice(0, -'/index.html'.length);
+      return basePath || '/';
+    }
     return pathname === '/' ? '/' : pathname.replace(/\\/+$/, '');
   };
 
@@ -166,7 +174,16 @@ insertIntoBody(`<script>(function(){
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return '/';
+    if (pathname.endsWith('/agijobmanager.html')) {
+      const basePath = pathname.slice(0, -'/agijobmanager.html'.length);
+      return basePath || '/';
+    }
+    if (pathname.endsWith('/index.html')) {
+      const basePath = pathname.slice(0, -'/index.html'.length);
+      return basePath || '/';
+    }
+    if (pathname === '/') return '/';
+    return pathname.replace(/\\/+$/, '');
   };
 
   const gatewayBase = detectGatewayBase(window.location.pathname);
@@ -174,6 +191,9 @@ insertIntoBody(`<script>(function(){
   const rawReplaceState = history.replaceState.bind(history);
 
   const stripGatewayBase = (pathname) => {
+    if (pathname.endsWith('/agijobmanager.html') || pathname.endsWith('/index.html')) {
+      return '/';
+    }
     if (gatewayBase !== '/') {
       if (pathname === gatewayBase) return '/';
       if (pathname.startsWith(gatewayBase + '/')) {
