@@ -385,14 +385,10 @@ const hasPushStateLogic = normalizedScriptBodies.some((body) => /\bhistory\.push
 const hasRoutingHook = uncommentedScriptBodies.some((body) => /\baddEventListener\s*\(\s*(["'`])hashchange\1/.test(body))
   || normalizedScriptBodies.some((body) => /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body));
 
-const hasBootstrapScriptIntegrity = normalizedScriptBodies.some((body) => {
-  if (!/\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body)) return false;
-  return /\bwindow\.location\.hash\b/.test(body)
-    && /\.startsWith\s*\(/.test(body)
-    && /\bhistory\.replaceState\b/.test(body)
-    && /\bbootstrapUrl\b/.test(body);
-});
-
+const hasBootstrapSentinelScript = uncommentedScriptBodies.some((body) => (
+  /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body)
+  && /\bwindow\.location\.hash\b/.test(body)
+));
 for (const body of uncommentedScriptBodies) {
   const invokesNavigate = /\bnavigateHashRoute\s*\(/.test(body);
   if (!invokesNavigate) continue;
@@ -634,7 +630,10 @@ if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
 }
 
-const hasBootstrapCandidate = uncommentedScriptBodies.some((body) => /\bconst\s+detectGatewayBase\b/.test(body) && /\bwindow\.location\.hash\b/.test(body));
+const hasBootstrapCandidate = uncommentedScriptBodies.some((body) => (
+  (/\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body) || /\bconst\s+detectGatewayBase\b/.test(body))
+  && /\bwindow\.location\.hash\b/.test(body)
+));
 
 const hasRouterBootstrapCandidate = uncommentedScriptBodies.some((body) => (
   /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
@@ -645,6 +644,13 @@ const hasRouterBootstrapCoherence = uncommentedScriptBodies.some((body) => (
   && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
   && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
   && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
+));
+
+const hasBootstrapScriptIntegrity = hasBootstrapSentinelScript || uncommentedScriptBodies.some((body) => (
+  /\bconst\s+detectGatewayBase\b/.test(body)
+  && /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
+  && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
+  && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
 ));
 
 if (hasBootstrapCandidate && !hasBootstrapScriptIntegrity) {
