@@ -126,7 +126,7 @@ insertIntoHead(`<script>(function(){
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return pathname === '/' ? '/' : pathname.replace(/\\/+$/, '');
+    return pathname || '/';
   };
 
   const rawHash = window.location.hash || '';
@@ -166,7 +166,7 @@ insertIntoBody(`<script>(function(){
     const segments = pathname.split('/').filter(Boolean);
     if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
     if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return '/';
+    return pathname || '/';
   };
 
   const gatewayBase = detectGatewayBase(window.location.pathname);
