@@ -33,6 +33,18 @@ test('top navigation tabs change route content', async ({ page }) => {
   await expect(page).toHaveURL(/\/identity$/);
 
   await page.goto('/');
+  await clickTopTab(page, 'Admin');
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto('/');
+  await clickTopTab(page, 'Advanced');
+  await expect(page).toHaveURL(/\/advanced$/);
+
+  await page.goto('/');
+  await clickTopTab(page, 'Design');
+  await expect(page).toHaveURL(/\/design$/);
+
+  await page.goto('/');
   await clickTopTab(page, 'Deployment');
   await expect(page).toHaveURL(/\/deployment$/);
 });
