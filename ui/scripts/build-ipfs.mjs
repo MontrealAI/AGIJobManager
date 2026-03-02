@@ -412,22 +412,6 @@ function hasOrphanHashUrlGuard(source) {
   return false;
 }
 
-function repairRouterBootstrap(singleFileHtml) {
-  let repaired = singleFileHtml;
-
-  repaired = repaired.replace(
-    /\n\s*if \(routePath === stripGatewayBase\(window\.location\.pathname\)\) return;\n\s*window\.addEventListener\('popstate'/,
-    "\n  window.addEventListener('popstate'"
-  );
-
-  repaired = repaired.replace(
-    /(window\.addEventListener\('hashchange', \(\) => \{\s*const rawHash = window\.location\.hash \|\| '';\s*if \(!rawHash\.startsWith\('#\/'\)\) return;\s*const routePath = rawHash\.slice\(1\);)(\s*navigateHashRoute\(routePath, 'replace'\);)/,
-    "$1\n    if (routePath === stripGatewayBase(window.location.pathname)) return;$2"
-  );
-
-  return repaired;
-}
-
 function assertRouterBootstrapCoherence(singleFileHtml) {
   const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
   const routerScript = scriptBodies.find((body) => (
@@ -576,7 +560,6 @@ function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
 }
 
 html = sanitizeForbiddenDataUris(html);
-html = repairRouterBootstrap(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);

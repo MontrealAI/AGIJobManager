@@ -108,28 +108,28 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
     if (parsed.hash && parsed.hash.startsWith('#/')) {
       return parsed.hash;
-    }
-
-    return toHashRoute(parsed.pathname + parsed.search);
-  }; // end normalizeHashHref
-
-  const parseRouteInput = (routeInput) => {
-    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
-    const hashIndex = routeInput.indexOf('#');
-    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
-    const queryIndex = withoutHash.indexOf('?');
-    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
-    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
-    return { pathname, search, routeInput: withoutHash };
-  }; // end parseRouteInput
-
-  const toGatewayUrl = (routeInput) => {
-    const parsedGatewayRoute = parseRouteInput(routeInput);
-    if (!parsedGatewayRoute) return null;
+    if (!parsedHashRoute) return null;
     const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const gatewayPathname = isContentAddressedGateway
-      ? gatewayBase + parsedGatewayRoute.pathname
-      : parsedGatewayRoute.pathname;
+    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
+    return hashBaseUrl + '#' + parsedHashRoute.routeInput;
+
+  let suppressRewrite = false;
+  const rewriteHistory = (method) => {
+    const original = history[method];
+    history[method] = function(state, title, url) {
+  const isDocumentLikePath = (pathname) => {
+    const stripped = stripGatewayBase(pathname || '');
+    const leaf = stripped.split('/').filter(Boolean).pop() || '';
+    return leaf.toLowerCase().endsWith('.html');
+  };
+
+    if (isDocumentLikePath(window.location.pathname)) return;
+    if (!hashUrl) return;
+
+      rawReplaceState(history.state, '', hashUrl);
+      rawPushState(history.state, '', hashUrl);
+    if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {
+      const hashUrl = toHashUrl(routePath + window.location.search);
     return gatewayPathname + parsedGatewayRoute.search;
   };
 
