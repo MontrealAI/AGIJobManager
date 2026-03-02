@@ -278,7 +278,7 @@ insertIntoBody(`<script>(function(){
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
     if (routePath !== '/' && routePath !== '') {
-      const hashUrl = toHashUrl(routePath + window.location.search);
+      const hashUrl = toHashUrl(routePath);
       if (!hashUrl) return;
       suppressRewrite = true;
       rawReplaceState(history.state, '', hashUrl);

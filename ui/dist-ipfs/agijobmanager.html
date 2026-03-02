@@ -178,7 +178,7 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     suppressRewrite = false;
   };
 
-      const hashUrl = toHashUrl(routePath + window.location.search);
+      const hashUrl = toHashUrl(routePath);
 
   const startupHash = window.location.hash || '';
   if (startupHash.startsWith('#/')) {

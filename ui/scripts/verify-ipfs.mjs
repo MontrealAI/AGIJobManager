@@ -387,7 +387,12 @@ const hasRoutingHook = uncommentedScriptBodies.some((body) => /\baddEventListene
 
 const hasBootstrapScriptIntegrity = uncommentedScriptBodies.some((body) => {
   const hasSentinelBootstrap = /\b__IPFS_BOOTSTRAP_ROUTE__\b/.test(body)
-    && /\bwindow\.location\.hash\b/.test(body);
+    && /\bwindow\.location\.hash\b/.test(body)
+    && (
+      (/\.startsWith\s*\(\s*['"`]#\//.test(body)
+        && /targetPath\.startsWith\s*\(\s*['"`]\//.test(body))
+      || /__IPFS_BOOTSTRAP_ROUTE__\s*=\s*['"`]\//.test(body)
+    );
 
   const hasLegacyBootstrap = /\bconst\s+detectGatewayBase\b/.test(body)
     && /\bwindow\.location\.hash\b/.test(body)
