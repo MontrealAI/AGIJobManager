@@ -135,16 +135,19 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
   const toHashUrl = (routeInput) => {
     const parsedHashRoute = parseRouteInput(routeInput);
-    if (!parsedHashRoute) return null;
-    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
-    return hashBaseUrl + '#' + parsedHashRoute.routeInput;
+  const isDocumentLikePath = (pathname) => {
+    const stripped = stripGatewayBase(pathname || '');
+    const leaf = stripped.split('/').filter(Boolean).pop() || '';
+    return leaf.toLowerCase().endsWith('.html');
   };
 
-  let suppressRewrite = false;
-  const rewriteHistory = (method) => {
-    const original = history[method];
-    history[method] = function(state, title, url) {
+    if (isDocumentLikePath(window.location.pathname)) return;
+    if (!hashUrl) return;
+
+      rawReplaceState(history.state, '', hashUrl);
+      rawPushState(history.state, '', hashUrl);
+    if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {
+      const hashUrl = toHashUrl(routePath + window.location.search);
       if (!suppressRewrite && typeof url === 'string') {
         const hashRoute = toHashRoute(url);
         if (hashRoute) {
