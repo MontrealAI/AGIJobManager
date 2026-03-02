@@ -41,14 +41,19 @@ const bootRouter = (initialUrl: string) => {
 };
 
 describe('single-file hash router runtime behavior', () => {
-  it('handles top-nav hash clicks without leaving the document', () => {
-    const { dom } = bootRouter('https://example.com/agijobmanager.html#/');
+  it('click interceptor prevents native anchor navigation and routes via history rewrite', () => {
+    const { dom, calls } = bootRouter('https://example.com/agijobmanager.html#/');
+    const before = { ...calls };
     const anchor = dom.window.document.createElement('a');
     anchor.setAttribute('href', '#/jobs');
     dom.window.document.body.appendChild(anchor);
 
-    anchor.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+    const event = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    const defaultNotPrevented = anchor.dispatchEvent(event);
 
+    expect(defaultNotPrevented).toBe(false);
+    expect(calls.pushState).toBeGreaterThan(before.pushState);
+    expect(calls.replaceState).toBeGreaterThan(before.replaceState);
     expect(dom.window.location.hash).toBe('#/jobs');
   });
 
