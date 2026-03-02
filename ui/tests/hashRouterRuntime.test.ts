@@ -41,6 +41,19 @@ const bootRouter = (initialUrl: string) => {
 };
 
 describe('single-file hash router runtime behavior', () => {
+  it('preserves nested Pages pathname when navigating hash routes', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
+    const anchor = dom.window.document.createElement('a');
+    anchor.setAttribute('href', '#/jobs');
+    dom.window.document.body.appendChild(anchor);
+
+    const clickEvent = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    anchor.dispatchEvent(clickEvent);
+
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/jobs');
+    expect(dom.window.location.href).not.toContain('/#/#/');
+  });
+
   it('handles top-nav hash clicks via router interception', () => {
     const { dom, calls } = bootRouter('https://example.com/agijobmanager.html#/');
     const before = { ...calls };
