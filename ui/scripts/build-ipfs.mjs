@@ -164,14 +164,6 @@ insertIntoBody(`<script>(function(){
   const rawPushState = history.pushState.bind(history);
   const rawReplaceState = history.replaceState.bind(history);
 
-  const stripGatewayBase = (pathname) => {
-    if (gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/')) {
-      if (pathname === gatewayBase) return '/';
-      if (pathname.startsWith(gatewayBase + '/')) return pathname.slice(gatewayBase.length);
-    }
-    return pathname;
-  };
-
   const toHashRoute = (input) => {
     if (typeof input !== 'string') return null;
     if (!input.startsWith('/') || input.startsWith('//')) return null;
@@ -228,46 +220,28 @@ insertIntoBody(`<script>(function(){
     return hashBaseUrl + '#' + parsedHashRoute.routeInput;
   };
 
-  let suppressRewrite = false;
-  const rewriteHistory = (method) => {
-    const original = history[method];
-    history[method] = function(state, title, url) {
-      if (!suppressRewrite && typeof url === 'string') {
-        const hashRoute = toHashRoute(url);
-        if (hashRoute) {
-          return original.call(this, state, title, hashRoute);
-        }
-      }
-      return original.call(this, state, title, url);
-    };
-  };
-
-  rewriteHistory('pushState');
-  rewriteHistory('replaceState');
-
   const dispatchRouteUpdate = (state) => {
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
   };
 
-  const isDocumentLikePath = (pathname) => {
-    const stripped = stripGatewayBase(pathname || '');
-    const leaf = stripped.split('/').filter(Boolean).pop() || '';
-    return leaf.toLowerCase().endsWith('.html');
+  const hasMalformedStartupHash = (rawHash) => {
+    if (!rawHash) return false;
+    if (rawHash.startsWith('#/')) return false;
+
+    const lowerHash = rawHash.toLowerCase();
+    if (lowerHash.includes('agijobmanager.html')) return true;
+    if (rawHash.startsWith('#/#/')) return true;
+    if (rawHash.startsWith('##/')) return true;
+    if (rawHash.includes(documentPath)) return true;
+    if (rawHash.includes(gatewayBase)) return true;
+    return true;
   };
 
-  const syncHashWithPath = (mode) => {
-    if (isDocumentLikePath(window.location.pathname)) return;
-    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
-    const hashUrl = toHashUrl(routePath);
-    if (!hashUrl) return;
-
-    suppressRewrite = true;
-    if (mode === 'push') {
-      rawPushState(history.state, '', hashUrl);
-    } else {
-      rawReplaceState(history.state, '', hashUrl);
-    }
-    suppressRewrite = false;
+  const getRouteFromHash = () => {
+    const rawHash = window.location.hash || '';
+    if (!rawHash.startsWith('#/')) return '/';
+    const normalized = rawHash.slice(1);
+    return normalized.startsWith('/') ? normalized : '/';
   };
 
   const navigateHashRoute = (nextRoute, options = {}) => {
@@ -277,13 +251,11 @@ insertIntoBody(`<script>(function(){
     const hashUrl = toHashUrl(nextRoute);
     if (!hashUrl) return;
 
-    suppressRewrite = true;
     if (mode === 'replace') {
       rawReplaceState(history.state, '', hashUrl);
     } else {
       rawPushState(history.state, '', hashUrl);
     }
-    suppressRewrite = false;
 
     dispatchRouteUpdate(history.state);
   };
@@ -356,30 +328,14 @@ insertIntoBody(`<script>(function(){
     host.innerHTML = routeContent[normalized] || routeContent['/'];
   };
 
-  if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
-    const routePath = stripGatewayBase(window.location.pathname);
-    if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {
-      const hashUrl = toHashUrl(routePath + window.location.search);
-      if (!hashUrl) return;
-      suppressRewrite = true;
-      rawReplaceState(history.state, '', hashUrl);
-      suppressRewrite = false;
-    }
+  if (hasMalformedStartupHash(window.location.hash || '')) {
+    rawReplaceState(history.state, '', documentUrl + '#/');
   }
 
   window.addEventListener('hashchange', () => {
-    const rawHash = window.location.hash || '';
-    if (!rawHash.startsWith('#/')) return;
-    const routePath = rawHash.slice(1);
-    if (routePath === stripGatewayBase(window.location.pathname)) return;
-    navigateHashRoute(routePath, { mode: 'replace' });
+    const routePath = getRouteFromHash();
     updateRoutePanel(routePath);
     updatePrimaryView(routePath);
-  });
-
-  window.addEventListener('popstate', () => {
-    if (window.location.hash.startsWith('#/')) return;
-    syncHashWithPath('replace');
   });
 
   document.addEventListener('click', (event) => {
@@ -405,16 +361,9 @@ insertIntoBody(`<script>(function(){
     updatePrimaryView(routePath);
   }, true);
 
-  const startupHash = window.location.hash || '';
-  if (startupHash.startsWith('#/')) {
-    const routePath = startupHash.slice(1);
-    navigateHashRoute(routePath, { mode: 'replace' });
-    updateRoutePanel(routePath);
-    updatePrimaryView(routePath);
-  } else {
-    updateRoutePanel('/');
-    updatePrimaryView('/');
-  }
+  const startupRoute = getRouteFromHash();
+  updateRoutePanel(startupRoute);
+  updatePrimaryView(startupRoute);
 })();</script>`);
 
 

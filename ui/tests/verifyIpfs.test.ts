@@ -810,7 +810,7 @@ describe('verify-ipfs script src attribute hardening', () => {
     }
   });
 
-  it('committed artifact router bootstrap keeps click/hash/popstate handling for deep-link and history navigation', () => {
+  it('committed artifact router bootstrap keeps click/hash handling without pathname-derived boot routes', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
     const routerScript = extractRouterBootstrapScript(artifactHtml);
@@ -821,10 +821,11 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toContain('const hashRoute = normalizeHashHref(href);');
     expect(body).toContain("navigateHashRoute(routePath, { mode: 'push' });");
     expect(body).toContain("window.addEventListener('hashchange', () => {");
-    expect(body).toContain("navigateHashRoute(routePath, { mode: 'replace' });");
-    expect(body).toContain("window.addEventListener('popstate', () => {");
-    expect(body).toContain("syncHashWithPath('replace');");
-    expect(body).toContain('const routePath = stripGatewayBase(window.location.pathname) + window.location.search;');
+    expect(body).toContain('const routePath = getRouteFromHash();');
+    expect(body).toContain('const startupRoute = getRouteFromHash();');
+    expect(body).toContain('if (hasMalformedStartupHash(window.location.hash || \'\')) {');
+    expect(body).not.toContain("syncHashWithPath('replace');");
+    expect(body).not.toContain('stripGatewayBase(window.location.pathname) + window.location.search');
     expect(body).toContain('window.dispatchEvent(new PopStateEvent(\'popstate\', { state }));');
   });
 
