@@ -71,27 +71,21 @@ describe('single-file hash router runtime behavior', () => {
     expect(dom.window.location.hash).toBe('#/jobs');
   });
 
-  it('hashchange handler performs history rewrites for deep-link navigation', () => {
+  it('hashchange handler updates the in-document route without pathname rewrites', () => {
     const { dom, calls } = bootRouter('https://example.com/agijobmanager.html#/');
     const before = { ...calls };
 
     dom.window.location.hash = '#/identity';
     dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
 
-    expect(calls.replaceState).toBeGreaterThan(before.replaceState);
+    expect(calls.replaceState).toBe(before.replaceState);
     expect(dom.window.location.hash).toBe('#/identity');
   });
 
-  it('popstate handler syncs hash when browsing path-only URLs', () => {
-    const { dom, calls } = bootRouter('https://example.com/agijobmanager.html#/');
-    const before = { ...calls };
-
-    dom.reconfigure({ url: 'https://example.com/admin' });
-    expect(dom.window.location.hash).toBe('');
-
-    dom.window.dispatchEvent(new dom.window.PopStateEvent('popstate'));
-
-    expect(calls.replaceState).toBeGreaterThan(before.replaceState);
-    expect(dom.window.location.hash).toBe('#/admin');
+  it('startup sanitizer normalizes malformed #/... hash routes that leak pathname/file details', () => {
+    const { dom, calls } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/AGIJobManager/agijobmanager.html');
+    expect(calls.replaceState).toBeGreaterThan(0);
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
+    expect(dom.window.location.pathname).toBe('/AGIJobManager/agijobmanager.html');
   });
 });
