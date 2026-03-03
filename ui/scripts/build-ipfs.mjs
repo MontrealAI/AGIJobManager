@@ -355,14 +355,7 @@ insertIntoBody(`<script>(function(){
     '/demo': '<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2><p>Fixtures cover lifecycle edge-cases, malformed URI blocking, and degraded RPC behavior.</p><p>Writes are disabled while preserving operator-visible action panels.</p></section>'
   };
 
-  const escapeHtml = (value) => String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-
-  const renderJobDetail = (routePath) => {
+  const renderJobDetail = (routePath, host) => {
     const rawJobId = routePath.slice('/jobs/'.length);
     let jobId = rawJobId;
     try {
@@ -370,8 +363,21 @@ insertIntoBody(`<script>(function(){
     } catch (_error) {
       jobId = rawJobId;
     }
-    const escapedJobId = escapeHtml(jobId);
-    return '<section data-testid="route-job-detail"><h2>Job Detail · ' + escapedJobId + '</h2><p>Route-specific detail panels: core state, dispute posture, spec/completion URI safety, and ENS identity snapshot.</p><p>Eligibility and write safety require simulation-first preflight checks.</p></section>';
+
+    const section = document.createElement('section');
+    section.setAttribute('data-testid', 'route-job-detail');
+
+    const title = document.createElement('h2');
+    title.textContent = 'Job Detail · ' + jobId;
+
+    const description = document.createElement('p');
+    description.textContent = 'Route-specific detail panels: core state, dispute posture, spec/completion URI safety, and ENS identity snapshot.';
+
+    const eligibility = document.createElement('p');
+    eligibility.textContent = 'Eligibility and write safety require simulation-first preflight checks.';
+
+    section.append(title, description, eligibility);
+    host.replaceChildren(section);
   };
 
   const updatePrimaryView = (routePath) => {
@@ -391,9 +397,12 @@ insertIntoBody(`<script>(function(){
       return wrapper;
     })();
 
-    host.innerHTML = isJobDetailRoute(normalizedRoute)
-      ? renderJobDetail(normalizedRoute)
-      : (routeContent[normalized] || routeContent['/']);
+    if (isJobDetailRoute(normalizedRoute)) {
+      renderJobDetail(normalizedRoute, host);
+      return;
+    }
+
+    host.innerHTML = routeContent[normalized] || routeContent['/'];
   };
 
   if (hasMalformedStartupHash(window.location.hash || '')) {
