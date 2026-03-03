@@ -489,6 +489,14 @@ function assertRouterBootstrapCoherence(singleFileHtml) {
     throw new Error('Router bootstrap script must terminate as a closed IIFE (})();).');
   }
 
+  try {
+    // Guard against malformed interleaving that can leave duplicate declarations
+    // (e.g., "Identifier 'routePath' has already been declared") in emitted HTML.
+    new Function(routerScript);
+  } catch (error) {
+    throw new Error(`Router bootstrap script is not parseable JavaScript: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
   const navigateBounds = extractNavigateHashRouteBounds(routerScript);
   if (!navigateBounds) {
     throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper in single-file artifact.');
