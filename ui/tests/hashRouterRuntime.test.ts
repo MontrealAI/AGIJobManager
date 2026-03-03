@@ -88,4 +88,11 @@ describe('single-file hash router runtime behavior', () => {
     expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
     expect(dom.window.location.pathname).toBe('/AGIJobManager/agijobmanager.html');
   });
+
+  it('treats bare # as dashboard without startup hash rewrite', () => {
+    const { dom, calls } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#');
+    expect(calls.replaceState).toBe(0);
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#');
+    expect(dom.window.document.body.getAttribute('data-hash-route')).toBe('/');
+  });
 });
