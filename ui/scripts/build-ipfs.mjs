@@ -257,6 +257,7 @@ insertIntoBody(`<script>(function(){
 
   const hasMalformedStartupHash = (rawHash) => {
     if (!rawHash) return false;
+    if (rawHash === '#') return false;
     const lowerHash = rawHash.toLowerCase();
     if (rawHash.startsWith('#/#/')) return true;
     if (rawHash.startsWith('##/')) return true;
@@ -280,6 +281,7 @@ insertIntoBody(`<script>(function(){
 
   const getRouteFromHash = () => {
     const rawHash = window.location.hash || '';
+    if (rawHash === '#' || rawHash === '') return '/';
     if (!rawHash.startsWith('#/')) return '/';
     const normalized = rawHash.slice(1);
     return sanitizeRoutePath(normalized.startsWith('/') ? normalized : '/');
@@ -345,15 +347,17 @@ insertIntoBody(`<script>(function(){
   };
 
   const routeContent = {
-    '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><p>Read-only-first, simulation-first operations for autonomous AI agents with human owner supervision.</p><ul><li>Jobs ledger quick view</li><li>Identity-layer readiness</li><li>Token and allowance posture</li></ul></section>',
-    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable job slots with status, payout, employer, agent, and ENS name derivation.</p><p>Use #/jobs/&lt;jobId&gt; for route-stable detail inspection.</p></section>',
-    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>ENSJobPages mainnet snapshot, permission checks, and record safety policy.</p><p>All external links are allowlisted and copy-first by default.</p></section>',
-    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Owner-gated governance controls with typed confirmations and simulation-first transaction flow.</p><p>Non-owner wallets remain explicit read-only.</p></section>',
-    '/advanced': '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2><p>ABI-driven method explorer for AGIJobManager, ENSJobPages, and AGI ALPHA token flows.</p><p>Export agent-ready payload JSON for deterministic execution.</p></section>',
-    '/design': '<section data-testid="route-design"><h2>Design System Gallery</h2><p>ASI Sovereign Purple palette, typography, contrast checks, and reduced-motion examples.</p><p>This route is the canonical visual demo for CI and docs.</p></section>',
-    '/deployment': '<section data-testid="route-deployment"><h2>Deployment Registry</h2><p>Mainnet artifact-derived addresses, owner/deployer roles, linked libraries, and constructor evidence.</p><p>Includes release and explorer references.</p></section>',
-    '/demo': '<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2><p>Fixtures cover lifecycle edge-cases, malformed URI blocking, and degraded RPC behavior.</p><p>Writes are disabled while preserving operator-visible action panels.</p></section>'
+    '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><p>Read-only-first, simulation-first operations for autonomous AI agents with human owner supervision.</p><ul><li>Jobs ledger quick view</li><li>Identity-layer readiness</li><li>Token and allowance posture</li></ul><p><strong>Intent:</strong> autonomous AI agents are primary operators; humans supervise ownership and risk boundaries.</p></section>',
+    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable job slots with status, payout, employer, agent, and ENS name derivation.</p><p>Use #/jobs/&lt;jobId&gt; for route-stable detail inspection.</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>ENS Name</th></tr></thead><tbody><tr><td>245</td><td>Open</td><td>1,200 AGI</td><td>job-245.alpha.jobs.agi.eth</td></tr></tbody></table></section>',
+    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>ENSJobPages mainnet snapshot, permission checks, and record safety policy.</p><p>All external links are allowlisted and copy-first by default.</p><ul><li>Root name: alpha.jobs.agi.eth</li><li>NameWrapper approval status</li><li>Job manager wiring state</li></ul></section>',
+    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Owner-gated governance controls with typed confirmations and simulation-first transaction flow.</p><p>Non-owner wallets remain explicit read-only.</p><ol><li>Prepare</li><li>Simulate</li><li>Sign</li><li>Pending</li><li>Confirmed/Failed</li></ol></section>',
+    '/advanced': '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2><p>ABI-driven method explorer for AGIJobManager, ENSJobPages, and AGI ALPHA token flows.</p><p>Export agent-ready payload JSON for deterministic execution.</p><pre>{"simulateFirst":true,"chainId":1,"functionName":"approve"}</pre></section>',
+    '/design': '<section data-testid="route-design"><h2>Design System Gallery</h2><p>ASI Sovereign Purple palette, typography, contrast checks, and reduced-motion examples.</p><p>This route is the canonical visual demo for CI and docs.</p><ul><li>Palette anchors</li><li>Typography scale</li><li>Focus-visible states</li></ul></section>',
+    '/deployment': '<section data-testid="route-deployment"><h2>Deployment Registry</h2><p>Mainnet artifact-derived addresses, owner/deployer roles, linked libraries, and constructor evidence.</p><p>Includes release and explorer references.</p><dl><dt>AGIJobManager</dt><dd>0xB3AAeb69b630f0299791679c063d68d6687481d1</dd><dt>ENSJobPages</dt><dd>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</dd></dl></section>',
+    '/demo': '<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2><p>Fixtures cover lifecycle edge-cases, malformed URI blocking, and degraded RPC behavior.</p><p>Writes are disabled while preserving operator-visible action panels.</p><p>Actors: visitor, employer, agent, validator, moderator, owner.</p></section>'
   };
+
+  const routeJobDetailMarker = 'data-testid="route-job-detail"';
 
   const renderJobDetail = (routePath, host) => {
     const rawJobId = routePath.slice('/jobs/'.length);
@@ -366,6 +370,7 @@ insertIntoBody(`<script>(function(){
 
     const section = document.createElement('section');
     section.setAttribute('data-testid', 'route-job-detail');
+    section.setAttribute('data-marker', routeJobDetailMarker);
 
     const title = document.createElement('h2');
     title.textContent = 'Job Detail · ' + jobId;
