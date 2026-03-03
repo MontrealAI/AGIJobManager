@@ -156,13 +156,62 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
   };
 
   rewriteHistory('pushState');
-  rewriteHistory('replaceState');
-
-  const dispatchRouteUpdate = (state) => {
-    window.dispatchEvent(new PopStateEvent('popstate', { state }));
+  const navigateHashRoute = (nextRoute, options = {}) => {
+    const mode = options.mode === 'replace' ? 'replace' : 'push';
+    if (!nextRoute || !nextRoute.startsWith('/')) return;
+    const hashUrl = toHashUrl(nextRoute);
+  const routeViewCopy = {
+    '/': { title: 'Dashboard', description: 'Read-only-first control plane for AGIJobManager and ENS identity operations.' },
+    '/jobs': { title: 'Jobs', description: 'Jobs ledger view. Use hash routes to paginate and inspect job slots.' },
+    '/identity': { title: 'Identity', description: 'ENS identity layer overview with job-name derivation and permission checks.' },
+    '/admin': { title: 'Admin', description: 'Owner/operator safety controls. Non-owners remain read-only.' },
+    '/advanced': { title: 'Advanced', description: 'ABI-driven advanced contract console with simulation-first payloads.' },
+    '/design': { title: 'Design', description: 'Sovereign Purple design gallery and deterministic review fixtures.' },
+    '/deployment': { title: 'Deployment', description: 'Mainnet deployment registry sourced from committed artifacts.' },
+    '/demo': { title: 'Demo', description: 'Deterministic demo scenarios for humans and autonomous agents.' }
   };
 
-  const isDocumentLikePath = (pathname) => {
+  const normalizeRouteForView = (routePath) => {
+    if (!routePath || routePath === '/') return '/';
+    if (routePath.startsWith('/jobs/')) return '/jobs';
+    return routeViewCopy[routePath] ? routePath : '/';
+  };
+
+  const updateRoutePanel = (routePath) => {
+    const normalized = normalizeRouteForView(routePath);
+    const view = routeViewCopy[normalized] || routeViewCopy['/'];
+    const root = document.getElementById('ipfs-route-panel') || (() => {
+      const panel = document.createElement('section');
+      panel.id = 'ipfs-route-panel';
+      panel.style.borderTop = '1px solid rgba(169,160,180,0.25)';
+      panel.style.padding = '0.85rem 1rem';
+      panel.style.fontFamily = 'system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+      panel.style.background = 'rgba(30,12,45,0.2)';
+      panel.style.color = 'inherit';
+      document.body.append(panel);
+      return panel;
+    })();
+
+    root.textContent = view.title + ' · ' + view.description;
+    document.body.setAttribute('data-hash-route', normalized);
+
+    document.querySelectorAll('nav a[href^="#/"]').forEach((anchor) => {
+      const href = anchor.getAttribute('href') || '';
+      anchor.setAttribute('aria-current', href === '#' + normalized ? 'page' : 'false');
+    });
+  };
+
+    navigateHashRoute(routePath, { mode: 'replace' });
+    updateRoutePanel(routePath);
+    const routePath = hashRoute.slice(1);
+    navigateHashRoute(routePath, { mode: 'push' });
+    updateRoutePanel(routePath);
+
+    const routePath = startupHash.slice(1);
+    navigateHashRoute(routePath, { mode: 'replace' });
+    updateRoutePanel(routePath);
+  } else {
+    updateRoutePanel('/');
     const stripped = stripGatewayBase(pathname || '');
     const leaf = stripped.split('/').filter(Boolean).pop() || '';
     return leaf.toLowerCase().endsWith('.html');

@@ -261,10 +261,11 @@ insertIntoBody(`<script>(function(){
     suppressRewrite = false;
   };
 
-  const navigateHashRoute = (routePath, mode) => {
-    if (!routePath || !routePath.startsWith('/')) return;
+  const navigateHashRoute = (nextRoute, options = {}) => {
+    const mode = options.mode === 'replace' ? 'replace' : 'push';
+    if (!nextRoute || !nextRoute.startsWith('/')) return;
 
-    const hashUrl = toHashUrl(routePath);
+    const hashUrl = toHashUrl(nextRoute);
     if (!hashUrl) return;
 
     suppressRewrite = true;
@@ -276,6 +277,47 @@ insertIntoBody(`<script>(function(){
     suppressRewrite = false;
 
     dispatchRouteUpdate(history.state);
+  };
+
+  const routeViewCopy = {
+    '/': { title: 'Dashboard', description: 'Read-only-first control plane for AGIJobManager and ENS identity operations.' },
+    '/jobs': { title: 'Jobs', description: 'Jobs ledger view. Use hash routes to paginate and inspect job slots.' },
+    '/identity': { title: 'Identity', description: 'ENS identity layer overview with job-name derivation and permission checks.' },
+    '/admin': { title: 'Admin', description: 'Owner/operator safety controls. Non-owners remain read-only.' },
+    '/advanced': { title: 'Advanced', description: 'ABI-driven advanced contract console with simulation-first payloads.' },
+    '/design': { title: 'Design', description: 'Sovereign Purple design gallery and deterministic review fixtures.' },
+    '/deployment': { title: 'Deployment', description: 'Mainnet deployment registry sourced from committed artifacts.' },
+    '/demo': { title: 'Demo', description: 'Deterministic demo scenarios for humans and autonomous agents.' }
+  };
+
+  const normalizeRouteForView = (routePath) => {
+    if (!routePath || routePath === '/') return '/';
+    if (routePath.startsWith('/jobs/')) return '/jobs';
+    return routeViewCopy[routePath] ? routePath : '/';
+  };
+
+  const updateRoutePanel = (routePath) => {
+    const normalized = normalizeRouteForView(routePath);
+    const view = routeViewCopy[normalized] || routeViewCopy['/'];
+    const root = document.getElementById('ipfs-route-panel') || (() => {
+      const panel = document.createElement('section');
+      panel.id = 'ipfs-route-panel';
+      panel.style.borderTop = '1px solid rgba(169,160,180,0.25)';
+      panel.style.padding = '0.85rem 1rem';
+      panel.style.fontFamily = 'system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+      panel.style.background = 'rgba(30,12,45,0.2)';
+      panel.style.color = 'inherit';
+      document.body.append(panel);
+      return panel;
+    })();
+
+    root.textContent = view.title + ' · ' + view.description;
+    document.body.setAttribute('data-hash-route', normalized);
+
+    document.querySelectorAll('nav a[href^="#/"]').forEach((anchor) => {
+      const href = anchor.getAttribute('href') || '';
+      anchor.setAttribute('aria-current', href === '#' + normalized ? 'page' : 'false');
+    });
   };
 
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
@@ -294,7 +336,8 @@ insertIntoBody(`<script>(function(){
     if (!rawHash.startsWith('#/')) return;
     const routePath = rawHash.slice(1);
     if (routePath === stripGatewayBase(window.location.pathname)) return;
-    navigateHashRoute(routePath, 'replace');
+    navigateHashRoute(routePath, { mode: 'replace' });
+    updateRoutePanel(routePath);
   });
 
   window.addEventListener('popstate', () => {
@@ -319,12 +362,18 @@ insertIntoBody(`<script>(function(){
     if (!hashRoute) return;
 
     event.preventDefault();
-    navigateHashRoute(hashRoute.slice(1), 'push');
+    const routePath = hashRoute.slice(1);
+    navigateHashRoute(routePath, { mode: 'push' });
+    updateRoutePanel(routePath);
   }, true);
 
   const startupHash = window.location.hash || '';
   if (startupHash.startsWith('#/')) {
-    navigateHashRoute(startupHash.slice(1), 'replace');
+    const routePath = startupHash.slice(1);
+    navigateHashRoute(routePath, { mode: 'replace' });
+    updateRoutePanel(routePath);
+  } else {
+    updateRoutePanel('/');
   }
 })();</script>`);
 
@@ -367,7 +416,7 @@ function assertNoPrematureDocumentClose(singleFileHtml) {
 }
 
 function assertHashRoutingBootstrapClosed(singleFileHtml) {
-  const hasClosedBootstrap = /navigateHashRoute\(hashRoute\.slice\(1\), 'push'\);[\s\S]*?\}\)\(\);<\/script>/.test(singleFileHtml);
+  const hasClosedBootstrap = /navigateHashRoute\(routePath, \{ mode: 'push' \}\);[\s\S]*?\}\)\(\);<\/script>/.test(singleFileHtml);
   if (!hasClosedBootstrap) {
     throw new Error('Hash routing bootstrap script appears unclosed or malformed in single-file artifact.');
   }
@@ -375,7 +424,7 @@ function assertHashRoutingBootstrapClosed(singleFileHtml) {
 
 
 function extractNavigateHashRouteBounds(scriptBody) {
-  const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/;
+  const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(nextRoute\s*,\s*options\s*=\s*\{\}\)\s*=>\s*\{/;
   const match = declarationPattern.exec(scriptBody);
   if (!match) return null;
 
@@ -416,7 +465,7 @@ function assertRouterBootstrapCoherence(singleFileHtml) {
   const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
   const routerScript = scriptBodies.find((body) => (
     body.includes('const normalizeHashHref = (input) => {')
-    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
     && body.includes("window.addEventListener('hashchange'")
   ));
 
@@ -440,6 +489,14 @@ function assertRouterBootstrapCoherence(singleFileHtml) {
     throw new Error('Router bootstrap script must terminate as a closed IIFE (})();).');
   }
 
+  try {
+    // Guard against malformed interleaving that can leave duplicate declarations
+    // (e.g., "Identifier 'routePath' has already been declared") in emitted HTML.
+    new Function(routerScript);
+  } catch (error) {
+    throw new Error(`Router bootstrap script is not parseable JavaScript: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
   const navigateBounds = extractNavigateHashRouteBounds(routerScript);
   if (!navigateBounds) {
     throw new Error('Router bootstrap script has no parseable navigateHashRoute wrapper in single-file artifact.');
@@ -457,7 +514,7 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
     throw new Error('IPFS artifact lost hashchange listener required for hash routing.');
   }
 
-  const declaration = 'const navigateHashRoute = (routePath, mode) => {';
+  const declaration = 'const navigateHashRoute = (nextRoute, options = {}) => {';
   const declarationIndex = singleFileHtml.indexOf(declaration);
   if (declarationIndex < 0) {
     throw new Error('Unable to locate stable navigateHashRoute declaration in generated single-file artifact.');

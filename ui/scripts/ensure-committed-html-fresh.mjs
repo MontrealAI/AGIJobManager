@@ -97,7 +97,7 @@ function assertRouterBootstrapScript(html, label) {
 
   const routerScript = scripts.find((body) =>
     body.includes('const normalizeHashHref = (input) => {')
-    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
     && body.includes("window.addEventListener('hashchange'")
   );
 

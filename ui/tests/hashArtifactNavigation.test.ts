@@ -67,7 +67,7 @@ describe('committed single-file hash navigation', () => {
   it('ships stable hash navigation helpers for route changes', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
-      expect(html, `${label} missing navigateHashRoute`).toContain('const navigateHashRoute = (routePath, mode) => {');
+      expect(html, `${label} missing navigateHashRoute`).toContain('const navigateHashRoute = (nextRoute, options = {}) => {');
       expect(html, `${label} missing dispatchRouteUpdate`).toContain("window.dispatchEvent(new PopStateEvent('popstate', { state }));");
       expect(html, `${label} missing hashchange listener`).toContain('window.addEventListener(\'hashchange\'');
       expect(html, `${label} missing normalizeHashHref`).toContain('const normalizeHashHref = (input) => {');
@@ -79,9 +79,9 @@ describe('committed single-file hash navigation', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
       expect(html, `${label} missing initial path-to-hash bootstrap`).toContain("if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {");
-      expect(html, `${label} missing hashchange route update`).toContain("navigateHashRoute(routePath, 'replace');");
+      expect(html, `${label} missing hashchange route update`).toContain("navigateHashRoute(routePath, { mode: 'replace' });");
       expect(html, `${label} missing popstate hash sync`).toContain("syncHashWithPath('replace');");
-      expect(html, `${label} missing hash click navigation push`).toContain("navigateHashRoute(hashRoute.slice(1), 'push');");
+      expect(html, `${label} missing hash click navigation push`).toContain("navigateHashRoute(routePath, { mode: 'push' });");
     }
   });
 
@@ -124,7 +124,7 @@ describe('committed single-file hash navigation', () => {
 
       const routerScript = scripts.find((body) =>
         body.includes('const normalizeHashHref = (input) => {')
-        && body.includes('const navigateHashRoute = (routePath, mode) => {')
+        && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
         && body.includes("window.addEventListener('hashchange'")
       );
 
@@ -135,7 +135,7 @@ describe('committed single-file hash navigation', () => {
       const scriptBody = routerScript ?? '';
       expect(scriptBody, `${label} has injected DOM markup inside router bootstrap script`).not.toContain('<div data-rk');
       expect(scriptBody.trimEnd(), `${label} router bootstrap script should terminate as an IIFE`).toMatch(/\}\)\(\);$/);
-      const declaration = 'const navigateHashRoute = (routePath, mode) => {';
+      const declaration = 'const navigateHashRoute = (nextRoute, options = {}) => {';
       const declarationIndex = scriptBody.indexOf(declaration);
       expect(declarationIndex, `${label} missing navigateHashRoute declaration inside router bootstrap script`).toBeGreaterThan(-1);
 
@@ -176,8 +176,9 @@ describe('committed single-file hash navigation', () => {
       expect(scriptBody, `${label} leaked detached routePath guard outside hashchange handler`).not.toContain(`if (routePath === stripGatewayBase(window.location.pathname)) return;
   window.addEventListener('popstate'`);
 
-      const hashchangePattern = /window\.addEventListener\('hashchange', \(\) => \{[\s\S]*?const routePath = rawHash\.slice\(1\);\s*if \(routePath === stripGatewayBase\(window\.location\.pathname\)\) return;\s*navigateHashRoute\(routePath, 'replace'\);\s*\}\);/;
-      expect(hashchangePattern.test(scriptBody), `${label} hashchange handler missing in-handler routePath guard`).toBe(true);
+      expect(scriptBody, `${label} hashchange handler missing routePath extraction`).toContain('const routePath = rawHash.slice(1);');
+      expect(scriptBody, `${label} hashchange handler missing same-path guard`).toContain('if (routePath === stripGatewayBase(window.location.pathname)) return;');
+      expect(scriptBody, `${label} hashchange handler missing replace navigation`).toContain("navigateHashRoute(routePath, { mode: 'replace' });");
     }
   });
 

@@ -132,7 +132,7 @@ function extractRouterBootstrapScript(html: string): string | null {
   const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   return scriptBodies.find((body) => (
     body.includes('const normalizeHashHref = (input) => {')
-    && body.includes('const navigateHashRoute = (routePath, mode) => {')
+    && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
     && body.includes("addEventListener('hashchange'")
   )) ?? null;
 }
@@ -396,8 +396,8 @@ describe('verify-ipfs script src attribute hardening', () => {
 
   it('fails when navigateHashRoute references rawHash from the hashchange scope', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (!rawHash.startsWith('#/')) return;
         if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
       };
@@ -413,8 +413,8 @@ describe('verify-ipfs script src attribute hardening', () => {
 
   it('fails when navigateHashRoute is present but unparseable', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (!rawHash.startsWith('#/')) return;
       // truncated body intentionally (missing closing brace)
       window.addEventListener('hashchange', () => {
@@ -431,8 +431,8 @@ describe('verify-ipfs script src attribute hardening', () => {
       <script>
       const rawPushState = history.pushState.bind(history);
       const rawReplaceState = history.replaceState.bind(history);
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (mode === 'replace') {
           rawReplaceState(history.state, '', routePath);
       </script><script>
@@ -465,7 +465,7 @@ describe('verify-ipfs script src attribute hardening', () => {
         const href = target.getAttribute('href') || '';
         const hashRoute = normalizeHashHref(href);
         if (!hashRoute) return;
-        navigateHashRoute(hashRoute.slice(1), 'push');
+        navigateHashRoute(routePath, { mode: 'push' });
       }, true);
     </script></body></html>`);
 
@@ -500,7 +500,7 @@ describe('verify-ipfs script src attribute hardening', () => {
         const href = target.getAttribute('href') || '';
         const hashRoute = normalizeHashHref(href);
         if (!hashRoute) return;
-        navigateHashRoute(hashRoute.slice(1), 'push');
+        navigateHashRoute(routePath, { mode: 'push' });
       }, true);
     </script></body></html>`);
 
@@ -510,8 +510,8 @@ describe('verify-ipfs script src attribute hardening', () => {
   it('fails when navigateHashRoute lacks push/replace rewrite logic', () => {
 
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
       };
       window.addEventListener('hashchange', () => {
         const rawHash = window.location.hash || '';
@@ -539,8 +539,8 @@ describe('verify-ipfs script src attribute hardening', () => {
   it('does not stitch navigateHashRoute across script tag boundaries', () => {
     const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body>
       <script>
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (mode === 'replace') {
           history.replaceState({}, '', routePath);
       </script><script>
@@ -583,8 +583,8 @@ describe('verify-ipfs script src attribute hardening', () => {
     const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const rawPushState = history.pushState.bind(history);
       const rawReplaceState = history.replaceState.bind(history);
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
       </script><script>(self.__next_f=self.__next_f||[]).push([1,"hashchange buildId _next/static __next_f"])</script><script>
         if (mode === 'replace') {
           rawReplaceState(history.state, '', routePath);
@@ -613,8 +613,8 @@ describe('verify-ipfs script src attribute hardening', () => {
     const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
       const rawPushState = history.pushState.bind(history);
       const rawReplaceState = history.replaceState.bind(history);
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (mode === 'replace') {
           rawReplaceState(history.state, '', routePath);
         }
@@ -644,8 +644,8 @@ describe('verify-ipfs script src attribute hardening', () => {
       <script>
       const rawPushState = history.pushState.bind(history);
       const rawReplaceState = history.replaceState.bind(history);
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (!rawHash.startsWith('#/')) return;
       </script><script>(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([1,"buildId _next/static __next_f"])</script><script>
       };
@@ -657,8 +657,8 @@ describe('verify-ipfs script src attribute hardening', () => {
       <script>
       const rawPushState = history.pushState.bind(history);
       const rawReplaceState = history.replaceState.bind(history);
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (mode === 'replace') {
           rawReplaceState(history.state, '', routePath);
         } else {
@@ -819,9 +819,9 @@ describe('verify-ipfs script src attribute hardening', () => {
     const body = routerScript ?? '';
     expect(body).toContain("document.addEventListener('click'");
     expect(body).toContain('const hashRoute = normalizeHashHref(href);');
-    expect(body).toContain("navigateHashRoute(hashRoute.slice(1), 'push');");
+    expect(body).toContain("navigateHashRoute(routePath, { mode: 'push' });");
     expect(body).toContain("window.addEventListener('hashchange', () => {");
-    expect(body).toContain("navigateHashRoute(routePath, 'replace');");
+    expect(body).toContain("navigateHashRoute(routePath, { mode: 'replace' });");
     expect(body).toContain("window.addEventListener('popstate', () => {");
     expect(body).toContain("syncHashWithPath('replace');");
     expect(body).toContain('const routePath = stripGatewayBase(window.location.pathname) + window.location.search;');
@@ -850,16 +850,16 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(routerScript).toBeTruthy();
 
     const body = routerScript ?? '';
-    expect(body).toContain('if (!routePath || !routePath.startsWith(\'/\')) return;');
+    expect(body).toContain('if (!nextRoute || !nextRoute.startsWith(\'/\')) return;');
     expect(body).toContain('const queryIndex = withoutHash.indexOf(\'?\');');
     expect(body).toContain('const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;');
-    expect(body).toContain('const hashUrl = toHashUrl(routePath);');
+    expect(body).toContain('const hashUrl = toHashUrl(nextRoute);');
   });
 
   it('passes when navigateHashRoute only uses its own inputs', () => {
     const run = runVerifierWithHtml(`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-ancestors 'none'"><meta name="referrer" content="no-referrer"></head><body><script>
-      const navigateHashRoute = (routePath, mode) => {
-        if (!routePath || !routePath.startsWith('/')) return;
+      const navigateHashRoute = (nextRoute, options = {}) => {
+        if (!nextRoute || !nextRoute.startsWith('/')) return;
         if (mode === 'replace') { history.replaceState({}, '', routePath); } else { history.pushState({}, '', routePath); }
       };
       window.addEventListener('hashchange', () => {
