@@ -114,12 +114,19 @@ function createTagInsertionPoint(tagName) {
 const insertIntoHead = createTagInsertionPoint('head');
 const insertIntoBody = createTagInsertionPoint('body');
 
-html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
-  const href = h1 ?? h2 ?? '';
-  if (!href.startsWith('/') || href.startsWith('//')) return full;
-  const hashHref = `#${href}`;
-  return `<a${before} href="${hashHref}"${after}>`;
+// Convert explicitly-marked Next path links into hash links for the standalone
+// single-file artifact while preserving normal path routing in ui/src runtime.
+html = html.replace(/<a\b([^>]*?)\sdata-hash-route=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (fullTag, before, hashA, hashB, after) => {
+  const hashRoute = hashA ?? hashB ?? '';
+  if (!hashRoute.startsWith('#/')) return fullTag;
+
+  const rewritten = `<a${before} href="${hashRoute}"${after}>`;
+  return rewritten
+    .replace(/\sdata-hash-route=(?:"[^"]*"|'[^']*')/i, '')
+    .replace(/\shref=(?:"[^"]*"|'[^']*')/i, ` href="${hashRoute}"`);
 });
+
+html = html.replace(/<a\b([^>]*?)\shref=("[^"]*"|'[^']*')([^>]*?)\shref=("[^"]*"|'[^']*')([^>]*)>/gi, '<a$1 href=$2$3$5>');
 
 insertIntoHead(`<script>(function(){
   const rawHash = window.location.hash || '';

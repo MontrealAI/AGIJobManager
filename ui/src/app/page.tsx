@@ -22,8 +22,8 @@ export default function Page() {
       {data?.settlementPaused && <Card>Settlement paused.</Card>}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card><h3 className="font-serif text-lg">Create Job</h3><p className="text-sm text-muted-foreground">Wallet required. Simulation-first.</p></Card>
-        <Card><h3 className="font-serif text-lg">Browse Jobs</h3><p className="text-sm">{String(data?.nextJobId ?? 0n)} total ids observed</p><Link className="underline" href="/jobs">Open jobs ledger</Link></Card>
-        <Card><h3 className="font-serif text-lg">Platform Config</h3><p className="text-xs">Quorum {String(data?.voteQuorum ?? 0n)} · approvals {String(data?.requiredValidatorApprovals ?? 0n)}</p><Link className="underline" href="/admin">Open ops console</Link></Card>
+        <Card><h3 className="font-serif text-lg">Browse Jobs</h3><p className="text-sm">{String(data?.nextJobId ?? 0n)} total ids observed</p><Link className="underline" href="/jobs" data-hash-route="#/jobs">Open jobs ledger</Link></Card>
+        <Card><h3 className="font-serif text-lg">Platform Config</h3><p className="text-xs">Quorum {String(data?.voteQuorum ?? 0n)} · approvals {String(data?.requiredValidatorApprovals ?? 0n)}</p><Link className="underline" href="/admin" data-hash-route="#/admin">Open ops console</Link></Card>
       </section>
     </div>
   );
