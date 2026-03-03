@@ -219,6 +219,39 @@ insertIntoBody(`<script>(function(){
     return hashBaseUrl + '#' + parsedHashRoute.routeInput;
   };
 
+  const sanitizeRoutePath = (routePath) => {
+    if (typeof routePath !== 'string' || !routePath.startsWith('/')) return null;
+    const parsed = parseRouteInput(routePath);
+    if (!parsed) return null;
+
+    const normalizedPath = parsed.pathname.replace(/\\/+$/, '') || '/';
+    const normalizedDocumentPath = documentPath.replace(/\\/+$/, '') || '/';
+    const documentDirectory = (() => {
+      if (normalizedDocumentPath === '/') return '/';
+      const trimmed = normalizedDocumentPath.slice(1);
+      const segments = trimmed.split('/').filter(Boolean);
+      if (!segments.length) return '/';
+      const last = segments[segments.length - 1] || '';
+      const prefix = last.toLowerCase().endsWith('.html') ? segments.slice(0, -1) : segments;
+      return '/' + prefix.join('/');
+    })();
+
+    const removePrefix = (value, prefix) => {
+      if (!prefix || prefix === '/') return value;
+      if (value === prefix) return '/';
+      if (value.startsWith(prefix + '/')) return value.slice(prefix.length);
+      return value;
+    };
+
+    let healed = normalizedPath;
+    healed = removePrefix(healed, normalizedDocumentPath);
+    healed = removePrefix(healed, documentDirectory);
+    healed = removePrefix(healed, '/index.html');
+    healed = removePrefix(healed, '/agijobmanager.html');
+
+    return (healed || '/') + parsed.search;
+  };
+
   let suppressRewrite = false;
   const rewriteHistory = (method) => {
     const original = history[method];
@@ -263,8 +296,10 @@ insertIntoBody(`<script>(function(){
 
   const navigateHashRoute = (routePath, mode) => {
     if (!routePath || !routePath.startsWith('/')) return;
+    const sanitizedRoute = sanitizeRoutePath(routePath);
+    if (!sanitizedRoute) return;
 
-    const hashUrl = toHashUrl(routePath);
+    const hashUrl = toHashUrl(sanitizedRoute);
     if (!hashUrl) return;
 
     suppressRewrite = true;
@@ -293,7 +328,9 @@ insertIntoBody(`<script>(function(){
     const rawHash = window.location.hash || '';
     if (!rawHash.startsWith('#/')) return;
     const routePath = rawHash.slice(1);
-    if (routePath === stripGatewayBase(window.location.pathname)) return;
+    const sanitizedRoute = sanitizeRoutePath(routePath);
+    if (!sanitizedRoute) return;
+    if (sanitizedRoute === stripGatewayBase(window.location.pathname)) return;
     navigateHashRoute(routePath, 'replace');
   });
 
