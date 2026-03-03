@@ -149,28 +149,12 @@ if (!/name=["']referrer["']/i.test(html)) {
 }
 
 insertIntoBody(`<script>(function(){
-  const detectGatewayBase = (pathname) => {
-    const segments = pathname.split('/').filter(Boolean);
-    if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
-    if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
-    return pathname;
-  };
-
   const documentPath = window.location.pathname;
   const documentSearch = window.location.search;
   const documentUrl = documentPath + documentSearch;
-  const gatewayBase = detectGatewayBase(documentPath);
 
   const rawPushState = history.pushState.bind(history);
   const rawReplaceState = history.replaceState.bind(history);
-
-  const stripGatewayBase = (pathname) => {
-    if (gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/')) {
-      if (pathname === gatewayBase) return '/';
-      if (pathname.startsWith(gatewayBase + '/')) return pathname.slice(gatewayBase.length);
-    }
-    return pathname;
-  };
 
   const toHashRoute = (input) => {
     if (typeof input !== 'string') return null;
@@ -200,74 +184,13 @@ insertIntoBody(`<script>(function(){
     return toHashRoute(parsed.pathname + parsed.search);
   }; // end normalizeHashHref
 
-  const parseRouteInput = (routeInput) => {
-    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
-    const hashIndex = routeInput.indexOf('#');
-    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
-    const queryIndex = withoutHash.indexOf('?');
-    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
-    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
-    return { pathname, search, routeInput: withoutHash };
-  }; // end parseRouteInput
-
-  const toGatewayUrl = (routeInput) => {
-    const parsedGatewayRoute = parseRouteInput(routeInput);
-    if (!parsedGatewayRoute) return null;
-    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const gatewayPathname = isContentAddressedGateway
-      ? gatewayBase + parsedGatewayRoute.pathname
-      : parsedGatewayRoute.pathname;
-    return gatewayPathname + parsedGatewayRoute.search;
-  };
-
   const toHashUrl = (routeInput) => {
-    const parsedHashRoute = parseRouteInput(routeInput);
-    if (!parsedHashRoute) return null;
-    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
-    return hashBaseUrl + '#' + parsedHashRoute.routeInput;
+    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
+    return documentUrl + '#' + routeInput;
   };
-
-  let suppressRewrite = false;
-  const rewriteHistory = (method) => {
-    const original = history[method];
-    history[method] = function(state, title, url) {
-      if (!suppressRewrite && typeof url === 'string') {
-        const hashRoute = toHashRoute(url);
-        if (hashRoute) {
-          return original.call(this, state, title, hashRoute);
-        }
-      }
-      return original.call(this, state, title, url);
-    };
-  };
-
-  rewriteHistory('pushState');
-  rewriteHistory('replaceState');
 
   const dispatchRouteUpdate = (state) => {
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
-  };
-
-  const isDocumentLikePath = (pathname) => {
-    const stripped = stripGatewayBase(pathname || '');
-    const leaf = stripped.split('/').filter(Boolean).pop() || '';
-    return leaf.toLowerCase().endsWith('.html');
-  };
-
-  const syncHashWithPath = (mode) => {
-    if (isDocumentLikePath(window.location.pathname)) return;
-    const routePath = stripGatewayBase(window.location.pathname) + window.location.search;
-    const hashUrl = toHashUrl(routePath);
-    if (!hashUrl) return;
-
-    suppressRewrite = true;
-    if (mode === 'push') {
-      rawPushState(history.state, '', hashUrl);
-    } else {
-      rawReplaceState(history.state, '', hashUrl);
-    }
-    suppressRewrite = false;
   };
 
   const navigateHashRoute = (nextRoute, options = {}) => {
@@ -277,15 +200,33 @@ insertIntoBody(`<script>(function(){
     const hashUrl = toHashUrl(nextRoute);
     if (!hashUrl) return;
 
-    suppressRewrite = true;
     if (mode === 'replace') {
       rawReplaceState(history.state, '', hashUrl);
     } else {
       rawPushState(history.state, '', hashUrl);
     }
-    suppressRewrite = false;
 
     dispatchRouteUpdate(history.state);
+  };
+
+  const sanitizeInitialHash = () => {
+    const currentHash = window.location.hash || '';
+    if (!currentHash) return null;
+
+    if (currentHash.startsWith('#/#/')) return '#/';
+    if (currentHash.startsWith('##/')) return '#/';
+
+    const value = currentHash.toLowerCase();
+    const lowerPathname = window.location.pathname.toLowerCase();
+    if (value.includes('agijobmanager.html') || (lowerPathname !== '/' && value.includes(lowerPathname))) {
+      return '#/';
+    }
+
+    if (!currentHash.startsWith('#/')) {
+      return '#/';
+    }
+
+    return currentHash;
   };
 
   const routeViewCopy = {
@@ -356,30 +297,16 @@ insertIntoBody(`<script>(function(){
     host.innerHTML = routeContent[normalized] || routeContent['/'];
   };
 
-  if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
-    const routePath = stripGatewayBase(window.location.pathname);
-    if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {
-      const hashUrl = toHashUrl(routePath + window.location.search);
-      if (!hashUrl) return;
-      suppressRewrite = true;
-      rawReplaceState(history.state, '', hashUrl);
-      suppressRewrite = false;
-    }
-  }
-
   window.addEventListener('hashchange', () => {
-    const rawHash = window.location.hash || '';
+    const rawHash = sanitizeInitialHash() || '';
+    if (rawHash !== (window.location.hash || '')) {
+      rawReplaceState(history.state, '', documentUrl + rawHash);
+    }
     if (!rawHash.startsWith('#/')) return;
     const routePath = rawHash.slice(1);
-    if (routePath === stripGatewayBase(window.location.pathname)) return;
     navigateHashRoute(routePath, { mode: 'replace' });
     updateRoutePanel(routePath);
     updatePrimaryView(routePath);
-  });
-
-  window.addEventListener('popstate', () => {
-    if (window.location.hash.startsWith('#/')) return;
-    syncHashWithPath('replace');
   });
 
   document.addEventListener('click', (event) => {
@@ -405,7 +332,10 @@ insertIntoBody(`<script>(function(){
     updatePrimaryView(routePath);
   }, true);
 
-  const startupHash = window.location.hash || '';
+  const startupHash = sanitizeInitialHash() || '';
+  if (startupHash && startupHash !== (window.location.hash || '')) {
+    rawReplaceState(history.state, '', documentUrl + startupHash);
+  }
   if (startupHash.startsWith('#/')) {
     const routePath = startupHash.slice(1);
     navigateHashRoute(routePath, { mode: 'replace' });
@@ -637,10 +567,6 @@ function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
     throw new Error('Router bootstrap must not declare basePath; use a unique helper-local pathname binding to avoid parse-collision regressions.');
   }
 
-  const gatewayPathnameDeclarations = routerWindow.match(/\bconst\s+gatewayPathname\s*=/g) ?? [];
-  if (gatewayPathnameDeclarations.length !== 1) {
-    throw new Error(`Router bootstrap must declare gatewayPathname exactly once; found ${gatewayPathnameDeclarations.length}.`);
-  }
 }
 
 function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
