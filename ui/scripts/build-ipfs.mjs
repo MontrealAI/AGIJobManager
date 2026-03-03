@@ -42,9 +42,38 @@ function resolveLocalAsset(assetPath) {
   return null;
 }
 
+function stripScriptTags(sourceHtml) {
+  let cursor = 0;
+  let output = '';
+
+  while (cursor < sourceHtml.length) {
+    const openIndex = sourceHtml.toLowerCase().indexOf('<script', cursor);
+    if (openIndex === -1) {
+      output += sourceHtml.slice(cursor);
+      break;
+    }
+
+    output += sourceHtml.slice(cursor, openIndex);
+
+    const openEnd = sourceHtml.indexOf('>', openIndex);
+    if (openEnd === -1) {
+      throw new Error('Malformed <script> tag found while building single-file artifact.');
+    }
+
+    const closeIndex = sourceHtml.toLowerCase().indexOf('</script>', openEnd + 1);
+    if (closeIndex === -1) {
+      throw new Error('Unclosed <script> tag found while building single-file artifact.');
+    }
+
+    cursor = closeIndex + '</script>'.length;
+  }
+
+  return output;
+}
+
 // For the IPFS single-file artifact we intentionally remove framework runtime scripts
 // and keep a deterministic static document + explicit hash router bootstrap.
-html = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+html = stripScriptTags(html);
 
 for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   const fullTag = match[0];
