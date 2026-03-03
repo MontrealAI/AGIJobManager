@@ -156,10 +156,26 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
   };
 
   rewriteHistory('pushState');
-  rewriteHistory('replaceState');
+  const normalizeIncomingHashRoute = (rawHash) => {
+    if (typeof rawHash !== 'string' || rawHash.length === 0) return null;
+    if (!rawHash.startsWith('#')) return null;
 
-  const dispatchRouteUpdate = (state) => {
-    window.dispatchEvent(new PopStateEvent('popstate', { state }));
+    const hashPayload = rawHash.slice(1);
+    if (!hashPayload.startsWith('/')) return null;
+
+    let collapsedHashPrefixes = hashPayload;
+    while (collapsedHashPrefixes.startsWith('/#/')) {
+      collapsedHashPrefixes = '/' + collapsedHashPrefixes.slice(3);
+    }
+    const routePath = toHashRoute(collapsedHashPrefixes);
+    return routePath ? routePath.slice(1) : null;
+  };
+
+    const routePath = normalizeIncomingHashRoute(rawHash);
+    if (!routePath) return;
+  const startupRoute = normalizeIncomingHashRoute(startupHash);
+  if (startupRoute) {
+    navigateHashRoute(startupRoute, 'replace');
   };
 
   const isDocumentLikePath = (pathname) => {

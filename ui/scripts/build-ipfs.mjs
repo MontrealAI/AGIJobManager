@@ -261,6 +261,21 @@ insertIntoBody(`<script>(function(){
     suppressRewrite = false;
   };
 
+  const normalizeIncomingHashRoute = (rawHash) => {
+    if (typeof rawHash !== 'string' || rawHash.length === 0) return null;
+    if (!rawHash.startsWith('#')) return null;
+
+    const hashPayload = rawHash.slice(1);
+    if (!hashPayload.startsWith('/')) return null;
+
+    let collapsedHashPrefixes = hashPayload;
+    while (collapsedHashPrefixes.startsWith('/#/')) {
+      collapsedHashPrefixes = '/' + collapsedHashPrefixes.slice(3);
+    }
+    const routePath = toHashRoute(collapsedHashPrefixes);
+    return routePath ? routePath.slice(1) : null;
+  };
+
   const navigateHashRoute = (routePath, mode) => {
     if (!routePath || !routePath.startsWith('/')) return;
 
@@ -291,8 +306,8 @@ insertIntoBody(`<script>(function(){
 
   window.addEventListener('hashchange', () => {
     const rawHash = window.location.hash || '';
-    if (!rawHash.startsWith('#/')) return;
-    const routePath = rawHash.slice(1);
+    const routePath = normalizeIncomingHashRoute(rawHash);
+    if (!routePath) return;
     if (routePath === stripGatewayBase(window.location.pathname)) return;
     navigateHashRoute(routePath, 'replace');
   });
@@ -323,8 +338,9 @@ insertIntoBody(`<script>(function(){
   }, true);
 
   const startupHash = window.location.hash || '';
-  if (startupHash.startsWith('#/')) {
-    navigateHashRoute(startupHash.slice(1), 'replace');
+  const startupRoute = normalizeIncomingHashRoute(startupHash);
+  if (startupRoute) {
+    navigateHashRoute(startupRoute, 'replace');
   }
 })();</script>`);
 
