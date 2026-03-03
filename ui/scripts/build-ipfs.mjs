@@ -114,13 +114,6 @@ function createTagInsertionPoint(tagName) {
 const insertIntoHead = createTagInsertionPoint('head');
 const insertIntoBody = createTagInsertionPoint('body');
 
-html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
-  const href = h1 ?? h2 ?? '';
-  if (!href.startsWith('/') || href.startsWith('//')) return full;
-  const hashHref = `#${href}`;
-  return `<a${before} href="${hashHref}"${after}>`;
-});
-
 insertIntoHead(`<script>(function(){
   const rawHash = window.location.hash || '';
   if (!rawHash.startsWith('#/')) return;

@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
@@ -18,7 +17,7 @@ export function Nav() {
       <div className="container-shell flex h-16 items-center justify-between">
         <div className="font-serif text-3xl">AGIJobManager</div>
         <nav className="flex gap-4 text-sm">
-          <Link href='/'>Dashboard</Link><Link href='/jobs'>Jobs</Link><Link href='/identity'>Identity</Link><Link href='/admin'>Admin</Link><Link href='/advanced'>Advanced</Link><Link href='/design'>Design</Link><Link href='/deployment'>Deployment</Link><Link href='/demo'>Demo</Link>
+          <a href="#/">Dashboard</a><a href="#/jobs">Jobs</a><a href="#/identity">Identity</a><a href="#/admin">Admin</a><a href="#/advanced">Advanced</a><a href="#/design">Design</a><a href="#/deployment">Deployment</a><a href="#/demo">Demo</a>
         </nav>
         <div className='flex items-center gap-2'><Button variant='outline' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>Theme</Button><ConnectButton showBalance={false} /></div>
       </div>
