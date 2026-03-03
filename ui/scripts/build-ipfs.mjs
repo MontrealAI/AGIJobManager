@@ -611,6 +611,10 @@ function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
     throw new Error('normalizeHashHref must declare `let parsed;` in generated single-file artifact.');
   }
 
+  if (!/if \(parsed\.hash && parsed\.hash\.startsWith\('#\/'\)\) \{\s*return parsed\.hash;\s*\}/.test(helperBody)) {
+    throw new Error('normalizeHashHref must preserve the parsed.hash return block with balanced braces.');
+  }
+
   if (/\bconst\s+parsed\s*=\s*parseRouteInput\(routeInput\)\s*;/.test(helperBody)) {
     throw new Error('normalizeHashHref contains a conflicting `const parsed` declaration and will fail to parse.');
   }
@@ -632,6 +636,12 @@ function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
   const routerWindow = routerScriptEnd > routerScriptStart
     ? singleFileHtml.slice(routerScriptStart, routerScriptEnd)
     : singleFileHtml.slice(routerScriptStart);
+
+  const normalizeClosureIndex = routerWindow.indexOf('}; // end normalizeHashHref');
+  const parseRouteInputIndex = routerWindow.indexOf('const parseRouteInput = (routeInput) => {');
+  if (normalizeClosureIndex < 0 || parseRouteInputIndex < 0 || normalizeClosureIndex > parseRouteInputIndex) {
+    throw new Error('Router bootstrap must keep normalizeHashHref closed before parseRouteInput declarations.');
+  }
 
   if (/\bconst\s+basePath\s*=/.test(routerWindow)) {
     throw new Error('Router bootstrap must not declare basePath; use a unique helper-local pathname binding to avoid parse-collision regressions.');
