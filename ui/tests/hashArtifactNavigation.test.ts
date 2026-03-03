@@ -71,26 +71,28 @@ describe('committed single-file hash navigation', () => {
       expect(html, `${label} missing dispatchRouteUpdate`).toContain("window.dispatchEvent(new PopStateEvent('popstate', { state }));");
       expect(html, `${label} missing hashchange listener`).toContain('window.addEventListener(\'hashchange\'');
       expect(html, `${label} missing normalizeHashHref`).toContain('const normalizeHashHref = (input) => {');
-      expect(html, `${label} missing popstate listener`).toContain("window.addEventListener('popstate'");
+      expect(html, `${label} should not install pathname-derived popstate rewrites`).not.toContain("window.addEventListener('popstate'");
     }
   });
 
-  it('keeps deep-link + history back/forward bootstrap guards', () => {
+  it('keeps hash-only startup bootstrap guards and click navigation push handling', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
-      expect(html, `${label} missing initial path-to-hash bootstrap`).toContain("if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {");
-      expect(html, `${label} missing hashchange route update`).toContain("navigateHashRoute(routePath, { mode: 'replace' });");
-      expect(html, `${label} missing popstate hash sync`).toContain("syncHashWithPath('replace');");
+      expect(html, `${label} missing malformed startup hash sanitizer`).toContain("if (hasMalformedStartupHash(window.location.hash || '')) {");
+      expect(html, `${label} missing startup hash normalization`).toContain("rawReplaceState(history.state, '', documentUrl + '#/');");
+      expect(html, `${label} must not derive startup hash from pathname`).not.toContain("if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {");
+      expect(html, `${label} must not sync from pathname-based popstate handler`).not.toContain("syncHashWithPath('replace');");
       expect(html, `${label} missing hash click navigation push`).toContain("navigateHashRoute(routePath, { mode: 'push' });");
     }
   });
 
-  it('keeps deep-link conversion logic for static-hosting direct loads', () => {
+  it('keeps deep-link conversion logic pathname-preserving and hash-only', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
-      expect(html, `${label} missing initial-load rewrite guard`).toContain("if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {");
-      expect(html, `${label} missing gateway-path normalization`).toContain('const routePath = stripGatewayBase(window.location.pathname);');
-      expect(html, `${label} missing initial hash rewrite`).toContain("rawReplaceState(history.state, '', hashUrl);");
+      expect(html, `${label} missing stable pathname capture`).toContain('const documentUrl = documentPath + documentSearch;');
+      expect(html, `${label} missing hash-only route parser`).toContain('const getRouteFromHash = () => {');
+      expect(html, `${label} must not derive routePath from stripGatewayBase(pathname) bootstrap`).not.toContain('const routePath = stripGatewayBase(window.location.pathname);');
+      expect(html, `${label} missing startup hash rewrite to canonical #/`).toContain("rawReplaceState(history.state, '', documentUrl + '#/');");
     }
   });
 
@@ -176,9 +178,9 @@ describe('committed single-file hash navigation', () => {
       expect(scriptBody, `${label} leaked detached routePath guard outside hashchange handler`).not.toContain(`if (routePath === stripGatewayBase(window.location.pathname)) return;
   window.addEventListener('popstate'`);
 
-      expect(scriptBody, `${label} hashchange handler missing routePath extraction`).toContain('const routePath = rawHash.slice(1);');
-      expect(scriptBody, `${label} hashchange handler missing same-path guard`).toContain('if (routePath === stripGatewayBase(window.location.pathname)) return;');
-      expect(scriptBody, `${label} hashchange handler missing replace navigation`).toContain("navigateHashRoute(routePath, { mode: 'replace' });");
+      expect(scriptBody, `${label} hashchange handler missing hash-only route extraction`).toContain('const routePath = getRouteFromHash();');
+      expect(scriptBody, `${label} hashchange handler should not compare against pathname`).not.toContain('if (routePath === stripGatewayBase(window.location.pathname)) return;');
+      expect(scriptBody, `${label} hashchange handler should not rewrite using replace navigation`).not.toContain("navigateHashRoute(routePath, { mode: 'replace' });");
     }
   });
 
