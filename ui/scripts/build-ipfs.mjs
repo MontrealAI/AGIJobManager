@@ -226,14 +226,24 @@ insertIntoBody(`<script>(function(){
 
   const hasMalformedStartupHash = (rawHash) => {
     if (!rawHash) return false;
-    if (rawHash.startsWith('#/')) return false;
-
     const lowerHash = rawHash.toLowerCase();
-    if (lowerHash.includes('agijobmanager.html')) return true;
     if (rawHash.startsWith('#/#/')) return true;
     if (rawHash.startsWith('##/')) return true;
+    if (lowerHash.includes('agijobmanager.html')) return true;
     if (rawHash.includes(documentPath)) return true;
     if (rawHash.includes(gatewayBase)) return true;
+
+    if (rawHash.startsWith('#/')) {
+      const routeCandidate = rawHash.slice(2);
+      const lowerRouteCandidate = routeCandidate.toLowerCase();
+      if (!routeCandidate) return false;
+      if (routeCandidate.startsWith('/')) return true;
+      if (lowerRouteCandidate.includes('agijobmanager.html')) return true;
+      if (lowerRouteCandidate.startsWith('agijobmanager/')) return true;
+      if (lowerRouteCandidate.startsWith('ipfs/') || lowerRouteCandidate.startsWith('ipns/')) return true;
+      return false;
+    }
+
     return true;
   };
 
