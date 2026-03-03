@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import * as parse5 from 'parse5';
 
 const uiRoot = process.cwd();
 const repoRoot = path.resolve(uiRoot, '..');
@@ -43,33 +44,19 @@ function resolveLocalAsset(assetPath) {
 }
 
 function stripScriptTags(sourceHtml) {
-  let cursor = 0;
-  let output = '';
+  const document = parse5.parse(sourceHtml);
 
-  while (cursor < sourceHtml.length) {
-    const openIndex = sourceHtml.toLowerCase().indexOf('<script', cursor);
-    if (openIndex === -1) {
-      output += sourceHtml.slice(cursor);
-      break;
-    }
+  const removeScripts = (node) => {
+    if (!node || !Array.isArray(node.childNodes) || node.childNodes.length === 0) return;
 
-    output += sourceHtml.slice(cursor, openIndex);
+    node.childNodes = node.childNodes.filter((child) => child.nodeName !== 'script');
+    node.childNodes.forEach(removeScripts);
+  };
 
-    const openEnd = sourceHtml.indexOf('>', openIndex);
-    if (openEnd === -1) {
-      throw new Error('Malformed <script> tag found while building single-file artifact.');
-    }
-
-    const closeIndex = sourceHtml.toLowerCase().indexOf('</script>', openEnd + 1);
-    if (closeIndex === -1) {
-      throw new Error('Unclosed <script> tag found while building single-file artifact.');
-    }
-
-    cursor = closeIndex + '</script>'.length;
-  }
-
-  return output;
+  removeScripts(document);
+  return parse5.serialize(document);
 }
+
 
 // For the IPFS single-file artifact we intentionally remove framework runtime scripts
 // and keep a deterministic static document + explicit hash router bootstrap.
