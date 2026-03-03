@@ -509,7 +509,7 @@ const validateNavigateHashRouteBody = (navigateHashRouteBody) => {
 
 
 const extractNavigateHashRouteBounds = (scriptBody) => {
-  const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/;
+  const declarationPattern = /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(nextRoute\s*,\s*options\s*=\s*\{\}\)\s*=>\s*\{/;
   const match = declarationPattern.exec(scriptBody);
   if (!match) return null;
 
@@ -654,7 +654,7 @@ const hasRouterBootstrapCandidate = uncommentedScriptBodies.some((body) => (
 
 const hasRouterBootstrapCoherence = uncommentedScriptBodies.some((body) => (
   /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
-  && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
+  && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(nextRoute\s*,\s*options\s*=\s*\{\}\)\s*=>\s*\{/.test(body)
   && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
   && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
 ));
@@ -670,7 +670,7 @@ if (hasRouterBootstrapCandidate && !hasRouterBootstrapCoherence) {
 if (hasRouterBootstrapCoherence) {
   const coherentBody = uncommentedScriptBodies.find((body) => (
     /(?:const|let|var)\s+normalizeHashHref\s*=\s*\(input\)\s*=>\s*\{/.test(body)
-    && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(routePath\s*,\s*mode\)\s*=>\s*\{/.test(body)
+    && /(?:const|let|var)\s+navigateHashRoute\s*=\s*\(nextRoute\s*,\s*options\s*=\s*\{\}\)\s*=>\s*\{/.test(body)
     && /window\.addEventListener\(\s*['"`]hashchange['"`]/.test(body)
     && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
   ));

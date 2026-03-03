@@ -10,7 +10,7 @@ const extractRouterBootstrapScript = (html: string) => {
   let match: RegExpExecArray | null;
   while ((match = scriptPattern.exec(html)) !== null) {
     const body = match[1] ?? '';
-    if (body.includes('const navigateHashRoute = (routePath, mode) => {') && body.includes("document.addEventListener('click'")) {
+    if (body.includes('const navigateHashRoute = (nextRoute, options = {}) => {') && body.includes("document.addEventListener('click'")) {
       return body;
     }
   }
