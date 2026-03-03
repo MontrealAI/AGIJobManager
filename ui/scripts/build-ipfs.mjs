@@ -355,6 +355,13 @@ insertIntoBody(`<script>(function(){
     '/demo': '<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2><p>Fixtures cover lifecycle edge-cases, malformed URI blocking, and degraded RPC behavior.</p><p>Writes are disabled while preserving operator-visible action panels.</p></section>'
   };
 
+  const escapeHtml = (value) => String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
   const renderJobDetail = (routePath) => {
     const rawJobId = routePath.slice('/jobs/'.length);
     let jobId = rawJobId;
@@ -363,7 +370,8 @@ insertIntoBody(`<script>(function(){
     } catch (_error) {
       jobId = rawJobId;
     }
-    return '<section data-testid="route-job-detail"><h2>Job Detail · ' + jobId + '</h2><p>Route-specific detail panels: core state, dispute posture, spec/completion URI safety, and ENS identity snapshot.</p><p>Eligibility and write safety require simulation-first preflight checks.</p></section>';
+    const escapedJobId = escapeHtml(jobId);
+    return '<section data-testid="route-job-detail"><h2>Job Detail · ' + escapedJobId + '</h2><p>Route-specific detail panels: core state, dispute posture, spec/completion URI safety, and ENS identity snapshot.</p><p>Eligibility and write safety require simulation-first preflight checks.</p></section>';
   };
 
   const updatePrimaryView = (routePath) => {
