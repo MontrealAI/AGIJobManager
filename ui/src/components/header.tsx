@@ -8,9 +8,9 @@ export function Header({ isDark, onToggleTheme, degradedRpc }: { isDark: boolean
     <header className="border-b border-border/80 bg-background/95 backdrop-blur">
       <div className="container-shell flex items-center justify-between py-5">
         <nav className="flex items-center gap-5 text-sm">
-          <Link href="#/" className="font-medium">Dashboard</Link>
-          <Link href="#/jobs">Jobs</Link>
-          <Link href="#/admin">Ops Console</Link>
+          <Link href="/" data-hash-route="#/" className="font-medium">Dashboard</Link>
+          <Link href="/jobs" data-hash-route="#/jobs">Jobs</Link>
+          <Link href="/admin" data-hash-route="#/admin">Ops Console</Link>
           {degradedRpc && <span className="pill border-yellow-500/50 text-yellow-400">Degraded RPC</span>}
         </nav>
         <div className="flex items-center gap-3">
