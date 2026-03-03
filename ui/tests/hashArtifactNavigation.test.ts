@@ -238,6 +238,22 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+  it('does not contain router splice corruption signatures from malformed artifact merges', () => {
+    const corruptionSignatures = [
+      "? gatewayBase + parsedGatewayRoute.pathname\n   rewriteHistory('replaceState');",
+      "const routePath = startupHash.slice(1);\n     navigateHashRoute(routePath, { mode: 'replace' });\n     updateRoutePanel(routePath);\n   } else {\n     updateRoutePanel('/');\n     const stripped = stripGatewayBase(pathname || '');",
+      "navigateHashRoute(hashRoute.slice(1), 'push');",
+      "navigateHashRoute(startupHash.slice(1), 'replace');"
+    ];
+
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      for (const signature of corruptionSignatures) {
+        expect(html, `${label} contains known malformed router splice signature`).not.toContain(signature);
+      }
+    }
+  });
+
   it('does not contain duplicated Next flight bootstrap markers', () => {
     const markers = [
       '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])',
