@@ -229,6 +229,31 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+
+  it('renders distinct route outlets with unique test ids in the single-file artifact router payload', () => {
+    const requiredRouteMarkers = [
+      'data-testid="route-dashboard"',
+      'data-testid="route-jobs"',
+      'data-testid="route-job-detail"',
+      'data-testid="route-identity"',
+      'data-testid="route-admin"',
+      'data-testid="route-advanced"',
+      'data-testid="route-design"',
+      'data-testid="route-deployment"'
+    ];
+
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      for (const marker of requiredRouteMarkers) {
+        expect(html, `${label} missing route marker ${marker}`).toContain(marker);
+      }
+
+      expect(html, `${label} should support hash canonicalization without pathname leakage`).toContain("const canonicalHash = '#' + routePath;");
+      expect(html, `${label} should sanitize route paths for malformed hashes`).toContain('const sanitizeRoutePath = (routePath) => {');
+      expect(html, `${label} should use dedicated route outlet replacement`).toContain('data-ipfs-main-outlet="true"');
+    }
+  });
+
   it('contains only syntactically parseable inline scripts', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
