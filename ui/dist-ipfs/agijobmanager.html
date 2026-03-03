@@ -227,6 +227,14 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     if (mode === 'push') {
       rawPushState(history.state, '', hashUrl);
     } else {
+  const initialHash = window.location.hash || '';
+  if (initialHash.startsWith('#/')) {
+    const routePath = initialHash.slice(1);
+    if (routePath !== stripGatewayBase(window.location.pathname)) {
+      navigateHashRoute(routePath, 'replace');
+    }
+  }
+
       rawReplaceState(history.state, '', hashUrl);
     }
     suppressRewrite = false;

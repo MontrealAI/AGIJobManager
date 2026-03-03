@@ -320,6 +320,14 @@ insertIntoBody(`<script>(function(){
     });
   };
 
+  const initialHash = window.location.hash || '';
+  if (initialHash.startsWith('#/')) {
+    const routePath = initialHash.slice(1);
+    if (routePath !== stripGatewayBase(window.location.pathname)) {
+      navigateHashRoute(routePath, 'replace');
+    }
+  }
+
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
     if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {

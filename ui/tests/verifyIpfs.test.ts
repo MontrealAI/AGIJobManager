@@ -700,6 +700,20 @@ describe('verify-ipfs script src attribute hardening', () => {
     }
   });
 
+  it('committed artifacts apply initial hash deep links through navigateHashRoute bootstrap', () => {
+    const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
+
+    for (const artifactPath of [rootArtifactPath, distArtifactPath]) {
+      const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+      const routerScript = extractRouterBootstrapScript(artifactHtml);
+      expect(routerScript).toBeTruthy();
+      expect(routerScript).toContain("const initialHash = window.location.hash || '';");
+      expect(routerScript).toContain("if (initialHash.startsWith('#/')) {");
+      expect(routerScript).toContain("navigateHashRoute(routePath, 'replace');");
+    }
+  });
+
   it('committed artifacts keep normalizeHashHref outside detectGatewayBase and available to click handler', () => {
     const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
