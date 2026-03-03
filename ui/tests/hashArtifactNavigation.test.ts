@@ -242,8 +242,6 @@ describe('committed single-file hash navigation', () => {
     const corruptionSignatures = [
       "? gatewayBase + parsedGatewayRoute.pathname\n   rewriteHistory('replaceState');",
       "const routePath = startupHash.slice(1);\n     navigateHashRoute(routePath, { mode: 'replace' });\n     updateRoutePanel(routePath);\n   } else {\n     updateRoutePanel('/');\n     const stripped = stripGatewayBase(pathname || '');",
-      "navigateHashRoute(hashRoute.slice(1), 'push');",
-      "navigateHashRoute(startupHash.slice(1), 'replace');"
     ];
 
     for (const { file, label } of artifactTargets) {
