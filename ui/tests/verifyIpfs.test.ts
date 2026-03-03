@@ -125,7 +125,7 @@ function assertInlineScriptsParseable(html: string): void {
 function extractBootstrapScripts(html: string): string[] {
   return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
     .map((m) => m[1])
-    .filter((body) => body.includes('const detectGatewayBase = (pathname) => {'));
+    .filter((body) => body.includes('const normalizeHashHref = (input) => {'));
 }
 
 function extractRouterBootstrapScript(html: string): string | null {
@@ -700,7 +700,7 @@ describe('verify-ipfs script src attribute hardening', () => {
     }
   });
 
-  it('committed artifacts keep normalizeHashHref outside detectGatewayBase and available to click handler', () => {
+  it('committed artifacts keep normalizeHashHref available to click handler', () => {
     const rootArtifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const distArtifactPath = path.resolve(__dirname, '../dist-ipfs/agijobmanager.html');
 
@@ -711,11 +711,6 @@ describe('verify-ipfs script src attribute hardening', () => {
 
       const routerScript = scripts.find((body) => body.includes('const normalizeHashHref = (input) => {'));
       expect(routerScript).toBeTruthy();
-
-      const detectBaseMatch = (routerScript ?? '').match(/const detectGatewayBase = \(pathname\) => \{([\s\S]*?)\n  \};/);
-      const detectBaseBody = detectBaseMatch?.[1] ?? '';
-      expect(detectBaseBody).not.toContain('const href = input;');
-      expect(detectBaseBody).not.toContain('normalizeHashHref');
 
       const normalizeIndex = (routerScript ?? '').indexOf('const normalizeHashHref = (input) => {');
       const clickUseIndex = (routerScript ?? '').indexOf('const hashRoute = normalizeHashHref(href);');
@@ -810,7 +805,7 @@ describe('verify-ipfs script src attribute hardening', () => {
     }
   });
 
-  it('committed artifact router bootstrap keeps click/hash/popstate handling for deep-link and history navigation', () => {
+  it('committed artifact router bootstrap keeps click/hash handling for deep-link and history navigation', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
     const routerScript = extractRouterBootstrapScript(artifactHtml);
@@ -822,9 +817,6 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toContain("navigateHashRoute(routePath, { mode: 'push' });");
     expect(body).toContain("window.addEventListener('hashchange', () => {");
     expect(body).toContain("navigateHashRoute(routePath, { mode: 'replace' });");
-    expect(body).toContain("window.addEventListener('popstate', () => {");
-    expect(body).toContain("syncHashWithPath('replace');");
-    expect(body).toContain('const routePath = stripGatewayBase(window.location.pathname) + window.location.search;');
     expect(body).toContain('window.dispatchEvent(new PopStateEvent(\'popstate\', { state }));');
   });
 
@@ -837,11 +829,26 @@ describe('verify-ipfs script src attribute hardening', () => {
 
     const body = routerScript ?? '';
     expect(body).toContain('const documentUrl = documentPath + documentSearch;');
-    expect(body).toContain('const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;');
-    expect(body).toContain("return hashBaseUrl + '#' + parsedHashRoute.routeInput;");
+    expect(body).toContain("return documentUrl + '#' + routeInput;");
     expect(body).not.toContain("return '/#' + parsedHashRoute.routeInput;");
     expect(body).not.toContain('/#/#/');
   });
+  it('committed artifact avoids pathname-derived startup bootstrapping', () => {
+    const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
+    const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
+
+    const routerScript = extractRouterBootstrapScript(artifactHtml);
+    expect(routerScript).toBeTruthy();
+
+    const body = routerScript ?? '';
+    expect(body).not.toContain('routePath = stripGatewayBase(window.location.pathname)');
+    expect(body).not.toContain('routePath === stripGatewayBase(window.location.pathname)');
+    expect(body).not.toContain("rawHash.slice(1), 'replace'");
+    expect(body).toContain('const sanitizeInitialHash = () => {');
+    expect(body).toContain("value.includes('agijobmanager.html')");
+    expect(body).toContain("if (!currentHash.startsWith('#/')) {");
+  });
+
   it('committed artifact supports deep-link job detail route tokens', () => {
     const artifactPath = path.resolve(__dirname, '../../agijobmanager.html');
     const artifactHtml = fs.readFileSync(artifactPath, 'utf8');
@@ -851,8 +858,6 @@ describe('verify-ipfs script src attribute hardening', () => {
 
     const body = routerScript ?? '';
     expect(body).toContain('if (!nextRoute || !nextRoute.startsWith(\'/\')) return;');
-    expect(body).toContain('const queryIndex = withoutHash.indexOf(\'?\');');
-    expect(body).toContain('const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;');
     expect(body).toContain('const hashUrl = toHashUrl(nextRoute);');
   });
 
