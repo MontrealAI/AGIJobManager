@@ -192,6 +192,37 @@ insertIntoBody(`<script>(function(){
     return toHashRoute(parsed.pathname + parsed.search);
   }; // end normalizeHashHref
 
+  const baseRoutes = new Set(['/', '/jobs', '/identity', '/admin', '/advanced', '/design', '/deployment', '/demo']);
+
+  const sanitizeRoutePath = (routePath) => {
+    if (typeof routePath !== 'string' || !routePath) return '/';
+
+    const routeWithoutHash = routePath.split('#')[0] || '/';
+    const withoutQuery = routeWithoutHash.split('?')[0] || '/';
+    const normalizedSlash = withoutQuery.startsWith('/') ? withoutQuery : '/' + withoutQuery;
+    const collapsed = normalizedSlash.replace(/\\/{2,}/g, '/');
+    const lowered = collapsed.toLowerCase();
+
+    if (lowered.includes('agijobmanager.html')) return '/';
+    if (lowered.startsWith('/agijobmanager/')) return '/';
+    if (lowered.startsWith('/ipfs/') || lowered.startsWith('/ipns/')) return '/';
+
+    if (collapsed.startsWith('/jobs/')) {
+      const jobId = collapsed.slice('/jobs/'.length);
+      if (!jobId || jobId.startsWith('/')) return '/jobs';
+      let decodedJobId = jobId;
+      try {
+        decodedJobId = decodeURIComponent(jobId);
+      } catch (_error) {
+        decodedJobId = jobId;
+      }
+      return '/jobs/' + encodeURIComponent(decodedJobId);
+    }
+
+    if (baseRoutes.has(collapsed)) return collapsed;
+    return '/';
+  };
+
   const parseRouteInput = (routeInput) => {
     if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
     const hashIndex = routeInput.indexOf('#');
@@ -251,7 +282,7 @@ insertIntoBody(`<script>(function(){
     const rawHash = window.location.hash || '';
     if (!rawHash.startsWith('#/')) return '/';
     const normalized = rawHash.slice(1);
-    return normalized.startsWith('/') ? normalized : '/';
+    return sanitizeRoutePath(normalized.startsWith('/') ? normalized : '/');
   };
 
   const navigateHashRoute = (nextRoute, options = {}) => {
@@ -287,6 +318,8 @@ insertIntoBody(`<script>(function(){
     return routeViewCopy[routePath] ? routePath : '/';
   };
 
+  const isJobDetailRoute = (routePath) => routePath.startsWith('/jobs/') && routePath.length > '/jobs/'.length;
+
   const updateRoutePanel = (routePath) => {
     const normalized = normalizeRouteForView(routePath);
     const view = routeViewCopy[normalized] || routeViewCopy['/'];
@@ -312,29 +345,63 @@ insertIntoBody(`<script>(function(){
   };
 
   const routeContent = {
-    '/': '<h2>Dashboard</h2><p>Read-only-first supervision console for autonomous agents with human owner oversight.</p>',
-    '/jobs': '<h2>Jobs</h2><p>Jobs ledger route active.</p>',
-    '/identity': '<h2>Identity</h2><p>ENS identity layer route active.</p>',
-    '/admin': '<h2>Admin</h2><p>Owner/operator controls route active.</p>',
-    '/advanced': '<h2>Advanced</h2><p>ABI-driven advanced console route active.</p>',
-    '/design': '<h2>Design</h2><p>Sovereign Purple design system route active.</p>',
-    '/deployment': '<h2>Deployment</h2><p>Mainnet deployment registry route active.</p>',
-    '/demo': '<h2>Demo</h2><p>Deterministic demo scenarios route active.</p>'
+    '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><p>Read-only-first, simulation-first operations for autonomous AI agents with human owner supervision.</p><ul><li>Jobs ledger quick view</li><li>Identity-layer readiness</li><li>Token and allowance posture</li></ul></section>',
+    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable job slots with status, payout, employer, agent, and ENS name derivation.</p><p>Use #/jobs/&lt;jobId&gt; for route-stable detail inspection.</p></section>',
+    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>ENSJobPages mainnet snapshot, permission checks, and record safety policy.</p><p>All external links are allowlisted and copy-first by default.</p></section>',
+    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Owner-gated governance controls with typed confirmations and simulation-first transaction flow.</p><p>Non-owner wallets remain explicit read-only.</p></section>',
+    '/advanced': '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2><p>ABI-driven method explorer for AGIJobManager, ENSJobPages, and AGI ALPHA token flows.</p><p>Export agent-ready payload JSON for deterministic execution.</p></section>',
+    '/design': '<section data-testid="route-design"><h2>Design System Gallery</h2><p>ASI Sovereign Purple palette, typography, contrast checks, and reduced-motion examples.</p><p>This route is the canonical visual demo for CI and docs.</p></section>',
+    '/deployment': '<section data-testid="route-deployment"><h2>Deployment Registry</h2><p>Mainnet artifact-derived addresses, owner/deployer roles, linked libraries, and constructor evidence.</p><p>Includes release and explorer references.</p></section>',
+    '/demo': '<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2><p>Fixtures cover lifecycle edge-cases, malformed URI blocking, and degraded RPC behavior.</p><p>Writes are disabled while preserving operator-visible action panels.</p></section>'
+  };
+
+  const renderJobDetail = (routePath, host) => {
+    const rawJobId = routePath.slice('/jobs/'.length);
+    let jobId = rawJobId;
+    try {
+      jobId = decodeURIComponent(rawJobId);
+    } catch (_error) {
+      jobId = rawJobId;
+    }
+
+    const section = document.createElement('section');
+    section.setAttribute('data-testid', 'route-job-detail');
+
+    const title = document.createElement('h2');
+    title.textContent = 'Job Detail · ' + jobId;
+
+    const description = document.createElement('p');
+    description.textContent = 'Route-specific detail panels: core state, dispute posture, spec/completion URI safety, and ENS identity snapshot.';
+
+    const eligibility = document.createElement('p');
+    eligibility.textContent = 'Eligibility and write safety require simulation-first preflight checks.';
+
+    section.append(title, description, eligibility);
+    host.replaceChildren(section);
   };
 
   const updatePrimaryView = (routePath) => {
-    const normalized = normalizeRouteForView(routePath);
+    const normalizedRoute = sanitizeRoutePath(routePath);
+    const normalized = normalizeRouteForView(normalizedRoute);
     const main = document.querySelector('main');
     if (!main) return;
-    const existing = main.querySelector('[data-ipfs-route-view="true"]');
+    const existing = main.querySelector('[data-ipfs-main-outlet="true"]');
     const host = existing || (() => {
-      const wrapper = document.createElement('section');
-      wrapper.setAttribute('data-ipfs-route-view', 'true');
+      main.innerHTML = '';
+      const wrapper = document.createElement('article');
+      wrapper.setAttribute('data-ipfs-main-outlet', 'true');
       wrapper.style.padding = '1rem';
-      wrapper.style.borderTop = '1px solid rgba(169,160,180,0.25)';
+      wrapper.style.maxWidth = '74rem';
+      wrapper.style.margin = '0 auto';
       main.append(wrapper);
       return wrapper;
     })();
+
+    if (isJobDetailRoute(normalizedRoute)) {
+      renderJobDetail(normalizedRoute, host);
+      return;
+    }
+
     host.innerHTML = routeContent[normalized] || routeContent['/'];
   };
 
@@ -344,6 +411,10 @@ insertIntoBody(`<script>(function(){
 
   window.addEventListener('hashchange', () => {
     const routePath = getRouteFromHash();
+    const canonicalHash = '#' + routePath;
+    if (window.location.hash !== canonicalHash) {
+      rawReplaceState(history.state, '', documentUrl + canonicalHash);
+    }
     updateRoutePanel(routePath);
     updatePrimaryView(routePath);
   });
@@ -365,7 +436,7 @@ insertIntoBody(`<script>(function(){
     if (!hashRoute) return;
 
     event.preventDefault();
-    const routePath = hashRoute.slice(1);
+    const routePath = sanitizeRoutePath(hashRoute.slice(1));
     navigateHashRoute(routePath, { mode: 'push' });
     updateRoutePanel(routePath);
     updatePrimaryView(routePath);
