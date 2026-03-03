@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import * as parse5 from 'parse5';
 
 const uiRoot = process.cwd();
 const repoRoot = path.resolve(uiRoot, '..');
@@ -42,16 +43,24 @@ function resolveLocalAsset(assetPath) {
   return null;
 }
 
-html = html.replace(/<script\b[^>]*\ssrc=(?:"([^"]+)"|'([^']+)')\s*[^>]*><\/script>/gi, (fullTag, srcA, srcB) => {
-  const src = srcA ?? srcB ?? '';
-  const localPath = resolveLocalAsset(src);
-  if (!localPath || !fs.existsSync(localPath)) {
-    throw new Error(`Referenced script not found: ${src}`);
-  }
-  const scriptBody = fs.readFileSync(localPath, 'utf8');
-  const safeScriptBody = scriptBody.replace(/<\/script/gi, '<\\/script');
-  return `<script>\n${safeScriptBody}\n</script>`;
-});
+function stripScriptTags(sourceHtml) {
+  const document = parse5.parse(sourceHtml);
+
+  const removeScripts = (node) => {
+    if (!node || !Array.isArray(node.childNodes) || node.childNodes.length === 0) return;
+
+    node.childNodes = node.childNodes.filter((child) => child.nodeName !== 'script');
+    node.childNodes.forEach(removeScripts);
+  };
+
+  removeScripts(document);
+  return parse5.serialize(document);
+}
+
+
+// For the IPFS single-file artifact we intentionally remove framework runtime scripts
+// and keep a deterministic static document + explicit hash router bootstrap.
+html = stripScriptTags(html);
 
 for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   const fullTag = match[0];
@@ -320,6 +329,33 @@ insertIntoBody(`<script>(function(){
     });
   };
 
+  const routeContent = {
+    '/': '<h2>Dashboard</h2><p>Read-only-first supervision console for autonomous agents with human owner oversight.</p>',
+    '/jobs': '<h2>Jobs</h2><p>Jobs ledger route active.</p>',
+    '/identity': '<h2>Identity</h2><p>ENS identity layer route active.</p>',
+    '/admin': '<h2>Admin</h2><p>Owner/operator controls route active.</p>',
+    '/advanced': '<h2>Advanced</h2><p>ABI-driven advanced console route active.</p>',
+    '/design': '<h2>Design</h2><p>Sovereign Purple design system route active.</p>',
+    '/deployment': '<h2>Deployment</h2><p>Mainnet deployment registry route active.</p>',
+    '/demo': '<h2>Demo</h2><p>Deterministic demo scenarios route active.</p>'
+  };
+
+  const updatePrimaryView = (routePath) => {
+    const normalized = normalizeRouteForView(routePath);
+    const main = document.querySelector('main');
+    if (!main) return;
+    const existing = main.querySelector('[data-ipfs-route-view="true"]');
+    const host = existing || (() => {
+      const wrapper = document.createElement('section');
+      wrapper.setAttribute('data-ipfs-route-view', 'true');
+      wrapper.style.padding = '1rem';
+      wrapper.style.borderTop = '1px solid rgba(169,160,180,0.25)';
+      main.append(wrapper);
+      return wrapper;
+    })();
+    host.innerHTML = routeContent[normalized] || routeContent['/'];
+  };
+
   if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {
     const routePath = stripGatewayBase(window.location.pathname);
     if (routePath !== '/' && routePath !== '' && !isDocumentLikePath(window.location.pathname)) {
@@ -338,6 +374,7 @@ insertIntoBody(`<script>(function(){
     if (routePath === stripGatewayBase(window.location.pathname)) return;
     navigateHashRoute(routePath, { mode: 'replace' });
     updateRoutePanel(routePath);
+    updatePrimaryView(routePath);
   });
 
   window.addEventListener('popstate', () => {
@@ -365,6 +402,7 @@ insertIntoBody(`<script>(function(){
     const routePath = hashRoute.slice(1);
     navigateHashRoute(routePath, { mode: 'push' });
     updateRoutePanel(routePath);
+    updatePrimaryView(routePath);
   }, true);
 
   const startupHash = window.location.hash || '';
@@ -372,8 +410,10 @@ insertIntoBody(`<script>(function(){
     const routePath = startupHash.slice(1);
     navigateHashRoute(routePath, { mode: 'replace' });
     updateRoutePanel(routePath);
+    updatePrimaryView(routePath);
   } else {
     updateRoutePanel('/');
+    updatePrimaryView('/');
   }
 })();</script>`);
 
