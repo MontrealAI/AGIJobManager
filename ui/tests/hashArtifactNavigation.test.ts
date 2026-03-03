@@ -176,7 +176,7 @@ describe('committed single-file hash navigation', () => {
       expect(scriptBody, `${label} leaked detached routePath guard outside hashchange handler`).not.toContain(`if (routePath === stripGatewayBase(window.location.pathname)) return;
   window.addEventListener('popstate'`);
 
-      const hashchangePattern = /window\.addEventListener\('hashchange', \(\) => \{[\s\S]*?const routePath = rawHash\.slice\(1\);\s*if \(routePath === stripGatewayBase\(window\.location\.pathname\)\) return;\s*navigateHashRoute\(routePath, 'replace'\);\s*\}\);/;
+      const hashchangePattern = /window\.addEventListener\('hashchange', \(\) => \{[\s\S]*?const routePath = rawHash\.slice\(1\);\s*const sanitizedRoute = sanitizeRoutePath\(routePath\);\s*if \(!sanitizedRoute\) return;\s*if \(sanitizedRoute === stripGatewayBase\(window\.location\.pathname\)\) return;\s*navigateHashRoute\(routePath, 'replace'\);\s*\}\);/;
       expect(hashchangePattern.test(scriptBody), `${label} hashchange handler missing in-handler routePath guard`).toBe(true);
     }
   });

@@ -94,4 +94,15 @@ describe('single-file hash router runtime behavior', () => {
     expect(calls.replaceState).toBeGreaterThan(before.replaceState);
     expect(dom.window.location.hash).toBe('#/admin');
   });
+
+  it('self-heals malformed startup hashes that include the current document path', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/AGIJobManager/agijobmanager.html/jobs');
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/jobs');
+  });
+
+  it('does not inject pathname into hash during empty-hash startup', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html');
+    expect(dom.window.location.hash).toBe('');
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html');
+  });
 });
