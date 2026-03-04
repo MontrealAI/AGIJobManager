@@ -57,6 +57,47 @@ function stripScriptTags(sourceHtml) {
   return parse5.serialize(document);
 }
 
+function findNodeByTag(node, tagName) {
+  if (!node) return null;
+  if (node.nodeName === tagName) return node;
+  if (!Array.isArray(node.childNodes)) return null;
+
+  for (const child of node.childNodes) {
+    const found = findNodeByTag(child, tagName);
+    if (found) return found;
+  }
+  return null;
+}
+
+function collectRouteMainFragments() {
+  const routeSources = {
+    '/': path.join(uiRoot, '.next/server/app/index.html'),
+    '/jobs': path.join(uiRoot, '.next/server/app/jobs.html'),
+    '/identity': path.join(uiRoot, '.next/server/app/identity.html'),
+    '/admin': path.join(uiRoot, '.next/server/app/admin.html'),
+    '/advanced': path.join(uiRoot, '.next/server/app/advanced.html'),
+    '/design': path.join(uiRoot, '.next/server/app/design.html'),
+    '/deployment': path.join(uiRoot, '.next/server/app/deployment.html'),
+    '/demo': path.join(uiRoot, '.next/server/app/demo.html')
+  };
+
+  const fragments = {};
+  for (const [route, filePath] of Object.entries(routeSources)) {
+    if (!fs.existsSync(filePath)) continue;
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const withoutScripts = stripScriptTags(raw);
+    const parsed = parse5.parse(withoutScripts);
+    const main = findNodeByTag(parsed, 'main');
+    if (!main || !Array.isArray(main.childNodes)) continue;
+
+    const content = parse5.serialize({ nodeName: '#document-fragment', childNodes: main.childNodes });
+    if (!content.trim()) continue;
+    fragments[route] = content.trim();
+  }
+
+  return fragments;
+}
+
 
 // For the IPFS single-file artifact we intentionally remove framework runtime scripts
 // and keep a deterministic static document + explicit hash router bootstrap.
@@ -122,6 +163,7 @@ function createTagInsertionPoint(tagName) {
 
 const insertIntoHead = createTagInsertionPoint('head');
 const insertIntoBody = createTagInsertionPoint('body');
+const routeMainFragments = collectRouteMainFragments();
 
 html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
   const href = h1 ?? h2 ?? '';
@@ -392,14 +434,14 @@ insertIntoBody(`<script>(function(){
   };
 
   const routeContent = {
-    '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><p>Read-only-first, simulation-first operations for autonomous AI agents with human owner supervision.</p><ul><li>Jobs ledger quick view</li><li>Identity-layer readiness</li><li>Token and allowance posture</li></ul><p><strong>Intent:</strong> autonomous AI agents are primary operators; humans supervise ownership and risk boundaries.</p></section>',
-    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable job slots with status, payout, employer, agent, and ENS name derivation.</p><p>Use #/jobs/&lt;jobId&gt; for route-stable detail inspection.</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>ENS Name</th></tr></thead><tbody><tr><td>245</td><td>Open</td><td>1,200 AGI</td><td>job-245.alpha.jobs.agi.eth</td></tr></tbody></table></section>',
-    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>ENSJobPages mainnet snapshot, permission checks, and record safety policy.</p><p>All external links are allowlisted and copy-first by default.</p><ul><li>Root name: alpha.jobs.agi.eth</li><li>NameWrapper approval status</li><li>Job manager wiring state</li></ul></section>',
-    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Owner-gated governance controls with typed confirmations and simulation-first transaction flow.</p><p>Non-owner wallets remain explicit read-only.</p><ol><li>Prepare</li><li>Simulate</li><li>Sign</li><li>Pending</li><li>Confirmed/Failed</li></ol></section>',
-    '/advanced': '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2><p>ABI-driven method explorer for AGIJobManager, ENSJobPages, and AGI ALPHA token flows.</p><p>Export agent-ready payload JSON for deterministic execution.</p><pre>{"simulateFirst":true,"chainId":1,"functionName":"approve"}</pre></section>',
-    '/design': '<section data-testid="route-design"><h2>Design System Gallery</h2><p>ASI Sovereign Purple palette, typography, contrast checks, and reduced-motion examples.</p><p>This route is the canonical visual demo for CI and docs.</p><ul><li>Palette anchors</li><li>Typography scale</li><li>Focus-visible states</li></ul></section>',
-    '/deployment': '<section data-testid="route-deployment"><h2>Deployment Registry</h2><p>Mainnet artifact-derived addresses, owner/deployer roles, linked libraries, and constructor evidence.</p><p>Includes release and explorer references.</p><dl><dt>AGIJobManager</dt><dd>0xB3AAeb69b630f0299791679c063d68d6687481d1</dd><dt>ENSJobPages</dt><dd>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</dd></dl></section>',
-    '/demo': '<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2><p>Fixtures cover lifecycle edge-cases, malformed URI blocking, and degraded RPC behavior.</p><p>Writes are disabled while preserving operator-visible action panels.</p><p>Actors: visitor, employer, agent, validator, moderator, owner.</p></section>'
+    '/': ${JSON.stringify(routeMainFragments['/'] ?? '<section data-testid="route-dashboard"><h2>Dashboard</h2></section>')},
+    '/jobs': ${JSON.stringify(routeMainFragments['/jobs'] ?? '<section data-testid="route-jobs"><h2>Jobs Ledger</h2></section>')},
+    '/identity': ${JSON.stringify(routeMainFragments['/identity'] ?? '<section data-testid="route-identity"><h2>Identity Layer Console</h2></section>')},
+    '/admin': ${JSON.stringify(routeMainFragments['/admin'] ?? '<section data-testid="route-admin"><h2>Admin Ops Console</h2></section>')},
+    '/advanced': ${JSON.stringify(routeMainFragments['/advanced'] ?? '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2></section>')},
+    '/design': ${JSON.stringify(routeMainFragments['/design'] ?? '<section data-testid="route-design"><h2>Design System Gallery</h2></section>')},
+    '/deployment': ${JSON.stringify(routeMainFragments['/deployment'] ?? '<section data-testid="route-deployment"><h2>Deployment Registry</h2></section>')},
+    '/demo': ${JSON.stringify(routeMainFragments['/demo'] ?? '<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2></section>')}
   };
 
   const routeJobDetailMarker = 'data-testid="route-job-detail"';
