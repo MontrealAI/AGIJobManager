@@ -1,18 +1,19 @@
 'use client';
+import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 
-const HASH_NAV_ROUTES = [
-  { label: 'Dashboard', href: '#/' },
-  { label: 'Jobs', href: '#/jobs' },
-  { label: 'Identity', href: '#/identity' },
-  { label: 'Admin', href: '#/admin' },
-  { label: 'Advanced', href: '#/advanced' },
-  { label: 'Design', href: '#/design' },
-  { label: 'Deployment', href: '#/deployment' },
-  { label: 'Demo', href: '#/demo' },
+const NAV_ROUTES = [
+  { label: 'Dashboard', pathname: '/' },
+  { label: 'Jobs', pathname: '/jobs' },
+  { label: 'Identity', pathname: '/identity' },
+  { label: 'Admin', pathname: '/admin' },
+  { label: 'Advanced', pathname: '/advanced' },
+  { label: 'Design', pathname: '/design' },
+  { label: 'Deployment', pathname: '/deployment' },
+  { label: 'Demo', pathname: '/demo' },
 ];
 
 export function Nav() {
@@ -28,10 +29,10 @@ export function Nav() {
       <div className="container-shell flex h-16 items-center justify-between">
         <div className="font-serif text-3xl">AGIJobManager</div>
         <nav className="flex gap-4 text-sm">
-          {HASH_NAV_ROUTES.map((route) => (
-            <a key={route.href} href={route.href} data-testid={`top-nav-${route.label.toLowerCase()}`}>
+          {NAV_ROUTES.map((route) => (
+            <Link key={route.pathname} href={route.pathname} data-testid={`top-nav-${route.label.toLowerCase()}`}>
               {route.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className='flex items-center gap-2'><Button variant='outline' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>Theme</Button><ConnectButton showBalance={false} /></div>
