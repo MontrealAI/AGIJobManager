@@ -18,7 +18,7 @@ const extractRouterBootstrapScript = (html: string) => {
 };
 
 const bootRouter = (initialUrl: string) => {
-  const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: initialUrl, runScripts: 'outside-only' });
+  const dom = new JSDOM('<!doctype html><html><body><main></main></body></html>', { url: initialUrl, runScripts: 'outside-only' });
   const calls = { pushState: 0, replaceState: 0 };
   const rawPushState = dom.window.history.pushState.bind(dom.window.history);
   const rawReplaceState = dom.window.history.replaceState.bind(dom.window.history);
@@ -41,6 +41,32 @@ const bootRouter = (initialUrl: string) => {
 };
 
 describe('single-file hash router runtime behavior', () => {
+  it('renders distinct main-route content when switching tabs inside the same document', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
+
+    const getMainText = () => {
+      const outlet = dom.window.document.querySelector('[data-ipfs-main-outlet="true"]')
+        ?? dom.window.document.querySelector('[data-testid^="route-"]');
+      expect(outlet, 'router route content should exist').toBeTruthy();
+      return (outlet?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    };
+
+    const dashboardText = getMainText();
+    expect(dashboardText).toContain('Dashboard · Sovereign Ops Console');
+
+    dom.window.location.hash = '#/jobs';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    const jobsText = getMainText();
+    expect(jobsText).toContain('Jobs Ledger');
+    expect(jobsText).not.toBe(dashboardText);
+
+    dom.window.location.hash = '#/deployment';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    const deploymentText = getMainText();
+    expect(deploymentText).toContain('Deployment Registry');
+    expect(deploymentText).not.toBe(jobsText);
+  });
+
   it('is filename-agnostic when the exact artifact is served as /index.html', () => {
     const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/index.html#/');
 
