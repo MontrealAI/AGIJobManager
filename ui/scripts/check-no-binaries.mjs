@@ -4,8 +4,9 @@ import path from 'node:path';
 
 const forbiddenExt = /\.(png|jpg|jpeg|gif|webp|pdf|ico|woff|woff2|ttf|otf|zip|tar|gz|7z|mp4|mov|webm|avi|mkv|trace)$/i;
 const sourceTextExt = /\.(html?|css|mjs|cjs|js|jsx|ts|tsx)$/i;
-const forbiddenDataUri = /data:(image|font)\//i;
+const forbiddenDataUri = /data:(?:image|font)\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+(?:=[^;,)'"\s>]+)?)*,/i;
 const forbiddenPaths = [
+  /^\.git\//,
   /^node_modules\//,
   /^ui\/node_modules\//,
   /^\.next\//,
@@ -14,14 +15,12 @@ const forbiddenPaths = [
   /^ui\/(dist|build)\//i
 ];
 
-const excludedTextScanPaths = [
-  /^docs\//,
-  /^ui\/docs\//,
-  /^test\//,
-  /^scripts\//,
-  /^ui\/scripts\//,
-  /^ui\/tests\//,
-  /^tests\//
+
+const dataUriScanExclusions = [
+  /^scripts\/check-no-binaries\.mjs$/,
+  /^ui\/scripts\/build-ipfs\.mjs$/,
+  /^ui\/scripts\/check-no-binaries\.mjs$/,
+  /^docs\/ui\/agijobmanager\.html$/
 ];
 
 const criticalTextSources = [
@@ -83,7 +82,7 @@ const trackedTextSources = run('git ls-files')
   .filter((line) => line)
   .filter((line) => sourceTextExt.test(line))
   .filter((line) => !forbiddenPaths.some((re) => re.test(line)))
-  .filter((line) => !excludedTextScanPaths.some((re) => re.test(line)));
+  .filter((line) => !dataUriScanExclusions.some((re) => re.test(line)));
 
 const offenders = [];
 for (const file of added) {
