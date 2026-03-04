@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const forbiddenExt = /\.(png|jpg|jpeg|gif|webp|pdf|ico|woff|woff2|ttf|otf|zip|tar|gz|7z|mp4|mov|webm|avi|mkv|trace)$/i;
 const sourceTextExt = /\.(html?|css|mjs|cjs|js|jsx|ts|tsx)$/i;
-const forbiddenDataUri = /data:(?:image|font)\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+=[^;,)'"\s>]+)*(?:;base64)?,/i;
+const forbiddenDataUri = /data:(?:image|font)\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+(?:=[^;,)'"\s>]+)?)*,/i;
 const forbiddenPaths = [
   /^\.git\//,
   /^node_modules\//,
