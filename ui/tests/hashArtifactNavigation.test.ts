@@ -48,7 +48,8 @@ describe('committed single-file hash navigation', () => {
       ['Admin', '#/admin'],
       ['Advanced', '#/advanced'],
       ['Design', '#/design'],
-      ['Deployment', '#/deployment']
+      ['Deployment', '#/deployment'],
+      ['Demo', '#/demo']
     ]);
 
     for (const { file, label } of artifactTargets) {
@@ -239,7 +240,8 @@ describe('committed single-file hash navigation', () => {
       'data-testid="route-admin"',
       'data-testid="route-advanced"',
       'data-testid="route-design"',
-      'data-testid="route-deployment"'
+      'data-testid="route-deployment"',
+      'data-testid="route-demo"'
     ];
 
     for (const { file, label } of artifactTargets) {
