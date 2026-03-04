@@ -58,6 +58,44 @@
 
   const baseRoutes = new Set(['/', '/jobs', '/identity', '/admin', '/advanced', '/design', '/deployment', '/demo']);
 
+  const recoverPrefixedRoute = (routePath) => {
+    if (typeof routePath !== 'string' || !routePath.startsWith('/')) return null;
+
+    const segments = routePath.split('/').filter(Boolean);
+    if (segments.length === 0) return '/';
+
+    const normalizedSegments = [];
+    for (const segment of segments) {
+      const lower = segment.toLowerCase();
+      if (!segment) continue;
+      if (lower === 'ipfs' || lower === 'ipns') {
+        normalizedSegments.length = 0;
+        continue;
+      }
+      if (lower === 'agijobmanager' || lower === 'index.html' || lower === 'agijobmanager.html') {
+        continue;
+      }
+      if (lower.endsWith('.html')) {
+        continue;
+      }
+      normalizedSegments.push(segment);
+    }
+
+    if (normalizedSegments.length === 0) return '/';
+
+    const first = normalizedSegments[0] || '';
+    const firstLower = first.toLowerCase();
+    if (firstLower === 'jobs') {
+      const maybeJobId = normalizedSegments.slice(1).join('/');
+      if (!maybeJobId) return '/jobs';
+      return '/jobs/' + maybeJobId;
+    }
+
+    const candidate = '/' + firstLower;
+    if (baseRoutes.has(candidate)) return candidate;
+    return null;
+  };
+
   const sanitizeRoutePath = (routePath) => {
     if (typeof routePath !== 'string' || !routePath) return '/';
 
@@ -67,9 +105,23 @@
     const collapsed = normalizedSlash.replace(/\/{2,}/g, '/');
     const lowered = collapsed.toLowerCase();
 
-    if (lowered.includes('agijobmanager.html')) return '/';
-    if (lowered.startsWith('/agijobmanager/')) return '/';
-    if (lowered.startsWith('/ipfs/') || lowered.startsWith('/ipns/')) return '/';
+    if (lowered.includes('agijobmanager.html') || lowered.startsWith('/agijobmanager/') || lowered.startsWith('/ipfs/') || lowered.startsWith('/ipns/')) {
+      const recoveredRoute = recoverPrefixedRoute(collapsed);
+      if (recoveredRoute) {
+        if (recoveredRoute.startsWith('/jobs/')) {
+          const rawRecoveredJobId = recoveredRoute.slice('/jobs/'.length);
+          let decodedRecoveredJobId = rawRecoveredJobId;
+          try {
+            decodedRecoveredJobId = decodeURIComponent(rawRecoveredJobId);
+          } catch (_error) {
+            decodedRecoveredJobId = rawRecoveredJobId;
+          }
+          return '/jobs/' + encodeURIComponent(decodedRecoveredJobId);
+        }
+        return recoveredRoute;
+      }
+      return '/';
+    }
 
     if (collapsed.startsWith('/jobs/')) {
       const jobId = collapsed.slice('/jobs/'.length);
@@ -119,28 +171,24 @@
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
   };
 
-  const hasMalformedStartupHash = (rawHash) => {
-    if (!rawHash) return false;
-    if (rawHash === '#') return false;
+  const getStartupCanonicalHash = (rawHash) => {
+    if (!rawHash || rawHash === '#') return null;
     const lowerHash = rawHash.toLowerCase();
-    if (rawHash.startsWith('#/#/')) return true;
-    if (rawHash.startsWith('##/')) return true;
-    if (lowerHash.includes('agijobmanager.html')) return true;
-    if (rawHash.includes(documentPath)) return true;
-    if (rawHash.includes(gatewayBase)) return true;
 
-    if (rawHash.startsWith('#/')) {
-      const routeCandidate = rawHash.slice(2);
-      const lowerRouteCandidate = routeCandidate.toLowerCase();
-      if (!routeCandidate) return false;
-      if (routeCandidate.startsWith('/')) return true;
-      if (lowerRouteCandidate.includes('agijobmanager.html')) return true;
-      if (lowerRouteCandidate.startsWith('agijobmanager/')) return true;
-      if (lowerRouteCandidate.startsWith('ipfs/') || lowerRouteCandidate.startsWith('ipns/')) return true;
-      return false;
+    const directRouteCandidate = rawHash.startsWith('#/') ? rawHash.slice(1) : '';
+    if (directRouteCandidate) {
+      const sanitizedDirectRoute = sanitizeRoutePath(directRouteCandidate);
+      const directCanonicalHash = '#' + sanitizedDirectRoute;
+      if (directCanonicalHash !== rawHash) return directCanonicalHash;
+      return null;
     }
 
-    return true;
+    if (rawHash.startsWith('#/#/') || rawHash.startsWith('##/')) return '#/';
+    if (lowerHash.includes('agijobmanager.html')) return '#/';
+    if (rawHash.includes(documentPath)) return '#/';
+    if (rawHash.includes(gatewayBase)) return '#/';
+
+    return '#/';
   };
 
   const getRouteFromHash = () => {
@@ -274,8 +322,9 @@
     host.innerHTML = routeContent[normalized] || routeContent['/'];
   };
 
-  if (hasMalformedStartupHash(window.location.hash || '')) {
-    rawReplaceState(history.state, '', documentUrl + '#/');
+  const startupCanonicalHash = getStartupCanonicalHash(window.location.hash || '');
+  if (startupCanonicalHash) {
+    rawReplaceState(history.state, '', documentUrl + startupCanonicalHash);
   }
 
   window.addEventListener('hashchange', () => {
