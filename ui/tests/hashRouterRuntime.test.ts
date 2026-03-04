@@ -41,6 +41,34 @@ const bootRouter = (initialUrl: string) => {
 };
 
 describe('single-file hash router runtime behavior', () => {
+  it('is filename-agnostic when the exact artifact is served as /index.html', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/index.html#/');
+
+    const anchor = dom.window.document.createElement('a');
+    anchor.setAttribute('href', '#/deployment');
+    dom.window.document.body.appendChild(anchor);
+
+    const clickEvent = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    anchor.dispatchEvent(clickEvent);
+
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/index.html#/deployment');
+    expect(dom.window.location.pathname).toBe('/AGIJobManager/index.html');
+  });
+
+  it('preserves arbitrary nested static prefixes and mutates only the hash fragment', () => {
+    const { dom } = bootRouter('https://example.com/nested/demo/AGIJobManager/agijobmanager.html#/');
+
+    const anchor = dom.window.document.createElement('a');
+    anchor.setAttribute('href', '#/advanced');
+    dom.window.document.body.appendChild(anchor);
+
+    const clickEvent = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    anchor.dispatchEvent(clickEvent);
+
+    expect(dom.window.location.href).toBe('https://example.com/nested/demo/AGIJobManager/agijobmanager.html#/advanced');
+    expect(dom.window.location.pathname).toBe('/nested/demo/AGIJobManager/agijobmanager.html');
+  });
+
   it('keeps navigation anchored to the current document under nested GitHub Pages paths', () => {
     const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
 
@@ -69,6 +97,21 @@ describe('single-file hash router runtime behavior', () => {
     expect(clickEvent.defaultPrevented).toBe(true);
     expect(calls.pushState).toBeGreaterThan(before.pushState);
     expect(dom.window.location.hash).toBe('#/jobs');
+    expect(dom.window.location.pathname).toBe('/agijobmanager.html');
+  });
+
+  it('never emits root-relative path navigation while switching tabs', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
+
+    const anchor = dom.window.document.createElement('a');
+    anchor.setAttribute('href', '/jobs');
+    dom.window.document.body.appendChild(anchor);
+
+    const clickEvent = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    anchor.dispatchEvent(clickEvent);
+
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/jobs');
+    expect(dom.window.location.pathname).toBe('/AGIJobManager/agijobmanager.html');
   });
 
   it('hashchange handler updates the in-document route without pathname rewrites', () => {
@@ -94,5 +137,28 @@ describe('single-file hash router runtime behavior', () => {
     expect(calls.replaceState).toBe(0);
     expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#');
     expect(dom.window.document.body.getAttribute('data-hash-route')).toBe('/');
+  });
+
+  it('normalizes malformed #/#/... startup hashes to a canonical dashboard route', () => {
+    const { dom, calls } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/#/AGIJobManager/agijobmanager.html');
+    expect(calls.replaceState).toBeGreaterThan(0);
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
+    expect(dom.window.document.body.getAttribute('data-hash-route')).toBe('/');
+  });
+
+  it('keeps hash history coherent for browser back/forward route traversal', () => {
+    const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
+
+    dom.window.location.hash = '#/jobs';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(dom.window.document.body.getAttribute('data-hash-route')).toBe('/jobs');
+
+    dom.window.location.hash = '#/admin';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(dom.window.document.body.getAttribute('data-hash-route')).toBe('/admin');
+
+    dom.window.location.hash = '#/jobs';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(dom.window.document.body.getAttribute('data-hash-route')).toBe('/jobs');
   });
 });
