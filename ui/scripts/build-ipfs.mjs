@@ -291,22 +291,13 @@ insertIntoBody(`<script>(function(){
     return { pathname, search, routeInput: withoutHash };
   }; // end parseRouteInput
 
-  const toGatewayUrl = (routeInput) => {
-    const parsedGatewayRoute = parseRouteInput(routeInput);
-    if (!parsedGatewayRoute) return null;
-    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const gatewayPathname = isContentAddressedGateway
-      ? gatewayBase + parsedGatewayRoute.pathname
-      : parsedGatewayRoute.pathname;
-    return gatewayPathname + parsedGatewayRoute.search;
-  };
-
   const toHashUrl = (routeInput) => {
     const parsedHashRoute = parseRouteInput(routeInput);
     if (!parsedHashRoute) return null;
-    const isContentAddressedGateway = gatewayBase.startsWith('/ipfs/') || gatewayBase.startsWith('/ipns/');
-    const hashBaseUrl = isContentAddressedGateway ? gatewayBase : documentUrl;
-    return hashBaseUrl + '#' + parsedHashRoute.routeInput;
+    // Always preserve the exact document URL prefix (path + filename + query)
+    // and mutate only the hash fragment. This keeps routing filename-agnostic
+    // and nested-hosting-safe for GitHub Pages, arbitrary subpaths, and IPFS gateways.
+    return documentUrl + '#' + parsedHashRoute.routeInput;
   };
 
   const dispatchRouteUpdate = (state) => {
@@ -728,8 +719,8 @@ function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
   }
 
   const gatewayPathnameDeclarations = routerWindow.match(/\bconst\s+gatewayPathname\s*=/g) ?? [];
-  if (gatewayPathnameDeclarations.length !== 1) {
-    throw new Error(`Router bootstrap must declare gatewayPathname exactly once; found ${gatewayPathnameDeclarations.length}.`);
+  if (gatewayPathnameDeclarations.length > 0) {
+    throw new Error('Router bootstrap must not declare gatewayPathname; internal route transitions must preserve the current document pathname and filename exactly.');
   }
 }
 
