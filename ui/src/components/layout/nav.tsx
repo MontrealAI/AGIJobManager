@@ -5,6 +5,17 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 
+const NAV_ROUTES = [
+  { label: 'Dashboard', pathname: '/' },
+  { label: 'Jobs', pathname: '/jobs' },
+  { label: 'Identity', pathname: '/identity' },
+  { label: 'Admin', pathname: '/admin' },
+  { label: 'Advanced', pathname: '/advanced' },
+  { label: 'Design', pathname: '/design' },
+  { label: 'Deployment', pathname: '/deployment' },
+  { label: 'Demo', pathname: '/demo' },
+];
+
 export function Nav() {
   const { theme, setTheme } = useTheme();
   const [isFileProtocol, setIsFileProtocol] = useState(false);
@@ -18,7 +29,11 @@ export function Nav() {
       <div className="container-shell flex h-16 items-center justify-between">
         <div className="font-serif text-3xl">AGIJobManager</div>
         <nav className="flex gap-4 text-sm">
-          <Link href='/'>Dashboard</Link><Link href='/jobs'>Jobs</Link><Link href='/identity'>Identity</Link><Link href='/admin'>Admin</Link><Link href='/advanced'>Advanced</Link><Link href='/design'>Design</Link><Link href='/deployment'>Deployment</Link><Link href='/demo'>Demo</Link>
+          {NAV_ROUTES.map((route) => (
+            <Link key={route.pathname} href={route.pathname} data-testid={`top-nav-${route.label.toLowerCase()}`}>
+              {route.label}
+            </Link>
+          ))}
         </nav>
         <div className='flex items-center gap-2'><Button variant='outline' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>Theme</Button><ConnectButton showBalance={false} /></div>
       </div>
