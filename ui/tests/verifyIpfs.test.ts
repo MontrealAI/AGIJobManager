@@ -823,7 +823,7 @@ describe('verify-ipfs script src attribute hardening', () => {
     expect(body).toContain("window.addEventListener('hashchange', () => {");
     expect(body).toContain('const routePath = getRouteFromHash();');
     expect(body).toContain('const startupRoute = getRouteFromHash();');
-    expect(body).toContain('if (hasMalformedStartupHash(window.location.hash || \'\')) {');
+    expect(body).toContain("const startupCanonicalHash = getStartupCanonicalHash(window.location.hash || '');");
     expect(body).not.toContain("syncHashWithPath('replace');");
     expect(body).not.toContain('stripGatewayBase(window.location.pathname) + window.location.search');
     expect(body).toContain('window.dispatchEvent(new PopStateEvent(\'popstate\', { state }));');

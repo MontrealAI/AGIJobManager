@@ -78,8 +78,8 @@ describe('committed single-file hash navigation', () => {
   it('keeps hash-only startup bootstrap guards and click navigation push handling', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
-      expect(html, `${label} missing malformed startup hash sanitizer`).toContain("if (hasMalformedStartupHash(window.location.hash || '')) {");
-      expect(html, `${label} missing startup hash normalization`).toContain("rawReplaceState(history.state, '', documentUrl + '#/');");
+      expect(html, `${label} missing malformed startup hash sanitizer`).toContain("const startupCanonicalHash = getStartupCanonicalHash(window.location.hash || '');");
+      expect(html, `${label} missing startup hash normalization`).toContain("rawReplaceState(history.state, '', documentUrl + startupCanonicalHash);");
       expect(html, `${label} must not derive startup hash from pathname`).not.toContain("if (!window.location.hash && !window.location.pathname.startsWith('/_next')) {");
       expect(html, `${label} must not sync from pathname-based popstate handler`).not.toContain("syncHashWithPath('replace');");
       expect(html, `${label} missing hash click navigation push`).toContain("navigateHashRoute(routePath, { mode: 'push' });");
@@ -92,7 +92,7 @@ describe('committed single-file hash navigation', () => {
       expect(html, `${label} missing stable pathname capture`).toContain('const documentUrl = documentPath + documentSearch;');
       expect(html, `${label} missing hash-only route parser`).toContain('const getRouteFromHash = () => {');
       expect(html, `${label} must not derive routePath from stripGatewayBase(pathname) bootstrap`).not.toContain('const routePath = stripGatewayBase(window.location.pathname);');
-      expect(html, `${label} missing startup hash rewrite to canonical #/`).toContain("rawReplaceState(history.state, '', documentUrl + '#/');");
+      expect(html, `${label} missing startup hash rewrite to canonical #/`).toContain("rawReplaceState(history.state, '', documentUrl + startupCanonicalHash);");
     }
   });
 
