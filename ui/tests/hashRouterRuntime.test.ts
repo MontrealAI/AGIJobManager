@@ -69,6 +69,20 @@ describe('single-file hash router runtime behavior', () => {
     expect(dom.window.location.pathname).toBe('/nested/demo/AGIJobManager/agijobmanager.html');
   });
 
+  it('preserves full IPFS gateway document path and filename while changing only hash', () => {
+    const { dom } = bootRouter('https://gateway.example/ipfs/bafybeigdyrzt/agijobmanager.html#/');
+
+    const anchor = dom.window.document.createElement('a');
+    anchor.setAttribute('href', '#/deployment');
+    dom.window.document.body.appendChild(anchor);
+
+    const clickEvent = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    anchor.dispatchEvent(clickEvent);
+
+    expect(dom.window.location.href).toBe('https://gateway.example/ipfs/bafybeigdyrzt/agijobmanager.html#/deployment');
+    expect(dom.window.location.pathname).toBe('/ipfs/bafybeigdyrzt/agijobmanager.html');
+  });
+
   it('keeps navigation anchored to the current document under nested GitHub Pages paths', () => {
     const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
 

@@ -225,7 +225,7 @@ describe('committed single-file hash navigation', () => {
       const basePathDeclarations = routerWindow.match(/\bconst\s+basePath\s*=/g) ?? [];
       expect(basePathDeclarations.length, `${label} router bootstrap should not declare basePath`).toBe(0);
       const gatewayPathnameDeclarations = routerWindow.match(/\bconst\s+gatewayPathname\s*=/g) ?? [];
-      expect(gatewayPathnameDeclarations.length, `${label} router bootstrap should declare gatewayPathname exactly once`).toBe(1);
+      expect(gatewayPathnameDeclarations.length, `${label} router bootstrap should not declare gatewayPathname`).toBe(0);
     }
   });
 
