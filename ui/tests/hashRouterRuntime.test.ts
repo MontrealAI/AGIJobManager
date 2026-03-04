@@ -161,6 +161,14 @@ describe('single-file hash router runtime behavior', () => {
     expect(dom.window.location.hash).toBe('#/jobs/123');
   });
 
+  it('recovers canonical routes from nested legacy startup hashes that include filename fragments', () => {
+    const { dom, calls } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/AGIJobManager/agijobmanager.html#/jobs/9');
+    expect(calls.replaceState).toBeGreaterThan(0);
+    expect(dom.window.location.href).toBe('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/jobs/9');
+    expect(dom.window.document.body.getAttribute('data-hash-route')).toBe('/jobs');
+    expect(dom.window.location.hash).toBe('#/jobs/9');
+  });
+
   it('keeps hash history coherent for browser back/forward route traversal', () => {
     const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
 

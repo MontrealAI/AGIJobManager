@@ -99,6 +99,12 @@
   const sanitizeRoutePath = (routePath) => {
     if (typeof routePath !== 'string' || !routePath) return '/';
 
+    const nestedHashRouteIndex = routePath.lastIndexOf('#/');
+    if (nestedHashRouteIndex > 0) {
+      const nestedHashRoute = routePath.slice(nestedHashRouteIndex + 1);
+      return sanitizeRoutePath(nestedHashRoute);
+    }
+
     const routeWithoutHash = routePath.split('#')[0] || '/';
     const withoutQuery = routeWithoutHash.split('?')[0] || '/';
     const normalizedSlash = withoutQuery.startsWith('/') ? withoutQuery : '/' + withoutQuery;
