@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getScenario } from '@/demo/fixtures/scenarios';
 
-export const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE !== '0';
+export const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === '1';
 
 export type DemoActor = 'visitor' | 'employer' | 'agent' | 'validator' | 'moderator' | 'owner';
 const ACTORS: DemoActor[] = ['visitor', 'employer', 'agent', 'validator', 'moderator', 'owner'];
