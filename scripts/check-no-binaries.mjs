@@ -11,6 +11,16 @@ const forbiddenExt = new Set([
 const sourceTextExt = new Set(['.html', '.htm', '.css', '.mjs', '.cjs', '.js', '.jsx', '.ts', '.tsx']);
 const forbiddenDataUri = /data:(image|font)\//i;
 
+const excludedTextScanPaths = [
+  /^docs\//,
+  /^scripts\//,
+  /^test\//,
+  /^ui\/docs\//,
+  /^ui\/scripts\//,
+  /^ui\/tests\//,
+  /^tests\//
+];
+
 const run = (cmd) => execSync(cmd, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
 
 function detectBase() {
@@ -34,13 +44,18 @@ function detectBase() {
 }
 
 const base = detectBase();
-const files = run(`git diff --name-only --diff-filter=A ${base}...HEAD`)
+const addedFiles = run(`git diff --name-only --diff-filter=A ${base}...HEAD`)
+  .split('\n')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const trackedFiles = run('git ls-files')
   .split('\n')
   .map((s) => s.trim())
   .filter(Boolean);
 
 const violations = [];
-for (const rel of files) {
+for (const rel of addedFiles) {
   const full = path.join(root, rel);
   const ext = path.extname(rel).toLowerCase();
   if (forbiddenExt.has(ext)) {
@@ -56,12 +71,28 @@ for (const rel of files) {
 
   if (sourceTextExt.has(ext)) {
     const text = data.toString('utf8');
-    const searchable = ext === '.html' || ext === '.htm'
-      ? text.replace(/<script\b[\s\S]*?<\/script>/gi, '')
-      : text;
-    if (forbiddenDataUri.test(searchable)) {
+    if (forbiddenDataUri.test(text)) {
       violations.push(`${rel}: forbidden data:image/* or data:font/* URI found`);
     }
+  }
+}
+
+for (const rel of trackedFiles) {
+  const full = path.join(root, rel);
+  const ext = path.extname(rel).toLowerCase();
+  if (!fs.existsSync(full) || !fs.statSync(full).isFile()) continue;
+  if (!sourceTextExt.has(ext)) continue;
+  if (excludedTextScanPaths.some((re) => re.test(rel))) continue;
+
+  const data = fs.readFileSync(full);
+  if (data.includes(0)) {
+    violations.push(`${rel}: appears binary (NUL byte detected in tracked source file)`);
+    continue;
+  }
+
+  const text = data.toString('utf8');
+  if (forbiddenDataUri.test(text)) {
+    violations.push(`${rel}: forbidden data:image/* or data:font/* URI found in tracked source file`);
   }
 }
 
@@ -73,4 +104,4 @@ if (violations.length) {
   process.exit(1);
 }
 
-console.log(`No forbidden binary additions detected (base ${base}, checked ${files.length} added file(s)).`);
+console.log(`No forbidden binary additions detected (base ${base}, checked ${addedFiles.length} added file(s), ${trackedFiles.length} tracked file(s)).`);

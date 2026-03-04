@@ -26,6 +26,10 @@ jobs:
           cache: npm
           cache-dependency-path: ui/package-lock.json
       - run: npm ci
+        working-directory: .
+      - run: npm run check:no-binaries
+        working-directory: .
+      - run: npm ci
       - run: npm run check:no-binaries
       - run: npm run lint
       - run: npm run typecheck
