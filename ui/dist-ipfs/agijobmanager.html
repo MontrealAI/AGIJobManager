@@ -231,108 +231,16 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
     if (rawHash.startsWith('#/#/') || rawHash.startsWith('##/')) return '#/';
     if (lowerHash.includes('agijobmanager.html')) return '#/';
-    if (rawHash.includes(documentPath)) return '#/';
-    if (rawHash.includes(gatewayBase)) return '#/';
-
-    return '#/';
-  };
-
-  const getRouteFromHash = () => {
-    const rawHash = window.location.hash || '';
-    if (rawHash === '#' || rawHash === '') return '/';
-    if (!rawHash.startsWith('#/')) return '/';
-    const normalized = rawHash.slice(1);
-    return sanitizeRoutePath(normalized.startsWith('/') ? normalized : '/');
-  };
-
-  const navigateHashRoute = (nextRoute, options = {}) => {
-    const mode = options.mode === 'replace' ? 'replace' : 'push';
-    if (!nextRoute || !nextRoute.startsWith('/')) return;
-
-    const hashUrl = toHashUrl(nextRoute);
-    if (!hashUrl) return;
-
-    if (mode === 'replace') {
-      rawReplaceState(history.state, '', hashUrl);
-    } else {
-      rawPushState(history.state, '', hashUrl);
-    }
 
   const WALLET_PROVIDER_KEY = 'agijobmanager.runtime.walletProvider.v1';
     providerId: null,
-    dispatchRouteUpdate(history.state);
+  const updateRoutePanel = (routePath) => {
+    const normalized = normalizeRouteForView(routePath);
+    const view = routeViewCopy[normalized] || routeViewCopy['/'];
+    const root = document.getElementById('ipfs-route-panel') || (() => {
+      const panel = document.createElement('section');
+      panel.id = 'ipfs-route-panel';
   };
-
-  const routeViewCopy = {
-    '/': { title: 'Dashboard', description: 'Read-only-first control plane for AGIJobManager and ENS identity operations.' },
-    '/jobs': { title: 'Jobs', description: 'Jobs ledger view. Use hash routes to paginate and inspect job slots.' },
-    '/identity': { title: 'Identity', description: 'ENS identity layer overview with job-name derivation and permission checks.' },
-    '/admin': { title: 'Admin', description: 'Owner/operator safety controls. Non-owners remain read-only.' },
-    '/advanced': { title: 'Advanced', description: 'ABI-driven advanced contract console with simulation-first payloads.' },
-    '/design': { title: 'Design', description: 'Sovereign Purple design gallery and deterministic review fixtures.' },
-    '/deployment': { title: 'Deployment', description: 'Mainnet deployment registry sourced from committed artifacts.' },
-    '/demo': { title: 'Demo', description: 'Deterministic demo scenarios for humans and autonomous agents.' }
-  };
-
-  const OFFICIAL = {
-    chainId: 1,
-    explorerBaseUrl: 'https://etherscan.io',
-    baseIpfsUrl: 'https://ipfs.io/ipfs/',
-    rpcUrls: ['https://eth.llamarpc.com', 'https://ethereum-rpc.publicnode.com'],
-    contracts: {
-      agiJobManager: '0xB3AAeb69b630f0299791679c063d68d6687481d1',
-      ensJobPages: '0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94',
-      agiToken: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA'
-    }
-  };
-
-  const SETTINGS_KEY = 'agijobmanager.runtime.settings.v1';
-  const DEFAULT_SETTINGS = {
-    rpcUrls: OFFICIAL.rpcUrls,
-    explorerBaseUrl: OFFICIAL.explorerBaseUrl,
-    ipfsGatewayBaseUrl: OFFICIAL.baseIpfsUrl,
-    demoMode: false,
-    agentMode: false,
-    allowInsecureHttpLinks: false
-  };
-
-  const walletState = {
-    provider: null,
-    providerLabel: null,
-    account: null,
-    chainId: null,
-    ensName: null,
-    connected: false,
-    error: null,
-    providers: [],
-    boundProvider: null
-  };
-
-  const loadSettings = () => {
-    try {
-      const raw = localStorage.getItem(SETTINGS_KEY);
-      if (!raw) return { ...DEFAULT_SETTINGS };
-      const parsed = JSON.parse(raw);
-      return {
-        ...DEFAULT_SETTINGS,
-        ...parsed,
-        rpcUrls: Array.isArray(parsed.rpcUrls) && parsed.rpcUrls.length ? parsed.rpcUrls : DEFAULT_SETTINGS.rpcUrls
-      };
-    } catch (_error) {
-      return { ...DEFAULT_SETTINGS };
-    }
-  };
-
-  let settings = loadSettings();
-  const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-
-  const normalizeRouteForView = (routePath) => {
-    if (!routePath || routePath === '/') return '/';
-    if (routePath.startsWith('/jobs/')) return '/jobs';
-    return routeViewCopy[routePath] ? routePath : '/';
-  };
-
-  const isJobDetailRoute = (routePath) => routePath.startsWith('/jobs/') && routePath.length > '/jobs/'.length;
 
     '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Live mainnet ledger hydrated from AGIJobManager ABI reads. Demo fixtures render only when Demo mode is explicitly enabled.</p><p id="jobs-status">Loading jobs ledger…</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th><th>ENS Name</th></tr></thead><tbody id="jobs-ledger-body"></tbody></table></section>',
     '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>Root: <code>alpha.jobs.agi.eth</code> · format <code>job-&lt;jobId&gt;.alpha.jobs.agi.eth</code></p><ul><li>ENSJobPages: <code>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</code></li><li>Resolver: <code>0xF29100983E058B709F3D539b0c765937B804AC15</code></li><li>Wired job manager: <code id="hyd-ens-job-manager">resolving…</code> <button id="identity-retry" type="button">Retry</button></li><li id="identity-wiring-status">Checking ABI-backed wiring state…</li></ul></section>',
@@ -386,6 +294,98 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
         return;
       }
       const start = Math.max(0, nextJobId - 25);
+      for (let jobId = start; jobId < nextJobId; jobId += 1) {
+        const data = methodId('getJobCore(uint256)') + padHex(BigInt(jobId).toString(16));
+        let core = null;
+        try {
+          core = decodeJobCore(await ethCall(OFFICIAL.contracts.agiJobManager, data));
+        } catch (_error) {
+          core = null;
+        }
+        if (!core || !core.employer || /^0x0{40}$/i.test(core.employer)) continue;
+        const row = document.createElement('tr');
+        row.innerHTML = '<td>' + jobId + '</td><td>' + escapeHtml(jobStatusLabel(core)) + '</td><td>' + escapeHtml(core.payout.toString()) + ' AGI</td><td><code>' + escapeHtml(toChecksumDisplay(core.employer)) + '</code></td><td><code>' + escapeHtml(toChecksumDisplay(core.agent)) + '</code></td><td><code>' + escapeHtml('job-' + jobId + '.alpha.jobs.agi.eth') + '</code></td>';
+        tbody.appendChild(row);
+      }
+      status.textContent = tbody.children.length ? 'Live on-chain jobs loaded: ' + tbody.children.length : 'No readable job slots in the latest window.';
+    } catch (error) {
+      status.textContent = 'Jobs ledger unavailable: ' + (error && error.message ? error.message : 'RPC error');
+    }
+  };
+
+  const hydrateIdentityWiring = async (attempt = 0) => {
+    const target = document.getElementById('hyd-ens-job-manager');
+    const status = document.getElementById('identity-wiring-status');
+    if (!target || !status) return;
+    status.textContent = 'Resolving ENSJobPages wiring…';
+    try {
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+      const wiringHex = await Promise.race([ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()')), timeout]);
+      const wired = decodeAddress(wiringHex);
+      if (!wired) throw new Error('method returned empty address');
+      target.textContent = wired;
+      status.textContent = wired.toLowerCase() === OFFICIAL.contracts.agiJobManager.toLowerCase()
+        ? 'Verified: ENSJobPages is wired to the expected AGIJobManager.'
+        : 'Mismatch: wiring differs from expected AGIJobManager address.';
+    } catch (error) {
+      if (attempt < 2) {
+        status.textContent = 'Retrying wiring lookup…';
+        setTimeout(() => hydrateIdentityWiring(attempt + 1), 500 * (attempt + 1));
+        return;
+      }
+      target.textContent = 'unavailable';
+      status.textContent = 'Wiring read failed: ' + (error && error.message ? error.message : 'unknown error') + '. Click Retry.';
+    }
+  };
+
+    if (normalized === '/jobs') hydrateJobsLedger();
+    if (normalized === '/identity') {
+      const retry = document.getElementById('identity-retry');
+      if (retry) retry.onclick = () => hydrateIdentityWiring(0);
+      hydrateIdentityWiring(0);
+    }
+      refreshWalletState();
+    });
+    provider.on('disconnect', () => disconnectWallet());
+    walletState.boundProvider = provider;
+  const resolveEnsName = async (account) => {
+  const providerLabelFromInfo = (entry) => {
+    const rdns = String(entry && entry.info && entry.info.rdns ? entry.info.rdns : '').toLowerCase();
+    const provider = entry && entry.provider ? entry.provider : null;
+    if ((provider && provider.isMetaMask) || rdns.includes('metamask')) return 'MetaMask';
+    if ((provider && provider.isPhantom) || rdns.includes('phantom')) return 'Phantom';
+    const fromInfo = entry && entry.info && entry.info.name ? String(entry.info.name) : '';
+    return fromInfo || 'Injected EVM Wallet';
+  };
+
+  const selectProvider = (discovered) => {
+    const preferredId = localStorage.getItem(WALLET_PROVIDER_KEY);
+    const byPreference = preferredId ? discovered.find((entry) => entry.id === preferredId) : null;
+    const metaMask = discovered.find((entry) => providerLabelFromInfo(entry) === 'MetaMask');
+    const selected = byPreference || metaMask || discovered[0] || null;
+    walletState.provider = selected ? selected.provider : null;
+    walletState.providerLabel = selected ? providerLabelFromInfo(selected) : null;
+    walletState.providerId = selected ? selected.id : null;
+    if (walletState.providerId) localStorage.setItem(WALLET_PROVIDER_KEY, walletState.providerId);
+    bindProviderEvents(walletState.provider);
+  };
+
+      discovered.push({ provider: window.ethereum, info: { name: 'Injected EVM Wallet', rdns: '' }, id: 'window.ethereum' });
+    walletState.providers = discovered;
+    selectProvider(discovered);
+    localStorage.removeItem(WALLET_PROVIDER_KEY);
+    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + safeProviderLabel + '</code></span><select id="wallet-provider-select" ' + (walletState.providers.length > 1 ? '' : 'disabled') + '><option value="">Auto</option>' + walletState.providers.map((entry, idx) => { const label = escapeHtml(providerLabelFromInfo(entry)); const id = escapeHtml(entry.id || String(idx)); const selected = walletState.providerId && walletState.providerId === (entry.id || String(idx)) ? ' selected' : ''; return '<option value="' + id + '"' + selected + '>' + label + '</option>'; }).join('') + '</select><span>Account: <code id="wallet-address-value">' + safeAccountDisplay + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + safeEnsName + '</code></span><span>Chain: <code>' + safeChainDisplay + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (safeWalletError ? '<p style="color:#ff8080">' + safeWalletError + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
+    const providerSelect = host.querySelector('#wallet-provider-select');
+    if (providerSelect) providerSelect.addEventListener('change', async (event) => {
+      const nextId = event && event.target ? event.target.value : '';
+      if (!nextId) {
+        localStorage.removeItem(WALLET_PROVIDER_KEY);
+      } else {
+        localStorage.setItem(WALLET_PROVIDER_KEY, nextId);
+      }
+      await detectProviders();
+      await refreshWalletState();
+    });
       for (let jobId = start; jobId < nextJobId; jobId += 1) {
         const data = methodId('getJobCore(uint256)') + padHex(BigInt(jobId).toString(16));
         let core = null;
