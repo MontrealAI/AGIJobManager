@@ -10,7 +10,9 @@ const extractRouterBootstrapScript = (source: string) => {
   let match: RegExpExecArray | null;
   while ((match = scriptPattern.exec(source)) !== null) {
     const body = match[1] ?? '';
-    if (body.includes('const navigateHashRoute = (nextRoute, options = {}) => {') && body.includes('const detectProviders = async () => {')) {
+    const hasRouterDeclaration = body.includes('const navigateHashRoute = (nextRoute, options = {}) => {');
+    const hasRouterHandlers = body.includes("window.addEventListener('hashchange'") || body.includes("document.addEventListener('click'");
+    if (hasRouterDeclaration && hasRouterHandlers) {
       return body;
     }
   }
