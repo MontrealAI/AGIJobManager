@@ -461,6 +461,14 @@ insertIntoBody(`<script>(function(){
     if (node) node.textContent = String(value);
   };
 
+
+  const escapeHtml = (value) => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
   const ensureHeaderWalletHost = () => {
     const existing = document.getElementById('wallet-header-panel');
     if (existing) return existing;
@@ -736,7 +744,12 @@ insertIntoBody(`<script>(function(){
 
     const mismatch = walletState.connected && walletState.chainId !== OFFICIAL.chainId;
     const fileOrigin = window.location.protocol === 'file:';
-    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + (walletState.providerLabel || 'none detected') + '</code></span><span>Account: <code id="wallet-address-value">' + toChecksumDisplay(walletState.account) + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + (walletState.ensName || '-') + '</code></span><span>Chain: <code>' + (walletState.chainId || 'read-only') + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (walletState.error ? '<p style="color:#ff8080">' + walletState.error + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
+    const safeProviderLabel = escapeHtml(walletState.providerLabel || 'none detected');
+    const safeAccountDisplay = escapeHtml(toChecksumDisplay(walletState.account));
+    const safeEnsName = escapeHtml(walletState.ensName || '-');
+    const safeChainDisplay = escapeHtml(walletState.chainId || 'read-only');
+    const safeWalletError = walletState.error ? escapeHtml(walletState.error) : '';
+    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + safeProviderLabel + '</code></span><span>Account: <code id="wallet-address-value">' + safeAccountDisplay + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + safeEnsName + '</code></span><span>Chain: <code>' + safeChainDisplay + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (safeWalletError ? '<p style="color:#ff8080">' + safeWalletError + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
     const connectBtn = host.querySelector('#wallet-connect');
     const disconnectBtn = host.querySelector('#wallet-disconnect');
     if (connectBtn) connectBtn.addEventListener('click', connectWallet);

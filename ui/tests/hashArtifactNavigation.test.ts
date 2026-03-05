@@ -106,6 +106,16 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+
+  it('escapes provider metadata before wallet panel HTML interpolation', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      expect(html, `${label} missing escapeHtml helper`).toContain('const escapeHtml = (value) => String(value)');
+      expect(html, `${label} missing sanitized provider label binding`).toContain("const safeProviderLabel = escapeHtml(walletState.providerLabel || 'none detected');");
+      expect(html, `${label} should not inject raw providerLabel into innerHTML`).not.toContain("<code>' + (walletState.providerLabel || 'none detected') + '</code>");
+    }
+  });
+
   it('contains a single terminal document close marker without trailing content', () => {
     const closeTag = '</body></html>';
 
