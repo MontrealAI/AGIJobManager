@@ -129,12 +129,19 @@ function createTagInsertionPoint(tagName) {
 const insertIntoHead = createTagInsertionPoint('head');
 const insertIntoBody = createTagInsertionPoint('body');
 
-html = html.replace(/<a\b([^>]*?)\shref=(?:"([^"]+)"|'([^']+)')([^>]*)>/gi, (full, before, h1, h2, after) => {
-  const href = h1 ?? h2 ?? '';
-  if (!href.startsWith('/') || href.startsWith('//')) return full;
-  const hashHref = `#${href}`;
-  return `<a${before} href="${hashHref}"${after}>`;
-});
+
+const appShellStart = html.indexOf('<div data-rk="">');
+const appShellEnd = appShellStart >= 0 ? html.indexOf('<script async="">', appShellStart) : -1;
+if (appShellStart >= 0 && appShellEnd > appShellStart) {
+  const shellMarkup = html.slice(appShellStart, appShellEnd);
+  const rewrittenShellMarkup = shellMarkup.replace(/(<a\b[^>]*\shref=")\/([^"]*)"/gi, (_full, prefix, routeTail) => {
+    if (routeTail.startsWith('/')) return `${prefix}/${routeTail}"`;
+    const normalizedTail = routeTail ? routeTail.replace(/^\/+/, '') : '';
+    const hashRoute = normalizedTail ? `#/${normalizedTail}` : '#/';
+    return `${prefix}${hashRoute}"`;
+  });
+  html = `${html.slice(0, appShellStart)}${rewrittenShellMarkup}${html.slice(appShellEnd)}`;
+}
 
 insertIntoHead(`<script>(function(){
   const rawHash = window.location.hash || '';
