@@ -97,6 +97,8 @@ function assertRouterBootstrapScript(html, label) {
 
   const routerScript = scripts.find((body) =>
     body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const baseRoutes = new Set([')
+    && body.includes('const sanitizeRoutePath = (routePath) => {')
     && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
     && body.includes("window.addEventListener('hashchange'")
   );
@@ -125,8 +127,29 @@ function assertRouterBootstrapScript(html, label) {
   if (toHashUrlIndex < 0 || dispatchRouteUpdateIndex < 0 || navigateHashRouteIndex < 0) {
     throw new Error(`${label}: router bootstrap missing toHashUrl/dispatchRouteUpdate/navigateHashRoute declarations.`);
   }
-  if (toHashUrlIndex > navigateHashRouteIndex || dispatchRouteUpdateIndex > navigateHashRouteIndex) {
-    throw new Error(`${label}: navigateHashRoute appears before helper declarations and may throw at runtime.`);
+
+  const baseRoutesIndex = routerScript.indexOf('const baseRoutes = new Set([');
+  const sanitizeRoutePathIndex = routerScript.indexOf('const sanitizeRoutePath = (routePath) => {');
+  if (baseRoutesIndex < 0 || sanitizeRoutePathIndex < 0) {
+    throw new Error(`${label}: router bootstrap missing baseRoutes/sanitizeRoutePath declarations.`);
+  }
+  if (baseRoutesIndex > sanitizeRoutePathIndex || sanitizeRoutePathIndex > navigateHashRouteIndex) {
+    throw new Error(`${label}: router bootstrap helper ordering changed; sanitizeRoutePath/navigateHashRoute may resolve incorrectly.`);
+  }
+
+  const parseCandidate = routerScript
+    .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
+    .replace(/<\/?script[^>]*>/gi, '')
+    .trim();
+  if (!/[<][a-z!/]/i.test(parseCandidate)) {
+    try {
+      // Parse-only guard: catches syntax regressions like illegal top-level `continue` in bootstrap script.
+      // eslint-disable-next-line no-new, no-new-func
+      new Function(parseCandidate);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`${label}: router bootstrap script is not syntactically parseable (${detail}).`);
+    }
   }
 }
 

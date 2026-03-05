@@ -412,9 +412,13 @@ for (const body of uncommentedScriptBodies) {
   }
 
   const hasFullRouterBootstrap = body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const baseRoutes = new Set([')
+    && body.includes('const sanitizeRoutePath = (routePath) => {')
     && body.includes("window.addEventListener('hashchange'");
   if (hasFullRouterBootstrap) {
     const requiredHelpers = [
+      'const baseRoutes = new Set([',
+      'const sanitizeRoutePath = (routePath) => {',
       'const parseRouteInput = (routeInput) => {',
       'const toHashUrl = (routeInput) => {',
       'const dispatchRouteUpdate = (state) => {',
@@ -440,11 +444,33 @@ for (const body of uncommentedScriptBodies) {
       throw new Error('Router bootstrap getStartupCanonicalHash must route through startupHashLooksLeaky(rawHash, lowerHash).');
     }
 
+    const baseRoutesIndex = body.indexOf('const baseRoutes = new Set([');
+    const sanitizeRoutePathIndex = body.indexOf('const sanitizeRoutePath = (routePath) => {');
     const toHashUrlIndex = body.indexOf('const toHashUrl = (routeInput) => {');
     const dispatchRouteUpdateIndex = body.indexOf('const dispatchRouteUpdate = (state) => {');
     const navigateHashRouteIndex = body.indexOf('const navigateHashRoute = (nextRoute, options = {}) => {');
-    if (toHashUrlIndex > navigateHashRouteIndex || dispatchRouteUpdateIndex > navigateHashRouteIndex) {
-      throw new Error('Router bootstrap declares navigateHashRoute before its helper declarations, which can break runtime routing.');
+    if (
+      baseRoutesIndex > sanitizeRoutePathIndex
+      || sanitizeRoutePathIndex > navigateHashRouteIndex
+      || toHashUrlIndex > navigateHashRouteIndex
+      || dispatchRouteUpdateIndex > navigateHashRouteIndex
+    ) {
+      throw new Error('Router bootstrap declares navigateHashRoute before required helper declarations, which can break runtime routing.');
+    }
+
+    const parseCandidate = body
+      .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
+      .replace(/<\/?script[^>]*>/gi, '')
+      .trim();
+    if (!/[<][a-z!/]/i.test(parseCandidate)) {
+      try {
+        // Parse-only guard catches syntax regressions such as illegal top-level `continue`.
+        // eslint-disable-next-line no-new, no-new-func
+        new Function(parseCandidate);
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        throw new Error(`Router bootstrap script is not syntactically parseable (${detail}).`);
+      }
     }
   }
 }
