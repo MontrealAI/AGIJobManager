@@ -190,10 +190,15 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     explorerBaseUrl: 'https://etherscan.io',
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
     rpcUrls: ['https://eth.llamarpc.com', 'https://ethereum-rpc.publicnode.com'],
-    contracts: {
-      agiJobManager: '0xB3AAeb69b630f0299791679c063d68d6687481d1',
-      ensJobPages: '0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94',
-      agiToken: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA'
+  const startupHashLooksLeaky = (rawHash, lowerHash) => {
+    if (rawHash.startsWith('#/#/') || rawHash.startsWith('##/')) return true;
+    if (lowerHash.includes('agijobmanager.html')) return true;
+    if (rawHash.includes(documentPath)) return true;
+    if (rawHash.includes(gatewayBase)) return true;
+    return false;
+  };
+
+    if (startupHashLooksLeaky(rawHash, lowerHash)) return '#/';
   const SETTINGS_KEY = 'agijobmanager.runtime.settings.v1';
   const WALLET_PROVIDER_KEY = 'agijobmanager.runtime.walletProvider.v1';
   const DEFAULT_SETTINGS = {

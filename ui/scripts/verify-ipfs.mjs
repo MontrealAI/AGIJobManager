@@ -417,6 +417,8 @@ for (const body of uncommentedScriptBodies) {
     const requiredHelpers = [
       'const parseRouteInput = (routeInput) => {',
       'const toHashUrl = (routeInput) => {',
+      'const dispatchRouteUpdate = (state) => {',
+      'const startupHashLooksLeaky = (rawHash, lowerHash) => {',
       'const getRouteFromHash = () => {',
       'const navigateHashRoute = (nextRoute, options = {}) => {'
     ];
@@ -432,6 +434,17 @@ for (const body of uncommentedScriptBodies) {
 
     if (!body.includes('const routePath = getRouteFromHash();')) {
       throw new Error('Router bootstrap must derive routePath from getRouteFromHash().');
+    }
+
+    if (!body.includes("if (startupHashLooksLeaky(rawHash, lowerHash)) return '#/';")) {
+      throw new Error('Router bootstrap getStartupCanonicalHash must route through startupHashLooksLeaky(rawHash, lowerHash).');
+    }
+
+    const toHashUrlIndex = body.indexOf('const toHashUrl = (routeInput) => {');
+    const dispatchRouteUpdateIndex = body.indexOf('const dispatchRouteUpdate = (state) => {');
+    const navigateHashRouteIndex = body.indexOf('const navigateHashRoute = (nextRoute, options = {}) => {');
+    if (toHashUrlIndex > navigateHashRouteIndex || dispatchRouteUpdateIndex > navigateHashRouteIndex) {
+      throw new Error('Router bootstrap declares navigateHashRoute before its helper declarations, which can break runtime routing.');
     }
   }
 }

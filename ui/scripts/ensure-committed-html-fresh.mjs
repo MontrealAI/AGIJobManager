@@ -111,6 +111,23 @@ function assertRouterBootstrapScript(html, label) {
   if (!routerScript.includes('const hashRoute = normalizeHashHref(href);')) {
     throw new Error(`${label}: click interception no longer uses normalizeHashHref(href) in router bootstrap script.`);
   }
+
+  if (!routerScript.includes('const startupHashLooksLeaky = (rawHash, lowerHash) => {')) {
+    throw new Error(`${label}: startupHashLooksLeaky helper missing from router bootstrap script.`);
+  }
+  if (!routerScript.includes('if (startupHashLooksLeaky(rawHash, lowerHash)) return \'#/\';')) {
+    throw new Error(`${label}: getStartupCanonicalHash no longer routes leaky startup hashes through startupHashLooksLeaky.`);
+  }
+
+  const navigateHashRouteIndex = routerScript.indexOf('const navigateHashRoute = (nextRoute, options = {}) => {');
+  const toHashUrlIndex = routerScript.indexOf('const toHashUrl = (routeInput) => {');
+  const dispatchRouteUpdateIndex = routerScript.indexOf('const dispatchRouteUpdate = (state) => {');
+  if (toHashUrlIndex < 0 || dispatchRouteUpdateIndex < 0 || navigateHashRouteIndex < 0) {
+    throw new Error(`${label}: router bootstrap missing toHashUrl/dispatchRouteUpdate/navigateHashRoute declarations.`);
+  }
+  if (toHashUrlIndex > navigateHashRouteIndex || dispatchRouteUpdateIndex > navigateHashRouteIndex) {
+    throw new Error(`${label}: navigateHashRoute appears before helper declarations and may throw at runtime.`);
+  }
 }
 
 assertNavigateHashRouteParseable(built, 'dist-ipfs/agijobmanager.html');
