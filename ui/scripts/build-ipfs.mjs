@@ -144,7 +144,7 @@ const rewrittenShellMarkup = shellMarkup.replace(/(<a\b[^>]*\shref=")\/([^"]*)"/
   return `${prefix}${hashRoute}"`;
 });
 
-if (/href="\/(?!\/)/i.test(rewrittenShellMarkup)) {
+if (/\bhref="\/(?!\/)/i.test(rewrittenShellMarkup)) {
   throw new Error('Internal app-shell anchors still contain pathname href values after hash-route rewrite.');
 }
 
