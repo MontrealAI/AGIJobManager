@@ -1221,6 +1221,25 @@ function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
   }
 }
 
+function assertAllInlineScriptsParseable(singleFileHtml) {
+  const scriptTags = [...singleFileHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+  for (let index = 0; index < scriptTags.length; index += 1) {
+    const attrs = scriptTags[index][1] || '';
+    const body = scriptTags[index][2] || '';
+
+    if (!body.trim()) continue;
+    if (/type=["']application\/(?:ld\+json|json)["']/i.test(attrs)) continue;
+    if (/id=["']__NEXT_DATA__["']/i.test(attrs)) continue;
+
+    try {
+      new Function(body);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Inline script #${index + 1} is not parseable: ${message}`);
+    }
+  }
+}
+
 html = sanitizeForbiddenDataUris(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
@@ -1229,6 +1248,7 @@ assertParseableNavigateHashRoute(html);
 assertRouterBootstrapCoherence(html);
 assertNormalizeHashHrefParsedBinding(html);
 assertNoNavigateInvocationWithoutDeclaration(html);
+assertAllInlineScriptsParseable(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
