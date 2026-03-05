@@ -378,6 +378,7 @@ insertIntoBody(`<script>(function(){
   };
 
   const SETTINGS_KEY = 'agijobmanager.runtime.settings.v1';
+  const WALLET_PROVIDER_KEY = 'agijobmanager.runtime.walletProvider.v1';
   const DEFAULT_SETTINGS = {
     rpcUrls: OFFICIAL.rpcUrls,
     explorerBaseUrl: OFFICIAL.explorerBaseUrl,
@@ -390,6 +391,7 @@ insertIntoBody(`<script>(function(){
   const walletState = {
     provider: null,
     providerLabel: null,
+    providerId: null,
     account: null,
     chainId: null,
     ensName: null,
@@ -451,9 +453,9 @@ insertIntoBody(`<script>(function(){
 
   const routeContent = {
     '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><div id="wallet-panel"></div><p id="rpc-status">Read-only mainnet hydration active.</p><ul><li>Owner: <code id="hyd-owner">loading</code></li><li>Next Job ID: <code id="hyd-next-job-id">loading</code></li><li>Token Symbol: <code id="hyd-token-symbol">loading</code></li><li>Wallet Balance: <code id="hyd-token-balance">-</code></li></ul></section>',
-    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable job slots with status, payout, employer, agent, and ENS name derivation.</p><p>Use #/jobs/&lt;jobId&gt; for route-stable detail inspection.</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>ENS Name</th></tr></thead><tbody><tr><td>245</td><td>Open</td><td>1,200 AGI</td><td>job-245.alpha.jobs.agi.eth</td></tr></tbody></table></section>',
-    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>Root: <code>alpha.jobs.agi.eth</code> · format <code>job-&lt;jobId&gt;.alpha.jobs.agi.eth</code></p><ul><li>ENSJobPages: <code>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</code></li><li>Resolver: <code>0xF29100983E058B709F3D539b0c765937B804AC15</code></li><li>Wired job manager: <code id="hyd-ens-job-manager">loading</code></li></ul></section>',
-    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Simulation-first write flow: Prepare → Simulate → Sign → Pending → Confirmed/Failed.</p><p>Connected chain: <code id="hyd-chain">read-only</code></p><p>Role gate: owner <code id="hyd-owner-match">unknown</code></p><details><summary>Settings</summary><div><label>RPC endpoints (newline)</label><textarea id="settings-rpc" rows="4" style="width:100%"></textarea><label>Explorer URL</label><input id="settings-explorer" style="width:100%"/><label>IPFS gateway URL</label><input id="settings-ipfs" style="width:100%"/><label><input type="checkbox" id="settings-demo"/> Demo mode</label><label><input type="checkbox" id="settings-agent"/> Agent mode</label><label><input type="checkbox" id="settings-http"/> Allow insecure HTTP links</label><div><button id="settings-save">Save</button><button id="settings-reset">Reset official defaults</button><button id="settings-export">Export JSON</button><button id="settings-import">Import JSON</button></div></div></details></section>',
+    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Live mainnet ledger hydrated from AGIJobManager ABI reads. Demo fixtures render only when Demo mode is explicitly enabled.</p><p id="jobs-status">Loading jobs ledger…</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th><th>ENS Name</th></tr></thead><tbody id="jobs-ledger-body"></tbody></table></section>',
+    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>Root: <code>alpha.jobs.agi.eth</code> · format <code>job-&lt;jobId&gt;.alpha.jobs.agi.eth</code></p><ul><li>ENSJobPages: <code>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</code></li><li>Resolver: <code>0xF29100983E058B709F3D539b0c765937B804AC15</code></li><li>Wired job manager: <code id="hyd-ens-job-manager">resolving…</code> <button id="identity-retry" type="button">Retry</button></li><li id="identity-wiring-status">Checking ABI-backed wiring state…</li></ul></section>',
+    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Simulation-first write flow: Prepare → Simulate → Sign → Pending → Confirmed/Failed.</p><div style="display:grid;gap:0.5rem"><p>Connected chain: <code id="hyd-chain">read-only</code></p><p>Role gate: <strong id="hyd-owner-match">Not authorized</strong></p><p id="admin-write-guidance">Connect MetaMask on Ethereum Mainnet for write actions. Read-only telemetry is always available.</p><div style="display:flex;gap:0.5rem;flex-wrap:wrap"><button id="admin-pause" disabled title="Connect wallet + owner authorization required">Pause protocol</button><button id="admin-unpause" disabled title="Connect wallet + owner authorization required">Unpause protocol</button><button id="admin-settlement" disabled title="Connect wallet + owner authorization required">Toggle settlement pause</button></div></div><details><summary>Settings</summary><div><label>RPC endpoints (newline)</label><textarea id="settings-rpc" rows="4" style="width:100%"></textarea><label>Explorer URL</label><input id="settings-explorer" style="width:100%"/><label>IPFS gateway URL</label><input id="settings-ipfs" style="width:100%"/><label><input type="checkbox" id="settings-demo"/> Demo mode</label><label><input type="checkbox" id="settings-agent"/> Agent mode</label><label><input type="checkbox" id="settings-http"/> Allow insecure HTTP links</label><div><button id="settings-save">Save</button><button id="settings-reset">Reset official defaults</button><button id="settings-export">Export JSON</button><button id="settings-import">Import JSON</button></div></div></details></section>',
     '/advanced': '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2><p>ABI-driven method explorer for AGIJobManager, ENSJobPages, and AGI ALPHA token flows.</p><p>Export agent-ready payload JSON for deterministic execution.</p><pre>{"simulateFirst":true,"chainId":1,"functionName":"approve"}</pre></section>',
     '/design': '<section data-testid="route-design"><h2>Design System Gallery</h2><p>ASI Sovereign Purple palette, typography, contrast checks, and reduced-motion examples.</p><p>This route is the canonical visual demo for CI and docs.</p><ul><li>Palette anchors</li><li>Typography scale</li><li>Focus-visible states</li></ul></section>',
     '/deployment': '<section data-testid="route-deployment"><h2>Deployment Registry</h2><p>Mainnet artifact-derived addresses, owner/deployer roles, linked libraries, and constructor evidence.</p><p>Includes release and explorer references.</p><dl><dt>AGIJobManager</dt><dd>0xB3AAeb69b630f0299791679c063d68d6687481d1</dd><dt>ENSJobPages</dt><dd>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</dd></dl></section>',
@@ -499,7 +501,8 @@ insertIntoBody(`<script>(function(){
     'symbol()': '0x95d89b41',
     'resolver(bytes32)': '0x0178b8bf',
     'name(bytes32)': '0x691f3431',
-    'balanceOf(address)': '0x70a08231'
+    'balanceOf(address)': '0x70a08231',
+    'getJobCore(uint256)': '0x0a0f704e'
   }[sig]);
 
   const decodeAddress = (hex) => (hex && hex.length >= 66 ? '0x' + hex.slice(-40) : null);
@@ -514,6 +517,25 @@ insertIntoBody(`<script>(function(){
     } catch (_error) {
       return '';
     }
+  };
+  const decodeBool = (hex) => (hex && hex.length >= 66 ? BigInt(hex) !== 0n : false);
+  const decodeJobCore = (hex) => {
+    if (!hex || hex.length < 2 + (9 * 64)) return null;
+    const words = [];
+    for (let i = 2; i + 64 <= hex.length && words.length < 9; i += 64) {
+      words.push('0x' + hex.slice(i, i + 64));
+    }
+    if (words.length < 9) return null;
+    return {
+      employer: decodeAddress(words[0]),
+      agent: decodeAddress(words[1]),
+      payout: BigInt(words[2]),
+      deadline: BigInt(words[4]),
+      active: decodeBool(words[5]),
+      completed: decodeBool(words[6]),
+      disputed: decodeBool(words[7]),
+      statusCode: Number(BigInt(words[8]))
+    };
   };
 
   const rpcCall = async (method, params) => {
@@ -538,18 +560,88 @@ insertIntoBody(`<script>(function(){
       const blockHex = await rpcCall('eth_blockNumber', []);
       setText('rpc-status', 'Read-only mainnet connected · block ' + parseInt(blockHex, 16) + ' · ' + new Date().toISOString());
       setText('hyd-chain', walletState.chainId ? walletState.chainId : '1 (read-only)');
-      setText('hyd-owner', decodeAddress(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('owner()'))));
+      const owner = decodeAddress(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('owner()')));
+      setText('hyd-owner', owner);
       setText('hyd-next-job-id', decodeUint(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'))));
-      setText('hyd-ens-job-manager', decodeAddress(await ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()'))) || 'unavailable');
       setText('hyd-token-symbol', decodeString(await ethCall(OFFICIAL.contracts.agiToken, methodId('symbol()'))) || 'AGI');
+      const ownerMatch = walletState.account && owner && walletState.account.toLowerCase() === owner.toLowerCase();
+      setText('hyd-owner-match', ownerMatch ? 'You are owner' : 'Not authorized');
+      setText('admin-write-guidance', ownerMatch ? 'Owner privileges detected. Keep simulation-first enabled for every write.' : 'Connect owner wallet on Ethereum Mainnet for writes. Read-only telemetry remains available.');
       if (walletState.account) {
         const data = methodId('balanceOf(address)') + padHex(BigInt(walletState.account).toString(16));
         setText('hyd-token-balance', decodeUint(await ethCall(OFFICIAL.contracts.agiToken, data)));
       } else {
         setText('hyd-token-balance', '-');
       }
+      hydrateIdentityWiring();
+      hydrateJobsLedger();
     } catch (error) {
       setText('rpc-status', 'Degraded RPC mode: ' + (error && error.message ? error.message : 'unknown error'));
+    }
+  };
+
+  const jobStatusLabel = (core) => {
+    if (!core) return 'unavailable';
+    if (core.completed) return 'Completed';
+    if (core.disputed) return 'Disputed';
+    if (core.active) return 'Open';
+    return 'Closed';
+  };
+
+  const hydrateJobsLedger = async () => {
+    const tbody = document.getElementById('jobs-ledger-body');
+    const status = document.getElementById('jobs-status');
+    if (!tbody || !status) return;
+    tbody.innerHTML = '';
+    try {
+      const nextJobIdHex = await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'));
+      const nextJobId = Number(BigInt(nextJobIdHex));
+      if (nextJobId === 0) {
+        status.textContent = 'No jobs found on-chain.';
+        return;
+      }
+      const start = Math.max(0, nextJobId - 25);
+      for (let jobId = start; jobId < nextJobId; jobId += 1) {
+        const data = methodId('getJobCore(uint256)') + padHex(BigInt(jobId).toString(16));
+        let core = null;
+        try {
+          core = decodeJobCore(await ethCall(OFFICIAL.contracts.agiJobManager, data));
+        } catch (_error) {
+          core = null;
+        }
+        if (!core || !core.employer || /^0x0{40}$/i.test(core.employer)) continue;
+        const row = document.createElement('tr');
+        row.innerHTML = '<td>' + jobId + '</td><td>' + escapeHtml(jobStatusLabel(core)) + '</td><td>' + escapeHtml(core.payout.toString()) + ' AGI</td><td><code>' + escapeHtml(toChecksumDisplay(core.employer)) + '</code></td><td><code>' + escapeHtml(toChecksumDisplay(core.agent)) + '</code></td><td><code>' + escapeHtml('job-' + jobId + '.alpha.jobs.agi.eth') + '</code></td>';
+        tbody.appendChild(row);
+      }
+      status.textContent = tbody.children.length ? 'Live on-chain jobs loaded: ' + tbody.children.length : 'No readable job slots in the latest window.';
+    } catch (error) {
+      status.textContent = 'Jobs ledger unavailable: ' + (error && error.message ? error.message : 'RPC error');
+    }
+  };
+
+  const hydrateIdentityWiring = async (attempt = 0) => {
+    const target = document.getElementById('hyd-ens-job-manager');
+    const status = document.getElementById('identity-wiring-status');
+    if (!target || !status) return;
+    status.textContent = 'Resolving ENSJobPages wiring…';
+    try {
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+      const wiringHex = await Promise.race([ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()')), timeout]);
+      const wired = decodeAddress(wiringHex);
+      if (!wired) throw new Error('method returned empty address');
+      target.textContent = wired;
+      status.textContent = wired.toLowerCase() === OFFICIAL.contracts.agiJobManager.toLowerCase()
+        ? 'Verified: ENSJobPages is wired to the expected AGIJobManager.'
+        : 'Mismatch: wiring differs from expected AGIJobManager address.';
+    } catch (error) {
+      if (attempt < 2) {
+        status.textContent = 'Retrying wiring lookup…';
+        setTimeout(() => hydrateIdentityWiring(attempt + 1), 500 * (attempt + 1));
+        return;
+      }
+      target.textContent = 'unavailable';
+      status.textContent = 'Wiring read failed: ' + (error && error.message ? error.message : 'unknown error') + '. Click Retry.';
     }
   };
 
@@ -605,6 +697,12 @@ insertIntoBody(`<script>(function(){
 
     if (normalized === '/') renderWalletPanel();
     if (normalized === '/admin') wireSettingsPanel();
+    if (normalized === '/jobs') hydrateJobsLedger();
+    if (normalized === '/identity') {
+      const retry = document.getElementById('identity-retry');
+      if (retry) retry.onclick = () => hydrateIdentityWiring(0);
+      hydrateIdentityWiring(0);
+    }
   };
 
   const setWalletError = (message) => {
@@ -675,6 +773,27 @@ insertIntoBody(`<script>(function(){
     }
   };
 
+  const providerLabelFromInfo = (entry) => {
+    const rdns = String(entry && entry.info && entry.info.rdns ? entry.info.rdns : '').toLowerCase();
+    const provider = entry && entry.provider ? entry.provider : null;
+    if ((provider && provider.isMetaMask) || rdns.includes('metamask')) return 'MetaMask';
+    if ((provider && provider.isPhantom) || rdns.includes('phantom')) return 'Phantom';
+    const fromInfo = entry && entry.info && entry.info.name ? String(entry.info.name) : '';
+    return fromInfo || 'Injected EVM Wallet';
+  };
+
+  const selectProvider = (discovered) => {
+    const preferredId = localStorage.getItem(WALLET_PROVIDER_KEY);
+    const byPreference = preferredId ? discovered.find((entry) => entry.id === preferredId) : null;
+    const metaMask = discovered.find((entry) => providerLabelFromInfo(entry) === 'MetaMask');
+    const selected = byPreference || metaMask || discovered[0] || null;
+    walletState.provider = selected ? selected.provider : null;
+    walletState.providerLabel = selected ? providerLabelFromInfo(selected) : null;
+    walletState.providerId = selected ? selected.id : null;
+    if (walletState.providerId) localStorage.setItem(WALLET_PROVIDER_KEY, walletState.providerId);
+    bindProviderEvents(walletState.provider);
+  };
+
   const detectProviders = async () => {
     const discovered = [];
     const providerSeen = new Set();
@@ -687,12 +806,10 @@ insertIntoBody(`<script>(function(){
     window.dispatchEvent(new Event('eip6963:requestProvider'));
     await new Promise((resolve) => setTimeout(resolve, 64));
     if (window.ethereum && !providerSeen.has(window.ethereum)) {
-      discovered.push({ provider: window.ethereum, info: { name: 'Injected wallet' } });
+      discovered.push({ provider: window.ethereum, info: { name: 'Injected EVM Wallet', rdns: '' }, id: 'window.ethereum' });
     }
-    walletState.providers = discovered.map((entry) => entry.provider);
-    walletState.provider = discovered[0] ? discovered[0].provider : null;
-    walletState.providerLabel = discovered[0] && discovered[0].info ? discovered[0].info.name : null;
-    bindProviderEvents(walletState.provider);
+    walletState.providers = discovered;
+    selectProvider(discovered);
   };
 
   const refreshWalletState = async () => {
@@ -728,6 +845,7 @@ insertIntoBody(`<script>(function(){
     walletState.ensName = null;
     walletState.chainId = null;
     walletState.error = null;
+    localStorage.removeItem(WALLET_PROVIDER_KEY);
     renderWalletPanel();
     hydrateReadOnly();
   };
@@ -755,7 +873,7 @@ insertIntoBody(`<script>(function(){
     const safeEnsName = escapeHtml(walletState.ensName || '-');
     const safeChainDisplay = escapeHtml(walletState.chainId || 'read-only');
     const safeWalletError = walletState.error ? escapeHtml(walletState.error) : '';
-    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + safeProviderLabel + '</code></span><span>Account: <code id="wallet-address-value">' + safeAccountDisplay + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + safeEnsName + '</code></span><span>Chain: <code>' + safeChainDisplay + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (safeWalletError ? '<p style="color:#ff8080">' + safeWalletError + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
+    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + safeProviderLabel + '</code></span><select id="wallet-provider-select" ' + (walletState.providers.length > 1 ? '' : 'disabled') + '><option value="">Auto</option>' + walletState.providers.map((entry, idx) => { const label = escapeHtml(providerLabelFromInfo(entry)); const id = escapeHtml(entry.id || String(idx)); const selected = walletState.providerId && walletState.providerId === (entry.id || String(idx)) ? ' selected' : ''; return '<option value="' + id + '"' + selected + '>' + label + '</option>'; }).join('') + '</select><span>Account: <code id="wallet-address-value">' + safeAccountDisplay + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + safeEnsName + '</code></span><span>Chain: <code>' + safeChainDisplay + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (safeWalletError ? '<p style="color:#ff8080">' + safeWalletError + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
     const connectBtn = host.querySelector('#wallet-connect');
     const disconnectBtn = host.querySelector('#wallet-disconnect');
     if (connectBtn) connectBtn.addEventListener('click', connectWallet);
@@ -766,6 +884,17 @@ insertIntoBody(`<script>(function(){
     if (copyBtn) copyBtn.addEventListener('click', async () => {
       if (!walletState.account) return;
       try { await navigator.clipboard.writeText(walletState.account); } catch (_error) {}
+    });
+    const providerSelect = host.querySelector('#wallet-provider-select');
+    if (providerSelect) providerSelect.addEventListener('change', async (event) => {
+      const nextId = event && event.target ? event.target.value : '';
+      if (!nextId) {
+        localStorage.removeItem(WALLET_PROVIDER_KEY);
+      } else {
+        localStorage.setItem(WALLET_PROVIDER_KEY, nextId);
+      }
+      await detectProviders();
+      await refreshWalletState();
     });
   };
 
