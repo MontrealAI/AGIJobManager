@@ -1158,6 +1158,46 @@ function assertParseableNavigateHashRoute(singleFileHtml) {
   }
 }
 
+function assertRouterHelperDeclarations(singleFileHtml) {
+  const scriptBodies = [...singleFileHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  const routerScript = scriptBodies.find((body) => (
+    body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const parseRouteInput = (routeInput) => {')
+    && body.includes('const toHashUrl = (routeInput) => {')
+    && body.includes('const getRouteFromHash = () => {')
+    && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
+  ));
+
+  if (!routerScript) {
+    throw new Error('Router bootstrap script is missing parseRouteInput/toHashUrl/getRouteFromHash/navigateHashRoute helper declarations.');
+  }
+
+  const parseRouteInputIndex = routerScript.indexOf('const parseRouteInput = (routeInput) => {');
+  const toHashUrlIndex = routerScript.indexOf('const toHashUrl = (routeInput) => {');
+  const getRouteFromHashIndex = routerScript.indexOf('const getRouteFromHash = () => {');
+  const navigateHashRouteIndex = routerScript.indexOf('const navigateHashRoute = (nextRoute, options = {}) => {');
+
+  if (parseRouteInputIndex < 0 || toHashUrlIndex < 0 || getRouteFromHashIndex < 0 || navigateHashRouteIndex < 0) {
+    throw new Error('Router bootstrap helper declaration indexes could not be resolved.');
+  }
+
+  if (parseRouteInputIndex > toHashUrlIndex) {
+    throw new Error('Router bootstrap declares toHashUrl before parseRouteInput, which can break parseability and runtime routing.');
+  }
+
+  if (!routerScript.includes('const parsedHashRoute = parseRouteInput(routeInput);')) {
+    throw new Error('toHashUrl no longer parses routes through parseRouteInput(routeInput).');
+  }
+
+  if (!routerScript.includes('const routePath = getRouteFromHash();')) {
+    throw new Error('Router bootstrap no longer derives routePath via getRouteFromHash().');
+  }
+
+  if (!routerScript.includes('navigateHashRoute(routePath, { mode: \'push\' });')) {
+    throw new Error('Router click interception no longer routes through navigateHashRoute(routePath, { mode: \'push\' }).');
+  }
+}
+
 
 function assertNormalizeHashHrefParsedBinding(singleFileHtml) {
   const declaration = 'const normalizeHashHref = (input) => {';
@@ -1263,6 +1303,7 @@ assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
 assertHashRoutingBootstrapClosed(html);
 assertParseableNavigateHashRoute(html);
+assertRouterHelperDeclarations(html);
 assertRouterBootstrapCoherence(html);
 assertNormalizeHashHrefParsedBinding(html);
 assertNoNavigateInvocationWithoutDeclaration(html);
