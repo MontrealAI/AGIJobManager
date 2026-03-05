@@ -410,6 +410,22 @@ for (const body of uncommentedScriptBodies) {
   if (!hasDeclaration) {
     throw new Error('Router bootstrap invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body.');
   }
+
+  const invokesGetRouteFromHash = /\bgetRouteFromHash\s*\(/.test(body);
+  if (invokesGetRouteFromHash) {
+    const hasGetRouteFromHashDeclaration = /\b(?:const|let|var)\s+getRouteFromHash\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+getRouteFromHash\s*\(/.test(body);
+    if (!hasGetRouteFromHashDeclaration) {
+      throw new Error('Router bootstrap invokes getRouteFromHash but no getRouteFromHash declaration exists in the same script body.');
+    }
+  }
+
+  const invokesParseRouteInput = /\bparseRouteInput\s*\(/.test(body);
+  if (invokesParseRouteInput) {
+    const hasParseRouteInputDeclaration = /\b(?:const|let|var)\s+parseRouteInput\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+parseRouteInput\s*\(/.test(body);
+    if (!hasParseRouteInputDeclaration) {
+      throw new Error('Router bootstrap invokes parseRouteInput but no parseRouteInput declaration exists in the same script body.');
+    }
+  }
 }
 const stripKnownNextScriptInterleave = (source) => {
   if (!source.includes('</script>')) return source;

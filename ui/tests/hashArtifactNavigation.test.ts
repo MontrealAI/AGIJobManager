@@ -186,6 +186,18 @@ describe('committed single-file hash navigation', () => {
       const hasLocalDeclaration = /\b(?:const|let|var)\s+navigateHashRoute\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+navigateHashRoute\s*\(/.test(scriptBody);
       expect(hasLocalDeclaration, `${label} invokes navigateHashRoute but lacks local navigateHashRoute declaration`).toBe(true);
 
+      const invokesParseRouteInput = /\bparseRouteInput\s*\(/.test(scriptBody);
+      if (invokesParseRouteInput) {
+        const hasParseRouteInputDeclaration = /\b(?:const|let|var)\s+parseRouteInput\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+parseRouteInput\s*\(/.test(scriptBody);
+        expect(hasParseRouteInputDeclaration, `${label} invokes parseRouteInput but lacks local parseRouteInput declaration`).toBe(true);
+      }
+
+      const invokesGetRouteFromHash = /\bgetRouteFromHash\s*\(/.test(scriptBody);
+      if (invokesGetRouteFromHash) {
+        const hasGetRouteFromHashDeclaration = /\b(?:const|let|var)\s+getRouteFromHash\s*=\s*\([^)]*\)\s*=>\s*\{|\bfunction\s+getRouteFromHash\s*\(/.test(scriptBody);
+        expect(hasGetRouteFromHashDeclaration, `${label} invokes getRouteFromHash but lacks local getRouteFromHash declaration`).toBe(true);
+      }
+
       expect(scriptBody, `${label} leaked detached routePath guard outside hashchange handler`).not.toContain(`if (routePath === stripGatewayBase(window.location.pathname)) return;
   window.addEventListener('popstate'`);
 
