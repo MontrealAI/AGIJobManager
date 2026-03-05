@@ -223,6 +223,57 @@
     '/demo': { title: 'Demo', description: 'Deterministic demo scenarios for humans and autonomous agents.' }
   };
 
+  const OFFICIAL = {
+    chainId: 1,
+    explorerBaseUrl: 'https://etherscan.io',
+    baseIpfsUrl: 'https://ipfs.io/ipfs/',
+    rpcUrls: ['https://eth.llamarpc.com', 'https://ethereum-rpc.publicnode.com'],
+    contracts: {
+      agiJobManager: '0xB3AAeb69b630f0299791679c063d68d6687481d1',
+      ensJobPages: '0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94',
+      agiToken: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA'
+    }
+  };
+
+  const SETTINGS_KEY = 'agijobmanager.runtime.settings.v1';
+  const DEFAULT_SETTINGS = {
+    rpcUrls: OFFICIAL.rpcUrls,
+    explorerBaseUrl: OFFICIAL.explorerBaseUrl,
+    ipfsGatewayBaseUrl: OFFICIAL.baseIpfsUrl,
+    demoMode: false,
+    agentMode: false,
+    allowInsecureHttpLinks: false
+  };
+
+  const walletState = {
+    provider: null,
+    account: null,
+    chainId: null,
+    ensName: null,
+    connected: false,
+    error: null,
+    providers: [],
+    boundProvider: null
+  };
+
+  const loadSettings = () => {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw) return { ...DEFAULT_SETTINGS };
+      const parsed = JSON.parse(raw);
+      return {
+        ...DEFAULT_SETTINGS,
+        ...parsed,
+        rpcUrls: Array.isArray(parsed.rpcUrls) && parsed.rpcUrls.length ? parsed.rpcUrls : DEFAULT_SETTINGS.rpcUrls
+      };
+    } catch (_error) {
+      return { ...DEFAULT_SETTINGS };
+    }
+  };
+
+  let settings = loadSettings();
+  const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+
   const normalizeRouteForView = (routePath) => {
     if (!routePath || routePath === '/') return '/';
     if (routePath.startsWith('/jobs/')) return '/jobs';
@@ -256,10 +307,10 @@
   };
 
   const routeContent = {
-    '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><p>Read-only-first, simulation-first operations for autonomous AI agents with human owner supervision.</p><ul><li>Jobs ledger quick view</li><li>Identity-layer readiness</li><li>Token and allowance posture</li></ul><p><strong>Intent:</strong> autonomous AI agents are primary operators; humans supervise ownership and risk boundaries.</p></section>',
+    '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><div id="wallet-panel"></div><p id="rpc-status">Read-only mainnet hydration active.</p><ul><li>Owner: <code id="hyd-owner">loading</code></li><li>Next Job ID: <code id="hyd-next-job-id">loading</code></li><li>Token Symbol: <code id="hyd-token-symbol">loading</code></li><li>Wallet Balance: <code id="hyd-token-balance">-</code></li></ul></section>',
     '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable job slots with status, payout, employer, agent, and ENS name derivation.</p><p>Use #/jobs/&lt;jobId&gt; for route-stable detail inspection.</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>ENS Name</th></tr></thead><tbody><tr><td>245</td><td>Open</td><td>1,200 AGI</td><td>job-245.alpha.jobs.agi.eth</td></tr></tbody></table></section>',
-    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>ENSJobPages mainnet snapshot, permission checks, and record safety policy.</p><p>All external links are allowlisted and copy-first by default.</p><ul><li>Root name: alpha.jobs.agi.eth</li><li>NameWrapper approval status</li><li>Job manager wiring state</li></ul></section>',
-    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Owner-gated governance controls with typed confirmations and simulation-first transaction flow.</p><p>Non-owner wallets remain explicit read-only.</p><ol><li>Prepare</li><li>Simulate</li><li>Sign</li><li>Pending</li><li>Confirmed/Failed</li></ol></section>',
+    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>Root: <code>alpha.jobs.agi.eth</code> · format <code>job-&lt;jobId&gt;.alpha.jobs.agi.eth</code></p><ul><li>ENSJobPages: <code>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</code></li><li>Resolver: <code>0xF29100983E058B709F3D539b0c765937B804AC15</code></li><li>Wired job manager: <code id="hyd-ens-job-manager">loading</code></li></ul></section>',
+    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Simulation-first write flow: Prepare → Simulate → Sign → Pending → Confirmed/Failed.</p><p>Connected chain: <code id="hyd-chain">read-only</code></p><p>Role gate: owner <code id="hyd-owner-match">unknown</code></p><details><summary>Settings</summary><div><label>RPC endpoints (newline)</label><textarea id="settings-rpc" rows="4" style="width:100%"></textarea><label>Explorer URL</label><input id="settings-explorer" style="width:100%"/><label>IPFS gateway URL</label><input id="settings-ipfs" style="width:100%"/><label><input type="checkbox" id="settings-demo"/> Demo mode</label><label><input type="checkbox" id="settings-agent"/> Agent mode</label><label><input type="checkbox" id="settings-http"/> Allow insecure HTTP links</label><div><button id="settings-save">Save</button><button id="settings-reset">Reset official defaults</button><button id="settings-export">Export JSON</button><button id="settings-import">Import JSON</button></div></div></details></section>',
     '/advanced': '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2><p>ABI-driven method explorer for AGIJobManager, ENSJobPages, and AGI ALPHA token flows.</p><p>Export agent-ready payload JSON for deterministic execution.</p><pre>{"simulateFirst":true,"chainId":1,"functionName":"approve"}</pre></section>',
     '/design': '<section data-testid="route-design"><h2>Design System Gallery</h2><p>ASI Sovereign Purple palette, typography, contrast checks, and reduced-motion examples.</p><p>This route is the canonical visual demo for CI and docs.</p><ul><li>Palette anchors</li><li>Typography scale</li><li>Focus-visible states</li></ul></section>',
     '/deployment': '<section data-testid="route-deployment"><h2>Deployment Registry</h2><p>Mainnet artifact-derived addresses, owner/deployer roles, linked libraries, and constructor evidence.</p><p>Includes release and explorer references.</p><dl><dt>AGIJobManager</dt><dd>0xB3AAeb69b630f0299791679c063d68d6687481d1</dd><dt>ENSJobPages</dt><dd>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</dd></dl></section>',
@@ -267,6 +318,76 @@
   };
 
   const routeJobDetailMarker = 'data-testid="route-job-detail"';
+
+  const setText = (id, value) => {
+    const node = document.getElementById(id);
+    if (node) node.textContent = String(value);
+  };
+
+  const toChecksumDisplay = (addr) => (addr ? addr.slice(0, 6) + '…' + addr.slice(-4) : 'not connected');
+  const padHex = (value) => value.toString(16).padStart(64, '0');
+  const methodId = (sig) => ({
+    'owner()': '0x8da5cb5b',
+    'nextJobId()': '0x0f10cc36',
+    'jobManager()': '0x3df395a3',
+    'agiToken()': '0xec9f4f8d',
+    'ensJobPages()': '0x9f58f6ff',
+    'symbol()': '0x95d89b41',
+    'resolver(bytes32)': '0x0178b8bf',
+    'name(bytes32)': '0x691f3431',
+    'balanceOf(address)': '0x70a08231'
+  }[sig]);
+
+  const decodeAddress = (hex) => (hex && hex.length >= 66 ? '0x' + hex.slice(-40) : null);
+  const decodeUint = (hex) => (hex && hex.length >= 66 ? BigInt(hex).toString() : '0');
+  const decodeString = (hex) => {
+    if (!hex || hex === '0x') return '';
+    if (hex.length < 130) return '';
+    const len = Number(BigInt('0x' + hex.slice(66, 130)));
+    const data = hex.slice(130, 130 + len * 2);
+    try {
+      return decodeURIComponent(data.replace(/(..)/g, '%$1'));
+    } catch (_error) {
+      return '';
+    }
+  };
+
+  const rpcCall = async (method, params) => {
+    let lastError = null;
+    for (const rpcUrl of settings.rpcUrls) {
+      try {
+        const res = await fetch(rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }) });
+        const json = await res.json();
+        if (json.error) throw new Error(json.error.message || 'RPC error');
+        return json.result;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error('All RPC endpoints failed');
+  };
+
+  const ethCall = async (to, data) => rpcCall('eth_call', [{ to, data }, 'latest']);
+
+  const hydrateReadOnly = async () => {
+    try {
+      const blockHex = await rpcCall('eth_blockNumber', []);
+      setText('rpc-status', 'Read-only mainnet connected · block ' + parseInt(blockHex, 16));
+      setText('hyd-chain', walletState.chainId ? walletState.chainId : '1 (read-only)');
+      setText('hyd-owner', decodeAddress(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('owner()'))));
+      setText('hyd-next-job-id', decodeUint(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'))));
+      setText('hyd-ens-job-manager', decodeAddress(await ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()'))) || 'unavailable');
+      setText('hyd-token-symbol', decodeString(await ethCall(OFFICIAL.contracts.agiToken, methodId('symbol()'))) || 'AGI');
+      if (walletState.account) {
+        const data = methodId('balanceOf(address)') + padHex(BigInt(walletState.account).toString(16));
+        setText('hyd-token-balance', decodeUint(await ethCall(OFFICIAL.contracts.agiToken, data)));
+      } else {
+        setText('hyd-token-balance', '-');
+      }
+    } catch (error) {
+      setText('rpc-status', 'Degraded RPC mode: ' + (error && error.message ? error.message : 'unknown error'));
+    }
+  };
 
   const renderJobDetail = (routePath, host) => {
     const rawJobId = routePath.slice('/jobs/'.length);
@@ -317,6 +438,180 @@
     }
 
     host.innerHTML = routeContent[normalized] || routeContent['/'];
+
+    if (normalized === '/') renderWalletPanel();
+    if (normalized === '/admin') wireSettingsPanel();
+  };
+
+  const setWalletError = (message) => {
+    walletState.error = message;
+    renderWalletPanel();
+  };
+
+  const utf8ToHex = (text) => {
+    const bytes = new TextEncoder().encode(text);
+    let hex = '';
+    for (const byte of bytes) hex += byte.toString(16).padStart(2, '0');
+    return '0x' + hex;
+  };
+
+  const hashHex = async (hexValue) => {
+    const result = await rpcCall('web3_sha3', [hexValue]);
+    return typeof result === 'string' ? result : null;
+  };
+
+  const namehash = async (name) => {
+    const labels = name.split('.').filter(Boolean);
+    let node = '0x' + '00'.repeat(32);
+    for (let i = labels.length - 1; i >= 0; i -= 1) {
+      const labelHash = await hashHex(utf8ToHex(labels[i]));
+      if (!labelHash) return null;
+      node = await hashHex(node + labelHash.slice(2));
+      if (!node) return null;
+    }
+    return node;
+  };
+
+  const bindProviderEvents = (provider) => {
+    if (!provider || typeof provider.on !== 'function') return;
+    if (walletState.boundProvider === provider) return;
+    provider.on('accountsChanged', () => refreshWalletState());
+    provider.on('chainChanged', () => refreshWalletState());
+    provider.on('disconnect', () => disconnectWallet());
+    walletState.boundProvider = provider;
+  };
+
+  const resolveEnsName = async (account) => {
+    try {
+      const reverseName = account.toLowerCase().replace(/^0x/, '') + '.addr.reverse';
+      const reverseNode = await namehash(reverseName);
+      if (!reverseNode) return null;
+
+      const resolverHex = await ethCall(
+        '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+        methodId('resolver(bytes32)') + reverseNode.slice(2)
+      );
+      const resolver = decodeAddress(resolverHex);
+      if (!resolver || /^0x0{40}$/i.test(resolver)) return null;
+
+      const nameHex = await ethCall(resolver, methodId('name(bytes32)') + reverseNode.slice(2));
+      const resolved = decodeString(nameHex);
+      return resolved || null;
+    } catch (_error) {
+      return null;
+    }
+  };
+
+  const detectProviders = async () => {
+    const discovered = [];
+    window.addEventListener('eip6963:announceProvider', (event) => {
+      if (event && event.detail && event.detail.provider) discovered.push(event.detail.provider);
+    });
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
+    await new Promise((resolve) => setTimeout(resolve, 64));
+    if (window.ethereum) discovered.push(window.ethereum);
+    walletState.providers = discovered;
+    walletState.provider = discovered[0] || null;
+    bindProviderEvents(walletState.provider);
+  };
+
+  const refreshWalletState = async () => {
+    if (!walletState.provider) return;
+    try {
+      const chainHex = await walletState.provider.request({ method: 'eth_chainId' });
+      walletState.chainId = parseInt(chainHex, 16);
+      const accounts = await walletState.provider.request({ method: 'eth_accounts' });
+      walletState.account = Array.isArray(accounts) && accounts[0] ? accounts[0] : null;
+      walletState.connected = Boolean(walletState.account);
+      walletState.ensName = walletState.account ? await resolveEnsName(walletState.account) : null;
+      renderWalletPanel();
+      hydrateReadOnly();
+    } catch (error) {
+      setWalletError(error && error.message ? error.message : 'Wallet state refresh failed');
+    }
+  };
+
+  const connectWallet = async () => {
+    try {
+      if (!walletState.provider) await detectProviders();
+      if (!walletState.provider) throw new Error('No EIP-1193 wallet provider detected.');
+      await walletState.provider.request({ method: 'eth_requestAccounts' });
+      await refreshWalletState();
+    } catch (error) {
+      setWalletError(error && error.message ? error.message : 'Connection failed');
+    }
+  };
+
+  const disconnectWallet = () => {
+    walletState.account = null;
+    walletState.connected = false;
+    walletState.ensName = null;
+    walletState.error = null;
+    renderWalletPanel();
+    hydrateReadOnly();
+  };
+
+  const switchMainnet = async () => {
+    if (!walletState.provider) return;
+    try {
+      await walletState.provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x1' }] });
+      await refreshWalletState();
+    } catch (error) {
+      setWalletError('Unable to switch chain automatically. Please change network to Ethereum Mainnet in wallet.');
+    }
+  };
+
+  const renderWalletPanel = () => {
+    const host = document.getElementById('wallet-panel');
+    if (!host) return;
+    const mismatch = walletState.connected && walletState.chainId !== OFFICIAL.chainId;
+    const fileOrigin = window.location.protocol === 'file:';
+    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button id="wallet-disconnect">Disconnect / Reset UI</button><span>Account: <code>' + toChecksumDisplay(walletState.account) + '</code></span><span>ENS: <code>' + (walletState.ensName || '-') + '</code></span><span>Chain: <code>' + (walletState.chainId || 'read-only') + '</code></span>' + (mismatch ? '<button id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (walletState.error ? '<p style="color:#ff8080">' + walletState.error + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
+    const connectBtn = document.getElementById('wallet-connect');
+    const disconnectBtn = document.getElementById('wallet-disconnect');
+    if (connectBtn) connectBtn.onclick = connectWallet;
+    if (disconnectBtn) disconnectBtn.onclick = disconnectWallet;
+    const switchBtn = document.getElementById('wallet-switch');
+    if (switchBtn) switchBtn.onclick = switchMainnet;
+  };
+
+  const wireSettingsPanel = () => {
+    const rpc = document.getElementById('settings-rpc');
+    const exp = document.getElementById('settings-explorer');
+    const ipfs = document.getElementById('settings-ipfs');
+    const demo = document.getElementById('settings-demo');
+    const agent = document.getElementById('settings-agent');
+    const http = document.getElementById('settings-http');
+    if (!rpc || !exp || !ipfs || !demo || !agent || !http) return;
+    rpc.value = settings.rpcUrls.join('\n');
+    exp.value = settings.explorerBaseUrl;
+    ipfs.value = settings.ipfsGatewayBaseUrl;
+    demo.checked = Boolean(settings.demoMode);
+    agent.checked = Boolean(settings.agentMode);
+    http.checked = Boolean(settings.allowInsecureHttpLinks);
+    const save = document.getElementById('settings-save');
+    const reset = document.getElementById('settings-reset');
+    const expBtn = document.getElementById('settings-export');
+    const impBtn = document.getElementById('settings-import');
+    if (save) save.onclick = () => {
+      settings = {
+        rpcUrls: String(rpc.value || '').split('\n').map((s) => s.trim()).filter(Boolean),
+        explorerBaseUrl: String(exp.value || '').trim() || OFFICIAL.explorerBaseUrl,
+        ipfsGatewayBaseUrl: String(ipfs.value || '').trim() || OFFICIAL.baseIpfsUrl,
+        demoMode: demo.checked,
+        agentMode: agent.checked,
+        allowInsecureHttpLinks: http.checked
+      };
+      saveSettings();
+      hydrateReadOnly();
+    };
+    if (reset) reset.onclick = () => { settings = { ...DEFAULT_SETTINGS }; saveSettings(); updatePrimaryView('/admin'); };
+    if (expBtn) expBtn.onclick = () => { navigator.clipboard.writeText(JSON.stringify(settings, null, 2)); };
+    if (impBtn) impBtn.onclick = () => {
+      const raw = prompt('Paste settings JSON');
+      if (!raw) return;
+      try { settings = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }; saveSettings(); updatePrimaryView('/admin'); } catch (_error) {}
+    };
   };
 
   const startupCanonicalHash = getStartupCanonicalHash(window.location.hash || '');
@@ -360,5 +655,7 @@
   const startupRoute = getRouteFromHash();
   updateRoutePanel(startupRoute);
   updatePrimaryView(startupRoute);
+  detectProviders().then(refreshWalletState).then(hydrateReadOnly);
+  bindProviderEvents(walletState.provider);
 })();</script>
 <div data-rk=""><style>[data-rk]{--rk-blurs-modalOverlay:blur(0px);--rk-fonts-body:SFRounded, ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";--rk-radii-actionButton:9999px;--rk-radii-connectButton:12px;--rk-radii-menuButton:12px;--rk-radii-modal:24px;--rk-radii-modalMobile:28px;--rk-colors-accentColor:#0E76FD;--rk-colors-accentColorForeground:#FFF;--rk-colors-actionButtonBorder:rgba(0, 0, 0, 0.04);--rk-colors-actionButtonBorderMobile:rgba(0, 0, 0, 0.06);--rk-colors-actionButtonSecondaryBackground:rgba(0, 0, 0, 0.06);--rk-colors-closeButton:rgba(60, 66, 66, 0.8);--rk-colors-closeButtonBackground:rgba(0, 0, 0, 0.06);--rk-colors-connectButtonBackground:#FFF;--rk-colors-connectButtonBackgroundError:#FF494A;--rk-colors-connectButtonInnerBackground:linear-gradient(0deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.06));--rk-colors-connectButtonText:#25292E;--rk-colors-connectButtonTextError:#FFF;--rk-colors-connectionIndicator:#30E000;--rk-colors-downloadBottomCardBackground:linear-gradient(126deg, rgba(255, 255, 255, 0) 9.49%, rgba(171, 171, 171, 0.04) 71.04%), #FFFFFF;--rk-colors-downloadTopCardBackground:linear-gradient(126deg, rgba(171, 171, 171, 0.2) 9.49%, rgba(255, 255, 255, 0) 71.04%), #FFFFFF;--rk-colors-error:#FF494A;--rk-colors-generalBorder:rgba(0, 0, 0, 0.06);--rk-colors-generalBorderDim:rgba(0, 0, 0, 0.03);--rk-colors-menuItemBackground:rgba(60, 66, 66, 0.1);--rk-colors-modalBackdrop:rgba(0, 0, 0, 0.3);--rk-colors-modalBackground:#FFF;--rk-colors-modalBorder:transparent;--rk-colors-modalText:#25292E;--rk-colors-modalTextDim:rgba(60, 66, 66, 0.3);--rk-colors-modalTextSecondary:rgba(60, 66, 66, 0.6);--rk-colors-profileAction:#FFF;--rk-colors-profileActionHover:rgba(255, 255, 255, 0.5);--rk-colors-profileForeground:rgba(60, 66, 66, 0.06);--rk-colors-selectedOptionBorder:rgba(60, 66, 66, 0.1);--rk-colors-standby:#FFD641;--rk-shadows-connectButton:0px 4px 12px rgba(0, 0, 0, 0.1);--rk-shadows-dialog:0px 8px 32px rgba(0, 0, 0, 0.32);--rk-shadows-profileDetailsAction:0px 2px 6px rgba(37, 41, 46, 0.04);--rk-shadows-selectedOption:0px 2px 6px rgba(0, 0, 0, 0.24);--rk-shadows-selectedWallet:0px 2px 6px rgba(0, 0, 0, 0.12);--rk-shadows-walletLogo:0px 2px 16px rgba(0, 0, 0, 0.16);}</style><header class="border-b border-border"><div class="container-shell flex h-16 items-center justify-between"><div class="font-serif text-3xl">AGIJobManager</div><nav class="flex gap-4 text-sm"><a data-testid="top-nav-dashboard" href="#/">Dashboard</a><a data-testid="top-nav-jobs" href="#/jobs">Jobs</a><a data-testid="top-nav-identity" href="#/identity">Identity</a><a data-testid="top-nav-admin" href="#/admin">Admin</a><a data-testid="top-nav-advanced" href="#/advanced">Advanced</a><a data-testid="top-nav-design" href="#/design">Design</a><a data-testid="top-nav-deployment" href="#/deployment">Deployment</a><a data-testid="top-nav-demo" href="#/demo">Demo</a></nav><div class="flex items-center gap-2"><button class="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 border border-border bg-transparent hover:bg-muted">Theme</button></div></div></header><main class="hero-aura min-h-[calc(100vh-8rem)]"><div class="container-shell py-8 space-y-4"><section class="hero border border-border bg-card/80"><h1 class="text-5xl font-serif">AGIJobManager · Sovereign Ops Console</h1><p class="text-muted-foreground mt-2">Institutional dApp for escrow lifecycle, dispute governance, and safety-first operations.</p></section><section class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="rounded-lg border border-border bg-card p-4"><h3 class="font-serif text-lg">Create Job</h3><p class="text-sm text-muted-foreground">Wallet required. Simulation-first.</p></div><div class="rounded-lg border border-border bg-card p-4"><h3 class="font-serif text-lg">Browse Jobs</h3><p class="text-sm">0<!-- --> total ids observed</p><a class="underline" href="#/jobs">Open jobs ledger</a></div><div class="rounded-lg border border-border bg-card p-4"><h3 class="font-serif text-lg">Platform Config</h3><p class="text-xs">Quorum <!-- -->0<!-- --> · approvals <!-- -->0</p><a class="underline" href="#/admin">Open ops console</a></div></section></div></main><footer class="container py-6 text-xs text-muted-foreground">Read-only browsing works without wallet. All writes are simulation-first.</footer></div></body></html>
