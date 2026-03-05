@@ -131,7 +131,10 @@ const insertIntoBody = createTagInsertionPoint('body');
 
 
 const appShellStart = html.indexOf('<div data-rk="">');
-const appShellEnd = appShellStart >= 0 ? html.indexOf('<script async="">', appShellStart) : -1;
+const firstScriptAfterShell = appShellStart >= 0 ? html.indexOf('<script', appShellStart) : -1;
+const appShellEnd = firstScriptAfterShell > appShellStart
+  ? firstScriptAfterShell
+  : (appShellStart >= 0 ? html.indexOf('</body>', appShellStart) : -1);
 if (appShellStart >= 0 && appShellEnd > appShellStart) {
   const shellMarkup = html.slice(appShellStart, appShellEnd);
   const rewrittenShellMarkup = shellMarkup.replace(/(<a\b[^>]*\shref=")\/([^"]*)"/gi, (_full, prefix, routeTail) => {
