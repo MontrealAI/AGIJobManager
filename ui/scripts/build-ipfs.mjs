@@ -369,7 +369,7 @@ insertIntoBody(`<script>(function(){
     chainId: 1,
     explorerBaseUrl: 'https://etherscan.io',
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
-    rpcUrls: ['https://eth.llamarpc.com', 'https://ethereum-rpc.publicnode.com'],
+    rpcUrls: ['https://eth.llamarpc.com', 'https://ethereum-rpc.publicnode.com', 'https://cloudflare-eth.com', 'https://rpc.ankr.com/eth'],
     contracts: {
       agiJobManager: '0xB3AAeb69b630f0299791679c063d68d6687481d1',
       ensJobPages: '0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94',
@@ -451,9 +451,9 @@ insertIntoBody(`<script>(function(){
 
   const routeContent = {
     '/': '<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><div id="wallet-panel"></div><p id="rpc-status">Read-only mainnet hydration active.</p><ul><li>Owner: <code id="hyd-owner">loading</code></li><li>Next Job ID: <code id="hyd-next-job-id">loading</code></li><li>Token Symbol: <code id="hyd-token-symbol">loading</code></li><li>Wallet Balance: <code id="hyd-token-balance">-</code></li></ul></section>',
-    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable job slots with status, payout, employer, agent, and ENS name derivation.</p><p>Use #/jobs/&lt;jobId&gt; for route-stable detail inspection.</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>ENS Name</th></tr></thead><tbody><tr><td>245</td><td>Open</td><td>1,200 AGI</td><td>job-245.alpha.jobs.agi.eth</td></tr></tbody></table></section>',
-    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>Root: <code>alpha.jobs.agi.eth</code> · format <code>job-&lt;jobId&gt;.alpha.jobs.agi.eth</code></p><ul><li>ENSJobPages: <code>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</code></li><li>Resolver: <code>0xF29100983E058B709F3D539b0c765937B804AC15</code></li><li>Wired job manager: <code id="hyd-ens-job-manager">loading</code></li></ul></section>',
-    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Simulation-first write flow: Prepare → Simulate → Sign → Pending → Confirmed/Failed.</p><p>Connected chain: <code id="hyd-chain">read-only</code></p><p>Role gate: owner <code id="hyd-owner-match">unknown</code></p><details><summary>Settings</summary><div><label>RPC endpoints (newline)</label><textarea id="settings-rpc" rows="4" style="width:100%"></textarea><label>Explorer URL</label><input id="settings-explorer" style="width:100%"/><label>IPFS gateway URL</label><input id="settings-ipfs" style="width:100%"/><label><input type="checkbox" id="settings-demo"/> Demo mode</label><label><input type="checkbox" id="settings-agent"/> Agent mode</label><label><input type="checkbox" id="settings-http"/> Allow insecure HTTP links</label><div><button id="settings-save">Save</button><button id="settings-reset">Reset official defaults</button><button id="settings-export">Export JSON</button><button id="settings-import">Import JSON</button></div></div></details></section>',
+    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Filterable live chain ledger (no placeholders in LIVE mode).</p><div style="display:flex;gap:0.5rem;flex-wrap:wrap"><input id="jobs-filter-id" placeholder="jobId"/><input id="jobs-filter-employer" placeholder="employer"/><input id="jobs-filter-agent" placeholder="agent"/><select id="jobs-filter-status"><option value="">all statuses</option><option>Open</option><option>Assigned</option><option>Requested</option><option>Completed</option><option>Disputed</option><option>Expired</option></select><button id="jobs-refresh">Refresh</button></div><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th><th>ENS Name</th></tr></thead><tbody id="jobs-live-body"><tr><td colspan="6">Loading live ledger…</td></tr></tbody></table></section>',
+    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>Root: <code>alpha.jobs.agi.eth</code> · format <code>job-&lt;jobId&gt;.alpha.jobs.agi.eth</code></p><ul><li>ENSJobPages: <code>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</code></li><li>Resolver: <code>0xF29100983E058B709F3D539b0c765937B804AC15</code></li><li>Wired job manager: <code id="hyd-ens-job-manager">resolving…</code> <button id="identity-retry" type="button">Retry</button></li><li id="hyd-ens-job-manager-status">Awaiting on-chain read.</li></ul></section>',
+    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Simulation-first write flow: Prepare → Simulate → Sign → Pending → Confirmed/Failed.</p><div><strong>Connected chain:</strong> <code id="hyd-chain">read-only</code></div><div><strong>Role gate:</strong> <code id="hyd-owner-match">unknown</code></div><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.5rem 0"><button id="admin-refresh" type="button">Refresh on-chain status</button><button id="admin-owner-action" type="button" disabled title="Connect wallet as owner on mainnet">Owner Action (simulate)</button></div><details><summary>Settings</summary><div><label>RPC endpoints (newline)</label><textarea id="settings-rpc" rows="4" style="width:100%"></textarea><label>Explorer URL</label><input id="settings-explorer" style="width:100%"/><label>IPFS gateway URL</label><input id="settings-ipfs" style="width:100%"/><label><input type="checkbox" id="settings-demo"/> Demo mode (default OFF)</label><label><input type="checkbox" id="settings-agent"/> Agent mode</label><label><input type="checkbox" id="settings-http"/> Allow insecure HTTP links</label><div><button id="settings-save">Save</button><button id="settings-reset">Reset official defaults</button><button id="settings-export">Export JSON</button><button id="settings-import">Import JSON</button></div></div></details></section>',
     '/advanced': '<section data-testid="route-advanced"><h2>Advanced Contract Console</h2><p>ABI-driven method explorer for AGIJobManager, ENSJobPages, and AGI ALPHA token flows.</p><p>Export agent-ready payload JSON for deterministic execution.</p><pre>{"simulateFirst":true,"chainId":1,"functionName":"approve"}</pre></section>',
     '/design': '<section data-testid="route-design"><h2>Design System Gallery</h2><p>ASI Sovereign Purple palette, typography, contrast checks, and reduced-motion examples.</p><p>This route is the canonical visual demo for CI and docs.</p><ul><li>Palette anchors</li><li>Typography scale</li><li>Focus-visible states</li></ul></section>',
     '/deployment': '<section data-testid="route-deployment"><h2>Deployment Registry</h2><p>Mainnet artifact-derived addresses, owner/deployer roles, linked libraries, and constructor evidence.</p><p>Includes release and explorer references.</p><dl><dt>AGIJobManager</dt><dd>0xB3AAeb69b630f0299791679c063d68d6687481d1</dd><dt>ENSJobPages</dt><dd>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</dd></dl></section>',
@@ -492,14 +492,15 @@ insertIntoBody(`<script>(function(){
   const padHex = (value) => value.toString(16).padStart(64, '0');
   const methodId = (sig) => ({
     'owner()': '0x8da5cb5b',
-    'nextJobId()': '0x0f10cc36',
+    'nextJobId()': '0xb0c2aa5e',
     'jobManager()': '0x3df395a3',
     'agiToken()': '0xec9f4f8d',
     'ensJobPages()': '0x9f58f6ff',
     'symbol()': '0x95d89b41',
     'resolver(bytes32)': '0x0178b8bf',
     'name(bytes32)': '0x691f3431',
-    'balanceOf(address)': '0x70a08231'
+    'balanceOf(address)': '0x70a08231',
+    'getJobCore(uint256)': '0xc6b44fe7'
   }[sig]);
 
   const decodeAddress = (hex) => (hex && hex.length >= 66 ? '0x' + hex.slice(-40) : null);
@@ -540,7 +541,6 @@ insertIntoBody(`<script>(function(){
       setText('hyd-chain', walletState.chainId ? walletState.chainId : '1 (read-only)');
       setText('hyd-owner', decodeAddress(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('owner()'))));
       setText('hyd-next-job-id', decodeUint(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'))));
-      setText('hyd-ens-job-manager', decodeAddress(await ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()'))) || 'unavailable');
       setText('hyd-token-symbol', decodeString(await ethCall(OFFICIAL.contracts.agiToken, methodId('symbol()'))) || 'AGI');
       if (walletState.account) {
         const data = methodId('balanceOf(address)') + padHex(BigInt(walletState.account).toString(16));
@@ -551,6 +551,70 @@ insertIntoBody(`<script>(function(){
     } catch (error) {
       setText('rpc-status', 'Degraded RPC mode: ' + (error && error.message ? error.message : 'unknown error'));
     }
+  };
+
+
+
+  const deriveStatus = (coreWords) => {
+    const agent = decodeAddress(coreWords[1]) || '0x0000000000000000000000000000000000000000';
+    const completed = BigInt(coreWords[5] || '0x0') !== 0n;
+    const disputed = BigInt(coreWords[6] || '0x0') !== 0n;
+    const expired = BigInt(coreWords[7] || '0x0') !== 0n;
+    if (expired) return 'Expired';
+    if (disputed) return 'Disputed';
+    if (completed) return 'Completed';
+    if (!/^0x0{40}$/i.test(agent)) return 'Assigned';
+    return 'Open';
+  };
+
+  const hydrateJobsLedger = async () => {
+    const body = document.getElementById('jobs-live-body');
+    if (!body) return;
+    try {
+      const next = Number(decodeUint(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'))));
+      const rows = [];
+      for (let jobId = Math.max(0, next - 30); jobId < next; jobId += 1) {
+        const payload = methodId('getJobCore(uint256)') + padHex(BigInt(jobId));
+        const raw = await ethCall(OFFICIAL.contracts.agiJobManager, payload);
+        if (!raw || raw === '0x') continue;
+        const words = [];
+        for (let i = 2; i < raw.length; i += 64) words.push('0x' + raw.slice(i, i + 64));
+        if (words.length < 9) continue;
+        const employer = decodeAddress(words[0]) || '';
+        if (!employer || /^0x0{40}$/i.test(employer)) continue;
+        rows.push({ jobId, status: deriveStatus(words), payout: decodeUint(words[2]), employer, agent: decodeAddress(words[1]) || '-', ens: 'job-' + jobId + '.alpha.jobs.agi.eth' });
+      }
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="6">No live jobs found on-chain.</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.reverse().map((row) => '<tr><td>' + row.jobId + '</td><td>' + escapeHtml(row.status) + '</td><td>' + escapeHtml(row.payout) + ' AGI</td><td><code>' + escapeHtml(row.employer) + '</code></td><td><code>' + escapeHtml(row.agent) + '</code></td><td>' + escapeHtml(row.ens) + '</td></tr>').join('');
+      const refresh = document.getElementById('jobs-refresh');
+      if (refresh) refresh.onclick = () => hydrateJobsLedger();
+    } catch (error) {
+      body.innerHTML = '<tr><td colspan="6">Live read failed: ' + escapeHtml(error && error.message ? error.message : 'unknown error') + '</td></tr>';
+    }
+  };
+
+  const hydrateIdentityWiring = async () => {
+    const status = document.getElementById('hyd-ens-job-manager-status');
+    const target = document.getElementById('hyd-ens-job-manager');
+    if (!status || !target) return;
+    status.textContent = 'Resolving wiring…';
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Identity wiring read timed out')), 7000));
+    try {
+      const wired = await Promise.race([ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()')), timeout]);
+      const wiredAddress = decodeAddress(wired) || 'Not exposed by ABI';
+      target.textContent = wiredAddress;
+      status.textContent = /^0x/i.test(wiredAddress) && wiredAddress.toLowerCase() === OFFICIAL.contracts.agiJobManager.toLowerCase()
+        ? 'Verified: wiring matches AGIJobManager.'
+        : 'Mismatch or unavailable wiring. Check deployment configuration.';
+    } catch (error) {
+      target.textContent = 'error';
+      status.textContent = 'Actionable error: ' + (error && error.message ? error.message : 'unknown');
+    }
+    const retry = document.getElementById('identity-retry');
+    if (retry) retry.onclick = () => hydrateIdentityWiring();
   };
 
   const renderJobDetail = (routePath, host) => {
@@ -604,6 +668,8 @@ insertIntoBody(`<script>(function(){
     host.innerHTML = routeContent[normalized] || routeContent['/'];
 
     if (normalized === '/') renderWalletPanel();
+    if (normalized === '/jobs') hydrateJobsLedger();
+    if (normalized === '/identity') hydrateIdentityWiring();
     if (normalized === '/admin') wireSettingsPanel();
   };
 
@@ -689,9 +755,17 @@ insertIntoBody(`<script>(function(){
     if (window.ethereum && !providerSeen.has(window.ethereum)) {
       discovered.push({ provider: window.ethereum, info: { name: 'Injected wallet' } });
     }
+    const labelForProvider = (entry) => {
+      if (!entry) return 'none detected';
+      const rdns = entry.info && entry.info.rdns ? String(entry.info.rdns).toLowerCase() : '';
+      if (entry.provider && entry.provider.isMetaMask) return 'MetaMask';
+      if (rdns.includes('metamask')) return 'MetaMask';
+      if (rdns.includes('phantom')) return 'Phantom';
+      return (entry.info && entry.info.name) || 'Injected EVM Wallet';
+    };
     walletState.providers = discovered.map((entry) => entry.provider);
     walletState.provider = discovered[0] ? discovered[0].provider : null;
-    walletState.providerLabel = discovered[0] && discovered[0].info ? discovered[0].info.name : null;
+    walletState.providerLabel = labelForProvider(discovered[0]);
     bindProviderEvents(walletState.provider);
   };
 
@@ -799,6 +873,14 @@ insertIntoBody(`<script>(function(){
       saveSettings();
       hydrateReadOnly();
     };
+    const adminRefresh = document.getElementById('admin-refresh');
+    if (adminRefresh) adminRefresh.onclick = () => hydrateReadOnly();
+    const ownerAction = document.getElementById('admin-owner-action');
+    if (ownerAction) {
+      const isOwner = walletState.account && walletState.account.toLowerCase() === '0xa9ed0539c2fbc5c6bc15a2e168bd9bcd07c01201';
+      ownerAction.disabled = !Boolean(walletState.connected && walletState.chainId === 1 && isOwner);
+      ownerAction.title = ownerAction.disabled ? 'Not authorized or wrong chain/wallet state' : 'Ready (simulation-first)';
+    }
     if (reset) reset.onclick = () => { settings = { ...DEFAULT_SETTINGS }; saveSettings(); updatePrimaryView('/admin'); };
     if (expBtn) expBtn.onclick = () => { navigator.clipboard.writeText(JSON.stringify(settings, null, 2)); };
     if (impBtn) impBtn.onclick = () => {
