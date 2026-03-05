@@ -593,21 +593,25 @@
   };
 
   const renderWalletPanel = () => {
-    const host = document.getElementById('wallet-panel') || ensureHeaderWalletHost();
+    const dashboardHost = document.getElementById('wallet-panel');
+    const headerHost = document.getElementById('wallet-header-panel');
+    if (dashboardHost && headerHost) headerHost.remove();
+    const host = dashboardHost || ensureHeaderWalletHost();
+
     const mismatch = walletState.connected && walletState.chainId !== OFFICIAL.chainId;
     const fileOrigin = window.location.protocol === 'file:';
-    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + (walletState.providerLabel || 'none detected') + '</code></span><span>Account: <code id="wallet-address-value">' + toChecksumDisplay(walletState.account) + '</code></span><button id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + (walletState.ensName || '-') + '</code></span><span>Chain: <code>' + (walletState.chainId || 'read-only') + '</code></span>' + (mismatch ? '<button id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (walletState.error ? '<p style="color:#ff8080">' + walletState.error + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
-    const connectBtn = document.getElementById('wallet-connect');
-    const disconnectBtn = document.getElementById('wallet-disconnect');
-    if (connectBtn) connectBtn.onclick = connectWallet;
-    if (disconnectBtn) disconnectBtn.onclick = disconnectWallet;
-    const switchBtn = document.getElementById('wallet-switch');
-    if (switchBtn) switchBtn.onclick = switchMainnet;
-    const copyBtn = document.getElementById('wallet-copy');
-    if (copyBtn) copyBtn.onclick = async () => {
+    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + (walletState.providerLabel || 'none detected') + '</code></span><span>Account: <code id="wallet-address-value">' + toChecksumDisplay(walletState.account) + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + (walletState.ensName || '-') + '</code></span><span>Chain: <code>' + (walletState.chainId || 'read-only') + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (walletState.error ? '<p style="color:#ff8080">' + walletState.error + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
+    const connectBtn = host.querySelector('#wallet-connect');
+    const disconnectBtn = host.querySelector('#wallet-disconnect');
+    if (connectBtn) connectBtn.addEventListener('click', connectWallet);
+    if (disconnectBtn) disconnectBtn.addEventListener('click', disconnectWallet);
+    const switchBtn = host.querySelector('#wallet-switch');
+    if (switchBtn) switchBtn.addEventListener('click', switchMainnet);
+    const copyBtn = host.querySelector('#wallet-copy');
+    if (copyBtn) copyBtn.addEventListener('click', async () => {
       if (!walletState.account) return;
       try { await navigator.clipboard.writeText(walletState.account); } catch (_error) {}
-    };
+    });
   };
 
   const wireSettingsPanel = () => {

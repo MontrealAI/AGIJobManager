@@ -209,6 +209,26 @@ describe('single-file hash router runtime behavior', () => {
     expect(dom.window.location.hash).toBe('#/jobs/9');
   });
 
+
+  it('removes stale header wallet host to avoid duplicate wallet control ids', () => {
+    const { dom } = bootRouter('https://example.com/agijobmanager.html#/');
+
+    const syntheticHeader = dom.window.document.createElement('div');
+    syntheticHeader.id = 'wallet-header-panel';
+    syntheticHeader.innerHTML = '<button id="wallet-connect">stale connect</button>';
+    dom.window.document.body.appendChild(syntheticHeader);
+
+    dom.window.location.hash = '#/jobs';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    dom.window.location.hash = '#/';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+
+    const walletConnectNodes = dom.window.document.querySelectorAll('#wallet-connect');
+    expect(walletConnectNodes.length).toBe(1);
+    expect(dom.window.document.querySelector('#wallet-panel #wallet-connect')).toBeTruthy();
+    expect(dom.window.document.querySelector('#wallet-header-panel')).toBeNull();
+  });
+
   it('keeps hash history coherent for browser back/forward route traversal', () => {
     const { dom } = bootRouter('https://montrealai.github.io/AGIJobManager/agijobmanager.html#/');
 
