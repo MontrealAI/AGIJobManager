@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import * as parse5 from 'parse5';
 
 const uiRoot = process.cwd();
 const repoRoot = path.resolve(uiRoot, '..');
@@ -43,24 +42,31 @@ function resolveLocalAsset(assetPath) {
   return null;
 }
 
-function stripScriptTags(sourceHtml) {
-  const document = parse5.parse(sourceHtml);
+function inlineExternalScripts(sourceHtml) {
+  return sourceHtml.replace(/<script\b([^>]*)><\/script>/gi, (fullTag, rawAttrs) => {
+    const attrs = parseTagAttributes(rawAttrs || '');
+    const src = attrs.get('src');
+    if (!src) return fullTag;
 
-  const removeScripts = (node) => {
-    if (!node || !Array.isArray(node.childNodes) || node.childNodes.length === 0) return;
+    const localPath = resolveLocalAsset(src);
+    if (!localPath || !fs.existsSync(localPath)) {
+      throw new Error(`Referenced script not found: ${src}`);
+    }
 
-    node.childNodes = node.childNodes.filter((child) => child.nodeName !== 'script');
-    node.childNodes.forEach(removeScripts);
-  };
+    const js = fs.readFileSync(localPath, 'utf8')
+      .replace(/<\/script/gi, '<\\/script')
+      .replace(/<!--/g, '<\\!--');
+    const attrsWithoutSrc = (rawAttrs || '')
+      .replace(/\s+src\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i, '')
+      .replace(/\s+/g, ' ')
+      .trim();
 
-  removeScripts(document);
-  return parse5.serialize(document);
+    const openingTag = attrsWithoutSrc.length > 0 ? `<script ${attrsWithoutSrc}>` : '<script>';
+    return `${openingTag}\n${js}\n</script>`;
+  });
 }
 
-
-// For the IPFS single-file artifact we intentionally remove framework runtime scripts
-// and keep a deterministic static document + explicit hash router bootstrap.
-html = stripScriptTags(html);
+html = inlineExternalScripts(html);
 
 for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   const fullTag = match[0];
