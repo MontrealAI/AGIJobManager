@@ -87,6 +87,26 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+
+  it('keeps parseRouteInput/toHashUrl/getRouteFromHash/navigateHashRoute declarations co-located in one router bootstrap script', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+      const routerScript = scripts.find((body) => (
+        body.includes('const normalizeHashHref = (input) => {')
+        && body.includes('const parseRouteInput = (routeInput) => {')
+        && body.includes('const toHashUrl = (routeInput) => {')
+        && body.includes('const getRouteFromHash = () => {')
+        && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
+        && body.includes("window.addEventListener('hashchange'")
+      ));
+
+      expect(routerScript, `${label} missing co-located hash-routing helper declarations`).toBeTruthy();
+      const body = routerScript ?? '';
+      expect(body, `${label} toHashUrl must parse route input`).toContain('const parsedHashRoute = parseRouteInput(routeInput);');
+      expect(body, `${label} hashchange must derive route from hash-only helper`).toContain('const routePath = getRouteFromHash();');
+    }
+  });
   it('keeps deep-link conversion logic pathname-preserving and hash-only', () => {
     for (const { file, label } of artifactTargets) {
       const html = fs.readFileSync(file, 'utf8');
