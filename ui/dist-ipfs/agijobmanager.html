@@ -332,12 +332,82 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
 
   const isJobDetailRoute = (routePath) => routePath.startsWith('/jobs/') && routePath.length > '/jobs/'.length;
 
-  const updateRoutePanel = (routePath) => {
-    const normalized = normalizeRouteForView(routePath);
-    const view = routeViewCopy[normalized] || routeViewCopy['/'];
-    const root = document.getElementById('ipfs-route-panel') || (() => {
-      const panel = document.createElement('section');
-      panel.id = 'ipfs-route-panel';
+    '/jobs': '<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p>Live on-chain ledger (mainnet); no placeholder rows in LIVE mode.</p><div id="jobs-status">Loading jobs from chain…</div><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th><th>ENS Name</th></tr></thead><tbody id="jobs-body"></tbody></table></section>',
+    '/identity': '<section data-testid="route-identity"><h2>Identity Layer Console</h2><p>Root: <code>alpha.jobs.agi.eth</code> · format <code>job-&lt;jobId&gt;.alpha.jobs.agi.eth</code></p><ul><li>ENSJobPages: <code>0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94</code></li><li>Resolver: <code>0xF29100983E058B709F3D539b0c765937B804AC15</code></li><li>Wired job manager: <code id="hyd-ens-job-manager">resolving…</code> <button id="identity-retry" type="button">Retry</button></li><li>Status: <span id="hyd-ens-job-manager-status">pending</span></li></ul></section>',
+    '/admin': '<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Simulation-first write flow: Prepare → Simulate → Sign → Pending → Confirmed/Failed.</p><div style="display:grid;gap:.5rem"><p>Connected chain: <code id="hyd-chain">read-only</code></p><p>Role gate: <code id="hyd-owner-match">read-only</code></p><div><button id="admin-owner-action" type="button" disabled title="Connect wallet on mainnet as owner">Owner-only action</button><button id="admin-simulate" type="button" disabled title="Connect wallet to enable writes">Run simulation</button></div></div><details><summary>Settings</summary><div><label>RPC endpoints (newline)</label><textarea id="settings-rpc" rows="4" style="width:100%"></textarea><label>Explorer URL</label><input id="settings-explorer" style="width:100%"/><label>IPFS gateway URL</label><input id="settings-ipfs" style="width:100%"/><label><input type="checkbox" id="settings-demo"/> Demo mode (opt-in)</label><label><input type="checkbox" id="settings-agent"/> Agent mode</label><label><input type="checkbox" id="settings-http"/> Allow insecure HTTP links</label><div><button id="settings-save">Save</button><button id="settings-reset">Reset official defaults</button><button id="settings-export">Export JSON</button><button id="settings-import">Import JSON</button></div></div></details></section>',
+    'nextJobId()': '0xb0c2aa5e',
+    'agiToken()': '0x658bb543',
+    'ensJobPages()': '0x275979d7',
+    'getJobCore(uint256)': '0xc6b44fe7',
+    'name()': '0x06fdde03',
+    'decimals()': '0x313ce567',
+    'totalSupply()': '0x18160ddd',
+    'allowance(address,address)': '0xdd62ed3e',
+  const decodeBool = (hex, index = 0) => {
+    if (!hex || hex.length < 66 + index * 64) return false;
+    const start = 2 + index * 64;
+    return BigInt('0x' + hex.slice(start, start + 64)) !== 0n;
+  };
+  const decodeWordAddress = (hex, index = 0) => decodeAddress('0x' + hex.slice(2 + index * 64, 2 + (index + 1) * 64));
+  const decodeWordUint = (hex, index = 0) => {
+    if (!hex || hex.length < 66 + index * 64) return '0';
+    const start = 2 + index * 64;
+    return BigInt('0x' + hex.slice(start, start + 64)).toString();
+  };
+  const hydrateJobs = async () => {
+    const body = document.getElementById('jobs-body');
+    const status = document.getElementById('jobs-status');
+    if (!body || !status) return;
+    body.innerHTML = '';
+    try {
+      const nextJobId = Number(decodeUint(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'))));
+      if (!Number.isFinite(nextJobId) || nextJobId <= 0) {
+        status.textContent = 'No jobs found on chain.';
+        return;
+      }
+      const from = Math.max(0, nextJobId - 25);
+      for (let jobId = from; jobId < nextJobId; jobId += 1) {
+        const payload = methodId('getJobCore(uint256)') + padHex(jobId);
+        const core = await ethCall(OFFICIAL.contracts.agiJobManager, payload);
+        const employer = decodeWordAddress(core, 0);
+        const agent = decodeWordAddress(core, 1);
+        const payout = decodeWordUint(core, 2);
+        if (!employer || /^0x0{40}$/i.test(employer)) continue;
+        const completed = decodeBool(core, 5);
+        const disputed = decodeBool(core, 6);
+        const expired = decodeBool(core, 7);
+        const statusLabel = completed ? 'Completed' : disputed ? 'Disputed' : expired ? 'Expired' : (agent && !/^0x0{40}$/i.test(agent) ? 'Assigned' : 'Open');
+        const row = document.createElement('tr');
+        row.innerHTML = '<td>' + jobId + '</td><td>' + statusLabel + '</td><td>' + payout + ' AGI</td><td><code>' + escapeHtml(toChecksumDisplay(employer)) + '</code></td><td><code>' + escapeHtml(toChecksumDisplay(agent)) + '</code></td><td><code>job-' + jobId + '.alpha.jobs.agi.eth</code></td>';
+        body.appendChild(row);
+      }
+      status.textContent = body.children.length ? ('Live rows loaded: ' + body.children.length) : 'No initialized job slots in scanned range.';
+    } catch (error) {
+      status.textContent = 'Unable to hydrate jobs: ' + (error && error.message ? error.message : 'unknown error');
+    }
+  };
+
+  const hydrateIdentity = async (attempt = 0) => {
+    const status = document.getElementById('hyd-ens-job-manager-status');
+    const value = document.getElementById('hyd-ens-job-manager');
+    if (!status || !value) return;
+    status.textContent = 'resolving';
+    const timeoutMs = 4000;
+    try {
+      const withTimeout = Promise.race([
+        ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()')),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('RPC timeout')), timeoutMs))
+      ]);
+      const wired = decodeAddress(await withTimeout);
+      value.textContent = wired || 'Not exposed by ABI';
+      status.textContent = wired && wired.toLowerCase() === OFFICIAL.contracts.agiJobManager.toLowerCase() ? 'verified' : 'mismatch';
+    } catch (error) {
+      status.textContent = 'error';
+      value.textContent = 'Error: ' + (error && error.message ? error.message : 'unknown');
+      if (attempt < 1) setTimeout(() => hydrateIdentity(attempt + 1), 800);
+    }
+  };
+
       panel.style.borderTop = '1px solid rgba(169,160,180,0.25)';
       panel.style.padding = '0.85rem 1rem';
       panel.style.fontFamily = 'system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
@@ -486,6 +556,8 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     host.replaceChildren(section);
   };
 
+    if (normalized === '/jobs') hydrateJobs();
+    if (normalized === '/identity') hydrateIdentity(0);
   const updatePrimaryView = (routePath) => {
     const normalizedRoute = sanitizeRoutePath(routePath);
     const normalized = normalizeRouteForView(normalizedRoute);
@@ -555,9 +627,33 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     provider.on('chainChanged', () => {
       walletState.chainId = null;
       renderWalletPanel();
+  const providerDisplayName = (entry) => {
+    const info = entry && entry.info ? entry.info : {};
+    const provider = entry && entry.provider ? entry.provider : null;
+    const rdns = String(info.rdns || '').toLowerCase();
+    const name = String(info.name || '').toLowerCase();
+    if ((provider && provider.isMetaMask) || rdns.includes('metamask') || name.includes('metamask')) return 'MetaMask';
+    if (rdns.includes('phantom') || name.includes('phantom')) return 'Phantom';
+    return info.name || 'Injected EVM Wallet';
+  };
+
+    discovered.sort((a, b) => (providerDisplayName(a) === 'MetaMask' ? -1 : 0) - (providerDisplayName(b) === 'MetaMask' ? -1 : 0));
+    walletState.providers = discovered;
+    walletState.providerLabel = discovered[0] ? providerDisplayName(discovered[0]) : null;
+      localStorage.setItem('agijobmanager.wallet.provider', walletState.providerLabel || 'Injected EVM Wallet');
+    localStorage.removeItem('agijobmanager.wallet.provider');
+    const providerOptions = walletState.providers.length > 1 ? '<label>Wallet <select id="wallet-provider-select">' + walletState.providers.map((p, i) => '<option value="' + i + '">' + escapeHtml(providerDisplayName(p)) + '</option>').join('') + '</select></label>' : '';
+    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button>' + providerOptions + '<span>Provider: <code>' + safeProviderLabel + '</code></span><span>Account: <code id="wallet-address-value">' + safeAccountDisplay + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + safeEnsName + '</code></span><span>Chain: <code>' + safeChainDisplay + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (safeWalletError ? '<p style="color:#ff8080">' + safeWalletError + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
+    const providerSelect = host.querySelector('#wallet-provider-select');
+    if (providerSelect) providerSelect.addEventListener('change', (event) => {
+      const idx = Number(event.target && event.target.value);
+      const selected = walletState.providers[idx];
+      if (!selected) return;
+      walletState.provider = selected.provider;
+      walletState.providerLabel = providerDisplayName(selected);
+      bindProviderEvents(walletState.provider);
       refreshWalletState();
     });
-    provider.on('disconnect', () => disconnectWallet());
     walletState.boundProvider = provider;
   };
 
@@ -730,7 +826,13 @@ Try increasing the nonce or find the latest nonce with \`getTransactionCount\`.`
     updatePrimaryView(routePath);
   });
 
+  detectProviders().then(refreshWalletState).then(hydrateReadOnly).then(hydrateJobs).then(() => hydrateIdentity(0));
   document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target.closest('#identity-retry') : null;
+    if (!target) return;
+    event.preventDefault();
+    hydrateIdentity(0);
+  });
     if (event.defaultPrevented) return;
     if (event.button !== 0) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
