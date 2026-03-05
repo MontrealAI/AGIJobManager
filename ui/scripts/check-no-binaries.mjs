@@ -110,7 +110,12 @@ for (const file of added) {
 for (const file of trackedTextSources) {
   const absolute = path.join(repoRoot, file);
   if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
-  const text = fs.readFileSync(absolute, 'utf8');
+  const blob = fs.readFileSync(absolute);
+  if (blob.includes(0)) {
+    offenders.push(`${file} (NUL byte detected in tracked text source)`);
+    continue;
+  }
+  const text = blob.toString('utf8');
   if (forbiddenDataUri.test(text)) {
     offenders.push(`${file} (forbidden data:image/* or data:font/* URI in tracked source)`);
   }
@@ -119,7 +124,12 @@ for (const file of trackedTextSources) {
 for (const file of criticalTextSources) {
   const absolute = path.join(repoRoot, file);
   if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
-  const text = fs.readFileSync(absolute, 'utf8');
+  const blob = fs.readFileSync(absolute);
+  if (blob.includes(0)) {
+    offenders.push(`${file} (NUL byte detected in required single-file artifact)`);
+    continue;
+  }
+  const text = blob.toString('utf8');
   if (forbiddenDataUri.test(text)) {
     offenders.push(`${file} (forbidden data:image/* or data:font/* URI in required single-file artifact)`);
   }

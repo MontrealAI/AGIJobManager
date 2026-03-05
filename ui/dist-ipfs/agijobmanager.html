@@ -247,6 +247,7 @@
 
   const walletState = {
     provider: null,
+    providerLabel: null,
     account: null,
     chainId: null,
     ensName: null,
@@ -324,6 +325,27 @@
     if (node) node.textContent = String(value);
   };
 
+
+  const escapeHtml = (value) => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  const ensureHeaderWalletHost = () => {
+    const existing = document.getElementById('wallet-header-panel');
+    if (existing) return existing;
+    const header = document.querySelector('header') || document.body;
+    const host = document.createElement('div');
+    host.id = 'wallet-header-panel';
+    host.style.padding = '0.5rem 1rem';
+    host.style.borderTop = '1px solid rgba(169,160,180,0.2)';
+    host.style.fontFamily = 'system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+    header.append(host);
+    return host;
+  };
+
   const toChecksumDisplay = (addr) => (addr ? addr.slice(0, 6) + '…' + addr.slice(-4) : 'not connected');
   const padHex = (value) => value.toString(16).padStart(64, '0');
   const methodId = (sig) => ({
@@ -372,7 +394,7 @@
   const hydrateReadOnly = async () => {
     try {
       const blockHex = await rpcCall('eth_blockNumber', []);
-      setText('rpc-status', 'Read-only mainnet connected · block ' + parseInt(blockHex, 16));
+      setText('rpc-status', 'Read-only mainnet connected · block ' + parseInt(blockHex, 16) + ' · ' + new Date().toISOString());
       setText('hyd-chain', walletState.chainId ? walletState.chainId : '1 (read-only)');
       setText('hyd-owner', decodeAddress(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('owner()'))));
       setText('hyd-next-job-id', decodeUint(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'))));
@@ -475,8 +497,17 @@
   const bindProviderEvents = (provider) => {
     if (!provider || typeof provider.on !== 'function') return;
     if (walletState.boundProvider === provider) return;
-    provider.on('accountsChanged', () => refreshWalletState());
-    provider.on('chainChanged', () => refreshWalletState());
+    provider.on('accountsChanged', () => {
+      walletState.account = null;
+      walletState.connected = false;
+      renderWalletPanel();
+      refreshWalletState();
+    });
+    provider.on('chainChanged', () => {
+      walletState.chainId = null;
+      renderWalletPanel();
+      refreshWalletState();
+    });
     provider.on('disconnect', () => disconnectWallet());
     walletState.boundProvider = provider;
   };
@@ -504,14 +535,21 @@
 
   const detectProviders = async () => {
     const discovered = [];
+    const providerSeen = new Set();
     window.addEventListener('eip6963:announceProvider', (event) => {
-      if (event && event.detail && event.detail.provider) discovered.push(event.detail.provider);
+      if (event && event.detail && event.detail.provider && !providerSeen.has(event.detail.provider)) {
+        providerSeen.add(event.detail.provider);
+        discovered.push(event.detail);
+      }
     });
     window.dispatchEvent(new Event('eip6963:requestProvider'));
     await new Promise((resolve) => setTimeout(resolve, 64));
-    if (window.ethereum) discovered.push(window.ethereum);
-    walletState.providers = discovered;
-    walletState.provider = discovered[0] || null;
+    if (window.ethereum && !providerSeen.has(window.ethereum)) {
+      discovered.push({ provider: window.ethereum, info: { name: 'Injected wallet' } });
+    }
+    walletState.providers = discovered.map((entry) => entry.provider);
+    walletState.provider = discovered[0] ? discovered[0].provider : null;
+    walletState.providerLabel = discovered[0] && discovered[0].info ? discovered[0].info.name : null;
     bindProviderEvents(walletState.provider);
   };
 
@@ -546,6 +584,7 @@
     walletState.account = null;
     walletState.connected = false;
     walletState.ensName = null;
+    walletState.chainId = null;
     walletState.error = null;
     renderWalletPanel();
     hydrateReadOnly();
@@ -562,17 +601,30 @@
   };
 
   const renderWalletPanel = () => {
-    const host = document.getElementById('wallet-panel');
-    if (!host) return;
+    const dashboardHost = document.getElementById('wallet-panel');
+    const headerHost = document.getElementById('wallet-header-panel');
+    if (dashboardHost && headerHost) headerHost.remove();
+    const host = dashboardHost || ensureHeaderWalletHost();
+
     const mismatch = walletState.connected && walletState.chainId !== OFFICIAL.chainId;
     const fileOrigin = window.location.protocol === 'file:';
-    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button id="wallet-disconnect">Disconnect / Reset UI</button><span>Account: <code>' + toChecksumDisplay(walletState.account) + '</code></span><span>ENS: <code>' + (walletState.ensName || '-') + '</code></span><span>Chain: <code>' + (walletState.chainId || 'read-only') + '</code></span>' + (mismatch ? '<button id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (walletState.error ? '<p style="color:#ff8080">' + walletState.error + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
-    const connectBtn = document.getElementById('wallet-connect');
-    const disconnectBtn = document.getElementById('wallet-disconnect');
-    if (connectBtn) connectBtn.onclick = connectWallet;
-    if (disconnectBtn) disconnectBtn.onclick = disconnectWallet;
-    const switchBtn = document.getElementById('wallet-switch');
-    if (switchBtn) switchBtn.onclick = switchMainnet;
+    const safeProviderLabel = escapeHtml(walletState.providerLabel || 'none detected');
+    const safeAccountDisplay = escapeHtml(toChecksumDisplay(walletState.account));
+    const safeEnsName = escapeHtml(walletState.ensName || '-');
+    const safeChainDisplay = escapeHtml(walletState.chainId || 'read-only');
+    const safeWalletError = walletState.error ? escapeHtml(walletState.error) : '';
+    host.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap"><button type="button" id="wallet-connect">' + (walletState.connected ? 'Connected' : 'Connect Wallet') + '</button><button type="button" id="wallet-disconnect">Disconnect / Reset UI</button><span>Provider: <code>' + safeProviderLabel + '</code></span><span>Account: <code id="wallet-address-value">' + safeAccountDisplay + '</code></span><button type="button" id="wallet-copy" ' + (walletState.account ? '' : 'disabled') + '>Copy</button><span>ENS: <code>' + safeEnsName + '</code></span><span>Chain: <code>' + safeChainDisplay + '</code></span>' + (mismatch ? '<button type="button" id="wallet-switch">Switch to Mainnet</button><strong style="color:#f5b">Wrong network</strong>' : '') + '</div>' + (safeWalletError ? '<p style="color:#ff8080">' + safeWalletError + '</p>' : '') + (fileOrigin ? '<p style="color:#ffd27f">file:// origin: wallet writes require HTTPS hosting.</p>' : '');
+    const connectBtn = host.querySelector('#wallet-connect');
+    const disconnectBtn = host.querySelector('#wallet-disconnect');
+    if (connectBtn) connectBtn.addEventListener('click', connectWallet);
+    if (disconnectBtn) disconnectBtn.addEventListener('click', disconnectWallet);
+    const switchBtn = host.querySelector('#wallet-switch');
+    if (switchBtn) switchBtn.addEventListener('click', switchMainnet);
+    const copyBtn = host.querySelector('#wallet-copy');
+    if (copyBtn) copyBtn.addEventListener('click', async () => {
+      if (!walletState.account) return;
+      try { await navigator.clipboard.writeText(walletState.account); } catch (_error) {}
+    });
   };
 
   const wireSettingsPanel = () => {
