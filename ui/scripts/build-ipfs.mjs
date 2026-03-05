@@ -1221,6 +1221,24 @@ function assertNoNavigateInvocationWithoutDeclaration(singleFileHtml) {
   }
 }
 
+function assertInlineScriptsParseable(singleFileHtml) {
+  const scriptPattern = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+  let match;
+  while ((match = scriptPattern.exec(singleFileHtml)) !== null) {
+    const attrs = String(match[1] || '').toLowerCase();
+    const body = String(match[2] || '');
+    if (!body.trim()) continue;
+    if (attrs.includes('type="application/ld+json"') || attrs.includes("type='application/ld+json'")) continue;
+    if (attrs.includes('type="application/json"') || attrs.includes("type='application/json'")) continue;
+    if (attrs.includes('id="__next_data__"') || attrs.includes("id='__next_data__'")) continue;
+    try {
+      new Function(body);
+    } catch (error) {
+      throw new Error(`Inline script parse failure in generated artifact: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+}
+
 html = sanitizeForbiddenDataUris(html);
 assertNoDuplicateNextFlightBootstrap(html);
 assertNoPrematureDocumentClose(html);
@@ -1229,6 +1247,7 @@ assertParseableNavigateHashRoute(html);
 assertRouterBootstrapCoherence(html);
 assertNormalizeHashHrefParsedBinding(html);
 assertNoNavigateInvocationWithoutDeclaration(html);
+assertInlineScriptsParseable(html);
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
