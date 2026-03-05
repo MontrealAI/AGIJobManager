@@ -410,6 +410,30 @@ for (const body of uncommentedScriptBodies) {
   if (!hasDeclaration) {
     throw new Error('Router bootstrap invokes navigateHashRoute but no navigateHashRoute declaration exists in the same script body.');
   }
+
+  const hasFullRouterBootstrap = body.includes('const normalizeHashHref = (input) => {')
+    && body.includes("window.addEventListener('hashchange'");
+  if (hasFullRouterBootstrap) {
+    const requiredHelpers = [
+      'const parseRouteInput = (routeInput) => {',
+      'const toHashUrl = (routeInput) => {',
+      'const getRouteFromHash = () => {',
+      'const navigateHashRoute = (nextRoute, options = {}) => {'
+    ];
+    for (const helperDeclaration of requiredHelpers) {
+      if (!body.includes(helperDeclaration)) {
+        throw new Error(`Router bootstrap is missing required helper declaration: ${helperDeclaration}`);
+      }
+    }
+
+    if (!body.includes('const parsedHashRoute = parseRouteInput(routeInput);')) {
+      throw new Error('Router bootstrap helper toHashUrl must parse routeInput via parseRouteInput(routeInput).');
+    }
+
+    if (!body.includes('const routePath = getRouteFromHash();')) {
+      throw new Error('Router bootstrap must derive routePath from getRouteFromHash().');
+    }
+  }
 }
 const stripKnownNextScriptInterleave = (source) => {
   if (!source.includes('</script>')) return source;
