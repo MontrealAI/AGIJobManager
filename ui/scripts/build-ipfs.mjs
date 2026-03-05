@@ -388,7 +388,8 @@ insertIntoBody(`<script>(function(){
     ensName: null,
     connected: false,
     error: null,
-    providers: []
+    providers: [],
+    boundProvider: null
   };
 
   const loadSettings = () => {
@@ -464,9 +465,12 @@ insertIntoBody(`<script>(function(){
   const methodId = (sig) => ({
     'owner()': '0x8da5cb5b',
     'nextJobId()': '0x0f10cc36',
+    'jobManager()': '0x3df395a3',
     'agiToken()': '0xec9f4f8d',
     'ensJobPages()': '0x9f58f6ff',
     'symbol()': '0x95d89b41',
+    'resolver(bytes32)': '0x0178b8bf',
+    'name(bytes32)': '0x691f3431',
     'balanceOf(address)': '0x70a08231'
   }[sig]);
 
@@ -508,11 +512,13 @@ insertIntoBody(`<script>(function(){
       setText('hyd-chain', walletState.chainId ? walletState.chainId : '1 (read-only)');
       setText('hyd-owner', decodeAddress(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('owner()'))));
       setText('hyd-next-job-id', decodeUint(await ethCall(OFFICIAL.contracts.agiJobManager, methodId('nextJobId()'))));
-      setText('hyd-ens-job-manager', decodeAddress(await ethCall(OFFICIAL.contracts.ensJobPages, methodId('owner()'))) || 'unavailable');
+      setText('hyd-ens-job-manager', decodeAddress(await ethCall(OFFICIAL.contracts.ensJobPages, methodId('jobManager()'))) || 'unavailable');
       setText('hyd-token-symbol', decodeString(await ethCall(OFFICIAL.contracts.agiToken, methodId('symbol()'))) || 'AGI');
       if (walletState.account) {
         const data = methodId('balanceOf(address)') + padHex(BigInt(walletState.account).toString(16));
         setText('hyd-token-balance', decodeUint(await ethCall(OFFICIAL.contracts.agiToken, data)));
+      } else {
+        setText('hyd-token-balance', '-');
       }
     } catch (error) {
       setText('rpc-status', 'Degraded RPC mode: ' + (error && error.message ? error.message : 'unknown error'));
@@ -578,13 +584,55 @@ insertIntoBody(`<script>(function(){
     renderWalletPanel();
   };
 
+  const utf8ToHex = (text) => {
+    const bytes = new TextEncoder().encode(text);
+    let hex = '';
+    for (const byte of bytes) hex += byte.toString(16).padStart(2, '0');
+    return '0x' + hex;
+  };
+
+  const hashHex = async (hexValue) => {
+    const result = await rpcCall('web3_sha3', [hexValue]);
+    return typeof result === 'string' ? result : null;
+  };
+
+  const namehash = async (name) => {
+    const labels = name.split('.').filter(Boolean);
+    let node = '0x' + '00'.repeat(32);
+    for (let i = labels.length - 1; i >= 0; i -= 1) {
+      const labelHash = await hashHex(utf8ToHex(labels[i]));
+      if (!labelHash) return null;
+      node = await hashHex(node + labelHash.slice(2));
+      if (!node) return null;
+    }
+    return node;
+  };
+
+  const bindProviderEvents = (provider) => {
+    if (!provider || typeof provider.on !== 'function') return;
+    if (walletState.boundProvider === provider) return;
+    provider.on('accountsChanged', () => refreshWalletState());
+    provider.on('chainChanged', () => refreshWalletState());
+    provider.on('disconnect', () => disconnectWallet());
+    walletState.boundProvider = provider;
+  };
+
   const resolveEnsName = async (account) => {
     try {
-      const name = await rpcCall('eth_call', [{
-        to: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
-        data: '0x691f3431'
-      }, 'latest']);
-      return name ? null : null;
+      const reverseName = account.toLowerCase().replace(/^0x/, '') + '.addr.reverse';
+      const reverseNode = await namehash(reverseName);
+      if (!reverseNode) return null;
+
+      const resolverHex = await ethCall(
+        '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+        methodId('resolver(bytes32)') + reverseNode.slice(2)
+      );
+      const resolver = decodeAddress(resolverHex);
+      if (!resolver || /^0x0{40}$/i.test(resolver)) return null;
+
+      const nameHex = await ethCall(resolver, methodId('name(bytes32)') + reverseNode.slice(2));
+      const resolved = decodeString(nameHex);
+      return resolved || null;
     } catch (_error) {
       return null;
     }
@@ -600,6 +648,7 @@ insertIntoBody(`<script>(function(){
     if (window.ethereum) discovered.push(window.ethereum);
     walletState.providers = discovered;
     walletState.provider = discovered[0] || null;
+    bindProviderEvents(walletState.provider);
   };
 
   const refreshWalletState = async () => {
@@ -743,11 +792,7 @@ insertIntoBody(`<script>(function(){
   updateRoutePanel(startupRoute);
   updatePrimaryView(startupRoute);
   detectProviders().then(refreshWalletState).then(hydrateReadOnly);
-  if (window.ethereum && window.ethereum.on) {
-    window.ethereum.on('accountsChanged', () => refreshWalletState());
-    window.ethereum.on('chainChanged', () => refreshWalletState());
-    window.ethereum.on('disconnect', () => disconnectWallet());
-  }
+  bindProviderEvents(walletState.provider);
 })();</script>`);
 
 
