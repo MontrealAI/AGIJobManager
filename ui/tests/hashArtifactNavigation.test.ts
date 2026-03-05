@@ -309,4 +309,30 @@ describe('committed single-file hash navigation', () => {
     }
   });
 
+
+
+  it('does not ship hardcoded live job placeholder rows in jobs ledger route', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      expect(html, `${label} must not include static job-245 placeholder`).not.toContain('job-245.alpha.jobs.agi.eth');
+      expect(html, `${label} jobs route should expose live tbody container`).toContain('id="jobs-live-body"');
+    }
+  });
+
+  it('labels MetaMask correctly when provider metadata indicates metamask', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      expect(html, `${label} missing metamask provider branch`).toContain("if (entry.provider && entry.provider.isMetaMask) return 'MetaMask';");
+      expect(html, `${label} should avoid phantom default labeling`).toContain("if (rdns.includes('phantom')) return 'Phantom';");
+      expect(html, `${label} should keep unknown wallets generic`).toContain("return (entry.info && entry.info.name) || 'Injected EVM Wallet';");
+    }
+  });
+
+  it('uses bounded identity wiring resolution instead of indefinite loading text', () => {
+    for (const { file, label } of artifactTargets) {
+      const html = fs.readFileSync(file, 'utf8');
+      expect(html, `${label} should include identity timeout`).toContain("Identity wiring read timed out");
+      expect(html, `${label} should include retry button wiring`).toContain("id=\"identity-retry\"");
+    }
+  });
 });
