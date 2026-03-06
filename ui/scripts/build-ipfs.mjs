@@ -74,6 +74,16 @@ function walkMarkdownFiles(dir) {
   return files;
 }
 
+
+function extractDeploymentBlockFromFilename(filePath) {
+  const basename = path.basename(filePath);
+  const match = basename.match(/deployment\.\d+\.(\d+)\.json$/i);
+  if (!match) {
+    throw new Error(`Unable to derive deployment block from filename: ${basename}`);
+  }
+  return Number.parseInt(match[1], 10);
+}
+
 function readJson(filePath) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Required deployment artifact missing: ${filePath}`);
@@ -97,8 +107,8 @@ function buildOfficialFromArtifacts() {
     },
     rpcUrls: ['https://eth.llamarpc.com', 'https://ethereum-rpc.publicnode.com'],
     deployment: {
-      agiJobManagerBlock: 24522684,
-      ensJobPagesBlock: 24531331,
+      agiJobManagerBlock: extractDeploymentBlockFromFilename(mainnetDeploymentPath),
+      ensJobPagesBlock: extractDeploymentBlockFromFilename(ensDeploymentPath),
       deployer: agi.deployer,
       ensRootName: ens.constructorArgs?.ENSJobPages?.rootName ?? 'alpha.jobs.agi.eth',
       ensResolver: ens.constructorArgs?.ENSJobPages?.publicResolverAddress
