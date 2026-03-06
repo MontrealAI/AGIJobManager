@@ -402,7 +402,8 @@ const hasBootstrapScriptIntegrity = uncommentedScriptBodies.some((body) => {
 
   return hasSentinelBootstrap || hasLegacyBootstrap;
 });
-for (const body of uncommentedScriptBodies) {
+for (const [bodyIndex, body] of uncommentedScriptBodies.entries()) {
+  const rawBody = scriptBodies[bodyIndex] || '';
   const invokesNavigate = /\bnavigateHashRoute\s*\(/.test(body);
   if (!invokesNavigate) continue;
 
@@ -412,11 +413,17 @@ for (const body of uncommentedScriptBodies) {
   }
 
   const hasFullRouterBootstrap = body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const baseRoutes = new Set([')
+    && body.includes('const sanitizeRoutePath = (routePath) => {')
     && body.includes("window.addEventListener('hashchange'");
   if (hasFullRouterBootstrap) {
     const requiredHelpers = [
+      'const baseRoutes = new Set([',
+      'const sanitizeRoutePath = (routePath) => {',
       'const parseRouteInput = (routeInput) => {',
       'const toHashUrl = (routeInput) => {',
+      'const dispatchRouteUpdate = (state) => {',
+      'const startupHashLooksLeaky = (rawHash, lowerHash) => {',
       'const getRouteFromHash = () => {',
       'const navigateHashRoute = (nextRoute, options = {}) => {'
     ];
@@ -432,6 +439,54 @@ for (const body of uncommentedScriptBodies) {
 
     if (!body.includes('const routePath = getRouteFromHash();')) {
       throw new Error('Router bootstrap must derive routePath from getRouteFromHash().');
+    }
+
+    if (!body.includes("if (startupHashLooksLeaky(rawHash, lowerHash)) return '#/';")) {
+      throw new Error('Router bootstrap getStartupCanonicalHash must route through startupHashLooksLeaky(rawHash, lowerHash).');
+    }
+
+    const malformedHtmlSuffixBranch = /if \(lower === 'agijobmanager' \|\| lower === 'index\.html' \|\| lower === 'agijobmanager\.html'\) \{\s*if \(lower\.endsWith\('\.html'\)\) \{/m;
+    if (malformedHtmlSuffixBranch.test(body)) {
+      throw new Error('Router bootstrap has malformed recoverPrefixedRoute HTML guard (nested if without continue/closing branch), which can yield illegal top-level continue parse failures.');
+    }
+
+    const hasStableHtmlSuffixBranch = body.includes("if (lower.endsWith('.html')) {\n        continue;\n      }\n      normalizedSegments.push(segment);");
+    if (!hasStableHtmlSuffixBranch) {
+      throw new Error('Router bootstrap recoverPrefixedRoute .html suffix branch is missing expected guarded-continue structure.');
+    }
+
+    const baseRoutesIndex = body.indexOf('const baseRoutes = new Set([');
+    const sanitizeRoutePathIndex = body.indexOf('const sanitizeRoutePath = (routePath) => {');
+    const toHashUrlIndex = body.indexOf('const toHashUrl = (routeInput) => {');
+    const dispatchRouteUpdateIndex = body.indexOf('const dispatchRouteUpdate = (state) => {');
+    const navigateHashRouteIndex = body.indexOf('const navigateHashRoute = (nextRoute, options = {}) => {');
+    if (
+      baseRoutesIndex > sanitizeRoutePathIndex
+      || sanitizeRoutePathIndex > navigateHashRouteIndex
+      || toHashUrlIndex > navigateHashRouteIndex
+      || dispatchRouteUpdateIndex > navigateHashRouteIndex
+    ) {
+      throw new Error('Router bootstrap declares navigateHashRoute before required helper declarations, which can break runtime routing.');
+    }
+
+    const parseCandidate = rawBody
+      .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
+      .replace(/<\/?script[^>]*>/gi, '')
+      .trim();
+    const bootstrapStart = parseCandidate.indexOf('const normalizeHashHref = (input) => {');
+    const routeContentStart = bootstrapStart >= 0 ? parseCandidate.indexOf('const routeContent = {', bootstrapStart) : -1;
+    const parseTarget = bootstrapStart >= 0 && routeContentStart > bootstrapStart
+      ? parseCandidate.slice(bootstrapStart, routeContentStart)
+      : parseCandidate;
+    const sanitizedParseTarget = parseTarget.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+
+    try {
+      // Parse-only guard catches syntax regressions such as illegal top-level `continue`.
+      // eslint-disable-next-line no-new, no-new-func
+      new Function(sanitizedParseTarget);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`Router bootstrap script is not syntactically parseable (${detail}).`);
     }
   }
 }

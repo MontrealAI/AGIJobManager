@@ -97,6 +97,8 @@ function assertRouterBootstrapScript(html, label) {
 
   const routerScript = scripts.find((body) =>
     body.includes('const normalizeHashHref = (input) => {')
+    && body.includes('const baseRoutes = new Set([')
+    && body.includes('const sanitizeRoutePath = (routePath) => {')
     && body.includes('const navigateHashRoute = (nextRoute, options = {}) => {')
     && body.includes("window.addEventListener('hashchange'")
   );
@@ -110,6 +112,57 @@ function assertRouterBootstrapScript(html, label) {
 
   if (!routerScript.includes('const hashRoute = normalizeHashHref(href);')) {
     throw new Error(`${label}: click interception no longer uses normalizeHashHref(href) in router bootstrap script.`);
+  }
+
+  if (!routerScript.includes('const startupHashLooksLeaky = (rawHash, lowerHash) => {')) {
+    throw new Error(`${label}: startupHashLooksLeaky helper missing from router bootstrap script.`);
+  }
+  if (!routerScript.includes('if (startupHashLooksLeaky(rawHash, lowerHash)) return \'#/\';')) {
+    throw new Error(`${label}: getStartupCanonicalHash no longer routes leaky startup hashes through startupHashLooksLeaky.`);
+  }
+
+  const navigateHashRouteIndex = routerScript.indexOf('const navigateHashRoute = (nextRoute, options = {}) => {');
+  const toHashUrlIndex = routerScript.indexOf('const toHashUrl = (routeInput) => {');
+  const dispatchRouteUpdateIndex = routerScript.indexOf('const dispatchRouteUpdate = (state) => {');
+  if (toHashUrlIndex < 0 || dispatchRouteUpdateIndex < 0 || navigateHashRouteIndex < 0) {
+    throw new Error(`${label}: router bootstrap missing toHashUrl/dispatchRouteUpdate/navigateHashRoute declarations.`);
+  }
+
+  const baseRoutesIndex = routerScript.indexOf('const baseRoutes = new Set([');
+  const sanitizeRoutePathIndex = routerScript.indexOf('const sanitizeRoutePath = (routePath) => {');
+  if (baseRoutesIndex < 0 || sanitizeRoutePathIndex < 0) {
+    throw new Error(`${label}: router bootstrap missing baseRoutes/sanitizeRoutePath declarations.`);
+  }
+  if (baseRoutesIndex > sanitizeRoutePathIndex || sanitizeRoutePathIndex > navigateHashRouteIndex) {
+    throw new Error(`${label}: router bootstrap helper ordering changed; sanitizeRoutePath/navigateHashRoute may resolve incorrectly.`);
+  }
+
+  const malformedHtmlSuffixBranch = /if \(lower === 'agijobmanager' \|\| lower === 'index\.html' \|\| lower === 'agijobmanager\.html'\) \{\s*if \(lower\.endsWith\('\.html'\)\) \{/m;
+  if (malformedHtmlSuffixBranch.test(routerScript)) {
+    throw new Error(`${label}: malformed recoverPrefixedRoute HTML guard detected (may trigger illegal top-level continue).`);
+  }
+
+  if (!routerScript.includes("if (lower.endsWith('.html')) {\n        continue;\n      }\n      normalizedSegments.push(segment);")) {
+    throw new Error(`${label}: recoverPrefixedRoute .html suffix branch no longer matches expected guarded-continue structure.`);
+  }
+
+  const parseCandidate = routerScript
+    .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
+    .replace(/<\/?script[^>]*>/gi, '')
+    .trim();
+  const bootstrapStart = parseCandidate.indexOf('const normalizeHashHref = (input) => {');
+  const routeContentStart = bootstrapStart >= 0 ? parseCandidate.indexOf('const routeContent = {', bootstrapStart) : -1;
+  const parseTarget = bootstrapStart >= 0 && routeContentStart > bootstrapStart
+    ? parseCandidate.slice(bootstrapStart, routeContentStart)
+    : parseCandidate;
+  const sanitizedParseTarget = parseTarget.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  try {
+    // Parse-only guard: catches syntax regressions like illegal top-level `continue` in bootstrap script.
+    // eslint-disable-next-line no-new, no-new-func
+    new Function(sanitizedParseTarget);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`${label}: router bootstrap script is not syntactically parseable (${detail}).`);
   }
 }
 

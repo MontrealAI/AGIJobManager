@@ -328,6 +328,14 @@ insertIntoBody(`<script>(function(){
     window.dispatchEvent(new PopStateEvent('popstate', { state }));
   };
 
+  const startupHashLooksLeaky = (rawHash, lowerHash) => {
+    if (rawHash.startsWith('#/#/') || rawHash.startsWith('##/')) return true;
+    if (lowerHash.includes('agijobmanager.html')) return true;
+    if (rawHash.includes(documentPath)) return true;
+    if (rawHash.includes(gatewayBase)) return true;
+    return false;
+  };
+
   const getStartupCanonicalHash = (rawHash) => {
     if (!rawHash || rawHash === '#') return null;
     const lowerHash = rawHash.toLowerCase();
@@ -340,10 +348,7 @@ insertIntoBody(`<script>(function(){
       return null;
     }
 
-    if (rawHash.startsWith('#/#/') || rawHash.startsWith('##/')) return '#/';
-    if (lowerHash.includes('agijobmanager.html')) return '#/';
-    if (rawHash.includes(documentPath)) return '#/';
-    if (rawHash.includes(gatewayBase)) return '#/';
+    if (startupHashLooksLeaky(rawHash, lowerHash)) return '#/';
 
     return '#/';
   };
