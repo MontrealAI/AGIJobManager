@@ -433,6 +433,14 @@ for (const body of scriptBodies) {
   }
 
   if (hasFullRouterBootstrap) {
+    const parsedHashGuardIndex = body.indexOf("if (parsed.hash && parsed.hash.startsWith('#/')) {");
+    if (parsedHashGuardIndex >= 0) {
+      const normalizeDeclIndex = body.indexOf('const normalizeHashHref = (input) => {');
+      if (normalizeDeclIndex < 0 || normalizeDeclIndex > parsedHashGuardIndex) {
+        throw new Error('Router bootstrap contains parsed.hash hash-guard logic without a leading normalizeHashHref helper declaration.');
+      }
+    }
+
     const requiredHelpers = [
       'const baseRoutes = new Set([',
       'const sanitizeRoutePath = (routePath) => {',
