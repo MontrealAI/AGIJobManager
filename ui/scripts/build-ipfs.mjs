@@ -20,6 +20,11 @@ if (/data:image\//i.test(html) || /data:font\//i.test(html)) {
 
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html, 'utf8');
-fs.writeFileSync(repoArtifactPath, html, 'utf8');
 console.log(`Wrote ${outPath}`);
-console.log(`Wrote ${repoArtifactPath}`);
+
+if (process.env.BUILD_IPFS_SKIP_ROOT_SYNC === '1') {
+  console.log(`Skipped root sync for ${repoArtifactPath}`);
+} else {
+  fs.writeFileSync(repoArtifactPath, html, 'utf8');
+  console.log(`Wrote ${repoArtifactPath}`);
+}
