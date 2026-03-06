@@ -20,6 +20,16 @@ const extractRouterBootstrapScript = (source: string) => {
 };
 
 describe('single-file P0 safeguards', () => {
+
+  it('ships full inlined runtime markers and is not stub-sized', () => {
+    const bytes = Buffer.byteLength(html, 'utf8');
+    expect(bytes).toBeGreaterThanOrEqual(700000);
+    expect(html).toContain('AGI_SINGLE_FILE_RUNTIME_BOOTSTRAP_V1');
+    expect(html).toContain('AGI_CONTRACT_ABI_REGISTRY_V1');
+    expect(html).toContain('window.__AGI_RUNTIME_BUNDLE__=');
+    expect(html).toContain('Connect Wallet');
+  });
+
   it('does not contain legacy hardcoded jobs placeholder row', () => {
     expect(html).not.toContain('<td>245</td><td>Open</td><td>1,200 AGI</td>');
   });
