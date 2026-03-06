@@ -150,15 +150,19 @@ function assertRouterBootstrapScript(html, label) {
     .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
     .replace(/<\/?script[^>]*>/gi, '')
     .trim();
-  if (!/[<][a-z!/]/i.test(parseCandidate)) {
-    try {
-      // Parse-only guard: catches syntax regressions like illegal top-level `continue` in bootstrap script.
-      // eslint-disable-next-line no-new, no-new-func
-      new Function(parseCandidate);
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      throw new Error(`${label}: router bootstrap script is not syntactically parseable (${detail}).`);
-    }
+  const bootstrapStart = parseCandidate.indexOf('const normalizeHashHref = (input) => {');
+  const routeContentStart = bootstrapStart >= 0 ? parseCandidate.indexOf('const routeContent = {', bootstrapStart) : -1;
+  const parseTarget = bootstrapStart >= 0 && routeContentStart > bootstrapStart
+    ? parseCandidate.slice(bootstrapStart, routeContentStart)
+    : parseCandidate;
+  const sanitizedParseTarget = parseTarget.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  try {
+    // Parse-only guard: catches syntax regressions like illegal top-level `continue` in bootstrap script.
+    // eslint-disable-next-line no-new, no-new-func
+    new Function(sanitizedParseTarget);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`${label}: router bootstrap script is not syntactically parseable (${detail}).`);
   }
 }
 
