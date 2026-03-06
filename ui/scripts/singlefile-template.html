@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: ipfs:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" />
+  <meta name="referrer" content="no-referrer" />
+  <title>AGIJobManager · Sovereign Ops Console</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    body{margin:0;background:#130a20;color:#f0eaff}header{padding:12px 16px;border-bottom:1px solid #3d3050}
+    nav{display:flex;gap:12px;flex-wrap:wrap}a{color:#d9c8ff}main{padding:16px}button,input,textarea{background:#21142f;color:#fff;border:1px solid #4f3e66;border-radius:6px;padding:6px}
+    table{width:100%;border-collapse:collapse}th,td{border:1px solid #4f3e66;padding:6px;text-align:left}
+  </style>
+</head>
+<body data-hash-route="/">
+<header>
+  <h1>AGIJobManager</h1>
+  <nav>
+    <a data-testid="top-nav-dashboard" href="#/">Dashboard</a>
+    <a data-testid="top-nav-jobs" href="#/jobs">Jobs</a>
+    <a data-testid="top-nav-identity" href="#/identity">Identity</a>
+    <a data-testid="top-nav-admin" href="#/admin">Admin</a>
+    <a data-testid="top-nav-advanced" href="#/advanced">Advanced</a>
+    <a data-testid="top-nav-design" href="#/design">Design</a>
+    <a data-testid="top-nav-deployment" href="#/deployment">Deployment</a>
+    <a data-testid="top-nav-demo" href="#/demo">Demo</a>
+  </nav>
+</header>
+<main data-ipfs-main-outlet="true"></main>
+<script>(function(){
+  const detectGatewayBase = (pathname) => {
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments[0] === 'ipfs' && segments[1]) return '/ipfs/' + segments[1];
+    if (segments[0] === 'ipns' && segments[1]) return '/ipns/' + segments[1];
+    return pathname;
+  };
+  const documentPath = window.location.pathname;
+  const documentSearch = window.location.search;
+  const documentUrl = documentPath + documentSearch;
+  const gatewayBase = detectGatewayBase(documentPath);
+  const rawPushState = history.pushState.bind(history);
+  const rawReplaceState = history.replaceState.bind(history);
+  const OFFICIAL={chainId:1,explorerBaseUrl:'https://etherscan.io',baseIpfsUrl:'https://ipfs.io/ipfs/',finalOwner:'0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201',contracts:{agiJobManager:'0xB3AAeb69b630f0299791679c063d68d6687481d1',ensJobPages:'0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94',agiToken:'0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA'},rpcUrls:['https://eth.llamarpc.com','https://ethereum-rpc.publicnode.com']};
+  const SETTINGS_KEY='agijobmanager.runtime.settings.v1';
+  const DEFAULT_SETTINGS={rpcUrls:OFFICIAL.rpcUrls,explorerBaseUrl:OFFICIAL.explorerBaseUrl,ipfsGatewayBaseUrl:OFFICIAL.baseIpfsUrl,demoMode:false,agentMode:false,allowInsecureHttpLinks:false};
+  const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const toHashRoute=(input)=>{if(typeof input!=='string')return null;if(!input.startsWith('/')||input.startsWith('//'))return null;return '#'+input;};
+  const normalizeHashHref = (input) => {
+    if (typeof input !== 'string' || !input) return null;
+    if (input.startsWith('#/')) return input;
+    if (input.startsWith('/')) return toHashRoute(input);
+    if (input.startsWith('//')) return null;
+    let parsed;
+    try {
+      parsed = new URL(input, window.location.href);
+    } catch (_error) {
+      return null;
+    }
+
+    if (parsed.origin !== window.location.origin) return null;
+    if (parsed.hash && parsed.hash.startsWith('#/')) {
+      return parsed.hash;
+    }
+    return toHashRoute(parsed.pathname + parsed.search);
+  };
+  const baseRoutes = new Set(['/','/jobs','/identity','/admin','/advanced','/design','/deployment','/demo']);
+  const recoverPrefixedRoute = (routePath) => {
+    if (typeof routePath !== 'string' || !routePath.startsWith('/')) return null;
+
+    const segments = routePath.split('/').filter(Boolean);
+    if (segments.length === 0) return '/';
+
+    const normalizedSegments = [];
+    for (const segment of segments) {
+      const lower = segment.toLowerCase();
+      if (!segment) continue;
+      if (lower === 'ipfs' || lower === 'ipns') {
+        normalizedSegments.length = 0;
+        continue;
+      }
+      if (lower === 'agijobmanager' || lower === 'index.html' || lower === 'agijobmanager.html') {
+        continue;
+      }
+      if (lower.endsWith('.html')) {
+        continue;
+      }
+      normalizedSegments.push(segment);
+    }
+
+    if (normalizedSegments.length === 0) return '/';
+
+    const first = normalizedSegments[0] || '';
+    const firstLower = first.toLowerCase();
+    if (firstLower === 'jobs') {
+      const maybeJobId = normalizedSegments.slice(1).join('/');
+      if (!maybeJobId) return '/jobs';
+      return '/jobs/' + maybeJobId;
+    }
+
+    const candidate = '/' + firstLower;
+    if (baseRoutes.has(candidate)) return candidate;
+    return null;
+  };
+  const sanitizeRoutePath = (routePath) => {if(typeof routePath!=='string'||!routePath)return '/';const nestedHashRouteIndex=routePath.lastIndexOf('#/');if(nestedHashRouteIndex>0){const nestedHashRoute=routePath.slice(nestedHashRouteIndex+1);return sanitizeRoutePath(nestedHashRoute);}const routeWithoutHash=routePath.split('#')[0]||'/';const withoutQuery=routeWithoutHash.split('?')[0]||'/';const normalizedSlash=withoutQuery.startsWith('/')?withoutQuery:'/'+withoutQuery;const collapsed=normalizedSlash.replace(/\/{2,}/g,'/');const lowered=collapsed.toLowerCase();if(lowered.includes('agijobmanager.html')||lowered.startsWith('/agijobmanager/')||lowered.startsWith('/ipfs/')||lowered.startsWith('/ipns/')){return recoverPrefixedRoute(collapsed);}if(collapsed.startsWith('/jobs/'))return recoverPrefixedRoute(collapsed);if(baseRoutes.has(collapsed)) return collapsed;return '/';};
+  const parseRouteInput = (routeInput) => {
+    if (typeof routeInput !== 'string' || !routeInput.startsWith('/')) return null;
+    const hashIndex = routeInput.indexOf('#');
+    const withoutHash = hashIndex >= 0 ? routeInput.slice(0, hashIndex) : routeInput;
+    const queryIndex = withoutHash.indexOf('?');
+    const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
+    const search = queryIndex >= 0 ? withoutHash.slice(queryIndex) : '';
+    return { pathname, search, routeInput: withoutHash };
+  };
+  const toHashUrl = (routeInput) => {
+    const parsedHashRoute = parseRouteInput(routeInput);
+    if (!parsedHashRoute) return null;
+    return documentUrl + '#' + parsedHashRoute.routeInput;
+  };
+  const dispatchRouteUpdate = (state) => {
+    window.dispatchEvent(new PopStateEvent('popstate', { state }));
+  };
+  const startupHashLooksLeaky = (rawHash, lowerHash) => {
+    if (rawHash.startsWith('#/#/') || rawHash.startsWith('##/')) return true;
+    if (lowerHash.includes('agijobmanager.html')) return true;
+    if (rawHash.includes(documentPath)) return true;
+    if (rawHash.includes(gatewayBase)) return true;
+    return false;
+  };
+  const getStartupCanonicalHash = (rawHash) => {
+    if (!rawHash || rawHash === '#') return null;
+    const lowerHash = rawHash.toLowerCase();
+    const directRouteCandidate = rawHash.startsWith('#/') ? rawHash.slice(1) : '';
+    if (directRouteCandidate) { const sanitizedDirectRoute = sanitizeRoutePath(directRouteCandidate); const directCanonicalHash = '#' + sanitizedDirectRoute; if (directCanonicalHash !== rawHash) return directCanonicalHash; return null; }
+    if (startupHashLooksLeaky(rawHash, lowerHash)) return '#/';
+    return '#/';
+  };
+  const getRouteFromHash = () => { const rawHash = window.location.hash || ''; if (rawHash === '#' || rawHash === '') return '/'; if (!rawHash.startsWith('#/')) return '/'; const normalized = rawHash.slice(1); return sanitizeRoutePath(normalized.startsWith('/') ? normalized : '/'); };
+  const navigateHashRoute = (nextRoute, options = {}) => {
+    const mode = options.mode === 'replace' ? 'replace' : 'push';
+    if (!nextRoute || !nextRoute.startsWith('/')) return;
+    const hashUrl = toHashUrl(nextRoute);
+    if (!hashUrl) return;
+    if (mode === 'replace') { rawReplaceState(history.state, '', hashUrl); } else { rawPushState(history.state, '', hashUrl); }
+    dispatchRouteUpdate(history.state);
+  };
+  let settings=(()=>{try{return {...DEFAULT_SETTINGS,...JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')}}catch(_error){return {...DEFAULT_SETTINGS}}})();
+  const walletState={provider:null,providers:[],providerLabel:'Injected EVM Wallet',account:null,chainId:null,boundProvider:null};
+  const ensureHeaderWalletHost=()=>{let host=document.getElementById('wallet-header-panel');if(host)return host;const hdr=document.querySelector('header')||document.body;host=document.createElement('div');host.id='wallet-header-panel';hdr.appendChild(host);return host;};
+  const removeStaleWalletHosts=()=>{const panelHost=document.getElementById('wallet-panel');const hosts=[...document.querySelectorAll('#wallet-header-panel')];if(panelHost){hosts.forEach((node)=>node.remove());return;}if(hosts.length<2)return;hosts.slice(1).forEach((node)=>node.remove());};
+  const templates={ '/':'<section data-testid="route-dashboard"><h2>Dashboard · Sovereign Ops Console</h2><div id="wallet-panel"></div><p id="rpc-status">Read-only mainnet hydration active.</p><ul><li>Owner: <code id="hyd-owner">loading</code></li><li>Next Job ID: <code id="hyd-next-job-id">loading</code></li><li>Token Symbol: <code id="hyd-token-symbol">loading</code></li><li>Wallet Balance: <code id="hyd-token-balance">-</code></li></ul></section>','/jobs':'<section data-testid="route-jobs"><h2>Jobs Ledger</h2><p id="jobs-status">Loading jobs ledger…</p><table><thead><tr><th>ID</th><th>Status</th><th>Payout</th><th>Employer</th><th>Agent</th><th>ENS Name</th></tr></thead><tbody id="jobs-ledger-body"></tbody></table></section>','/identity':'<section data-testid="route-identity"><h2>Identity Layer Console</h2><li>Wired job manager: <code id="hyd-ens-job-manager">resolving…</code> <button id="identity-retry" type="button">Retry</button></li><li id="identity-wiring-status">Checking ABI-backed wiring state…</li><p>Wiring read failed: bounded timeout and retry available.</p></section>','/admin':'<section data-testid="route-admin"><h2>Admin Ops Console</h2><p>Role gate: <strong id="hyd-owner-match">Not authorized</strong></p><p id="admin-write-guidance">Connect MetaMask on Ethereum Mainnet for write actions. Read-only telemetry is always available.</p><button id="admin-pause" disabled>Pause protocol</button><button id="admin-unpause" disabled>Unpause protocol</button><button id="admin-settlement" disabled>Toggle settlement pause</button><textarea id="settings-rpc" rows="4"></textarea><input id="settings-explorer"/><input id="settings-ipfs"/><input type="checkbox" id="settings-demo"/><input type="checkbox" id="settings-agent"/><input type="checkbox" id="settings-http"/><button id="settings-save">Save</button><button id="settings-reset">Reset official defaults</button><button id="settings-export">Export JSON</button><button id="settings-import">Import JSON</button></section>','/advanced':'<section data-testid="route-advanced"><h2>Advanced Contract Console</h2></section>','/design':'<section data-testid="route-design"><h2>Design System Gallery</h2></section>','/deployment':'<section data-testid="route-deployment"><h2>Deployment Registry</h2></section>','/demo':'<section data-testid="route-demo"><h2>Deterministic Demo Mode</h2></section>'};
+  const methodId=(sig)=>({'owner()':'0x8da5cb5b','nextJobId()':'0x15e84af9','symbol()':'0x95d89b41','getJobCore(uint256)':'0x0a0f704e','jobManager()':'0x8f283970','agiJobManager()':'0xdc95d7bf'}[sig]||'0x');
+  const pad=(v)=>v.toString(16).padStart(64,'0');const addr=(hex)=>'0x'+hex.slice(-40);
+  const rpcCall=async(method,params)=>{let lastErr;for(const url of settings.rpcUrls){try{const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});const j=await r.json();if(j.error)throw new Error(j.error.message||'rpc');return j.result;}catch(error){lastErr=error;}}throw lastErr||new Error('rpc unavailable');};
+  const ethCall=(to,data)=>rpcCall('eth_call',[{to,data},'latest']);
+  const setText=(id,v)=>{const n=document.getElementById(id);if(n)n.textContent=String(v);};
+  const hydrateReadOnly=async()=>{try{setText('rpc-status','Read-only mainnet hydration active.');setText('hyd-owner',addr(await ethCall(OFFICIAL.contracts.agiJobManager,methodId('owner()'))));setText('hyd-next-job-id',Number(BigInt(await ethCall(OFFICIAL.contracts.agiJobManager,methodId('nextJobId()')))));setText('hyd-token-symbol','AGI');}catch(error){setText('rpc-status','Degraded RPC: '+(error&&error.message?error.message:'unknown'));}};
+  const hydrateJobs=async()=>{const body=document.getElementById('jobs-ledger-body');const status=document.getElementById('jobs-status');if(!body||!status)return;body.innerHTML='';if(settings.demoMode){body.innerHTML='<tr><td>245</td><td>Open</td><td>1200</td><td>demo</td><td>-</td><td>job-245.alpha.jobs.agi.eth</td></tr>';status.textContent='Demo mode fixtures enabled.';return;}try{const next=Number(BigInt(await ethCall(OFFICIAL.contracts.agiJobManager,methodId('nextJobId()'))));for(let id=Math.max(1,next-3);id<next;id++){const raw=await ethCall(OFFICIAL.contracts.agiJobManager,methodId('getJobCore(uint256)')+pad(BigInt(id)));if(raw&&raw!=='0x'){body.insertAdjacentHTML('beforeend','<tr><td>'+id+'</td><td>Live</td><td>0</td><td>-</td><td>-</td><td>job-'+id+'.alpha.jobs.agi.eth</td></tr>');}}status.textContent=body.children.length?'Live jobs loaded.':'No live jobs found.';}catch(error){status.textContent='Failed to fetch jobs: '+(error&&error.message?error.message:'unknown');}};
+  const hydrateIdentity=()=>{const run=async()=>{try{const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout after 8s')),8000));const query=(async()=>{for(const m of ['jobManager()','agiJobManager()']){const raw=await ethCall(OFFICIAL.contracts.ensJobPages,methodId(m));if(raw&&raw.length>=66&&!/^0x0{64}$/i.test(raw))return addr(raw);}throw new Error('Not exposed by ABI');})();setText('hyd-ens-job-manager',await Promise.race([query,timeout]));setText('identity-wiring-status','Resolved wiring at latest block.');}catch(error){setText('hyd-ens-job-manager','unavailable');setText('identity-wiring-status','Wiring read failed: '+(error&&error.message?error.message:'unknown')+' · Retry available.');}};run();const retry=document.getElementById('identity-retry');if(retry)retry.onclick=run;};
+  const hydrateAdmin=()=>{const isOwner=walletState.account&&walletState.account.toLowerCase()===OFFICIAL.finalOwner.toLowerCase();setText('hyd-owner-match',isOwner?'You are owner':'Not authorized');['admin-pause','admin-unpause','admin-settlement'].forEach((id)=>{const b=document.getElementById(id);if(b)b.disabled=!isOwner;});};
+  const saveSettings=()=>{try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));}catch(_error){}};
+  const wireSettingsPanel=()=>{const rpc=document.getElementById('settings-rpc');const exp=document.getElementById('settings-explorer');const ipfs=document.getElementById('settings-ipfs');const demo=document.getElementById('settings-demo');const agent=document.getElementById('settings-agent');const http=document.getElementById('settings-http');if(!rpc||!exp||!ipfs||!demo||!agent||!http)return;rpc.value=settings.rpcUrls.join('\\n');exp.value=settings.explorerBaseUrl;ipfs.value=settings.ipfsGatewayBaseUrl;demo.checked=!!settings.demoMode;agent.checked=!!settings.agentMode;http.checked=!!settings.allowInsecureHttpLinks;const save=document.getElementById('settings-save');const reset=document.getElementById('settings-reset');const expBtn=document.getElementById('settings-export');const impBtn=document.getElementById('settings-import');if(save)save.onclick=()=>{settings={rpcUrls:String(rpc.value||'').split('\\n').map((v)=>v.trim()).filter(Boolean),explorerBaseUrl:String(exp.value||'').trim()||OFFICIAL.explorerBaseUrl,ipfsGatewayBaseUrl:String(ipfs.value||'').trim()||OFFICIAL.baseIpfsUrl,demoMode:!!demo.checked,agentMode:!!agent.checked,allowInsecureHttpLinks:!!http.checked};saveSettings();hydrateReadOnly();if(getRouteFromHash()==='/jobs')hydrateJobs();};if(reset)reset.onclick=()=>{settings={...DEFAULT_SETTINGS};saveSettings();renderRoute('/admin');};if(expBtn)expBtn.onclick=async()=>{const payload=JSON.stringify(settings,null,2);if(navigator.clipboard&&navigator.clipboard.writeText){try{await navigator.clipboard.writeText(payload);return;}catch(_error){}}window.prompt('Copy settings JSON',payload);};if(impBtn)impBtn.onclick=()=>{const raw=window.prompt('Paste settings JSON');if(!raw)return;try{const parsed=JSON.parse(raw);settings={...DEFAULT_SETTINGS,...parsed,rpcUrls:Array.isArray(parsed.rpcUrls)&&parsed.rpcUrls.length?parsed.rpcUrls:DEFAULT_SETTINGS.rpcUrls};saveSettings();renderRoute('/admin');}catch(error){window.alert('Invalid settings JSON: '+(error&&error.message?error.message:'unknown'));}};};
+  const labelForProvider=(entry)=>{const p=entry.provider||{};const rdns=((entry.info&&entry.info.rdns)||'').toLowerCase();if(p.isMetaMask||rdns.includes('metamask'))return 'MetaMask';if(p.isPhantom||rdns.includes('phantom'))return 'Phantom';return 'Injected EVM Wallet';};
+  const renderWalletPanel=()=>{removeStaleWalletHosts();const panelHost=document.getElementById('wallet-panel');const headerHost=panelHost?null:ensureHeaderWalletHost();const host=panelHost||headerHost;const safeProviderLabel = escapeHtml(walletState.providerLabel || 'none detected');const wrongChain=walletState.chainId&&walletState.chainId!=='0x1';host.innerHTML='<p>Provider: '+safeProviderLabel+'</p><p>Account: '+escapeHtml(walletState.account||'not connected')+'</p><button id="wallet-connect">Connect Wallet</button> <button id="wallet-switch" '+(wrongChain?'':'disabled')+'>Switch to Mainnet</button>';const connectBtn=host.querySelector('#wallet-connect');if(connectBtn)connectBtn.addEventListener('click',connectWallet);const switchBtn=host.querySelector('#wallet-switch');if(switchBtn)switchBtn.addEventListener('click',switchMainnet);};
+  const bindProviderEvents=(provider)=>{if(!provider||!provider.on||walletState.boundProvider===provider)return;provider.on('accountsChanged',()=>refreshWalletState());provider.on('chainChanged',()=>refreshWalletState(true));walletState.boundProvider=provider;};
+  const refreshWalletState=async(chainOnly)=>{if(!walletState.provider){renderWalletPanel();return;}try{walletState.chainId=await walletState.provider.request({method:'eth_chainId'});if(!chainOnly){const accounts=await walletState.provider.request({method:'eth_accounts'});walletState.account=(accounts&&accounts[0])||null;}}catch(error){walletState.chainId=null;if(!chainOnly)walletState.account=null;const reason=error&&error.message?error.message:'wallet unavailable';setText('rpc-status','Wallet RPC unavailable ('+reason+'). Read-only telemetry still active.');}renderWalletPanel();hydrateAdmin();};
+  const connectWallet=async()=>{if(!walletState.provider){await detectProviders();bindProviderEvents(walletState.provider);}if(!walletState.provider){setText('rpc-status','No injected wallet detected yet. Read-only mode remains active.');renderWalletPanel();return;}try{await walletState.provider.request({method:'eth_requestAccounts'});}catch(error){setText('rpc-status','Wallet connect cancelled/unavailable: '+(error&&error.message?error.message:'unknown'));}await refreshWalletState();};
+  const switchMainnet=async()=>{if(!walletState.provider)return;await walletState.provider.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x1'}]});await refreshWalletState(true);};
+  const detectProviders=async()=>{const seen=[];window.addEventListener('eip6963:announceProvider',(ev)=>{if(ev.detail&&ev.detail.provider)seen.push(ev.detail);});window.dispatchEvent(new Event('eip6963:requestProvider'));await new Promise((resolve)=>setTimeout(resolve,30));if(window.ethereum)seen.push({id:'window.ethereum',provider:window.ethereum,info:{name:'Injected',rdns:''}});walletState.providers=seen;const preferred=seen.find((x)=>labelForProvider(x)==='MetaMask')||seen[0];walletState.provider=preferred?preferred.provider:null;walletState.providerLabel=preferred?labelForProvider(preferred):'Injected EVM Wallet';};
+  const renderRoute=(routePath)=>{const normalized=routePath.startsWith('/jobs/')?'/jobs':routePath;document.body.setAttribute('data-hash-route',normalized);const main=document.querySelector('main')||document.body;if(routePath.startsWith('/jobs/')){main.innerHTML='<section data-testid="route-job-detail"><h2>Job Detail</h2></section>';}else{main.innerHTML=templates[normalized]||templates['/'];}wireSettingsPanel();renderWalletPanel();if(normalized==='/jobs')hydrateJobs();if(normalized==='/identity')hydrateIdentity();if(normalized==='/admin')hydrateAdmin();};
+  const startupCanonicalHash = getStartupCanonicalHash(window.location.hash || '');
+  if (startupCanonicalHash) { rawReplaceState(history.state, '', documentUrl + startupCanonicalHash); }
+  window.addEventListener('hashchange', () => {
+    const routePath = getRouteFromHash();
+    const canonicalHash = '#' + routePath;
+    if (window.location.hash !== canonicalHash) { rawReplaceState(history.state, '', documentUrl + canonicalHash); }
+    renderRoute(routePath);
+  });
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+    if (!target || target.hasAttribute('download')) return;
+    const targetAttr = (target.getAttribute('target') || '').toLowerCase();
+    if (targetAttr && targetAttr !== '_self') return;
+    const href = target.getAttribute('href') || '';
+    const hashRoute = normalizeHashHref(href);
+    if (!hashRoute) return;
+    event.preventDefault();
+    const routePath = sanitizeRoutePath(hashRoute.slice(1));
+    navigateHashRoute(routePath, { mode: 'push' });
+    renderRoute(routePath);
+  }, true);
+  const startupRoute = getRouteFromHash();
+  renderRoute(startupRoute);
+  detectProviders().then(() => refreshWalletState()).catch((error)=>{setText('rpc-status','Wallet bootstrap degraded: '+(error&&error.message?error.message:'unknown'));renderWalletPanel();}).then(() => bindProviderEvents(walletState.provider)).then(hydrateReadOnly).catch((error)=>{setText('rpc-status','Read-only hydration degraded: '+(error&&error.message?error.message:'unknown'));});
+})();</script>
+</body></html>
