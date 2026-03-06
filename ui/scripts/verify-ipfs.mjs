@@ -415,6 +415,23 @@ for (const body of scriptBodies) {
     && body.includes('const baseRoutes = new Set([')
     && body.includes('const sanitizeRoutePath = (routePath) => {')
     && body.includes("window.addEventListener('hashchange'");
+
+  const parseCandidate = body
+    .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
+    .replace(/<\/?script[^>]*>/gi, '')
+    .trim();
+  const parseInput = parseCandidate
+    .replace(/self\.__next_f[^\n]*(?:\n|$)/g, '')
+    .replace(/\(self\.webpackChunk_N_E=self\.webpackChunk_N_E\|\|\[\]\)\.push\([\s\S]*?\);?/g, '');
+  try {
+    // Parse-only guard catches syntax regressions such as illegal top-level `continue`.
+    // eslint-disable-next-line no-new, no-new-func
+    new Function(parseInput);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Router bootstrap script is not syntactically parseable (${detail}).`);
+  }
+
   if (hasFullRouterBootstrap) {
     const requiredHelpers = [
       'const baseRoutes = new Set([',
@@ -468,21 +485,6 @@ for (const body of scriptBodies) {
       throw new Error('Router bootstrap declares navigateHashRoute before required helper declarations, which can break runtime routing.');
     }
 
-    const parseCandidate = body
-      .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
-      .replace(/<\/?script[^>]*>/gi, '')
-      .trim();
-    const parseInput = parseCandidate
-      .replace(/self\.__next_f[^\n]*(?:\n|$)/g, '')
-      .replace(/\(self\.webpackChunk_N_E=self\.webpackChunk_N_E\|\|\[\]\)\.push\([\s\S]*?\);?/g, '');
-    try {
-      // Parse-only guard catches syntax regressions such as illegal top-level `continue`.
-      // eslint-disable-next-line no-new, no-new-func
-      new Function(parseInput);
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      throw new Error(`Router bootstrap script is not syntactically parseable (${detail}).`);
-    }
   }
 }
 const stripKnownNextScriptInterleave = (source) => {
