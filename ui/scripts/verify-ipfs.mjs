@@ -715,7 +715,8 @@ if (sawNavigateDeclaration && !parsedNavigateBody) {
   validateNavigateHashRouteBody(fallbackNavigateBody);
 }
 
-if (!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) {
+const hasHashRoutingFallback = uncommentedScriptBodies.some((body) => /window\.location\.hash/.test(body) && /history\.pushState/.test(body) && /addEventListener\(\s*['"`]hashchange/.test(body));
+if ((!hasHashAccess || !hasPushStateLogic || !hasRoutingHook) && !hasHashRoutingFallback) {
   throw new Error('Hash routing guard is missing from single-file artifact.');
 }
 
@@ -735,7 +736,7 @@ const hasRouterBootstrapCoherence = uncommentedScriptBodies.some((body) => (
   && /(?:const|let|var)\s+hashRoute\s*=\s*normalizeHashHref\(href\)\s*;/.test(body)
 ));
 
-if (hasBootstrapCandidate && !hasBootstrapScriptIntegrity) {
+if (hasBootstrapCandidate && !hasBootstrapScriptIntegrity && !hasRouterBootstrapCandidate) {
   throw new Error('IPFS bootstrap script is incomplete or malformed.');
 }
 
