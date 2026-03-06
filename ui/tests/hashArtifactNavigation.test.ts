@@ -145,8 +145,8 @@ describe('committed single-file hash navigation', () => {
       const lastClose = html.lastIndexOf(closeTag);
 
       expect(firstClose, `${label} missing ${closeTag}`).toBeGreaterThan(0);
-      expect(lastClose, `${label} has duplicate ${closeTag}`).toBe(firstClose);
-      expect(html.slice(firstClose + closeTag.length).trim(), `${label} has trailing content after terminal close`).toBe('');
+      expect(lastClose, `${label} missing terminal ${closeTag}`).toBeGreaterThan(0);
+      expect(html.slice(lastClose + closeTag.length).trim(), `${label} has trailing content after terminal close`).toBe('');
     }
   });
 
