@@ -444,6 +444,16 @@ for (const body of uncommentedScriptBodies) {
       throw new Error('Router bootstrap getStartupCanonicalHash must route through startupHashLooksLeaky(rawHash, lowerHash).');
     }
 
+    const malformedHtmlSuffixBranch = /if \(lower === 'agijobmanager' \|\| lower === 'index\.html' \|\| lower === 'agijobmanager\.html'\) \{\s*if \(lower\.endsWith\('\.html'\)\) \{/m;
+    if (malformedHtmlSuffixBranch.test(body)) {
+      throw new Error('Router bootstrap has malformed recoverPrefixedRoute HTML guard (nested if without continue/closing branch), which can yield illegal top-level continue parse failures.');
+    }
+
+    const hasStableHtmlSuffixBranch = body.includes("if (lower.endsWith('.html')) {\n        continue;\n      }\n      normalizedSegments.push(segment);");
+    if (!hasStableHtmlSuffixBranch) {
+      throw new Error('Router bootstrap recoverPrefixedRoute .html suffix branch is missing expected guarded-continue structure.');
+    }
+
     const baseRoutesIndex = body.indexOf('const baseRoutes = new Set([');
     const sanitizeRoutePathIndex = body.indexOf('const sanitizeRoutePath = (routePath) => {');
     const toHashUrlIndex = body.indexOf('const toHashUrl = (routeInput) => {');

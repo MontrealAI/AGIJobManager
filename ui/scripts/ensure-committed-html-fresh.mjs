@@ -137,6 +137,15 @@ function assertRouterBootstrapScript(html, label) {
     throw new Error(`${label}: router bootstrap helper ordering changed; sanitizeRoutePath/navigateHashRoute may resolve incorrectly.`);
   }
 
+  const malformedHtmlSuffixBranch = /if \(lower === 'agijobmanager' \|\| lower === 'index\.html' \|\| lower === 'agijobmanager\.html'\) \{\s*if \(lower\.endsWith\('\.html'\)\) \{/m;
+  if (malformedHtmlSuffixBranch.test(routerScript)) {
+    throw new Error(`${label}: malformed recoverPrefixedRoute HTML guard detected (may trigger illegal top-level continue).`);
+  }
+
+  if (!routerScript.includes("if (lower.endsWith('.html')) {\n        continue;\n      }\n      normalizedSegments.push(segment);")) {
+    throw new Error(`${label}: recoverPrefixedRoute .html suffix branch no longer matches expected guarded-continue structure.`);
+  }
+
   const parseCandidate = routerScript
     .replace(/<\/script>\s*<script\b[^>]*>/gi, '')
     .replace(/<\/?script[^>]*>/gi, '')
