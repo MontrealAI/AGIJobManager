@@ -52,6 +52,8 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     error ConfigLocked();
 
     uint256 private constant MAX_ROOT_NAME_LENGTH = 240;
+    uint256 private constant MAX_JOB_LABEL_PREFIX_LENGTH = 32;
+    uint256 private constant MAX_ENS_LABEL_LENGTH = 63;
     uint256 private constant ENS_READ_GAS_LIMIT = 50_000;
 
     bytes4 private constant ENS_OWNER_SELECTOR = bytes4(keccak256("owner(bytes32)"));
@@ -94,6 +96,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     event ENSHookSkipped(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed reason);
     event ENSHookBestEffortFailure(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed operation);
     event ConfigurationLocked(address indexed locker);
+    event JobLabelPrefixUpdated(string oldPrefix, string newPrefix);
 
     IENSRegistry public ens;
     INameWrapper public nameWrapper;
@@ -103,6 +106,13 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     address public jobManager;
     bool public useEnsJobTokenURI;
     bool public configLocked;
+    /// @notice Prefix used when constructing ENS job labels as prefix + decimal(jobId).
+    string public jobLabelPrefix;
+
+    mapping(uint256 => string) private _jobLabelById;
+    mapping(uint256 => bool) private _jobLabelIsSet;
+    mapping(bytes32 => uint256) private _jobIdByNode;
+    mapping(bytes32 => bool) private _nodeJobIsSet;
 
     constructor(
         address ensAddress,
@@ -125,6 +135,18 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         publicResolver = IPublicResolver(publicResolverAddress);
         jobsRootNode = rootNode;
         jobsRootName = rootName;
+        jobLabelPrefix = "agijob";
+    }
+
+    /// @notice Updates the default prefix used for unsnapshotted/future job ENS labels.
+    /// @dev Existing jobs keep their snapshotted label and are unaffected by later prefix changes.
+    function setJobLabelPrefix(string calldata newPrefix) external onlyOwner {
+        if (configLocked) revert ConfigLocked();
+        if (!_isValidJobLabelPrefix(newPrefix)) revert InvalidParameters();
+
+        string memory oldPrefix = jobLabelPrefix;
+        jobLabelPrefix = newPrefix;
+        emit JobLabelPrefixUpdated(oldPrefix, newPrefix);
     }
 
     function setENSRegistry(address ensAddress) external onlyOwner {
@@ -193,13 +215,15 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         _;
     }
 
-    function jobEnsLabel(uint256 jobId) public pure returns (string memory) {
-        return string(abi.encodePacked("job-", jobId.toString()));
+    /// @notice Returns the effective label for a job, or a preview for unsnapshotted/future jobs.
+    /// @dev Prefix changes only affect jobs whose label has not been snapshotted by first creation.
+    function jobEnsLabel(uint256 jobId) public view returns (string memory) {
+        return _resolvedJobLabel(jobId);
     }
 
     function jobEnsName(uint256 jobId) public view returns (string memory) {
         if (!_isRootConfigured()) return "";
-        return string(abi.encodePacked(jobEnsLabel(jobId), ".", jobsRootName));
+        return string(abi.encodePacked(_resolvedJobLabel(jobId), ".", jobsRootName));
     }
 
     function jobEnsURI(uint256 jobId) external view returns (string memory) {
@@ -210,7 +234,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
     function jobEnsNode(uint256 jobId) public view returns (bytes32) {
         if (!_isRootConfigured()) revert ENSNotConfigured();
-        bytes32 labelHash = keccak256(bytes(jobEnsLabel(jobId)));
+        bytes32 labelHash = keccak256(bytes(_resolvedJobLabel(jobId)));
         return keccak256(abi.encodePacked(jobsRootNode, labelHash));
     }
 
@@ -222,12 +246,32 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         if (employer == address(0)) revert InvalidParameters();
         _requireConfigured();
 
-        bytes32 node = jobEnsNode(jobId);
+        string memory label = _resolvedJobLabel(jobId);
+        bytes32 labelHash = keccak256(bytes(label));
+        bytes32 node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
+        if (_nodeJobIsSet[node] && _jobIdByNode[node] != jobId) revert InvalidParameters();
+
         if (_nodeExists(node)) {
             if (!_nodeManagedBySelf(node)) revert ENSNotAuthorized();
+            if (!_jobLabelIsSet[jobId]) {
+                _jobLabelById[jobId] = label;
+                _jobLabelIsSet[jobId] = true;
+            }
         } else {
-            node = _createSubname(jobId);
+            if (_jobLabelIsSet[jobId]) {
+                label = _jobLabelById[jobId];
+            } else {
+                label = _buildJobLabel(jobLabelPrefix, jobId);
+                _jobLabelById[jobId] = label;
+                _jobLabelIsSet[jobId] = true;
+            }
+            node = _createSubname(label);
             emit JobENSPageCreated(jobId, node);
+        }
+
+        if (!_nodeJobIsSet[node]) {
+            _nodeJobIsSet[node] = true;
+            _jobIdByNode[node] = jobId;
         }
 
         _setResolverBestEffort(HOOK_CREATE, jobId, node, address(publicResolver));
@@ -401,7 +445,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         bool fusesBurned = false;
         if (burnFuses && _isWrappedNode(node)) {
             if (_nodeManagedBySelf(node)) {
-                bytes32 labelhash = keccak256(bytes(jobEnsLabel(jobId)));
+                bytes32 labelhash = keccak256(bytes(_resolvedJobLabel(jobId)));
                 try nameWrapper.setChildFuses(jobsRootNode, labelhash, LOCK_FUSES, type(uint64).max) {
                     fusesBurned = true;
                 } catch {
@@ -415,8 +459,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         emit JobENSLocked(jobId, node, fusesBurned);
     }
 
-    function _createSubname(uint256 jobId) internal returns (bytes32 node) {
-        string memory label = jobEnsLabel(jobId);
+    function _createSubname(string memory label) internal returns (bytes32 node) {
         bytes32 labelHash = keccak256(bytes(label));
 
         if (_isWrappedRoot()) {
@@ -613,6 +656,36 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     function _isValidRootName(string memory rootName) internal pure returns (bool) {
         uint256 len = bytes(rootName).length;
         return len > 0 && len <= MAX_ROOT_NAME_LENGTH;
+    }
+
+    function _isValidJobLabelPrefix(string memory prefix) internal pure returns (bool) {
+        bytes memory raw = bytes(prefix);
+        uint256 len = raw.length;
+        if (len == 0 || len > MAX_JOB_LABEL_PREFIX_LENGTH) return false;
+        if (raw[0] == bytes1("-")) return false;
+
+        for (uint256 i = 0; i < len; i++) {
+            bytes1 ch = raw[i];
+            bool isDigit = ch >= bytes1("0") && ch <= bytes1("9");
+            bool isLower = ch >= bytes1("a") && ch <= bytes1("z");
+            bool isHyphen = ch == bytes1("-");
+            if (!isDigit && !isLower && !isHyphen) return false;
+        }
+
+        return true;
+    }
+
+    function _buildJobLabel(string memory prefix, uint256 jobId) internal pure returns (string memory) {
+        string memory label = string(abi.encodePacked(prefix, jobId.toString()));
+        if (bytes(label).length > MAX_ENS_LABEL_LENGTH) revert InvalidParameters();
+        return label;
+    }
+
+    function _resolvedJobLabel(uint256 jobId) internal view returns (string memory) {
+        if (_jobLabelIsSet[jobId]) {
+            return _jobLabelById[jobId];
+        }
+        return _buildJobLabel(jobLabelPrefix, jobId);
     }
 
     function _tryRootOwner() internal view returns (bool ok, address ownerAddress) {
