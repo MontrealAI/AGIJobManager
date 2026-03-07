@@ -32,7 +32,7 @@ contract("ENSJobPages helper", (accounts) => {
     const specURI = "ipfs://spec.json";
     await helper.createJobPage(jobId, employer, specURI, { from: owner });
 
-    const node = subnode(rootNode, `job-${jobId}`);
+    const node = subnode(rootNode, `agijob${jobId}`);
     const storedOwner = await ens.owner(node);
     const storedResolver = await ens.resolver(node);
     assert.equal(storedOwner, helper.address, "subnode owner should be helper");
@@ -83,7 +83,7 @@ contract("ENSJobPages helper", (accounts) => {
     const jobId = 7;
     await helper.createJobPage(jobId, employer, "ipfs://spec.json", { from: owner });
 
-    const node = subnode(rootNode, `job-${jobId}`);
+    const node = subnode(rootNode, `agijob${jobId}`);
     const wrappedOwner = await nameWrapper.ownerOf(web3.utils.toBN(node));
     assert.equal(wrappedOwner, helper.address, "wrapped subnode should be owned by helper");
     const isWrapped = await nameWrapper.isWrapped(node);
@@ -94,7 +94,7 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await nameWrapper.lastParentNode(), rootNode, "parent node should be jobs root");
     assert.equal(
       await nameWrapper.lastLabelhash(),
-      web3.utils.keccak256(`job-${jobId}`),
+      web3.utils.keccak256(`agijob${jobId}`),
       "labelhash should match job label"
     );
   });
@@ -140,7 +140,7 @@ contract("ENSJobPages helper", (accounts) => {
 
     assert.equal((await nameWrapper.setChildFusesCalls()).toString(), "1", "should set child fuses");
     assert.equal(await nameWrapper.lastParentNode(), rootNode, "parent node should be jobs root");
-    assert.equal(await nameWrapper.lastLabelhash(), web3.utils.keccak256(`job-${jobId}`), "labelhash should match");
+    assert.equal(await nameWrapper.lastLabelhash(), web3.utils.keccak256(`agijob${jobId}`), "labelhash should match");
     assert.equal((await nameWrapper.lastChildExpiry()).toString(), web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1).toString(), "expiry should be max uint64");
   });
 
@@ -197,7 +197,7 @@ contract("ENSJobPages helper", (accounts) => {
     await nameWrapper.setApprovalForAll(helper.address, true, { from: owner });
 
     await helper.createJobPage(13, employer, "ipfs://spec-approved", { from: owner });
-    const node = subnode(rootNode, "job-13");
+    const node = subnode(rootNode, "agijob13");
     assert.equal(await resolver.text(node, "agijobs.spec.public"), "ipfs://spec-approved");
   });
 
@@ -219,7 +219,7 @@ contract("ENSJobPages helper", (accounts) => {
     await resolver.setRevertSetText(true, { from: owner });
 
     await helper.createJobPage(14, employer, "ipfs://spec", { from: owner });
-    const node = subnode(rootNode, "job-14");
+    const node = subnode(rootNode, "agijob14");
     assert.equal(await ens.owner(node), helper.address, "critical subname creation should still succeed");
   });
 
@@ -447,7 +447,7 @@ contract("ENSJobPages helper", (accounts) => {
       { from: owner }
     );
 
-    const node = subnode(rootNode, "job-80");
+    const node = subnode(rootNode, "agijob80");
     await ens.setOwner(rootNode, wrapper.address, { from: owner });
     await ens.setOwner(node, wrapper.address, { from: owner });
     await wrapper.setOwner(web3.utils.toBN(node), owner, { from: owner });
@@ -474,7 +474,7 @@ contract("ENSJobPages helper", (accounts) => {
 
     const jobId = 81;
     await helper.createJobPage(jobId, employer, "ipfs://spec81", { from: owner });
-    const node = subnode(rootNode, `job-${jobId}`);
+    const node = subnode(rootNode, `agijob${jobId}`);
 
     assert.equal((await wrapper.setResolverCalls()).toString(), "1", "should set resolver through wrapper");
     assert.equal(await wrapper.lastResolverNode(), node, "resolver node should match wrapped subnode");
@@ -503,6 +503,165 @@ contract("ENSJobPages helper", (accounts) => {
     await helper.lockJobENS(82, employer, agent, true, { from: owner });
 
     assert.equal((await wrapper.lastChildFuses()).toString(), "65561", "lock fuses must include unwrap/parent control/resolver/ttl bits");
+  });
+
+
+  it("uses agijob as default prefix and lets owner update prefix previews", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    assert.equal(await helper.jobLabelPrefix(), "agijob");
+    assert.equal(await helper.jobEnsLabel(1), "agijob1");
+
+    await helper.setJobLabelPrefix("job-", { from: owner });
+    assert.equal(await helper.jobLabelPrefix(), "job-");
+    assert.equal(await helper.jobEnsLabel(2), "job-2");
+  });
+
+  it("rejects invalid label prefixes and blocks prefix updates when config is locked", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const hookCaller = await MockHookCaller.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    for (const invalid of ["", "-job", "Job", "job.", "job_", "a".repeat(33)]) {
+      await expectRevert.unspecified(helper.setJobLabelPrefix(invalid, { from: owner }));
+    }
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.setJobManager(hookCaller.address, { from: owner });
+    await helper.lockConfiguration({ from: owner });
+    await expectRevert.unspecified(helper.setJobLabelPrefix("job-", { from: owner }));
+  });
+
+  it("snapshots created labels so old jobs remain stable after prefix changes", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+
+    await helper.createJobPage(91, employer, "ipfs://spec91", { from: owner });
+    const oldNode = subnode(rootNode, "agijob91");
+    assert.equal(await helper.jobEnsLabel(91), "agijob91");
+    assert.equal(await helper.jobEnsNode(91), oldNode);
+
+    await helper.setJobLabelPrefix("job-", { from: owner });
+    assert.equal(await helper.jobEnsLabel(91), "agijob91");
+    assert.equal(await helper.jobEnsNode(91), oldNode);
+
+    await helper.onAgentAssigned(91, agent, { from: owner });
+    assert.equal(await resolver.isAuthorised(oldNode, agent), true, "assign should target snapshotted node");
+
+    await helper.revokePermissions(91, employer, agent, { from: owner });
+    assert.equal(await resolver.isAuthorised(oldNode, agent), false, "revoke should target snapshotted node");
+
+    await helper.lockJobENS(91, employer, agent, true, { from: owner });
+    assert.equal(await wrapper.lastLabelhash(), web3.utils.keccak256("agijob91"), "lock should use snapshotted label");
+
+    assert.equal(await helper.jobEnsLabel(92), "job-92", "future jobs should preview new prefix");
+    await helper.createJobPage(92, employer, "ipfs://spec92", { from: owner });
+    assert.equal(await helper.jobEnsLabel(92), "job-92", "newly created jobs should snapshot new prefix");
+    assert.equal(await helper.jobEnsNode(92), subnode(rootNode, "job-92"));
+  });
+
+  it("does not overwrite a snapshotted label when recreating a missing node", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.createJobPage(93, employer, "ipfs://spec93", { from: owner });
+    const originalNode = subnode(rootNode, "agijob93");
+
+    await helper.setJobLabelPrefix("job-", { from: owner });
+    await ens.setOwner(originalNode, "0x0000000000000000000000000000000000000000", { from: owner });
+
+    await helper.createJobPage(93, employer, "ipfs://spec93b", { from: owner });
+    assert.equal(await helper.jobEnsLabel(93), "agijob93", "snapshot should remain unchanged");
+    assert.equal(await helper.jobEnsNode(93), originalNode, "recreated node should keep original label");
+    assert.equal(await ens.owner(originalNode), helper.address, "missing original node should be recreated");
+  });
+
+  it("rejects label collisions after prefix changes so two jobs cannot share one ENS node", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.createJobPage(12, employer, "ipfs://spec12", { from: owner });
+
+    await helper.setJobLabelPrefix("agijob1", { from: owner });
+    await expectRevert.unspecified(helper.createJobPage(2, employer, "ipfs://spec2", { from: owner }));
+
+    assert.equal(await helper.jobEnsLabel(12), "agijob12", "job 12 label remains canonical");
+    assert.equal(await helper.jobEnsLabel(2), "agijob12", "job 2 preview collides under new prefix");
+    assert.equal(await resolver.text(subnode(rootNode, "agijob12"), "agijobs.spec.public"), "ipfs://spec12");
+  });
+
+  it("blocks write hooks for unsnapshotted jobs whose preview collides with another job snapshot", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.createJobPage(12, employer, "ipfs://spec12", { from: owner });
+    await helper.setJobLabelPrefix("agijob1", { from: owner });
+
+    const sharedNode = subnode(rootNode, "agijob12");
+    await expectRevert.unspecified(helper.onAgentAssigned(2, agent, { from: owner }));
+    await expectRevert.unspecified(helper.onCompletionRequested(2, "ipfs://completion", { from: owner }));
+    await expectRevert.unspecified(helper.revokePermissions(2, employer, agent, { from: owner }));
+    await expectRevert.unspecified(helper.lockJobENS(2, employer, agent, false, { from: owner }));
+
+    assert.equal(await resolver.isAuthorised(sharedNode, agent), false, "colliding write hooks must not mutate existing node auth");
+    assert.equal(await resolver.text(sharedNode, "agijobs.completion.public"), "", "colliding write hooks must not mutate existing node text");
   });
 
   it("rejects oversized root names to keep ENS URIs bounded", async () => {
