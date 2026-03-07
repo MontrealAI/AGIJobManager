@@ -3,6 +3,7 @@ const MockENSRegistry = artifacts.require("MockENSRegistry");
 const MockPublicResolver = artifacts.require("MockPublicResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockHookCaller = artifacts.require("MockHookCaller");
+const MockAGIJobManagerView = artifacts.require("MockAGIJobManagerView");
 
 const { expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -664,6 +665,147 @@ contract("ENSJobPages helper", (accounts) => {
 
     assert.equal(await resolver.isAuthorised(sharedNode, agent), false, "colliding write hooks must not mutate existing node auth");
     assert.equal(await resolver.text(sharedNode, "agijobs.completion.public"), "", "colliding write hooks must not mutate existing node text");
+  });
+
+
+  it("migrates a missing legacy wrapped page with an exact label without changing default prefix", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await MockAGIJobManagerView.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(manager.address, { from: owner });
+
+    await manager.setJob(0, employer, agent, "ipfs://legacy-spec-0", { from: owner });
+
+    const receipt = await helper.migrateLegacyWrappedJobPage(0, "job-0", { from: owner });
+    expectEvent(receipt, "LegacyJobPageMigrated", { jobId: "0", label: "job-0", adopted: false, created: true });
+
+    const node = subnode(rootNode, "job-0");
+    const snapshot = await helper.jobLabelSnapshot(0);
+    assert.equal(snapshot[0], true, "label should be snapshotted");
+    assert.equal(snapshot[1], "job-0", "snapshot should match imported label");
+    assert.equal(await helper.jobLabelPrefix(), "agijob", "global prefix should remain unchanged");
+    assert.equal(await helper.jobEnsLabel(0), "job-0", "job should resolve to imported exact label");
+    assert.equal(await wrapper.ownerOf(web3.utils.toBN(node)), helper.address, "wrapped node should be owned by helper");
+    assert.equal(await resolver.text(node, "agijobs.spec.public"), "ipfs://legacy-spec-0", "spec should be repaired from manager");
+  });
+
+  it("adopts an existing wrapped legacy page and routes write hooks through the imported exact label", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await MockAGIJobManagerView.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(manager.address, { from: owner });
+
+    const legacyNode = subnode(rootNode, "job-10");
+    await wrapper.setSubnodeOwner(rootNode, "job-10", owner, 0, web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1), { from: owner });
+    assert.equal(await wrapper.ownerOf(web3.utils.toBN(legacyNode)), owner, "legacy node starts under old manager owner");
+
+    await manager.setJob(10, employer, agent, "ipfs://legacy-spec-10", { from: owner });
+    const migrateReceipt = await helper.migrateLegacyWrappedJobPage(10, "job-10", { from: owner });
+    expectEvent(migrateReceipt, "LegacyJobPageMigrated", { jobId: "10", label: "job-10", adopted: true, created: false });
+
+    assert.equal(await wrapper.ownerOf(web3.utils.toBN(legacyNode)), helper.address, "node should be adopted by helper");
+    assert.equal(await resolver.isAuthorised(legacyNode, employer), true, "employer auth repaired on adopted node");
+
+    await helper.onAgentAssigned(10, agent, { from: owner });
+    assert.equal(await resolver.isAuthorised(legacyNode, agent), true, "assign should use imported exact label");
+
+    await helper.revokePermissions(10, employer, agent, { from: owner });
+    assert.equal(await resolver.isAuthorised(legacyNode, employer), false, "revoke should use imported exact label");
+    assert.equal(await resolver.isAuthorised(legacyNode, agent), false, "revoke should target imported node");
+
+    await helper.lockJobENS(10, employer, agent, true, { from: owner });
+    assert.equal(await wrapper.lastLabelhash(), web3.utils.keccak256("job-10"), "lock should use imported exact label");
+  });
+
+
+  it("keeps terminal jobs revoked during migration while restoring completion text", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await MockAGIJobManagerView.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(manager.address, { from: owner });
+
+    const jobId = 11;
+    await manager.setJob(jobId, employer, agent, "ipfs://legacy-spec-11", { from: owner });
+    await manager.setCompletionURI(jobId, "ipfs://legacy-completion-11", { from: owner });
+    await manager.setJobTerminalState(jobId, true, false, false, { from: owner });
+
+    const node = subnode(rootNode, "job-11");
+    await resolver.setAuthorisation(node, employer, true, { from: owner });
+    await resolver.setAuthorisation(node, agent, true, { from: owner });
+
+    await helper.migrateLegacyWrappedJobPage(jobId, "job-11", { from: owner });
+
+    assert.equal(await resolver.isAuthorised(node, employer), false, "employer should stay revoked for terminal jobs");
+    assert.equal(await resolver.isAuthorised(node, agent), false, "agent should stay revoked for terminal jobs");
+    assert.equal(
+      await resolver.text(node, "agijobs.completion.public"),
+      "ipfs://legacy-completion-11",
+      "completion URI should still be restored"
+    );
+  });
+
+  it("rejects invalid exact legacy labels for a job", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await MockAGIJobManagerView.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(manager.address, { from: owner });
+    await manager.setJob(5, employer, agent, "ipfs://legacy-spec-5", { from: owner });
+
+    for (const bad of ["", "Job-5", "job-", "job-6", "job-15", "-job5", "job.5"]) {
+      await expectRevert.unspecified(helper.migrateLegacyWrappedJobPage(5, bad, { from: owner }));
+    }
   });
 
   it("rejects oversized root names to keep ENS URIs bounded", async () => {
