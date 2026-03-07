@@ -675,20 +675,16 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         if (_jobLabelIsSet[jobId]) {
             return _jobLabelById[jobId];
         }
-        return _buildJobLabel(jobLabelPrefix, jobId);
+
+        string memory label = _buildJobLabel(jobLabelPrefix, jobId);
+        bytes32 labelHash = keccak256(bytes(label));
+        uint256 existing = _jobIdPlusOneByLabelHash[labelHash];
+        if (existing != 0 && existing != jobId + 1) revert InvalidParameters();
+        return label;
     }
 
     function _resolvedJobNodeForWrite(uint256 jobId) internal view returns (bytes32) {
-        string memory label;
-        if (_jobLabelIsSet[jobId]) {
-            label = _jobLabelById[jobId];
-        } else {
-            label = _buildJobLabel(jobLabelPrefix, jobId);
-            bytes32 labelHash = keccak256(bytes(label));
-            uint256 existing = _jobIdPlusOneByLabelHash[labelHash];
-            if (existing != 0 && existing != jobId + 1) revert InvalidParameters();
-        }
-
+        string memory label = _resolvedJobLabel(jobId);
         return keccak256(abi.encodePacked(jobsRootNode, keccak256(bytes(label))));
     }
 

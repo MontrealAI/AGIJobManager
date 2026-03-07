@@ -634,7 +634,9 @@ contract("ENSJobPages helper", (accounts) => {
     await expectRevert.unspecified(helper.createJobPage(2, employer, "ipfs://spec2", { from: owner }));
 
     assert.equal(await helper.jobEnsLabel(12), "agijob12", "job 12 label remains canonical");
-    assert.equal(await helper.jobEnsLabel(2), "agijob12", "job 2 preview collides under new prefix");
+    await expectRevert.unspecified(helper.jobEnsLabel(2));
+    await expectRevert.unspecified(helper.jobEnsName(2));
+    await expectRevert.unspecified(helper.jobEnsURI(2));
     assert.equal(await resolver.text(subnode(rootNode, "agijob12"), "agijobs.spec.public"), "ipfs://spec12");
   });
 
