@@ -590,6 +590,31 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await helper.jobEnsNode(92), subnode(rootNode, "job-92"));
   });
 
+  it("does not overwrite a snapshotted label when recreating a missing node", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.createJobPage(93, employer, "ipfs://spec93", { from: owner });
+    const originalNode = subnode(rootNode, "agijob93");
+
+    await helper.setJobLabelPrefix("job-", { from: owner });
+    await ens.setOwner(originalNode, "0x0000000000000000000000000000000000000000", { from: owner });
+
+    await helper.createJobPage(93, employer, "ipfs://spec93b", { from: owner });
+    assert.equal(await helper.jobEnsLabel(93), "agijob93", "snapshot should remain unchanged");
+    assert.equal(await helper.jobEnsNode(93), originalNode, "recreated node should keep original label");
+    assert.equal(await ens.owner(originalNode), helper.address, "missing original node should be recreated");
+  });
+
   it("rejects oversized root names to keep ENS URIs bounded", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });

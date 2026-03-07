@@ -254,9 +254,13 @@ contract ENSJobPages is Ownable, ERC1155Holder {
                 _jobLabelIsSet[jobId] = true;
             }
         } else {
-            label = _buildJobLabel(jobLabelPrefix, jobId);
-            _jobLabelById[jobId] = label;
-            _jobLabelIsSet[jobId] = true;
+            if (_jobLabelIsSet[jobId]) {
+                label = _jobLabelById[jobId];
+            } else {
+                label = _buildJobLabel(jobLabelPrefix, jobId);
+                _jobLabelById[jobId] = label;
+                _jobLabelIsSet[jobId] = true;
+            }
             node = _createSubname(label);
             emit JobENSPageCreated(jobId, node);
         }
