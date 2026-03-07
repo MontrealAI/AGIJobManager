@@ -76,6 +76,7 @@ contract("ENSJobPages helper", (accounts) => {
       { from: owner }
     );
 
+    await nameWrapper.setENSRegistry(ens.address, { from: owner });
     await ens.setOwner(rootNode, nameWrapper.address, { from: owner });
     await nameWrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
 
@@ -127,12 +128,14 @@ contract("ENSJobPages helper", (accounts) => {
       { from: owner }
     );
 
+    await nameWrapper.setENSRegistry(ens.address, { from: owner });
     await ens.setOwner(rootNode, nameWrapper.address, { from: owner });
     await nameWrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
     const hookCaller = await MockHookCaller.new({ from: owner });
     await helper.setJobManager(hookCaller.address, { from: owner });
 
     const jobId = 6;
+    await helper.createJobPage(jobId, employer, "ipfs://spec6", { from: owner });
     await hookCaller.callHandleHook(helper.address, 6, jobId, { from: owner });
 
     assert.equal((await nameWrapper.setChildFusesCalls()).toString(), "1", "should set child fuses");
@@ -403,6 +406,103 @@ contract("ENSJobPages helper", (accounts) => {
     await helper.setJobManager(hookCaller.address, { from: owner });
     await helper.lockConfiguration({ from: owner });
     await helper.createJobPage(78, employer, "ipfs://spec78", { from: owner });
+  });
+
+
+
+  it("reuses existing wrapped node when ENSJobPages remains effective manager", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+
+    const first = await helper.createJobPage(79, employer, "ipfs://spec79", { from: owner });
+    const second = await helper.createJobPage(79, employer, "ipfs://spec79b", { from: owner });
+
+    assert.equal(first.logs.filter((l) => l.event === "JobENSPageCreated").length, 1, "first call should create");
+    assert.equal(second.logs.filter((l) => l.event === "JobENSPageCreated").length, 0, "second call should reuse");
+  });
+
+  it("refuses wrapped-node reuse when ENSJobPages is not effective manager", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    const node = subnode(rootNode, "job-80");
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await ens.setOwner(node, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(node), owner, { from: owner });
+
+    await expectRevert.unspecified(helper.createJobPage(80, employer, "ipfs://spec80", { from: owner }));
+  });
+
+  it("uses NameWrapper resolver path for wrapped node updates", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+
+    const jobId = 81;
+    await helper.createJobPage(jobId, employer, "ipfs://spec81", { from: owner });
+    const node = subnode(rootNode, `job-${jobId}`);
+
+    assert.equal((await wrapper.setResolverCalls()).toString(), "1", "should set resolver through wrapper");
+    assert.equal(await wrapper.lastResolverNode(), node, "resolver node should match wrapped subnode");
+    assert.equal(await wrapper.lastResolver(), resolver.address, "resolver address should match public resolver");
+    assert.equal(await ens.resolver(node), "0x0000000000000000000000000000000000000000", "ENS resolver should not be written directly for wrapped node");
+  });
+
+  it("burn fuse path uses wrapped lock fuse mask", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+
+    await helper.createJobPage(82, employer, "ipfs://spec82", { from: owner });
+    await helper.lockJobENS(82, employer, agent, true, { from: owner });
+
+    assert.equal((await wrapper.lastChildFuses()).toString(), "65561", "lock fuses must include unwrap/parent control/resolver/ttl bits");
   });
 
   it("rejects oversized root names to keep ENS URIs bounded", async () => {

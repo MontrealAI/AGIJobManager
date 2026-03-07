@@ -50,7 +50,12 @@ contract('ensHooks.integration', (accounts) => {
     await token.mint(validator, payout); await token.approve(manager.address, payout, { from: validator });
     await token.mint(agent, payout); await token.approve(manager.address, payout, { from: agent });
 
+    await wrapper.setENSRegistry(ens.address);
     await seedSettledJob({ manager, token, payout, proof: mkTree([agent]).proofFor(agent) });
+
+    const wrappedNode = subnode(rootNodeHash, 'job-0');
+    assert.equal((await wrapper.setResolverCalls()).toString(), '1', 'wrapped CREATE hook should set resolver via NameWrapper');
+    assert.equal(await wrapper.lastResolverNode(), wrappedNode, 'wrapper resolver target should be wrapped subnode');
 
     const lockReceipt = await manager.lockJobENS(0, true, { from: owner });
     await expectEvent.inTransaction(lockReceipt.tx, pages, 'JobENSLocked', {

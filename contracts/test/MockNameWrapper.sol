@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 contract MockNameWrapper {
+    mapping(bytes32 => address) private nodeResolvers;
     mapping(uint256 => address) private owners;
     mapping(address => mapping(address => bool)) private approvals;
     mapping(uint256 => address) private tokenApprovals;
@@ -13,6 +14,14 @@ contract MockNameWrapper {
     uint32 public lastChildFuses;
     uint64 public lastChildExpiry;
     bool public revertGetApproved;
+    address public ensRegistry;
+    uint256 public setResolverCalls;
+    bytes32 public lastResolverNode;
+    address public lastResolver;
+
+    function setENSRegistry(address registry) external {
+        ensRegistry = registry;
+    }
 
     function setOwner(uint256 id, address owner) external {
         owners[id] = owner;
@@ -59,6 +68,32 @@ contract MockNameWrapper {
         lastLabelhash = labelhash;
         lastChildFuses = fuses;
         lastChildExpiry = expiry;
+    }
+
+    function setResolver(bytes32 node, address resolverAddr) external {
+        setResolverCalls += 1;
+        lastResolverNode = node;
+        lastResolver = resolverAddr;
+        nodeResolvers[node] = resolverAddr;
+    }
+
+    function resolver(bytes32 node) external view returns (address) {
+        return nodeResolvers[node];
+    }
+
+    function setSubnodeOwner(bytes32 parentNode, string calldata label, address ownerAddr, uint32, uint64)
+        external
+        returns (bytes32)
+    {
+        bytes32 labelhash = keccak256(bytes(label));
+        bytes32 subnode = keccak256(abi.encodePacked(parentNode, labelhash));
+        owners[uint256(subnode)] = ownerAddr;
+        wrapped[subnode] = true;
+        if (ensRegistry != address(0)) {
+            (bool ok,) = ensRegistry.call(abi.encodeWithSignature("setOwner(bytes32,address)", subnode, address(this)));
+            ok;
+        }
+        return subnode;
     }
 
     function setSubnodeRecord(
