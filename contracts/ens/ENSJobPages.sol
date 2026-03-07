@@ -50,6 +50,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     error ENSNotAuthorized();
     error InvalidParameters();
     error ConfigLocked();
+    error JobLabelNotSnapshotted();
 
     uint256 private constant MAX_ROOT_NAME_LENGTH = 240;
     uint256 private constant MAX_JOB_LABEL_PREFIX_LENGTH = 32;
@@ -514,7 +515,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         bool fusesBurned = false;
         if (burnFuses && _isWrappedNode(node)) {
             if (_nodeManagedBySelf(node)) {
-                bytes32 labelhash = keccak256(bytes(_resolvedJobLabel(jobId)));
+                bytes32 labelhash = keccak256(bytes(_jobLabelById[jobId]));
                 try nameWrapper.setChildFuses(jobsRootNode, labelhash, LOCK_FUSES, type(uint64).max) {
                     fusesBurned = true;
                 } catch {
@@ -799,9 +800,11 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         return label;
     }
 
+    /// @dev Post-create write paths must use a snapshotted/imported label.
+    ///      Legacy jobs that predate this contract must be migrated before hooks can mutate ENS records.
     function _resolvedJobNodeForWrite(uint256 jobId) internal view returns (bytes32) {
-        string memory label = _resolvedJobLabel(jobId);
-        return keccak256(abi.encodePacked(jobsRootNode, keccak256(bytes(label))));
+        if (!_jobLabelIsSet[jobId]) revert JobLabelNotSnapshotted();
+        return keccak256(abi.encodePacked(jobsRootNode, keccak256(bytes(_jobLabelById[jobId]))));
     }
 
     function _snapshotJobLabel(uint256 jobId, string memory label) internal {

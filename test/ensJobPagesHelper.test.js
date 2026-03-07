@@ -113,6 +113,7 @@ contract("ENSJobPages helper", (accounts) => {
     );
 
     await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.createJobPage(5, employer, "ipfs://spec5", { from: owner });
     await helper.lockJobENS(5, employer, agent, true, { from: owner });
   });
 
@@ -589,6 +590,40 @@ contract("ENSJobPages helper", (accounts) => {
     await helper.createJobPage(92, employer, "ipfs://spec92", { from: owner });
     assert.equal(await helper.jobEnsLabel(92), "job-92", "newly created jobs should snapshot new prefix");
     assert.equal(await helper.jobEnsNode(92), subnode(rootNode, "job-92"));
+  });
+
+
+  it("fails fast on post-create writes for legacy jobs until exact label is snapshotted", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+
+    await helper.setJobLabelPrefix("job-", { from: owner });
+    await wrapper.setSubnodeOwner(
+      rootNode,
+      "agijob200",
+      helper.address,
+      0,
+      web3.utils.toBN(2).pow(web3.utils.toBN(64)).subn(1),
+      { from: owner }
+    );
+
+    await expectRevert.unspecified(helper.onAgentAssigned(200, agent, { from: owner }));
+    await expectRevert.unspecified(helper.onCompletionRequested(200, "ipfs://completion-200", { from: owner }));
+    await expectRevert.unspecified(helper.revokePermissions(200, employer, agent, { from: owner }));
+    await expectRevert.unspecified(helper.lockJobENS(200, employer, agent, true, { from: owner }));
   });
 
   it("does not overwrite a snapshotted label when recreating a missing node", async () => {
