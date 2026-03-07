@@ -1,7 +1,7 @@
 # ENS Reference (Generated)
 
 Generated at (UTC): 1970-01-01T00:00:00Z
-Source fingerprint: 1c2f25519fbcc68f
+Source fingerprint: 436d10492150ffb6
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -51,9 +51,9 @@ Source files used:
 - `function setNameWrapper(address nameWrapperAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L166](../../contracts/ens/ENSJobPages.sol#L166))
 - `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L182](../../contracts/ens/ENSJobPages.sol#L182))
 - `function lockConfiguration() external onlyOwner` ([contracts/ens/ENSJobPages.sol#L208](../../contracts/ens/ENSJobPages.sol#L208))
-- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` ([contracts/ens/ENSJobPages.sol#L338](../../contracts/ens/ENSJobPages.sol#L338))
-- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` ([contracts/ens/ENSJobPages.sol#L487](../../contracts/ens/ENSJobPages.sol#L487))
-- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` ([contracts/ens/ENSJobPages.sol#L492](../../contracts/ens/ENSJobPages.sol#L492))
+- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` ([contracts/ens/ENSJobPages.sol#L352](../../contracts/ens/ENSJobPages.sol#L352))
+- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` ([contracts/ens/ENSJobPages.sol#L501](../../contracts/ens/ENSJobPages.sol#L501))
+- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` ([contracts/ens/ENSJobPages.sol#L506](../../contracts/ens/ENSJobPages.sol#L506))
 - `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L32](../../contracts/utils/ENSOwnership.sol#L32))
 - `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L48](../../contracts/utils/ENSOwnership.sol#L48))
 - `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` ([contracts/utils/ENSOwnership.sol#L61](../../contracts/utils/ENSOwnership.sol#L61))

@@ -28,6 +28,12 @@ contract MockAGIJobManagerView {
         _completion[jobId] = completionURI;
     }
 
+    function setJobTerminalState(uint256 jobId, bool completed, bool disputed, bool expired) external {
+        _core[jobId].completed = completed;
+        _core[jobId].disputed = disputed;
+        _core[jobId].expired = expired;
+    }
+
     function getJobCore(uint256 jobId)
         external
         view

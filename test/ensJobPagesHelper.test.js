@@ -743,6 +743,38 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await wrapper.lastLabelhash(), web3.utils.keccak256("job-10"), "lock should use imported exact label");
   });
 
+
+  it("keeps resolver auth revoked when migrating a terminal legacy job", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await MockAGIJobManagerView.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      wrapper.address,
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(manager.address, { from: owner });
+
+    await manager.setJob(11, employer, agent, "ipfs://legacy-spec-11", { from: owner });
+    await manager.setCompletionURI(11, "ipfs://legacy-completion-11", { from: owner });
+    await manager.setJobTerminalState(11, true, false, false, { from: owner });
+
+    await helper.migrateLegacyWrappedJobPage(11, "job-11", { from: owner });
+
+    const node = subnode(rootNode, "job-11");
+    assert.equal(await resolver.isAuthorised(node, employer), false, "employer must stay revoked for terminal jobs");
+    assert.equal(await resolver.isAuthorised(node, agent), false, "agent must stay revoked for terminal jobs");
+    assert.equal(await resolver.text(node, "agijobs.completion.public"), "ipfs://legacy-completion-11", "completion URI should still be restored");
+  });
+
   it("rejects invalid exact legacy labels for a job", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });

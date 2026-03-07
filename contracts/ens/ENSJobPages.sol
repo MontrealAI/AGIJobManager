@@ -263,13 +263,11 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         _importExactJobLabel(jobId, exactLabel);
         string memory label = _jobLabelById[jobId];
 
-        string memory specURI = IAGIJobManagerView(jobManager).getJobSpecURI(jobId);
-        (address employer, address assignedAgent, , , , , , , ) = IAGIJobManagerView(jobManager).getJobCore(jobId);
+        (address employer, address assignedAgent, , , , bool completed, bool disputed, bool expired, ) = IAGIJobManagerView(jobManager).getJobCore(jobId);
         if (employer == address(0)) revert InvalidParameters();
-        string memory completionURI = IAGIJobManagerView(jobManager).getJobCompletionURI(jobId);
+        bool isTerminal = completed || disputed || expired;
 
-        bytes32 labelHash = keccak256(bytes(label));
-        node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
+        node = keccak256(abi.encodePacked(jobsRootNode, keccak256(bytes(label))));
 
         bool adopted;
         bool created;
@@ -296,14 +294,30 @@ contract ENSJobPages is Ownable, ERC1155Holder {
             created = true;
         }
 
-        _setResolverBestEffort(HOOK_CREATE, jobId, node, address(publicResolver));
-        _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, employer, true);
-        _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, assignedAgent, true);
-        _setTextBestEffort(HOOK_CREATE, jobId, node, "schema", "agijobmanager/v1");
-        _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.spec.public", specURI);
-        _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.completion.public", completionURI);
+        _repairMigratedJobRecords(jobId, node, employer, assignedAgent, isTerminal);
 
         emit LegacyJobPageMigrated(jobId, node, label, adopted, created);
+    }
+
+    function _repairMigratedJobRecords(
+        uint256 jobId,
+        bytes32 node,
+        address employer,
+        address assignedAgent,
+        bool isTerminal
+    ) internal {
+        _setResolverBestEffort(HOOK_CREATE, jobId, node, address(publicResolver));
+        _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, employer, !isTerminal);
+        _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, assignedAgent, !isTerminal);
+        _setTextBestEffort(HOOK_CREATE, jobId, node, "schema", "agijobmanager/v1");
+        _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.spec.public", IAGIJobManagerView(jobManager).getJobSpecURI(jobId));
+        _setTextBestEffort(
+            HOOK_CREATE,
+            jobId,
+            node,
+            "agijobs.completion.public",
+            IAGIJobManagerView(jobManager).getJobCompletionURI(jobId)
+        );
     }
 
     function _createJobPage(uint256 jobId, address employer, string memory specURI) internal {
