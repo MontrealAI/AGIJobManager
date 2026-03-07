@@ -615,6 +615,29 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await ens.owner(originalNode), helper.address, "missing original node should be recreated");
   });
 
+  it("rejects label collisions after prefix changes so two jobs cannot share one ENS node", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.createJobPage(12, employer, "ipfs://spec12", { from: owner });
+
+    await helper.setJobLabelPrefix("agijob1", { from: owner });
+    await expectRevert.unspecified(helper.createJobPage(2, employer, "ipfs://spec2", { from: owner }));
+
+    assert.equal(await helper.jobEnsLabel(12), "agijob12", "job 12 label remains canonical");
+    assert.equal(await helper.jobEnsLabel(2), "agijob12", "job 2 preview collides under new prefix");
+    assert.equal(await resolver.text(subnode(rootNode, "agijob12"), "agijobs.spec.public"), "ipfs://spec12");
+  });
+
   it("rejects oversized root names to keep ENS URIs bounded", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });

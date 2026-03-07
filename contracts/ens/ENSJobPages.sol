@@ -111,6 +111,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
     mapping(uint256 => string) private _jobLabelById;
     mapping(uint256 => bool) private _jobLabelIsSet;
+    mapping(bytes32 => uint256) private _jobIdPlusOneByLabelHash;
 
     constructor(
         address ensAddress,
@@ -250,16 +251,14 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         if (_nodeExists(node)) {
             if (!_nodeManagedBySelf(node)) revert ENSNotAuthorized();
             if (!_jobLabelIsSet[jobId]) {
-                _jobLabelById[jobId] = label;
-                _jobLabelIsSet[jobId] = true;
+                _snapshotJobLabel(jobId, label);
             }
         } else {
             if (_jobLabelIsSet[jobId]) {
                 label = _jobLabelById[jobId];
             } else {
                 label = _buildJobLabel(jobLabelPrefix, jobId);
-                _jobLabelById[jobId] = label;
-                _jobLabelIsSet[jobId] = true;
+                _snapshotJobLabel(jobId, label);
             }
             node = _createSubname(label);
             emit JobENSPageCreated(jobId, node);
@@ -677,6 +676,16 @@ contract ENSJobPages is Ownable, ERC1155Holder {
             return _jobLabelById[jobId];
         }
         return _buildJobLabel(jobLabelPrefix, jobId);
+    }
+
+    function _snapshotJobLabel(uint256 jobId, string memory label) internal {
+        bytes32 labelHash = keccak256(bytes(label));
+        uint256 existing = _jobIdPlusOneByLabelHash[labelHash];
+        if (existing != 0 && existing != jobId + 1) revert InvalidParameters();
+
+        _jobLabelById[jobId] = label;
+        _jobLabelIsSet[jobId] = true;
+        _jobIdPlusOneByLabelHash[labelHash] = jobId + 1;
     }
 
     function _tryRootOwner() internal view returns (bool ok, address ownerAddress) {
