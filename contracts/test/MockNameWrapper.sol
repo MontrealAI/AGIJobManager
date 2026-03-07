@@ -12,6 +12,16 @@ contract MockNameWrapper {
     bytes32 public lastLabelhash;
     uint32 public lastChildFuses;
     uint64 public lastChildExpiry;
+    uint256 public setResolverCalls;
+    bytes32 public lastResolverNode;
+    address public lastResolver;
+    uint256 public setSubnodeOwnerCalls;
+    bytes32 public lastSetSubnodeOwnerParent;
+    string public lastSetSubnodeOwnerLabel;
+    address public lastSetSubnodeOwnerOwner;
+    uint32 public lastSetSubnodeOwnerFuses;
+    uint64 public lastSetSubnodeOwnerExpiry;
+    address public ensRegistry;
     bool public revertGetApproved;
 
     function setOwner(uint256 id, address owner) external {
@@ -43,6 +53,10 @@ contract MockNameWrapper {
         revertGetApproved = value;
     }
 
+    function setENSRegistry(address ensRegistryAddress) external {
+        ensRegistry = ensRegistryAddress;
+    }
+
     function isWrapped(bytes32 node) external view returns (bool) {
         return wrapped[node];
     }
@@ -59,6 +73,35 @@ contract MockNameWrapper {
         lastLabelhash = labelhash;
         lastChildFuses = fuses;
         lastChildExpiry = expiry;
+    }
+
+    function setResolver(bytes32 node, address resolver) external {
+        setResolverCalls += 1;
+        lastResolverNode = node;
+        lastResolver = resolver;
+    }
+
+    function setSubnodeOwner(
+        bytes32 parentNode,
+        string calldata label,
+        address ownerAddr,
+        uint32 fuses,
+        uint64 expiry
+    ) external returns (bytes32) {
+        bytes32 subnode = keccak256(abi.encodePacked(parentNode, keccak256(bytes(label))));
+        owners[uint256(subnode)] = ownerAddr;
+        wrapped[subnode] = true;
+        setSubnodeOwnerCalls += 1;
+        lastSetSubnodeOwnerParent = parentNode;
+        lastSetSubnodeOwnerLabel = label;
+        lastSetSubnodeOwnerOwner = ownerAddr;
+        lastSetSubnodeOwnerFuses = fuses;
+        lastSetSubnodeOwnerExpiry = expiry;
+        if (ensRegistry != address(0)) {
+            (bool ok, ) = ensRegistry.call(abi.encodeWithSignature("setOwner(bytes32,address)", subnode, address(this)));
+            ok;
+        }
+        return subnode;
     }
 
     function setSubnodeRecord(
