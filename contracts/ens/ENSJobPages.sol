@@ -97,6 +97,13 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     event ENSHookBestEffortFailure(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed operation);
     event ConfigurationLocked(address indexed locker);
     event JobLabelPrefixUpdated(string oldPrefix, string newPrefix);
+    event LegacyJobPageMigrated(
+        uint256 indexed jobId,
+        bytes32 indexed node,
+        string label,
+        bool adopted,
+        bool created
+    );
 
     IENSRegistry public ens;
     INameWrapper public nameWrapper;
@@ -225,6 +232,10 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         return string(abi.encodePacked(_resolvedJobLabel(jobId), ".", jobsRootName));
     }
 
+    function jobLabelSnapshot(uint256 jobId) external view returns (bool isSet, string memory label) {
+        return (_jobLabelIsSet[jobId], _jobLabelById[jobId]);
+    }
+
     function jobEnsURI(uint256 jobId) external view returns (string memory) {
         string memory ensName = jobEnsName(jobId);
         if (bytes(ensName).length == 0) return "";
@@ -239,6 +250,73 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
     function createJobPage(uint256 jobId, address employer, string memory specURI) public onlyOwner {
         _createJobPage(jobId, employer, specURI);
+    }
+
+    function migrateLegacyWrappedJobPage(uint256 jobId, string calldata exactLabel)
+        external
+        onlyOwner
+        returns (bytes32 node)
+    {
+        _requireConfigured();
+        if (jobManager == address(0)) revert ENSNotConfigured();
+
+        _importExactJobLabel(jobId, exactLabel);
+        string memory label = _jobLabelById[jobId];
+
+        string memory specURI = IAGIJobManagerView(jobManager).getJobSpecURI(jobId);
+        (address employer, address assignedAgent, bool allowAuth) = _jobAuthStateForMigration(jobId);
+        if (employer == address(0)) revert InvalidParameters();
+        string memory completionURI = IAGIJobManagerView(jobManager).getJobCompletionURI(jobId);
+
+        bytes32 labelHash = keccak256(bytes(label));
+        node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
+
+        bool adopted;
+        bool created;
+
+        if (_nodeExists(node)) {
+            if (!_nodeManagedBySelf(node)) {
+                if (!_isWrappedRoot()) revert ENSNotAuthorized();
+                _requireWrapperAuthorization();
+                INameWrapperSubnameOwner(address(nameWrapper)).setSubnodeOwner(
+                    jobsRootNode,
+                    label,
+                    address(this),
+                    0,
+                    type(uint64).max
+                );
+
+                node = keccak256(abi.encodePacked(jobsRootNode, keccak256(bytes(label))));
+                if (!_nodeManagedBySelf(node)) revert ENSNotAuthorized();
+                adopted = true;
+            }
+        } else {
+            node = _createSubname(label);
+            emit JobENSPageCreated(jobId, node);
+            created = true;
+        }
+
+        _setResolverBestEffort(HOOK_CREATE, jobId, node, address(publicResolver));
+        _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, employer, allowAuth);
+        _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, assignedAgent, allowAuth);
+        _setTextBestEffort(HOOK_CREATE, jobId, node, "schema", "agijobmanager/v1");
+        _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.spec.public", specURI);
+        _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.completion.public", completionURI);
+
+        emit LegacyJobPageMigrated(jobId, node, label, adopted, created);
+    }
+
+
+    function _jobAuthStateForMigration(uint256 jobId)
+        internal
+        view
+        returns (address employer, address assignedAgent, bool allowAuth)
+    {
+        bool completed;
+        bool disputed;
+        bool expired;
+        (employer, assignedAgent, , , , completed, disputed, expired, ) = IAGIJobManagerView(jobManager).getJobCore(jobId);
+        allowAuth = !(completed || disputed || expired);
     }
 
     function _createJobPage(uint256 jobId, address employer, string memory specURI) internal {
@@ -671,6 +749,41 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         return label;
     }
 
+    function _isValidExactJobLabelForJob(uint256 jobId, string memory label) internal pure returns (bool) {
+        bytes memory raw = bytes(label);
+        uint256 len = raw.length;
+        if (len == 0 || len > MAX_ENS_LABEL_LENGTH) return false;
+        if (raw[0] == bytes1("-")) return false;
+
+        bytes memory idRaw = bytes(jobId.toString());
+        uint256 idLen = idRaw.length;
+        if (idLen == 0 || idLen > len) return false;
+
+        for (uint256 i = 0; i < len; i++) {
+            bytes1 ch = raw[i];
+            bool isDigit = ch >= bytes1("0") && ch <= bytes1("9");
+            bool isLower = ch >= bytes1("a") && ch <= bytes1("z");
+            bool isHyphen = ch == bytes1("-");
+            if (!isDigit && !isLower && !isHyphen) return false;
+        }
+
+        uint256 suffixStart = len - idLen;
+        for (uint256 i = 0; i < idLen; i++) {
+            if (raw[suffixStart + i] != idRaw[i]) return false;
+        }
+        if (suffixStart > 0) {
+            bytes1 prior = raw[suffixStart - 1];
+            if (prior >= bytes1("0") && prior <= bytes1("9")) return false;
+        }
+
+        bytes memory prefixRaw = new bytes(suffixStart);
+        for (uint256 i = 0; i < suffixStart; i++) {
+            prefixRaw[i] = raw[i];
+        }
+
+        return _isValidJobLabelPrefix(string(prefixRaw));
+    }
+
     function _resolvedJobLabel(uint256 jobId) internal view returns (string memory) {
         if (_jobLabelIsSet[jobId]) {
             return _jobLabelById[jobId];
@@ -696,6 +809,19 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         _jobLabelById[jobId] = label;
         _jobLabelIsSet[jobId] = true;
         _jobIdPlusOneByLabelHash[labelHash] = jobId + 1;
+    }
+
+    function _importExactJobLabel(uint256 jobId, string memory label) internal {
+        if (!_isValidExactJobLabelForJob(jobId, label)) revert InvalidParameters();
+
+        if (_jobLabelIsSet[jobId]) {
+            if (keccak256(bytes(_jobLabelById[jobId])) != keccak256(bytes(label))) {
+                revert InvalidParameters();
+            }
+            return;
+        }
+
+        _snapshotJobLabel(jobId, label);
     }
 
     function _tryRootOwner() internal view returns (bool ok, address ownerAddress) {
