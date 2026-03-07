@@ -540,7 +540,7 @@ contract("ENSJobPages helper", (accounts) => {
       { from: owner }
     );
 
-    for (const invalid of ["", "-job", "Job", "job.", "job_", "a".repeat(33)]) {
+    for (const invalid of ["", "-job", "Job", "job.", "job_", "agijob1", "a".repeat(33)]) {
       await expectRevert.unspecified(helper.setJobLabelPrefix(invalid, { from: owner }));
     }
 
@@ -616,7 +616,7 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await ens.owner(originalNode), helper.address, "missing original node should be recreated");
   });
 
-  it("rejects label collisions after prefix changes so two jobs cannot share one ENS node", async () => {
+  it("rejects prefixes that end in a digit to keep label boundaries unambiguous", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
     const helper = await ENSJobPages.new(
@@ -630,41 +630,72 @@ contract("ENSJobPages helper", (accounts) => {
 
     await ens.setOwner(rootNode, helper.address, { from: owner });
     await helper.createJobPage(12, employer, "ipfs://spec12", { from: owner });
-
-    await helper.setJobLabelPrefix("agijob1", { from: owner });
-    await expectRevert.unspecified(helper.createJobPage(2, employer, "ipfs://spec2", { from: owner }));
-
+    await expectRevert.unspecified(helper.setJobLabelPrefix("agijob1", { from: owner }));
     assert.equal(await helper.jobEnsLabel(12), "agijob12", "job 12 label remains canonical");
-    await expectRevert.unspecified(helper.jobEnsLabel(2));
-    await expectRevert.unspecified(helper.jobEnsName(2));
-    await expectRevert.unspecified(helper.jobEnsURI(2));
+    assert.equal(await helper.jobEnsLabel(2), "agijob2", "default prefix remains active for future jobs");
     assert.equal(await resolver.text(subnode(rootNode, "agijob12"), "agijobs.spec.public"), "ipfs://spec12");
   });
 
-  it("blocks write hooks for unsnapshotted jobs whose preview collides with another job snapshot", async () => {
+  it("preserves auth for disputed-but-unresolved jobs during legacy migration", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await MockAGIJobManagerView.new({ from: owner });
+    const helper = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNode, rootName, { from: owner });
+
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(manager.address, { from: owner });
+
+    const jobId = 21;
+    await manager.setJob(jobId, employer, agent, "ipfs://legacy-spec-21", { from: owner });
+    await manager.setJobTerminalState(jobId, false, true, false, { from: owner });
+
+    const node = subnode(rootNode, "job-21");
+    await helper.migrateLegacyWrappedJobPage(jobId, "job-21", { from: owner });
+
+    assert.equal(await resolver.isAuthorised(node, employer), true, "employer should remain authorised for unresolved disputes");
+    assert.equal(await resolver.isAuthorised(node, agent), true, "agent should remain authorised for unresolved disputes");
+  });
+
+  it("keeps expired jobs revoked during migration while restoring completion text", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await MockAGIJobManagerView.new({ from: owner });
     const helper = await ENSJobPages.new(
       ens.address,
-      "0x0000000000000000000000000000000000000000",
+      wrapper.address,
       resolver.address,
       rootNode,
       rootName,
       { from: owner }
     );
 
-    await ens.setOwner(rootNode, helper.address, { from: owner });
-    await helper.createJobPage(12, employer, "ipfs://spec12", { from: owner });
-    await helper.setJobLabelPrefix("agijob1", { from: owner });
+    await wrapper.setENSRegistry(ens.address, { from: owner });
+    await ens.setOwner(rootNode, wrapper.address, { from: owner });
+    await wrapper.setOwner(web3.utils.toBN(rootNode), helper.address, { from: owner });
+    await helper.setJobManager(manager.address, { from: owner });
 
-    const sharedNode = subnode(rootNode, "agijob12");
-    await expectRevert.unspecified(helper.onAgentAssigned(2, agent, { from: owner }));
-    await expectRevert.unspecified(helper.onCompletionRequested(2, "ipfs://completion", { from: owner }));
-    await expectRevert.unspecified(helper.revokePermissions(2, employer, agent, { from: owner }));
-    await expectRevert.unspecified(helper.lockJobENS(2, employer, agent, false, { from: owner }));
+    const jobId = 111;
+    await manager.setJob(jobId, employer, agent, "ipfs://legacy-spec-111", { from: owner });
+    await manager.setCompletionURI(jobId, "ipfs://legacy-completion-111", { from: owner });
+    await manager.setJobTerminalState(jobId, false, false, true, { from: owner });
 
-    assert.equal(await resolver.isAuthorised(sharedNode, agent), false, "colliding write hooks must not mutate existing node auth");
-    assert.equal(await resolver.text(sharedNode, "agijobs.completion.public"), "", "colliding write hooks must not mutate existing node text");
+    const node = subnode(rootNode, "job-111");
+    await resolver.setAuthorisation(node, employer, true, { from: owner });
+    await resolver.setAuthorisation(node, agent, true, { from: owner });
+
+    await helper.migrateLegacyWrappedJobPage(jobId, "job-111", { from: owner });
+
+    assert.equal(await resolver.isAuthorised(node, employer), false, "employer should stay revoked for expired jobs");
+    assert.equal(await resolver.isAuthorised(node, agent), false, "agent should stay revoked for expired jobs");
+    assert.equal(
+      await resolver.text(node, "agijobs.completion.public"),
+      "ipfs://legacy-completion-111",
+      "completion URI should still be restored"
+    );
   });
 
 

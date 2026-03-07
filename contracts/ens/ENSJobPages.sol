@@ -146,6 +146,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
     /// @notice Updates the default prefix used for unsnapshotted/future job ENS labels.
     /// @dev Existing jobs keep their snapshotted label and are unaffected by later prefix changes.
+    /// @dev The prefix is concatenated directly with decimal(jobId), so the final prefix character must be non-numeric.
     function setJobLabelPrefix(string calldata newPrefix) external onlyOwner {
         if (configLocked) revert ConfigLocked();
         if (!_isValidJobLabelPrefix(newPrefix)) revert InvalidParameters();
@@ -313,10 +314,10 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         returns (address employer, address assignedAgent, bool allowAuth)
     {
         bool completed;
-        bool disputed;
         bool expired;
-        (employer, assignedAgent, , , , completed, disputed, expired, ) = IAGIJobManagerView(jobManager).getJobCore(jobId);
-        allowAuth = !(completed || disputed || expired);
+        (employer, assignedAgent, , , , completed, , expired, ) = IAGIJobManagerView(jobManager).getJobCore(jobId);
+        // Preserve auth for unresolved disputes. Revoke only for terminal completion/expiry states.
+        allowAuth = !(completed || expired);
     }
 
     function _createJobPage(uint256 jobId, address employer, string memory specURI) internal {
@@ -731,6 +732,8 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         uint256 len = raw.length;
         if (len == 0 || len > MAX_JOB_LABEL_PREFIX_LENGTH) return false;
         if (raw[0] == bytes1("-")) return false;
+        // Prefix is followed immediately by decimal(jobId), so the suffix boundary must be non-numeric.
+        if (raw[len - 1] >= bytes1("0") && raw[len - 1] <= bytes1("9")) return false;
 
         for (uint256 i = 0; i < len; i++) {
             bytes1 ch = raw[i];
