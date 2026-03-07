@@ -1,7 +1,7 @@
 # ENS Reference (Generated)
 
 Generated at (UTC): 1970-01-01T00:00:00Z
-Source fingerprint: 7ef983e70b894259
+Source fingerprint: eb129d03a41dc0a5
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -21,14 +21,15 @@ Source files used:
 - `NameWrapper public nameWrapper;` ([contracts/AGIJobManager.sol#L401](../../contracts/AGIJobManager.sol#L401))
 - `address public ensJobPages;` ([contracts/AGIJobManager.sol#L402](../../contracts/AGIJobManager.sol#L402))
 - `bool public lockIdentityConfig;` ([contracts/AGIJobManager.sol#L405](../../contracts/AGIJobManager.sol#L405))
-- `IENSRegistry public ens;` ([contracts/ens/ENSJobPages.sol#L98](../../contracts/ens/ENSJobPages.sol#L98))
-- `INameWrapper public nameWrapper;` ([contracts/ens/ENSJobPages.sol#L99](../../contracts/ens/ENSJobPages.sol#L99))
-- `IPublicResolver public publicResolver;` ([contracts/ens/ENSJobPages.sol#L100](../../contracts/ens/ENSJobPages.sol#L100))
-- `bytes32 public jobsRootNode;` ([contracts/ens/ENSJobPages.sol#L101](../../contracts/ens/ENSJobPages.sol#L101))
-- `string public jobsRootName;` ([contracts/ens/ENSJobPages.sol#L102](../../contracts/ens/ENSJobPages.sol#L102))
-- `address public jobManager;` ([contracts/ens/ENSJobPages.sol#L103](../../contracts/ens/ENSJobPages.sol#L103))
-- `bool public useEnsJobTokenURI;` ([contracts/ens/ENSJobPages.sol#L104](../../contracts/ens/ENSJobPages.sol#L104))
-- `bool public configLocked;` ([contracts/ens/ENSJobPages.sol#L105](../../contracts/ens/ENSJobPages.sol#L105))
+- `IENSRegistry public ens;` ([contracts/ens/ENSJobPages.sol#L101](../../contracts/ens/ENSJobPages.sol#L101))
+- `INameWrapper public nameWrapper;` ([contracts/ens/ENSJobPages.sol#L102](../../contracts/ens/ENSJobPages.sol#L102))
+- `IPublicResolver public publicResolver;` ([contracts/ens/ENSJobPages.sol#L103](../../contracts/ens/ENSJobPages.sol#L103))
+- `bytes32 public jobsRootNode;` ([contracts/ens/ENSJobPages.sol#L104](../../contracts/ens/ENSJobPages.sol#L104))
+- `string public jobsRootName;` ([contracts/ens/ENSJobPages.sol#L105](../../contracts/ens/ENSJobPages.sol#L105))
+- `address public jobManager;` ([contracts/ens/ENSJobPages.sol#L106](../../contracts/ens/ENSJobPages.sol#L106))
+- `bool public useEnsJobTokenURI;` ([contracts/ens/ENSJobPages.sol#L107](../../contracts/ens/ENSJobPages.sol#L107))
+- `bool public configLocked;` ([contracts/ens/ENSJobPages.sol#L108](../../contracts/ens/ENSJobPages.sol#L108))
+- `string public jobLabelPrefix;` ([contracts/ens/ENSJobPages.sol#L110](../../contracts/ens/ENSJobPages.sol#L110))
 
 ## Config and locks
 
@@ -46,13 +47,13 @@ Source files used:
 - `function lockJobENS(uint256 jobId, bool burnFuses) external` ([contracts/AGIJobManager.sol#L1293](../../contracts/AGIJobManager.sol#L1293))
 - `function tokenURI(uint256 tokenId) public view override returns (string memory)` ([contracts/AGIJobManager.sol#L1529](../../contracts/AGIJobManager.sol#L1529))
 - `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` ([contracts/AGIJobManager.sol#L1534](../../contracts/AGIJobManager.sol#L1534))
-- `function setENSRegistry(address ensAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L130](../../contracts/ens/ENSJobPages.sol#L130))
-- `function setNameWrapper(address nameWrapperAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L138](../../contracts/ens/ENSJobPages.sol#L138))
-- `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L154](../../contracts/ens/ENSJobPages.sol#L154))
-- `function lockConfiguration() external onlyOwner` ([contracts/ens/ENSJobPages.sol#L180](../../contracts/ens/ENSJobPages.sol#L180))
-- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` ([contracts/ens/ENSJobPages.sol#L239](../../contracts/ens/ENSJobPages.sol#L239))
-- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` ([contracts/ens/ENSJobPages.sol#L388](../../contracts/ens/ENSJobPages.sol#L388))
-- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` ([contracts/ens/ENSJobPages.sol#L393](../../contracts/ens/ENSJobPages.sol#L393))
+- `function setENSRegistry(address ensAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L151](../../contracts/ens/ENSJobPages.sol#L151))
+- `function setNameWrapper(address nameWrapperAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L159](../../contracts/ens/ENSJobPages.sol#L159))
+- `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L175](../../contracts/ens/ENSJobPages.sol#L175))
+- `function lockConfiguration() external onlyOwner` ([contracts/ens/ENSJobPages.sol#L201](../../contracts/ens/ENSJobPages.sol#L201))
+- `function handleHook(uint8 hook, uint256 jobId) external onlyJobManager` ([contracts/ens/ENSJobPages.sol#L273](../../contracts/ens/ENSJobPages.sol#L273))
+- `function lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) public onlyOwner` ([contracts/ens/ENSJobPages.sol#L422](../../contracts/ens/ENSJobPages.sol#L422))
+- `function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal` ([contracts/ens/ENSJobPages.sol#L427](../../contracts/ens/ENSJobPages.sol#L427))
 - `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L32](../../contracts/utils/ENSOwnership.sol#L32))
 - `function verifyENSOwnership(` ([contracts/utils/ENSOwnership.sol#L48](../../contracts/utils/ENSOwnership.sol#L48))
 - `function verifyMerkleOwnership(address claimant, bytes32[] calldata proof, bytes32 merkleRoot)` ([contracts/utils/ENSOwnership.sol#L61](../../contracts/utils/ENSOwnership.sol#L61))
@@ -71,14 +72,14 @@ Source files used:
 - `error ENSNotConfigured();` ([contracts/ens/ENSJobPages.sol#L49](../../contracts/ens/ENSJobPages.sol#L49))
 - `error ENSNotAuthorized();` ([contracts/ens/ENSJobPages.sol#L50](../../contracts/ens/ENSJobPages.sol#L50))
 - `error InvalidParameters();` ([contracts/ens/ENSJobPages.sol#L51](../../contracts/ens/ENSJobPages.sol#L51))
-- `event JobENSPageCreated(uint256 indexed jobId, bytes32 indexed node);` ([contracts/ens/ENSJobPages.sol#L79](../../contracts/ens/ENSJobPages.sol#L79))
-- `event JobENSPermissionsUpdated(uint256 indexed jobId, address indexed account, bool isAuthorised);` ([contracts/ens/ENSJobPages.sol#L80](../../contracts/ens/ENSJobPages.sol#L80))
-- `event JobENSLocked(uint256 indexed jobId, bytes32 indexed node, bool fusesBurned);` ([contracts/ens/ENSJobPages.sol#L81](../../contracts/ens/ENSJobPages.sol#L81))
-- `event ENSRegistryUpdated(address indexed oldEns, address indexed newEns);` ([contracts/ens/ENSJobPages.sol#L82](../../contracts/ens/ENSJobPages.sol#L82))
-- `event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);` ([contracts/ens/ENSJobPages.sol#L92](../../contracts/ens/ENSJobPages.sol#L92))
-- `event ENSHookProcessed(uint8 indexed hook, uint256 indexed jobId, bool configured, bool success);` ([contracts/ens/ENSJobPages.sol#L93](../../contracts/ens/ENSJobPages.sol#L93))
-- `event ENSHookSkipped(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed reason);` ([contracts/ens/ENSJobPages.sol#L94](../../contracts/ens/ENSJobPages.sol#L94))
-- `event ENSHookBestEffortFailure(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed operation);` ([contracts/ens/ENSJobPages.sol#L95](../../contracts/ens/ENSJobPages.sol#L95))
+- `event JobENSPageCreated(uint256 indexed jobId, bytes32 indexed node);` ([contracts/ens/ENSJobPages.sol#L81](../../contracts/ens/ENSJobPages.sol#L81))
+- `event JobENSPermissionsUpdated(uint256 indexed jobId, address indexed account, bool isAuthorised);` ([contracts/ens/ENSJobPages.sol#L82](../../contracts/ens/ENSJobPages.sol#L82))
+- `event JobENSLocked(uint256 indexed jobId, bytes32 indexed node, bool fusesBurned);` ([contracts/ens/ENSJobPages.sol#L83](../../contracts/ens/ENSJobPages.sol#L83))
+- `event ENSRegistryUpdated(address indexed oldEns, address indexed newEns);` ([contracts/ens/ENSJobPages.sol#L84](../../contracts/ens/ENSJobPages.sol#L84))
+- `event UseEnsJobTokenURIUpdated(bool oldValue, bool newValue);` ([contracts/ens/ENSJobPages.sol#L94](../../contracts/ens/ENSJobPages.sol#L94))
+- `event ENSHookProcessed(uint8 indexed hook, uint256 indexed jobId, bool configured, bool success);` ([contracts/ens/ENSJobPages.sol#L95](../../contracts/ens/ENSJobPages.sol#L95))
+- `event ENSHookSkipped(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed reason);` ([contracts/ens/ENSJobPages.sol#L96](../../contracts/ens/ENSJobPages.sol#L96))
+- `event ENSHookBestEffortFailure(uint8 indexed hook, uint256 indexed jobId, bytes32 indexed operation);` ([contracts/ens/ENSJobPages.sol#L97](../../contracts/ens/ENSJobPages.sol#L97))
 
 ## Notes / caveats from code comments
 
@@ -90,4 +91,6 @@ Source files used:
 - @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. ([contracts/AGIJobManager.sol#L1292](../../contracts/AGIJobManager.sol#L1292))
 - @dev as long as lockedEscrow/locked*Bonds are fully covered. ([contracts/AGIJobManager.sol#L1339](../../contracts/AGIJobManager.sol#L1339))
 - @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. ([contracts/AGIJobManager.sol#L1564](../../contracts/AGIJobManager.sol#L1564))
+- @notice Prefix used when constructing ENS job labels as prefix + decimal(jobId). ([contracts/ens/ENSJobPages.sol#L109](../../contracts/ens/ENSJobPages.sol#L109))
+- @notice Updates the default prefix used for unsnapshotted/future job ENS labels. ([contracts/ens/ENSJobPages.sol#L140](../../contracts/ens/ENSJobPages.sol#L140))
 

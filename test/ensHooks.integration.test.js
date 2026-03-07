@@ -53,7 +53,7 @@ contract('ensHooks.integration', (accounts) => {
     await wrapper.setENSRegistry(ens.address);
     await seedSettledJob({ manager, token, payout, proof: mkTree([agent]).proofFor(agent) });
 
-    const wrappedNode = subnode(rootNodeHash, 'job-0');
+    const wrappedNode = subnode(rootNodeHash, 'agijob0');
     assert.equal((await wrapper.setResolverCalls()).toString(), '1', 'wrapped CREATE hook should set resolver via NameWrapper');
     assert.equal(await wrapper.lastResolverNode(), wrappedNode, 'wrapper resolver target should be wrapped subnode');
 
@@ -64,7 +64,7 @@ contract('ensHooks.integration', (accounts) => {
     });
     assert.equal((await wrapper.setChildFusesCalls()).toString(), '1');
     assert.equal((await wrapper.lastParentNode()), rootNodeHash);
-    assert.equal((await wrapper.lastLabelhash()), web3.utils.keccak256('job-0'));
+    assert.equal((await wrapper.lastLabelhash()), web3.utils.keccak256('agijob0'));
   });
 
   it('supports unwrapped-root mode across CREATE/ASSIGN/COMPLETION/REVOKE/LOCK hooks', async () => {
@@ -96,7 +96,7 @@ contract('ensHooks.integration', (accounts) => {
     await manager.setCompletionReviewPeriod(1, { from: owner });
     await manager.createJob('QmSpec', payout, 5000, 'd', { from: employer });
 
-    const node = subnode(rootNodeHash, 'job-0');
+    const node = subnode(rootNodeHash, 'agijob0');
     const employerAuthAfterCreate = await resolver.isAuthorised(node, employer);
     const agentAuthAfterCreate = await resolver.isAuthorised(node, agent);
     assert.equal(employerAuthAfterCreate, true, 'CREATE hook must authorise employer');
