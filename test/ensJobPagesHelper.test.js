@@ -803,9 +803,12 @@ contract("ENSJobPages helper", (accounts) => {
     await helper.setJobManager(manager.address, { from: owner });
     await manager.setJob(5, employer, agent, "ipfs://legacy-spec-5", { from: owner });
 
-    for (const bad of ["", "Job-5", "job-", "job-6", "-job5", "job.5"]) {
+    for (const bad of ["", "Job-5", "job-", "job-6", "-job5", "job.5", "job-15", "job-05"]) {
       await expectRevert.unspecified(helper.migrateLegacyWrappedJobPage(5, bad, { from: owner }));
     }
+
+    await manager.setJob(0, employer, agent, "ipfs://legacy-spec-0", { from: owner });
+    await expectRevert.unspecified(helper.migrateLegacyWrappedJobPage(0, "job-10", { from: owner }));
   });
 
   it("rejects oversized root names to keep ENS URIs bounded", async () => {

@@ -771,6 +771,10 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         for (uint256 i = 0; i < idLen; i++) {
             if (raw[suffixStart + i] != idRaw[i]) return false;
         }
+        if (suffixStart > 0) {
+            bytes1 prior = raw[suffixStart - 1];
+            if (prior >= bytes1("0") && prior <= bytes1("9")) return false;
+        }
 
         bytes memory prefixRaw = new bytes(suffixStart);
         for (uint256 i = 0; i < suffixStart; i++) {
