@@ -134,7 +134,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     const decoded = web3.eth.abi.decodeParameter("string", raw);
     assert.equal(offsetWord.toString(), "32", "ABI offset should be 32 for single string return");
     assert.equal(stringLenWord.toString(), decoded.length.toString(), "ABI string length word should match");
-    assert.equal(decoded, "ens://job-123.jobs.agi.eth");
+    assert.equal(decoded, "ens://agijob123.jobs.agi.eth");
     assert.isAtMost(decoded.length, 1024, "ENS URI should stay within AGIJobManager bounds");
   });
 
@@ -278,7 +278,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await manager.finalizeJob(0, { from: employer });
 
     const uri = await manager.tokenURI(0);
-    assert.equal(uri, `ens://job-0.${rootName}`);
+    assert.equal(uri, `ens://agijob0.${rootName}`);
     assert.isAtMost(uri.length, 1024, "ENS URI should stay within AGIJobManager bounds");
   });
 
