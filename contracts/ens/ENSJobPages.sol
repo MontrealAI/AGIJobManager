@@ -394,7 +394,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     function _onAgentAssigned(uint256 jobId, address agent) internal {
         if (agent == address(0)) revert InvalidParameters();
         _requireConfigured();
-        bytes32 node = jobEnsNode(jobId);
+        bytes32 node = _jobEnsNodeForWrite(jobId);
         _setAuthorisationBestEffort(HOOK_ASSIGN, jobId, node, agent, true);
     }
 
@@ -404,7 +404,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
     function _onCompletionRequested(uint256 jobId, string memory completionURI) internal {
         _requireConfigured();
-        bytes32 node = jobEnsNode(jobId);
+        bytes32 node = _jobEnsNodeForWrite(jobId);
         _setTextBestEffort(HOOK_COMPLETION, jobId, node, "agijobs.completion.public", completionURI);
     }
 
@@ -414,7 +414,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
     function _revokePermissions(uint256 jobId, address employer, address agent) internal {
         _requireConfigured();
-        bytes32 node = jobEnsNode(jobId);
+        bytes32 node = _jobEnsNodeForWrite(jobId);
         _setAuthorisationBestEffort(HOOK_REVOKE, jobId, node, employer, false);
         _setAuthorisationBestEffort(HOOK_REVOKE, jobId, node, agent, false);
     }
@@ -426,7 +426,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     /* solhint-disable no-empty-blocks */
     function _lockJobENS(uint256 jobId, address employer, address agent, bool burnFuses) internal {
         _requireConfigured();
-        bytes32 node = jobEnsNode(jobId);
+        bytes32 node = _jobEnsNodeForWrite(jobId);
         uint8 hook = burnFuses ? HOOK_LOCK_BURN : HOOK_LOCK;
 
         _setAuthorisationBestEffort(hook, jobId, node, employer, false);
@@ -676,6 +676,18 @@ contract ENSJobPages is Ownable, ERC1155Holder {
             return _jobLabelById[jobId];
         }
         return _buildJobLabel(jobLabelPrefix, jobId);
+    }
+
+    function _jobEnsNodeForWrite(uint256 jobId) internal view returns (bytes32) {
+        string memory label = _resolvedJobLabel(jobId);
+
+        if (!_jobLabelIsSet[jobId]) {
+            bytes32 labelHash = keccak256(bytes(label));
+            uint256 existing = _jobIdPlusOneByLabelHash[labelHash];
+            if (existing != 0 && existing != jobId + 1) revert InvalidParameters();
+        }
+
+        return keccak256(abi.encodePacked(jobsRootNode, keccak256(bytes(label))));
     }
 
     function _snapshotJobLabel(uint256 jobId, string memory label) internal {

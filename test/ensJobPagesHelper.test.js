@@ -638,6 +638,33 @@ contract("ENSJobPages helper", (accounts) => {
     assert.equal(await resolver.text(subnode(rootNode, "agijob12"), "agijobs.spec.public"), "ipfs://spec12");
   });
 
+  it("blocks write hooks on unsnapshotted colliding preview labels", async () => {
+    const ens = await MockENSRegistry.new({ from: owner });
+    const resolver = await MockPublicResolver.new({ from: owner });
+    const helper = await ENSJobPages.new(
+      ens.address,
+      "0x0000000000000000000000000000000000000000",
+      resolver.address,
+      rootNode,
+      rootName,
+      { from: owner }
+    );
+
+    await ens.setOwner(rootNode, helper.address, { from: owner });
+    await helper.createJobPage(12, employer, "ipfs://spec12", { from: owner });
+    const canonicalNode = subnode(rootNode, "agijob12");
+
+    await helper.setJobLabelPrefix("agijob1", { from: owner });
+
+    await expectRevert.unspecified(helper.onAgentAssigned(2, agent, { from: owner }));
+    await expectRevert.unspecified(helper.onCompletionRequested(2, "ipfs://c2", { from: owner }));
+    await expectRevert.unspecified(helper.revokePermissions(2, employer, agent, { from: owner }));
+    await expectRevert.unspecified(helper.lockJobENS(2, employer, agent, true, { from: owner }));
+
+    assert.equal(await resolver.isAuthorised(canonicalNode, agent), false, "colliding hook calls must not mutate job 12 auth");
+    assert.equal(await resolver.text(canonicalNode, "agijobs.completion.public"), "", "colliding hook calls must not mutate job 12 text");
+  });
+
   it("rejects oversized root names to keep ENS URIs bounded", async () => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
