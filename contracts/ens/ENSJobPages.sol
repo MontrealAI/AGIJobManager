@@ -264,8 +264,9 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         string memory label = _jobLabelById[jobId];
 
         string memory specURI = IAGIJobManagerView(jobManager).getJobSpecURI(jobId);
-        (address employer, , , , , , , , ) = IAGIJobManagerView(jobManager).getJobCore(jobId);
+        (address employer, address assignedAgent, , , , , , , ) = IAGIJobManagerView(jobManager).getJobCore(jobId);
         if (employer == address(0)) revert InvalidParameters();
+        string memory completionURI = IAGIJobManagerView(jobManager).getJobCompletionURI(jobId);
 
         bytes32 labelHash = keccak256(bytes(label));
         node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
@@ -297,8 +298,10 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
         _setResolverBestEffort(HOOK_CREATE, jobId, node, address(publicResolver));
         _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, employer, true);
+        _setAuthorisationBestEffort(HOOK_CREATE, jobId, node, assignedAgent, true);
         _setTextBestEffort(HOOK_CREATE, jobId, node, "schema", "agijobmanager/v1");
         _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.spec.public", specURI);
+        _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.completion.public", completionURI);
 
         emit LegacyJobPageMigrated(jobId, node, label, adopted, created);
     }
