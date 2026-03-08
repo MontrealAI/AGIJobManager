@@ -7,7 +7,9 @@
     "clean": "hardhat clean",
     "compile": "hardhat compile",
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
-    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet"
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
+    "deploy:ens-job-pages:mainnet": "hardhat run scripts/deploy-ens-job-pages.js --network mainnet",
+    "deploy:ens-job-pages:sepolia": "hardhat run scripts/deploy-ens-job-pages.js --network sepolia"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.1.0",
