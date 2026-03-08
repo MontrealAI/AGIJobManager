@@ -254,6 +254,8 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         _createJobPage(jobId, employer, specURI);
     }
 
+    /// @notice Imports/adopts legacy wrapped job pages by exact historical label for a given jobId.
+    /// @dev Needed when older jobs predate label snapshotting but still require post-create ENS writes.
     function migrateLegacyWrappedJobPage(uint256 jobId, string calldata exactLabel)
         external
         onlyOwner
@@ -350,6 +352,8 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         _setTextBestEffort(HOOK_CREATE, jobId, node, "agijobs.spec.public", specURI);
     }
 
+    /// @notice Processes AGIJobManager ENS hooks with best-effort external writes.
+    /// @dev Hook failures are intentionally isolated so AGIJobManager core lifecycle is not reverted by ENS side effects.
     function handleHook(uint8 hook, uint256 jobId) external onlyJobManager {
         if (!_isFullyConfigured()) {
             emit ENSHookSkipped(hook, jobId, "NOT_CONFIGURED");
@@ -637,6 +641,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         return ok && ownerAddress == address(nameWrapper);
     }
 
+    /// @dev Wrapped-root operations require ENSJobPages to be root owner, per-token approved, or approved-for-all in NameWrapper.
     function _requireWrapperAuthorization() internal view {
         uint256 rootTokenId = uint256(jobsRootNode);
 

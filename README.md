@@ -12,7 +12,78 @@
 > This is an intended-usage policy and is **not fully enforced on-chain**.
 > See [`docs/POLICY/AI_AGENTS_ONLY.md`](docs/POLICY/AI_AGENTS_ONLY.md), [`docs/LEGAL/TERMS_AND_CONDITIONS.md`](docs/LEGAL/TERMS_AND_CONDITIONS.md), and the authoritative contract source [`contracts/AGIJobManager.sol`](contracts/AGIJobManager.sol).
 
-AGIJobManager is a single Solidity contract for escrowed AGI work agreements.
+AGIJobManager is the core escrow and settlement contract for AGI work agreements. The repository also contains ENS companion contracts, deployment tooling, audits/tests, and an operator UI.
+
+## What this repository contains
+
+### Core on-chain components
+
+- `contracts/AGIJobManager.sol`: core protocol lifecycle, escrow accounting, settlement, roles, and governance controls.
+- `contracts/ens/ENSJobPages.sol`: ENS companion contract that creates and updates per-job ENS pages via hooks.
+- `contracts/ens/IENSJobPages.sol`: AGIJobManager-facing interface for ENS hook integration.
+
+### Deployment/tooling components
+
+- `hardhat/`: **official/recommended deployment + verification flow** (mainnet/sepolia).
+- `migrations/`: Truffle migrations (**legacy-supported** deployment path).
+- `scripts/`: operator utility scripts (docs checks, parameter validation, etherscan helpers, snapshots).
+- `test/` and `forge-test/`: regression, integration, invariant, and security tests.
+
+### Canonical operator docs
+
+- **Hardhat operator guide (recommended):** [`hardhat/README.md`](hardhat/README.md)
+- **Deployment docs index:** [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md)
+- **ENSJobPages mainnet replacement runbook:** [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
+- **ENS naming behavior reference:** [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_JOB_PAGES_OVERVIEW.md)
+- **Troubleshooting:** [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
+
+## Deployment paths (recommended vs legacy)
+
+- **Official / recommended path:** Hardhat (`hardhat/scripts/deploy.js` for AGIJobManager, `hardhat/scripts/deploy-ens-job-pages.js` for ENSJobPages utility deployment).
+- **Legacy-supported path:** Truffle migrations in `migrations/` and legacy deployment docs in `docs/DEPLOYMENT/*TRUFFLE*`.
+
+Why this matters: both paths exist in this repo; Hardhat is the maintained operator path for new production deployments, while Truffle remains available for historical reproducibility and legacy operations.
+
+## ENS integration at a glance
+
+For job ENS names:
+
+- `ENSJobPages` determines the **label prefix** (default `agijob`).
+- `ENSJobPages` determines the **root suffix** via `jobsRootName` (default deployment examples use `alpha.jobs.agi.eth`).
+- `AGIJobManager` provides the **numeric `jobId`**.
+
+Default resulting names are therefore of the form:
+
+- `agijob0.alpha.jobs.agi.eth`
+- `agijob1.alpha.jobs.agi.eth`
+
+Changing `jobLabelPrefix` only affects jobs whose label has not been snapshotted yet (future/unsnapshotted jobs). Existing snapshotted jobs keep their original label.
+
+## Quick start: local checks
+
+```bash
+npm ci
+npm run lint
+npm run build
+npm run size
+npm test
+npm run docs:check
+npm run docs:ens:check
+```
+
+`npm test` runs Truffle compile/tests, Node regression tests, and contract-size checks.
+
+## Hardhat quick entry
+
+```bash
+cd hardhat
+npm ci
+cp .env.example .env
+npx hardhat compile
+DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
+```
+
+For full operator flow (dry-run, deploy, verification, ENSJobPages replacement, post-deploy wiring), follow [`hardhat/README.md`](hardhat/README.md).
 
 ## Policy and legal authority
 
@@ -36,126 +107,6 @@ AGIJobManager is a single Solidity contract for escrowed AGI work agreements.
 - Contract verification guide: [`docs/VERIFY_ON_ETHERSCAN.md`](docs/VERIFY_ON_ETHERSCAN.md)
 - FAQ: [`docs/FAQ.md`](docs/FAQ.md)
 
-## Roles (plain language)
-
-- **Employer**: funds jobs and can cancel before assignment, then finalize or dispute after completion request.
-- **Agent**: applies for jobs through allowlist/Merkle/ENS authorization and submits completion.
-- **Validator**: approves/disapproves completion during the review period.
-- **Moderator**: resolves disputes using `resolveDisputeWithCode`.
-- **Owner**: manages risk/configuration, allowlists, pause controls, moderators, ENS integration, and constrained treasury withdrawals.
-
-## Trust model (explicit)
-
-This is an operator-managed protocol, not trustless governance.
-
-Owner powers include:
-- pause/unpause intake (`pause`, `unpause`, `pauseAll`, `unpauseAll`),
-- pause/unpause settlement (`setSettlementPaused`),
-- parameter changes (quorum, review windows, bond/slash params, max payout, etc.),
-- authorization governance (Merkle roots, additional agent/validator lists, blacklists),
-- moderator membership (`addModerator`, `removeModerator`),
-- identity configuration (`updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `setEnsJobPages`, `updateAGITokenAddress`) until locked,
-- non-escrow AGI withdrawals only (`withdrawAGI` bounded by `withdrawableAGI`).
-
-Users should verify owner actions on-chain and assume privileged operations are possible unless identity configuration has been locked.
-
-## One-screen Etherscan quickstart
-
-1. AGI token contract: `approve(AGIJobManager, amountInBaseUnits)`.
-2. Employer: `createJob(jobSpecURI, payout, duration, details)`.
-3. Agent: `applyForJob(jobId, subdomain, proof)`.
-4. Agent: `requestJobCompletion(jobId, jobCompletionURI)`.
-5. Validators: `validateJob` or `disapproveJob` during review.
-6. Employer: `finalizeJob(jobId)` when windows permit.
-7. If needed: `disputeJob(jobId)` then moderator calls `resolveDisputeWithCode(jobId, code, reason)`.
-
-## Glossary (Etherscan terms)
-
-- **jobId**: numeric identifier for a job.
-- **payout**: escrow amount in token base units.
-- **duration**: seconds from assignment until expiry threshold.
-- **review window**: `completionReviewPeriod` after completion request.
-- **quorum**: minimum validator participation for non-dispute settle path.
-- **bond**: agent/validator/dispute stake amount.
-- **slashing**: bond haircut for incorrect validator side.
-
-
-## Sovereign Ops Console UI
-
-A security-minded, read-only-first operations console is available under `ui/` with deterministic demo fixtures.
-
-Run locally in demo mode:
-
-```bash
-cd ui
-NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
-```
-
-UI docs:
-- [`docs/ui/README.md`](docs/ui/README.md)
-- [`docs/ui/OVERVIEW.md`](docs/ui/OVERVIEW.md)
-- [`docs/ui/ARCHITECTURE.md`](docs/ui/ARCHITECTURE.md)
-- [`docs/ui/OPS_RUNBOOK.md`](docs/ui/OPS_RUNBOOK.md)
-- [`docs/ui/SECURITY_MODEL.md`](docs/ui/SECURITY_MODEL.md)
-- [`docs/ui/DEPLOYMENT_MAINNET.md`](docs/ui/DEPLOYMENT_MAINNET.md)
-- [`docs/ui/IPFS_DEPLOYMENT.md`](docs/ui/IPFS_DEPLOYMENT.md)
-- [`docs/ui/GITHUB_PAGES.md`](docs/ui/GITHUB_PAGES.md)
-
-Text-only visual references:
-- ![Sovereign palette](docs/ui/assets/palette.svg)
-- ![Sovereign UI wireframe](docs/ui/assets/ui-wireframe.svg)
-- ![Simulation-first transaction pipeline](docs/ui/assets/tx-pipeline.svg)
-
-UI CI workflow: [`UI CI`](.github/workflows/ui.yml)
-GitHub Pages autopublish workflow: [`UI Pages Deploy`](.github/workflows/pages.yml) -> `https://montrealai.github.io/AGIJobManager/` and `https://montrealai.github.io/AGIJobManager/agijobmanager.html`.
-
-Build single-file IPFS artifact:
-```bash
-cd ui
-npm run build:ipfs
-npm run verify:singlefile
-```
-
-Immediate single-file artifact (IPFS-ready):
-- `agijobmanager.html` (repo root)
-
-Refresh committed artifact (use Node `20.19.6` from `ui/.nvmrc` for reproducible output):
-```bash
-cd ui
-nvm use || true
-npm run build:ipfs
-npm run verify:committed-html
-```
-
-## Local setup and CI-equivalent entrypoints
-
-```bash
-npm ci
-npm run lint
-npm run build
-npm run size
-npm test
-npm run docs:check
-npm run docs:ens:check
-```
-
-`npm test` runs Truffle compile/tests, Node regression tests, and contract-size checks.
-
-## Offline helper tooling (Etherscan-first)
-
-- Merkle root + per-address proofs (paste-ready bytes32[]):
-  ```bash
-  node scripts/merkle/export_merkle_proofs.js --input scripts/merkle/sample_addresses.json --output proofs.json
-  ```
-- Etherscan input preparation and unit conversion:
-  ```bash
-  node scripts/etherscan/prepare_inputs.js --action create-job --payout 1200 --duration 7d --jobSpecURI ipfs://bafy.../job.json --details "Translate legal packet EN->ES"
-  ```
-- Offline state advisor from pasted Read Contract outputs:
-  ```bash
-  node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
-  ```
-
 [ci-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/ci.yml?branch=main&style=flat-square&label=CI
 [ci-url]: https://github.com/MontrealAI/AGIJobManager/actions/workflows/ci.yml
 [security-verification-badge]: https://img.shields.io/github/actions/workflow/status/MontrealAI/AGIJobManager/security-verification.yml?branch=main&style=flat-square&label=Security%20Verification
@@ -166,7 +117,6 @@ npm run docs:ens:check
 [security-url]: ./SECURITY.md
 [license-badge]: https://img.shields.io/github/license/MontrealAI/AGIJobManager?style=flat-square
 [license-url]: ./LICENSE
-
 
 ## Documentation
 

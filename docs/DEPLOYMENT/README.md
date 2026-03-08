@@ -2,7 +2,8 @@
 
 ## 1) Hardhat (recommended / official)
 
-- [Hardhat Deployment & Verification README](../../hardhat/README.md)
+- [Hardhat Deployment & Verification Guide](../../hardhat/README.md)
+- [ENSJobPages Mainnet Replacement Runbook](./ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - [Ethereum Mainnet Beta Deployment Record](./MAINNET_BETA_DEPLOYMENT_RECORD.md)
 - [Official Mainnet Deployment Record](./MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md)
 
@@ -13,3 +14,8 @@
 - [Truffle Production Deploy](./TRUFFLE_PRODUCTION_DEPLOY.md)
 
 > Truffle migrations remain supported for backward compatibility and historical reproducibility.
+
+## 3) ENS operations references
+
+- [ENS Job Pages Behavior Overview](../ENS/ENS_JOB_PAGES_OVERVIEW.md)
+- [Troubleshooting](../TROUBLESHOOTING.md)
