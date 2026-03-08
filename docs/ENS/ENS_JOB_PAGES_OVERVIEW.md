@@ -58,7 +58,7 @@ What this migration is for:
 - adopts existing wrapped child if parent-controllable, or creates when needed,
 - applies resolver/auth/text updates on a best-effort basis.
 
-If a wrapped child was previously emancipated (no longer parent-controllable), adoption/permission actions may be limited; snapshotting still preserves deterministic label lookup for future best-effort writes.
+If a wrapped child is no longer parent-controllable (for example, emancipated), migration adoption can fail and revert (`ENSNotAuthorized`) rather than partially succeeding.
 
 ---
 
