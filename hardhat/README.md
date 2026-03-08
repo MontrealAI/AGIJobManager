@@ -4,6 +4,17 @@ This `hardhat/` project is the official deployment and verification workflow for
 
 > Truffle remains supported as a legacy path. Hardhat is the recommended production path for new deployments and replacements.
 
+## In one minute (mainnet-safe path)
+
+1. Run compile + `DRY_RUN=1` first.
+2. Deploy `AGIJobManager` and/or new `ENSJobPages` with mainnet confirmation gate.
+3. Complete manual wiring in strict order:
+   - wrapped-root owner: `NameWrapper.setApprovalForAll(newEnsJobPages, true)`
+   - AGIJobManager owner: `AGIJobManager.setEnsJobPages(newEnsJobPages)`
+4. Validate on Etherscan (`status=1`, `ensJobPages` pointer, hook events).
+5. Migrate legacy jobs if historical labels must be retained.
+6. Only then consider irreversible `lockConfiguration()`.
+
 ---
 
 ## 1) What this workflow does and does not do
@@ -244,6 +255,11 @@ Troubleshooting reference:
 - `../docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`
 
 ---
+
+### Do not do this by accident
+- Do **not** set `LOCK_CONFIG=1` during initial cutover unless full validation is complete.
+- Do **not** assume scripts perform NameWrapper approval or AGIJobManager `setEnsJobPages(...)`.
+- Do **not** expect prefix changes to rename snapshotted legacy labels.
 
 ## 11) Operator checklists
 

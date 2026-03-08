@@ -8,6 +8,12 @@ This guide covers common production/operator issues for the current Hardhat + EN
 - Legacy jobs failing post-create writes: migrate exact labels with `migrateLegacyWrappedJobPage`.
 - Settlement succeeded but ENS update missing: expected under best-effort ENS semantics; inspect ENS hook events.
 
+## Safety preflight before any cutover tx
+- [ ] Confirm which account is **AGIJobManager owner**.
+- [ ] Confirm which account is **wrapped-root owner**.
+- [ ] Confirm manual steps are scheduled (NameWrapper approval + `setEnsJobPages`).
+- [ ] Confirm legacy jobs likely to need migration are listed.
+
 ---
 
 ## 1) Hardhat compile import errors

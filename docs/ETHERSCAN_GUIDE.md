@@ -13,6 +13,18 @@ Use this guide if you only have:
 
 ---
 
+## ENS replacement (owner-focused) quick path
+
+Use this order on mainnet to avoid partial cutovers:
+1. Wrapped-root owner on NameWrapper: `setApprovalForAll(newEnsJobPages, true)`.
+2. AGIJobManager owner on AGIJobManager: `setEnsJobPages(newEnsJobPages)`.
+3. ENSJobPages owner (if needed): `migrateLegacyWrappedJobPage(jobId, exactLabel)` for affected legacy jobs.
+4. Verify `status=1` receipts and read fields before considering lock calls.
+
+Do not call irreversible lock functions until these checks are complete.
+
+---
+
 ## A) Before you start
 
 ### Verification matters

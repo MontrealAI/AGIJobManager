@@ -13,6 +13,19 @@ Canonical cutover flow:
 
 ---
 
+## 1.1) Who does which action
+
+| Action | Automated by script? | Required caller |
+| --- | --- | --- |
+| Deploy new `ENSJobPages` | Yes | deployer key |
+| `setJobManager(JOB_MANAGER)` on new ENSJobPages | Yes | deployer key |
+| NameWrapper `setApprovalForAll(newEnsJobPages, true)` | No (manual) | wrapped-root owner |
+| `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No (manual) | AGIJobManager owner |
+| `migrateLegacyWrappedJobPage(jobId, exactLabel)` | No (manual, if needed) | ENSJobPages owner |
+| `lockConfiguration()` | Optional/manual | ENSJobPages owner |
+
+---
+
 ## 1) Purpose and scope
 
 `ENSJobPages` manages ENS job page naming and metadata writes for AGIJobManager hooks.
@@ -130,6 +143,8 @@ Why this matters:
 
 Expected result after wiring:
 - New hook calls route to the new ENSJobPages contract.
+- On AGIJobManager `Read Contract`, `ensJobPages` equals `newEnsJobPages`.
+- On NameWrapper `Read Contract`, `isApprovedForAll(rootOwner, newEnsJobPages)` is true (or token-level approval exists).
 
 ---
 
@@ -205,3 +220,10 @@ Event checks:
 - Do not change prefix expecting old snapshotted labels to rename automatically.
 - Do not lock configuration before validating future-job hooks and legacy-job migration needs.
 - Do not treat ENS hook best-effort failures as proof that settlement failed; check AGIJobManager settlement events separately.
+
+
+## 13.1) Migration-specific mistakes
+
+- Calling `setEnsJobPages(new)` before wrapped-root approval is in place, then misreading hook failures as total protocol failure.
+- Locking ENSJobPages configuration before future-job hook validation and legacy migration checks.
+- Using approximate labels for migration; `exactLabel` must match historical on-chain label.

@@ -9,6 +9,13 @@ If you only read one thing right now:
 - **Replace ENSJobPages safely:** [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - **Owner using Etherscan only:** [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 
+## Start here if you are...
+
+- **A new operator deploying now:** start with [../hardhat/README.md](../hardhat/README.md), then [DEPLOYMENT/README.md](./DEPLOYMENT/README.md).
+- **An ENSJobPages replacement operator:** use [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) as the single canonical cutover flow.
+- **A non-technical owner using Etherscan:** start with [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md), then [OWNER_RUNBOOK.md](./OWNER_RUNBOOK.md).
+- **Troubleshooting ENS hook failures:** jump to [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
+
 ## Audience map
 
 | Audience | Start here | Then read |
@@ -23,7 +30,7 @@ If you only read one thing right now:
 
 - Deploy AGIJobManager (Hardhat, recommended): [../hardhat/README.md](../hardhat/README.md)
 - Deploy/replace ENSJobPages (additive flow): [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
-- Verify deployment on Etherscan: [ETHERSCAN_GUIDE.md](./ETHERSCAN_GUIDE.md)
+- Verify deployment on Etherscan (and check post-cutover events): [ETHERSCAN_GUIDE.md](./ETHERSCAN_GUIDE.md)
 - Migrate legacy ENS job pages: [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md#8-legacy-migration-for-old-wrapped-job-pages](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md#8-legacy-migration-for-old-wrapped-job-pages)
 - Perform mainnet owner cutover: [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 - Troubleshoot ENS hook failures: [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
