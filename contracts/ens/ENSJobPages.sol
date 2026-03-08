@@ -259,6 +259,8 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         onlyOwner
         returns (bytes32 node)
     {
+        // Legacy migration path: import the historically exact label so post-create writes can resolve
+        // the correct node even when current prefix settings differ from historical naming.
         _requireConfigured();
         if (jobManager == address(0)) revert ENSNotConfigured();
 
@@ -351,6 +353,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     }
 
     function handleHook(uint8 hook, uint256 jobId) external onlyJobManager {
+        // Hooks are operationally best-effort and must never become a hard dependency for settlement.
         if (!_isFullyConfigured()) {
             emit ENSHookSkipped(hook, jobId, "NOT_CONFIGURED");
             emit ENSHookProcessed(hook, jobId, false, false);
@@ -638,6 +641,8 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     }
 
     function _requireWrapperAuthorization() internal view {
+        // Wrapped-root operations require ENSJobPages to be owner, token-approved, or operator-approved
+        // for the wrapped root token ID (uint256(jobsRootNode)).
         uint256 rootTokenId = uint256(jobsRootNode);
 
         (bool ok, address wrappedOwner) = _staticcallAddress(

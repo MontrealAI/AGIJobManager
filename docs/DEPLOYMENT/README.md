@@ -2,7 +2,8 @@
 
 ## 1) Hardhat (recommended / official)
 
-- [Hardhat Deployment & Verification README](../../hardhat/README.md)
+- [Hardhat Operator Guide](../../hardhat/README.md)
+- [ENSJobPages Mainnet Replacement Runbook](./ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - [Ethereum Mainnet Beta Deployment Record](./MAINNET_BETA_DEPLOYMENT_RECORD.md)
 - [Official Mainnet Deployment Record](./MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md)
 
