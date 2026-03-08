@@ -1,0 +1,178 @@
+# ENSJobPages Mainnet Replacement Runbook
+
+This runbook is for replacing the `ENSJobPages` contract used by AGIJobManager on Ethereum mainnet, without changing AGIJobManager protocol behavior.
+
+---
+
+## 1) Purpose and scope
+
+`ENSJobPages` manages ENS job page naming and metadata writes for AGIJobManager hooks.
+
+It determines:
+- job label prefix (`jobLabelPrefix`, default `agijob`),
+- job root suffix (`jobsRootName`, default in deploy script: `alpha.jobs.agi.eth`),
+- and stores snapshotted exact labels for each job.
+
+`AGIJobManager` contributes the numeric `jobId`; `ENSJobPages` builds names from that `jobId`.
+
+---
+
+## 2) Why replacement might be needed
+
+Typical replacement/migration drivers from current contract behavior:
+- You need newer `ENSJobPages` behavior for label snapshotting and legacy migration support.
+- Old jobs may not have label snapshots in the new contract, causing post-create writes to revert with `JobLabelNotSnapshotted` until migrated.
+- Wrapped-root operations require explicit NameWrapper approval to the active `ENSJobPages`; missing approval blocks wrapped-root writes.
+
+---
+
+## 3) Current default naming behavior
+
+With script defaults + contract defaults:
+- `jobLabelPrefix = "agijob"`
+- `jobsRootName = "alpha.jobs.agi.eth"`
+
+So names are:
+- `agijob0.alpha.jobs.agi.eth`
+- `agijob1.alpha.jobs.agi.eth`
+- ...
+
+Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged.
+
+---
+
+## 4) Mainnet-sensitive warnings
+
+- Mainnet deploy scripts require: `DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT`.
+- `lockConfiguration()` on ENSJobPages is irreversible.
+- Wiring the wrong ENSJobPages address into AGIJobManager changes hook target for all future calls.
+- If NameWrapper approval is missing on wrapped root, create/adopt/write paths can fail best-effort.
+
+---
+
+## 5) Preconditions
+
+- You control deployer key and owner key(s) needed for manual wiring.
+- `hardhat/.env` is configured.
+- You know the intended AGIJobManager address for `JOB_MANAGER`.
+- You have identified whether your jobs root is wrapped or unwrapped.
+
+---
+
+## 6) Exact deployment flow (mainnet)
+
+```bash
+cd hardhat
+npm ci
+cp .env.example .env
+npm run compile
+
+DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:ens-job-pages:mainnet
+
+DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 NEW_OWNER=0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201 npm run deploy:ens-job-pages:mainnet
+```
+
+Optional overrides (via `.env`):
+- `JOB_MANAGER`
+- `JOBS_ROOT_NAME`
+- `JOBS_ROOT_NODE` (must match `namehash(JOBS_ROOT_NAME)`)
+- `ENS_REGISTRY`
+- `NAME_WRAPPER`
+- `PUBLIC_RESOLVER`
+- `LOCK_CONFIG=1`
+
+Expected result:
+- New ENSJobPages address deployed.
+- `setJobManager(JOB_MANAGER)` already executed by script.
+- Optional verification submitted.
+
+---
+
+## 7) Required manual post-deploy wiring on mainnet
+
+### Step 1 — NameWrapper approval (wrapped root)
+Caller: wrapped-root owner account.
+
+On NameWrapper:
+- `setApprovalForAll(newEnsJobPages, true)`
+
+Why this matters:
+- ENSJobPages checks wrapper authorization before wrapped-root create/adopt operations.
+
+### Step 2 — Point AGIJobManager to the new ENSJobPages
+Caller: AGIJobManager owner account.
+
+On AGIJobManager:
+- `setEnsJobPages(newEnsJobPages)`
+
+Why this matters:
+- AGIJobManager calls ENS hooks on the configured `ensJobPages` target only.
+
+Expected result after wiring:
+- New hook calls route to the new ENSJobPages contract.
+
+---
+
+## 8) Legacy migration for old wrapped job pages
+
+If a legacy job page exists under a historical exact label, migrate by importing the exact label:
+
+- `migrateLegacyWrappedJobPage(jobId, exactLabel)` on ENSJobPages owner account.
+
+Use this when post-create write hooks fail because label was never snapshotted in the current ENSJobPages.
+
+Important:
+- `exactLabel` must match the real label for that `jobId` (including numeric suffix).
+- Migration snapshots/adopts/creates as needed, then best-effort updates resolver/auth/text.
+
+Expected result:
+- `LegacyJobPageMigrated(jobId, node, label, adopted, created)` emitted.
+- Subsequent write hooks for that job can resolve node from snapshotted label.
+
+---
+
+## 9) Etherscan confirmation checks
+
+On new ENSJobPages (`Read Contract`):
+- `jobManager` equals target AGIJobManager.
+- `jobsRootName` and `jobsRootNode` are expected values.
+- `jobLabelPrefix` expected default or configured value.
+
+On AGIJobManager (`Read Contract`):
+- `ensJobPages` equals new ENSJobPages address.
+
+On NameWrapper (`Read Contract`):
+- `isApprovedForAll(rootOwner, newEnsJobPages)` is `true` (or token-level approval exists).
+
+Event checks:
+- ENSJobPages deployment tx + ownership transfer (if used).
+- AGIJobManager `EnsJobPagesUpdated(old,new)` event.
+
+---
+
+## 10) Rollback / recovery considerations
+
+- If AGIJobManager was wired to the wrong ENSJobPages, owner can call `setEnsJobPages(previousAddress)` (if identity config still configurable).
+- If NameWrapper approval is incorrect, correct with `setApprovalForAll(correctEnsJobPages, true)`.
+- If legacy writes fail for specific jobs, run `migrateLegacyWrappedJobPage(jobId, exactLabel)` per affected job.
+- If verification API fails, use deployment artifact `solc-input.json` for manual standard-json verify.
+
+---
+
+## 11) Operator “done successfully” checklist
+
+- [ ] Dry run reviewed and approved.
+- [ ] ENSJobPages deployed and (if required) verified.
+- [ ] NameWrapper approval granted for wrapped root.
+- [ ] AGIJobManager `setEnsJobPages(new)` executed.
+- [ ] Etherscan read checks pass on all key fields.
+- [ ] At least one new job hook observed successfully.
+- [ ] Legacy jobs requiring migration identified and migrated.
+
+## 12) Before locking ENSJobPages configuration
+
+- [ ] All addresses (`ens`, `nameWrapper`, `publicResolver`, `jobManager`) are final.
+- [ ] `jobsRootName`/`jobsRootNode` are final and validated.
+- [ ] Wrapped-root approval already works.
+- [ ] Migration backlog is complete or explicitly tracked.
+- [ ] You acknowledge `lockConfiguration()` is irreversible.
