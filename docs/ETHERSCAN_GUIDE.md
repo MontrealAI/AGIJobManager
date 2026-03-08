@@ -4,6 +4,14 @@ Use this guide if you only have:
 - a browser wallet (MetaMask, Rabby, etc.)
 - Etherscan verified contract pages
 
+
+## Start here if you are an owner/operator
+
+Read these in order for mainnet changes:
+1. `docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`
+2. `docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md` (if replacing ENSJobPages)
+3. This Etherscan guide for exact Read/Write flows and checks
+
 ## Choose your role
 - [Employer](#employer-flow)
 - [Agent](#agent-flow)

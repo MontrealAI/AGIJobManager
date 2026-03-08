@@ -85,6 +85,13 @@ flowchart TD
 - These are separate transactions; do not assume either one happened automatically.
 - If legacy post-create ENS writes fail, evaluate `migrateLegacyWrappedJobPage(jobId, exactLabel)` on ENSJobPages.
 
+
+### Expected result after ENS cutover
+- `ensJobPages()` points to the new ENSJobPages address.
+- NameWrapper approval is active for that exact ENSJobPages address.
+- Future jobs follow `<prefix><jobId>.<jobsRootName>` with current prefix defaults unless explicitly changed.
+- Legacy jobs with historical labels are migrated if post-create writes fail.
+
 ## ENS naming and legacy-job note
 - Canonical ENS format is `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
 - Future/unsnapshotted jobs follow current prefix.

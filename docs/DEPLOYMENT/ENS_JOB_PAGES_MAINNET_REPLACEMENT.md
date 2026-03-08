@@ -148,6 +148,11 @@ Expected result after wiring:
 
 ---
 
+
+### Expected result for Step 1 + Step 2
+- NameWrapper approval tx has `status=1` and `isApprovedForAll(rootOwner, newEnsJobPages)` returns `true` (or token-level approval exists).
+- AGIJobManager wiring tx has `status=1`, emits `EnsJobPagesUpdated(old,new)`, and `ensJobPages()` reads back `newEnsJobPages`.
+
 ## 8) Legacy migration for old wrapped job pages
 
 If a legacy job page exists under a historical exact label, migrate by importing the exact label:
