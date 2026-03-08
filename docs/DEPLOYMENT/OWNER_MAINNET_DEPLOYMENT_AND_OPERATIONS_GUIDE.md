@@ -29,6 +29,15 @@ Expected safe state before locking:
 - At least one future hook path succeeds.
 - Legacy migration status is complete or explicitly tracked.
 
+
+## 0.2) Role split and naming (must-know)
+
+- **AGIJobManager owner:** calls `setEnsJobPages(...)`, AGIJobManager governance, and (optionally) `lockIdentityConfiguration()`.
+- **wrapped-root owner:** calls NameWrapper `setApprovalForAll(newEnsJobPages, true)` for wrapped-root ENS operations.
+- **Canonical ENS name format:** `<prefix><jobId>.<jobsRootName>`.
+- **Current defaults:** prefix `agijob`, so names look like `agijob0.alpha.jobs.agi.eth`.
+- **Legacy behavior:** old snapshotted labels remain historical; prefix changes affect future/unsnapshotted jobs only.
+
 ## 1) Purpose and Audience
 
 This guide is for non-technical contract owners and owner-approved operators.

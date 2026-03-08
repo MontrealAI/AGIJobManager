@@ -21,7 +21,15 @@ Use this order on mainnet to avoid partial cutovers:
 3. ENSJobPages owner (if needed): `migrateLegacyWrappedJobPage(jobId, exactLabel)` for affected legacy jobs.
 4. Verify `status=1` receipts and read fields before considering lock calls.
 
+Expected outcome: new job hooks resolve through the new ENSJobPages; legacy jobs retain historical labels unless migrated.
+
 Do not call irreversible lock functions until these checks are complete.
+
+### What is safe from Etherscan vs what still needs deploy scripts
+
+- **Safe and expected on Etherscan:** owner/admin writes (`setEnsJobPages`, pause controls, allowlists, roots), NameWrapper approval by wrapped-root owner, read-based verification.
+- **Do with scripts first:** contract deployment and source verification workflow (Hardhat recommended).
+- **Never assume automated:** NameWrapper approval and `setEnsJobPages` are always explicit manual transactions.
 
 ---
 
