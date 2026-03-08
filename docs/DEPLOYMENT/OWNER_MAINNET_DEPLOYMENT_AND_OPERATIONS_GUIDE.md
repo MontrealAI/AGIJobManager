@@ -1,5 +1,18 @@
 # Owner Mainnet Deployment & Operations Guide
 
+## 0) Start here first (non-technical owner)
+
+If you are pressed for time, follow this safe order:
+1. Deploy with the official Hardhat path (`hardhat/README.md`).
+2. For ENSJobPages replacement, complete manual wiring in order: wrapper approval -> `setEnsJobPages(newAddress)`.
+3. Validate on Etherscan read pages and events.
+4. Migrate legacy jobs where historical labels must be retained.
+5. Only then call irreversible lock functions.
+
+Irreversible owner actions:
+- `lockIdentityConfiguration()` (AGIJobManager)
+- `lockConfiguration()` (ENSJobPages)
+
 ## 1) Purpose and Audience
 
 This guide is for non-technical contract owners and owner-approved operators.

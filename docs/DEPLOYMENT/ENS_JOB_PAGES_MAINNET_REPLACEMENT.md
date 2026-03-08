@@ -2,6 +2,15 @@
 
 This runbook is for replacing the `ENSJobPages` contract used by AGIJobManager on Ethereum mainnet, without changing AGIJobManager protocol behavior.
 
+## In one minute
+
+Canonical cutover flow:
+1. Deploy new `ENSJobPages` (Hardhat script).
+2. Wrapped-root owner manually calls `NameWrapper.setApprovalForAll(newEnsJobPages, true)`.
+3. AGIJobManager owner manually calls `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
+4. Migrate legacy jobs with historical labels if needed (`migrateLegacyWrappedJobPage`).
+5. Lock configuration only after validation is complete.
+
 ---
 
 ## 1) Purpose and scope
@@ -27,6 +36,12 @@ Typical replacement/migration drivers from current contract behavior:
 ---
 
 ## 3) Current default naming behavior
+
+## 3.1) Canonical naming and responsibility split
+- Name format: `<prefix><jobId>.<jobsRootName>`.
+- `AGIJobManager` decides numeric `jobId` and protocol settlement state.
+- `ENSJobPages` decides `prefix`, `jobsRootName`, label snapshotting, and ENS write behavior.
+
 
 With script defaults + contract defaults:
 - `jobLabelPrefix = "agijob"`
@@ -89,6 +104,11 @@ Expected result:
 ---
 
 ## 7) Required manual post-deploy wiring on mainnet
+
+What is automated vs manual:
+- Automated by deploy script: deploy contract, set `jobManager`, optional ownership transfer/verification.
+- Manual on mainnet: NameWrapper approval + AGIJobManager `setEnsJobPages`.
+
 
 ### Step 1 — NameWrapper approval (wrapped root)
 Caller: wrapped-root owner account.
@@ -176,3 +196,12 @@ Event checks:
 - [ ] Wrapped-root approval already works.
 - [ ] Migration backlog is complete or explicitly tracked.
 - [ ] You acknowledge `lockConfiguration()` is irreversible.
+
+
+## 13) Common mistakes (do not do this)
+
+- Do not assume deploy scripts perform NameWrapper approval.
+- Do not forget `setEnsJobPages(newEnsJobPages)` on AGIJobManager owner account.
+- Do not change prefix expecting old snapshotted labels to rename automatically.
+- Do not lock configuration before validating future-job hooks and legacy-job migration needs.
+- Do not treat ENS hook best-effort failures as proof that settlement failed; check AGIJobManager settlement events separately.

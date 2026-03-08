@@ -2,6 +2,12 @@
 
 This document describes ENS naming and hook behavior from the current on-chain contracts (`AGIJobManager` + `ENSJobPages`).
 
+## In one minute
+- Canonical name shape is `<prefix><jobId>.<jobsRootName>`.
+- Defaults are `prefix=agijob`, `jobsRootName=alpha.jobs.agi.eth`, so names look like `agijob0.alpha.jobs.agi.eth`.
+- Settlement and dispute progression live in `AGIJobManager`; ENS writes in `ENSJobPages` are best-effort and non-fatal to settlement.
+- Legacy jobs may need explicit snapshot migration to avoid `JobLabelNotSnapshotted` write failures.
+
 ---
 
 ## 1) Name composition: who controls what
@@ -47,9 +53,25 @@ If a job predates the current ENSJobPages deployment and label was never importe
 Recovery path:
 - Owner calls `migrateLegacyWrappedJobPage(jobId, exactLabel)`.
 
-This imports/snapshots exact label, adopts or creates subname as needed, and applies best-effort resolver/auth/text updates.
+What this migration is for:
+- snapshots the exact historical label for deterministic node resolution,
+- adopts existing wrapped child if parent-controllable, or creates when needed,
+- applies resolver/auth/text updates on a best-effort basis.
+
+If a wrapped child was previously emancipated (no longer parent-controllable), adoption/permission actions may be limited; snapshotting still preserves deterministic label lookup for future best-effort writes.
 
 ---
+
+## 3.1) Why old create hooks failed in some deployments
+
+In replacement scenarios, historical jobs can fail post-create ENS writes because the new ENSJobPages does not automatically know old exact labels.
+
+Typical root causes:
+- missing label snapshot for a legacy job in the new contract,
+- missing wrapped-root approval for the active ENSJobPages operator,
+- AGIJobManager still pointing to an old ENSJobPages address.
+
+The replacement flow addresses this by cutover wiring plus per-job legacy migration when needed.
 
 ## 4) Wrapped root vs unwrapped root behavior
 

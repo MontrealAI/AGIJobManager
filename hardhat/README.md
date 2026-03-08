@@ -178,6 +178,27 @@ You may override with `.env` values if needed (`JOB_MANAGER`, `JOBS_ROOT_NAME`, 
 
 ---
 
+## ENSJobPages replacement: safe cutover checklist
+
+Before broadcasting on mainnet:
+- [ ] Confirm `JOB_MANAGER` is the intended AGIJobManager contract.
+- [ ] Confirm `JOBS_ROOT_NAME` and `JOBS_ROOT_NODE` match.
+- [ ] Dry-run output reviewed (`DRY_RUN=1`).
+- [ ] Wrapped-root owner is ready to execute NameWrapper approval.
+- [ ] AGIJobManager owner is ready to execute `setEnsJobPages(newAddress)`.
+- [ ] Legacy jobs requiring migration are identified.
+
+After deploy and wiring:
+- [ ] `isApprovedForAll(rootOwner, newEnsJobPages) == true` (or token-level equivalent).
+- [ ] `AGIJobManager.ensJobPages() == newEnsJobPages`.
+- [ ] At least one new/future job hook succeeds.
+- [ ] Legacy jobs that need historical labels are migrated.
+- [ ] Only then evaluate `lockConfiguration()`.
+
+> 🚫 Do not lock ENSJobPages configuration during initial cutover unless all validation checks are already complete.
+
+---
+
 ## 9) Required manual post-deploy wiring (mainnet)
 
 These actions are intentionally manual and not automated by scripts.
@@ -198,7 +219,18 @@ Expected result:
 Detailed replacement + migration runbook:
 - `../docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`
 
+### Expected successful output signals
+- Deploy script prints deployed ENSJobPages address and owner/job manager summary.
+- Mainnet wiring tx receipts are `status = 1` on Etherscan.
+- AGIJobManager emits `EnsJobPagesUpdated(old,new)` for cutover transaction.
+- ENS hook events on the new ENSJobPages show `ENSHookProcessed` for future jobs.
+
 ---
+
+### Rollback / recovery (operational)
+- Wrong ENSJobPages in AGIJobManager: call `setEnsJobPages(previousAddress)` from AGIJobManager owner (if identity config is still unlocked).
+- Missing/incorrect wrapper approval: wrapped-root owner calls `setApprovalForAll(correctEnsJobPages, true)`.
+- Legacy job still failing ENS writes: migrate with `migrateLegacyWrappedJobPage(jobId, exactLabel)`.
 
 ## 10) Etherscan verification and manual fallback
 

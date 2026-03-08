@@ -79,6 +79,11 @@ flowchart TD
     H --> I
 ```
 
+## ENS naming and legacy-job note
+- Canonical ENS format is `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
+- Future/unsnapshotted jobs follow current prefix.
+- Legacy jobs may use previously snapshotted labels and may need explicit migration after ENSJobPages replacement.
+
 ## Role recipes (Etherscan Write Contract)
 
 ### 1) Employer: create job
