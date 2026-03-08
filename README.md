@@ -10,6 +10,13 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 
 > **Operational policy:** intended for autonomous AI-agent execution with accountable human owner/operator oversight. This is policy intent and is not fully enforced on-chain.
 
+## Start here by role (30-second routing)
+
+- **New operator / deployer:** start with [`hardhat/README.md`](hardhat/README.md) (**official path**) and then the deployment index [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md).
+- **Contract owner (Etherscan-first):** start with [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md), then [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md).
+- **ENSJobPages replacement operator:** use one canonical flow in [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
+- **Troubleshooting during deployment/cutover:** go to [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
+
 ## What this repository contains
 
 ### Core contracts
@@ -52,6 +59,7 @@ Legacy docs:
   - `agijob0.alpha.jobs.agi.eth`
   - `agijob1.alpha.jobs.agi.eth`
 - Prefix updates only affect jobs whose labels are not yet snapshotted.
+- ENS hooks are best-effort and non-fatal to core settlement; protocol settlement can succeed even when ENS writes fail.
 
 See full behavior details: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_JOB_PAGES_OVERVIEW.md)
 
@@ -64,7 +72,16 @@ See full behavior details: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_J
 5. Perform manual post-deploy wiring on mainnet:
    - `NameWrapper.setApprovalForAll(newEnsJobPages, true)` by wrapped-root owner.
    - `AGIJobManager.setEnsJobPages(newEnsJobPages)` by AGIJobManager owner.
-6. Verify results on Etherscan using `Read Contract` + events.
+6. If legacy jobs must retain historical labels, run per-job migration (`migrateLegacyWrappedJobPage(jobId, exactLabel)`).
+7. Verify results on Etherscan using `Read Contract` + events.
+8. Only lock configuration after validation is complete.
+
+### Never-do-this-by-accident checklist
+
+- Do **not** assume scripts perform NameWrapper approval or `setEnsJobPages(...)`; those remain manual.
+- Do **not** call `lockConfiguration()` / `lockIdentityConfiguration()` before deploy, wiring, and migration validation.
+- Do **not** assume changing `jobLabelPrefix` rewrites existing legacy/snapshotted names.
+- Do **not** treat ENS hook failures as settlement failures; check both protocol events and ENS hook events.
 
 Detailed procedures and expected outputs:
 - [`hardhat/README.md`](hardhat/README.md)

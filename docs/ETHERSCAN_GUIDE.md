@@ -231,6 +231,16 @@ Prepare moderator inputs:
 node scripts/etherscan/prepare_inputs.js --action resolve-dispute --jobId 42 --code 1 --reason "EVIDENCE:v1|job:42|code:1|summary:Delivered spec v1|links:ipfs://...|moderator:0x...|ts:1735689600"
 ```
 
+## Operator safety notes for ENSJobPages cutover
+
+- **Scripted/deploy-tool actions:** deploy contracts, run verification attempts, emit deployment artifacts.
+- **Manual Etherscan actions:** NameWrapper `setApprovalForAll(newEnsJobPages, true)` and AGIJobManager `setEnsJobPages(newEnsJobPages)`.
+- **Role split:**
+  - `setApprovalForAll(...)` must be sent by the **wrapped-root owner**.
+  - `setEnsJobPages(...)` must be sent by the **AGIJobManager owner**.
+- **Irreversible actions:** `lockConfiguration()` on ENSJobPages and `lockIdentityConfiguration()` on AGIJobManager.
+- **Do not lock early:** lock only after post-cutover validation and any required legacy migrations.
+
 ## Owner/operator flow
 
 Use with extreme caution:

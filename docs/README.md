@@ -2,6 +2,13 @@
 
 Institutional documentation for operators, integrators, contributors, and auditors.
 
+## Start here in one minute
+
+If you only read one thing right now:
+- **Deploy or operate on mainnet (recommended):** [../hardhat/README.md](../hardhat/README.md)
+- **Replace ENSJobPages safely:** [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
+- **Owner using Etherscan only:** [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
+
 ## Audience map
 
 | Audience | Start here | Then read |
@@ -11,6 +18,16 @@ Institutional documentation for operators, integrators, contributors, and audito
 | Contract owner (non-technical) | [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) | [OWNER_RUNBOOK.md](./OWNER_RUNBOOK.md), [ETHERSCAN_GUIDE.md](./ETHERSCAN_GUIDE.md) |
 | Security reviewer | [SECURITY_MODEL.md](./SECURITY_MODEL.md) | [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md), [REFERENCE/EVENTS_AND_ERRORS.md](./REFERENCE/EVENTS_AND_ERRORS.md) |
 | Integrator | [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md) | [REFERENCE/CONTRACT_INTERFACE.md](./REFERENCE/CONTRACT_INTERFACE.md) |
+
+## Most common operator tasks
+
+- Deploy AGIJobManager (Hardhat, recommended): [../hardhat/README.md](../hardhat/README.md)
+- Deploy/replace ENSJobPages (additive flow): [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
+- Verify deployment on Etherscan: [ETHERSCAN_GUIDE.md](./ETHERSCAN_GUIDE.md)
+- Migrate legacy ENS job pages: [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md#8-legacy-migration-for-old-wrapped-job-pages](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md#8-legacy-migration-for-old-wrapped-job-pages)
+- Perform mainnet owner cutover: [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
+- Troubleshoot ENS hook failures: [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
+- Understand ENS naming behavior: [ENS/ENS_JOB_PAGES_OVERVIEW.md](./ENS/ENS_JOB_PAGES_OVERVIEW.md)
 
 ## Core set
 

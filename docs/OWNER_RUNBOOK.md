@@ -2,6 +2,11 @@
 
 This runbook is optimized for autonomous, checklist-driven operations and Etherscan-first control.
 
+## In one minute (owner/operator)
+- Use Hardhat for deploy/replacement; use Etherscan for owner controls and verification reads.
+- ENSJobPages cutover is additive: deploy new ENSJobPages, grant wrapper approval, set AGIJobManager ENSJobPages pointer, migrate legacy jobs if needed, lock only after validation.
+- Never lock identity/configuration before validating addresses, approvals, and expected ENS hook behavior.
+
 ## 1) Deployment checklist
 
 1. Compile with repository defaults (Truffle + optimizer settings from `truffle-config.js`).
@@ -75,6 +80,11 @@ node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proo
 ```
 
 ## 6) ENS operations
+
+Role split reminder:
+- **wrapped-root owner** executes NameWrapper approvals.
+- **AGIJobManager owner** executes `setEnsJobPages` and AGIJobManager identity controls.
+
 
 - Configure ENS via `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`.
 - Point job pages with `setEnsJobPages`.

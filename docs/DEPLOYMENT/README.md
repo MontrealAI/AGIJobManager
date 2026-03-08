@@ -1,5 +1,10 @@
 # Deployment Documentation Index
 
+## Start here by deployment task
+- Fresh deployment (official path): [../../hardhat/README.md](../../hardhat/README.md)
+- ENSJobPages replacement/cutover: [./ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
+- Owner web-only deployment/operations: [./OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
+
 ## 1) Hardhat (recommended / official)
 
 - [Hardhat Operator Guide](../../hardhat/README.md)

@@ -2,6 +2,12 @@
 
 This guide covers common production/operator issues for the current Hardhat + ENSJobPages workflow.
 
+## Quick triage by symptom
+- New ENSJobPages deployed but no effect: check AGIJobManager `setEnsJobPages(newAddress)` was executed.
+- Wrapped root writes failing: check NameWrapper approval for active ENSJobPages.
+- Legacy jobs failing post-create writes: migrate exact labels with `migrateLegacyWrappedJobPage`.
+- Settlement succeeded but ENS update missing: expected under best-effort ENS semantics; inspect ENS hook events.
+
 ---
 
 ## 1) Hardhat compile import errors
@@ -188,3 +194,21 @@ ENS updates are implemented as best-effort; hook and resolver operations can fai
 - Official Hardhat guide: `../hardhat/README.md`
 - ENS replacement runbook: `DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`
 - ENS behavior overview: `ENS/ENS_JOB_PAGES_OVERVIEW.md`
+
+
+## 11) FAQ-style operator clarifications
+
+### Why did Etherscan show an ENS-path revert but the transaction still succeeded?
+ENS hook operations are designed as best-effort side effects. AGIJobManager can continue core settlement while ENSJobPages emits hook failure/skip events for recoverable ENS issues.
+
+### Why can settlement succeed while ENS fails?
+Protocol escrow settlement is intentionally decoupled from ENS writes so metadata outages do not block payouts/dispute outcomes.
+
+### Why do some jobs use `agijob...` and others `job-...`?
+Legacy jobs may carry previously snapshotted historical labels. Prefix changes only affect unsnapshotted/future jobs in the current ENSJobPages context.
+
+### What should I check before calling `lockConfiguration()`?
+Confirm final addresses, wrapper approvals, AGIJobManager wiring, and any required legacy migrations. Lock only after successful end-to-end validation.
+
+### What should I do if post-create ENS writes fail after cutover?
+Check wrapper approval and AGIJobManager wiring first, then migrate affected legacy jobs with exact historical labels where needed.
