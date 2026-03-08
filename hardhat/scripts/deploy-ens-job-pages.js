@@ -61,11 +61,11 @@ async function main() {
   const confirmations = parseIntEnv("CONFIRMATIONS", 3, 0);
   const verifyDelayMs = parseIntEnv("VERIFY_DELAY_MS", 3500, 0);
 
-  if (network.name === "mainnet") {
+  if (chainId === 1) {
     const confirm = env("DEPLOY_CONFIRM_MAINNET");
     if (confirm !== MAINNET_SAFETY_PHRASE) {
       throw new Error(
-        `Refusing mainnet deploy without DEPLOY_CONFIRM_MAINNET=${MAINNET_SAFETY_PHRASE}`,
+        `Refusing chainId 1 deploy without DEPLOY_CONFIRM_MAINNET=${MAINNET_SAFETY_PHRASE}`,
       );
     }
   }
