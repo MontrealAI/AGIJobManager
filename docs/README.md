@@ -26,6 +26,17 @@ If you only read one thing right now:
 | Security reviewer | [SECURITY_MODEL.md](./SECURITY_MODEL.md) | [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md), [REFERENCE/EVENTS_AND_ERRORS.md](./REFERENCE/EVENTS_AND_ERRORS.md) |
 | Integrator | [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md) | [REFERENCE/CONTRACT_INTERFACE.md](./REFERENCE/CONTRACT_INTERFACE.md) |
 
+
+## Canonical ENS answers (single source)
+
+- Name format: `<prefix><jobId>.<jobsRootName>`.
+- Current defaults: `prefix=agijob`, `jobsRootName=alpha.jobs.agi.eth`.
+- Example names: `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`.
+- Responsibility split:
+  - `AGIJobManager` decides numeric `jobId` and protocol settlement/dispute outcomes.
+  - `ENSJobPages` decides prefix/root naming, label snapshotting, and ENS write behavior.
+- ENS hooks are best-effort and non-fatal to settlement.
+
 ## Most common operator tasks
 
 - Deploy AGIJobManager (Hardhat, recommended): [../hardhat/README.md](../hardhat/README.md)
@@ -35,6 +46,16 @@ If you only read one thing right now:
 - Perform mainnet owner cutover: [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 - Troubleshoot ENS hook failures: [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
 - Understand ENS naming behavior: [ENS/ENS_JOB_PAGES_OVERVIEW.md](./ENS/ENS_JOB_PAGES_OVERVIEW.md)
+
+
+## ENS cutover checklist (operator-safe order)
+
+1. Deploy new `ENSJobPages` (Hardhat).
+2. Wrapped-root owner: `NameWrapper.setApprovalForAll(newEnsJobPages, true)`.
+3. AGIJobManager owner: `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
+4. Migrate legacy jobs if needed (`migrateLegacyWrappedJobPage`).
+5. Validate in Etherscan reads/events.
+6. Lock only after validation (`lockConfiguration` / `lockIdentityConfiguration` as applicable).
 
 ## Core set
 

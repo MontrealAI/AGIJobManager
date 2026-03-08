@@ -27,6 +27,25 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
   - `wrapped-root owner` controls NameWrapper approval needed for wrapped-root ENS writes.
 - **Canonical safety rule:** ENS hooks are best-effort side effects; settlement/dispute outcomes remain authoritative on AGIJobManager.
 
+## Most common operator tasks (copy-paste routing)
+
+1. **Deploy AGIJobManager (Hardhat recommended):** [`hardhat/README.md`](hardhat/README.md)
+2. **Replace ENSJobPages safely (mainnet):** [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
+3. **Run owner actions from Etherscan:** [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
+4. **Verify deployment / read post-cutover state:** [`docs/ETHERSCAN_GUIDE.md`](docs/ETHERSCAN_GUIDE.md)
+5. **Troubleshoot ENS hook failures:** [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
+
+### ENS cutover: what is automated vs manual
+
+| Step | Scripted | Caller |
+| --- | --- | --- |
+| Deploy new `ENSJobPages` | Yes (Hardhat script) | deployer |
+| `setJobManager(JOB_MANAGER)` on new `ENSJobPages` | Yes (Hardhat script) | deployer |
+| `NameWrapper.setApprovalForAll(newEnsJobPages, true)` | No | wrapped-root owner |
+| `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No | AGIJobManager owner |
+| `migrateLegacyWrappedJobPage(jobId, exactLabel)` (if needed) | No | ENSJobPages owner |
+| `lockConfiguration()` | No (optional) | ENSJobPages owner |
+
 ## What this repository contains
 
 ### Core contracts

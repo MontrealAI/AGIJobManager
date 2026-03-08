@@ -230,6 +230,14 @@ Expected result:
 Detailed replacement + migration runbook:
 - `../docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`
 
+
+### Owner-role split and irreversible actions
+
+- **wrapped-root owner** sends `NameWrapper.setApprovalForAll(newEnsJobPages, true)`.
+- **AGIJobManager owner** sends `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
+- **ENSJobPages owner** may run `migrateLegacyWrappedJobPage(jobId, exactLabel)` for legacy jobs.
+- `lockConfiguration()` is irreversible: do not call until wiring + migration + validation are complete.
+
 ### Expected successful output signals
 - Deploy script prints deployed ENSJobPages address and owner/job manager summary.
 - Mainnet wiring tx receipts are `status = 1` on Etherscan.
