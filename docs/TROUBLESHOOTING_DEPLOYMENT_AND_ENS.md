@@ -1,16 +1,16 @@
 # Troubleshooting: Hardhat Deployment and ENSJobPages Operations
 
-This guide covers common production/operator issues for the current Hardhat + ENSJobPages workflow.
+This guide covers common operator failures for the current Hardhat deployment flow and ENSJobPages mainnet operations.
 
 ---
 
 ## 1) Hardhat compile import errors
 
 ### Symptom
-Errors such as missing `@openzeppelin/contracts/...` imports.
+`File import callback not supported`, `Source "@openzeppelin/contracts/..." not found`, or similar compile failures.
 
 ### Cause
-Dependencies not installed in the **same project** where command is run.
+Dependencies were not installed in the same Node project where compile was run.
 
 ### Fix
 ```bash
@@ -19,52 +19,55 @@ npm ci
 npm run compile
 ```
 
-If using root Truffle flow instead:
+If you are using root Truffle flow instead:
 ```bash
 cd /workspace/AGIJobManager
 npm ci
 npm run build
 ```
 
+Expected result:
+- Compile completes and artifacts are generated.
+
 ---
 
 ## 2) Missing OpenZeppelin dependency
 
 ### Symptom
-`Cannot find module '@openzeppelin/contracts'` or Solidity import not found.
+`Cannot find module '@openzeppelin/contracts'` or Solidity imports fail.
+
+### Cause
+`hardhat/` and repo root are separate package contexts.
 
 ### Fix
-Install with lockfile-respecting command in current subproject:
-
 ```bash
 # Hardhat project
 cd hardhat && npm ci
 
-# Root project (Truffle/tests/docs tooling)
+# Root project
 cd /workspace/AGIJobManager && npm ci
 ```
 
-Why this happens:
-- `hardhat/` has its own `package.json` and `node_modules`.
-
 ---
 
-## 3) Mainnet deployment blocked by confirmation gate
+## 3) Mainnet deploy blocked by confirmation gate
 
 ### Symptom
-Error refusing mainnet deployment due to missing confirmation phrase.
+Deployment script exits with refusal message on chainId 1.
+
+### Cause
+`DEPLOY_CONFIRM_MAINNET` not set to exact required phrase.
 
 ### Fix
-Use exact value:
-
-```bash
-DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT
-```
-
-Example:
 ```bash
 cd hardhat
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
+```
+
+Same gate applies to:
+```bash
+cd hardhat
+DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:ens-job-pages:mainnet
 ```
 
 ---
@@ -72,17 +75,18 @@ DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 ## 4) Verification failures
 
 ### Symptom
-Hardhat verify step fails or times out.
+Hardhat verification fails, times out, or returns temporary explorer errors.
 
 ### Checks
-- `ETHERSCAN_API_KEY` set.
-- Correct network RPC and chain.
-- Sufficient block confirmations elapsed.
+- `ETHERSCAN_API_KEY` present.
+- Correct network endpoint.
+- Contract addresses and constructor args from deployment output.
 
-### Fixes
-- Increase delay and retry deployment script:
+### Recovery
+- Increase delay:
   - `VERIFY_DELAY_MS=7000`
-- Use saved artifacts for manual standard-json verification:
+- Retry with same deployed addresses where possible.
+- Use manual fallback artifacts:
   - `hardhat/deployments/<network>/solc-input.json`
   - `hardhat/deployments/<network>/verify-targets.json`
 
@@ -91,16 +95,16 @@ Hardhat verify step fails or times out.
 ## 5) NameWrapper approval missing (wrapped root)
 
 ### Symptom
-ENSJobPages cannot create/adopt/manage wrapped subnames reliably.
+Wrapped subname create/adopt/update paths fail or partially fail.
 
 ### Cause
-Wrapped-root owner did not grant NameWrapper approval to new ENSJobPages.
+Wrapped-root owner did not approve ENSJobPages as operator.
 
 ### Fix
-On NameWrapper, wrapped-root owner calls:
+On NameWrapper (wrapped-root owner account):
 - `setApprovalForAll(newEnsJobPages, true)`
 
-Confirm in Etherscan `Read Contract`:
+Verification:
 - `isApprovedForAll(rootOwner, newEnsJobPages) == true`
 
 ---
@@ -108,63 +112,65 @@ Confirm in Etherscan `Read Contract`:
 ## 6) AGIJobManager still points to old ENSJobPages
 
 ### Symptom
-New ENSJobPages deployed, but hooks still go to old contract.
+New ENSJobPages is deployed but hooks still hit old contract.
 
 ### Cause
-Manual post-deploy wiring step not completed.
+Manual post-deploy wiring not performed.
 
 ### Fix
 On AGIJobManager (owner account):
 - `setEnsJobPages(newEnsJobPages)`
 
-Confirm in Etherscan `Read Contract`:
-- `ensJobPages == newEnsJobPages`
+Verification:
+- `ensJobPages` getter returns `newEnsJobPages`.
 
 ---
 
-## 7) Legacy job write hooks fail (label not snapshotted)
+## 7) Legacy write hooks failing (`JobLabelNotSnapshotted`)
 
 ### Symptom
-Post-create writes fail for old jobs, often due to `JobLabelNotSnapshotted` semantics in ENSJobPages.
-
-### Cause
-Job label for that legacy job was never imported/snapshotted in current ENSJobPages.
+Write paths for old jobs fail because label was never snapshotted in current ENSJobPages.
 
 ### Fix
-On ENSJobPages owner account call:
+On ENSJobPages (owner account):
 - `migrateLegacyWrappedJobPage(jobId, exactLabel)`
 
-`exactLabel` must exactly match the historical label for that job id.
+Requirements:
+- `exactLabel` must exactly match historical label for the specific job.
 
-Confirm with:
-- `jobLabelSnapshot(jobId)` returns `(true, "...")`.
+Verification:
+- `jobLabelSnapshot(jobId)` returns `(true, exactLabel)`.
+- Migration event `LegacyJobPageMigrated(...)` exists.
 
 ---
 
-## 8) Resolver/authorization updates fail but protocol continues
+## 8) Resolver/auth updates fail but AGIJobManager continues
 
 ### Symptom
-ENS metadata or resolver authorization is missing/incomplete, but AGIJobManager lifecycle progressed.
+Lifecycle progressed, but ENS resolver text/auth state is missing or stale.
 
 ### Explanation
-ENS updates are implemented as best-effort; hook and resolver operations can fail without reverting the core protocol flow.
+ENS hook operations are best-effort by design and should not halt core settlement.
 
-### Operator action
-- Inspect ENSJobPages events:
-  - `ENSHookBestEffortFailure`
-  - `ENSHookSkipped`
-  - `ENSHookProcessed`
-- Correct config (resolver address, wrapper approval, ownership/wiring), then retry owner/manual helper paths if appropriate.
+### What to inspect
+On ENSJobPages events:
+- `ENSHookProcessed`
+- `ENSHookSkipped`
+- `ENSHookBestEffortFailure`
+
+### Recovery actions
+- Confirm `ens`, `nameWrapper`, `publicResolver`, `jobsRootNode`, `jobsRootName`, `jobManager`.
+- Confirm NameWrapper approval for wrapped root.
+- Re-run safe owner/manual correction path as appropriate.
 
 ---
 
-## 9) How to inspect current config on Etherscan
+## 9) Inspect current on-chain config via Etherscan
 
 ### AGIJobManager (`Read Contract`)
 - `owner`
 - `ensJobPages`
 - `useEnsJobTokenURI`
-- ENS root-related fields and identity lock status as applicable
 
 ### ENSJobPages (`Read Contract`)
 - `owner`
@@ -178,13 +184,12 @@ ENS updates are implemented as best-effort; hook and resolver operations can fai
 - `configLocked`
 
 ### NameWrapper (`Read Contract`)
-- approval status for ENSJobPages operator
-- wrapped ownership of `jobsRootNode` token id
+- `isApprovedForAll(rootOwner, ensJobPages)` for wrapped root operations.
 
 ---
 
-## 10) Cross-references
+## 10) Cross references
 
-- Official Hardhat guide: `../hardhat/README.md`
+- Official Hardhat operator guide: `../hardhat/README.md`
 - ENS replacement runbook: `DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`
-- ENS behavior overview: `ENS/ENS_JOB_PAGES_OVERVIEW.md`
+- ENS behavior reference: `ENS/ENS_JOB_PAGES_OVERVIEW.md`

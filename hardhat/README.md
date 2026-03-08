@@ -2,34 +2,32 @@
 
 This `hardhat/` project is the official deployment and verification workflow for AGIJobManager.
 
-> Truffle remains supported as a legacy path. Hardhat is the recommended production path for new deployments and replacements.
+> Truffle remains supported as a legacy path. Hardhat is the recommended production path for new deployments and ENSJobPages replacement.
 
 ---
 
-## 1) What this workflow does and does not do
+## 1) Scope and operational boundaries
 
-### Does
-- Compiles contracts with pinned production compiler settings.
-- Deploys linked libraries (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`).
-- Deploys `AGIJobManager` from `scripts/deploy.js`.
+### What this workflow does
+- Compiles with pinned production-oriented settings from `hardhat.config.js` and deploy scripts.
+- Deploys linked libraries and `AGIJobManager` via `scripts/deploy.js`.
+- Deploys/replaces `ENSJobPages` via `scripts/deploy-ens-job-pages.js`.
 - Attempts Etherscan verification.
-- Optionally transfers AGIJobManager ownership to `FINAL_OWNER`.
-- Writes deployment artifacts for auditability and manual verification fallback.
-- Provides additive utility script to deploy/replace `ENSJobPages` (`scripts/deploy-ens-job-pages.js`).
+- Writes deployment artifacts (`deployment.*.json`, `solc-input.json`, `verify-targets.json`) for audit trail and manual verification fallback.
 
-### Does not
-- Perform runtime protocol tuning after deployment (pause flags, thresholds, roots, etc.).
-- Execute ENS NameWrapper approval.
-- Wire AGIJobManager to a new ENSJobPages automatically.
+### What this workflow intentionally does **not** do
+- It does **not** automatically grant NameWrapper approval.
+- It does **not** automatically call `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
+- It does **not** tune runtime owner settings after deployment.
 
-Those two ENS wiring actions are manual post-deploy wiring steps and are required on mainnet when replacing ENSJobPages.
+Those are manual post-deploy wiring/operations steps.
 
 ---
 
 ## 2) Deployment paths in this repo
 
-- **Official / recommended:** this Hardhat folder.
-- **Legacy / supported:** root Truffle flow and legacy deployment docs in `docs/DEPLOYMENT/`.
+- **Official / recommended:** this `hardhat/` folder.
+- **Legacy / supported:** root Truffle flow and docs under `../docs/DEPLOYMENT/`.
 
 Legacy references:
 - `../docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md`
@@ -38,7 +36,7 @@ Legacy references:
 
 ---
 
-## 3) Prerequisites
+## 3) Setup
 
 ```bash
 cd hardhat
@@ -46,21 +44,22 @@ npm ci
 cp .env.example .env
 ```
 
-Required in `.env`:
+### Required `.env` keys
 - `MAINNET_RPC_URL`
 - `SEPOLIA_RPC_URL`
 - `PRIVATE_KEY`
 - `ETHERSCAN_API_KEY`
 - `DEPLOY_CONFIRM_MAINNET` (required on chainId 1)
 
-Common optional controls:
+### Common optional `.env` keys
 - `FINAL_OWNER`
 - `CONFIRMATIONS` (default `3`)
 - `VERIFY_DELAY_MS` (default `3500`)
 - `DRY_RUN=1`
-- `DEPLOY_CONFIG` (path override for deploy profile)
+- `DEPLOY_CONFIG` (override config file path)
+- ENSJobPages script controls: `NEW_OWNER`, `VERIFY`, `LOCK_CONFIG`, `JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`
 
-Mainnet confirmation gate value:
+Mainnet confirmation phrase (exact):
 
 ```text
 I_UNDERSTAND_MAINNET_DEPLOYMENT
@@ -70,13 +69,13 @@ I_UNDERSTAND_MAINNET_DEPLOYMENT
 
 ---
 
-## 4) Compiler and profile source of truth
+## 4) AGIJobManager constructor profile source of truth
 
-- Hardhat config: `hardhat.config.js`.
-- Default constructor profile: `deploy.config.example.js`.
-- Optional profile override: set `DEPLOY_CONFIG=<path-to-js-config>`.
+- Hardhat config: `hardhat.config.js`
+- Default deploy profile: `deploy.config.example.js`
+- Optional override: `DEPLOY_CONFIG=<path-to-js-config>`
 
-`deploy.js` resolves constructor args from the profile for the current network and validates address/bytes32 shapes before broadcasting.
+`deploy.js` validates constructor args for shape and address/bytes32 format before broadcasting.
 
 ---
 
@@ -87,37 +86,35 @@ cd hardhat
 npm run compile
 ```
 
-If imports fail for `@openzeppelin/contracts`, run `npm ci` in this `hardhat/` folder (it is a separate Node project from repo root).
-
 Expected result:
-- Hardhat compilation succeeds.
+- Compilation succeeds.
 - Artifacts are written under `hardhat/artifacts`.
+
+If you see OpenZeppelin import errors, run `npm ci` in this `hardhat/` directory (it is a separate Node project from repo root).
 
 ---
 
-## 6) Dry-run before any mainnet transaction
+## 6) Dry-run (required before mainnet)
 
-AGIJobManager deploy plan:
-
+### AGIJobManager plan only
 ```bash
 cd hardhat
 DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 ```
 
-ENSJobPages deploy plan:
-
+### ENSJobPages plan only
 ```bash
 cd hardhat
 DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:ens-job-pages:mainnet
 ```
 
 Expected result:
-- Script prints full plan.
-- Script exits before broadcasting transactions.
+- Script prints deploy plan and resolved parameters.
+- Script exits before transactions are broadcast.
 
 ---
 
-## 7) Deploy AGIJobManager (mainnet)
+## 7) Mainnet deploy: AGIJobManager
 
 ```bash
 cd hardhat
@@ -132,31 +129,31 @@ FINAL_OWNER=0xYourOwner DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT n
 ```
 
 Expected result:
-- Libraries + `AGIJobManager` deployed.
+- `UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership` deployed.
+- `AGIJobManager` deployed.
 - Verification attempts executed.
-- Optional `transferOwnership(finalOwner)` executed if deployer != final owner.
-- Deployment records written under `hardhat/deployments/mainnet/`.
+- `transferOwnership(finalOwner)` executed only if deployer differs from final owner.
+- Deployment records written to `hardhat/deployments/mainnet/`.
 
-### Output artifacts to keep
+### Keep these files (audit + fallback verification)
 - `hardhat/deployments/<network>/deployment.<chainId>.<blockNumber>.json`
 - `hardhat/deployments/<network>/solc-input.json`
 - `hardhat/deployments/<network>/verify-targets.json`
 
-These are audit artifacts and a fallback for manual Etherscan standard-json verification.
-
 ---
 
-## 8) Deploy or replace ENSJobPages (mainnet additive flow)
+## 8) Mainnet deploy: ENSJobPages (deploy or replacement)
 
-`ENSJobPages` deploy script:
-- `scripts/deploy-ens-job-pages.js`
-- Deploys `ENSJobPages`
-- Sets `setJobManager(JOB_MANAGER)` on the new contract
-- Optional: ownership transfer (`NEW_OWNER`/`FINAL_OWNER`)
-- Optional: `lockConfiguration()` if `LOCK_CONFIG=1`
-- Optional verification if `VERIFY=1`
+Script: `scripts/deploy-ens-job-pages.js`
 
-### Mainnet command sequence
+What the script performs:
+- Deploys `ENSJobPages(ens, nameWrapper, publicResolver, jobsRootNode, jobsRootName)`.
+- Calls `setJobManager(JOB_MANAGER)`.
+- Optionally transfers ownership (`NEW_OWNER` or `FINAL_OWNER`).
+- Optionally calls `lockConfiguration()` if `LOCK_CONFIG=1`.
+- Optionally submits verification if `VERIFY=1`.
+
+### Command sequence
 
 ```bash
 cd hardhat
@@ -165,69 +162,93 @@ DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 NEW_OWNER=0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201 npm run deploy:ens-job-pages:mainnet
 ```
 
-Defaults in the script for mainnet context:
-- ENS registry: `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`
-- NameWrapper: `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401`
-- Public resolver: `0xF29100983E058B709F3D539b0c765937B804AC15`
+### Script defaults for mainnet context
+- `ENS_REGISTRY`: `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`
+- `NAME_WRAPPER`: `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401`
+- `PUBLIC_RESOLVER`: `0xF29100983E058B709F3D539b0c765937B804AC15`
 - `JOB_MANAGER`: `0xB3AAeb69b630f0299791679c063d68d6687481d1`
 - `JOBS_ROOT_NAME`: `alpha.jobs.agi.eth`
 
-You may override with `.env` values if needed (`JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`).
+You may override these in `.env`. If setting `JOBS_ROOT_NODE`, it must match `namehash(JOBS_ROOT_NAME)` or the script reverts.
 
-> ⚠️ Mainnet-sensitive: if you set `LOCK_CONFIG=1`, ENSJobPages config setters become permanently unavailable.
+> ⚠️ Mainnet-sensitive: `LOCK_CONFIG=1` makes ENSJobPages config setters permanently unavailable.
 
 ---
 
 ## 9) Required manual post-deploy wiring (mainnet)
 
-These actions are intentionally manual and not automated by scripts.
+These are intentionally manual and should be confirmed in Etherscan.
 
-1. On **NameWrapper**, wrapped-root owner calls:
-   - `setApprovalForAll(newEnsJobPages, true)`
-2. On **AGIJobManager**, owner calls:
-   - `setEnsJobPages(newEnsJobPages)`
+1. **NameWrapper approval** (wrapped-root owner account):
+   - `setApprovalForAll(newEnsJobPages, true)` on NameWrapper.
+2. **Point AGIJobManager to new ENSJobPages** (AGIJobManager owner account):
+   - `setEnsJobPages(newEnsJobPages)` on AGIJobManager.
 
 Why this matters:
-- Without NameWrapper approval, wrapped-root writes can fail (subname create/adopt, resolver operations).
-- Without `setEnsJobPages`, AGIJobManager keeps calling the old ENSJobPages address.
+- Missing NameWrapper approval can block wrapped-root create/adopt/write paths.
+- Missing `setEnsJobPages` means AGIJobManager still routes hooks to old ENSJobPages.
 
 Expected result:
-- New jobs/hooks route to the new ENSJobPages.
-- `ENSJobPages._isFullyConfigured()` conditions are satisfied for hook processing.
+- Future hook calls target the new ENSJobPages.
+- Wrapped-root operations are authorized.
 
-Detailed replacement + migration runbook:
+Detailed runbook (including legacy migration):
 - `../docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`
 
 ---
 
-## 10) Etherscan verification and manual fallback
+## 10) Verification
 
-Automated path:
-- `deploy.js` and `deploy-ens-job-pages.js` use `@nomicfoundation/hardhat-verify` when configured.
+### Automatic
+Deploy scripts call `verify:verify` when configured.
 
-Fallback path:
-- Use `solc-input.json` and compiler settings from this repo for Etherscan standard-json verification.
+### Manual fallback
+Use artifact files from `hardhat/deployments/<network>/`:
+- `solc-input.json` for standard-json verification.
+- `verify-targets.json` for contract addresses/FQNs.
 
 Troubleshooting reference:
 - `../docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`
 
 ---
 
-## 11) Operator checklists
+## 11) Etherscan read checks after deployment
 
-### Done successfully checklist
+### AGIJobManager
+- `owner`
+- `ensJobPages`
+
+### ENSJobPages
+- `owner`
+- `ens`
+- `nameWrapper`
+- `publicResolver`
+- `jobsRootName`
+- `jobsRootNode`
+- `jobManager`
+- `jobLabelPrefix`
+- `configLocked`
+
+### NameWrapper
+- `isApprovedForAll(rootOwner, newEnsJobPages)` (or token-level approval path)
+
+---
+
+## 12) Operator checklists
+
+### Done successfully
 - [ ] Dry-run output reviewed.
-- [ ] Mainnet deploy transaction(s) mined.
-- [ ] Verification complete or manual fallback documented.
-- [ ] Deployment JSON + solc-input + verify-targets archived.
-- [ ] (If ENS replacement) NameWrapper approval granted.
-- [ ] (If ENS replacement) AGIJobManager `setEnsJobPages(newAddress)` completed.
-- [ ] Etherscan read checks confirm expected addresses.
+- [ ] Mainnet transactions mined.
+- [ ] Verification succeeded or manual fallback documented.
+- [ ] Deployment artifacts archived.
+- [ ] (ENS replacement) NameWrapper approval granted.
+- [ ] (ENS replacement) `AGIJobManager.setEnsJobPages(new)` completed.
+- [ ] Etherscan read checks match expected values.
 
 ### Before locking ENSJobPages configuration
 - [ ] `ens`, `nameWrapper`, `publicResolver` are correct.
-- [ ] `jobsRootNode` and `jobsRootName` are correct and match.
+- [ ] `jobsRootNode` and `jobsRootName` are correct and matching.
 - [ ] `jobManager` is correct AGIJobManager address.
-- [ ] NameWrapper approval is already valid for wrapped root.
-- [ ] You have tested at least one create/write path.
-- [ ] You understand `lockConfiguration()` is irreversible.
+- [ ] NameWrapper approval is already in place for wrapped root.
+- [ ] At least one create/write path was validated.
+- [ ] You acknowledge `lockConfiguration()` is irreversible.
