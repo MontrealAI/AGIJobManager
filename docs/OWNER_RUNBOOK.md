@@ -7,6 +7,12 @@ This runbook is optimized for autonomous, checklist-driven operations and Ethers
 - ENSJobPages cutover is additive: deploy new ENSJobPages, grant wrapper approval, set AGIJobManager ENSJobPages pointer, migrate legacy jobs if needed, lock only after validation.
 - Never lock identity/configuration before validating addresses, approvals, and expected ENS hook behavior.
 
+
+## Start here by owner intent
+- **I need to deploy or replace ENSJobPages now:** use `hardhat/README.md`, then `docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`.
+- **I only need manual owner actions on Etherscan:** use `docs/ETHERSCAN_GUIDE.md` and this runbook.
+- **I am about to lock config:** complete the lock preflight checklist below first.
+
 ## 1) Deployment checklist
 
 1. Compile with repository defaults (Truffle + optimizer settings from `truffle-config.js`).
@@ -92,6 +98,15 @@ Role split reminder:
 - Lock identity config permanently with `lockIdentityConfiguration` only after full validation.
 
 `lockIdentityConfiguration` is irreversible. Delay until final addresses/nodes are battle-tested.
+
+## 6.1) Lock preflight (do not skip)
+
+Before `lockIdentityConfiguration()` or `lockConfiguration()`:
+- [ ] AGIJobManager points to the intended ENSJobPages.
+- [ ] NameWrapper approval is active for wrapped-root operations.
+- [ ] At least one future job hook path succeeds.
+- [ ] Legacy jobs that require historical labels are migrated or explicitly tracked.
+- [ ] You understand lock calls are irreversible.
 
 ## 7) High-risk actions (operator warnings)
 

@@ -9,6 +9,15 @@ If you only read one thing right now:
 - **Replace ENSJobPages safely:** [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - **Owner using Etherscan only:** [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 
+## Canonical docs (use these when docs overlap)
+
+- **Canonical deployment workflow:** [../hardhat/README.md](../hardhat/README.md)
+- **Canonical ENSJobPages replacement flow:** [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
+- **Canonical ENS naming/behavior reference:** [ENS/ENS_JOB_PAGES_OVERVIEW.md](./ENS/ENS_JOB_PAGES_OVERVIEW.md)
+- **Canonical deployment/cutover troubleshooting:** [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
+
+If another document conflicts with these in an operational detail, follow the canonical document and open a docs fix PR.
+
 ## Start here if you are...
 
 - **A new operator deploying now:** start with [../hardhat/README.md](../hardhat/README.md), then [DEPLOYMENT/README.md](./DEPLOYMENT/README.md).
