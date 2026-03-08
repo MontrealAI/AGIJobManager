@@ -159,12 +159,12 @@ Use this when post-create write hooks fail because label was never snapshotted i
 Important:
 - `exactLabel` must match the real label for that `jobId` (including numeric suffix).
 - Migration snapshots/adopts/creates as needed, then best-effort updates resolver/auth/text.
-- If a wrapped child was already emancipated (no longer parent-controllable), adoption/permission writes may be limited; snapshotting still gives deterministic label lookup for that job.
+- If a wrapped child was already emancipated (no longer parent-controllable), migration can revert because adoption cannot be enforced by parent control.
 
 Expected result:
 - `LegacyJobPageMigrated(jobId, node, label, adopted, created)` emitted.
 - Subsequent write hooks for that job can resolve node from snapshotted label.
-- If `adopted=false` on emancipated children, treat resolver/auth updates as operator follow-up work, not protocol failure.
+- If migration reverts for an emancipated child, treat it as a failed migration (not partial success) and handle the job as a manual ENS exception.
 
 ---
 
