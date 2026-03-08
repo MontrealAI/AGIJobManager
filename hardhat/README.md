@@ -99,6 +99,32 @@ Optional override if you need a different owner than the default:
 FINAL_OWNER=0xYourOverrideOwner DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 ```
 
+## Utility: Deploy or replace `ENSJobPages` (additive flow)
+
+This is an additive utility for deploying/replacing `ENSJobPages` and does **not** replace the official AGIJobManager deploy flow above.
+
+```bash
+cd hardhat
+npm ci
+cp .env.example .env
+# edit .env to set MAINNET_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY, DEPLOY_CONFIRM_MAINNET
+
+npx hardhat compile
+
+DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT \
+npx hardhat run scripts/deploy-ens-job-pages.js --network mainnet
+
+DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT \
+VERIFY=1 \
+NEW_OWNER=0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201 \
+npx hardhat run scripts/deploy-ens-job-pages.js --network mainnet
+```
+
+Manual post-deploy steps:
+
+1) `setApprovalForAll(newEnsJobPages, true)` on NameWrapper by the wrapped-root owner.
+2) `setEnsJobPages(newEnsJobPages)` on AGIJobManager by the AGIJobManager owner.
+
 ## Artifacts for operations + manual verification fallback
 
 Each deployment writes:
