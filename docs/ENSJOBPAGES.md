@@ -1,5 +1,8 @@
 # ENSJobPages Deep Reference
 
+> Operator-facing quick overview: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](ENS/ENS_JOB_PAGES_OVERVIEW.md).
+> Mainnet replacement procedure: [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
+
 Primary source: `contracts/ens/ENSJobPages.sol`.
 
 ## Integration model
