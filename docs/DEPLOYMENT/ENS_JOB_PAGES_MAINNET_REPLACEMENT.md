@@ -159,10 +159,20 @@ Use this when post-create write hooks fail because label was never snapshotted i
 Important:
 - `exactLabel` must match the real label for that `jobId` (including numeric suffix).
 - Migration snapshots/adopts/creates as needed, then best-effort updates resolver/auth/text.
+- If a wrapped child is no longer parent-controllable (for example, emancipated), migration adoption can fail and revert (`ENSNotAuthorized`).
 
 Expected result:
 - `LegacyJobPageMigrated(jobId, node, label, adopted, created)` emitted.
 - Subsequent write hooks for that job can resolve node from snapshotted label.
+- If wrapped-child adoption is blocked (for example, child no longer parent-controllable), migration reverts and no `LegacyJobPageMigrated` event is emitted; treat this as a failed migration that needs operator remediation before retry.
+
+---
+
+## 8.1) Future jobs vs legacy jobs after cutover (expected behavior)
+
+- **Future/unsnapshotted jobs:** new creates use `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`) and should proceed once wiring is complete.
+- **Legacy snapshotted jobs:** keep their historical label; they do not auto-rename on prefix changes.
+- **Legacy unsnapshotted jobs:** may need `migrateLegacyWrappedJobPage(jobId, exactLabel)` before deterministic write hooks succeed.
 
 ---
 

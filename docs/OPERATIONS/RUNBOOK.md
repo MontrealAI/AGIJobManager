@@ -4,6 +4,12 @@
 - **Owner/operator:** perform checklisted parameter/incident actions and record tx hashes.
 - **ENS cutover operator:** complete wrapper approval + `setEnsJobPages` before expecting new hook behavior.
 
+## ENS cutover expected result
+- `AGIJobManager.ensJobPages` points to the new ENSJobPages address.
+- NameWrapper reports active approval for the new ENSJobPages (or token-level equivalent).
+- Future jobs resolve under `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
+- Legacy jobs keep historical snapshotted labels unless explicitly migrated.
+
 ## Never do this by accident
 - Do not lock identity/config before validating all addresses and operational wiring.
 - Do not assume ENS hook success is required for protocol settlement success.

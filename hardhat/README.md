@@ -35,6 +35,16 @@ This `hardhat/` project is the official deployment and verification workflow for
 
 Those two ENS wiring actions are manual post-deploy wiring steps and are required on mainnet when replacing ENSJobPages.
 
+### Manual vs automated at cutover
+
+| Step | Automated by script | Manual action |
+| --- | --- | --- |
+| Deploy `ENSJobPages` | Yes | No |
+| `setJobManager(JOB_MANAGER)` on new ENSJobPages | Yes | No |
+| NameWrapper `setApprovalForAll(newEnsJobPages, true)` | No | Yes, by wrapped-root owner |
+| `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No | Yes, by AGIJobManager owner |
+| `migrateLegacyWrappedJobPage(jobId, exactLabel)` | No | Yes, if legacy jobs require it |
+
 ---
 
 ## 2) Deployment paths in this repo
