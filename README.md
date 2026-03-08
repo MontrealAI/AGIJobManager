@@ -17,6 +17,16 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **ENSJobPages replacement operator:** use one canonical flow in [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Troubleshooting during deployment/cutover:** go to [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
 
+## Canonical operator answers (quick reference)
+
+- **Canonical deployment path:** Hardhat (`hardhat/README.md`). Truffle is legacy/supported.
+- **Canonical ENS replacement flow:** deploy new ENSJobPages -> NameWrapper approval -> `setEnsJobPages` -> legacy migration if needed -> lock only after validation.
+- **Canonical ENS naming format:** `<prefix><jobId>.<jobsRootName>` with default prefix `agijob`.
+- **Canonical ownership split:**
+  - `AGIJobManager owner` controls `setEnsJobPages(...)` and AGIJobManager governance.
+  - `wrapped-root owner` controls NameWrapper approval needed for wrapped-root ENS writes.
+- **Canonical safety rule:** ENS hooks are best-effort side effects; settlement/dispute outcomes remain authoritative on AGIJobManager.
+
 ## What this repository contains
 
 ### Core contracts

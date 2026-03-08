@@ -13,6 +13,22 @@ Irreversible owner actions:
 - `lockIdentityConfiguration()` (AGIJobManager)
 - `lockConfiguration()` (ENSJobPages)
 
+## 0.1) Manual vs automated (ENS replacement)
+
+| Step | Automated by Hardhat deploy script | Manual Etherscan action |
+| --- | --- | --- |
+| Deploy new ENSJobPages | Yes | No |
+| `setJobManager(JOB_MANAGER)` on ENSJobPages | Yes | No |
+| NameWrapper approval for new ENSJobPages | No | Yes (wrapped-root owner) |
+| `AGIJobManager.setEnsJobPages(newAddress)` | No | Yes (AGIJobManager owner) |
+| Legacy migration `migrateLegacyWrappedJobPage` | No | Yes, if needed |
+
+Expected safe state before locking:
+- New ENSJobPages is deployed and referenced by AGIJobManager.
+- Wrapped-root approval is active for new ENSJobPages.
+- At least one future hook path succeeds.
+- Legacy migration status is complete or explicitly tracked.
+
 ## 1) Purpose and Audience
 
 This guide is for non-technical contract owners and owner-approved operators.

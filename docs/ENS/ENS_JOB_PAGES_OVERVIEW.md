@@ -121,6 +121,13 @@ Why this matters:
 
 ---
 
+
+## 6.1) Expected behavior after cutover
+
+- **Future/unsnapshotted jobs:** use the active prefix and root (`<prefix><jobId>.<jobsRootName>`), then snapshot on create/import.
+- **Legacy snapshotted jobs:** keep historical exact labels; they do not auto-rename when prefix changes.
+- **Legacy unsnapshotted jobs in replacement contract:** may require `migrateLegacyWrappedJobPage(jobId, exactLabel)` before deterministic post-create writes succeed.
+
 ## 7) Practical operator checks on Etherscan
 
 On ENSJobPages `Read Contract`:
