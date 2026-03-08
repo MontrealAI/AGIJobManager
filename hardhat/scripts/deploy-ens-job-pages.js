@@ -23,15 +23,12 @@ function sleep(ms) {
 }
 
 function namehash(name) {
-  let node = "0x" + "00".repeat(32);
-  if (!name || name.trim() === "") return node;
-
-  const labels = name.split(".").filter(Boolean);
-  for (let i = labels.length - 1; i >= 0; i -= 1) {
-    const labelHash = ethers.keccak256(ethers.toUtf8Bytes(labels[i]));
-    node = ethers.keccak256(ethers.concat([node, labelHash]));
+  if (!name || name.trim() === "") {
+    return "0x" + "00".repeat(32);
   }
-  return node;
+
+  const normalized = ethers.ensNormalize(name);
+  return ethers.namehash(normalized);
 }
 
 async function requireCode(addr, label) {
@@ -74,7 +71,8 @@ async function main() {
   const nameWrapper = env("NAME_WRAPPER", MAINNET_NAME_WRAPPER);
   const publicResolver = env("PUBLIC_RESOLVER", MAINNET_PUBLIC_RESOLVER);
   const jobsRootName = env("JOBS_ROOT_NAME", DEFAULT_ROOT_NAME);
-  const computedJobsRootNode = namehash(jobsRootName);
+  const normalizedJobsRootName = ethers.ensNormalize(jobsRootName);
+  const computedJobsRootNode = namehash(normalizedJobsRootName);
   const jobsRootNode = env("JOBS_ROOT_NODE", computedJobsRootNode);
   const jobManager = env("JOB_MANAGER", DEFAULT_JOB_MANAGER);
 
@@ -89,8 +87,11 @@ async function main() {
   }
   if (jobsRootNode.toLowerCase() !== computedJobsRootNode.toLowerCase()) {
     throw new Error(
-      `JOBS_ROOT_NODE mismatch for JOBS_ROOT_NAME (${jobsRootName}). Expected ${computedJobsRootNode}, got ${jobsRootNode}`,
+      `JOBS_ROOT_NODE mismatch for JOBS_ROOT_NAME (${normalizedJobsRootName}). Expected ${computedJobsRootNode}, got ${jobsRootNode}`,
     );
+  }
+  if (ownerOverride && !ethers.isAddress(ownerOverride)) {
+    throw new Error(`Resolved owner override is not a valid address: ${ownerOverride}`);
   }
 
   await requireCode(ensRegistry, "ENS_REGISTRY");
@@ -115,7 +116,7 @@ async function main() {
   console.log("ENS_REGISTRY:", ensRegistry);
   console.log("NAME_WRAPPER:", nameWrapper);
   console.log("PUBLIC_RESOLVER:", publicResolver);
-  console.log("JOBS_ROOT_NAME:", jobsRootName);
+  console.log("JOBS_ROOT_NAME:", normalizedJobsRootName);
   console.log("JOBS_ROOT_NODE:", jobsRootNode);
   console.log("current root owner:", currentRootOwner);
   console.log("root tokenId decimal:", BigInt(jobsRootNode).toString());
@@ -132,7 +133,7 @@ async function main() {
     return;
   }
 
-  const constructorArgs = [ensRegistry, nameWrapper, publicResolver, jobsRootNode, jobsRootName];
+  const constructorArgs = [ensRegistry, nameWrapper, publicResolver, jobsRootNode, normalizedJobsRootName];
   const factory = await ethers.getContractFactory("ENSJobPages");
   const ensJobPages = await factory.deploy(...constructorArgs);
   await ensJobPages.waitForDeployment();
@@ -155,9 +156,6 @@ async function main() {
   }
 
   if (ownerOverride) {
-    if (!ethers.isAddress(ownerOverride)) {
-      throw new Error(`Resolved owner override is not a valid address: ${ownerOverride}`);
-    }
     console.log("Transferring ownership to:", ownerOverride);
     const transferTx = await ensJobPages.transferOwnership(ownerOverride);
     await transferTx.wait(confirmations);
