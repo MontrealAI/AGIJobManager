@@ -57,8 +57,8 @@ See full behavior details: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_J
 
 ## Operator quickstart
 
-1. Read the official Hardhat guide and prepare `.env` + deploy config.
-2. Compile (`npx hardhat compile`) and dry-run (`DRY_RUN=1 ...`).
+1. Read the official Hardhat guide and prepare `.env` + deploy config (in `hardhat/`).
+2. From `hardhat/`, compile (`npx hardhat compile`) and dry-run (`DRY_RUN=1 ...`).
 3. Deploy `AGIJobManager` with mainnet confirmation gate.
 4. If replacing ENS pages, deploy `ENSJobPages` via `hardhat/scripts/deploy-ens-job-pages.js`.
 5. Perform manual post-deploy wiring on mainnet:
