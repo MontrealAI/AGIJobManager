@@ -18,8 +18,9 @@ The standalone HTML page is **not** a replacement for the full UI roadmap.
 | File / path | Purpose | Network / environment | Intended audience | Status | Docs |
 | --- | --- | --- | --- | --- | --- |
 | `agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` | Standalone browser interface for the Genesis mainnet flow: wallet connect, role/readiness checks, live jobs table, create/apply/validate/dispute/finalize actions, completion submission, and $AGIALPHA bridge/conversion helpers. | Ethereum mainnet-focused (`chainId 1`) with embedded mainnet contract addresses. | Operators, contract-adjacent power users, demos/reviewers who need a single-file interface artifact. | Versioned standalone artifact (additive, active snapshot). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
-| `agijobmanager_genesis_job_mainnet_2026-03-05-v13.html` ... `v23.html` | Adjacent standalone snapshots for historical comparison and reproducibility. | Mainnet-oriented standalone snapshots. | Auditors/reviewers comparing versions and behavior deltas. | Versioned historical/iterative snapshots (do not treat as canonical operator default unless explicitly chosen). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
+| `agijobmanager_genesis_job_mainnet_2026-03-05-v13.html` ... `v20.html` | Adjacent standalone snapshots for historical comparison and reproducibility. | Mainnet-oriented standalone snapshots. | Auditors/reviewers comparing versions and behavior deltas. | Versioned historical/iterative snapshots (do not treat as canonical operator default unless explicitly chosen). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
 | `agijobmanager.html` | Legacy single-file UI artifact retained for historical compatibility. | Historical/legacy context. | Auditors and maintainers verifying old references. | Legacy artifact (not primary). | `../docs/ui/README.md` |
+| `agijobmanager_genesis_job_mainnet_2026-03-05-v22.html` and `v23.html` | Newer standalone snapshots adjacent to `v21`; useful for comparative review and iterative testing. | Mainnet-oriented standalone snapshots. | Auditors/reviewers and UI maintainers comparing revisions. | Additive snapshots (not the default canonical runbook target in this repo). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
 | `dist-ipfs/agijobmanager.html` | Built single-file artifact generated from the Next.js UI pipeline (IPFS/distribution output). | Environment depends on build-time config. | Release operators and distribution workflow maintainers. | Generated build output. | `../docs/ui/IPFS_DEPLOYMENT.md` |
 | `package.json`, `next.config.*`, `tests/`, `e2e/`, `scripts/` | Full Next.js UI codebase, testing, and deterministic build/documentation tooling. | Local dev/demo + deployment pipelines. | UI developers/operators. | Broader/full UI in development. | `../docs/ui/README.md` |
 
@@ -31,6 +32,12 @@ For operator instructions in this repository, `v21` is the explicit standalone a
 - `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 
 Later snapshots (for example `v22`/`v23`) are retained in-repo as additive versions for comparison and iterative UI work; they do not change deployment/operator canon by themselves.
+
+### Operator-safe usage boundary
+
+- Use the standalone page for browser-based read/write interaction only.
+- Use `../hardhat/README.md` + deployment runbooks for deployment and ENS replacement operations.
+- If standalone artifact guidance and deployment docs ever differ, follow deployment/operator docs and on-chain behavior.
 
 ## Quick start
 

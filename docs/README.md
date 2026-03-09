@@ -26,6 +26,17 @@ If you only read one thing right now:
 - **I need to understand what exists in `ui/` (including older snapshots):** [../ui/README.md](../ui/README.md)
 - **I need the broader/full UI roadmap and runbooks:** [ui/README.md](./ui/README.md)
 
+
+## Standalone HTML UI safety routing
+
+When you intentionally operate the single-file mainnet artifact (`v21`), use this order:
+
+1. [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) for preconditions, gate checks, and action flow.
+2. [../ui/README.md](../ui/README.md) to confirm file inventory and artifact status in `ui/`.
+3. [../hardhat/README.md](../hardhat/README.md) and [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) for deployment/cutover authority.
+
+If guidance appears to conflict, follow deployment/operator runbooks and on-chain contract behavior.
+
 ## Canonical docs (use these when docs overlap)
 
 - **Canonical deployment workflow:** [../hardhat/README.md](../hardhat/README.md)
