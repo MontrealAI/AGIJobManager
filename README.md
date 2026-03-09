@@ -37,6 +37,17 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 | Legacy migration `migrateLegacyWrappedJobPage(jobId, exactLabel)` | No | ENSJobPages owner (if needed) |
 | `lockConfiguration()` / `lockIdentityConfiguration()` | No | owner(s), only after validation |
 
+## Most common owner/operator safety checks
+
+Before any irreversible action:
+- Confirm which key is **AGIJobManager owner** vs **wrapped-root owner**.
+- Confirm manual steps are complete: `setApprovalForAll(newEnsJobPages, true)` then `setEnsJobPages(newEnsJobPages)`.
+- Confirm at least one future job hook succeeds and legacy migration status is known.
+
+Irreversible actions (delay until validated):
+- `AGIJobManager.lockIdentityConfiguration()`
+- `ENSJobPages.lockConfiguration()`
+
 ## What this repository contains
 
 ### Core contracts

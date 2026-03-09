@@ -129,6 +129,9 @@ Why this matters:
 - ENS metadata should not halt escrow settlement.
 - Operators must monitor ENS events and correct configuration issues separately.
 
+### Why best-effort is intentional
+AGIJobManager is the source of truth for escrow, dispute, and payout outcomes. ENS is an auxiliary metadata/indexing layer. Keeping ENS hook failures non-fatal prevents resolver/wrapper outages from blocking protocol settlement.
+
 ---
 
 

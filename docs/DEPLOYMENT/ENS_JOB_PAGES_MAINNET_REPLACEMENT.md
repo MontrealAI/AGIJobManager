@@ -155,6 +155,14 @@ Expected result after wiring:
 
 ---
 
+
+## 7.1) Post-wiring expected checks (copy/paste checklist)
+
+- [ ] AGIJobManager `ensJobPages()` equals `newEnsJobPages`.
+- [ ] NameWrapper `isApprovedForAll(rootOwner, newEnsJobPages)` is `true` (or token-level approval equivalent).
+- [ ] New job hook transaction shows protocol success (`status=1`).
+- [ ] ENSJobPages events include `ENSHookProcessed` (or explicit skip/failure reason).
+
 ## 8) Legacy migration for old wrapped job pages
 
 If a legacy job page exists under a historical exact label, migrate by importing the exact label:

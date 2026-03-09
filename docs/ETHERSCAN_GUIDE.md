@@ -25,6 +25,15 @@ Expected outcome: new job hooks resolve through the new ENSJobPages; legacy jobs
 
 Do not call irreversible lock functions until these checks are complete.
 
+### ENS cutover signer matrix
+
+| Action | Required signer | Safe to do on Etherscan? |
+| --- | --- | --- |
+| `setApprovalForAll(newEnsJobPages, true)` on NameWrapper | wrapped-root owner | Yes |
+| `setEnsJobPages(newEnsJobPages)` on AGIJobManager | AGIJobManager owner | Yes |
+| `migrateLegacyWrappedJobPage(jobId, exactLabel)` on ENSJobPages | ENSJobPages owner | Yes |
+| `lockIdentityConfiguration()` / `lockConfiguration()` | owner(s) | Yes, but irreversible |
+
 ### Expected result after ENS replacement cutover checks
 - AGIJobManager `ensJobPages()` returns the new address.
 - NameWrapper approval is active for the same address.
