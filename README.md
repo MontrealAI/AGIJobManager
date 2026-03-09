@@ -17,6 +17,14 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **ENSJobPages replacement operator:** use one canonical flow in [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Troubleshooting during deployment/cutover:** go to [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
 
+## UI surfaces (what to use today)
+
+- **Protocol source of truth:** on-chain smart contracts (`contracts/`) and verified deployments.
+- **Deployment/operator tooling:** Hardhat (`hardhat/README.md`) is official; Truffle remains legacy/supported.
+- **ENS identity layer:** ENSJobPages docs and replacement runbooks remain additive to protocol settlement logic.
+- **Standalone HTML UI artifact:** `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` (documented at [`docs/ui/STANDALONE_GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/STANDALONE_GENESIS_JOB_MAINNET_HTML_UI.md)).
+- **Broader/full UI in development:** Next.js UI track in `ui/` with docs in [`docs/ui/README.md`](docs/ui/README.md).
+
 ## Canonical operator answers (quick reference)
 
 - **Canonical deployment path:** Hardhat (`hardhat/README.md`). Truffle is legacy/supported.

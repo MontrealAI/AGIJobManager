@@ -2,7 +2,10 @@
 
 Institutional-grade Next.js dApp + operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
 
+> Also see the standalone, versioned browser artifact documentation for `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`: [STANDALONE_GENESIS_JOB_MAINNET_HTML_UI.md](./STANDALONE_GENESIS_JOB_MAINNET_HTML_UI.md).
+
 ## Quick links
+- [Standalone HTML artifact (genesis mainnet v21)](./STANDALONE_GENESIS_JOB_MAINNET_HTML_UI.md)
 - [Overview](./OVERVIEW.md)
 - [Architecture](./ARCHITECTURE.md)
 - [Job Lifecycle](./JOB_LIFECYCLE.md)
