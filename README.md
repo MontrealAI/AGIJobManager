@@ -50,6 +50,14 @@ Irreversible actions (delay until validated):
 
 ## What this repository contains
 
+### UI surfaces (what exists now)
+
+- **Smart contracts (authoritative protocol state):** `contracts/` (AGIJobManager + ENSJobPages integration).
+- **Deployment/operator tooling (official):** `hardhat/` with runbooks in `docs/DEPLOYMENT/`.
+- **ENS identity layer (additive):** ENSJobPages docs in `docs/ENS/` and replacement flow in `docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`.
+- **Standalone HTML UI artifact (versioned):** `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` with operator guide at [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md).
+- **Broader/full UI in development:** Next.js app and UI docs in [`ui/`](ui/) and [`docs/ui/README.md`](docs/ui/README.md).
+
 ### Core contracts
 - `contracts/AGIJobManager.sol`: core escrow, role checks, job lifecycle, settlement, dispute flow, owner controls.
 - `contracts/ens/ENSJobPages.sol`: optional ENS per-job page manager, naming, resolver updates, permission hooks, and legacy wrapped-page migration.
@@ -65,6 +73,8 @@ Irreversible actions (delay until validated):
 - ENSJobPages replacement runbook (mainnet): [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - ENS naming/behavior reference: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_JOB_PAGES_OVERVIEW.md)
 - Deployment troubleshooting: [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
+- Standalone HTML UI (v21) operator guide: [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- UI directory inventory: [`ui/README.md`](ui/README.md)
 
 ## Recommended vs legacy deployment paths
 
@@ -138,6 +148,9 @@ npm run docs:ens:check
 ## Documentation
 
 - Main documentation index: [`docs/README.md`](docs/README.md)
+- UI docs hub (broader UI): [`docs/ui/README.md`](docs/ui/README.md)
+- Standalone HTML UI guide (v21): [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- UI directory inventory: [`ui/README.md`](ui/README.md)
 - Quintessential walkthrough: [`docs/QUINTESSENTIAL_USE_CASE.md`](docs/QUINTESSENTIAL_USE_CASE.md)
 
 Maintenance commands:

@@ -3,6 +3,7 @@
 Institutional-grade Next.js dApp + operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
 
 ## Quick links
+- [Standalone Genesis Mainnet HTML UI (`v21`)](./GENESIS_JOB_MAINNET_HTML_UI.md)
 - [Overview](./OVERVIEW.md)
 - [Architecture](./ARCHITECTURE.md)
 - [Job Lifecycle](./JOB_LIFECYCLE.md)
@@ -44,3 +45,11 @@ This folder is **text-only**. Binary assets are forbidden and CI-enforced by `np
 
 - [IPFS single-file deployment](./IPFS_DEPLOYMENT.md)
 - [GitHub Pages autopublish](./GITHUB_PAGES.md)
+
+## Standalone HTML artifact (additive)
+
+For the versioned, single-file mainnet page in `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`, use:
+
+- [GENESIS_JOB_MAINNET_HTML_UI.md](./GENESIS_JOB_MAINNET_HTML_UI.md)
+
+This artifact is additive to the broader/full Next.js UI effort and is documented separately to keep operator guidance explicit and safe.

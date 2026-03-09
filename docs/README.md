@@ -8,6 +8,7 @@ If you only read one thing right now:
 - **Deploy or operate on mainnet (recommended):** [../hardhat/README.md](../hardhat/README.md)
 - **Replace ENSJobPages safely:** [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - **Owner using Etherscan only:** [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
+- **Standalone HTML UI (versioned mainnet artifact):** [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
 
 ## Canonical docs (use these when docs overlap)
 
@@ -16,6 +17,8 @@ If you only read one thing right now:
 - **Canonical ENS naming/behavior reference:** [ENS/ENS_JOB_PAGES_OVERVIEW.md](./ENS/ENS_JOB_PAGES_OVERVIEW.md)
 - **Canonical deployment/cutover troubleshooting:** [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
 
+- **Canonical standalone HTML UI runbook:** [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- **Canonical broader UI docs hub:** [ui/README.md](./ui/README.md)
 If another document conflicts with these in an operational detail, follow the canonical document and open a docs fix PR.
 
 
@@ -43,6 +46,7 @@ If another document conflicts with these in an operational detail, follow the ca
 | Contract owner (non-technical) | [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) | [OWNER_RUNBOOK.md](./OWNER_RUNBOOK.md), [ETHERSCAN_GUIDE.md](./ETHERSCAN_GUIDE.md) |
 | Security reviewer | [SECURITY_MODEL.md](./SECURITY_MODEL.md) | [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md), [REFERENCE/EVENTS_AND_ERRORS.md](./REFERENCE/EVENTS_AND_ERRORS.md) |
 | Integrator | [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md) | [REFERENCE/CONTRACT_INTERFACE.md](./REFERENCE/CONTRACT_INTERFACE.md) |
+| UI operator / reviewer | [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) | [ui/README.md](./ui/README.md), [../ui/README.md](../ui/README.md) |
 
 ## Most common operator tasks
 
@@ -53,6 +57,8 @@ If another document conflicts with these in an operational detail, follow the ca
 - Perform mainnet owner cutover: [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 - Troubleshoot ENS hook failures: [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
 - Understand ENS naming behavior: [ENS/ENS_JOB_PAGES_OVERVIEW.md](./ENS/ENS_JOB_PAGES_OVERVIEW.md)
+- Operate the standalone HTML UI artifact: [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- Track broader UI docs and release posture: [ui/README.md](./ui/README.md)
 
 ## Most common operator questions (fast answers)
 
@@ -68,6 +74,8 @@ If another document conflicts with these in an operational detail, follow the ca
 - [REPO_MAP.md](./REPO_MAP.md) *(generated)*
 - [QUICKSTART.md](./QUICKSTART.md)
 - [QUINTESSENTIAL_USE_CASE.md](./QUINTESSENTIAL_USE_CASE.md)
+- [ui/README.md](./ui/README.md) (broader UI docs hub)
+- [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) (standalone HTML UI runbook)
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [DEPLOYMENT_OPERATIONS.md](./DEPLOYMENT_OPERATIONS.md)
 - [Deployment Documentation Index (Hardhat recommended, Truffle legacy)](./DEPLOYMENT/README.md)
