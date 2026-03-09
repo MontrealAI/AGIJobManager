@@ -9,6 +9,16 @@ Before deeper debugging, do **not** immediately redeploy again. First verify:
 2. NameWrapper approval exists for that exact ENSJobPages address.
 3. The failing job is legacy and may need `migrateLegacyWrappedJobPage`.
 
+
+## Why old create/write hooks failed in replacement scenarios
+
+Most historical failures were one (or more) of these:
+1. AGIJobManager still pointed to old ENSJobPages.
+2. NameWrapper approval was missing for the active ENSJobPages.
+3. Legacy job label was not snapshotted in the new ENSJobPages yet.
+
+This is why the canonical cutover order is strict: deploy -> wrapper approval -> `setEnsJobPages` -> legacy migration as needed -> lock only after validation.
+
 ## Quick triage by symptom
 Expected triage outcome: identify whether the issue is pointer wiring, wrapper approval, or legacy label snapshot state before any new deployment attempt.
 

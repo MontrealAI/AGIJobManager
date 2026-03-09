@@ -39,11 +39,19 @@ Expected safe state before locking:
 - **Legacy behavior:** old snapshotted labels remain historical; prefix changes affect future/unsnapshotted jobs only.
 
 
+Expected result of a safe cutover:
+- Future jobs use `<prefix><jobId>.<jobsRootName>` under the new ENSJobPages wiring.
+- Legacy jobs keep historical snapshotted labels unless explicitly migrated.
+- Settlement remains authoritative even if ENS side effects are temporarily degraded.
+
 ## 0.3) Start here by owner objective
 
 - **I only want safe manual cutover steps:** follow Section 0, then Section 8 verification checks.
 - **I need full deployment context too:** read `hardhat/README.md` first, then return here for owner-only execution.
 - **I am deciding whether to lock config:** complete all checks in Section 0 and migration status review before any lock call.
+
+
+> **Path clarity:** Hardhat is the official/recommended deployment workflow for current production operations. The Truffle deployment section in this document remains for legacy/supported environments and institutional reproducibility.
 
 ## 1) Purpose and Audience
 

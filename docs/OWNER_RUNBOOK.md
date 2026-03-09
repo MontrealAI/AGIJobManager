@@ -23,6 +23,19 @@ Expected result:
 - Future jobs resolve using `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
 - Legacy snapshotted labels remain stable unless explicitly migrated/imported.
 
+
+## Manual vs automated (owner-safe expectations)
+
+- **Scripted:** deployment/verification workflows (Hardhat recommended).
+- **Manual on Etherscan:** NameWrapper approval, `setEnsJobPages`, optional legacy migration, lock calls.
+- **Never assume automated:** cutover wiring and migration decisions.
+
+Expected result before lock calls:
+- `ensJobPages()` points at intended address.
+- NameWrapper approval for that address is active.
+- Future job hooks are behaving as expected.
+- Legacy migration status is complete or explicitly tracked.
+
 ## 1) Deployment checklist
 
 1. Compile with repository defaults (Truffle + optimizer settings from `truffle-config.js`).
