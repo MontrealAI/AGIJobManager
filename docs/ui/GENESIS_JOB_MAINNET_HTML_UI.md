@@ -19,6 +19,12 @@ It is intentionally additive:
 Related UI hub:
 - [docs/ui/README.md](./README.md)
 
+## Fast audience routing
+
+- **Contract owner/operator:** use this page for day-to-day inspection and transaction submission, but keep deployment and cutover actions anchored in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
+- **Reviewer/auditor/demo participant:** use this page for reproducible browser walkthroughs of live mainnet state and action surfaces.
+- **Full UI contributor:** use this page as a standalone snapshot reference; broader product/UI roadmap lives in [docs/ui/README.md](./README.md).
+
 ## Canonical scope and positioning
 
 - **Protocol authority:** the deployed smart contracts remain authoritative.
@@ -42,6 +48,15 @@ Based on the file contents, this standalone page includes:
 - Completion helper that normalizes URIs and submits completion requests.
 - `$AGIALPHA` bridge/conversion console (deBridge widget embedding plus `depositExact` flow into `AGIALPHAEqualMinterVault`).
 - Embedded Terms & Conditions section and in-page acceptance gating for write controls.
+
+## Grounded non-goals (important)
+
+This artifact does **not**:
+
+- Deploy contracts or replace deployment runbooks.
+- Replace ENSJobPages cutover/owner procedures.
+- Introduce a backend service requirement.
+- Change AGIJobManager or ENSJobPages protocol rules.
 
 ## Contract interaction map (grounded, operator-friendly)
 
@@ -97,6 +112,14 @@ http://localhost:8000/ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html
 ```
 
 HTTP serving is generally safer for extension compatibility and future browser restrictions.
+
+## Quick open matrix
+
+| Goal | Recommended open method | Why |
+| --- | --- | --- |
+| Fast local review without wallet writes | `file://` open is acceptable | Minimal setup for read-only walkthroughs.
+| Wallet-connected operations | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers.
+| Team review/demo | Serve over HTTP from a clean repo clone | Reproducible path and easier troubleshooting.
 
 ## How to use it (operator flow)
 
@@ -240,6 +263,12 @@ Typical causes in v21:
 - Check wallet connectivity and RPC health.
 - Check browser console for RPC or provider errors.
 - Confirm the hardcoded contract addresses are valid for your intended environment (this artifact is mainnet-targeted).
+
+### Browser opens file but wallet injection is inconsistent
+
+- Prefer HTTP serving over `file://` mode.
+- Disable aggressive extension/privacy isolation features for the local host session.
+- Reconnect wallet after any chain/account switch event.
 
 ### IPFS upload helper failures
 
