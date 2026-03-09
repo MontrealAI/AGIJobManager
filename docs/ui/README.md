@@ -4,6 +4,7 @@ Institutional-grade Next.js dApp + operations console with **read-only first**, 
 
 ## Quick links
 - [Standalone Genesis Mainnet HTML UI (`v21`)](./GENESIS_JOB_MAINNET_HTML_UI.md)
+- [UI directory inventory (`/ui`)](../../ui/README.md)
 - [Overview](./OVERVIEW.md)
 - [Architecture](./ARCHITECTURE.md)
 - [Job Lifecycle](./JOB_LIFECYCLE.md)
