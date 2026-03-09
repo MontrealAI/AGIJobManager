@@ -27,6 +27,16 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
   - `wrapped-root owner` controls NameWrapper approval needed for wrapped-root ENS writes.
 - **Canonical safety rule:** ENS hooks are best-effort side effects; settlement/dispute outcomes remain authoritative on AGIJobManager.
 
+### Manual vs automated (do not assume)
+
+| Action | Automated by deploy scripts | Manual caller |
+| --- | --- | --- |
+| Deploy `AGIJobManager` / deploy new `ENSJobPages` | Yes | deployer key |
+| NameWrapper approval `setApprovalForAll(newEnsJobPages, true)` | No | wrapped-root owner |
+| `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No | AGIJobManager owner |
+| Legacy migration `migrateLegacyWrappedJobPage(jobId, exactLabel)` | No | ENSJobPages owner (if needed) |
+| `lockConfiguration()` / `lockIdentityConfiguration()` | No | owner(s), only after validation |
+
 ## What this repository contains
 
 ### Core contracts
@@ -85,6 +95,11 @@ See full behavior details: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_J
 6. If legacy jobs must retain historical labels, run per-job migration (`migrateLegacyWrappedJobPage(jobId, exactLabel)`).
 7. Verify results on Etherscan using `Read Contract` + events.
 8. Only lock configuration after validation is complete.
+
+Expected result after safe cutover:
+- New jobs use `<prefix><jobId>.<jobsRootName>` (default `agijob...alpha.jobs.agi.eth`).
+- AGIJobManager lifecycle and settlement continue even if an ENS side-effect fails.
+- Legacy labels remain stable unless explicitly migrated/imported.
 
 ### Never-do-this-by-accident checklist
 

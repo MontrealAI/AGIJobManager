@@ -13,6 +13,16 @@ This runbook is optimized for autonomous, checklist-driven operations and Ethers
 - **I only need manual owner actions on Etherscan:** use `docs/ETHERSCAN_GUIDE.md` and this runbook.
 - **I am about to lock config:** complete the lock preflight checklist below first.
 
+
+## ENS replacement responsibilities (owner split)
+- **wrapped-root owner**: `NameWrapper.setApprovalForAll(newEnsJobPages, true)`.
+- **AGIJobManager owner**: `setEnsJobPages(newEnsJobPages)` on AGIJobManager.
+- **ENSJobPages owner (if needed)**: `migrateLegacyWrappedJobPage(jobId, exactLabel)` for legacy jobs missing snapshots.
+
+Expected result:
+- Future jobs resolve using `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
+- Legacy snapshotted labels remain stable unless explicitly migrated/imported.
+
 ## 1) Deployment checklist
 
 1. Compile with repository defaults (Truffle + optimizer settings from `truffle-config.js`).

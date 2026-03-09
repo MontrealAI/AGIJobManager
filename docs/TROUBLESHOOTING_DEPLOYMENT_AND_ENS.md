@@ -2,6 +2,13 @@
 
 This guide covers common production/operator issues for the current Hardhat + ENSJobPages workflow.
 
+
+## Do-not-do-this-first response
+Before deeper debugging, do **not** immediately redeploy again. First verify:
+1. `AGIJobManager.ensJobPages()` points to intended contract.
+2. NameWrapper approval exists for that exact ENSJobPages address.
+3. The failing job is legacy and may need `migrateLegacyWrappedJobPage`.
+
 ## Quick triage by symptom
 - New ENSJobPages deployed but no effect: check AGIJobManager `setEnsJobPages(newAddress)` was executed.
 - Wrapped root writes failing: check NameWrapper approval for active ENSJobPages.

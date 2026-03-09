@@ -25,6 +25,13 @@ Expected outcome: new job hooks resolve through the new ENSJobPages; legacy jobs
 
 Do not call irreversible lock functions until these checks are complete.
 
+### Expected result after ENS replacement cutover checks
+- AGIJobManager `ensJobPages()` returns the new address.
+- NameWrapper approval is active for the same address.
+- At least one future job emits expected ENS hook processing events.
+- Any legacy jobs needing historical labels are either migrated or explicitly tracked.
+
+
 ### What is safe from Etherscan vs what still needs deploy scripts
 
 - **Safe and expected on Etherscan:** owner/admin writes (`setEnsJobPages`, pause controls, allowlists, roots), NameWrapper approval by wrapped-root owner, read-based verification.
