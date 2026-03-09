@@ -151,6 +151,13 @@ Plain-language model:
 
 The page also surfaces ENS-oriented context (label/name/URI previews and ENS-lock actions) but does not redefine ENS replacement procedures.
 
+## Status and lifecycle
+
+- This file documents a **versioned standalone artifact**: `v21`.
+- It is intended as an additive, practical browser interface for current operator/reviewer workflows.
+- The broader/full UI effort is still in active development in `ui/` (Next.js surface) and tracked in [docs/ui/README.md](./README.md).
+- When operational guidance conflicts, treat deployment/operator docs and on-chain contract behavior as canonical.
+
 ## What this page does not replace
 
 - It does not replace Hardhat deployment and verification workflows.

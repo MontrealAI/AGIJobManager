@@ -237,3 +237,10 @@ Confirm final addresses, wrapper approvals, AGIJobManager wiring, and any requir
 
 ### What should I do if post-create ENS writes fail after cutover?
 Check wrapper approval and AGIJobManager wiring first, then migrate affected legacy jobs with exact historical labels where needed.
+
+## 11) Using the standalone HTML UI during triage
+
+If you are validating live mainnet behavior through the versioned standalone page (`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`), use the dedicated troubleshooting section in:
+- `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
+
+Keep deployment/cutover troubleshooting in this document as canonical for pointer wiring, NameWrapper approval, and legacy migration decisions.
