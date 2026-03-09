@@ -17,7 +17,8 @@ AGIJobManager is an owner-operated escrow and settlement contract for employer-a
 - **Deployment guide**: [`DEPLOYMENT_OPERATIONS.md`](./DEPLOYMENT_OPERATIONS.md)
 - **Automation inventory**: [`SCRIPTS_REFERENCE.md`](./SCRIPTS_REFERENCE.md)
 - **Tests**: [`test/`](../test), [`forge-test/`](../forge-test)
-- **UI**: [`ui/`](../ui)
+- **UI (broader/full effort in development)**: [`ui/`](../ui), docs: [`ui/README.md`](./ui/README.md)
+- **Standalone HTML UI artifact (versioned, additive)**: [`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`](../ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html), runbook: [`ui/GENESIS_JOB_MAINNET_HTML_UI.md`](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
 
 ## Roles
 
