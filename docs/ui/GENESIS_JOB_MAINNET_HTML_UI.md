@@ -43,6 +43,20 @@ Based on the file contents, this standalone page includes:
 - `$AGIALPHA` bridge/conversion console (deBridge widget embedding plus `depositExact` flow into `AGIALPHAEqualMinterVault`).
 - Embedded Terms & Conditions section and in-page acceptance gating for write controls.
 
+## Contract interaction map (grounded, operator-friendly)
+
+This section maps major UI actions to the contract methods surfaced in the file's embedded ABIs.
+
+| UI workflow area | Primary contract target | Method examples exposed in page | Operator note |
+| --- | --- | --- | --- |
+| Job creation and hiring | `AGIJobManager` | `createJob`, `applyForJob` | Requires mainnet wallet and role eligibility/parameters. |
+| Completion and review | `AGIJobManager` | `requestJobCompletion`, `approveJob`, `disapproveJob` | Completion URI quality directly affects validator decisions. |
+| Settlement and exception paths | `AGIJobManager` | `finalizeJob`, `disputeJob`, `expireJob`, `cancelJob` | State-dependent actions; check job status first. |
+| ENS per-job controls | `AGIJobManager` + `ENSJobPages` | `lockJobENS` and ENS reads shown in UI | Additive ENS layer; settlement authority remains in AGIJobManager. |
+| Bridge / conversion helper | bridged/offical token + vault | ERC-20 `approve`, vault `depositExact` | Token operations are separate transactions; verify spender and amount. |
+
+If uncertain about exact callable semantics, confirm against contract docs/runbooks before signing.
+
 ## Intended audience
 
 Primary:
@@ -103,6 +117,17 @@ Expected result:
 - Eligible actions produce wallet prompts and on-chain transactions.
 - The in-page activity trail logs pending/success/failure states for actions initiated from this session.
 
+## Practical pre-sign checklist (copy/paste)
+
+Use this checklist before each write transaction:
+
+- [ ] I am connected to **Ethereum Mainnet** (`chainId 1`).
+- [ ] The page address panel matches expected deployment docs for my operation.
+- [ ] I reviewed the exact action being triggered (create/apply/approve/dispute/finalize/etc.).
+- [ ] I reviewed value fields (amounts, URIs, ENS names, durations) for typo-risk.
+- [ ] I understand this UI is a client and on-chain contracts are authoritative.
+- [ ] I accepted in-page terms intentionally for this session.
+
 
 ## Read-only vs action-capable behavior
 
@@ -129,6 +154,14 @@ The page hardcodes the following addresses/constants in the script block:
 Operator implication:
 - Treat this artifact as a **mainnet-targeted versioned snapshot**.
 - Re-verify addresses against current deployment documentation before signing transactions.
+
+## Relationship to other UI artifacts in `ui/`
+
+- `v21` is the documented standalone artifact for this runbook.
+- Other `agijobmanager_genesis_job_mainnet_2026-03-05-v*.html` files are adjacent snapshots for comparison/reproducibility.
+- The Next.js app in `ui/` remains the broader/full UI effort under active development.
+
+Use this document when you intentionally operate the standalone, versioned single-file surface.
 
 ## External dependencies used by this standalone page
 
