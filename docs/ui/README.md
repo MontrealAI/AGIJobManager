@@ -4,6 +4,7 @@ Institutional-grade Next.js dApp + operations console with **read-only first**, 
 
 ## Quick links
 - [Standalone Genesis Mainnet HTML UI (`v21`)](./GENESIS_JOB_MAINNET_HTML_UI.md)
+- [Standalone HTML artifact index (`ui/*.html`)](./STANDALONE_HTML_UIS.md)
 - [UI directory inventory (`/ui`)](../../ui/README.md)
 - [Overview](./OVERVIEW.md)
 - [Architecture](./ARCHITECTURE.md)
@@ -52,5 +53,6 @@ This folder is **text-only**. Binary assets are forbidden and CI-enforced by `np
 For the versioned, single-file mainnet page in `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`, use:
 
 - [GENESIS_JOB_MAINNET_HTML_UI.md](./GENESIS_JOB_MAINNET_HTML_UI.md)
+- [STANDALONE_HTML_UIS.md](./STANDALONE_HTML_UIS.md)
 
 This artifact is additive to the broader/full Next.js UI effort and is documented separately to keep operator guidance explicit and safe.

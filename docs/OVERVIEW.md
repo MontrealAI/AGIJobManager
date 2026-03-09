@@ -37,4 +37,4 @@ AGIJobManager is an owner-operated escrow and settlement contract for employer-a
 | Agent | Apply, submit completion, claim payout on win | Maintain valid identity proof and completion artifacts |
 | Validator | Vote with bond | Vote quality and timely participation |
 | Anyone | Trigger some liveness actions like expiry/finalization depending on state | Event monitoring and alerting |
-Operator navigation: root gateway [README.md](../README.md), docs hub [README.md](./README.md), standalone UI runbook [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md), and UI directory inventory [../ui/README.md](../ui/README.md).
+Operator navigation: root gateway [README.md](../README.md), docs hub [README.md](./README.md), standalone UI runbook [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md), standalone artifact index [ui/STANDALONE_HTML_UIS.md](./ui/STANDALONE_HTML_UIS.md), and UI directory inventory [../ui/README.md](../ui/README.md).

@@ -16,7 +16,7 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **Contract owner (Etherscan-first):** start with [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md), then [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md).
 - **ENSJobPages replacement operator:** use one canonical flow in [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Troubleshooting during deployment/cutover:** go to [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
-- **Standalone HTML UI operator/reviewer:** start with [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md), then see [`ui/README.md`](ui/README.md) for UI surface inventory.
+- **Standalone HTML UI operator/reviewer:** start with [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md), then [`docs/ui/STANDALONE_HTML_UIS.md`](docs/ui/STANDALONE_HTML_UIS.md) and [`ui/README.md`](ui/README.md) for UI surface inventory.
 - **Broader/full UI contributor:** use [`docs/ui/README.md`](docs/ui/README.md) for Next.js UI roadmap, runbooks, and release/testing docs.
 
 ## Canonical operator answers (quick reference)
@@ -57,7 +57,7 @@ Irreversible actions (delay until validated):
 - **Smart contracts (authoritative protocol state):** `contracts/` (AGIJobManager + ENSJobPages integration).
 - **Deployment/operator tooling (official):** `hardhat/` with runbooks in `docs/DEPLOYMENT/`.
 - **ENS identity layer (additive):** ENSJobPages docs in `docs/ENS/` and replacement flow in `docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`.
-- **Standalone HTML UI artifact (versioned):** `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` with operator guide at [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md).
+- **Standalone HTML UI artifact (versioned):** `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` with operator guide at [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) and artifact index [`docs/ui/STANDALONE_HTML_UIS.md`](docs/ui/STANDALONE_HTML_UIS.md).
 - **Broader/full UI in development:** Next.js app and UI docs in [`ui/`](ui/) and [`docs/ui/README.md`](docs/ui/README.md).
 
 ### UI routing (pick the right interface quickly)
