@@ -114,6 +114,13 @@ Expected result:
 - `setJobManager(JOB_MANAGER)` already executed by script.
 - Optional verification submitted.
 
+
+### Common cutover mistakes
+- Performing only deploy, but forgetting manual NameWrapper approval.
+- Performing NameWrapper approval, but forgetting `setEnsJobPages(newAddress)`.
+- Locking configuration before validating at least one future job hook and any required legacy migration.
+- Supplying an inexact `exactLabel` in legacy migration calls.
+
 ---
 
 ## 7) Required manual post-deploy wiring on mainnet

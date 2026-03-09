@@ -88,3 +88,11 @@ If another document conflicts with these in an operational detail, follow the ca
 
 - [assets/palette.svg](./assets/palette.svg)
 - [assets/architecture-wireframe.svg](./assets/architecture-wireframe.svg)
+
+
+## Most common operator mistakes (avoid these)
+
+- Assuming Hardhat scripts automatically do NameWrapper approval or `setEnsJobPages(...)` (they do not).
+- Locking ENS/identity configuration before post-cutover checks and legacy migration decisions are complete.
+- Expecting prefix changes to rename already snapshotted legacy labels.
+- Treating ENS hook failures as protocol settlement failures without checking AGIJobManager events first.

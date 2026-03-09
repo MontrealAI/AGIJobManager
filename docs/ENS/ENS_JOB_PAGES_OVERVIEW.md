@@ -10,6 +10,16 @@ This document describes ENS naming and hook behavior from the current on-chain c
 
 ---
 
+
+## Canonical defaults used in current operator docs
+- `jobLabelPrefix = agijob`
+- `jobsRootName = alpha.jobs.agi.eth`
+- Example names: `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`
+
+If your deployment uses different values, update your runbooks so operators still reason using the same `<prefix><jobId>.<jobsRootName>` model.
+
+---
+
 ## 1) Name composition: who controls what
 
 For a given job ENS name, each component comes from a different source:

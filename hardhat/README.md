@@ -15,6 +15,16 @@ This `hardhat/` project is the official deployment and verification workflow for
 5. Migrate legacy jobs if historical labels must be retained.
 6. Only then consider irreversible `lockConfiguration()`.
 
+## Who signs which transaction
+
+| Transaction | Required signer | Notes |
+| --- | --- | --- |
+| `scripts/deploy.js` / `scripts/deploy-ens-job-pages.js` | deployer key | contract deploy + scripted setup |
+| `NameWrapper.setApprovalForAll(newEnsJobPages, true)` | wrapped-root owner | manual, always required for wrapped-root control |
+| `AGIJobManager.setEnsJobPages(newEnsJobPages)` | AGIJobManager owner | manual pointer switch to new ENSJobPages |
+| `migrateLegacyWrappedJobPage(jobId, exactLabel)` | ENSJobPages owner | manual, only for affected legacy jobs |
+| `lockConfiguration()` | ENSJobPages owner | irreversible; do only after validation |
+
 ---
 
 ## 1) What this workflow does and does not do
