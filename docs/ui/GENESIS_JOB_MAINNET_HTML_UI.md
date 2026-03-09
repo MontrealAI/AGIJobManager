@@ -7,6 +7,7 @@
 - [Security and trust hygiene](#security-and-trust-hygiene)
 - [Troubleshooting (standalone page)](#troubleshooting-standalone-page)
 - [What this page does not replace](#what-this-page-does-not-replace)
+- [Standalone artifact inventory](./STANDALONE_HTML_UIS.md)
 
 ## What this page is
 
@@ -92,6 +93,21 @@ Secondary:
 - Developers comparing standalone snapshots (`v13` ... `v21`) during UI iteration.
 
 ## Quick start (safe and practical)
+
+### Copy/paste open commands
+
+```bash
+cd ui
+python3 -m http.server 8000
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html
+```
+
+(Direct `file://` open can work, but local HTTP is more reliable for wallet/provider behavior.)
 
 ### Preconditions
 

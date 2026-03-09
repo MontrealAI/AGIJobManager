@@ -9,6 +9,7 @@ If you only read one thing right now:
 - **Replace ENSJobPages safely:** [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - **Owner using Etherscan only:** [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 - **Standalone HTML UI (versioned mainnet artifact):** [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- **Standalone HTML artifact index (`ui/*.html`):** [ui/STANDALONE_HTML_UIS.md](./ui/STANDALONE_HTML_UIS.md)
 - **UI directory inventory (`ui/`):** [../ui/README.md](../ui/README.md)
 
 ## UI surfaces at a glance
