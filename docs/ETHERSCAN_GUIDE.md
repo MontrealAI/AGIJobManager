@@ -4,6 +4,14 @@ Use this guide if you only have:
 - a browser wallet (MetaMask, Rabby, etc.)
 - Etherscan verified contract pages
 
+## In one minute (Etherscan-first safety)
+
+- Deployments are done with scripts (Hardhat recommended); owner cutover/governance writes are safe on Etherscan.
+- ENS replacement is additive and manual for key wiring: `setApprovalForAll(newEnsJobPages, true)` then `setEnsJobPages(newEnsJobPages)`.
+- ENS naming is `<prefix><jobId>.<jobsRootName>` (defaults: `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`).
+- ENS writes are best-effort: settlement can succeed even if ENS side effects fail.
+- Treat `lockIdentityConfiguration()` and `lockConfiguration()` as irreversible and postpone until full post-cutover validation.
+
 ## Choose your role
 - [Employer](#employer-flow)
 - [Agent](#agent-flow)
@@ -24,6 +32,11 @@ Use this order on mainnet to avoid partial cutovers:
 Expected outcome: new job hooks resolve through the new ENSJobPages; legacy jobs retain historical labels unless migrated.
 
 Do not call irreversible lock functions until these checks are complete.
+
+### Start here by owner intent
+- **I only need the minimum safe cutover order:** follow this section plus [Expected result after ENS replacement cutover checks](#expected-result-after-ens-replacement-cutover-checks).
+- **I need lifecycle steps by role:** jump to [B) Core role flows](#b-core-role-flows).
+- **I am about to lock configuration:** complete [Safety checklist before any write tx](#safety-checklist-before-any-write-tx) and confirm both lock preconditions above.
 
 ### ENS cutover signer matrix
 

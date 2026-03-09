@@ -55,6 +55,16 @@ Those two ENS wiring actions are manual post-deploy wiring steps and are require
 | `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No | Yes, by AGIJobManager owner |
 | `migrateLegacyWrappedJobPage(jobId, exactLabel)` | No | Yes, if legacy jobs require it |
 
+
+### Manual-only steps that are easy to miss
+
+These are never auto-executed by the deployment scripts:
+- `NameWrapper.setApprovalForAll(newEnsJobPages, true)` by **wrapped-root owner**
+- `AGIJobManager.setEnsJobPages(newEnsJobPages)` by **AGIJobManager owner**
+- `migrateLegacyWrappedJobPage(jobId, exactLabel)` by **ENSJobPages owner** (only when needed)
+
+If you skip them, deployment can appear successful while ENS behavior is still partially cut over.
+
 ---
 
 ## 2) Deployment paths in this repo
