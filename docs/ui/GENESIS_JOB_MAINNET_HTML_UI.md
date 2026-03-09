@@ -56,9 +56,12 @@ Secondary:
 
 ### Preconditions
 
-- Modern browser with EIP-1193 wallet extension support (for write paths).
+- Modern browser (Chrome/Brave/Firefox-class) with JavaScript enabled.
+- EIP-1193 wallet extension support for write paths (for example MetaMask or Rabby).
 - Wallet account on **Ethereum mainnet** for transaction-capable workflows.
-- Network access to external scripts/services used by the page (for example Web3 CDN and deBridge widget script).
+- Network access to external scripts/services used by the page (Web3 CDN and deBridge widget script).
+
+No local backend, indexer, or database is required for this standalone page.
 
 ### Open method
 
@@ -99,6 +102,17 @@ Expected result:
 - Read state refreshes from mainnet contracts.
 - Eligible actions produce wallet prompts and on-chain transactions.
 - The in-page activity trail logs pending/success/failure states for actions initiated from this session.
+
+
+## Read-only vs action-capable behavior
+
+- **Read-only (no wallet):** You can view static sections and most dashboard content, but cannot submit on-chain transactions.
+- **Action-capable (wallet + mainnet + terms accepted):** Write buttons unlock and the page can submit contract transactions through your wallet.
+
+Write-gate conditions in v21 are explicitly tied to:
+1. wallet connection,
+2. Ethereum mainnet (`chainId 1`), and
+3. in-page terms acceptance checkbox.
 
 ## Embedded network and contract assumptions (v21)
 
@@ -205,6 +219,12 @@ Typical causes in v21:
 - Check network access to `https://app.debridge.com/assets/scripts/widget.js`.
 - Content blocking/privacy tooling may block third-party scripts/iframes.
 - Continue with non-embedded/manual asset routing if policy requires it.
+
+### Wrong contract target concern
+
+- Stop before signing.
+- Compare displayed addresses with the deployment/operator docs for your intended environment.
+- If you are not intentionally operating on Ethereum mainnet with the embedded addresses, do not use this artifact for write actions.
 
 ## Related docs
 

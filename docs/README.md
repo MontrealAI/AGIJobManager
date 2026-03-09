@@ -19,6 +19,13 @@ If you only read one thing right now:
 | Broader/full UI effort | Next.js UI with ongoing development, test, and release tracks. | You are developing, testing, or evaluating the full UI roadmap. | [ui/README.md](./ui/README.md) and [../ui/README.md](../ui/README.md) |
 
 
+
+### UI task routing (fast path)
+
+- **I need a single-file browser artifact for mainnet operations/review:** [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- **I need to understand what exists in `ui/` (including older snapshots):** [../ui/README.md](../ui/README.md)
+- **I need the broader/full UI roadmap and runbooks:** [ui/README.md](./ui/README.md)
+
 ## Canonical docs (use these when docs overlap)
 
 - **Canonical deployment workflow:** [../hardhat/README.md](../hardhat/README.md)
