@@ -38,6 +38,13 @@ Expected safe state before locking:
 - **Current defaults:** prefix `agijob`, so names look like `agijob0.alpha.jobs.agi.eth`.
 - **Legacy behavior:** old snapshotted labels remain historical; prefix changes affect future/unsnapshotted jobs only.
 
+
+## 0.3) Start here by owner objective
+
+- **I only want safe manual cutover steps:** follow Section 0, then Section 8 verification checks.
+- **I need full deployment context too:** read `hardhat/README.md` first, then return here for owner-only execution.
+- **I am deciding whether to lock config:** complete all checks in Section 0 and migration status review before any lock call.
+
 ## 1) Purpose and Audience
 
 This guide is for non-technical contract owners and owner-approved operators.

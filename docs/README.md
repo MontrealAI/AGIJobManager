@@ -45,6 +45,14 @@ If another document conflicts with these in an operational detail, follow the ca
 - Troubleshoot ENS hook failures: [TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](./TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
 - Understand ENS naming behavior: [ENS/ENS_JOB_PAGES_OVERVIEW.md](./ENS/ENS_JOB_PAGES_OVERVIEW.md)
 
+## Most common operator questions (fast answers)
+
+- **What is canonical if docs disagree?** Follow the canonical set above (Hardhat guide, ENS replacement runbook, ENS overview, deployment troubleshooting).
+- **What deployment path is recommended?** Hardhat is recommended/official; Truffle is legacy/supported only.
+- **What is manual vs automated during ENS replacement?** Deploy + `setJobManager` are scripted; NameWrapper approval + `setEnsJobPages` + legacy migration are manual.
+- **How are ENS names built?** `<prefix><jobId>.<jobsRootName>` where `AGIJobManager` provides `jobId` and `ENSJobPages` provides prefix/root.
+- **When is locking safe?** Only after post-cutover read/event checks and any legacy migration decisions are complete.
+
 ## Core set
 
 - [OVERVIEW.md](./OVERVIEW.md)
@@ -96,3 +104,10 @@ If another document conflicts with these in an operational detail, follow the ca
 - Locking ENS/identity configuration before post-cutover checks and legacy migration decisions are complete.
 - Expecting prefix changes to rename already snapshotted legacy labels.
 - Treating ENS hook failures as protocol settlement failures without checking AGIJobManager events first.
+
+
+## Etherscan safety boundaries (owner/operator)
+
+- Safe and expected on Etherscan: owner reads, owner governance writes, NameWrapper approval, `setEnsJobPages`, migration calls.
+- Script-first actions: contract deployment and source verification workflow.
+- Never assume automation: NameWrapper approval and AGIJobManager pointer switch are always explicit manual transactions.

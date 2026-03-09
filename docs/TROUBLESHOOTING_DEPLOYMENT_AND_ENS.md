@@ -10,6 +10,8 @@ Before deeper debugging, do **not** immediately redeploy again. First verify:
 3. The failing job is legacy and may need `migrateLegacyWrappedJobPage`.
 
 ## Quick triage by symptom
+Expected triage outcome: identify whether the issue is pointer wiring, wrapper approval, or legacy label snapshot state before any new deployment attempt.
+
 - New ENSJobPages deployed but no effect: check AGIJobManager `setEnsJobPages(newAddress)` was executed.
 - Wrapped root writes failing: check NameWrapper approval for active ENSJobPages.
 - Legacy jobs failing post-create writes: migrate exact labels with `migrateLegacyWrappedJobPage`.

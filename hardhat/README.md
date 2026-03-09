@@ -250,6 +250,11 @@ Expected result:
 Detailed replacement + migration runbook:
 - `../docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`
 
+### Legacy migration decision checklist
+- If a legacy job already has correct snapshot in new ENSJobPages, no migration call is needed.
+- If `jobLabelSnapshot(jobId)` is missing and writes fail, run `migrateLegacyWrappedJobPage(jobId, exactLabel)`.
+- If migration reverts with authorization issues (for example emancipated child), treat as ownership remediation task before retrying.
+
 ### Expected successful output signals
 - Deploy script prints deployed ENSJobPages address and owner/job manager summary.
 - Mainnet wiring tx receipts are `status = 1` on Etherscan.

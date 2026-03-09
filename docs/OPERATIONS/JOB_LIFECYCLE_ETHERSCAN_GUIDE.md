@@ -90,6 +90,12 @@ flowchart TD
 - Future/unsnapshotted jobs follow current prefix.
 - Legacy jobs may use previously snapshotted labels and may need explicit migration after ENSJobPages replacement.
 
+
+## Cutover safety: do not do this by accident
+- Do not assume deployment scripts executed NameWrapper approval.
+- Do not assume `setEnsJobPages(newAddress)` happened unless you confirm on-chain read state.
+- Do not lock configuration until future-job hooks are validated and legacy migration status is known.
+
 ## Role recipes (Etherscan Write Contract)
 
 ### 1) Employer: create job
