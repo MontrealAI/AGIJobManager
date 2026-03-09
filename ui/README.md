@@ -8,6 +8,8 @@ This directory contains **two additive UI surfaces**:
 
 The standalone HTML page is **not** a replacement for the full UI roadmap.
 
+For broader/full UI status, planning, and runbooks, start at `../docs/ui/README.md`.
+
 ## 30-second routing
 
 - Need a **single-file, versioned mainnet interface artifact** for review/operator workflows: use `agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` and the runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.

@@ -19,6 +19,14 @@ It is intentionally additive:
 Related UI hub:
 - [docs/ui/README.md](./README.md)
 
+## Decision: should you use this page right now?
+
+Use this page when you need a **single-file browser artifact** for intentional **Ethereum mainnet** review or operations.
+
+Do not use it as a deployment source of truth:
+- Deployment and cutover authority remain in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
+- If guidance differs, trust deployment runbooks and on-chain contract behavior.
+
 ## Fast audience routing
 
 - **Contract owner/operator:** use this page for day-to-day inspection and transaction submission, but keep deployment and cutover actions anchored in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
@@ -48,6 +56,8 @@ Based on the file contents, this standalone page includes:
 - Completion helper that normalizes URIs and submits completion requests.
 - `$AGIALPHA` bridge/conversion console (deBridge widget embedding plus `depositExact` flow into `AGIALPHAEqualMinterVault`).
 - Embedded Terms & Conditions section and in-page acceptance gating for write controls.
+
+Grounding note: this list is based on visible controls, embedded ABIs, and in-page handlers in the `v21` file.
 
 ## Grounded non-goals (important)
 
@@ -92,6 +102,12 @@ Secondary:
 
 No local backend, indexer, or database is required for this standalone page.
 
+### Mainnet posture
+
+- This artifact is a **mainnet-targeted versioned snapshot**.
+- Read actions are broadly available; write actions require wallet, mainnet, and terms acceptance.
+- For non-mainnet environments, use broader UI/development docs instead of repurposing this file.
+
 ### Open method
 
 Use either:
@@ -117,9 +133,18 @@ HTTP serving is generally safer for extension compatibility and future browser r
 
 | Goal | Recommended open method | Why |
 | --- | --- | --- |
-| Fast local review without wallet writes | `file://` open is acceptable | Minimal setup for read-only walkthroughs.
-| Wallet-connected operations | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers.
-| Team review/demo | Serve over HTTP from a clean repo clone | Reproducible path and easier troubleshooting.
+| Fast local review without wallet writes | `file://` open is acceptable | Minimal setup for read-only walkthroughs. |
+| Wallet-connected operations | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers. |
+| Team review/demo | Serve over HTTP from a clean repo clone | Reproducible path and easier troubleshooting. |
+
+### Minimal safe operating sequence
+
+1. Open via local HTTP.
+2. Confirm filename/path ends with `agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`.
+3. Connect wallet and confirm Ethereum Mainnet.
+4. Confirm address panel values against deployment docs.
+5. Accept terms in-page.
+6. Perform one read/check action first, then write actions one at a time.
 
 ## How to use it (operator flow)
 
@@ -177,6 +202,7 @@ The page hardcodes the following addresses/constants in the script block:
 Operator implication:
 - Treat this artifact as a **mainnet-targeted versioned snapshot**.
 - Re-verify addresses against current deployment documentation before signing transactions.
+- If you need a different network, use the broader UI workflow rather than this fixed-address snapshot.
 
 ## Relationship to other UI artifacts in `ui/`
 
@@ -220,6 +246,8 @@ Plain-language model:
 - **This standalone HTML page:** operator surface that reads state from these contracts and submits transactions to them.
 
 The page also surfaces ENS-oriented context (label/name/URI previews and ENS-lock actions) but does not redefine ENS replacement procedures.
+
+Operationally, AGIJobManager settlement/dispute outcomes remain authoritative even when ENS side-effects fail.
 
 ## Status and lifecycle
 
@@ -282,6 +310,13 @@ Typical causes in v21:
 - Content blocking/privacy tooling may block third-party scripts/iframes.
 - Continue with non-embedded/manual asset routing if policy requires it.
 
+### Bridged token arrives but official mint fails
+
+- Confirm wallet is on Ethereum Mainnet before calling `depositExact`.
+- Confirm bridged-token balance is non-zero.
+- If approval is requested, wait for approval confirmation before retrying mint.
+- Re-check custom recipient formatting before signing.
+
 ### Wrong contract target concern
 
 - Stop before signing.
@@ -296,3 +331,4 @@ Typical causes in v21:
 - ENS replacement runbook: [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - ENS behavior overview: [docs/ENS/ENS_JOB_PAGES_OVERVIEW.md](../ENS/ENS_JOB_PAGES_OVERVIEW.md)
 - Deployment troubleshooting: [docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md](../TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
+- UI directory inventory: [ui/README.md](../../ui/README.md)

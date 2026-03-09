@@ -17,6 +17,7 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **ENSJobPages replacement operator:** use one canonical flow in [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Troubleshooting during deployment/cutover:** go to [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
 - **Standalone HTML UI operator/reviewer:** start with [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md), then see [`ui/README.md`](ui/README.md) for UI surface inventory.
+- **Broader/full UI contributor:** use [`docs/ui/README.md`](docs/ui/README.md) for Next.js UI roadmap, runbooks, and release/testing docs.
 
 ## Canonical operator answers (quick reference)
 
@@ -66,6 +67,8 @@ Irreversible actions (delay until validated):
 | Operate a versioned single-file mainnet interface | [`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`](ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html) + [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) | Fast, standalone browser artifact for direct operator/reviewer workflows. |
 | Build/test the broader UI stack | [`ui/`](ui/) + [`docs/ui/README.md`](docs/ui/README.md) | Full Next.js UI effort, still in active development. |
 | Deploy/replace contracts and ENS components | [`hardhat/README.md`](hardhat/README.md) + [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md) | Canonical deployment and operator runbooks; UI is not a deployment substitute. |
+
+> **UI safety boundary:** the standalone HTML artifact is action-capable, but contract deployment, ownership wiring, and ENS replacement authority remain in Hardhat/deployment runbooks.
 
 ### Core contracts
 - `contracts/AGIJobManager.sol`: core escrow, role checks, job lifecycle, settlement, dispute flow, owner controls.

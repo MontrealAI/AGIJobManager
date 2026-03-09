@@ -4,6 +4,8 @@ This `hardhat/` project is the official deployment and verification workflow for
 
 > Truffle remains supported as a legacy path. Hardhat is the recommended production path for new deployments and replacements.
 
+UI note: this guide is deployment authority. For the standalone mainnet browser artifact, see `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`; use UI only after deploy/cutover steps are complete.
+
 ## In one minute (mainnet-safe path)
 
 1. Run compile + `DRY_RUN=1` first.
