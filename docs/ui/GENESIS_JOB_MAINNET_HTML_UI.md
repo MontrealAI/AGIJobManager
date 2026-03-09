@@ -1,5 +1,13 @@
 # Standalone HTML UI: `agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`
 
+## At-a-glance navigation
+
+- [Quick start (safe and practical)](#quick-start-safe-and-practical)
+- [Embedded network and contract assumptions (v21)](#embedded-network-and-contract-assumptions-v21)
+- [Security and trust hygiene](#security-and-trust-hygiene)
+- [Troubleshooting (standalone page)](#troubleshooting-standalone-page)
+- [What this page does not replace](#what-this-page-does-not-replace)
+
 ## What this page is
 
 `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` is a **standalone, versioned HTML interface artifact** for AGIJobManager mainnet operations and demonstrations.
@@ -107,6 +115,17 @@ The page hardcodes the following addresses/constants in the script block:
 Operator implication:
 - Treat this artifact as a **mainnet-targeted versioned snapshot**.
 - Re-verify addresses against current deployment documentation before signing transactions.
+
+## External dependencies used by this standalone page
+
+The HTML file loads third-party resources directly in-browser:
+
+- Web3 runtime from jsDelivr: `https://cdn.jsdelivr.net/npm/web3@4.8.0/dist/web3.min.js`
+- deBridge widget script: `https://app.debridge.com/assets/scripts/widget.js`
+
+Operational implication:
+- If your browser, policy, or network blocks these hosts, some wallet/bridge features can degrade or fail.
+- Core contract truth remains on-chain; this page is a convenience client.
 
 ## Security and trust hygiene
 
