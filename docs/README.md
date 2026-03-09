@@ -23,6 +23,7 @@ If you only read one thing right now:
 ### UI task routing (fast path)
 
 - **I need a single-file browser artifact for mainnet operations/review:** [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- **I need a safe pre-sign workflow for the standalone page:** use the checklist and troubleshooting sections in [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md).
 - **I need to understand what exists in `ui/` (including older snapshots):** [../ui/README.md](../ui/README.md)
 - **I need the broader/full UI roadmap and runbooks:** [ui/README.md](./ui/README.md)
 
@@ -36,6 +37,8 @@ When you intentionally operate the single-file mainnet artifact (`v21`), use thi
 3. [../hardhat/README.md](../hardhat/README.md) and [DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](./DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) for deployment/cutover authority.
 
 If guidance appears to conflict, follow deployment/operator runbooks and on-chain contract behavior.
+
+**UI safety boundary:** standalone HTML is a client surface, not deployment authority; use Hardhat/deployment docs for owner/cutover decisions.
 
 ## Canonical docs (use these when docs overlap)
 
