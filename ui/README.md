@@ -72,3 +72,9 @@ npm run verify:committed-html
 - Read-only behavior is available before wallet connection.
 - Write actions are still governed by deployed contracts and wallet signature prompts.
 - WalletConnect is optional in the Next.js app; extension wallets are sufficient for many flows.
+
+## Safety and scope notes
+
+- The standalone HTML artifact is **action-capable** on mainnet when a wallet is connected and terms are accepted in-page.
+- The standalone artifact can be opened directly from disk, but local HTTP serving is recommended for browser compatibility.
+- Neither UI surface replaces deployment/operator runbooks; use `../hardhat/README.md` and deployment docs for canonical contract operations.

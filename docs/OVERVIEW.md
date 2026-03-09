@@ -20,6 +20,13 @@ AGIJobManager is an owner-operated escrow and settlement contract for employer-a
 - **UI (broader/full effort in development)**: [`ui/`](../ui), docs: [`ui/README.md`](./ui/README.md)
 - **Standalone HTML UI artifact (versioned, additive)**: [`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`](../ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html), runbook: [`ui/GENESIS_JOB_MAINNET_HTML_UI.md`](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
 
+
+## UI surfaces (current state)
+
+- **Standalone HTML UI artifact (v21):** a versioned, single-file mainnet-focused interface for direct browser-based operations/review.
+- **Broader/full UI:** Next.js UI stack in `ui/`, still under active development.
+- **Authority model:** UI surfaces are clients; AGIJobManager + ENSJobPages contracts remain authoritative.
+
 ## Roles
 
 | Role | Enforced on-chain | Off-chain responsibility |
