@@ -10,6 +10,14 @@ If you only read one thing right now:
 - **Owner using Etherscan only:** [DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md)
 - **Standalone HTML UI (versioned mainnet artifact):** [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
 
+## UI surfaces at a glance
+
+| Surface | What it is now | Use this when | Canonical doc |
+| --- | --- | --- | --- |
+| Standalone HTML UI artifact | Versioned, single-file, mainnet-focused browser artifact (`v21`). | You need a direct operator/reviewer interface without running the full UI stack. | [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) |
+| Broader/full UI effort | Next.js UI with ongoing development, test, and release tracks. | You are developing, testing, or evaluating the full UI roadmap. | [ui/README.md](./ui/README.md) and [../ui/README.md](../ui/README.md) |
+
+
 ## Canonical docs (use these when docs overlap)
 
 - **Canonical deployment workflow:** [../hardhat/README.md](../hardhat/README.md)

@@ -58,6 +58,14 @@ Irreversible actions (delay until validated):
 - **Standalone HTML UI artifact (versioned):** `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` with operator guide at [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md).
 - **Broader/full UI in development:** Next.js app and UI docs in [`ui/`](ui/) and [`docs/ui/README.md`](docs/ui/README.md).
 
+### UI routing (pick the right interface quickly)
+
+| If you need to... | Use this | Why |
+| --- | --- | --- |
+| Operate a versioned single-file mainnet interface | [`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`](ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html) + [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) | Fast, standalone browser artifact for direct operator/reviewer workflows. |
+| Build/test the broader UI stack | [`ui/`](ui/) + [`docs/ui/README.md`](docs/ui/README.md) | Full Next.js UI effort, still in active development. |
+| Deploy/replace contracts and ENS components | [`hardhat/README.md`](hardhat/README.md) + [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md) | Canonical deployment and operator runbooks; UI is not a deployment substitute. |
+
 ### Core contracts
 - `contracts/AGIJobManager.sol`: core escrow, role checks, job lifecycle, settlement, dispute flow, owner controls.
 - `contracts/ens/ENSJobPages.sol`: optional ENS per-job page manager, naming, resolver updates, permission hooks, and legacy wrapped-page migration.

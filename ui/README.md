@@ -24,6 +24,11 @@ The standalone HTML page is **not** a replacement for the full UI roadmap.
 Open the dedicated runbook first:
 - `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 
+Recommended operator posture:
+- Treat `v21` as a versioned mainnet snapshot with embedded addresses.
+- Verify network + addresses in the runbook before signing wallet transactions.
+- Use the broader Next.js UI docs for roadmap/development workflows.
+
 ### Run the broader Next.js UI locally
 
 ```bash
