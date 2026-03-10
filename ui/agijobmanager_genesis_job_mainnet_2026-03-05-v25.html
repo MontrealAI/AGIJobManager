@@ -2257,7 +2257,7 @@ const AGIJobManagerABI = [
       {"inputs":[],"name":"jobsRootName","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"jobLabelPrefix","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobLabelSnapshot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobLabelSnapshot","outputs":[{"internalType":"bool","name":"isSet","type":"bool"},{"internalType":"string","name":"label","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"setJobLabelPrefix","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"bool","name":"","type":"bool"}],"name":"setUseEnsJobTokenURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[],"name":"lockConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
@@ -2855,8 +2855,7 @@ const AGIJobManagerABI = [
       let bond = (payout * agentBps) / 10000n;
       if(bond < agentMin) bond = agentMin;
       if(durationLimit > 0n && duration > 0n){
-        const boundedDuration = duration > durationLimit ? durationLimit : duration;
-        const durationPremium = (bond * boundedDuration) / durationLimit;
+        const durationPremium = (bond * duration) / durationLimit;
         bond += durationPremium;
       }
       if(agentMax > 0n && bond > agentMax) bond = agentMax;
@@ -3219,6 +3218,13 @@ const AGIJobManagerABI = [
       if(!uri || uri === "—"){ setToast("No ENS URI preview available.", "warn"); return; }
       navigator.clipboard.writeText(uri).then(()=>setToast("Predicted ENS URI copied.", "ok")).catch(()=>setToast(uri, "ok"));
     }
+
+    function parseJobLabelSnapshot(snapshotRead){
+      if(snapshotRead == null) return { isSet:false, label:'' };
+      if(Array.isArray(snapshotRead)) return { isSet: !!snapshotRead[0], label: String(snapshotRead[1] || '') };
+      if(typeof snapshotRead === 'object') return { isSet: !!snapshotRead.isSet, label: String(snapshotRead.label || '') };
+      return { isSet: String(snapshotRead || '').trim().length > 0, label: String(snapshotRead || '') };
+    }
     async function updateEnsJobPagePreview(){
       try{
         if(!web3 || !agiJobManager){ return; }
@@ -3240,7 +3246,8 @@ const AGIJobManagerABI = [
         if(el("ensRootName")) el("ensRootName").textContent = rootName || "—";
         if(el("predictedJobLabel")) el("predictedJobLabel").textContent = label || "Unavailable (read failed)";
         if(el("ensLabelPrefix")) el("ensLabelPrefix").textContent = labelPrefix || "Unavailable";
-        if(el("ensLabelSnapshot")) el("ensLabelSnapshot").textContent = labelSnapshot || "No snapshot for next job (expected for new IDs)";
+        const parsedSnapshot = parseJobLabelSnapshot(labelSnapshot);
+        if(el("ensLabelSnapshot")) el("ensLabelSnapshot").textContent = parsedSnapshot.isSet ? parsedSnapshot.label : "No snapshot for next job (expected for new IDs)";
         if(el("predictedEnsName")) el("predictedEnsName").textContent = ensName || "—";
         if(el("predictedEnsURI")) el("predictedEnsURI").textContent = ensURI || "—";
         if(el("predictedEnsNode")) el("predictedEnsNode").textContent = ensNode || "—";
