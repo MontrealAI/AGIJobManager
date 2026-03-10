@@ -5559,9 +5559,39 @@ function normalizeIpfsToHttp(uri){
           await connectWallet();
         });
         window.ethereum.on("chainChanged", async ()=>{
-          try{ if(web3){ const cid = await web3.eth.getChainId(); isMainnet = (Number(cid)===1); el("chainStatus").textContent = `chainId ${cid}` + (isMainnet ? " (Mainnet)" : " (Not Mainnet)"); updateWriteGate();} }catch{}
+          let networkToast = "";
+          let networkToastType = "warn";
+          try{
+            if(!web3) web3 = new Web3(window.ethereum);
+            const cid = await web3.eth.getChainId();
+            isMainnet = (Number(cid)===1);
+            el("chainStatus").textContent = `chainId ${cid}` + (isMainnet ? " (Mainnet)" : " (Not Mainnet)");
+
+            if(!agiJobManager) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
+            if(!ensJobPages) ensJobPages = new web3.eth.Contract(ENSJobPagesABI, ENS_JOB_PAGES);
+
+            if(isMainnet){
+              const tokenAddr = await agiJobManager.methods.agiToken().call();
+              agiToken = new web3.eth.Contract(ERC20ABI, tokenAddr);
+              try{ tokenDecimals = Number(await agiToken.methods.decimals().call()); }catch{ tokenDecimals = 18; }
+              if(userAccount){
+                el("refreshBtn").disabled = false;
+                await refreshAll();
+              }
+              networkToast = "Network changed. Mainnet contracts reloaded.";
+            }else{
+              agiToken = null;
+              tokenDecimals = 18;
+              networkToast = "Read-only mode: switch to Ethereum Mainnet to transact.";
+            }
+            updateWriteGate();
+          }catch(e){
+            if(!isExpectedRpcRevert(e)) console.error(e);
+            networkToast = `Network update issue: ${normalizedErrorMessage(e)}`;
+            networkToastType = "bad";
+          }
           clearToast();
-          setToast(isMainnet ? "Network changed. Click Refresh if needed." : "Read-only mode: switch to Ethereum Mainnet to transact.", "warn");
+          setToast(networkToast || (isMainnet ? "Network changed. Mainnet contracts reloaded." : "Read-only mode: switch to Ethereum Mainnet to transact."), networkToastType);
         });
       }
     }
