@@ -2522,6 +2522,8 @@ const AGIJobManagerABI = [
         }
         const receipt = await promi;
         updateTxActivity(pending.id, { state:'success', txHash: receipt?.transactionHash || pending.txHash || '', detail: options.successDetail || 'Confirmed on-chain.' });
+        activeJobIndexCache.ids = null;
+        activeJobIndexCache.ts = 0;
         return receipt;
       }catch(err){
         updateTxActivity(pending.id, { state:'error', detail: err?.message || String(err) });
@@ -2711,7 +2713,7 @@ const AGIJobManagerABI = [
     }
     function clearToast(){const t=el("toast"); if(t){t.style.display="none"; t.textContent="";}}
     function requireConnected(){
-      if(!web3 || !userAccount || !agiJobManager || !agiToken){
+      if(!web3 || !userAccount || !agiJobManager){
         setToast("Connect your wallet first.", "warn");
         return false;
       }
