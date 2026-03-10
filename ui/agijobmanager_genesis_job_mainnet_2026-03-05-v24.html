@@ -4525,6 +4525,7 @@ async function updateSummary(){
 
     async function lockEns(jobId){
       if(!requireConnected()) return;
+      if(!mustBeReadyToWrite()) return;
       try{
         const job = jobCache.get(String(jobId));
         openActionReview({
@@ -5084,7 +5085,7 @@ function normalizeIpfsToHttp(uri){
     function buildActionButtons(job){
       const i = job.id;
       const actions = [];
-      const txAttr = isMainnet ? 'data-tx="1"' : 'data-tx="1" disabled';
+      const txAttr = (isMainnet && hasAcceptedTerms) ? 'data-tx="1"' : 'data-tx="1" disabled';
       const isOpen = job.assignedAgent === "0x0000000000000000000000000000000000000000";
       if(isOpen && verified.agent) actions.push(`<button class="btn" ${txAttr} onclick="applyForJob(${i})">Apply</button>`);
       if(!isOpen && job.assignedAgent.toLowerCase()===userAccount?.toLowerCase() && !job.completed && !job.expired && !job.completionRequested){ actions.push(`<button class="btn" ${txAttr} onclick="requestCompletion(${i})">Request completion</button>`); }
