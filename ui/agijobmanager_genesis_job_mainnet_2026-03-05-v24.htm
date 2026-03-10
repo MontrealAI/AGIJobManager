@@ -2024,6 +2024,7 @@ Evaluation methodology"></textarea>
     let debridgeStableAmount = "10000";
     let debridgeSyncTimer = null;
     const jobCache = new Map();
+    const activeJobIndexCache = { ids:null, ts:0 };
     const AGI_JOB_MANAGER = "0xB3AAeb69b630f0299791679c063d68d6687481d1";
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const ENS_JOB_PAGES = "0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94";
@@ -2237,6 +2238,52 @@ const AGIJobManagerABI = [
         return {__safeReadError:true, stepLabel, summary};
       }
     }
+    function getProtocolNumber(key){
+      const value = window.protocolState?.[key];
+      if(value === null || value === undefined || value === '') return null;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    }
+    function protocolWindowLabel(key, fallback='Unknown (RPC read failed)'){
+      const n = getProtocolNumber(key);
+      return n == null ? fallback : secondsToHuman(n);
+    }
+    async function getActiveJobIdsFromEvents(totalHint){
+      const now = Date.now();
+      if(activeJobIndexCache.ids && (now - activeJobIndexCache.ts) < 20_000){
+        return activeJobIndexCache.ids.slice();
+      }
+      const fallback = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
+      try{
+        const [createdEvents, cancelledEvents] = await Promise.all([
+          agiJobManager.getPastEvents('JobCreated', {fromBlock:0, toBlock:'latest'}),
+          agiJobManager.getPastEvents('JobCancelled', {fromBlock:0, toBlock:'latest'})
+        ]);
+        const created = new Set();
+        for(const ev of createdEvents || []){
+          const id = Number(ev?.returnValues?.jobId);
+          if(Number.isInteger(id) && id >= 0) created.add(id);
+        }
+        if(!created.size){
+          activeJobIndexCache.ids = fallback.slice();
+          activeJobIndexCache.ts = now;
+          return fallback;
+        }
+        for(const ev of cancelledEvents || []){
+          const id = Number(ev?.returnValues?.jobId);
+          if(Number.isInteger(id) && id >= 0) created.delete(id);
+        }
+        const ids = Array.from(created).sort((a,b)=>a-b);
+        activeJobIndexCache.ids = ids.slice();
+        activeJobIndexCache.ts = now;
+        return ids;
+      }catch(error){
+        if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
+        activeJobIndexCache.ids = fallback.slice();
+        activeJobIndexCache.ts = now;
+        return fallback;
+      }
+    }
 
     const TX_ACTIVITY_KEY = "agijobmanager_v17_tx_activity";
     const ELITE_PREFS_KEY = "agijobmanager_v18_elite_prefs";
@@ -2374,7 +2421,11 @@ const AGIJobManagerABI = [
         if(status === 'completion' && verified.club){
           priority = 0;
           title = `Job #${job.id} is waiting for validator review`;
-          reason = `${job.approvals} approvals · ${job.disapprovals} disapprovals · ${fmtRemaining(Number(job.completionRequestedAt||0) + Number(window.protocolState?.completionReviewPeriod || 0))}`;
+          const reviewWindow = getProtocolNumber('completionReviewPeriod');
+          const reviewEta = reviewWindow == null
+            ? 'review window unknown (RPC read failed)'
+            : fmtRemaining(Number(job.completionRequestedAt||0) + reviewWindow);
+          reason = `${job.approvals} approvals · ${job.disapprovals} disapprovals · ${reviewEta}`;
           tags.push('validator');
           quick = {label:'Open review', fn:`openJobDetails(${job.id})`};
         }else if(status === 'assigned' && myAgent && !job.completionRequested){
@@ -3695,7 +3746,7 @@ const AGIJobManagerABI = [
         await refreshAgiAlphaBridgePanel();
         await updateEnsJobPagePreview();
         await loadJobs();
-        await loadNFTs();
+        loadNFTs().catch(err=>{ if(!isExpectedRpcRevert(err)) console.error(err); });
         if(currentJobDetailId !== null) await openJobDetails(currentJobDetailId);
         markRefreshed();
         if(!isAuto) setToast("Up to date.", "ok");
@@ -3706,6 +3757,7 @@ const AGIJobManagerABI = [
     }
 
 async function updateSummary(){
+      const prior = window.protocolState || {};
       const total = await agiJobManager.methods.nextJobId().call();
       el("totalJobs").textContent = total;
 
@@ -3714,13 +3766,13 @@ async function updateSummary(){
       const vq = await agiJobManager.methods.voteQuorum().call();
       const crp = await agiJobManager.methods.completionReviewPeriod().call();
       const chpRead = await runSafeReadStep('challengePeriodAfterApproval', ()=>agiJobManager.methods.challengePeriodAfterApproval().call(), {silent:true});
-      const chp = chpRead?.__safeReadError ? '0' : chpRead;
+      const chp = chpRead?.__safeReadError ? (prior.challengePeriodAfterApproval ?? null) : Number(chpRead);
 
       el("reqApprovals").textContent = ra;
       el("reqDisapprovals").textContent = rd;
       el("voteQuorum").textContent = vq;
       el("completionReview").textContent = secondsToHuman(crp);
-      el("challengePeriod").textContent = secondsToHuman(chp);
+      el("challengePeriod").textContent = chp == null ? 'Unknown (RPC read failed)' : secondsToHuman(chp);
 
       // Protocol parameters (bonds, limits, pause states)
       const [
@@ -3745,8 +3797,8 @@ async function updateSummary(){
         runSafeReadStep('disputeReviewPeriod', ()=>agiJobManager.methods.disputeReviewPeriod().call(), {silent:true})
       ]);
       const maxActiveSafe = maxActive?.__safeReadError ? '—' : maxActive;
-      const settlePaused = settlePausedRead?.__safeReadError ? false : settlePausedRead;
-      const drp = drpRead?.__safeReadError ? '0' : drpRead;
+      const settlePaused = settlePausedRead?.__safeReadError ? (prior.settlementPaused ?? null) : !!settlePausedRead;
+      const drp = drpRead?.__safeReadError ? (prior.disputeReviewPeriod ?? null) : Number(drpRead);
 
       el("agentBondMin").textContent = formatUnitsToAmount(aMin);
       el("agentBondBps").textContent = aBps;
@@ -3761,8 +3813,9 @@ async function updateSummary(){
       window.protocolState = {
         chainId: 1,
         completionReviewPeriod: Number(crp),
-        challengePeriodAfterApproval: Number(chp),
-        disputeReviewPeriod: Number(drp),
+        challengePeriodAfterApproval: chp,
+        disputeReviewPeriod: drp,
+        settlementPaused: settlePaused,
         requiredValidatorApprovals: Number(ra),
         requiredValidatorDisapprovals: Number(rd),
         voteQuorum: Number(vq)
@@ -3771,8 +3824,8 @@ async function updateSummary(){
       el("maxJobPayout").textContent = formatUnitsToAmount(maxPayout);
       el("jobDurationLimit").textContent = jobLimit;
       el("pausedState").textContent = pausedState ? "true" : "false";
-      el("settlementPaused").textContent = settlePaused ? "true" : "false";
-      el("disputeReview").textContent = secondsToHuman(drp);
+      el("settlementPaused").textContent = settlePaused === null ? 'unknown' : (settlePaused ? "true" : "false");
+      el("disputeReview").textContent = drp == null ? 'Unknown (RPC read failed)' : secondsToHuman(drp);
 
       const bal = await agiToken.methods.balanceOf(userAccount).call();
       el("agiBalance").textContent = formatUnitsToAmount(bal);
@@ -3932,7 +3985,8 @@ async function updateSummary(){
       const status = classifyJobStatus(job);
       const now = nowSec();
       if(status === 'completion'){
-        const endTs = Number(job.completionRequestedAt || 0) + Number(window.protocolState?.completionReviewPeriod || 0);
+        const reviewWindow = getProtocolNumber('completionReviewPeriod');
+        const endTs = reviewWindow == null ? 0 : Number(job.completionRequestedAt || 0) + reviewWindow;
         return [0, endTs ? Math.max(0, endTs - now) : Number.MAX_SAFE_INTEGER, -Number(job.id)];
       }
       if(status === 'assigned'){
@@ -3976,17 +4030,23 @@ async function updateSummary(){
 
     async function loadJobs(){
       const total = Number(await agiJobManager.methods.nextJobId().call());
+      const jobIds = await getActiveJobIdsFromEvents(total);
       const tbody = el("jobsBody");
       tbody.innerHTML = "";
       let myJobsCount = 0;
       const jobs = [];
-      for(let i=0;i<total;i++){
-        const core = await agiJobManager.methods.getJobCore(i).call();
-        const spec = await agiJobManager.methods.getJobSpecURI(i).call();
-        const val = await agiJobManager.methods.getJobValidation(i).call();
+      const liveIds = new Set();
+      for(const i of jobIds){
+        const core = await runSafeReadStep(`getJobCore(${i})`, ()=>agiJobManager.methods.getJobCore(i).call(), {silent:true});
+        if(core?.__safeReadError) continue;
+        const spec = await runSafeReadStep(`getJobSpecURI(${i})`, ()=>agiJobManager.methods.getJobSpecURI(i).call(), {silent:true});
+        if(spec?.__safeReadError) continue;
+        const val = await runSafeReadStep(`getJobValidation(${i})`, ()=>agiJobManager.methods.getJobValidation(i).call(), {silent:true});
+        if(val?.__safeReadError) continue;
         let completionURI = "";
         if(val.completionRequested){
-          try{ completionURI = await agiJobManager.methods.getJobCompletionURI(i).call(); }catch{}
+          const completionRead = await runSafeReadStep(`getJobCompletionURI(${i})`, ()=>agiJobManager.methods.getJobCompletionURI(i).call(), {silent:true});
+          completionURI = completionRead?.__safeReadError ? '' : completionRead;
         }
         const job = {
           id:i,
@@ -4009,7 +4069,11 @@ async function updateSummary(){
         };
         if(String(core.employer).toLowerCase()===String(userAccount||'').toLowerCase()) myJobsCount++;
         jobCache.set(String(i), job);
+        liveIds.add(String(i));
         jobs.push(job);
+      }
+      for(const key of Array.from(jobCache.keys())){
+        if(!liveIds.has(key)) jobCache.delete(key);
       }
       latestJobs = jobs.slice();
       const rows = jobs.map(job=>({ job, actions: buildActionButtons(job) }))
@@ -4046,7 +4110,7 @@ async function updateSummary(){
         }
       }
       el("myJobs").textContent = String(myJobsCount);
-      if(el("jobsVisibleSummary")) el("jobsVisibleSummary").textContent = `${visibleCount} shown / ${total} total · sorted ${jobSortMode}`;
+      if(el("jobsVisibleSummary")) el("jobsVisibleSummary").textContent = `${visibleCount} shown / ${jobIds.length} active IDs · sorted ${jobSortMode}`;
       updateJobStats(jobs, visibleCount);
       renderAttentionQueue();
     }
@@ -4837,34 +4901,46 @@ function normalizeIpfsToHttp(uri){
     async function loadNFTs(){
       const my = el("myNfts");
       const all = el("allNfts");
+      my.innerHTML = "<li>Loading…</li>";
+      all.innerHTML = "<li>Loading…</li>";
+      const totalRead = await runSafeReadStep('nextTokenId', ()=>agiJobManager.methods.nextTokenId().call(), {silent:true});
+      if(totalRead?.__safeReadError){
+        my.innerHTML = '<li>Unable to load NFT index right now.</li>';
+        all.innerHTML = '<li>Unable to load NFT index right now.</li>';
+        return;
+      }
+      const total = Number(totalRead);
+      const start = Math.max(0, total - 25);
+      const myItems = [];
+      const allItems = [];
       my.innerHTML = "";
       all.innerHTML = "";
-      const total = Number(await agiJobManager.methods.nextTokenId().call());
-      const start = Math.max(0, total - 25);
 
       for(let i=0;i<total;i++){
-        const owner = await agiJobManager.methods.ownerOf(i).call();
-        const uri = await agiJobManager.methods.tokenURI(i).call();
+        const [ownerRead, uriRead] = await Promise.all([
+          runSafeReadStep(`ownerOf(${i})`, ()=>agiJobManager.methods.ownerOf(i).call(), {silent:true}),
+          runSafeReadStep(`tokenURI(${i})`, ()=>agiJobManager.methods.tokenURI(i).call(), {silent:true})
+        ]);
+        if(ownerRead?.__safeReadError || uriRead?.__safeReadError) continue;
+        const owner = ownerRead;
+        const uri = uriRead;
         const link = normalizeIpfsToHttp(uri);
         if(owner.toLowerCase() === userAccount.toLowerCase()){
-          const li = document.createElement("li");
-          li.style.margin = "6px 0";
-          li.innerHTML = `#${i} · <a href="${link}" target="_blank" rel="noopener">${uri}</a>`;
-          my.appendChild(li);
+          myItems.push(`#${i} · <a href="${link}" target="_blank" rel="noopener">${uri}</a>`);
         }
+        if(i % 20 === 0) await new Promise(r=>setTimeout(r, 0));
       }
 
       for(let i=start;i<total;i++){
-        const uri = await agiJobManager.methods.tokenURI(i).call();
+        const uriRead = await runSafeReadStep(`tokenURI(${i})`, ()=>agiJobManager.methods.tokenURI(i).call(), {silent:true});
+        if(uriRead?.__safeReadError) continue;
+        const uri = uriRead;
         const link = normalizeIpfsToHttp(uri);
-        const li = document.createElement("li");
-        li.style.margin = "6px 0";
-        li.innerHTML = `#${i} · <a href="${link}" target="_blank" rel="noopener">${uri}</a>`;
-        all.appendChild(li);
+        allItems.push(`#${i} · <a href="${link}" target="_blank" rel="noopener">${uri}</a>`);
       }
 
-      if(!my.children.length){const li=document.createElement("li");li.textContent="—";my.appendChild(li);}
-      if(!all.children.length){const li=document.createElement("li");li.textContent="—";all.appendChild(li);}
+      my.innerHTML = myItems.length ? myItems.map(x=>`<li style="margin:6px 0">${x}</li>`).join('') : '<li>—</li>';
+      all.innerHTML = allItems.length ? allItems.map(x=>`<li style="margin:6px 0">${x}</li>`).join('') : '<li>—</li>';
     }
 
     
@@ -4910,15 +4986,16 @@ function normalizeIpfsToHttp(uri){
       const quorum = Number(el("voteQuorum")?.textContent || 0);
       const reqA = Number(el("reqApprovals")?.textContent || 0);
       const reqD = Number(el("reqDisapprovals")?.textContent || 0);
-      const reviewPeriod = Number(window.protocolState?.completionReviewPeriod || 0);
+      const reviewPeriod = getProtocolNumber('completionReviewPeriod');
       const completionAt = Number(job.completionRequestedAt || 0);
-      const reviewEnded = !!completionAt && !!reviewPeriod && nowSec() > completionAt + reviewPeriod;
+      const reviewEnded = !!completionAt && reviewPeriod != null && nowSec() > completionAt + reviewPeriod;
       let headline = "Pending review";
       let rationale = "The job is still moving through the protocol lifecycle.";
       if(job.completed) { headline = "Settled"; rationale = "The job already reached a terminal settlement path."; }
       else if(job.expired) { headline = "Expired"; rationale = "The assigned duration elapsed without a valid completion request."; }
       else if(job.disputed) { headline = "Disputed"; rationale = "A dispute path is active; moderator/owner resolution governs the next outcome."; }
       else if(!job.completionRequested) { headline = "Not in review yet"; rationale = "Finalization is not available before a completion request exists."; }
+      else if(reviewPeriod == null) { headline = "Review window unknown"; rationale = "Completion-review timing could not be read from the RPC provider. Refresh with a healthy provider before sending finalize/dispute transactions."; }
       else if(reviewEnded && totalVotes===0) { headline = "Finalize now → agent-win no-vote path"; rationale = "After the review window, zero votes deterministically settle in favor of the agent in this contract."; }
       else if(reviewEnded && (totalVotes < quorum || approvals===disapprovals)) { headline = "Finalize now → dispute path"; rationale = "Under quorum or a tie forces the job into dispute after the review window."; }
       else if(reviewEnded && approvals>disapprovals) { headline = "Finalize now → agent-win path"; rationale = "Approvals exceed disapprovals after the review window and quorum is satisfied."; }
@@ -4986,15 +5063,15 @@ function normalizeIpfsToHttp(uri){
       const assignedAt = Number(job.assignedAt || 0);
       const duration = Number(job.duration || 0);
       const completionRequestedAt = Number(job.completionRequestedAt || 0);
-      const reviewPeriod = Number(window.protocolState?.completionReviewPeriod || 0);
-      const challengePeriod = Number(window.protocolState?.challengePeriodAfterApproval || 0);
+      const reviewPeriod = getProtocolNumber('completionReviewPeriod');
+      const challengePeriod = getProtocolNumber('challengePeriodAfterApproval');
       const expiryTs = assignedAt && duration ? assignedAt + duration : 0;
-      const reviewTs = completionRequestedAt && reviewPeriod ? completionRequestedAt + reviewPeriod : 0;
-      const challengeTs = completionRequestedAt && challengePeriod ? completionRequestedAt + challengePeriod : 0;
+      const reviewTs = completionRequestedAt && reviewPeriod != null ? completionRequestedAt + reviewPeriod : 0;
+      const challengeTs = completionRequestedAt && challengePeriod != null ? completionRequestedAt + challengePeriod : 0;
       return [
         {label:"Assignment / expiry window", when: expiryTs, desc: expiryTs ? formatDateTime(expiryTs) : "Not assigned"},
-        {label:"Completion review end", when: reviewTs, desc: reviewTs ? formatDateTime(reviewTs) : "No completion request yet"},
-        {label:"Earliest approval challenge end", when: challengeTs, desc: challengeTs ? formatDateTime(challengeTs) : "Needs completion request / approval threshold"}
+        {label:"Completion review end", when: reviewTs, desc: reviewPeriod == null ? "Unknown (RPC read failed)" : (reviewTs ? formatDateTime(reviewTs) : "No completion request yet")},
+        {label:"Earliest approval challenge end", when: challengeTs, desc: challengePeriod == null ? "Unknown (RPC read failed)" : (challengeTs ? formatDateTime(challengeTs) : "Needs completion request / approval threshold")}
       ].map(x=>`<div class="countdownCard"><div class="smallNote">${x.label}</div><div style="font-size:1.02rem;font-weight:700;margin:6px 0">${fmtRemaining(x.when)}</div><div class="smallNote">${x.desc}</div></div>`).join('');
     }
     function buildPreflight(job, sim){
@@ -5047,11 +5124,24 @@ function normalizeIpfsToHttp(uri){
       const id = Number(jobId);
       let job = jobCache.get(String(id));
       if(!job){
-        const core = await agiJobManager.methods.getJobCore(id).call();
-        const spec = await agiJobManager.methods.getJobSpecURI(id).call();
-        const val = await agiJobManager.methods.getJobValidation(id).call();
+        const core = await runSafeReadStep(`getJobCore(${id})`, ()=>agiJobManager.methods.getJobCore(id).call(), {silent:true});
+        if(core?.__safeReadError){
+          currentJobDetailId = null;
+          setToast(`Job #${id} is not available (it may be cancelled/delisted or the RPC node is stale).`, 'warn');
+          return;
+        }
+        const spec = await runSafeReadStep(`getJobSpecURI(${id})`, ()=>agiJobManager.methods.getJobSpecURI(id).call(), {silent:true});
+        const val = await runSafeReadStep(`getJobValidation(${id})`, ()=>agiJobManager.methods.getJobValidation(id).call(), {silent:true});
+        if(spec?.__safeReadError || val?.__safeReadError){
+          currentJobDetailId = null;
+          setToast(`Unable to fully load job #${id} right now. Please refresh and try again.`, 'warn');
+          return;
+        }
         let completionURI = "";
-        if(val.completionRequested){ try{ completionURI = await agiJobManager.methods.getJobCompletionURI(id).call(); }catch{} }
+        if(val.completionRequested){
+          const completionRead = await runSafeReadStep(`getJobCompletionURI(${id})`, ()=>agiJobManager.methods.getJobCompletionURI(id).call(), {silent:true});
+          completionURI = completionRead?.__safeReadError ? '' : completionRead;
+        }
         job = {
           id, employer:core.employer, assignedAgent:core.assignedAgent, payout:core.payout, duration:core.duration, assignedAt:core.assignedAt,
           completed:core.completed, disputed:core.disputed, expired:core.expired, completionRequested:val.completionRequested,
