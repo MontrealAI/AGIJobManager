@@ -5184,12 +5184,19 @@ function normalizeIpfsToHttp(uri){
         ['Approvals', sim.approvals/total*100, sim.approvals], ['Disapprovals', sim.disapprovals/total*100, sim.disapprovals], ['Quorum', sim.totalVotes/Math.max(1,sim.quorum)*100, `${sim.totalVotes}/${sim.quorum}`]
       ].map(([label,pct,val])=>`<div class="barRow"><div class="smallNote">${label}</div><div class="barTrack"><div class="barFill" style="width:${Math.max(0,Math.min(100,Number(pct)))}%"></div></div><div class="smallNote">${val}</div></div>`).join('');
       el('jobUriCards').innerHTML = [
-        ['Spec URI', safeLink(job.specURI)], ['Completion URI', job.completionURI ? safeLink(job.completionURI) : '—'], ['Predicted ENS URI', ens.ensUri || '—'], ['Predicted ENS name', ens.ensName || '—']
+        ['Spec URI', safeLink(job.specURI)],
+        ['Completion URI', job.completionURI ? safeLink(job.completionURI) : '—'],
+        ['Predicted ENS URI', ens.ensUri ? safeLink(ens.ensUri) : '—'],
+        ['Predicted ENS name', escapeHtml(ens.ensName || '—')]
       ].map(([k,v])=>`<div class="ensRecord"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
       el('jobEnsRecords').innerHTML = [
-        ['ENS root', ens.rootName || '—'], ['ENS name', ens.ensName || '—'], ['ENS URI', ens.ensUri || '—'], ['ENS node', ens.node || '—'],
-        ['Resolver', ens.resolverAddr || '—'], ['Token URI mode', ens.tokenUriMode ? 'ENS token URI enabled' : 'Completion URI / base IPFS path'],
-        ['schema', ens.texts?.schema || '—'], ['agijobs.spec.public', ens.texts?.['agijobs.spec.public'] ? safeLink(ens.texts['agijobs.spec.public']) : '—'],
+        ['ENS root', escapeHtml(ens.rootName || '—')],
+        ['ENS name', escapeHtml(ens.ensName || '—')],
+        ['ENS URI', ens.ensUri ? safeLink(ens.ensUri) : '—'],
+        ['ENS node', escapeHtml(ens.node || '—')],
+        ['Resolver', escapeHtml(ens.resolverAddr || '—')],
+        ['Token URI mode', ens.tokenUriMode ? 'ENS token URI enabled' : 'Completion URI / base IPFS path'],
+        ['schema', escapeHtml(ens.texts?.schema || '—')], ['agijobs.spec.public', ens.texts?.['agijobs.spec.public'] ? safeLink(ens.texts['agijobs.spec.public']) : '—'],
         ['agijobs.completion.public', ens.texts?.['agijobs.completion.public'] ? safeLink(ens.texts['agijobs.completion.public']) : '—']
       ].map(([k,v])=>`<div class="ensRecord"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
       const timelineHtml = [];
