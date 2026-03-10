@@ -2333,7 +2333,7 @@ const AGIJobManagerABI = [
       if(activeJobIndexCache.ids && (now - activeJobIndexCache.ts) < 20_000){
         return activeJobIndexCache.ids.slice();
       }
-      const fallback = [];
+      const fallback = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
       try{
         const [createdEvents, cancelledEvents] = await Promise.all([
           agiJobManager.getPastEvents('JobCreated', {fromBlock:0, toBlock:'latest'}),
@@ -2853,13 +2853,14 @@ const AGIJobManagerABI = [
       const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
 
       let bond = (payout * agentBps) / 10000n;
+      if(bond < agentMin) bond = agentMin;
       if(durationLimit > 0n && duration > 0n){
         const boundedDuration = duration > durationLimit ? durationLimit : duration;
         const durationPremium = (bond * boundedDuration) / durationLimit;
         bond += durationPremium;
       }
-      if(bond < agentMin) bond = agentMin;
       if(agentMax > 0n && bond > agentMax) bond = agentMax;
+      if(payout > 0n && bond > payout) bond = payout;
       return bond;
     }
     function updateCalculator(){
@@ -2878,18 +2879,15 @@ const AGIJobManagerABI = [
         const agentBps = BigInt(el("agentBondBps").textContent.replace(/[^0-9]/g,"") || "0");
         const validatorBps = BigInt(el("validatorBondBps").textContent.replace(/[^0-9]/g,"") || "0");
         const validationPct = BigInt((el("validationRewardPct").textContent.match(/[0-9]+/) || ["0"])[0]);
-        const durationLimit = BigInt(getProtocolNumber("jobDurationLimit") || 0);
-        const boundedDuration = durationLimit > 0n && duration > durationLimit ? durationLimit : duration;
-        let agentBase = (payout * agentBps) / 10000n;
-        if(durationLimit > 0n && boundedDuration > 0n){
-          const durationPremium = (agentBase * boundedDuration) / durationLimit;
-          agentBase += durationPremium;
-        }
-        if(agentBase < agentMin) agentBase = agentMin;
-        if(agentBase > agentMax) agentBase = agentMax;
+        const agentMin = BigInt(window.protocolState?.agentBondMin || 0);
+        const agentMax = BigInt(window.protocolState?.agentBondMax || 0);
+        const validatorMin = BigInt(window.protocolState?.validatorBondMin || 0);
+        const validatorMax = BigInt(window.protocolState?.validatorBondMax || 0);
+        let agentBase = computeExactAgentBondUnits(payout, duration);
         let validatorBond = (payout * validatorBps) / 10000n;
         if(validatorBond < validatorMin) validatorBond = validatorMin;
-        if(validatorBond > validatorMax) validatorBond = validatorMax;
+        if(validatorMax > 0n && validatorBond > validatorMax) validatorBond = validatorMax;
+        if(payout > 0n && validatorBond > payout) validatorBond = payout;
         const rewardPool = (payout * validationPct) / 100n;
         const disputeBond = computeDisputeBondFromPayout(payout);
         el("calcAgentBond").textContent = formatUnitsToAmount(agentBase);
