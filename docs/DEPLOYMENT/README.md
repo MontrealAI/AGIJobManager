@@ -25,3 +25,12 @@
 - [Truffle Production Deploy](./TRUFFLE_PRODUCTION_DEPLOY.md)
 
 > Truffle migrations remain supported for backward compatibility and historical reproducibility.
+
+## UI boundary during deployment operations
+
+- Standalone HTML UI artifacts are additive client surfaces, not deployment authority.
+- If you are using the standalone `v21` page for operational review, pair it with:
+  - `../ui/GENESIS_JOB_MAINNET_HTML_UI.md`
+  - `../../ui/README.md`
+- For deployment/cutover decisions, this index and `../../hardhat/README.md` remain canonical.
+

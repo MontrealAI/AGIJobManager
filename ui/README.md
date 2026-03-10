@@ -67,6 +67,24 @@ cp .env.example .env.local
 NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
 ```
 
+## Standalone artifact quick-open (copy/paste)
+
+```bash
+cd /workspace/AGIJobManager/ui
+python3 -m http.server 8000
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html
+```
+
+Pre-sign trust check (recommended):
+- Confirm network is Ethereum mainnet (`chainId 1`).
+- Confirm contract addresses against `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
+- Confirm you are intentionally using the standalone artifact (not the broader Next.js UI flow).
+
 ## Required verification commands (Next.js UI workflow)
 
 ```bash
