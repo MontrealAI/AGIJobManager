@@ -2025,6 +2025,7 @@ Evaluation methodology"></textarea>
     let debridgeSyncTimer = null;
     const jobCache = new Map();
     const activeJobIndexCache = { ids:null, ts:0 };
+    const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
     const AGI_JOB_MANAGER = "0xB3AAeb69b630f0299791679c063d68d6687481d1";
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const ENS_JOB_PAGES = "0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94";
@@ -3714,12 +3715,17 @@ const AGIJobManagerABI = [
 
         agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         ensJobPages = new web3.eth.Contract(ENSJobPagesABI, ENS_JOB_PAGES);
-        const tokenAddr = await agiJobManager.methods.agiToken().call();
-        agiToken = new web3.eth.Contract(ERC20ABI, tokenAddr);
-        try{ tokenDecimals = Number(await agiToken.methods.decimals().call()); }catch{ tokenDecimals = 18; }
         bridgedAgiToken = new web3.eth.Contract(ERC20ABI, BRIDGED_AGIALPHA_ETH);
         officialAgiToken = new web3.eth.Contract(ERC20ABI, OFFICIAL_AGIALPHA_ETH);
         agiAlphaEqualMinterVault = new web3.eth.Contract(AGIALPHAEqualMinterVaultABI, AGIALPHA_EQUAL_MINTER_VAULT);
+        if(isMainnet){
+          const tokenAddr = await agiJobManager.methods.agiToken().call();
+          agiToken = new web3.eth.Contract(ERC20ABI, tokenAddr);
+          try{ tokenDecimals = Number(await agiToken.methods.decimals().call()); }catch{ tokenDecimals = 18; }
+        }else{
+          agiToken = null;
+          tokenDecimals = 18;
+        }
 
         el("refreshBtn").disabled = false;
         setToast("Connected. Loading data…", "ok");
@@ -4927,13 +4933,22 @@ function normalizeIpfsToHttp(uri){
         return;
       }
       const total = Number(totalRead);
+      const cacheFresh = nftRenderCache.total === total
+        && nftRenderCache.myAccount === String(userAccount || '').toLowerCase()
+        && (Date.now() - nftRenderCache.ts) < 60_000;
+      if(cacheFresh){
+        my.innerHTML = nftRenderCache.myHtml || '<li>—</li>';
+        all.innerHTML = nftRenderCache.allHtml || '<li>—</li>';
+        return;
+      }
       const start = Math.max(0, total - 25);
+      const myStart = Math.max(0, total - 250);
       const myItems = [];
       const allItems = [];
       my.innerHTML = "";
       all.innerHTML = "";
 
-      for(let i=0;i<total;i++){
+      for(let i=myStart;i<total;i++){
         const [ownerRead, uriRead] = await Promise.all([
           runSafeReadStep(`ownerOf(${i})`, ()=>agiJobManager.methods.ownerOf(i).call(), {silent:true}),
           runSafeReadStep(`tokenURI(${i})`, ()=>agiJobManager.methods.tokenURI(i).call(), {silent:true})
@@ -4956,6 +4971,11 @@ function normalizeIpfsToHttp(uri){
 
       my.innerHTML = myItems.length ? myItems.map(x=>`<li style="margin:6px 0">${x}</li>`).join('') : '<li>—</li>';
       all.innerHTML = allItems.length ? allItems.map(x=>`<li style="margin:6px 0">${x}</li>`).join('') : '<li>—</li>';
+      nftRenderCache.total = total;
+      nftRenderCache.myAccount = String(userAccount || '').toLowerCase();
+      nftRenderCache.myHtml = my.innerHTML;
+      nftRenderCache.allHtml = all.innerHTML;
+      nftRenderCache.ts = Date.now();
     }
 
     
