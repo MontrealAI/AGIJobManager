@@ -2175,7 +2175,18 @@ const AGIJobManagerABI = [
       {"inputs":[],"name":"jobDurationLimit","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"settlementPaused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"disputeReviewPeriod","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+      {"inputs":[],"name":"disputeReviewPeriod","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":false,"internalType":"string","name":"jobSpecURI","type":"string"},{"indexed":true,"internalType":"uint256","name":"payout","type":"uint256"},{"indexed":true,"internalType":"uint256","name":"duration","type":"uint256"},{"indexed":false,"internalType":"string","name":"details","type":"string"}],"name":"JobCreated","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"agent","type":"address"}],"name":"JobApplied","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"agent","type":"address"},{"indexed":false,"internalType":"string","name":"jobCompletionURI","type":"string"}],"name":"JobCompletionRequested","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"validator","type":"address"}],"name":"JobValidated","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"validator","type":"address"}],"name":"JobDisapproved","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"disputant","type":"address"}],"name":"JobDisputed","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"agent","type":"address"},{"indexed":true,"internalType":"uint256","name":"reputationPoints","type":"uint256"}],"name":"JobCompleted","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"JobCancelled","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"employer","type":"address"},{"indexed":false,"internalType":"address","name":"agent","type":"address"},{"indexed":true,"internalType":"uint256","name":"payout","type":"uint256"}],"name":"JobExpired","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":true,"internalType":"address","name":"employer","type":"address"},{"indexed":false,"internalType":"string","name":"tokenURI","type":"string"}],"name":"NFTIssued","type":"event"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint8","name":"hook","type":"uint8"},{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"target","type":"address"},{"indexed":false,"internalType":"bool","name":"success","type":"bool"}],"name":"EnsHookAttempted","type":"event"}
     ];
 
     
@@ -3967,13 +3978,13 @@ async function updateSummary(){
     function safeLink(uri){
       const u = String(uri||"").trim();
       if(!u) return "";
-      const esc = u.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const esc = u.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#39;");
       const lower = u.toLowerCase();
       if(lower.startsWith("https://") || lower.startsWith("http://")){
         return `<a href="${esc}" target="_blank" rel="noopener">${esc}</a>`;
       }
       if(lower.startsWith("ipfs://")){
-        const link = normalizeIpfsToHttp(u).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        const link = normalizeIpfsToHttp(u).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#39;");
         return `<a href="${link}" target="_blank" rel="noopener">${esc}</a>`;
       }
       return `<span class="muted">${esc}</span>`;
