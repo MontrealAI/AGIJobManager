@@ -4941,9 +4941,8 @@ function normalizeIpfsToHttp(uri){
         if(ownerRead?.__safeReadError || uriRead?.__safeReadError) continue;
         const owner = ownerRead;
         const uri = uriRead;
-        const link = normalizeIpfsToHttp(uri);
         if(owner.toLowerCase() === userAccount.toLowerCase()){
-          myItems.push(`#${i} · <a href="${link}" target="_blank" rel="noopener">${uri}</a>`);
+          myItems.push(`#${i} · ${safeLink(uri)}`);
         }
         if(i % 20 === 0) await new Promise(r=>setTimeout(r, 0));
       }
@@ -4952,8 +4951,7 @@ function normalizeIpfsToHttp(uri){
         const uriRead = await runSafeReadStep(`tokenURI(${i})`, ()=>agiJobManager.methods.tokenURI(i).call(), {silent:true});
         if(uriRead?.__safeReadError) continue;
         const uri = uriRead;
-        const link = normalizeIpfsToHttp(uri);
-        allItems.push(`#${i} · <a href="${link}" target="_blank" rel="noopener">${uri}</a>`);
+        allItems.push(`#${i} · ${safeLink(uri)}`);
       }
 
       my.innerHTML = myItems.length ? myItems.map(x=>`<li style="margin:6px 0">${x}</li>`).join('') : '<li>—</li>';
