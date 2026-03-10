@@ -1,5 +1,12 @@
 # Quickstart (15–30 minutes)
 
+## 0) Route to the right surface first
+
+- Deploying or operating contracts: `../hardhat/README.md` (official path).
+- Replacing ENSJobPages: `DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`.
+- Operating the standalone mainnet HTML artifact (`v21`): `ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
+- Working on the broader/full UI (Next.js): `ui/README.md`.
+
 ## 1) Install
 
 ```bash

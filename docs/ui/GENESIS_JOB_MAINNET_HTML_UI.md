@@ -13,6 +13,11 @@
 
 `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` is a **standalone, versioned HTML interface artifact** for AGIJobManager mainnet operations and demonstrations.
 
+Version/lifecycle posture:
+- This file is a point-in-time artifact (`v21`) committed in-repo for reproducible browser-based operations and review.
+- It is intentionally additive to the broader/full UI effort (Next.js app in `ui/src/`, docs in [docs/ui/README.md](./README.md)).
+- It is not the deployment authority and not a replacement for Hardhat runbooks.
+
 It is intentionally additive:
 - It gives operators and reviewers a single-file browser surface.
 - It does **not** replace the broader Next.js UI effort in `ui/`.
@@ -76,7 +81,7 @@ This section maps major UI actions to the contract methods surfaced in the file'
 | UI workflow area | Primary contract target | Method examples exposed in page | Operator note |
 | --- | --- | --- | --- |
 | Job creation and hiring | `AGIJobManager` | `createJob`, `applyForJob` | Requires mainnet wallet and role eligibility/parameters. |
-| Completion and review | `AGIJobManager` | `requestJobCompletion`, `approveJob`, `disapproveJob` | Completion URI quality directly affects validator decisions. |
+| Completion and review | `AGIJobManager` | `requestJobCompletion`, `validateJob`, `disapproveJob` | Completion URI quality directly affects validator decisions. |
 | Settlement and exception paths | `AGIJobManager` | `finalizeJob`, `disputeJob`, `expireJob`, `cancelJob` | State-dependent actions; check job status first. |
 | ENS per-job controls | `AGIJobManager` + `ENSJobPages` | `lockJobENS` and ENS reads shown in UI | Additive ENS layer; settlement authority remains in AGIJobManager. |
 | Bridge / conversion helper | bridged/offical token + vault | ERC-20 `approve`, vault `depositExact` | Token operations are separate transactions; verify spender and amount. |
@@ -219,6 +224,16 @@ Operator implication:
 - Treat this artifact as a **mainnet-targeted versioned snapshot**.
 - Re-verify addresses against current deployment documentation before signing transactions.
 - If you need a different network, use the broader UI workflow rather than this fixed-address snapshot.
+
+## Broader/full UI status and where to track it
+
+The broader UI is a separate Next.js surface that continues to evolve in parallel with this standalone artifact.
+
+- Source tree: `ui/src/`
+- Broader UI docs hub: [docs/ui/README.md](./README.md)
+- UI directory inventory (artifact + app): [ui/README.md](../../ui/README.md)
+
+Use this `v21` runbook when you intentionally need a single-file, versioned browser interface. Use the broader UI docs when you need roadmap/development/testing context.
 
 ## Relationship to other UI artifacts in `ui/`
 
