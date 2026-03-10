@@ -65,6 +65,18 @@ Based on the file contents, this standalone page includes:
 
 Grounding note: this list is based on visible controls, embedded ABIs, and in-page handlers in the `v21` file.
 
+## Grounded page sections and expected outcomes (v21)
+
+| Section in page | What you do there | Expected result |
+| --- | --- | --- |
+| Mission Control / readiness cards | Connect wallet, switch network, verify posture, jump to next action. | You get a clear "what to do next" prompt and write-gate status before any transaction. |
+| Jobs board + detail modal | Search/filter jobs, inspect status, then trigger lifecycle actions when eligible. | You can inspect live state and execute allowed job actions one step at a time. |
+| Metadata + completion helpers | Prepare spec/completion URI inputs, normalize URI format, and stage data. | You reduce operator input mistakes before submitting on-chain writes. |
+| AGIALPHA bridge/conversion area | Review bridged vs official balances, run approval, run vault conversion, optionally use embedded deBridge route. | Bridged token can be converted into official Ethereum `$AGIALPHA` (when wallet and vault state permit). |
+| Terms & Conditions area | Review and accept embedded terms. | Write controls remain intentionally locked until terms are accepted in-page. |
+
+Inference boundary: this table describes visible UX and method wiring present in `v21`; it does not redefine protocol-level permissions.
+
 ## Grounded non-goals (important)
 
 This artifact does **not**:
@@ -87,6 +99,28 @@ This section maps major UI actions to the contract methods surfaced in the file'
 | Bridge / conversion helper | bridged/offical token + vault | ERC-20 `approve`, vault `depositExact` | Token operations are separate transactions; verify spender and amount. |
 
 If uncertain about exact callable semantics, confirm against contract docs/runbooks before signing.
+
+## Write-capable transaction methods exposed in v21
+
+The standalone page includes handlers that can submit the following transactions (subject to role/state checks enforced by contracts):
+
+- `AGIJobManager.createJob(...)`
+- `AGIJobManager.applyForJob(...)`
+- `AGIJobManager.requestJobCompletion(...)`
+- `AGIJobManager.validateJob(...)`
+- `AGIJobManager.disapproveJob(...)`
+- `AGIJobManager.finalizeJob(...)`
+- `AGIJobManager.disputeJob(...)`
+- `AGIJobManager.expireJob(...)`
+- `AGIJobManager.cancelJob(...)`
+- `AGIJobManager.lockJobENS(...)`
+- ERC-20 `approve(...)` for AGIJobManager and conversion spender flows
+- `AGIALPHAEqualMinterVault.depositExact(...)`
+
+Safety reminder:
+- The UI can initiate these calls.
+- Contract permissions, state guards, and wallet confirmation remain decisive.
+- Always verify target address, method intent, and value fields before signing.
 
 ## Intended audience
 
@@ -253,6 +287,15 @@ The HTML file loads third-party resources directly in-browser:
 Operational implication:
 - If your browser, policy, or network blocks these hosts, some wallet/bridge features can degrade or fail.
 - Core contract truth remains on-chain; this page is a convenience client.
+
+## Local browser persistence used by this page
+
+The page stores some operator preferences in browser `localStorage` (for example filters/drafts/IPFS helper settings).
+
+Practical implications:
+- Preferences can persist across reloads in the same browser profile.
+- Sensitive values entered into helper fields (for example IPFS JWT) can remain in local browser storage until cleared.
+- For high-trust or shared-machine workflows, use a dedicated profile and clear site data after use.
 
 ## Security and trust hygiene
 
