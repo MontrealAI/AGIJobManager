@@ -2557,7 +2557,11 @@ const AGIJobManagerABI = [
       if(el('actionReviewTitle')) el('actionReviewTitle').textContent = config.title || 'Review action';
       if(el('actionReviewBody')) el('actionReviewBody').textContent = config.body || '';
       if(el('actionReviewRisk')) el('actionReviewRisk').innerHTML = config.riskHtml || '<b>Review carefully</b><br>This UI will only open your wallet after you confirm the details below.';
-      if(el('actionReviewFacts')) el('actionReviewFacts').innerHTML = (config.facts || []).map(x=>`<div class="reviewFact"><span class="k">${escapeHtml(x.label)}</span><span class="v">${x.html ? x.value : escapeHtml(x.value)}</span></div>`).join('');
+      if(el('actionReviewFacts')) el('actionReviewFacts').innerHTML = (config.facts || []).map(x=>{
+        const label = x.label ?? x.k ?? 'Detail';
+        const value = x.value ?? x.v ?? '—';
+        return `<div class="reviewFact"><span class="k">${escapeHtml(label)}</span><span class="v">${x.html ? value : escapeHtml(value)}</span></div>`;
+      }).join('');
       if(el('actionReviewChecklist')) el('actionReviewChecklist').innerHTML = (config.checks || []).map(x=>`<div class="reviewCheck"><span class="syncBadge ${x.badge || ''}">${escapeHtml(x.state || 'Check')}</span><div>${escapeHtml(x.text || '')}</div></div>`).join('');
       if(el('actionReviewMethod')) el('actionReviewMethod').textContent = config.method || 'method: —';
       if(el('actionReviewFooterNote')) el('actionReviewFooterNote').textContent = config.footer || 'You may still be asked for an approval transaction first if allowance is insufficient.';
@@ -4359,13 +4363,22 @@ async function updateSummary(){
 
     function estimatedAgentApprovalForJob(job){
       const payout = BigInt(job?.payout || 0);
+      const duration = BigInt(job?.duration || 0);
       const minBond = BigInt(window.protocolState?.agentBondMin || 0);
       const maxBond = BigInt(window.protocolState?.agentBondMax || 0);
       const bps = BigInt(window.protocolState?.agentBondBps || 0);
-      let exact = (payout * bps) / 10000n;
-      if(exact < minBond) exact = minBond;
-      if(maxBond > 0n && exact > maxBond) exact = maxBond;
-      return exact;
+      const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
+
+      let baseBond = (payout * bps) / 10000n;
+      let durationPremium = 0n;
+      if(durationLimit > 0n && duration > 0n){
+        const capped = duration > durationLimit ? durationLimit : duration;
+        durationPremium = (baseBond * capped) / durationLimit;
+      }
+      let estimated = baseBond + durationPremium;
+      if(estimated < minBond) estimated = minBond;
+      if(maxBond > 0n && estimated > maxBond) estimated = maxBond;
+      return estimated;
     }
 
     function renderValidationStatus(job){
