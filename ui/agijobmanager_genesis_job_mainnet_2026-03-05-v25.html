@@ -3257,8 +3257,32 @@ const AGIJobManagerABI = [
     }
     async function runAdminAction(method,args,target){
       if(!requireConnected() || !mustBeReadyToWrite()) return;
+      await refreshAdminPanels();
       const contract = target==='ENSJobPages' ? ensJobPages : agiJobManager;
       if(!contract?.methods?.[method]) return setToast(`Method ${method} unavailable in ABI surface.`, 'bad');
+
+      const me = String(userAccount || '').toLowerCase();
+      const mgrOwner = String(appState.authorization?.managerOwner || '').toLowerCase();
+      const ensOwner = String(appState.authorization?.ensOwner || '').toLowerCase();
+      const isMgrOwner = !!mgrOwner && mgrOwner === me;
+      const isEnsOwner = !!ensOwner && ensOwner === me;
+      const isModerator = !!appState.authorization?.isModerator;
+
+      const moderatorOrOwnerMethods = new Set(['resolveDisputeWithCode','resolveStaleDispute']);
+      const roleRequired = target === 'ENSJobPages'
+        ? 'ens_owner'
+        : (moderatorOrOwnerMethods.has(method) ? 'manager_owner_or_moderator' : 'manager_owner');
+
+      if(roleRequired === 'ens_owner' && !isEnsOwner){
+        return setToast('Blocked: this ENSJobPages admin method requires the ENSJobPages owner wallet.', 'warn');
+      }
+      if(roleRequired === 'manager_owner' && !isMgrOwner){
+        return setToast('Blocked: this AGIJobManager admin method requires the AGIJobManager owner wallet.', 'warn');
+      }
+      if(roleRequired === 'manager_owner_or_moderator' && !(isMgrOwner || isModerator)){
+        return setToast('Blocked: this dispute method requires AGIJobManager owner or moderator authorization.', 'warn');
+      }
+
       const highRisk = ['lockIdentityConfiguration','lockConfiguration','updateAGITokenAddress','updateEnsRegistry','updateNameWrapper','updateRootNodes','setEnsJobPages','withdrawAGI','rescueETH','rescueERC20','rescueToken','resolveDisputeWithCode','resolveStaleDispute','migrateLegacyWrappedJobPage'];
       openActionReview({
         title:`${target}.${method} review`,
@@ -3268,13 +3292,15 @@ const AGIJobManagerABI = [
           {k:'Target', v:target==='ENSJobPages' ? ENS_JOB_PAGES : AGI_JOB_MANAGER},
           {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'},
           {k:'Authorization', v:el('adminAuthPosture')?.textContent || 'Unknown'},
+          {k:'Role required', v: roleRequired === 'ens_owner' ? 'ENSJobPages owner' : (roleRequired === 'manager_owner' ? 'AGIJobManager owner' : 'AGIJobManager owner or moderator')},
           {k:'Prereq approval', v:'Not ERC-20 approval based (direct contract call)'}
         ],
-        checks:[{state:'Role', badge:'warn', text:'Call will revert if wallet lacks required owner/moderator authorization.'}],
+        checks:[{state:'Role', badge:'good', text:'Authorization check passed in UI before review modal opened.'}],
         method:`${target}.${method}(${args.map(a=>JSON.stringify(a)).join(', ')})`,
         run: async ()=>{ await runTrackedTx(`${target}.${method}`, ()=>contract.methods[method](...args).send({from:userAccount}), {pendingDetail:`Submitting ${target}.${method}.`, successDetail:`${target}.${method} confirmed.`}); await refreshAll(); await refreshAdminPanels(); }
       });
     }
+
 
     function namehash(name){
       const keccak = web3.utils.keccak256;
