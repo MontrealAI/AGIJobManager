@@ -2884,15 +2884,12 @@ const AGIJobManagerABI = [
       try{
         const payout = parseAmountToUnits(payoutRaw);
         const duration = durationRaw ? BigInt(durationRaw) : 0n;
-        const agentBps = BigInt(el("agentBondBps").textContent.replace(/[^0-9]/g,"") || "0");
-        const validatorBps = BigInt(el("validatorBondBps").textContent.replace(/[^0-9]/g,"") || "0");
         const validationPct = BigInt((el("validationRewardPct").textContent.match(/[0-9]+/) || ["0"])[0]);
-        const agentBase = (payout * agentBps) / 10000n;
-        const validatorBond = (payout * validatorBps) / 10000n;
+        const agentBond = computeAgentBondExactForJob({ payout, duration });
+        const validatorBond = computeValidatorBondFromPayout(payout);
         const rewardPool = (payout * validationPct) / 100n;
         const disputeBond = computeDisputeBondFromPayout(payout);
-        const durationNote = duration > 0n ? " (duration-sensitive)" : "";
-        el("calcAgentBond").textContent = formatUnitsToAmount(agentBase) + durationNote;
+        el("calcAgentBond").textContent = formatUnitsToAmount(agentBond);
         el("calcValidatorBond").textContent = formatUnitsToAmount(validatorBond);
         el("calcDisputeBond").textContent = formatUnitsToAmount(disputeBond);
         el("calcRewardPool").textContent = formatUnitsToAmount(rewardPool);
@@ -5393,7 +5390,7 @@ function normalizeIpfsToHttp(uri){
       return {
         protocol: 'AGIJobManager',
         version: 'v25',
-        chainId: Number(window.protocolState?.chainId || 1),
+        chainId: (window.protocolState?.chainId == null ? null : Number(window.protocolState.chainId)),
         contract: AGI_JOB_MANAGER,
         ensJobPages: ENS_JOB_PAGES,
         generatedAt: new Date().toISOString(),
