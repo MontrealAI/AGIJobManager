@@ -2321,7 +2321,11 @@ const AGIJobManagerABI = [
         const ids = Array.from(created).sort((a,b)=>a-b);
         activeJobIndexCache.ids = ids.slice();
         activeJobIndexCache.ts = now;
-        if(!ids.length && Number(totalHint||0) > 0) setToast('Job index event scan returned no active ids. This may be partial data; retry refresh.', 'warn');
+        if(!ids.length && Number(totalHint||0) > 0){
+          const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
+          setToast('Job index event scan returned no active ids; showing inferred ids from nextJobId as degraded fallback.', 'warn');
+          return inferred;
+        }
         return ids;
       }catch(error){
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
@@ -3785,7 +3789,7 @@ const AGIJobManagerABI = [
     async function ensureAdminRole(required){
       if(!requireConnected()) return false;
       if(!mustBeReadyToWrite()) return false;
-      if(!appState.admin || Object.keys(appState.admin).length===0) await refreshAdminPanels();
+      await refreshAdminPanels();
       const roleMap = {
         owner: !!appState.admin?.isOwner,
         ensOwner: !!appState.admin?.isEnsOwner,
