@@ -1019,7 +1019,7 @@
 
       <div class="card">
         <div class="noticeTitle">Quick Bond Calculator</div>
-        <div class="helper" style="margin-bottom:10px">Fast planning tool using the live contract parameters shown on this page. Validator bond uses the public bond parameters directly. Dispute bond follows the contract constants in the verified source. Agent bond and validator bond use deterministic client-side calculations aligned with verified BondMath parameters when direct quote getters are unavailable.</div>
+        <div class="helper" style="margin-bottom:10px">Fast planning tool using the live contract parameters shown on this page. Validator bond uses the public bond parameters directly. Dispute bond follows the contract constants in the verified source. Agent bond and validator bond use deterministic client-side math that mirrors the verified BondMath logic whenever required inputs are readable.</div>
         <div class="calc-grid">
           <div class="miniStat" style="grid-column:1/-1">
             <label for="calcPayout">Job payout ($AGIALPHA)</label>
@@ -1029,7 +1029,7 @@
             <label for="calcDuration">Job duration (seconds)</label>
             <input id="calcDuration" type="number" min="1" step="1" placeholder="e.g. 604800" style="width:100%">
           </div>
-          <div class="miniStat"><span class="k">Agent bond (exact formula)</span><span class="v" id="calcAgentBond">—</span></div>
+          <div class="miniStat"><span class="k">Agent bond (exact BondMath mirror)</span><span class="v" id="calcAgentBond">—</span></div>
           <div class="miniStat"><span class="k">Validator bond</span><span class="v" id="calcValidatorBond">—</span></div>
           <div class="miniStat"><span class="k">Dispute bond</span><span class="v" id="calcDisputeBond">—</span></div>
           <div class="miniStat"><span class="k">Validator reward pool</span><span class="v" id="calcRewardPool">—</span></div>
@@ -1448,13 +1448,11 @@ Evaluation methodology"></textarea>
               <tr><td>Predicted node</td><td><span id="predictedEnsNode">—</span></td></tr>
               <tr><td>Token URI mode</td><td><span id="ensTokenUriMode">—</span></td></tr>
               <tr><td>Config locked</td><td><span id="ensConfigLocked">—</span></td></tr>
-              <tr><td>Label prefix (live read)</td><td><span id="ensLabelPrefix">—</span></td></tr>
-              <tr><td>Label snapshot for next job</td><td><span id="ensLabelSnapshot">—</span></td></tr>
               <tr><td>Hook readiness</td><td><span id="ensHookReadiness">—</span></td></tr>
             </table>
             <div class="goodBox" style="margin-top:12px">
               <b>Best-practice interpretation</b><br>
-              If the ENSJobPages stack is configured, a created job can get a deterministic ENS label based on <code>jobLabelPrefix + decimal(jobId)</code> with per-job label snapshots for migration-safe legacy behavior, text records for public spec/completion URIs, and later lock actions after terminal settlement.
+              If the ENSJobPages stack is configured, a created job can get a deterministic ENS page label using <code>jobLabelPrefix + decimal(jobId)</code> semantics, text records for public spec/completion URIs, and later lock actions after terminal settlement.
             </div>
           </div>
         </div>
@@ -1596,6 +1594,23 @@ Evaluation methodology"></textarea>
         <tbody id="jobsBody"></tbody>
       </table>
     </div>
+
+    <div class="card" id="adminSection">
+      <div class="row"><h2 style="margin:0 0 8px">AGIJobManager Admin</h2><span class="pill" id="adminPostureBadge">Posture: loading</span></div>
+      <div class="twoCol">
+        <div class="statusline">Owner: <b id="agiOwnerAddr">—</b><br>Moderator (connected wallet): <b id="isModeratorFlag">—</b><br>Withdrawable AGI: <b id="withdrawableAgi">—</b></div>
+        <div class="statusline">ENSJobPages owner: <b id="ensOwnerAddr">—</b><br>ENS label prefix: <b id="ensLabelPrefix">—</b><br>Configuration lock: <b id="ensConfigLockStatus">—</b></div>
+      </div>
+      <details style="margin-top:10px" class="accordion"><summary>Danger zone (owner only · high risk)</summary><div class="body">
+        <div class="twoCol">
+          <button class="btn btn-danger" id="adminPauseAllBtn" data-tx="1">pauseAll()</button>
+          <button class="btn" id="adminUnpauseAllBtn" data-tx="1">unpauseAll()</button>
+          <button class="btn btn-danger" id="adminLockIdentityBtn" data-tx="1">lockIdentityConfiguration()</button>
+          <button class="btn btn-danger" id="ensLockConfigBtn" data-tx="1">ENS lockConfiguration()</button>
+        </div>
+      </div></details>
+    </div>
+
 
 
     <div class="card">
@@ -1979,37 +1994,6 @@ Evaluation methodology"></textarea>
     </div>
 
     <div class="card">
-      <h2 style="margin:0 0 10px">AGIJobManager Admin (Owner / Moderator)</h2>
-      <div class="smallNote">Live-read posture for privileged controls. Write actions are enabled only when wallet, mainnet, terms, and role posture are valid.</div>
-      <div class="kvGrid" style="margin-top:10px">
-        <div class="kvCard"><span class="k">AGIJobManager owner</span><span class="v" id="adminOwnerAddress">—</span></div>
-        <div class="kvCard"><span class="k">ENSJobPages owner</span><span class="v" id="ensAdminOwnerAddress">—</span></div>
-        <div class="kvCard"><span class="k">Moderator posture</span><span class="v" id="adminModeratorPosture">—</span></div>
-        <div class="kvCard"><span class="k">Authorization posture</span><span class="v" id="adminAuthPosture">Not authorized</span></div>
-      </div>
-      <details class="accordion" style="margin-top:10px">
-        <summary>Danger zone (high-risk/irreversible controls)</summary>
-        <div class="smallNote" style="margin:10px 0">Use this only when acting as contract owner/moderator. Every call opens the in-page review modal with method, target, posture, and movement details.</div>
-        <div class="actions">
-          <button class="btn btn-danger" data-tx="1" onclick="runAdminAction('pauseAll',[],'AGIJobManager')">pauseAll()</button>
-          <button class="btn btn-danger" data-tx="1" onclick="runAdminAction('unpauseAll',[],'AGIJobManager')">unpauseAll()</button>
-          <button class="btn btn-danger" data-tx="1" onclick="runAdminAction('lockIdentityConfiguration',[],'AGIJobManager')">lockIdentityConfiguration()</button>
-          <input id="adminWithdrawWei" class="input" placeholder="withdraw amount in wei"><button class="btn btn-danger" data-tx="1" onclick="runAdminAction('withdrawAGI',[el('adminWithdrawWei')?.value||'0'],'AGIJobManager')">withdrawAGI(uint256)</button>
-        </div>
-      </details>
-    </div>
-
-    <div class="card">
-      <h2 style="margin:0 0 10px">ENSJobPages Admin</h2>
-      <div class="smallNote">ENSJobPages label semantics are prefix + decimal(jobId), with optional per-job snapshots for legacy migration safety.</div>
-      <div class="actions" style="margin-top:10px">
-        <input id="ensPrefixInput" class="input" placeholder="new job label prefix"><button class="btn" data-tx="1" onclick="runAdminAction('setJobLabelPrefix',[el('ensPrefixInput')?.value||''],'ENSJobPages')">setJobLabelPrefix(string)</button>
-        <input id="ensUseTokenUriInput" class="input" placeholder="true or false"><button class="btn" data-tx="1" onclick="runAdminAction('setUseEnsJobTokenURI',[(el('ensUseTokenUriInput')?.value||'').trim().toLowerCase()==='true'],'ENSJobPages')">setUseEnsJobTokenURI(bool)</button>
-        <button class="btn btn-danger" data-tx="1" onclick="runAdminAction('lockConfiguration',[],'ENSJobPages')">lockConfiguration()</button>
-      </div>
-    </div>
-
-    <div class="card">
       <h2 style="margin:0 0 10px">Contact & Legal</h2>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
@@ -2058,7 +2042,6 @@ Evaluation methodology"></textarea>
     let debridgeSyncTimer = null;
     const jobCache = new Map();
     const activeJobIndexCache = { ids:null, ts:0 };
-    let jobIndexReadStatus = "idle";
     const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
     const AGI_JOB_MANAGER = "0xB3AAeb69b630f0299791679c063d68d6687481d1";
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
@@ -2073,11 +2056,6 @@ Evaluation methodology"></textarea>
     const SUFFIX = { agent:"agent.agi.eth", club:"club.agi.eth", alphaAgent:"alpha.agent.agi.eth", alphaClub:"alpha.club.agi.eth" };
 
     const verified = { agent:null, club:null, agentAlpha:false, clubAlpha:false };
-    const appState = {
-      wallet:{account:null, chainId:null, isMainnet:false, hasAcceptedTerms:false},
-      authorization:{managerOwner:null, ensOwner:null, isModerator:false},
-      protocol:{}, jobs:{list:[], readStatus:"idle"}, ens:{}, bridge:{}
-    };
 
     let isMainnet = false;
     let hasAcceptedTerms = false;
@@ -2086,19 +2064,7 @@ Evaluation methodology"></textarea>
     const DISPUTE_BOND_MAX = 200n;
     let uiBootstrapped = false;
     let completionAssistantState = { jobId:null, inspected:null };
-    function syncAppState(){
-      appState.wallet = {account:userAccount||null, chainId:window.protocolState?.chainId ?? null, isMainnet:!!isMainnet, hasAcceptedTerms:!!hasAcceptedTerms};
-      appState.protocol = Object.assign({}, window.protocolState||{});
-      appState.jobs = {list: latestJobs.slice(), readStatus: appState.jobs.readStatus || "ok"};
-    }
-    function resetSessionState(){
-      latestJobs = [];
-      jobCache.clear();
-      activeJobIndexCache.ids = null;
-      activeJobIndexCache.ts = 0;
-      if(el('jobsBody')) el('jobsBody').innerHTML = '<tr><td colspan="8" class="muted">Session changed. Refresh to reload live state.</td></tr>';
-      if(el('adminAuthPosture')) el('adminAuthPosture').textContent = 'Not authorized';
-    }
+    const appState = { wallet:{account:null,chainId:null,isMainnet:false}, protocol:{}, jobs:{ids:[],lastError:null}, ens:{}, admin:{} };
     function updatePrimaryActionHints(){
       const createReasons = [];
       if(!userAccount) createReasons.push('connect wallet');
@@ -2188,16 +2154,6 @@ Evaluation methodology"></textarea>
 
 
 const AGIJobManagerABI = [
-      {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"moderators","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"ensJobPages","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"withdrawableAGI","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"pauseAll","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"unpauseAll","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"lockIdentityConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"withdrawAGI","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"bool","name":"","type":"bool"}],"name":"blacklistAgent","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"bool","name":"","type":"bool"}],"name":"blacklistValidator","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[],"name":"agiToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"nextJobId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"nextTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -2255,12 +2211,6 @@ const AGIJobManagerABI = [
     
     const ENSJobPagesABI = [
       {"inputs":[],"name":"jobsRootName","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"jobLabelPrefix","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobLabelSnapshot","outputs":[{"internalType":"bool","name":"isSet","type":"bool"},{"internalType":"string","name":"label","type":"string"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"setJobLabelPrefix","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"bool","name":"","type":"bool"}],"name":"setUseEnsJobTokenURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"lockConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[],"name":"jobsRootNode","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"jobManager","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"useEnsJobTokenURI","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
@@ -2297,6 +2247,27 @@ const AGIJobManagerABI = [
     const NameWrapperABI = [
       {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
     ];
+    function ensureAbiFunction(abi, fn){ if(!abi.some(x=>x.type==='function' && x.name===fn.name)) abi.push(fn); }
+    [
+      {"name":"owner","inputs":[],"outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
+      {"name":"moderators","inputs":[{"type":"address"}],"outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
+      {"name":"withdrawableAGI","inputs":[],"outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"name":"pauseAll","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"unpauseAll","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"setEnsJobPages","inputs":[{"type":"address"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"withdrawAGI","inputs":[{"type":"uint256"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"rescueETH","inputs":[{"type":"uint256"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"rescueERC20","inputs":[{"type":"address"},{"type":"address"},{"type":"uint256"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"lockIdentityConfiguration","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ].forEach(fn=>ensureAbiFunction(AGIJobManagerABI, fn));
+    [
+      {"name":"owner","inputs":[],"outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
+      {"name":"jobLabelPrefix","inputs":[],"outputs":[{"type":"string"}],"stateMutability":"view","type":"function"},
+      {"name":"jobLabelSnapshot","inputs":[{"type":"uint256"}],"outputs":[{"type":"string"}],"stateMutability":"view","type":"function"},
+      {"name":"setJobLabelPrefix","inputs":[{"type":"string"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"lockConfiguration","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"name":"migrateLegacyWrappedJobPage","inputs":[{"type":"uint256"},{"type":"string"}],"outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ].forEach(fn=>ensureAbiFunction(ENSJobPagesABI, fn));
 
     function el(id){return document.getElementById(id);}
     function normalizedErrorMessage(error){
@@ -2333,7 +2304,6 @@ const AGIJobManagerABI = [
       if(activeJobIndexCache.ids && (now - activeJobIndexCache.ts) < 20_000){
         return activeJobIndexCache.ids.slice();
       }
-      const fallback = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
       try{
         const [createdEvents, cancelledEvents] = await Promise.all([
           agiJobManager.getPastEvents('JobCreated', {fromBlock:0, toBlock:'latest'}),
@@ -2344,38 +2314,23 @@ const AGIJobManagerABI = [
           const id = Number(ev?.returnValues?.jobId);
           if(Number.isInteger(id) && id >= 0) created.add(id);
         }
-        jobIndexReadStatus = "ok";
-        if(!created.size){
-          const hintedTotal = Math.max(0, Number(totalHint || 0));
-          if(hintedTotal > 0){
-            jobIndexReadStatus = "degraded";
-            activeJobIndexCache.ids = fallback.slice();
-            activeJobIndexCache.ts = now;
-            return fallback;
-          }
-          activeJobIndexCache.ids = [];
-          activeJobIndexCache.ts = now;
-          return [];
-        }
         for(const ev of cancelledEvents || []){
           const id = Number(ev?.returnValues?.jobId);
           if(Number.isInteger(id) && id >= 0) created.delete(id);
         }
         const ids = Array.from(created).sort((a,b)=>a-b);
-        jobIndexReadStatus = "ok";
         activeJobIndexCache.ids = ids.slice();
         activeJobIndexCache.ts = now;
+        if(!ids.length && Number(totalHint||0) > 0) setToast('Job index event scan returned no active ids. This may be partial data; retry refresh.', 'warn');
         return ids;
       }catch(error){
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
-        jobIndexReadStatus = "degraded";
-        activeJobIndexCache.ids = fallback.slice();
-        activeJobIndexCache.ts = now;
-        return fallback;
+        setToast('Job index event scan failed; active ids are unavailable right now. Retry refresh.', 'warn');
+        return activeJobIndexCache.ids ? activeJobIndexCache.ids.slice() : [];
       }
     }
 
-    const TX_ACTIVITY_KEY = "agijobmanager_v17_tx_activity";
+    const TX_ACTIVITY_KEY = "agijobmanager_v25_tx_activity";
     const ELITE_PREFS_KEY = "agijobmanager_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
@@ -2385,7 +2340,7 @@ const AGIJobManagerABI = [
         .catch(()=>setToast("Switch to Ethereum Mainnet in your wallet to unlock write actions.", "warn"));
     }
     function loadTxActivity(){
-      try{ txActivity = JSON.parse(localStorage.getItem(TX_ACTIVITY_KEY) || "[]"); }catch{ txActivity = []; }
+      try{ txActivity = JSON.parse(localStorage.getItem(TX_ACTIVITY_KEY) || localStorage.getItem("agijobmanager_v17_tx_activity") || "[]"); }catch{ txActivity = []; }
       renderTxActivity();
     }
     function saveTxActivity(){
@@ -2564,7 +2519,7 @@ const AGIJobManagerABI = [
       if(el('actionReviewTitle')) el('actionReviewTitle').textContent = config.title || 'Review action';
       if(el('actionReviewBody')) el('actionReviewBody').textContent = config.body || '';
       if(el('actionReviewRisk')) el('actionReviewRisk').innerHTML = config.riskHtml || '<b>Review carefully</b><br>This UI will only open your wallet after you confirm the details below.';
-      if(el('actionReviewFacts')) el('actionReviewFacts').innerHTML = (config.facts || []).map(x=>{ const label = x.label ?? x.k ?? ''; const value = x.value ?? x.v ?? ''; return `<div class="reviewFact"><span class="k">${escapeHtml(label)}</span><span class="v">${x.html ? value : escapeHtml(value)}</span></div>`; }).join('');
+      if(el('actionReviewFacts')) el('actionReviewFacts').innerHTML = (config.facts || []).map(x=>`<div class="reviewFact"><span class="k">${escapeHtml(x.label)}</span><span class="v">${x.html ? x.value : escapeHtml(x.value)}</span></div>`).join('');
       if(el('actionReviewChecklist')) el('actionReviewChecklist').innerHTML = (config.checks || []).map(x=>`<div class="reviewCheck"><span class="syncBadge ${x.badge || ''}">${escapeHtml(x.state || 'Check')}</span><div>${escapeHtml(x.text || '')}</div></div>`).join('');
       if(el('actionReviewMethod')) el('actionReviewMethod').textContent = config.method || 'method: —';
       if(el('actionReviewFooterNote')) el('actionReviewFooterNote').textContent = config.footer || 'You may still be asked for an approval transaction first if allowance is insufficient.';
@@ -2572,31 +2527,21 @@ const AGIJobManagerABI = [
       el('actionReviewModal')?.classList.add('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','false');
     }
-    function closeActionReview(skipOnClose=false){
-      const review = pendingReviewedAction;
+    function closeActionReview(){
       pendingReviewedAction = null;
       el('actionReviewModal')?.classList.remove('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','true');
-      if(!skipOnClose && review?.onClose){
-        try{ review.onClose(); }catch{}
-      }
     }
-    function openActionReviewAndWait(config){
-      return new Promise(resolve=>{
-        let settled = false;
-        const settle = (ok)=>{
-          if(settled) return;
-          settled = true;
-          resolve(!!ok);
-        };
+    function requestSimpleReview({title,body,method,risk='warn'}){
+      return new Promise((resolve)=>{
         openActionReview({
-          ...config,
-          onClose: ()=>settle(false),
-          onError: ()=>settle(false),
-          run: async ()=>{
-            if(config?.run) await config.run();
-            settle(true);
-          }
+          title: title || 'Review action',
+          body: body || '',
+          method: method || 'method: —',
+          checks:[{state:'Risk posture',badge:risk==='bad'?'bad':'warn',text:risk==='bad'?'High-risk or irreversible action.':'Confirm intent before proceeding.'}],
+          facts:[{label:'Network',value:isMainnet?'Ethereum Mainnet':'Not Mainnet'},{label:'Wallet',value:userAccount||'Not connected'},{label:'Contract target',value:AGI_JOB_MANAGER}],
+          onConfirm: async ()=>{ resolve(true); },
+          onCancel: ()=>resolve(false)
         });
       });
     }
@@ -2605,13 +2550,8 @@ const AGIJobManagerABI = [
       if(!review?.run) return closeActionReview();
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
-      closeActionReview(true);
-      try{ await review.run(); }
-      catch(e){
-        try{ if(review?.onError) review.onError(e); }catch{}
-        console.error(e);
-        setToast(e?.message || String(e), 'bad');
-      }
+      closeActionReview();
+      try{ await review.run(); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); }
       finally{ if(btn) btn.disabled = false; }
     }
     async function runTrackedTx(label, sendFactory, options={}){
@@ -2879,24 +2819,6 @@ const AGIJobManagerABI = [
       if(bond > payout) bond = payout;
       return bond;
     }
-    function computeExactAgentBondUnits(payoutRaw, durationRaw){
-      const payout = BigInt(payoutRaw || 0);
-      const duration = BigInt(durationRaw || 0);
-      const agentMin = BigInt(window.protocolState?.agentBondMin || 0);
-      const agentMax = BigInt(window.protocolState?.agentBondMax || 0);
-      const agentBps = BigInt(window.protocolState?.agentBondBps || 0);
-      const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
-
-      let bond = (payout * agentBps) / 10000n;
-      if(bond < agentMin) bond = agentMin;
-      if(durationLimit > 0n && duration > 0n){
-        const durationPremium = (bond * duration) / durationLimit;
-        bond += durationPremium;
-      }
-      if(agentMax > 0n && bond > agentMax) bond = agentMax;
-      if(payout > 0n && bond > payout) bond = payout;
-      return bond;
-    }
     function updateCalculator(){
       const payoutRaw = (el("calcPayout")?.value || "").trim();
       const durationRaw = (el("calcDuration")?.value || "").trim();
@@ -2913,18 +2835,12 @@ const AGIJobManagerABI = [
         const agentBps = BigInt(el("agentBondBps").textContent.replace(/[^0-9]/g,"") || "0");
         const validatorBps = BigInt(el("validatorBondBps").textContent.replace(/[^0-9]/g,"") || "0");
         const validationPct = BigInt((el("validationRewardPct").textContent.match(/[0-9]+/) || ["0"])[0]);
-        const agentMin = BigInt(window.protocolState?.agentBondMin || 0);
-        const agentMax = BigInt(window.protocolState?.agentBondMax || 0);
-        const validatorMin = BigInt(window.protocolState?.validatorBondMin || 0);
-        const validatorMax = BigInt(window.protocolState?.validatorBondMax || 0);
-        let agentBase = computeExactAgentBondUnits(payout, duration);
-        let validatorBond = (payout * validatorBps) / 10000n;
-        if(validatorBond < validatorMin) validatorBond = validatorMin;
-        if(validatorMax > 0n && validatorBond > validatorMax) validatorBond = validatorMax;
-        if(payout > 0n && validatorBond > payout) validatorBond = payout;
+        const agentBase = (payout * agentBps) / 10000n;
+        const validatorBond = (payout * validatorBps) / 10000n;
         const rewardPool = (payout * validationPct) / 100n;
         const disputeBond = computeDisputeBondFromPayout(payout);
-        el("calcAgentBond").textContent = formatUnitsToAmount(agentBase);
+        const durationNote = duration > 0n ? " (duration-sensitive)" : "";
+        el("calcAgentBond").textContent = formatUnitsToAmount(agentBase) + durationNote;
         el("calcValidatorBond").textContent = formatUnitsToAmount(validatorBond);
         el("calcDisputeBond").textContent = formatUnitsToAmount(disputeBond);
         el("calcRewardPool").textContent = formatUnitsToAmount(rewardPool);
@@ -2980,12 +2896,12 @@ const AGIJobManagerABI = [
         if(verified.agent && agiJobManager && userAccount && isMainnet){
           try{ agentPct = Number(await agiJobManager.methods.getHighestPayoutPercentage(userAccount).call()); }catch{}
         }
-        const validatorPct = Number(window.protocolState?.validationRewardPercentage ?? 0);
+        const validatorPct = Number((el("validationRewardPct")?.textContent.match(/[0-9]+/)||["0"])[0]);
         renderPayoutChart(agentPct, validatorPct);
-        const approvals = Number(window.protocolState?.requiredValidatorApprovals || 0);
-        const disapprovals = Number(window.protocolState?.requiredValidatorDisapprovals || 0);
-        const quorum = Number(window.protocolState?.voteQuorum || 0);
-        const slash = Number(window.protocolState?.validatorSlashBps || 0) / 100;
+        const approvals = Number(el("reqApprovals")?.textContent || 0);
+        const disapprovals = Number(el("reqDisapprovals")?.textContent || 0);
+        const quorum = Number(el("voteQuorum")?.textContent || 0);
+        const slash = Number(el("validatorSlashBps")?.textContent || 0) / 100;
         setMeter("barApprovals","barApprovalsText", approvals * 2, approvals ? approvals + " votes" : "—");
         setMeter("barDisapprovals","barDisapprovalsText", disapprovals * 2, disapprovals ? disapprovals + " votes" : "—");
         setMeter("barQuorum","barQuorumText", quorum * 2, quorum ? quorum + " votes" : "—");
@@ -3007,10 +2923,7 @@ const AGIJobManagerABI = [
     }
     function nowIso(){ return new Date().toISOString(); }
     async function currentChainIdSafe(){
-      try{
-        const cid = Number(await web3.eth.getChainId());
-        return Number.isFinite(cid) ? cid : null;
-      }catch{return null;}
+      try{return Number(await web3.eth.getChainId());}catch{return null;}
     }
 
     const BUILDER_DRAFT_KEY = "agijobmanager_builder_draft_v11_1";
@@ -3258,25 +3171,19 @@ const AGIJobManagerABI = [
         if(!web3 || !agiJobManager){ return; }
         if(!ensJobPages) ensJobPages = new web3.eth.Contract(ENSJobPagesABI, ENS_JOB_PAGES);
         const nextJobId = Number(await agiJobManager.methods.nextJobId().call());
-        const [rootName, jobManager, tokenUriMode, configLocked, labelPrefix, labelSnapshotRaw] = await Promise.all([
+        const [rootName, jobManager, tokenUriMode, configLocked] = await Promise.all([
           ensJobPages.methods.jobsRootName().call().catch(()=>""), 
           ensJobPages.methods.jobManager().call().catch(()=>""), 
           ensJobPages.methods.useEnsJobTokenURI().call().catch(()=>false), 
-          ensJobPages.methods.configLocked().call().catch(()=>false),
-          ensJobPages.methods.jobLabelPrefix().call().catch(()=>""),
-          ensJobPages.methods.jobLabelSnapshot(String(nextJobId)).call().catch(()=>null)
+          ensJobPages.methods.configLocked().call().catch(()=>false)
         ]);
-        const snapshotIsSet = !!(labelSnapshotRaw && (labelSnapshotRaw.isSet === true || labelSnapshotRaw[0] === true || labelSnapshotRaw[0] === 'true'));
-        const snapshotLabel = labelSnapshotRaw ? String(labelSnapshotRaw.label ?? labelSnapshotRaw[1] ?? '') : '';
         const label = await ensJobPages.methods.jobEnsLabel(String(nextJobId)).call().catch(()=>"");
         let ensName = "—", ensURI = "—", ensNode = "—";
         try{ ensName = await ensJobPages.methods.jobEnsName(String(nextJobId)).call(); }catch{}
         try{ ensURI = await ensJobPages.methods.jobEnsURI(String(nextJobId)).call(); }catch{}
         try{ ensNode = await ensJobPages.methods.jobEnsNode(String(nextJobId)).call(); }catch{}
         if(el("ensRootName")) el("ensRootName").textContent = rootName || "—";
-        if(el("predictedJobLabel")) el("predictedJobLabel").textContent = label || "Unavailable (read failed)";
-        if(el("ensLabelPrefix")) el("ensLabelPrefix").textContent = labelPrefix || "Unavailable";
-        if(el("ensLabelSnapshot")) el("ensLabelSnapshot").textContent = snapshotIsSet ? (snapshotLabel || "Snapshot set (empty label)") : "No snapshot for next job (expected for new IDs)";
+        if(el("predictedJobLabel")) el("predictedJobLabel").textContent = label || "(label unavailable)";
         if(el("predictedEnsName")) el("predictedEnsName").textContent = ensName || "—";
         if(el("predictedEnsURI")) el("predictedEnsURI").textContent = ensURI || "—";
         if(el("predictedEnsNode")) el("predictedEnsNode").textContent = ensNode || "—";
@@ -3287,74 +3194,6 @@ const AGIJobManagerABI = [
       }catch(e){
         if(el("ensHookReadiness")) el("ensHookReadiness").textContent = "Unable to load ENSJobPages";
       }
-    }
-
-
-    async function refreshAdminPanels(){
-      if(!web3) return;
-      try{
-        if(!agiJobManager) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
-        if(!ensJobPages) ensJobPages = new web3.eth.Contract(ENSJobPagesABI, ENS_JOB_PAGES);
-        const [mgrOwner, ensOwner, mod] = await Promise.all([
-          agiJobManager.methods.owner().call().catch(()=>''),
-          ensJobPages.methods.owner().call().catch(()=>''),
-          userAccount ? agiJobManager.methods.moderators(userAccount).call().catch(()=>false) : false
-        ]);
-        appState.authorization = {managerOwner:mgrOwner||null, ensOwner:ensOwner||null, isModerator:!!mod};
-        if(el('adminOwnerAddress')) el('adminOwnerAddress').textContent = mgrOwner || 'Unavailable';
-        if(el('ensAdminOwnerAddress')) el('ensAdminOwnerAddress').textContent = ensOwner || 'Unavailable';
-        if(el('adminModeratorPosture')) el('adminModeratorPosture').textContent = mod ? 'Wallet is moderator' : 'Wallet is not moderator';
-        const lower = String(userAccount||'').toLowerCase();
-        const isMgrOwner = !!mgrOwner && String(mgrOwner).toLowerCase()===lower;
-        const isEnsOwner = !!ensOwner && String(ensOwner).toLowerCase()===lower;
-        if(el('adminAuthPosture')) el('adminAuthPosture').textContent = isMgrOwner ? 'Wallet is AGIJobManager owner' : (isEnsOwner ? 'Wallet is ENSJobPages owner' : (mod ? 'Wallet is moderator' : 'Wallet not authorized'));
-      }catch(e){ if(el('adminAuthPosture')) el('adminAuthPosture').textContent = 'Admin read failed'; }
-    }
-    async function runAdminAction(method,args,target){
-      if(!requireConnected() || !mustBeReadyToWrite()) return;
-      await refreshAdminPanels();
-      const contract = target==='ENSJobPages' ? ensJobPages : agiJobManager;
-      if(!contract?.methods?.[method]) return setToast(`Method ${method} unavailable in ABI surface.`, 'bad');
-
-      const me = String(userAccount || '').toLowerCase();
-      const mgrOwner = String(appState.authorization?.managerOwner || '').toLowerCase();
-      const ensOwner = String(appState.authorization?.ensOwner || '').toLowerCase();
-      const isMgrOwner = !!mgrOwner && mgrOwner === me;
-      const isEnsOwner = !!ensOwner && ensOwner === me;
-      const isModerator = !!appState.authorization?.isModerator;
-
-      const moderatorOnlyMethods = new Set(['resolveDisputeWithCode']);
-      const ownerOnlyMethods = new Set(['resolveStaleDispute']);
-      const roleRequired = target === 'ENSJobPages'
-        ? 'ens_owner'
-        : (moderatorOnlyMethods.has(method) ? 'manager_moderator' : (ownerOnlyMethods.has(method) ? 'manager_owner' : 'manager_owner'));
-
-      if(roleRequired === 'ens_owner' && !isEnsOwner){
-        return setToast('Blocked: this ENSJobPages admin method requires the ENSJobPages owner wallet.', 'warn');
-      }
-      if(roleRequired === 'manager_owner' && !isMgrOwner){
-        return setToast('Blocked: this AGIJobManager admin method requires the AGIJobManager owner wallet.', 'warn');
-      }
-      if(roleRequired === 'manager_moderator' && !isModerator){
-        return setToast('Blocked: this dispute method requires AGIJobManager moderator authorization.', 'warn');
-      }
-
-      const highRisk = ['lockIdentityConfiguration','lockConfiguration','updateAGITokenAddress','updateEnsRegistry','updateNameWrapper','updateRootNodes','setEnsJobPages','withdrawAGI','rescueETH','rescueERC20','rescueToken','resolveDisputeWithCode','resolveStaleDispute','migrateLegacyWrappedJobPage'];
-      openActionReview({
-        title:`${target}.${method} review`,
-        body: highRisk.includes(method) ? 'High-risk action. Verify method, parameters, role posture, network posture, and intended value movement before signing.' : 'Administrative action review.',
-        facts:[
-          {k:'Method', v:`${method}(${args.map(()=>'?').join(',')})`},
-          {k:'Target', v:target==='ENSJobPages' ? ENS_JOB_PAGES : AGI_JOB_MANAGER},
-          {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'},
-          {k:'Authorization', v:el('adminAuthPosture')?.textContent || 'Unknown'},
-          {k:'Role required', v: roleRequired === 'ens_owner' ? 'ENSJobPages owner' : (roleRequired === 'manager_owner' ? 'AGIJobManager owner' : 'AGIJobManager moderator')},
-          {k:'Prereq approval', v:'Not ERC-20 approval based (direct contract call)'}
-        ],
-        checks:[{state:'Role', badge:'good', text:'Authorization check passed in UI before review modal opened.'}],
-        method:`${target}.${method}(${args.map(a=>JSON.stringify(a)).join(', ')})`,
-        run: async ()=>{ await runTrackedTx(`${target}.${method}`, ()=>contract.methods[method](...args).send({from:userAccount}), {pendingDetail:`Submitting ${target}.${method}.`, successDetail:`${target}.${method} confirmed.`}); await refreshAll(); await refreshAdminPanels(); }
-      });
     }
 
 
@@ -3739,24 +3578,12 @@ const AGIJobManagerABI = [
         return false;
       }
       if(allowance >= needed) return true;
-      return await openActionReviewAndWait({
-        title:`Token approval review · ${label}`,
-        body:'Approval is required before the downstream call can transfer tokens.',
-        facts:[
-          {k:'Method', v:'approve(address,uint256)'},
-          {k:'Spender', v:spender},
-          {k:'Approve amount', v:formatUnitsWithDecimals(needed, fmtDecimals)},
-          {k:'Current allowance', v:formatUnitsWithDecimals(allowance, fmtDecimals)},
-          {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'}
-        ],
-        checks:[{state:'Prerequisite', badge:'warn', text: options.explanation || 'This approval unlocks the intended write action.'}],
-        method:`approve(${spender}, ${needed.toString()})`,
-        run: async ()=>{
-          setToast(`Waiting for token approval for ${label}…`, 'warn');
-          await runTrackedTx(`Approve token for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
-          setToast(`Token approval confirmed for ${label}.`, 'ok');
-        }
-      });
+      const ok = await requestSimpleReview({title:'Token approval required',body:`${label} needs token approval before execution.`,method:'approve(address,uint256)',risk:'warn'});
+      if(!ok) return false;
+      setToast(`Waiting for token approval for ${label}…`, 'warn');
+      await runTrackedTx(`Approve token for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
+      setToast(`Token approval confirmed for ${label}.`, 'ok');
+      return true;
     }
     async function refreshAgiAlphaBridgePanel(){
       updateBridgeUiState();
@@ -3913,10 +3740,45 @@ const AGIJobManagerABI = [
       setToast('Vault call summary copied.', 'ok');
     }
 
+    function resetRuntimeState(reason='context reset'){
+      appState.wallet = {account:null,chainId:null,isMainnet:false};
+      appState.jobs = {ids:[],lastError:reason};
+      appState.admin = {};
+      if(el('agiOwnerAddr')) el('agiOwnerAddr').textContent = '—';
+      if(el('ensOwnerAddr')) el('ensOwnerAddr').textContent = '—';
+      if(el('adminPostureBadge')) el('adminPostureBadge').textContent = `Posture: ${reason}`;
+    }
+    async function refreshAdminPanels(){
+      if(!web3 || !agiJobManager) return;
+      const [ownerRead, ensOwnerRead, modRead, withdrawRead, prefixRead, lockRead] = await Promise.all([
+        runSafeReadStep('owner', ()=>agiJobManager.methods.owner().call(), {silent:true}),
+        runSafeReadStep('ens owner', ()=>ensJobPages.methods.owner().call(), {silent:true}),
+        userAccount ? runSafeReadStep('moderators', ()=>agiJobManager.methods.moderators(userAccount).call(), {silent:true}) : false,
+        runSafeReadStep('withdrawableAGI', ()=>agiJobManager.methods.withdrawableAGI().call(), {silent:true}),
+        runSafeReadStep('jobLabelPrefix', ()=>ensJobPages.methods.jobLabelPrefix().call(), {silent:true}),
+        runSafeReadStep('ens configLocked', ()=>ensJobPages.methods.configLocked().call(), {silent:true})
+      ]);
+      const owner = ownerRead?.__safeReadError ? '' : ownerRead;
+      const ensOwner = ensOwnerRead?.__safeReadError ? '' : ensOwnerRead;
+      const isOwner = !!(userAccount && owner && userAccount.toLowerCase()===owner.toLowerCase());
+      const isEnsOwner = !!(userAccount && ensOwner && userAccount.toLowerCase()===ensOwner.toLowerCase());
+      const isMod = !!modRead && !modRead?.__safeReadError;
+      if(el('agiOwnerAddr')) el('agiOwnerAddr').textContent = owner || 'Unavailable (read failed)';
+      if(el('ensOwnerAddr')) el('ensOwnerAddr').textContent = ensOwner || 'Unavailable (read failed)';
+      if(el('isModeratorFlag')) el('isModeratorFlag').textContent = isMod ? 'true' : 'false';
+      if(el('withdrawableAgi')) el('withdrawableAgi').textContent = withdrawRead?.__safeReadError ? 'Unavailable' : formatUnitsToAmount(withdrawRead || '0');
+      if(el('ensLabelPrefix')) el('ensLabelPrefix').textContent = prefixRead?.__safeReadError ? 'Unavailable' : (prefixRead || '(empty)');
+      if(el('ensConfigLockStatus')) el('ensConfigLockStatus').textContent = lockRead?.__safeReadError ? 'Unavailable' : String(!!lockRead);
+      const posture = isOwner ? 'contract owner' : (isEnsOwner ? 'ENSJobPages owner' : (isMod ? 'moderator' : 'not authorized'));
+      if(el('adminPostureBadge')) el('adminPostureBadge').textContent = `Posture: ${posture}`;
+      ['adminPauseAllBtn','adminUnpauseAllBtn','adminLockIdentityBtn'].forEach(id=>{ const b=el(id); if(b) b.disabled=!isOwner || !isMainnet || !hasAcceptedTerms; });
+      const lockBtn = el('ensLockConfigBtn'); if(lockBtn) lockBtn.disabled=!isEnsOwner || !isMainnet || !hasAcceptedTerms;
+    }
+
     async function connectWallet(){
       clearToast();
       try{
-        if(!window.ethereum){setToast("No injected wallet found. Install MetaMask or another EIP-1193 wallet.","warn");return;}
+        if(!window.ethereum){setToast("Please install a Web3 wallet such as MetaMask.","warn");return;}
         web3 = new Web3(window.ethereum);
         await window.ethereum.request({method:"eth_requestAccounts"});
         const accts = await web3.eth.getAccounts();
@@ -4046,7 +3908,7 @@ async function updateSummary(){
       el("validatorSlashBps").textContent = vSlash;
 
       window.protocolState = {
-        chainId: Number((await currentChainIdSafe()) ?? 0),
+        chainId: (await currentChainIdSafe()),
         completionReviewPeriod: Number(crp),
         challengePeriodAfterApproval: chp,
         disputeReviewPeriod: drp,
@@ -4054,10 +3916,8 @@ async function updateSummary(){
         requiredValidatorApprovals: Number(ra),
         requiredValidatorDisapprovals: Number(rd),
         voteQuorum: Number(vq),
-        validationRewardPercentage: Number(vReward),
-        validatorSlashBps: Number(vSlash),
+        agentBond: String(aMin),
         agentBondBps: Number(aBps),
-        agentBondMin: String(aMin),
         agentBondMax: String(aMax),
         validatorBondBps: Number(vBps),
         validatorBondMin: String(vMin),
@@ -4330,13 +4190,12 @@ async function updateSummary(){
         if(!liveIds.has(key)) jobCache.delete(key);
       }
       latestJobs = jobs.slice();
-      syncAppState();
       const rows = jobs.map(job=>({ job, actions: buildActionButtons(job) }))
         .filter(row=>rowMatchesFilters(row.job, row.actions))
         .sort((a,b)=>compareJobs(a.job, b.job, jobSortMode));
       const visibleCount = rows.length;
       if(!rows.length){
-        tbody.innerHTML = jobIndexReadStatus === 'degraded' ? '<tr><td colspan="8" class="muted" data-label="">Job index degraded: event read failed, so active IDs are unavailable. Retry refresh to recover a full list.</td></tr>' : '<tr><td colspan="8" class="muted" data-label="">No jobs match the current filters.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="muted" data-label="">No jobs match the current filters.</td></tr>';
       } else {
         for(const rowData of rows){
           const job = rowData.job;
@@ -4350,7 +4209,7 @@ async function updateSummary(){
             <td data-label="Job">
               <div style="display:flex;gap:8px;align-items:center">
                 <button class="btn starBtn ${isFav ? 'active':''}" onclick="toggleFavorite(${job.id})" title="Toggle watchlist">${isFav ? '★' : '☆'}</button>
-                <div><b>${job.id}</b><div class="muted" style="font-size:.82rem">ENS label via ENSJobPages live read</div></div>
+                <div><b>${job.id}</b><div class="muted" style="font-size:.82rem">job-${job.id}</div></div>
               </div>
             </td>
             <td class="muted" data-label="Employer">${shortAddr(job.employer)}</td>
@@ -4365,7 +4224,7 @@ async function updateSummary(){
         }
       }
       el("myJobs").textContent = String(myJobsCount);
-      if(el("jobsVisibleSummary")) el("jobsVisibleSummary").textContent = `${visibleCount} shown / ${jobIds.length} active IDs · sorted ${jobSortMode}${jobIndexReadStatus==='degraded' ? ' · degraded event index' : ''}`;
+      if(el("jobsVisibleSummary")) el("jobsVisibleSummary").textContent = `${visibleCount} shown / ${jobIds.length} active IDs · sorted ${jobSortMode}`;
       updateJobStats(jobs, visibleCount);
       renderAttentionQueue();
     }
@@ -4391,34 +4250,41 @@ async function updateSummary(){
       }
       if(allowance >= needed) return true;
       const currentAllowance = formatUnitsToAmount(allowance);
-      return await openActionReviewAndWait({
-        title:`Approval review · ${actionLabel}`,
-        body:'AGIJobManager needs ERC-20 approval for this action.',
-        facts:[
-          {k:'Method', v:'approve(address,uint256)'},
-          {k:'Spender', v:AGI_JOB_MANAGER},
-          {k:'Approve now', v:approvalLabel},
-          {k:'Current allowance', v:`${currentAllowance} $AGIALPHA`},
-          {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'}
-        ],
-        checks:[{state:'Prerequisite', badge:'warn', text: explanation || 'Approval is required before the core transaction.'}],
-        method:`approve(${AGI_JOB_MANAGER}, ${needed.toString()})`,
-        run: async ()=>{
-          setToast(`Waiting for token approval for ${actionLabel}…`, 'warn');
-          await runTrackedTx(`Approve AGIJobManager for ${actionLabel}`, ()=>agiToken.methods.approve(AGI_JOB_MANAGER, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting AGIJobManager approval for ${actionLabel}.`, successDetail:`AGIJobManager approval confirmed for ${actionLabel}.` });
-          setToast(`Token approval confirmed for ${actionLabel}. You can now complete the action transaction.`, 'ok');
-        }
-      });
+      const ok = await requestSimpleReview({title:'AGIALPHA approval review',body:`${actionLabel} needs token approval before AGIJobManager can transfer required $AGIALPHA. ${explanation}`.trim(),method:'approve(address,uint256)',risk:'warn'});
+      if(!ok) return false;
+      setToast(`Waiting for token approval for ${actionLabel}…`, 'warn');
+      await runTrackedTx(`Approve AGIJobManager for ${actionLabel}`, ()=>agiToken.methods.approve(AGI_JOB_MANAGER, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting AGIJobManager approval for ${actionLabel}.`, successDetail:`AGIJobManager approval confirmed for ${actionLabel}.` });
+      setToast(`Token approval confirmed for ${actionLabel}. You can now complete the action transaction.`, 'ok');
+      return true;
     }
 
+    function safeParseDisplayedAmount(value){
+      try{ return parseAmountToUnits(String(value || '0').replace(/[^0-9.]/g, '') || '0'); }catch{ return 0n; }
+    }
+
+    function exactAgentBondForJob(job){
+      const payout = BigInt(job?.payout || 0);
+      const duration = BigInt(job?.duration || 0);
+      const minBond = BigInt(window.protocolState?.agentBond || 0);
+      const maxBond = BigInt(window.protocolState?.agentBondMax || 0);
+      const bps = BigInt(window.protocolState?.agentBondBps || 0);
+      const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
+      let base = (payout * bps) / 10000n;
+      if(durationLimit > 0n && duration > 0n){
+        base = (base * duration) / durationLimit;
+      }
+      if(base < minBond) base = minBond;
+      if(maxBond > 0n && base > maxBond) base = maxBond;
+      return base;
+    }
     function estimatedAgentApprovalForJob(job){
-      return computeExactAgentBondUnits(job?.payout || 0, job?.duration || 0);
+      return exactAgentBondForJob(job);
     }
 
     function renderValidationStatus(job){
-      const reqA = Math.max(1, Number(window.protocolState?.requiredValidatorApprovals || 0));
-      const reqD = Math.max(1, Number(window.protocolState?.requiredValidatorDisapprovals || 0));
-      const quorum = Math.max(1, Number(window.protocolState?.voteQuorum || 0));
+      const reqA = Math.max(1, Number(el('reqApprovals')?.textContent || 0));
+      const reqD = Math.max(1, Number(el('reqDisapprovals')?.textContent || 0));
+      const quorum = Math.max(1, Number(el('voteQuorum')?.textContent || 0));
       const approvals = Number(job.approvals || 0);
       const disapprovals = Number(job.disapprovals || 0);
       const totalVotes = approvals + disapprovals;
@@ -4504,7 +4370,7 @@ async function updateSummary(){
         const approvalCap = estimatedAgentApprovalForJob(job);
         openActionReview({
           title:`Apply for Job #${jobId}`,
-          body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. The contract computes the exact agent bond on-chain; this UI uses a safe approval cap to avoid allowance-related reverts.',
+          body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. The contract computes the exact agent bond on-chain; this UI mirrors the verified BondMath path from current parameters and sizes approval to that deterministic amount.',
           facts:[
             {label:'Agent ENS', value: `${verified.agent}.${verified.agentAlpha ? SUFFIX.alphaAgent : SUFFIX.agent}`},
             {label:'Job payout', value: `${formatUnitsToAmount(job?.payout || 0)} $AGIALPHA`},
@@ -4513,7 +4379,7 @@ async function updateSummary(){
           ],
           checks:[
             {state:'Eligibility', badge:'good', text:'Your wallet is verified in the UI as an agent ENS owner.'},
-            {state:'Bond', badge:'good', text:'Approval sizing uses the BondMath-aligned payout+duration formula mirrored client-side and then clamped by live min/max params.'},
+            {state:'Bond', badge:'warn', text:'Exact BondMath mirror using live protocol parameters.'},
             {state:'Allowance', badge:'warn', text:'A token approval may be requested before applyForJob is sent.'}
           ],
           method:`applyForJob(jobId=${jobId}, subdomain=${JSON.stringify(verified.agent)}, proof=[])`,
@@ -4523,7 +4389,7 @@ async function updateSummary(){
             const approved = await ensureApproval(approvalCap, {
               actionLabel: `applying for job #${jobId}`,
               approvalLabel: `${formatUnitsToAmount(approvalCap)} $AGIALPHA`,
-              explanation: 'The exact agent bond is computed on-chain by BondMath and is not exposed as a direct public quote. This UI therefore asks for a bounded approval sized to safely cover the current job application.'
+              explanation: 'Agent bond approval uses deterministic BondMath-equivalent client-side math derived from live protocol parameters (bps, min, max, duration limit, payout, duration).'
             });
             if(!approved) return;
             setToast("Submitting applyForJob transaction…", "warn");
@@ -4754,7 +4620,7 @@ async function updateSummary(){
           body:'You are about to call the public ENS lock path for a terminal job. This is best-effort and depends on the ENSJobPages configuration and terminal state.',
           facts:[
             {label:'Job status', value: job ? classifyJobStatus(job) : 'Unknown'},
-            {label:'Predicted ENS name', value: currentLivePacket?.job?.id === jobId ? (currentLivePacket.job.ensName || '—') : (job ? 'Read from ENSJobPages per job' : '—')},
+            {label:'Predicted ENS name', value: currentLivePacket?.job?.id === jobId ? (currentLivePacket.job.ensName || '—') : (job ? `job-${jobId}` : '—')},
             {label:'Burn fuses', value: 'false'},
             {label:'Terminal requirement', value: 'Completed or expired only'}
           ],
@@ -5136,26 +5002,8 @@ function normalizeIpfsToHttp(uri){
       if(normalized.uriBytes > 1024) throw new Error('The completion URI exceeds the contract limit of 1024 bytes.');
       const posture = inspection?.posture || '';
       if(/direct image/i.test(posture)){
-        return openActionReview({
-          title:'Completion URI posture warning',
-          body:'This URI appears to point directly to an image instead of metadata JSON. Continue only if you intentionally accept weaker NFT rendering compatibility.',
-          facts:[
-            {k:'Method', v:'requestJobCompletion(uint256,string)'},
-            {k:'Job ID', v:String(jobId)},
-            {k:'URI', v:normalized.canonical},
-            {k:'Posture', v:posture},
-            {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'}
-          ],
-          checks:[{state:'Risk', badge:'warn', text:'Direct image URIs are high-risk for downstream metadata compatibility.'}],
-          method:`requestJobCompletion(${jobId}, ${JSON.stringify(normalized.canonical)})`,
-          run: async ()=>{
-            saveCompletionDraft(jobId);
-            setToast('Submitting requestJobCompletion…', 'warn');
-            await runTrackedTx(`Request completion for job #${jobId}`, ()=>agiJobManager.methods.requestJobCompletion(String(jobId), normalized.canonical).send({from:userAccount}), { pendingDetail:`Submitting requestJobCompletion for job #${jobId}.`, successDetail:`Completion request for job #${jobId} confirmed.` });
-            closeCompletionAssistant();
-            await refreshAll();
-          }
-        });
+        const approved = await requestSimpleReview({title:'Direct media URI warning',body:'This completion URI appears to point directly to an image instead of metadata JSON. Continue only if this is intentional.',method:'requestJobCompletion(uint256,string)',risk:'warn'});
+        if(!approved) return;
       }
       if(/Invalid/i.test(posture)) throw new Error('The completion URI is not ready yet.');
       saveCompletionDraft(jobId);
@@ -5451,7 +5299,7 @@ function normalizeIpfsToHttp(uri){
         ['Spec URI', safeLink(job.specURI)],
         ['Completion URI', job.completionURI ? safeLink(job.completionURI) : '—'],
         ['Predicted ENS URI', ens.ensUri ? safeLink(ens.ensUri) : '—'],
-        ['ENS name (live read)', escapeHtml(ens.ensName || '—')]
+        ['Predicted ENS name', escapeHtml(ens.ensName || '—')]
       ].map(([k,v])=>`<div class="ensRecord"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
       el('jobEnsRecords').innerHTML = [
         ['ENS root', escapeHtml(ens.rootName || '—')],
@@ -5514,7 +5362,7 @@ function normalizeIpfsToHttp(uri){
       return {
         protocol: 'AGIJobManager',
         version: 'v23',
-        chainId: Number(window.protocolState?.chainId ?? 0),
+        chainId: Number(window.protocolState?.chainId || 1),
         contract: AGI_JOB_MANAGER,
         ensJobPages: ENS_JOB_PAGES,
         generatedAt: new Date().toISOString(),
@@ -5779,6 +5627,10 @@ function normalizeIpfsToHttp(uri){
       });
       if(el("copyLivePacketBtn")) el("copyLivePacketBtn").addEventListener("click", ()=>copyLivePacket().catch(e=>setToast(e.message||String(e),"bad")));
       if(el("downloadLivePacketBtn")) el("downloadLivePacketBtn").addEventListener("click", ()=>downloadLivePacket().catch(e=>setToast(e.message||String(e),"bad")));
+      if(el('adminPauseAllBtn')) el('adminPauseAllBtn').addEventListener('click', ()=>openActionReview({title:'pauseAll review',body:'High-risk emergency action. This pauses protocol execution broadly.',method:'pauseAll()',checks:[{state:'Risk',badge:'bad',text:'Irreversible side-effects until unpaused.'}],facts:[{label:'Target',value:AGI_JOB_MANAGER},{label:'Role',value:'Owner required'}],onConfirm:async()=>runTrackedTx('pauseAll',()=>agiJobManager.methods.pauseAll().send({from:userAccount}))}));
+      if(el('adminUnpauseAllBtn')) el('adminUnpauseAllBtn').addEventListener('click', ()=>openActionReview({title:'unpauseAll review',body:'Resume protocol operation after incident handling.',method:'unpauseAll()',checks:[{state:'Risk',badge:'warn',text:'Ensure incident condition is resolved.'}],facts:[{label:'Target',value:AGI_JOB_MANAGER}],onConfirm:async()=>runTrackedTx('unpauseAll',()=>agiJobManager.methods.unpauseAll().send({from:userAccount}))}));
+      if(el('adminLockIdentityBtn')) el('adminLockIdentityBtn').addEventListener('click', ()=>openActionReview({title:'lockIdentityConfiguration review',body:'Irreversible high-risk action. Identity configuration cannot be changed after lock.',method:'lockIdentityConfiguration()',checks:[{state:'Risk',badge:'bad',text:'Irreversible / high-risk'}],facts:[{label:'Target',value:AGI_JOB_MANAGER}],onConfirm:async()=>runTrackedTx('lockIdentityConfiguration',()=>agiJobManager.methods.lockIdentityConfiguration().send({from:userAccount}))}));
+      if(el('ensLockConfigBtn')) el('ensLockConfigBtn').addEventListener('click', ()=>openActionReview({title:'ENS lockConfiguration review',body:'Irreversible high-risk action on ENSJobPages.',method:'lockConfiguration()',checks:[{state:'Risk',badge:'bad',text:'Irreversible / high-risk'}],facts:[{label:'Target',value:ENS_JOB_PAGES}],onConfirm:async()=>runTrackedTx('ENS lockConfiguration',()=>ensJobPages.methods.lockConfiguration().send({from:userAccount}))}));
 
       loadTxActivity();
       loadElitePrefs();
@@ -5793,24 +5645,23 @@ function normalizeIpfsToHttp(uri){
       if(window.ethereum){
         window.ethereum.on("accountsChanged", async (accounts)=>{
           userAccount = accounts && accounts[0] ? accounts[0] : null;
-          resetSessionState();
           el("walletStatus").textContent = userAccount ? shortAddr(userAccount) : "Not connected";
           verified.agent = null; verified.club = null; verified.agentAlpha=false; verified.clubAlpha=false; hasAcceptedTerms=false; const tac=el("termsAccepted"); if(tac) tac.checked=false; updateWriteGate();
           el("agentPill").className="pill"; el("agentPill").textContent="Agent ENS: not verified";
           const aab=el("agentAlphaBadge"); if(aab) aab.style.display="none";
           el("clubPill").className="pill"; el("clubPill").textContent="Club ENS: not verified";
           const vb=el("validatorBadge"); if(vb) vb.style.display="none";
-          if(!userAccount){ el("refreshBtn").disabled=true; return; }
+          if(!userAccount){ resetRuntimeState('wallet disconnected'); el("refreshBtn").disabled=true; return; }
           await connectWallet();
         });
         window.ethereum.on("chainChanged", async ()=>{
+          resetRuntimeState('chain changed');
           let networkToast = "";
           let networkToastType = "warn";
           try{
             if(!web3) web3 = new Web3(window.ethereum);
             const cid = await web3.eth.getChainId();
             isMainnet = (Number(cid)===1);
-            resetSessionState();
             el("chainStatus").textContent = `chainId ${cid}` + (isMainnet ? " (Mainnet)" : " (Not Mainnet)");
 
             if(!agiJobManager) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
