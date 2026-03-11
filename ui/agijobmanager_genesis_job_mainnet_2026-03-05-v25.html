@@ -2360,6 +2360,16 @@ const AGIJobManagerABI = [
       latestJobs = [];
       APP_STATE.jobsReadDegraded = false;
       APP_STATE.admin = {managerOwner:null, ensOwner:null, isModerator:false};
+      window.protocolState = { chainId: APP_STATE.wallet.chainId ?? null };
+      if(el('jobsBody')) el('jobsBody').innerHTML = '<tr><td colspan="8" class="muted">Runtime context reset. Connect and refresh to load live jobs.</td></tr>';
+      if(el('jobsVisibleSummary')) el('jobsVisibleSummary').textContent = 'Runtime context reset.';
+      if(el('myJobs')) el('myJobs').textContent = '—';
+      if(el('totalJobs')) el('totalJobs').textContent = '—';
+      if(el('managerOwnerAddress')) el('managerOwnerAddress').textContent = '—';
+      if(el('ensOwnerAddress')) el('ensOwnerAddress').textContent = '—';
+      if(el('managerModeratorPosture')) el('managerModeratorPosture').textContent = '—';
+      if(el('managerAdminPostureBadges')) el('managerAdminPostureBadges').innerHTML = '<span class="pill bad">Authorization context reset</span>';
+      if(el('ensAdminPostureBadges')) el('ensAdminPostureBadges').innerHTML = '<span class="pill bad">Authorization context reset</span>';
       if(reason) console.info('[resetRuntimeState]', reason);
     }
     async function getActiveJobIdsFromEvents(totalHint){
@@ -5584,15 +5594,33 @@ function normalizeIpfsToHttp(uri){
       const cls = danger ? 'btn btn-danger' : 'btn';
       return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'})">${escapeHtml(method)}</button>`;
     }
+    function isAuthorizedForAdminMethod(target, method){
+      const account = String(userAccount || '').toLowerCase();
+      if(!account) return {ok:false, reason:'Connect wallet first.'};
+      if(target === 'ens'){
+        const ensOwner = String(APP_STATE.admin?.ensOwner || '').toLowerCase();
+        return ensOwner && account === ensOwner
+          ? {ok:true, role:'ens-owner'}
+          : {ok:false, reason:'Only ENSJobPages owner can execute ENS admin methods.'};
+      }
+      const managerOwner = String(APP_STATE.admin?.managerOwner || '').toLowerCase();
+      const isOwner = managerOwner && account === managerOwner;
+      if(isOwner) return {ok:true, role:'manager-owner'};
+      const moderatorMethods = new Set(['resolveDisputeWithCode','resolveStaleDispute']);
+      if(APP_STATE.admin?.isModerator && moderatorMethods.has(method)) return {ok:true, role:'moderator'};
+      return {ok:false, reason: APP_STATE.admin?.isModerator ? 'Only AGIJobManager owner can execute this method.' : 'Only AGIJobManager owner or authorized moderator can execute admin methods.'};
+    }
     async function executeAdminControl(target, method, danger=false){
       if(!requireConnected() || !mustBeReadyToWrite()) return;
+      const auth = isAuthorizedForAdminMethod(target, method);
+      if(!auth.ok){ setToast(auth.reason, 'bad'); return; }
       const contract = target === 'ens' ? ensJobPages : agiJobManager;
       const argInput = prompt(`Optional comma-separated args for ${method}`);
       const args = String(argInput || '').trim() ? String(argInput).split(',').map(x=>x.trim()) : [];
       const ok = await requestActionConfirmation({
         title: `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${method}`,
         body: danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
-        checks:[{state:'Authorization', badge: 'warn', text:'Wallet must be owner or delegated moderator for this method.'}],
+        checks:[{state:'Authorization', badge: 'good', text:`Authorized as ${auth.role || 'admin'}.`}],
         method: `${method}(${args.join(', ')})`,
         confirmLabel: danger ? 'Submit high-risk action' : 'Submit admin action'
       });
