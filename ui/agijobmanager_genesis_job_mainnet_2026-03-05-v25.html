@@ -2285,6 +2285,10 @@ const AGIJobManagerABI = [
       {"inputs":[],"name":"withdrawableAGI","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"pauseIntake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"unpauseIntake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"pauseAll","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"unpauseAll","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"bool","name":"paused","type":"bool"}],"name":"setSettlementPaused","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"addModerator","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"removeModerator","outputs":[],"stateMutability":"nonpayable","type":"function"},
@@ -2293,14 +2297,30 @@ const AGIJobManagerABI = [
       {"inputs":[{"internalType":"address","name":"addr","type":"address"},{"internalType":"bool","name":"flag","type":"bool"}],"name":"blacklistAgent","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address","name":"addr","type":"address"},{"internalType":"bool","name":"flag","type":"bool"}],"name":"blacklistValidator","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"delistJob","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawAGI","outputs":[],"stateMutability":"nonpayable","type":"function"}
+      {"inputs":[{"internalType":"address","name":"newToken","type":"address"}],"name":"updateAGITokenAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"newRegistry","type":"address"}],"name":"updateEnsRegistry","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"newWrapper","type":"address"}],"name":"updateNameWrapper","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bytes32","name":"a","type":"bytes32"},{"internalType":"bytes32","name":"b","type":"bytes32"},{"internalType":"bytes32","name":"c","type":"bytes32"},{"internalType":"bytes32","name":"d","type":"bytes32"}],"name":"updateRootNodes","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"newEnsPages","type":"address"}],"name":"setEnsJobPages","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"lockIdentityConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawAGI","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueETH","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"rescueToken","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ]);
     ensureAbiMethods(ENSJobPagesABI, [
       {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"jobLabelPrefix","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"jobLabelSnapshot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"string","name":"prefix","type":"string"}],"name":"setJobLabelPrefix","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"lockConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"}
+      {"inputs":[{"internalType":"address","name":"registry","type":"address"}],"name":"setENSRegistry","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"wrapper","type":"address"}],"name":"setNameWrapper","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"resolver","type":"address"}],"name":"setPublicResolver","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bytes32","name":"rootNode","type":"bytes32"},{"internalType":"string","name":"rootName","type":"string"}],"name":"setJobsRoot","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"jobManager","type":"address"}],"name":"setJobManager","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bool","name":"enabled","type":"bool"}],"name":"setUseEnsJobTokenURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"lockConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"string","name":"label","type":"string"}],"name":"migrateLegacyWrappedJobPage","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ]);
 
     function el(id){return document.getElementById(id);}
@@ -2563,11 +2583,11 @@ const AGIJobManagerABI = [
       el('actionReviewModal')?.setAttribute('aria-hidden','false');
     }
     let pendingActionConfirmResolver = null;
-    function closeActionReview(){
+    function closeActionReview(resolveAsCancel=true){
       pendingReviewedAction = null;
       el('actionReviewModal')?.classList.remove('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','true');
-      if(pendingActionConfirmResolver){ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolver(false); }
+      if(resolveAsCancel && pendingActionConfirmResolver){ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolver(false); }
     }
     function requestActionConfirmation(config){
       return new Promise(resolve=>{
@@ -2583,8 +2603,7 @@ const AGIJobManagerABI = [
       if(!review?.run) return closeActionReview();
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
-      closeActionReview();
-      try{ await review.run(); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); }
+      try{ await review.run(); closeActionReview(false); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); closeActionReview(false); }
       finally{ if(btn) btn.disabled = false; }
     }
     async function runTrackedTx(label, sendFactory, options={}){
@@ -4267,16 +4286,19 @@ async function updateSummary(){
     function computeAgentBondExactForJob(job){
       const payout = BigInt(job?.payout || 0);
       const duration = BigInt(job?.duration || 0);
-      const durationLimit = getProtocolBigInt('jobDurationLimit', 1n);
+      const durationLimit = getProtocolBigInt('jobDurationLimit', 0n);
       const bps = getProtocolBigInt('agentBondBps');
       const minBond = getProtocolBigInt('agentBondMin');
       const maxBond = getProtocolBigInt('agentBondMax');
+      if(bps === 0n && minBond === 0n && maxBond === 0n) return 0n;
       let bond = payout * bps / 10000n;
-      if(durationLimit > 0n && duration > 0n && duration > durationLimit){
-        bond = bond * duration / durationLimit;
-      }
       if(bond < minBond) bond = minBond;
-      if(maxBond > 0n && bond > maxBond) bond = maxBond;
+      if(durationLimit !== 0n){
+        const durationPremium = bond * duration / durationLimit;
+        bond += durationPremium;
+      }
+      if(maxBond !== 0n && bond > maxBond) bond = maxBond;
+      if(bond > payout) bond = payout;
       return bond;
     }
     function estimatedAgentApprovalForJob(job){
