@@ -3703,25 +3703,10 @@ const AGIJobManagerABI = [
         return false;
       }
       if(allowance >= needed) return true;
-      openActionReview({
-        title:`Token approval review · ${label}`,
-        body:'Approval is required before the downstream call can transfer tokens.',
-        facts:[
-          {k:'Method', v:'approve(address,uint256)'},
-          {k:'Spender', v:spender},
-          {k:'Approve amount', v:formatUnitsWithDecimals(needed, fmtDecimals)},
-          {k:'Current allowance', v:formatUnitsWithDecimals(allowance, fmtDecimals)},
-          {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'}
-        ],
-        checks:[{state:'Prerequisite', badge:'warn', text: options.explanation || 'This approval unlocks the intended write action.'}],
-        method:`approve(${spender}, ${needed.toString()})`,
-        run: async ()=>{
-          setToast(`Waiting for token approval for ${label}…`, 'warn');
-          await runTrackedTx(`Approve token for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
-          setToast(`Token approval confirmed for ${label}.`, 'ok');
-        }
-      });
-      return false;
+      setToast(`Waiting for token approval for ${label}…`, 'warn');
+      await runTrackedTx(`Approve token for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
+      setToast(`Token approval confirmed for ${label}. Continuing with ${actionLabel}.`, 'ok');
+      return true;
     }
     async function refreshAgiAlphaBridgePanel(){
       updateBridgeUiState();
@@ -4356,25 +4341,10 @@ async function updateSummary(){
       }
       if(allowance >= needed) return true;
       const currentAllowance = formatUnitsToAmount(allowance);
-      openActionReview({
-        title:`Approval review · ${actionLabel}`,
-        body:'AGIJobManager needs ERC-20 approval for this action.',
-        facts:[
-          {k:'Method', v:'approve(address,uint256)'},
-          {k:'Spender', v:AGI_JOB_MANAGER},
-          {k:'Approve now', v:approvalLabel},
-          {k:'Current allowance', v:`${currentAllowance} $AGIALPHA`},
-          {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'}
-        ],
-        checks:[{state:'Prerequisite', badge:'warn', text: explanation || 'Approval is required before the core transaction.'}],
-        method:`approve(${AGI_JOB_MANAGER}, ${needed.toString()})`,
-        run: async ()=>{
-          setToast(`Waiting for token approval for ${actionLabel}…`, 'warn');
-          await runTrackedTx(`Approve AGIJobManager for ${actionLabel}`, ()=>agiToken.methods.approve(AGI_JOB_MANAGER, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting AGIJobManager approval for ${actionLabel}.`, successDetail:`AGIJobManager approval confirmed for ${actionLabel}.` });
-          setToast(`Token approval confirmed for ${actionLabel}. You can now complete the action transaction.`, 'ok');
-        }
-      });
-      return false;
+      setToast(`Waiting for token approval for ${actionLabel}…`, 'warn');
+      await runTrackedTx(`Approve AGIJobManager for ${actionLabel}`, ()=>agiToken.methods.approve(AGI_JOB_MANAGER, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting AGIJobManager approval for ${actionLabel}.`, successDetail:`AGIJobManager approval confirmed for ${actionLabel}.` });
+      setToast(`Token approval confirmed for ${actionLabel}. Continuing requested action.`, 'ok');
+      return true;
     }
 
     function estimatedAgentApprovalForJob(job){
