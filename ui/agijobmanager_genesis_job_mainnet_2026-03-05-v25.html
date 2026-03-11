@@ -2263,7 +2263,7 @@ const AGIJobManagerABI = [
     [
       {"name":"owner","inputs":[],"outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
       {"name":"jobLabelPrefix","inputs":[],"outputs":[{"type":"string"}],"stateMutability":"view","type":"function"},
-      {"name":"jobLabelSnapshot","inputs":[{"type":"uint256"}],"outputs":[{"type":"string"}],"stateMutability":"view","type":"function"},
+      {"name":"jobLabelSnapshot","inputs":[{"type":"uint256"}],"outputs":[{"type":"bool"},{"type":"string"}],"stateMutability":"view","type":"function"},
       {"name":"setJobLabelPrefix","inputs":[{"type":"string"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"name":"lockConfiguration","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"name":"migrateLegacyWrappedJobPage","inputs":[{"type":"uint256"},{"type":"string"}],"outputs":[],"stateMutability":"nonpayable","type":"function"}
@@ -2319,12 +2319,12 @@ const AGIJobManagerABI = [
           if(Number.isInteger(id) && id >= 0) created.delete(id);
         }
         const ids = Array.from(created).sort((a,b)=>a-b);
-        const noEventsReturned = (!createdEvents || !createdEvents.length) && (!cancelledEvents || !cancelledEvents.length);
-        if(!ids.length && Number(totalHint||0) > 0 && noEventsReturned){
+        const createdLogsMissing = (!createdEvents || !createdEvents.length);
+        if(!ids.length && Number(totalHint||0) > 0 && createdLogsMissing){
           const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
           activeJobIndexCache.ids = inferred.slice();
           activeJobIndexCache.ts = now;
-          setToast('Job index event scan returned no events; showing inferred ids from nextJobId as degraded fallback.', 'warn');
+          setToast('Job index event scan returned no JobCreated logs; showing inferred ids from nextJobId as degraded fallback.', 'warn');
           return inferred;
         }
         activeJobIndexCache.ids = ids.slice();
@@ -3762,6 +3762,10 @@ const AGIJobManagerABI = [
       jobCache.clear();
       activeJobIndexCache.ids = null;
       activeJobIndexCache.ts = 0;
+      const tbody = el('jobsBody');
+      if(tbody) tbody.innerHTML = '<tr><td colspan="8" class="muted">Context changed. Connect and refresh to load jobs for the current account/network.</td></tr>';
+      if(el('jobCountSummary')) el('jobCountSummary').textContent = 'Jobs cache cleared after context change.';
+      if(el('pulseVisibleSummary')) el('pulseVisibleSummary').textContent = 'Context changed. Refresh to rebuild visibility metrics.';
       if(el('agiOwnerAddr')) el('agiOwnerAddr').textContent = '—';
       if(el('ensOwnerAddr')) el('ensOwnerAddr').textContent = '—';
       if(el('adminPostureBadge')) el('adminPostureBadge').textContent = `Posture: ${reason}`;
