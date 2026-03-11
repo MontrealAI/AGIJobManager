@@ -4273,12 +4273,13 @@ async function updateSummary(){
       const bps = BigInt(window.protocolState?.agentBondBps || 0);
       const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
       let bond = (payout * bps) / 10000n;
+      if(bond < minBond) bond = minBond;
       if(durationLimit > 0n && duration > 0n){
         const durationPremium = (bond * duration) / durationLimit;
         bond += durationPremium;
       }
-      if(bond < minBond) bond = minBond;
       if(maxBond > 0n && bond > maxBond) bond = maxBond;
+      if(bond > payout) bond = payout;
       return bond;
     }
     function estimatedAgentApprovalForJob(job){
