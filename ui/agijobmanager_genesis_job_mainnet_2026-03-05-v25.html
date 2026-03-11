@@ -534,14 +534,14 @@
 
   </style>
 
-  <style id="v23-mobile-enhancements">
-    .v23-mobile-only{display:none}
+  <style id="v25-mobile-enhancements">
+    .v25-mobile-only{display:none}
     @media (max-width:900px){
       html{scroll-padding-top:16px;scroll-padding-bottom:100px}
-      body.v23-mobile-dock-ready{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
-      .v23-mobile-only{display:block}
-      .v23-mobile-anchor{scroll-margin-top:16px;scroll-margin-bottom:96px}
-      #v23MobileDock{
+      body.v25-mobile-dock-ready{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
+      .v25-mobile-only{display:block}
+      .v25-mobile-anchor{scroll-margin-top:16px;scroll-margin-bottom:96px}
+      #v25MobileDock{
         position:fixed;
         left:max(10px, env(safe-area-inset-left));
         right:max(10px, env(safe-area-inset-right));
@@ -557,7 +557,7 @@
         box-shadow:0 18px 48px rgba(0,0,0,.34);
         backdrop-filter:blur(14px);
       }
-      #v23MobileDock .v23-dock-btn{
+      #v25MobileDock .v25-dock-btn{
         min-height:54px;
         padding:9px 6px;
         border-radius:14px;
@@ -575,14 +575,14 @@
         cursor:pointer;
         transition:transform .12s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease;
       }
-      #v23MobileDock .v23-dock-btn:active{transform:translateY(1px) scale(.995)}
-      #v23MobileDock .v23-dock-btn.active,
-      #v23MobileDock .v23-dock-btn:hover{
+      #v25MobileDock .v25-dock-btn:active{transform:translateY(1px) scale(.995)}
+      #v25MobileDock .v25-dock-btn.active,
+      #v25MobileDock .v25-dock-btn:hover{
         background:rgba(122,63,242,.18);
         border-color:rgba(122,63,242,.58);
         box-shadow:0 0 0 1px rgba(122,63,242,.16) inset;
       }
-      #v23MobileDock .v23-dock-label{
+      #v25MobileDock .v25-dock-label{
         display:block;
         font-size:11px;
         line-height:1.1;
@@ -590,7 +590,7 @@
         color:var(--text-soft);
         white-space:nowrap;
       }
-      #v23MobileSheet{
+      #v25MobileSheet{
         position:fixed;
         inset:0;
         z-index:97;
@@ -601,8 +601,8 @@
         backdrop-filter:blur(10px);
         padding:0;
       }
-      #v23MobileSheet.open{display:flex}
-      #v23MobileSheet .v23-sheet-card{
+      #v25MobileSheet.open{display:flex}
+      #v25MobileSheet .v25-sheet-card{
         width:min(760px,100vw);
         max-height:min(90vh,100dvh - 12px);
         overflow:auto;
@@ -613,27 +613,27 @@
         box-shadow:0 -12px 40px rgba(0,0,0,.32);
         padding:14px 12px calc(18px + env(safe-area-inset-bottom));
       }
-      #v23MobileSheet .v23-sheet-handle{
+      #v25MobileSheet .v25-sheet-handle{
         width:56px;height:5px;border-radius:999px;margin:0 auto 12px;background:rgba(255,255,255,.18)
       }
-      #v23MobileSheet .v23-sheet-header{
+      #v25MobileSheet .v25-sheet-header{
         display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px
       }
-      #v23MobileSheet .v23-sheet-title{font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(202,186,232,.74);margin-bottom:8px}
-      #v23MobileSheet .v23-sheet-section{
+      #v25MobileSheet .v25-sheet-title{font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(202,186,232,.74);margin-bottom:8px}
+      #v25MobileSheet .v25-sheet-section{
         padding:12px;border:1px solid hsl(var(--border));border-radius:16px;background:rgba(255,255,255,.03);margin-bottom:10px;min-width:0
       }
-      #v23MobileSheet .v23-sheet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      #v23MobileSheet .v23-sheet-btn{
+      #v25MobileSheet .v25-sheet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      #v25MobileSheet .v25-sheet-btn{
         width:100%;min-width:0;min-height:46px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:hsl(var(--foreground));font:inherit;font-weight:700;cursor:pointer;overflow-wrap:anywhere;word-break:break-word
       }
-      #v23MobileSheet .v23-sheet-btn.primary{background:rgba(122,63,242,.2);border-color:rgba(122,63,242,.55)}
-      #v23MobileSheet .v23-sheet-summary,
-      #v23MobileSheet .v23-sheet-meta,
-      #v23MobileSheet .v23-sheet-note{overflow-wrap:anywhere;word-break:break-word;color:var(--text-soft);line-height:1.5}
-      #v23MobileSheet .v23-sheet-meta{font-size:.88rem;margin-top:6px}
-      #v23MobileSheet .v23-sheet-note{font-size:.84rem;margin-top:8px}
-      #v23MobileSheet .modalClose{flex:0 0 44px}
+      #v25MobileSheet .v25-sheet-btn.primary{background:rgba(122,63,242,.2);border-color:rgba(122,63,242,.55)}
+      #v25MobileSheet .v25-sheet-summary,
+      #v25MobileSheet .v25-sheet-meta,
+      #v25MobileSheet .v25-sheet-note{overflow-wrap:anywhere;word-break:break-word;color:var(--text-soft);line-height:1.5}
+      #v25MobileSheet .v25-sheet-meta{font-size:.88rem;margin-top:6px}
+      #v25MobileSheet .v25-sheet-note{font-size:.84rem;margin-top:8px}
+      #v25MobileSheet .modalClose{flex:0 0 44px}
       #termsSection .toc{
         display:flex !important;
         flex-wrap:nowrap !important;
@@ -700,10 +700,10 @@
       #insightsSection{scroll-margin-top:16px;scroll-margin-bottom:96px}
     }
     @media (max-width:640px){
-      #v23MobileDock{padding:8px;gap:6px}
-      #v23MobileDock .v23-dock-btn{min-height:52px;padding:8px 4px;font-size:17px}
-      #v23MobileDock .v23-dock-label{font-size:10.5px}
-      #v23MobileSheet .v23-sheet-grid{grid-template-columns:1fr}
+      #v25MobileDock{padding:8px;gap:6px}
+      #v25MobileDock .v25-dock-btn{min-height:52px;padding:8px 4px;font-size:17px}
+      #v25MobileDock .v25-dock-label{font-size:10.5px}
+      #v25MobileSheet .v25-sheet-grid{grid-template-columns:1fr}
       #jobsSection .jobs-table .actions{grid-template-columns:1fr}
       #agialphaBridgeSection .debridgeWidgetMount,
       #agialphaBridgeSection #debridgeWidgetMount,
@@ -1019,7 +1019,7 @@
 
       <div class="card">
         <div class="noticeTitle">Quick Bond Calculator</div>
-        <div class="helper" style="margin-bottom:10px">Fast planning tool using the live contract parameters shown on this page. Validator bond uses the public bond parameters directly. Dispute bond follows the contract constants in the verified source. Agent bond and validator bond use deterministic client-side math that mirrors the verified BondMath logic whenever required inputs are readable.</div>
+        <div class="helper" style="margin-bottom:10px">Fast planning tool using the live contract parameters shown on this page. Validator bond uses the public bond parameters directly. Dispute bond follows the contract constants in the verified source. Agent bond uses deterministic client-side math that mirrors the verified BondMath parameters (payout, duration, bps, min, max, and duration limit).</div>
         <div class="calc-grid">
           <div class="miniStat" style="grid-column:1/-1">
             <label for="calcPayout">Job payout ($AGIALPHA)</label>
@@ -1029,7 +1029,7 @@
             <label for="calcDuration">Job duration (seconds)</label>
             <input id="calcDuration" type="number" min="1" step="1" placeholder="e.g. 604800" style="width:100%">
           </div>
-          <div class="miniStat"><span class="k">Agent bond (exact BondMath mirror)</span><span class="v" id="calcAgentBond">—</span></div>
+          <div class="miniStat"><span class="k">Agent bond (BondMath mirror)</span><span class="v" id="calcAgentBond">—</span></div>
           <div class="miniStat"><span class="k">Validator bond</span><span class="v" id="calcValidatorBond">—</span></div>
           <div class="miniStat"><span class="k">Dispute bond</span><span class="v" id="calcDisputeBond">—</span></div>
           <div class="miniStat"><span class="k">Validator reward pool</span><span class="v" id="calcRewardPool">—</span></div>
@@ -1452,7 +1452,7 @@ Evaluation methodology"></textarea>
             </table>
             <div class="goodBox" style="margin-top:12px">
               <b>Best-practice interpretation</b><br>
-              If the ENSJobPages stack is configured, a created job can get a deterministic ENS page label using <code>jobLabelPrefix + decimal(jobId)</code> semantics, text records for public spec/completion URIs, and later lock actions after terminal settlement.
+              If the ENSJobPages stack is configured, a created job can get a predictable ENS label generated by <code>jobLabelPrefix + decimal(jobId)</code>, text records for public spec/completion URIs, and later lock actions after terminal settlement.
             </div>
           </div>
         </div>
@@ -1595,23 +1595,6 @@ Evaluation methodology"></textarea>
       </table>
     </div>
 
-    <div class="card" id="adminSection">
-      <div class="row"><h2 style="margin:0 0 8px">AGIJobManager Admin</h2><span class="pill" id="adminPostureBadge">Posture: loading</span></div>
-      <div class="twoCol">
-        <div class="statusline">Owner: <b id="agiOwnerAddr">—</b><br>Moderator (connected wallet): <b id="isModeratorFlag">—</b><br>Withdrawable AGI: <b id="withdrawableAgi">—</b></div>
-        <div class="statusline">ENSJobPages owner: <b id="ensOwnerAddr">—</b><br>ENS label prefix: <b id="ensLabelPrefix">—</b><br>Configuration lock: <b id="ensConfigLockStatus">—</b></div>
-      </div>
-      <details style="margin-top:10px" class="accordion"><summary>Danger zone (owner only · high risk)</summary><div class="body">
-        <div class="twoCol">
-          <button class="btn btn-danger" id="adminPauseAllBtn" data-tx="1">pauseAll()</button>
-          <button class="btn" id="adminUnpauseAllBtn" data-tx="1">unpauseAll()</button>
-          <button class="btn btn-danger" id="adminLockIdentityBtn" data-tx="1">lockIdentityConfiguration()</button>
-          <button class="btn btn-danger" id="ensLockConfigBtn" data-tx="1">ENS lockConfiguration()</button>
-        </div>
-      </div></details>
-    </div>
-
-
 
     <div class="card">
       <h2 style="margin:0 0 12px">Completion NFTs (ERC-721)</h2>
@@ -1629,6 +1612,44 @@ Evaluation methodology"></textarea>
     </div>
 
 
+    <div class="card" id="adminControlSection">
+      <h2 style="margin:0 0 10px">Admin Control Surfaces</h2>
+      <div class="helper" style="margin-bottom:12px">Reads are live where available. High-risk write methods are intentionally grouped in danger accordions and require transaction review before wallet confirmation.</div>
+      <div class="twoCol">
+        <div class="softCard" style="padding:12px;border:1px solid hsl(var(--border));border-radius:12px">
+          <h3 style="margin:0 0 8px">AGIJobManager Admin</h3>
+          <div class="smallNote">Owner: <span id="managerOwnerAddress">—</span></div>
+          <div class="smallNote">Moderator posture: <span id="managerModeratorPosture">—</span></div>
+          <div id="managerAdminPostureBadges" class="actions" style="margin:10px 0"></div>
+          <div class="accordion">
+            <details>
+              <summary>Routine controls</summary>
+              <div class="body" id="managerRoutineControls"></div>
+            </details>
+            <details>
+              <summary>Danger controls (irreversible / high-risk)</summary>
+              <div class="body" id="managerDangerControls"></div>
+            </details>
+          </div>
+        </div>
+        <div class="softCard" style="padding:12px;border:1px solid hsl(var(--border));border-radius:12px">
+          <h3 style="margin:0 0 8px">ENSJobPages Admin</h3>
+          <div class="smallNote">Owner: <span id="ensOwnerAddress">—</span></div>
+          <div class="smallNote">Job label prefix: <span id="ensJobLabelPrefix">—</span></div>
+          <div id="ensAdminPostureBadges" class="actions" style="margin:10px 0"></div>
+          <div class="accordion">
+            <details>
+              <summary>Routine controls</summary>
+              <div class="body" id="ensRoutineControls"></div>
+            </details>
+            <details>
+              <summary>Danger controls (irreversible / high-risk)</summary>
+              <div class="body" id="ensDangerControls"></div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="card">
       <h2 style="margin:0 0 12px">Practical Guidance</h2>
@@ -2056,15 +2077,18 @@ Evaluation methodology"></textarea>
     const SUFFIX = { agent:"agent.agi.eth", club:"club.agi.eth", alphaAgent:"alpha.agent.agi.eth", alphaClub:"alpha.club.agi.eth" };
 
     const verified = { agent:null, club:null, agentAlpha:false, clubAlpha:false };
+    const APP_STATE = {
+      wallet:{account:null, chainId:null, isMainnet:false, termsAccepted:false},
+      protocol:{}, jobsReadDegraded:false, admin:{managerOwner:null, ensOwner:null, isModerator:false}
+    };
 
     let isMainnet = false;
-    let hasAcceptedTerms = false;
+    let hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
     const DISPUTE_BOND_BPS = 50n;
     const DISPUTE_BOND_MIN = 1n;
     const DISPUTE_BOND_MAX = 200n;
     let uiBootstrapped = false;
     let completionAssistantState = { jobId:null, inspected:null };
-    const appState = { wallet:{account:null,chainId:null,isMainnet:false}, protocol:{}, jobs:{ids:[],lastError:null}, ens:{}, admin:{} };
     function updatePrimaryActionHints(){
       const createReasons = [];
       if(!userAccount) createReasons.push('connect wallet');
@@ -2247,27 +2271,57 @@ const AGIJobManagerABI = [
     const NameWrapperABI = [
       {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
     ];
-    function ensureAbiFunction(abi, fn){ if(!abi.some(x=>x.type==='function' && x.name===fn.name)) abi.push(fn); }
-    [
-      {"name":"owner","inputs":[],"outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
-      {"name":"moderators","inputs":[{"type":"address"}],"outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
-      {"name":"withdrawableAGI","inputs":[],"outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"name":"pauseAll","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"unpauseAll","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"setEnsJobPages","inputs":[{"type":"address"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"withdrawAGI","inputs":[{"type":"uint256"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"rescueETH","inputs":[{"type":"uint256"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"rescueERC20","inputs":[{"type":"address"},{"type":"address"},{"type":"uint256"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"lockIdentityConfiguration","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"}
-    ].forEach(fn=>ensureAbiFunction(AGIJobManagerABI, fn));
-    [
-      {"name":"owner","inputs":[],"outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
-      {"name":"jobLabelPrefix","inputs":[],"outputs":[{"type":"string"}],"stateMutability":"view","type":"function"},
-      {"name":"jobLabelSnapshot","inputs":[{"type":"uint256"}],"outputs":[{"type":"bool","name":"isSet"},{"type":"string","name":"label"}],"stateMutability":"view","type":"function"},
-      {"name":"setJobLabelPrefix","inputs":[{"type":"string"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"lockConfiguration","inputs":[],"outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"name":"migrateLegacyWrappedJobPage","inputs":[{"type":"uint256"},{"type":"string"}],"outputs":[],"stateMutability":"nonpayable","type":"function"}
-    ].forEach(fn=>ensureAbiFunction(ENSJobPagesABI, fn));
+
+    function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
+    function ensureAbiMethods(abi, defs){
+      defs.forEach(def=>{ if(!abi.some(abiHas(def.name))) abi.push(def); });
+    }
+    ensureAbiMethods(AGIJobManagerABI, [
+      {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"moderators","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"blacklistedAgents","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"blacklistedValidators","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"ensJobPages","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"withdrawableAGI","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"pauseIntake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"unpauseIntake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"pauseAll","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"unpauseAll","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bool","name":"paused","type":"bool"}],"name":"setSettlementPaused","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"addModerator","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"removeModerator","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"uint8","name":"code","type":"uint8"},{"internalType":"string","name":"note","type":"string"}],"name":"resolveDisputeWithCode","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"bool","name":"agentWins","type":"bool"}],"name":"resolveStaleDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"addr","type":"address"},{"internalType":"bool","name":"flag","type":"bool"}],"name":"blacklistAgent","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"addr","type":"address"},{"internalType":"bool","name":"flag","type":"bool"}],"name":"blacklistValidator","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"delistJob","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"newToken","type":"address"}],"name":"updateAGITokenAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"newRegistry","type":"address"}],"name":"updateEnsRegistry","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"newWrapper","type":"address"}],"name":"updateNameWrapper","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bytes32","name":"a","type":"bytes32"},{"internalType":"bytes32","name":"b","type":"bytes32"},{"internalType":"bytes32","name":"c","type":"bytes32"},{"internalType":"bytes32","name":"d","type":"bytes32"}],"name":"updateRootNodes","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"newEnsPages","type":"address"}],"name":"setEnsJobPages","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"lockIdentityConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawAGI","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueETH","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"rescueToken","outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ]);
+    ensureAbiMethods(ENSJobPagesABI, [
+      {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"jobLabelPrefix","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"jobLabelSnapshot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"string","name":"prefix","type":"string"}],"name":"setJobLabelPrefix","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"registry","type":"address"}],"name":"setENSRegistry","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"wrapper","type":"address"}],"name":"setNameWrapper","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"resolver","type":"address"}],"name":"setPublicResolver","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bytes32","name":"rootNode","type":"bytes32"},{"internalType":"string","name":"rootName","type":"string"}],"name":"setJobsRoot","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"jobManager","type":"address"}],"name":"setJobManager","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bool","name":"enabled","type":"bool"}],"name":"setUseEnsJobTokenURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"lockConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"string","name":"label","type":"string"}],"name":"migrateLegacyWrappedJobPage","outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ]);
 
     function el(id){return document.getElementById(id);}
     function normalizedErrorMessage(error){
@@ -2319,30 +2373,19 @@ const AGIJobManagerABI = [
           if(Number.isInteger(id) && id >= 0) created.delete(id);
         }
         const ids = Array.from(created).sort((a,b)=>a-b);
-        const missingCreatedEvents = !createdEvents || !createdEvents.length;
-        if(!ids.length && Number(totalHint||0) > 0 && missingCreatedEvents){
-          const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
-          activeJobIndexCache.ids = inferred.slice();
-          activeJobIndexCache.ts = now;
-          setToast('Job index event scan is missing JobCreated coverage; showing inferred ids from nextJobId as degraded fallback.', 'warn');
-          return inferred;
-        }
         activeJobIndexCache.ids = ids.slice();
         activeJobIndexCache.ts = now;
+        APP_STATE.jobsReadDegraded = false;
         return ids;
       }catch(error){
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
-        if(activeJobIndexCache.ids && activeJobIndexCache.ids.length){
-          setToast('Job index event scan failed; showing cached active ids. Retry refresh for a live index.', 'warn');
-          return activeJobIndexCache.ids.slice();
-        }
-        const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
-        setToast('Job index event scan failed; showing inferred ids from nextJobId as degraded fallback.', 'warn');
-        return inferred;
+        APP_STATE.jobsReadDegraded = true;
+        const cached = activeJobIndexCache.ids ? activeJobIndexCache.ids.slice() : [];
+        return cached;
       }
     }
 
-    const TX_ACTIVITY_KEY = "agijobmanager_v25_tx_activity";
+    const TX_ACTIVITY_KEY = "agijobmanager_v17_tx_activity";
     const ELITE_PREFS_KEY = "agijobmanager_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
@@ -2352,7 +2395,7 @@ const AGIJobManagerABI = [
         .catch(()=>setToast("Switch to Ethereum Mainnet in your wallet to unlock write actions.", "warn"));
     }
     function loadTxActivity(){
-      try{ txActivity = JSON.parse(localStorage.getItem(TX_ACTIVITY_KEY) || localStorage.getItem("agijobmanager_v17_tx_activity") || "[]"); }catch{ txActivity = []; }
+      try{ txActivity = JSON.parse(localStorage.getItem(TX_ACTIVITY_KEY) || "[]"); }catch{ txActivity = []; }
       renderTxActivity();
     }
     function saveTxActivity(){
@@ -2539,36 +2582,28 @@ const AGIJobManagerABI = [
       el('actionReviewModal')?.classList.add('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','false');
     }
-    function closeActionReview(triggerCancel=true){
-      const review = pendingReviewedAction;
+    let pendingActionConfirmResolver = null;
+    function closeActionReview(resolveAsCancel=true){
       pendingReviewedAction = null;
       el('actionReviewModal')?.classList.remove('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','true');
-      if(triggerCancel && review?.onCancel){ try{ review.onCancel(); }catch(e){ console.error(e); } }
+      if(resolveAsCancel && pendingActionConfirmResolver){ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolver(false); }
     }
-    function requestSimpleReview({title,body,method,risk='warn'}){
-      return new Promise((resolve)=>{
+    function requestActionConfirmation(config){
+      return new Promise(resolve=>{
+        pendingActionConfirmResolver = resolve;
         openActionReview({
-          title: title || 'Review action',
-          body: body || '',
-          method: method || 'method: —',
-          checks:[{state:'Risk posture',badge:risk==='bad'?'bad':'warn',text:risk==='bad'?'High-risk or irreversible action.':'Confirm intent before proceeding.'}],
-          facts:[{label:'Network',value:isMainnet?'Ethereum Mainnet':'Not Mainnet'},{label:'Wallet',value:userAccount||'Not connected'},{label:'Contract target',value:AGI_JOB_MANAGER}],
-          onConfirm: async ()=>{ resolve(true); },
-          onCancel: ()=>resolve(false)
+          ...config,
+          run: async ()=>{ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; if(resolver) resolver(true); }
         });
       });
     }
     async function confirmReviewedAction(){
       const review = pendingReviewedAction;
-      if(!review) return closeActionReview(false);
+      if(!review?.run) return closeActionReview();
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
-      closeActionReview(false);
-      try{
-        const runner = review.run || review.onConfirm;
-        if(runner) await runner();
-      }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); }
+      try{ await review.run(); closeActionReview(false); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); closeActionReview(false); }
       finally{ if(btn) btn.disabled = false; }
     }
     async function runTrackedTx(label, sendFactory, options={}){
@@ -2850,7 +2885,7 @@ const AGIJobManagerABI = [
         const payout = parseAmountToUnits(payoutRaw);
         const duration = durationRaw ? BigInt(durationRaw) : 0n;
         const validationPct = BigInt((el("validationRewardPct").textContent.match(/[0-9]+/) || ["0"])[0]);
-        const agentBond = exactAgentBondForJob({ payout: String(payout), duration: String(duration) });
+        const agentBond = computeAgentBondExactForJob({ payout:String(payout), duration:String(duration) });
         const validatorBond = computeValidatorBondFromPayout(payout);
         const rewardPool = (payout * validationPct) / 100n;
         const disputeBond = computeDisputeBondFromPayout(payout);
@@ -2936,6 +2971,10 @@ const AGIJobManagerABI = [
       return String(v||"job").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60) || "job";
     }
     function nowIso(){ return new Date().toISOString(); }
+    function ensLabelPreviewForJobId(jobId){
+      const prefix = String(el('ensJobLabelPrefix')?.textContent || window.protocolState?.ensJobLabelPrefix || 'job-').trim() || 'job-';
+      return `${prefix}${jobId}`;
+    }
     async function currentChainIdSafe(){
       try{return Number(await web3.eth.getChainId());}catch{return null;}
     }
@@ -3051,7 +3090,7 @@ const AGIJobManagerABI = [
           ensPreview: predictedEns || null,
           ensURI: predictedEnsUri && !predictedEnsUri.includes("—") ? predictedEnsUri : null,
           generatedAt: nowIso(),
-          createdVia: "AGIJobManager single-page UI v23.0"
+          createdVia: "AGIJobManager single-page UI v25.0"
         }
       };
       Object.keys(obj).forEach(k=>{ if(obj[k]===undefined) delete obj[k]; });
@@ -3191,13 +3230,13 @@ const AGIJobManagerABI = [
           ensJobPages.methods.useEnsJobTokenURI().call().catch(()=>false), 
           ensJobPages.methods.configLocked().call().catch(()=>false)
         ]);
-        const label = await ensJobPages.methods.jobEnsLabel(String(nextJobId)).call().catch(()=>"");
+        const label = await ensJobPages.methods.jobEnsLabel(String(nextJobId)).call().catch(()=>ensLabelPreviewForJobId(nextJobId));
         let ensName = "—", ensURI = "—", ensNode = "—";
         try{ ensName = await ensJobPages.methods.jobEnsName(String(nextJobId)).call(); }catch{}
         try{ ensURI = await ensJobPages.methods.jobEnsURI(String(nextJobId)).call(); }catch{}
         try{ ensNode = await ensJobPages.methods.jobEnsNode(String(nextJobId)).call(); }catch{}
         if(el("ensRootName")) el("ensRootName").textContent = rootName || "—";
-        if(el("predictedJobLabel")) el("predictedJobLabel").textContent = label || "(label unavailable)";
+        if(el("predictedJobLabel")) el("predictedJobLabel").textContent = label || ensLabelPreviewForJobId(nextJobId);
         if(el("predictedEnsName")) el("predictedEnsName").textContent = ensName || "—";
         if(el("predictedEnsURI")) el("predictedEnsURI").textContent = ensURI || "—";
         if(el("predictedEnsNode")) el("predictedEnsNode").textContent = ensNode || "—";
@@ -3592,7 +3631,7 @@ const AGIJobManagerABI = [
         return false;
       }
       if(allowance >= needed) return true;
-      const ok = await requestSimpleReview({title:'Token approval required',body:`${label} needs token approval before execution.`,method:'approve(address,uint256)',risk:'warn'});
+      const ok = await requestActionConfirmation({title:'Token approval required', body:`${label} needs token approval first.`, facts:[{label:'Approve', value:formatUnitsWithDecimals(needed, fmtDecimals)},{label:'Current allowance', value:formatUnitsWithDecimals(allowance, fmtDecimals)}], checks:[{state:'Prerequisite', badge:'warn', text: options.explanation || 'Approval is required before continuing.'}], method:`approve(${spender}, ${needed.toString()})`, confirmLabel:'Approve token'});
       if(!ok) return false;
       setToast(`Waiting for token approval for ${label}…`, 'warn');
       await runTrackedTx(`Approve token for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
@@ -3754,67 +3793,10 @@ const AGIJobManagerABI = [
       setToast('Vault call summary copied.', 'ok');
     }
 
-    function resetRuntimeState(reason='context reset'){
-      appState.wallet = {account:null,chainId:null,isMainnet:false};
-      appState.jobs = {ids:[],lastError:reason};
-      appState.admin = {};
-      latestJobs = [];
-      jobCache.clear();
-      activeJobIndexCache.ids = null;
-      activeJobIndexCache.ts = 0;
-      const tbody = el('jobsBody');
-      if(tbody) tbody.innerHTML = `<tr><td colspan="8" class="muted">Jobs unavailable: ${escapeHtml(reason)}. Refresh after reconnecting to Ethereum Mainnet.</td></tr>`;
-      if(el('totalJobs')) el('totalJobs').textContent = '—';
-      if(el('myJobs')) el('myJobs').textContent = '—';
-      if(el('agiOwnerAddr')) el('agiOwnerAddr').textContent = '—';
-      if(el('ensOwnerAddr')) el('ensOwnerAddr').textContent = '—';
-      if(el('adminPostureBadge')) el('adminPostureBadge').textContent = `Posture: ${reason}`;
-    }
-    async function refreshAdminPanels(){
-      if(!web3 || !agiJobManager) return;
-      const [ownerRead, ensOwnerRead, modRead, withdrawRead, prefixRead, lockRead] = await Promise.all([
-        runSafeReadStep('owner', ()=>agiJobManager.methods.owner().call(), {silent:true}),
-        runSafeReadStep('ens owner', ()=>ensJobPages.methods.owner().call(), {silent:true}),
-        userAccount ? runSafeReadStep('moderators', ()=>agiJobManager.methods.moderators(userAccount).call(), {silent:true}) : false,
-        runSafeReadStep('withdrawableAGI', ()=>agiJobManager.methods.withdrawableAGI().call(), {silent:true}),
-        runSafeReadStep('jobLabelPrefix', ()=>ensJobPages.methods.jobLabelPrefix().call(), {silent:true}),
-        runSafeReadStep('ens configLocked', ()=>ensJobPages.methods.configLocked().call(), {silent:true})
-      ]);
-      const owner = ownerRead?.__safeReadError ? '' : ownerRead;
-      const ensOwner = ensOwnerRead?.__safeReadError ? '' : ensOwnerRead;
-      const isOwner = !!(userAccount && owner && userAccount.toLowerCase()===owner.toLowerCase());
-      const isEnsOwner = !!(userAccount && ensOwner && userAccount.toLowerCase()===ensOwner.toLowerCase());
-      const isMod = !!modRead && !modRead?.__safeReadError;
-      if(el('agiOwnerAddr')) el('agiOwnerAddr').textContent = owner || 'Unavailable (read failed)';
-      if(el('ensOwnerAddr')) el('ensOwnerAddr').textContent = ensOwner || 'Unavailable (read failed)';
-      if(el('isModeratorFlag')) el('isModeratorFlag').textContent = isMod ? 'true' : 'false';
-      if(el('withdrawableAgi')) el('withdrawableAgi').textContent = withdrawRead?.__safeReadError ? 'Unavailable' : formatUnitsToAmount(withdrawRead || '0');
-      if(el('ensLabelPrefix')) el('ensLabelPrefix').textContent = prefixRead?.__safeReadError ? 'Unavailable' : (prefixRead || '(empty)');
-      if(el('ensConfigLockStatus')) el('ensConfigLockStatus').textContent = lockRead?.__safeReadError ? 'Unavailable' : String(!!lockRead);
-      const posture = isOwner ? 'contract owner' : (isEnsOwner ? 'ENSJobPages owner' : (isMod ? 'moderator' : 'not authorized'));
-      appState.admin = { owner, ensOwner, isOwner, isEnsOwner, isMod, posture };
-      if(el('adminPostureBadge')) el('adminPostureBadge').textContent = `Posture: ${posture}`;
-      ['adminPauseAllBtn','adminUnpauseAllBtn','adminLockIdentityBtn'].forEach(id=>{ const b=el(id); if(b) b.disabled=!isOwner || !isMainnet || !hasAcceptedTerms; });
-      const lockBtn = el('ensLockConfigBtn'); if(lockBtn) lockBtn.disabled=!isEnsOwner || !isMainnet || !hasAcceptedTerms;
-    }
-    async function ensureAdminRole(required){
-      if(!requireConnected()) return false;
-      if(!mustBeReadyToWrite()) return false;
-      await refreshAdminPanels();
-      const roleMap = {
-        owner: !!appState.admin?.isOwner,
-        ensOwner: !!appState.admin?.isEnsOwner,
-        moderator: !!appState.admin?.isMod
-      };
-      if(roleMap[required]) return true;
-      setToast(`Action blocked: ${required} authorization required for this method.`, 'bad');
-      return false;
-    }
-
     async function connectWallet(){
       clearToast();
       try{
-        if(!window.ethereum){setToast("Please install a Web3 wallet such as MetaMask.","warn");return;}
+        if(!window.ethereum){ setToast("No injected wallet detected. Install a wallet such as MetaMask to continue.", "bad"); return; }
         web3 = new Web3(window.ethereum);
         await window.ethereum.request({method:"eth_requestAccounts"});
         const accts = await web3.eth.getAccounts();
@@ -3944,7 +3926,7 @@ async function updateSummary(){
       el("validatorSlashBps").textContent = vSlash;
 
       window.protocolState = {
-        chainId: (await currentChainIdSafe()),
+        chainId: APP_STATE.wallet.chainId,
         completionReviewPeriod: Number(crp),
         challengePeriodAfterApproval: chp,
         disputeReviewPeriod: drp,
@@ -3952,14 +3934,13 @@ async function updateSummary(){
         requiredValidatorApprovals: Number(ra),
         requiredValidatorDisapprovals: Number(rd),
         voteQuorum: Number(vq),
-        agentBond: String(aMin),
-        agentBondBps: Number(aBps),
-        agentBondMax: String(aMax),
-        validatorBondBps: Number(vBps),
+        validatorBondBps: String(vBps),
         validatorBondMin: String(vMin),
         validatorBondMax: String(vMax),
-        jobDurationLimit: Number(jobLimit),
-        maxJobPayout: String(maxPayout)
+        agentBondBps: String(aBps),
+        agentBondMin: String(aMin),
+        agentBondMax: String(aMax),
+        jobDurationLimit: String(jobLimit)
       };
       el("validationRewardPct").textContent = String(vReward) + "%";
       el("maxJobPayout").textContent = formatUnitsToAmount(maxPayout);
@@ -4037,7 +4018,7 @@ async function updateSummary(){
       if(query){
         const hay = [
           job.id, job.employer, job.assignedAgent, job.specURI, job.completionURI,
-          classifyJobStatus(job), `job-${job.id}`
+          classifyJobStatus(job), ensLabelPreviewForJobId(job.id)
         ].join(" ").toLowerCase();
         if(!hay.includes(query)) return false;
       }
@@ -4246,7 +4227,7 @@ async function updateSummary(){
             <td data-label="Job">
               <div style="display:flex;gap:8px;align-items:center">
                 <button class="btn starBtn ${isFav ? 'active':''}" onclick="toggleFavorite(${job.id})" title="Toggle watchlist">${isFav ? '★' : '☆'}</button>
-                <div><b>${job.id}</b><div class="muted" style="font-size:.82rem">job-${job.id}</div></div>
+                <div><b>${job.id}</b><div class="muted" style="font-size:.82rem">${ensLabelPreviewForJobId(job.id)}</div></div>
               </div>
             </td>
             <td class="muted" data-label="Employer">${shortAddr(job.employer)}</td>
@@ -4261,7 +4242,7 @@ async function updateSummary(){
         }
       }
       el("myJobs").textContent = String(myJobsCount);
-      if(el("jobsVisibleSummary")) el("jobsVisibleSummary").textContent = `${visibleCount} shown / ${jobIds.length} active IDs · sorted ${jobSortMode}`;
+      if(el("jobsVisibleSummary")) el("jobsVisibleSummary").textContent = `${visibleCount} shown / ${jobIds.length} active IDs · sorted ${jobSortMode}${APP_STATE.jobsReadDegraded ? ' · degraded event read (showing cached IDs only)' : ''}`;
       updateJobStats(jobs, visibleCount);
       renderAttentionQueue();
     }
@@ -4287,7 +4268,7 @@ async function updateSummary(){
       }
       if(allowance >= needed) return true;
       const currentAllowance = formatUnitsToAmount(allowance);
-      const ok = await requestSimpleReview({title:'AGIALPHA approval review',body:`${actionLabel} needs token approval before AGIJobManager can transfer required $AGIALPHA. ${explanation}`.trim(),method:'approve(address,uint256)',risk:'warn'});
+      const ok = await requestActionConfirmation({title:'Token approval required', body:`${actionLabel} needs token approval before AGIJobManager can transfer the required $AGIALPHA.`, facts:[{label:'Approve now', value:approvalLabel},{label:'Current allowance', value:`${currentAllowance} $AGIALPHA`}], checks:[{state:'Prerequisite', badge:'warn', text: explanation || 'Approval is required before this write action can proceed.'}], method:`approve(${AGI_JOB_MANAGER}, ${needed.toString()})`, confirmLabel:'Approve token'});
       if(!ok) return false;
       setToast(`Waiting for token approval for ${actionLabel}…`, 'warn');
       await runTrackedTx(`Approve AGIJobManager for ${actionLabel}`, ()=>agiToken.methods.approve(AGI_JOB_MANAGER, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting AGIJobManager approval for ${actionLabel}.`, successDetail:`AGIJobManager approval confirmed for ${actionLabel}.` });
@@ -4299,25 +4280,26 @@ async function updateSummary(){
       try{ return parseAmountToUnits(String(value || '0').replace(/[^0-9.]/g, '') || '0'); }catch{ return 0n; }
     }
 
-    function exactAgentBondForJob(job){
+    function computeAgentBondExactForJob(job){
       const payout = BigInt(job?.payout || 0);
       const duration = BigInt(job?.duration || 0);
-      const minBond = BigInt(window.protocolState?.agentBond || 0);
-      const maxBond = BigInt(window.protocolState?.agentBondMax || 0);
-      const bps = BigInt(window.protocolState?.agentBondBps || 0);
-      const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
-      let bond = (payout * bps) / 10000n;
+      const durationLimit = getProtocolBigInt('jobDurationLimit', 0n);
+      const bps = getProtocolBigInt('agentBondBps');
+      const minBond = getProtocolBigInt('agentBondMin');
+      const maxBond = getProtocolBigInt('agentBondMax');
+      if(bps === 0n && minBond === 0n && maxBond === 0n) return 0n;
+      let bond = payout * bps / 10000n;
       if(bond < minBond) bond = minBond;
-      if(durationLimit > 0n && duration > 0n){
-        const durationPremium = (bond * duration) / durationLimit;
+      if(durationLimit !== 0n){
+        const durationPremium = bond * duration / durationLimit;
         bond += durationPremium;
       }
-      if(maxBond > 0n && bond > maxBond) bond = maxBond;
+      if(maxBond !== 0n && bond > maxBond) bond = maxBond;
       if(bond > payout) bond = payout;
       return bond;
     }
     function estimatedAgentApprovalForJob(job){
-      return exactAgentBondForJob(job);
+      return computeAgentBondExactForJob(job);
     }
 
     function renderValidationStatus(job){
@@ -4409,7 +4391,7 @@ async function updateSummary(){
         const approvalCap = estimatedAgentApprovalForJob(job);
         openActionReview({
           title:`Apply for Job #${jobId}`,
-          body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. The contract computes the exact agent bond on-chain; this UI mirrors the verified BondMath path from current parameters and sizes approval to that deterministic amount.',
+          body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. The contract computes the exact agent bond on-chain; this UI uses a safe approval cap to avoid allowance-related reverts.',
           facts:[
             {label:'Agent ENS', value: `${verified.agent}.${verified.agentAlpha ? SUFFIX.alphaAgent : SUFFIX.agent}`},
             {label:'Job payout', value: `${formatUnitsToAmount(job?.payout || 0)} $AGIALPHA`},
@@ -4418,7 +4400,7 @@ async function updateSummary(){
           ],
           checks:[
             {state:'Eligibility', badge:'good', text:'Your wallet is verified in the UI as an agent ENS owner.'},
-            {state:'Bond', badge:'warn', text:'Exact BondMath mirror using live protocol parameters.'},
+            {state:'Bond', badge:'warn', text:'The exact bond is computed on-chain in BondMath and is not exposed as a direct public quote.'},
             {state:'Allowance', badge:'warn', text:'A token approval may be requested before applyForJob is sent.'}
           ],
           method:`applyForJob(jobId=${jobId}, subdomain=${JSON.stringify(verified.agent)}, proof=[])`,
@@ -4428,7 +4410,7 @@ async function updateSummary(){
             const approved = await ensureApproval(approvalCap, {
               actionLabel: `applying for job #${jobId}`,
               approvalLabel: `${formatUnitsToAmount(approvalCap)} $AGIALPHA`,
-              explanation: 'Agent bond approval uses deterministic BondMath-equivalent client-side math derived from live protocol parameters (bps, min, max, duration limit, payout, duration).'
+              explanation: 'The exact agent bond is computed on-chain by BondMath and is not exposed as a direct public quote. This UI therefore asks for a bounded approval sized to safely cover the current job application.'
             });
             if(!approved) return;
             setToast("Submitting applyForJob transaction…", "warn");
@@ -4659,7 +4641,7 @@ async function updateSummary(){
           body:'You are about to call the public ENS lock path for a terminal job. This is best-effort and depends on the ENSJobPages configuration and terminal state.',
           facts:[
             {label:'Job status', value: job ? classifyJobStatus(job) : 'Unknown'},
-            {label:'Predicted ENS name', value: currentLivePacket?.job?.id === jobId ? (currentLivePacket.job.ensName || '—') : (job ? `job-${jobId}` : '—')},
+            {label:'Predicted ENS name', value: currentLivePacket?.job?.id === jobId ? (currentLivePacket.job.ensName || '—') : (job ? ensLabelPreviewForJobId(jobId) : '—')},
             {label:'Burn fuses', value: 'false'},
             {label:'Terminal requirement', value: 'Completed or expired only'}
           ],
@@ -5041,8 +5023,8 @@ function normalizeIpfsToHttp(uri){
       if(normalized.uriBytes > 1024) throw new Error('The completion URI exceeds the contract limit of 1024 bytes.');
       const posture = inspection?.posture || '';
       if(/direct image/i.test(posture)){
-        const approved = await requestSimpleReview({title:'Direct media URI warning',body:'This completion URI appears to point directly to an image instead of metadata JSON. Continue only if this is intentional.',method:'requestJobCompletion(uint256,string)',risk:'warn'});
-        if(!approved) return;
+        const ok = await requestActionConfirmation({title:'Direct image completion URI detected', body:'This completion URI appears to point directly to an image rather than metadata JSON. That can weaken downstream NFT display and indexer compatibility.', checks:[{state:'Metadata posture', badge:'warn', text:'Continue only if you explicitly want a direct-image URI.'}], method:'requestJobCompletion(jobId, completionURI)', confirmLabel:'Continue with direct image'});
+        if(!ok) return;
       }
       if(/Invalid/i.test(posture)) throw new Error('The completion URI is not ready yet.');
       saveCompletionDraft(jobId);
@@ -5126,11 +5108,18 @@ function normalizeIpfsToHttp(uri){
     }
     function nowSec(){ return Math.floor(Date.now()/1000); }
     function getNumericText(id){ return BigInt((el(id)?.textContent || "0").replace(/[^0-9]/g,"") || "0"); }
+    function getProtocolBigInt(key, fallback=0n){
+      try{
+        const v = window.protocolState?.[key];
+        if(v === null || v === undefined || v === "") return fallback;
+        return BigInt(String(v));
+      }catch{return fallback;}
+    }
     function computeValidatorBondFromPayout(payout){
       if(!payout || payout<=0n) return 0n;
-      const bps = getNumericText("validatorBondBps");
-      const min = parseAmountToUnits(el("validatorBondMin")?.textContent || "0");
-      const max = parseAmountToUnits(el("validatorBondMax")?.textContent || "0");
+      const bps = getProtocolBigInt("validatorBondBps");
+      const min = getProtocolBigInt("validatorBondMin");
+      const max = getProtocolBigInt("validatorBondMax");
       let bond = (payout * bps) / 10000n;
       if(bond < min) bond = min;
       if(max>0n && bond > max) bond = max;
@@ -5319,7 +5308,7 @@ function normalizeIpfsToHttp(uri){
       const sim = simulateJobSettlement(job);
       const [timeline, ens] = await Promise.all([fetchJobTimeline(id), fetchEnsVisibility(id)]);
       currentLivePacket = buildLiveAutonomousPacket(job, sim, ens);
-      const title = ens.ensName || `job-${id}`;
+      const title = ens.ensName || ensLabelPreviewForJobId(id);
       el('jobDetailTitle').textContent = `Job #${id} · ${title}`;
       el('jobDetailSubtitle').innerHTML = `${statusPillFrom(job)} <span class="smallNote" style="margin-left:8px">${sim.headline}</span>`;
       el('jobOverview').innerHTML = [
@@ -5566,6 +5555,61 @@ function normalizeIpfsToHttp(uri){
       setToast('Live autonomous packet downloaded.', 'ok');
     }
 
+    function postureBadge(ok, yes, no){ return `<span class="pill ${ok ? 'ok' : 'bad'}">${escapeHtml(ok ? yes : no)}</span>`; }
+    function adminControlButton(target, method, danger=false){
+      const cls = danger ? 'btn btn-danger' : 'btn';
+      return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'})">${escapeHtml(method)}</button>`;
+    }
+    async function executeAdminControl(target, method, danger=false){
+      if(!requireConnected() || !mustBeReadyToWrite()) return;
+      const contract = target === 'ens' ? ensJobPages : agiJobManager;
+      const argInput = prompt(`Optional comma-separated args for ${method}`);
+      const args = String(argInput || '').trim() ? String(argInput).split(',').map(x=>x.trim()) : [];
+      const ok = await requestActionConfirmation({
+        title: `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${method}`,
+        body: danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
+        checks:[{state:'Authorization', badge: 'warn', text:'Wallet must be owner or delegated moderator for this method.'}],
+        method: `${method}(${args.join(', ')})`,
+        confirmLabel: danger ? 'Submit high-risk action' : 'Submit admin action'
+      });
+      if(!ok) return;
+      await runTrackedTx(`Admin ${method}`, ()=>contract.methods[method](...args).send({from:userAccount}), {pendingDetail:`Submitting ${method}.`, successDetail:`${method} confirmed.`});
+      await refreshAll();
+    }
+    async function refreshAdminPanels(){
+      if(!agiJobManager || !ensJobPages) return;
+      const [mOwnerRead, eOwnerRead, moderatorRead, prefixRead] = await Promise.all([
+        runSafeReadStep('owner', ()=>agiJobManager.methods.owner().call(), {silent:true}),
+        runSafeReadStep('ensOwner', ()=>ensJobPages.methods.owner().call(), {silent:true}),
+        userAccount ? runSafeReadStep('moderators', ()=>agiJobManager.methods.moderators(userAccount).call(), {silent:true}) : false,
+        runSafeReadStep('jobLabelPrefix', ()=>ensJobPages.methods.jobLabelPrefix().call(), {silent:true})
+      ]);
+      const managerOwner = mOwnerRead?.__safeReadError ? 'unavailable' : mOwnerRead;
+      const ensOwner = eOwnerRead?.__safeReadError ? 'unavailable' : eOwnerRead;
+      const isModerator = !!moderatorRead && !moderatorRead?.__safeReadError && !!moderatorRead;
+      APP_STATE.admin = {managerOwner, ensOwner, isModerator};
+      if(el('managerOwnerAddress')) el('managerOwnerAddress').textContent = managerOwner || '—';
+      if(el('ensOwnerAddress')) el('ensOwnerAddress').textContent = ensOwner || '—';
+      if(el('ensJobLabelPrefix')) el('ensJobLabelPrefix').textContent = prefixRead?.__safeReadError ? 'unavailable' : (prefixRead || '—');
+      const isManagerOwner = userAccount && managerOwner && String(userAccount).toLowerCase() === String(managerOwner).toLowerCase();
+      const isEnsOwner = userAccount && ensOwner && String(userAccount).toLowerCase() === String(ensOwner).toLowerCase();
+      if(el('managerModeratorPosture')) el('managerModeratorPosture').textContent = isModerator ? 'Connected wallet is moderator' : 'Connected wallet is not moderator';
+      if(el('managerAdminPostureBadges')) el('managerAdminPostureBadges').innerHTML = [
+        postureBadge(!!userAccount, 'Wallet connected', 'Wallet disconnected'),
+        postureBadge(!!isManagerOwner, 'AGIJobManager owner', 'Not AGIJobManager owner'),
+        postureBadge(!!isModerator, 'Moderator', 'Not moderator')
+      ].join(' ');
+      if(el('ensAdminPostureBadges')) el('ensAdminPostureBadges').innerHTML = [
+        postureBadge(!!userAccount, 'Wallet connected', 'Wallet disconnected'),
+        postureBadge(!!isEnsOwner, 'ENSJobPages owner', 'Not ENSJobPages owner')
+      ].join(' ');
+      if(el('managerRoutineControls')) el('managerRoutineControls').innerHTML = ['pause','unpause','pauseIntake','unpauseIntake','pauseAll','unpauseAll','setSettlementPaused','addModerator','removeModerator','blacklistAgent','blacklistValidator','delistJob','withdrawAGI'].map(m=>adminControlButton('manager',m,false)).join(' ');
+      if(el('managerDangerControls')) el('managerDangerControls').innerHTML = ['updateAGITokenAddress','updateEnsRegistry','updateNameWrapper','updateRootNodes','setEnsJobPages','lockIdentityConfiguration','rescueETH','rescueERC20','rescueToken','resolveDisputeWithCode','resolveStaleDispute'].map(m=>adminControlButton('manager',m,true)).join(' ');
+      if(el('ensRoutineControls')) el('ensRoutineControls').innerHTML = ['setJobLabelPrefix','setENSRegistry','setNameWrapper','setPublicResolver','setJobsRoot','setJobManager','setUseEnsJobTokenURI'].map(m=>adminControlButton('ens',m,false)).join(' ');
+      if(el('ensDangerControls')) el('ensDangerControls').innerHTML = ['lockConfiguration','migrateLegacyWrappedJobPage'].map(m=>adminControlButton('ens',m,true)).join(' ');
+      window.protocolState = {...(window.protocolState||{}), ensJobLabelPrefix: prefixRead?.__safeReadError ? '' : String(prefixRead || '') };
+    }
+
     function bind(){
       el("connectBtn").addEventListener("click", connectWallet);
       el("refreshBtn").addEventListener("click", refreshAll);
@@ -5666,10 +5710,6 @@ function normalizeIpfsToHttp(uri){
       });
       if(el("copyLivePacketBtn")) el("copyLivePacketBtn").addEventListener("click", ()=>copyLivePacket().catch(e=>setToast(e.message||String(e),"bad")));
       if(el("downloadLivePacketBtn")) el("downloadLivePacketBtn").addEventListener("click", ()=>downloadLivePacket().catch(e=>setToast(e.message||String(e),"bad")));
-      if(el('adminPauseAllBtn')) el('adminPauseAllBtn').addEventListener('click', async ()=>{ if(!(await ensureAdminRole('owner'))) return; openActionReview({title:'pauseAll review',body:'High-risk emergency action. This pauses protocol execution broadly.',method:'pauseAll()',checks:[{state:'Risk',badge:'bad',text:'Irreversible side-effects until unpaused.'}],facts:[{label:'Target',value:AGI_JOB_MANAGER},{label:'Role',value:'Owner required'}],run:async()=>runTrackedTx('pauseAll',()=>agiJobManager.methods.pauseAll().send({from:userAccount}))}); });
-      if(el('adminUnpauseAllBtn')) el('adminUnpauseAllBtn').addEventListener('click', async ()=>{ if(!(await ensureAdminRole('owner'))) return; openActionReview({title:'unpauseAll review',body:'Resume protocol operation after incident handling.',method:'unpauseAll()',checks:[{state:'Risk',badge:'warn',text:'Ensure incident condition is resolved.'}],facts:[{label:'Target',value:AGI_JOB_MANAGER},{label:'Role',value:'Owner required'}],run:async()=>runTrackedTx('unpauseAll',()=>agiJobManager.methods.unpauseAll().send({from:userAccount}))}); });
-      if(el('adminLockIdentityBtn')) el('adminLockIdentityBtn').addEventListener('click', async ()=>{ if(!(await ensureAdminRole('owner'))) return; openActionReview({title:'lockIdentityConfiguration review',body:'Irreversible high-risk action. Identity configuration cannot be changed after lock.',method:'lockIdentityConfiguration()',checks:[{state:'Risk',badge:'bad',text:'Irreversible / high-risk'}],facts:[{label:'Target',value:AGI_JOB_MANAGER},{label:'Role',value:'Owner required'}],run:async()=>runTrackedTx('lockIdentityConfiguration',()=>agiJobManager.methods.lockIdentityConfiguration().send({from:userAccount}))}); });
-      if(el('ensLockConfigBtn')) el('ensLockConfigBtn').addEventListener('click', async ()=>{ if(!(await ensureAdminRole('ensOwner'))) return; openActionReview({title:'ENS lockConfiguration review',body:'Irreversible high-risk action on ENSJobPages.',method:'lockConfiguration()',checks:[{state:'Risk',badge:'bad',text:'Irreversible / high-risk'}],facts:[{label:'Target',value:ENS_JOB_PAGES},{label:'Role',value:'ENS owner required'}],run:async()=>runTrackedTx('ENS lockConfiguration',()=>ensJobPages.methods.lockConfiguration().send({from:userAccount}))}); });
 
       loadTxActivity();
       loadElitePrefs();
@@ -5683,24 +5723,25 @@ function normalizeIpfsToHttp(uri){
 
       if(window.ethereum){
         window.ethereum.on("accountsChanged", async (accounts)=>{
-          userAccount = accounts && accounts[0] ? accounts[0] : null;
+          userAccount = accounts && accounts[0] ? accounts[0] : null; APP_STATE.wallet.account = userAccount;
           el("walletStatus").textContent = userAccount ? shortAddr(userAccount) : "Not connected";
           verified.agent = null; verified.club = null; verified.agentAlpha=false; verified.clubAlpha=false; hasAcceptedTerms=false; const tac=el("termsAccepted"); if(tac) tac.checked=false; updateWriteGate();
           el("agentPill").className="pill"; el("agentPill").textContent="Agent ENS: not verified";
           const aab=el("agentAlphaBadge"); if(aab) aab.style.display="none";
           el("clubPill").className="pill"; el("clubPill").textContent="Club ENS: not verified";
           const vb=el("validatorBadge"); if(vb) vb.style.display="none";
-          if(!userAccount){ resetRuntimeState('wallet disconnected'); el("refreshBtn").disabled=true; return; }
+          if(!userAccount){ el("refreshBtn").disabled=true; return; }
           await connectWallet();
         });
         window.ethereum.on("chainChanged", async ()=>{
-          resetRuntimeState('chain changed');
           let networkToast = "";
           let networkToastType = "warn";
           try{
             if(!web3) web3 = new Web3(window.ethereum);
             const cid = await web3.eth.getChainId();
             isMainnet = (Number(cid)===1);
+      APP_STATE.wallet.chainId = Number(cid);
+      APP_STATE.wallet.isMainnet = isMainnet;
             el("chainStatus").textContent = `chainId ${cid}` + (isMainnet ? " (Mainnet)" : " (Not Mainnet)");
 
             if(!agiJobManager) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
@@ -5743,16 +5784,16 @@ function normalizeIpfsToHttp(uri){
     });
   </script>
 
-  <script id="v23-mobile-enhancements-script">
+  <script id="v25-mobile-enhancements-script">
     (function(){
       const V23_BREAKPOINT = 900;
-      const v23PrimarySections = [
+      const v25PrimarySections = [
         {id:'missionControlSection', label:'Mission', icon:'◎'},
         {id:'agialphaBridgeSection', label:'Convert', icon:'⇄'},
         {id:'createJobSection', label:'Create', icon:'＋'},
         {id:'jobsSection', label:'Jobs', icon:'▤'}
       ];
-      const v23ExtraSections = [
+      const v25ExtraSections = [
         {id:'verifyEnsSection', label:'ENS Verify'},
         {id:'activitySection', label:'Activity'},
         {id:'operationsDeckSection', label:'Operator Deck'},
@@ -5760,14 +5801,14 @@ function normalizeIpfsToHttp(uri){
         {id:'insightsSection', label:'Economics'},
         {id:'termsSection', label:'Terms'}
       ];
-      let v23Observer = null;
-      let v23SyncTimer = null;
+      let v25Observer = null;
+      let v25SyncTimer = null;
 
-      function v23IsMobile(){ return window.matchMedia(`(max-width:${V23_BREAKPOINT}px)`).matches; }
-      function v23El(id){ return document.getElementById(id); }
-      function v23Text(id, fallback='—'){ const n = v23El(id); return (n && String(n.textContent || '').trim()) || fallback; }
-      function v23ScrollTo(id){ const n = v23El(id); if(n){ n.scrollIntoView({behavior:'smooth', block:'start'}); v23CloseSheet(); } }
-      function v23Run(action){
+      function v25IsMobile(){ return window.matchMedia(`(max-width:${V23_BREAKPOINT}px)`).matches; }
+      function v25El(id){ return document.getElementById(id); }
+      function v25Text(id, fallback='—'){ const n = v25El(id); return (n && String(n.textContent || '').trim()) || fallback; }
+      function v25ScrollTo(id){ const n = v25El(id); if(n){ n.scrollIntoView({behavior:'smooth', block:'start'}); v25CloseSheet(); } }
+      function v25Run(action){
         if(action === 'connect' && typeof connectWallet === 'function') return connectWallet();
         if(action === 'switch-mainnet' && typeof requestMainnetSwitch === 'function') return requestMainnetSwitch();
         if(action === 'refresh' && typeof refreshAll === 'function') return refreshAll();
@@ -5775,150 +5816,150 @@ function normalizeIpfsToHttp(uri){
         if(action === 'expand-terms') return document.querySelectorAll('.term-block').forEach(d=>d.open=true);
         if(action === 'collapse-terms') return document.querySelectorAll('.term-block').forEach((d,i)=>d.open=i<2);
         if(action === 'top') return window.scrollTo({top:0, behavior:'smooth'});
-        if(action === 'bridge') return v23ScrollTo('agialphaBridgeSection');
-        if(action === 'create') return v23ScrollTo('createJobSection');
-        if(action === 'jobs') return v23ScrollTo('jobsSection');
-        if(action === 'terms') return v23ScrollTo('termsSection');
-        if(action === 'verify') return v23ScrollTo('verifyEnsSection');
-        if(action === 'activity') return v23ScrollTo('activitySection');
-        if(action === 'ops') return v23ScrollTo('operationsDeckSection');
+        if(action === 'bridge') return v25ScrollTo('agialphaBridgeSection');
+        if(action === 'create') return v25ScrollTo('createJobSection');
+        if(action === 'jobs') return v25ScrollTo('jobsSection');
+        if(action === 'terms') return v25ScrollTo('termsSection');
+        if(action === 'verify') return v25ScrollTo('verifyEnsSection');
+        if(action === 'activity') return v25ScrollTo('activitySection');
+        if(action === 'ops') return v25ScrollTo('operationsDeckSection');
         return undefined;
       }
-      function v23SetActive(id){
-        document.querySelectorAll('#v23MobileDock [data-v23-target]').forEach(btn=>btn.classList.toggle('active', btn.dataset.v23Target === id));
+      function v25SetActive(id){
+        document.querySelectorAll('#v25MobileDock [data-v25-target]').forEach(btn=>btn.classList.toggle('active', btn.dataset.v25Target === id));
       }
-      function v23OpenSheet(){
-        const sheet = v23El('v23MobileSheet');
+      function v25OpenSheet(){
+        const sheet = v25El('v25MobileSheet');
         if(!sheet) return;
         sheet.classList.add('open');
         sheet.setAttribute('aria-hidden','false');
         document.body.style.overflow = 'hidden';
-        v23SyncSummary();
+        v25SyncSummary();
       }
-      function v23CloseSheet(){
-        const sheet = v23El('v23MobileSheet');
+      function v25CloseSheet(){
+        const sheet = v25El('v25MobileSheet');
         if(!sheet) return;
         sheet.classList.remove('open');
         sheet.setAttribute('aria-hidden','true');
         document.body.style.overflow = '';
       }
-      function v23BuildMobileShell(){
-        if(v23El('v23MobileDock')) return;
+      function v25BuildMobileShell(){
+        if(v25El('v25MobileDock')) return;
         const dock = document.createElement('div');
-        dock.id = 'v23MobileDock';
-        dock.className = 'v23-mobile-only';
+        dock.id = 'v25MobileDock';
+        dock.className = 'v25-mobile-only';
         dock.setAttribute('aria-label', 'Mobile protocol navigation');
-        dock.innerHTML = v23PrimarySections.map(item=>`<button type="button" class="v23-dock-btn" data-v23-target="${item.id}" aria-label="${item.label}">${item.icon}<span class="v23-dock-label">${item.label}</span></button>`).join('') + `<button type="button" class="v23-dock-btn" data-v23-open-sheet="1" aria-label="More">⋯<span class="v23-dock-label">More</span></button>`;
+        dock.innerHTML = v25PrimarySections.map(item=>`<button type="button" class="v25-dock-btn" data-v25-target="${item.id}" aria-label="${item.label}">${item.icon}<span class="v25-dock-label">${item.label}</span></button>`).join('') + `<button type="button" class="v25-dock-btn" data-v25-open-sheet="1" aria-label="More">⋯<span class="v25-dock-label">More</span></button>`;
 
         const sheet = document.createElement('div');
-        sheet.id = 'v23MobileSheet';
-        sheet.className = 'v23-mobile-only';
+        sheet.id = 'v25MobileSheet';
+        sheet.className = 'v25-mobile-only';
         sheet.setAttribute('aria-hidden','true');
         sheet.innerHTML = `
-          <div class="v23-sheet-card" role="dialog" aria-modal="true" aria-label="Mobile control sheet">
-            <div class="v23-sheet-handle" aria-hidden="true"></div>
-            <div class="v23-sheet-header">
+          <div class="v25-sheet-card" role="dialog" aria-modal="true" aria-label="Mobile control sheet">
+            <div class="v25-sheet-handle" aria-hidden="true"></div>
+            <div class="v25-sheet-header">
               <div>
                 <div class="eyebrow">Mobile control</div>
                 <div class="subtleTitle" style="margin:0">Protocol navigation</div>
-                <div class="v23-sheet-summary" id="v23MobileSummary">Wallet not connected · write access locked</div>
-                <div class="v23-sheet-meta" id="v23MobileMeta">Refresh to load live board status.</div>
+                <div class="v25-sheet-summary" id="v25MobileSummary">Wallet not connected · write access locked</div>
+                <div class="v25-sheet-meta" id="v25MobileMeta">Refresh to load live board status.</div>
               </div>
-              <button type="button" class="modalClose" id="v23CloseSheetBtn" aria-label="Close">×</button>
+              <button type="button" class="modalClose" id="v25CloseSheetBtn" aria-label="Close">×</button>
             </div>
-            <div class="v23-sheet-section">
-              <div class="v23-sheet-title">Primary sections</div>
-              <div class="v23-sheet-grid" id="v23PrimarySectionGrid"></div>
+            <div class="v25-sheet-section">
+              <div class="v25-sheet-title">Primary sections</div>
+              <div class="v25-sheet-grid" id="v25PrimarySectionGrid"></div>
             </div>
-            <div class="v23-sheet-section">
-              <div class="v23-sheet-title">Session actions</div>
-              <div class="v23-sheet-grid">
-                <button type="button" class="v23-sheet-btn primary" id="v23MirrorPrimaryBtn">Primary action</button>
-                <button type="button" class="v23-sheet-btn" id="v23MirrorSecondaryBtn">Secondary action</button>
-                <button type="button" class="v23-sheet-btn" data-v23-run="refresh">Refresh live data</button>
-                <button type="button" class="v23-sheet-btn" data-v23-run="command">Open command palette</button>
-                <button type="button" class="v23-sheet-btn" data-v23-run="expand-terms">Expand all terms</button>
-                <button type="button" class="v23-sheet-btn" data-v23-run="collapse-terms">Collapse terms</button>
-                <button type="button" class="v23-sheet-btn" data-v23-run="top">Back to top</button>
+            <div class="v25-sheet-section">
+              <div class="v25-sheet-title">Session actions</div>
+              <div class="v25-sheet-grid">
+                <button type="button" class="v25-sheet-btn primary" id="v25MirrorPrimaryBtn">Primary action</button>
+                <button type="button" class="v25-sheet-btn" id="v25MirrorSecondaryBtn">Secondary action</button>
+                <button type="button" class="v25-sheet-btn" data-v25-run="refresh">Refresh live data</button>
+                <button type="button" class="v25-sheet-btn" data-v25-run="command">Open command palette</button>
+                <button type="button" class="v25-sheet-btn" data-v25-run="expand-terms">Expand all terms</button>
+                <button type="button" class="v25-sheet-btn" data-v25-run="collapse-terms">Collapse terms</button>
+                <button type="button" class="v25-sheet-btn" data-v25-run="top">Back to top</button>
               </div>
-              <div class="v23-sheet-note">This sheet is additive only. It does not remove or alter the existing desktop layout; it simply makes mobile operation faster and more organized.</div>
+              <div class="v25-sheet-note">This sheet is additive only. It does not remove or alter the existing desktop layout; it simply makes mobile operation faster and more organized.</div>
             </div>
-            <div class="v23-sheet-section">
-              <div class="v23-sheet-title">Additional sections</div>
-              <div class="v23-sheet-grid" id="v23ExtraSectionGrid"></div>
+            <div class="v25-sheet-section">
+              <div class="v25-sheet-title">Additional sections</div>
+              <div class="v25-sheet-grid" id="v25ExtraSectionGrid"></div>
             </div>
           </div>`;
 
         document.body.appendChild(dock);
         document.body.appendChild(sheet);
 
-        dock.querySelectorAll('[data-v23-target]').forEach(btn=>btn.addEventListener('click', ()=>v23ScrollTo(btn.dataset.v23Target)));
-        dock.querySelector('[data-v23-open-sheet]')?.addEventListener('click', v23OpenSheet);
-        sheet.addEventListener('click', (evt)=>{ if(evt.target === sheet) v23CloseSheet(); });
-        v23El('v23CloseSheetBtn')?.addEventListener('click', v23CloseSheet);
-        v23El('v23MirrorPrimaryBtn')?.addEventListener('click', ()=>v23Run(v23El('v23MirrorPrimaryBtn')?.dataset.v23Run || ''));
-        v23El('v23MirrorSecondaryBtn')?.addEventListener('click', ()=>v23Run(v23El('v23MirrorSecondaryBtn')?.dataset.v23Run || ''));
-        sheet.querySelectorAll('[data-v23-run]').forEach(btn=>btn.addEventListener('click', ()=>v23Run(btn.dataset.v23Run)));
+        dock.querySelectorAll('[data-v25-target]').forEach(btn=>btn.addEventListener('click', ()=>v25ScrollTo(btn.dataset.v25Target)));
+        dock.querySelector('[data-v25-open-sheet]')?.addEventListener('click', v25OpenSheet);
+        sheet.addEventListener('click', (evt)=>{ if(evt.target === sheet) v25CloseSheet(); });
+        v25El('v25CloseSheetBtn')?.addEventListener('click', v25CloseSheet);
+        v25El('v25MirrorPrimaryBtn')?.addEventListener('click', ()=>v25Run(v25El('v25MirrorPrimaryBtn')?.dataset.v25Run || ''));
+        v25El('v25MirrorSecondaryBtn')?.addEventListener('click', ()=>v25Run(v25El('v25MirrorSecondaryBtn')?.dataset.v25Run || ''));
+        sheet.querySelectorAll('[data-v25-run]').forEach(btn=>btn.addEventListener('click', ()=>v25Run(btn.dataset.v25Run)));
 
-        const primaryGrid = v23El('v23PrimarySectionGrid');
+        const primaryGrid = v25El('v25PrimarySectionGrid');
         if(primaryGrid){
-          primaryGrid.innerHTML = v23PrimarySections.map(item=>`<button type="button" class="v23-sheet-btn" data-v23-target="${item.id}">${item.label}</button>`).join('');
-          primaryGrid.querySelectorAll('[data-v23-target]').forEach(btn=>btn.addEventListener('click', ()=>v23ScrollTo(btn.dataset.v23Target)));
+          primaryGrid.innerHTML = v25PrimarySections.map(item=>`<button type="button" class="v25-sheet-btn" data-v25-target="${item.id}">${item.label}</button>`).join('');
+          primaryGrid.querySelectorAll('[data-v25-target]').forEach(btn=>btn.addEventListener('click', ()=>v25ScrollTo(btn.dataset.v25Target)));
         }
-        const extraGrid = v23El('v23ExtraSectionGrid');
+        const extraGrid = v25El('v25ExtraSectionGrid');
         if(extraGrid){
-          extraGrid.innerHTML = v23ExtraSections.map(item=>`<button type="button" class="v23-sheet-btn" data-v23-target="${item.id}">${item.label}</button>`).join('');
-          extraGrid.querySelectorAll('[data-v23-target]').forEach(btn=>btn.addEventListener('click', ()=>v23ScrollTo(btn.dataset.v23Target)));
+          extraGrid.innerHTML = v25ExtraSections.map(item=>`<button type="button" class="v25-sheet-btn" data-v25-target="${item.id}">${item.label}</button>`).join('');
+          extraGrid.querySelectorAll('[data-v25-target]').forEach(btn=>btn.addEventListener('click', ()=>v25ScrollTo(btn.dataset.v25Target)));
         }
       }
-      function v23EnsureAnchors(){
-        [...v23PrimarySections, ...v23ExtraSections].forEach(item=>{
-          const node = v23El(item.id);
-          if(node) node.classList.add('v23-mobile-anchor');
+      function v25EnsureAnchors(){
+        [...v25PrimarySections, ...v25ExtraSections].forEach(item=>{
+          const node = v25El(item.id);
+          if(node) node.classList.add('v25-mobile-anchor');
         });
       }
-      function v23ObserveSections(){
-        if(v23Observer){ v23Observer.disconnect(); v23Observer = null; }
+      function v25ObserveSections(){
+        if(v25Observer){ v25Observer.disconnect(); v25Observer = null; }
         if(!('IntersectionObserver' in window)) return;
-        v23Observer = new IntersectionObserver((entries)=>{
+        v25Observer = new IntersectionObserver((entries)=>{
           const live = entries.filter(entry=>entry.isIntersecting)
             .sort((a,b)=>b.intersectionRatio - a.intersectionRatio || a.boundingClientRect.top - b.boundingClientRect.top);
-          if(live[0]?.target?.id) v23SetActive(live[0].target.id);
+          if(live[0]?.target?.id) v25SetActive(live[0].target.id);
         }, {rootMargin:'-22% 0px -58% 0px', threshold:[0.12,0.25,0.45,0.65]});
-        v23PrimarySections.forEach(item=>{ const node = v23El(item.id); if(node) v23Observer.observe(node); });
+        v25PrimarySections.forEach(item=>{ const node = v25El(item.id); if(node) v25Observer.observe(node); });
       }
-      function v23SyncSummary(){
-        document.body.classList.toggle('v23-mobile-dock-ready', v23IsMobile());
-        const summary = `${v23Text('missionWalletStatus','Wallet not connected')} · ${v23Text('missionNetworkStatus','—')} · ${v23Text('missionWriteStatus','Locked')}`;
-        const meta = `${v23Text('pulseVisibleSummary','No jobs loaded yet.')} · ${v23Text('syncFreshnessBadge','No sync yet')}`;
-        const summaryNode = v23El('v23MobileSummary');
-        const metaNode = v23El('v23MobileMeta');
+      function v25SyncSummary(){
+        document.body.classList.toggle('v25-mobile-dock-ready', v25IsMobile());
+        const summary = `${v25Text('missionWalletStatus','Wallet not connected')} · ${v25Text('missionNetworkStatus','—')} · ${v25Text('missionWriteStatus','Locked')}`;
+        const meta = `${v25Text('pulseVisibleSummary','No jobs loaded yet.')} · ${v25Text('syncFreshnessBadge','No sync yet')}`;
+        const summaryNode = v25El('v25MobileSummary');
+        const metaNode = v25El('v25MobileMeta');
         if(summaryNode) summaryNode.textContent = summary;
         if(metaNode) metaNode.textContent = meta;
-        const primary = v23El('missionPrimaryBtn');
-        const secondary = v23El('missionSecondaryBtn');
-        const primaryMirror = v23El('v23MirrorPrimaryBtn');
-        const secondaryMirror = v23El('v23MirrorSecondaryBtn');
-        if(primary && primaryMirror){ primaryMirror.textContent = primary.textContent || 'Primary action'; primaryMirror.dataset.v23Run = primary.dataset.action || ''; }
-        if(secondary && secondaryMirror){ secondaryMirror.textContent = secondary.textContent || 'Secondary action'; secondaryMirror.dataset.v23Run = secondary.dataset.action || ''; }
+        const primary = v25El('missionPrimaryBtn');
+        const secondary = v25El('missionSecondaryBtn');
+        const primaryMirror = v25El('v25MirrorPrimaryBtn');
+        const secondaryMirror = v25El('v25MirrorSecondaryBtn');
+        if(primary && primaryMirror){ primaryMirror.textContent = primary.textContent || 'Primary action'; primaryMirror.dataset.v25Run = primary.dataset.action || ''; }
+        if(secondary && secondaryMirror){ secondaryMirror.textContent = secondary.textContent || 'Secondary action'; secondaryMirror.dataset.v25Run = secondary.dataset.action || ''; }
       }
-      function v23HandleResize(){
-        document.body.classList.toggle('v23-mobile-dock-ready', v23IsMobile());
-        if(!v23IsMobile()) v23CloseSheet();
-        v23SyncSummary();
+      function v25HandleResize(){
+        document.body.classList.toggle('v25-mobile-dock-ready', v25IsMobile());
+        if(!v25IsMobile()) v25CloseSheet();
+        v25SyncSummary();
       }
-      function v23Init(){
-        v23BuildMobileShell();
-        v23EnsureAnchors();
-        v23ObserveSections();
-        v23HandleResize();
-        if(v23SyncTimer) clearInterval(v23SyncTimer);
-        v23SyncTimer = setInterval(v23SyncSummary, 1200);
+      function v25Init(){
+        v25BuildMobileShell();
+        v25EnsureAnchors();
+        v25ObserveSections();
+        v25HandleResize();
+        if(v25SyncTimer) clearInterval(v25SyncTimer);
+        v25SyncTimer = setInterval(v25SyncSummary, 1200);
       }
-      window.addEventListener('load', ()=>{ setTimeout(v23Init, 40); });
-      window.addEventListener('resize', v23HandleResize);
-      window.addEventListener('orientationchange', ()=>setTimeout(v23HandleResize, 80));
-      document.addEventListener('keydown', (evt)=>{ if(evt.key === 'Escape') v23CloseSheet(); });
+      window.addEventListener('load', ()=>{ setTimeout(v25Init, 40); });
+      window.addEventListener('resize', v25HandleResize);
+      window.addEventListener('orientationchange', ()=>setTimeout(v25HandleResize, 80));
+      document.addEventListener('keydown', (evt)=>{ if(evt.key === 'Escape') v25CloseSheet(); });
     })();
   </script>
 
