@@ -2601,11 +2601,14 @@ const AGIJobManagerABI = [
     }
     async function confirmReviewedAction(){
       const review = pendingReviewedAction;
-      if(!review?.run) return closeActionReview();
+      const runner = review?.run || review?.onConfirm;
+      if(!runner) return closeActionReview();
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
-      try{ await review.run(); closeActionReview(false); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); closeActionReview(false); }
-      finally{ if(btn) btn.disabled = false; }
+      closeActionReview(false);
+      if(btn) btn.disabled = false;
+      try{ await runner(); }
+      catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); }
     }
     async function runTrackedTx(label, sendFactory, options={}){
       const pending = addTxActivity({ label, state:'pending', detail: options.pendingDetail || 'Waiting for wallet confirmation…' });
