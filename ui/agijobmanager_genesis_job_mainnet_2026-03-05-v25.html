@@ -2381,7 +2381,9 @@ const AGIJobManagerABI = [
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
         APP_STATE.jobsReadDegraded = true;
         const cached = activeJobIndexCache.ids ? activeJobIndexCache.ids.slice() : [];
-        return cached;
+        if(cached.length) return cached;
+        const fallback = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
+        return fallback;
       }
     }
 
@@ -3801,11 +3803,14 @@ const AGIJobManagerABI = [
         await window.ethereum.request({method:"eth_requestAccounts"});
         const accts = await web3.eth.getAccounts();
         userAccount = accts[0] || null;
+        APP_STATE.wallet.account = userAccount;
         if(!userAccount){el("walletStatus").textContent="Not connected";return;}
         el("walletStatus").textContent = shortAddr(userAccount);
 
         const chainId = await web3.eth.getChainId();
-        isMainnet = (Number(chainId) === 1);
+        APP_STATE.wallet.chainId = Number(chainId);
+        APP_STATE.wallet.isMainnet = (APP_STATE.wallet.chainId === 1);
+        isMainnet = APP_STATE.wallet.isMainnet;
         el("chainStatus").textContent = `chainId ${chainId}` + (isMainnet ? " (Mainnet)" : " (Not Mainnet)");
         updateWriteGate();
         if(!isMainnet){ setToast("Connected on the wrong network. Switch to Ethereum Mainnet to transact.", "warn"); }
