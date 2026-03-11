@@ -2585,10 +2585,18 @@ const AGIJobManagerABI = [
             resolve(false);
           },
           run: async ()=>{
-            if(config?.run) await config.run();
-            if(settled) return;
-            settled = true;
-            resolve(true);
+            try{
+              if(config?.run) await config.run();
+              if(settled) return;
+              settled = true;
+              resolve(true);
+            }catch(error){
+              if(!settled){
+                settled = true;
+                resolve(false);
+              }
+              throw error;
+            }
           }
         });
       });
