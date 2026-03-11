@@ -2824,6 +2824,20 @@ const AGIJobManagerABI = [
       if(bond > payout) bond = payout;
       return bond;
     }
+    function computeAgentBondFromInputs(payout, duration){
+      const minBond = BigInt(window.protocolState?.agentBond || 0);
+      const maxBond = BigInt(window.protocolState?.agentBondMax || 0);
+      const bps = BigInt(window.protocolState?.agentBondBps || 0);
+      const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
+      let bond = (BigInt(payout || 0) * bps) / 10000n;
+      if(durationLimit > 0n && BigInt(duration || 0) > 0n){
+        const durationPremium = (bond * BigInt(duration || 0)) / durationLimit;
+        bond += durationPremium;
+      }
+      if(bond < minBond) bond = minBond;
+      if(maxBond > 0n && bond > maxBond) bond = maxBond;
+      return bond;
+    }
     function updateCalculator(){
       const payoutRaw = (el("calcPayout")?.value || "").trim();
       const durationRaw = (el("calcDuration")?.value || "").trim();
@@ -2837,15 +2851,12 @@ const AGIJobManagerABI = [
       try{
         const payout = parseAmountToUnits(payoutRaw);
         const duration = durationRaw ? BigInt(durationRaw) : 0n;
-        const agentBps = BigInt(el("agentBondBps").textContent.replace(/[^0-9]/g,"") || "0");
-        const validatorBps = BigInt(el("validatorBondBps").textContent.replace(/[^0-9]/g,"") || "0");
         const validationPct = BigInt((el("validationRewardPct").textContent.match(/[0-9]+/) || ["0"])[0]);
-        const agentBase = (payout * agentBps) / 10000n;
-        const validatorBond = (payout * validatorBps) / 10000n;
+        const agentBond = computeAgentBondFromInputs(payout, duration);
+        const validatorBond = computeValidatorBondFromPayout(payout);
         const rewardPool = (payout * validationPct) / 100n;
         const disputeBond = computeDisputeBondFromPayout(payout);
-        const durationNote = duration > 0n ? " (duration-sensitive)" : "";
-        el("calcAgentBond").textContent = formatUnitsToAmount(agentBase) + durationNote;
+        el("calcAgentBond").textContent = formatUnitsToAmount(agentBond);
         el("calcValidatorBond").textContent = formatUnitsToAmount(validatorBond);
         el("calcDisputeBond").textContent = formatUnitsToAmount(disputeBond);
         el("calcRewardPool").textContent = formatUnitsToAmount(rewardPool);
@@ -4269,23 +4280,7 @@ async function updateSummary(){
     }
 
     function exactAgentBondForJob(job){
-      const payout = BigInt(job?.payout || 0);
-      const duration = BigInt(job?.duration || 0);
-      const minBond = BigInt(window.protocolState?.agentBond || 0);
-      const maxBond = BigInt(window.protocolState?.agentBondMax || 0);
-      const bps = BigInt(window.protocolState?.agentBondBps || 0);
-      const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
-      const payoutCap = BigInt(window.protocolState?.maxJobPayout || 0);
-      const effectivePayout = (payoutCap > 0n && payout > payoutCap) ? payoutCap : payout;
-      let bond = (effectivePayout * bps) / 10000n;
-      if(durationLimit > 0n && duration > 0n){
-        const effectiveDuration = duration > durationLimit ? durationLimit : duration;
-        const durationPremium = (bond * effectiveDuration) / durationLimit;
-        bond += durationPremium;
-      }
-      if(bond < minBond) bond = minBond;
-      if(maxBond > 0n && bond > maxBond) bond = maxBond;
-      return bond;
+      return computeAgentBondFromInputs(BigInt(job?.payout || 0), BigInt(job?.duration || 0));
     }
     function estimatedAgentApprovalForJob(job){
       return exactAgentBondForJob(job);
@@ -5105,6 +5100,7 @@ function normalizeIpfsToHttp(uri){
       let bond = (payout * bps) / 10000n;
       if(bond < min) bond = min;
       if(max>0n && bond > max) bond = max;
+      if(bond > payout) bond = payout;
       return bond;
     }
     function simulateJobSettlement(job){
