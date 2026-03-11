@@ -2319,13 +2319,15 @@ const AGIJobManagerABI = [
           if(Number.isInteger(id) && id >= 0) created.delete(id);
         }
         const ids = Array.from(created).sort((a,b)=>a-b);
-        activeJobIndexCache.ids = ids.slice();
-        activeJobIndexCache.ts = now;
         if(!ids.length && Number(totalHint||0) > 0){
           const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
+          activeJobIndexCache.ids = inferred.slice();
+          activeJobIndexCache.ts = now;
           setToast('Job index event scan returned no active ids; showing inferred ids from nextJobId as degraded fallback.', 'warn');
           return inferred;
         }
+        activeJobIndexCache.ids = ids.slice();
+        activeJobIndexCache.ts = now;
         return ids;
       }catch(error){
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
@@ -3755,6 +3757,10 @@ const AGIJobManagerABI = [
       appState.wallet = {account:null,chainId:null,isMainnet:false};
       appState.jobs = {ids:[],lastError:reason};
       appState.admin = {};
+      latestJobs = [];
+      jobCache.clear();
+      activeJobIndexCache.ids = null;
+      activeJobIndexCache.ts = 0;
       if(el('agiOwnerAddr')) el('agiOwnerAddr').textContent = '—';
       if(el('ensOwnerAddr')) el('ensOwnerAddr').textContent = '—';
       if(el('adminPostureBadge')) el('adminPostureBadge').textContent = `Posture: ${reason}`;
