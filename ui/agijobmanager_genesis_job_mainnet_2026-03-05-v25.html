@@ -2064,6 +2064,17 @@ Evaluation methodology"></textarea>
     const jobCache = new Map();
     const activeJobIndexCache = { ids:null, ts:0 };
     const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
+    function clearRuntimeCaches(reason=''){
+      activeJobIndexCache.ids = null;
+      activeJobIndexCache.ts = 0;
+      jobCache.clear();
+      nftRenderCache.total = null;
+      nftRenderCache.myHtml = '';
+      nftRenderCache.allHtml = '';
+      nftRenderCache.ts = 0;
+      nftRenderCache.myAccount = '';
+      APP_STATE.jobsReadDegraded = false;
+    }
     const AGI_JOB_MANAGER = "0xB3AAeb69b630f0299791679c063d68d6687481d1";
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const ENS_JOB_PAGES = "0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94";
@@ -2373,6 +2384,14 @@ const AGIJobManagerABI = [
           if(Number.isInteger(id) && id >= 0) created.delete(id);
         }
         const ids = Array.from(created).sort((a,b)=>a-b);
+        const missingCreatedEvents = !createdEvents || !createdEvents.length;
+        if(!ids.length && Number(totalHint || 0) > 0 && missingCreatedEvents){
+          APP_STATE.jobsReadDegraded = true;
+          const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
+          activeJobIndexCache.ids = inferred.slice();
+          activeJobIndexCache.ts = now;
+          return inferred;
+        }
         activeJobIndexCache.ids = ids.slice();
         activeJobIndexCache.ts = now;
         APP_STATE.jobsReadDegraded = false;
@@ -5736,7 +5755,7 @@ function normalizeIpfsToHttp(uri){
           const aab=el("agentAlphaBadge"); if(aab) aab.style.display="none";
           el("clubPill").className="pill"; el("clubPill").textContent="Club ENS: not verified";
           const vb=el("validatorBadge"); if(vb) vb.style.display="none";
-          if(!userAccount){ el("refreshBtn").disabled=true; return; }
+          if(!userAccount){ clearRuntimeCaches('wallet disconnected'); el("refreshBtn").disabled=true; return; }
           await connectWallet();
         });
         window.ethereum.on("chainChanged", async ()=>{
@@ -5746,6 +5765,7 @@ function normalizeIpfsToHttp(uri){
             if(!web3) web3 = new Web3(window.ethereum);
             const cid = await web3.eth.getChainId();
             isMainnet = (Number(cid)===1);
+      clearRuntimeCaches('chain changed');
       APP_STATE.wallet.chainId = Number(cid);
       APP_STATE.wallet.isMainnet = isMainnet;
             el("chainStatus").textContent = `chainId ${cid}` + (isMainnet ? " (Mainnet)" : " (Not Mainnet)");
