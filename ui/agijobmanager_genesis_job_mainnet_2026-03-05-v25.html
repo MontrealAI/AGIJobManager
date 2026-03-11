@@ -2319,13 +2319,6 @@ const AGIJobManagerABI = [
           if(Number.isInteger(id) && id >= 0) created.delete(id);
         }
         const ids = Array.from(created).sort((a,b)=>a-b);
-        if(!ids.length && Number(totalHint||0) > 0){
-          const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
-          activeJobIndexCache.ids = inferred.slice();
-          activeJobIndexCache.ts = now;
-          setToast('Job index event scan returned no active ids; showing inferred ids from nextJobId as degraded fallback.', 'warn');
-          return inferred;
-        }
         activeJobIndexCache.ids = ids.slice();
         activeJobIndexCache.ts = now;
         return ids;
