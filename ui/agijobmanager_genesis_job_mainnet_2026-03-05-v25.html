@@ -2527,10 +2527,14 @@ const AGIJobManagerABI = [
       el('actionReviewModal')?.classList.add('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','false');
     }
-    function closeActionReview(){
+    function closeActionReview(triggerCancel=true){
+      const review = pendingReviewedAction;
       pendingReviewedAction = null;
       el('actionReviewModal')?.classList.remove('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','true');
+      if(triggerCancel && typeof review?.onCancel === 'function'){
+        try{ review.onCancel(); }catch(e){ console.error(e); }
+      }
     }
     function requestSimpleReview({title,body,method,risk='warn'}){
       return new Promise((resolve)=>{
@@ -2547,11 +2551,12 @@ const AGIJobManagerABI = [
     }
     async function confirmReviewedAction(){
       const review = pendingReviewedAction;
-      if(!review?.run) return closeActionReview();
+      const run = review?.run || review?.onConfirm;
+      if(!run) return closeActionReview(false);
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
-      closeActionReview();
-      try{ await review.run(); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); }
+      closeActionReview(false);
+      try{ await run(); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); }
       finally{ if(btn) btn.disabled = false; }
     }
     async function runTrackedTx(label, sendFactory, options={}){
@@ -4269,13 +4274,16 @@ async function updateSummary(){
       const maxBond = BigInt(window.protocolState?.agentBondMax || 0);
       const bps = BigInt(window.protocolState?.agentBondBps || 0);
       const durationLimit = BigInt(window.protocolState?.jobDurationLimit || 0);
-      let base = (payout * bps) / 10000n;
-      if(durationLimit > 0n && duration > 0n){
-        base = (base * duration) / durationLimit;
+      if(bps === 0n && minBond === 0n && maxBond === 0n) return 0n;
+      let bond = (payout * bps) / 10000n;
+      if(bond < minBond) bond = minBond;
+      if(durationLimit > 0n){
+        const durationPremium = (bond * duration) / durationLimit;
+        bond += durationPremium;
       }
-      if(base < minBond) base = minBond;
-      if(maxBond > 0n && base > maxBond) base = maxBond;
-      return base;
+      if(maxBond > 0n && bond > maxBond) bond = maxBond;
+      if(bond > payout) bond = payout;
+      return bond;
     }
     function estimatedAgentApprovalForJob(job){
       return exactAgentBondForJob(job);
@@ -5362,7 +5370,7 @@ function normalizeIpfsToHttp(uri){
       return {
         protocol: 'AGIJobManager',
         version: 'v23',
-        chainId: Number(window.protocolState?.chainId || 1),
+        chainId: Number(window.protocolState?.chainId ?? 0),
         contract: AGI_JOB_MANAGER,
         ensJobPages: ENS_JOB_PAGES,
         generatedAt: new Date().toISOString(),
