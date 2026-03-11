@@ -2346,9 +2346,12 @@ const AGIJobManagerABI = [
         }
         jobIndexReadStatus = "ok";
         if(!created.size){
-          activeJobIndexCache.ids = [];
+          const shouldFallbackSequential = Number(totalHint || 0) > 0;
+          const ids = shouldFallbackSequential ? fallback.slice() : [];
+          jobIndexReadStatus = shouldFallbackSequential ? "degraded" : "ok";
+          activeJobIndexCache.ids = ids;
           activeJobIndexCache.ts = now;
-          return [];
+          return ids;
         }
         for(const ev of cancelledEvents || []){
           const id = Number(ev?.returnValues?.jobId);
