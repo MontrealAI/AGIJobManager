@@ -3323,10 +3323,11 @@ const AGIJobManagerABI = [
       const isEnsOwner = !!ensOwner && ensOwner === me;
       const isModerator = !!appState.authorization?.isModerator;
 
-      const moderatorOrOwnerMethods = new Set(['resolveDisputeWithCode','resolveStaleDispute']);
+      const moderatorOnlyMethods = new Set(['resolveDisputeWithCode']);
+      const ownerOnlyMethods = new Set(['resolveStaleDispute']);
       const roleRequired = target === 'ENSJobPages'
         ? 'ens_owner'
-        : (moderatorOrOwnerMethods.has(method) ? 'manager_owner_or_moderator' : 'manager_owner');
+        : (moderatorOnlyMethods.has(method) ? 'manager_moderator' : (ownerOnlyMethods.has(method) ? 'manager_owner' : 'manager_owner'));
 
       if(roleRequired === 'ens_owner' && !isEnsOwner){
         return setToast('Blocked: this ENSJobPages admin method requires the ENSJobPages owner wallet.', 'warn');
@@ -3334,8 +3335,8 @@ const AGIJobManagerABI = [
       if(roleRequired === 'manager_owner' && !isMgrOwner){
         return setToast('Blocked: this AGIJobManager admin method requires the AGIJobManager owner wallet.', 'warn');
       }
-      if(roleRequired === 'manager_owner_or_moderator' && !(isMgrOwner || isModerator)){
-        return setToast('Blocked: this dispute method requires AGIJobManager owner or moderator authorization.', 'warn');
+      if(roleRequired === 'manager_moderator' && !isModerator){
+        return setToast('Blocked: this dispute method requires AGIJobManager moderator authorization.', 'warn');
       }
 
       const highRisk = ['lockIdentityConfiguration','lockConfiguration','updateAGITokenAddress','updateEnsRegistry','updateNameWrapper','updateRootNodes','setEnsJobPages','withdrawAGI','rescueETH','rescueERC20','rescueToken','resolveDisputeWithCode','resolveStaleDispute','migrateLegacyWrappedJobPage'];
@@ -3347,7 +3348,7 @@ const AGIJobManagerABI = [
           {k:'Target', v:target==='ENSJobPages' ? ENS_JOB_PAGES : AGI_JOB_MANAGER},
           {k:'Network', v:isMainnet ? 'Ethereum Mainnet' : 'Read-only'},
           {k:'Authorization', v:el('adminAuthPosture')?.textContent || 'Unknown'},
-          {k:'Role required', v: roleRequired === 'ens_owner' ? 'ENSJobPages owner' : (roleRequired === 'manager_owner' ? 'AGIJobManager owner' : 'AGIJobManager owner or moderator')},
+          {k:'Role required', v: roleRequired === 'ens_owner' ? 'ENSJobPages owner' : (roleRequired === 'manager_owner' ? 'AGIJobManager owner' : 'AGIJobManager moderator')},
           {k:'Prereq approval', v:'Not ERC-20 approval based (direct contract call)'}
         ],
         checks:[{state:'Role', badge:'good', text:'Authorization check passed in UI before review modal opened.'}],
