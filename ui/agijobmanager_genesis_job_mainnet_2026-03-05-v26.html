@@ -2344,6 +2344,7 @@ const AGIJobManagerABI = [
       {"inputs":[{"internalType":"address","name":"newWrapper","type":"address"}],"name":"updateNameWrapper","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"bytes32","name":"a","type":"bytes32"},{"internalType":"bytes32","name":"b","type":"bytes32"},{"internalType":"bytes32","name":"c","type":"bytes32"},{"internalType":"bytes32","name":"d","type":"bytes32"}],"name":"updateRootNodes","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address","name":"newEnsPages","type":"address"}],"name":"setEnsJobPages","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"bool","name":"enabled","type":"bool"}],"name":"setUseEnsJobTokenURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[],"name":"lockIdentityConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawAGI","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueETH","outputs":[],"stateMutability":"nonpayable","type":"function"},
@@ -5367,7 +5368,10 @@ function normalizeIpfsToHttp(uri){
     }
     async function fetchEnsVisibility(jobId){
       try{
-        if(!ensJobPages) ensJobPages = null; clearEnsPreview("wallet connected; resolving ENSJobPages");
+        if(!ensJobPages){
+          await resolveEnsJobPagesContract();
+        }
+        if(!ensJobPages) return {texts:{}};
         const [rootName, ensName, ensUri, node, tokenUriMode, resolverAddr] = await Promise.all([
           ensJobPages.methods.jobsRootName().call().catch(()=>""),
           ensJobPages.methods.jobEnsName(String(jobId)).call().catch(()=>""),
@@ -6004,7 +6008,9 @@ function normalizeIpfsToHttp(uri){
             el("chainStatus").textContent = `chainId ${cid}` + (isMainnet ? " (Mainnet)" : " (Not Mainnet)");
 
             if(!agiJobManager) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
-            if(!ensJobPages) ensJobPages = null; clearEnsPreview("wallet connected; resolving ENSJobPages");
+            if(!ensJobPages){
+              await resolveEnsJobPagesContract();
+            }
 
             if(isMainnet){
               const tokenAddr = await agiJobManager.methods.agiToken().call();
