@@ -2418,6 +2418,7 @@ const AGIJobManagerABI = [
     }
 
     const TX_ACTIVITY_KEY = "agijobmanager_v17_tx_activity";
+    const LEGACY_TX_ACTIVITY_KEYS = ["agijobmanager_v25_tx_activity"];
     const ELITE_PREFS_KEY = "agijobmanager_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
@@ -2427,7 +2428,19 @@ const AGIJobManagerABI = [
         .catch(()=>setToast("Switch to Ethereum Mainnet in your wallet to unlock write actions.", "warn"));
     }
     function loadTxActivity(){
-      try{ txActivity = JSON.parse(localStorage.getItem(TX_ACTIVITY_KEY) || "[]"); }catch{ txActivity = []; }
+      try{
+        const primary = localStorage.getItem(TX_ACTIVITY_KEY);
+        if(primary){
+          txActivity = JSON.parse(primary || '[]');
+        }else{
+          const legacyKey = LEGACY_TX_ACTIVITY_KEYS.find(key=>!!localStorage.getItem(key));
+          const legacyRaw = legacyKey ? localStorage.getItem(legacyKey) : null;
+          txActivity = JSON.parse(legacyRaw || '[]');
+          if(legacyRaw){
+            try{ localStorage.setItem(TX_ACTIVITY_KEY, legacyRaw); }catch{}
+          }
+        }
+      }catch{ txActivity = []; }
       renderTxActivity();
     }
     function saveTxActivity(){
