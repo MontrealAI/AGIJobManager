@@ -2281,7 +2281,13 @@ const AGIJobManagerABI = [
     ];
 
 
-    const PublicResolverABI = [{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"string","name":"key","type":"string"}],"name":"text","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+    const PublicResolverABI = [
+      {"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"string","name":"key","type":"string"}],"name":"text","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"addr","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
+    ];
+    const ENSRegistryABI = [
+      {"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"resolver","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
+    ];
 
     const ERC20ABI = [
       {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -2303,7 +2309,9 @@ const AGIJobManagerABI = [
     ];
 
     const NameWrapperABI = [
-      {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
+      {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}
     ];
 
     function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
@@ -2409,11 +2417,11 @@ const AGIJobManagerABI = [
       {"inputs":[{"internalType":"bool","name":"enabled","type":"bool"}],"name":"setUseEnsJobTokenURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[],"name":"lockConfiguration","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"string","name":"label","type":"string"}],"name":"migrateLegacyWrappedJobPage","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"address","name":"agent","type":"address"},{"internalType":"string","name":"jobCompletionURI","type":"string"}],"name":"createJobPage","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"address","name":"agent","type":"address"},{"internalType":"string","name":"specURI","type":"string"}],"name":"createJobPage","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"address","name":"agent","type":"address"}],"name":"onAgentAssigned","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"string","name":"jobCompletionURI","type":"string"}],"name":"onCompletionRequested","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"address","name":"ensRegistrar","type":"address"},{"internalType":"address","name":"publicResolver","type":"address"}],"name":"revokePermissions","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"address","name":"ensRegistrar","type":"address"},{"internalType":"address","name":"publicResolver","type":"address"},{"internalType":"bool","name":"burnFuses","type":"bool"}],"name":"lockJobENS","outputs":[],"stateMutability":"nonpayable","type":"function"}
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"address","name":"employer","type":"address"},{"internalType":"address","name":"agent","type":"address"}],"name":"revokePermissions","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"},{"internalType":"address","name":"employer","type":"address"},{"internalType":"address","name":"agent","type":"address"},{"internalType":"bool","name":"burnFuses","type":"bool"}],"name":"lockJobENS","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ]);
 
     function el(id){return document.getElementById(id);}
@@ -4896,8 +4904,30 @@ async function updateSummary(){
         const tokenID = namehash(full);
         const nw = new web3.eth.Contract(NameWrapperABI, NAME_WRAPPER);
         const owner = await nw.methods.ownerOf(tokenID).call();
+        const approved = await nw.methods.getApproved(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+        const approvedForAll = await nw.methods.isApprovedForAll(owner, userAccount).call().catch(()=>false);
 
-        if(owner.toLowerCase() === userAccount.toLowerCase()){
+        let resolverOwned = false;
+        try{
+          const ensRegistryAddress = await agiJobManager.methods.ens().call().catch(()=>"0x0000000000000000000000000000000000000000");
+          if(!isZeroAddress(ensRegistryAddress)){
+            const ensRegistry = new web3.eth.Contract(ENSRegistryABI, ensRegistryAddress);
+            const resolverAddr = await ensRegistry.methods.resolver(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+            if(!isZeroAddress(resolverAddr)){
+              const resolver = new web3.eth.Contract(PublicResolverABI, resolverAddr);
+              const resolvedAddr = await resolver.methods.addr(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+              resolverOwned = !isZeroAddress(resolvedAddr) && String(resolvedAddr).toLowerCase() === String(userAccount).toLowerCase();
+            }
+          }
+        }catch{}
+
+        const account = String(userAccount || '').toLowerCase();
+        const isVerified = String(owner||'').toLowerCase() === account
+          || String(approved||'').toLowerCase() === account
+          || !!approvedForAll
+          || !!resolverOwned;
+
+        if(isVerified){
           verified[kind] = sub;
           if(isAgent){
             verified.agentAlpha = !!alpha;
@@ -4910,14 +4940,19 @@ async function updateSummary(){
             const vb = el("validatorBadge");
             if(vb) vb.style.display = "inline-block";
           }
-          out.textContent = `Verified: you own ${full}`;
+          const reason = String(owner||'').toLowerCase() === account
+            ? 'namewrapper owner'
+            : (String(approved||'').toLowerCase() === account
+              ? 'token approval'
+              : (approvedForAll ? 'operator approval' : 'resolver address linkage'));
+          out.textContent = `Verified: authorization confirmed for ${full} (${reason})`;
           pill.className = "pill ok";
           pill.textContent = (isAgent?"Agent":"Club") + (alpha ? " ENS: verified (alpha)" : " ENS: verified");
           await loadJobs();
           await updateDynamicInsights();
         }else{
           clearRoleVerification();
-          out.textContent = `Not owned by this wallet: ${full}`;
+          out.textContent = `Authorization not found for this wallet on ${full}`;
           pill.className = "pill bad";
           pill.textContent = (isAgent?"Agent":"Club") + " ENS: not verified";
         }
@@ -5774,9 +5809,9 @@ function normalizeIpfsToHttp(uri){
       resolveDisputeWithCode:[{name:'jobId',type:'uint256'},{name:'winner',type:'uint8'},{name:'reasonURI',type:'string'}], resolveStaleDispute:[{name:'jobId',type:'uint256'},{name:'approveCompletion',type:'bool'}],
       setJobLabelPrefix:[{name:'prefix',type:'string'}], setENSRegistry:[{name:'registry',type:'address'}], setNameWrapper:[{name:'wrapper',type:'address'}], setPublicResolver:[{name:'resolver',type:'address'}],
       setJobsRoot:[{name:'rootNode',type:'bytes32'},{name:'rootName',type:'string'}], setJobManager:[{name:'jobManager',type:'address'}], setUseEnsJobTokenURI:[{name:'enabled',type:'bool'}],
-      migrateLegacyWrappedJobPage:[{name:'jobId',type:'uint256'},{name:'label',type:'string'}], createJobPage:[{name:'jobId',type:'uint256'},{name:'agent',type:'address'},{name:'jobCompletionURI',type:'string'}],
+      migrateLegacyWrappedJobPage:[{name:'jobId',type:'uint256'},{name:'label',type:'string'}], createJobPage:[{name:'jobId',type:'uint256'},{name:'agent',type:'address'},{name:'specURI',type:'string'}],
       onAgentAssigned:[{name:'jobId',type:'uint256'},{name:'agent',type:'address'}], onCompletionRequested:[{name:'jobId',type:'uint256'},{name:'jobCompletionURI',type:'string'}],
-      revokePermissions:[{name:'jobId',type:'uint256'},{name:'ensRegistrar',type:'address'},{name:'publicResolver',type:'address'}], lockJobENS:[{name:'jobId',type:'uint256'},{name:'ensRegistrar',type:'address'},{name:'publicResolver',type:'address'},{name:'burnFuses',type:'bool'}]
+      revokePermissions:[{name:'jobId',type:'uint256'},{name:'employer',type:'address'},{name:'agent',type:'address'}], lockJobENS:[{name:'jobId',type:'uint256'},{name:'employer',type:'address'},{name:'agent',type:'address'},{name:'burnFuses',type:'bool'}]
     };
     function parseAdminArg(type, raw, fieldName='arg'){
       const value = String(raw || '').trim();
