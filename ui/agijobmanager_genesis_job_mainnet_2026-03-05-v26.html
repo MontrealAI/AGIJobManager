@@ -2521,13 +2521,14 @@ const AGIJobManagerABI = [
         }
         const ids = Array.from(created).sort((a,b)=>a-b);
         const missingCreatedEvents = !createdEvents || !createdEvents.length;
-        if(!ids.length && Number(totalHint || 0) > 0 && missingCreatedEvents){
+        const degradedCoverage = !ids.length && Number(totalHint || 0) > 0 && missingCreatedEvents;
+        if(degradedCoverage){
           APP_STATE.jobsReadDegraded = true;
           setToast('Job index event scan missing JobCreated coverage; no synthetic IDs shown. Retry refresh or rely on cached confirmed IDs.', 'warn');
         }
         activeJobIndexCache.ids = ids.slice();
         activeJobIndexCache.ts = now;
-        APP_STATE.jobsReadDegraded = false;
+        APP_STATE.jobsReadDegraded = degradedCoverage;
         return ids;
       }catch(error){
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
@@ -5770,9 +5771,33 @@ function normalizeIpfsToHttp(uri){
       revokePermissions:[{name:'jobId',type:'uint256'},{name:'ensRegistrar',type:'address'},{name:'publicResolver',type:'address'}], lockJobENS:[{name:'jobId',type:'uint256'},{name:'ensRegistrar',type:'address'},{name:'publicResolver',type:'address'},{name:'burnFuses',type:'bool'}]
     };
     function parseAdminArg(type, raw){
-      const value = String(raw || '').trim();
-      if(type.startsWith('uint')) return value || '0';
-      if(type === 'bool') return /^(1|true|yes)$/i.test(value);
+      const value = String(raw ?? '').trim();
+      if(type.startsWith('uint')){
+        if(!/^[0-9]+$/.test(value)) throw new Error(`Invalid ${type}: expected a non-negative integer.`);
+        return value;
+      }
+      if(type === 'bool'){
+        if(/^(1|true|yes)$/i.test(value)) return true;
+        if(/^(0|false|no)$/i.test(value)) return false;
+        throw new Error('Invalid bool: use true/false or 1/0.');
+      }
+      if(type === 'address'){
+        if(!/^0x[a-fA-F0-9]{40}$/.test(value)) throw new Error('Invalid address: expected 0x + 40 hex characters.');
+        return value;
+      }
+      if(type === 'bytes32'){
+        if(!/^0x[a-fA-F0-9]{64}$/.test(value)) throw new Error('Invalid bytes32: expected 0x + 64 hex characters.');
+        return value;
+      }
+      if(type === 'bytes'){
+        if(!/^0x([a-fA-F0-9]{2})*$/.test(value)) throw new Error('Invalid bytes: expected even-length 0x-prefixed hex.');
+        return value;
+      }
+      if(type === 'string'){
+        if(!value) throw new Error('Invalid string: value is required.');
+        return value;
+      }
+      if(!value) throw new Error(`Invalid ${type}: value is required.`);
       return value;
     }
     async function collectAdminArgs(target, method, danger){
@@ -5788,8 +5813,12 @@ function normalizeIpfsToHttp(uri){
         const cancelBtn = el('cancelAdminArgsBtn');
         const closeBtn = el('closeAdminArgsModal');
         confirmBtn.onclick = ()=>{
-          const args = schema.map((field, idx)=>parseAdminArg(field.type, el(`adminArg_${idx}`)?.value));
-          close(args);
+          try{
+            const args = schema.map((field, idx)=>parseAdminArg(field.type, el(`adminArg_${idx}`)?.value));
+            close(args);
+          }catch(error){
+            setToast(`Admin argument validation failed: ${normalizedErrorMessage(error)}`, 'bad');
+          }
         };
         cancelBtn.onclick = ()=>close(null);
         closeBtn.onclick = ()=>close(null);
