@@ -2282,6 +2282,8 @@ const AGIJobManagerABI = [
 
 
     const PublicResolverABI = [{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"string","name":"key","type":"string"}],"name":"text","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+    const ENSRegistryABI = [{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"resolver","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}];
+    const AddrResolverABI = [{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"addr","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}];
 
     const ERC20ABI = [
       {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -4903,18 +4905,20 @@ async function updateSummary(){
         const approved = await nw.methods.getApproved(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
         const approvedLc = String(approved || '').toLowerCase();
         const approvedForAll = await nw.methods.isApprovedForAll(owner, userAccount).call().catch(()=>false);
-        let resolverOwnerMatch = false;
-        if(owner && ownerLc !== acct){
-          try{
-            const code = await web3.eth.getCode(owner);
-            if(code && code !== '0x'){
-              const ownerProbe = new web3.eth.Contract([{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}], owner);
-              const resolverOwner = await ownerProbe.methods.owner().call().catch(()=>"");
-              resolverOwnerMatch = !!resolverOwner && String(resolverOwner).toLowerCase() === acct;
+        let resolverAddrMatch = false;
+        try{
+          const ensRegistryAddress = await agiJobManager.methods.ens().call().catch(()=>"");
+          if(ensRegistryAddress && web3.utils.isAddress(ensRegistryAddress)){
+            const registry = new web3.eth.Contract(ENSRegistryABI, ensRegistryAddress);
+            const resolverAddress = await registry.methods.resolver(tokenID).call().catch(()=>"");
+            if(resolverAddress && web3.utils.isAddress(resolverAddress) && !isZeroAddress(resolverAddress)){
+              const resolver = new web3.eth.Contract(AddrResolverABI, resolverAddress);
+              const resolvedAddr = await resolver.methods.addr(tokenID).call().catch(()=>"");
+              resolverAddrMatch = !!resolvedAddr && String(resolvedAddr).toLowerCase() === acct;
             }
-          }catch{}
-        }
-        const isAuthorized = ownerLc === acct || approvedLc === acct || !!approvedForAll || resolverOwnerMatch;
+          }
+        }catch{}
+        const isAuthorized = ownerLc === acct || approvedLc === acct || !!approvedForAll || resolverAddrMatch;
 
         if(isAuthorized){
           verified[kind] = sub;
@@ -4929,7 +4933,7 @@ async function updateSummary(){
             const vb = el("validatorBadge");
             if(vb) vb.style.display = "inline-block";
           }
-          const mode = ownerLc === acct ? 'owner' : (approvedLc === acct ? 'token approval' : (approvedForAll ? 'operator approval' : 'resolver-owner authorization'));
+          const mode = ownerLc === acct ? 'owner' : (approvedLc === acct ? 'token approval' : (approvedForAll ? 'operator approval' : 'resolver addr(node)'));
           out.textContent = `Verified (${mode}): ${full}`;
           pill.className = "pill ok";
           pill.textContent = (isAgent?"Agent":"Club") + (alpha ? " ENS: verified (alpha)" : " ENS: verified");
@@ -5796,7 +5800,30 @@ function normalizeIpfsToHttp(uri){
       setJobsRoot:[{name:'rootNode',type:'bytes32'},{name:'rootName',type:'string'}], setJobManager:[{name:'jobManager',type:'address'}], setUseEnsJobTokenURI:[{name:'enabled',type:'bool'}],
       migrateLegacyWrappedJobPage:[{name:'jobId',type:'uint256'},{name:'label',type:'string'}], createJobPage:[{name:'jobId',type:'uint256'},{name:'agent',type:'address'},{name:'specURI',type:'string'}],
       onAgentAssigned:[{name:'jobId',type:'uint256'},{name:'agent',type:'address'}], onCompletionRequested:[{name:'jobId',type:'uint256'},{name:'jobCompletionURI',type:'string'}],
-      revokePermissions:[{name:'jobId',type:'uint256'},{name:'employer',type:'address'},{name:'agent',type:'address'}], lockJobENS:[{name:'jobId',type:'uint256'},{name:'employer',type:'address'},{name:'agent',type:'address'},{name:'burnFuses',type:'bool'}]
+      revokePermissions:[{name:'jobId',type:'uint256'},{name:'employer',type:'address'},{name:'agent',type:'address'}], lockJobENS:[{name:'jobId',type:'uint256'},{name:'employer',type:'address'},{name:'agent',type:'address'},{name:'burnFuses',type:'bool'}],
+      updateMerkleRoots:[{name:'validatorRoot',type:'bytes32'},{name:'agentRoot',type:'bytes32'}],
+      setBaseIpfsUrl:[{name:'newBase',type:'string'}],
+      setRequiredValidatorApprovals:[{name:'v',type:'uint256'}],
+      setRequiredValidatorDisapprovals:[{name:'v',type:'uint256'}],
+      setPremiumReputationThreshold:[{name:'v',type:'uint256'}],
+      setVoteQuorum:[{name:'v',type:'uint256'}],
+      setMaxJobPayout:[{name:'v',type:'uint256'}],
+      setJobDurationLimit:[{name:'v',type:'uint256'}],
+      setMaxActiveJobsPerAgent:[{name:'v',type:'uint256'}],
+      setCompletionReviewPeriod:[{name:'v',type:'uint256'}],
+      setDisputeReviewPeriod:[{name:'v',type:'uint256'}],
+      setValidatorBondParams:[{name:'bps',type:'uint256'},{name:'min',type:'uint256'},{name:'max',type:'uint256'}],
+      setAgentBondParams:[{name:'bps',type:'uint256'},{name:'min',type:'uint256'},{name:'max',type:'uint256'}],
+      setAgentBond:[{name:'v',type:'uint256'}],
+      setValidatorSlashBps:[{name:'v',type:'uint256'}],
+      setChallengePeriodAfterApproval:[{name:'v',type:'uint256'}],
+      setValidationRewardPercentage:[{name:'v',type:'uint256'}],
+      addAdditionalValidator:[{name:'a',type:'address'}],
+      removeAdditionalValidator:[{name:'a',type:'address'}],
+      addAdditionalAgent:[{name:'a',type:'address'}],
+      removeAdditionalAgent:[{name:'a',type:'address'}],
+      addAGIType:[{name:'token',type:'address'},{name:'agiType',type:'uint256'}],
+      disableAGIType:[{name:'token',type:'address'}]
     };
     function parseAdminArg(type, raw, fieldName='arg'){
       const value = String(raw || '').trim();
