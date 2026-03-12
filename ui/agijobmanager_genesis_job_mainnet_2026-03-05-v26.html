@@ -2524,7 +2524,11 @@ const AGIJobManagerABI = [
         const degraded = !ids.length && Number(totalHint || 0) > 0 && missingCreatedEvents;
         if(degraded){
           APP_STATE.jobsReadDegraded = true;
-          setToast('Job index event scan missing JobCreated coverage; no synthetic IDs shown. Retry refresh or rely on cached confirmed IDs.', 'warn');
+          const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
+          activeJobIndexCache.ids = inferred.slice();
+          activeJobIndexCache.ts = now;
+          setToast('Job index event scan missing JobCreated coverage; using inferred IDs from nextJobId in degraded mode.', 'warn');
+          return inferred;
         }else{
           APP_STATE.jobsReadDegraded = false;
         }
@@ -2535,6 +2539,13 @@ const AGIJobManagerABI = [
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
         APP_STATE.jobsReadDegraded = true;
         if(activeJobIndexCache.ids && activeJobIndexCache.ids.length) return activeJobIndexCache.ids.slice();
+        const inferred = Array.from({length: Math.max(0, Number(totalHint || 0))}, (_, i)=>i);
+        if(inferred.length){
+          activeJobIndexCache.ids = inferred.slice();
+          activeJobIndexCache.ts = now;
+          setToast('Job index event query failed; using inferred IDs from nextJobId in degraded mode.', 'warn');
+          return inferred;
+        }
         return [];
       }
     }
