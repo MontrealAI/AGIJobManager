@@ -3580,14 +3580,18 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       const ms = n > 1e12 ? n : n * 1000;
       return new Date(ms).toLocaleString();
     }
-    function normalizeAlphaLabel(raw){ return String(raw || '').trim().toLowerCase().replace(/[^a-z0-9]/g, ''); }
+    function normalizeAlphaLabel(raw){ return String(raw || '').trim().toLowerCase(); }
     function validateAlphaLabelLocal(raw){
-      const label = normalizeAlphaLabel(raw);
-      if(!label) return {label, ok:false, reason:'Label required.'};
+      const rawText = String(raw || '').trim();
+      const label = normalizeAlphaLabel(rawText);
+      if(!rawText) return {label, ok:false, reason:'Label required.'};
       if(label.length < 8) return {label, ok:false, reason:'Minimum length is 8.'};
       if(label.length > 63) return {label, ok:false, reason:'Maximum length is 63.'};
+      if(/\./.test(rawText)) return {label, ok:false, reason:'Dots are not allowed.'};
+      if(/-/.test(rawText)) return {label, ok:false, reason:'Hyphens are not allowed.'};
+      if(/\s/.test(rawText)) return {label, ok:false, reason:'Spaces are not allowed.'};
       if(!/^[a-z0-9]+$/.test(label)) return {label, ok:false, reason:'Use lowercase letters and digits only.'};
-      return {label, ok:true, reason:'Label format is valid.'};
+      return {label, ok:true, reason: rawText === label ? 'Label format is valid.' : 'Uppercase converted to lowercase for submission preview.'};
     }
     function loadRecentAlphaAgentNames(){
       try{ return JSON.parse(localStorage.getItem(RECENT_ALPHA_AGENT_KEY) || '[]'); }catch{ return []; }
@@ -3658,7 +3662,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     async function updateAlphaMintPreview(){
       const raw = el('mintAlphaLabel')?.value || '';
       const local = validateAlphaLabelLocal(raw);
-      if(el('mintAlphaLabel')) el('mintAlphaLabel').value = local.label;
+      const mintLabelInput = el('mintAlphaLabel');
+      const rawInput = String(mintLabelInput?.value || '');
+      if(mintLabelInput && rawInput.trim() !== rawInput.trim().toLowerCase()){
+        mintLabelInput.value = local.label;
+      }
       const full = local.label ? `${local.label}.${ALPHA_AGENT_PARENT}` : '—';
       if(el('mintAlphaFullName')) el('mintAlphaFullName').textContent = full;
       if(el('mintAlphaEnsUri')) el('mintAlphaEnsUri').textContent = local.label ? `ens://${full}` : '—';
@@ -3666,16 +3674,32 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('mintAlphaNode')) el('mintAlphaNode').textContent = node;
       if(el('mintLabelValidation')) el('mintLabelValidation').textContent = local.reason;
       let availableText = local.ok ? 'checking…' : 'invalid label';
+      let isAvailable = false;
+      let isContractValid = local.ok;
       if(local.ok && freeTrialRegistrar){
         const available = await freeTrialRegistrar.methods.available(node).call().catch(()=>null);
-        availableText = available === null ? 'unavailable (read failed)' : (available ? 'available' : 'unavailable');
-        await freeTrialRegistrar.methods.validateLabel(local.label).call().catch(()=>{ availableText = 'invalid by contract'; });
+        if(available === null){
+          availableText = 'unavailable (read failed)';
+          isAvailable = false;
+        }else{
+          isAvailable = !!available;
+          availableText = isAvailable ? 'available' : 'unavailable';
+        }
+        try{
+          const labelValid = await freeTrialRegistrar.methods.validateLabel(local.label).call();
+          if(typeof labelValid === 'boolean') isContractValid = labelValid;
+          else if(labelValid === false || String(labelValid).toLowerCase() === 'false' || String(labelValid) === '0') isContractValid = false;
+          else isContractValid = true;
+        }catch{
+          isContractValid = false;
+        }
+        if(!isContractValid) availableText = 'invalid by contract';
       }
       if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = availableText;
       const recipientRaw = String(el('mintAlphaRecipient')?.value || '').trim();
       const recipient = recipientRaw || userAccount || '';
       const badRecipient = recipient && !web3?.utils?.isAddress(recipient);
-      const blocked = !userAccount || !isMainnet || !hasAcceptedTerms || !local.ok || !APP_STATE.registrar.parentUsable || badRecipient || !/available/.test(availableText) || /unavailable/.test(availableText);
+      const blocked = !userAccount || !isMainnet || !hasAcceptedTerms || !local.ok || !APP_STATE.registrar.parentUsable || badRecipient || !isAvailable || !isContractValid;
       if(el('mintAlphaAgentBtn')) el('mintAlphaAgentBtn').disabled = !!blocked;
       if(el('mintAlphaStatus')){
         if(!userAccount) el('mintAlphaStatus').textContent = 'Connect wallet to mint.';
