@@ -3608,9 +3608,27 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       const box = el('recentAlphaAgentNames');
       if(!box) return;
       const names = loadRecentAlphaAgentNames();
-      if(!names.length){ box.innerHTML = '<span class="smallNote">No recent alpha-agent names on this device yet.</span>'; return; }
-      box.innerHTML = names.map(name=>`<button class="btn" data-alpha-recent="${name}" type="button">${name}.alpha.agent.agi.eth</button>`).join('');
-      box.querySelectorAll('[data-alpha-recent]').forEach(btn=>btn.addEventListener('click', ()=>{ const name = btn.dataset.alphaRecent || ''; if(el('mintAlphaLabel')) el('mintAlphaLabel').value = name; updateAlphaMintPreview(); }));
+      box.replaceChildren();
+      if(!names.length){
+        const note = document.createElement('span');
+        note.className = 'smallNote';
+        note.textContent = 'No recent alpha-agent names on this device yet.';
+        box.appendChild(note);
+        return;
+      }
+      names.forEach(name=>{
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.type = 'button';
+        btn.dataset.alphaRecent = String(name || '');
+        btn.textContent = `${String(name || '')}.alpha.agent.agi.eth`;
+        btn.addEventListener('click', ()=>{
+          const selected = btn.dataset.alphaRecent || '';
+          if(el('mintAlphaLabel')) el('mintAlphaLabel').value = selected;
+          updateAlphaMintPreview();
+        });
+        box.appendChild(btn);
+      });
     }
     async function refreshFreeTrialRegistrarState(){
       if(!web3){ return; }
