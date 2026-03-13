@@ -3768,6 +3768,16 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function closeAlphaMintReview(){ const modal = el('alphaMintReviewModal'); if(modal){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); } }
     async function mintAlphaAgentName(){
       if(!requireConnected() || !mustBeReadyToWrite()) return;
+      if(!freeTrialRegistrar){
+        try{ await refreshFreeTrialRegistrarState(); }
+        catch(error){
+          if(!isExpectedRpcRevert(error)) console.error('[mintAlphaAgentName] registrar bootstrap failed', error);
+        }
+      }
+      if(!freeTrialRegistrar){
+        if(el('mintAlphaStatus')) el('mintAlphaStatus').textContent = 'Registrar contract unavailable. Refresh registrar state and retry.';
+        return setToast('Registrar state unavailable. Use "Refresh registrar state" and try again.', 'warn');
+      }
       const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
       if(!local.ok) return setToast(local.reason, 'warn');
       const recipient = String(el('mintAlphaRecipient')?.value || '').trim() || userAccount;
