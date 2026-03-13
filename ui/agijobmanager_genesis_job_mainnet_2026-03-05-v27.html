@@ -256,7 +256,15 @@
     .stickySubsection{position:sticky;top:8px}
     @media (max-width:900px){.builderGrid,.tripleGrid,.ensGrid,.previewHero{grid-template-columns:1fr}}
 
-  
+    .mintGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
+    .mintPreview{border:1px solid hsl(var(--border));border-radius:12px;padding:12px;background:rgba(255,255,255,.02)}
+    .mintPreview .line{margin:6px 0;color:var(--text-soft);word-break:break-all}
+    .mintPreview b{color:hsl(var(--foreground))}
+    .inlineError{font-size:.85rem;color:var(--warn);margin-top:6px}
+    .recentNames{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .recentNames button{font-size:.84rem;padding:6px 10px}
+    @media (max-width:900px){.mintGrid{grid-template-columns:1fr}}
+
     .modalBackdrop{position:fixed;inset:0;background:rgba(5,8,18,.72);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:22px;z-index:70}
     .modalBackdrop.open{display:flex}
     .modalCard{width:min(1180px,96vw);max-height:92vh;overflow:auto;border:1px solid rgba(255,255,255,.12);border-radius:22px;background:linear-gradient(180deg,rgba(27,10,52,.98),rgba(18,7,34,.98));box-shadow:0 28px 80px rgba(0,0,0,.45);padding:18px}
@@ -534,14 +542,14 @@
 
   </style>
 
-  <style id="v27-mobile-enhancements">
-    .v27-mobile-only{display:none}
+  <style id="v26-mobile-enhancements">
+    .v26-mobile-only{display:none}
     @media (max-width:900px){
       html{scroll-padding-top:16px;scroll-padding-bottom:100px}
-      body.v27-mobile-dock-ready{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
-      .v27-mobile-only{display:block}
-      .v27-mobile-anchor{scroll-margin-top:16px;scroll-margin-bottom:96px}
-      #v27MobileDock{
+      body.v26-mobile-dock-ready{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
+      .v26-mobile-only{display:block}
+      .v26-mobile-anchor{scroll-margin-top:16px;scroll-margin-bottom:96px}
+      #v26MobileDock{
         position:fixed;
         left:max(10px, env(safe-area-inset-left));
         right:max(10px, env(safe-area-inset-right));
@@ -557,7 +565,7 @@
         box-shadow:0 18px 48px rgba(0,0,0,.34);
         backdrop-filter:blur(14px);
       }
-      #v27MobileDock .v27-dock-btn{
+      #v26MobileDock .v26-dock-btn{
         min-height:54px;
         padding:9px 6px;
         border-radius:14px;
@@ -575,14 +583,14 @@
         cursor:pointer;
         transition:transform .12s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease;
       }
-      #v27MobileDock .v27-dock-btn:active{transform:translateY(1px) scale(.995)}
-      #v27MobileDock .v27-dock-btn.active,
-      #v27MobileDock .v27-dock-btn:hover{
+      #v26MobileDock .v26-dock-btn:active{transform:translateY(1px) scale(.995)}
+      #v26MobileDock .v26-dock-btn.active,
+      #v26MobileDock .v26-dock-btn:hover{
         background:rgba(122,63,242,.18);
         border-color:rgba(122,63,242,.58);
         box-shadow:0 0 0 1px rgba(122,63,242,.16) inset;
       }
-      #v27MobileDock .v27-dock-label{
+      #v26MobileDock .v26-dock-label{
         display:block;
         font-size:11px;
         line-height:1.1;
@@ -590,7 +598,7 @@
         color:var(--text-soft);
         white-space:nowrap;
       }
-      #v27MobileSheet{
+      #v26MobileSheet{
         position:fixed;
         inset:0;
         z-index:97;
@@ -601,8 +609,8 @@
         backdrop-filter:blur(10px);
         padding:0;
       }
-      #v27MobileSheet.open{display:flex}
-      #v27MobileSheet .v27-sheet-card{
+      #v26MobileSheet.open{display:flex}
+      #v26MobileSheet .v26-sheet-card{
         width:min(760px,100vw);
         max-height:min(90vh,100dvh - 12px);
         overflow:auto;
@@ -613,27 +621,27 @@
         box-shadow:0 -12px 40px rgba(0,0,0,.32);
         padding:14px 12px calc(18px + env(safe-area-inset-bottom));
       }
-      #v27MobileSheet .v27-sheet-handle{
+      #v26MobileSheet .v26-sheet-handle{
         width:56px;height:5px;border-radius:999px;margin:0 auto 12px;background:rgba(255,255,255,.18)
       }
-      #v27MobileSheet .v27-sheet-header{
+      #v26MobileSheet .v26-sheet-header{
         display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px
       }
-      #v27MobileSheet .v27-sheet-title{font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(202,186,232,.74);margin-bottom:8px}
-      #v27MobileSheet .v27-sheet-section{
+      #v26MobileSheet .v26-sheet-title{font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(202,186,232,.74);margin-bottom:8px}
+      #v26MobileSheet .v26-sheet-section{
         padding:12px;border:1px solid hsl(var(--border));border-radius:16px;background:rgba(255,255,255,.03);margin-bottom:10px;min-width:0
       }
-      #v27MobileSheet .v27-sheet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      #v27MobileSheet .v27-sheet-btn{
+      #v26MobileSheet .v26-sheet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      #v26MobileSheet .v26-sheet-btn{
         width:100%;min-width:0;min-height:46px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:hsl(var(--foreground));font:inherit;font-weight:700;cursor:pointer;overflow-wrap:anywhere;word-break:break-word
       }
-      #v27MobileSheet .v27-sheet-btn.primary{background:rgba(122,63,242,.2);border-color:rgba(122,63,242,.55)}
-      #v27MobileSheet .v27-sheet-summary,
-      #v27MobileSheet .v27-sheet-meta,
-      #v27MobileSheet .v27-sheet-note{overflow-wrap:anywhere;word-break:break-word;color:var(--text-soft);line-height:1.5}
-      #v27MobileSheet .v27-sheet-meta{font-size:.88rem;margin-top:6px}
-      #v27MobileSheet .v27-sheet-note{font-size:.84rem;margin-top:8px}
-      #v27MobileSheet .modalClose{flex:0 0 44px}
+      #v26MobileSheet .v26-sheet-btn.primary{background:rgba(122,63,242,.2);border-color:rgba(122,63,242,.55)}
+      #v26MobileSheet .v26-sheet-summary,
+      #v26MobileSheet .v26-sheet-meta,
+      #v26MobileSheet .v26-sheet-note{overflow-wrap:anywhere;word-break:break-word;color:var(--text-soft);line-height:1.5}
+      #v26MobileSheet .v26-sheet-meta{font-size:.88rem;margin-top:6px}
+      #v26MobileSheet .v26-sheet-note{font-size:.84rem;margin-top:8px}
+      #v26MobileSheet .modalClose{flex:0 0 44px}
       #termsSection .toc{
         display:flex !important;
         flex-wrap:nowrap !important;
@@ -700,10 +708,10 @@
       #insightsSection{scroll-margin-top:16px;scroll-margin-bottom:96px}
     }
     @media (max-width:640px){
-      #v27MobileDock{padding:8px;gap:6px}
-      #v27MobileDock .v27-dock-btn{min-height:52px;padding:8px 4px;font-size:17px}
-      #v27MobileDock .v27-dock-label{font-size:10.5px}
-      #v27MobileSheet .v27-sheet-grid{grid-template-columns:1fr}
+      #v26MobileDock{padding:8px;gap:6px}
+      #v26MobileDock .v26-dock-btn{min-height:52px;padding:8px 4px;font-size:17px}
+      #v26MobileDock .v26-dock-label{font-size:10.5px}
+      #v26MobileSheet .v26-sheet-grid{grid-template-columns:1fr}
       #jobsSection .jobs-table .actions{grid-template-columns:1fr}
       #agialphaBridgeSection .debridgeWidgetMount,
       #agialphaBridgeSection #debridgeWidgetMount,
@@ -1220,7 +1228,6 @@
         </div>
       </div>
     </div>
-    </div>
 
     <div class="card">
       <h2 style="margin:0 0 10px">Protocol Parameters (Mainnet)</h2>
@@ -1289,63 +1296,72 @@
       </div>
     </div>
 
-    <div class="card" id="alphaAgentMintSection">
+    <div class="card" id="alphaAgentMintSection" data-surface="freeTrialRegistrarSection">
       <h2 style="margin:0 0 12px">1.5) Mint Free Alpha-Agent ENS Access Key</h2>
-      <div class="helper" style="margin-bottom:12px">Mint a free-trial <b>*.alpha.agent.agi.eth</b> operator identity in-browser through the FreeTrialSubdomainRegistrar. Registration is free, but you still pay Ethereum gas. This trial subname is time-limited and not a permanent entitlement.</div>
-      <div class="twoCol">
-        <div class="softCard" id="freeTrialRegistrarSection" style="padding:12px;border:1px solid hsl(var(--border));border-radius:12px">
-          <div class="subtleTitle">Public registrar state</div>
-          <table class="previewTable" id="freeTrialRegistrarState">
-            <tr><td>Registrar</td><td><span id="freeTrialRegistrarAddress">0x7aae649184182a01ac7d8d5d7873903015c08761</span></td></tr>
-            <tr><td>NameWrapper (live)</td><td><span id="freeTrialWrapperAddress">—</span></td></tr>
-            <tr><td>Target parent name</td><td><span id="freeTrialParentName">alpha.agent.agi.eth</span></td></tr>
-            <tr><td>Target parent node</td><td><span id="freeTrialParentNode">0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e</span></td></tr>
-            <tr><td>Namehash cross-check</td><td><span id="freeTrialParentNodeCheck">pending</span></td></tr>
-            <tr><td>Parent active</td><td><span id="freeTrialParentActive">—</span></td></tr>
-            <tr><td>Parent locked</td><td><span id="freeTrialParentLocked">—</span></td></tr>
-            <tr><td>Registrar authorized</td><td><span id="freeTrialRegistrarAuthorized">—</span></td></tr>
-            <tr><td>Parent usable</td><td><span id="freeTrialParentUsable">—</span></td></tr>
-            <tr><td>Parent effective expiry</td><td><span id="freeTrialParentExpiry">—</span></td></tr>
-            <tr><td>Expected child trial expiry</td><td><span id="freeTrialNextExpiry">—</span></td></tr>
-            <tr><td>Registration cost</td><td><span id="freeTrialCostSummary">Free (gas only)</span></td></tr>
-            <tr><td>Label rules</td><td><span id="freeTrialLabelRules">lowercase a-z / 0-9 only, 8–63 chars, no dots/hyphens/spaces</span></td></tr>
-          </table>
+      <div class="helper" style="margin-bottom:10px">Claim a free-trial <b>*.alpha.agent.agi.eth</b> credential directly from the on-chain FreeTrialSubdomainRegistrar. Registration fee is <b>free</b>; you still pay normal Ethereum gas. Trial subnames expire and are not permanent entitlements.</div>
+      <div class="mintGrid">
+        <div>
+          <label for="mintAlphaLabel">Desired label (lowercase a-z and 0-9, length 8–63)</label>
+          <input id="mintAlphaLabel" type="text" placeholder="e.g. eliteagent01" autocomplete="off" spellcheck="false">
+          <div class="inlineError" id="mintLabelValidation">Enter a label to begin.</div>
+          <label for="mintAlphaRecipient" style="margin-top:10px">Recipient (optional, defaults to connected wallet)</label>
+          <input id="mintAlphaRecipient" type="text" placeholder="0x... (optional)">
           <div class="row" style="justify-content:flex-start;margin-top:10px">
-            <button class="btn" id="refreshFreeTrialRegistrarBtn">Refresh registrar state</button>
+            <button class="btn btn-primary" id="mintAlphaAgentBtn">Mint free-trial name</button>
+            <button class="btn" id="refreshRegistrarStateBtn">Refresh registrar state</button>
           </div>
+          <div class="muted" id="mintAlphaStatus" style="margin-top:8px">Waiting for wallet + mainnet + terms.</div>
+          <div class="recentNames" id="recentAlphaAgentNames"></div>
         </div>
-        <div class="softCard" style="padding:12px;border:1px solid hsl(var(--border));border-radius:12px">
-          <div class="subtleTitle">Mint free-trial subname</div>
-          <label for="mintAlphaLabel">Desired label</label>
-          <input id="mintAlphaLabel" type="text" inputmode="text" autocomplete="off" autocapitalize="none" placeholder="e.g. quantpilot01">
-          <label for="mintAlphaRecipient" style="margin-top:10px">Recipient (optional override)</label>
-          <input id="mintAlphaRecipient" type="text" placeholder="defaults to connected wallet">
-          <div class="smallNote" id="mintAlphaInlineValidation" style="margin-top:8px">Enter 8–63 lowercase letters/numbers to continue.</div>
-          <table class="previewTable" style="margin-top:10px">
-            <tr><td>Full name</td><td><span id="mintAlphaFullName">—</span></td></tr>
-            <tr><td>ENS URI</td><td><span id="mintAlphaEnsURI">—</span></td></tr>
-            <tr><td>Child node</td><td><span id="mintAlphaNode">—</span></td></tr>
-            <tr><td>Availability</td><td><span id="mintAlphaAvailability">—</span></td></tr>
-            <tr><td>Expected expiry</td><td><span id="mintAlphaExpectedExpiry">—</span></td></tr>
-          </table>
-          <div class="row" style="justify-content:flex-start;margin-top:10px">
-            <button class="btn btn-primary" id="mintAlphaAgentBtn" data-tx="1">Mint free alpha-agent ENS</button>
+        <div class="mintPreview">
+          <div class="subtleTitle">Alpha-agent mint preview</div>
+          <div class="line">Full name: <b id="mintAlphaFullName">—</b></div>
+          <div class="line">ENS URI: <b id="mintAlphaEnsUri">—</b></div>
+          <div class="line">Child node: <b id="mintAlphaNode">—</b></div>
+          <div class="line">Availability: <b id="mintAlphaAvailability">—</b></div>
+          <div class="line">Expected trial expiry: <b id="mintAlphaExpectedExpiry">—</b></div>
+          <div class="line">Parent status: <b id="mintAlphaParentUsable">—</b></div>
+          <div class="line">Cost: <b>Free registration (gas only)</b></div>
+        </div>
+      </div>
+      <div class="subtleTitle" style="margin-top:14px">FreeTrialSubdomainRegistrar live state</div>
+      <div id="freeTrialRegistrarState"><table class="miniTable">
+        <tr><td>Registrar</td><td><span id="freeTrialRegistrarAddress">0x7aae649184182a01ac7d8d5d7873903015c08761</span></td></tr>
+        <tr><td>NameWrapper</td><td><span id="freeTrialWrapperAddress">—</span></td></tr>
+        <tr><td>Target parent</td><td><span id="freeTrialParentName">alpha.agent.agi.eth</span></td></tr>
+        <tr><td>Target parent node</td><td><span id="freeTrialParentNode">0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e</span></td></tr>
+        <tr><td>Parent active</td><td><span id="freeTrialParentActive">—</span></td></tr>
+        <tr><td>Parent locked</td><td><span id="freeTrialParentLocked">—</span></td></tr>
+        <tr><td>Registrar authorised</td><td><span id="freeTrialRegistrarAuthorised">—</span></td></tr>
+        <tr><td>Parent usable</td><td><span id="freeTrialParentUsableState">—</span></td></tr>
+        <tr><td>Parent effective expiry</td><td><span id="freeTrialParentExpiry">—</span></td></tr>
+        <tr><td>Trial period</td><td><span id="freeTrialTrialPeriod">—</span></td></tr>
+        <tr><td>Label rules</td><td><span id="freeTrialLabelRules">lowercase a-z0-9, no dots, no hyphens, 8–63 chars</span></td></tr>
+      </table></div>
+      <details style="margin-top:10px">
+        <summary>Expert registrar controls (authorized parent managers only)</summary>
+        <div id="registrarAdminControls" class="actions" style="margin-top:10px"></div>
+      </details>
+    </div>
+
+    <div id="alphaMintReviewModal" class="modalBackdrop" aria-hidden="true">
+      <div class="modalCard">
+        <div class="modalHeader">
+          <div>
+            <div class="eyebrow">Transaction Review</div>
+            <h2 style="margin:4px 0 6px">Mint free alpha-agent ENS</h2>
+            <div class="helper">registerSimple(parentNode,label,newOwner) · 0 ETH value · free registration, gas only.</div>
           </div>
-          <div class="smallNote" id="mintAlphaDisabledReason" style="margin-top:8px">Minting requires wallet + mainnet + accepted terms + valid label + usable parent.</div>
-          <div class="smallNote" id="mintAlphaLastResult" style="margin-top:8px">No mint transaction in this session yet.</div>
-          <div class="row" style="justify-content:flex-start;margin-top:8px">
-            <button class="btn" id="copyMintedAlphaNameBtn">Copy full name</button>
-            <button class="btn" id="copyMintedAlphaUriBtn">Copy ens:// URI</button>
-            <button class="btn" id="copyMintedAlphaNodeBtn">Copy node</button>
-            <button class="btn" id="openMintedAlphaEnsAppBtn">Open ENS App</button>
-            <button class="btn" id="openMintedAlphaTxBtn">Open Etherscan tx</button>
-          </div>
-          <div class="smallNote" id="recentAlphaAgentNames" style="margin-top:10px">Recent names: none</div>
+          <button class="modalClose" id="closeAlphaMintReviewBtn" aria-label="Close">×</button>
+        </div>
+        <div id="alphaMintReviewFacts" class="reviewFacts"></div>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn" id="cancelAlphaMintReviewBtn">Cancel</button>
+          <button class="btn btn-primary" id="confirmAlphaMintReviewBtn">Submit mint</button>
         </div>
       </div>
     </div>
 
-    
     <div class="card" id="createJobSection">
       <h2 style="margin:0 0 12px">2) Create a Job (Employer)</h2>
       <div class="helper" style="margin-bottom:12px">This flow keeps job creation local-first and single-page. You can compose a structured job spec, generate standards-friendly JSON metadata, optionally pin it to IPFS directly from the browser, preview the ENS job page details that the contract stack is designed to create, and then submit the final on-chain createJob transaction using the resulting URI.</div>
@@ -1724,27 +1740,6 @@ Evaluation methodology"></textarea>
               <div class="body" id="ensDangerControls"></div>
             </details>
           </div>
-        </div>
-      <div class="softCard" id="registrarAdminControls" style="padding:12px;border:1px solid hsl(var(--border));border-radius:12px;margin-top:12px">
-        <h3 style="margin:0 0 8px">FreeTrialSubdomainRegistrar</h3>
-        <div class="smallNote">Contract: <span id="registrarAdminAddress">0x7aae649184182a01ac7d8d5d7873903015c08761</span></div>
-        <div class="smallNote">Parent-manager posture: <span id="registrarAdminPosture">—</span></div>
-        <div class="smallNote" id="registrarExpertHint" style="margin-top:6px">Expert controls appear if this wallet can modify the parent node.</div>
-        <div class="accordion" style="margin-top:8px">
-          <details>
-            <summary>Parent-manager controls</summary>
-            <div class="body" id="registrarManagerControls"><div class="smallNote">Refresh registrar state to evaluate authorization.</div></div>
-          </details>
-          <details>
-            <summary>Advanced registration (expert)</summary>
-            <div class="body">
-              <div class="smallNote" style="margin-bottom:8px">Advanced path for register(parentNode,label,newOwner,resolver,ownerControlledFuses,records). Only use if you fully understand resolver calldata risks.</div>
-              <label for="expertResolver">Resolver</label><input id="expertResolver" type="text" placeholder="0x...">
-              <label for="expertFuses">Owner-controlled fuses (uint16)</label><input id="expertFuses" type="number" min="0" max="65535" step="1" placeholder="0">
-              <label for="expertRecords">Records (bytes[]), one hex calldata item per line</label><textarea id="expertRecords" placeholder="0x..."></textarea>
-              <div class="row" style="justify-content:flex-start"><button class="btn" id="expertRegisterBtn" data-tx="1">Submit advanced register</button></div>
-            </div>
-          </details>
         </div>
       </div>
     </div>
@@ -2137,7 +2132,7 @@ Evaluation methodology"></textarea>
 
   <script src="https://cdn.jsdelivr.net/npm/web3@4.8.0/dist/web3.min.js"></script>
   <script>
-    let web3, userAccount, agiJobManager, agiToken, ensJobPages, tokenDecimals = 18;
+    let web3, userAccount, agiJobManager, agiToken, ensJobPages, freeTrialRegistrar, registrarWrapperContract, tokenDecimals = 18;
     let bridgedAgiToken, officialAgiToken, agiAlphaEqualMinterVault, bridgedTokenDecimals = 18, officialTokenDecimals = 18;
     let lastGeneratedMetadata = null;
     let lastUploadedMetadataURI = "";
@@ -2178,15 +2173,11 @@ Evaluation methodology"></textarea>
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const KNOWN_ENS_JOB_PAGES_FALLBACK = "0x06188e77c1c38d392b16d9d9fb24673363ce1da0";
     const FREE_TRIAL_REGISTRAR = "0x7aae649184182a01ac7d8d5d7873903015c08761";
+    const ALPHA_AGENT_PARENT = "alpha.agent.agi.eth";
     const ALPHA_AGENT_PARENT_NODE = "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e";
-    const ALPHA_AGENT_PARENT_NAME = "alpha.agent.agi.eth";
+    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_v27_recent_alpha_names";
     let resolvedEnsJobPagesAddress = "";
     let resolvedEnsJobPagesSource = "unavailable";
-    let freeTrialRegistrar = null;
-    let freeTrialWrapper = null;
-    let freeTrialParentStatus = null;
-    let freeTrialMintDraft = {label:'', normalized:'', valid:false, childNode:'', fullName:'', available:null, expectedExpiry:null, recipient:''};
-    let lastMintedAlphaAgent = null;
     const BRIDGED_AGIALPHA_ETH = "0x2e8Fb54C3eC41F55F06C1F082C081a609EaA4ebe";
     const OFFICIAL_AGIALPHA_ETH = "0xa61a3b3a130a9c20768eebf97e21515a6046a1fa";
     const AGIALPHA_EQUAL_MINTER_VAULT = "0x27d6fe8668c6f652ac26ffae020d949f03af80d8";
@@ -2199,7 +2190,7 @@ Evaluation methodology"></textarea>
     const verified = { agent:null, club:null, agentAlpha:false, clubAlpha:false };
     const APP_STATE = {
       wallet:{account:null, chainId:null, isMainnet:false, termsAccepted:false},
-      protocol:{}, jobsReadDegraded:false, admin:{managerOwner:null, ensOwner:null, isModerator:false}
+      protocol:{}, jobsReadDegraded:false, admin:{managerOwner:null, ensOwner:null, isModerator:false}, registrar:{wrapper:null,parentUsable:false,parentActive:false,managerAuthorized:false}
     };
 
     let isMainnet = false;
@@ -2398,12 +2389,14 @@ const AGIJobManagerABI = [
       {"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"uint32","name":"fuseMask","type":"uint32"}],"name":"allFusesBurned","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}
     ];
 
+    
+
     const FreeTrialSubdomainRegistrarABI = [
       {"inputs":[],"name":"wrapper","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"TRIAL_PERIOD","outputs":[{"internalType":"uint64","name":"","type":"uint64"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"PARENT_GRACE_PERIOD","outputs":[{"internalType":"uint64","name":"","type":"uint64"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"MIN_LABEL_LENGTH","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"MAX_LABEL_LENGTH","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"MIN_LABEL_LENGTH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"MAX_LABEL_LENGTH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"activeParents","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"bytes32","name":"parentNode","type":"bytes32"}],"name":"isParentActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"bytes32","name":"parentNode","type":"bytes32"}],"name":"effectiveParentExpiry","outputs":[{"internalType":"uint64","name":"","type":"uint64"}],"stateMutability":"view","type":"function"},
@@ -2416,10 +2409,10 @@ const AGIJobManagerABI = [
       {"inputs":[{"internalType":"bytes32","name":"parentNode","type":"bytes32"},{"internalType":"bool","name":"active","type":"bool"}],"name":"setupDomain","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"bytes32","name":"parentNode","type":"bytes32"}],"name":"activateParent","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"bytes32","name":"parentNode","type":"bytes32"}],"name":"deactivateParent","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"bytes32","name":"parentNode","type":"bytes32"}],"name":"removeParent","outputs":[],"stateMutability":"nonpayable","type":"function"}
+      {"inputs":[{"internalType":"bytes32","name":"parentNode","type":"bytes32"}],"name":"removeParent","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"node","type":"bytes32"},{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"uint64","name":"expiry","type":"uint64"}],"name":"NameRegistered","type":"event"}
     ];
-
-    function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
+function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function ensureAbiMethods(abi, defs){
       defs.forEach(def=>{ if(!abi.some(abiHas(def.name))) abi.push(def); });
     }
@@ -2513,6 +2506,10 @@ const AGIJobManagerABI = [
       {"inputs":[],"name":"configLocked","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"jobLabelPrefix","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobLabelSnapshot","outputs":[{"internalType":"bool","name":"isSet","type":"bool"},{"internalType":"string","name":"label","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobEnsLabel","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobEnsName","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobEnsURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobEnsNode","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"string","name":"prefix","type":"string"}],"name":"setJobLabelPrefix","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address","name":"registry","type":"address"}],"name":"setENSRegistry","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address","name":"wrapper","type":"address"}],"name":"setNameWrapper","outputs":[],"stateMutability":"nonpayable","type":"function"},
@@ -2570,7 +2567,7 @@ const AGIJobManagerABI = [
         source = 'AGIJobManager getter';
       }else if(!isZeroAddress(KNOWN_ENS_JOB_PAGES_FALLBACK)){
         viaGetter = KNOWN_ENS_JOB_PAGES_FALLBACK;
-        source = 'verified fallback (degraded: manager getter unavailable)';
+        source = 'verified fallback';
       }
       if(!viaGetter){ clearEnsPreview('no ENSJobPages address available'); return null; }
       resolvedEnsJobPagesAddress = viaGetter;
@@ -2611,10 +2608,9 @@ const AGIJobManagerABI = [
       if(el('ensRoutineControls')) el('ensRoutineControls').innerHTML = '<div class="smallNote">Controls unavailable until ENS owner posture is refreshed.</div>';
       if(el('ensDangerControls')) el('ensDangerControls').innerHTML = '<div class="smallNote">Controls unavailable until ENS owner posture is refreshed.</div>';
       clearEnsPreview(reason);
-      freeTrialParentStatus = null;
-      freeTrialMintDraft = {label:'', normalized:'', valid:false, childNode:'', fullName:'', available:null, expectedExpiry:null, recipient:''};
-      lastMintedAlphaAgent = null;
-      if(el('mintAlphaLastResult')) el('mintAlphaLastResult').textContent = 'No mint transaction in this session yet.';
+      if(el('mintAlphaStatus')) el('mintAlphaStatus').textContent = 'Runtime context reset. Reconnect to refresh registrar state.';
+      if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = '—';
+      if(el('freeTrialParentUsableState')) el('freeTrialParentUsableState').textContent = '—';
       if(reason) console.info('[resetRuntimeState]', reason);
     }
     async function getActiveJobIdsFromEvents(totalHint){
@@ -2643,7 +2639,7 @@ const AGIJobManagerABI = [
           APP_STATE.jobsReadDegraded = true;
           activeJobIndexCache.ids = [];
           activeJobIndexCache.ts = now;
-          setToast('Job index event scan missing JobCreated coverage; no synthetic IDs are shown. Connect a fuller RPC indexer or rely on cached confirmed IDs.', 'warn');
+          setToast('Job index event scan missing JobCreated coverage; no synthetic IDs will be shown.', 'warn');
           return [];
         }
         APP_STATE.jobsReadDegraded = false;
@@ -2654,7 +2650,7 @@ const AGIJobManagerABI = [
         if(!isExpectedRpcRevert(error)) console.error('[getActiveJobIdsFromEvents]', error);
         APP_STATE.jobsReadDegraded = true;
         if(activeJobIndexCache.ids && activeJobIndexCache.ids.length) return activeJobIndexCache.ids.slice();
-        setToast('Job event indexing unavailable; no synthetic IDs are shown. Refresh later or switch RPC for complete event coverage.', 'warn');
+        setToast('Job event indexing unavailable; no synthetic IDs are shown in degraded mode.', 'warn');
         return [];
       }
     }
@@ -2938,6 +2934,7 @@ const AGIJobManagerABI = [
       if(action === 'verify') return scrollToId('verifyEnsSection');
       if(action === 'mint-alpha') return scrollToId('alphaAgentMintSection');
       if(action === 'refresh-registrar') return refreshFreeTrialRegistrarState();
+      if(action === 'copy-minted-alpha'){ const n = (el('mintAlphaFullName')?.textContent || '').trim(); if(n && n !== '—') return navigator.clipboard.writeText(n).then(()=>setToast('Minted alpha-agent name copied.','ok')); return setToast('No minted alpha-agent name to copy yet.','warn'); }
       if(action === 'create') return scrollToId('createJobSection');
       if(action === 'bridge') return scrollToId('agialphaBridgeSection');
       if(action === 'jobs') return scrollToId('jobsSection');
@@ -2993,16 +2990,10 @@ const AGIJobManagerABI = [
         primary = {label:'Open bridge console', action:'bridge'};
         secondary = {label:'Refresh balances', action:'refresh'};
       }else if(connected && isMainnet && hasAcceptedTerms && !verified.agentAlpha){
-        title = 'Mint free alpha-agent ENS';
-        body = 'You are write-ready but no verified alpha-agent identity is present. Mint a free-trial *.alpha.agent.agi.eth subname (gas only), then auto-verify it for operator workflows.';
-        pill = 'Alpha-agent credential available';
+        title = 'Mint your alpha-agent ENS access key';
+        body = 'You can mint a free-trial *.alpha.agent.agi.eth identity now (gas only), then auto-verify it for agent readiness.';
+        pill = 'Alpha-agent identity recommended';
         primary = {label:'Mint free alpha-agent ENS', action:'mint-alpha'};
-        secondary = {label:'Verify ENS', action:'verify'};
-      }else if(connected && isMainnet && hasAcceptedTerms && !verified.agent && !verified.club){
-        title = 'Create a job or verify an ENS role';
-        body = 'Employer flows are already open. Verify an agent or club ENS path only if you want to apply for jobs or validate completions from this wallet.';
-        pill = 'Write access ready';
-        primary = {label:'Open Create Job', action:'create'};
         secondary = {label:'Verify ENS', action:'verify'};
       }else if(connected && isMainnet && hasAcceptedTerms && jobStats.completion > 0 && verified.club){
         title = 'Review jobs waiting for validator attention';
@@ -3038,8 +3029,9 @@ const AGIJobManagerABI = [
         {title:'Open bridge console', subtitle:'Bridge from Solana and mint the official Ethereum $AGIALPHA.', tags:'bridge vault agialpha solana ethereum', action:'bridge'},
         {title:'Open jobs table', subtitle:'Review, sort, filter, and open the live job board.', tags:'jobs board table review', action:'jobs'},
         {title:'Open ENS verification', subtitle:'Verify agent or validator ENS ownership for this wallet.', tags:'ens verify agent validator', action:'verify'},
-        {title:'Mint free alpha-agent ENS', subtitle:'Open the free-trial alpha-agent mint panel.', tags:'ens alpha agent mint free trial', action:'mint-alpha'},
-        {title:'Refresh registrar state', subtitle:'Refresh FreeTrialSubdomainRegistrar parent/availability posture.', tags:'registrar refresh parent status', action:'refresh-registrar'},
+        {title:'Mint free alpha-agent ENS', subtitle:'Open the alpha-agent access-key mint panel (free registration, gas only).', tags:'alpha agent ens mint registrar free trial', action:'mint-alpha'},
+        {title:'Refresh registrar state', subtitle:'Reload FreeTrialSubdomainRegistrar + parent status + availability posture.', tags:'registrar refresh parent wrapper', action:'refresh-registrar'},
+        {title:'Copy minted alpha-agent name', subtitle:'Copy the currently previewed minted alpha-agent ENS name.', tags:'alpha agent copy ens', action:'copy-minted-alpha'},
         {title:'Read terms & conditions', subtitle:'Jump to the embedded terms section before signing.', tags:'terms legal read', action:'terms'},
         {title:'Expand all terms', subtitle:'Open every terms section for a full read-through.', tags:'terms expand legal', action:'expand-terms'},
         {title:'Collapse terms', subtitle:'Return the legal section to a lighter review mode.', tags:'terms collapse legal', action:'collapse-terms'},
@@ -3383,7 +3375,7 @@ const AGIJobManagerABI = [
           ensPreview: predictedEns || null,
           ensURI: predictedEnsUri && !predictedEnsUri.includes("—") ? predictedEnsUri : null,
           generatedAt: nowIso(),
-          createdVia: "AGIJobManager single-page UI v27.0"
+          createdVia: "AGIJobManager single-page UI v26.0"
         }
       };
       Object.keys(obj).forEach(k=>{ if(obj[k]===undefined) delete obj[k]; });
@@ -3517,7 +3509,7 @@ const AGIJobManagerABI = [
         if(!web3 || !agiJobManager){ clearEnsPreview('missing connected contracts'); return; }
         const ensContract = await resolveEnsJobPagesContract();
         if(!ensContract){
-          if(el('ensHookReadiness')) el('ensHookReadiness').textContent = 'ENSJobPages unavailable. Using degraded posture only.';
+          if(el('ensHookReadiness')) el('ensHookReadiness').textContent = 'ENSJobPages unavailable. Degraded state: live preview is not fully available.';
           return;
         }
         const nextJobId = Number(await agiJobManager.methods.nextJobId().call());
@@ -3555,8 +3547,9 @@ const AGIJobManagerABI = [
         if(el('predictedEnsName')) el('predictedEnsName').textContent = ensName || '—';
         if(el('predictedEnsURI')) el('predictedEnsURI').textContent = ensURI || '—';
         if(el('predictedEnsNode')) el('predictedEnsNode').textContent = ensNode || '—';
-        if(el('ensTokenUriMode')) el('ensTokenUriMode').textContent = tokenUriMode ? 'true' : 'false';
+        if(el('ensTokenUriMode')) el('ensTokenUriMode').textContent = `${tokenUriMode ? 'true' : 'false'} (ENSJobPages public flag)`;
         if(el('ensConfigLocked')) el('ensConfigLocked').textContent = configLocked ? 'true' : 'false';
+        if(el('managerTokenUriMode')) el('managerTokenUriMode').textContent = 'owner-configurable, getter unavailable';
         const linked = !!jobManager && String(jobManager).toLowerCase() === AGI_JOB_MANAGER.toLowerCase();
         const prereqs = !isZeroAddress(ensRegistry) && !isZeroAddress(publicResolver) && !!rootName && !isZeroAddress(nameWrapper) && linked;
         if(el('ensHookReadiness')) el('ensHookReadiness').textContent = prereqs ? 'Public prerequisites satisfied; full internal readiness not publicly provable.' : 'Public prerequisites incomplete; full internal readiness not publicly provable.';
@@ -3581,217 +3574,242 @@ const AGIJobManagerABI = [
     }
 
 
-    const RECENT_ALPHA_AGENT_NAMES_KEY = 'agijobmanager_v27_recent_alpha_agent_names';
-    function formatUnixTs(ts){
+    function formatTimestamp(ts){
       const n = Number(ts || 0);
       if(!n) return '—';
-      return new Date(n * 1000).toLocaleString();
+      const ms = n > 1e12 ? n : n * 1000;
+      return new Date(ms).toLocaleString();
     }
-    function getAlphaRecipient(){
-      const raw = (el('mintAlphaRecipient')?.value || '').trim();
-      return raw || userAccount || '';
+    function normalizeAlphaLabel(raw){ return String(raw || '').trim().toLowerCase(); }
+    function validateAlphaLabelLocal(raw){
+      const rawText = String(raw || '').trim();
+      const label = normalizeAlphaLabel(rawText);
+      if(!rawText) return {label, ok:false, reason:'Label required.'};
+      if(label.length < 8) return {label, ok:false, reason:'Minimum length is 8.'};
+      if(label.length > 63) return {label, ok:false, reason:'Maximum length is 63.'};
+      if(/\./.test(rawText)) return {label, ok:false, reason:'Dots are not allowed.'};
+      if(/-/.test(rawText)) return {label, ok:false, reason:'Hyphens are not allowed.'};
+      if(/\s/.test(rawText)) return {label, ok:false, reason:'Spaces are not allowed.'};
+      if(!/^[a-z0-9]+$/.test(label)) return {label, ok:false, reason:'Use lowercase letters and digits only.'};
+      return {label, ok:true, reason: rawText === label ? 'Label format is valid.' : 'Uppercase converted to lowercase for submission preview.'};
     }
-    function validateAlphaAgentLabel(input){
-      const normalized = String(input || '').trim().toLowerCase();
-      if(!normalized) return {ok:false, normalized, reason:'Label required.'};
-      if(normalized !== String(input || '').trim()) return {ok:false, normalized, reason:'Use lowercase only (a-z, 0-9).'};
-      if(normalized.length < 8 || normalized.length > 63) return {ok:false, normalized, reason:'Label length must be between 8 and 63.'};
-      if(normalized.includes('.') || normalized.includes('-') || /\s/.test(normalized)) return {ok:false, normalized, reason:'No dots, hyphens, or spaces are allowed.'};
-      if(!/^[a-z0-9]+$/.test(normalized)) return {ok:false, normalized, reason:'Only lowercase letters a-z and digits 0-9 are allowed.'};
-      return {ok:true, normalized, reason:'Label format valid.'};
-    }
-    function alphaChildNode(label){ return namehash(`${label}.${ALPHA_AGENT_PARENT_NAME}`); }
     function loadRecentAlphaAgentNames(){
-      try{ return JSON.parse(localStorage.getItem(RECENT_ALPHA_AGENT_NAMES_KEY) || '[]'); }catch{return [];}
+      try{ return JSON.parse(localStorage.getItem(RECENT_ALPHA_AGENT_KEY) || '[]'); }catch{ return []; }
     }
     function saveRecentAlphaAgentName(name){
-      if(!name) return;
-      const list = loadRecentAlphaAgentNames().filter(x=>x!==name);
-      list.unshift(name);
-      const trimmed = list.slice(0,6);
-      try{ localStorage.setItem(RECENT_ALPHA_AGENT_NAMES_KEY, JSON.stringify(trimmed)); }catch{}
+      const clean = String(name || '').trim().toLowerCase();
+      if(!clean) return;
+      const now = loadRecentAlphaAgentNames().filter(x=>x!==clean);
+      now.unshift(clean);
+      try{ localStorage.setItem(RECENT_ALPHA_AGENT_KEY, JSON.stringify(now.slice(0,8))); }catch{}
       renderRecentAlphaAgentNames();
     }
     function renderRecentAlphaAgentNames(){
-      const host = el('recentAlphaAgentNames');
-      if(!host) return;
-      const list = loadRecentAlphaAgentNames();
-      if(!list.length){ host.textContent = 'Recent names: none'; return; }
-      host.innerHTML = `Recent names: ${list.map(n=>`<button class="btn" type="button" data-recent-alpha="${escapeHtml(n)}">${escapeHtml(n)}.alpha.agent.agi.eth</button>`).join(' ')}`;
-      host.querySelectorAll('[data-recent-alpha]').forEach(btn=>btn.addEventListener('click', ()=>{
-        const label = btn.dataset.recentAlpha || '';
-        if(el('mintAlphaLabel')) el('mintAlphaLabel').value = label;
-        updateAlphaMintPreview(true);
-      }));
-    }
-    async function ensureFreeTrialRegistrar(){
-      if(!web3) return null;
-      if(!freeTrialRegistrar) freeTrialRegistrar = new web3.eth.Contract(FreeTrialSubdomainRegistrarABI, FREE_TRIAL_REGISTRAR);
-      return freeTrialRegistrar;
+      const box = el('recentAlphaAgentNames');
+      if(!box) return;
+      const names = loadRecentAlphaAgentNames();
+      box.innerHTML = '';
+      if(!names.length){
+        const note = document.createElement('span');
+        note.className = 'smallNote';
+        note.textContent = 'No recent alpha-agent names on this device yet.';
+        box.appendChild(note);
+        return;
+      }
+      names.forEach(name=>{
+        const clean = String(name || '').trim().toLowerCase();
+        if(!/^[a-z0-9]{8,63}$/.test(clean)) return;
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.type = 'button';
+        btn.dataset.alphaRecent = clean;
+        btn.textContent = `${clean}.alpha.agent.agi.eth`;
+        btn.addEventListener('click', ()=>{
+          if(el('mintAlphaLabel')) el('mintAlphaLabel').value = clean;
+          updateAlphaMintPreview();
+        });
+        box.appendChild(btn);
+      });
+      if(!box.children.length){
+        const note = document.createElement('span');
+        note.className = 'smallNote';
+        note.textContent = 'No valid recent alpha-agent names available.';
+        box.appendChild(note);
+      }
     }
     async function refreshFreeTrialRegistrarState(){
-      const registrar = await ensureFreeTrialRegistrar();
-      if(!registrar || !web3){ return; }
-      const computed = namehash(ALPHA_AGENT_PARENT_NAME);
-      const parentMatch = computed.toLowerCase() === ALPHA_AGENT_PARENT_NODE.toLowerCase();
-      if(el('freeTrialParentNodeCheck')) el('freeTrialParentNodeCheck').textContent = parentMatch ? 'match' : 'BLOCKING MISMATCH: provided parent node differs from alpha.agent.agi.eth namehash';
-      if(!parentMatch){
-        if(el('mintAlphaDisabledReason')) el('mintAlphaDisabledReason').textContent = 'Mint blocked: parent node mismatch. Do not proceed until parent configuration is corrected.';
+      if(!web3){ return; }
+      if(!freeTrialRegistrar) freeTrialRegistrar = new web3.eth.Contract(FreeTrialSubdomainRegistrarABI, FREE_TRIAL_REGISTRAR);
+      if(el('freeTrialRegistrarAddress')) el('freeTrialRegistrarAddress').textContent = FREE_TRIAL_REGISTRAR;
+      APP_STATE.registrar.parentUsable = false;
+      APP_STATE.registrar.parentActive = false;
+      APP_STATE.registrar.managerAuthorized = false;
+      if(el('freeTrialParentActive')) el('freeTrialParentActive').textContent = 'unknown (read failed or unavailable)';
+      if(el('freeTrialParentLocked')) el('freeTrialParentLocked').textContent = 'unknown (read failed or unavailable)';
+      if(el('freeTrialRegistrarAuthorised')) el('freeTrialRegistrarAuthorised').textContent = 'unknown (read failed or unavailable)';
+      if(el('freeTrialParentUsableState')) el('freeTrialParentUsableState').textContent = 'false (degraded)';
+      if(el('mintAlphaParentUsable')) el('mintAlphaParentUsable').textContent = 'unknown / degraded';
+      const computed = namehash(ALPHA_AGENT_PARENT);
+      if(el('freeTrialParentNode')) el('freeTrialParentNode').textContent = ALPHA_AGENT_PARENT_NODE;
+      if(computed.toLowerCase() !== ALPHA_AGENT_PARENT_NODE.toLowerCase()){
+        if(el('mintAlphaStatus')) el('mintAlphaStatus').textContent = `Blocking warning: parent node mismatch. expected ${ALPHA_AGENT_PARENT_NODE}, computed ${computed}.`;
+        if(el('mintAlphaAgentBtn')) el('mintAlphaAgentBtn').disabled = true;
+        return;
       }
-      const [wrapper, trialPeriod, minLen, maxLen, statusRaw, nextExp] = await Promise.all([
-        registrar.methods.wrapper().call().catch(()=>''),
-        registrar.methods.TRIAL_PERIOD().call().catch(()=>'0'),
-        registrar.methods.MIN_LABEL_LENGTH().call().catch(()=>'8'),
-        registrar.methods.MAX_LABEL_LENGTH().call().catch(()=>'63'),
-        registrar.methods.getParentStatus(ALPHA_AGENT_PARENT_NODE).call().catch(()=>null),
-        registrar.methods.nextExpiry(ALPHA_AGENT_PARENT_NODE).call().catch(()=>'0')
+      const [wrapper, trial, minLen, maxLen, parentStatus, nextExp] = await Promise.all([
+        freeTrialRegistrar.methods.wrapper().call().catch(()=>''),
+        freeTrialRegistrar.methods.TRIAL_PERIOD().call().catch(()=>0),
+        freeTrialRegistrar.methods.MIN_LABEL_LENGTH().call().catch(()=>8),
+        freeTrialRegistrar.methods.MAX_LABEL_LENGTH().call().catch(()=>63),
+        freeTrialRegistrar.methods.getParentStatus(ALPHA_AGENT_PARENT_NODE).call().catch(()=>null),
+        freeTrialRegistrar.methods.nextExpiry(ALPHA_AGENT_PARENT_NODE).call().catch(()=>0)
       ]);
-      if(wrapper && !isZeroAddress(wrapper)){
-        freeTrialWrapper = new web3.eth.Contract(NameWrapperABI, wrapper);
-        if(el('freeTrialWrapperAddress')) el('freeTrialWrapperAddress').textContent = wrapper;
+      if(wrapper && !isZeroAddress(wrapper)) registrarWrapperContract = new web3.eth.Contract(NameWrapperABI, wrapper);
+      APP_STATE.registrar.wrapper = wrapper || null;
+      if(el('freeTrialWrapperAddress')) el('freeTrialWrapperAddress').textContent = wrapper || '—';
+      if(el('freeTrialTrialPeriod')) el('freeTrialTrialPeriod').textContent = `${trial} sec`;
+      if(el('freeTrialLabelRules')) el('freeTrialLabelRules').textContent = `lowercase a-z0-9, no dots, no hyphens, ${minLen}–${maxLen} chars`;
+      if(parentStatus){
+        const active = !!(Array.isArray(parentStatus) ? parentStatus[0] : parentStatus.active);
+        const parentLocked = !!(Array.isArray(parentStatus) ? parentStatus[1] : parentStatus.parentLocked);
+        const registrarAuthorised = !!(Array.isArray(parentStatus) ? parentStatus[2] : parentStatus.registrarAuthorised);
+        const parentUsable = !!(Array.isArray(parentStatus) ? parentStatus[3] : parentStatus.parentUsable);
+        const parentExpiry = Number(Array.isArray(parentStatus) ? parentStatus[4] : parentStatus.parentEffectiveExpiry);
+        APP_STATE.registrar.parentUsable = parentUsable;
+        APP_STATE.registrar.parentActive = active;
+        if(el('freeTrialParentActive')) el('freeTrialParentActive').textContent = active ? 'true' : 'false';
+        if(el('freeTrialParentLocked')) el('freeTrialParentLocked').textContent = parentLocked ? 'true' : 'false';
+        if(el('freeTrialRegistrarAuthorised')) el('freeTrialRegistrarAuthorised').textContent = registrarAuthorised ? 'true' : 'false';
+        if(el('freeTrialParentUsableState')) el('freeTrialParentUsableState').textContent = parentUsable ? 'true' : 'false';
+        if(el('freeTrialParentExpiry')) el('freeTrialParentExpiry').textContent = formatTimestamp(parentExpiry);
+        if(el('mintAlphaParentUsable')) el('mintAlphaParentUsable').textContent = parentUsable ? 'usable' : 'not usable';
       }
-      const st = statusRaw ? {
-        active: !!(statusRaw.active ?? statusRaw[0]),
-        parentLocked: !!(statusRaw.parentLocked ?? statusRaw[1]),
-        registrarAuthorised: !!(statusRaw.registrarAuthorised ?? statusRaw[2]),
-        parentUsable: !!(statusRaw.parentUsable ?? statusRaw[3]),
-        parentEffectiveExpiry: Number(statusRaw.parentEffectiveExpiry ?? statusRaw[4] ?? 0)
-      } : {active:false,parentLocked:false,registrarAuthorised:false,parentUsable:false,parentEffectiveExpiry:0};
-      freeTrialParentStatus = {...st, minLen:Number(minLen||8), maxLen:Number(maxLen||63), trialPeriod:Number(trialPeriod||0), nextExpiry:Number(nextExp||0), nodeMatch:parentMatch};
-      if(el('freeTrialParentActive')) el('freeTrialParentActive').textContent = st.active ? 'true' : 'false';
-      if(el('freeTrialParentLocked')) el('freeTrialParentLocked').textContent = st.parentLocked ? 'true' : 'false';
-      if(el('freeTrialRegistrarAuthorized')) el('freeTrialRegistrarAuthorized').textContent = st.registrarAuthorised ? 'true' : 'false';
-      if(el('freeTrialParentUsable')) el('freeTrialParentUsable').textContent = st.parentUsable ? 'true' : 'false';
-      if(el('freeTrialParentExpiry')) el('freeTrialParentExpiry').textContent = formatUnixTs(st.parentEffectiveExpiry);
-      if(el('freeTrialNextExpiry')) el('freeTrialNextExpiry').textContent = formatUnixTs(Number(nextExp||0));
-      if(el('mintAlphaExpectedExpiry')) el('mintAlphaExpectedExpiry').textContent = formatUnixTs(Number(nextExp||0));
-      if(el('freeTrialLabelRules')) el('freeTrialLabelRules').textContent = `lowercase a-z / 0-9 only, ${minLen}–${maxLen} chars, no dots/hyphens/spaces`;
-      let canManage = false;
-      if(userAccount && freeTrialWrapper && parentMatch){
-        canManage = await freeTrialWrapper.methods.canModifyName(ALPHA_AGENT_PARENT_NODE, userAccount).call().catch(()=>false);
+      if(el('mintAlphaExpectedExpiry')) el('mintAlphaExpectedExpiry').textContent = formatTimestamp(Number(nextExp));
+      if(userAccount && registrarWrapperContract?.methods?.canModifyName){
+        const can = await registrarWrapperContract.methods.canModifyName(ALPHA_AGENT_PARENT_NODE, userAccount).call().catch(()=>false);
+        APP_STATE.registrar.managerAuthorized = !!can;
       }
-      if(el('registrarAdminPosture')) el('registrarAdminPosture').textContent = canManage ? 'parent manager authorized' : 'not authorized';
-      const body = el('registrarManagerControls');
-      if(body){
-        body.innerHTML = canManage
-          ? ['setupDomain','activateParent','deactivateParent','removeParent'].map(m=>`<button class="btn" data-registrar-admin="${m}" data-tx="1">${m}</button>`).join(' ')
-          : '<div class="smallNote">No parent-manager authorization detected for this wallet.</div>';
-        body.querySelectorAll('[data-registrar-admin]').forEach(btn=>btn.addEventListener('click', ()=>runRegistrarAdminAction(btn.dataset.registrarAdmin)));
+      if(!parentStatus && el('mintAlphaStatus')){
+        el('mintAlphaStatus').textContent = 'Registrar parent status unavailable (degraded read). Refresh and retry before minting.';
       }
-      updateAlphaMintPreview(false);
+      renderRegistrarAdminControls();
+      await updateAlphaMintPreview();
     }
-    async function updateAlphaMintPreview(checkAvailability=true){
-      const input = el('mintAlphaLabel');
-      const labelRaw = String(input?.value || '');
-      const v = validateAlphaAgentLabel(labelRaw);
-      if(input && v.normalized !== labelRaw.trim()) input.value = v.normalized;
-      const label = v.normalized;
-      const full = label ? `${label}.${ALPHA_AGENT_PARENT_NAME}` : '—';
-      const node = label ? alphaChildNode(label) : '—';
-      const recipient = getAlphaRecipient();
-      freeTrialMintDraft = {...freeTrialMintDraft, label:labelRaw, normalized:label, valid:v.ok, childNode:label ? node : '', fullName: label ? full : '', recipient};
+    async function updateAlphaMintPreview(){
+      const raw = el('mintAlphaLabel')?.value || '';
+      const local = validateAlphaLabelLocal(raw);
+      const mintLabelInput = el('mintAlphaLabel');
+      const rawInput = String(mintLabelInput?.value || '');
+      if(mintLabelInput && rawInput.trim() !== rawInput.trim().toLowerCase()){
+        mintLabelInput.value = local.label;
+      }
+      const full = local.label ? `${local.label}.${ALPHA_AGENT_PARENT}` : '—';
       if(el('mintAlphaFullName')) el('mintAlphaFullName').textContent = full;
-      if(el('mintAlphaEnsURI')) el('mintAlphaEnsURI').textContent = label ? `ens://${full}` : '—';
+      if(el('mintAlphaEnsUri')) el('mintAlphaEnsUri').textContent = local.label ? `ens://${full}` : '—';
+      const node = local.label ? namehash(full) : '—';
       if(el('mintAlphaNode')) el('mintAlphaNode').textContent = node;
-      if(el('mintAlphaInlineValidation')) el('mintAlphaInlineValidation').textContent = v.reason;
-      if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = v.ok ? 'checking…' : 'invalid label';
-      if(checkAvailability && v.ok){
-        const registrar = await ensureFreeTrialRegistrar();
-        const contractValid = await registrar.methods.validateLabel(label).call().catch(()=>v.ok);
-        if(!contractValid){
-          freeTrialMintDraft.valid = false;
-          if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = 'invalid by registrar';
+      if(el('mintLabelValidation')) el('mintLabelValidation').textContent = local.reason;
+      let availableText = local.ok ? 'checking…' : 'invalid label';
+      let isAvailable = false;
+      let isContractValid = local.ok;
+      if(local.ok && freeTrialRegistrar){
+        const available = await freeTrialRegistrar.methods.available(node).call().catch(()=>null);
+        if(available === null){
+          availableText = 'unavailable (read failed)';
+          isAvailable = false;
         }else{
-          const available = await registrar.methods.available(node).call().catch(()=>null);
-          freeTrialMintDraft.available = available;
-          if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = available===null ? 'unavailable (read failed)' : (available ? 'available' : 'unavailable');
+          isAvailable = !!available;
+          availableText = isAvailable ? 'available' : 'unavailable';
         }
+        try{
+          const labelValid = await freeTrialRegistrar.methods.validateLabel(local.label).call();
+          if(typeof labelValid === 'boolean') isContractValid = labelValid;
+          else if(labelValid === false || String(labelValid).toLowerCase() === 'false' || String(labelValid) === '0') isContractValid = false;
+          else isContractValid = true;
+        }catch{
+          isContractValid = false;
+        }
+        if(!isContractValid) availableText = 'invalid by contract';
       }
-      refreshAlphaMintButtonState();
+      if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = availableText;
+      const recipientRaw = String(el('mintAlphaRecipient')?.value || '').trim();
+      const recipient = recipientRaw || userAccount || '';
+      const badRecipient = recipient && !web3?.utils?.isAddress(recipient);
+      const blocked = !userAccount || !isMainnet || !hasAcceptedTerms || !local.ok || !APP_STATE.registrar.parentUsable || badRecipient || !isAvailable || !isContractValid;
+      if(el('mintAlphaAgentBtn')) el('mintAlphaAgentBtn').disabled = !!blocked;
+      if(el('mintAlphaStatus')){
+        if(!userAccount) el('mintAlphaStatus').textContent = 'Connect wallet to mint.';
+        else if(!isMainnet) el('mintAlphaStatus').textContent = 'Switch to Ethereum mainnet.';
+        else if(!hasAcceptedTerms) el('mintAlphaStatus').textContent = 'Accept terms to unlock writes.';
+        else if(!APP_STATE.registrar.parentUsable) el('mintAlphaStatus').textContent = 'Parent not usable right now.';
+        else if(badRecipient) el('mintAlphaStatus').textContent = 'Recipient is not a valid address.';
+        else if(!local.ok) el('mintAlphaStatus').textContent = local.reason;
+        else el('mintAlphaStatus').textContent = `Ready to mint ${full} (free, gas only).`;
+      }
     }
-    function refreshAlphaMintButtonState(){
-      const btn = el('mintAlphaAgentBtn');
-      if(!btn) return;
-      const reasons = [];
-      const recipient = getAlphaRecipient();
-      if(!userAccount) reasons.push('wallet not connected');
-      if(userAccount && !isMainnet) reasons.push('wrong network');
-      if(userAccount && isMainnet && !hasAcceptedTerms) reasons.push('terms not accepted');
-      if(!freeTrialParentStatus?.nodeMatch) reasons.push('parent node mismatch');
-      if(!freeTrialParentStatus?.active) reasons.push('parent inactive');
-      if(!freeTrialParentStatus?.parentUsable) reasons.push('parent not usable');
-      if(!freeTrialParentStatus?.registrarAuthorised) reasons.push('registrar not authorized on parent');
-      if(!freeTrialMintDraft.valid) reasons.push('invalid label');
-      if(freeTrialMintDraft.available === false) reasons.push('label unavailable');
-      if(recipient && !web3?.utils?.isAddress(recipient)) reasons.push('recipient invalid');
-      btn.disabled = reasons.length > 0;
-      if(el('mintAlphaDisabledReason')) el('mintAlphaDisabledReason').textContent = reasons.length ? `Mint disabled: ${reasons.join(' · ')}.` : 'Ready to mint via registerSimple(parentNode,label,recipient) with value 0 ETH (gas only).';
+    function openAlphaMintReview(){
+      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      const recipient = String(el('mintAlphaRecipient')?.value || '').trim() || userAccount;
+      const full = `${local.label}.${ALPHA_AGENT_PARENT}`;
+      if(el('alphaMintReviewFacts')) el('alphaMintReviewFacts').innerHTML = [
+        ['Target contract', FREE_TRIAL_REGISTRAR],
+        ['Method', 'registerSimple'],
+        ['Parent node', ALPHA_AGENT_PARENT_NODE],
+        ['Label', local.label],
+        ['Full ENS name', full],
+        ['Recipient / owner', recipient],
+        ['Value', '0 ETH'],
+        ['Fees', 'Free registration, gas only'],
+        ['Expected trial expiry', el('mintAlphaExpectedExpiry')?.textContent || '—']
+      ].map(([k,v])=>`<div class="reviewFact"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v||''))}</span></div>`).join('');
+      const modal = el('alphaMintReviewModal');
+      if(modal){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
     }
-    async function mintFreeAlphaAgentENS(){
-      if(!requireConnected()) return;
-      if(!mustBeReadyToWrite()) return;
-      await updateAlphaMintPreview(true);
-      refreshAlphaMintButtonState();
-      if(el('mintAlphaAgentBtn')?.disabled) return;
-      const registrar = await ensureFreeTrialRegistrar();
-      const label = freeTrialMintDraft.normalized;
-      const recipient = getAlphaRecipient();
-      const fullName = `${label}.${ALPHA_AGENT_PARENT_NAME}`;
-      openActionReview({
-        title:'Review free alpha-agent ENS mint',
-        body:'You are about to submit a free-trial ENS subname registration. Registration cost is 0 ETH, but gas is required. Trial names are time-limited and not guaranteed permanent rights.',
-        facts:[
-          {label:'Target contract', value:FREE_TRIAL_REGISTRAR},
-          {label:'Method', value:'registerSimple'},
-          {label:'Parent node', value:ALPHA_AGENT_PARENT_NODE},
-          {label:'Label', value:label},
-          {label:'Resulting full name', value:fullName},
-          {label:'Recipient / owner', value:recipient},
-          {label:'Expected expiry', value:el('mintAlphaExpectedExpiry')?.textContent || '—'},
-          {label:'Value sent', value:'0 ETH'}
-        ],
-        checks:[{state:'Fee model', badge:'good', text:'Free registration, gas only.'}],
-        method:`registerSimple(${ALPHA_AGENT_PARENT_NODE},${label},${recipient})`,
-        confirmLabel:'Mint free trial subname',
-        run: async ()=>{
-          const receipt = await runTrackedTx(`Mint ${fullName}`, ()=>registrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, label, recipient).send({from:userAccount, value:'0'}), {pendingDetail:`Submitting registerSimple for ${fullName}.`, successDetail:`Mint confirmed for ${fullName}.`});
-          const ev = receipt?.events?.NameRegistered?.returnValues || null;
-          const node = (ev?.node || freeTrialMintDraft.childNode || '').toString();
-          const expiry = Number(ev?.expiry || 0);
-          lastMintedAlphaAgent = {fullName, node: node || freeTrialMintDraft.childNode || '', txHash: receipt.transactionHash || '', recipient, expiry: expiry || 0};
-          if(el('mintAlphaLastResult')) el('mintAlphaLastResult').innerHTML = `Minted <b>${escapeHtml(fullName)}</b> · node ${escapeHtml(node || '—')} · owner ${escapeHtml(recipient)} · expiry ${escapeHtml(expiry ? formatUnixTs(expiry) : (el('mintAlphaExpectedExpiry')?.textContent || '—'))} · <a href="${etherscanTxUrl(receipt.transactionHash)}" target="_blank" rel="noopener">tx</a>`;
-          saveRecentAlphaAgentName(label);
-          if(el('agentSub')) el('agentSub').value = label;
-          await verifySubdomain('agent', true);
-          await refreshFreeTrialRegistrarState();
-        }
-      });
-    }
-    async function runRegistrarAdminAction(action){
+    function closeAlphaMintReview(){ const modal = el('alphaMintReviewModal'); if(modal){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); } }
+    async function mintAlphaAgentName(){
       if(!requireConnected() || !mustBeReadyToWrite()) return;
-      const registrar = await ensureFreeTrialRegistrar();
-      const map = {
-        setupDomain: ()=>registrar.methods.setupDomain(ALPHA_AGENT_PARENT_NODE, true).send({from:userAccount}),
-        activateParent: ()=>registrar.methods.activateParent(ALPHA_AGENT_PARENT_NODE).send({from:userAccount}),
-        deactivateParent: ()=>registrar.methods.deactivateParent(ALPHA_AGENT_PARENT_NODE).send({from:userAccount}),
-        removeParent: ()=>registrar.methods.removeParent(ALPHA_AGENT_PARENT_NODE).send({from:userAccount})
-      };
-      if(!map[action]) return;
-      await runTrackedTx(`Registrar ${action}`, map[action], {pendingDetail:`Submitting ${action}.`, successDetail:`${action} confirmed.`});
+      if(!freeTrialRegistrar){
+        if(!web3) return setToast('Wallet provider unavailable. Reconnect wallet and retry.', 'bad');
+        freeTrialRegistrar = new web3.eth.Contract(FreeTrialSubdomainRegistrarABI, FREE_TRIAL_REGISTRAR);
+      }
+      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      if(!local.ok) return setToast(local.reason, 'warn');
+      const recipient = String(el('mintAlphaRecipient')?.value || '').trim() || userAccount;
+      if(!web3.utils.isAddress(recipient)) return setToast('Recipient address is invalid.', 'bad');
+      const available = await freeTrialRegistrar.methods.available(namehash(`${local.label}.${ALPHA_AGENT_PARENT}`)).call().catch(()=>null);
+      if(available === null){
+        setToast('Registrar availability read failed. Refresh registrar state and retry.', 'warn');
+        refreshFreeTrialRegistrarState().catch(()=>{});
+        return;
+      }
+      if(!available) return setToast('Label unavailable.', 'warn');
+      closeAlphaMintReview();
+      const receipt = await runTrackedTx(`Mint ${local.label}.${ALPHA_AGENT_PARENT}`, ()=>freeTrialRegistrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, local.label, recipient).send({from:userAccount, value:'0'}), {pendingDetail:'Submitting free-trial ENS registration…', successDetail:'Free-trial ENS registration confirmed.'});
+      const ev = receipt?.events?.NameRegistered?.returnValues || null;
+      const node = ev?.node || namehash(`${local.label}.${ALPHA_AGENT_PARENT}`);
+      const expiry = ev?.expiry ? formatTimestamp(ev.expiry) : (el('mintAlphaExpectedExpiry')?.textContent || '—');
+      setToast(`Minted ${local.label}.${ALPHA_AGENT_PARENT} · expiry ${expiry}`, 'ok');
+      saveRecentAlphaAgentName(local.label);
+      if(el('agentSub')) el('agentSub').value = local.label;
+      await verifySubdomain('agent', true);
       await refreshFreeTrialRegistrarState();
+      await updateMissionControl();
     }
-    async function runExpertRegister(){
-      if(!requireConnected() || !mustBeReadyToWrite()) return;
-      const registrar = await ensureFreeTrialRegistrar();
-      const label = (el('mintAlphaLabel')?.value || '').trim().toLowerCase();
-      const recipient = getAlphaRecipient();
-      const resolver = (el('expertResolver')?.value || '').trim();
-      const fuses = Number(el('expertFuses')?.value || 0);
-      const records = String(el('expertRecords')?.value || '').split('\n').map(x=>x.trim()).filter(Boolean);
-      if(records.length && (!resolver || !web3.utils.isAddress(resolver))) return setToast('Expert mode: resolver must be a valid contract address if records are supplied.', 'warn');
-      await runTrackedTx(`Advanced register ${label}.${ALPHA_AGENT_PARENT_NAME}`, ()=>registrar.methods.register(ALPHA_AGENT_PARENT_NODE, label, recipient, resolver || '0x0000000000000000000000000000000000000000', fuses, records).send({from:userAccount, value:'0'}), {pendingDetail:'Submitting advanced register.', successDetail:'Advanced register confirmed.'});
-      await refreshFreeTrialRegistrarState();
+    function renderRegistrarAdminControls(){
+      const box = el('registrarAdminControls');
+      if(!box) return;
+      if(!APP_STATE.registrar.managerAuthorized){ box.innerHTML = '<span class="smallNote">Connected wallet is not authorized for parent-management methods.</span>'; return; }
+      const methods = ['setupDomain','activateParent','deactivateParent','removeParent'];
+      box.innerHTML = methods.map(m=>`<button class="btn" type="button" data-registrar-admin="${m}">${m}</button>`).join(' ');
+      box.querySelectorAll('[data-registrar-admin]').forEach(btn=>btn.addEventListener('click', async ()=>{
+        if(!requireConnected() || !mustBeReadyToWrite()) return;
+        const m = btn.dataset.registrarAdmin;
+        if(m === 'setupDomain') await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods.setupDomain(ALPHA_AGENT_PARENT_NODE, true).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
+        else await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods[m](ALPHA_AGENT_PARENT_NODE).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
+        await refreshFreeTrialRegistrarState();
+      }));
     }
+
 
     function parseAmountToUnitsWithDecimals(s, decimals){
       const str = String(s||"").trim();
@@ -4386,6 +4404,7 @@ const AGIJobManagerABI = [
           if(my) my.innerHTML = "<li>—</li>";
           if(all) all.innerHTML = "<li>—</li>";
           await refreshAgiAlphaBridgePanel();
+          if(el("mintAlphaStatus")) el("mintAlphaStatus").textContent = "Registrar minting requires Ethereum mainnet.";
           renderSyncDeck();
           return;
         }
@@ -5943,7 +5962,7 @@ function normalizeIpfsToHttp(uri){
     function buildPacketBase(source){
       return {
         protocol: 'AGIJobManager',
-        version: 'v27',
+        version: 'v26',
         chainId: (window.protocolState?.chainId == null ? null : Number(window.protocolState.chainId)),
         contract: AGI_JOB_MANAGER,
         ensJobPages: resolvedEnsJobPagesAddress || KNOWN_ENS_JOB_PAGES_FALLBACK,
@@ -6311,21 +6330,20 @@ function normalizeIpfsToHttp(uri){
       if(el("convertFullBalanceBtn")) el("convertFullBalanceBtn").addEventListener("click", ()=>prepareOfficialAgialphaMint(true));
       if(el("mintOfficialAgiBtn")) el("mintOfficialAgiBtn").addEventListener("click", ()=>prepareOfficialAgialphaMint(false));
       if(el("copyVaultCallBtn")) el("copyVaultCallBtn").addEventListener("click", ()=>copyVaultCallSummary().catch(e=>setToast(e.message||String(e),"bad")));
-      if(el('refreshFreeTrialRegistrarBtn')) el('refreshFreeTrialRegistrarBtn').addEventListener('click', ()=>refreshFreeTrialRegistrarState().catch(e=>setToast(e.message||String(e),'bad')));
-      if(el('mintAlphaLabel')) el('mintAlphaLabel').addEventListener('input', ()=>updateAlphaMintPreview(true).catch(()=>{}));
-      if(el('mintAlphaRecipient')) el('mintAlphaRecipient').addEventListener('input', ()=>updateAlphaMintPreview(false).catch(()=>{}));
-      if(el('mintAlphaAgentBtn')) el('mintAlphaAgentBtn').addEventListener('click', ()=>mintFreeAlphaAgentENS().catch(e=>setToast(e.message||String(e),'bad')));
-      if(el('expertRegisterBtn')) el('expertRegisterBtn').addEventListener('click', ()=>runExpertRegister().catch(e=>setToast(e.message||String(e),'bad')));
-      if(el('copyMintedAlphaNameBtn')) el('copyMintedAlphaNameBtn').addEventListener('click', async ()=>{ if(!lastMintedAlphaAgent?.fullName) return setToast('No minted name yet.', 'warn'); await navigator.clipboard.writeText(lastMintedAlphaAgent.fullName); setToast('Minted name copied.', 'ok'); });
-      if(el('copyMintedAlphaUriBtn')) el('copyMintedAlphaUriBtn').addEventListener('click', async ()=>{ if(!lastMintedAlphaAgent?.fullName) return setToast('No minted name yet.', 'warn'); await navigator.clipboard.writeText(`ens://${lastMintedAlphaAgent.fullName}`); setToast('Minted ens:// URI copied.', 'ok'); });
-      if(el('copyMintedAlphaNodeBtn')) el('copyMintedAlphaNodeBtn').addEventListener('click', async ()=>{ if(!lastMintedAlphaAgent?.node) return setToast('No minted node yet.', 'warn'); await navigator.clipboard.writeText(lastMintedAlphaAgent.node); setToast('Minted node copied.', 'ok'); });
-      if(el('openMintedAlphaEnsAppBtn')) el('openMintedAlphaEnsAppBtn').addEventListener('click', ()=>{ if(!lastMintedAlphaAgent?.fullName) return setToast('No minted name yet.', 'warn'); window.open(`https://app.ens.domains/${lastMintedAlphaAgent.fullName}`, '_blank', 'noopener'); });
-      if(el('openMintedAlphaTxBtn')) el('openMintedAlphaTxBtn').addEventListener('click', ()=>{ if(!lastMintedAlphaAgent?.txHash) return setToast('No minted tx hash yet.', 'warn'); window.open(etherscanTxUrl(lastMintedAlphaAgent.txHash), '_blank', 'noopener'); });
       el("verifyAgentBtn").addEventListener("click", ()=>verifySubdomain("agent", false));
       el("verifyAgentAlphaBtn").addEventListener("click", ()=>verifySubdomain("agent", true));
       el("verifyClubBtn").addEventListener("click", ()=>verifySubdomain("club", false));
       el("verifyClubAlphaBtn").addEventListener("click", ()=>verifySubdomain("club", true));
       el("buyClubBtn").addEventListener("click", ()=>window.open("https://montrealai.xyz/club.html","_blank","noopener"));
+      if(el("mintAlphaLabel")) el("mintAlphaLabel").addEventListener("input", ()=>updateAlphaMintPreview().catch(()=>{}));
+      if(el("mintAlphaRecipient")) el("mintAlphaRecipient").addEventListener("input", ()=>updateAlphaMintPreview().catch(()=>{}));
+      if(el("refreshRegistrarStateBtn")) el("refreshRegistrarStateBtn").addEventListener("click", ()=>refreshFreeTrialRegistrarState().catch(e=>setToast(e.message||String(e),"bad")));
+      if(el("mintAlphaAgentBtn")) el("mintAlphaAgentBtn").addEventListener("click", ()=>openAlphaMintReview());
+      if(el("closeAlphaMintReviewBtn")) el("closeAlphaMintReviewBtn").addEventListener("click", closeAlphaMintReview);
+      if(el("cancelAlphaMintReviewBtn")) el("cancelAlphaMintReviewBtn").addEventListener("click", closeAlphaMintReview);
+      if(el("confirmAlphaMintReviewBtn")) el("confirmAlphaMintReviewBtn").addEventListener("click", ()=>mintAlphaAgentName().catch(e=>setToast(e.message||String(e),"bad")));
+      if(el("alphaMintReviewModal")) el("alphaMintReviewModal").addEventListener("click", (e)=>{ if(e.target.id === "alphaMintReviewModal") closeAlphaMintReview(); });
+      renderRecentAlphaAgentNames();
       el("createJobBtn").addEventListener("click", createJob);
 
       el("termsAccepted").addEventListener("change", (e)=>{ hasAcceptedTerms = !!e.target.checked; updateWriteGate(); });
@@ -6352,7 +6370,7 @@ function normalizeIpfsToHttp(uri){
           if(el('commandPaletteModal')?.classList.contains('open')) closeCommandPalette(); else openCommandPalette();
           return;
         }
-        if(e.key === "Escape"){ closeJobDetails(); closeCompletionAssistant(); closeCommandPalette(); closeActionReview(); return; }
+        if(e.key === "Escape"){ closeJobDetails(); closeCompletionAssistant(); closeCommandPalette(); closeActionReview(); closeAlphaMintReview(); return; }
         if(!el('commandPaletteModal')?.classList.contains('open')) return;
         const input = el('commandPaletteInput');
         const items = filteredCommandItems(input?.value || '');
@@ -6394,8 +6412,6 @@ function normalizeIpfsToHttp(uri){
 
       loadTxActivity();
       loadElitePrefs();
-      renderRecentAlphaAgentNames();
-      updateAlphaMintPreview(false).catch(()=>{});
       renderDraftPacket();
       updateDebridgePreview();
       updateReadinessUI();
@@ -6468,32 +6484,32 @@ function normalizeIpfsToHttp(uri){
     });
   </script>
 
-  <script id="v27-mobile-enhancements-script">
+  <script id="v26-mobile-enhancements-script">
     (function(){
       const V23_BREAKPOINT = 900;
-      const v27PrimarySections = [
+      const v26PrimarySections = [
         {id:'missionControlSection', label:'Mission', icon:'◎'},
         {id:'agialphaBridgeSection', label:'Convert', icon:'⇄'},
         {id:'createJobSection', label:'Create', icon:'＋'},
         {id:'jobsSection', label:'Jobs', icon:'▤'}
       ];
-      const v27ExtraSections = [
+      const v26ExtraSections = [
         {id:'verifyEnsSection', label:'ENS Verify'},
-        {id:'alphaAgentMintSection', label:'Mint Alpha ENS'},
+        {id:'alphaAgentMintSection', label:'Alpha Mint'},
         {id:'activitySection', label:'Activity'},
         {id:'operationsDeckSection', label:'Operator Deck'},
         {id:'workflowSection', label:'Lifecycle'},
         {id:'insightsSection', label:'Economics'},
         {id:'termsSection', label:'Terms'}
       ];
-      let v27Observer = null;
-      let v27SyncTimer = null;
+      let v26Observer = null;
+      let v26SyncTimer = null;
 
-      function v27IsMobile(){ return window.matchMedia(`(max-width:${V23_BREAKPOINT}px)`).matches; }
-      function v27El(id){ return document.getElementById(id); }
-      function v27Text(id, fallback='—'){ const n = v27El(id); return (n && String(n.textContent || '').trim()) || fallback; }
-      function v27ScrollTo(id){ const n = v27El(id); if(n){ n.scrollIntoView({behavior:'smooth', block:'start'}); v27CloseSheet(); } }
-      function v27Run(action){
+      function v26IsMobile(){ return window.matchMedia(`(max-width:${V23_BREAKPOINT}px)`).matches; }
+      function v26El(id){ return document.getElementById(id); }
+      function v26Text(id, fallback='—'){ const n = v26El(id); return (n && String(n.textContent || '').trim()) || fallback; }
+      function v26ScrollTo(id){ const n = v26El(id); if(n){ n.scrollIntoView({behavior:'smooth', block:'start'}); v26CloseSheet(); } }
+      function v26Run(action){
         if(action === 'connect' && typeof connectWallet === 'function') return connectWallet();
         if(action === 'switch-mainnet' && typeof requestMainnetSwitch === 'function') return requestMainnetSwitch();
         if(action === 'refresh' && typeof refreshAll === 'function') return refreshAll();
@@ -6501,152 +6517,152 @@ function normalizeIpfsToHttp(uri){
         if(action === 'expand-terms') return document.querySelectorAll('.term-block').forEach(d=>d.open=true);
         if(action === 'collapse-terms') return document.querySelectorAll('.term-block').forEach((d,i)=>d.open=i<2);
         if(action === 'top') return window.scrollTo({top:0, behavior:'smooth'});
-        if(action === 'bridge') return v27ScrollTo('agialphaBridgeSection');
-        if(action === 'create') return v27ScrollTo('createJobSection');
-        if(action === 'jobs') return v27ScrollTo('jobsSection');
-        if(action === 'terms') return v27ScrollTo('termsSection');
-        if(action === 'verify') return v27ScrollTo('verifyEnsSection');
-        if(action === 'mint-alpha') return v27ScrollTo('alphaAgentMintSection');
-        if(action === 'activity') return v27ScrollTo('activitySection');
-        if(action === 'ops') return v27ScrollTo('operationsDeckSection');
+        if(action === 'bridge') return v26ScrollTo('agialphaBridgeSection');
+        if(action === 'create') return v26ScrollTo('createJobSection');
+        if(action === 'jobs') return v26ScrollTo('jobsSection');
+        if(action === 'terms') return v26ScrollTo('termsSection');
+        if(action === 'verify') return v26ScrollTo('verifyEnsSection');
+        if(action === 'mint-alpha') return v26ScrollTo('alphaAgentMintSection');
+        if(action === 'activity') return v26ScrollTo('activitySection');
+        if(action === 'ops') return v26ScrollTo('operationsDeckSection');
         return undefined;
       }
-      function v27SetActive(id){
-        document.querySelectorAll('#v27MobileDock [data-v27-target]').forEach(btn=>btn.classList.toggle('active', btn.dataset.v27Target === id));
+      function v26SetActive(id){
+        document.querySelectorAll('#v26MobileDock [data-v26-target]').forEach(btn=>btn.classList.toggle('active', btn.dataset.v26Target === id));
       }
-      function v27OpenSheet(){
-        const sheet = v27El('v27MobileSheet');
+      function v26OpenSheet(){
+        const sheet = v26El('v26MobileSheet');
         if(!sheet) return;
         sheet.classList.add('open');
         sheet.setAttribute('aria-hidden','false');
         document.body.style.overflow = 'hidden';
-        v27SyncSummary();
+        v26SyncSummary();
       }
-      function v27CloseSheet(){
-        const sheet = v27El('v27MobileSheet');
+      function v26CloseSheet(){
+        const sheet = v26El('v26MobileSheet');
         if(!sheet) return;
         sheet.classList.remove('open');
         sheet.setAttribute('aria-hidden','true');
         document.body.style.overflow = '';
       }
-      function v27BuildMobileShell(){
-        if(v27El('v27MobileDock')) return;
+      function v26BuildMobileShell(){
+        if(v26El('v26MobileDock')) return;
         const dock = document.createElement('div');
-        dock.id = 'v27MobileDock';
-        dock.className = 'v27-mobile-only';
+        dock.id = 'v26MobileDock';
+        dock.className = 'v26-mobile-only';
         dock.setAttribute('aria-label', 'Mobile protocol navigation');
-        dock.innerHTML = v27PrimarySections.map(item=>`<button type="button" class="v27-dock-btn" data-v27-target="${item.id}" aria-label="${item.label}">${item.icon}<span class="v27-dock-label">${item.label}</span></button>`).join('') + `<button type="button" class="v27-dock-btn" data-v27-open-sheet="1" aria-label="More">⋯<span class="v27-dock-label">More</span></button>`;
+        dock.innerHTML = v26PrimarySections.map(item=>`<button type="button" class="v26-dock-btn" data-v26-target="${item.id}" aria-label="${item.label}">${item.icon}<span class="v26-dock-label">${item.label}</span></button>`).join('') + `<button type="button" class="v26-dock-btn" data-v26-open-sheet="1" aria-label="More">⋯<span class="v26-dock-label">More</span></button>`;
 
         const sheet = document.createElement('div');
-        sheet.id = 'v27MobileSheet';
-        sheet.className = 'v27-mobile-only';
+        sheet.id = 'v26MobileSheet';
+        sheet.className = 'v26-mobile-only';
         sheet.setAttribute('aria-hidden','true');
         sheet.innerHTML = `
-          <div class="v27-sheet-card" role="dialog" aria-modal="true" aria-label="Mobile control sheet">
-            <div class="v27-sheet-handle" aria-hidden="true"></div>
-            <div class="v27-sheet-header">
+          <div class="v26-sheet-card" role="dialog" aria-modal="true" aria-label="Mobile control sheet">
+            <div class="v26-sheet-handle" aria-hidden="true"></div>
+            <div class="v26-sheet-header">
               <div>
                 <div class="eyebrow">Mobile control</div>
                 <div class="subtleTitle" style="margin:0">Protocol navigation</div>
-                <div class="v27-sheet-summary" id="v27MobileSummary">Wallet not connected · write access locked</div>
-                <div class="v27-sheet-meta" id="v27MobileMeta">Refresh to load live board status.</div>
+                <div class="v26-sheet-summary" id="v26MobileSummary">Wallet not connected · write access locked</div>
+                <div class="v26-sheet-meta" id="v26MobileMeta">Refresh to load live board status.</div>
               </div>
-              <button type="button" class="modalClose" id="v27CloseSheetBtn" aria-label="Close">×</button>
+              <button type="button" class="modalClose" id="v26CloseSheetBtn" aria-label="Close">×</button>
             </div>
-            <div class="v27-sheet-section">
-              <div class="v27-sheet-title">Primary sections</div>
-              <div class="v27-sheet-grid" id="v27PrimarySectionGrid"></div>
+            <div class="v26-sheet-section">
+              <div class="v26-sheet-title">Primary sections</div>
+              <div class="v26-sheet-grid" id="v26PrimarySectionGrid"></div>
             </div>
-            <div class="v27-sheet-section">
-              <div class="v27-sheet-title">Session actions</div>
-              <div class="v27-sheet-grid">
-                <button type="button" class="v27-sheet-btn primary" id="v27MirrorPrimaryBtn">Primary action</button>
-                <button type="button" class="v27-sheet-btn" id="v27MirrorSecondaryBtn">Secondary action</button>
-                <button type="button" class="v27-sheet-btn" data-v27-run="refresh">Refresh live data</button>
-                <button type="button" class="v27-sheet-btn" data-v27-run="command">Open command palette</button>
-                <button type="button" class="v27-sheet-btn" data-v27-run="mint-alpha">Mint free alpha-agent ENS</button>
-                <button type="button" class="v27-sheet-btn" data-v27-run="expand-terms">Expand all terms</button>
-                <button type="button" class="v27-sheet-btn" data-v27-run="collapse-terms">Collapse terms</button>
-                <button type="button" class="v27-sheet-btn" data-v27-run="top">Back to top</button>
+            <div class="v26-sheet-section">
+              <div class="v26-sheet-title">Session actions</div>
+              <div class="v26-sheet-grid">
+                <button type="button" class="v26-sheet-btn primary" id="v26MirrorPrimaryBtn">Primary action</button>
+                <button type="button" class="v26-sheet-btn" id="v26MirrorSecondaryBtn">Secondary action</button>
+                <button type="button" class="v26-sheet-btn" data-v26-run="refresh">Refresh live data</button>
+                <button type="button" class="v26-sheet-btn" data-v26-run="command">Open command palette</button>
+                <button type="button" class="v26-sheet-btn" data-v26-run="mint-alpha">Mint free alpha-agent ENS</button>
+                <button type="button" class="v26-sheet-btn" data-v26-run="expand-terms">Expand all terms</button>
+                <button type="button" class="v26-sheet-btn" data-v26-run="collapse-terms">Collapse terms</button>
+                <button type="button" class="v26-sheet-btn" data-v26-run="top">Back to top</button>
               </div>
-              <div class="v27-sheet-note">This sheet is additive only. It does not remove or alter the existing desktop layout; it simply makes mobile operation faster and more organized.</div>
+              <div class="v26-sheet-note">This sheet is additive only. It does not remove or alter the existing desktop layout; it simply makes mobile operation faster and more organized.</div>
             </div>
-            <div class="v27-sheet-section">
-              <div class="v27-sheet-title">Additional sections</div>
-              <div class="v27-sheet-grid" id="v27ExtraSectionGrid"></div>
+            <div class="v26-sheet-section">
+              <div class="v26-sheet-title">Additional sections</div>
+              <div class="v26-sheet-grid" id="v26ExtraSectionGrid"></div>
             </div>
           </div>`;
 
         document.body.appendChild(dock);
         document.body.appendChild(sheet);
 
-        dock.querySelectorAll('[data-v27-target]').forEach(btn=>btn.addEventListener('click', ()=>v27ScrollTo(btn.dataset.v27Target)));
-        dock.querySelector('[data-v27-open-sheet]')?.addEventListener('click', v27OpenSheet);
-        sheet.addEventListener('click', (evt)=>{ if(evt.target === sheet) v27CloseSheet(); });
-        v27El('v27CloseSheetBtn')?.addEventListener('click', v27CloseSheet);
-        v27El('v27MirrorPrimaryBtn')?.addEventListener('click', ()=>v27Run(v27El('v27MirrorPrimaryBtn')?.dataset.v27Run || ''));
-        v27El('v27MirrorSecondaryBtn')?.addEventListener('click', ()=>v27Run(v27El('v27MirrorSecondaryBtn')?.dataset.v27Run || ''));
-        sheet.querySelectorAll('[data-v27-run]').forEach(btn=>btn.addEventListener('click', ()=>v27Run(btn.dataset.v27Run)));
+        dock.querySelectorAll('[data-v26-target]').forEach(btn=>btn.addEventListener('click', ()=>v26ScrollTo(btn.dataset.v26Target)));
+        dock.querySelector('[data-v26-open-sheet]')?.addEventListener('click', v26OpenSheet);
+        sheet.addEventListener('click', (evt)=>{ if(evt.target === sheet) v26CloseSheet(); });
+        v26El('v26CloseSheetBtn')?.addEventListener('click', v26CloseSheet);
+        v26El('v26MirrorPrimaryBtn')?.addEventListener('click', ()=>v26Run(v26El('v26MirrorPrimaryBtn')?.dataset.v26Run || ''));
+        v26El('v26MirrorSecondaryBtn')?.addEventListener('click', ()=>v26Run(v26El('v26MirrorSecondaryBtn')?.dataset.v26Run || ''));
+        sheet.querySelectorAll('[data-v26-run]').forEach(btn=>btn.addEventListener('click', ()=>v26Run(btn.dataset.v26Run)));
 
-        const primaryGrid = v27El('v27PrimarySectionGrid');
+        const primaryGrid = v26El('v26PrimarySectionGrid');
         if(primaryGrid){
-          primaryGrid.innerHTML = v27PrimarySections.map(item=>`<button type="button" class="v27-sheet-btn" data-v27-target="${item.id}">${item.label}</button>`).join('');
-          primaryGrid.querySelectorAll('[data-v27-target]').forEach(btn=>btn.addEventListener('click', ()=>v27ScrollTo(btn.dataset.v27Target)));
+          primaryGrid.innerHTML = v26PrimarySections.map(item=>`<button type="button" class="v26-sheet-btn" data-v26-target="${item.id}">${item.label}</button>`).join('');
+          primaryGrid.querySelectorAll('[data-v26-target]').forEach(btn=>btn.addEventListener('click', ()=>v26ScrollTo(btn.dataset.v26Target)));
         }
-        const extraGrid = v27El('v27ExtraSectionGrid');
+        const extraGrid = v26El('v26ExtraSectionGrid');
         if(extraGrid){
-          extraGrid.innerHTML = v27ExtraSections.map(item=>`<button type="button" class="v27-sheet-btn" data-v27-target="${item.id}">${item.label}</button>`).join('');
-          extraGrid.querySelectorAll('[data-v27-target]').forEach(btn=>btn.addEventListener('click', ()=>v27ScrollTo(btn.dataset.v27Target)));
+          extraGrid.innerHTML = v26ExtraSections.map(item=>`<button type="button" class="v26-sheet-btn" data-v26-target="${item.id}">${item.label}</button>`).join('');
+          extraGrid.querySelectorAll('[data-v26-target]').forEach(btn=>btn.addEventListener('click', ()=>v26ScrollTo(btn.dataset.v26Target)));
         }
       }
-      function v27EnsureAnchors(){
-        [...v27PrimarySections, ...v27ExtraSections].forEach(item=>{
-          const node = v27El(item.id);
-          if(node) node.classList.add('v27-mobile-anchor');
+      function v26EnsureAnchors(){
+        [...v26PrimarySections, ...v26ExtraSections].forEach(item=>{
+          const node = v26El(item.id);
+          if(node) node.classList.add('v26-mobile-anchor');
         });
       }
-      function v27ObserveSections(){
-        if(v27Observer){ v27Observer.disconnect(); v27Observer = null; }
+      function v26ObserveSections(){
+        if(v26Observer){ v26Observer.disconnect(); v26Observer = null; }
         if(!('IntersectionObserver' in window)) return;
-        v27Observer = new IntersectionObserver((entries)=>{
+        v26Observer = new IntersectionObserver((entries)=>{
           const live = entries.filter(entry=>entry.isIntersecting)
             .sort((a,b)=>b.intersectionRatio - a.intersectionRatio || a.boundingClientRect.top - b.boundingClientRect.top);
-          if(live[0]?.target?.id) v27SetActive(live[0].target.id);
+          if(live[0]?.target?.id) v26SetActive(live[0].target.id);
         }, {rootMargin:'-22% 0px -58% 0px', threshold:[0.12,0.25,0.45,0.65]});
-        v27PrimarySections.forEach(item=>{ const node = v27El(item.id); if(node) v27Observer.observe(node); });
+        v26PrimarySections.forEach(item=>{ const node = v26El(item.id); if(node) v26Observer.observe(node); });
       }
-      function v27SyncSummary(){
-        document.body.classList.toggle('v27-mobile-dock-ready', v27IsMobile());
-        const summary = `${v27Text('missionWalletStatus','Wallet not connected')} · ${v27Text('missionNetworkStatus','—')} · ${v27Text('missionWriteStatus','Locked')}`;
-        const meta = `${v27Text('pulseVisibleSummary','No jobs loaded yet.')} · ${v27Text('syncFreshnessBadge','No sync yet')}`;
-        const summaryNode = v27El('v27MobileSummary');
-        const metaNode = v27El('v27MobileMeta');
+      function v26SyncSummary(){
+        document.body.classList.toggle('v26-mobile-dock-ready', v26IsMobile());
+        const summary = `${v26Text('missionWalletStatus','Wallet not connected')} · ${v26Text('missionNetworkStatus','—')} · ${v26Text('missionWriteStatus','Locked')}`;
+        const meta = `${v26Text('pulseVisibleSummary','No jobs loaded yet.')} · ${v26Text('syncFreshnessBadge','No sync yet')}`;
+        const summaryNode = v26El('v26MobileSummary');
+        const metaNode = v26El('v26MobileMeta');
         if(summaryNode) summaryNode.textContent = summary;
         if(metaNode) metaNode.textContent = meta;
-        const primary = v27El('missionPrimaryBtn');
-        const secondary = v27El('missionSecondaryBtn');
-        const primaryMirror = v27El('v27MirrorPrimaryBtn');
-        const secondaryMirror = v27El('v27MirrorSecondaryBtn');
-        if(primary && primaryMirror){ primaryMirror.textContent = primary.textContent || 'Primary action'; primaryMirror.dataset.v27Run = primary.dataset.action || ''; }
-        if(secondary && secondaryMirror){ secondaryMirror.textContent = secondary.textContent || 'Secondary action'; secondaryMirror.dataset.v27Run = secondary.dataset.action || ''; }
+        const primary = v26El('missionPrimaryBtn');
+        const secondary = v26El('missionSecondaryBtn');
+        const primaryMirror = v26El('v26MirrorPrimaryBtn');
+        const secondaryMirror = v26El('v26MirrorSecondaryBtn');
+        if(primary && primaryMirror){ primaryMirror.textContent = primary.textContent || 'Primary action'; primaryMirror.dataset.v26Run = primary.dataset.action || ''; }
+        if(secondary && secondaryMirror){ secondaryMirror.textContent = secondary.textContent || 'Secondary action'; secondaryMirror.dataset.v26Run = secondary.dataset.action || ''; }
       }
-      function v27HandleResize(){
-        document.body.classList.toggle('v27-mobile-dock-ready', v27IsMobile());
-        if(!v27IsMobile()) v27CloseSheet();
-        v27SyncSummary();
+      function v26HandleResize(){
+        document.body.classList.toggle('v26-mobile-dock-ready', v26IsMobile());
+        if(!v26IsMobile()) v26CloseSheet();
+        v26SyncSummary();
       }
-      function v27Init(){
-        v27BuildMobileShell();
-        v27EnsureAnchors();
-        v27ObserveSections();
-        v27HandleResize();
-        if(v27SyncTimer) clearInterval(v27SyncTimer);
-        v27SyncTimer = setInterval(v27SyncSummary, 1200);
+      function v26Init(){
+        v26BuildMobileShell();
+        v26EnsureAnchors();
+        v26ObserveSections();
+        v26HandleResize();
+        if(v26SyncTimer) clearInterval(v26SyncTimer);
+        v26SyncTimer = setInterval(v26SyncSummary, 1200);
       }
-      window.addEventListener('load', ()=>{ setTimeout(v27Init, 40); });
-      window.addEventListener('resize', v27HandleResize);
-      window.addEventListener('orientationchange', ()=>setTimeout(v27HandleResize, 80));
-      document.addEventListener('keydown', (evt)=>{ if(evt.key === 'Escape') v27CloseSheet(); });
+      window.addEventListener('load', ()=>{ setTimeout(v26Init, 40); });
+      window.addEventListener('resize', v26HandleResize);
+      window.addEventListener('orientationchange', ()=>setTimeout(v26HandleResize, 80));
+      document.addEventListener('keydown', (evt)=>{ if(evt.key === 'Escape') v26CloseSheet(); });
     })();
   </script>
 
