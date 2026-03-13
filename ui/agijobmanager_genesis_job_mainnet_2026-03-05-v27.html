@@ -3636,6 +3636,14 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('freeTrialWrapperAddress')) el('freeTrialWrapperAddress').textContent = wrapper || '—';
       if(el('freeTrialTrialPeriod')) el('freeTrialTrialPeriod').textContent = `${trial} sec`;
       if(el('freeTrialLabelRules')) el('freeTrialLabelRules').textContent = `lowercase a-z0-9, no dots, no hyphens, ${minLen}–${maxLen} chars`;
+      APP_STATE.registrar.parentUsable = false;
+      APP_STATE.registrar.parentActive = false;
+      if(el('freeTrialParentActive')) el('freeTrialParentActive').textContent = 'unknown';
+      if(el('freeTrialParentLocked')) el('freeTrialParentLocked').textContent = 'unknown';
+      if(el('freeTrialRegistrarAuthorised')) el('freeTrialRegistrarAuthorised').textContent = 'unknown';
+      if(el('freeTrialParentUsableState')) el('freeTrialParentUsableState').textContent = 'unknown';
+      if(el('freeTrialParentExpiry')) el('freeTrialParentExpiry').textContent = '—';
+      if(el('mintAlphaParentUsable')) el('mintAlphaParentUsable').textContent = 'unknown';
       if(parentStatus){
         const active = !!(Array.isArray(parentStatus) ? parentStatus[0] : parentStatus.active);
         const parentLocked = !!(Array.isArray(parentStatus) ? parentStatus[1] : parentStatus.parentLocked);
@@ -3652,6 +3660,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         if(el('mintAlphaParentUsable')) el('mintAlphaParentUsable').textContent = parentUsable ? 'usable' : 'not usable';
       }
       if(el('mintAlphaExpectedExpiry')) el('mintAlphaExpectedExpiry').textContent = formatTimestamp(Number(nextExp));
+      APP_STATE.registrar.managerAuthorized = false;
       if(userAccount && registrarWrapperContract?.methods?.canModifyName){
         const can = await registrarWrapperContract.methods.canModifyName(ALPHA_AGENT_PARENT_NODE, userAccount).call().catch(()=>false);
         APP_STATE.registrar.managerAuthorized = !!can;
