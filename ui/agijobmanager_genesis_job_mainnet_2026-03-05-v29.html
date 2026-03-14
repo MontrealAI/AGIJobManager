@@ -4043,7 +4043,22 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
             const node = el('alphaIdentityTokenImage');
             if(node){ if(img){ node.style.display='block'; node.src = img; } else { node.style.display='none'; node.removeAttribute('src'); } }
           }catch{}
+        }else{
+          if(el('alphaIdentityTokenMetaName')) el('alphaIdentityTokenMetaName').textContent = '—';
+          if(el('alphaIdentityTokenMetaDescription')) el('alphaIdentityTokenMetaDescription').textContent = '—';
+          const node = el('alphaIdentityTokenImage');
+          if(node){ node.style.display='none'; node.removeAttribute('src'); }
         }
+      }else{
+        if(el('alphaIdentityTokenOwner')) el('alphaIdentityTokenOwner').textContent = '—';
+        if(el('alphaIdentityWrappedOwner')) el('alphaIdentityWrappedOwner').textContent = preview?.wrappedOwner || '—';
+        if(el('alphaIdentityResolver')) el('alphaIdentityResolver').textContent = preview?.resolver || '—';
+        if(el('alphaIdentityWrappedExpiry')) el('alphaIdentityWrappedExpiry').textContent = preview ? formatTimestamp(preview.currentWrappedExpiry) : '—';
+        if(el('alphaIdentityMintedAt')) el('alphaIdentityMintedAt').textContent = '—';
+        if(el('alphaIdentityTokenMetaName')) el('alphaIdentityTokenMetaName').textContent = '—';
+        if(el('alphaIdentityTokenMetaDescription')) el('alphaIdentityTokenMetaDescription').textContent = '—';
+        const node = el('alphaIdentityTokenImage');
+        if(node){ node.style.display='none'; node.removeAttribute('src'); }
       }
       renderIdentityAdminControls(owner, pendingOwner);
       updateMissionControl();
