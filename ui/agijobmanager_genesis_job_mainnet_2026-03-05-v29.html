@@ -4039,8 +4039,9 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('alphaIdentityRegistrarAuth')) el('alphaIdentityRegistrarAuth').textContent = h ? String(!!h.registrarAuthorised) : '—';
       if(el('alphaIdentityParentExpiry')) el('alphaIdentityParentExpiry').textContent = h ? formatTimestamp(h.effectiveParentExpiry) : '—';
       if(el('alphaIdentityRootUsable')) el('alphaIdentityRootUsable').textContent = h ? String(!!h.rootUsable) : '—';
-      const rootNodeMismatch = !!rootNode && computed.toLowerCase() !== String(rootNode).toLowerCase();
-      if(rootNodeMismatch && el('alphaIdentityActionStatus')) el('alphaIdentityActionStatus').textContent = `Blocking warning: ROOT_NODE mismatch. computed ${computed}, contract ${rootNode}.`;
+      const rootNodeForCheck = String(rootNode || h?.rootNode || '');
+      const rootNodeMismatch = !!rootNodeForCheck && computed.toLowerCase() !== rootNodeForCheck.toLowerCase();
+      if(rootNodeMismatch && el('alphaIdentityActionStatus')) el('alphaIdentityActionStatus').textContent = `Blocking warning: ROOT_NODE mismatch. computed ${computed}, contract ${rootNodeForCheck}.`;
       const mismatchWarnings = [];
       const managerEns = await agiJobManager?.methods?.ens?.().call().catch(()=> '');
       const managerWrapper = await agiJobManager?.methods?.nameWrapper?.().call().catch(()=> '');
