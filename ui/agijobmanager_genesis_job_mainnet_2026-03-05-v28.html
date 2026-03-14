@@ -2702,6 +2702,10 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       latestJobs = [];
       APP_STATE.jobsReadDegraded = false;
       APP_STATE.admin = {managerOwner:null, ensOwner:null, isModerator:false};
+      APP_STATE.registrar = {wrapper:null,parentUsable:false,parentActive:false,managerAuthorized:false};
+      APP_STATE.identity = {preview:null,rootHealth:null,label:"",tokenData:null};
+      resolvedEnsJobPagesAddress = '';
+      resolvedEnsJobPagesSource = 'unavailable';
       const tbody = el('jobsBody');
       if(tbody) tbody.innerHTML = '<tr><td colspan="8" class="muted">Runtime context reset. Reconnect and refresh to load live jobs.</td></tr>';
       if(el('jobsVisibleSummary')) el('jobsVisibleSummary').textContent = 'Runtime context reset; live job index not loaded.';
@@ -2720,6 +2724,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = '—';
       if(el('freeTrialParentUsableState')) el('freeTrialParentUsableState').textContent = '—';
       ['alphaIdentityStatusPill','alphaIdentityFullName','alphaIdentityTokenId','alphaIdentityExists','alphaIdentityClaimable','alphaIdentityRegistrable','alphaIdentityActionStatus','alphaIdentityTokenOwner','alphaIdentityWrappedOwner','alphaIdentityResolver','alphaIdentityWrappedExpiry','alphaIdentityMintedAt','alphaIdentityTokenMetaName','alphaIdentityTokenMetaDescription'].forEach(id=>{ if(el(id)) el(id).textContent='—'; });
+      ['alphaIdentityRootName','alphaIdentityRootNode','alphaIdentityRootActive','alphaIdentityPaused','alphaIdentityWrapper','alphaIdentityRegistry','alphaIdentityOwnerLine','alphaIdentityParentOwner','alphaIdentityParentFlags','alphaIdentityRegistrarAuth','alphaIdentityParentExpiry','alphaIdentityRootUsable','alphaIdentityRequiredFuses','alphaIdentityNameSymbol'].forEach(id=>{ if(el(id)) el(id).textContent='—'; });
+      if(el('alphaIdentityAdminControls')) el('alphaIdentityAdminControls').innerHTML = '<div class="smallNote">Reconnect to refresh identity admin posture.</div>';
       if(el('alphaIdentityActionStatus')) el('alphaIdentityActionStatus').textContent='Runtime context reset. Reconnect to refresh identity state.';
       if(el('alphaIdentityTokenImage')){ el('alphaIdentityTokenImage').style.display='none'; el('alphaIdentityTokenImage').removeAttribute('src'); }
       if(reason) console.info('[resetRuntimeState]', reason);
