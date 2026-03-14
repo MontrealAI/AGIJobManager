@@ -6573,9 +6573,21 @@ function normalizeIpfsToHttp(uri){
   function e(id){ return document.getElementById(id); }
   function mapStatus(code){ const n=Number(code); return STATUS_LABELS[n] || `unknown (${code})`; }
   function safeJsonBase64DataUri(uri){ try{ const m=String(uri||'').match(/^data:application\/json;base64,(.+)$/i); if(!m) return null; return JSON.parse(atob(m[1])); }catch{return null;} }
+  function resetIdentityPreviewState(reason='unavailable'){
+    APP_STATE.identity.previewStatus = null;
+    APP_STATE.identity.preview = null;
+    APP_STATE.identity.tokenId = null;
+    APP_STATE.identity.label = '';
+    if(e('alphaIdentityStatusPill')) e('alphaIdentityStatusPill').textContent = reason === 'no-label' ? 'Enter a label to load identity preview(label).' : 'Identity preview unavailable';
+    if(e('alphaIdentityTokenId')) e('alphaIdentityTokenId').textContent = '—';
+    if(e('alphaIdentityRegisterBtn')) e('alphaIdentityRegisterBtn').disabled = true;
+    if(e('alphaIdentityClaimBtn')) e('alphaIdentityClaimBtn').disabled = true;
+    if(e('alphaIdentitySyncBtn')) e('alphaIdentitySyncBtn').disabled = true;
+    if(e('alphaIdentityTokenCard')) e('alphaIdentityTokenCard').innerHTML = '<div class="smallNote">Identity NFT preview appears here when available.</div>';
+  }
   window.refreshAlphaIdentityState = async function(){
     try{
-      if(!web3 || !userAccount){ if(e('alphaIdentityStatusPill')) e('alphaIdentityStatusPill').textContent='Connect wallet to load preview(label).'; return; }
+      if(!web3 || !userAccount){ resetIdentityPreviewState('wallet-disconnected'); if(e('alphaIdentityStatusPill')) e('alphaIdentityStatusPill').textContent='Connect wallet to load preview(label).'; if(typeof updateMissionControl === 'function') updateMissionControl(); return; }
       if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(window.FreeTrialSubdomainRegistrarIdentityABI||[], FREE_TRIAL_REGISTRAR_IDENTITY||'0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a');
       const label=(e('mintAlphaLabel')?.value||'').trim().toLowerCase();
       const [rootName, rootNode, rootHealth, paused, owner, pendingOwner, wrapper, ensRegistry, requiredFuses, nftName, nftSymbol, preview] = await Promise.all([
@@ -6592,6 +6604,9 @@ function normalizeIpfsToHttp(uri){
         freeTrialRegistrarIdentity.methods.symbol().call().catch(()=>''),
         label ? freeTrialRegistrarIdentity.methods.preview(label).call().catch(()=>null) : null
       ]);
+      if(!label){
+        resetIdentityPreviewState('no-label');
+      }
       const computed = typeof namehash === 'function' ? namehash('alpha.agent.agi.eth') : '';
       const nodeMismatch = !!(rootNode && computed && rootNode.toLowerCase()!==computed.toLowerCase());
       if(e('alphaIdentityRootName')) e('alphaIdentityRootName').textContent = rootName || '—';
@@ -6630,6 +6645,7 @@ function normalizeIpfsToHttp(uri){
         const tokenId = String(preview.tokenId || preview.identityTokenId || preview[8] || '');
         APP_STATE.identity.previewStatus = status;
         APP_STATE.identity.preview = preview;
+        APP_STATE.identity.label = label;
         APP_STATE.identity.rootHealth = rootHealth;
         APP_STATE.identity.rootUsable = !!(rootHealth?.rootUsable);
         APP_STATE.identity.nodeMismatch = nodeMismatch;
@@ -6653,9 +6669,16 @@ function normalizeIpfsToHttp(uri){
           const img = meta?.image ? `<img src="${meta.image}" alt="Identity NFT" style="max-width:160px;border-radius:10px;border:1px solid rgba(255,255,255,.15);margin-top:8px"/>` : '';
           if(e('alphaIdentityTokenCard')) e('alphaIdentityTokenCard').innerHTML = `<div class="subtleTitle">Selected-label identity NFT</div><div class="line">Full name: <b>${(preview.fullName||`${label}.alpha.agent.agi.eth`)}</b></div><div class="line">Node/tokenId: <b>${tokenId}</b></div><div class="line">Token owner: <b>${ownerOf||'—'}</b> · Wrapped owner: <b>${preview.wrappedOwner||'—'}</b></div><div class="line">Resolver: <b>${preview.resolver||'—'}</b> · Wrapped expiry: <b>${(typeof formatTimestamp==='function')?formatTimestamp(preview.wrappedExpiry||0):'—'}</b></div><div class="line">Locked / soulbound: <b>${String(locked)}</b></div><div class="line">NFT: <b>${meta?.name||nftName||'—'}</b> (${nftSymbol||'—'})</div><div class="smallNote">Identity NFTs here are soulbound and are not AGIJobManager completion NFTs.</div>${img}`;
         }
+      }else{
+        resetIdentityPreviewState(label ? 'preview-empty' : 'no-label');
       }
       if(typeof updateMissionControl === 'function') updateMissionControl();
-    }catch(err){ console.error(err); if(e('alphaIdentityStatusPill')) e('alphaIdentityStatusPill').textContent = 'Identity preview read failed (degraded).'; }
+    }catch(err){
+      console.error(err);
+      resetIdentityPreviewState('read-error');
+      if(e('alphaIdentityStatusPill')) e('alphaIdentityStatusPill').textContent = 'Identity preview read failed (degraded).';
+      if(typeof updateMissionControl === 'function') updateMissionControl();
+    }
   }
   window.openAlphaIdentityReview = function(mode='register'){
     const label=(e('mintAlphaLabel')?.value||'').trim().toLowerCase();
