@@ -5553,7 +5553,6 @@ async function updateSummary(){
         const managerWrapperAddr = await agiJobManager?.methods?.nameWrapper?.().call().catch(()=>null);
         const managerEnsAddr = await agiJobManager?.methods?.ens?.().call().catch(()=>null);
         if(!managerWrapperAddr || isZeroAddress(managerWrapperAddr)) throw new Error('AGIJobManager.nameWrapper() unavailable; cannot verify with contract-faithful certainty.');
-        if(!managerEnsAddr || isZeroAddress(managerEnsAddr)) throw new Error('AGIJobManager.ens() unavailable; resolver cross-check degraded.');
         const nw = new web3.eth.Contract(NameWrapperABI, managerWrapperAddr);
         const owner = await nw.methods.ownerOf(tokenID).call();
         const acct = String(userAccount || '').toLowerCase();
@@ -5561,16 +5560,20 @@ async function updateSummary(){
         const approved = await nw.methods.getApproved(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
         const approvedLc = String(approved || '').toLowerCase();
         const approvedForAll = await nw.methods.isApprovedForAll(owner, userAccount).call().catch(()=>false);
-        const ensRegistry = new web3.eth.Contract(ENSRegistryResolverABI, managerEnsAddr);
-        const nodeResolver = await ensRegistry.methods.resolver(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
-        const resolverAddrMatch = !!nodeResolver && String(nodeResolver).toLowerCase() === acct;
+        let resolverAddrMatch = false;
+        const resolverCheckDegraded = !managerEnsAddr || isZeroAddress(managerEnsAddr);
+        if(!resolverCheckDegraded){
+          const ensRegistry = new web3.eth.Contract(ENSRegistryResolverABI, managerEnsAddr);
+          const nodeResolver = await ensRegistry.methods.resolver(tokenID).call().catch(()=>"0x0000000000000000000000000000000000000000");
+          resolverAddrMatch = !!nodeResolver && String(nodeResolver).toLowerCase() === acct;
+        }
         const isAuthorized = ownerLc === acct || approvedLc === acct || !!approvedForAll || resolverAddrMatch;
         if(isAuthorized){
           verified[kind] = sub;
           if(isAgent){ verified.agentAlpha = !!alpha; const ab = el("agentAlphaBadge"); if(ab) ab.style.display = alpha ? "inline-block" : "none"; }
           else { verified.clubAlpha = !!alpha; const cb = el("clubAlphaBadge"); if(cb) cb.style.display = alpha ? "inline-block" : "none"; const vb = el("validatorBadge"); if(vb) vb.style.display = "inline-block"; }
           const mode = ownerLc === acct ? 'owner' : (approvedLc === acct ? 'token approval' : (approvedForAll ? 'operator approval' : 'resolver-address authorization'));
-          out.textContent = `Verified (${mode}): ${full}`; pill.className = "pill ok"; pill.textContent = (isAgent?"Agent":"Club") + (alpha ? " ENS: verified (alpha)" : " ENS: verified");
+          out.textContent = `Verified (${mode}${resolverCheckDegraded ? '; resolver check degraded' : ''}): ${full}`; pill.className = "pill ok"; pill.textContent = (isAgent?"Agent":"Club") + (alpha ? " ENS: verified (alpha)" : " ENS: verified");
           await loadJobs(); await updateDynamicInsights();
         }else{
           clearRoleVerification(); out.textContent = `Not authorized for this wallet: ${full}`; pill.className = "pill bad"; pill.textContent = (isAgent?"Agent":"Club") + " ENS: not verified";
