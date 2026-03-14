@@ -5627,7 +5627,7 @@ async function updateSummary(){
       try{
         const full = `${sub}.${suffix}`;
         const tokenID = namehash(full);
-        const managerWrapperAddr = await agiJobManager?.methods?.nameWrapper().call().catch(()=> '');
+        const managerWrapperAddr = await agiJobManager?.methods?.nameWrapper?.().call().catch(()=> '');
         const wrapperCheckDegraded = !managerWrapperAddr || isZeroAddress(managerWrapperAddr);
         const runtimeNameWrapper = wrapperCheckDegraded ? NAME_WRAPPER : managerWrapperAddr;
         const nw = new web3.eth.Contract(NameWrapperABI, runtimeNameWrapper);
