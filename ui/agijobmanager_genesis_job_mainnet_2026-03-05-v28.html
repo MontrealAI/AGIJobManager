@@ -1297,26 +1297,13 @@
     </div>
 
     <div class="card" id="alphaAgentMintSection" data-surface="freeTrialRegistrarSection">
-      <h2 style="margin:0 0 12px">1.5) Alpha-Agent Identity & ENS Access Keys</h2>
-      <div class="helper" style="margin-bottom:10px">Mint and verify your alpha-agent operator credential from mainnet contracts. Recommended path mints both the wrapped <b>*.alpha.agent.agi.eth</b> subname and an <b>Alpha Agent Identity</b> soulbound NFT via <code>FreeTrialSubdomainRegistrarIdentity</code>. Alternative expert path keeps ENS-only minting through <code>FreeTrialSubdomainRegistrar</code>. Registration fee is <b>free</b>; gas still applies.</div>
-      <div class="row" id="alphaIdentityModeTabs" style="justify-content:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <button class="btn btn-primary" data-alpha-mode="identity-register">Identity + ENS (recommended)</button>
-        <button class="btn" data-alpha-mode="identity-claim">Claim existing identity</button>
-        <button class="btn" data-alpha-mode="identity-sync">Repair / sync identity</button>
-        <button class="btn" data-alpha-mode="ens-only">ENS-only (expert)</button>
-      </div>
-      <div class="smallNote">Identity NFTs are soulbound and non-transferable. AGIJobManager authorization still verifies ENS ownership; identity is an operator credential layer, not a bypass.</div>
+      <h2 style="margin:0 0 12px">1.5) Mint Free Alpha-Agent ENS Access Key</h2>
+      <div class="helper" style="margin-bottom:10px">Claim a free-trial <b>*.alpha.agent.agi.eth</b> credential directly from the on-chain FreeTrialSubdomainRegistrar. Registration fee is <b>free</b>; you still pay normal Ethereum gas. Trial subnames expire and are not permanent entitlements.</div>
       <div class="mintGrid">
         <div>
           <label for="mintAlphaLabel">Desired label (lowercase a-z and 0-9, length 8–63)</label>
           <input id="mintAlphaLabel" type="text" placeholder="e.g. eliteagent01" autocomplete="off" spellcheck="false">
           <div class="inlineError" id="mintLabelValidation">Enter a label to begin.</div>
-          <div class="row" style="justify-content:flex-start;margin-top:10px">
-            <button class="btn btn-primary" id="alphaIdentityRegisterBtn">Mint Alpha Agent Identity</button>
-            <button class="btn" id="alphaIdentityClaimBtn">Claim Alpha Agent Identity</button>
-            <button class="btn" id="alphaIdentitySyncBtn">Sync Alpha Agent Identity</button>
-          </div>
-          <div class="muted" id="alphaIdentityStatusPill" style="margin-top:8px">Identity preview unavailable until wallet + label are provided.</div>
           <label for="mintAlphaRecipient" style="margin-top:10px">Recipient (optional, defaults to connected wallet)</label>
           <input id="mintAlphaRecipient" type="text" placeholder="0x... (optional)">
           <div class="row" style="justify-content:flex-start;margin-top:10px">
@@ -1336,26 +1323,63 @@
           <div class="line">Parent status: <b id="mintAlphaParentUsable">—</b></div>
           <div class="line">Cost: <b>Free registration (gas only)</b></div>
         </div>
+      </div>
+      <div class="subtleTitle" style="margin-top:14px">Alpha Identity Mode</div>
+      <div class="actions" id="alphaIdentityModeTabs" style="margin-top:8px">
+        <button class="btn btn-primary" id="alphaIdentityModeRecommended" type="button">Recommended: Name + Identity</button>
+        <button class="btn" id="alphaIdentityModeEnsOnly" type="button">Alternative: ENS-only</button>
+      </div>
+      <div class="mintGrid" style="margin-top:10px">
         <div class="mintPreview" id="alphaIdentityPreviewCard">
-          <div class="subtleTitle">Alpha Identity preview</div>
-          <div class="line">Preview status: <b id="alphaIdentityPreviewStatus">—</b></div>
-          <div class="line">Registrable: <b id="alphaIdentityRegistrable">—</b></div>
-          <div class="line">Claimable: <b id="alphaIdentityClaimable">—</b></div>
-          <div class="line">Identity exists: <b id="alphaIdentityExists">—</b></div>
-          <div class="line">TokenId (node-derived): <b id="alphaIdentityTokenId">—</b></div>
+          <div class="subtleTitle">Alpha Agent Identity preview (from preview(label))</div>
+          <div class="line">Status: <b id="alphaIdentityStatusPill">—</b></div>
           <div class="line">Full name: <b id="alphaIdentityFullName">—</b></div>
-          <div class="line">Node: <b id="alphaIdentityNode">—</b></div>
+          <div class="line">Token ID (node-based): <b id="alphaIdentityTokenId">—</b></div>
+          <div class="line">Identity exists: <b id="alphaIdentityExists">—</b></div>
+          <div class="line">Claimable: <b id="alphaIdentityClaimable">—</b></div>
+          <div class="line">Registrable: <b id="alphaIdentityRegistrable">—</b></div>
+          <div class="line">Soulbound / locked: <b>true</b></div>
+          <div class="line">Contract: <b id="alphaIdentityContractAddress">0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a</b></div>
+          <div class="actions" style="margin-top:10px">
+            <button class="btn btn-primary" id="alphaIdentityRegisterBtn" type="button">Mint Alpha Agent Identity</button>
+            <button class="btn" id="alphaIdentityClaimBtn" type="button">Claim Alpha Agent Identity</button>
+            <button class="btn" id="alphaIdentitySyncBtn" type="button">Sync Alpha Agent Identity</button>
+          </div>
+          <div class="muted" id="alphaIdentityActionStatus" style="margin-top:8px">Identity flow locked until wallet + mainnet + terms + valid label.</div>
         </div>
         <div class="mintPreview" id="alphaIdentityTokenCard">
-          <div class="subtleTitle">Alpha Identity token card (soulbound)</div>
+          <div class="subtleTitle">Selected-label identity NFT card</div>
           <div class="line">Token owner: <b id="alphaIdentityTokenOwner">—</b></div>
           <div class="line">Wrapped owner: <b id="alphaIdentityWrappedOwner">—</b></div>
-          <div class="line">Locked: <b id="alphaIdentityLocked">true</b></div>
-          <div class="line">TokenURI decode: <b id="alphaIdentityTokenUriName">—</b></div>
-          <div class="line" id="alphaIdentityTokenUriDesc">—</div>
-          <div class="line">Image</div><div id="alphaIdentityImageWrap" class="smallNote">No token image loaded.</div>
+          <div class="line">Resolver: <b id="alphaIdentityResolver">—</b></div>
+          <div class="line">Wrapped expiry: <b id="alphaIdentityWrappedExpiry">—</b></div>
+          <div class="line">Minted at: <b id="alphaIdentityMintedAt">—</b></div>
+          <div class="line">TokenURI (decoded): <b id="alphaIdentityTokenMetaName">—</b></div>
+          <div class="smallNote" id="alphaIdentityTokenMetaDescription">—</div>
+          <img id="alphaIdentityTokenImage" alt="Identity preview" style="display:none;max-width:100%;border-radius:12px;margin-top:8px;border:1px solid rgba(255,255,255,.18)">
         </div>
       </div>
+      <div class="subtleTitle" style="margin-top:14px">FreeTrialSubdomainRegistrarIdentity root health</div>
+      <div id="alphaIdentityRootHealthCard"><table class="miniTable">
+        <tr><td>ROOT_NAME</td><td><span id="alphaIdentityRootName">—</span></td></tr>
+        <tr><td>ROOT_NODE</td><td><span id="alphaIdentityRootNode">—</span></td></tr>
+        <tr><td>rootActive</td><td><span id="alphaIdentityRootActive">—</span></td></tr>
+        <tr><td>paused</td><td><span id="alphaIdentityPaused">—</span></td></tr>
+        <tr><td>wrapper</td><td><span id="alphaIdentityWrapper">—</span></td></tr>
+        <tr><td>ensRegistry</td><td><span id="alphaIdentityRegistry">—</span></td></tr>
+        <tr><td>owner / pendingOwner</td><td><span id="alphaIdentityOwnerLine">—</span></td></tr>
+        <tr><td>wrapped parent owner</td><td><span id="alphaIdentityParentOwner">—</span></td></tr>
+        <tr><td>parent wrapped / locked</td><td><span id="alphaIdentityParentFlags">—</span></td></tr>
+        <tr><td>registrar authorized</td><td><span id="alphaIdentityRegistrarAuth">—</span></td></tr>
+        <tr><td>effective parent expiry</td><td><span id="alphaIdentityParentExpiry">—</span></td></tr>
+        <tr><td>root usable</td><td><span id="alphaIdentityRootUsable">—</span></td></tr>
+        <tr><td>required child fuses</td><td><span id="alphaIdentityRequiredFuses">—</span></td></tr>
+        <tr><td>token name / symbol</td><td><span id="alphaIdentityNameSymbol">—</span></td></tr>
+      </table></div>
+      <details style="margin-top:10px">
+        <summary>FreeTrialSubdomainRegistrarIdentity Admin</summary>
+        <div class="actions" id="alphaIdentityAdminControls" style="margin-top:10px"></div>
+      </details>
       <div class="subtleTitle" style="margin-top:14px">FreeTrialSubdomainRegistrar live state</div>
       <div id="freeTrialRegistrarState"><table class="miniTable">
         <tr><td>Registrar</td><td><span id="freeTrialRegistrarAddress">0x7aae649184182a01ac7d8d5d7873903015c08761</span></td></tr>
@@ -1370,39 +1394,9 @@
         <tr><td>Trial period</td><td><span id="freeTrialTrialPeriod">—</span></td></tr>
         <tr><td>Label rules</td><td><span id="freeTrialLabelRules">lowercase a-z0-9, no dots, no hyphens, 8–63 chars</span></td></tr>
       </table></div>
-      <div class="subtleTitle" style="margin-top:14px">FreeTrialSubdomainRegistrarIdentity root health</div>
-      <div id="alphaIdentityRootHealthCard"><table class="miniTable">
-        <tr><td>RegistrarIdentity</td><td><span id="alphaIdentityRegistrarAddress">0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a</span></td></tr>
-        <tr><td>Root name</td><td><span id="alphaIdentityRootName">—</span></td></tr>
-        <tr><td>Root node</td><td><span id="alphaIdentityRootNode">—</span></td></tr>
-        <tr><td>Root node match</td><td><span id="alphaIdentityRootNodeMatch">—</span></td></tr>
-        <tr><td>Root active</td><td><span id="alphaIdentityRootActive">—</span></td></tr>
-        <tr><td>Paused</td><td><span id="alphaIdentityPaused">—</span></td></tr>
-        <tr><td>ENS registry</td><td><span id="alphaIdentityEnsRegistry">—</span></td></tr>
-        <tr><td>NameWrapper</td><td><span id="alphaIdentityWrapper">—</span></td></tr>
-        <tr><td>Contract owner</td><td><span id="alphaIdentityOwner">—</span></td></tr>
-        <tr><td>Pending owner</td><td><span id="alphaIdentityPendingOwner">—</span></td></tr>
-        <tr><td>Wrapped parent owner</td><td><span id="alphaIdentityParentOwner">—</span></td></tr>
-        <tr><td>Parent wrapped</td><td><span id="alphaIdentityParentWrapped">—</span></td></tr>
-        <tr><td>Parent locked</td><td><span id="alphaIdentityParentLocked">—</span></td></tr>
-        <tr><td>Registrar authorized</td><td><span id="alphaIdentityRegistrarAuthorized">—</span></td></tr>
-        <tr><td>Parent usable</td><td><span id="alphaIdentityParentUsable">—</span></td></tr>
-        <tr><td>Parent effective expiry</td><td><span id="alphaIdentityParentExpiry">—</span></td></tr>
-        <tr><td>Required child fuses</td><td><span id="alphaIdentityRequiredFuses">—</span></td></tr>
-        <tr><td>Token name / symbol</td><td><span id="alphaIdentityTokenNameSymbol">—</span></td></tr>
-      </table></div>
       <details style="margin-top:10px">
         <summary>Expert registrar controls (authorized parent managers only)</summary>
         <div id="registrarAdminControls" class="actions" style="margin-top:10px"></div>
-      </details>
-      <details style="margin-top:10px">
-        <summary>FreeTrialSubdomainRegistrarIdentity Admin</summary>
-        <div id="alphaIdentityAdminPosture" class="smallNote" style="margin-top:8px">Wallet role posture unavailable until refresh.</div>
-        <div id="alphaIdentityAdminControls" class="actions" style="margin-top:10px"></div>
-      </details>
-      <details style="margin-top:10px">
-        <summary>FreeTrialSubdomainRegistrarIdentity Danger Zone</summary>
-        <div id="alphaIdentityAdminDangerControls" class="actions" style="margin-top:10px"></div>
       </details>
     </div>
 
@@ -1412,7 +1406,7 @@
           <div>
             <div class="eyebrow">Transaction Review</div>
             <h2 style="margin:4px 0 6px">Mint free alpha-agent ENS</h2>
-            <div class="helper">Mode-aware review. ENS-only path uses registerSimple(parentNode,label,newOwner). Identity path uses register(label), claimIdentity(label), or syncIdentityByLabel(label). All are 0 ETH value and gas only.</div>
+            <div class="helper">registerSimple(parentNode,label,newOwner) · 0 ETH value · free registration, gas only.</div>
           </div>
           <button class="modalClose" id="closeAlphaMintReviewBtn" aria-label="Close">×</button>
         </div>
@@ -1421,6 +1415,14 @@
           <button class="btn" id="cancelAlphaMintReviewBtn">Cancel</button>
           <button class="btn btn-primary" id="confirmAlphaMintReviewBtn">Submit mint</button>
         </div>
+      </div>
+    </div>
+
+    <div id="alphaIdentityReviewModal" class="modalBackdrop" aria-hidden="true">
+      <div class="modalCard">
+        <div class="modalHeader"><div><div class="eyebrow">Transaction Review</div><h2 style="margin:4px 0 6px" id="alphaIdentityReviewTitle">Alpha identity action</h2><div class="helper" id="alphaIdentityReviewHelper">Contract-faithful action preview.</div></div><button class="modalClose" id="closeAlphaIdentityReviewBtn" aria-label="Close">×</button></div>
+        <div id="alphaIdentityReviewFacts" class="reviewFacts"></div>
+        <div class="actions" style="margin-top:12px"><button class="btn" id="cancelAlphaIdentityReviewBtn">Cancel</button><button class="btn btn-primary" id="confirmAlphaIdentityReviewBtn">Submit</button></div>
       </div>
     </div>
 
@@ -2253,7 +2255,7 @@ Evaluation methodology"></textarea>
     const verified = { agent:null, club:null, agentAlpha:false, clubAlpha:false };
     const APP_STATE = {
       wallet:{account:null, chainId:null, isMainnet:false, termsAccepted:false},
-      protocol:{}, jobsReadDegraded:false, admin:{managerOwner:null, ensOwner:null, isModerator:false}, registrar:{wrapper:null,parentUsable:false,parentActive:false,managerAuthorized:false}, identity:{rootHealthy:false,preview:null,tokenId:null,statusCode:null,rootNodeMatch:true,wrapperMismatch:false,registryMismatch:false,isOwner:false,isPendingOwner:false}
+      protocol:{}, jobsReadDegraded:false, admin:{managerOwner:null, ensOwner:null, isModerator:false}, registrar:{wrapper:null,parentUsable:false,parentActive:false,managerAuthorized:false}, identity:{preview:null,rootHealth:null,label:"",tokenData:null}
     };
 
     let isMainnet = false;
@@ -2476,7 +2478,6 @@ const AGIJobManagerABI = [
       {"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"node","type":"bytes32"},{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"uint64","name":"expiry","type":"uint64"}],"name":"NameRegistered","type":"event"}
     ];
 
-
     const FreeTrialSubdomainRegistrarIdentityABI = [
       {"inputs":[],"name":"ROOT_NAME","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"ROOT_NODE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
@@ -2484,7 +2485,7 @@ const AGIJobManagerABI = [
       {"inputs":[],"name":"PARENT_GRACE_PERIOD","outputs":[{"internalType":"uint64","name":"","type":"uint64"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"MIN_LABEL_LENGTH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"MAX_LABEL_LENGTH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"REQUIRED_CHILD_FUSES","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"REQUIRED_CHILD_FUSES","outputs":[{"internalType":"uint32","name":"","type":"uint32"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"wrapper","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"ensRegistry","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
@@ -2498,11 +2499,11 @@ const AGIJobManagerABI = [
       {"inputs":[{"internalType":"string","name":"label","type":"string"}],"name":"validateLabel","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"string","name":"label","type":"string"}],"name":"fullNameForLabel","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"string","name":"label","type":"string"}],"name":"nodeForLabel","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"rootHealth","outputs":[{"internalType":"address","name":"wrappedParentOwner","type":"address"},{"internalType":"bool","name":"parentWrapped","type":"bool"},{"internalType":"bool","name":"parentLocked","type":"bool"},{"internalType":"bool","name":"registrarAuthorized","type":"bool"},{"internalType":"uint64","name":"parentEffectiveExpiry","type":"uint64"},{"internalType":"bool","name":"rootUsable","type":"bool"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"string","name":"label","type":"string"}],"name":"preview","outputs":[{"internalType":"uint8","name":"status","type":"uint8"},{"internalType":"bool","name":"validLabel","type":"bool"},{"internalType":"bool","name":"availableNow","type":"bool"},{"internalType":"bool","name":"registrable","type":"bool"},{"internalType":"bool","name":"claimable","type":"bool"},{"internalType":"bool","name":"identityExists","type":"bool"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"string","name":"fullName","type":"string"},{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"address","name":"wrappedOwner","type":"address"},{"internalType":"uint64","name":"wrappedExpiry","type":"uint64"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"rootHealth","outputs":[{"internalType":"bool","name":"parentWrapped","type":"bool"},{"internalType":"bool","name":"parentLocked","type":"bool"},{"internalType":"bool","name":"registrarAuthorised","type":"bool"},{"internalType":"bool","name":"rootUsable","type":"bool"},{"internalType":"uint64","name":"effectiveParentExpiry","type":"uint64"},{"internalType":"address","name":"parentOwner","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"string","name":"label","type":"string"}],"name":"preview","outputs":[{"internalType":"uint8","name":"status","type":"uint8"},{"internalType":"bool","name":"validLabel","type":"bool"},{"internalType":"bool","name":"registrable","type":"bool"},{"internalType":"bool","name":"claimable","type":"bool"},{"internalType":"bool","name":"identityExists","type":"bool"},{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"string","name":"fullName","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"locked","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"labelData","outputs":[{"internalType":"bytes32","name":"labelhash","type":"bytes32"},{"internalType":"address","name":"wrappedOwner","type":"address"},{"internalType":"address","name":"resolver","type":"address"},{"internalType":"uint64","name":"expiry","type":"uint64"},{"internalType":"uint64","name":"mintedAt","type":"uint64"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"labelData","outputs":[{"internalType":"bytes32","name":"labelhash","type":"bytes32"},{"internalType":"address","name":"wrappedOwner","type":"address"},{"internalType":"address","name":"resolver","type":"address"},{"internalType":"uint64","name":"wrappedExpiry","type":"uint64"},{"internalType":"uint64","name":"mintedAt","type":"uint64"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
@@ -2518,7 +2519,6 @@ const AGIJobManagerABI = [
       {"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ];
-    const ALPHA_IDENTITY_STATUS = {0:'available',1:'active',2:'claimable',3:'expired',4:'desynced',5:'invalid-label',6:'root-inactive',7:'parent-unusable',8:'unavailable'};
 
 function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function ensureAbiMethods(abi, defs){
@@ -2670,11 +2670,10 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       let viaGetter = '';
       let source = 'unavailable';
       const read = await runSafeReadStep('ensJobPages', ()=>agiJobManager.methods.ensJobPages().call(), {silent:true});
-      const degraded = !!read?.__safeReadError || isZeroAddress(read);
-      if(!degraded && !isZeroAddress(read)){
+      if(!read?.__safeReadError && !isZeroAddress(read)){
         viaGetter = String(read);
         source = 'AGIJobManager getter';
-      }else if(userAccount && !isZeroAddress(KNOWN_ENS_JOB_PAGES_FALLBACK)){
+      }else if(!isZeroAddress(KNOWN_ENS_JOB_PAGES_FALLBACK)){
         viaGetter = KNOWN_ENS_JOB_PAGES_FALLBACK;
         source = 'verified fallback';
       }
@@ -2720,9 +2719,9 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('mintAlphaStatus')) el('mintAlphaStatus').textContent = 'Runtime context reset. Reconnect to refresh registrar state.';
       if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = '—';
       if(el('freeTrialParentUsableState')) el('freeTrialParentUsableState').textContent = '—';
-      APP_STATE.identity.preview = null;
-      ['alphaIdentityPreviewStatus','alphaIdentityRegistrable','alphaIdentityClaimable','alphaIdentityExists','alphaIdentityTokenId','alphaIdentityTokenOwner','alphaIdentityWrappedOwner','alphaIdentityTokenUriName'].forEach(id=>{ if(el(id)) el(id).textContent='—'; });
-      if(el('alphaIdentityImageWrap')) el('alphaIdentityImageWrap').textContent = 'No token image loaded.';
+      ['alphaIdentityStatusPill','alphaIdentityFullName','alphaIdentityTokenId','alphaIdentityExists','alphaIdentityClaimable','alphaIdentityRegistrable','alphaIdentityActionStatus','alphaIdentityTokenOwner','alphaIdentityWrappedOwner','alphaIdentityResolver','alphaIdentityWrappedExpiry','alphaIdentityMintedAt','alphaIdentityTokenMetaName','alphaIdentityTokenMetaDescription'].forEach(id=>{ if(el(id)) el(id).textContent='—'; });
+      if(el('alphaIdentityActionStatus')) el('alphaIdentityActionStatus').textContent='Runtime context reset. Reconnect to refresh identity state.';
+      if(el('alphaIdentityTokenImage')){ el('alphaIdentityTokenImage').style.display='none'; el('alphaIdentityTokenImage').removeAttribute('src'); }
       if(reason) console.info('[resetRuntimeState]', reason);
     }
     async function getActiveJobIdsFromEvents(totalHint){
@@ -2779,7 +2778,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function loadTxActivity(){
       try{
         const raw = localStorage.getItem(TX_ACTIVITY_KEY)
-          || localStorage.getItem('agijobmanager_v28_tx_activity')
+          || localStorage.getItem('agijobmanager_v27_tx_activity')
           || localStorage.getItem('agijobmanager_v17_tx_activity')
           || '[]';
         txActivity = JSON.parse(raw);
@@ -3045,14 +3044,14 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(action === 'terms') return scrollToId('termsSection');
       if(action === 'verify') return scrollToId('verifyEnsSection');
       if(action === 'mint-alpha') return scrollToId('alphaAgentMintSection');
-      if(action === 'mint-alpha-identity'){ const sec=el('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-register'; return scrollToId('alphaAgentMintSection'); }
-      if(action === 'claim-alpha-identity'){ const sec=el('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-claim'; return scrollToId('alphaAgentMintSection'); }
-      if(action === 'sync-alpha-identity'){ const sec=el('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-sync'; return scrollToId('alphaAgentMintSection'); }
-      if(action === 'refresh-identity-preview') return refreshAlphaIdentityPreview();
-      if(action === 'copy-identity-tokenid'){ const v=(el('alphaIdentityTokenId')?.textContent||'').trim(); if(v&&v!=='—') return navigator.clipboard.writeText(v).then(()=>setToast('Identity tokenId copied.','ok')); return setToast('No identity tokenId to copy.','warn'); }
-      if(action === 'copy-identity-name'){ const v=(el('alphaIdentityFullName')?.textContent||'').trim(); if(v&&v!=='—') return navigator.clipboard.writeText(v).then(()=>setToast('Identity full name copied.','ok')); return setToast('No identity name to copy.','warn'); }
+      if(action === 'mint-alpha-identity') return scrollToId('alphaAgentMintSection');
+      if(action === 'claim-alpha-identity') return openAlphaIdentityReview('claimIdentity');
+      if(action === 'sync-alpha-identity') return openAlphaIdentityReview('syncIdentityByLabel');
+      if(action === 'refresh-identity-preview') return refreshIdentityState();
       if(action === 'refresh-registrar') return refreshFreeTrialRegistrarState();
       if(action === 'copy-minted-alpha'){ const n = (el('mintAlphaFullName')?.textContent || '').trim(); if(n && n !== '—') return navigator.clipboard.writeText(n).then(()=>setToast('Minted alpha-agent name copied.','ok')); return setToast('No minted alpha-agent name to copy yet.','warn'); }
+      if(action === 'copy-identity-tokenid'){ const t = (el('alphaIdentityTokenId')?.textContent || '').trim(); if(t && t !== '—') return navigator.clipboard.writeText(t).then(()=>setToast('Identity tokenId copied.','ok')); return setToast('No identity tokenId available.','warn'); }
+      if(action === 'copy-identity-fullname'){ const n = (el('alphaIdentityFullName')?.textContent || '').trim(); if(n && n !== '—') return navigator.clipboard.writeText(n).then(()=>setToast('Identity full name copied.','ok')); return setToast('No identity full name available.','warn'); }
       if(action === 'create') return scrollToId('createJobSection');
       if(action === 'bridge') return scrollToId('agialphaBridgeSection');
       if(action === 'jobs') return scrollToId('jobsSection');
@@ -3108,26 +3107,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         primary = {label:'Open bridge console', action:'bridge'};
         secondary = {label:'Refresh balances', action:'refresh'};
       }else if(connected && isMainnet && hasAcceptedTerms && !verified.agentAlpha){
-        const p = APP_STATE.identity.preview;
-        if(p?.claimable){
-          title = 'Claim Alpha Agent Identity';
-          body = 'Your wrapped alpha-agent ENS appears eligible for claimIdentity(label).';
-          pill = 'Identity claim available';
-          primary = {label:'Claim identity', action:'claim-alpha-identity'};
-          secondary = {label:'Open alpha section', action:'mint-alpha'};
-        }else if(p?.identityExists && (p.status===3 || p.status===4)){
-          title = 'Sync Alpha Agent Identity';
-          body = 'Identity state appears expired/desynced. Use syncIdentityByLabel(label) to repair.';
-          pill = 'Identity sync recommended';
-          primary = {label:'Sync identity', action:'sync-alpha-identity'};
-          secondary = {label:'Open alpha section', action:'mint-alpha'};
-        }else{
-          title = 'Mint Alpha Agent Identity';
-          body = 'Recommended path: register(label) mints wrapped ENS + soulbound identity (gas only).';
-          pill = 'Alpha identity recommended';
-          primary = {label:'Mint identity', action:'mint-alpha-identity'};
-          secondary = {label:'Open ENS verify', action:'verify'};
-        }
+        title = 'Mint your alpha-agent ENS access key';
+        body = 'You can mint a free-trial *.alpha.agent.agi.eth identity now (gas only), then auto-verify it for agent readiness.';
+        pill = 'Alpha-agent identity recommended';
+        primary = {label:'Mint free alpha-agent ENS', action:'mint-alpha'};
+        secondary = {label:'Verify ENS', action:'verify'};
       }else if(connected && isMainnet && hasAcceptedTerms && jobStats.completion > 0 && verified.club){
         title = 'Review jobs waiting for validator attention';
         body = `${jobStats.completion} job${jobStats.completion === 1 ? '' : 's'} currently show a live completion-review surface. Open the board, inspect the details modal, and vote only after independent evidence review.`;
@@ -3144,8 +3128,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         title = 'System ready';
         body = 'Wallet, network, and write-gating are in a good state. You can create a job, inspect live jobs, or use the command palette for faster navigation.';
         pill = 'Ready for production use';
-        primary = {label:'Open Create Job', action:'create'};
-        secondary = {label:'Open Jobs', action:'jobs'};
+        const p = APP_STATE.identity?.preview;
+        if(p && p.claimable){ primary = {label:'Claim Alpha Agent Identity', action:'claim-alpha-identity'}; secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'}; }
+        else if(p && p.identityExists && (p.status===3 || p.status===4)){ primary = {label:'Sync Alpha Agent Identity', action:'sync-alpha-identity'}; secondary = {label:'Open alpha-agent section', action:'mint-alpha'}; }
+        else if((!p || !p.identityExists) && userAccount && isMainnet && hasAcceptedTerms){ primary = {label:'Mint Alpha Agent Identity', action:'mint-alpha-identity'}; secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'}; }
+        else { primary = {label:'Open Create Job', action:'create'}; secondary = {label:'Open Jobs', action:'jobs'}; }
       }
       if(el('missionNextActionTitle')) el('missionNextActionTitle').textContent = title;
       if(el('missionNextActionBody')) el('missionNextActionBody').textContent = body;
@@ -3162,15 +3149,15 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         {title:'Open bridge console', subtitle:'Bridge from Solana and mint the official Ethereum $AGIALPHA.', tags:'bridge vault agialpha solana ethereum', action:'bridge'},
         {title:'Open jobs table', subtitle:'Review, sort, filter, and open the live job board.', tags:'jobs board table review', action:'jobs'},
         {title:'Open ENS verification', subtitle:'Verify agent or validator ENS ownership for this wallet.', tags:'ens verify agent validator', action:'verify'},
-        {title:'Mint Alpha Agent Identity', subtitle:'Open recommended register(label) path to mint ENS + soulbound identity.', tags:'alpha identity register mint soulbound', action:'mint-alpha-identity'},
-        {title:'Claim Alpha Agent Identity', subtitle:'Open claimIdentity(label) for existing wrapped names.', tags:'alpha identity claim', action:'claim-alpha-identity'},
-        {title:'Sync Alpha Agent Identity', subtitle:'Open syncIdentityByLabel(label) repair mode.', tags:'alpha identity sync repair', action:'sync-alpha-identity'},
-        {title:'Open ENS-only alpha-agent mint', subtitle:'Open expert ENS-only registerSimple path with optional recipient override.', tags:'alpha ens only registersimple', action:'mint-alpha'},
-        {title:'Refresh identity preview', subtitle:'Reload preview(label), rootHealth(), and token card.', tags:'alpha identity preview refresh', action:'refresh-identity-preview'},
-        {title:'Copy identity tokenId', subtitle:'Copy node-derived identity tokenId from current preview.', tags:'alpha identity tokenid copy', action:'copy-identity-tokenid'},
-        {title:'Copy identity full name', subtitle:'Copy full ENS name from identity preview.', tags:'alpha identity ens copy', action:'copy-identity-name'},
+        {title:'Mint Alpha Agent Identity', subtitle:'Open recommended path: register(label) for wrapped ENS + soulbound identity.', tags:'alpha identity register mint recommended', action:'mint-alpha-identity'},
+        {title:'Claim Alpha Agent Identity', subtitle:'Use claimIdentity(label) when wrapped name already exists.', tags:'alpha identity claim', action:'claim-alpha-identity'},
+        {title:'Sync Alpha Agent Identity', subtitle:'Repair desynced/expired identity state with syncIdentityByLabel(label).', tags:'alpha identity sync repair', action:'sync-alpha-identity'},
+        {title:'Refresh identity preview', subtitle:'Reload preview(label) and rootHealth() from identity registrar.', tags:'alpha identity preview refresh roothealth', action:'refresh-identity-preview'},
+        {title:'Open ENS-only alpha-agent mint path', subtitle:'Alternative expert path: registerSimple(parentNode,label,newOwner).', tags:'alpha ens only expert', action:'mint-alpha'},
         {title:'Refresh registrar state', subtitle:'Reload FreeTrialSubdomainRegistrar + parent status + availability posture.', tags:'registrar refresh parent wrapper', action:'refresh-registrar'},
-        {title:'Copy minted alpha-agent name', subtitle:'Copy the currently previewed minted alpha-agent ENS name.', tags:'alpha agent copy ens', action:'copy-minted-alpha'},
+        {title:'Copy minted alpha-agent name', subtitle:'Copy ENS-only preview full name.', tags:'alpha agent copy ens', action:'copy-minted-alpha'},
+        {title:'Copy identity tokenId', subtitle:'Copy selected-label identity tokenId (node-based).', tags:'alpha identity tokenid copy', action:'copy-identity-tokenid'},
+        {title:'Copy identity full name', subtitle:'Copy selected-label identity full ENS name.', tags:'alpha identity fullname copy', action:'copy-identity-fullname'},
         {title:'Read terms & conditions', subtitle:'Jump to the embedded terms section before signing.', tags:'terms legal read', action:'terms'},
         {title:'Expand all terms', subtitle:'Open every terms section for a full read-through.', tags:'terms expand legal', action:'expand-terms'},
         {title:'Collapse terms', subtitle:'Return the legal section to a lighter review mode.', tags:'terms collapse legal', action:'collapse-terms'},
@@ -3776,135 +3763,24 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         box.appendChild(note);
       }
     }
-    function parseIdentityPreviewResult(preview){
-      if(!preview) return null;
-      const arr = Array.isArray(preview) ? preview : [];
-      return {
-        status: Number(arr[0] ?? preview.status ?? 8),
-        validLabel: !!(arr[1] ?? preview.validLabel),
-        availableNow: !!(arr[2] ?? preview.availableNow),
-        registrable: !!(arr[3] ?? preview.registrable),
-        claimable: !!(arr[4] ?? preview.claimable),
-        identityExists: !!(arr[5] ?? preview.identityExists),
-        tokenId: String(arr[6] ?? preview.tokenId ?? '0'),
-        fullName: String(arr[7] ?? preview.fullName ?? ''),
-        node: String(arr[8] ?? preview.node ?? ''),
-        wrappedOwner: String(arr[9] ?? preview.wrappedOwner ?? ''),
-        wrappedExpiry: Number(arr[10] ?? preview.wrappedExpiry ?? 0)
-      };
-    }
-    function decodeDataTokenURI(uri){
-      try{
-        if(!uri || !String(uri).startsWith('data:application/json;base64,')) return null;
-        const json = atob(String(uri).split(',')[1] || '');
-        return JSON.parse(json);
-      }catch{return null;}
-    }
-    async function refreshAlphaIdentityRootHealth(){
-      if(!web3) return;
-      if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(FreeTrialSubdomainRegistrarIdentityABI, FREE_TRIAL_REGISTRAR_IDENTITY);
-      if(el('alphaIdentityRegistrarAddress')) el('alphaIdentityRegistrarAddress').textContent = FREE_TRIAL_REGISTRAR_IDENTITY;
-      const [rootName, rootNode, rootActive, paused, wrapper, ensRegistry, owner, pendingOwner, fuses, name, symbol, health] = await Promise.all([
-        freeTrialRegistrarIdentity.methods.ROOT_NAME().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.ROOT_NODE().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.rootActive().call().catch(()=>false),
-        freeTrialRegistrarIdentity.methods.paused().call().catch(()=>false),
-        freeTrialRegistrarIdentity.methods.wrapper().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.ensRegistry().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.owner().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.pendingOwner().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.REQUIRED_CHILD_FUSES().call().catch(()=>'—'),
-        freeTrialRegistrarIdentity.methods.name().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.symbol().call().catch(()=>''),
-        freeTrialRegistrarIdentity.methods.rootHealth().call().catch(()=>null)
-      ]);
-      const computed = namehash(ALPHA_AGENT_PARENT);
-      const nodeMatch = rootNode && computed && rootNode.toLowerCase() === computed.toLowerCase();
-      APP_STATE.identity.rootNodeMatch = !!nodeMatch;
-      APP_STATE.identity.wrapperMismatch = !!(wrapper && APP_STATE.registrar.wrapper && String(wrapper).toLowerCase() !== String(APP_STATE.registrar.wrapper).toLowerCase());
-      const mgrEns = await agiJobManager?.methods?.ens?.().call().catch(()=> '');
-      APP_STATE.identity.registryMismatch = !!(ensRegistry && mgrEns && String(ensRegistry).toLowerCase() !== String(mgrEns).toLowerCase());
-      if(el('alphaIdentityRootName')) el('alphaIdentityRootName').textContent = rootName || '—';
-      if(el('alphaIdentityRootNode')) el('alphaIdentityRootNode').textContent = rootNode || '—';
-      if(el('alphaIdentityRootNodeMatch')) el('alphaIdentityRootNodeMatch').textContent = nodeMatch ? 'true' : `false (expected ${ALPHA_AGENT_PARENT_NODE})`;
-      if(el('alphaIdentityRootActive')) el('alphaIdentityRootActive').textContent = rootActive ? 'true' : 'false';
-      if(el('alphaIdentityPaused')) el('alphaIdentityPaused').textContent = paused ? 'true' : 'false';
-      if(el('alphaIdentityEnsRegistry')) el('alphaIdentityEnsRegistry').textContent = ensRegistry || '—';
-      if(el('alphaIdentityWrapper')) el('alphaIdentityWrapper').textContent = wrapper || '—';
-      if(el('alphaIdentityOwner')) el('alphaIdentityOwner').textContent = owner || '—';
-      if(el('alphaIdentityPendingOwner')) el('alphaIdentityPendingOwner').textContent = pendingOwner || '—';
-      if(el('alphaIdentityRequiredFuses')) el('alphaIdentityRequiredFuses').textContent = String(fuses);
-      if(el('alphaIdentityTokenNameSymbol')) el('alphaIdentityTokenNameSymbol').textContent = `${name || '—'} / ${symbol || '—'}`;
-      if(health){
-        const h=Array.isArray(health)?health:Object.values(health);
-        if(el('alphaIdentityParentOwner')) el('alphaIdentityParentOwner').textContent = h[0] || '—';
-        if(el('alphaIdentityParentWrapped')) el('alphaIdentityParentWrapped').textContent = String(!!h[1]);
-        if(el('alphaIdentityParentLocked')) el('alphaIdentityParentLocked').textContent = String(!!h[2]);
-        if(el('alphaIdentityRegistrarAuthorized')) el('alphaIdentityRegistrarAuthorized').textContent = String(!!h[3]);
-        if(el('alphaIdentityParentExpiry')) el('alphaIdentityParentExpiry').textContent = formatTimestamp(Number(h[4]||0));
-        if(el('alphaIdentityParentUsable')) el('alphaIdentityParentUsable').textContent = String(!!h[5]);
-        APP_STATE.identity.rootHealthy = !!h[5] && !!rootActive && !paused && !!nodeMatch;
-      }
-      APP_STATE.identity.isOwner = !!userAccount && !!owner && String(owner).toLowerCase()===String(userAccount).toLowerCase();
-      APP_STATE.identity.isPendingOwner = !!userAccount && !!pendingOwner && String(pendingOwner).toLowerCase()===String(userAccount).toLowerCase();
-      if(el('alphaIdentityAdminPosture')) el('alphaIdentityAdminPosture').textContent = APP_STATE.identity.isOwner ? 'Connected wallet is owner.' : (APP_STATE.identity.isPendingOwner ? 'Connected wallet is pending owner.' : 'Connected wallet is not owner/pending-owner.');
-      renderAlphaIdentityAdminControls();
-    }
-    async function refreshAlphaIdentityPreview(){
-      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
-      if(!freeTrialRegistrarIdentity || !local.label){
-        APP_STATE.identity.preview = null;
-        if(el('alphaIdentityPreviewStatus')) el('alphaIdentityPreviewStatus').textContent = local.ok ? 'awaiting contract preview' : 'invalid label';
-        return;
-      }
-      const p = parseIdentityPreviewResult(await freeTrialRegistrarIdentity.methods.preview(local.label).call().catch(()=>null));
-      APP_STATE.identity.preview = p;
-      APP_STATE.identity.statusCode = p?.status ?? null;
-      APP_STATE.identity.tokenId = p?.tokenId || null;
-      if(!p) return;
-      if(el('alphaIdentityPreviewStatus')) el('alphaIdentityPreviewStatus').textContent = `${ALPHA_IDENTITY_STATUS[p.status] || 'unknown'} (${p.status})`;
-      if(el('alphaIdentityRegistrable')) el('alphaIdentityRegistrable').textContent = String(!!p.registrable);
-      if(el('alphaIdentityClaimable')) el('alphaIdentityClaimable').textContent = String(!!p.claimable);
-      if(el('alphaIdentityExists')) el('alphaIdentityExists').textContent = String(!!p.identityExists);
-      if(el('alphaIdentityTokenId')) el('alphaIdentityTokenId').textContent = p.tokenId || '—';
-      if(el('alphaIdentityFullName')) el('alphaIdentityFullName').textContent = p.fullName || `${local.label}.${ALPHA_AGENT_PARENT}`;
-      if(el('alphaIdentityNode')) el('alphaIdentityNode').textContent = p.node || '—';
-      const registerEnabled = !!(userAccount && isMainnet && hasAcceptedTerms && p.validLabel && p.registrable && APP_STATE.identity.rootNodeMatch);
-      const claimEnabled = !!(userAccount && isMainnet && hasAcceptedTerms && p.claimable && APP_STATE.identity.rootNodeMatch);
-      const syncEnabled = !!(userAccount && isMainnet && hasAcceptedTerms && p.identityExists && (p.status===3 || p.status===4));
-      if(el('alphaIdentityRegisterBtn')) el('alphaIdentityRegisterBtn').disabled = !registerEnabled;
-      if(el('alphaIdentityClaimBtn')) el('alphaIdentityClaimBtn').disabled = !claimEnabled;
-      if(el('alphaIdentitySyncBtn')) el('alphaIdentitySyncBtn').disabled = !syncEnabled;
-      if(el('alphaIdentityStatusPill')) el('alphaIdentityStatusPill').textContent = !userAccount ? 'Connect wallet.' : (!isMainnet ? 'Switch to Ethereum mainnet.' : (!hasAcceptedTerms ? 'Accept terms to unlock writes.' : (!APP_STATE.identity.rootNodeMatch ? 'Root node mismatch blocks identity minting.' : `${ALPHA_IDENTITY_STATUS[p.status] || 'unknown'} · register:${p.registrable?'ready':'blocked'} · claim:${p.claimable?'ready':'blocked'} · sync:${syncEnabled?'ready':'not needed'}`)));
-      if(p.identityExists && p.tokenId){
-        const [ownerOf, ldata, locked, uri] = await Promise.all([
-          freeTrialRegistrarIdentity.methods.ownerOf(p.tokenId).call().catch(()=>''),
-          freeTrialRegistrarIdentity.methods.labelData(p.tokenId).call().catch(()=>null),
-          freeTrialRegistrarIdentity.methods.locked(p.tokenId).call().catch(()=>true),
-          freeTrialRegistrarIdentity.methods.tokenURI(p.tokenId).call().catch(()=>''),
-        ]);
-        if(el('alphaIdentityTokenOwner')) el('alphaIdentityTokenOwner').textContent = ownerOf || '—';
-        if(el('alphaIdentityWrappedOwner')) el('alphaIdentityWrappedOwner').textContent = p.wrappedOwner || (Array.isArray(ldata)?ldata[1]:'—');
-        if(el('alphaIdentityLocked')) el('alphaIdentityLocked').textContent = String(locked);
-        const j = decodeDataTokenURI(uri);
-        if(el('alphaIdentityTokenUriName')) el('alphaIdentityTokenUriName').textContent = j?.name || 'unavailable';
-        if(el('alphaIdentityTokenUriDesc')) el('alphaIdentityTokenUriDesc').textContent = j?.description || '—';
-        if(el('alphaIdentityImageWrap')) el('alphaIdentityImageWrap').innerHTML = j?.image ? `<img src="${escapeHtml(j.image)}" alt="identity image" style="max-width:100%;border-radius:10px">` : 'No token image loaded.';
-      }
-    }
     async function refreshFreeTrialRegistrarState(){
       if(!web3){ return; }
       if(!freeTrialRegistrar) freeTrialRegistrar = new web3.eth.Contract(FreeTrialSubdomainRegistrarABI, FREE_TRIAL_REGISTRAR);
-      if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(FreeTrialSubdomainRegistrarIdentityABI, FREE_TRIAL_REGISTRAR_IDENTITY);
       if(el('freeTrialRegistrarAddress')) el('freeTrialRegistrarAddress').textContent = FREE_TRIAL_REGISTRAR;
       APP_STATE.registrar.parentUsable = false;
       APP_STATE.registrar.parentActive = false;
       APP_STATE.registrar.managerAuthorized = false;
+      if(el('freeTrialParentActive')) el('freeTrialParentActive').textContent = 'unknown (read failed or unavailable)';
+      if(el('freeTrialParentLocked')) el('freeTrialParentLocked').textContent = 'unknown (read failed or unavailable)';
+      if(el('freeTrialRegistrarAuthorised')) el('freeTrialRegistrarAuthorised').textContent = 'unknown (read failed or unavailable)';
+      if(el('freeTrialParentUsableState')) el('freeTrialParentUsableState').textContent = 'false (degraded)';
+      if(el('mintAlphaParentUsable')) el('mintAlphaParentUsable').textContent = 'unknown / degraded';
       const computed = namehash(ALPHA_AGENT_PARENT);
       if(el('freeTrialParentNode')) el('freeTrialParentNode').textContent = ALPHA_AGENT_PARENT_NODE;
       if(computed.toLowerCase() !== ALPHA_AGENT_PARENT_NODE.toLowerCase()){
         if(el('mintAlphaStatus')) el('mintAlphaStatus').textContent = `Blocking warning: parent node mismatch. expected ${ALPHA_AGENT_PARENT_NODE}, computed ${computed}.`;
         if(el('mintAlphaAgentBtn')) el('mintAlphaAgentBtn').disabled = true;
+        return;
       }
       const [wrapper, trial, minLen, maxLen, parentStatus, nextExp] = await Promise.all([
         freeTrialRegistrar.methods.wrapper().call().catch(()=>''),
@@ -3939,90 +3815,113 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         const can = await registrarWrapperContract.methods.canModifyName(ALPHA_AGENT_PARENT_NODE, userAccount).call().catch(()=>false);
         APP_STATE.registrar.managerAuthorized = !!can;
       }
+      if(!parentStatus && el('mintAlphaStatus')){
+        el('mintAlphaStatus').textContent = 'Registrar parent status unavailable (degraded read). Refresh and retry before minting.';
+      }
       renderRegistrarAdminControls();
-      await refreshAlphaIdentityRootHealth();
       await updateAlphaMintPreview();
-      await refreshAlphaIdentityPreview();
+      await refreshIdentityState().catch(()=>{});
     }
     async function updateAlphaMintPreview(){
-      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      const raw = el('mintAlphaLabel')?.value || '';
+      const local = validateAlphaLabelLocal(raw);
       const mintLabelInput = el('mintAlphaLabel');
-      if(mintLabelInput && String(mintLabelInput.value||'').trim() !== local.label) mintLabelInput.value = local.label;
+      const rawInput = String(mintLabelInput?.value || '');
+      if(mintLabelInput && rawInput.trim() !== rawInput.trim().toLowerCase()){
+        mintLabelInput.value = local.label;
+      }
       const full = local.label ? `${local.label}.${ALPHA_AGENT_PARENT}` : '—';
       if(el('mintAlphaFullName')) el('mintAlphaFullName').textContent = full;
       if(el('mintAlphaEnsUri')) el('mintAlphaEnsUri').textContent = local.label ? `ens://${full}` : '—';
       const node = local.label ? namehash(full) : '—';
       if(el('mintAlphaNode')) el('mintAlphaNode').textContent = node;
       if(el('mintLabelValidation')) el('mintLabelValidation').textContent = local.reason;
+      let availableText = local.ok ? 'checking…' : 'invalid label';
       let isAvailable = false;
+      let isContractValid = local.ok;
       if(local.ok && freeTrialRegistrar){
-        isAvailable = !!(await freeTrialRegistrar.methods.available(node).call().catch(()=>false));
+        const available = await freeTrialRegistrar.methods.available(node).call().catch(()=>null);
+        if(available === null){
+          availableText = 'unavailable (read failed)';
+          isAvailable = false;
+        }else{
+          isAvailable = !!available;
+          availableText = isAvailable ? 'available' : 'unavailable';
+        }
+        try{
+          const labelValid = await freeTrialRegistrar.methods.validateLabel(local.label).call();
+          if(typeof labelValid === 'boolean') isContractValid = labelValid;
+          else if(labelValid === false || String(labelValid).toLowerCase() === 'false' || String(labelValid) === '0') isContractValid = false;
+          else isContractValid = true;
+        }catch{
+          isContractValid = false;
+        }
+        if(!isContractValid) availableText = 'invalid by contract';
       }
-      if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = local.ok ? (isAvailable ? 'available' : 'unavailable') : 'invalid label';
+      if(el('mintAlphaAvailability')) el('mintAlphaAvailability').textContent = availableText;
       const recipientRaw = String(el('mintAlphaRecipient')?.value || '').trim();
-      const badRecipient = !!recipientRaw && !web3?.utils?.isAddress?.(recipientRaw);
-      const blocked = !userAccount || !isMainnet || !hasAcceptedTerms || !local.ok || !APP_STATE.registrar.parentUsable || badRecipient || !isAvailable || !APP_STATE.identity.rootNodeMatch;
+      const recipient = recipientRaw || userAccount || '';
+      const badRecipient = recipient && !web3?.utils?.isAddress(recipient);
+      const blocked = !userAccount || !isMainnet || !hasAcceptedTerms || !local.ok || !APP_STATE.registrar.parentUsable || badRecipient || !isAvailable || !isContractValid;
       if(el('mintAlphaAgentBtn')) el('mintAlphaAgentBtn').disabled = !!blocked;
       if(el('mintAlphaStatus')){
-        let status = '';
-        if(!userAccount) status = 'Connect wallet to mint.';
-        else if(!isMainnet) status = 'Switch to Ethereum mainnet.';
-        else if(!hasAcceptedTerms) status = 'Accept terms to unlock writes.';
-        else if(!APP_STATE.registrar.parentUsable) status = 'Parent not usable right now.';
-        else if(badRecipient) status = 'Recipient is not a valid address.';
-        else if(!APP_STATE.identity.rootNodeMatch) status = 'Root node mismatch blocks minting.';
-        else if(!local.ok) status = local.reason;
-        else status = isAvailable ? `Ready for ENS-only mint ${full} (free, gas only).` : 'Label unavailable.';
-        el('mintAlphaStatus').textContent = status;
+        if(!userAccount) el('mintAlphaStatus').textContent = 'Connect wallet to mint.';
+        else if(!isMainnet) el('mintAlphaStatus').textContent = 'Switch to Ethereum mainnet.';
+        else if(!hasAcceptedTerms) el('mintAlphaStatus').textContent = 'Accept terms to unlock writes.';
+        else if(!APP_STATE.registrar.parentUsable) el('mintAlphaStatus').textContent = 'Parent not usable right now.';
+        else if(badRecipient) el('mintAlphaStatus').textContent = 'Recipient is not a valid address.';
+        else if(!local.ok) el('mintAlphaStatus').textContent = local.reason;
+        else el('mintAlphaStatus').textContent = `Ready to mint ${full} (free, gas only).`;
       }
+      refreshIdentityState().catch(()=>{});
     }
     function openAlphaMintReview(){
       const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
       const recipient = String(el('mintAlphaRecipient')?.value || '').trim() || userAccount;
-      if(!local.ok) return setToast(local.reason, 'warn');
-      const mode = el('alphaAgentMintSection')?.dataset?.alphaMode || 'ens-only';
+      const full = `${local.label}.${ALPHA_AGENT_PARENT}`;
       if(el('alphaMintReviewFacts')) el('alphaMintReviewFacts').innerHTML = [
-        ['Mode', mode],['Label', local.label],['Full name', `${local.label}.${ALPHA_AGENT_PARENT}`],['Recipient (ENS-only path)', recipient],['Root node check', APP_STATE.identity.rootNodeMatch ? 'pass' : 'fail'],['Preview status', el('alphaIdentityPreviewStatus')?.textContent || '—']
+        ['Target contract', FREE_TRIAL_REGISTRAR],
+        ['Method', 'registerSimple'],
+        ['Parent node', ALPHA_AGENT_PARENT_NODE],
+        ['Label', local.label],
+        ['Full ENS name', full],
+        ['Recipient / owner', recipient],
+        ['Value', '0 ETH'],
+        ['Fees', 'Free registration, gas only'],
+        ['Expected trial expiry', el('mintAlphaExpectedExpiry')?.textContent || '—']
       ].map(([k,v])=>`<div class="reviewFact"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v||''))}</span></div>`).join('');
-      const modal = el('alphaMintReviewModal'); if(modal){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
+      const modal = el('alphaMintReviewModal');
+      if(modal){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
     }
     function closeAlphaMintReview(){ const modal = el('alphaMintReviewModal'); if(modal){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); } }
-    async function runAlphaIdentityWrite(method){
-      if(!requireConnected() || !mustBeReadyToWrite()) return;
-      if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(FreeTrialSubdomainRegistrarIdentityABI, FREE_TRIAL_REGISTRAR_IDENTITY);
-      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
-      if(!local.ok) return setToast(local.reason, 'warn');
-      closeAlphaMintReview();
-      await runTrackedTx(`Alpha identity ${method} ${local.label}`, ()=>freeTrialRegistrarIdentity.methods[method](local.label).send({from:userAccount, value:'0'}), {pendingDetail:`Submitting ${method}(${local.label})…`, successDetail:`${method} confirmed.`});
-      if(el('agentSub')) el('agentSub').value = local.label;
-      await verifySubdomain('agent', true);
-      await refreshFreeTrialRegistrarState();
-      await refreshAlphaIdentityPreview();
-      await updateMissionControl();
-    }
     async function mintAlphaAgentName(){
-      const mode = el('alphaAgentMintSection')?.dataset?.alphaMode || 'ens-only';
-      if(mode === 'identity-register') return runAlphaIdentityWrite('register');
-      if(mode === 'identity-claim') return runAlphaIdentityWrite('claimIdentity');
-      if(mode === 'identity-sync') return runAlphaIdentityWrite('syncIdentityByLabel');
       if(!requireConnected() || !mustBeReadyToWrite()) return;
-      if(!freeTrialRegistrar){ if(!web3) return setToast('Wallet provider unavailable. Reconnect wallet and retry.', 'bad'); freeTrialRegistrar = new web3.eth.Contract(FreeTrialSubdomainRegistrarABI, FREE_TRIAL_REGISTRAR); }
+      if(!freeTrialRegistrar){
+        if(!web3) return setToast('Wallet provider unavailable. Reconnect wallet and retry.', 'bad');
+        freeTrialRegistrar = new web3.eth.Contract(FreeTrialSubdomainRegistrarABI, FREE_TRIAL_REGISTRAR);
+      }
       const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
       if(!local.ok) return setToast(local.reason, 'warn');
       const recipient = String(el('mintAlphaRecipient')?.value || '').trim() || userAccount;
       if(!web3.utils.isAddress(recipient)) return setToast('Recipient address is invalid.', 'bad');
       const available = await freeTrialRegistrar.methods.available(namehash(`${local.label}.${ALPHA_AGENT_PARENT}`)).call().catch(()=>null);
-      if(available === null){ setToast('Registrar availability read failed. Refresh registrar state and retry.', 'warn'); refreshFreeTrialRegistrarState().catch(()=>{}); return; }
+      if(available === null){
+        setToast('Registrar availability read failed. Refresh registrar state and retry.', 'warn');
+        refreshFreeTrialRegistrarState().catch(()=>{});
+        return;
+      }
       if(!available) return setToast('Label unavailable.', 'warn');
       closeAlphaMintReview();
-      await runTrackedTx(`Mint ${local.label}.${ALPHA_AGENT_PARENT}`, ()=>freeTrialRegistrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, local.label, recipient).send({from:userAccount, value:'0'}), {pendingDetail:'Submitting ENS-only free-trial registration…', successDetail:'ENS-only registration confirmed.'});
+      const receipt = await runTrackedTx(`Mint ${local.label}.${ALPHA_AGENT_PARENT}`, ()=>freeTrialRegistrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, local.label, recipient).send({from:userAccount, value:'0'}), {pendingDetail:'Submitting free-trial ENS registration…', successDetail:'Free-trial ENS registration confirmed.'});
+      const ev = receipt?.events?.NameRegistered?.returnValues || null;
+      const node = ev?.node || namehash(`${local.label}.${ALPHA_AGENT_PARENT}`);
+      const expiry = ev?.expiry ? formatTimestamp(ev.expiry) : (el('mintAlphaExpectedExpiry')?.textContent || '—');
+      setToast(`Minted ${local.label}.${ALPHA_AGENT_PARENT} · expiry ${expiry}`, 'ok');
       saveRecentAlphaAgentName(local.label);
       if(el('agentSub')) el('agentSub').value = local.label;
       await verifySubdomain('agent', true);
       await refreshFreeTrialRegistrarState();
-      await refreshAlphaIdentityPreview();
-      const p = APP_STATE.identity.preview;
-      if(p?.claimable) setToast('ENS-only registration confirmed. Identity now claimable: use Claim Alpha Agent Identity.', 'ok');
+      await refreshIdentityState().catch(()=>{});
       await updateMissionControl();
     }
     function renderRegistrarAdminControls(){
@@ -4031,22 +3930,192 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(!APP_STATE.registrar.managerAuthorized){ box.innerHTML = '<span class="smallNote">Connected wallet is not authorized for parent-management methods.</span>'; return; }
       const methods = ['setupDomain','activateParent','deactivateParent','removeParent'];
       box.innerHTML = methods.map(m=>`<button class="btn" type="button" data-registrar-admin="${m}">${m}</button>`).join(' ');
-      box.querySelectorAll('[data-registrar-admin]').forEach(btn=>btn.addEventListener('click', async ()=>{ if(!requireConnected() || !mustBeReadyToWrite()) return; const m = btn.dataset.registrarAdmin; if(m === 'setupDomain') await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods.setupDomain(ALPHA_AGENT_PARENT_NODE, true).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`}); else await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods[m](ALPHA_AGENT_PARENT_NODE).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`}); await refreshFreeTrialRegistrarState(); }));
+      box.querySelectorAll('[data-registrar-admin]').forEach(btn=>btn.addEventListener('click', async ()=>{
+        if(!requireConnected() || !mustBeReadyToWrite()) return;
+        const m = btn.dataset.registrarAdmin;
+        if(m === 'setupDomain') await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods.setupDomain(ALPHA_AGENT_PARENT_NODE, true).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
+        else await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods[m](ALPHA_AGENT_PARENT_NODE).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
+        await refreshFreeTrialRegistrarState();
+      }));
     }
-    function renderAlphaIdentityAdminControls(){
-      const box = el('alphaIdentityAdminControls');
-      const danger = el('alphaIdentityAdminDangerControls');
-      if(!box || !danger) return;
-      if(!APP_STATE.identity.isOwner && !APP_STATE.identity.isPendingOwner){
-        box.innerHTML = '<span class="smallNote">Owner-only controls unavailable.</span>';
-        danger.innerHTML = '<span class="smallNote">Danger controls unavailable.</span>';
-        return;
+
+
+
+    const IDENTITY_PREVIEW_STATUS = {
+      0:'available',1:'active',2:'claimable',3:'expired',4:'desynced',5:'invalid-label',6:'root-inactive',7:'parent-unusable',8:'unavailable'
+    };
+    function parseIdentityPreviewResult(v){
+      if(!v) return null;
+      const p = Array.isArray(v)
+        ? {status:Number(v[0]||0), validLabel:!!v[1], registrable:!!v[2], claimable:!!v[3], identityExists:!!v[4], node:String(v[5]||''), tokenId:String(v[6]||''), fullName:String(v[7]||'')}
+        : {status:Number(v.status||0), validLabel:!!v.validLabel, registrable:!!v.registrable, claimable:!!v.claimable, identityExists:!!v.identityExists, node:String(v.node||''), tokenId:String(v.tokenId||''), fullName:String(v.fullName||'')};
+      p.statusLabel = IDENTITY_PREVIEW_STATUS[p.status] || `unknown-${p.status}`;
+      return p;
+    }
+    function identityWriteLockedReason(preview){
+      if(!userAccount) return 'Connect wallet to continue.';
+      if(!isMainnet) return 'Switch to Ethereum mainnet.';
+      if(!hasAcceptedTerms) return 'Accept terms to unlock writes.';
+      if(!preview) return 'Preview unavailable.';
+      if(!preview.validLabel) return 'Invalid label.';
+      return '';
+    }
+    async function refreshIdentityState(){
+      if(!web3) return;
+      if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(FreeTrialSubdomainRegistrarIdentityABI, FREE_TRIAL_REGISTRAR_IDENTITY);
+      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      APP_STATE.identity.label = local.label || '';
+      if(el('alphaIdentityContractAddress')) el('alphaIdentityContractAddress').textContent = FREE_TRIAL_REGISTRAR_IDENTITY;
+      const [rootName,rootNode,rootActive,paused,wrapper,registry,owner,pendingOwner,fuses,name,symbol,health] = await Promise.all([
+        freeTrialRegistrarIdentity.methods.ROOT_NAME().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.ROOT_NODE().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.rootActive().call().catch(()=>false),
+        freeTrialRegistrarIdentity.methods.paused().call().catch(()=>false),
+        freeTrialRegistrarIdentity.methods.wrapper().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.ensRegistry().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.owner().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.pendingOwner().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.REQUIRED_CHILD_FUSES().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.name().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.symbol().call().catch(()=>''),
+        freeTrialRegistrarIdentity.methods.rootHealth().call().catch(()=>null)
+      ]);
+      const computed = namehash(ALPHA_AGENT_PARENT);
+      if(el('alphaIdentityRootName')) el('alphaIdentityRootName').textContent = rootName || ALPHA_AGENT_PARENT;
+      if(el('alphaIdentityRootNode')) el('alphaIdentityRootNode').textContent = rootNode || '—';
+      if(el('alphaIdentityRootActive')) el('alphaIdentityRootActive').textContent = String(!!rootActive);
+      if(el('alphaIdentityPaused')) el('alphaIdentityPaused').textContent = String(!!paused);
+      if(el('alphaIdentityWrapper')) el('alphaIdentityWrapper').textContent = wrapper || '—';
+      if(el('alphaIdentityRegistry')) el('alphaIdentityRegistry').textContent = registry || '—';
+      if(el('alphaIdentityOwnerLine')) el('alphaIdentityOwnerLine').textContent = `${owner || '—'} / ${pendingOwner || '—'}`;
+      if(el('alphaIdentityRequiredFuses')) el('alphaIdentityRequiredFuses').textContent = String(fuses || '—');
+      if(el('alphaIdentityNameSymbol')) el('alphaIdentityNameSymbol').textContent = `${name || '—'} / ${symbol || '—'}`;
+      const h = health ? (Array.isArray(health) ? {parentWrapped:!!health[0], parentLocked:!!health[1], registrarAuthorised:!!health[2], rootUsable:!!health[3], effectiveParentExpiry:Number(health[4]||0), parentOwner:String(health[5]||'')} : health) : null;
+      if(el('alphaIdentityParentOwner')) el('alphaIdentityParentOwner').textContent = h?.parentOwner || '—';
+      if(el('alphaIdentityParentFlags')) el('alphaIdentityParentFlags').textContent = h ? `${h.parentWrapped?'wrapped':'not wrapped'} / ${h.parentLocked?'locked':'unlocked'}` : '—';
+      if(el('alphaIdentityRegistrarAuth')) el('alphaIdentityRegistrarAuth').textContent = h ? String(!!h.registrarAuthorised) : '—';
+      if(el('alphaIdentityParentExpiry')) el('alphaIdentityParentExpiry').textContent = h ? formatTimestamp(h.effectiveParentExpiry) : '—';
+      if(el('alphaIdentityRootUsable')) el('alphaIdentityRootUsable').textContent = h ? String(!!h.rootUsable) : '—';
+      if(rootNode && computed.toLowerCase() !== String(rootNode).toLowerCase()){
+        if(el('alphaIdentityActionStatus')) el('alphaIdentityActionStatus').textContent = `Blocking warning: ROOT_NODE mismatch. computed ${computed}, contract ${rootNode}.`;
       }
-      box.innerHTML = ['setRootActive(true)','setRootActive(false)','pause','unpause','acceptOwnership'].map(x=>`<button class="btn" data-alpha-id-admin="${x}">${x}</button>`).join(' ');
-      danger.innerHTML = ['transferOwnership','renounceOwnership'].map(x=>`<button class="btn" data-alpha-id-danger="${x}">${x}</button>`).join(' ');
-      box.querySelectorAll('[data-alpha-id-admin]').forEach(btn=>btn.onclick=async()=>{ if(!requireConnected()||!mustBeReadyToWrite()) return; const m=btn.dataset.alphaIdAdmin; if(m.startsWith('setRootActive')){ const v=m.includes('true'); await runTrackedTx(m, ()=>freeTrialRegistrarIdentity.methods.setRootActive(v).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`,successDetail:`${m} confirmed.`}); } else await runTrackedTx(m, ()=>freeTrialRegistrarIdentity.methods[m]().send({from:userAccount}), {pendingDetail:`Submitting ${m}…`,successDetail:`${m} confirmed.`}); await refreshFreeTrialRegistrarState(); });
-      danger.querySelectorAll('[data-alpha-id-danger]').forEach(btn=>btn.onclick=async()=>{ if(!requireConnected()||!mustBeReadyToWrite()) return; const m=btn.dataset.alphaIdDanger; if(m==='transferOwnership'){ const to=(el('adminInput')?.value||'').trim(); if(!web3.utils.isAddress(to)) return setToast('Provide transferOwnership target in Admin input.', 'warn'); await runTrackedTx(m, ()=>freeTrialRegistrarIdentity.methods.transferOwnership(to).send({from:userAccount}), {pendingDetail:'Submitting transferOwnership…',successDetail:'transferOwnership confirmed.'}); } else await runTrackedTx(m, ()=>freeTrialRegistrarIdentity.methods.renounceOwnership().send({from:userAccount}), {pendingDetail:'Submitting renounceOwnership…',successDetail:'renounceOwnership confirmed.'}); await refreshFreeTrialRegistrarState(); });
+      const previewRaw = local.ok ? await freeTrialRegistrarIdentity.methods.preview(local.label).call().catch(()=>null) : null;
+      const preview = parseIdentityPreviewResult(previewRaw);
+      APP_STATE.identity.preview = preview;
+      if(el('alphaIdentityStatusPill')) el('alphaIdentityStatusPill').textContent = preview ? `${preview.statusLabel} (${preview.status})` : '—';
+      if(el('alphaIdentityFullName')) el('alphaIdentityFullName').textContent = preview?.fullName || (local.ok ? `${local.label}.${ALPHA_AGENT_PARENT}` : '—');
+      if(el('alphaIdentityTokenId')) el('alphaIdentityTokenId').textContent = preview?.tokenId || '—';
+      if(el('alphaIdentityExists')) el('alphaIdentityExists').textContent = preview ? String(!!preview.identityExists) : '—';
+      if(el('alphaIdentityClaimable')) el('alphaIdentityClaimable').textContent = preview ? String(!!preview.claimable) : '—';
+      if(el('alphaIdentityRegistrable')) el('alphaIdentityRegistrable').textContent = preview ? String(!!preview.registrable) : '—';
+      const lockedReason = identityWriteLockedReason(preview);
+      const registerEnabled = !lockedReason && preview?.registrable;
+      const claimEnabled = !lockedReason && preview?.claimable;
+      const syncEnabled = !lockedReason && preview?.identityExists && (preview.status===3 || preview.status===4);
+      if(el('alphaIdentityRegisterBtn')) el('alphaIdentityRegisterBtn').disabled = !registerEnabled;
+      if(el('alphaIdentityClaimBtn')) el('alphaIdentityClaimBtn').disabled = !claimEnabled;
+      if(el('alphaIdentitySyncBtn')) el('alphaIdentitySyncBtn').disabled = !syncEnabled;
+      if(el('alphaIdentityActionStatus')){
+        if(lockedReason) el('alphaIdentityActionStatus').textContent = lockedReason;
+        else if(registerEnabled) el('alphaIdentityActionStatus').textContent = 'Ready: register(label) mints wrapped ENS name + soulbound identity to connected wallet.';
+        else if(claimEnabled) el('alphaIdentityActionStatus').textContent = 'Ready: claimIdentity(label) for an existing wrapped name you already own.';
+        else if(syncEnabled) el('alphaIdentityActionStatus').textContent = 'Ready: syncIdentityByLabel(label) repair path.';
+        else el('alphaIdentityActionStatus').textContent = 'No eligible identity write action for current preview state.';
+      }
+      if(preview?.identityExists && preview?.tokenId){
+        const [ownerOf, labelData, tokenURI] = await Promise.all([
+          freeTrialRegistrarIdentity.methods.ownerOf(preview.tokenId).call().catch(()=>''),
+          freeTrialRegistrarIdentity.methods.labelData(preview.tokenId).call().catch(()=>null),
+          freeTrialRegistrarIdentity.methods.tokenURI(preview.tokenId).call().catch(()=>''),
+        ]);
+        if(el('alphaIdentityTokenOwner')) el('alphaIdentityTokenOwner').textContent = ownerOf || '—';
+        const ld = labelData ? (Array.isArray(labelData) ? {wrappedOwner:String(labelData[1]||''), resolver:String(labelData[2]||''), wrappedExpiry:Number(labelData[3]||0), mintedAt:Number(labelData[4]||0)} : labelData) : null;
+        if(el('alphaIdentityWrappedOwner')) el('alphaIdentityWrappedOwner').textContent = ld?.wrappedOwner || '—';
+        if(el('alphaIdentityResolver')) el('alphaIdentityResolver').textContent = ld?.resolver || '—';
+        if(el('alphaIdentityWrappedExpiry')) el('alphaIdentityWrappedExpiry').textContent = ld ? formatTimestamp(ld.wrappedExpiry) : '—';
+        if(el('alphaIdentityMintedAt')) el('alphaIdentityMintedAt').textContent = ld ? formatTimestamp(ld.mintedAt) : '—';
+        if(tokenURI && tokenURI.startsWith('data:application/json;base64,')){
+          try{
+            const payload = JSON.parse(atob(tokenURI.split(',')[1] || ''));
+            if(el('alphaIdentityTokenMetaName')) el('alphaIdentityTokenMetaName').textContent = payload?.name || '—';
+            if(el('alphaIdentityTokenMetaDescription')) el('alphaIdentityTokenMetaDescription').textContent = payload?.description || '—';
+            const img = payload?.image || '';
+            const node = el('alphaIdentityTokenImage');
+            if(node){
+              if(img){ node.style.display='block'; node.src = img; }
+              else{ node.style.display='none'; node.removeAttribute('src'); }
+            }
+          }catch{}
+        }
+      }
+      renderIdentityAdminControls(owner, pendingOwner);
+      updateMissionControl();
     }
+    function openAlphaIdentityReview(action){
+      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      const preview = APP_STATE.identity.preview;
+      const facts = [
+        ['Contract', FREE_TRIAL_REGISTRAR_IDENTITY],
+        ['Method', action],
+        ['Label', local.label || '—'],
+        ['Full name', `${local.label || '—'}.${ALPHA_AGENT_PARENT}`],
+        ['Owner target', userAccount || 'connected wallet required'],
+        ['Recipient override', 'Not supported on identity path'],
+        ['Preview status', preview ? `${preview.statusLabel} (${preview.status})` : '—'],
+        ['Soulbound', 'true (transfer/approval UI intentionally not exposed)']
+      ];
+      if(el('alphaIdentityReviewFacts')) el('alphaIdentityReviewFacts').innerHTML = facts.map(([k,v])=>`<div class="reviewFact"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v||''))}</span></div>`).join('');
+      if(el('alphaIdentityReviewTitle')) el('alphaIdentityReviewTitle').textContent = `${action} Alpha Agent Identity`;
+      if(el('confirmAlphaIdentityReviewBtn')) el('confirmAlphaIdentityReviewBtn').dataset.identityAction = action;
+      const m=el('alphaIdentityReviewModal'); if(m){ m.classList.add('open'); m.setAttribute('aria-hidden','false'); }
+    }
+    function closeAlphaIdentityReview(){ const m=el('alphaIdentityReviewModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } }
+    async function runAlphaIdentityAction(action){
+      if(!requireConnected() || !mustBeReadyToWrite()) return;
+      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      if(!local.ok) return setToast(local.reason,'warn');
+      if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(FreeTrialSubdomainRegistrarIdentityABI, FREE_TRIAL_REGISTRAR_IDENTITY);
+      closeAlphaIdentityReview();
+      let send;
+      if(action==='register') send = ()=>freeTrialRegistrarIdentity.methods.register(local.label).send({from:userAccount, value:'0'});
+      if(action==='claimIdentity') send = ()=>freeTrialRegistrarIdentity.methods.claimIdentity(local.label).send({from:userAccount, value:'0'});
+      if(action==='syncIdentityByLabel') send = ()=>freeTrialRegistrarIdentity.methods.syncIdentityByLabel(local.label).send({from:userAccount, value:'0'});
+      if(!send) return;
+      await runTrackedTx(`Alpha identity ${action} ${local.label}`, send, {pendingDetail:`Submitting ${action}…`, successDetail:`${action} confirmed.`});
+      if(el('agentSub')) el('agentSub').value = local.label;
+      await verifySubdomain('agent', true);
+      await refreshFreeTrialRegistrarState();
+      await refreshIdentityState();
+      saveRecentAlphaAgentName(local.label);
+      setToast(`Identity action ${action} confirmed for ${local.label}.${ALPHA_AGENT_PARENT}.`, 'ok');
+    }
+    function renderIdentityAdminControls(owner,pendingOwner){
+      const box = el('alphaIdentityAdminControls');
+      if(!box) return;
+      const mine = String(userAccount||'').toLowerCase();
+      const isOwner = owner && String(owner).toLowerCase()===mine;
+      const isPending = pendingOwner && String(pendingOwner).toLowerCase()===mine;
+      const head = `<div class="smallNote">Owner posture: ${isOwner?'owner':'not owner'} · pending-owner posture: ${isPending?'yes':'no'}</div>`;
+      if(!isOwner && !isPending){ box.innerHTML = head + '<div class="smallNote">Owner-only controls are hidden for safety.</div>'; return; }
+      box.innerHTML = head + [
+        isOwner ? '<button class="btn" data-alpha-admin="setRootActiveTrue">setRootActive(true)</button><button class="btn" data-alpha-admin="setRootActiveFalse">setRootActive(false)</button><button class="btn" data-alpha-admin="pause">pause()</button><button class="btn" data-alpha-admin="unpause">unpause()</button>' : '',
+        isOwner ? '<button class="btn" data-alpha-admin="transferOwnership">transferOwnership(target from admin wallet field)</button><button class="btn" data-alpha-admin="renounceOwnership">renounceOwnership()</button>' : '',
+        isPending ? '<button class="btn" data-alpha-admin="acceptOwnership">acceptOwnership()</button>' : ''
+      ].join(' ');
+      box.querySelectorAll('[data-alpha-admin]').forEach(btn=>btn.addEventListener('click', async ()=>{
+        if(!requireConnected() || !mustBeReadyToWrite()) return;
+        const a = btn.dataset.alphaAdmin;
+        if(a==='setRootActiveTrue') await runTrackedTx('Identity setRootActive(true)', ()=>freeTrialRegistrarIdentity.methods.setRootActive(true).send({from:userAccount}));
+        if(a==='setRootActiveFalse') await runTrackedTx('Identity setRootActive(false)', ()=>freeTrialRegistrarIdentity.methods.setRootActive(false).send({from:userAccount}));
+        if(a==='pause') await runTrackedTx('Identity pause', ()=>freeTrialRegistrarIdentity.methods.pause().send({from:userAccount}));
+        if(a==='unpause') await runTrackedTx('Identity unpause', ()=>freeTrialRegistrarIdentity.methods.unpause().send({from:userAccount}));
+        if(a==='acceptOwnership') await runTrackedTx('Identity acceptOwnership', ()=>freeTrialRegistrarIdentity.methods.acceptOwnership().send({from:userAccount}));
+        if(a==='renounceOwnership') await runTrackedTx('Identity renounceOwnership', ()=>freeTrialRegistrarIdentity.methods.renounceOwnership().send({from:userAccount}));
+        if(a==='transferOwnership') setToast('Use command palette/admin wallet tooling to call transferOwnership(address) with an explicit target.', 'warn');
+        await refreshIdentityState();
+      }));
+    }
+
     function parseAmountToUnitsWithDecimals(s, decimals){
       const str = String(s||"").trim();
       if(!str) throw new Error("Missing amount");
@@ -6571,19 +6640,25 @@ function normalizeIpfsToHttp(uri){
       el("verifyClubBtn").addEventListener("click", ()=>verifySubdomain("club", false));
       el("verifyClubAlphaBtn").addEventListener("click", ()=>verifySubdomain("club", true));
       el("buyClubBtn").addEventListener("click", ()=>window.open("https://montrealai.xyz/club.html","_blank","noopener"));
-      if(el("mintAlphaLabel")) el("mintAlphaLabel").addEventListener("input", ()=>Promise.all([updateAlphaMintPreview(), refreshAlphaIdentityPreview()]).catch(()=>{}));
+      if(el("mintAlphaLabel")) el("mintAlphaLabel").addEventListener("input", ()=>updateAlphaMintPreview().catch(()=>{}));
       if(el("mintAlphaRecipient")) el("mintAlphaRecipient").addEventListener("input", ()=>updateAlphaMintPreview().catch(()=>{}));
       if(el("refreshRegistrarStateBtn")) el("refreshRegistrarStateBtn").addEventListener("click", ()=>refreshFreeTrialRegistrarState().catch(e=>setToast(e.message||String(e),"bad")));
       if(el("mintAlphaAgentBtn")) el("mintAlphaAgentBtn").addEventListener("click", ()=>openAlphaMintReview());
-      if(el("alphaIdentityRegisterBtn")) el("alphaIdentityRegisterBtn").addEventListener("click", ()=>{ const sec=el('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-register'; openAlphaMintReview(); });
-      if(el("alphaIdentityClaimBtn")) el("alphaIdentityClaimBtn").addEventListener("click", ()=>{ const sec=el('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-claim'; openAlphaMintReview(); });
-      if(el("alphaIdentitySyncBtn")) el("alphaIdentitySyncBtn").addEventListener("click", ()=>{ const sec=el('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-sync'; openAlphaMintReview(); });
-      document.querySelectorAll('#alphaIdentityModeTabs [data-alpha-mode]').forEach(btn=>btn.addEventListener('click', ()=>{ const sec=el('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode = btn.dataset.alphaMode; document.querySelectorAll('#alphaIdentityModeTabs [data-alpha-mode]').forEach(b=>b.classList.toggle('btn-primary', b===btn)); updateAlphaMintPreview().catch(()=>{}); refreshAlphaIdentityPreview().catch(()=>{}); }));
       if(el("closeAlphaMintReviewBtn")) el("closeAlphaMintReviewBtn").addEventListener("click", closeAlphaMintReview);
       if(el("cancelAlphaMintReviewBtn")) el("cancelAlphaMintReviewBtn").addEventListener("click", closeAlphaMintReview);
       if(el("confirmAlphaMintReviewBtn")) el("confirmAlphaMintReviewBtn").addEventListener("click", ()=>mintAlphaAgentName().catch(e=>setToast(e.message||String(e),"bad")));
       if(el("alphaMintReviewModal")) el("alphaMintReviewModal").addEventListener("click", (e)=>{ if(e.target.id === "alphaMintReviewModal") closeAlphaMintReview(); });
+      if(el("alphaIdentityRegisterBtn")) el("alphaIdentityRegisterBtn").addEventListener("click", ()=>openAlphaIdentityReview('register'));
+      if(el("alphaIdentityClaimBtn")) el("alphaIdentityClaimBtn").addEventListener("click", ()=>openAlphaIdentityReview('claimIdentity'));
+      if(el("alphaIdentitySyncBtn")) el("alphaIdentitySyncBtn").addEventListener("click", ()=>openAlphaIdentityReview('syncIdentityByLabel'));
+      if(el("closeAlphaIdentityReviewBtn")) el("closeAlphaIdentityReviewBtn").addEventListener("click", closeAlphaIdentityReview);
+      if(el("cancelAlphaIdentityReviewBtn")) el("cancelAlphaIdentityReviewBtn").addEventListener("click", closeAlphaIdentityReview);
+      if(el("confirmAlphaIdentityReviewBtn")) el("confirmAlphaIdentityReviewBtn").addEventListener("click", ()=>runAlphaIdentityAction(el("confirmAlphaIdentityReviewBtn")?.dataset.identityAction || 'register').catch(e=>setToast(e.message||String(e),"bad")));
+      if(el("alphaIdentityReviewModal")) el("alphaIdentityReviewModal").addEventListener("click", (e)=>{ if(e.target.id === "alphaIdentityReviewModal") closeAlphaIdentityReview(); });
+      if(el("alphaIdentityModeRecommended")) el("alphaIdentityModeRecommended").addEventListener("click", ()=>setToast('Recommended path selected: register(label) = ENS name + soulbound identity.', 'ok'));
+      if(el("alphaIdentityModeEnsOnly")) el("alphaIdentityModeEnsOnly").addEventListener("click", ()=>setToast('ENS-only expert path selected: registerSimple(parentNode,label,newOwner).', 'warn'));
       renderRecentAlphaAgentNames();
+      refreshIdentityState().catch(()=>{});
       el("createJobBtn").addEventListener("click", createJob);
 
       el("termsAccepted").addEventListener("change", (e)=>{ hasAcceptedTerms = !!e.target.checked; updateWriteGate(); });
@@ -6763,8 +6838,9 @@ function normalizeIpfsToHttp(uri){
         if(action === 'terms') return v26ScrollTo('termsSection');
         if(action === 'verify') return v26ScrollTo('verifyEnsSection');
         if(action === 'mint-alpha') return v26ScrollTo('alphaAgentMintSection');
-        if(action === 'mint-alpha-identity'){ const sec=v26El('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-register'; return v26ScrollTo('alphaAgentMintSection'); }
-        if(action === 'claim-alpha-identity'){ const sec=v26El('alphaAgentMintSection'); if(sec) sec.dataset.alphaMode='identity-claim'; return v26ScrollTo('alphaAgentMintSection'); }
+        if(action === 'mint-alpha-identity') return v26ScrollTo('alphaAgentMintSection');
+        if(action === 'claim-alpha-identity' && typeof missionAction === 'function') return missionAction('claim-alpha-identity');
+        if(action === 'sync-alpha-identity' && typeof missionAction === 'function') return missionAction('sync-alpha-identity');
         if(action === 'activity') return v26ScrollTo('activitySection');
         if(action === 'ops') return v26ScrollTo('operationsDeckSection');
         return undefined;
@@ -6822,9 +6898,7 @@ function normalizeIpfsToHttp(uri){
                 <button type="button" class="v26-sheet-btn" id="v26MirrorSecondaryBtn">Secondary action</button>
                 <button type="button" class="v26-sheet-btn" data-v26-run="refresh">Refresh live data</button>
                 <button type="button" class="v26-sheet-btn" data-v26-run="command">Open command palette</button>
-                <button type="button" class="v26-sheet-btn" data-v26-run="mint-alpha-identity">Mint Alpha Agent Identity</button>
-                <button type="button" class="v26-sheet-btn" data-v26-run="claim-alpha-identity">Claim Alpha Agent Identity</button>
-                <button type="button" class="v26-sheet-btn" data-v26-run="mint-alpha">Open ENS-only alpha-agent mint</button>
+                <button type="button" class="v26-sheet-btn primary" data-v26-run="mint-alpha-identity">Mint Alpha Agent Identity</button><button type="button" class="v26-sheet-btn" data-v26-run="claim-alpha-identity">Claim Alpha Agent Identity</button><button type="button" class="v26-sheet-btn" data-v26-run="sync-alpha-identity">Sync Alpha Agent Identity</button><button type="button" class="v26-sheet-btn" data-v26-run="mint-alpha">Open ENS-only alpha-agent path</button>
                 <button type="button" class="v26-sheet-btn" data-v26-run="expand-terms">Expand all terms</button>
                 <button type="button" class="v26-sheet-btn" data-v26-run="collapse-terms">Collapse terms</button>
                 <button type="button" class="v26-sheet-btn" data-v26-run="top">Back to top</button>
