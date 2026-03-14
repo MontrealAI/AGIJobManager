@@ -3135,12 +3135,6 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         pill = 'Identity register available';
         primary = {label:'Mint Alpha Agent Identity', action:'mint-alpha-identity'};
         secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'};
-      }else if(connected && isMainnet && hasAcceptedTerms && !verified.agentAlpha){
-        title = 'Mint your alpha-agent ENS access key';
-        body = 'You can mint a free-trial *.alpha.agent.agi.eth identity now (gas only), then auto-verify it for agent readiness.';
-        pill = 'Alpha-agent identity recommended';
-        primary = {label:'Open alpha-agent section', action:'mint-alpha'};
-        secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'};
       }else if(connected && isMainnet && hasAcceptedTerms && jobStats.completion > 0 && verified.club){
         title = 'Review jobs waiting for validator attention';
         body = `${jobStats.completion} job${jobStats.completion === 1 ? '' : 's'} currently show a live completion-review surface. Open the board, inspect the details modal, and vote only after independent evidence review.`;
@@ -3153,6 +3147,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         pill = 'Agent mode ready';
         primary = {label:'Browse open jobs', action:'jobs'};
         secondary = {label:'Command Palette', action:'command'};
+      }else if(connected && isMainnet && hasAcceptedTerms && !verified.agentAlpha){
+        title = 'Mint your alpha-agent ENS access key';
+        body = 'You can mint a free-trial *.alpha.agent.agi.eth identity now (gas only), then auto-verify it for agent readiness.';
+        pill = 'Alpha-agent identity recommended';
+        primary = {label:'Open alpha-agent section', action:'mint-alpha'};
+        secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'};
       }else if(connected && isMainnet && hasAcceptedTerms){
         title = 'System ready';
         body = 'Wallet, network, and write-gating are in a good state. You can create a job, inspect live jobs, or use the command palette for faster navigation.';
@@ -4039,9 +4039,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('alphaIdentityRegistrarAuth')) el('alphaIdentityRegistrarAuth').textContent = h ? String(!!h.registrarAuthorised) : '—';
       if(el('alphaIdentityParentExpiry')) el('alphaIdentityParentExpiry').textContent = h ? formatTimestamp(h.effectiveParentExpiry) : '—';
       if(el('alphaIdentityRootUsable')) el('alphaIdentityRootUsable').textContent = h ? String(!!h.rootUsable) : '—';
-      if(rootNode && computed.toLowerCase() !== String(rootNode).toLowerCase()){
-        if(el('alphaIdentityActionStatus')) el('alphaIdentityActionStatus').textContent = `Blocking warning: ROOT_NODE mismatch. computed ${computed}, contract ${rootNode}.`;
-      }
+      const rootNodeMismatch = !!rootNode && computed.toLowerCase() !== String(rootNode).toLowerCase();
+      if(rootNodeMismatch && el('alphaIdentityActionStatus')) el('alphaIdentityActionStatus').textContent = `Blocking warning: ROOT_NODE mismatch. computed ${computed}, contract ${rootNode}.`;
       const mismatchWarnings = [];
       const managerEns = await agiJobManager?.methods?.ens?.().call().catch(()=> '');
       const managerWrapper = await agiJobManager?.methods?.nameWrapper?.().call().catch(()=> '');
@@ -4058,7 +4057,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('alphaIdentityExists')) el('alphaIdentityExists').textContent = preview ? String(!!preview.identityExists) : '—';
       if(el('alphaIdentityClaimable')) el('alphaIdentityClaimable').textContent = preview ? String(!!preview.claimable) : '—';
       if(el('alphaIdentityRegistrable')) el('alphaIdentityRegistrable').textContent = preview ? String(!!preview.registrable) : '—';
-      const lockedReason = identityWriteLockedReason(preview);
+      const lockedReason = rootNodeMismatch ? 'ROOT_NODE mismatch blocks identity writes.' : identityWriteLockedReason(preview);
       const registerEnabled = !lockedReason && preview?.registrable;
       const claimEnabled = !lockedReason && preview?.claimable;
       const syncEnabled = !lockedReason && preview?.identityExists && (preview.status===3 || preview.status===4);
