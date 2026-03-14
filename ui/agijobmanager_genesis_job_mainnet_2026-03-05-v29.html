@@ -4020,12 +4020,14 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         else el('alphaIdentityActionStatus').textContent = 'No eligible identity write action for current preview state.';
       }
 
-      if(preview?.tokenId && (preview?.identityExists || preview?.tokenOwner)){
+      const hasPreviewTokenOwner = !!preview?.tokenOwner && !isZeroAddress(preview.tokenOwner);
+      const shouldReadIdentityToken = !!preview?.tokenId && (!!preview?.identityExists || hasPreviewTokenOwner);
+      if(shouldReadIdentityToken){
         const [ownerOf, labelData, tokenURI, lockedState] = await Promise.all([
           freeTrialRegistrarIdentity.methods.ownerOf(preview.tokenId).call().catch(()=> preview?.tokenOwner || ''),
           freeTrialRegistrarIdentity.methods.labelData(preview.tokenId).call().catch(()=>null),
           freeTrialRegistrarIdentity.methods.tokenURI(preview.tokenId).call().catch(()=>''),
-          freeTrialRegistrarIdentity.methods.locked(preview.tokenId).call().catch(()=>true),
+          freeTrialRegistrarIdentity.methods.locked(preview.tokenId).call().catch(()=>null),
         ]);
         const ld = labelData ? (Array.isArray(labelData) ? {label:String(labelData[0]||''), labelhash:String(labelData[1]||''), mintedAt:Number(labelData[2]||0)} : {label:String(labelData.label||''), labelhash:String(labelData.labelhash||''), mintedAt:Number(labelData.mintedAt||0)}) : null;
         if(el('alphaIdentityTokenOwner')) el('alphaIdentityTokenOwner').textContent = ownerOf || preview?.tokenOwner || '—';
@@ -4033,7 +4035,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         if(el('alphaIdentityResolver')) el('alphaIdentityResolver').textContent = preview?.resolver || '—';
         if(el('alphaIdentityWrappedExpiry')) el('alphaIdentityWrappedExpiry').textContent = preview ? formatTimestamp(preview.currentWrappedExpiry) : '—';
         if(el('alphaIdentityMintedAt')) el('alphaIdentityMintedAt').textContent = ld ? formatTimestamp(ld.mintedAt) : '—';
-        if(el('alphaIdentityStatusPill')) el('alphaIdentityStatusPill').textContent = `${preview?.statusLabel || '—'} (${preview?.status ?? '—'}) · soulbound locked: ${lockedState ? 'true' : 'false'}`;
+        if(el('alphaIdentityStatusPill')) el('alphaIdentityStatusPill').textContent = `${preview?.statusLabel || '—'} (${preview?.status ?? '—'}) · soulbound locked: ${lockedState === null ? '—' : (lockedState ? 'true' : 'false')}`;
         if(tokenURI && tokenURI.startsWith('data:application/json;base64,')){
           try{
             const payload = JSON.parse(atob(tokenURI.split(',')[1] || ''));
