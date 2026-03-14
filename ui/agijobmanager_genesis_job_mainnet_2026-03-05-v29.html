@@ -3098,6 +3098,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       let primary = {label:'Connect wallet', action:'connect'};
       let secondary = {label:'Command Palette', action:'command'};
       const bridgedBal = parseDisplayedNumber(el('bridgeAcceptedBalance')?.textContent || '0');
+      const p = APP_STATE.identity?.preview;
       if(connected && !isMainnet){
         title = 'Switch to Ethereum Mainnet';
         body = 'The UI is in read-only mode on the current network. Switch to chainId 1 to post jobs, apply, validate, finalize, and mint through the Ethereum vault.';
@@ -3116,12 +3117,30 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         pill = 'Bridge conversion available';
         primary = {label:'Open bridge console', action:'bridge'};
         secondary = {label:'Refresh balances', action:'refresh'};
+      }else if(connected && isMainnet && hasAcceptedTerms && p && p.claimable){
+        title = 'Claim your Alpha Agent Identity';
+        body = 'A wrapped alpha-agent ENS name is already present for this label and can be claimed into your soulbound identity credential now.';
+        pill = 'Identity claim available';
+        primary = {label:'Claim Alpha Agent Identity', action:'claim-alpha-identity'};
+        secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'};
+      }else if(connected && isMainnet && hasAcceptedTerms && p && p.identityExists && (p.status===3 || p.status===4)){
+        title = 'Repair Alpha Agent Identity state';
+        body = 'Your selected label indicates expired or desynced identity posture. Run sync to repair or clean up stale credential state.';
+        pill = 'Identity sync recommended';
+        primary = {label:'Sync Alpha Agent Identity', action:'sync-alpha-identity'};
+        secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'};
+      }else if(connected && isMainnet && hasAcceptedTerms && p && p.registrable){
+        title = 'Mint Alpha Agent Identity';
+        body = 'Use the recommended register(label) path to mint wrapped ENS + soulbound identity (gas only, no recipient override).';
+        pill = 'Identity register available';
+        primary = {label:'Mint Alpha Agent Identity', action:'mint-alpha-identity'};
+        secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'};
       }else if(connected && isMainnet && hasAcceptedTerms && !verified.agentAlpha){
         title = 'Mint your alpha-agent ENS access key';
         body = 'You can mint a free-trial *.alpha.agent.agi.eth identity now (gas only), then auto-verify it for agent readiness.';
         pill = 'Alpha-agent identity recommended';
-        primary = {label:'Mint free alpha-agent ENS', action:'mint-alpha'};
-        secondary = {label:'Verify ENS', action:'verify'};
+        primary = {label:'Open alpha-agent section', action:'mint-alpha'};
+        secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'};
       }else if(connected && isMainnet && hasAcceptedTerms && jobStats.completion > 0 && verified.club){
         title = 'Review jobs waiting for validator attention';
         body = `${jobStats.completion} job${jobStats.completion === 1 ? '' : 's'} currently show a live completion-review surface. Open the board, inspect the details modal, and vote only after independent evidence review.`;
@@ -3138,7 +3157,6 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         title = 'System ready';
         body = 'Wallet, network, and write-gating are in a good state. You can create a job, inspect live jobs, or use the command palette for faster navigation.';
         pill = 'Ready for production use';
-        const p = APP_STATE.identity?.preview;
         if(p && p.claimable){ primary = {label:'Claim Alpha Agent Identity', action:'claim-alpha-identity'}; secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'}; }
         else if(p && p.identityExists && (p.status===3 || p.status===4)){ primary = {label:'Sync Alpha Agent Identity', action:'sync-alpha-identity'}; secondary = {label:'Open alpha-agent section', action:'mint-alpha'}; }
         else if(p && p.registrable){ primary = {label:'Mint Alpha Agent Identity', action:'mint-alpha-identity'}; secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'}; } else if(!p){ primary = {label:'Open alpha-agent section', action:'mint-alpha'}; secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'}; }
@@ -4080,8 +4098,28 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
               if(img){ node.style.display='block'; node.src = img; }
               else{ node.style.display='none'; node.removeAttribute('src'); }
             }
-          }catch{}
+          }catch{
+            if(el('alphaIdentityTokenMetaName')) el('alphaIdentityTokenMetaName').textContent = '—';
+            if(el('alphaIdentityTokenMetaDescription')) el('alphaIdentityTokenMetaDescription').textContent = '—';
+            const node = el('alphaIdentityTokenImage');
+            if(node){ node.style.display='none'; node.removeAttribute('src'); }
+          }
+        }else{
+          if(el('alphaIdentityTokenMetaName')) el('alphaIdentityTokenMetaName').textContent = '—';
+          if(el('alphaIdentityTokenMetaDescription')) el('alphaIdentityTokenMetaDescription').textContent = '—';
+          const node = el('alphaIdentityTokenImage');
+          if(node){ node.style.display='none'; node.removeAttribute('src'); }
         }
+      }else{
+        if(el('alphaIdentityTokenOwner')) el('alphaIdentityTokenOwner').textContent = '—';
+        if(el('alphaIdentityWrappedOwner')) el('alphaIdentityWrappedOwner').textContent = '—';
+        if(el('alphaIdentityResolver')) el('alphaIdentityResolver').textContent = '—';
+        if(el('alphaIdentityWrappedExpiry')) el('alphaIdentityWrappedExpiry').textContent = '—';
+        if(el('alphaIdentityMintedAt')) el('alphaIdentityMintedAt').textContent = '—';
+        if(el('alphaIdentityTokenMetaName')) el('alphaIdentityTokenMetaName').textContent = '—';
+        if(el('alphaIdentityTokenMetaDescription')) el('alphaIdentityTokenMetaDescription').textContent = '—';
+        const node = el('alphaIdentityTokenImage');
+        if(node){ node.style.display='none'; node.removeAttribute('src'); }
       }
       renderIdentityAdminControls(owner, pendingOwner);
       updateMissionControl();
@@ -5589,7 +5627,9 @@ async function updateSummary(){
       try{
         const full = `${sub}.${suffix}`;
         const tokenID = namehash(full);
-        const runtimeNameWrapper = await agiJobManager?.methods?.nameWrapper().call().catch(()=> '') || NAME_WRAPPER;
+        const managerWrapperAddr = await agiJobManager?.methods?.nameWrapper().call().catch(()=> '');
+        const wrapperCheckDegraded = !managerWrapperAddr || isZeroAddress(managerWrapperAddr);
+        const runtimeNameWrapper = wrapperCheckDegraded ? NAME_WRAPPER : managerWrapperAddr;
         const nw = new web3.eth.Contract(NameWrapperABI, runtimeNameWrapper);
         const owner = await nw.methods.ownerOf(tokenID).call();
         const acct = String(userAccount || '').toLowerCase();
