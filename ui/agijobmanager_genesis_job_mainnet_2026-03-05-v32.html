@@ -540,92 +540,6 @@
     }
 
 
-
-    /* ===== v32 premium light theme overrides ===== */
-    :root{
-      --background:34 36% 96%;
-      --foreground:255 18% 14%;
-      --card:0 0% 100%;
-      --card-2:36 30% 97%;
-      --border:258 20% 84%;
-      --accent:#6f42e8;
-      --accent-soft:#eee8ff;
-      --text-soft:rgba(63,57,78,.82);
-      --danger:#b42339;
-      --ok:#157347;
-      --warn:#9a5600;
-    }
-    body{
-      background:radial-gradient(circle at 5% 0%, rgba(111,66,232,.08), transparent 42%),radial-gradient(circle at 100% 0%, rgba(164,131,255,.12), transparent 34%),linear-gradient(180deg,#f9f7f2 0%, #f6f3ee 55%, #f3efea 100%);
-      color:hsl(var(--foreground));
-    }
-    .container{width:min(1360px,94%);padding:18px 0 48px;}
-    h1{text-align:left;margin:16px 0 8px;font-size:clamp(2.1rem,3.3vw,2.85rem);letter-spacing:-.02em;color:#221b35;}
-    .subtitle{text-align:left;max-width:1000px;color:var(--text-soft);margin:0 0 16px;}
-    .card,.softCard,.detailSection,.bridgeCompactCard,.kpi,.syncCard,.heroStatusCard,.reviewFact,.reviewCheck,.attentionItem,.activityItem,.miniStat,.metaStat,.term-block,.accordion,.callout,.banner,.mintPreview,.statusline,.term-link,.codeBox{
-      background:#fff !important;
-      color:hsl(var(--foreground));
-      border:1px solid rgba(37,24,73,.12) !important;
-      box-shadow:0 8px 26px rgba(54,38,95,.07);
-      backdrop-filter:none;
-    }
-    .card{border-radius:18px;padding:20px;}
-    .muted,label,.helper,.softList,.term-body,.accordion .body,.miniStat .k,.pill,.chip,.statusline,.inlineError{color:var(--text-soft);}
-    .banner{background:linear-gradient(180deg,#fff7f8,#fff);border-color:rgba(180,35,57,.2) !important;color:#5d2030;}
-    .btn,.roleTab,.packetTab,.syncBadge,.starBtn{
-      background:#fff;
-      color:#2f2550;
-      border:1px solid rgba(75,52,145,.28);
-      border-radius:11px;
-      font-weight:600;
-      box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
-    }
-    .btn:hover,.roleTab:hover,.packetTab:hover,.starBtn:hover{background:#f7f3ff;border-color:rgba(75,52,145,.5);transform:translateY(-1px);}
-    .btn-primary{background:linear-gradient(180deg,#7d4df0,#6639de);color:#fff;border-color:#5e30d2;}
-    .btn-primary:hover{background:linear-gradient(180deg,#7444ec,#5b30d3);}
-    .btn-danger{background:#fff5f7;border-color:rgba(180,35,57,.28);color:#8b1d34;}
-    .pill,.miniPill{background:#faf8ff;border-color:rgba(87,61,166,.2);color:#4f3f79;}
-    .pill.ok{color:var(--ok);border-color:rgba(21,115,71,.28);background:#edf9f2;}
-    .pill.warn{color:var(--warn);border-color:rgba(154,86,0,.3);background:#fff5e9;}
-    .pill.bad{color:var(--danger);border-color:rgba(180,35,57,.3);background:#fff0f3;}
-    input[type="text"],input[type="number"],textarea,select{background:#fff;color:#261f38;border:1px solid rgba(62,44,117,.28);}
-    input:focus,textarea:focus,select:focus{border-color:#7144e8;box-shadow:0 0 0 3px rgba(113,68,232,.16);}
-    .jobs-table{background:#fff;border:1px solid rgba(47,31,92,.18);}
-    .jobs-table th{background:linear-gradient(180deg,#f5efff,#eee6ff);color:#2a2142;border-bottom:1px solid rgba(47,31,92,.2);}
-    .jobs-table td{border-bottom:1px solid rgba(47,31,92,.11);}
-    .jobs-table tbody tr:nth-child(even){background:#fcfbff;}
-    .jobs-table tbody tr:hover{background:#f3edff;}
-    .heroNotice{margin:8px 0 18px;align-items:stretch;}
-    .heroNotice > .card:first-child{
-      background:linear-gradient(160deg,#2f173f,#3d1f52 60%,#47245f) !important;
-      border-color:rgba(211,177,255,.28) !important;
-      box-shadow:0 18px 38px rgba(42,20,62,.3);
-      color:#f4ecff;
-    }
-    .heroNotice > .card:first-child .noticeTitle{color:#fff;font-size:1.2rem;}
-    .heroNotice > .card:first-child .helper,.heroNotice > .card:first-child label{color:rgba(243,231,255,.88);}
-    .heroNotice > .card:first-child .banner{background:linear-gradient(180deg,rgba(176,45,74,.34),rgba(108,22,43,.3)) !important;border-color:rgba(248,173,191,.35) !important;color:#ffeef2;}
-    .heroNotice > .card:first-child .btn{background:#f0e7ff;color:#2d1f4d;border-color:rgba(197,172,255,.5);}
-    .heroNotice > .card:first-child .btn:hover{background:#e7dcff;}
-    .heroNotice > .card:last-child{background:linear-gradient(180deg,#fff,#fcfaff) !important;}
-    .noticeTitle{color:#2d2348;}
-    .eliteHero{margin-top:6px;}
-    .elitePanel{background:#fff !important;}
-    .missionTitle{color:#241c38;}
-    .eyebrow{color:#6a4abf;}
-    .missionPill{background:#efe8ff;border-color:rgba(93,65,182,.24);color:#4b3791;}
-    .snapshotHint{color:#62577f;}
-    #termsSection{background:#fff;border:1px solid rgba(37,24,73,.14);box-shadow:0 10px 26px rgba(49,35,83,.08);}
-    .scrollTerms{background:#fefcf9;border:1px solid rgba(50,35,84,.14);}
-    .term-block{background:#fffdff !important;}
-    .term-block summary{color:#2f2550;}
-    .modalBackdrop{background:rgba(25,19,43,.34);backdrop-filter:blur(4px);}
-    .modalCard{background:#fff;border:1px solid rgba(56,39,101,.18);box-shadow:0 28px 60px rgba(34,22,60,.24);}
-    .modalClose{background:#f8f4ff;color:#2f2550;border:1px solid rgba(74,52,143,.28);}
-    #v26MobileDock{background:rgba(255,255,255,.94) !important;border:1px solid rgba(71,49,136,.22);box-shadow:0 10px 28px rgba(40,26,77,.18);}
-    #v26MobileSheet{background:rgba(21,13,38,.08);}
-    #v26MobileSheet .v26-sheet-card{background:#fff;border:1px solid rgba(71,49,136,.2);}
-
   </style>
 
   <style id="v26-mobile-enhancements">
@@ -803,13 +717,96 @@
       #agialphaBridgeSection #debridgeWidgetMount,
       #agialphaBridgeSection .debridgeWidgetMount iframe{min-height:560px !important}
     }
-  </style>
+  
+
+    /* v32 flagship white-edition redesign */
+    :root{
+      --background:35 44% 97%;
+      --foreground:258 24% 14%;
+      --card:0 0% 100%;
+      --card-2:260 40% 98%;
+      --surface-soft:258 42% 97%;
+      --surface-tint:266 54% 96%;
+      --border:258 24% 85%;
+      --border-strong:258 20% 76%;
+      --accent:#6f4be8;
+      --accent-strong:#4f2db9;
+      --accent-soft:#efe9ff;
+      --accent-ink:#3a2586;
+      --text-soft:rgba(74,58,98,.78);
+      --danger:rgba(181,48,78,1);
+      --ok:rgba(21,140,95,1);
+      --warn:rgba(171,118,22,1);
+      --shadow-sm:0 6px 16px rgba(51,30,90,.06);
+      --shadow-md:0 14px 32px rgba(48,20,84,.09);
+      --shadow-lg:0 30px 60px rgba(40,16,76,.14);
+      --radius-sm:10px;--radius-md:14px;--radius-lg:18px;--radius-xl:24px;
+    }
+    body{
+      background:linear-gradient(180deg,#f9f7f2 0%, #f7f5ff 38%, #f8f8fd 100%);
+      color:hsl(var(--foreground));
+      letter-spacing:.01em;
+    }
+    .container{width:min(1420px,93%);padding:26px 0 70px;}
+    .mastheadBadge{display:inline-block;margin:14px auto 8px;left:50%;position:relative;transform:translateX(-50%);padding:7px 14px;border-radius:999px;background:var(--accent-soft);border:1px solid rgba(111,75,232,.24);color:var(--accent-ink);font-weight:700;font-size:.76rem;letter-spacing:.11em;text-transform:uppercase;}
+    h1{text-align:center;color:#1f1730;font-size:clamp(2.2rem,3.4vw,3rem);margin:10px 0 10px;letter-spacing:.01em;font-weight:700;}
+    .subtitle{max-width:980px;margin:0 auto 24px;text-align:center;color:var(--text-soft);font-size:clamp(1rem,1.4vw,1.15rem);line-height:1.6;}
+    .card,.softCard,.detailSection,.bridgeCompactCard,.syncCard,.heroStatusCard,.reviewFact,.reviewCheck,.attentionItem,.activityItem,.metaStat,.term-block,.accordion,.banner,.callout{
+      background:hsl(var(--card));border:1px solid hsl(var(--border));box-shadow:var(--shadow-sm);border-radius:var(--radius-lg);backdrop-filter:none;
+    }
+    .card:hover,.softCard:hover,.bridgeCompactCard:hover,.syncCard:hover{box-shadow:var(--shadow-md);}
+    .statusline{background:hsl(var(--card-2));border-color:hsl(var(--border));color:#4b3d68;border-radius:var(--radius-md);}
+    .muted,.helper,.tiny,label,.kpi .label,.miniStat .k{color:var(--text-soft);}
+    .btn{background:#f4f1fd;color:#2d1b54;border:1px solid #d9cffb;border-radius:12px;font-weight:600;}
+    .btn:hover{background:#ece5ff;border-color:#c8b8fb;box-shadow:var(--shadow-sm);}
+    .btn-primary{background:linear-gradient(180deg,#7a5bf0,#6242da);color:#fff;border-color:#5e3ed6;}
+    .btn-primary:hover{background:linear-gradient(180deg,#6d4ae8,#5534cb);}
+    .btn-danger{background:#fff2f5;color:#8f2747;border-color:#f2bfd0;}
+    input[type="text"],input[type="number"],select,textarea{background:#fff;border:1px solid hsl(var(--border));color:#211734;border-radius:12px;}
+    input:focus,select:focus,textarea:focus{border-color:#8765f2;box-shadow:0 0 0 3px rgba(122,63,242,.16);}
+    .pill,.miniPill,.roleTab,.packetTab,.syncBadge{background:#f7f4ff;border:1px solid #ddd3fa;color:#4b3a76;}
+    .roleTab.active,.packetTab.active,.syncBadge.ok{background:#ece3ff;border-color:#bda9f7;color:#332262;}
+    .jobs-table{border-color:hsl(var(--border));background:#fff;border-radius:16px;overflow:hidden;}
+    .jobs-table th{background:#f2ecff;color:#2f2350;border-bottom:1px solid #ddd2f9;}
+    .jobs-table td{border-bottom:1px solid #ede7fb;}
+    .jobs-table tbody tr:nth-child(even){background:#fcfbff;}
+    .jobs-table tbody tr:hover{background:#f5f1ff;}
+    .anchorNav a,.term-link{text-decoration:none;background:#fff;border:1px solid hsl(var(--border));color:#3d2d66;border-radius:999px;}
+    .anchorNav a:hover,.term-link:hover{background:#f3edff;border-color:#ccbdf8;}
+    .heroNotice{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:14px;margin:0 0 18px;}
+    .heroNotice .card:first-child{background:linear-gradient(155deg,#2a153f 0%,#3b215e 55%,#4a2f76 100%);border-color:#5c4390;box-shadow:var(--shadow-lg);}
+    .heroNotice .card:first-child .noticeTitle,.heroNotice .card:first-child .helper,.heroNotice .card:first-child label,.heroNotice .card:first-child .banner{color:#f6efff;}
+    .heroNotice .card:first-child .banner{background:rgba(255,255,255,.1);border:1px solid rgba(255,225,177,.35);}
+    .heroNotice .card:first-child .btn{background:rgba(255,255,255,.12);border-color:rgba(224,199,255,.45);color:#fff;}
+    .heroNotice .card:first-child .btn:hover{background:rgba(255,255,255,.2);}
+    .noticeTitle{font-size:1.16rem;letter-spacing:.01em;}
+    .miniStat{background:#faf8ff;border-color:#e3dafc;border-radius:14px;}
+    .eliteHero .elitePanel:first-child{background:linear-gradient(180deg,#ffffff,#faf7ff);}
+    .eliteHero .elitePanel:last-child{background:linear-gradient(180deg,#f9f5ff,#ffffff);}
+    .eyebrow{color:#5e4798;letter-spacing:.12em;text-transform:uppercase;font-weight:700;font-size:.76rem;}
+    .missionTitle{color:#23173a;}
+    .heroStatusCard .k{color:#6f6094}.heroStatusCard .v{color:#25183f;}
+    #termsSection{background:#ffffff;border:1px solid hsl(var(--border));box-shadow:var(--shadow-md);}
+    #termsSection .scrollTerms{background:#fcfafe;border-color:#e4dafd;}
+    .term-body,.accordion .body{color:#4f3f71;}
+    .modal-content,.modalCard,#commandPaletteModal .modal-content,#jobDetailModal .modal-content,#completionAssistantModal .modal-content,#adminArgsModal .modal-content,#actionReviewModal .modal-content,#alphaMintReviewModal .modal-content,#alphaIdentityReviewModal .modal-content{background:#fff !important;border:1px solid hsl(var(--border)) !important;box-shadow:var(--shadow-lg);}
+    #v26MobileDock{background:rgba(255,255,255,.9);border:1px solid #dfd3fb;box-shadow:0 -10px 28px rgba(55,28,99,.13);backdrop-filter:blur(10px);}
+    #v26MobileDock .v26-dock-btn{background:#f8f4ff;border-color:#d7cbfa;color:#3e2c69;}
+    #v26MobileSheet{background:rgba(245,240,255,.65);}
+    .flowSvg text{fill:#332654;}
+    .barTrack{background:#efe8ff;border-color:#e0d2ff;}
+    .barFill{background:linear-gradient(90deg,#6d47dd,#8f6cff);}
+    @media (max-width:1040px){.heroNotice{grid-template-columns:1fr}}
+    @media (max-width:720px){.container{width:min(100%,100vw);padding:12px 10px calc(28px + env(safe-area-inset-bottom));}}
+    @media (max-width:560px){.container{padding:10px 8px calc(24px + env(safe-area-inset-bottom));}}
+</style>
 
 </head>
 <body>
   <div class="container">
-    <h1>AGIJobManager</h1>
-    <div class="subtitle">[ Jobs.AGI.eth 🗝️👾 ] · Post jobs, pay in <b>$AGIALPHA</b>. ENS subdomain ownership is the primary authorization path.</div>
+    <div class="mastheadBadge">ASI Access · Jobs.AGI.eth</div>
+    <h1>AGIJobManager · Genesis Mainnet Console</h1>
+    <div class="subtitle">Sovereign coordination infrastructure for frontier intelligence work. Operate jobs, verification, bridge routing, mint flows, and protocol settlement with institutional-grade precision.</div>
 
     <div class="card">
       <div class="row">
@@ -824,7 +821,6 @@
       </div>
       <div id="toast" class="statusline" style="margin-top:12px;display:none"></div>
     </div>
-
 
     <div class="heroNotice">
       <div class="card">
@@ -1139,7 +1135,7 @@
       </div>
     </div>
 
-
+    
 
 
 
