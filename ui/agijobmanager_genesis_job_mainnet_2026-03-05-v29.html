@@ -2643,6 +2643,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       const raw = error?.message || String(error || 'Unknown error');
       return raw.replace(/\s+/g, ' ').trim();
     }
+    function isUserRejectedTx(error){
+      const code = Number(error?.code);
+      if(code === 4001) return true;
+      const msg = normalizedErrorMessage(error).toLowerCase();
+      return msg.includes('user rejected') || msg.includes('user denied') || msg.includes('denied transaction signature') || msg.includes('rejected the request') || msg.includes('cancelled');
+    }
     function isExpectedRpcRevert(error){
       const msg = normalizedErrorMessage(error).toLowerCase();
       return msg.includes('execution reverted') || msg.includes('returned error') || msg.includes('revert');
@@ -4546,23 +4552,9 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       setToast('Connected Ethereum wallet inserted as a receiver override and the embedded route is being refreshed.', 'ok');
     }
     async function ensureApprovalForToken(tokenContract, spender, required, fmtDecimals, options={}){
-      const needed = BigInt(required || 0);
-      if(needed <= 0n) return true;
-      const balance = BigInt(await tokenContract.methods.balanceOf(userAccount).call());
-      const allowance = BigInt(await tokenContract.methods.allowance(userAccount, spender).call());
-      const label = options.actionLabel || 'this action';
-      const actionLabel = options.actionLabel || 'this action';
-      if(balance < needed){
-        setToast(`Insufficient token balance for ${label}. Need about ${formatUnitsWithDecimals(needed, fmtDecimals)}.`, 'bad');
-        return false;
-      }
-      if(allowance >= needed) return true;
-      const ok = await requestActionConfirmation({title:'Token approval required', body:`${label} needs token approval first.`, facts:[{label:'Approve', value:formatUnitsWithDecimals(needed, fmtDecimals)},{label:'Current allowance', value:formatUnitsWithDecimals(allowance, fmtDecimals)}], checks:[{state:'Prerequisite', badge:'warn', text: options.explanation || 'Approval is required before continuing.'}], method:`approve(${spender}, ${needed.toString()})`, confirmLabel:'Approve token'});
-      if(!ok) return false;
-      setToast(`Waiting for token approval for ${label}…`, 'warn');
-      await runTrackedTx(`Approve token for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
-      setToast(`Token approval confirmed for ${label}.`, 'ok');
-      return true;
+      const result = await ensureTokenApprovalExact(tokenContract, spender, required, fmtDecimals, options);
+      if(result.ok && result.approvalTx) setToast(`Token approval confirmed for ${options.actionLabel || 'this action'}.`, 'ok');
+      return result;
     }
     async function refreshAgiAlphaBridgePanel(){
       updateBridgeUiState();
@@ -4678,11 +4670,21 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       try{
         const plan = options.precomputed || await getVaultConversionPlan(options);
         if(plan.paused) throw new Error('AGIALPHAEqualMinterVault is paused.');
-        const approved = await ensureApprovalForToken(bridgedAgiToken, AGIALPHA_EQUAL_MINTER_VAULT, plan.amountIn, bridgedTokenDecimals, {
+        const approval = await ensureApprovalForToken(bridgedAgiToken, AGIALPHA_EQUAL_MINTER_VAULT, plan.amountIn, bridgedTokenDecimals, {
           actionLabel: 'minting official Ethereum $AGIALPHA',
-          explanation: 'The vault pulls the bridged Ethereum token, then mints the official Ethereum $AGIALPHA via depositExact.'
+          explanation: 'The vault pulls the bridged Ethereum token, then mints the official Ethereum $AGIALPHA via depositExact.',
+          tokenLabel: 'Bridged Ethereum $AGIALPHA',
+          tokenAddress: BRIDGED_AGIALPHA_ETH,
+          postActionLabel: `depositExact(${plan.amountIn.toString()}, ${plan.recipient}, ${plan.minMintOut.toString()})`
         });
-        if(!approved) return;
+        if(!approval.ok) return;
+        const finalPlan = await getVaultConversionPlan(options);
+        if(finalPlan.paused) throw new Error('Vault paused before depositExact could be sent.');
+        if(finalPlan.amountIn !== plan.amountIn || String(finalPlan.recipient).toLowerCase() !== String(plan.recipient).toLowerCase() || finalPlan.minMintOut !== plan.minMintOut){
+          throw new Error('Vault conversion inputs changed after review. Re-open review to confirm updated amount/recipient/slippage parameters.');
+        }
+        const gate = await getTokenBalanceAndAllowance({ tokenContract: bridgedAgiToken, spender: AGIALPHA_EQUAL_MINTER_VAULT });
+        if(gate.balance < plan.amountIn || gate.allowance < plan.amountIn) throw new Error('Vault preflight drifted after approval: bridged token allowance/balance is no longer sufficient for reviewed depositExact parameters. Refresh and retry.');
         setToast('Submitting depositExact to AGIALPHAEqualMinterVault…', 'warn');
         await runTrackedTx('Convert bridged token to official Ethereum $AGIALPHA', ()=>agiAlphaEqualMinterVault.methods.depositExact(String(plan.amountIn), plan.recipient, String(plan.minMintOut)).send({from:userAccount}), { pendingDetail:'Submitting depositExact to AGIALPHAEqualMinterVault.', successDetail:'Vault conversion confirmed on-chain.' });
         setToast('Vault conversion submitted successfully.', 'ok');
@@ -5179,46 +5181,105 @@ async function updateSummary(){
       renderAttentionQueue();
     }
 
-    async function getTokenBalanceAndAllowance(){
+    async function getTokenBalanceAndAllowance(options={}){
+      const tokenContract = options.tokenContract || agiToken;
+      const spender = options.spender || AGI_JOB_MANAGER;
+      const owner = options.owner || userAccount;
+      if(!tokenContract || !owner || !spender) throw new Error('Token balance/allowance read requires token, owner, and spender.');
       const [balanceRaw, allowanceRaw] = await Promise.all([
-        agiToken.methods.balanceOf(userAccount).call(),
-        agiToken.methods.allowance(userAccount, AGI_JOB_MANAGER).call()
+        tokenContract.methods.balanceOf(owner).call(),
+        tokenContract.methods.allowance(owner, spender).call()
       ]);
       return { balance: BigInt(balanceRaw), allowance: BigInt(allowanceRaw) };
     }
 
-    async function ensureApproval(required, options={}){
+    async function ensureTokenApprovalExact(tokenContract, spender, required, fmtDecimals, options={}){
       const needed = BigInt(required || 0);
-      if(needed <= 0n) return true;
+      const owner = options.owner || userAccount;
       const actionLabel = options.actionLabel || 'this action';
-      const approvalLabel = options.approvalLabel || `${formatUnitsToAmount(needed)} $AGIALPHA`;
-      const explanation = options.explanation || '';
-      const { balance, allowance } = await getTokenBalanceAndAllowance();
-      if(balance < needed){
-        setToast(`Insufficient $AGIALPHA balance for ${actionLabel}. Need about ${formatUnitsToAmount(needed)}.`, 'bad');
-        return false;
+      const tokenLabel = options.tokenLabel || 'Token';
+      const postActionLabel = options.postActionLabel || actionLabel;
+      const explanation = options.explanation || 'Approval is required before this write action can proceed.';
+      const formatAmount = (v)=> typeof fmtDecimals === 'number' ? formatUnitsWithDecimals(v, fmtDecimals) : formatUnitsToAmount(v);
+      const tokenAddress = options.tokenAddress || tokenContract?._address || 'unknown';
+      if(needed <= 0n) return { ok:true, needed, balance:0n, allowance:0n, postAllowance:0n, approvalTx:false, zeroResetUsed:false, tokenAddress, spender };
+      const initial = await getTokenBalanceAndAllowance({ tokenContract, spender, owner });
+      if(initial.balance < needed){
+        setToast(`Insufficient ${tokenLabel} balance for ${actionLabel}. Need ${formatAmount(needed)} (${needed.toString()} raw).`, 'bad');
+        return { ok:false, needed, ...initial, postAllowance:initial.allowance, approvalTx:false, zeroResetUsed:false, tokenAddress, spender };
       }
-      if(allowance >= needed) return true;
-      const currentAllowance = formatUnitsToAmount(allowance);
-      const ok = await requestActionConfirmation({title:'Token approval required', body:`${actionLabel} needs token approval before AGIJobManager can transfer the required $AGIALPHA.`, facts:[{label:'Approve now', value:approvalLabel},{label:'Current allowance', value:`${currentAllowance} $AGIALPHA`}], checks:[{state:'Prerequisite', badge:'warn', text: explanation || 'Approval is required before this write action can proceed.'}], method:`approve(${AGI_JOB_MANAGER}, ${needed.toString()})`, confirmLabel:'Approve token'});
-      if(!ok) return false;
+      if(initial.allowance >= needed) return { ok:true, needed, ...initial, postAllowance:initial.allowance, approvalTx:false, zeroResetUsed:false, tokenAddress, spender };
+
+      const approvalMode = options.approveMax ? 'max (opt-in)' : 'exact';
+      const targetApproval = options.approveMax ? (2n ** 256n - 1n) : needed;
+      const reviewOk = await requestActionConfirmation({
+        title:'Token approval required',
+        body:`${actionLabel} needs token approval before ${spender} can spend ${tokenLabel}.`,
+        facts:[
+          {label:'Token', value: `${tokenLabel} (${tokenAddress})`},
+          {label:'Spender', value: spender},
+          {label:'Required amount', value: `${formatAmount(needed)} (${needed.toString()} raw)`},
+          {label:'Current allowance', value: `${formatAmount(initial.allowance)} (${initial.allowance.toString()} raw)`},
+          {label:'Approval mode', value: approvalMode},
+          {label:'Post-approval action', value: postActionLabel}
+        ],
+        checks:[
+          {state:'Prerequisite', badge:'warn', text: explanation},
+          {state:'Zero-reset compatibility', badge:'warn', text:'If direct approve(amount) fails and allowance is non-zero, the UI will try approve(0) then approve(amount).'}
+        ],
+        method:`approve(${spender}, ${targetApproval.toString()})`,
+        confirmLabel:'Approve token'
+      });
+      if(!reviewOk) return { ok:false, needed, ...initial, postAllowance:initial.allowance, approvalTx:false, zeroResetUsed:false, tokenAddress, spender };
+
+      let zeroResetUsed = false;
       setToast(`Waiting for token approval for ${actionLabel}…`, 'warn');
-      await runTrackedTx(`Approve AGIJobManager for ${actionLabel}`, ()=>agiToken.methods.approve(AGI_JOB_MANAGER, String(needed)).send({from:userAccount}), { pendingDetail:`Submitting AGIJobManager approval for ${actionLabel}.`, successDetail:`AGIJobManager approval confirmed for ${actionLabel}.` });
-      setToast(`Token approval confirmed for ${actionLabel}. You can now complete the action transaction.`, 'ok');
-      return true;
+      try{
+        await runTrackedTx(`Approve ${tokenLabel} for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(targetApproval)).send({from:owner}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
+      }catch(err){
+        if(isUserRejectedTx(err)) throw err;
+        if(initial.allowance > 0n){
+          zeroResetUsed = true;
+          setToast('Direct approve reverted; retrying with approve(0) then approve(amount).', 'warn');
+          await runTrackedTx(`Reset ${tokenLabel} allowance to zero`, ()=>tokenContract.methods.approve(spender, '0').send({from:owner}), { pendingDetail:'Submitting approve(0) zero-reset for ERC-20 compatibility.', successDetail:'Allowance reset to zero confirmed.' });
+          await runTrackedTx(`Approve ${tokenLabel} after zero-reset`, ()=>tokenContract.methods.approve(spender, String(targetApproval)).send({from:owner}), { pendingDetail:`Submitting token approval for ${actionLabel} after zero-reset.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
+        }else{
+          throw err;
+        }
+      }
+      const post = await getTokenBalanceAndAllowance({ tokenContract, spender, owner });
+      if(post.allowance < needed){
+        setToast(`Approval mined but allowance is still insufficient for ${actionLabel}. Needed ${formatAmount(needed)}, now ${formatAmount(post.allowance)}.`, 'bad');
+        return { ok:false, needed, balance:post.balance, allowance:initial.allowance, postAllowance:post.allowance, approvalTx:true, zeroResetUsed, tokenAddress, spender };
+      }
+      return { ok:true, needed, balance:post.balance, allowance:initial.allowance, postAllowance:post.allowance, approvalTx:true, zeroResetUsed, tokenAddress, spender };
+    }
+
+    async function ensureApproval(required, options={}){
+      const managerTokenAddr = String(await agiJobManager.methods.agiToken().call());
+      if(!agiToken || String(agiToken.options?.address || agiToken._address || '').toLowerCase() !== managerTokenAddr.toLowerCase()){
+        agiToken = new web3.eth.Contract(ERC20ABI, managerTokenAddr);
+      }
+      const result = await ensureTokenApprovalExact(agiToken, AGI_JOB_MANAGER, required, tokenDecimals, {
+        ...options,
+        tokenLabel: '$AGIALPHA',
+        tokenAddress: managerTokenAddr
+      });
+      if(result.ok && result.approvalTx) setToast(`Token approval confirmed for ${options.actionLabel || 'this action'}.`, 'ok');
+      return result;
     }
 
     function safeParseDisplayedAmount(value){
       try{ return parseAmountToUnits(String(value || '0').replace(/[^0-9.]/g, '') || '0'); }catch{ return 0n; }
     }
 
-    function computeAgentBondExactForJob(job){
+    function computeAgentBondExactForJob(job, params={}){
       const payout = BigInt(job?.payout || 0);
       const duration = BigInt(job?.duration || 0);
-      const durationLimit = getProtocolBigInt('jobDurationLimit', 0n);
-      const bps = getProtocolBigInt('agentBondBps');
-      const minBond = getProtocolBigInt('agentBondMin');
-      const maxBond = getProtocolBigInt('agentBondMax');
+      const durationLimit = params.durationLimit == null ? getProtocolBigInt('jobDurationLimit', 0n) : BigInt(params.durationLimit);
+      const bps = params.bps == null ? getProtocolBigInt('agentBondBps') : BigInt(params.bps);
+      const minBond = params.minBond == null ? getProtocolBigInt('agentBondMin') : BigInt(params.minBond);
+      const maxBond = params.maxBond == null ? getProtocolBigInt('agentBondMax') : BigInt(params.maxBond);
       if(bps === 0n && minBond === 0n && maxBond === 0n) return 0n;
       let bond = payout * bps / 10000n;
       if(bond < minBond) bond = minBond;
@@ -5230,8 +5291,15 @@ async function updateSummary(){
       if(bond > payout) bond = payout;
       return bond;
     }
-    function estimatedAgentApprovalForJob(job){
-      return computeAgentBondExactForJob(job);
+    async function computeAgentBondExactForJobId(jobId){
+      const [core, bps, minBond, maxBond, durationLimit] = await Promise.all([
+        agiJobManager.methods.getJobCore(String(jobId)).call(),
+        agiJobManager.methods.agentBondBps().call(),
+        agiJobManager.methods.agentBond().call(),
+        agiJobManager.methods.agentBondMax().call(),
+        agiJobManager.methods.jobDurationLimit().call()
+      ]);
+      return computeAgentBondExactForJob(core, { bps, minBond, maxBond, durationLimit });
     }
 
     function renderValidationStatus(job){
@@ -5303,8 +5371,10 @@ async function updateSummary(){
           confirmLabel:'Create job',
           footer:'After confirmation, the UI may first request approve() if your AGIALPHA allowance is below the escrow amount.',
           run: async ()=>{
-            const approved = await ensureApproval(payoutUnits, { actionLabel: 'creating this job', explanation: 'Job creation escrows the full payout amount into AGIJobManager.' });
-            if(!approved) return;
+            const approval = await ensureApproval(payoutUnits, { actionLabel: 'creating this job', explanation: 'Job creation escrows the full payout amount into AGIJobManager.', postActionLabel:`createJob(${spec},${payoutUnits.toString()},${durationInt.toString()},details)` });
+            if(!approval.ok) return;
+            const finalGate = await getTokenBalanceAndAllowance();
+            if(finalGate.balance < payoutUnits || finalGate.allowance < payoutUnits) throw new Error('Create job preflight drifted after approval: allowance or balance is no longer sufficient for escrow. Refresh and retry.');
             setToast('Sending createJob transaction…', 'warn');
             await runTrackedTx('Create job', ()=>agiJobManager.methods.createJob(spec, String(payoutUnits), String(durationInt), details).send({from:userAccount}), { pendingDetail:'Escrowing payout and creating the job on-chain.', successDetail:'Job created successfully.' });
             if(el('jobSpecURI')) el('jobSpecURI').value = spec;
@@ -5319,32 +5389,37 @@ async function updateSummary(){
       if(!mustBeReadyToWrite()) return;
       if(!verified.agent){setToast("Verify your agent.agi.eth subdomain first.", "warn");return;}
       try{
-        const job = jobCache.get(String(jobId));
-        const approvalCap = estimatedAgentApprovalForJob(job);
+        const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
+        const exactAgentBond = await computeAgentBondExactForJobId(jobId);
         openActionReview({
           title:`Apply for Job #${jobId}`,
-          body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. The contract computes the exact agent bond on-chain; this UI uses a safe approval cap to avoid allowance-related reverts.',
+          body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. The UI computes the exact current bond from fresh job/core protocol state and verifies it again right before sending applyForJob.',
           facts:[
             {label:'Agent ENS', value: `${verified.agent}.${verified.agentAlpha ? SUFFIX.alphaAgent : SUFFIX.agent}`},
             {label:'Job payout', value: `${formatUnitsToAmount(job?.payout || 0)} $AGIALPHA`},
             {label:'Duration', value: `${secondsToHuman(job?.duration || 0)}`},
-            {label:'Approval cap', value: `${formatUnitsToAmount(approvalCap)} $AGIALPHA`}
+            {label:'Exact agent bond (fresh)', value: `${formatUnitsToAmount(exactAgentBond)} $AGIALPHA`}
           ],
           checks:[
             {state:'Eligibility', badge:'good', text:'Your wallet is verified in the UI as an agent ENS owner.'},
-            {state:'Bond', badge:'warn', text:'The exact bond is computed on-chain in BondMath and is not exposed as a direct public quote.'},
+            {state:'Bond', badge:'good', text:'Bond preview follows the contract path using payout, duration, agentBondBps, agentBond, agentBondMax, and jobDurationLimit from fresh reads.'},
             {state:'Allowance', badge:'warn', text:'A token approval may be requested before applyForJob is sent.'}
           ],
           method:`applyForJob(jobId=${jobId}, subdomain=${JSON.stringify(verified.agent)}, proof=[])`,
           confirmLabel:'Apply for job',
           footer:'This transaction only succeeds if the job is still open and your wallet satisfies the protocol authorization path at execution time.',
           run: async ()=>{
-            const approved = await ensureApproval(approvalCap, {
+            const requiredBondNow = await computeAgentBondExactForJobId(jobId);
+            const approval = await ensureApproval(requiredBondNow, {
               actionLabel: `applying for job #${jobId}`,
-              approvalLabel: `${formatUnitsToAmount(approvalCap)} $AGIALPHA`,
-              explanation: 'The exact agent bond is computed on-chain by BondMath and is not exposed as a direct public quote. This UI therefore asks for a bounded approval sized to safely cover the current job application.'
+              approvalLabel: `${formatUnitsToAmount(requiredBondNow)} $AGIALPHA`,
+              explanation: 'The exact agent bond is computed from fresh state and revalidated after approval to prevent stale or drifted sends.',
+              postActionLabel: `applyForJob(${jobId},${verified.agent},[])`
             });
-            if(!approved) return;
+            if(!approval.ok) return;
+            const requiredBondFinal = await computeAgentBondExactForJobId(jobId);
+            const finalGate = await getTokenBalanceAndAllowance();
+            if(finalGate.balance < requiredBondFinal || finalGate.allowance < requiredBondFinal) throw new Error(`Apply preflight drifted after approval: current required bond is ${formatUnitsToAmount(requiredBondFinal)} $AGIALPHA and allowance is insufficient. Refresh and retry.`);
             setToast("Submitting applyForJob transaction…", "warn");
             await runTrackedTx(`Apply for job #${jobId}`, ()=>agiJobManager.methods.applyForJob(String(jobId), verified.agent, []).send({from:userAccount}), { pendingDetail:`Submitting applyForJob for job #${jobId}.`, successDetail:`Application for job #${jobId} confirmed.` });
             await refreshAll();
@@ -5385,11 +5460,18 @@ async function updateSummary(){
           confirmLabel:'Approve job',
           footer:'Validator incentives are outcome-aligned but not risk-free.',
           run: async ()=>{
-            const approved = await ensureApproval(requiredBond, {
+            const freshJob = await fetchJobSnapshot(jobId, {forceRefresh:true});
+            const requiredBondNow = computeValidatorBondFromPayout(BigInt(freshJob?.payout || 0));
+            const approval = await ensureApproval(requiredBondNow, {
               actionLabel: `approving job #${jobId}`,
-              explanation: 'Validators post a per-vote bond. This approval matches the current validator bond computed from the job payout and the live on-chain validator bond parameters.'
+              explanation: 'Validators post a per-vote bond. The UI recomputes the validator bond from fresh payout state before and after approval.',
+              postActionLabel: `validateJob(${jobId},${verified.club},[])`
             });
-            if(!approved) return;
+            if(!approval.ok) return;
+            const finalJob = await fetchJobSnapshot(jobId, {forceRefresh:true});
+            const requiredBondFinal = computeValidatorBondFromPayout(BigInt(finalJob?.payout || 0));
+            const finalGate = await getTokenBalanceAndAllowance();
+            if(finalGate.balance < requiredBondFinal || finalGate.allowance < requiredBondFinal) throw new Error('Validate preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting approval…", "warn");
             await runTrackedTx(`Approve job #${jobId}`, ()=>agiJobManager.methods.validateJob(String(jobId), verified.club, []).send({from:userAccount}), { pendingDetail:`Submitting validator approval for job #${jobId}.`, successDetail:`Validator approval for job #${jobId} confirmed.` });
             await refreshAll();
@@ -5423,11 +5505,18 @@ async function updateSummary(){
           confirmLabel:'Disapprove job',
           footer:'Disapproval is not just a UI flag; it is a bonded on-chain vote.',
           run: async ()=>{
-            const approved = await ensureApproval(requiredBond, {
+            const freshJob = await fetchJobSnapshot(jobId, {forceRefresh:true});
+            const requiredBondNow = computeValidatorBondFromPayout(BigInt(freshJob?.payout || 0));
+            const approval = await ensureApproval(requiredBondNow, {
               actionLabel: `disapproving job #${jobId}`,
-              explanation: 'Disapprovals post the same validator bond as approvals. The UI checks and requests approval before sending the vote transaction.'
+              explanation: 'Disapprovals post the same validator bond as approvals. The UI recomputes from fresh payout state before and after approval.',
+              postActionLabel: `disapproveJob(${jobId},${verified.club},[])`
             });
-            if(!approved) return;
+            if(!approval.ok) return;
+            const finalJob = await fetchJobSnapshot(jobId, {forceRefresh:true});
+            const requiredBondFinal = computeValidatorBondFromPayout(BigInt(finalJob?.payout || 0));
+            const finalGate = await getTokenBalanceAndAllowance();
+            if(finalGate.balance < requiredBondFinal || finalGate.allowance < requiredBondFinal) throw new Error('Disapprove preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting disapproval…", "warn");
             await runTrackedTx(`Disapprove job #${jobId}`, ()=>agiJobManager.methods.disapproveJob(String(jobId), verified.club, []).send({from:userAccount}), { pendingDetail:`Submitting validator disapproval for job #${jobId}.`, successDetail:`Validator disapproval for job #${jobId} confirmed.` });
             await refreshAll();
@@ -5490,11 +5579,18 @@ async function updateSummary(){
           confirmLabel:'Start dispute',
           footer:'Only the employer or assigned agent can successfully open this dispute path.',
           run: async ()=>{
-            const approved = await ensureApproval(disputeBond, {
+            const freshJob = await fetchJobSnapshot(jobId, {forceRefresh:true});
+            const disputeBondNow = computeDisputeBondFromPayout(BigInt(freshJob?.payout || 0));
+            const approval = await ensureApproval(disputeBondNow, {
               actionLabel: `starting a dispute for job #${jobId}`,
-              explanation: 'The dispute bond follows the current contract constants and is checked before the dispute transaction is sent.'
+              explanation: 'The dispute bond follows contract constants and is revalidated from fresh payout state before and after approval.',
+              postActionLabel: `disputeJob(${jobId})`
             });
-            if(!approved) return;
+            if(!approval.ok) return;
+            const finalJob = await fetchJobSnapshot(jobId, {forceRefresh:true});
+            const disputeBondFinal = computeDisputeBondFromPayout(BigInt(finalJob?.payout || 0));
+            const finalGate = await getTokenBalanceAndAllowance();
+            if(finalGate.balance < disputeBondFinal || finalGate.allowance < disputeBondFinal) throw new Error('Dispute preflight drifted after approval: current dispute bond is no longer fully covered. Refresh and retry.');
             setToast("Disputing…", "warn");
             await runTrackedTx(`Dispute job #${jobId}`, ()=>agiJobManager.methods.disputeJob(String(jobId)).send({from:userAccount}), { pendingDetail:`Submitting dispute for job #${jobId}.`, successDetail:`Dispute for job #${jobId} confirmed.` });
             await refreshAll();
@@ -5910,8 +6006,9 @@ function normalizeIpfsToHttp(uri){
     function saveCompletionDraft(jobId){
       try{ localStorage.setItem(`agijobmanager_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
     }
-    async function fetchJobSnapshot(jobId){
-      let job = jobCache.get(String(jobId));
+    async function fetchJobSnapshot(jobId, options={}){
+      const forceRefresh = !!options.forceRefresh;
+      let job = forceRefresh ? null : jobCache.get(String(jobId));
       if(job) return job;
       const core = await agiJobManager.methods.getJobCore(jobId).call();
       const spec = await agiJobManager.methods.getJobSpecURI(jobId).call();
