@@ -7568,6 +7568,15 @@ function normalizeIpfsToHttp(uri){
         clearTimeout(showSessionRestore._timer);
         showSessionRestore._timer = setTimeout(()=>{ note.style.display='none'; }, 5200);
       }
+      function clearAcceptedTerms(){
+        try{
+          hasAcceptedTerms = false;
+          APP_STATE.wallet.termsAccepted = false;
+          const tac = byId('termsAccepted');
+          if(tac) tac.checked = false;
+          if(typeof updateWriteGate === 'function') updateWriteGate();
+        }catch{}
+      }
       function persistAccessState(){
         const terms = byId('termsAccepted');
         const state = {
@@ -7640,7 +7649,18 @@ function normalizeIpfsToHttp(uri){
         try{
           const accounts = await window.ethereum.request({method:'eth_accounts'});
           const account = accounts && accounts[0] ? String(accounts[0]) : '';
-          if(!account) return;
+          if(!account){
+            const hadAccount = !!userAccount;
+            userAccount = null;
+            APP_STATE.wallet.account = null;
+            if(byId('walletStatus')) byId('walletStatus').textContent = 'Not connected';
+            clearAcceptedTerms();
+            invalidateVerification('Wallet session unavailable. Reconnect and re-verify membership.');
+            if(hadAccount && typeof resetRuntimeState === 'function') resetRuntimeState('silent wallet disconnect');
+            if(byId('refreshBtn')) byId('refreshBtn').disabled = true;
+            persistAccessState();
+            return;
+          }
           const saved = readSession();
           const accountHint = String(saved.accountHint || '').toLowerCase();
           const sameSession = !accountHint || accountHint.includes(account.slice(0,6).toLowerCase());
@@ -7672,6 +7692,7 @@ function normalizeIpfsToHttp(uri){
             showSessionRestore('Wallet still detected. Re-validating membership…');
             await reverifySavedInputs();
           }else{
+            clearAcceptedTerms();
             invalidateVerification('Wallet or network changed. Re-verify agent/validator membership.');
           }
           persistAccessState();
