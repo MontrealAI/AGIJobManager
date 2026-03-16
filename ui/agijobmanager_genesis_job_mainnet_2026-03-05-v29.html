@@ -2643,6 +2643,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       const raw = error?.message || String(error || 'Unknown error');
       return raw.replace(/\s+/g, ' ').trim();
     }
+    function isUserRejectedTx(error){
+      const code = Number(error?.code);
+      if(code === 4001) return true;
+      const msg = normalizedErrorMessage(error).toLowerCase();
+      return msg.includes('user rejected') || msg.includes('user denied') || msg.includes('denied transaction signature') || msg.includes('rejected the request') || msg.includes('cancelled');
+    }
     function isExpectedRpcRevert(error){
       const msg = normalizedErrorMessage(error).toLowerCase();
       return msg.includes('execution reverted') || msg.includes('returned error') || msg.includes('revert');
@@ -4674,10 +4680,13 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         if(!approval.ok) return;
         const finalPlan = await getVaultConversionPlan(options);
         if(finalPlan.paused) throw new Error('Vault paused before depositExact could be sent.');
+        if(finalPlan.amountIn !== plan.amountIn || String(finalPlan.recipient).toLowerCase() !== String(plan.recipient).toLowerCase() || finalPlan.minMintOut !== plan.minMintOut){
+          throw new Error('Vault conversion inputs changed after review. Re-open review to confirm updated amount/recipient/slippage parameters.');
+        }
         const gate = await getTokenBalanceAndAllowance({ tokenContract: bridgedAgiToken, spender: AGIALPHA_EQUAL_MINTER_VAULT });
-        if(gate.balance < finalPlan.amountIn || gate.allowance < finalPlan.amountIn) throw new Error('Vault preflight drifted after approval: bridged token allowance/balance is no longer sufficient for depositExact. Refresh and retry.');
+        if(gate.balance < plan.amountIn || gate.allowance < plan.amountIn) throw new Error('Vault preflight drifted after approval: bridged token allowance/balance is no longer sufficient for reviewed depositExact parameters. Refresh and retry.');
         setToast('Submitting depositExact to AGIALPHAEqualMinterVault…', 'warn');
-        await runTrackedTx('Convert bridged token to official Ethereum $AGIALPHA', ()=>agiAlphaEqualMinterVault.methods.depositExact(String(finalPlan.amountIn), finalPlan.recipient, String(finalPlan.minMintOut)).send({from:userAccount}), { pendingDetail:'Submitting depositExact to AGIALPHAEqualMinterVault.', successDetail:'Vault conversion confirmed on-chain.' });
+        await runTrackedTx('Convert bridged token to official Ethereum $AGIALPHA', ()=>agiAlphaEqualMinterVault.methods.depositExact(String(plan.amountIn), plan.recipient, String(plan.minMintOut)).send({from:userAccount}), { pendingDetail:'Submitting depositExact to AGIALPHAEqualMinterVault.', successDetail:'Vault conversion confirmed on-chain.' });
         setToast('Vault conversion submitted successfully.', 'ok');
         await refreshAgiAlphaBridgePanel();
         await refreshAll();
@@ -5228,9 +5237,10 @@ async function updateSummary(){
       try{
         await runTrackedTx(`Approve ${tokenLabel} for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(targetApproval)).send({from:owner}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
       }catch(err){
+        if(isUserRejectedTx(err)) throw err;
         if(initial.allowance > 0n){
           zeroResetUsed = true;
-          setToast('Direct approve failed; retrying with approve(0) then approve(amount).', 'warn');
+          setToast('Direct approve reverted; retrying with approve(0) then approve(amount).', 'warn');
           await runTrackedTx(`Reset ${tokenLabel} allowance to zero`, ()=>tokenContract.methods.approve(spender, '0').send({from:owner}), { pendingDetail:'Submitting approve(0) zero-reset for ERC-20 compatibility.', successDetail:'Allowance reset to zero confirmed.' });
           await runTrackedTx(`Approve ${tokenLabel} after zero-reset`, ()=>tokenContract.methods.approve(spender, String(targetApproval)).send({from:owner}), { pendingDetail:`Submitting token approval for ${actionLabel} after zero-reset.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
         }else{
