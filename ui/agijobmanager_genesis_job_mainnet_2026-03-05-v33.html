@@ -7641,6 +7641,7 @@ function normalizeIpfsToHttp(uri){
           const accounts = await window.ethereum.request({method:'eth_accounts'});
           const account = accounts && accounts[0] ? String(accounts[0]) : '';
           if(!account){
+            try{ resetRuntimeState('wallet disconnected'); }catch{}
             userAccount = null;
             APP_STATE.wallet.account = null;
             verified.agent = null;
