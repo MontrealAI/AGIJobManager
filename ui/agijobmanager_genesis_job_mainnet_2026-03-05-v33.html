@@ -7593,8 +7593,15 @@ function normalizeIpfsToHttp(uri){
       }
       function invalidateVerification(reason='Verification must be refreshed for this wallet/network.'){
         try{
-                    const ap=byId('agentPill'); if(ap){ ap.className='pill warn'; ap.textContent='Agent ENS: re-verification required'; }
+          if(typeof verified === 'object' && verified){
+            verified.agent = null;
+            verified.club = null;
+            verified.agentAlpha = false;
+            verified.clubAlpha = false;
+          }
+          const ap=byId('agentPill'); if(ap){ ap.className='pill warn'; ap.textContent='Agent ENS: re-verification required'; }
           const cp=byId('clubPill'); if(cp){ cp.className='pill warn'; cp.textContent='Club ENS: re-verification required'; }
+          const vb=byId('validatorBadge'); if(vb) vb.style.display='none';
           if(byId('agentAlphaBadge')) byId('agentAlphaBadge').style.display='none';
           if(byId('clubAlphaBadge')) byId('clubAlphaBadge').style.display='none';
           if(byId('agentOut')) byId('agentOut').textContent = reason;
@@ -7618,12 +7625,31 @@ function normalizeIpfsToHttp(uri){
           const saved = readSession();
           const accountHint = String(saved.accountHint || '').toLowerCase();
           const sameSession = !accountHint || accountHint.includes(account.slice(0,6).toLowerCase());
-          if(typeof connectWallet === 'function' && String(byId('walletStatus')?.textContent || '').toLowerCase().includes('not connected')){
+
+          const wasDisconnected = String(byId('walletStatus')?.textContent || '').toLowerCase().includes('not connected');
+          const previousAccount = String(userAccount || '').toLowerCase();
+          const accountChanged = !!previousAccount && previousAccount !== account.toLowerCase();
+          userAccount = account;
+          APP_STATE.wallet.account = account;
+          if(byId('walletStatus')) byId('walletStatus').textContent = (typeof shortAddr === 'function') ? shortAddr(account) : account;
+
+          try{
+            if(!web3 && window.Web3) web3 = new Web3(window.ethereum);
+            if(web3 && web3.eth && typeof web3.eth.getChainId === 'function'){
+              const cid = Number(await web3.eth.getChainId());
+              isMainnet = (cid === 1);
+              APP_STATE.wallet.chainId = cid;
+              APP_STATE.wallet.isMainnet = isMainnet;
+              if(byId('chainStatus')) byId('chainStatus').textContent = `chainId ${cid}` + (isMainnet ? ' (Mainnet)' : ' (Not Mainnet)');
+            }
+          }catch{}
+
+          if(typeof connectWallet === 'function' && wasDisconnected){
             await connectWallet();
           }else if(typeof refreshAll === 'function'){
             await refreshAll(true);
           }
-          if(sameSession){
+          if(sameSession && !accountChanged){
             showSessionRestore('Wallet still detected. Re-validating membership…');
             await reverifySavedInputs();
           }else{
