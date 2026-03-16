@@ -7301,7 +7301,10 @@ function normalizeIpfsToHttp(uri){
         window.ethereum.on("accountsChanged", async (accounts)=>{
           userAccount = accounts && accounts[0] ? accounts[0] : null; APP_STATE.wallet.account = userAccount;
           el("walletStatus").textContent = userAccount ? shortAddr(userAccount) : "Not connected";
-          verified.agent = null; verified.club = null; verified.agentAlpha=false; verified.clubAlpha=false; updateWriteGate();
+          verified.agent = null; verified.club = null; verified.agentAlpha=false; verified.clubAlpha=false;
+          hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
+          const tac=el("termsAccepted"); if(tac) tac.checked=false;
+          updateWriteGate();
           el("agentPill").className="pill"; el("agentPill").textContent="Agent ENS: not verified";
           const aab=el("agentAlphaBadge"); if(aab) aab.style.display="none";
           el("clubPill").className="pill"; el("clubPill").textContent="Club ENS: not verified";
@@ -7572,6 +7575,8 @@ function normalizeIpfsToHttp(uri){
           agentSub: String(byId('agentSub')?.value||'').trim(),
           clubSub: String(byId('clubSub')?.value||'').trim(),
           mintAlphaLabel: String(byId('mintAlphaLabel')?.value||'').trim(),
+          agentAlphaPreferred: !!(typeof verified === 'object' && verified && verified.agentAlpha),
+          clubAlphaPreferred: !!(typeof verified === 'object' && verified && verified.clubAlpha),
           accountHint: String(byId('walletStatus')?.textContent || '').trim().toLowerCase(),
           chainHint: String(byId('chainStatus')?.textContent || '').trim()
         };
@@ -7613,8 +7618,22 @@ function normalizeIpfsToHttp(uri){
         const saved = readSession();
         const agentSub = String(byId('agentSub')?.value||saved.agentSub||'').trim();
         const clubSub = String(byId('clubSub')?.value||saved.clubSub||'').trim();
-        if(agentSub && typeof verifySubdomain === 'function'){ await verifySubdomain('agent', false); }
-        if(clubSub && typeof verifySubdomain === 'function'){ await verifySubdomain('club', false); }
+        const preferAgentAlpha = !!saved.agentAlphaPreferred;
+        const preferClubAlpha = !!saved.clubAlphaPreferred;
+        if(agentSub && typeof verifySubdomain === 'function'){
+          if(preferAgentAlpha){
+            await verifySubdomain('agent', true);
+          }else{
+            await verifySubdomain('agent', false);
+          }
+        }
+        if(clubSub && typeof verifySubdomain === 'function'){
+          if(preferClubAlpha){
+            await verifySubdomain('club', true);
+          }else{
+            await verifySubdomain('club', false);
+          }
+        }
       }
       async function silentWalletRefresh(){
         if(!window.ethereum?.request) return;
