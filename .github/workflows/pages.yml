@@ -44,6 +44,11 @@ jobs:
           npm run build:ipfs
           npm run verify:singlefile
 
+      - name: Verify hosted Genesis Console artifact
+        run: |
+          test -f agijobmanager_genesis_job_mainnet_2026-03-05-v33.html
+          python3 -c "from pathlib import Path; path = Path('agijobmanager_genesis_job_mainnet_2026-03-05-v33.html'); html = path.read_text(encoding='utf-8'); required = ['<!DOCTYPE html>', '<html', '</html>', 'AGIJobManager']; missing = [marker for marker in required if marker not in html]; assert not missing, f'Missing expected markers in {path.name}: {missing}'; print(f'Verified {path.name} for Pages publish')"
+
       - name: Prepare gh-pages payload
         run: |
           rm -rf ../.pages-dist

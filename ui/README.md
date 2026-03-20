@@ -6,7 +6,7 @@ This directory contains **two additive UI surfaces**:
 2. Versioned standalone HTML artifacts for direct browser use, including:
    - `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`
 
-Hosted newcomer/operator entry: `https://montrealai.github.io/agijobmanagerv0.html`
+Hosted newcomer/operator entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
 
 The standalone HTML page is **not** a replacement for the full UI roadmap.
 
@@ -16,7 +16,7 @@ For standalone HTML artifact routing and inventory, see `../docs/ui/STANDALONE_H
 
 ## 30-second routing
 
-- Need the **fastest newcomer/operator entry**: use the hosted Genesis Console at `https://montrealai.github.io/agijobmanagerv0.html`, then follow the runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
+- Need the **fastest newcomer/operator entry**: use the hosted Genesis Console at `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`, then follow the runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
 - Need a **single-file, versioned mainnet interface artifact** for review/operator workflows: use `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html` and the same runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
 - Need to **develop/test the broader UI**: use the Next.js app in this folder and docs at `../docs/ui/README.md`.
 
@@ -33,7 +33,7 @@ For standalone HTML artifact routing and inventory, see `../docs/ui/STANDALONE_H
 
 ## Canonical standalone artifact for this runbook
 
-Hosted newcomer entry: `https://montrealai.github.io/agijobmanagerv0.html`
+Hosted newcomer entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
 
 For operator instructions in this repository, `v33` is the explicit repo-pinned standalone artifact documented in:
 

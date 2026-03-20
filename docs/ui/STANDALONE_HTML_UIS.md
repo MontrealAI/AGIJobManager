@@ -6,7 +6,7 @@ These files are **additive** to the broader Next.js UI effort in `ui/`; they are
 
 ## Canonical routing
 
-- **Hosted newcomer/operator entry:** `https://montrealai.github.io/agijobmanagerv0.html`
+- **Hosted newcomer/operator entry:** `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
 - **Primary operator runbook for the documented mainnet artifact (`v33`):** [GENESIS_JOB_MAINNET_HTML_UI.md](./GENESIS_JOB_MAINNET_HTML_UI.md)
 - **Broader/full UI docs hub (Next.js):** [README.md](./README.md)
 - **Deployment/operator authority (Hardhat):** [../../hardhat/README.md](../../hardhat/README.md)
@@ -29,7 +29,7 @@ These files are **additive** to the broader Next.js UI effort in `ui/`; they are
 
 ## Quick open guidance
 
-Hosted newcomer entry: `https://montrealai.github.io/agijobmanagerv0.html`
+Hosted newcomer entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
 
 For the canonical `v33` repo artifact:
 

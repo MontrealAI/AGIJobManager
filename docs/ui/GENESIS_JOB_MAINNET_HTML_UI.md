@@ -11,7 +11,7 @@
 
 ## What this page is
 
-Hosted newcomer entry: `https://montrealai.github.io/agijobmanagerv0.html`
+Hosted newcomer entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
 
 `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html` is the **repo-pinned equivalent standalone HTML interface artifact** for AGIJobManager mainnet operations and demonstrations.
 
@@ -37,7 +37,7 @@ Do not use it as a deployment source of truth:
 
 ## Fast audience routing
 
-- **Contract owner/operator:** open the hosted Genesis Console first (`https://montrealai.github.io/agijobmanagerv0.html`) and use this page as the operator runbook, but keep deployment and cutover actions anchored in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
+- **Contract owner/operator:** open the hosted Genesis Console first (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`) and use this page as the operator runbook, but keep deployment and cutover actions anchored in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Reviewer/auditor/demo participant:** use this page for reproducible browser walkthroughs of live mainnet state and action surfaces.
 - **Full UI contributor:** use this page as a standalone snapshot reference; broader product/UI roadmap lives in [docs/ui/README.md](./README.md).
 
@@ -140,7 +140,7 @@ Secondary:
 Hosted newcomer entry:
 
 ```text
-https://montrealai.github.io/agijobmanagerv0.html
+https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html
 ```
 
 Repo-pinned local artifact:
@@ -176,7 +176,7 @@ No local backend, indexer, or database is required for this standalone page.
 ### Open method
 
 Use either:
-1. Hosted Genesis Console (`https://montrealai.github.io/agijobmanagerv0.html`),
+1. Hosted Genesis Console (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`),
 2. Direct file open (`file://.../ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`), or
 3. Serve over HTTP from repository root.
 
@@ -199,7 +199,7 @@ HTTP serving is generally safer for extension compatibility and future browser r
 
 | Goal | Recommended open method | Why |
 | --- | --- | --- |
-| Fast newcomer/operator entry | Hosted Genesis Console (`https://montrealai.github.io/agijobmanagerv0.html`) | Fastest no-setup path for operators and reviewers using the published console. |
+| Fast newcomer/operator entry | Hosted Genesis Console (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`) | Fastest no-setup path for operators and reviewers using the published console. |
 | Fast local review without wallet writes | `file://` open is acceptable | Minimal setup for read-only walkthroughs. |
 | Wallet-connected operations on the repo-pinned artifact | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers. |
 | Team review/demo | Serve over HTTP from a clean repo clone | Reproducible path and easier troubleshooting. |
@@ -208,7 +208,7 @@ HTTP serving is generally safer for extension compatibility and future browser r
 
 #### Hosted Genesis Console
 
-1. Open `https://montrealai.github.io/agijobmanagerv0.html`.
+1. Open `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`.
 2. Confirm you intentionally chose the hosted Genesis Console path.
 3. Connect wallet and confirm Ethereum Mainnet.
 4. Confirm the in-page address panel values against deployment docs.
@@ -290,7 +290,7 @@ The broader UI is a separate Next.js surface that continues to evolve in paralle
 - Broader UI docs hub: [docs/ui/README.md](./README.md)
 - UI directory inventory (artifact + app): [ui/README.md](../../ui/README.md)
 
-Start with the hosted Genesis Console (`https://montrealai.github.io/agijobmanagerv0.html`) for the fastest newcomer/operator entry. Use this `v33` runbook when you intentionally need the repo-pinned equivalent single-file browser interface. Use the broader UI docs when you need roadmap/development/testing context.
+Start with the hosted Genesis Console (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`) for the fastest newcomer/operator entry. Use this `v33` runbook when you intentionally need the repo-pinned equivalent single-file browser interface. Use the broader UI docs when you need roadmap/development/testing context.
 
 ## Relationship to other UI artifacts in `ui/`
 
