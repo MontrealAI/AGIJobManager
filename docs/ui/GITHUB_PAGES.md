@@ -9,11 +9,10 @@ The UI can be deployed automatically to `gh-pages` using only `GITHUB_TOKEN` via
 
 ## Deployment outputs
 
-The workflow builds the single-file IPFS artifact and publishes three equivalent files:
+The workflow publishes two Pages surfaces from two source artifacts:
 
-- `index.html`
-- `agijobmanager.html`
-- `agijobmanagerv0.html`
+- `index.html` and `agijobmanager.html` from `ui/dist-ipfs/agijobmanager.html`
+- `agijobmanagerv0.html` from `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`
 
 Hosted URLs:
 
@@ -25,5 +24,5 @@ Hosted URLs:
 ## Operational notes
 
 - Deployment is force-pushed to the `gh-pages` branch.
-- Only text-based HTML files are published, and `agijobmanagerv0.html` is kept as a published alias for the promoted Genesis Console URL.
+- Only text-based HTML files are published, and `agijobmanagerv0.html` is published from the repo-pinned `v33` standalone artifact so the hosted Genesis Console matches the documented runbook path.
 - The workflow runs `npm run build:ipfs` and `npm run verify:singlefile` before publish.

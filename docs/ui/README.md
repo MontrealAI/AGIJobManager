@@ -2,8 +2,10 @@
 
 Institutional-grade Next.js dApp + operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
 
+Hosted Genesis Console newcomer entry: `https://montrealai.github.io/agijobmanagerv0.html`
+
 ## Quick links
-- [Standalone Genesis Mainnet HTML UI (`v21`)](./GENESIS_JOB_MAINNET_HTML_UI.md)
+- [Genesis Console operator guide (`v33` / hosted + repo-pinned)](./GENESIS_JOB_MAINNET_HTML_UI.md)
 - [Standalone HTML artifact index (`ui/*.html`)](./STANDALONE_HTML_UIS.md)
 - [UI directory inventory (`/ui`)](../../ui/README.md)
 - [Overview](./OVERVIEW.md)
@@ -50,7 +52,7 @@ This folder is **text-only**. Binary assets are forbidden and CI-enforced by `np
 
 ## Standalone HTML artifact (additive)
 
-For the versioned, single-file mainnet page in `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`, use:
+For the hosted Genesis Console (`https://montrealai.github.io/agijobmanagerv0.html`) and the repo-pinned single-file mainnet artifact `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`, use:
 
 - [GENESIS_JOB_MAINNET_HTML_UI.md](./GENESIS_JOB_MAINNET_HTML_UI.md)
 - [STANDALONE_HTML_UIS.md](./STANDALONE_HTML_UIS.md)

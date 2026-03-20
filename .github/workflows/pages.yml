@@ -50,7 +50,7 @@ jobs:
           mkdir -p ../.pages-dist
           cp dist-ipfs/agijobmanager.html ../.pages-dist/index.html
           cp dist-ipfs/agijobmanager.html ../.pages-dist/agijobmanager.html
-          cp dist-ipfs/agijobmanager.html ../.pages-dist/agijobmanagerv0.html
+          cp agijobmanager_genesis_job_mainnet_2026-03-05-v33.html ../.pages-dist/agijobmanagerv0.html
           touch ../.pages-dist/.nojekyll
 
       - name: Publish to gh-pages
