@@ -44,12 +44,18 @@ jobs:
           npm run build:ipfs
           npm run verify:singlefile
 
+      - name: Verify hosted Genesis Console artifact
+        run: |
+          test -f agijobmanager_genesis_job_mainnet_2026-03-05-v33.html
+          python3 -c "from pathlib import Path; path = Path('agijobmanager_genesis_job_mainnet_2026-03-05-v33.html'); html = path.read_text(encoding='utf-8'); required = ['<!DOCTYPE html>', '<html', '</html>', 'AGIJobManager']; missing = [marker for marker in required if marker not in html]; assert not missing, f'Missing expected markers in {path.name}: {missing}'; print(f'Verified {path.name} for Pages publish')"
+
       - name: Prepare gh-pages payload
         run: |
           rm -rf ../.pages-dist
           mkdir -p ../.pages-dist
           cp dist-ipfs/agijobmanager.html ../.pages-dist/index.html
           cp dist-ipfs/agijobmanager.html ../.pages-dist/agijobmanager.html
+          cp agijobmanager_genesis_job_mainnet_2026-03-05-v33.html ../.pages-dist/agijobmanagerv0.html
           touch ../.pages-dist/.nojekyll
 
       - name: Publish to gh-pages
@@ -59,7 +65,7 @@ jobs:
           git checkout -b gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html agijobmanager.html .nojekyll
+          git add index.html agijobmanager.html agijobmanagerv0.html .nojekyll
           git commit -m "Deploy Sovereign Ops Console"
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin gh-pages

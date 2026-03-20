@@ -1,9 +1,9 @@
-# Standalone HTML UI: `agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`
+# Standalone HTML UI: `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`
 
 ## At-a-glance navigation
 
 - [Quick start (safe and practical)](#quick-start-safe-and-practical)
-- [Embedded network and contract assumptions (v21)](#embedded-network-and-contract-assumptions-v21)
+- [Embedded network and contract assumptions (v33)](#embedded-network-and-contract-assumptions-v33)
 - [Security and trust hygiene](#security-and-trust-hygiene)
 - [Troubleshooting (standalone page)](#troubleshooting-standalone-page)
 - [What this page does not replace](#what-this-page-does-not-replace)
@@ -11,10 +11,12 @@
 
 ## What this page is
 
-`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html` is a **standalone, versioned HTML interface artifact** for AGIJobManager mainnet operations and demonstrations.
+Hosted newcomer entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
+
+`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html` is the **repo-pinned equivalent standalone HTML interface artifact** for AGIJobManager mainnet operations and demonstrations.
 
 Version/lifecycle posture:
-- This file is a point-in-time artifact (`v21`) committed in-repo for reproducible browser-based operations and review.
+- This file is a point-in-time artifact (`v33`) committed in-repo for reproducible browser-based operations and review.
 - It is intentionally additive to the broader/full UI effort (Next.js app in `ui/src/`, docs in [docs/ui/README.md](./README.md)).
 - It is not the deployment authority and not a replacement for Hardhat runbooks.
 
@@ -27,7 +29,7 @@ Related UI hub:
 
 ## Decision: should you use this page right now?
 
-Use this page when you need a **single-file browser artifact** for intentional **Ethereum mainnet** review or operations.
+Use this page when you need the operator runbook for the hosted Genesis Console or its **repo-pinned equivalent single-file browser artifact** for intentional **Ethereum mainnet** review or operations.
 
 Do not use it as a deployment source of truth:
 - Deployment and cutover authority remain in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
@@ -35,7 +37,7 @@ Do not use it as a deployment source of truth:
 
 ## Fast audience routing
 
-- **Contract owner/operator:** use this page for day-to-day inspection and transaction submission, but keep deployment and cutover actions anchored in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
+- **Contract owner/operator:** open the hosted Genesis Console first (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`) and use this page as the operator runbook, but keep deployment and cutover actions anchored in [hardhat/README.md](../../hardhat/README.md) and [docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Reviewer/auditor/demo participant:** use this page for reproducible browser walkthroughs of live mainnet state and action surfaces.
 - **Full UI contributor:** use this page as a standalone snapshot reference; broader product/UI roadmap lives in [docs/ui/README.md](./README.md).
 
@@ -48,7 +50,7 @@ Do not use it as a deployment source of truth:
 
 This page is a UI client for that ecosystem, not a deployment framework.
 
-## Grounded capabilities in v21
+## Grounded capabilities in v33
 
 Based on the file contents, this standalone page includes:
 
@@ -63,9 +65,9 @@ Based on the file contents, this standalone page includes:
 - `$AGIALPHA` bridge/conversion console (deBridge widget embedding plus `depositExact` flow into `AGIALPHAEqualMinterVault`).
 - Embedded Terms & Conditions section and in-page acceptance gating for write controls.
 
-Grounding note: this list is based on visible controls, embedded ABIs, and in-page handlers in the `v21` file.
+Grounding note: this list is based on visible controls, embedded ABIs, and in-page handlers in the `v33` file.
 
-## Grounded page sections and expected outcomes (v21)
+## Grounded page sections and expected outcomes (v33)
 
 | Section in page | What you do there | Expected result |
 | --- | --- | --- |
@@ -75,7 +77,7 @@ Grounding note: this list is based on visible controls, embedded ABIs, and in-pa
 | AGIALPHA bridge/conversion area | Review bridged vs official balances, run approval, run vault conversion, optionally use embedded deBridge route. | Bridged token can be converted into official Ethereum `$AGIALPHA` (when wallet and vault state permit). |
 | Terms & Conditions area | Review and accept embedded terms. | Write controls remain intentionally locked until terms are accepted in-page. |
 
-Inference boundary: this table describes visible UX and method wiring present in `v21`; it does not redefine protocol-level permissions.
+Inference boundary: this table describes visible UX and method wiring present in `v33`; it does not redefine protocol-level permissions.
 
 ## Grounded non-goals (important)
 
@@ -100,7 +102,7 @@ This section maps major UI actions to the contract methods surfaced in the file'
 
 If uncertain about exact callable semantics, confirm against contract docs/runbooks before signing.
 
-## Write-capable transaction methods exposed in v21
+## Write-capable transaction methods exposed in v33
 
 The standalone page includes handlers that can submit the following transactions (subject to role/state checks enforced by contracts):
 
@@ -129,11 +131,19 @@ Primary:
 - Reviewers/auditors/demo participants validating end-to-end operator UX without running the full Next.js stack.
 
 Secondary:
-- Developers comparing standalone snapshots (`v13` ... `v21`) during UI iteration.
+- Developers comparing standalone snapshots (`v13` ... `v33`) during UI iteration.
 
 ## Quick start (safe and practical)
 
 ### Copy/paste open commands
+
+Hosted newcomer entry:
+
+```text
+https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html
+```
+
+Repo-pinned local artifact:
 
 ```bash
 cd ui
@@ -143,7 +153,7 @@ python3 -m http.server 8000
 Open:
 
 ```text
-http://127.0.0.1:8000/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html
+http://127.0.0.1:8000/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html
 ```
 
 (Direct `file://` open can work, but local HTTP is more reliable for wallet/provider behavior.)
@@ -166,8 +176,9 @@ No local backend, indexer, or database is required for this standalone page.
 ### Open method
 
 Use either:
-1. Direct file open (`file://.../ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`), or
-2. Serve over HTTP from repository root.
+1. Hosted Genesis Console (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`),
+2. Direct file open (`file://.../ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`), or
+3. Serve over HTTP from repository root.
 
 Recommended HTTP approach:
 
@@ -179,7 +190,7 @@ python3 -m http.server 8000
 Then open:
 
 ```text
-http://localhost:8000/ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html
+http://localhost:8000/ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html
 ```
 
 HTTP serving is generally safer for extension compatibility and future browser restrictions.
@@ -188,16 +199,28 @@ HTTP serving is generally safer for extension compatibility and future browser r
 
 | Goal | Recommended open method | Why |
 | --- | --- | --- |
+| Fast newcomer/operator entry | Hosted Genesis Console (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`) | Fastest no-setup path for operators and reviewers using the published console. |
 | Fast local review without wallet writes | `file://` open is acceptable | Minimal setup for read-only walkthroughs. |
-| Wallet-connected operations | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers. |
+| Wallet-connected operations on the repo-pinned artifact | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers. |
 | Team review/demo | Serve over HTTP from a clean repo clone | Reproducible path and easier troubleshooting. |
 
 ### Minimal safe operating sequence
 
-1. Open via local HTTP.
-2. Confirm filename/path ends with `agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`.
+#### Hosted Genesis Console
+
+1. Open `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`.
+2. Confirm you intentionally chose the hosted Genesis Console path.
 3. Connect wallet and confirm Ethereum Mainnet.
-4. Confirm address panel values against deployment docs.
+4. Confirm the in-page address panel values against deployment docs.
+5. Accept terms in-page.
+6. Perform one read/check action first, then write actions one at a time.
+
+#### Repo-pinned local artifact (`v33`)
+
+1. Open via local HTTP.
+2. Confirm filename/path ends with `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`.
+3. Connect wallet and confirm Ethereum Mainnet.
+4. Confirm the in-page address panel values against deployment docs.
 5. Accept terms in-page.
 6. Perform one read/check action first, then write actions one at a time.
 
@@ -237,12 +260,12 @@ Use this checklist before each write transaction:
 - **Read-only (no wallet):** You can view static sections and most dashboard content, but cannot submit on-chain transactions.
 - **Action-capable (wallet + mainnet + terms accepted):** Write buttons unlock and the page can submit contract transactions through your wallet.
 
-Write-gate conditions in v21 are explicitly tied to:
+Write-gate conditions in v33 are explicitly tied to:
 1. wallet connection,
 2. Ethereum mainnet (`chainId 1`), and
 3. in-page terms acceptance checkbox.
 
-## Embedded network and contract assumptions (v21)
+## Embedded network and contract assumptions (v33)
 
 The page hardcodes the following addresses/constants in the script block:
 
@@ -267,11 +290,11 @@ The broader UI is a separate Next.js surface that continues to evolve in paralle
 - Broader UI docs hub: [docs/ui/README.md](./README.md)
 - UI directory inventory (artifact + app): [ui/README.md](../../ui/README.md)
 
-Use this `v21` runbook when you intentionally need a single-file, versioned browser interface. Use the broader UI docs when you need roadmap/development/testing context.
+Start with the hosted Genesis Console (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`) for the fastest newcomer/operator entry. Use this `v33` runbook when you intentionally need the repo-pinned equivalent single-file browser interface. Use the broader UI docs when you need roadmap/development/testing context.
 
 ## Relationship to other UI artifacts in `ui/`
 
-- `v21` is the documented standalone artifact for this runbook.
+- `v33` is the documented standalone artifact for this runbook.
 - Other `agijobmanager_genesis_job_mainnet_2026-03-05-v*.html` files are adjacent snapshots for comparison/reproducibility.
 - The Next.js app in `ui/` remains the broader/full UI effort under active development.
 
@@ -325,7 +348,7 @@ Operationally, AGIJobManager settlement/dispute outcomes remain authoritative ev
 
 ## Status and lifecycle
 
-- This file documents a **versioned standalone artifact**: `v21`.
+- This file documents a **versioned standalone artifact**: `v33`.
 - It is intended as an additive, practical browser interface for current operator/reviewer workflows.
 - The broader/full UI effort is still in active development in `ui/` (Next.js surface) and tracked in [docs/ui/README.md](./README.md).
 - When operational guidance conflicts, treat deployment/operator docs and on-chain contract behavior as canonical.
@@ -350,7 +373,7 @@ For full UI development and operations docs, use:
 
 ### Write buttons remain disabled
 
-Typical causes in v21:
+Typical causes in v33:
 - Wallet not connected.
 - Not on Ethereum Mainnet.
 - Terms not accepted in-page.
