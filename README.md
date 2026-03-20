@@ -14,6 +14,8 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 > **Repo-pinned equivalent artifact:** `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`  
 > **Operator guide:** `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 
+## Quick links
+
 - **Launch Genesis Console:** `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
 - **Read the operator guide:** `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 - **Inspect the pinned standalone artifact:** `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`
