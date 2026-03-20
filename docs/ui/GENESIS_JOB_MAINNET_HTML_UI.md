@@ -199,16 +199,28 @@ HTTP serving is generally safer for extension compatibility and future browser r
 
 | Goal | Recommended open method | Why |
 | --- | --- | --- |
+| Fast newcomer/operator entry | Hosted Genesis Console (`https://montrealai.github.io/agijobmanagerv0.html`) | Fastest no-setup path for operators and reviewers using the published console. |
 | Fast local review without wallet writes | `file://` open is acceptable | Minimal setup for read-only walkthroughs. |
-| Wallet-connected operations | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers. |
+| Wallet-connected operations on the repo-pinned artifact | Serve over HTTP (`python3 -m http.server 8000`) | More consistent extension/provider behavior across browsers. |
 | Team review/demo | Serve over HTTP from a clean repo clone | Reproducible path and easier troubleshooting. |
 
 ### Minimal safe operating sequence
 
+#### Hosted Genesis Console
+
+1. Open `https://montrealai.github.io/agijobmanagerv0.html`.
+2. Confirm you intentionally chose the hosted Genesis Console path.
+3. Connect wallet and confirm Ethereum Mainnet.
+4. Confirm the in-page address panel values against deployment docs.
+5. Accept terms in-page.
+6. Perform one read/check action first, then write actions one at a time.
+
+#### Repo-pinned local artifact (`v33`)
+
 1. Open via local HTTP.
 2. Confirm filename/path ends with `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`.
 3. Connect wallet and confirm Ethereum Mainnet.
-4. Confirm address panel values against deployment docs.
+4. Confirm the in-page address panel values against deployment docs.
 5. Accept terms in-page.
 6. Perform one read/check action first, then write actions one at a time.
 
