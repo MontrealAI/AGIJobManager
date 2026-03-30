@@ -1,0 +1,19 @@
+{
+  "top_use_cases": [
+    "Institutional research and comparative intelligence dossiers",
+    "Protocol integration, adapter, ABI, and migration packages",
+    "Evaluation, benchmarking, and model-comparison packs",
+    "Runbooks, SOPs, onboarding kits, and documentation migrations",
+    "Governance, compliance, risk, and policy memoranda",
+    "Structured data extraction, normalization, and taxonomy bundles",
+    "Public creative / launch asset bundles"
+  ],
+  "blocked_categories": [
+    "Verified external-account or social-reputation jobs",
+    "Jobs requiring live posting to third-party platforms",
+    "Jobs needing private credentials or closed systems",
+    "Physical-world, field, custody, or device-control tasks",
+    "Highly subjective work with no public evidence path"
+  ],
+  "profitability_framing": "Operationally attractive, not token appreciation."
+}
