@@ -1,0 +1,182 @@
+name: Add AEP-002 Evidence Docket Standard Website Page
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_pages:
+        description: "Deploy GitHub Pages after creating the AEP-002 page?"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: proof-gradient-pages
+  cancel-in-progress: false
+
+jobs:
+  add-aep002-page:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create AEP-002 website page and resource indexes safely
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          WEB_ROOT="site"
+          if [ ! -d "$WEB_ROOT" ] && [ -d "public" ]; then
+            WEB_ROOT="public"
+          fi
+
+          AEP_ROOT="$WEB_ROOT/standards/AEP-002"
+          mkdir -p "$AEP_ROOT/schemas" "$AEP_ROOT/templates" "$AEP_ROOT/examples" "$AEP_ROOT/figures"
+
+          cp -f docs/standards/AEP-002/AEP-002_Evidence-Docket-Standard_v1.1_Institutional.pdf "$AEP_ROOT/paper.pdf" 2>/dev/null || true
+          cp -f docs/standards/AEP-002/AEP-002_Evidence-Docket-Standard_v1.1_Institutional.md "$AEP_ROOT/source.md" 2>/dev/null || true
+          cp -f docs/standards/AEP-002/schemas/*.json "$AEP_ROOT/schemas/" 2>/dev/null || true
+          cp -f docs/standards/AEP-002/templates/*.md "$AEP_ROOT/templates/" 2>/dev/null || true
+          cp -f docs/standards/AEP-002/examples/*.json "$AEP_ROOT/examples/" 2>/dev/null || true
+          cp -f docs/standards/AEP-002/figures/*.png "$AEP_ROOT/figures/" 2>/dev/null || true
+
+          make_index () {
+            local dir="$1"
+            local title="$2"
+            local intro="$3"
+            local rel_back="../"
+            cat > "$dir/index.html" <<HTML
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>$title</title>
+            <style>
+              body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#070b14;color:#f5f7fb;line-height:1.6}
+              main{max-width:980px;margin:0 auto;padding:64px 22px}
+              a{color:#7dd3fc}.badge{display:inline-block;padding:6px 12px;border:1px solid #334155;border-radius:999px;color:#cbd5e1;font-size:14px}
+              h1{font-size:clamp(34px,6vw,58px);line-height:1.05;margin:22px 0}.panel{background:rgba(15,23,42,.72);border:1px solid #1e293b;border-radius:20px;padding:22px;margin:18px 0}
+              ul{padding-left:22px}li{margin:8px 0}code{background:#111827;padding:2px 6px;border-radius:6px}
+            </style>
+          </head>
+          <body><main>
+            <span class="badge">AEP-002 Resource Index</span>
+            <h1>$title</h1>
+            <p>$intro</p>
+            <p><a href="$rel_back">← Back to AEP-002</a></p>
+            <section class="panel"><h2>Files</h2><ul>
+          HTML
+            shopt -s nullglob
+            local count=0
+            for file in "$dir"/*; do
+              [ -f "$file" ] || continue
+              [ "$(basename "$file")" = "index.html" ] && continue
+              local base
+              base="$(basename "$file")"
+              printf '              <li><a href="%s"><code>%s</code></a></li>\n' "$base" "$base" >> "$dir/index.html"
+              count=$((count + 1))
+            done
+            if [ "$count" -eq 0 ]; then
+              echo '              <li>No files were copied into this resource directory yet.</li>' >> "$dir/index.html"
+            fi
+            cat >> "$dir/index.html" <<HTML
+            </ul></section>
+          </main></body></html>
+          HTML
+          }
+
+          make_index "$AEP_ROOT/schemas" "AEP-002 Schemas" "Machine-readable schemas copied from the institutional Evidence Docket standard package."
+          make_index "$AEP_ROOT/templates" "AEP-002 Templates" "Reusable templates for building Evidence Dockets and related proof materials."
+          make_index "$AEP_ROOT/examples" "AEP-002 Examples" "Sample Evidence Docket resources and example proof artifacts."
+          make_index "$AEP_ROOT/figures" "AEP-002 Figures" "Visual assets used by the AEP-002 standard page and documents."
+
+          cat > "$AEP_ROOT/index.html" <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>AEP-002 — Evidence Docket Standard</title>
+            <style>
+              body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #070b14; color: #f5f7fb; line-height: 1.6; }
+              main { max-width: 980px; margin: 0 auto; padding: 64px 22px; }
+              .badge { display: inline-block; padding: 6px 12px; border: 1px solid #334155; border-radius: 999px; color: #cbd5e1; font-size: 14px; }
+              h1 { font-size: clamp(38px, 7vw, 72px); line-height: 1.02; margin: 22px 0; }
+              h2 { margin-top: 44px; font-size: 30px; }
+              a { color: #7dd3fc; }
+              .panel { background: rgba(15, 23, 42, 0.72); border: 1px solid #1e293b; border-radius: 24px; padding: 28px; margin: 24px 0; }
+              .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+              .law { font-size: 22px; font-weight: 700; }
+              code { background: #111827; padding: 2px 6px; border-radius: 6px; }
+            </style>
+          </head>
+          <body>
+            <main>
+              <span class="badge">Proof Gradient · Protocol Standard</span>
+              <h1>AEP-002 — Evidence Docket Standard</h1>
+              <p>AEP-002 defines the Evidence Docket: the portable proof package for machine work, including commitments, claims, evidence, ProofPackets, evals, risks, costs, policy decisions, Selection Certificates, rollout, rollback, and public-safe reports.</p>
+              <p>
+                <a href="../AEP-001/">AEP-001 Constitution</a> ·
+                <a href="./paper.pdf">Download PDF</a> ·
+                <a href="./schemas/">Schemas</a> ·
+                <a href="./templates/">Templates</a> ·
+                <a href="./examples/">Examples</a> ·
+                <a href="./figures/">Figures</a>
+              </p>
+              <section class="panel"><h2>Canonical Law</h2><p class="law">No proof, no evolution.<br>No eval, no propagation.<br>No rollback, no release.</p></section>
+              <section><h2>What AEP-002 Standardizes</h2><div class="grid"><div class="panel"><h3>Claims Matrix</h3><p>Separates what is claimed, what evidence supports it, and what is not claimed.</p></div><div class="panel"><h3>ProofPackets</h3><p>Atomic evidence units for traces, evals, tool calls, policy decisions, and outputs.</p></div><div class="panel"><h3>Selection Certificate</h3><p>Records whether a capability may be promoted, canaried, rejected, revised, archived, or rolled back.</p></div></div></section>
+              <section class="panel"><h2>Public Boundary</h2><p>AEP-002 proves accountability without leaking private intelligence. Public reports must preserve claim boundaries and keep sensitive prompts, data, traces, tools, and protected details private.</p></section>
+            </main>
+          </body>
+          </html>
+          HTML
+
+          echo "web_root=$WEB_ROOT" >> "$GITHUB_OUTPUT"
+
+      - name: Safety check — refuse deletions
+        shell: bash
+        run: |
+          deleted="$(git diff --name-status | awk '$1 ~ /^D/ {print}')"
+          if [ -n "$deleted" ]; then
+            echo "$deleted"
+            exit 1
+          fi
+
+      - name: Commit AEP-002 website page and resource indexes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ steps.build.outputs.web_root }}/standards/AEP-002"
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Add AEP-002 website page and resource indexes"
+            git push
+          fi
+
+      - name: Configure GitHub Pages
+        if: ${{ inputs.deploy_pages == 'true' }}
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        if: ${{ inputs.deploy_pages == 'true' }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.build.outputs.web_root }}
+
+      - name: Deploy GitHub Pages
+        if: ${{ inputs.deploy_pages == 'true' }}
+        uses: actions/deploy-pages@v4
