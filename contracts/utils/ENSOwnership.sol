@@ -7,6 +7,8 @@ import "./EnsLabelUtils.sol";
 library ENSOwnership {
     // Legacy note: keep this library limited to deterministic ownership checks used by
     // AGIJobManager routing (`verifyENSOwnership` + `verifyMerkleOwnership`).
+    // The old aggregate helper (`verifyOwnership`) is intentionally not present to avoid
+    // ambiguous routing paths between ENS and Merkle verification.
     // Keep a fixed staticcall cap: enough for normal ENS stack reads while bounding griefing surface.
     uint256 private constant ENS_STATICCALL_GAS_LIMIT = 80_000;
     bytes4 private constant OWNER_OF_SELECTOR = 0x6352211e;
