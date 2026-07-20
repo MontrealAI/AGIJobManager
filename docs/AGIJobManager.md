@@ -35,6 +35,42 @@ This document provides a comprehensive, code‑accurate overview of the `AGIJobM
 
 A complete, per‑function access matrix is in the interface reference: [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
 
+## Events (canonical log surface)
+
+AGIJobManager uses events as the primary integration surface for indexers, auditors, and downstream adapters. Key events include:
+
+- **Job lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobCompleted`, `JobExpired`, `JobFinalized`, `JobCancelled`.
+- **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`, `DisputeTimeoutResolved`.
+- **Reputation**: `ReputationUpdated`.
+- **Identity & configuration**: `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `MerkleRootsUpdated`, `OwnershipVerified`, `IdentityConfigurationLocked`.
+- **Marketplace**: `NFTIssued`, `NFTListed`, `NFTPurchased`, `NFTDelisted`.
+- **Governance & parameters**: `AGITypeUpdated`, `CompletionReviewPeriodUpdated`, `DisputeReviewPeriodUpdated`, `AdditionalAgentPayoutPercentageUpdated`, `AGIWithdrawn`, `RewardPoolContribution`.
+- **Compliance & controls**: `AgentBlacklisted`, `ValidatorBlacklisted`.
+
+For ABI‑exact parameters, see [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md) (generated from the compiled ABI).
+
+## Custom errors (revert taxonomy)
+
+The contract uses custom errors for precise revert reasons and lower gas usage:
+
+| Error | Meaning (high‑level) |
+| --- | --- |
+| `NotModerator` | Caller is not an authorized moderator. |
+| `NotAuthorized` | Caller lacks role/ownership to perform the action. |
+| `Blacklisted` | Caller is blacklisted for the relevant role. |
+| `InvalidParameters` | One or more parameters are invalid or out of bounds. |
+| `InvalidState` | The job or contract is in an incompatible state for the action. |
+| `JobNotFound` | Job ID does not map to a valid, initialized job. |
+| `TransferFailed` | ERC‑20 transfer/transferFrom failed or returned false/invalid data. |
+| `ValidatorLimitReached` | Validator count exceeded the per‑job cap. |
+| `InvalidValidatorThresholds` | Validator approval/disapproval thresholds exceed the cap. |
+| `ValidatorSetTooLarge` | Aggregated validator set exceeded the cap. |
+| `IneligibleAgentPayout` | Agent’s payout percentage is zero at assignment. |
+| `InvalidAgentPayoutSnapshot` | Payout snapshot invalid (e.g., exceeds allowed maximum). |
+| `InsufficientWithdrawableBalance` | Owner attempted to withdraw more than available. |
+| `InsolventEscrowBalance` | Contract balance < locked escrow invariant. |
+| `ConfigLocked` | Identity configuration updates are locked. |
+
 ## Job lifecycle (state machine)
 
 ```mermaid
@@ -146,6 +182,15 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
   - Employer‑win dispute resolution or finalization returns escrow to the employer and settles validator/agent bonds.
 - **No‑vote liveness**: after `completionReviewPeriod` with zero votes, `finalizeJob` settles in favor of the agent **without** reputation updates (`repEligible = false`).
 - **ERC‑20 safety**: the contract checks `transfer`/`transferFrom` return values and enforces **exact transfer amounts** (balances must increase by exactly `amount`), so fee‑on‑transfer tokens will revert.
+
+## Invariants & safety checks (operator‑relevant)
+
+- **Escrow solvency**: `lockedEscrow` tracks the sum of job escrows. `withdrawableAGI()` enforces `balance >= lockedEscrow`, reverting with `InsolventEscrowBalance` if escrow accounting is inconsistent.
+- **Completion gate**: payouts and job NFT minting require a recorded completion request and a non‑empty, valid completion URI.
+- **Validator thresholds bounded**: approval/disapproval thresholds are validated against `MAX_VALIDATORS_PER_JOB`, and the sum of thresholds must stay within the cap.
+- **Validator set bounded**: per‑job validator arrays are capped; attempts to exceed the cap revert.
+- **Payout percentage safety**: agent payout percentages must remain within `100 − validationRewardPercentage`; invalid snapshots revert.
+- **Transfer integrity**: ERC‑20 transfers must succeed and (for exact transfers) increase balances by the intended amount.
 
 ## ENS / NameWrapper / Merkle ownership verification
 
