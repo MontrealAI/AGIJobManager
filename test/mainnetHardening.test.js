@@ -349,6 +349,27 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await expectCustomError(manager.rescueToken.call(malformedToken.address, transferData, { from: owner }), "TransferFailed");
   });
 
+  it("reverts rescueToken when target is an EOA", async () => {
+    const agi = await MockERC20.new({ from: owner });
+    const ens = await MockENS.new({ from: owner });
+    const wrapper = await MockNameWrapper.new({ from: owner });
+    const manager = await deployManager(agi, ens.address, wrapper.address);
+
+    const transferData = web3.eth.abi.encodeFunctionCall(
+      {
+        name: "transfer",
+        type: "function",
+        inputs: [
+          { type: "address", name: "to" },
+          { type: "uint256", name: "amount" }
+        ]
+      },
+      [owner, "1"]
+    );
+
+    await expectCustomError(manager.rescueToken.call(owner, transferData, { from: owner }), "InvalidParameters");
+  });
+
 
   it("keeps old jobs settleable after later validation reward config changes", async () => {
     const token = await MockERC20.new({ from: owner });
