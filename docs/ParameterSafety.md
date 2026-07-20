@@ -153,7 +153,8 @@ Below are plausible misconfiguration or operational failures that can trap funds
 ## Recovery playbook (operator runbook)
 
 1. **Stop the bleeding:**
-   - Call `pause()` if misconfiguration is causing failed settlements or unexpected behavior.
+   - Call `setSettlementPaused(true)` to freeze settlement/fund‑moving paths first.
+   - Optionally call `pause()` to stop new intake if misconfiguration is causing failed settlements or unexpected behavior.
 
 2. **Fix misconfiguration:**
    - Adjust validator thresholds (`setRequiredValidatorApprovals`, `setRequiredValidatorDisapprovals`).
@@ -170,6 +171,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
 4. **Validate recovery:**
    - Use `getJobCore(jobId)` and `getJobValidation(jobId)` to confirm lifecycle flags.
    - Confirm contract token balance is ≥ expected payout obligations.
+   - Only unset `settlementPaused` after settlement math/invariants are confirmed safe; unpause intake last if you want conservative safety.
 
 ## Optional hardening ideas (no code changes in this task)
 
