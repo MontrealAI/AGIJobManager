@@ -55,6 +55,7 @@ if (scriptSrcMatches.length > 0) {
 }
 
 const stylesheetLinks = [];
+const forbiddenLinkRefs = [];
 for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   const attrs = parseTagAttributes(match[0]);
   const rel = (attrs.get('rel') || '').toLowerCase();
@@ -62,9 +63,28 @@ for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
   if (rel.split(/\s+/).includes('stylesheet') && href) {
     stylesheetLinks.push(href);
   }
+
+  const relTokens = rel.split(/\s+/).filter(Boolean);
+  if (href && (relTokens.includes('icon') || relTokens.includes('manifest'))) {
+    forbiddenLinkRefs.push(`${rel || '(missing rel)'}:${href}`);
+  }
 }
 if (stylesheetLinks.length > 0) {
   throw new Error(`External stylesheet references found: ${stylesheetLinks.join(', ')}`);
+}
+if (forbiddenLinkRefs.length > 0) {
+  throw new Error(`Forbidden link rel references found (icon/manifest): ${forbiddenLinkRefs.join(', ')}`);
+}
+
+const forbiddenAssetPathRefs = [
+  /(?:^|["'\s(])\/?assets\//i,
+  /\bdata:(?:image|font)\//i
+];
+
+for (const pattern of forbiddenAssetPathRefs) {
+  if (pattern.test(html)) {
+    throw new Error(`Forbidden single-file artifact reference detected: ${pattern}`);
+  }
 }
 
 const htmlWithoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '');
