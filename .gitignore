@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # Deployment runtime artifacts
 deployments/
 migrations/config/agijobmanager.config.js
+
+# UI single-file build output (generated)
+ui/dist-ipfs/
