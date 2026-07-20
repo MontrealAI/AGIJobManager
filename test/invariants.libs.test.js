@@ -265,6 +265,20 @@ contract("Utility library invariants", (accounts) => {
     assert.equal(ok, false, "reverting resolver.addr should fail closed");
   });
 
+  it("reverts InvalidENSLabel before any ENS staticcalls on invalid labels", async () => {
+    const ens = await RevertingENSRegistry.new({ from: owner });
+    const wrapper = await RevertingNameWrapper.new({ from: owner });
+    const root = rootNode("club-root");
+
+    await ens.setRevertResolver(true, { from: owner });
+    await wrapper.setRevertOwnerOf(true, { from: owner });
+
+    await expectCustomError(
+      harness.verifyENSOwnership.call(ens.address, wrapper.address, claimant, "alice.bob", root),
+      "InvalidENSLabel"
+    );
+  });
+
   it("fails closed on malformed ENS/resolver/name-wrapper return data", async () => {
     const ens = await MalformedENSRegistry.new({ from: owner });
     const wrapper = await MalformedNameWrapper.new({ from: owner });
