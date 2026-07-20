@@ -81,6 +81,7 @@ integrations/erc8004/out/
 # Next.js build output
 .next
 out
+ui/dist-ipfs/
 
 # Nuxt.js build / generate output
 .nuxt
