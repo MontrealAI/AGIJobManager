@@ -24,7 +24,8 @@ describe('committed single-file hash navigation', () => {
       '#/admin',
       '#/advanced',
       '#/design',
-      '#/deployment'
+      '#/deployment',
+      '#/demo'
     ];
 
     for (const { file, label } of artifactTargets) {
