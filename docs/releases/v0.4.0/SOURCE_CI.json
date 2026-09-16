@@ -1,0 +1,39 @@
+{
+  "repository": "MontrealAI/AGIJobManager",
+  "capturedOn": "2026-09-16",
+  "runs": [
+    {
+      "id": 27019923649,
+      "name": "CI",
+      "path": ".github/workflows/ci.yml",
+      "head_sha": "5d3607e98672487ec67f856079c154d340c3e848",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-06-05T14:11:40Z",
+      "updated_at": "2026-06-05T14:28:34Z",
+      "html_url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/27019923649"
+    },
+    {
+      "id": 27019923862,
+      "name": "Docs Integrity",
+      "path": ".github/workflows/docs.yml",
+      "head_sha": "5d3607e98672487ec67f856079c154d340c3e848",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-06-05T14:11:41Z",
+      "updated_at": "2026-06-05T14:12:32Z",
+      "html_url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/27019923862"
+    },
+    {
+      "id": 27019923829,
+      "name": "Security Verification",
+      "path": ".github/workflows/security-verification.yml",
+      "head_sha": "5d3607e98672487ec67f856079c154d340c3e848",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-06-05T14:11:41Z",
+      "updated_at": "2026-06-05T14:13:05Z",
+      "html_url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/27019923829"
+    }
+  ]
+}
