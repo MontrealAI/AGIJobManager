@@ -1,0 +1,66 @@
+name: Current-State Release v0.4.0
+
+on:
+  pull_request:
+    paths:
+      - 'docs/releases/v0.4.0/**'
+      - 'scripts/release/**'
+      - '.github/workflows/current-state-release.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/releases/v0.4.0/release.json'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: current-state-release-v0.4.0
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 20.19.6
+      - name: Verify exact frozen Genesis Console
+        run: |
+          git worktree add --detach /tmp/genesis-release-source 5d3607e98672487ec67f856079c154d340c3e848
+          node scripts/release/verify-genesis-ui.mjs /tmp/genesis-release-source
+      - name: Verify recorded successful source CI
+        run: python3 scripts/release/publish-release.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Build and verify reproducible release assets
+        run: |
+          python3 scripts/release/package-release.py
+          python3 scripts/release/package-release.py --out /tmp/genesis-release-rebuild
+          diff -r build/release/v0.4.0 /tmp/genesis-release-rebuild
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Package the pinned application commit
+        run: python3 scripts/release/package-release.py
+      - name: Create draft, verify assets, then publish
+        run: python3 scripts/release/publish-release.py --publish
+        env:
+          GH_TOKEN: ${{ github.token }}

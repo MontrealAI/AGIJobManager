@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.4.0",
+  "name": "v0.4.0 — Genesis Console · Current-State Final Release",
+  "releaseDate": "2026-09-16",
+  "sourceCommit": "5d3607e98672487ec67f856079c154d340c3e848",
+  "sourceTree": "2fe8911c0a1e857db5a2caebae9cf8fcd9b2a44f",
+  "previousTag": "v0.3.0-mainnet-ensjobpages-upgrade",
+  "primaryUI": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html",
+  "scope": "Frozen source and Genesis Console release; no contract deployment or fresh production certification.",
+  "unchangedPaths": [
+    "contracts",
+    "test",
+    "forge-test",
+    "ui/src",
+    "ui/package.json",
+    "ui/package-lock.json",
+    "package.json",
+    "package-lock.json",
+    "hardhat/contracts",
+    "hardhat/scripts",
+    "hardhat/deployments"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "a78cea7d5ebbf5ef62a1295271c544ab654d996e8a48eb244992f9d93c77db24",
+    "PREVIOUS_RELEASE.json": "170970550508567ac1a7942fd352ef61ce498cf018c076628b3437fe07211d6a",
+    "SOURCE_CI.json": "bc8c2b023b2a9bed8894fc706373cd635ab8a52f986ca822ed34a0e32f53d497"
+  },
+  "requiredSourceRuns": {
+    "ci": {
+      "id": 27019923649,
+      "workflow": "ci.yml"
+    },
+    "docs": {
+      "id": 27019923862,
+      "workflow": "docs.yml"
+    },
+    "security": {
+      "id": 27019923829,
+      "workflow": "security-verification.yml"
+    }
+  }
+}

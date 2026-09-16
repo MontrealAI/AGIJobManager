@@ -1,0 +1,190 @@
+{
+  "previousTag": "v0.3.0-mainnet-ensjobpages-upgrade",
+  "sourceCommit": "5d3607e98672487ec67f856079c154d340c3e848",
+  "changes": [
+    {
+      "status": "A",
+      "path": ".github/workflows/add-aep002-evidence-docket-standard-page.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/pages.yml"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Institutional_Overview_2026-03-30.docx"
+    },
+    {
+      "status": "A",
+      "path": "docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Institutional_Overview_2026-03-30.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Institutional_Overview_2026-03-30.pdf"
+    },
+    {
+      "status": "A",
+      "path": "docs/AGIJobManager_OpenClaw_Joint_Use_Cases_Scorecard_2026-03-30.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ENS/ENS_JOB_PAGES_OVERVIEW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ETHERSCAN_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/FAQ.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/JOB_LIFECYCLE_ETHERSCAN_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OVERVIEW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OWNER_RUNBOOK.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/Operational-Blueprint-for-a-Task-Foundry-AGI-Workforce-Flywheel.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/QUICKSTART.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GITHUB_PAGES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ui/STANDALONE_HTML_UIS.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/README.md"
+    },
+    {
+      "status": "M",
+      "path": "ui/README.md"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v16.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v17.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v18.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v19.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v20.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v22.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v23.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v24.htm"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v24.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v25.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v26.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v27.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v28.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v29.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v30.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v31.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v32.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html"
+    }
+  ]
+}
