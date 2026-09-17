@@ -6,10 +6,15 @@ const repoRoot = path.resolve(process.cwd(), '..');
 const abiPath = path.join(process.cwd(), 'src', 'abis', 'agiJobManager.ts');
 const raw = fs.readFileSync(abiPath, 'utf8');
 
-const itemRegex = /\{"type":"(function|event|error)","name":"([^"]+)"/g;
+const match = raw.match(/export const agiJobManagerAbi\s*=\s*(\[[\s\S]*\])\s+as const;/);
+if (!match) throw new Error('Expected the generated JSON ABI export.');
+const abi = JSON.parse(match[1]);
 const buckets = { function: new Set(), event: new Set(), error: new Set() };
-for (const match of raw.matchAll(itemRegex)) {
-  buckets[match[1]].add(match[2]);
+for (const item of abi) {
+  if (Object.hasOwn(buckets, item.type) && item.name) buckets[item.type].add(item.name);
+}
+if (!buckets.function.has('usdcToken') || !buckets.function.has('withdrawUSDC')) {
+  throw new Error('The USDC settlement interface is missing from the generated ABI.');
 }
 
 const toSection = (title, values) => {
