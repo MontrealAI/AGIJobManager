@@ -10,7 +10,9 @@ contract AGIJobManagerHarness is AGIJobManager {
         address[2] memory ensConfig,
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
-    ) AGIJobManager(usdcTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots, [address(0x301), address(0x101)]) {}
+    ) AGIJobManager(usdcTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots, [address(0x301), address(0x101)]) {
+        if (paused()) _unpause();
+    }
 
     function activeJobsByAgentView(address agent) external view returns (uint256) {
         return activeJobsByAgent[agent];
@@ -42,6 +44,10 @@ contract AGIJobManagerHarness is AGIJobManager {
 
     function jobPayout(uint256 jobId) external view returns (uint256) {
         return jobs[jobId].payout;
+    }
+
+    function jobValidatorRewardPct(uint256 jobId) external view returns (uint256) {
+        return jobs[jobId].validatorRewardPctSnapshot;
     }
 
     function jobAssignedAgent(uint256 jobId) external view returns (address) {

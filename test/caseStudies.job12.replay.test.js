@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { BN, expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
@@ -88,7 +89,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     alphaClubRootNode = clubRootNode;
     alphaAgentRootNode = agentRootNode;
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         baseIpfsUrl,
         ens.address,

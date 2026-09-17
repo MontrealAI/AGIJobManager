@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { expectRevert, time } = require("@openzeppelin/test-helpers");
@@ -28,7 +29,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         "ipfs://base",
         ens.address,

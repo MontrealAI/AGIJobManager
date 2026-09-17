@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { verifyUSDCDeployment, assertUSDCWriteTarget, USDC_ADDRESSES } from '../src/lib/usdc';
+import { verifyUSDCDeployment, assertUSDCWriteTarget, assertUSDCWalletContext, USDC_ADDRESSES } from '../src/lib/usdc';
 import { fmtToken } from '../src/lib/format';
 import { estimateDisputeBond } from '../src/lib/bonds';
 const manager = '0x1111111111111111111111111111111111111111';
@@ -8,6 +8,13 @@ const client = (token = USDC_ADDRESSES[1], decimals = 6, chain = 1, code = '0x60
   readContract: vi.fn(async ({functionName}: {functionName: string}) => functionName === 'usdcToken' ? token : functionName === 'wallet30' ? '0x3333333333333333333333333333333333333333' : functionName === 'wallet10' ? '0x4444444444444444444444444444444444444444' : functionName === 'pendingOwner' ? '0x0000000000000000000000000000000000000000' : decimals)
 });
 describe('USDC transaction preflight', () => {
+  it('rechecks the wallet account and chain before signing', async () => {
+    const wallet = { getChainId: async () => 1, getAddresses: async () => [manager] };
+    await expect(assertUSDCWalletContext(wallet, manager, 1)).resolves.toBeUndefined();
+    await expect(assertUSDCWalletContext(wallet, USDC_ADDRESSES[1], 1)).rejects.toThrow('changed');
+    await expect(assertUSDCWalletContext(wallet, manager, 11155111)).rejects.toThrow('changed');
+    await expect(assertUSDCWalletContext({ ...wallet, getAddresses: async () => [] }, manager, 1)).rejects.toThrow('changed');
+  });
   it('requires a configured manager on the canonical chain with six-decimal USDC', async () => {
     await expect(verifyUSDCDeployment(client(), manager, 1)).resolves.toBe(USDC_ADDRESSES[1]);
     for (const c of [client(manager),client(undefined,18),client(undefined,6,11155111),client(undefined,6,1,'0x')]) {

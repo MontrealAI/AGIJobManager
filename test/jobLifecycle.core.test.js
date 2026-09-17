@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, expectEvent, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
@@ -37,7 +38,7 @@ contract('jobLifecycle.core', (accounts) => {
     agentTree = mkTree([agent]);
     validatorTree = mkTree([v1, v2, v3]);
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
       token.address,
       'ipfs://base',
       ens.address,

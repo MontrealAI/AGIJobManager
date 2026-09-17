@@ -1,6 +1,6 @@
 'use client'
 
-import { verifyUSDCDeployment, assertUSDCWriteTarget } from '@/lib/usdc'
+import { verifyUSDCDeployment, assertUSDCWriteTarget, assertUSDCWalletContext } from '@/lib/usdc'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { BaseError } from 'viem'
 import { useAccount, useChainId, usePublicClient, useSimulateContract, useWaitForTransactionReceipt, useWalletClient, useWriteContract } from 'wagmi'
@@ -10,11 +10,12 @@ import { env } from '@/lib/env'
 export function TxStepperButton({ children, disabled, simulateConfig, preflightError }: { children: ReactNode; disabled?: boolean; simulateConfig: any; preflightError?: string }) {
   const [step, setStep] = useState<'idle' | 'preparing' | 'signature' | 'pending' | 'confirmed' | 'failed'>('idle')
   const chainId = useChainId()
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
+  const [localError, setLocalError] = useState<Error>()
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
   const write = useWriteContract()
-  const sim = useSimulateContract({ ...simulateConfig, query: { enabled: false } })
+  const sim = useSimulateContract({ ...simulateConfig, account: address, chainId: env.chainId, query: { enabled: false } })
   const wait = useWaitForTransactionReceipt({ hash: write.data })
 
   const txLink = useMemo(() => {
@@ -24,28 +25,34 @@ export function TxStepperButton({ children, disabled, simulateConfig, preflightE
   }, [write.data])
 
   const run = async () => {
-    if (!isConnected || chainId !== env.chainId || preflightError) return
+    if (!isConnected || !address || chainId !== env.chainId || preflightError) return
     try {
+      setLocalError(undefined)
       setStep('preparing')
+      await assertUSDCWalletContext(walletClient, address, env.chainId)
       const simulated = await sim.refetch()
       if (!simulated.data?.request) throw new Error('Simulation failed')
       const token = await verifyUSDCDeployment(publicClient, env.agiJobManagerAddress, chainId)
       assertUSDCWriteTarget(simulateConfig.address, env.agiJobManagerAddress, token, simulateConfig.functionName, simulateConfig.args)
-      if (!walletClient || await walletClient.getChainId() !== env.chainId) throw new Error('Wallet network mismatch')
+      await assertUSDCWalletContext(walletClient, address, env.chainId)
       setStep('signature')
-      await write.writeContractAsync(simulated.data.request)
+      await write.writeContractAsync({ ...simulated.data.request, account: address, chainId: env.chainId })
       setStep('pending')
-    } catch {
+    } catch (error) {
+      setLocalError(error instanceof Error ? error : new Error(String(error)))
       setStep('failed')
     }
   }
 
   useEffect(() => {
-    if (wait.isSuccess && step === 'pending') setStep('confirmed')
+    if (wait.isSuccess && step === 'pending') {
+      if (wait.data?.status === 'success') setStep('confirmed')
+      else { setLocalError(new Error('Transaction reverted. Check your wallet before retrying.')); setStep('failed') }
+    }
     if (wait.isError && step === 'pending') setStep('failed')
-  }, [wait.isSuccess, wait.isError, step])
+  }, [wait.isSuccess, wait.isError, wait.data?.status, step])
 
-  const err = (sim.error || write.error || wait.error) as BaseError | undefined
+  const err = (localError || sim.error || write.error || wait.error) as BaseError | undefined
   const decoded = decodeError(err)
   const effectiveError = preflightError || (!isConnected ? 'Connect wallet' : chainId !== env.chainId ? 'Wrong network' : '')
 

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const outRootArg = process.argv.find((arg) => arg.startsWith('--out-dir='));
@@ -14,7 +15,7 @@ const curated = [
   ['migrations/1_deploy_contracts.js', 'Truffle deployment entrypoint', 'Reads deployment config'],
   ['migrations/deploy-config.js', 'Network-dependent deployment parameters', 'Operator-reviewed before deploy'],
   ['test/', 'Truffle and node-based security/regression suites', 'Primary CI safety net'],
-  ['forge-test/', 'Foundry fuzz/invariant suites', 'Optional hardening lane'],
+  ['forge-test/', 'Foundry fuzz/invariant suites', 'Mandatory security qualification gate'],
   ['scripts/ops/validate-params.js', 'Parameter sanity checker for operations', 'Run before live changes'],
   ['scripts/postdeploy-config.js', 'Post-deploy owner configuration routine', 'Operational setup automation'],
   ['scripts/check-no-binaries.mjs', 'Repository policy guard against binary additions', 'Docs governance + supply chain hygiene'],
@@ -24,8 +25,10 @@ const curated = [
   ['docs/', 'Institutional documentation and generated references', 'Read docs/README.md first']
 ];
 
+const trackedRoots = new Set(execFileSync('git', ['ls-files', '-z'], { cwd: repoRoot, encoding: 'utf8' })
+  .split('\0').filter(Boolean).map((name) => name.split('/')[0]));
 const topLevel = fs.readdirSync(repoRoot, { withFileTypes: true })
-  .filter((d) => !d.name.startsWith('.git') && d.name !== 'node_modules' && d.name !== 'build')
+  .filter((d) => trackedRoots.has(d.name) && !d.name.startsWith('.git'))
   .map((d) => ({ name: d.name, type: d.isDirectory() ? 'dir' : 'file' }))
   .sort((a, b) => a.name.localeCompare(b.name));
 

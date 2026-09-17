@@ -105,7 +105,7 @@ const deploymentTsBefore = fs.readFileSync(deploymentTsPath, 'utf8');
 execSync('node scripts/sync-deployments.mjs', { cwd: process.cwd(), stdio: 'pipe' });
 const deploymentTsAfter = fs.readFileSync(deploymentTsPath, 'utf8');
 if (deploymentTsBefore !== deploymentTsAfter) {
-  throw new Error('ui/src/generated/deployments.ts is stale compared with hardhat/deployments/mainnet artifacts. Run npm run sync:deployment and commit the result.');
+  throw new Error('ui/src/generated/deployments.ts is stale compared with config/usdc-deployment.json. Run npm run sync:deployment and commit the result.');
 }
 
 const deploymentPath = path.join(docsRoot, 'DEPLOYMENT_MAINNET.md');
@@ -113,7 +113,7 @@ const deploymentBefore = fs.readFileSync(deploymentPath, 'utf8');
 execSync('node scripts/generate-deployment-docs.mjs', { cwd: process.cwd(), stdio: 'pipe' });
 const deploymentAfter = fs.readFileSync(deploymentPath, 'utf8');
 if (normalize(deploymentBefore) !== normalize(deploymentAfter)) {
-  throw new Error('docs/ui/DEPLOYMENT_MAINNET.md is stale compared with hardhat/deployments/mainnet artifacts. Run npm run docs:deployment and commit the result.');
+  throw new Error('docs/ui/DEPLOYMENT_MAINNET.md is stale compared with config/usdc-deployment.json. Run npm run docs:deployment and commit the result.');
 }
 
 for (const section of ['## Official release', '## Constructor arguments', '## Verification']) {

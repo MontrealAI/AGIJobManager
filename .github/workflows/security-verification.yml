@@ -34,11 +34,13 @@ jobs:
           npm ci
           npm audit --audit-level=high
           npm run compile
+          npm run test:preflight
+          npm run test:deployment
 
       - name: Setup Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
         with:
-          version: stable
+          version: v1.7.1
 
       - name: Forge format check
         run: forge fmt --check forge-test/**/*.sol contracts/test/MaliciousCompletionReceiver.sol
@@ -53,7 +55,7 @@ jobs:
         run: FOUNDRY_PROFILE=ci forge test --match-path "forge-test/invariant/*.t.sol"
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.11'
 
@@ -64,3 +66,14 @@ jobs:
 
       - name: Run Slither
         run: npm run slither
+
+      - name: Run and review extended Slither findings
+        run: npm run slither:extended
+
+      - name: Preserve static analysis evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: static-analysis-evidence
+          path: build/security/*.json
+          if-no-files-found: warn

@@ -145,3 +145,8 @@ vite.config.ts.timestamp-*
 # Deployment runtime artifacts
 deployments/
 migrations/config/agijobmanager.config.js
+
+# Foundry local compilation and invariant replay cache
+/cache/
+__pycache__/
+*.py[cod]

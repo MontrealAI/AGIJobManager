@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time, expectEvent } = require("@openzeppelin/test-helpers");
 
@@ -21,7 +22,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
   const ZERO32 = "0x" + "00".repeat(32);
 
   async function deployManager(token, ens, wrapper) {
-    return AGIJobManager.new(
+    return deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         "",
@@ -251,7 +252,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     const rootName = "jobs.mainnet-ready.agi.eth";
     const rootNode = namehash(rootName);
 
-    const manager = await AGIJobManager.new(
+    const manager = await deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         "",

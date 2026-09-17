@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { MerkleTree } = require("merkletreejs");
@@ -55,7 +56,7 @@ contract("ENS label hardening", (accounts) => {
       const ens = await MockENS.new({ from: owner });
       const nameWrapper = await MockNameWrapper.new({ from: owner });
 
-      manager = await AGIJobManager.new(
+      manager = await deployActive(AGIJobManager,
         ...buildInitConfig(
           token.address,
           "ipfs://base",
@@ -152,7 +153,7 @@ contract("ENS label hardening", (accounts) => {
       await revertingEns.setRevertResolver(true, { from: owner });
       await revertingWrapper.setRevertOwnerOf(true, { from: owner });
 
-      const strictManager = await AGIJobManager.new(
+      const strictManager = await deployActive(AGIJobManager,
         ...buildInitConfig(
           token.address,
           "ipfs://base",
@@ -181,7 +182,7 @@ contract("ENS label hardening", (accounts) => {
       await revertingEns.setRevertResolver(true, { from: owner });
       await revertingWrapper.setRevertOwnerOf(true, { from: owner });
 
-      const strictManager = await AGIJobManager.new(
+      const strictManager = await deployActive(AGIJobManager,
         ...buildInitConfig(
           token.address,
           "ipfs://base",
@@ -222,7 +223,7 @@ contract("ENS label hardening", (accounts) => {
     beforeEach(async () => {
       token = await MockERC20.new({ from: owner });
 
-      manager = await AGIJobManager.new(
+      manager = await deployActive(AGIJobManager,
         ...buildInitConfig(
           token.address,
           "ipfs://base",

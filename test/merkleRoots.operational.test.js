@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require('assert');
 
@@ -24,7 +25,7 @@ contract('merkleRoots.operational', (accounts) => {
     const ens = await MockENS.new({ from: owner });
     const nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    manager = await AGIJobManager.new(
+    manager = await deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         'ipfs://base',

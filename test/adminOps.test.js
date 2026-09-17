@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
@@ -46,7 +47,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         "ipfs://base",
         ens.address,
@@ -276,7 +277,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(owner, toBN(toWei("2")), { from: owner });
 
-    const managerFailing = await AGIJobManager.new(...buildInitConfig(
+    const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
         failing.address,
         "ipfs://base",
         ens.address,

@@ -318,7 +318,7 @@
             <span id="legacyAddress"></span>
           </p>
           <p class="muted">Active source: <span id="contractSource">—</span></p>
-          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.7.0 configuration file.</p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.8.0 configuration file.</p>
           <p class="muted">No contract is selected by default until you explicitly choose one.</p>
         </div>
       </div>
@@ -1005,9 +1005,9 @@
       preferredContract: "",
       notes: "",
     };
-    const storageKey = "agijobmanager_usdc_v070_contract";
-    const uiSettingsKey = "agijobmanager_usdc_v070_ui_settings_v1";
-    const indexCacheKey = "agijobmanager_usdc_v070_index_cache_v1";
+    const storageKey = "agijobmanager_usdc_v080_contract";
+    const uiSettingsKey = "agijobmanager_usdc_v080_ui_settings_v1";
+    const indexCacheKey = "agijobmanager_usdc_v080_index_cache_v1";
     const defaultPageSize = 50;
     const defaultIndexLookback = 20000;
     const supportedChainIds = new Set([1n, 11155111n, 1337n]);
@@ -1472,6 +1472,7 @@
     }
 
     function applyContractAddress(address, { source = "manual", persist = false } = {}) {
+      state.writeEpoch = (state.writeEpoch || 0) + 1;
       const parsed = parseAddress(address, "Contract address");
       state.contractAddress = parsed;
       state.contractSource = source;
@@ -1506,7 +1507,7 @@
         if(amount > ethers.MaxUint256) throw new Error("USDC amount exceeds uint256");
         return amount;
       } catch (error) {
-        throw new Error(`${fieldLabel} must be a valid number.`);
+        throw new Error(`${fieldLabel} must be a non-negative USDC amount with at most six decimal places, within uint256.`);
       }
     }
 
@@ -1541,8 +1542,8 @@
     }
 
     const metadataStorageKeys = {
-      pinataJwt: "agijobmanager_usdc_v070_pinata_jwt",
-      nftStorageKey: "agijobmanager_usdc_v070_nft_storage_key",
+      pinataJwt: "agijobmanager_usdc_v080_pinata_jwt",
+      nftStorageKey: "agijobmanager_usdc_v080_nft_storage_key",
     };
 
     function updatePill(id, text, tone = "warn") {
@@ -2148,6 +2149,7 @@
     }
 
     function disconnectWallet({ clearChain = true } = {}) {
+      state.writeEpoch = (state.writeEpoch || 0) + 1;
       state.signer = null;
       state.walletAddress = null;
       state.token = null;
@@ -2167,6 +2169,18 @@
       updateAdminPanel();
     }
 
+    function captureTransactionContext() {
+      return { account: String(state.walletAddress || '').toLowerCase(), chainId: state.chainId, address: state.contractAddress, contract: state.contract, signer: state.signer, provider: state.provider, epoch: state.writeEpoch || 0 };
+    }
+    function assertTransactionContext(context) {
+      if (!context.account || !context.signer || context.account !== String(state.walletAddress || '').toLowerCase() || context.chainId !== state.chainId || context.address !== state.contractAddress || context.contract !== state.contract || context.signer !== state.signer || context.provider !== state.provider || context.epoch !== (state.writeEpoch || 0)) throw new Error('Wallet, network or contract changed. Review the action again.');
+    }
+    async function assertLiveTransactionContext(context) {
+      assertTransactionContext(context);
+      const [accounts, chainId] = await Promise.all([context.provider.send('eth_accounts', []), context.provider.send('eth_chainId', [])]);
+      assertTransactionContext(context);
+      if (String(accounts?.[0] || '').toLowerCase() !== context.account || BigInt(chainId) !== context.chainId) throw new Error('Wallet account or network changed. Reconnect and review the action again.');
+    }
     async function ensureToken() {
       state.usdcValidated = false;
       requireContract();
@@ -2180,11 +2194,11 @@
       const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
       if(Number(await token.decimals()) !== 6) throw new Error('USDC decimal verification failed; transactions disabled.');
       const pendingOwner = await state.readContract.pendingOwner();
-      if(!ethers.isAddress(pendingOwner)) throw new Error('A v0.7.0 manager with two-step ownership is required.');
+      if(!ethers.isAddress(pendingOwner)) throw new Error('A v0.8.0 manager with two-step ownership is required.');
       state.pendingOwner = pendingOwner;
       const wallets = await Promise.all([state.readContract.wallet30(), state.readContract.wallet10()]);
       const invalid = [ethers.ZeroAddress, state.contractAddress, tokenAddress].filter(Boolean).map(x=>x.toLowerCase());
-      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.7.0 settlement wallets.');
+      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.8.0 settlement wallets.');
       setText('settlementWallets', '30%: '+wallets[0]+' · 10%: '+wallets[1]);
       state.usdcTokenAddress = tokenAddress;
       state.usdcTokenDecimals = 6;
@@ -2623,6 +2637,7 @@
     }
 
     async function handleAccountsChanged(accounts) {
+      state.writeEpoch = (state.writeEpoch || 0) + 1;
       if (!accounts || !accounts.length) {
         logEvent("Wallet disconnected");
         disconnectWallet();
@@ -2635,6 +2650,7 @@
     }
 
     async function handleChainChanged(chainIdHex) {
+      state.writeEpoch = (state.writeEpoch || 0) + 1;
       const chainId = BigInt(chainIdHex);
       logEvent(`Network changed to chainId=${chainId}; rebinding...`);
       state.provider = null;
@@ -2698,16 +2714,17 @@
       }
     }
 
-    async function sendTx(method, args, description) {
+    async function sendTx(method, args, description, context = captureTransactionContext()) {
+      await assertLiveTransactionContext(context);
       await ensureToken();
-      if (!state.contract) {
-        throw new Error("Connect a wallet to send transactions.");
-      }
       try {
-        await preflight(state.contract, method, args);
-        const tx = await state.contract.getFunction(method)(...args);
+        await assertLiveTransactionContext(context);
+        await preflight(context.contract, method, args);
+        await assertLiveTransactionContext(context);
+        const tx = await context.contract.getFunction(method)(...args);
         logEvent(`⏳ ${description} — ${tx.hash}`);
-        await tx.wait();
+        const receipt = await tx.wait();
+        if (!receipt || receipt.status !== 1) throw new Error('Transaction success could not be confirmed. Check your wallet before retrying.');
         logEvent(`✅ ${description} confirmed`);
       } catch (error) {
         const friendly = AGIJMErrorDecoder?.friendlyError
@@ -2718,7 +2735,11 @@
     }
 
     async function sendAdminTx(method, args, description, confirmLines) {
+      const context = captureTransactionContext();
+      await assertLiveTransactionContext(context);
+      if (method === 'setJobDurationLimit' && (BigInt(args[0]) < 1n || BigInt(args[0]) > 31536000n)) throw new Error('Job duration limit must be 1–31,536,000 seconds (up to 365 days).');
       await ensureToken();
+      await assertLiveTransactionContext(context);
       if (!state.contract) {
         throw new Error("Connect a wallet to send transactions.");
       }
@@ -2740,15 +2761,12 @@
         return;
       }
       if (reviewedAccount !== state.walletAddress || reviewedContract !== state.contract) throw new Error('Wallet or contract changed. Review again.');
-      await ensureToken();
-      await preflight(state.contract, method, args);
-      const tx = await state.contract.getFunction(method)(...args);
-      logEvent(`⏳ ${description} — ${formatTxLog(tx.hash)}`);
-      await tx.wait();
-      logEvent(`✅ ${description} confirmed`);
+      await sendTx(method, args, description, context);
     }
 
     async function handleCancelJobFlow(jobId) {
+      const context = captureTransactionContext();
+      await assertLiveTransactionContext(context);
       requireContract();
       if (!state.walletAddress) {
         throw new Error("Connect a wallet to cancel a job.");
@@ -2781,11 +2799,7 @@
         logEvent(`⚠️ Cancel job #${jobId} aborted by user.`);
         return;
       }
-      await ensureToken();
-      const tx = await state.contract.getFunction("cancelJob")(jobId);
-      logEvent(`⏳ Cancel job #${jobId} — ${formatTxLog(tx.hash)}`);
-      await tx.wait();
-      logEvent(`✅ Cancel job #${jobId} confirmed`);
+      await sendTx('cancelJob', [jobId], `Cancel job #${jobId}`, context);
       await refreshDashboard();
       await loadJobs();
     }
@@ -3168,26 +3182,19 @@
       };
     }
 
-    async function approveToken(amount, context) {
-      if (!state.walletAddress) {
-        throw new Error("Connect a wallet to approve tokens.");
-      }
+    async function approveToken(amount, description) {
+      const context = captureTransactionContext();
+      await assertLiveTransactionContext(context);
       const token = await ensureToken();
-      if (!state.contractAddress) {
-        throw new Error("Set a contract address first.");
-      }
-      try {
-        await token.getFunction("approve").staticCall(state.contractAddress, amount);
-      } catch (error) {
-        const friendly = AGIJMErrorDecoder?.friendlyError
-          ? AGIJMErrorDecoder.friendlyError(error, buildErrorContext({ type: "preflight", method: "approve", description: context }))
-          : (error.shortMessage || error.message || "Approve would revert.");
-        throw new Error(friendly);
-      }
-      const tx = await token.connect(state.signer).approve(state.contractAddress, amount);
-      logEvent(`⏳ ${context} approve — ${tx.hash}`);
-      await tx.wait();
-      logEvent(`✅ ${context} approve confirmed`);
+      await assertLiveTransactionContext(context);
+      const signedToken = token.connect(context.signer);
+      await preflight(signedToken, 'approve', [context.address, amount]);
+      await assertLiveTransactionContext(context);
+      const tx = await signedToken.approve(context.address, amount);
+      logEvent(`⏳ ${description} approve — ${tx.hash}`);
+      const receipt = await tx.wait();
+      if (!receipt || receipt.status !== 1) throw new Error('Approval success could not be confirmed. Check your wallet before retrying.');
+      logEvent(`✅ ${description} approve confirmed`);
     }
 
     async function loadJobs() {

@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const assert = require('assert');
 const { expectRevert } = require('@openzeppelin/test-helpers');
 const { parseUSDC, formatUSDC, requireCanonicalUSDC, USDC_ADDRESSES } = require('../scripts/lib/usdc');
@@ -14,12 +15,12 @@ contract('USDC-only settlement', ([owner, employer]) => {
   const args = token => buildInitConfig(token, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero);
   beforeEach(async () => {
     usdc = await USDC.new(); ens = await ENS.new(); wrapper = await Wrapper.new();
-    manager = await Manager.new(...args(usdc.address));
+    manager = await deployActive(Manager, ...args(usdc.address));
   });
   it('rejects 18-decimal contracts and non-contract token addresses', async () => {
     const wrong = await Wrong.new();
-    await assert.rejects(Manager.new(...args(wrong.address)), /revert|Custom error|code couldn.t be stored/);
-    await assert.rejects(Manager.new(...args(employer)), /revert|Custom error|code couldn.t be stored/);
+    await assert.rejects(deployActive(Manager, ...args(wrong.address)), /revert|Custom error|code couldn.t be stored/);
+    await assert.rejects(deployActive(Manager, ...args(employer)), /revert|Custom error|code couldn.t be stored/);
     assert.equal(await manager.usdcToken(), usdc.address);
     assert(!Manager.abi.some(x => /update.*TokenAddress/.test(x.name || '')));
   });

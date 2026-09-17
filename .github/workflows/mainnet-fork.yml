@@ -1,0 +1,31 @@
+name: Mainnet USDC Fork Qualification
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  mainnet-usdc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.23.2
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            hardhat/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: hardhat
+      - name: Test actual Circle USDC on a pinned local mainnet fork
+        working-directory: hardhat
+        run: npm run test:mainnet-fork
+        env:
+          MAINNET_FORK_RPC_URL: https://eth-mainnet.g.alchemy.com/public

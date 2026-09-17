@@ -1,6 +1,6 @@
 # AGIJobManager Interface Reference (ABI‑accurate)
 
-For v0.7.0, see [USDC payout distribution](USDC_PAYOUT_SPLIT.md): new immutable `wallet30()` and `wallet10()` getters, sixth constructor argument `address[2] settlementWallets`, and `JobPayoutDistributed` replace retained job-cost revenue.
+For v0.8.0, see [USDC payout distribution](USDC_PAYOUT_SPLIT.md): new immutable `wallet30()` and `wallet10()` getters, sixth constructor argument `address[2] settlementWallets`, and `JobPayoutDistributed` replace retained job-cost revenue.
 
 This reference is derived from the compiled ABI (`build/contracts/AGIJobManager.json`). It documents every public/external function, event, error, and public state variable. Regenerate the ABI with `npx truffle compile` before updating this document.
 

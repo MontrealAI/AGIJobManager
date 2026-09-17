@@ -72,8 +72,8 @@ function evaluateInvariants({
   });
   results.push({
     key: "jobDurationLimit",
-    status: BigInt(jobDurationLimit) > 0n ? CHECK.PASS : CHECK.FAIL,
-    message: "jobDurationLimit must be > 0",
+    status: BigInt(jobDurationLimit) > 0n && BigInt(jobDurationLimit) <= 31536000n ? CHECK.PASS : CHECK.FAIL,
+    message: "jobDurationLimit must be between 1 and 31536000 seconds (365 days)",
   });
   results.push({
     key: "combinedPayouts",

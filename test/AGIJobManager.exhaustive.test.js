@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { expectRevert, time } = require("@openzeppelin/test-helpers");
 const { MerkleTree } = require("merkletreejs");
@@ -50,7 +51,7 @@ async function deployManager({
 }) {
   const resolvedAlphaValidatorRootNode = alphaValidatorRootNode || validatorRootNode;
   const resolvedAlphaAgentRootNode = alphaAgentRootNode || agentRootNode;
-  return AGIJobManager.new(...buildInitConfig(
+  return deployActive(AGIJobManager, ...buildInitConfig(
       token.address,
       "ipfs://base",
       ens.address,

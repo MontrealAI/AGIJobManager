@@ -64,6 +64,9 @@ module.exports = async function (deployer, network, accounts) {
 
     const mintAmount = require("../scripts/lib/usdc").parseUSDC("100000");
     await token.mint(accounts[0], mintAmount);
+    // This migration is exclusively a disposable local test/demo fixture.
+    const manager = await AGIJobManager.deployed();
+    await manager.unpause({ from: accounts[0] });
     return;
   }
 

@@ -21,7 +21,7 @@ const tokenAbi = [
 export async function verifyUSDCDeployment(client: any, manager: string, chainId: number) {
   const expected = USDC_ADDRESSES[chainId];
   if (!expected) throw new Error('Unsupported USDC chain.');
-  if (!isAddress(manager) || manager.toLowerCase() === zeroAddress) throw new Error('Configure a verified v0.7.0 USDC deployment.');
+  if (!isAddress(manager) || manager.toLowerCase() === zeroAddress) throw new Error('Configure a verified v0.8.0 USDC deployment.');
   if (await client.getChainId() !== chainId) throw new Error('USDC provider chain mismatch.');
   const code = await client.getBytecode({ address: manager });
   if (!code || code === '0x') throw new Error('USDC manager has no deployed code.');
@@ -32,10 +32,10 @@ export async function verifyUSDCDeployment(client: any, manager: string, chainId
   const wallets = await Promise.all(['wallet30', 'wallet10'].map(functionName => client.readContract({ address: manager, abi: tokenAbi, functionName })));
   const invalid = [zeroAddress, manager, expected].map(x => x.toLowerCase());
   if (wallets.some(x => !isAddress(String(x)) || invalid.includes(String(x).toLowerCase())) || String(wallets[0]).toLowerCase() === String(wallets[1]).toLowerCase()) {
-    throw new Error('A v0.7.0 manager with distinct valid 30% and 10% settlement wallets is required.');
+    throw new Error('A v0.8.0 manager with distinct valid 30% and 10% settlement wallets is required.');
   }
   const pending = await client.readContract({ address: manager, abi: tokenAbi, functionName: 'pendingOwner' });
-  if (!isAddress(String(pending))) throw new Error('A v0.7.0 manager with two-step ownership is required.');
+  if (!isAddress(String(pending))) throw new Error('A v0.8.0 manager with two-step ownership is required.');
   return expected;
 }
 
@@ -43,4 +43,12 @@ export function assertUSDCWriteTarget(address: string, manager: string, token: s
   if (address.toLowerCase() === manager.toLowerCase()) return;
   if (address.toLowerCase() === token.toLowerCase() && functionName === 'approve' && String(args[0]).toLowerCase() === manager.toLowerCase()) return;
   throw new Error('Only the verified USDC manager and its USDC approvals are supported.');
+}
+
+export async function assertUSDCWalletContext(walletClient: any, expectedAccount: string, expectedChainId: number) {
+  if (!walletClient || !expectedAccount) throw new Error('Connect wallet.');
+  const [chainId, accounts] = await Promise.all([walletClient.getChainId(), walletClient.getAddresses()]);
+  if (chainId !== expectedChainId || String(accounts?.[0] || '').toLowerCase() !== expectedAccount.toLowerCase()) {
+    throw new Error('Wallet account or network changed. Review the action again.');
+  }
 }

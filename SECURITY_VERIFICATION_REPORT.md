@@ -1,6 +1,10 @@
-# Security Verification Scope — v0.5.0 USDC
+# Security Verification Scope — v0.8.0 USDC
 
-This document describes the configured checks and residual assumptions. Exact run results belong to the v0.5.0 release evidence; this is not an independent audit.
+This document describes the configured checks and residual assumptions. Exact run results belong to the v0.8.0 release evidence; this is not an independent audit.
+
+The extended gate additionally runs all medium/high detectors and a dedicated reentrancy pass without detector-category exclusions. Its reviewed findings and source-bound baseline are preserved in [static analysis triage](docs/security/v0.8.0-static-analysis.md). A clean configured gate does not mean the extended scan returned no findings.
+
+See [mainnet readiness](docs/MAINNET_READINESS.md) for deployment checks and limitations.
 
 ## Scope
 - `contracts/AGIJobManager.sol`
@@ -8,7 +12,7 @@ This document describes the configured checks and residual assumptions. Exact ru
 - ENS integration contracts and assembly call compatibility assumptions
 
 ## Tooling Versions
-- Foundry: the stable toolchain selected by CI (exact version is recorded in run logs)
+- Foundry: 1.7.1 (pinned by CI)
 - Solidity compiler: `0.8.23` (from `foundry.toml`)
 - Slither: `0.10.4`
 - Echidna: not included (Foundry handler invariants already cover the multi-step state machine with deterministic CI runtime)
@@ -80,7 +84,7 @@ Invariants enforced:
 ## Slither Findings Triage
 - **Accepted by design:** privileged owner/admin control surfaces (`onlyOwner`) per business-operated trust model.
 - **False positives / low-noise filtered:** currently controlled via repository `slither.config.json` path filters and detector exclusions for non-actionable categories.
-- **v0.5.0 scope:** settlement currency, economic/reputation scaling, immutable token configuration, and fail-closed UI guards changed. New USDC tests cover public-chain canonical addresses, six-decimal amounts and transfer restrictions.
+- **Earlier USDC migration scope:** settlement currency, economic/reputation scaling, immutable token configuration, and fail-closed UI guards changed. New USDC tests cover public-chain canonical addresses, six-decimal amounts and transfer restrictions.
 
 ## Residual Risks / Assumptions
 - Owner/operator privilege remains central by design.
@@ -88,3 +92,7 @@ Invariants enforced:
 - ENS integration remains optional/best-effort and intentionally non-blocking for escrow lifecycle safety.
 
 - USDC issuer pauses or blocked addresses can prevent transfers. Failed operations must preserve escrow accounting and be retried only after the underlying restriction is resolved.
+
+## v0.8.0 qualification additions
+
+The constructor starts intake paused; unsafe duration limits and self-targeted rescue calls are rejected. New fuzzing covers exact USDC transfer order, snapshotted budgets, micro-unit rounding, issuer restrictions and maximum-duration boundaries. The directed lifecycle handler asserts successful transitions without swallowing unexpected reverts, while checking concurrent-job reserves, owner extraction guards and ownership transitions. CI uses 256 fuzz cases per fuzz test and 64×64 calls per stateful invariant. A separate local mainnet-fork gate exercises the actual Circle proxy at a pinned finalized block without sending live transactions. Deployment tests check compiler/runtime matching, EIP limits, preflight failures, partial receipts and incomplete verification.

@@ -1,6 +1,6 @@
 {
   "name": "agijobmanager",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Single-contract AGIJobManager",
   "scripts": {
@@ -25,7 +25,8 @@
     "forge:test": "forge test",
     "forge:invariant": "FOUNDRY_PROFILE=ci forge test --match-path forge-test/invariant/*.t.sol",
     "slither": "./scripts/security/run-slither.sh",
-    "deploy:agijobmanager:prod": "npm --prefix hardhat run deploy:mainnet"
+    "deploy:agijobmanager:prod": "npm --prefix hardhat run deploy:mainnet",
+    "slither:extended": "bash scripts/security/run-slither-extended.sh"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

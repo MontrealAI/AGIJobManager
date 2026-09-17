@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time, expectEvent } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
@@ -38,7 +39,7 @@ contract('ensHooks.integration', (accounts) => {
 
     const rootName = 'jobs.alpha.agi.eth';
     const rootNodeHash = namehash(rootName);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
     const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNodeHash, rootName, { from: owner });
     await pages.setJobManager(manager.address, { from: owner });
     await manager.setEnsJobPages(pages.address, { from: owner });
@@ -77,7 +78,7 @@ contract('ensHooks.integration', (accounts) => {
 
     const rootName = 'jobs.alpha.agi.eth';
     const rootNodeHash = namehash(rootName);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
     const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNodeHash, rootName, { from: owner });
     await pages.setJobManager(manager.address, { from: owner });
     await manager.setEnsJobPages(pages.address, { from: owner });
@@ -136,7 +137,7 @@ contract('ensHooks.integration', (accounts) => {
 
     const rootName = 'jobs.alpha.agi.eth';
     const rootNodeHash = namehash(rootName);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), mkTree([validator]).root, mkTree([agent]).root), { from: owner });
     const pages = await ENSJobPages.new(ens.address, wrapper.address, resolver.address, rootNodeHash, rootName, { from: owner });
     await pages.setJobManager(manager.address, { from: owner });
     await manager.setEnsJobPages(pages.address, { from: owner });

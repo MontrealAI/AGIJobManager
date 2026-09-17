@@ -1,6 +1,6 @@
 # Protocol Flow and Economic Accounting
 
-See [the v0.7.0 payout specification](USDC_PAYOUT_SPLIT.md) for exact arithmetic, wallet configuration and rounding.
+See [the v0.8.0 payout specification](USDC_PAYOUT_SPLIT.md) for exact arithmetic, wallet configuration and rounding.
 
 ## Escrow accounting model
 

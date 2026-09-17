@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -15,7 +16,7 @@ contract("AGIJobManager rescue hardening", (accounts) => {
   async function deployManager(token) {
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
-    return AGIJobManager.new(
+    return deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         "ipfs://base",

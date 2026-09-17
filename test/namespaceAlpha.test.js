@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
@@ -53,7 +54,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     alphaClubRoot = namehash("alpha.club.agi.eth");
     alphaAgentRoot = namehash("alpha.agent.agi.eth");
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         "ipfs://base",
         ens.address,
@@ -161,7 +162,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const agentLeaf = Buffer.from(leafFor(agent).slice(2), "hex");
     const validatorLeaf = Buffer.from(leafFor(validator).slice(2), "hex");
 
-    const merkleManager = await AGIJobManager.new(...buildInitConfig(
+    const merkleManager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         "ipfs://base",
         ens.address,
