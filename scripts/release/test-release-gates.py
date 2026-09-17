@@ -72,11 +72,18 @@ class ReleaseGateTests(unittest.TestCase):
 
     def fake_run(self, command, **kwargs):
         prefix = ['gh', 'api', f'repos/{REPOSITORY}/']
-        if (len(command) != 5 or command[:2] != prefix[:2]
+        if (len(command) < 3 or command[:2] != prefix[:2]
                 or not command[2].startswith(prefix[2])
-                or command[3:] != ['--method', 'GET'] or kwargs.get('input') is not None):
+                or kwargs.get('input') is not None):
             raise RuntimeError(f'Unexpected or mutating subprocess in offline test: {command!r}')
         endpoint = command[2][len(prefix[2]):]
+        flags = ['--method', 'GET']
+        if endpoint.startswith('actions/jobs/') and endpoint.endswith('/logs'):
+            flags.append('--allow-escape-sequences')
+            if kwargs.get('capture_output') is not True:
+                raise RuntimeError('Job logs must be captured, never printed directly')
+        if command[3:] != flags:
+            raise RuntimeError(f'Unexpected transport flags in offline test: {command!r}')
         self.calls.append(endpoint)
         if endpoint not in self.responses:
             raise RuntimeError(f'Unmocked GitHub endpoint: {endpoint}')
@@ -89,11 +96,12 @@ class ReleaseGateTests(unittest.TestCase):
         (self.meta / 'release.json').write_text(json.dumps(self.config))
         (self.meta / 'SOURCE_CI.json').write_text(json.dumps(self.evidence))
         self.calls = []
+        self.output = io.StringIO()
         with patch.dict(os.environ, {'GITHUB_REPOSITORY': REPOSITORY}, clear=True), \
                 patch.object(sys, 'argv', [str(self.script)]), \
                 patch('subprocess.run', side_effect=self.fake_run), \
                 patch('subprocess.check_output', side_effect=RuntimeError('Unexpected local subprocess')), \
-                contextlib.redirect_stdout(io.StringIO()):
+                contextlib.redirect_stdout(self.output):
             runpy.run_path(str(self.script), run_name='__main__')
 
     def rejects(self):
@@ -172,6 +180,30 @@ class ReleaseGateTests(unittest.TestCase):
                 with self.assertRaises(SystemExit) as result:
                     self.verify()
                 self.assertEqual(result.exception.code, 0)
+
+    def test_ansi_logs_are_captured_without_weakening_checkout_evidence(self):
+        endpoint = 'actions/jobs/1000/logs'
+        noise = '2026-09-17T12:00:00Z \x1b[32mANSI log content must stay captured\x1b[0m\n'
+        marker = f'2026-09-17T12:00:00Z QUALIFIED_SOURCE_COMMIT={SOURCE}\n'
+        self.responses[endpoint] = noise + marker
+        with self.assertRaises(SystemExit) as result:
+            self.verify()
+        self.assertEqual(result.exception.code, 0)
+        self.assertNotIn('ANSI log content', self.output.getvalue())
+        self.assertNotIn('\x1b', self.output.getvalue())
+        for logs in [noise, noise + marker.replace(SOURCE, 'c' * 40), noise + marker + marker]:
+            with self.subTest(logs=logs):
+                self.responses[endpoint] = logs
+                self.rejects()
+
+    def test_mock_requires_escape_flag_only_for_captured_job_logs(self):
+        log_command = ['gh', 'api', f'repos/{REPOSITORY}/actions/jobs/1000/logs', '--method', 'GET']
+        for command, kwargs in [
+                (log_command, {'capture_output': True}),
+                (log_command + ['--allow-escape-sequences'], {'capture_output': False}),
+                (['gh', 'api', f'repos/{REPOSITORY}/git/commits/{SOURCE}', '--method', 'GET', '--allow-escape-sequences'], {'capture_output': True})]:
+            with self.subTest(command=command, kwargs=kwargs), self.assertRaises(RuntimeError):
+                self.fake_run(command, **kwargs)
 
     def test_rejects_unavailable_checkout_logs(self):
         self.responses['actions/jobs/1000/logs'] = subprocess.CalledProcessError(

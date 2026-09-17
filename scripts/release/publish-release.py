@@ -94,7 +94,9 @@ for item in config['requiredSourceRuns'].values():
         assert len(checks) == 1 and checks[0]['status'] == 'completed' and checks[0]['conclusion'] == 'success', 'Every source job must verify its actual checkout.'
         # The dedicated step prints git rev-parse HEAD after checking the expected
         # source. Anchor the emitted line so echoed shell commands cannot qualify.
-        logs = gh('api', f'repos/{repo}/actions/jobs/{job["id"]}/logs', '--method', 'GET')
+        # Actions logs contain ANSI escapes. Permit them only in this captured
+        # response for parsing; never render the raw log content to a terminal.
+        logs = gh('api', f'repos/{repo}/actions/jobs/{job["id"]}/logs', '--method', 'GET', '--allow-escape-sequences')
         observed = re.findall(r'^(?:\d{4}-\d{2}-\d{2}T\S+[ \t]+)?QUALIFIED_SOURCE_COMMIT=([0-9a-f]{40})[ \t]*\r?$', logs, re.MULTILINE)
         assert observed == [source], f'Checkout log evidence differs or is missing for job {job["name"]}.'
     print(f'Confirmed source CI evidence: {run["name"]} at {source} ({run["html_url"]})')
