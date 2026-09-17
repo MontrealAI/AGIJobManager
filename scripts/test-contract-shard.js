@@ -35,7 +35,7 @@ async function main() {
       isAtMost: (value, maximum, message) => require('node:assert').ok(value <= maximum, message),
       include: (value, expected, message) => require('node:assert').ok(value.includes(expected), message),
     });
-    const Mocha = require('mocha');
+    const { Mocha } = require('mocha');
     const mocha = new Mocha({ timeout: 100_000, forbidOnly: true, forbidPending: true, failZero: true, reporter: process.env.TEST_REPORTER || 'spec' });
     mocha.suite.emit('pre-require', global, 'contract-test-runtime', mocha);
     global.contract = (name, callback) => global.describe(name, () => callback(runtime.accounts));
