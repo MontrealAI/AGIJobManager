@@ -8,7 +8,7 @@ Canonical cutover flow:
 1. Deploy new `ENSJobPages` (Hardhat script).
 2. Establish the new helper's authority over the reviewed jobs root. Prefer a dedicated root owned by the helper; otherwise review the scope of any NameWrapper operator approval.
 3. AGIJobManager owner manually calls `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
-4. Migrate legacy jobs with historical labels if needed (`migrateLegacyWrappedJobPage`).
+4. For existing jobs of this same manager only, migrate historical page labels if needed (`migrateLegacyWrappedJobPage`). Never import the original mainnet manager’s pages or balances into a fresh USDC manager.
 5. Lock configuration only after validation is complete.
 
 ---
@@ -19,7 +19,8 @@ Canonical cutover flow:
 | --- | --- | --- |
 | Deploy new `ENSJobPages` | Yes | deployer key |
 | `setJobManager(JOB_MANAGER)` on new ENSJobPages | Yes | deployer key |
-| NameWrapper `setApprovalForAll(newEnsJobPages, true)` | No (manual) | wrapped-root owner |
+| Establish dedicated-root ownership by the new helper | No (manual) | ENS parent owner |
+| Broader NameWrapper approval, only for a separately reviewed same-manager wrapped-root replacement | No (manual) | wrapped-root owner |
 | `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No (manual) | AGIJobManager owner |
 | `migrateLegacyWrappedJobPage(jobId, exactLabel)` | No (manual, if needed) | ENSJobPages owner |
 | `lockConfiguration()` | Optional/manual | ENSJobPages owner |
@@ -44,7 +45,7 @@ It determines:
 Typical replacement/migration drivers from current contract behavior:
 - You need newer `ENSJobPages` behavior for label snapshotting and legacy migration support.
 - Old jobs may not have label snapshots in the new contract, causing post-create writes to revert with `JobLabelNotSnapshotted` until migrated.
-- Wrapped-root operations require explicit NameWrapper approval to the active `ENSJobPages`; missing approval blocks wrapped-root writes.
+- A wrapped-root replacement must establish supported ownership/approval for the active `ENSJobPages`; missing authority blocks wrapped-root writes. A fresh dedicated root can instead be directly owned by the helper.
 
 ---
 
@@ -58,11 +59,11 @@ Typical replacement/migration drivers from current contract behavior:
 
 Example using the isolated namespace exercised in the fork rehearsal (a proposal, not a live deployment):
 - `jobLabelPrefix = "agijob"`
-- `jobsRootName = "usdc-v091.alpha.jobs.agi.eth"`
+- `jobsRootName = "usdc-v092.alpha.jobs.agi.eth"`
 
 So names are:
-- `agijob0.usdc-v091.alpha.jobs.agi.eth`
-- `agijob1.usdc-v091.alpha.jobs.agi.eth`
+- `agijob0.usdc-v092.alpha.jobs.agi.eth`
+- `agijob1.usdc-v092.alpha.jobs.agi.eth`
 - ...
 
 Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged.
@@ -74,7 +75,7 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 - Mainnet deploy scripts require: `DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT`.
 - `lockConfiguration()` on ENSJobPages is irreversible.
 - Wiring the wrong ENSJobPages address into AGIJobManager changes hook target for all future calls.
-- If NameWrapper approval is missing on wrapped root, create/adopt/write paths can fail best-effort.
+- If the helper lacks root ownership or separately reviewed wrapper approval, create/adopt/write paths can fail best-effort.
 
 ---
 
@@ -100,14 +101,15 @@ npm ci
 npm run compile
 
 export JOB_MANAGER='<verified-new-USDC-manager-address>'
-export JOBS_ROOT_NAME='usdc-v091.alpha.jobs.agi.eth'
+export JOBS_ROOT_NAME='usdc-v092.alpha.jobs.agi.eth'
+export NEW_OWNER='<reviewed-final-helper-owner-address>'
 
 DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:ens-job-pages:mainnet
 
-DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 NEW_OWNER=0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201 npm run deploy:ens-job-pages:mainnet
+DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 LOCK_CONFIG=0 npm run deploy:ens-job-pages:mainnet
 ```
 
-Required settings (via `.env` or the shell): `JOB_MANAGER` and `JOBS_ROOT_NAME`.
+Required settings (via `.env` or the shell): `JOB_MANAGER` and `JOBS_ROOT_NAME`. The example also requires the reviewed final `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. `usdc-v092.alpha.jobs.agi.eth` is the tested proposal, not a pre-authorized live root. Verify authority and availability before adopting it.
 
 Optional overrides:
 - `JOBS_ROOT_NODE` (must match `namehash(JOBS_ROOT_NAME)`)
@@ -123,8 +125,9 @@ Expected result:
 
 
 ### Common cutover mistakes
-- Performing only deploy, but forgetting manual NameWrapper approval.
-- Performing NameWrapper approval, but forgetting `setEnsJobPages(newAddress)`.
+- Performing only deployment, but failing to establish authority over the reviewed root.
+- Establishing root authority, but forgetting the new manager’s `setEnsJobPages(newAddress)`.
+- Treating broad NameWrapper approval as a default for a fresh USDC cutover.
 - Locking configuration before validating at least one future job hook and any required legacy migration.
 - Supplying an inexact `exactLabel` in legacy migration calls.
 
@@ -134,17 +137,14 @@ Expected result:
 
 What is automated vs manual:
 - Automated by deploy script: deploy contract, set `jobManager`, optional ownership transfer/verification.
-- Manual on mainnet: NameWrapper approval + AGIJobManager `setEnsJobPages`.
+- Manual on mainnet: establish the reviewed root authority, then call `setEnsJobPages` on the intended manager. A fresh USDC cutover leaves all legacy pointers and approvals unchanged.
 
 
-### Step 1 — NameWrapper approval (wrapped root)
-Caller: wrapped-root owner account.
+### Step 1 — Establish authority over the reviewed root
 
-On NameWrapper:
-- `setApprovalForAll(newEnsJobPages, true)`
+For a fresh USDC deployment, the parent-root owner creates the dedicated child root with the new helper as its direct ENS Registry owner. The qualified fork exercises NameWrapper `setSubnodeOwner` on the observed wrapped parent; verify the parent, label, helper address, fuses and expiry for the actual transaction. Read `ENS.owner(jobsRootNode)` afterward and require the new helper address. No blanket NameWrapper approval is needed for this route.
 
-Why this matters:
-- ENSJobPages checks wrapper authorization before wrapped-root create/adopt operations.
+For a separately reviewed replacement on the same manager with an existing wrapped jobs root, verify the helper owns that wrapped root or has the authority required by the wrapper. If operator approval is deliberately chosen, only its wrapped-root owner can call `setApprovalForAll(newEnsJobPages, true)`. This grants authority over **every wrapped name of that approving account**, so it is not a default cutover step. Record the scope and revocation plan. Do not transfer the original legacy manager’s root or revoke its helper authority to launch a new USDC manager.
 
 ### Step 2 — Point AGIJobManager to the new ENSJobPages
 Caller: AGIJobManager owner account.
@@ -158,7 +158,7 @@ Why this matters:
 Expected result after wiring:
 - New hook calls route to the new ENSJobPages contract.
 - On AGIJobManager `Read Contract`, `ensJobPages` equals `newEnsJobPages`.
-- On NameWrapper `Read Contract`, `isApprovedForAll(rootOwner, newEnsJobPages)` is true (or token-level approval exists).
+- For the qualified dedicated-root route, ENS Registry `owner(jobsRootNode)` equals `newEnsJobPages`; for an intentionally reviewed wrapped-root replacement, the wrapper authority matches the approved plan.
 
 ---
 
@@ -166,13 +166,18 @@ Expected result after wiring:
 ## 7.1) Post-wiring expected checks (copy/paste checklist)
 
 - [ ] AGIJobManager `ensJobPages()` equals `newEnsJobPages`.
-- [ ] NameWrapper `isApprovedForAll(rootOwner, newEnsJobPages)` is `true` (or token-level approval equivalent).
-- [ ] New job hook transaction shows protocol success (`status=1`).
-- [ ] ENSJobPages events include `ENSHookProcessed` (or explicit skip/failure reason).
+- [ ] Root ownership/authority matches the dedicated-root or separately reviewed wrapped-root plan.
+- [ ] Both manager/helper pointers and their separate owners match the intended configuration.
+- [ ] The lifecycle transactions have successful receipts, and ENS hooks emit successful `ENSHookProcessed` events without skipped or best-effort failures.
+- [ ] The job name and records exist; employer/agent resolver writes succeed while an outsider is rejected.
+- [ ] After settlement, resolver delegation is revoked and further actor writes are rejected.
+- [ ] The original manager’s jobs, balances, reserves, ENS pointer and records match the preserved legacy inventory.
+
+A `status=1` settlement or an explicit ENS failure event alone does not pass wiring qualification. Investigate and rerun the affected lifecycle before declaring ENS operational.
 
 ## 8) Legacy migration for old wrapped job pages
 
-If a legacy job page exists under a historical exact label, migrate by importing the exact label:
+This section applies only to existing pages of the **same manager** whose helper is being replaced. It must not be used to import the original mainnet manager’s pages into a fresh USDC manager. If such a page exists under a historical exact label, migrate by importing the exact label:
 
 - `migrateLegacyWrappedJobPage(jobId, exactLabel)` on ENSJobPages owner account.
 
@@ -208,8 +213,13 @@ On new ENSJobPages (`Read Contract`):
 On AGIJobManager (`Read Contract`):
 - `ensJobPages` equals new ENSJobPages address.
 
-On NameWrapper (`Read Contract`):
-- `isApprovedForAll(rootOwner, newEnsJobPages)` is `true` (or token-level approval exists).
+On ENS Registry (`Read Contract`), for the qualified dedicated-root route:
+- `owner(jobsRootNode)` equals `newEnsJobPages`.
+
+Only for a separately reviewed wrapped-root replacement, inspect NameWrapper ownership/authority against the approved plan. A blanket approval is not an unconditional success criterion.
+
+On PublicResolver (`Read Contract`), through a full job lifecycle:
+- `isApprovedFor(newEnsJobPages, jobNode, actor)` matches the intended employer/agent authorization before settlement and is false afterward. Confirm actual allowed and rejected writes, not just a successful core transaction.
 
 Event checks:
 - ENSJobPages deployment tx + ownership transfer (if used).
@@ -230,24 +240,25 @@ Event checks:
 
 - [ ] Dry run reviewed and approved.
 - [ ] ENSJobPages deployed and (if required) verified.
-- [ ] NameWrapper approval granted for wrapped root.
+- [ ] Dedicated-root ownership or separately reviewed wrapped-root authority verified.
 - [ ] AGIJobManager `setEnsJobPages(new)` executed.
 - [ ] Etherscan read checks pass on all key fields.
-- [ ] At least one new job hook observed successfully.
+- [ ] Creation, actual delegated writes and terminal revocation pass without skipped/failed ENS hooks.
 - [ ] Legacy jobs requiring migration identified and migrated.
 
 ## 12) Before locking ENSJobPages configuration
 
 - [ ] All addresses (`ens`, `nameWrapper`, `publicResolver`, `jobManager`) are final.
 - [ ] `jobsRootName`/`jobsRootNode` are final and validated.
-- [ ] Wrapped-root approval already works.
+- [ ] Reviewed root ownership/authority and the full ENS lifecycle already work.
 - [ ] Migration backlog is complete or explicitly tracked.
 - [ ] You acknowledge `lockConfiguration()` is irreversible.
 
 
 ## 13) Common mistakes (do not do this)
 
-- Do not assume deploy scripts perform NameWrapper approval.
+- Do not assume deploy scripts create the dedicated root or grant any wrapper authority.
+- Do not grant broad NameWrapper authority merely to make a fresh USDC cutover appear wired.
 - Do not forget `setEnsJobPages(newEnsJobPages)` on AGIJobManager owner account.
 - Do not change prefix expecting old snapshotted labels to rename automatically.
 - Do not lock configuration before validating future-job hooks and legacy-job migration needs.
@@ -256,6 +267,6 @@ Event checks:
 
 ## 13.1) Migration-specific mistakes
 
-- Calling `setEnsJobPages(new)` before wrapped-root approval is in place, then misreading hook failures as total protocol failure.
+- Calling `setEnsJobPages(new)` before reviewed root authority is in place, then misreading hook failures as total protocol failure.
 - Locking ENSJobPages configuration before future-job hook validation and legacy migration checks.
 - Using approximate labels for migration; `exactLabel` must match historical on-chain label.

@@ -1,4 +1,4 @@
-# Testing v0.9.1
+# Testing v0.9.2
 
 ## Current strategy
 

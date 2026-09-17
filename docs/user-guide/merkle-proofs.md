@@ -1,4 +1,4 @@
-# Merkle proofs — v0.9.1
+# Merkle proofs — v0.9.2
 
 Merkle proofs let the contract confirm your wallet is on an allowlist **without** storing the full list on‑chain.
 

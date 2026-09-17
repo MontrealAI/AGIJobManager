@@ -268,7 +268,7 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
     return require(name);
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy-ens-job-pages.cjs'), 'utf8'), {
-    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, JOBS_ROOT_NAME: 'usdc-v091.alpha.jobs.agi.eth', VERIFY: '1',
+    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, JOBS_ROOT_NAME: 'usdc-v092.alpha.jobs.agi.eth', VERIFY: '1',
       VERIFY_DELAY_MS: '0', DEPLOY_CONFIRM_MAINNET: 'I_UNDERSTAND_MAINNET_DEPLOYMENT', ...env } },
     console: { log() {}, error() {} }, setTimeout,
   });

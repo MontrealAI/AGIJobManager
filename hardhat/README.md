@@ -1,6 +1,6 @@
-# Hardhat deployment guide — v0.9.1
+# Hardhat deployment guide — v0.9.2
 
-This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. v0.9.1 requires a fresh deployment and two real recipient wallets; this release does not deploy a contract or populate those addresses.
+This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. v0.9.2 requires a fresh deployment and two real recipient wallets; this release does not deploy a contract or populate those addresses.
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 

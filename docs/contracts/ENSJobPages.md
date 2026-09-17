@@ -39,7 +39,7 @@ flowchart TD
   B --> C{Wrapped root?}
   C -->|yes| D[nameWrapper.setSubnodeRecord]
   C -->|no| E[ens.setSubnodeRecord]
-  D --> F[setText + setAuthorisation best effort]
+  D --> F[setText + approve best effort]
   E --> F
   F --> G[JobENSPageCreated]
 ```
@@ -73,7 +73,7 @@ sequenceDiagram
 
 ### Guarantees vs best-effort behavior
 - **Guaranteed / fail-closed:** subname creation (`ens.setSubnodeRecord` or `nameWrapper.setSubnodeRecord`) and authorization preconditions for wrapped roots.
-- **Best-effort (non-critical):** resolver `setText` and `setAuthorisation` updates run in `try/catch` and emit `ENSHookBestEffortFailure` when they fail.
+- **Best-effort (non-critical):** resolver `setText` and `approve` updates run in `try/catch` and emit `ENSHookBestEffortFailure` when they fail.
 - **Operational implication:** large text payloads may exceed hook gas and be skipped; employer/agent can still write these records later if authorized.
 
 ## Gotchas / failure modes

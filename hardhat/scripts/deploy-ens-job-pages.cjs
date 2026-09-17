@@ -232,8 +232,11 @@ async function main() {
   }
 
   console.log("\nManual next steps (not automated):");
-  console.log("1) On NameWrapper, wrapped-root owner calls setApprovalForAll(newEnsJobPages, true).");
-  console.log("2) On AGIJobManager, owner calls setEnsJobPages(newEnsJobPages).");
+  console.log("1) Have the ENS parent owner establish this dedicated jobs root with newEnsJobPages as its direct NameWrapper owner; verify the exact root and ownership.");
+  console.log("   A fresh USDC manager must keep the legacy manager, helper and jobs namespace unchanged. Do not grant blanket approval over legacy names.");
+  console.log("   For a same-manager helper replacement, review the existing root authority and replacement runbook separately.");
+  console.log("2) On the reviewed USDC AGIJobManager, its accepted owner calls setEnsJobPages(newEnsJobPages).");
+  console.log("3) Verify creation, actor delegation, authorized writes and terminal revocation with no skipped or best-effort failure events before opening general intake.");
 }
 
 if (require.main === module) main().catch((err) => {

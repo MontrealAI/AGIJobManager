@@ -6,7 +6,7 @@ The USDC settlement code passes the targeted technical qualification below. The 
 
 This is an internal source review and executable rehearsal, not an independent security audit. Every transaction in the rehearsal is local. Circle-role and owner impersonation proves contract authorization behavior; it does not prove access to a production key or governance signer.
 
-**The frozen v0.9.1 release does not contain the ENS correction discovered here.** Do not use its ENS helper for a launch that requires working employer/agent resolver delegation. The manager's settlement source and five linked library sources are unchanged from v0.9.1. The corrective source changes are confined to the ENS helper/interface and its mock. Use the qualified corrective source with matching artifacts and source verification; do not silently combine old release artifacts with new source.
+**v0.9.2 includes the ENS correction discovered here and the executable cutover rehearsal.** The earlier frozen v0.9.1 release does not contain the correction. The manager's settlement source and five linked library sources are unchanged from v0.9.1; the production Solidity correction is confined to the ENS helper/interface. Use matching v0.9.2 source and artifacts and verify the deployed source; do not combine old helper artifacts with the corrected source.
 
 ## Existing mainnet system
 
@@ -31,19 +31,19 @@ The manager owner and wrapped-root owner are different EOAs. A manager ownership
 
 ## Findings and corrections
 
-### ENS resolver API mismatch — corrected in source
+### ENS resolver API mismatch — corrected in v0.9.2
 
-The released helper called `setAuthorisation(bytes32,address,bool)`. The deployed NameWrapper-aware resolver at `0xF29100983E058B709F3D539b0c765937B804AC15` uses `approve(bytes32,address,bool)` and `isApprovedFor(address,bytes32,address)`.
+The v0.9.1 helper called `setAuthorisation(bytes32,address,bool)`. The deployed NameWrapper-aware resolver at `0xF29100983E058B709F3D539b0c765937B804AC15` uses `approve(bytes32,address,bool)` and `isApprovedFor(address,bytes32,address)`.
 
 The first real-ENS CREATE rehearsal emitted `ENSHookBestEffortFailure` with `SET_AUTH` even though the job and ENS name were created. This is a functional delegation failure; the run did not demonstrate escrow loss. The mock had implemented the unsupported selector, hiding the incompatibility.
 
-The helper now calls `approve`. The regression checks actual employer/agent delegation, authorized text writes, rejection of an outsider, completion text, terminal revocation and rejection of writes after settlement. It also requires successful ENS hook events without skipped/best-effort failures for the qualified lifecycle. See the [upstream resolver interface](https://github.com/ensdomains/ens-contracts/blob/master/contracts/resolvers/PublicResolver.sol).
+The helper now calls `approve`. The regression checks actual employer/agent delegation, authorized text writes, rejection of an outsider, completion text, terminal revocation and rejection of writes after settlement. It also requires successful ENS hook events without skipped/best-effort failures for the qualified lifecycle. The real-ENS fixture uses short metadata: accepted maximum-size specification/completion URIs (2,048/1,024 bytes) can exceed the bounded 500,000-gas ENS hook budget. This rehearsal does not prove every valid metadata size will mirror successfully. Check actual ENS events and records, investigate failed metadata writes and validate the intended metadata size before launch; core settlement remains authoritative. See the [upstream resolver interface](https://github.com/ensdomains/ens-contracts/blob/master/contracts/resolvers/PublicResolver.sol).
 
 ### Legacy ENS namespace reuse — blocked in the deployment script
 
 A fresh manager restarts numeric job IDs at zero. Reusing the legacy root and prefix would collide with existing job names. A successful job transaction alone would not establish successful ENS creation because hooks are best-effort.
 
-`JOBS_ROOT_NAME` is now explicit, and the mainnet ENS deployment script rejects the reserved legacy root `alpha.jobs.agi.eth`. The rehearsal creates the distinct root `usdc-v091.alpha.jobs.agi.eth`, owned directly by the new helper, through the observed parent owner's authorization. This name is a tested proposal, not an existing production deployment. No new blanket operator approval is granted over the legacy owner's wrapped names.
+`JOBS_ROOT_NAME` is now explicit, and the mainnet ENS deployment script rejects the reserved legacy root `alpha.jobs.agi.eth`. The rehearsal creates the distinct root `usdc-v092.alpha.jobs.agi.eth`, owned directly by the new helper, through the observed parent owner's authorization. This name is a tested proposal, not an existing production deployment. No new blanket operator approval is granted over the legacy owner's wrapped names.
 
 ### Legacy jobs and assets — preserved
 

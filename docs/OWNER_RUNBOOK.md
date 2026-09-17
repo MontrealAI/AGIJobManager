@@ -1,4 +1,4 @@
-# Owner Runbook — v0.9.1
+# Owner Runbook — v0.9.2
 
 Use this runbook for configuration, ownership and incident decisions. Use the [Hardhat deployment guide](../hardhat/README.md) for public-network commands and the [owner controls guide](OWNER_CONTROLS.md) for the exact boundaries of each setting. Local rehearsals use the maintained Hardhat 3 test runtime; Truffle and Ganache are retired.
 
@@ -22,22 +22,23 @@ Use this runbook for configuration, ownership and incident decisions. Use the [H
 
 | Action | Responsible signer |
 | --- | --- |
-| NameWrapper `setApprovalForAll(newEnsJobPages, true)` | Wrapped-root owner |
+| Create dedicated jobs root owned directly by the new helper | ENS parent owner |
+| Broader NameWrapper authority, only for a separately reviewed same-manager wrapped-root replacement | Wrapped-root owner |
 | Manager `setEnsJobPages(newEnsJobPages)` | AGIJobManager owner, while identity configuration remains unlocked |
-| `migrateLegacyWrappedJobPage(jobId, exactLabel)` where required | ENSJobPages owner |
+| `migrateLegacyWrappedJobPage(jobId, exactLabel)` for existing pages of the same manager only | ENSJobPages owner |
 | Reviewed irreversible lock | Owner of the contract being locked |
 
-Future jobs use the configured `<prefix><jobId>.<jobsRootName>` label, with `agijob` as the default prefix. Existing snapshotted labels stay stable unless explicitly migrated or imported. Verify the actual root, prefix, approvals and legacy-label inventory before cutover.
+A fresh USDC launch preserves the original manager, helper, namespace, approvals and jobs, and uses a separate helper/root. Future jobs use the configured `<prefix><jobId>.<jobsRootName>` label, with `agijob` as the default prefix. Existing snapshotted labels stay stable unless explicitly migrated or imported. Verify the actual root, prefix, approvals and legacy-label inventory before cutover.
 
 ## Manual vs automated (owner-safe expectations)
 
 The manager's Hardhat workflow builds, deploys, checks runtime code and completes explorer verification before proposing ownership transfer when needed. A verification failure stops before that proposal. It does not accept ownership, open intake, grant NameWrapper approvals or choose a migration policy for you.
 
-Before an ENS lock, confirm `ensJobPages()` points to the intended contract, wrapper approval is active, a future job hook succeeds, and legacy migration work is complete or explicitly tracked.
+Before an ENS lock, confirm both new manager/helper pointers and root authority, successful creation/delegated writes/terminal revocation without failed or skipped ENS hooks, and the preserved legacy inventory. Same-manager page migration is separately reviewed.
 
 ## 1) Deployment checklist
 
-1. Check out the immutable v0.9.1 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
+1. Check out the immutable v0.9.2 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
 2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; use the exact release compiler profile and linked artifacts for the public deployment build.
 3. Review all six constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, and **two distinct settlement wallets ordered 30% then 10%**. Confirm the intended final owner separately. Example addresses and roots are not a reviewed production configuration.
 4. Run a read-only deployment plan, rehearse on Sepolia and review the saved plan before any authorized mainnet broadcast. Review the five library addresses and exact linked runtime code.
@@ -114,22 +115,22 @@ Merkle roots and additional allowlists remain separate controls from the irrever
 - `setUseEnsJobTokenURI(false)` disables the optional ENS token-URI presentation path. It does not change agent/validator authorization through ENS.
 - `lockIdentityConfiguration()` permanently disables the protected identity setters. It does not lock Merkle roots, freeze the entire contract or mitigate compromised identity configuration.
 
-Use the separate wrapped-root owner for NameWrapper approvals. Confirm the impact of revoking an old approval on existing pages before doing so.
+Use the separate ENS parent owner to establish dedicated-root ownership. Any broad wrapper authority is a separately reviewed same-manager replacement decision; do not revoke the original helper’s authority or change legacy wiring as part of fresh USDC deployment.
 
 ## 6.1) Lock preflight (do not skip)
 
 Before manager `lockIdentityConfiguration()` or ENSJobPages `lockConfiguration()`:
 
 - [ ] All addresses, namespace roots and manager/job-page relationships match the reviewed configuration.
-- [ ] NameWrapper approval is active for intended wrapped-root operations.
-- [ ] A future job hook path and intended authorization paths have succeeded in rehearsal.
-- [ ] Legacy labels requiring preservation are migrated or explicitly tracked.
+- [ ] Dedicated-root ownership or separately reviewed wrapped-root authority is correct.
+- [ ] Creation, delegated resolver writes and terminal revocation pass without failed/skipped hooks in rehearsal.
+- [ ] The original legacy inventory is preserved; any same-manager label migrations are reconciled separately.
 - [ ] The owner understands which future repairs and replacements the particular lock prevents.
 - [ ] There is no unresolved identity incident. Locking a bad configuration would preserve the problem.
 
 ## 7) High-risk actions (operator warnings)
 
-USDC is immutable and the 30% / 10% shares are fixed in v0.9.1. Recipient addresses can change only with paused intake and zero reserves; existing escrow cannot be redirected to a new wallet.
+USDC is immutable and the 30% / 10% shares are fixed in v0.9.2. Recipient addresses can change only with paused intake and zero reserves; existing escrow cannot be redirected to a new wallet.
 
 Ownership uses proposal then acceptance. Administrative authority stays with the current owner until acceptance; `renounceOwnership()` is disabled. Verify the recipient independently before proposing a change.
 

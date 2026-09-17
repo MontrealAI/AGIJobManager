@@ -1,13 +1,13 @@
 # Troubleshooting: Hardhat Deployment and ENSJobPages Operations
 
-This guide covers common production/operator issues for the current Hardhat + ENSJobPages workflow.
+This guide covers common production/operator issues for the current Hardhat + ENSJobPages workflow. Fresh USDC cutover uses a separate helper and dedicated root directly owned by it; preserve the original manager, helper, root and jobs. Same-manager helper replacement is a separate procedure in the [replacement runbook](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 
 
 ## Do-not-do-this-first response
 Before deeper debugging, do **not** immediately redeploy again. First verify:
 1. `AGIJobManager.ensJobPages()` points to intended contract.
-2. NameWrapper approval exists for that exact ENSJobPages address.
-3. The failing job is legacy and may need `migrateLegacyWrappedJobPage`.
+2. The intended helper owns the dedicated root, or has the separately reviewed authority for a wrapped-root replacement.
+3. Determine whether the failing page belongs to this same manager and predates its helper; only that case may need `migrateLegacyWrappedJobPage`.
 
 
 ## Why old create/write hooks failed in replacement scenarios
@@ -17,7 +17,7 @@ Most historical failures were one (or more) of these:
 2. NameWrapper approval was missing for the active ENSJobPages.
 3. Legacy job label was not snapshotted in the new ENSJobPages yet.
 
-This is why the canonical cutover order is strict: deploy -> wrapper approval -> `setEnsJobPages` -> legacy migration as needed -> lock only after validation.
+The order is deploy -> establish reviewed root authority -> `setEnsJobPages` on the intended manager -> verify creation, actual delegated writes and terminal revocation -> consider locks. Existing-page migration applies only to helper replacement on the same manager.
 
 ## Quick triage by symptom
 Expected triage outcome: identify whether the issue is pointer wiring, wrapper approval, or legacy label snapshot state before any new deployment attempt.
@@ -30,7 +30,7 @@ Expected triage outcome: identify whether the issue is pointer wiring, wrapper a
 ## Safety preflight before any cutover tx
 - [ ] Confirm which account is **AGIJobManager owner**.
 - [ ] Confirm which account is **wrapped-root owner**.
-- [ ] Confirm manual steps are scheduled (NameWrapper approval + `setEnsJobPages`).
+- [ ] Confirm dedicated-root setup and new-manager `setEnsJobPages` are scheduled with their respective authorized callers.
 - [ ] Confirm legacy jobs likely to need migration are listed.
 
 ---
@@ -120,11 +120,9 @@ ENSJobPages cannot create/adopt/manage wrapped subnames reliably.
 Wrapped-root owner did not grant NameWrapper approval to new ENSJobPages.
 
 ### Fix
-On NameWrapper, wrapped-root owner calls:
-- `setApprovalForAll(newEnsJobPages, true)`
+For a fresh USDC deployment, use the dedicated-root route and verify `ENS.owner(jobsRootNode) == newEnsJobPages`; blanket approval over the legacy owner’s names is unnecessary.
 
-Confirm in Etherscan `Read Contract`:
-- `isApprovedForAll(rootOwner, newEnsJobPages) == true`
+Only for a separately reviewed same-manager wrapped-root replacement, verify the helper owns the wrapped root or has the required wrapper authority. If broad operator approval is intentionally selected, the wrapped-root owner calls `setApprovalForAll(newEnsJobPages, true)` and verifies `isApprovedForAll(rootOwner, newEnsJobPages)`. This authorizes every wrapped name of that account; review the scope and revocation plan first.
 
 ---
 
@@ -225,10 +223,10 @@ Protocol escrow settlement is intentionally decoupled from ENS writes so metadat
 Legacy jobs may carry previously snapshotted historical labels. Prefix changes only affect unsnapshotted/future jobs in the current ENSJobPages context.
 
 ### What should I check before calling `lockConfiguration()`?
-Confirm final addresses, wrapper approvals, AGIJobManager wiring, and any required legacy migrations. Lock only after successful end-to-end validation.
+Confirm final addresses, dedicated-root ownership or separately reviewed wrapper authority, both new pointers and the preserved legacy inventory. Lock only after successful creation, delegated writes and terminal revocation without skipped/failed ENS hooks.
 
 ### What should I do if post-create ENS writes fail after cutover?
-Check wrapper approval and AGIJobManager wiring first, then migrate affected legacy jobs with exact historical labels where needed.
+Check the intended root authority and manager/helper pointers first. Migrate exact historical labels only for affected existing pages of a same-manager helper replacement; never import the original manager’s pages into the fresh USDC manager.
 
 ## 11) Using the standalone HTML UI during triage
 

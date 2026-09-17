@@ -25,7 +25,7 @@ From `AGIJobManager` constants:
 ## Wrapped vs unwrapped root handling
 
 `ENSJobPages._createSubname` branches:
-- **Wrapped root**: uses `nameWrapper.setSubnodeRecord`, requiring wrapper ownership or operator approval.
+- **Wrapped root**: uses `nameWrapper.setSubnodeOwner`, requiring supported wrapper ownership or approval.
 - **Unwrapped root**: uses `ens.setSubnodeRecord`, requiring direct ENS ownership by ENSJobPages contract.
 
 ## Fuse-locking and permissions model
@@ -39,6 +39,8 @@ From `AGIJobManager` constants:
 `AGIJobManager.lockJobENS(jobId, burnFuses)` is permissionless for terminal jobs, but fuse burning is owner-only.
 
 ## Deployment and configuration sequence (mainnet)
+
+For a fresh USDC manager, preserve the original manager, helper, root, approvals and jobs. Use a separate helper and dedicated root directly owned by it, as exercised in the [cutover rehearsal](qualification/USDC_CUTOVER.md). Broad NameWrapper authority is only a separately reviewed same-manager helper replacement option.
 
 1. Deploy `ENSJobPages` with ENS Registry, PublicResolver, optional NameWrapper, `jobsRootNode`, and `jobsRootName`.
 2. Ensure root authority before enabling hooks:

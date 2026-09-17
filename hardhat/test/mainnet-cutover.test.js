@@ -113,14 +113,14 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     wrapper = new ethers.Contract(baseline.pages.nameWrapper, WRAPPER_ABI, rootOwner);
     registry = new ethers.Contract(baseline.pages.ens, REGISTRY_ABI, ethers.provider);
     resolver = new ethers.Contract(baseline.pages.publicResolver, RESOLVER_ABI, ethers.provider);
-    rootName = `usdc-v091.${baseline.pages.jobsRootName}`;
+    rootName = `usdc-v092.${baseline.pages.jobsRootName}`;
     rootNode = ethers.namehash(rootName);
     assert.equal(await registry.owner(rootNode), ethers.ZeroAddress, 'The rehearsal namespace must be unused at the pinned block');
     pages = await (await ethers.getContractFactory('ENSJobPages')).deploy(baseline.pages.ens, baseline.pages.nameWrapper,
       baseline.pages.publicResolver, rootNode, rootName);
     await pages.waitForDeployment();
     pagesAddress = await pages.getAddress();
-    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v091', pagesAddress, 0, BigInt(baseline.rootData[2])));
+    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v092', pagesAddress, 0, BigInt(baseline.rootData[2])));
     await send(pages.setJobManager(managerAddress));
     await send(manager.setEnsJobPages(pagesAddress));
     const nft = await (await ethers.getContractFactory('MockERC721')).deploy();
@@ -340,9 +340,9 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     const tests = this.test.parent.tests;
     if (preservationFailures || tests.some(test => test.state !== 'passed')) return;
     const root = path.resolve(new URL('../..', import.meta.url).pathname);
-    const sources = ['package-lock.json', 'hardhat/package-lock.json', 'hardhat/hardhat.config.js', 'hardhat.cutover-fork.config.mjs',
+    const sources = ['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json', 'hardhat/hardhat.config.js', 'hardhat.cutover-fork.config.mjs',
       'hardhat/test/mainnet-cutover.test.js', 'hardhat/qualification/legacy-snapshot.cjs', 'hardhat/qualification/cutover-pin.json',
-      'hardhat/scripts/runtime.cjs', 'scripts/security/patch-openzeppelin-compiler.cjs', 'scripts/security/openzeppelin-compiler-patches.json'];
+      'hardhat/scripts/runtime.cjs', 'hardhat/scripts/deployment-safety.cjs', 'scripts/security/patch-openzeppelin-compiler.cjs', 'scripts/security/openzeppelin-compiler-patches.json'];
     function collect(directory) {
       for (const entry of fs.readdirSync(path.join(root, directory), { withFileTypes: true })) {
         const filename = `${directory}/${entry.name}`;

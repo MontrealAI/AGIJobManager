@@ -14,7 +14,7 @@ Auditors and deploy operators.
 |---|---|---|
 | `IENSRegistry` | `owner`, `resolver`, `setSubnodeRecord` | Registry is canonical for target network. |
 | `INameWrapper` | `ownerOf`, `isApprovedForAll`, `isWrapped`, `setChildFuses`, `setSubnodeRecord` | Root may be wrapped; wrapper permissions must be granted when applicable. |
-| `IPublicResolver` | `setAuthorisation`, `setText` | Resolver supports expected text/auth APIs. |
+| `IPublicResolver` | `approve`, `setText` | Resolver supports expected text/auth APIs. |
 | `IENSJobPages` | lifecycle hook methods and URI getters | AGIJobManager treats calls as best-effort side effects. |
 
 ## Ownership verification model

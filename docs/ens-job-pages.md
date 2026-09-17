@@ -1,37 +1,37 @@
-# ENS “Job Page” conventions (ALPHA namespace)
+# ENS job-page naming and records
 
-This document defines the **official ENS naming scheme** and **record layout** for job pages under the ALPHA root namespace. These records are **public** and **indexer‑friendly**; they are designed to be a lightweight mirror of on‑chain pointers.
+This document describes the configurable naming scheme and public record layout for ENS job pages. Fresh USDC deployments require a dedicated namespace and helper. Preserve the legacy `alpha.jobs.agi.eth` root and its existing manager/helper/jobs. The examples use the fork-rehearsed proposal `usdc-v092.alpha.jobs.agi.eth`, which is not a live deployment; see the [cutover qualification](qualification/USDC_CUTOVER.md).
 
-## Naming convention (official ALPHA namespace)
+## Configured naming convention
 
 One ENS name per job:
 
 ```
-job-<jobId>.alpha.jobs.agi.eth
+agijob<jobId>.usdc-v092.alpha.jobs.agi.eth
 ```
 
 Example:
 ```
-job-42.alpha.jobs.agi.eth
+agijob42.usdc-v092.alpha.jobs.agi.eth
 ```
 
 `jobId` is the on‑chain AGIJobManager job ID.
 
-The ALPHA root configuration is fixed:
-- `jobsRootName = "alpha.jobs.agi.eth"`
-- `jobsRootNode = namehash("alpha.jobs.agi.eth")`
+`jobLabelPrefix` defaults to `agijob`; the root is explicit. The proposal is:
+- `jobsRootName = "usdc-v092.alpha.jobs.agi.eth"`
+- `jobsRootNode = namehash("usdc-v092.alpha.jobs.agi.eth")`
 
 ## Ownership + delegation model (Model B)
 
 ### Ownership
-- **Owner of `alpha.jobs.agi.eth`**: the AGIJobManager platform (or its ENS helper contract).
+- **Owner of `usdc-v092.alpha.jobs.agi.eth`**: the AGIJobManager platform (or its ENS helper contract).
 - **Owner of each job subname**: the platform (contract‑controlled), **not** the employer.
 
 This keeps the namespace official and prevents spoofed job pages while still allowing delegated edits.
 
 ### Resolver authorization (employer + agent edits)
 - The platform sets a PublicResolver for each job subname.
-- The platform **authorizes** the employer and the assigned agent to edit records via `setAuthorisation`.
+- The platform **authorizes** the employer and the assigned agent to edit records via `approve(bytes32,address,bool)`.
 - After terminal settlement, the platform **revokes** resolver authorizations (best‑effort).
 
 ### Optional post‑terminal lock
@@ -77,35 +77,37 @@ The platform also authorizes the employer on creation and the assigned agent on 
 
 ## Wrapped vs unwrapped root setup
 
-### Unwrapped root (`alpha.jobs.agi.eth`)
-- ENS Registry owner of `alpha.jobs.agi.eth` is the platform contract (or ENS helper).
+Direct ownership of the dedicated root by the helper is the qualified fresh-USDC route. A same-manager wrapped-root replacement needs separate authority review; `setApprovalForAll` affects every wrapped name of the approving account.
+
+### Unwrapped root (`usdc-v092.alpha.jobs.agi.eth`)
+- ENS Registry owner of `usdc-v092.alpha.jobs.agi.eth` is the platform contract (or ENS helper).
 - Subnames are created via `ENSRegistry.setSubnodeRecord(...)`.
 
-### Wrapped root (`alpha.jobs.agi.eth` wrapped)
-- ENS Registry owner of `alpha.jobs.agi.eth` is NameWrapper.
+### Wrapped root (`usdc-v092.alpha.jobs.agi.eth` wrapped)
+- ENS Registry owner of `usdc-v092.alpha.jobs.agi.eth` is NameWrapper.
 - NameWrapper owner of the root must be the platform contract **or** must approve it via `setApprovalForAll`.
-- Subnames are created via `NameWrapper.setSubnodeRecord(...)`.
+- Subnames are created via `NameWrapper.setSubnodeOwner(...)`.
 
 ### Operational ownership requirements (summary)
 - **Unwrapped**: `ENSRegistry.owner(jobsRootNode)` must be `ENSJobPages` (or the configured controller).
 - **Wrapped**: `ENSRegistry.owner(jobsRootNode)` must be `NameWrapper`, and the wrapped owner must be `ENSJobPages` **or** have approved it via `setApprovalForAll`.
 
 ## Resolver requirements
-- `ENSJobPages` expects a PublicResolver that exposes `setAuthorisation(bytes32,address,bool)` and `setText(bytes32,string,string)`.
+- `ENSJobPages` expects a PublicResolver that exposes `approve(bytes32,address,bool)` and `setText(bytes32,string,string)`.
 - Verify the resolver by calling `supportsInterface` off‑chain or inspecting the deployment’s ABI.
 
 ## ENSJobPages helper wiring (on-chain)
 
 When using the `ENSJobPages` helper contract, complete these wiring steps:
 1. Deploy `ENSJobPages` with the ENS registry, NameWrapper (if any), PublicResolver, root node, and root name.
-2. Ensure `alpha.jobs.agi.eth` is owned by the helper (or wrapped and approved for it).
+2. Have the parent owner establish the reviewed dedicated root with the new helper as direct ENS Registry owner. A broader wrapped-root approval is not required for this route.
 3. Call `ENSJobPages.setJobManager(AGIJobManager)` so hooks are accepted.
 4. Call `AGIJobManager.setEnsJobPages(ENSJobPages)` to enable hook callbacks.
 
 These steps keep ENS integration **opt-in** and ensure lifecycle hooks remain best-effort.
 
 ## Operator checklist
-- Ensure the platform controls `alpha.jobs.agi.eth` and the configured PublicResolver.
+- Ensure the platform controls `usdc-v092.alpha.jobs.agi.eth` and the configured PublicResolver.
 - Ensure `ENSJobPages` is wired to `AGIJobManager` via `setJobManager` and `setEnsJobPages`.
 - Ensure employer/agent wallets are authorized to edit text records via the resolver.
 - Avoid secrets: use hashes or URIs only.
@@ -114,7 +116,7 @@ These steps keep ENS integration **opt-in** and ensure lifecycle hooks remain be
 ## ENS job NFT tokenURI (optional)
 When `AGIJobManager.setUseEnsJobTokenURI(true)` is enabled (and an ENS helper is configured), completion NFTs point to:
 ```
-ens://job-<jobId>.alpha.jobs.agi.eth
+ens://agijob<jobId>.usdc-v092.alpha.jobs.agi.eth
 ```
 When disabled (default), the tokenURI behavior is unchanged and continues to use the completion metadata pointer.
 

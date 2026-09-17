@@ -1,6 +1,6 @@
 # Deployment Documentation Index
 
-> v0.9.1 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.1/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+> v0.9.2 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.2/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
 
 ## Start here by deployment task
 - Fresh deployment (official path): [../../hardhat/README.md](../../hardhat/README.md)
@@ -26,7 +26,7 @@
 - [Truffle Mainnet Deploy](./TRUFFLE_MAINNET_DEPLOY.md)
 - [Truffle Production Deploy](./TRUFFLE_PRODUCTION_DEPLOY.md)
 
-> These guides preserve historical references; their old deployment commands are retired. Use the Hardhat guide above for v0.9.1 and later.
+> These guides preserve historical references; their old deployment commands are retired. Use the Hardhat guide above for v0.9.2 and later.
 
 ## UI boundary during deployment operations
 

@@ -1,8 +1,8 @@
-# v0.9.1 mainnet qualification
+# v0.9.2 mainnet qualification
 
-v0.9.1 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v0.9.2 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
-The project already has a legacy mainnet manager with outstanding original-asset obligations. The [post-release USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, a corrected ENS resolver API mismatch, and a fork rehearsal preserving legacy jobs. The correction is newer than the frozen v0.9.1 assets; use the qualified corrective source and keep live-instance approval separate.
+The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction included in v0.9.2, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
 
 ## Settlement
 
@@ -27,9 +27,9 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 - Transaction reviews bind the connected account, network and manager through approvals and submission. Changed contexts require a new review. Failed receipts cannot be reported as successful.
 - Qualification includes contract regressions, issuer restrictions, bonds/disputes, exact transfer ordering, fuzzing, concurrent-job invariants, deployment rejection scenarios, browser tests and static-analysis triage.
 
-## v0.9.1 operational review
+## v0.9.2 operational review
 
-v0.9.1 changes production contract source to validate decoded addresses and order settlement state updates before transfers, while preserving the USDC payout rules. It replaces Truffle/Ganache and Hardhat 2 dependencies, enforces warning-free Forge builds, and adds constructor-data and transaction-gas deployment checks. The release evidence records the final commands, counts and findings. Start with the [user journey](START_HERE.md), [owner runbook](OWNER_RUNBOOK.md) or [incident response](OPERATIONS/INCIDENT_RESPONSE.md) for the appropriate task.
+v0.9.2 includes the corrected PublicResolver `approve` call, an explicit dedicated ENS namespace, and the USDC cutover rehearsal covering settlement, ownership and legacy preservation. It retains the address-decoding and settlement-ordering protections, maintained toolchains, warning-free Forge build and deployment checks introduced in v0.9.1. The manager and five linked library sources are unchanged from v0.9.1. The release evidence records the final commands, counts and findings. Start with the [user journey](START_HERE.md), [owner runbook](OWNER_RUNBOOK.md) or [incident response](OPERATIONS/INCIDENT_RESPONSE.md) for the appropriate task.
 
 ## Reproduce qualification
 
@@ -47,9 +47,12 @@ npm run compile
 npm run test:preflight
 npm run test:deployment
 npm run test:mainnet-fork
+CUTOVER_REPORT=../build/qualification/mainnet-cutover.json npm run test:cutover
 ```
 
 The qualified fork fixture pins Ethereum block **25,997,388**, hash `0x1495b5decf70b7757b60b8d4ba10d14a7cdb4512f55c4ae5400d8a97b9deedf9`, and checks USDC implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` plus its runtime hash. Eight cases cover paused launch, exact default-bond settlement and real issuer pause/blocklist rollback and recovery.
+
+The separate cutover fixture pins block **25,998,952**, hash `0xac9075441aff899351bf4ca9abf5be0edc4494b69a1c7543b389fd8cacaa159a`. Its 12 scenarios exercise the actual mainnet ENS contracts, separate ownership paths, further USDC settlement/recovery cases, the preserved legacy inventory and the original-asset exit for job 11. See the [source-bound report](qualification/mainnet-cutover.json).
 
 The fork runner exposes only the local Hardhat network. It reads a pinned finalized Ethereum block and executes every transaction on that local fork. It never broadcasts transactions to Ethereum, does not use production private keys and fails if the remote state is unavailable. Fork evidence checks a historical state; USDC implementation and issuer configuration must be rechecked before an actual launch.
 
