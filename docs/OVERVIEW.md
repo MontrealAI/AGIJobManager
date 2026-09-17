@@ -6,7 +6,7 @@ AGIJobManager is an owner-operated escrow and settlement contract for employer-a
 
 1. Escrow solvency is tracked on-chain via locked accounting buckets.
 2. Job settlement follows explicit state guards (assignment, completion request, review windows, dispute paths).
-3. Treasury withdrawal is constrained to `withdrawableAGI()` and pause requirements.
+3. Treasury withdrawal is constrained to `withdrawableUSDC()` and pause requirements.
 4. ENS and ENSJobPages integrations are best-effort; they do not replace settlement safety checks.
 
 ## Components
@@ -18,7 +18,7 @@ AGIJobManager is an owner-operated escrow and settlement contract for employer-a
 - **Automation inventory**: [`SCRIPTS_REFERENCE.md`](./SCRIPTS_REFERENCE.md)
 - **Tests**: [`test/`](../test), [`forge-test/`](../forge-test)
 - **UI (broader/full effort in development)**: [`ui/`](../ui), docs: [`ui/README.md`](./ui/README.md)
-- **Standalone HTML UI artifact (versioned, additive)**: [`ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html`](../ui/agijobmanager_genesis_job_mainnet_2026-03-05-v21.html), runbook: [`ui/GENESIS_JOB_MAINNET_HTML_UI.md`](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
+- **Standalone HTML UI artifact (versioned, additive)**: [`ui/agijobmanager-usdc.html`](../ui/agijobmanager-usdc.html), runbook: [`ui/GENESIS_JOB_MAINNET_HTML_UI.md`](./ui/GENESIS_JOB_MAINNET_HTML_UI.md)
 
 
 ## UI surfaces (current state)

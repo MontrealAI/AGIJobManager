@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -62,7 +63,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await nft.mint(agent, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(jobCreator, payout, { from: owner });
 
     if (createViaContract) {
@@ -72,8 +73,8 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       await manager.createJob("ipfs://spec", payout, 100, "details", { from: jobCreator });
     }
 
-    await token.mint(agent, web3.utils.toWei("3"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("3"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("3"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("3"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
     const reviewPeriod = await manager.completionReviewPeriod();
@@ -137,22 +138,22 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent, { from: owner });
 
-    await token.mint(employer, web3.utils.toWei("10"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("10"), { from: employer });
-    await manager.createJob("ipfs://spec", web3.utils.toWei("10"), 1000, "details", { from: employer });
+    await token.mint(employer, parseUSDCAmount("10"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("10"), { from: employer });
+    await manager.createJob("ipfs://spec", parseUSDCAmount("10"), 1000, "details", { from: employer });
 
     await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
 
     await manager.addAdditionalAgent(agent, { from: owner });
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
 
     await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
     await expectCustomError(manager.validateJob.call(0, "validator", [], { from: validator }), "NotAuthorized");
     await manager.addAdditionalValidator(validator, { from: owner });
-    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
+    await token.mint(validator, parseUSDCAmount("20"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("20"), { from: validator });
     await manager.validateJob(0, "validator", [], { from: validator });
   });
 
@@ -165,9 +166,9 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     await ens.setResolverAddress(resolver.address, { from: owner });
 
-    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
-    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+    await token.mint(employer, parseUSDCAmount("1"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("1"), { from: employer });
+    await manager.createJob("ipfs://spec", parseUSDCAmount("1"), 100, "details", { from: employer });
     await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
   });
 
@@ -180,9 +181,9 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const wrapper = await MalformedApprovalNameWrapper.new({ from: owner });
     const manager = await deployManager(token, ens.address, wrapper.address);
 
-    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
-    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+    await token.mint(employer, parseUSDCAmount("1"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("1"), { from: employer });
+    await manager.createJob("ipfs://spec", parseUSDCAmount("1"), 100, "details", { from: employer });
 
     await wrapper.setOwnerValue(employer, { from: owner });
     await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
@@ -193,9 +194,9 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const gasBurner = await GasBurnerENS.new({ from: owner });
     const manager = await deployManager(token, gasBurner.address, gasBurner.address);
 
-    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
-    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+    await token.mint(employer, parseUSDCAmount("1"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("1"), { from: employer });
+    await manager.createJob("ipfs://spec", parseUSDCAmount("1"), 100, "details", { from: employer });
 
     await expectCustomError(manager.applyForJob.call(0, "agent", [], { from: agent }), "NotAuthorized");
   });
@@ -212,9 +213,9 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent, { from: owner });
 
-    await token.mint(employer, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: employer });
-    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
+    await token.mint(employer, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: employer });
+    await manager.createJob("ipfs://spec", parseUSDCAmount("1"), 100, "details", { from: employer });
 
     for (const mode of [1, 2, 3, 4]) {
       await ens.setMode(mode, { from: owner });
@@ -224,8 +225,8 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     }
 
     await manager.addAdditionalAgent(agent, { from: owner });
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
 
@@ -264,13 +265,13 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     await sender.boom(manager.address, { from: owner });
     const ownerBefore = BigInt(await web3.eth.getBalance(owner));
-    const tx = await manager.rescueETH(web3.utils.toWei("1"), { from: owner });
+    const tx = await manager.rescueETH(parseUSDCAmount("1"), { from: owner });
     const gasSpent = BigInt(tx.receipt.gasUsed) * BigInt((await web3.eth.getTransaction(tx.tx)).gasPrice);
     const ownerAfter = BigInt(await web3.eth.getBalance(owner));
-    assert.equal(ownerAfter - ownerBefore + gasSpent, BigInt(web3.utils.toWei("1")));
+    assert.equal(ownerAfter - ownerBefore + gasSpent, BigInt(parseUSDCAmount("1")));
   });
 
-  it("rescues non-AGI tokens via calldata and blocks AGI token rescue", async () => {
+  it("rescues non-USDC tokens via calldata and blocks USDC token rescue", async () => {
     const agi = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
@@ -356,7 +357,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployManager(token, ens.address, wrapper.address);
     const nft = await MockERC721.new({ from: owner });
-    const payout = web3.utils.toBN(web3.utils.toWei("10"));
+    const payout = web3.utils.toBN(parseUSDCAmount("10"));
 
     await manager.setAgentBondParams(0, 0, 0, { from: owner });
     await manager.setValidationRewardPercentage(5, { from: owner });
@@ -396,18 +397,18 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
     await manager.createJob("ipfs://spec", payout, 1000, "details", { from: employer });
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "ipfs://completion", { from: agent });
 
-    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("20"), { from: validator });
+    await token.mint(validator, parseUSDCAmount("20"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("20"), { from: validator });
     await manager.disapproveJob(0, "validator", [], { from: validator });
 
     let core = await manager.getJobCore(0);
@@ -425,12 +426,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await token.mint(employer, payout, { from: owner });
     await token.approve(managerStrict.address, payout, { from: employer });
     await managerStrict.createJob("ipfs://spec-2", payout, 1000, "details", { from: employer });
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(managerStrict.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(managerStrict.address, parseUSDCAmount("2"), { from: agent });
     await managerStrict.applyForJob(0, "agent", [], { from: agent });
     await managerStrict.requestJobCompletion(0, "ipfs://completion-2", { from: agent });
-    await token.mint(validator, web3.utils.toWei("20"), { from: owner });
-    await token.approve(managerStrict.address, web3.utils.toWei("20"), { from: validator });
+    await token.mint(validator, parseUSDCAmount("20"), { from: owner });
+    await token.approve(managerStrict.address, parseUSDCAmount("20"), { from: validator });
     await managerStrict.disapproveJob(0, "validator", [], { from: validator });
 
     core = await managerStrict.getJobCore(0);
@@ -445,19 +446,19 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const nft = await MockERC721.new({ from: owner });
 
     const tooLongSpec = `ipfs://${"a".repeat(2050)}`;
-    await token.mint(employer, web3.utils.toWei("1"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
+    await token.mint(employer, parseUSDCAmount("1"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("1"), { from: employer });
     await expectCustomError(
-      manager.createJob.call(tooLongSpec, web3.utils.toWei("1"), 100, "details", { from: employer }),
+      manager.createJob.call(tooLongSpec, parseUSDCAmount("1"), 100, "details", { from: employer }),
       "InvalidParameters"
     );
 
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
-    await manager.createJob("ipfs://spec", web3.utils.toWei("1"), 100, "details", { from: employer });
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await manager.createJob("ipfs://spec", parseUSDCAmount("1"), 100, "details", { from: employer });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
 
     const tooLongCompletion = `ipfs://${"b".repeat(1030)}`;
@@ -537,7 +538,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     const wrapper = await MockNameWrapper.new({ from: owner });
     const manager = await deployManager(token, ens.address, wrapper.address);
 
-    await expectCustomError(manager.updateAGITokenAddress.call(owner, { from: owner }), "InvalidParameters");
+    assert.equal(manager.updateUSDCTokenAddress, undefined);
     await expectCustomError(manager.updateEnsRegistry.call(owner, { from: owner }), "InvalidParameters");
     await expectCustomError(manager.updateNameWrapper.call(owner, { from: owner }), "InvalidParameters");
     await manager.updateNameWrapper("0x0000000000000000000000000000000000000000", { from: owner });
@@ -570,12 +571,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     const receiverEmployer = await ERC721ReceiverEmployer.new(manager.address, token.address, { from: owner });
     const nonReceiverEmployer = await NonReceiverEmployer.new(manager.address, token.address, { from: owner });
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
 
     await token.mint(receiverEmployer.address, payout, { from: owner });
     await receiverEmployer.createJob("ipfs://spec-safe", payout, 100, "details", { from: owner });
-    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("4"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("4"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "ipfs://completion-safe", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
@@ -584,8 +585,8 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     await token.mint(nonReceiverEmployer.address, payout, { from: owner });
     await nonReceiverEmployer.createJob("ipfs://spec-unsafe", payout, 100, "details", { from: owner });
-    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("4"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("4"), { from: agent });
     await manager.applyForJob(1, "agent", [], { from: agent });
     await manager.requestJobCompletion(1, "ipfs://completion-unsafe", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
@@ -610,12 +611,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
 
     const gasGriefer = await GasGriefingReceiverEmployer.new(manager.address, token.address, { from: owner });
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(gasGriefer.address, payout, { from: owner });
     await gasGriefer.createJob("ipfs://spec-grief", payout, 100, "details", { from: owner });
 
-    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("4"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("4"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "ipfs://completion-grief", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
@@ -635,12 +636,12 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
 
     const receiver = await TokenURIReaderReceiver.new(manager.address, token.address, { from: owner });
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(receiver.address, payout, { from: owner });
     await receiver.createJob("ipfs://spec-reader", payout, 100, "details", { from: owner });
 
-    await token.mint(agent, web3.utils.toWei("4"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("4"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("4"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("4"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "QmCallbackURI", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));

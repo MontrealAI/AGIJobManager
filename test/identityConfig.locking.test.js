@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -23,19 +24,19 @@ contract('identityConfig.locking', (accounts) => {
     const validatorTree = mkTree([validator]); const agentTree = mkTree([agent]);
     const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
-    await token.mint(employer, new BN(web3.utils.toWei('1000'))); await token.approve(manager.address, web3.utils.toWei('1000'), { from: employer });
+    await token.mint(employer, new BN(parseUSDCAmount('1000'))); await token.approve(manager.address, parseUSDCAmount('1000'), { from: employer });
     await fundValidators(token, manager, [validator], owner); await fundAgents(token, manager, [agent], owner);
 
-    await manager.createJob('Qm', web3.utils.toWei('1000'), 5000, 'd', { from: employer });
+    await manager.createJob('Qm', parseUSDCAmount('1000'), 5000, 'd', { from: employer });
     await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
-    const altToken = await MockERC20.new();
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateAGITokenAddress(altToken.address, { from: owner }));
+    const altEns = await MockENS.new();
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateEnsRegistry(altEns.address, { from: owner }));
 
     await time.increase(6001);
     await manager.expireJob(0, { from: employer });
-    await manager.updateAGITokenAddress(altToken.address, { from: owner });
+    await manager.updateEnsRegistry(altEns.address, { from: owner });
     await manager.lockIdentityConfiguration({ from: owner });
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateAGITokenAddress(token.address, { from: owner }));
+    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateEnsRegistry(ens.address, { from: owner }));
   });
 
   it('locks ENS identity wiring permanently after lockIdentityConfiguration', async () => {

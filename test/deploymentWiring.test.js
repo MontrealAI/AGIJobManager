@@ -40,7 +40,7 @@ contract("AGIJobManager deployment wiring", (accounts) => {
       { from: owner },
     );
 
-    assert.equal(await manager.agiToken(), token.address);
+    assert.equal(await manager.usdcToken(), token.address);
     assert.equal(await manager.ens(), ens.address);
     assert.equal(await manager.nameWrapper(), nameWrapper.address);
     assert.equal(await manager.clubRootNode(), clubRoot);

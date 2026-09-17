@@ -7,7 +7,7 @@ This document summarizes security posture, fixed issues, and remaining risks bas
 The contract inherits `ReentrancyGuard` and applies `nonReentrant` to state‑changing functions that handle funds or sensitive transitions, including:
 - Job escrow and settlement (`createJob`, `cancelJob`, `expireJob`, `finalizeJob`).
 - Validation and dispute resolution (`validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `resolveDisputeWithCode`, `resolveStaleDispute`).
-- Funds management (`withdrawAGI`, `contributeToRewardPool`).
+- Funds management (`withdrawUSDC`, `contributeToRewardPool`).
 
 Functions without `nonReentrant` (e.g., `requestJobCompletion`) do not transfer funds and only update job metadata.
 
@@ -30,7 +30,7 @@ The contract explicitly addresses common issues observed in earlier variants:
 - **External dependencies**: ENS, NameWrapper, and Resolver contracts are trusted for ownership validation.
 - **Merkle root management**: Merkle roots can be updated by the owner via `updateMerkleRoots`. Incorrect roots can be corrected without redeploying; use explicit allowlists for urgent recovery while governance approves an update.
 - **ERC‑20 behavior assumptions**: the token must return `true` on transfers or provide no return data, and it must transfer exact amounts (no transfer fees). Fee‑on‑transfer tokens are incompatible.
-- **Escrow solvency**: `withdrawableAGI` reverts if the contract balance is below `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`. Operators must avoid draining escrowed funds or locked bonds by mistake.
+- **Escrow solvency**: `withdrawableUSDC` reverts if the contract balance is below `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`. Operators must avoid draining escrowed funds or locked bonds by mistake.
 - **Dispute bonds**: the dispute bond is paid to the winning side, not refunded to the initiator unless they win. Ensure participants understand this risk.
 - **Vote quorum edge cases**: after the completion review period, jobs with low vote counts or ties are auto‑disputed, which relies on moderator availability or owner intervention after `disputeReviewPeriod`.
 

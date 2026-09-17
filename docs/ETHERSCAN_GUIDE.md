@@ -69,8 +69,8 @@ You need verified source + ABI on Etherscan for human-readable forms and decoded
 
 ### Units and conversions
 - Token amounts are base units (`uint256`).
-  - `1 AGI` at 18 decimals -> `1000000000000000000`
-  - `1.5 AGI` -> `1500000000000000000`
+  - `1 USDC` at 6 decimals -> `1000000`
+  - `1.5 USDC` -> `1500000`
 - Time values are seconds.
   - `12h` -> `43200`
   - `7d` -> `604800`
@@ -99,7 +99,7 @@ node scripts/etherscan/prepare_inputs.js --action convert --amount 1.5 --duratio
 | `JobNotFound` | wrong job ID | verify event/read output |
 | `InvalidParameters` | malformed URI/code/config | fix inputs |
 | `TransferFailed` | insufficient balance/allowance or unsupported token transfer behavior | fix balance/allowance; use strict ERC20 |
-| `InsufficientWithdrawableBalance` | owner withdrawal too large | use `withdrawableAGI()` bound |
+| `InsufficientWithdrawableBalance` | owner withdrawal too large | use `withdrawableUSDC()` bound |
 | `InsolventEscrowBalance` | owner action would violate escrow solvency | reduce action amount |
 | `ConfigLocked` | identity config already locked | cannot change identity config |
 | `finalizeJob` opens dispute | validator outcomes/quorum unresolved | moderator resolution path is required |
@@ -136,12 +136,12 @@ bytes32[]: ["0x1111111111111111111111111111111111111111111111111111111111111111"
 
 ## Employer flow
 
-### 1) Approve escrow (AGI token contract)
+### 1) Approve escrow (USDC token contract)
 Write: `approve(spender, amount)`
 
 ```text
 spender: 0xAGIJobManagerAddress
-amount: 1200000000000000000000   // 1200 AGI @ 18 decimals
+amount: 1200000000   // 1200 USDC @ 6 decimals
 ```
 
 ### 2) Create job
@@ -153,7 +153,7 @@ Write: `createJob(jobSpecURI, payout, duration, details)`
 
 ```text
 jobSpecURI: ipfs://bafy.../job-spec.v1.json
-payout: 1200000000000000000000
+payout: 1200000000
 duration: 259200
 details: Translate legal packet EN->ES
 ```
@@ -216,7 +216,7 @@ node scripts/etherscan/prepare_inputs.js --action apply --route merkle --jobId 4
 ```
 
 ### 2) Bond approval (if required by current params)
-Write on AGI token: `approve(spender, amount)`.
+Write on USDC token: `approve(spender, amount)`.
 
 ### 3) Request completion
 Write: `requestJobCompletion(jobId, jobCompletionURI)`
@@ -237,7 +237,7 @@ Write: `disputeJob(jobId)` if still inside review window.
 3) ENS subdomain ownership route.
 
 ### 1) Bond approval (if required)
-Write on AGI token: `approve(spender, amount)`.
+Write on USDC token: `approve(spender, amount)`.
 
 ### 2) Vote approve
 Write: `validateJob(jobId, subdomain, proof)`
@@ -296,7 +296,7 @@ Use with extreme caution:
 - intake/settlement controls: `pause`, `unpause`, `pauseAll`, `unpauseAll`, `setSettlementPaused`
 - role governance: `addAdditionalAgent`, `removeAdditionalAgent`, `addAdditionalValidator`, `removeAdditionalValidator`, `blacklistAgent`, `blacklistValidator`, `addModerator`, `removeModerator`
 - risk params: quorum, approval/disapproval thresholds, review/challenge periods, bond/slash values
-- withdrawals: `withdrawableAGI`, `withdrawAGI`
+- withdrawals: `withdrawableUSDC`, `withdrawUSDC`
 - ENS/identity config: `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `setEnsJobPages`, `setUseEnsJobTokenURI`, `updateMerkleRoots`, `lockIdentityConfiguration`
 - rescue paths: `rescueERC20`, `rescueToken`
 

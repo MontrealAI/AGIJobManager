@@ -10,7 +10,7 @@ flowchart LR
   Validator -->|validate/disapprove + bond| AGIJobManager
   Moderator -->|resolveDisputeWithCode| AGIJobManager
   Owner -->|pause/configure| AGIJobManager
-  AGIJobManager <-->|ERC20 transfers| AGIToken
+  AGIJobManager <-->|ERC20 transfers| USDCToken
   AGIJobManager <-->|best-effort ownership checks| ENS[ENS + NameWrapper + Resolver]
   AGIJobManager -->|best-effort hooks/tokenURI| ENSJobPages
   AGIJobManager --> Indexers

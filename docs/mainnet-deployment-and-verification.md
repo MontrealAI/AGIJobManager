@@ -54,7 +54,7 @@ locks identity configuration if `LOCK_IDENTITY_CONFIG=true` or `LOCK_CONFIG=true
 
 Mainnet defaults are defined in `migrations/deploy-config.js` and can be
 overridden with environment variables:
-- `AGI_TOKEN_ADDRESS`
+- `USDC_TOKEN_ADDRESS`
 - `AGI_ENS_REGISTRY`
 - `AGI_NAMEWRAPPER`
 - `AGI_CLUB_ROOT_NODE`

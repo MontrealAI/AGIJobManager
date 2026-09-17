@@ -7,8 +7,8 @@ This walkthrough shows a full job lifecycle for **Employer → Agent → Validat
 1. **Confirm the network** (e.g., Sepolia vs Mainnet) matches the deployment.
 2. **Confirm the contract address** from a trusted source (deployment output, official announcement, or UI page).
 3. **Read the token address** directly from the contract:
-   - `agiToken()` (read‑only)
-4. **Approve token spend** for actions that move AGI tokens:
+   - `usdcToken()` (read‑only)
+4. **Approve token spend** for actions that move USDC tokens:
    - Employer: `createJob` (escrow payout)
    - Contributor: `contributeToRewardPool`
 

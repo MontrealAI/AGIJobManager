@@ -14,9 +14,9 @@ contract ReenteringEmployer {
     bool public attempted;
     bool public reentered;
 
-    constructor(address manager, address agiToken) {
+    constructor(address manager, address usdcToken) {
         jobManager = AGIJobManagerLike(manager);
-        token = IERC20(agiToken);
+        token = IERC20(usdcToken);
     }
 
     function setJobId(uint256 _jobId) external {

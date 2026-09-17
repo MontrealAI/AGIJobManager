@@ -125,4 +125,4 @@ flowchart TD
 | ERC20 returns `false` | Transfer wrappers revert `TransferFailed`. |
 | ERC20 fee-on-transfer under-delivers | `safeTransferFromExact` reverts. |
 | Stale dispute not yet timed out | `resolveStaleDispute` reverts until review period elapses. |
-| Insolvent withdrawal attempt | `withdrawableAGI`/withdraw paths reject unsafe extraction. |
+| Insolvent withdrawal attempt | `withdrawableUSDC`/withdraw paths reject unsafe extraction. |

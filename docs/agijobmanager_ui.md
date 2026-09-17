@@ -39,7 +39,7 @@ The **legacy v0** address is shown as a reference and must be selected manually.
 ## Role flows
 
 ### Employer
-1) **Approve** the AGI token for the contract (`approve`).
+1) **Approve** the USDC token for the contract (`approve`).
 2) **Create job** (`createJob`) with payout + duration + a **job spec metadata URI** (ERC‑721 JSON).
    - Use the form-driven metadata generator to build `jobSpec.v1.json`.
    - Upload it manually (or via optional Pinata/NFT.Storage) and paste the resulting URI.

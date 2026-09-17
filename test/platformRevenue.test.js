@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const { time } = require("@openzeppelin/test-helpers");
@@ -61,7 +62,7 @@ contract("AGIJobManager platform revenue", (accounts) => {
   it("emits PlatformRevenueAccrued for retained remainder on agent win", async () => {
     const agentPct = 60;
     const { token, manager } = await deployManager(agentPct);
-    const payout = web3.utils.toBN(web3.utils.toWei("101"));
+    const payout = web3.utils.toBN(parseUSDCAmount("101"));
 
     const { jobId, finalizeTx } = await completeJob(manager, token, payout);
 
@@ -79,7 +80,7 @@ contract("AGIJobManager platform revenue", (accounts) => {
   it("does not emit PlatformRevenueAccrued when retained remainder is zero", async () => {
     const agentPct = 92;
     const { token, manager } = await deployManager(agentPct);
-    const payout = web3.utils.toBN(web3.utils.toWei("100"));
+    const payout = web3.utils.toBN(parseUSDCAmount("100"));
 
     const { finalizeTx } = await completeJob(manager, token, payout);
     const retainedEvent = finalizeTx.logs.find((log) => log.event === "PlatformRevenueAccrued");

@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { BN, expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
 
@@ -106,7 +107,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     await manager.addAGIType(nft.address, 92, { from: owner });
     await nft.mint(agent, { from: owner });
 
-    await token.mint(employer, web3.utils.toWei("2500"), { from: owner });
+    await token.mint(employer, parseUSDCAmount("2500"), { from: owner });
 
     await fundValidators(token, manager, [validator1, validator2, validator3], owner);
     await fundAgents(token, manager, [agent], owner);
@@ -153,7 +154,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       from: owner,
     });
 
-    const payout = new BN(web3.utils.toWei("1200"));
+    const payout = new BN(parseUSDCAmount("1200"));
     const duration = 30 * 24 * 60 * 60;
     const ipfsHash = "bafkreibq3jcpanwlzubcvhdwstbfrwc43wrq2nqjh5kgrvflau3gxgoum4";
 
@@ -243,7 +244,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
       manager.applyForJob(9999, subdomains.agent, EMPTY_PROOF, { from: agent })
     );
 
-    const payout = new BN(web3.utils.toWei("100"));
+    const payout = new BN(parseUSDCAmount("100"));
     const jobId = (await manager.nextJobId()).toNumber();
     await token.approve(manager.address, payout, { from: employer });
     await manager.createJob("ipfs-better-only", payout, 1000, "details", { from: employer });
@@ -334,7 +335,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
 
     await manager.addModerator(moderator, { from: owner });
 
-    const payout = new BN(web3.utils.toWei("50"));
+    const payout = new BN(parseUSDCAmount("50"));
     const jobId = (await manager.nextJobId()).toNumber();
     await token.approve(manager.address, payout, { from: employer });
     await manager.createJob("ipfs-dispute", payout, 1000, "details", { from: employer });

@@ -1,5 +1,6 @@
+const { requireCanonicalUSDC, USDC_ADDRESSES } = require('../scripts/lib/usdc');
 const ZERO_ROOT = "0x" + "00".repeat(32);
-const MAINNET_TOKEN = "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA";
+const MAINNET_TOKEN = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 const MAINNET_ENS = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 const MAINNET_NAMEWRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
 const MAINNET_CLUB_ROOT = "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16";
@@ -48,8 +49,9 @@ function resolveDeployConfig(network, networkId) {
   const baseIpfsUrl = envValue("AGI_BASE_IPFS_URL", DEFAULT_IPFS_BASE);
 
   const tokenAddress = isMainnet
-    ? envValue("AGI_TOKEN_ADDRESS", MAINNET_TOKEN)
-    : requireEnv("AGI_TOKEN_ADDRESS");
+    ? envValue("USDC_TOKEN_ADDRESS", MAINNET_TOKEN)
+    : requireEnv("USDC_TOKEN_ADDRESS", USDC_ADDRESSES[Number(networkId)]);
+  requireCanonicalUSDC(networkId, tokenAddress);
   const ensAddress = isMainnet
     ? envValue("AGI_ENS_REGISTRY", MAINNET_ENS)
     : requireEnv("AGI_ENS_REGISTRY");

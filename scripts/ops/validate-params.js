@@ -14,7 +14,7 @@ function evaluateInvariants({
   maxJobPayout,
   jobDurationLimit,
   maxAgentPayoutPercentage,
-  agiToken,
+  usdcToken,
   ens,
   nameWrapper,
 }) {
@@ -26,9 +26,9 @@ function evaluateInvariants({
   const maxAgentPayoutNum = Number(maxAgentPayoutPercentage);
 
   results.push({
-    key: "agiToken",
-    status: agiToken && agiToken !== "0x0000000000000000000000000000000000000000" ? CHECK.PASS : CHECK.FAIL,
-    message: "agiToken address must be non-zero",
+    key: "usdcToken",
+    status: usdcToken && usdcToken !== "0x0000000000000000000000000000000000000000" ? CHECK.PASS : CHECK.FAIL,
+    message: "usdcToken address must be non-zero",
   });
   results.push({
     key: "ens",
@@ -136,7 +136,7 @@ module.exports = async function validateParams(callback) {
     const [
       owner,
       paused,
-      agiToken,
+      usdcToken,
       ens,
       nameWrapper,
       requiredValidatorApprovals,
@@ -148,7 +148,7 @@ module.exports = async function validateParams(callback) {
     ] = await Promise.all([
       instance.owner(),
       instance.paused(),
-      instance.agiToken(),
+      instance.usdcToken(),
       instance.ens(),
       instance.nameWrapper(),
       instance.requiredValidatorApprovals(),
@@ -169,7 +169,7 @@ module.exports = async function validateParams(callback) {
       maxJobPayout,
       jobDurationLimit,
       maxAgentPayoutPercentage,
-      agiToken,
+      usdcToken,
       ens,
       nameWrapper,
     });

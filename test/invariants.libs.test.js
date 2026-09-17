@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
@@ -22,7 +23,8 @@ const MalformedResolver = artifacts.require("MalformedResolver");
 const { rootNode, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { expectCustomError } = require("./helpers/errors");
 
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 contract("Utility library invariants", (accounts) => {
   const [owner, claimant, other] = accounts;

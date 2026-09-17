@@ -12,7 +12,7 @@ The UI can be deployed automatically to `gh-pages` using only `GITHUB_TOKEN` via
 The workflow publishes two Pages surfaces from two source artifacts:
 
 - `index.html` and `agijobmanager.html` from `ui/dist-ipfs/agijobmanager.html`
-- `agijobmanagerv0.html` from `ui/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`
+- `agijobmanagerv0.html` from `ui/agijobmanager-usdc.html`
 
 Hosted URLs published by this workflow:
 

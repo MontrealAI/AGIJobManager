@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time, expectRevert } = require('@openzeppelin/test-helpers');
 
 const AGIJobManager = artifacts.require('AGIJobManager');
@@ -29,7 +30,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
     return { token, ens, wrapper, manager };
   }
 
-  async function seedAssignedJob(ctx, payout = web3.utils.toWei('10')) {
+  async function seedAssignedJob(ctx, payout = parseUSDCAmount('10')) {
     const nft = await MockERC721.new({ from: owner });
     await nft.mint(agent, { from: owner });
     await ctx.manager.addAGIType(nft.address, 90, { from: owner });
@@ -40,8 +41,8 @@ contract('mainnet governance + ops regressions', (accounts) => {
     await ctx.token.approve(ctx.manager.address, payout, { from: employer });
     await ctx.manager.createJob('ipfs://spec', payout, 1000, 'details', { from: employer });
 
-    await ctx.token.mint(agent, web3.utils.toWei('3'), { from: owner });
-    await ctx.token.approve(ctx.manager.address, web3.utils.toWei('3'), { from: agent });
+    await ctx.token.mint(agent, parseUSDCAmount('3'), { from: owner });
+    await ctx.token.approve(ctx.manager.address, parseUSDCAmount('3'), { from: agent });
     await ctx.manager.applyForJob(0, 'agent', [], { from: agent });
   }
 
@@ -98,7 +99,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
 
   it('enforces MAX_JOB_DETAILS_BYTES during createJob', async () => {
     const ctx = await deployManager();
-    const payout = web3.utils.toWei('1');
+    const payout = parseUSDCAmount('1');
     await ctx.token.mint(employer, payout, { from: owner });
     await ctx.token.approve(ctx.manager.address, payout, { from: employer });
 
@@ -120,9 +121,9 @@ contract('mainnet governance + ops regressions', (accounts) => {
     await seedAssignedJob(ctx);
 
     await ctx.manager.pauseIntake({ from: owner });
-    await ctx.token.mint(employer, web3.utils.toWei('1'), { from: owner });
-    await ctx.token.approve(ctx.manager.address, web3.utils.toWei('1'), { from: employer });
-    await expectRevert.unspecified(ctx.manager.createJob('ipfs://blocked', web3.utils.toWei('1'), 100, 'd', { from: employer }));
+    await ctx.token.mint(employer, parseUSDCAmount('1'), { from: owner });
+    await ctx.token.approve(ctx.manager.address, parseUSDCAmount('1'), { from: employer });
+    await expectRevert.unspecified(ctx.manager.createJob('ipfs://blocked', parseUSDCAmount('1'), 100, 'd', { from: employer }));
 
     await ctx.manager.requestJobCompletion(0, 'ipfs://done', { from: agent });
 
@@ -139,7 +140,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
     const happyHook = await MockENSJobPages.new({ from: owner });
     await ctx.manager.setEnsJobPages(happyHook.address, { from: owner });
 
-    const payout = web3.utils.toWei('1');
+    const payout = parseUSDCAmount('1');
     await ctx.token.mint(employer, payout, { from: owner });
     await ctx.token.approve(ctx.manager.address, payout, { from: employer });
     let receipt = await ctx.manager.createJob('ipfs://hook-ok', payout, 100, 'd', { from: employer });

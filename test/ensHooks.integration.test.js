@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time, expectEvent } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -45,7 +46,7 @@ contract('ensHooks.integration', (accounts) => {
     await wrapper.setOwner(web3.utils.toBN(rootNodeHash), pages.address);
 
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
-    const payout = new BN(web3.utils.toWei('1000'));
+    const payout = new BN(parseUSDCAmount('1000'));
     await token.mint(employer, payout); await token.approve(manager.address, payout, { from: employer });
     await token.mint(validator, payout); await token.approve(manager.address, payout, { from: validator });
     await token.mint(agent, payout); await token.approve(manager.address, payout, { from: agent });
@@ -84,7 +85,7 @@ contract('ensHooks.integration', (accounts) => {
 
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent);
-    const payout = new BN(web3.utils.toWei('1000'));
+    const payout = new BN(parseUSDCAmount('1000'));
     await token.mint(employer, payout);
     await token.approve(manager.address, payout, { from: employer });
     await token.mint(validator, payout);
@@ -145,7 +146,7 @@ contract('ensHooks.integration', (accounts) => {
 
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent);
-    const payout = new BN(web3.utils.toWei('1000'));
+    const payout = new BN(parseUSDCAmount('1000'));
     await token.mint(employer, payout);
     await token.approve(manager.address, payout, { from: employer });
     await token.mint(agent, payout);

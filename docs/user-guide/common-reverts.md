@@ -7,7 +7,7 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 ## Quick troubleshooting checklist
 
 - ✅ Correct **network** and **contract address**
-- ✅ Correct **token address** via `agiToken()`
+- ✅ Correct **token address** via `usdcToken()`
 - ✅ Sufficient **token balance** and **allowance**
 - ✅ Correct **role** (employer vs agent vs validator)
 - ✅ Correct **job state** (created/assigned/completed/disputed)
@@ -37,10 +37,10 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 | Purchase an NFT | `InvalidState` | Listing is inactive or already purchased. | Refresh listing state; buy only active listings. | [Happy path](happy-path.md) |
 | Delist an NFT | `NotAuthorized` | You are not the seller or listing is inactive. | Only the listing seller can delist. | [Roles → Employer](roles.md#employer) |
 | Create a job | `InvalidParameters` | Payout/duration is zero or above contract limits. | Use a positive payout and duration within limits (`maxJobPayout`, `jobDurationLimit`). | [Happy path](happy-path.md) |
-| Withdraw AGI (owner) | `InvalidParameters` | Amount is zero or exceeds contract balance. | Withdraw an amount within the contract’s AGI balance. | [Roles → Owner](roles.md#owner) |
+| Withdraw AGI (owner) | `InvalidParameters` | Amount is zero or exceeds contract balance. | Withdraw an amount within the contract’s USDC balance. | [Roles → Owner](roles.md#owner) |
 | Contribute to reward pool | `InvalidParameters` | Amount is zero. | Enter a positive amount. | [Happy path](happy-path.md) |
 | Add AGI type (owner) | `InvalidParameters` | Address is zero or payout percentage outside 1–100. | Provide a valid NFT address and percentage. | [Roles → Owner](roles.md#owner) |
-| Any token transfer | `TransferFailed` | Token transfer or transferFrom returned false. | Ensure you have enough AGI balance and **approved** the contract for the needed amount. | [Happy path](happy-path.md) |
+| Any token transfer | `TransferFailed` | Token transfer or transferFrom returned false. | Ensure you have enough USDC balance and **approved** the contract for the needed amount. | [Happy path](happy-path.md) |
 | Any job action | `JobNotFound` | The job ID does not exist. | Double‑check the job ID. | [Happy path](happy-path.md) |
 | Set validation reward percentage (owner) | `InvalidParameters` | Percentage must be between 1 and 100. | Use a value from 1–100. | [Roles → Owner](roles.md#owner) |
 | Actions protected by pause | `Pausable: paused` | The contract is paused, so `whenNotPaused` actions are blocked. | Wait for the owner to unpause before retrying. | [Roles → Owner](roles.md#owner) |

@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require('assert');
 
 const AGIJobManager = artifacts.require('AGIJobManager');
@@ -13,7 +14,7 @@ const ZERO_ROOT = '0x' + '00'.repeat(32);
 
 contract('merkleRoots.operational', (accounts) => {
   const [owner, employer] = accounts;
-  const payout = web3.utils.toWei('1');
+  const payout = parseUSDCAmount('1');
 
   let manager;
   let token;

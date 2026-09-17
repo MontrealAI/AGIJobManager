@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const { expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
@@ -22,7 +23,8 @@ const { fundValidators, fundAgents } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 contract("AGIJobManager admin ops", (accounts) => {
   const [owner, employer, agent, validator, other] = accounts;
@@ -173,8 +175,8 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     await manager.pause({ from: owner });
     await manager.setSettlementPaused(false, { from: owner });
-    const withdrawTx = await manager.withdrawAGI(surplus, { from: owner });
-    expectEvent(withdrawTx, "AGIWithdrawn", {
+    const withdrawTx = await manager.withdrawUSDC(surplus, { from: owner });
+    expectEvent(withdrawTx, "USDCWithdrawn", {
       to: owner,
       amount: surplus,
       remainingWithdrawable: toBN(0),
@@ -196,25 +198,19 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.lockIdentityConfiguration({ from: owner });
 
     const balanceBefore = await token.balanceOf(owner);
-    await expectRevert.unspecified(manager.withdrawAGI(surplus, { from: owner }));
+    await expectRevert.unspecified(manager.withdrawUSDC(surplus, { from: owner }));
     await manager.pause({ from: owner });
     await expectCustomError(
-      manager.withdrawAGI.call(payout, { from: owner }),
+      manager.withdrawUSDC.call(payout, { from: owner }),
       "InsufficientWithdrawableBalance"
     );
-    await manager.withdrawAGI(surplus, { from: owner });
+    await manager.withdrawUSDC(surplus, { from: owner });
     const balanceAfter = await token.balanceOf(owner);
     assert.equal(balanceAfter.sub(balanceBefore).toString(), surplus.toString(), "withdraw should move funds");
   });
 
   it("emits events for high-impact configuration updates", async () => {
-    const newToken = await MockERC20.new({ from: owner });
-    const oldTokenAddress = await manager.agiToken();
-    const tokenTx = await manager.updateAGITokenAddress(newToken.address, { from: owner });
-    const tokenEvent = tokenTx.logs.find((log) => log.event === "AGITokenAddressUpdated");
-    assert.ok(tokenEvent, "AGITokenAddressUpdated should be emitted");
-    assert.equal(tokenEvent.args.oldToken, oldTokenAddress);
-    assert.equal(tokenEvent.args.newToken, newToken.address);
+    assert.equal(await manager.usdcToken(), token.address);
 
     const ensJobPages = await MockENSJobPages.new({ from: owner });
     const oldEnsJobPages = await manager.ensJobPages();
@@ -299,7 +295,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await failing.setFailTransfers(true, { from: owner });
     await managerFailing.pause({ from: owner });
     await expectCustomError(
-      managerFailing.withdrawAGI.call(toBN(toWei("1")), { from: owner }),
+      managerFailing.withdrawUSDC.call(toBN(toWei("1")), { from: owner }),
       "TransferFailed"
     );
   });
@@ -355,27 +351,15 @@ contract("AGIJobManager admin ops", (accounts) => {
     await expectCustomError(manager.updateNameWrapper.call(nameWrapper.address, { from: owner }), "ConfigLocked");
   });
 
-  it("locks critical config and restricts token updates to pre-job setup", async () => {
-    const newToken = await MockERC20.new({ from: owner });
-    await manager.updateAGITokenAddress(newToken.address, { from: owner });
-    assert.equal(await manager.agiToken(), newToken.address, "token should update before jobs");
-
+  it("keeps the USDC settlement asset fixed before and after jobs", async () => {
+    assert.equal(manager.updateUSDCTokenAddress, undefined);
+    assert.equal(await manager.usdcToken(), token.address);
     const payout = toBN(toWei("3"));
-    await newToken.mint(employer, payout, { from: owner });
-    await newToken.approve(manager.address, payout, { from: employer });
+    await token.mint(employer, payout, { from: owner });
+    await token.approve(manager.address, payout, { from: employer });
     await manager.createJob("ipfs", payout, 1000, "details", { from: employer });
-
-    const anotherToken = await MockERC20.new({ from: owner });
-    await expectCustomError(
-      manager.updateAGITokenAddress.call(anotherToken.address, { from: owner }),
-      "InvalidState"
-    );
-
     await manager.lockIdentityConfiguration({ from: owner });
-    await expectCustomError(
-      manager.updateAGITokenAddress.call(newToken.address, { from: owner }),
-      "ConfigLocked"
-    );
+    assert.equal(await manager.usdcToken(), token.address);
   });
 
   it("rejects non-ERC721 AGI type configurations", async () => {
@@ -448,9 +432,9 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
 
-    const newToken = await MockERC20.new({ from: owner });
+    const newEns = await MockENS.new({ from: owner });
     await expectCustomError(
-      manager.updateAGITokenAddress.call(newToken.address, { from: owner }),
+      manager.updateEnsRegistry.call(newEns.address, { from: owner }),
       "InvalidState"
     );
 
@@ -458,7 +442,8 @@ contract("AGIJobManager admin ops", (accounts) => {
     await time.increase(reviewPeriod.addn(1));
     await manager.finalizeJob(jobId, { from: employer });
 
-    await manager.updateAGITokenAddress(newToken.address, { from: owner });
-    assert.equal(await manager.agiToken(), newToken.address, "token should update after settlement");
+    await manager.updateEnsRegistry(newEns.address, { from: owner });
+    assert.equal(await manager.ens(), newEns.address, "ENS may update after settlement");
+    assert.equal(await manager.usdcToken(), token.address, "USDC remains immutable");
   });
 });

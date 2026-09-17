@@ -9,13 +9,9 @@ The authoritative Terms & Conditions for AGIJobManager are embedded in the smart
 
 Repository documentation is explanatory and operational. It does not override the contract source text.
 
-## Canonical public terms link
+## USDC settlement notice
 
-The contract text references the canonical public Terms URL:
-
-- <https://agialphaagent.com/>
-
-If there is any discrepancy between this documentation and the current contract source, treat the contract source as authoritative.
+The v0.5.0 source distinguishes protocol job terms from USDC issuer terms. AGIJobManager does not issue USDC. Historical project-token sale disclosures are preserved in prior Git tags and do not describe USDC settlement. See the [migration guide](../USDC_MIGRATION.md).
 
 ## Intended use policy linkage
 

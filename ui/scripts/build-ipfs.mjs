@@ -8,10 +8,8 @@ const templatePath = path.join(uiRoot, 'scripts', 'singlefile-template.html');
 const outDir = path.join(uiRoot, 'dist-ipfs');
 const outPath = path.join(outDir, 'agijobmanager.html');
 const repoArtifactPath = path.join(repoRoot, 'agijobmanager.html');
-const mainnetDeploymentPath = path.join(repoRoot, 'hardhat', 'deployments', 'mainnet', 'deployment.1.24522684.json');
-const ensDeploymentPath = path.join(repoRoot, 'hardhat', 'deployments', 'mainnet', 'ens-job-pages', 'deployment.1.24531331.json');
+const deploymentConfigPath = path.join(repoRoot, 'config/usdc-deployment.json');
 const srcRoot = path.join(uiRoot, 'src');
-const deploymentsRoot = path.join(repoRoot, 'hardhat', 'deployments', 'mainnet');
 const docsRoot = path.join(repoRoot, 'docs');
 
 const forbiddenInlineUriPattern = /data:(?:image|font)\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+(?:=(?:"[^"]*"|'[^']*'|[^;,)'"\s>]+))?)*,[^"'\s)<>]*/gi;
@@ -28,12 +26,7 @@ function normalizeEmbeddedSourceText(text) {
     .replace(/<\/html/gi, '<\\/html');
 }
 
-const largeTextArtifacts = [
-  path.join(repoRoot, 'hardhat', 'deployments', 'mainnet', 'solc-input.json'),
-  path.join(repoRoot, 'hardhat', 'deployments', 'mainnet', 'ens-job-pages', 'solc-input.json'),
-  path.join(repoRoot, 'hardhat', 'deployments', 'mainnet', 'verify-targets.json'),
-  path.join(repoRoot, 'hardhat', 'deployments', 'mainnet', 'ens-job-pages', 'verify-targets.json')
-];
+const largeTextArtifacts = [deploymentConfigPath];
 
 if (!fs.existsSync(templatePath)) {
   throw new Error(`Template missing at ${templatePath}`);
@@ -92,28 +85,9 @@ function readJson(filePath) {
 }
 
 function buildOfficialFromArtifacts() {
-  const agi = readJson(mainnetDeploymentPath);
-  const ens = readJson(ensDeploymentPath);
-
-  return {
-    chainId: agi.chainId,
-    explorerBaseUrl: agi.explorerBaseUrl,
-    baseIpfsUrl: agi.constructorArgs?.baseIpfsUrl ?? 'https://ipfs.io/ipfs/',
-    finalOwner: agi.finalOwner,
-    contracts: {
-      agiJobManager: agi.contracts?.AGIJobManager,
-      ensJobPages: ens.contracts?.ENSJobPages,
-      agiToken: agi.constructorArgs?.agiTokenAddress
-    },
-    rpcUrls: ['https://eth.llamarpc.com', 'https://ethereum-rpc.publicnode.com'],
-    deployment: {
-      agiJobManagerBlock: extractDeploymentBlockFromFilename(mainnetDeploymentPath),
-      ensJobPagesBlock: extractDeploymentBlockFromFilename(ensDeploymentPath),
-      deployer: agi.deployer,
-      ensRootName: ens.constructorArgs?.ENSJobPages?.rootName ?? 'alpha.jobs.agi.eth',
-      ensResolver: ens.constructorArgs?.ENSJobPages?.publicResolverAddress
-    }
-  };
+  const c = readJson(deploymentConfigPath);
+  return {...c, contracts: {agiJobManager:c.managerAddress, ensJobPages:c.ensJobPagesAddress, usdcToken:c.usdc.address},
+    rpcUrls:['https://eth.llamarpc.com','https://ethereum-rpc.publicnode.com']};
 }
 
 const htmlTemplate = fs.readFileSync(templatePath, 'utf8');
@@ -133,18 +107,8 @@ for (const absoluteFile of largeTextArtifacts) {
   embeddedSources[relativeFile] = normalizeEmbeddedSourceText(fs.readFileSync(absoluteFile, 'utf8'));
 }
 
-const deploymentJsonFiles = walkTextFiles(deploymentsRoot).filter((filePath) => /\.json$/i.test(filePath));
-for (const absoluteFile of deploymentJsonFiles) {
-  const relativeFile = path.relative(repoRoot, absoluteFile).replace(/\\/g, '/');
-  if (embeddedSources[relativeFile]) continue;
-  embeddedSources[relativeFile] = normalizeEmbeddedSourceText(fs.readFileSync(absoluteFile, 'utf8'));
-}
-
-
-const documentationFiles = [
-  ...walkMarkdownFiles(docsRoot),
-  ...walkMarkdownFiles(repoRoot).filter((filePath) => path.dirname(filePath) === repoRoot)
-];
+const documentationFiles = ['README.md', 'docs/USDC_MIGRATION.md', 'docs/ui/DEPLOYMENT_MAINNET.md']
+  .map((file) => path.join(repoRoot, file)).filter((file) => fs.existsSync(file));
 for (const absoluteFile of documentationFiles) {
   const relativeFile = path.relative(repoRoot, absoluteFile).replace(/\\/g, '/');
   if (embeddedSources[relativeFile]) continue;

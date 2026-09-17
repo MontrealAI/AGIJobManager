@@ -1,6 +1,6 @@
 module.exports = {
   mainnet: {
-    agiTokenAddress: '0xa61a3b3a130a9c20768eebf97e21515a6046a1fa',
+    usdcTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
     ensConfig: [
       '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
@@ -20,7 +20,7 @@ module.exports = {
   },
   sepolia: {
     // TODO: Replace every field with Sepolia-safe values before deployment.
-    agiTokenAddress: '0x0000000000000000000000000000000000000001', // TODO
+    usdcTokenAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
     baseIpfsUrl: 'https://ipfs.io/ipfs/', // TODO
     ensConfig: [
       '0x0000000000000000000000000000000000000001', // TODO

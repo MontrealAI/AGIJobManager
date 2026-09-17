@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
@@ -18,7 +19,8 @@ const { fundValidators, fundAgents } = require('./helpers/bonds');
 
 const ZERO_ROOT = '0x' + '00'.repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 contract('ERC-8004 adapter export (smoke test)', (accounts) => {
   const [owner, employer, agent, validator, moderator] = accounts;

@@ -2,15 +2,15 @@
 
 ## Escrow accounting model
 
-`withdrawableAGI()` defines treasury-only withdrawability:
+`withdrawableUSDC()` defines treasury-only withdrawability:
 
 - `lockedEscrow`: sum of unsettled job payouts.
 - `lockedAgentBonds`: active agent performance bonds.
 - `lockedValidatorBonds`: active validator vote bonds.
 - `lockedDisputeBonds`: active dispute bonds.
-- `withdrawableAGI = agiToken.balanceOf(this) - (all locked*)` (reverts if insolvent).
+- `withdrawableUSDC = usdcToken.balanceOf(this) - (all locked*)` (reverts if insolvent).
 
-Owner withdrawals (`withdrawAGI`) are additionally restricted to **paused** mode and blocked if `settlementPaused` is true.
+Owner withdrawals (`withdrawUSDC`) are additionally restricted to **paused** mode and blocked if `settlementPaused` is true.
 
 ## Bonds and settlement logic
 
@@ -29,7 +29,7 @@ Owner withdrawals (`withdrawAGI`) are additionally restricted to **paused** mode
 
 ### Dispute bond
 - Charged in `disputeJob` to the disputant (agent or employer):
-  - `payout * 50 bps` bounded by `1e18` min, `200e18` max, and `<= payout`.
+  - `payout * 50 bps` bounded by `1e6` min, `200e6` max, and `<= payout`.
 - Added to `lockedDisputeBonds`.
 - Returned to disputant if their side wins; otherwise sent to counterparty.
 
@@ -82,5 +82,5 @@ Owner withdrawals (`withdrawAGI`) are additionally restricted to **paused** mode
 | `JobCancelled` | Job cancelled/delisted pre-assignment |
 | `NFTIssued` | Completion NFT minted to employer |
 | `PlatformRevenueAccrued` | Agent-win retained remainder recorded |
-| `AGIWithdrawn` | Owner withdraws treasury surplus while paused |
+| `USDCWithdrawn` | Owner withdraws treasury surplus while paused |
 | `EnsHookAttempted` | AGIJobManager best-effort call to ENSJobPages |

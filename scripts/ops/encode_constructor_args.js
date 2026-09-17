@@ -26,7 +26,7 @@ function main() {
 
   const encoded = abi.encodeParameters(
     ['address', 'string', 'tuple(address,address)', 'tuple(bytes32,bytes32,bytes32,bytes32)', 'tuple(bytes32,bytes32)'],
-    [args.agiTokenAddress, args.baseIpfsUrl, args.ensConfig, args.rootNodes, args.merkleRoots],
+    [args.usdcTokenAddress, args.baseIpfsUrl, args.ensConfig, args.rootNodes, args.merkleRoots],
   );
 
   const noPrefix = encoded.startsWith('0x') ? encoded.slice(2) : encoded;

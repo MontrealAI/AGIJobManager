@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -13,7 +14,8 @@ const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 const AGENT_SLASH_BPS = toBN(10000);
 
 contract("AGIJobManager incentive hardening", (accounts) => {
@@ -173,7 +175,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     );
   });
 
-  it("snapshots and returns or slashes agent bonds, and excludes them from withdrawable AGI", async () => {
+  it("snapshots and returns or slashes agent bonds, and excludes them from withdrawable USDC", async () => {
     const payout = toBN(toWei("20"));
     await token.mint(employer, payout, { from: owner });
 
@@ -186,8 +188,8 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     const agentAfterApply = await token.balanceOf(agentFast);
     assert.strictEqual(agentBefore.sub(agentAfterApply).toString(), agentBond.toString(), "bond should be collected");
 
-    const withdrawable = await manager.withdrawableAGI();
-    assert.strictEqual(withdrawable.toString(), "0", "withdrawable AGI should exclude locked agent bond");
+    const withdrawable = await manager.withdrawableUSDC();
+    assert.strictEqual(withdrawable.toString(), "0", "withdrawable USDC should exclude locked agent bond");
 
     await manager.requestJobCompletion(jobId, "ipfs-bond-complete", { from: agentFast });
     await time.increase(2);

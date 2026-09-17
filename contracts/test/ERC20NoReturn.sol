@@ -4,6 +4,8 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract ERC20NoReturn is ERC20 {
+    function decimals() public pure override returns (uint8) { return 6; }
+
     constructor() ERC20("No Return Token", "NORET") {}
 
     function mint(address to, uint256 amount) external {

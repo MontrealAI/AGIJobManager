@@ -1,5 +1,7 @@
 'use client';
 
+import { verifyUSDCDeployment } from '@/lib/usdc';
+import { CHAIN_ID } from '@/lib/constants';
 import { useMemo, useRef, useState } from 'react';
 import type { AbiFunction } from 'viem';
 import { Card } from '@/components/ui/card';
@@ -82,6 +84,8 @@ export default function AdvancedPage() {
         account
       });
       updateState(key, { phase: 'sign', result: stringify(simulation.request) });
+      if(await walletClient.getChainId() !== CHAIN_ID) throw new Error('Wallet network mismatch.');
+      await verifyUSDCDeployment(publicClient, CONTRACT_ADDRESS, CHAIN_ID);
       const txHash = await (walletClient as any).writeContract(simulation.request as any);
       updateState(key, { phase: 'pending', txHash });
       await publicClient.waitForTransactionReceipt({ hash: txHash });

@@ -11,7 +11,7 @@ describe("validate-params invariant evaluator", () => {
       maxJobPayout: 1,
       jobDurationLimit: 1,
       maxAgentPayoutPercentage: 90,
-      agiToken: "0x0000000000000000000000000000000000000001",
+      usdcToken: "0x0000000000000000000000000000000000000001",
       ens: "0x0000000000000000000000000000000000000001",
       nameWrapper: "0x0000000000000000000000000000000000000001",
     });

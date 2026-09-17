@@ -3,7 +3,6 @@
 ## Configuration locking model
 
 `lockIdentityConfiguration()` permanently freezes identity wiring setters guarded by `whenIdentityConfigurable`:
-- `updateAGITokenAddress`
 - `updateEnsRegistry`
 - `updateNameWrapper`
 - `setEnsJobPages`
@@ -35,7 +34,6 @@ It **does not** freeze operational controls like pause, settlement pause, thresh
 | `additionalText1/2/3` | `updateAdditionalText1/2/3` | Yes | none | Informational metadata |
 | `settlementPaused` | `setSettlementPaused` | Yes | none | Blocks settlement-sensitive functions via custom modifier |
 | Pause state | `pause`/`unpause` | Yes | OpenZeppelin Pausable | Pausing required for treasury withdraw |
-| `agiToken` | `updateAGITokenAddress` | Yes | identity-configurable + empty locked balances + nonzero address | High impact; do before production jobs |
 | `ens` | `updateEnsRegistry` | Yes | identity-configurable + **empty locked balances** + nonzero | Identity gating dependency |
 | `nameWrapper` | `updateNameWrapper` | Yes | identity-configurable + **empty locked balances** + nonzero | Wrapped-root checks dependency |
 | `ensJobPages` | `setEnsJobPages` | Yes | identity-configurable; contract code required if nonzero | Enables lifecycle hooks |
@@ -69,11 +67,11 @@ It **does not** freeze operational controls like pause, settlement pause, thresh
 Defaults are in-code unless changed post-deploy:
 - approvals/disapprovals/quorum: `3 / 3 / 3`
 - validation reward: `8%`
-- max payout: `88,888,888e18`
+- max payout: `88,888,888e6`
 - job duration limit: `10,000,000`
 - completion/dispute review: `7 days / 14 days`
-- validator bond: `1500 bps`, min `10e18`, max `88,888,888e18`
+- validator bond: `1500 bps`, min `10e6`, max `88,888,888e6`
 - validator slash: `8000 bps`
 - challenge period after approval: `1 day`
-- agent bond params: `500 bps`, min `1e18`, max `88,888,888e18`
-- dispute bond constants: `50 bps`, min `1e18`, max `200e18`
+- agent bond params: `500 bps`, min `1e6`, max `88,888,888e6`
+- dispute bond constants: `50 bps`, min `1e6`, max `200e6`

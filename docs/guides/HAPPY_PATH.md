@@ -9,7 +9,7 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 3. Check **Chain** and **Network pill**. If you are not on Ethereum Mainnet, use **Switch to Mainnet**.
 4. In **Contract address (Mainnet)**, paste the deployment address and click **Save address**.
 5. Click **Refresh snapshot** and confirm:
-   - **AGI Token** address
+   - **USDC Token** address
    - **Token Symbol** / **Token Decimals**
    - **Owner** / **Paused**
 
@@ -20,12 +20,12 @@ This walkthrough mirrors the **AGIJobManager Web UI** and uses the exact field n
 ## 2) Verify token balance and allowance
 
 1. In **Your role flags**, click **Refresh role flags**.
-2. Check **AGI Token balance** and **AGI allowance**.
-3. If allowance is too low, use **Approve AGI token** under **Employer actions**.
+2. Check **USDC Token balance** and **USDC allowance**.
+3. If allowance is too low, use **Approve USDC token** under **Employer actions**.
 
 **What you should see in the UI**
-- **AGI Token balance** shows your token amount.
-- **AGI allowance** shows approved amount for the contract.
+- **USDC Token balance** shows your token amount.
+- **USDC allowance** shows approved amount for the contract.
 
 ## 3) Employer flow (create → validate → dispute if needed)
 
@@ -142,8 +142,8 @@ const jm = await AGIJobManager.deployed();
 
 ## Employer
 ```javascript
-const token = await IERC20.at(await jm.agiToken());
-const payout = web3.utils.toWei("100");
+const token = await IERC20.at(await jm.usdcToken());
+const payout = 100000000;
 const duration = 86400; // 1 day
 await token.approve(jm.address, payout);
 await jm.createJob("Qm...", payout, duration, "Short description");

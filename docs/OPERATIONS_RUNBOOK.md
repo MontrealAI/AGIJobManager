@@ -13,14 +13,14 @@ On-call operators, security responders, and owner administrators.
 ## Monitoring (minimum)
 | Signal | Why it matters |
 |---|---|
-| `AGI balance` vs `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` | Solvency / withdrawal safety. |
+| `USDC balance` vs `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` | Solvency / withdrawal safety. |
 | Job lifecycle events | Throughput, stuck states, and liveness checks. |
 | Dispute and stale-dispute events | Moderator load and dispute backlog health. |
 | `paused` + `settlementPaused` | Service availability state. |
 | `EnsHookAttempted` success ratio | ENS integration reliability (non-fatal). |
 
 ## Suggested alert conditions
-- **Critical:** `withdrawableAGI()` reverts `InsolventEscrowBalance`.
+- **Critical:** `withdrawableUSDC()` reverts `InsolventEscrowBalance`.
 - **Critical:** unexpected pause toggles without approved change ticket.
 - **High:** disputes older than `disputeReviewPeriod` without resolution.
 - **High:** sustained `EnsHookAttempted(...,false)` above normal baseline.
@@ -73,7 +73,7 @@ flowchart TD
 
 ## Gotchas / failure modes
 - `settlementPaused=true` blocks critical settlement routes; avoid prolonged use.
-- Paused state is required for `withdrawAGI`, but this should be operationally rare and logged.
+- Paused state is required for `withdrawUSDC`, but this should be operationally rare and logged.
 
 ## References
 - [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)

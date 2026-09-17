@@ -5,12 +5,12 @@ import "contracts/AGIJobManager.sol";
 
 contract AGIJobManagerHarness is AGIJobManager {
     constructor(
-        address agiTokenAddress,
+        address usdcTokenAddress,
         string memory baseIpfs,
         address[2] memory ensConfig,
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
-    ) AGIJobManager(agiTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots) {}
+    ) AGIJobManager(usdcTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots) {}
 
     function activeJobsByAgentView(address agent) external view returns (uint256) {
         return activeJobsByAgent[agent];

@@ -10,11 +10,10 @@ The table below lists configurable parameters and relevant caps, including who c
 
 | Parameter | Who can change | How it is used | On-chain enforced bounds | Recommended operational range | Failure mode if mis-set |
 | --- | --- | --- | --- | --- | --- |
-| `agiToken` | Owner (`updateAGITokenAddress`) | ERC‑20 used for escrow deposits, payouts, reward pool, and withdrawals. | None. | **Never change** after any job funds are deposited. Treat as immutable post‑deploy. | If changed after jobs are funded, payouts will attempt the *new* token while escrow sits in the old token. Completion/cancellation transfers can revert from insufficient balance; old token escrow becomes unrecoverable (no in-contract method to transfer old token). Funds can become permanently stuck. |
 | `requiredValidatorApprovals` | Owner (`setRequiredValidatorApprovals`) | Approvals needed to auto‑complete a job via `validateJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **2–5** (or <= available validator count). Ensure enough active validators can realistically approve. | Too high → job completion requires more validators than are available; jobs can stall and require moderator dispute resolution. Setting to `0` makes any validation sufficient, which may be too weak for trust. |
 | `requiredValidatorDisapprovals` | Owner (`setRequiredValidatorDisapprovals`) | Disapprovals needed to mark job as `disputed` in `disapproveJob`. | `<= MAX_VALIDATORS_PER_JOB`; `approvals + disapprovals <= MAX_VALIDATORS_PER_JOB`. | **1–3**; keep low so disputes are reachable with a small validator set. | Too high → disputes rarely trigger; jobs can remain in limbo if approvals never reach threshold. Setting to `0` means *any* disapproval triggers dispute. |
 | `validationRewardPercentage` | Owner (`setValidationRewardPercentage`) | Total % of payout distributed to validators on completion. | `1..100`; **enforced with** `maxAgentPayoutPercentage + validationRewardPercentage <= 100` | **Keep low enough so:** `maxAgentPayoutPercentage + validationRewardPercentage <= 100`. Commonly **1–10%**. | If `validationRewardPercentage + agent payout % > 100` and validators are present, settlement reverts due to insufficient escrow, making jobs uncompletable. |
-| `maxJobPayout` | Owner (`setMaxJobPayout`) | Caps `_payout` in `createJob`. | None. | Keep near realistic operational exposure (e.g., default `4888e18`). Avoid enormous values that stress reputation math and escrow solvency. | Too low → `createJob` reverts. Too high → giant payouts can make reputation math overflow or exceed escrow solvency in completion; settlement reverts. |
+| `maxJobPayout` | Owner (`setMaxJobPayout`) | Caps `_payout` in `createJob`. | None. | Keep near realistic operational exposure (e.g., default `4888e6`). Avoid enormous values that stress reputation math and escrow solvency. | Too low → `createJob` reverts. Too high → giant payouts can make reputation math overflow or exceed escrow solvency in completion; settlement reverts. |
 | `jobDurationLimit` | Owner (`setJobDurationLimit`) | Caps `_duration` in `createJob` and controls when `requestJobCompletion` can be called. | None. | Pick a duration aligned with business SLAs (seconds). | Too low → `createJob` reverts or agents miss the completion request window. Too high → long‑running jobs remain open for extended periods. |
 | `completionReviewPeriod` | Owner (`setCompletionReviewPeriod`) | Review window after `requestJobCompletion` before `finalizeJob` can settle with deterministic fallback rules. | `1..365 days` | **Hours to days** (e.g., 24h–7d). Keep short enough to unblock payouts but long enough for employer/validators to act. | Too short → low-vote finalizations may occur before review; too long → agent payouts can remain locked unnecessarily. |
 | `disputeReviewPeriod` | Owner (`setDisputeReviewPeriod`) | Emergency window before `resolveStaleDispute` can be used (owner‑only; pausing optional for incident recovery). | `1..365 days` | **Days to weeks** (e.g., 7d–30d). Keep long enough for moderators to act, but not so long that disputes deadlock. | Too short → owner can resolve disputes too quickly during incidents; too long → disputes can remain stuck if moderators vanish. |
@@ -40,7 +39,7 @@ On completion (`_completeJob`), the contract executes the following calculations
 **Rounding behavior:** all divisions are integer divisions; any remainder stays in the contract. Specifically:
 - Any fractional remainder from `agentPayout` is retained by the contract.
 - Any remainder from `totalValidatorPayout / vCount` stays in the contract.
-- There is no “dust” redistribution. Remaining tokens are only recoverable by the owner via `withdrawAGI` while paused, which is limited to `withdrawableAGI()` (balance minus `lockedEscrow`, `lockedAgentBonds`, and `lockedValidatorBonds`).
+- There is no “dust” redistribution. Remaining tokens are only recoverable by the owner via `withdrawUSDC` while paused, which is limited to `withdrawableUSDC()` (balance minus `lockedEscrow`, `lockedAgentBonds`, and `lockedValidatorBonds`).
 
 ### Safety constraints derived from settlement
 
@@ -59,7 +58,7 @@ On completion (`_completeJob`), the contract executes the following calculations
 3. **Overflow/revert considerations (Solidity 0.8+):**
    - `calculateReputationPoints` uses `scaledPayout ** 3`. Extremely high `job.payout` values can overflow and revert completion.
    - `enforceReputationGrowth` squares `newReputation`, which can also overflow if `newReputation` becomes enormous.
-   - **Operational rule:** keep `maxJobPayout` at realistic levels (e.g., the current default of `4888e18`) to avoid overflow and minimize escrow exposure.
+   - **Operational rule:** keep `maxJobPayout` at realistic levels (e.g., the current default of `4888e6`) to avoid overflow and minimize escrow exposure.
 
 ## Stuck-funds analysis (realistic scenarios)
 
@@ -67,8 +66,8 @@ Below are plausible misconfiguration or operational failures that can trap funds
 
 ### 1) ERC‑20 token address changed after jobs are funded
 - **Symptom:** Validators attempt to approve; completion reverts. Employer/agent cannot receive payouts or refunds.
-- **Root cause:** `agiToken` was updated while escrow for existing jobs remains in the old token. Payouts now target the new token balance (likely zero).
-- **On‑chain recovery:** **None** for existing escrow in the old token; there is no function to transfer arbitrary ERC‑20s out. `withdrawAGI` only works for the *current* token.
+- **Root cause:** `usdcToken` was updated while escrow for existing jobs remains in the old token. Payouts now target the new token balance (likely zero).
+- **On‑chain recovery:** **None** for existing escrow in the old token; there is no function to transfer arbitrary ERC‑20s out. `withdrawUSDC` only works for the *current* token.
 - **Operational recovery:** Pause the contract, and redeploy a new instance. If possible, coordinate off‑chain refunds from treasury.
 - **Outcome:** **Funds can be permanently stuck** in the old token.
 
@@ -117,11 +116,11 @@ Below are plausible misconfiguration or operational failures that can trap funds
 - **Operational recovery:** Prefer `disputeJob` and resolve in favor of the counterparty **only if that address can receive tokens**. If the token itself is frozen, jobs cannot be settled.
 - **Outcome:** Potentially **stuck** until token behavior changes or you redeploy.
 
-### 5) Owner attempts to withdraw escrowed funds (`withdrawAGI`)
+### 5) Owner attempts to withdraw escrowed funds (`withdrawUSDC`)
 - **Symptom:** Withdrawal reverts with `InsufficientWithdrawableBalance`.
 - **Root cause:** Owner attempted to withdraw funds reserved in `lockedEscrow`.
 - **On‑chain recovery:** None needed; withdrawal is blocked. If `lockedEscrow` is mis-accounted and insolvency occurs, fix the underlying accounting via a redeploy or off-chain remediation.
-- **Operational recovery:** Verify `withdrawableAGI()` before withdrawing.
+- **Operational recovery:** Verify `withdrawableUSDC()` before withdrawing.
 - **Outcome:** **Prevented** when accounting is correct.
 
 ### 6) Misuse of legacy `resolveDispute` resolution strings
@@ -134,7 +133,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
 ## Pre‑deploy / post‑deploy parameter sanity checklist
 
 ### Pre‑deploy (before contract creation)
-1. **Token selection:** confirm `agiToken` is a standard ERC‑20 (no fee‑on‑transfer, no rebasing) and will not be changed post‑deploy.
+1. **Token selection:** confirm `usdcToken` is a standard ERC‑20 (no fee‑on‑transfer, no rebasing) and will not be changed post‑deploy.
 2. **Eligibility roots:** verify `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, and `agentMerkleRoot` against your allowlists and ENS settings.
 3. **Validator thresholds:** choose `requiredValidatorApprovals` and `requiredValidatorDisapprovals` so that your known validator set can reach them quickly.
 4. **Payout economics:** define a maximum `AGIType.payoutPercentage` and choose `validationRewardPercentage` so their sum is **≤ 100**.
@@ -146,7 +145,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - `requiredValidatorApprovals`, `requiredValidatorDisapprovals`
    - `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`
    - `premiumReputationThreshold`, `completionReviewPeriod`, `disputeReviewPeriod`, `MAX_VALIDATORS_PER_JOB`
-   - `agiToken`, `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot`
+   - `usdcToken`, `clubRootNode`, `agentRootNode`, `validatorMerkleRoot`, `agentMerkleRoot`
 2. **Verify add‑on configuration:** check `AGIType` entries to confirm max payout percentages.
 3. **Dry‑run acceptance:** have one agent and one validator prove eligibility (Merkle/ENS) and perform a small‑value job end‑to‑end.
 
@@ -159,7 +158,7 @@ Below are plausible misconfiguration or operational failures that can trap funds
    - Adjust validator thresholds (`setRequiredValidatorApprovals`, `setRequiredValidatorDisapprovals`).
    - Adjust payout percentages (`setValidationRewardPercentage`, `addAGIType`).
    - Add emergency allowlisted validators/agents (`addAdditionalValidator`, `addAdditionalAgent`).
-   - **Do not** change `agiToken` when escrow is outstanding.
+   - **Do not** change `usdcToken` when escrow is outstanding.
 
 3. **Unstick existing jobs:**
    - For unassigned jobs: employer can `cancelJob` (if no agent assigned). Owner can `delistJob` to refund.
@@ -175,6 +174,6 @@ Below are plausible misconfiguration or operational failures that can trap funds
 
 If you plan a future upgrade or redeploy, consider:
 - Enforce `agentPayoutPercentage + validationRewardPercentage <= 100` in `addAGIType` or `setValidationRewardPercentage` to prevent uncompletable jobs.
-- Disallow `updateAGITokenAddress` once `nextJobId > 0` or once any escrow exists.
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - Add a controlled rescue method for non‑current tokens (with strict event logging and governance).
 - Require `completionRequested` before `validateJob` to align on‑chain behavior with off‑chain expectations.

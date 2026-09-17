@@ -38,9 +38,9 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         manager.setSettlementPaused(false);
         manager.setRequiredValidatorApprovals(1);
 
-        token.mint(employer, 1000 ether);
-        token.mint(agent, 1000 ether);
-        token.mint(validator, 1000 ether);
+        token.mint(employer, 1000 * 1e6);
+        token.mint(agent, 1000 * 1e6);
+        token.mint(validator, 1000 * 1e6);
 
         vm.prank(employer);
         token.approve(address(manager), type(uint256).max);
@@ -50,9 +50,32 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         token.approve(address(manager), type(uint256).max);
     }
 
+    function testUSDCConstructorPublicChainAllowlist() external {
+        address[2] memory ensConfig;
+        bytes32[4] memory roots;
+        bytes32[2] memory merkle;
+        address mainnetUSDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+        address sepoliaUSDC = 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238;
+        vm.chainId(1);
+        vm.expectRevert(AGIJobManager.InvalidParameters.selector);
+        new AGIJobManager(address(token), "", ensConfig, roots, merkle);
+        vm.etch(mainnetUSDC, address(token).code);
+        AGIJobManager mainnetManager = new AGIJobManager(mainnetUSDC, "", ensConfig, roots, merkle);
+        assertEq(address(mainnetManager.usdcToken()), mainnetUSDC);
+        vm.chainId(11155111);
+        vm.expectRevert(AGIJobManager.InvalidParameters.selector);
+        new AGIJobManager(mainnetUSDC, "", ensConfig, roots, merkle);
+        vm.etch(sepoliaUSDC, address(token).code);
+        AGIJobManager sepoliaManager = new AGIJobManager(sepoliaUSDC, "", ensConfig, roots, merkle);
+        assertEq(address(sepoliaManager.usdcToken()), sepoliaUSDC);
+        vm.chainId(137);
+        vm.expectRevert(AGIJobManager.InvalidParameters.selector);
+        new AGIJobManager(address(token), "", ensConfig, roots, merkle);
+    }
+
     function _createReadyToFinalizeJob(address employerAddr, address agentAddr) internal returns (uint256 jobId) {
         vm.prank(employerAddr);
-        manager.createJob("ipfs://spec", 10 ether, 2 days, "details");
+        manager.createJob("ipfs://spec", 10 * 1e6, 2 days, "details");
         jobId = manager.nextJobId() - 1;
 
         vm.prank(agentAddr);
@@ -85,20 +108,20 @@ contract AGIJobManagerSecurityVerificationTest is Test {
     }
 
     function test_FeeOnTransferTokenRevertsExactTransferFlow() external {
-        FeeOnTransferToken feeToken = new FeeOnTransferToken(10_000 ether, 500);
+        FeeOnTransferToken feeToken = new FeeOnTransferToken(10_000 * 1e6, 500);
         address[2] memory ensConfig = [address(0), address(0)];
         bytes32[4] memory rootNodes;
         bytes32[2] memory merkleRoots;
         AGIJobManagerHarness feeManager =
             new AGIJobManagerHarness(address(feeToken), "", ensConfig, rootNodes, merkleRoots);
 
-        feeToken.transfer(employer, 100 ether);
+        feeToken.transfer(employer, 100 * 1e6);
         vm.prank(employer);
         feeToken.approve(address(feeManager), type(uint256).max);
 
         vm.prank(employer);
         vm.expectRevert();
-        feeManager.createJob("ipfs://spec", 10 ether, 1 days, "details");
+        feeManager.createJob("ipfs://spec", 10 * 1e6, 1 days, "details");
     }
 
     function test_ENSHookRevertAndMalformedURIAreGraceful() external {
@@ -130,8 +153,8 @@ contract AGIJobManagerSecurityVerificationTest is Test {
 
         ensManager.addAGIType(address(agiType), 60);
         agiType.mint(agent);
-        token.mint(employer, 100 ether);
-        token.mint(agent, 100 ether);
+        token.mint(employer, 100 * 1e6);
+        token.mint(agent, 100 * 1e6);
 
         vm.prank(employer);
         token.approve(address(ensManager), type(uint256).max);
@@ -143,7 +166,7 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         wrapper.setOwner(uint256(subnode), agent);
 
         vm.prank(employer);
-        ensManager.createJob("ipfs://spec", 5 ether, 1 days, "details");
+        ensManager.createJob("ipfs://spec", 5 * 1e6, 1 days, "details");
         uint256 jobId = ensManager.nextJobId() - 1;
 
         vm.prank(agent);
@@ -151,7 +174,7 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         assertEq(ensManager.jobAssignedAgent(jobId), agent);
 
         vm.prank(employer);
-        ensManager.createJob("ipfs://spec-2", 5 ether, 1 days, "details");
+        ensManager.createJob("ipfs://spec-2", 5 * 1e6, 1 days, "details");
         uint256 badLabelJobId = ensManager.nextJobId() - 1;
 
         vm.prank(agent);
@@ -162,12 +185,12 @@ contract AGIJobManagerSecurityVerificationTest is Test {
     function test_ReentrancyDuringNFTMintCannotDoubleSettle() external {
         MaliciousCompletionReceiver receiver = new MaliciousCompletionReceiver(address(manager), address(token));
 
-        token.mint(address(receiver), 100 ether);
+        token.mint(address(receiver), 100 * 1e6);
         agiType.mint(address(receiver));
         manager.addAdditionalAgent(address(receiver));
 
         vm.prank(address(receiver));
-        receiver.createAndFundJob(10 ether, 2 days);
+        receiver.createAndFundJob(10 * 1e6, 2 days);
         uint256 jobId = manager.nextJobId() - 1;
 
         vm.prank(address(receiver));

@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const { expectRevert, time } = require("@openzeppelin/test-helpers");
@@ -20,7 +21,8 @@ const {
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 contract("AGIJobManager escrow accounting", (accounts) => {
   const [owner, employer, agent, validator, moderator, validatorTwo, validatorThree] = accounts;
@@ -78,11 +80,11 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const lockedEscrow = await manager.lockedEscrow();
     assert.equal(lockedEscrow.toString(), payout.toString(), "locked escrow should track job payout");
 
-    const withdrawable = await manager.withdrawableAGI();
+    const withdrawable = await manager.withdrawableUSDC();
     assert.equal(withdrawable.toString(), "0", "withdrawable should exclude escrow");
 
     await manager.pause({ from: owner });
-    await expectRevert.unspecified(manager.withdrawAGI(payout, { from: owner }));
+    await expectRevert.unspecified(manager.withdrawUSDC(payout, { from: owner }));
 
   });
 
@@ -92,14 +94,14 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await createJob(payout);
     await token.mint(manager.address, surplus, { from: owner });
 
-    const withdrawable = await manager.withdrawableAGI();
+    const withdrawable = await manager.withdrawableUSDC();
     assert.equal(withdrawable.toString(), surplus.toString(), "withdrawable should be surplus only");
 
-    await expectRevert.unspecified(manager.withdrawAGI(surplus, { from: owner }));
+    await expectRevert.unspecified(manager.withdrawUSDC(surplus, { from: owner }));
     await manager.pause({ from: owner });
-    await manager.withdrawAGI(surplus, { from: owner });
+    await manager.withdrawUSDC(surplus, { from: owner });
 
-    const remainingWithdrawable = await manager.withdrawableAGI();
+    const remainingWithdrawable = await manager.withdrawableUSDC();
     assert.equal(remainingWithdrawable.toString(), "0", "surplus should be fully withdrawn");
     const lockedEscrow = await manager.lockedEscrow();
     assert.equal(lockedEscrow.toString(), payout.toString(), "escrow remains locked");
@@ -132,7 +134,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const surplus = toBN(toWei("1"));
     await token.mint(manager.address, surplus, { from: owner });
 
-    const withdrawable = await manager.withdrawableAGI();
+    const withdrawable = await manager.withdrawableUSDC();
     assert.equal(
       withdrawable.toString(),
       surplus.toString(),
@@ -141,7 +143,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
   });
 
-  it("excludes locked dispute bonds from withdrawable AGI", async () => {
+  it("excludes locked dispute bonds from withdrawable USDC", async () => {
     const payout = toBN(toWei("9"));
     const jobId = await createJob(payout);
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
@@ -153,7 +155,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const lockedDisputeBonds = await manager.lockedDisputeBonds();
     assert.equal(lockedDisputeBonds.toString(), disputeBond.toString(), "dispute bond should be locked");
 
-    const withdrawable = await manager.withdrawableAGI();
+    const withdrawable = await manager.withdrawableUSDC();
     assert.equal(withdrawable.toString(), "0", "withdrawable should exclude locked dispute bond");
   });
 
@@ -476,7 +478,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const remainderPct = toBN("100").sub(agentPct).sub(validatorPct);
     const expectedRemainder = payout.mul(remainderPct).divn(100);
 
-    const withdrawableAfterCompletion = await manager.withdrawableAGI();
+    const withdrawableAfterCompletion = await manager.withdrawableUSDC();
     assert.equal(
       withdrawableAfterCompletion.toString(),
       expectedRemainder.toString(),
@@ -486,7 +488,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const contribution = toBN(toWei("1"));
     await token.mint(manager.address, contribution, { from: owner });
 
-    const withdrawableAfterContribution = await manager.withdrawableAGI();
+    const withdrawableAfterContribution = await manager.withdrawableUSDC();
     assert.equal(
       withdrawableAfterContribution.toString(),
       expectedRemainder.add(contribution).toString(),
@@ -494,8 +496,8 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     );
 
     await manager.pause({ from: owner });
-    await manager.withdrawAGI(expectedRemainder.add(contribution), { from: owner });
-    const remainingWithdrawable = await manager.withdrawableAGI();
+    await manager.withdrawUSDC(expectedRemainder.add(contribution), { from: owner });
+    const remainingWithdrawable = await manager.withdrawableUSDC();
     assert.equal(remainingWithdrawable.toString(), "0", "treasury should be withdrawable when paused");
   });
 });

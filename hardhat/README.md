@@ -1,5 +1,7 @@
 # Hardhat Operator Guide (Official / Recommended)
 
+> v0.5.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.5.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+
 This `hardhat/` project is the official deployment and verification workflow for AGIJobManager.
 
 > Truffle remains supported as a legacy path. Hardhat is the recommended production path for new deployments and replacements.
@@ -212,7 +214,7 @@ Defaults in the script for mainnet context:
 - ENS registry: `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`
 - NameWrapper: `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401`
 - Public resolver: `0xF29100983E058B709F3D539b0c765937B804AC15`
-- `JOB_MANAGER`: `0xB3AAeb69b630f0299791679c063d68d6687481d1`
+- `JOB_MANAGER`: a newly deployed and verified v0.5.0 USDC manager (required; no default)
 - `JOBS_ROOT_NAME`: `alpha.jobs.agi.eth`
 
 You may override with `.env` values if needed (`JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`).

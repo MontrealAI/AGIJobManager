@@ -12,7 +12,7 @@ AGI Jobs is framed as a **metrology + settlement** system. It binds identity to 
 - Computed from signed metering telemetry × difficulty tier × quality score.
 - Failing acceptance/SLO yields **0 credit**.
 
-## $AGIALPHA utility (token‑only)
+## $USDC utility (token‑only)
 
 - **Stake**: bond participation, Sybil resistance, and slashable accountability.
 - **Settle**: jobs paid via escrow; release after validation; fee routing + optional burn.

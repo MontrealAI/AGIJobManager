@@ -26,7 +26,7 @@ The historical AGIJobManager is described publicly as an Ethereum smart-contract
 
 Operationally important on-chain facts visible on Etherscan include:
 
-- **Constructor configuration** exposes the escrow token address (“AGI token address”) and a **base IPFS URL** used for URI resolution; this is a strong hint that off-chain specs/completions should be content-addressed and immutable-by-default. citeturn8view3turn7view0  
+- **Constructor configuration** exposes the escrow token address (“USDC token address”) and a **base IPFS URL** used for URI resolution; this is a strong hint that off-chain specs/completions should be content-addressed and immutable-by-default. citeturn8view3turn7view0  
 - The contract is live and actively used (transaction history), and is associated with named identities and token holdings on the explorer page. citeturn7view0  
 
 ### Canonical job lifecycle and operator posture

@@ -27,7 +27,7 @@ describe("deployment config defaults", () => {
   it("uses canonical mainnet defaults when env overrides are unset", () => {
     withEnv(
       {
-        AGI_TOKEN_ADDRESS: "",
+        USDC_TOKEN_ADDRESS: "",
         AGI_ENS_REGISTRY: "",
         AGI_NAMEWRAPPER: "",
         AGI_CLUB_ROOT_NODE: "",
@@ -57,7 +57,7 @@ describe("deployment config defaults", () => {
   it("requires explicit wiring on non-mainnet deployments", () => {
     withEnv(
       {
-        AGI_TOKEN_ADDRESS: "",
+        USDC_TOKEN_ADDRESS: "",
         AGI_ENS_REGISTRY: "",
         AGI_NAMEWRAPPER: "",
         AGI_CLUB_ROOT_NODE: "",
@@ -68,7 +68,7 @@ describe("deployment config defaults", () => {
       () => {
         assert.throws(
           () => resolveDeployConfig("sepolia", 11155111),
-          /Missing AGI_TOKEN_ADDRESS/,
+          /Missing AGI_ENS_REGISTRY/,
         );
       },
     );

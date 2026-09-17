@@ -90,7 +90,7 @@ function applyEnvOverrides(config) {
     target[pathParts[pathParts.length - 1]] = value;
   };
 
-  setIf(['identity', 'agiTokenAddress'], process.env.AGIJOBMANAGER_AGI_TOKEN_ADDRESS);
+  setIf(['identity', 'usdcTokenAddress'], process.env.AGIJOBMANAGER_USDC_TOKEN_ADDRESS);
   setIf(['identity', 'baseIpfsUrl'], process.env.AGIJOBMANAGER_BASE_IPFS_URL);
   setIf(['identity', 'ensRegistry'], process.env.AGIJOBMANAGER_ENS_REGISTRY);
   setIf(['identity', 'nameWrapper'], process.env.AGIJOBMANAGER_NAME_WRAPPER);
@@ -197,7 +197,7 @@ function loadConfig({ network, chainId, web3 }) {
     configPath: loaded.path,
     config,
     constructorArgs: {
-      agiTokenAddress: config.identity.agiTokenAddress,
+      usdcTokenAddress: config.identity.usdcTokenAddress,
       baseIpfsUrl: config.identity.baseIpfsUrl,
       ensConfig: [config.identity.ensRegistry, config.identity.nameWrapper],
       rootNodes: [

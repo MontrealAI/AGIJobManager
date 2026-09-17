@@ -30,7 +30,7 @@ export type DemoScenario = {
   voteQuorum: bigint;
   requiredValidatorApprovals: bigint;
   requiredValidatorDisapprovals: bigint;
-  withdrawableAGI: bigint;
+  withdrawableUSDC: bigint;
   jobs: (DemoJob | null)[];
 };
 
@@ -42,14 +42,14 @@ type RawDemoJob = Omit<DemoJob, 'payout' | 'duration' | 'assignedAt' | 'completi
   disputedAt: string;
 };
 
-type RawScenario = Omit<DemoScenario, 'nextJobId' | 'completionReviewPeriod' | 'disputeReviewPeriod' | 'voteQuorum' | 'requiredValidatorApprovals' | 'requiredValidatorDisapprovals' | 'withdrawableAGI' | 'jobs'> & {
+type RawScenario = Omit<DemoScenario, 'nextJobId' | 'completionReviewPeriod' | 'disputeReviewPeriod' | 'voteQuorum' | 'requiredValidatorApprovals' | 'requiredValidatorDisapprovals' | 'withdrawableUSDC' | 'jobs'> & {
   nextJobId: string;
   completionReviewPeriod: string;
   disputeReviewPeriod: string;
   voteQuorum: string;
   requiredValidatorApprovals: string;
   requiredValidatorDisapprovals: string;
-  withdrawableAGI: string;
+  withdrawableUSDC: string;
   jobs: (RawDemoJob | null)[];
 };
 
@@ -72,7 +72,7 @@ export const demoScenarios: DemoScenario[] = (rawScenarios as RawScenario[]).map
   voteQuorum: toBigInt(scenario.voteQuorum),
   requiredValidatorApprovals: toBigInt(scenario.requiredValidatorApprovals),
   requiredValidatorDisapprovals: toBigInt(scenario.requiredValidatorDisapprovals),
-  withdrawableAGI: toBigInt(scenario.withdrawableAGI),
+  withdrawableUSDC: toBigInt(scenario.withdrawableUSDC),
   jobs: scenario.jobs.map((job) => (job ? normalizeJob(job) : null))
 }));
 

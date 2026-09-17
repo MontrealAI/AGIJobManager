@@ -24,7 +24,7 @@ describe('formatting robustness', () => {
   it('formats uint256-like values without throwing', () => {
     fc.assert(
       fc.property(fc.bigUintN(256), (value) => {
-        expect(() => fmtToken(value, 18)).not.toThrow();
+        expect(() => fmtToken(value, 6)).not.toThrow();
       })
     );
   });

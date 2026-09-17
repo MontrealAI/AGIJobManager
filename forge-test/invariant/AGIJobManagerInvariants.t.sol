@@ -31,24 +31,24 @@ contract AGIJobManagerHandler is Test {
         moderator = address(0x404);
 
         for (uint256 i = 0; i < employers.length; i++) {
-            token.mint(employers[i], 1_000_000 ether);
+            token.mint(employers[i], 1_000_000 * 1e6);
             vm.prank(employers[i]);
             token.approve(address(manager), type(uint256).max);
         }
 
         for (uint256 i = 0; i < agents.length; i++) {
-            token.mint(agents[i], 1_000_000 ether);
+            token.mint(agents[i], 1_000_000 * 1e6);
             vm.prank(agents[i]);
             token.approve(address(manager), type(uint256).max);
         }
 
         for (uint256 i = 0; i < validators.length; i++) {
-            token.mint(validators[i], 1_000_000 ether);
+            token.mint(validators[i], 1_000_000 * 1e6);
             vm.prank(validators[i]);
             token.approve(address(manager), type(uint256).max);
         }
 
-        token.mint(moderator, 1_000_000 ether);
+        token.mint(moderator, 1_000_000 * 1e6);
         vm.prank(moderator);
         token.approve(address(manager), type(uint256).max);
 
@@ -80,7 +80,7 @@ contract AGIJobManagerHandler is Test {
     function createJob(uint256 employerSeed, uint256 payoutSeed, uint256 durationSeed) external {
         if (manager.nextJobId() >= maxJobs) return;
         address employer = employers[bound(employerSeed, 0, employers.length - 1)];
-        uint256 payout = bound(payoutSeed, 1 ether, 100 ether);
+        uint256 payout = bound(payoutSeed, 1 * 1e6, 100 * 1e6);
         uint256 duration = bound(durationSeed, 1 hours, 7 days);
         vm.prank(employer);
         try manager.createJob("ipfs://spec", payout, duration, "d") {} catch {}
@@ -175,24 +175,24 @@ contract AGIJobManagerHandler is Test {
         vm.stopPrank();
     }
 
-    function withdrawAGI(uint256 amountSeed) external {
+    function withdrawUSDC(uint256 amountSeed) external {
         vm.startPrank(manager.owner());
         manager.pauseAll();
         manager.setSettlementPaused(false);
-        uint256 max = manager.withdrawableAGI();
+        uint256 max = manager.withdrawableUSDC();
         if (max == 0) {
             vm.stopPrank();
             return;
         }
         uint256 amount = bound(amountSeed, 1, max);
-        try manager.withdrawAGI(amount) {} catch {}
+        try manager.withdrawUSDC(amount) {} catch {}
         vm.stopPrank();
     }
 
     function rescueERC20(uint256 amountSeed) external {
         MockERC20 rescue = new MockERC20();
-        rescue.mint(address(manager), 10 ether);
-        uint256 amount = bound(amountSeed, 1, 10 ether);
+        rescue.mint(address(manager), 10 * 1e6);
+        uint256 amount = bound(amountSeed, 1, 10 * 1e6);
         vm.prank(manager.owner());
         try manager.rescueERC20(address(rescue), address(this), amount) {} catch {}
     }
@@ -221,7 +221,7 @@ contract AGIJobManagerInvariants is StdInvariant, Test {
         uint256 lockedTotal = manager.lockedEscrow() + manager.lockedAgentBonds() + manager.lockedValidatorBonds()
             + manager.lockedDisputeBonds();
         assertGe(token.balanceOf(address(manager)), lockedTotal);
-        manager.withdrawableAGI();
+        manager.withdrawableUSDC();
     }
 
     function invariant_lockedTotalsConsistency() external view {

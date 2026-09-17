@@ -4,7 +4,7 @@
     "symbol": 0,
     "owner": 0,
     "paused": 0,
-    "agiToken": 0,
+    "usdcToken": 0,
     "agentRootNode": 0,
     "clubRootNode": 0,
     "agentMerkleRoot": 0,

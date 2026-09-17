@@ -34,7 +34,8 @@ function parseDecimals(input) {
   if (!/^\d+$/.test(text)) {
     throw new Error(`Invalid decimals: ${input}. Expected a non-negative integer.`);
   }
-  return Number(text);
+  if (Number(text) !== 6) throw new Error('USDC requires exactly six decimals.');
+  return 6;
 }
 
 function parseDurationToSeconds(input) {
@@ -65,7 +66,7 @@ function checklist(action) {
   const common = [
     '- Read: paused() and settlementPaused()',
     '- Read: job state (getJobCore/getJobValidation) if action is job-specific',
-    '- Check wallet AGI balance and ERC20 allowance',
+    '- Check wallet USDC balance and ERC20 allowance',
     '- Confirm you are using token base units and seconds',
   ];
 
@@ -108,7 +109,7 @@ function parseRoute(input) {
 function run() {
   const args = parseArgs(process.argv);
   const action = args.action || 'help';
-  const decimals = parseDecimals(args.decimals || '18');
+  const decimals = parseDecimals(args.decimals || '6');
 
   if (action === 'help' || args.help) {
     console.log('Usage: node scripts/etherscan/prepare_inputs.js --action <action> [options]');

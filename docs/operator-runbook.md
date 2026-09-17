@@ -9,15 +9,15 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 **Use when**: incident response, parameter change review, treasury withdrawal.
 
 - `pause()` blocks new activity (create/apply/vote/dispute/reward pool contribution) but preserves settlement exits.
-- `setSettlementPaused(true)` freezes settlement/exit paths (`cancelJob`, `expireJob`, `finalizeJob`, `delistJob`, `resolveDispute*`, `resolveStaleDispute`, `withdrawAGI`) guarded by `whenSettlementNotPaused`.
+- `setSettlementPaused(true)` freezes settlement/exit paths (`cancelJob`, `expireJob`, `finalizeJob`, `delistJob`, `resolveDispute*`, `resolveStaleDispute`, `withdrawUSDC`) guarded by `whenSettlementNotPaused`.
 - **Incident sequence:** call `setSettlementPaused(true)` first to stop fund-out, then `pause()` to stop intake.
 - **Recovery:** unpause intake only after settlement is safe; keep `settlementPaused` on until final safety, then set it to false last.
 
 ### 2) Treasury withdrawals (owner‑only, paused‑only)
 **Process**
 1. **Pause** the contract.
-2. Check `withdrawableAGI()` = `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`.
-3. Withdraw up to `withdrawableAGI()` using `withdrawAGI(amount)`.
+2. Check `withdrawableUSDC()` = `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`.
+3. Withdraw up to `withdrawableUSDC()` using `withdrawUSDC(amount)`.
 4. **Unpause** after confirming balances.
 
 ### 3) Blacklisting / allowlisting
@@ -55,8 +55,8 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 ## Monitoring checklist
 
 **Core invariants**
-- `agiToken.balanceOf(contract) >= lockedEscrow`
-- `withdrawableAGI()` does not revert
+- `usdcToken.balanceOf(contract) >= lockedEscrow`
+- `withdrawableUSDC()` does not revert
 
 **Events to index and alert**
 - **Lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`,
@@ -65,7 +65,7 @@ safe day‑to‑day operations, emergency procedures, and monitoring.
 - **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`,
   `DisputeTimeoutResolved`
 - **NFT issuance**: `NFTIssued`
-- **Treasury/ops**: `AGIWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`
+- **Treasury/ops**: `USDCWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`
 - **Identity**: `IdentityConfigurationLocked`, `RootNodesUpdated`,
   `MerkleRootsUpdated`, `EnsRegistryUpdated`, `NameWrapperUpdated`
 - **Blacklists**: `AgentBlacklisted`, `ValidatorBlacklisted`

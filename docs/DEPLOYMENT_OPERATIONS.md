@@ -57,11 +57,11 @@ node scripts/postdeploy-config.js --network development --address <DEPLOYED_AGIJ
 
 ## Post-deploy validation checklist
 
-- Confirm `owner()` and immutable addresses (`agiToken`) are expected.
+- Confirm `owner()` and immutable addresses (`usdcToken`) are expected.
 - Confirm operational parameters match approved values.
 - Confirm pause flags are in expected default state.
 - Confirm moderator, allowlist, and Merkle-root configuration by getter + events.
-- Confirm solvency guardrail: `withdrawableAGI()` remains coherent after canary job lifecycle.
+- Confirm solvency guardrail: `withdrawableUSDC()` remains coherent after canary job lifecycle.
 
 ## Release rollback philosophy
 

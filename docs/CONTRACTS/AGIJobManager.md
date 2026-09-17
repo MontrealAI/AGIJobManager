@@ -72,7 +72,7 @@ sequenceDiagram
 
 ## Operational invariants
 
-- `withdrawableAGI()` excludes locked escrow and all lock buckets.
+- `withdrawableUSDC()` excludes locked escrow and all lock buckets.
 - Agent-win payout requires completion request metadata and settled state.
 - Disputes freeze validator voting effects until moderator/owner stale resolution.
 - Identity configuration lock is irreversible.

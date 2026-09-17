@@ -6,7 +6,7 @@ This guide helps you identify common failure causes and quick fixes.
 
 - [ ] **Network**: You are on the correct chain (usually Ethereum Mainnet).
 - [ ] **Contract address**: The UI points to the correct deployment.
-- [ ] **Token allowance**: AGI allowance is high enough for your action.
+- [ ] **Token allowance**: USDC allowance is high enough for your action.
 - [ ] **Token balance**: Your wallet has enough AGI for payouts or purchases.
 - [ ] **Role eligibility**: Your agent/validator identity passes the preflight check.
 - [ ] **Job state**: The job is in the correct status for your action.

@@ -11,7 +11,7 @@
 | `JobDisputed` | Dispute opened | Frozen validator lane | Immediate moderation queue |
 | `DisputeResolvedWithCode` | Moderator resolution | Outcome integrity | Critical if unusual resolution code |
 | `JobCompleted` / `JobExpired` / `JobCancelled` | Terminal state | Liability release | Reconciliation check |
-| `AGIWithdrawn` | Treasury withdrawal | Owner action trace | High-severity if unscheduled |
+| `USDCWithdrawn` | Treasury withdrawal | Owner action trace | High-severity if unscheduled |
 | `SettlementPauseSet` | Settlement mode toggle | Incident state transitions | High-severity |
 
 ## Recommended dashboard blocks

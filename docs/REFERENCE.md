@@ -4,7 +4,7 @@ This is a function‑by‑function reference of the deployed contract’s public
 
 ## Read‑only getters (auto‑generated)
 The following `public` state variables have auto‑generated getter functions:
-- `agiToken()`, `baseIpfsUrl()`
+- `usdcToken()`, `baseIpfsUrl()`
 - `requiredValidatorApprovals()`, `requiredValidatorDisapprovals()`
 - `premiumReputationThreshold()`, `validationRewardPercentage()`
 - `maxJobPayout()`, `jobDurationLimit()`
@@ -71,7 +71,7 @@ Manages moderator permissions.
 ### `addAdditionalValidator(address)` / `removeAdditionalValidator(address)`
 Explicit allowlists for roles, bypassing ENS/Merkle checks.
 
-### `updateAGITokenAddress(address)`
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 Changes the ERC‑20 token used for payouts.
 
 ### `setBaseIpfsUrl(string)`
@@ -98,8 +98,8 @@ Sets max job duration allowed.
 ### `updateAdditionalText1/2/3(string)`
 Updates informational metadata fields.
 
-### `withdrawAGI(uint256 amount)`
-Withdraws surplus AGI tokens held by the contract while paused. Reverts if `amount > withdrawableAGI()`.
+### `withdrawUSDC(uint256 amount)`
+Withdraws surplus USDC tokens held by the contract while paused. Reverts if `amount > withdrawableUSDC()`.
 
 ### `contributeToRewardPool(uint256 amount)`
 Transfers tokens to the contract and emits `RewardPoolContribution`.
@@ -112,8 +112,8 @@ Adds or updates an AGIType NFT that boosts agent payout percentage. Emits `AGITy
 ### `lockedEscrow()`
 Returns the total AGI reserved for unsettled job escrows.
 
-### `withdrawableAGI()`
-Returns the surplus AGI balance (`balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`). Reverts if obligations exceed balance.
+### `withdrawableUSDC()`
+Returns the surplus USDC balance (`balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`). Reverts if obligations exceed balance.
 
 ### `canAccessPremiumFeature(address user)`
 Returns true if reputation exceeds `premiumReputationThreshold`.

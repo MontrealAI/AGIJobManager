@@ -61,7 +61,7 @@ module.exports = async function (deployer, network, accounts) {
       )
     );
 
-    const mintAmount = web3.utils.toWei("100000");
+    const mintAmount = require("../scripts/lib/usdc").parseUSDC("100000");
     await token.mint(accounts[0], mintAmount);
     return;
   }

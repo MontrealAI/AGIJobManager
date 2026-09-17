@@ -9,7 +9,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "agiTokenAddress",
+          "name": "usdcTokenAddress",
           "type": "address"
         },
         {
@@ -112,25 +112,6 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "oldToken",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newToken",
-          "type": "address"
-        }
-      ],
-      "name": "AGITokenAddressUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
           "name": "nftAddress",
           "type": "address"
         },
@@ -142,31 +123,6 @@
         }
       ],
       "name": "AGITypeUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "remainingWithdrawable",
-          "type": "uint256"
-        }
-      ],
-      "name": "AGIWithdrawn",
       "type": "event"
     },
     {
@@ -921,6 +877,31 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "remainingWithdrawable",
+          "type": "uint256"
+        }
+      ],
+      "name": "USDCWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "address",
           "name": "account",
@@ -1155,19 +1136,6 @@
           "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "agiToken",
-      "outputs": [
-        {
-          "internalType": "contract IERC20",
-          "name": "",
-          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -1856,6 +1824,19 @@
     },
     {
       "inputs": [],
+      "name": "usdcToken",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "validationRewardPercentage",
       "outputs": [
         {
@@ -2247,19 +2228,6 @@
         }
       ],
       "name": "removeModerator",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_newTokenAddress",
-          "type": "address"
-        }
-      ],
-      "name": "updateAGITokenAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -2874,7 +2842,7 @@
     },
     {
       "inputs": [],
-      "name": "withdrawableAGI",
+      "name": "withdrawableUSDC",
       "outputs": [
         {
           "internalType": "uint256",
@@ -2893,7 +2861,7 @@
           "type": "uint256"
         }
       ],
-      "name": "withdrawAGI",
+      "name": "withdrawUSDC",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

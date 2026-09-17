@@ -20,7 +20,7 @@ The treasury is defined as **all AGI held by the contract that is *not* locked i
 - Reward-pool contributions (`contributeToRewardPool`).
 - Any direct transfers sent to the contract address.
 
-Treasury withdrawals are **only allowed while paused** via `withdrawAGI`, and never touch escrowed balances.
+Treasury withdrawals are **only allowed while paused** via `withdrawUSDC`, and never touch escrowed balances.
 
 ## Pause semantics (brief withdrawal pause)
 
@@ -34,7 +34,7 @@ Pausing is intended to be a **brief, operator-initiated window** (e.g., to withd
 ### Allowed while paused
 - **Completion submission**: assigned agents can call `requestJobCompletion` for valid, active jobs.
 - **Settlement exits**: `cancelJob`, `expireJob`, and `finalizeJob` still operate when their normal predicates are satisfied.
-- **Owner withdrawals**: `withdrawAGI` is available only while paused.
+- **Owner withdrawals**: `withdrawUSDC` is available only while paused.
 
 These exceptions ensure users can complete or exit positions even during a brief treasury withdrawal pause.
 
@@ -43,7 +43,6 @@ These exceptions ensure users can complete or exit positions even during a brief
 The **identity wiring lock** permanently freezes only the identity-related wiring and does **not** freeze business operations.
 
 ### Frozen by `lockIdentityConfiguration()`
-- `updateAGITokenAddress`
 - `updateEnsRegistry`
 - `updateNameWrapper`
 - `updateRootNodes`

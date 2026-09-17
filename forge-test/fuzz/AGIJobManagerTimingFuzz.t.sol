@@ -21,9 +21,9 @@ contract AGIJobManagerTimingFuzz is Test {
         bytes32[2] memory merkleRoots;
         manager = new AGIJobManagerHarness(address(token), "", ensConfig, rootNodes, merkleRoots);
 
-        token.mint(employer, 1000 ether);
-        token.mint(agent, 1000 ether);
-        token.mint(validator, 1000 ether);
+        token.mint(employer, 1000 * 1e6);
+        token.mint(agent, 1000 * 1e6);
+        token.mint(validator, 1000 * 1e6);
         vm.prank(employer);
         token.approve(address(manager), type(uint256).max);
         vm.prank(agent);
@@ -45,7 +45,7 @@ contract AGIJobManagerTimingFuzz is Test {
 
     function _createAssignedJob() internal returns (uint256 jobId) {
         vm.prank(employer);
-        manager.createJob("ipfs://spec", 10 ether, 2 days, "");
+        manager.createJob("ipfs://spec", 10 * 1e6, 2 days, "");
         jobId = manager.nextJobId() - 1;
         vm.prank(agent);
         manager.applyForJob(jobId, "", new bytes32[](0));
@@ -88,7 +88,7 @@ contract AGIJobManagerTimingFuzz is Test {
 
     function testFuzz_expiryBoundary(uint256 dt) external {
         vm.prank(employer);
-        manager.createJob("ipfs://spec", 10 ether, 1 days, "");
+        manager.createJob("ipfs://spec", 10 * 1e6, 1 days, "");
         uint256 jobId = manager.nextJobId() - 1;
         vm.prank(agent);
         manager.applyForJob(jobId, "", new bytes32[](0));

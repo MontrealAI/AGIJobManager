@@ -8,7 +8,7 @@ The constructor signature is:
 
 ```
 constructor(
-  address agiTokenAddress,
+  address usdcTokenAddress,
   string baseIpfs,
   address[2] ensConfig,
   bytes32[4] rootNodes,
@@ -18,7 +18,7 @@ constructor(
 
 Parameter mapping:
 
-1. `agiTokenAddress` — ERC‑20 token used for escrow and payouts.
+1. `usdcTokenAddress` — ERC‑20 token used for escrow and payouts.
 2. `baseIpfs` — base URL used to prefix non‑full token URIs.
 3. `ensConfig[0]` — ENS registry address.
 4. `ensConfig[1]` — ENS NameWrapper address.
@@ -54,7 +54,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - When paused:
   - Most job actions are blocked (`createJob`, `applyForJob`, validation, disputes).
   - `requestJobCompletion` remains available for assigned agents so completion metadata can be submitted even during a brief pause.
-  - `withdrawAGI` requires the contract to be paused; `resolveStaleDispute` is owner‑only after `disputeReviewPeriod` (pause optional, but often used for incident recovery).
+  - `withdrawUSDC` requires the contract to be paused; `resolveStaleDispute` is owner‑only after `disputeReviewPeriod` (pause optional, but often used for incident recovery).
 
 ### Managing allowlists
 - **Merkle roots** are stored on‑chain and can be updated by the owner via `updateMerkleRoots`. Treat updates as governance events with audit logs.
@@ -66,7 +66,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
   - `blacklistValidator`
 
 ### Managing ENS wiring and identity lock
-- ENS wiring functions (`updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`) are only available while `lockIdentityConfig` is false **and** only before any jobs exist (`nextJobId == 0`) with zero escrow (`lockedEscrow == 0`). If either guard fails, the call reverts with `InvalidState` even if identity configuration is still unlocked.
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - `lockIdentityConfiguration()` permanently disables those wiring updates by setting `lockIdentityConfig = true` and emits `IdentityConfigurationLocked`.
 - `updateMerkleRoots` remains available after the lock and is the primary mechanism for allowlist rotation.
 
@@ -80,11 +80,11 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 - Agent payout percentage is snapshotted at assignment based on the highest AGI type the agent holds.
 
 ### Withdrawing ERC‑20
-- `withdrawAGI(amount)` can only withdraw surplus balances; it fails if `balance < lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` or `amount > withdrawableAGI()`.
+- `withdrawUSDC(amount)` can only withdraw surplus balances; it fails if `balance < lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` or `amount > withdrawableUSDC()`.
 - Withdrawals are only allowed while paused.
 
 ### Rotating the escrow token
-- `updateAGITokenAddress` changes the ERC‑20 used for escrow, payouts, and reward pool contributions.
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - The token can only be changed while identity configuration is unlocked **and** before any jobs exist (`nextJobId == 0`) with zero escrow (`lockedEscrow == 0`).
 - Changing the token can break integrations and invalidate approvals. Ensure all users re‑approve the new token and carefully manage `lockedEscrow` vs balances before switching.
 - **Production invariant**: treat the escrow token as immutable once jobs are funded.
@@ -92,7 +92,7 @@ All parameters are upgradable by the owner. Defaults are set in the contract to 
 ## Monitoring checklist
 
 - Track `JobCreated`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobDisputed`, `JobCompleted`, `DisputeResolvedWithCode`, and `JobExpired` for lifecycle visibility.
-- Track `AGIWithdrawn` and `lockedEscrow`/`lockedAgentBonds`/`lockedValidatorBonds`/`lockedDisputeBonds` to ensure the contract remains solvent.
+- Track `USDCWithdrawn` and `lockedEscrow`/`lockedAgentBonds`/`lockedValidatorBonds`/`lockedDisputeBonds` to ensure the contract remains solvent.
 - Monitor `ReputationUpdated` to maintain off‑chain reputation views.
 
 ## Upgrade & recovery notes

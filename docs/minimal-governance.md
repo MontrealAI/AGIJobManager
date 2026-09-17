@@ -13,7 +13,7 @@ Once locked, the contract keeps operating for normal jobs, escrows, and dispute 
 These functions are guarded by `whenIdentityConfigurable` and **revert** once the identity wiring is locked:
 
 **Identity wiring**
-- `updateAGITokenAddress` (only allowed before any job exists and before the lock)
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - `updateEnsRegistry` (only allowed before any job exists and before the lock)
 - `updateNameWrapper` (only allowed before any job exists and before the lock)
 - `updateRootNodes` (only allowed before any job exists and before the lock)
@@ -27,7 +27,7 @@ These are considered **break-glass** or operational safety controls and remain a
 - `pause()` / `unpause()` — incident response.
 - `resolveStaleDispute()` — owner-only recovery after the dispute timeout (pause optional).
 - `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
-- `withdrawAGI()` — surplus withdrawals while paused (escrow is always reserved).
+- `withdrawUSDC()` — surplus withdrawals while paused (escrow is always reserved).
 
 Other configuration knobs (thresholds, review periods, allowlists, metadata, etc.) remain **tunable** after lock because they are not part of the identity wiring surface.
 
@@ -48,7 +48,7 @@ Other configuration knobs (thresholds, review periods, allowlists, metadata, etc
 
 To keep operations low-touch, monitor the following invariants and events:
 
-- **Escrow solvency**: track `lockedEscrow + lockedAgentBonds + lockedValidatorBonds` vs. token balance; `withdrawableAGI()` must stay non‑negative.
+- **Escrow solvency**: track `lockedEscrow + lockedAgentBonds + lockedValidatorBonds` vs. token balance; `withdrawableUSDC()` must stay non‑negative.
 - **Identity wiring changes (pre-lock)**: watch `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, and `IdentityConfigurationLocked`.
 - **Allowlist updates**: `MerkleRootsUpdated` signals validator/agent allowlist changes (access only, not payout logic).
 - **Dispute recovery**: `DisputeTimeoutResolved` indicates break‑glass resolution by the owner.
@@ -56,5 +56,5 @@ To keep operations low-touch, monitor the following invariants and events:
 ## Notes for Sepolia/local/private deployments
 
 - Keep **ENS registry** and **NameWrapper** addresses configurable (`AGI_ENS_REGISTRY`, `AGI_NAMEWRAPPER`).
-- Override the AGI token address for non-mainnet networks (`AGI_TOKEN_ADDRESS`).
+- Override the USDC token address for non-mainnet networks (`USDC_TOKEN_ADDRESS`).
 - Root nodes and Merkle roots should be set per environment.

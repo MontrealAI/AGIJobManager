@@ -31,10 +31,10 @@ contract AGIJobManagerBoundaryFuzz is Test {
         manager.addAdditionalValidator(validatorB);
         manager.setSettlementPaused(false);
 
-        token.mint(employer, 1_000_000_000 ether);
-        token.mint(agent, 10_000 ether);
-        token.mint(validatorA, 10_000 ether);
-        token.mint(validatorB, 10_000 ether);
+        token.mint(employer, 1_000_000_000 * 1e6);
+        token.mint(agent, 10_000 * 1e6);
+        token.mint(validatorA, 10_000 * 1e6);
+        token.mint(validatorB, 10_000 * 1e6);
 
         vm.prank(employer);
         token.approve(address(manager), type(uint256).max);
@@ -52,12 +52,12 @@ contract AGIJobManagerBoundaryFuzz is Test {
         if (details.length > 2048) {
             vm.expectRevert();
         }
-        manager.createJob("ipfs://spec", 1 ether, 1 days, string(details));
+        manager.createJob("ipfs://spec", 1 * 1e6, 1 days, string(details));
     }
 
     function testFuzz_completionURIBoundary(uint16 completionLen) external {
         vm.prank(employer);
-        manager.createJob("ipfs://spec", 10 ether, 1 days, "details");
+        manager.createJob("ipfs://spec", 10 * 1e6, 1 days, "details");
         uint256 jobId = manager.nextJobId() - 1;
 
         vm.prank(agent);
@@ -72,7 +72,7 @@ contract AGIJobManagerBoundaryFuzz is Test {
     }
 
     function testFuzz_disputeBondWithinConfiguredBounds(uint96 payoutSeed) external {
-        uint256 payout = bound(uint256(payoutSeed), 1 ether, 100_000 ether);
+        uint256 payout = bound(uint256(payoutSeed), 1 * 1e6, 100_000 * 1e6);
         vm.prank(employer);
         manager.createJob("ipfs://spec", payout, 2 days, "details");
         uint256 jobId = manager.nextJobId() - 1;
@@ -86,8 +86,8 @@ contract AGIJobManagerBoundaryFuzz is Test {
         manager.disputeJob(jobId);
 
         uint256 bond = manager.jobDisputeBondAmount(jobId);
-        assertGe(bond, 1 ether);
-        assertLe(bond, 200 ether);
+        assertGe(bond, 1 * 1e6);
+        assertLe(bond, 200 * 1e6);
     }
 
     function test_validatorCapIsEnforced() external {
@@ -95,7 +95,7 @@ contract AGIJobManagerBoundaryFuzz is Test {
         manager.setRequiredValidatorApprovals(50);
 
         vm.prank(employer);
-        manager.createJob("ipfs://spec", 10 ether, 2 days, "details");
+        manager.createJob("ipfs://spec", 10 * 1e6, 2 days, "details");
         uint256 jobId = manager.nextJobId() - 1;
 
         vm.prank(agent);
@@ -106,7 +106,7 @@ contract AGIJobManagerBoundaryFuzz is Test {
         for (uint256 i = 0; i < 51; i++) {
             address validator = address(uint160(0x7000 + i));
             manager.addAdditionalValidator(validator);
-            token.mint(validator, 1000 ether);
+            token.mint(validator, 1000 * 1e6);
             vm.prank(validator);
             token.approve(address(manager), type(uint256).max);
 
@@ -128,7 +128,7 @@ contract AGIJobManagerBoundaryFuzz is Test {
         manager.setVoteQuorum(1);
 
         vm.prank(employer);
-        manager.createJob("ipfs://spec", 10 ether, 2 days, "details");
+        manager.createJob("ipfs://spec", 10 * 1e6, 2 days, "details");
         uint256 jobId = manager.nextJobId() - 1;
         vm.prank(agent);
         manager.applyForJob(jobId, "", new bytes32[](0));

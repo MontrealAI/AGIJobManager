@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -47,7 +48,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await seedAgentType(manager, nft, agent);
     await fundAgents(token, manager, [agent], owner);
 
-    const payout = web3.utils.toWei("5");
+    const payout = parseUSDCAmount("5");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -68,7 +69,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await seedAgentType(manager, nft, agent);
     await manager.setEnsJobPages(ensJobPages.address, { from: owner });
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -78,8 +79,8 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     assert.equal(await ensJobPages.lastHandleHookSelector(), "0x1f76f7a2", "hook selector must match ABI");
     assert.equal((await ensJobPages.lastHandleHookCalldataLength()).toString(), "68", "hook calldata must be 0x44 bytes");
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     assert.equal((await ensJobPages.assignCalls()).toString(), "1");
     assert.equal((await ensJobPages.lastHook()).toString(), "2", "ASSIGN hook id must be 2");
@@ -118,14 +119,14 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await ensJobPages.setRevertHook(4, true, { from: owner });
     assert.equal(await ensJobPages.revertHook(1), true, "create hook should revert");
 
-    const payout = web3.utils.toWei("5");
+    const payout = parseUSDCAmount("5");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
     await manager.createJob("ipfs://spec.json", payout, 50, "details", { from: employer });
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
 
     await manager.requestJobCompletion(0, "ipfs://completion.json", { from: agent });
@@ -145,7 +146,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await manager.setEnsJobPages(ensJobPages.address, { from: owner });
     await ensJobPages.setRevertHook(4, true, { from: owner });
 
-    const payout = web3.utils.toWei("3");
+    const payout = parseUSDCAmount("3");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -156,8 +157,8 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await token.approve(manager.address, payout, { from: employer });
     await manager.createJob("ipfs://spec2.json", payout, 1, "details", { from: employer });
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(1, "agent", [], { from: agent });
 
     await time.increase(2);
@@ -192,14 +193,14 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await manager.setEnsJobPages(ensJobPages.address, { from: owner });
     await manager.setUseEnsJobTokenURI(true, { from: owner });
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
     await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
 
@@ -222,7 +223,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await manager.setEnsJobPages(ensJobPages.address, { from: owner });
     await manager.setUseEnsJobTokenURI(true, { from: owner });
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -230,8 +231,8 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     assert.equal(await ensJobPages.lastHandleHookSelector(), "0x1f76f7a2");
     assert.equal((await ensJobPages.lastHandleHookCalldataLength()).toString(), "68");
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
 
@@ -255,14 +256,14 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await manager.setUseEnsJobTokenURI(true, { from: owner });
     await ensJobPages.setJobEnsUriOverride("", { from: owner });
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
     await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
 
@@ -283,7 +284,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
     await seedAgentType(manager, nft, agent);
     await manager.setEnsJobPages(ensJobPages.address, { from: owner });
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
@@ -298,14 +299,14 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     await seedAgentType(manager, nft, agent);
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
     await manager.createJob("ipfs://spec.json", payout, 100, "details", { from: employer });
 
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
 

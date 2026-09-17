@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { expectRevert, time } = require("@openzeppelin/test-helpers");
 
@@ -14,7 +15,8 @@ const { fundValidators, fundAgents, computeValidatorBond, computeAgentBond } = r
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 contract("AGIJobManager economic state-machine scenarios", (accounts) => {
   const [owner, employer, agent, validatorA, validatorB, moderator, other] = accounts;

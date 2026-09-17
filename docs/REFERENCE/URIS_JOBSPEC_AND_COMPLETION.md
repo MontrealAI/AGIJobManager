@@ -152,7 +152,7 @@ Recommended pattern for both fields: point to metadata JSON.
     { "trait_type": "chainId", "value": "1" },
     { "trait_type": "contractAddress", "value": "0xYourContract" },
     { "trait_type": "employer", "value": "0xEmployer" },
-    { "trait_type": "payout", "value": "250000000000000000000" },
+    { "trait_type": "payout", "value": "250000000" },
     { "trait_type": "createdAt", "value": "1739836800" }
   ],
   "properties": {
@@ -179,7 +179,7 @@ Recommended pattern for both fields: point to metadata JSON.
     { "trait_type": "contractAddress", "value": "0xYourContract" },
     { "trait_type": "employer", "value": "0xEmployer" },
     { "trait_type": "agent", "value": "0xAgent" },
-    { "trait_type": "payout", "value": "250000000000000000000" },
+    { "trait_type": "payout", "value": "250000000" },
     { "trait_type": "completionRequestedAt", "value": "1739926800" }
   ],
   "properties": {
@@ -285,7 +285,7 @@ The NFT mint is still intended to proceed even if ENS URI retrieval fails.
 | `requestJobCompletion` reverts with `InvalidParameters` | Empty, whitespace-containing, or oversized `_jobCompletionURI` | Use non-empty URI without space/tab/newline/CR and <= 1024 bytes. |
 | `tokenURI` looks different than submitted completion URI | ENS override path supplied token URI and/or `baseIpfsUrl` prefixed a no-scheme URI | Check `setUseEnsJobTokenURI`, `ensJobPages`, and `baseIpfsUrl` settings. |
 | `details` missing from getters | `_details` is event-only and not persisted in `jobs` mapping | Read `JobCreated` event logs; keep durable details in `jobSpecURI` document. |
-| Etherscan write fails due to token transfer issue | ERC-20 allowance or balance insufficient for payout/bond transfer | `approve` AGI token for contract address and ensure sufficient balance before write call. |
+| Etherscan write fails due to token transfer issue | ERC-20 allowance or balance insufficient for payout/bond transfer | `approve` USDC token for contract address and ensure sufficient balance before write call. |
 
 ## Source references
 

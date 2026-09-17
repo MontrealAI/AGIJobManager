@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { BN, expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
 const { MerkleTree } = require("merkletreejs");
@@ -187,9 +188,9 @@ contract("AGIJobManager comprehensive", (accounts) => {
     );
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
-    await token.mint(employer, web3.utils.toWei("500"), { from: owner });
-    await token.mint(buyer, web3.utils.toWei("500"), { from: owner });
-    await token.mint(other, web3.utils.toWei("500"), { from: owner });
+    await token.mint(employer, parseUSDCAmount("500"), { from: owner });
+    await token.mint(buyer, parseUSDCAmount("500"), { from: owner });
+    await token.mint(other, parseUSDCAmount("500"), { from: owner });
     await manager.addAGIType(nft.address, 1, { from: owner });
     const mintReceipt = await nft.mint(agent, { from: owner });
     agentTokenId = mintReceipt.logs[0].args.tokenId.toNumber();
@@ -200,11 +201,11 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
   describe("deployment & initialization", () => {
     it("deploys with expected defaults and ownership", async () => {
-      assert.equal(await manager.agiToken(), token.address);
+      assert.equal(await manager.usdcToken(), token.address);
       assert.equal(await manager.requiredValidatorApprovals(), "3");
       assert.equal(await manager.requiredValidatorDisapprovals(), "3");
       assert.equal(await manager.validationRewardPercentage(), "8");
-      assert.equal(await manager.maxJobPayout(), web3.utils.toWei("88888888"));
+      assert.equal(await manager.maxJobPayout(), parseUSDCAmount("88888888"));
       assert.equal(await manager.jobDurationLimit(), "10000000");
       assert.equal(await manager.owner(), owner);
       assert.equal(await manager.name(), "AGIJobs");
@@ -224,12 +225,12 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.pause({ from: owner });
 
       await expectRevert.unspecified(
-        manager.createJob("ipfs", web3.utils.toWei("1"), 1000, "details", { from: employer }));
+        manager.createJob("ipfs", parseUSDCAmount("1"), 1000, "details", { from: employer }));
       assert.equal((await manager.nextJobId()).toString(), "0");
 
       await manager.unpause({ from: owner });
-      await token.approve(manager.address, web3.utils.toWei("1"), { from: employer });
-      await manager.createJob("ipfs", web3.utils.toWei("1"), 1000, "details", { from: employer });
+      await token.approve(manager.address, parseUSDCAmount("1"), { from: employer });
+      await manager.createJob("ipfs", parseUSDCAmount("1"), 1000, "details", { from: employer });
     });
   });
 
@@ -238,7 +239,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await nft.mint(agent, { from: owner });
       await manager.addAGIType(nft.address, 90, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("100"));
+      const payout = new BN(parseUSDCAmount("100"));
       const { jobId } = await createJob(manager, token, employer, payout, 2000, "ipfs-job-1");
 
       const applyReceipt = await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
@@ -302,7 +303,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("prevents reassigning an already assigned job", async () => {
-      const payout = new BN(web3.utils.toWei("2"));
+      const payout = new BN(parseUSDCAmount("2"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
@@ -313,7 +314,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("rejects empty completion metadata URIs", async () => {
-      const payout = new BN(web3.utils.toWei("2"));
+      const payout = new BN(parseUSDCAmount("2"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
 
@@ -328,7 +329,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
         "InvalidParameters"
       );
       await expectCustomError(
-        manager.createJob("ipfs", web3.utils.toWei("1"), 0, "details", { from: employer }),
+        manager.createJob("ipfs", parseUSDCAmount("1"), 0, "details", { from: employer }),
         "InvalidParameters"
       );
 
@@ -340,7 +341,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("restricts cancel/delist to proper callers and states", async () => {
-      const payout = new BN(web3.utils.toWei("3"));
+      const payout = new BN(parseUSDCAmount("3"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await expectCustomError(manager.cancelJob(jobId, { from: other }), "NotAuthorized");
@@ -359,7 +360,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("escrows funds on createJob", async () => {
-      const payout = new BN(web3.utils.toWei("4"));
+      const payout = new BN(parseUSDCAmount("4"));
       const contractBalanceBefore = new BN(await token.balanceOf(manager.address));
       const { jobId } = await createJob(manager, token, employer, payout, 1000, "ipfs-escrow");
       const contractBalanceAfter = new BN(await token.balanceOf(manager.address));
@@ -374,7 +375,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
   describe("agent payout snapshots", () => {
     it("rejects ineligible agents without a payout tier", async () => {
-      const payout = new BN(web3.utils.toWei("2"));
+      const payout = new BN(parseUSDCAmount("2"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
@@ -387,7 +388,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     it("snapshots agent payout percentage at apply time", async () => {
       await manager.addAGIType(nft.address, 90, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("12"));
+      const payout = new BN(parseUSDCAmount("12"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
@@ -412,7 +413,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.addAdditionalAgent(other, { from: owner });
       await nft.mint(other, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("20"));
+      const payout = new BN(parseUSDCAmount("20"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
@@ -447,7 +448,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await nft.mint(agent, { from: owner });
       await manager.addAGIType(nft.address, 92, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("10"));
+      const payout = new BN(parseUSDCAmount("10"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
@@ -473,7 +474,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await nft.mint(agent, { from: owner });
       await manager.addAGIType(nft.address, 92, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("5"));
+      const payout = new BN(parseUSDCAmount("5"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
@@ -489,7 +490,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await nft.mint(agent, { from: owner });
       await manager.addAGIType(nft.address, 92, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("20"));
+      const payout = new BN(parseUSDCAmount("20"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
@@ -510,7 +511,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("enforces validator vote rules and blacklist checks", async () => {
-      const payout = new BN(web3.utils.toWei("5"));
+      const payout = new BN(parseUSDCAmount("5"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await expectCustomError(
@@ -550,7 +551,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("rejects validator proofs not in allowlist", async () => {
-      const payout = new BN(web3.utils.toWei("6"));
+      const payout = new BN(parseUSDCAmount("6"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
@@ -564,7 +565,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
   describe("dispute resolution behavior", () => {
     it("requires proper disputant and marks disputed on disapprovals", async () => {
-      const payout = new BN(web3.utils.toWei("9"));
+      const payout = new BN(parseUSDCAmount("9"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
@@ -581,7 +582,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("prevents repeated disputes and limits dispute initiation to in-progress jobs", async () => {
-      const payout = new BN(web3.utils.toWei("6"));
+      const payout = new BN(parseUSDCAmount("6"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
@@ -600,7 +601,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.addAGIType(nft.address, 92, { from: owner });
       await manager.addModerator(moderator, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("30"));
+      const payout = new BN(parseUSDCAmount("30"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
@@ -617,7 +618,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
       await expectCustomError(manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator }), "InvalidState");
 
-      const payout2 = new BN(web3.utils.toWei("40"));
+      const payout2 = new BN(parseUSDCAmount("40"));
       const { jobId: jobId2 } = await createJob(manager, token, employer, payout2, 1000, "ipfs-2");
       await assignJob(manager, jobId2, agent, buildProof(agentTree, agent));
       await manager.requestJobCompletion(jobId2, "ipfs-complete", { from: agent });
@@ -638,7 +639,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
     it("allows non-canonical resolutions without forcing completion", async () => {
       await manager.addModerator(moderator, { from: owner });
-      const payout = new BN(web3.utils.toWei("15"));
+      const payout = new BN(parseUSDCAmount("15"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
       await manager.requestJobCompletion(jobId, "ipfs-final", { from: agent });
@@ -662,7 +663,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("restricts dispute resolution to moderators", async () => {
-      const payout = new BN(web3.utils.toWei("9"));
+      const payout = new BN(parseUSDCAmount("9"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
@@ -676,7 +677,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
   describe("checked ERC20 transfers", () => {
     it("reverts createJob when transferFrom fails", async () => {
       const failing = await FailingERC20.new({ from: owner });
-      await failing.mint(employer, web3.utils.toWei("10"), { from: owner });
+      await failing.mint(employer, parseUSDCAmount("10"), { from: owner });
 
       const managerFailing = await AGIJobManager.new(...buildInitConfig(
           failing.address,
@@ -694,17 +695,17 @@ contract("AGIJobManager comprehensive", (accounts) => {
       );
 
       await failing.setFailTransferFroms(true, { from: owner });
-      await failing.approve(managerFailing.address, web3.utils.toWei("5"), { from: employer });
+      await failing.approve(managerFailing.address, parseUSDCAmount("5"), { from: employer });
 
       await expectCustomError(
-        managerFailing.createJob("ipfs", web3.utils.toWei("5"), 1000, "details", { from: employer }),
+        managerFailing.createJob("ipfs", parseUSDCAmount("5"), 1000, "details", { from: employer }),
         "TransferFailed"
       );
     });
 
     it("reverts payouts when transfer fails", async () => {
       const failing = await FailingERC20.new({ from: owner });
-      await failing.mint(employer, web3.utils.toWei("20"), { from: owner });
+      await failing.mint(employer, parseUSDCAmount("20"), { from: owner });
 
       const managerFailing = await AGIJobManager.new(...buildInitConfig(
           failing.address,
@@ -721,11 +722,11 @@ contract("AGIJobManager comprehensive", (accounts) => {
         { from: owner }
       );
 
-      await failing.approve(managerFailing.address, web3.utils.toWei("10"), { from: employer });
+      await failing.approve(managerFailing.address, parseUSDCAmount("10"), { from: employer });
       await managerFailing.setRequiredValidatorApprovals(1, { from: owner });
       await managerFailing.setChallengePeriodAfterApproval(1, { from: owner });
       const jobId = (await managerFailing.nextJobId()).toNumber();
-      await managerFailing.createJob("ipfs", web3.utils.toWei("10"), 1000, "details", { from: employer });
+      await managerFailing.createJob("ipfs", parseUSDCAmount("10"), 1000, "details", { from: employer });
 
       await managerFailing.addAGIType(nft.address, 92, { from: owner });
       await nft.mint(agent, { from: owner });
@@ -733,7 +734,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await managerFailing.applyForJob(jobId, "agent", buildProof(agentTree, agent), { from: agent });
 
       await managerFailing.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-      const bond = await computeValidatorBond(managerFailing, new BN(web3.utils.toWei("10")));
+      const bond = await computeValidatorBond(managerFailing, new BN(parseUSDCAmount("10")));
       await failing.mint(validator1, bond, { from: owner });
       await failing.approve(managerFailing.address, bond, { from: validator1 });
       await managerFailing.validateJob(jobId, "validator", buildProof(validatorTree, validator1), { from: validator1 });
@@ -774,8 +775,8 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.setRequiredValidatorDisapprovals(4, { from: owner });
       assert.equal(await manager.requiredValidatorDisapprovals(), "4");
 
-      await manager.setMaxJobPayout(web3.utils.toWei("999"), { from: owner });
-      assert.equal(await manager.maxJobPayout(), web3.utils.toWei("999"));
+      await manager.setMaxJobPayout(parseUSDCAmount("999"), { from: owner });
+      assert.equal(await manager.maxJobPayout(), parseUSDCAmount("999"));
 
       await manager.setJobDurationLimit(12345, { from: owner });
       assert.equal(await manager.jobDurationLimit(), "12345");
@@ -783,26 +784,25 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await manager.setValidationRewardPercentage(12, { from: owner });
       assert.equal(await manager.validationRewardPercentage(), "12");
 
-      const replacementToken = await MockERC20.new({ from: owner });
-      await manager.updateAGITokenAddress(replacementToken.address, { from: owner });
-      assert.equal(await manager.agiToken(), replacementToken.address);
+      assert.equal(manager.updateUSDCTokenAddress, undefined);
+      assert.equal(await manager.usdcToken(), token.address);
     });
 
     it("withdraws AGI within bounds and respects pause", async () => {
-      await token.mint(manager.address, web3.utils.toWei("50"), { from: owner });
+      await token.mint(manager.address, parseUSDCAmount("50"), { from: owner });
       await expectRevert.unspecified(
-        manager.withdrawAGI(web3.utils.toWei("10"), { from: owner }));
+        manager.withdrawUSDC(parseUSDCAmount("10"), { from: owner }));
 
       const ownerBalanceBefore = new BN(await token.balanceOf(owner));
       await manager.pause({ from: owner });
-      await expectCustomError(manager.withdrawAGI(0, { from: owner }), "InvalidParameters");
+      await expectCustomError(manager.withdrawUSDC(0, { from: owner }), "InvalidParameters");
       await expectCustomError(
-        manager.withdrawAGI(web3.utils.toWei("100"), { from: owner }),
+        manager.withdrawUSDC(parseUSDCAmount("100"), { from: owner }),
         "InsufficientWithdrawableBalance"
       );
-      await manager.withdrawAGI(web3.utils.toWei("10"), { from: owner });
+      await manager.withdrawUSDC(parseUSDCAmount("10"), { from: owner });
       const ownerBalanceAfter = new BN(await token.balanceOf(owner));
-      assert(ownerBalanceAfter.sub(ownerBalanceBefore).eq(new BN(web3.utils.toWei("10"))));
+      assert(ownerBalanceAfter.sub(ownerBalanceBefore).eq(new BN(parseUSDCAmount("10"))));
     });
 
     it("updates baseIpfsUrl for future mints", async () => {
@@ -812,7 +812,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await nft.mint(agent, { from: owner });
       await manager.addAGIType(nft.address, 92, { from: owner });
 
-      const payout = new BN(web3.utils.toWei("7"));
+      const payout = new BN(parseUSDCAmount("7"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000, "ipfs-6");
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
@@ -829,7 +829,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
   describe("ownership gating (ENS/Merkle)", () => {
     it("accepts merkle proofs and rejects invalid ones", async () => {
-      const payout = new BN(web3.utils.toWei("5"));
+      const payout = new BN(parseUSDCAmount("5"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
@@ -840,7 +840,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("accepts NameWrapper ownership", async () => {
-      const payout = new BN(web3.utils.toWei("6"));
+      const payout = new BN(parseUSDCAmount("6"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000, "ipfs-3");
 
       const subdomain = "agent-name";
@@ -851,7 +851,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("accepts resolver address lookup", async () => {
-      const payout = new BN(web3.utils.toWei("6"));
+      const payout = new BN(parseUSDCAmount("6"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000, "ipfs-4");
 
@@ -871,7 +871,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("allows additional agents and validators without proofs", async () => {
-      const payout = new BN(web3.utils.toWei("4"));
+      const payout = new BN(parseUSDCAmount("4"));
       await manager.setRequiredValidatorApprovals(1, { from: owner });
       const { jobId } = await createJob(manager, token, employer, payout, 1000, "ipfs-5");
 
@@ -890,7 +890,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
   describe("timing and duration", () => {
     it("prevents completion request after duration", async () => {
-      const payout = new BN(web3.utils.toWei("5"));
+      const payout = new BN(parseUSDCAmount("5"));
       const { jobId } = await createJob(manager, token, employer, payout, 10);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
 
@@ -899,7 +899,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     });
 
     it("restricts completion requests to assigned agent", async () => {
-      const payout = new BN(web3.utils.toWei("5"));
+      const payout = new BN(parseUSDCAmount("5"));
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
 
@@ -912,7 +912,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
 
   describe("legacy transfer failure behavior", () => {
     it("reverts cancelJob if refund transfer fails", async () => {
-      const payout = new BN(web3.utils.toWei("5"));
+      const payout = new BN(parseUSDCAmount("5"));
       const failTransferToken = await FailTransferToken.new({ from: owner });
       await failTransferToken.mint(employer, payout, { from: owner });
 
