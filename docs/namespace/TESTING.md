@@ -1,10 +1,10 @@
 # Namespace Identity Tests — Local Coverage
 
-This document explains the **local Truffle tests** added to prove AGI.Eth namespace gating for the **alpha** environment using deterministic mocks.
+This document describes the local JavaScript regression tests for AGI.eth namespace gating in the alpha environment. The preserved suites run on Hardhat 3's local EDR chain with ethers-backed compatibility helpers and deterministic mocks; Truffle and Ganache are not required.
 
 ## What the tests cover
 
-The new test suite focuses on the alpha namespace and identity‑gating logic using mock ENS contracts:
+The suite focuses on the alpha namespace and identity-gating logic using mock ENS contracts:
 
 1. **Agent authorization via NameWrapper** under `alpha.agent.agi.eth`.
 2. **Validator authorization via ENS resolver** under `alpha.club.agi.eth`.
@@ -26,16 +26,22 @@ The tests compute **alpha root nodes** using namehash and derive subnodes exactl
 subnode = keccak256(rootNode, keccak256(label))
 ```
 
-This makes the local chain behave like mainnet **for identity verification logic only**. It does not assert real ENS ownership.
+These mocks exercise the contract's identity-verification paths. They do not establish live ENS ownership or reproduce every mainnet ENS behavior.
 
 ## How to run
 
 ```bash
-npm install
-npx truffle compile
-npx truffle test
+npm ci
+npm --prefix hardhat ci
+npm audit --audit-level=low
+npm --prefix hardhat audit --audit-level=low
+npm test
 ```
+
+Run these commands from the repository root with Node 22.23.2. `npm test` builds the pinned Hardhat artifacts and runs the complete JavaScript regression inventory, including this namespace suite. CI partitions the same inventory across four required shards. See [the test matrix](../TESTING.md) for strict Forge lint, UI dependency audits and the remaining release gates.
 
 ## Test file
 
-- `test/namespaceAlpha.test.js`
+- [`test/namespaceAlpha.test.js`](../../test/namespaceAlpha.test.js)
+
+Refer to the final release validation evidence for measured results and its exact source identity; this page does not claim a passing count for an unqualified tree.

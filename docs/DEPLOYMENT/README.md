@@ -1,6 +1,6 @@
 # Deployment Documentation Index
 
-> v0.9.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+> v0.9.1 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.1/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
 
 ## Start here by deployment task
 - Fresh deployment (official path): [../../hardhat/README.md](../../hardhat/README.md)
@@ -9,7 +9,7 @@
 
 ## Canonical answers for operators
 - Recommended deployment path: **Hardhat**.
-- Truffle status: **local tests and historical reproduction only**. Public-network signing is disabled in v0.9.0; use Hardhat and the [owner console](../OWNER_CONTROLS.md).
+- Truffle status: **removed in v0.9.1**, together with Ganache. Local tests also use Hardhat 3. Use Hardhat for deployment and the [owner console](../OWNER_CONTROLS.md) for live configuration.
 - ENS replacement is additive and requires manual post-deploy wiring.
 - Do not lock ENS/identity configuration until cutover + migration checks pass.
 
@@ -22,11 +22,11 @@
 
 ## 2) Truffle (historical reference only)
 
-- [Ethereum Mainnet Deployment, Verification & Ownership Transfer Guide (Truffle)](./MAINNET_TRUFFLE_DEPLOYMENT.md)
+- [Retired Truffle deployment and verification guide](./MAINNET_TRUFFLE_DEPLOYMENT.md)
 - [Truffle Mainnet Deploy](./TRUFFLE_MAINNET_DEPLOY.md)
 - [Truffle Production Deploy](./TRUFFLE_PRODUCTION_DEPLOY.md)
 
-> Public-network commands in these historical guides are retired. Use the Hardhat guide above for v0.9.0 and later.
+> These guides preserve historical references; their old deployment commands are retired. Use the Hardhat guide above for v0.9.1 and later.
 
 ## UI boundary during deployment operations
 

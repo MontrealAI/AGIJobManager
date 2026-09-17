@@ -1,19 +1,12 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { Contract, Interface } = require('ethers');
+const { providerFor, assertNetwork, managerAbi, cliCallback } = require('../lib/operations');
 
 const ARG_PREFIX = '--';
 const DEFAULT_BATCH_SIZE = 2000;
 const LEGACY_DISPUTE_RESOLVED_TOPIC = '0x7b71d2e00379bd165b2750d54298da2414376699827edca2bce2a096c491d2e9';
-
-function ensureWeb3() {
-  if (typeof web3 !== 'undefined') return web3;
-  const Web3 = require('web3');
-  const providerUrl = process.env.WEB3_PROVIDER || 'http://127.0.0.1:8545';
-  const web3Instance = new Web3(providerUrl);
-  global.web3 = web3Instance;
-  return web3Instance;
-}
 
 function getArgValue(name) {
   const idx = process.argv.indexOf(`${ARG_PREFIX}${name}`);
@@ -36,17 +29,21 @@ function toNumber(value) {
 }
 
 function toBN(value) {
-  return web3.utils.toBN(value);
+  return BigInt(value.toString());
 }
 
 function formatRate(numerator, denominator) {
-  if (!denominator || denominator.isZero()) return null;
-  const scale = toBN(10000);
-  const scaled = numerator.mul(scale);
-  const rounded = scaled.add(denominator.div(toBN(2))).div(denominator);
+  if (denominator === 0n) return null;
+  return { value: Number((numerator * 10000n + denominator / 2n) / denominator), valueDecimals: 2 };
+}
+
+function normalizeEvent(log) {
   return {
-    value: rounded.toNumber(),
-    valueDecimals: 2,
+    event: log.fragment.name,
+    blockNumber: log.blockNumber,
+    transactionHash: log.transactionHash,
+    logIndex: log.index,
+    returnValues: { ...log.args, ...log.args.toObject() },
   };
 }
 
@@ -55,8 +52,8 @@ async function fetchEvents(contract, eventName, fromBlock, toBlock, batchSize) {
   for (let start = fromBlock; start <= toBlock; start += batchSize) {
     const end = Math.min(toBlock, start + batchSize - 1);
     // eslint-disable-next-line no-await-in-loop
-    const batch = await contract.getPastEvents(eventName, { fromBlock: start, toBlock: end });
-    events.push(...batch);
+    const batch = await contract.queryFilter(eventName, start, end);
+    events.push(...batch.map(normalizeEvent));
   }
   return events.sort((a, b) => {
     if (a.blockNumber !== b.blockNumber) return a.blockNumber - b.blockNumber;
@@ -65,9 +62,9 @@ async function fetchEvents(contract, eventName, fromBlock, toBlock, batchSize) {
 }
 
 async function getDeploymentBlock(contract) {
-  const txHash = contract.transactionHash || contract.receipt?.transactionHash;
+  const txHash = contract.deploymentTransaction()?.hash;
   if (!txHash) return 0;
-  const receipt = await web3.eth.getTransactionReceipt(txHash);
+  const receipt = await contract.runner.getTransactionReceipt(txHash);
   return receipt?.blockNumber ?? 0;
 }
 
@@ -122,8 +119,7 @@ function sortObjectByKeys(entries) {
 
 
 function hasEvent(contract, eventName) {
-  const json = contract.constructor?._json?.abi || contract.abi || [];
-  return json.some((item) => item && item.type === 'event' && item.name === eventName);
+  return contract.interface.hasEvent(eventName);
 }
 
 async function fetchEventsIfPresent(contract, eventName, fromBlock, toBlock, batchSize) {
@@ -141,28 +137,22 @@ async function fetchLegacyDisputeResolvedEvents(contract, fromBlock, toBlock, ba
   for (let start = fromBlock; start <= toBlock; start += batchSize) {
     const end = Math.min(toBlock, start + batchSize - 1);
     // eslint-disable-next-line no-await-in-loop
-    const logs = await web3.eth.getPastLogs({
-      address: contract.address,
+    const logs = await contract.runner.getLogs({
+      address: contract.target,
       topics: [topic0],
       fromBlock: start,
       toBlock: end,
     });
     for (const log of logs) {
-      const parsed = web3.eth.abi.decodeLog(
-        [
-          { indexed: true, name: 'jobId', type: 'uint256' },
-          { indexed: true, name: 'resolver', type: 'address' },
-          { indexed: false, name: 'resolution', type: 'string' },
-        ],
-        log.data,
-        log.topics.slice(1),
-      );
+      const parsed = new Interface([
+        'event DisputeResolved(uint256 indexed jobId, address indexed resolver, string resolution)',
+      ]).decodeEventLog('DisputeResolved', log.data, log.topics);
       decoded.push({
         event: 'DisputeResolved',
         blockNumber: Number(log.blockNumber),
         transactionHash: log.transactionHash,
         transactionIndex: Number(log.transactionIndex || 0),
-        logIndex: Number(log.logIndex || 0),
+        logIndex: Number(log.index || 0),
         returnValues: {
           0: parsed.jobId,
           1: parsed.resolver,
@@ -208,7 +198,7 @@ function compareEventOrder(a, b) {
 function mergeDisputeResolutionEvents(legacyEvents, typedEvents) {
   const byKey = new Map();
   for (const ev of legacyEvents.concat(typedEvents)) {
-    const jobId = String(ev.returnValues.jobId || ev.returnValues[0] || '');
+    const jobId = String(ev.returnValues.jobId ?? ev.returnValues[0] ?? '');
     const key = `${ev.transactionHash || ''}:${jobId}`;
     const existing = byKey.get(key);
     if (!existing) {
@@ -228,22 +218,11 @@ function mergeDisputeResolutionEvents(legacyEvents, typedEvents) {
   return Array.from(byKey.values()).sort(compareEventOrder);
 }
 
-function getAGIJobManagerContract() {
-  const web3Instance = ensureWeb3();
-  if (typeof artifacts !== 'undefined') {
-    return artifacts.require('AGIJobManager');
-  }
-  const contract = require('@truffle/contract');
-  const artifactPath = path.join(__dirname, '../../build/contracts/AGIJobManager.json');
-  const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
-  const AGIJobManager = contract(artifact);
-  AGIJobManager.setProvider(web3Instance.currentProvider);
-  return AGIJobManager;
-}
-
 async function runExportMetrics(overrides = {}) {
-  ensureWeb3();
-  const AGIJobManager = getAGIJobManagerContract();
+  const network = overrides.network || getArgValue('network') || 'development';
+  const provider = overrides.provider || providerFor(network);
+  try {
+  await assertNetwork(provider, network);
   const address = overrides.address || process.env.AGIJOBMANAGER_ADDRESS || getArgValue('address');
   const fromBlockRaw = overrides.fromBlock ?? process.env.FROM_BLOCK ?? getArgValue('from-block');
   const toBlockRaw = overrides.toBlock ?? process.env.TO_BLOCK ?? getArgValue('to-block');
@@ -257,13 +236,15 @@ async function runExportMetrics(overrides = {}) {
     ?? process.env.EVENT_BATCH_SIZE
     ?? getArgValue('event-batch-size');
   const parsedBatchSize = Number(batchSizeRaw);
-  const batchSize = Number.isFinite(parsedBatchSize) && parsedBatchSize > 0
+  const batchSize = Number.isSafeInteger(parsedBatchSize) && parsedBatchSize > 0
     ? parsedBatchSize
     : DEFAULT_BATCH_SIZE;
 
-  const contract = address ? await AGIJobManager.at(address) : await AGIJobManager.deployed();
+  if (!address) throw new Error("Missing AGIJOBMANAGER_ADDRESS or --address.");
+  const contract = new Contract(address, managerAbi(), provider);
+  if (await provider.getCode(address) === "0x") throw new Error(`No contract code at ${address}`);
 
-  const latestBlock = await web3.eth.getBlockNumber();
+  const latestBlock = await provider.getBlockNumber();
   const deploymentBlock = await getDeploymentBlock(contract);
 
   const resolvedFromBlock = fromBlockRaw === undefined || fromBlockRaw === null
@@ -273,8 +254,8 @@ async function runExportMetrics(overrides = {}) {
     ? latestBlock
     : (String(toBlockRaw) === 'latest' ? latestBlock : toNumber(toBlockRaw));
 
-  if (!Number.isFinite(resolvedFromBlock) || !Number.isFinite(resolvedToBlock)) {
-    throw new Error('Invalid block range. FROM_BLOCK/TO_BLOCK must be numbers or "latest".');
+  if (!Number.isSafeInteger(resolvedFromBlock) || !Number.isSafeInteger(resolvedToBlock) || resolvedFromBlock < 0 || resolvedToBlock < resolvedFromBlock) {
+    throw new Error('Invalid block range. FROM_BLOCK/TO_BLOCK must be ordered non-negative integers or "latest".');
   }
   const fromBlock = Math.max(0, resolvedFromBlock);
   const toBlock = Math.max(fromBlock, resolvedToBlock);
@@ -310,8 +291,8 @@ async function runExportMetrics(overrides = {}) {
 
   const disputeResolved = mergeDisputeResolutionEvents(disputeResolvedLegacy, disputeResolvedWithCode);
 
-  const chainId = await web3.eth.getChainId();
-  const contractAddress = contract.address;
+  const chainId = Number((await provider.getNetwork()).chainId);
+  const contractAddress = contract.target;
   const jobCache = new Map();
   const agents = new Map();
   const validators = new Map();
@@ -390,16 +371,16 @@ async function runExportMetrics(overrides = {}) {
   }
 
   for (const ev of jobCreated) {
-    const jobId = ev.returnValues.jobId || ev.returnValues[0];
+    const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
     const job = await getJob(jobId);
-    if (job.employer && job.payout && job.payout.gt(toBN(0))) {
+    if (job.employer && job.payout && job.payout > 0n) {
       employerSet.add(job.employer);
       addAnchor(employerAnchors, job.employer, buildAnchor(ev, jobId, chainId, contractAddress));
     }
   }
 
   for (const ev of jobApplied) {
-    const jobId = ev.returnValues.jobId || ev.returnValues[0];
+    const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
     const agent = ev.returnValues.agent || ev.returnValues[1];
     const metrics = getAgent(agent);
     metrics.jobsApplied += 1;
@@ -415,7 +396,7 @@ async function runExportMetrics(overrides = {}) {
   }
 
   for (const ev of jobCompletionRequested) {
-    const jobId = ev.returnValues.jobId || ev.returnValues[0];
+    const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
     const agent = ev.returnValues.agent || ev.returnValues[1];
     const metrics = getAgent(agent);
     metrics.jobsCompletionRequested += 1;
@@ -423,29 +404,25 @@ async function runExportMetrics(overrides = {}) {
     jobCompletionRequestedBlock.set(String(jobId), ev.blockNumber);
     const assignedBlock = jobAssignedBlock.get(String(jobId));
     if (assignedBlock !== undefined) {
-      metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal.add(
-        toBN(ev.blockNumber - assignedBlock),
-      );
+      metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal + BigInt(ev.blockNumber - assignedBlock);
       metrics.responseTimeSamples += 1;
     }
     addAnchor(agentAnchors, agent, buildAnchor(ev, jobId, chainId, contractAddress));
   }
 
   for (const ev of jobCompleted) {
-    const jobId = ev.returnValues.jobId || ev.returnValues[0];
+    const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
     const agent = ev.returnValues.agent || ev.returnValues[1];
     const metrics = getAgent(agent);
     metrics.jobsCompleted += 1;
     metrics.lastActivityBlock = Math.max(metrics.lastActivityBlock ?? 0, ev.blockNumber);
     const job = await getJob(jobId);
-    metrics.revenuesProxy = metrics.revenuesProxy.add(job.payout);
-    metrics.grossEscrow = metrics.grossEscrow.add(job.payout);
+    metrics.revenuesProxy = metrics.revenuesProxy + job.payout;
+    metrics.grossEscrow = metrics.grossEscrow + job.payout;
     if (!jobCompletionRequestedBlock.has(String(jobId))) {
       const assignedBlock = jobAssignedBlock.get(String(jobId));
       if (assignedBlock !== undefined) {
-        metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal.add(
-          toBN(ev.blockNumber - assignedBlock),
-        );
+        metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal + BigInt(ev.blockNumber - assignedBlock);
         metrics.responseTimeSamples += 1;
       }
     }
@@ -453,7 +430,7 @@ async function runExportMetrics(overrides = {}) {
   }
 
   for (const ev of jobDisputed) {
-    const jobId = ev.returnValues.jobId || ev.returnValues[0];
+    const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
     const metrics = getAgent(job.assignedAgent);
@@ -475,7 +452,7 @@ async function runExportMetrics(overrides = {}) {
   }
 
   for (const ev of disputeResolved) {
-    const jobId = ev.returnValues.jobId || ev.returnValues[0];
+    const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
     const resolution = decodeDisputeResolution(ev);
     const job = await getJob(jobId);
     if (!job.assignedAgent) continue;
@@ -493,7 +470,7 @@ async function runExportMetrics(overrides = {}) {
 
   if (includeValidators) {
     for (const ev of jobValidated) {
-      const jobId = ev.returnValues.jobId || ev.returnValues[0];
+      const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
       const validator = ev.returnValues.validator || ev.returnValues[1];
       getValidator(validator).approvals += 1;
       getValidator(validator).lastActivityBlock = Math.max(
@@ -503,7 +480,7 @@ async function runExportMetrics(overrides = {}) {
       addAnchor(validatorAnchors, validator, buildAnchor(ev, jobId, chainId, contractAddress));
     }
     for (const ev of jobDisapproved) {
-      const jobId = ev.returnValues.jobId || ev.returnValues[0];
+      const jobId = ev.returnValues.jobId ?? ev.returnValues[0];
       const validator = ev.returnValues.validator || ev.returnValues[1];
       getValidator(validator).disapprovals += 1;
       getValidator(validator).lastActivityBlock = Math.max(
@@ -518,11 +495,11 @@ async function runExportMetrics(overrides = {}) {
       const key = normalizeAddress(user);
       if (!validators.has(key)) continue;
       const metrics = getValidator(user);
-      const newRep = toBN(ev.returnValues.newReputation || ev.returnValues[1]);
+      const newRep = toBN(ev.returnValues.newReputation ?? ev.returnValues[1]);
       if (metrics.latestReputation !== null) {
-        const delta = newRep.sub(toBN(metrics.latestReputation));
-        if (delta.gt(toBN(0))) {
-          metrics.reputationGain = metrics.reputationGain.add(delta);
+        const delta = newRep - BigInt(metrics.latestReputation);
+        if (delta > 0n) {
+          metrics.reputationGain = metrics.reputationGain + delta;
         }
       }
       metrics.latestReputation = newRep.toString();
@@ -541,7 +518,7 @@ async function runExportMetrics(overrides = {}) {
     }
     if (payoutPercentage !== null && payoutPercentage !== undefined) {
       const percentage = toBN(payoutPercentage);
-      metrics.netAgentPaidProxy = metrics.grossEscrow.mul(percentage).div(toBN(100)).toString();
+      metrics.netAgentPaidProxy = (metrics.grossEscrow * percentage / 100n).toString();
       metrics.agentPayoutPercentage = percentage.toString();
     }
     const jobsAssigned = toBN(metrics.jobsAssigned);
@@ -558,9 +535,7 @@ async function runExportMetrics(overrides = {}) {
     metrics.employerWinCount = metrics.employerWins;
     metrics.unknownResolutionCount = metrics.unknownResolutions;
     if (metrics.responseTimeSamples > 0) {
-      metrics.responseTimeBlocksAvg = metrics.responseTimeBlocksTotal
-        .div(toBN(metrics.responseTimeSamples))
-        .toNumber();
+      metrics.responseTimeBlocksAvg = Number(metrics.responseTimeBlocksTotal / BigInt(metrics.responseTimeSamples));
     }
     metrics.responseTimeBlocksTotal = metrics.responseTimeBlocksTotal.toString();
     metrics.evidence = {
@@ -571,7 +546,7 @@ async function runExportMetrics(overrides = {}) {
 
   if (includeValidators) {
     for (const [addressKey, metrics] of validators.entries()) {
-      const totalDecisions = toBN(metrics.approvals).add(toBN(metrics.disapprovals));
+      const totalDecisions = BigInt(metrics.approvals) + BigInt(metrics.disapprovals);
       const approvalRate = formatRate(toBN(metrics.approvals), totalDecisions);
       if (approvalRate) metrics.rates.approvalRate = approvalRate;
       metrics.approvalsCount = metrics.approvals;
@@ -591,8 +566,8 @@ async function runExportMetrics(overrides = {}) {
     version: '0.2',
     metadata: {
       chainId,
-      network: overrides.network || ((typeof config !== 'undefined' && config.network) ? config.network : 'unknown'),
-      contractAddress: contract.address,
+      network: network,
+      contractAddress: contract.target,
       fromBlock,
       toBlock,
       generatedAt: overrides.generatedAt || new Date().toISOString(),
@@ -618,6 +593,9 @@ async function runExportMetrics(overrides = {}) {
 
   console.log(`ERC-8004 metrics written to ${outPath}`);
   return { outPath, output };
+  } finally {
+    if (!overrides.provider) provider.destroy();
+  }
 }
 
 module.exports = function (callback) {
@@ -629,3 +607,5 @@ module.exports = function (callback) {
 module.exports.runExportMetrics = runExportMetrics;
 
 module.exports.mergeDisputeResolutionEvents = mergeDisputeResolutionEvents;
+
+if (require.main === module) module.exports(cliCallback);

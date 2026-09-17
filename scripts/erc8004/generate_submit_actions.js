@@ -1,15 +1,8 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
-
-function ensureWeb3() {
-  if (typeof web3 !== 'undefined') return web3;
-  const Web3 = require('web3');
-  const providerUrl = process.env.WEB3_PROVIDER || 'http://127.0.0.1:8545';
-  const web3Instance = new Web3(providerUrl);
-  global.web3 = web3Instance;
-  return web3Instance;
-}
+const { Contract, Interface, getAddress } = require('ethers');
+const { providerFor, assertNetwork } = require('../lib/operations');
 
 function getArgValue(name) {
   const idx = process.argv.indexOf(`--${name}`);
@@ -34,7 +27,10 @@ function normalizeAddress(address) {
 
 function parseAgentRegistry(agentRegistry) {
   const [namespace, chainId, identityRegistry] = String(agentRegistry || '').split(':');
-  return { namespace, chainId: Number(chainId), identityRegistry };
+  if (namespace !== 'eip155' || !/^\d+$/.test(chainId || '') || !Number.isSafeInteger(Number(chainId)) || Number(chainId) < 1) {
+    throw new Error(`Invalid EIP-155 agentRegistry: ${agentRegistry}`);
+  }
+  return { namespace, chainId: Number(chainId), identityRegistry: getAddress(identityRegistry) };
 }
 
 function getAbi(fileName) {
@@ -46,18 +42,18 @@ function getFunctionAbi(abi, name) {
   return abi.find((item) => item.type === 'function' && item.name === name);
 }
 
-async function checkSenderEligibility({ identityRegistryAddress, agentId, sender }) {
+async function checkSenderEligibility({ identityRegistryAddress, agentId, sender, provider }) {
   const identityAbi = getAbi('IdentityRegistry.json');
-  const identityRegistry = new web3.eth.Contract(identityAbi, identityRegistryAddress);
-  const owner = await identityRegistry.methods.ownerOf(agentId).call();
+  const identityRegistry = new Contract(identityRegistryAddress, identityAbi, provider);
+  const owner = await identityRegistry.ownerOf(agentId);
   if (normalizeAddress(owner) === normalizeAddress(sender)) {
     throw new Error(`Sender ${sender} is the owner of agentId ${agentId}.`);
   }
-  const approved = await identityRegistry.methods.getApproved(agentId).call();
+  const approved = await identityRegistry.getApproved(agentId);
   if (normalizeAddress(approved) === normalizeAddress(sender)) {
     throw new Error(`Sender ${sender} is the approved operator for agentId ${agentId}.`);
   }
-  const isApprovedForAll = await identityRegistry.methods.isApprovedForAll(owner, sender).call();
+  const isApprovedForAll = await identityRegistry.isApprovedForAll(owner, sender);
   if (isApprovedForAll) {
     throw new Error(`Sender ${sender} is an approved operator for agentId ${agentId}.`);
   }
@@ -70,7 +66,6 @@ function validateValueDecimals(valueDecimals) {
 }
 
 async function main() {
-  ensureWeb3();
   const feedbackDir = process.env.FEEDBACK_DIR || getArgValue('feedback-dir');
   if (!feedbackDir) {
     throw new Error('Missing FEEDBACK_DIR/--feedback-dir');
@@ -118,9 +113,9 @@ async function main() {
       entry.feedbackHash || '0x' + '00'.repeat(32),
     ];
 
-    const calldata = web3.eth.abi.encodeFunctionCall(giveFeedbackAbi, args);
+    const calldata = new Interface(reputationAbi).encodeFunctionData('giveFeedback', args);
     actions.push({
-      to: reputationRegistryAddress,
+      to: getAddress(reputationRegistryAddress),
       function: 'giveFeedback',
       args: {
         agentId,
@@ -155,30 +150,37 @@ async function main() {
     throw new Error('SEND_TX=true requires I_UNDERSTAND=true confirmation.');
   }
 
-  const accounts = await web3.eth.getAccounts();
-  const sender = process.env.SENDER || getArgValue('sender') || accounts[0];
-  if (!sender) {
-    throw new Error('Unable to resolve sender account for SEND_TX.');
-  }
-
-  const reputationRegistry = new web3.eth.Contract(reputationAbi, reputationRegistryAddress);
-  for (const action of actions) {
-    await checkSenderEligibility({
-      identityRegistryAddress: action.identityRegistry,
-      agentId: action.args.agentId,
-      sender,
-    });
-    // eslint-disable-next-line no-await-in-loop
-    await reputationRegistry.methods.giveFeedback(
-      action.args.agentId,
-      action.args.value,
-      action.args.valueDecimals,
-      action.args.tag1,
-      action.args.tag2,
-      action.args.endpoint,
-      action.args.feedbackURI,
-      action.args.feedbackHash,
-    ).send({ from: sender });
+  const network = getArgValue('network') || 'development';
+  const provider = providerFor(network);
+  try {
+    const chainId = Number(await assertNetwork(provider, network));
+    for (const action of actions) {
+      if (action.chainId !== chainId) throw new Error(`Feedback chain ${action.chainId} does not match connected chain ${chainId}.`);
+    }
+    const senderInput = process.env.SENDER || getArgValue('sender');
+    if (!senderInput && ![1337, 31337].includes(chainId)) {
+      throw new Error('Public-chain submission requires an explicit SENDER/--sender and an unlocked signing RPC.');
+    }
+    const signer = await provider.getSigner(senderInput || 0);
+    const sender = await signer.getAddress();
+    if (await provider.getCode(reputationRegistryAddress) === '0x') throw new Error('No reputation registry contract code.');
+    // Check every action before the first broadcast, then recheck eligibility per send.
+    for (const action of actions) {
+      await checkSenderEligibility({ identityRegistryAddress: action.identityRegistry, agentId: action.args.agentId, sender, provider });
+    }
+    const reputationRegistry = new Contract(reputationRegistryAddress, reputationAbi, signer);
+    for (const action of actions) {
+      await checkSenderEligibility({ identityRegistryAddress: action.identityRegistry, agentId: action.args.agentId, sender, provider });
+      const transaction = await reputationRegistry.giveFeedback(
+        action.args.agentId, action.args.value, action.args.valueDecimals,
+        action.args.tag1, action.args.tag2, action.args.endpoint,
+        action.args.feedbackURI, action.args.feedbackHash,
+      );
+      const receipt = await transaction.wait();
+      if (!receipt || receipt.status !== 1) throw new Error(`Feedback transaction failed: ${transaction.hash}`);
+    }
+  } finally {
+    provider.destroy();
   }
 
   console.log(`Submitted ${actions.length} feedback transactions.`);

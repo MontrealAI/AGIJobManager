@@ -1,0 +1,36 @@
+{
+  "package": "@openzeppelin/contracts",
+  "version": "4.9.6",
+  "files": {
+    "utils/Address.sol": {
+      "original": "8b85a2463eda119c2f42c34fa3d942b61aee65df381f48ed436fe8edb3a7d602",
+      "patched": "2cfd9ff9d2e03c87c12deae8f8afb95b85496ac9944ebf57843c7b9fd479d156",
+      "memorySafeBlocks": 1,
+      "renamedIdentifiers": 0
+    },
+    "utils/Strings.sol": {
+      "original": "cb2df477077a5963ab50a52768cb74ec6f32177177a78611ddbbe2c07e2d36de",
+      "patched": "d273b688181261c2e5ce4554216f6cd24a7f14f52a71e81839eeb56304a68652",
+      "memorySafeBlocks": 2,
+      "renamedIdentifiers": 0
+    },
+    "token/ERC721/ERC721.sol": {
+      "original": "7af3ff063370acb5e1f1a2aab125ceca457cd1fa60ff8afa37aabc366349d286",
+      "patched": "01cd07a08d98f784bb466d1c3298d0e8a3f85587d468edea7e08d6a26f59ad8f",
+      "memorySafeBlocks": 1,
+      "renamedIdentifiers": 0
+    },
+    "utils/cryptography/ECDSA.sol": {
+      "original": "445963619903cee339e49aa2d7a0b07cfad90959529fff136394429c4a92d554",
+      "patched": "e9e7342678cbee8864cd8ce0a49ee9556af1351c40f74fd5cf458b3dc3bdd0ff",
+      "memorySafeBlocks": 3,
+      "renamedIdentifiers": 11
+    },
+    "utils/cryptography/MerkleProof.sol": {
+      "original": "878acde5ffd208c8a7e0081cd1b7cdc87d15c51aa41d9f32cacd93b129f89df3",
+      "patched": "deae99b9a68659bd845f8a8580633a3538c45d3b475533280ae55fa388a03ffa",
+      "memorySafeBlocks": 1,
+      "renamedIdentifiers": 0
+    }
+  }
+}

@@ -444,6 +444,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
+    event MaxJobPayoutUpdated(uint256 indexed oldPayout, uint256 indexed newPayout);
+    event JobDurationLimitUpdated(uint256 indexed oldLimit, uint256 indexed newLimit);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event USDCWithdrawn(address indexed to, uint256 indexed amount, uint256 remainingWithdrawable);
     event JobPayoutDistributed(uint256 indexed jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount);
@@ -737,8 +739,10 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         job.jobSpecURI = _jobSpecURI;
         job.payout = _payout;
         job.duration = _duration;
+        // The only setter enforces 1..60; this posting-time snapshot cannot truncate.
+        // forge-lint: disable-next-line(unsafe-typecast)
         job.validatorRewardPctSnapshot = uint8(validationRewardPercentage);
-        job.agentPayoutPct = uint8(60 - validationRewardPercentage);
+        job.agentPayoutPct = 60 - job.validatorRewardPctSnapshot;
         TransferUtils.safeTransferFromExact(address(usdcToken), msg.sender, address(this), _payout);
         unchecked {
             lockedEscrow += _payout;
@@ -796,6 +800,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (!(uriLength > 0 && uriLength <= MAX_JOB_COMPLETION_URI_BYTES)) revert InvalidParameters();
         if (msg.sender != job.assignedAgent) revert NotAuthorized();
         if (job.completed || job.expired) revert InvalidState();
+        // Assignment deadlines intentionally use chain time, with inclusive submission at the boundary.
+        // forge-lint: disable-next-line(block-timestamp)
         if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
         if (job.completionRequested) revert InvalidState();
         UriUtils.requireValidUri(_jobCompletionURI);
@@ -836,6 +842,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
             revert NotAuthorized();
         }
         if (!job.completionRequested) revert InvalidState();
+        // Voting is intentionally available through the recorded review deadline; not a randomness source.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
         if (job.approvals[msg.sender] || job.disapprovals[msg.sender]) revert InvalidState();
 
@@ -922,6 +930,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         _requireJobUnsettled(job);
         if (msg.sender != job.assignedAgent && msg.sender != job.employer) revert NotAuthorized();
         if (!job.completionRequested) revert InvalidState();
+        // A party may dispute through the same chain-time review deadline used by validator voting.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
         uint256 bond;
         unchecked {
@@ -976,6 +986,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     function resolveStaleDispute(uint256 _jobId, bool employerWins) external onlyOwner whenSettlementNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         _requireActiveDispute(job);
+        // Owner stale-dispute authority starts strictly after the recorded chain-time review deadline.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp <= job.disputedAt + disputeReviewPeriod) revert InvalidState();
 
         _clearDispute(job);
@@ -1078,11 +1090,15 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         emit VoteQuorumUpdated(oldQuorum, _quorum);
     }
     function setMaxJobPayout(uint256 _maxPayout) external onlyOwner {
+        uint256 oldPayout = maxJobPayout;
         maxJobPayout = _maxPayout;
+        emit MaxJobPayoutUpdated(oldPayout, _maxPayout);
     }
     function setJobDurationLimit(uint256 _limit) external onlyOwner {
         if (_limit == 0 || _limit > 365 days) revert InvalidParameters();
+        uint256 oldLimit = jobDurationLimit;
         jobDurationLimit = _limit;
+        emit JobDurationLimitUpdated(oldLimit, _limit);
     }
     function setMaxActiveJobsPerAgent(uint256 value) external onlyOwner {
         unchecked {
@@ -1245,6 +1261,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         _requireJobUnsettled(job);
         if (job.completionRequested) revert InvalidState();
         _requireAssignedAgent(job);
+        // Expiry starts strictly after the submission deadline; tests cover both boundary sides.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp <= job.assignedAt + job.duration) revert InvalidState();
 
         job.expired = true;
@@ -1272,6 +1290,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         _requireJobUnsettled(job);
         if (!job.completionRequested) revert InvalidState();
         if (job.validatorApproved) {
+            // Finalization must wait strictly beyond the chain-time challenge window.
+            // forge-lint: disable-next-line(block-timestamp)
             if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
             if (approvals > disapprovals) {
                 _completeJob(_jobId, true);
@@ -1279,6 +1299,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
             }
         }
 
+        // The no-vote/majority fallback starts strictly after the chain-time review window.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp <= job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
 
         uint256 totalVotes;
@@ -1360,7 +1382,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         uint256 correctCount = agentWins ? job.validatorApprovals : job.validatorDisapprovals;
         uint256 slashedPerIncorrect;
         uint256 poolForCorrect;
-        uint256 perCorrectReward;
+        uint256 perCorrectReward = 0;
         uint256 validatorReputationGain;
         unchecked {
             slashedPerIncorrect = (bond * validatorSlashBps) / 10_000;
@@ -1370,14 +1392,23 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
             }
             validatorReputationGain = (reputationPoints * job.validatorRewardPctSnapshot) / 100;
         }
+        // Commit every validator's reputation before any token interaction, including later loop entries.
+        if (validatorReputationGain > 0) {
+            for (uint256 i = 0; i < vCount; ) {
+                address validator = job.validators[i];
+                if (agentWins ? job.approvals[validator] : job.disapprovals[validator]) {
+                    enforceReputationGrowth(validator, validatorReputationGain);
+                }
+                unchecked {
+                    ++i;
+                }
+            }
+        }
         for (uint256 i = 0; i < vCount; ) {
             address validator = job.validators[i];
             bool correct = agentWins ? job.approvals[validator] : job.disapprovals[validator];
             uint256 payout = correct ? bond + perCorrectReward : bond - slashedPerIncorrect;
             _t(validator, payout);
-            if (correct && validatorReputationGain > 0) {
-                enforceReputationGrowth(validator, validatorReputationGain);
-            }
             unchecked {
                 ++i;
             }
@@ -1581,13 +1612,21 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
                 mstore(add(ptr, 0x04), shl(224, 0x01ffc9a7))
                 isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
                 isSupported := and(isSupported, gt(returndatasize(), 0x1f))
-                isSupported := and(isSupported, iszero(iszero(mload(ptr))))
+                isSupported := and(isSupported, eq(mload(ptr), 1))
                 if isSupported {
                     mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
                     mstore(add(ptr, 0x04), shl(224, 0x80ac58cd))
                     isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
                     isSupported := and(isSupported, gt(returndatasize(), 0x1f))
-                    isSupported := and(isSupported, iszero(iszero(mload(ptr))))
+                    isSupported := and(isSupported, eq(mload(ptr), 1))
+                }
+                if isSupported {
+                    // ERC-165 requires the invalid interface to return exactly false.
+                    mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
+                    mstore(add(ptr, 0x04), shl(224, 0xffffffff))
+                    isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
+                    isSupported := and(isSupported, gt(returndatasize(), 0x1f))
+                    isSupported := and(isSupported, iszero(mload(ptr)))
                 }
             }
         }

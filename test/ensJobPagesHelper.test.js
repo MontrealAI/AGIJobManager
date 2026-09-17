@@ -5,7 +5,7 @@ const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockHookCaller = artifacts.require("MockHookCaller");
 const MockAGIJobManagerView = artifacts.require("MockAGIJobManagerView");
 
-const { expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { expectEvent, expectRevert } = require("../scripts/test-helpers.cjs");
 
 const { namehash, subnode } = require("./helpers/ens");
 
@@ -253,12 +253,9 @@ contract("ENSJobPages helper", (accounts) => {
     const ens = await MockENSRegistry.new({ from: owner });
     const resolver = await MockPublicResolver.new({ from: owner });
 
-    try {
-      await ENSJobPages.new(owner, owner, resolver.address, rootNode, rootName, { from: owner });
-      assert.fail("expected constructor revert");
-    } catch (error) {
-      assert.include(String(error.message), "couldn't be stored");
-    }
+    await expectRevert.unspecified(
+      ENSJobPages.new(owner, owner, resolver.address, rootNode, rootName, { from: owner }),
+    );
 
     const helper = await ENSJobPages.new(
       ens.address,

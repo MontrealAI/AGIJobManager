@@ -5,7 +5,8 @@ This adapter consumes AGIJobManager events and produces ERC-8004-compatible **of
 ## Quick start
 ```bash
 # from repo root
-npm install
+npm ci
+npm --prefix hardhat ci
 npm run build
 
 # optional: copy the sample env file
@@ -17,17 +18,18 @@ ERC8004_IDENTITY_REGISTRY=0xIdentityRegistry \
 FROM_BLOCK=0 \
 TO_BLOCK=latest \
 OUT_DIR=integrations/erc8004/out \
-truffle exec scripts/erc8004/export_feedback.js --network sepolia
+node scripts/erc8004/export_feedback.js --network sepolia
 ```
 
 Optional validator aggregation:
 ```bash
 INCLUDE_VALIDATORS=true \
-truffle exec scripts/erc8004/export_feedback.js --network sepolia
+node scripts/erc8004/export_feedback.js --network sepolia
 ```
 
 ## Inputs (env vars / args)
-- `AGIJOBMANAGER_ADDRESS` (required if not using `truffle exec` with a deployed artifact)
+- `AGIJOBMANAGER_ADDRESS` or `--address` (required)
+- `RPC_URL` / `WEB3_PROVIDER`, or `MAINNET_RPC_URL` / `SEPOLIA_RPC_URL` with the matching `--network` (read-only RPC)
 - `FROM_BLOCK` (default: deployment block if known, otherwise `0`)
 - `TO_BLOCK` (default: `latest`)
 - `OUT_DIR` (default: `integrations/erc8004/out`)
@@ -38,7 +40,7 @@ truffle exec scripts/erc8004/export_feedback.js --network sepolia
 - `ERC8004_AGENT_ID` (optional; only safe when exporting a single subject)
 - `ERC8004_AGENT_ID_MAP` (optional path to JSON: `{ "0xwallet": 123 }`)
 - `NAMESPACE` (default: `eip155`)
-- `CHAIN_ID` (optional override)
+- `CHAIN_ID` (optional assertion; must equal the connected chain)
 - `ERC8004_CLIENT_ADDRESS` (optional; defaults to AGIJobManager address for artifacts)
 
 ## Output
@@ -57,7 +59,7 @@ ERC8004_REPUTATION_REGISTRY=0xYourReputationRegistry \
 node scripts/erc8004/generate_submit_actions.js
 ```
 
-This generates a **dry-run** list of intended ERC-8004 `giveFeedback(...)` calls. To send transactions, set `SEND_TX=true` and `I_UNDERSTAND=true` with a funded signer in your Truffle provider (the script will auto-disable dry-run unless you explicitly set `DRY_RUN=true`, which will error). The script enforces the ERC-8004 rule that the submitter **must not** be the agent owner or approved operator.
+This generates a **dry-run** list of intended ERC-8004 `giveFeedback(...)` calls. To send transactions, set `SEND_TX=true` and `I_UNDERSTAND=true` with an explicit `SENDER`/`--sender` available through your signing RPC (`RPC_URL`, or `--network` with its corresponding RPC environment variable) (the script will auto-disable dry-run unless you explicitly set `DRY_RUN=true`, which will error). The connected chain must match every feedback entry before any transaction is sent, and successful receipts are awaited. The script enforces the ERC-8004 rule that the submitter **must not** be the agent owner or approved operator.
 
 ABIs used by the scripts are vendored from the official ERC-8004 contracts repo in `integrations/erc8004/abis/`.
 

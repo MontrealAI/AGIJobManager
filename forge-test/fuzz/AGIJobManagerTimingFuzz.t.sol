@@ -61,6 +61,8 @@ contract AGIJobManagerTimingFuzz is Test {
 
         vm.warp(boundary - (delta == 0 ? 1 : 0));
         vm.prank(validator);
+        // vm.warp controls the test clock; this branch exercises the exact protocol deadline.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp <= boundary) {
             manager.validateJob(jobId, "", new bytes32[](0));
         }

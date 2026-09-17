@@ -23,10 +23,10 @@ contract AGIJobManagerHandler is Test {
         manager = _manager;
         token = _token;
 
-        for (uint256 i = 0; i < 3; i++) {
-            employers.push(address(uint160(0x100 + i)));
-            agents.push(address(uint160(0x200 + i)));
-            validators.push(address(uint160(0x300 + i)));
+        for (uint160 i = 0; i < 3; i++) {
+            employers.push(address(0x100 + i));
+            agents.push(address(0x200 + i));
+            validators.push(address(0x300 + i));
         }
         moderator = address(0x404);
 

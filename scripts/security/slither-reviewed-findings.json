@@ -2,91 +2,34 @@
   "schema": 1,
   "slither_version": "0.11.6",
   "review_date": "2026-09-17",
-  "scope": "Production Solidity, all medium/high detectors and all severities of six reentrancy detectors. Each finding is retained, individually reviewed, and bound to exact source/configuration/dependency hashes. This is an internal review, not an independent audit.",
+  "scope": "Production Solidity, all 102 enabled Slither detectors at every severity, plus separate all-medium/high and all-six-reentrancy reports. All findings are retained and individually reviewed against exact production/configuration/compiler/dependency-patch hashes. This is an internal review, not an independent audit.",
   "source_sha256": {
-    "contracts/AGIJobManager.sol": "20a64e4f992864594b252586fa82860490f11c3b14acf61353cefcf47113e7fd",
-    "contracts/ens/ENSJobPages.sol": "52d71e80d37e8ef653af4378169d6e7bdd272097af74d5448d8f599351095ae8",
+    "contracts/AGIJobManager.sol": "863fa33e67b9390643b609eea04eaad08463d1ec635fc3b960f8d466cbd89f60",
+    "contracts/ens/ENSJobPages.sol": "b9ef3d109e1a15f63c21aa3e3ed52fbe2181117ceaa5667d36b27bbc04b3af3f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
-    "contracts/ens/IENSRegistry.sol": "bc11a38b030825eaaaaf44eeb2e72197ba37db12d5e059bb5f329dc20d9e4340",
+    "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
     "contracts/ens/INameWrapper.sol": "182065cbe99804d03abef665ec6d927cfa4d91cc0804301d7893fe6a57fc58d3",
     "contracts/ens/IPublicResolver.sol": "a2fffdeba3181c798b3b61996ca76531b6bae635070674e13f7d50937275117e",
-    "contracts/periphery/AGIJobPages.sol": "ba2fce3968289382f9a3ef85090842ab992d315c71b9302d186244448ae2ce56",
+    "contracts/periphery/AGIJobPages.sol": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
     "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
-    "contracts/utils/ENSOwnership.sol": "9f5dcf7b9eab3a11f023fb4d5d6f93b98560eb39b5ca75fa2fc2b2acd07bb3f6",
+    "contracts/utils/ENSOwnership.sol": "8f6ddf455fe74489693e47979485770b9627c2e717d381a69a9445ab71974944",
     "contracts/utils/EnsLabelUtils.sol": "e7bf88fa5c3ecd85472e066c73dd76c2ce3b9f1f9700db27c4781e0577b358db",
-    "contracts/utils/ReputationMath.sol": "4788aa3ce3cffb4f80f881ea820ff8e0b198bbe7a9e29a40848ea9d8c29cca6e",
+    "contracts/utils/ReputationMath.sol": "c742c3e7cb05a412405e8fe29d5283b1464e6c377ce98e2d8a360f96f3e3522c",
     "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
-    "contracts/utils/UriUtils.sol": "244d758a497bdd61c1f4655e0d094a434f86067b82ec5150f671acce33523e03",
-    "foundry.toml": "129c697f553cd4fb849cf1f0916b0f1c0dce6b9e1f75cc2e6251f9f859384c01",
-    "package-lock.json": "4614e333c0c836fc1c2f72977e40d4922b12bde1a8410113167be74cb6da9d85",
+    "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
+    "foundry.toml": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
+    "package-lock.json": "dc4d87c4722bb5f8713ae4bf8208cbbcfd38a7fca6c53129a60c3b747bef6886",
+    "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
+    "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116",
+    "scripts/security/run-slither-extended.sh": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb",
+    "scripts/security/run-slither.sh": "c4e819672f0955250dbb695298ec9128b50794c24cfbf76ab547ebb2d84650a2",
+    "scripts/security/slither-all.config.json": "a0070c69b696f0401b15391074fd08f6ed31a2684dcda29f7a14b33a1f687159",
     "scripts/security/slither-extended.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
-    "scripts/security/slither-reentrancy.config.json": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba"
+    "scripts/security/slither-reentrancy.config.json": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba",
+    "slither.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01"
   },
   "reports": {
     "slither-extended.json": [
-      {
-        "id": "10040e318ecd6dcb10cd010fabf12c76b75c4e44302a85579e147079e079ec2e",
-        "check": "uninitialized-local",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "ENSJobPages.migrateLegacyWrappedJobPage(uint256,string).adopted (contracts/ens/ENSJobPages.sol#278) is a local variable never initialized",
-        "rationale": "The event flag intentionally starts false and is set true only after existing wrapped ownership is successfully adopted. Solidity initializes scalar locals to their type default; no uninitialized storage pointer is involved.",
-        "evidence": "contracts/ens/ENSJobPages.sol; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "1b8438a4b8eb5006701e590777ed49d7fe3b60a14e7947f8a7845a7b36f52f30",
-        "check": "uninitialized-local",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "ENSJobPages.handleHook(uint8,uint256).success (contracts/ens/ENSJobPages.sol#363) is a local variable never initialized",
-        "rationale": "Each best-effort ENS operation intentionally starts with a false result and sets true only inside a successful try branch. Solidity initializes scalar locals to their type default; no uninitialized storage pointer is involved.",
-        "evidence": "contracts/ens/ENSJobPages.sol; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "2937ade14e131f1ef97b6893c73fffc4b034e2a62f6acd81e1a7106d5b148e71",
-        "check": "divide-before-multiply",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "AGIJobManager._settleValidators(AGIJobManager.Job,bool,uint256,uint256,uint256) (contracts/AGIJobManager.sol#1343-1389) performs a multiplication on the result of a division:",
-        "rationale": "The slash is intentionally floored for each incorrect validator. Multiplying that per-validator slash by the incorrect-validator count exactly equals the sum withheld from individual bonds; multiplying before flooring could allocate more than was withheld. Remaining USDC is routed to the winning party.",
-        "evidence": "contracts/AGIJobManager.sol:_settleValidators; test/validatorVoting.bonds.test.js; test/escrowAccounting.invariants.test.js; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
-      },
-      {
-        "id": "3da456eadcdb677e0827d78866312a07351b2c37441eda07679457dfddc44d8d",
-        "check": "encode-packed-collision",
-        "impact": "High",
-        "confidence": "High",
-        "location": "AGIJobPages._resolveTokenURI(uint256) (contracts/periphery/AGIJobPages.sol#101-109) calls abi.encodePacked() with multiple dynamic arguments:",
-        "rationale": "Intentional literal URI concatenation of an owner-configured base and a decimal job ID, optionally followed by .json. The concatenated value does not authorize a user, validate a signature, or identify escrow.",
-        "evidence": "contracts/periphery/AGIJobPages.sol:_resolveTokenURI; test/jobMetadataRoutingAndMappings.test.js"
-      },
-      {
-        "id": "4142a39bb15adc97cf44327c5bab559ec37fb451a71703648d273baadf92f99d",
-        "check": "mapping-deletion",
-        "impact": "Medium",
-        "confidence": "High",
-        "location": "AGIJobManager._cancelJobAndRefund(uint256,AGIJobManager.Job) (contracts/AGIJobManager.sol#617-623) deletes AGIJobManager.Job (contracts/AGIJobManager.sol#365-393) which contains a mapping:",
-        "rationale": "Cancellation/delisting requires an unassigned job. Voting requires assignment and completion, so approvals/disapprovals mappings have no populated entries on this deletion path. Job IDs advance monotonically and are not reused. Both external cancellation entry points hold the reentrancy guard.",
-        "evidence": "contracts/AGIJobManager.sol:cancelJob,delistJob,_recordValidatorVote,createJob; test/delistJob.reentrancy.test.js; test/securityRegression.test.js"
-      },
-      {
-        "id": "4ecfaf003c7a127371204a5a6db583cfd61234fc99c79774518b5ef303e7467a",
-        "check": "encode-packed-collision",
-        "impact": "High",
-        "confidence": "High",
-        "location": "ENSJobPages._buildJobLabel(string,uint256) (contracts/ens/ENSJobPages.sol#755-759) calls abi.encodePacked() with multiple dynamic arguments:",
-        "rationale": "The operation builds the literal ENS label rather than an authentication digest. Prefix validation requires a nonnumeric final character, decimal job IDs delimit the suffix, and snapshotted label ownership rejects reuse across jobs.",
-        "evidence": "contracts/ens/ENSJobPages.sol:_isValidJobLabelPrefix,_snapshotJobLabel,_importExactJobLabel; test/ensJobPagesHooks.test.js; test/ensLabelAuthRouting.regression.test.js"
-      },
-      {
-        "id": "50d15f227b2e77c5ae778d0ced22f054e24d4208f922d19f617cb1e17cfd2b96",
-        "check": "uninitialized-local",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "ReputationMath.computeReputationPoints(uint256,uint256,uint256,uint256,bool).timeBonus (contracts/utils/ReputationMath.sol#22) is a local variable never initialized",
-        "rationale": "The integer bonus intentionally starts at zero when no positive duration-based bonus applies. Solidity initializes scalar locals to their type default; no uninitialized storage pointer is involved.",
-        "evidence": "contracts/AGIJobManager.sol:_settleValidators; contracts/utils/ReputationMath.sol; test/securityRegression.test.js; test/validatorVoting.bonds.test.js"
-      },
       {
         "id": "6a657bd713879619e5cbbaf89c2e47cbd624af78c1d10d2863200ebae8370b4d",
         "check": "unused-return",
@@ -97,13 +40,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "6e1a37c7a93abcd03851b871ec632c22e40648e7c6021828901d1f59e6515b07",
-        "check": "encode-packed-collision",
-        "impact": "High",
-        "confidence": "High",
-        "location": "AGIJobPages._resolveTokenURI(uint256) (contracts/periphery/AGIJobPages.sol#101-109) calls abi.encodePacked() with multiple dynamic arguments:",
-        "rationale": "Intentional literal URI concatenation of an owner-configured base and a decimal job ID, optionally followed by .json. The concatenated value does not authorize a user, validate a signature, or identify escrow.",
-        "evidence": "contracts/periphery/AGIJobPages.sol:_resolveTokenURI; test/jobMetadataRoutingAndMappings.test.js"
+        "id": "6af74a9c1481209b1e448240cf80cd21df8b550bf5a50b5dca0db7964e347e0d",
+        "check": "divide-before-multiply",
+        "impact": "Medium",
+        "confidence": "Medium",
+        "location": "AGIJobManager._settleValidators(AGIJobManager.Job,bool,uint256,uint256,uint256) (contracts/AGIJobManager.sol#1365-1420) performs a multiplication on the result of a division:",
+        "rationale": "The slash is intentionally floored for each incorrect validator. Multiplying that per-validator slash by the incorrect-validator count exactly equals the sum withheld from individual bonds; multiplying before flooring could allocate more than was withheld. Remaining USDC is routed to the winning party.",
+        "evidence": "contracts/AGIJobManager.sol:_settleValidators; test/validatorVoting.bonds.test.js; test/escrowAccounting.invariants.test.js; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
       {
         "id": "71b4cf55d5f2bb454f8cb7a64405ae4585152a6f1e56a0bb0239ea7c8bccc932",
@@ -113,51 +56,6 @@
         "location": "ENSJobPages._handleRevokeHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#437-453) ignores return value by (employer,agent) = managerView.getJobCore(jobId) (contracts/ens/ENSJobPages.sol#438-452)",
         "rationale": "This call intentionally destructures only the job fields needed for this metadata operation. The unused tuple fields are unrelated payout, duration, or status fields; return decoding and call failure are still enforced by Solidity/try-catch.",
         "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "74bac43b7e012a846e5b39533065e7af3ec8e2877cedc847e00dfae94e2aee05",
-        "check": "uninitialized-local",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "AGIJobManager._settleValidators(AGIJobManager.Job,bool,uint256,uint256,uint256).perCorrectReward (contracts/AGIJobManager.sol#1363) is a local variable never initialized",
-        "rationale": "The integer reward intentionally starts at zero when no validator is correct; the entire undistributed pool then becomes the returned remainder. Solidity initializes scalar locals to their type default; no uninitialized storage pointer is involved.",
-        "evidence": "contracts/AGIJobManager.sol:_settleValidators; contracts/utils/ReputationMath.sol; test/securityRegression.test.js; test/validatorVoting.bonds.test.js"
-      },
-      {
-        "id": "8ab07fec6c7aeeedf88d7f841b7eca581ff8aafbf0e8b214ccd0009945847ca9",
-        "check": "encode-packed-collision",
-        "impact": "High",
-        "confidence": "High",
-        "location": "UriUtils._applyBaseIpfs(string,string) (contracts/utils/UriUtils.sol#78-98) calls abi.encodePacked() with multiple dynamic arguments:",
-        "rationale": "Intentional literal URI joining, with slash normalization, rather than hashing or signing an ambiguous tuple. Metadata is untrusted display content and cannot authorize token movement.",
-        "evidence": "contracts/utils/UriUtils.sol:_applyBaseIpfs; test/jobMetadataRoutingAndMappings.test.js"
-      },
-      {
-        "id": "8bf9e38d6893867cb8944a440426e6996fee0eed9423c736468252b965754e70",
-        "check": "uninitialized-local",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "ENSJobPages.migrateLegacyWrappedJobPage(uint256,string).created (contracts/ens/ENSJobPages.sol#279) is a local variable never initialized",
-        "rationale": "The event flag intentionally starts false and is set true only after a new subname is created. Solidity initializes scalar locals to their type default; no uninitialized storage pointer is involved.",
-        "evidence": "contracts/ens/ENSJobPages.sol; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "9df58b9a9bef388fa113df3f2f5a22b0567fc4dd080f9ec3ec0633726b8ec187",
-        "check": "unused-return",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311) ignores return value by INameWrapperSubnameOwner(address(nameWrapper)).setSubnodeOwner(jobsRootNode,label,address(this),0,type()(uint64).max) (contracts/ens/ENSJobPages.sol#285-291)",
-        "rationale": "The ENS namehash is independently computed from the configured parent and exact label instead of trusting the wrapper return value. Migration additionally verifies the resulting ownership. ENS addresses are owner-controlled integrations; these paths manage metadata and do not transfer or authorize job funds.",
-        "evidence": "contracts/ens/ENSJobPages.sol:migrateLegacyWrappedJobPage,_createSubname,_nodeManagedBySelf; test/ensJobPagesHooks.test.js; test/ensLabelAuthRouting.regression.test.js"
-      },
-      {
-        "id": "ac4a4e9df82fe9f8d6cacbd61e827ce146bcbc7458870f06690561f220f4d36e",
-        "check": "unused-return",
-        "impact": "Medium",
-        "confidence": "Medium",
-        "location": "ENSJobPages._createSubname(string) (contracts/ens/ENSJobPages.sol#535-553) ignores return value by INameWrapperSubnameOwner(address(nameWrapper)).setSubnodeOwner(jobsRootNode,label,address(this),0,type()(uint64).max) (contracts/ens/ENSJobPages.sol#540-546)",
-        "rationale": "The ENS namehash is independently computed from the configured parent and exact label instead of trusting the wrapper return value. Migration additionally verifies the resulting ownership. ENS addresses are owner-controlled integrations; these paths manage metadata and do not transfer or authorize job funds.",
-        "evidence": "contracts/ens/ENSJobPages.sol:migrateLegacyWrappedJobPage,_createSubname,_nodeManagedBySelf; test/ensJobPagesHooks.test.js; test/ensLabelAuthRouting.regression.test.js"
       },
       {
         "id": "c18f5be884ef9b08680419482ae1d61fc635bba48cfcb0f824c4af071a792240",
@@ -187,51 +85,24 @@
         "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "f46ced7bce7c10c6e13da08a11f9612ec5fbd76358db687e4f3393fc0ee9b5dd",
-        "check": "reentrancy-no-eth",
+        "id": "ee4f7c117f5d553963b75762c826e3c89068f14428402cd5a2bce73c6b33d421",
+        "check": "mapping-deletion",
         "impact": "Medium",
-        "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager._settleValidators(AGIJobManager.Job,bool,uint256,uint256,uint256) (contracts/AGIJobManager.sol#1343-1389):",
-        "rationale": "The post-transfer write is validator reputation, not escrow authority. All settlement entry points hold nonReentrant and terminal state/reserve debits precede transfers. Native Circle USDC transfer does not invoke recipient hooks; a view of reputation cannot reenter guarded money-moving paths. This review does not approve substituting an arbitrary callback token.",
-        "evidence": "contracts/AGIJobManager.sol:_completeJob,_refundEmployer,_settleValidators,finalizeJob,resolveDisputeWithCode,resolveStaleDispute; test/securityRegression.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js"
-      },
-      {
-        "id": "f7abf1cd135833216fc1312a9472a4ebf0cd36e466423d0b16916b3ca8b2dc85",
-        "check": "encode-packed-collision",
-        "impact": "High",
         "confidence": "High",
-        "location": "UriUtils._applyBaseIpfs(string,string) (contracts/utils/UriUtils.sol#78-98) calls abi.encodePacked() with multiple dynamic arguments:",
-        "rationale": "Intentional literal URI joining, with slash normalization, rather than hashing or signing an ambiguous tuple. Metadata is untrusted display content and cannot authorize token movement.",
-        "evidence": "contracts/utils/UriUtils.sol:_applyBaseIpfs; test/jobMetadataRoutingAndMappings.test.js"
+        "location": "AGIJobManager._cancelJobAndRefund(uint256,AGIJobManager.Job) (contracts/AGIJobManager.sol#619-625) deletes AGIJobManager.Job (contracts/AGIJobManager.sol#365-393) which contains a mapping:",
+        "rationale": "Cancellation/delisting requires an unassigned job. Voting requires assignment and completion, so approvals/disapprovals mappings have no populated entries on this deletion path. Job IDs advance monotonically and are not reused. Both external cancellation entry points hold the reentrancy guard.",
+        "evidence": "contracts/AGIJobManager.sol:cancelJob,delistJob,_recordValidatorVote,createJob; test/delistJob.reentrancy.test.js; test/securityRegression.test.js"
       }
     ],
     "slither-reentrancy.json": [
       {
-        "id": "00d4baf28f64c8a5235f8ea756571e86953a3609da1613fd3df99b01bc6390e3",
+        "id": "06251002b6a3176c91104eea1f212ec5282377a622fa00a98b1115b1905a5573",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
         "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "04f6e861cdd6a74cd21ccfc127b3796411bb37114eb0000f9ae1e5fb263f15f5",
-        "check": "reentrancy-events",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "0b35b1413d30ca71a30ca3e7d493c32b93838b5d72be130acb78eafa97cfeb81",
-        "check": "reentrancy-benign",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#920-944):",
-        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
-        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
         "id": "0dfdfabef93367f19f94ddbf2ebfdf893ff183013465cb4cbd59f87c609ebdf2",
@@ -243,13 +114,40 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "1e7c00e73c74a58fdef39c2ebb5cf2ba8d7bc4c7eaf07e18b7bc61a397d4ea78",
-        "check": "reentrancy-benign",
+        "id": "1984eefad32879981dfeae4ec8d4b4002cbd68ab0b7938801b60d950ee916df3",
+        "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager._completeJob(uint256,bool) (contracts/AGIJobManager.sol#1307-1341):",
-        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
-        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "25ef3b54ee6043bd055edb1570922e4b2a644801fb89a0528332ab9731be9927",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "33c29c69e01a2726e0662510e1e0290430d94074568c13ab27d26599da8b5d2b",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "35c70ae069ec79677066cb36e907b8a39021668cd4b4aeffe8347c761c8b973f",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
         "id": "3650b10c80d185b952d325c1ce3823c349b8fcc1cfc49cb1cc364059db823a8d",
@@ -261,13 +159,22 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "3ca12186392bd286759419f55365580376d208274aba2bc12a01a7b16265a2a0",
+        "id": "37ec575d9d23f6509134707910e0aee8d5af33907b502568d952bc8c1c72b7ab",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
         "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "3dcbfcf908c07e2d5124bf1dea9aac2082443b25c11e929924313e6077bf8211",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#723-752):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
         "id": "42023577d4990a83249c26e489c76676cd5dbc0a126e996d9108b8f55b207265",
@@ -279,31 +186,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "4b5ee343f59232777fb32747b9e2a80fea71ea81a75d4629a7c69e88178bcec5",
-        "check": "reentrancy-events",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "569a17dda8793f358e956e892191be966091ea4354bfdb45934d2c9a6fdc6b25",
+        "id": "4c042ef419c032c5f3aac5a8d591ce11c8b7a7b68486de21c6950f8ab57b71e0",
         "check": "reentrancy-benign",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager._recordValidatorVote(uint256,string,bytes32[],bool) (contracts/AGIJobManager.sol#825-890):",
+        "location": "Reentrancy in AGIJobManager._recordValidatorVote(uint256,string,bytes32[],bool) (contracts/AGIJobManager.sol#831-898):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
-      },
-      {
-        "id": "6652ce43720712396c04630885031ae67dcc54405aee1f5123c6322e7dc4189e",
-        "check": "reentrancy-events",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
         "id": "6c88202661e438d2b2ca052beb79b1a30d8cfb3713aa56a3b8f8064eb12465d6",
@@ -311,6 +200,15 @@
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._lockJobENS(uint256,address,address,bool) (contracts/ens/ENSJobPages.sol#510-533):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "719909ae40fdbec663e85d8e2af9ceb13ab97454afa186ff5e383ea08b5dadcc",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
         "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
@@ -333,13 +231,22 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "8e2d52bb46c1dcfecd0f042d7a415f66d3f298fe3348a9fec1e97bed13920ae9",
+        "id": "86d52431aa9c8e8febadeebb82721e27ac2315ec698e8828c907f016326021e2",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
         "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "8b8c1873e2f7c4a04bf6e28c6246b855c9f4d6bab2f1063e27fb9f17d6427174",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#928-954):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
         "id": "91ecdc5b4f367ba28de83a2f0fd9ae77fa54acc36695e9c05b2903afbafd60ff",
@@ -351,20 +258,11 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "97fefe13ecab1309811704763a44389bd6879f2937de59191ba5004efb69269d",
-        "check": "reentrancy-events",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
-      },
-      {
-        "id": "99cfdbac38ff02289b9bcd3f28964ce7d14ef1c2a55c0e58405e377eb34a8b6c",
+        "id": "9b3eeab1b835c45c0a13b8917e1b610e032549399b8233faa5212638ca7a1f8d",
         "check": "reentrancy-benign",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#721-748):",
+        "location": "Reentrancy in AGIJobManager._cancelJobAndRefund(uint256,AGIJobManager.Job) (contracts/AGIJobManager.sol#619-625):",
         "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
@@ -396,11 +294,29 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
+        "id": "caf8424a081a270a8d01ca674404cf23b96d22a0b8adec43319b0c625164c92d",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager._completeJob(uint256,bool) (contracts/AGIJobManager.sol#1329-1363):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
         "id": "d491b41f16c9379163315f0f656b7041cfef7476efa85efa612d35bdfcb3084e",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.handleHook(uint8,uint256) (contracts/ens/ENSJobPages.sol#355-419):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "d7da381f2f20b7f18e8e97be9b729958e73e8000a3a50f65e82a0181d23123b8",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
         "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
@@ -414,7 +330,7 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "df6339cb095cea5fa685968b93567a1ba135eacc9497bccac474f3d80379930b",
+        "id": "ddc995397817d04f029d62962c0fa3534b69494abbbf05eb23aed18606496251",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
@@ -423,7 +339,16 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "e0d10e022e9ce3de98c3b50b8b825e18d0dbdb8fe3752454a8a8b5e036f52979",
+        "id": "fd069f40ab37ddafc4b86cc23cfe1b83ebe0c267d5c501a254739768ef51ced7",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#754-791):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
+        "id": "ff419e864cec0ee6f1a00f3a032c500c0ccb7d7e1c364c2549279d923fd6dfb1",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
@@ -432,7 +357,135 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "e55dc67296fd50be4f2a15144071f5381753c8d67b83255561ec3cc15d2fa6f6",
+        "id": "ff6b50fdb97bf5c4d8617b47b2f85f99c78a70185e45e9419e06bd9b2fb47852",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      }
+    ],
+    "slither-all.json": [
+      {
+        "id": "06251002b6a3176c91104eea1f212ec5282377a622fa00a98b1115b1905a5573",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "092e2e1c5ed41a765c90205ca9da8bbb5dde36ead15ad7bdb955243927da8d67",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobCompletionURI (contracts/AGIJobManager.sol#793) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobCompletionURI intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "0acf2cc3b10599f80154ef1682da6da5a1aec91a92a40799ee3b9903a6c99ad6",
+        "check": "too-many-digits",
+        "impact": "Informational",
+        "confidence": "Medium",
+        "location": "AGIJobManager._supportsERC721(address) (contracts/AGIJobManager.sol#1607-1633) uses literals with too many digits:",
+        "rationale": "The long hexadecimal value is an intentionally left-aligned four-byte ABI selector followed by zero padding in a 32-byte memory word. It is not a decimal amount or address. Selector/return-data tests and strict ERC165 checks establish the expected call encoding.",
+        "evidence": "contracts/AGIJobManager.sol:_supportsERC721,getHighestPayoutPercentage; forge-test/unit/AGIJobManagerV091Security.t.sol; test/agiTypes.safety.test.js"
+      },
+      {
+        "id": "0dfdfabef93367f19f94ddbf2ebfdf893ff183013465cb4cbd59f87c609ebdf2",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.handleHook(uint8,uint256) (contracts/ens/ENSJobPages.sol#355-419):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "0fcf19dddd7958a0ab14c55ec8d3716aae8c9c791a4b985fda26972710f8944f",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setVoteQuorum(uint256)._quorum (contracts/AGIJobManager.sol#1085) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setVoteQuorum(uint256)._quorum intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "18bfe62d12d0f4e5933d2f49ff2e262325b32776aa17914aa23d000e29bce400",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._validatorMerkleRoot (contracts/AGIJobManager.sol#1056) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._validatorMerkleRoot intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "1984eefad32879981dfeae4ec8d4b4002cbd68ab0b7938801b60d950ee916df3",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "1bf5359fcd87a6de134e6620a555c517e4ac8b6bb2df4e05474583128419ad3d",
+        "check": "missing-inheritance",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "AGIJobManager (contracts/AGIJobManager.sol#284-1663) should inherit from IAGIJobManagerView (contracts/ens/ENSJobPages.sol#12-30)",
+        "rationale": "IAGIJobManagerView is the deliberately narrow structural view interface consumed by optional ENSJobPages. The manager exposes the matching getJobCore/getJobSpecURI/getJobCompletionURI selectors and return types without inheriting its optional metadata consumer. Solidity ABI compatibility and integration calls are tested; inheritance is not an authorization control.",
+        "evidence": "contracts/ens/ENSJobPages.sol:IAGIJobManagerView; contracts/AGIJobManager.sol; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "1eb95743b4237acb1ca865a0cd174f3b03ecc48a27ba5d9ee1e1063301988a4a",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Function ENSJobPages._handleAssignHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#427-430) is not in mixedCase",
+        "rationale": "Function ENSJobPages._handleAssignHook(IAGIJobManagerView,uint256) intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "1f03ec3644d9500edd8364fec0381162e3e7c81702e9370abec1c8f84efe0302",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "AGIJobPages.fallback() (contracts/periphery/AGIJobPages.sol#78-99) uses assembly",
+        "rationale": "The compatibility fallback checks the selector and minimum calldata length before loading the job ID, then returns Solidity ABI-encoded URI bytes. It makes no fund transfers or privileged state changes; metadata selector/ABI compatibility is tested.",
+        "evidence": "contracts/periphery/AGIJobPages.sol:fallback; forge-test/unit/AGIJobManagerSecurityVerification.t.sol; test/jobMetadataRoutingAndMappings.test.js"
+      },
+      {
+        "id": "1f5365b877e4c8a3fdbb866e44c88e1781560f20bdc74ca444b74c8cd91d5080",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setValidationRewardPercentage(uint256)._percentage (contracts/AGIJobManager.sol#1232) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setValidationRewardPercentage(uint256)._percentage intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "2461da869b4366581cad9c0acd546c5887a40ca32df03def4c8d4eb165fb9d3e",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.requestJobCompletion(uint256,string) (contracts/AGIJobManager.sol#793-813) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "2542ff481b51814ab4bfdf4811548d2af4a0902ea0875df63325d8991caa45ec",
+        "check": "too-many-digits",
+        "impact": "Informational",
+        "confidence": "Medium",
+        "location": "AGIJobManager.getHighestPayoutPercentage(address) (contracts/AGIJobManager.sol#1636-1662) uses literals with too many digits:",
+        "rationale": "The long hexadecimal value is an intentionally left-aligned four-byte ABI selector followed by zero padding in a 32-byte memory word. It is not a decimal amount or address. Selector/return-data tests and strict ERC165 checks establish the expected call encoding.",
+        "evidence": "contracts/AGIJobManager.sol:_supportsERC721,getHighestPayoutPercentage; forge-test/unit/AGIJobManagerV091Security.t.sol; test/agiTypes.safety.test.js"
+      },
+      {
+        "id": "25ef3b54ee6043bd055edb1570922e4b2a644801fb89a0528332ab9731be9927",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
@@ -441,25 +494,61 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "e68967080564fde5019c67ce5854ff5140ce06a775112eb02d6258e9bbdc7d93",
-        "check": "reentrancy-benign",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#750-787):",
-        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
-        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+        "id": "278cbe1b1391fe9c0ed3867fd84a8656a230c7fe1c35a91175c6ccd3c424917e",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setEnsJobPages(address)._ensJobPages (contracts/AGIJobManager.sol#1034) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setEnsJobPages(address)._ensJobPages intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "eae227eba506ba778a39ba77a5bac8a770593aeb08ef285b93ded0fed9fb7ac3",
-        "check": "reentrancy-benign",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager._cancelJobAndRefund(uint256,AGIJobManager.Job) (contracts/AGIJobManager.sol#617-623):",
-        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
-        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+        "id": "2acb9bf15ccdee61914fe0802a4de338072273abe8b684066ffcb61695960cf0",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.cancelJob(uint256)._jobId (contracts/AGIJobManager.sol#1252) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.cancelJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "f36bf7dee8dfeee6f98f5cc713dfb6c8da35cac81f1e26b11fe04dd5e0f643cd",
+        "id": "2b2cc7d0046c6eeb9a0a63c17f83c9829d1266eb8aa22d4d487656f5a882b644",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.removeModerator(address)._moderator (contracts/AGIJobManager.sol#1019) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.removeModerator(address)._moderator intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "2c7f858ce6440b9ce48325d54cef87a4e1dc793d5c64dbbc73eda0e5974e2b5a",
+        "check": "too-many-digits",
+        "impact": "Informational",
+        "confidence": "Medium",
+        "location": "AGIJobManager._supportsERC721(address) (contracts/AGIJobManager.sol#1607-1633) uses literals with too many digits:",
+        "rationale": "The long hexadecimal value is an intentionally left-aligned four-byte ABI selector followed by zero padding in a 32-byte memory word. It is not a decimal amount or address. Selector/return-data tests and strict ERC165 checks establish the expected call encoding.",
+        "evidence": "contracts/AGIJobManager.sol:_supportsERC721,getHighestPayoutPercentage; forge-test/unit/AGIJobManagerV091Security.t.sol; test/agiTypes.safety.test.js"
+      },
+      {
+        "id": "31775650d97f08395411fc8fd47ea4b47ee18ec1151e201890136337b5a08f30",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "AGIJobManager._supportsERC721(address) (contracts/AGIJobManager.sol#1607-1633) uses assembly",
+        "rationale": "Assembly bounds each ERC165 staticcall to ERC165_GAS_LIMIT, requires at least one full return word, accepts only canonical true for ERC165/ERC721, and requires canonical false for the invalid interface. Owner-selected credential registration rejects malformed and dishonest interface responses.",
+        "evidence": "contracts/AGIJobManager.sol:_supportsERC721; forge-test/unit/AGIJobManagerV091Security.t.sol:test_ERC721RegistrationRequiresCanonicalERC165Responses"
+      },
+      {
+        "id": "32afac62c3f0517247a9ad4d56372a705681e2c0e433992948fde4bed093f4fc",
+        "check": "low-level-calls",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Low level call in TransferUtils._callOptionalReturn(address,bytes) (contracts/utils/TransferUtils.sol#36-49):",
+        "rationale": "Assembly decodes exactly one full return word after a 32-byte length check. Failed calls, false/noncanonical booleans and malformed nonempty returndata revert; supported no-return ERC20 calls are allowed only for contract targets. Exact incoming balance deltas reject transfer fees.",
+        "evidence": "contracts/utils/TransferUtils.sol; forge-test/unit/AGIJobManagerSecurityVerification.t.sol:test_FeeOnTransferTokenRevertsExactTransferFlow; test/mainnetRescueAndMint.test.js"
+      },
+      {
+        "id": "33c29c69e01a2726e0662510e1e0290430d94074568c13ab27d26599da8b5d2b",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
@@ -468,22 +557,859 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "f46ced7bce7c10c6e13da08a11f9612ec5fbd76358db687e4f3393fc0ee9b5dd",
-        "check": "reentrancy-no-eth",
+        "id": "35c70ae069ec79677066cb36e907b8a39021668cd4b4aeffe8347c761c8b973f",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "3650b10c80d185b952d325c1ce3823c349b8fcc1cfc49cb1cc364059db823a8d",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._revokePermissions(uint256,address,address) (contracts/ens/ENSJobPages.sol#498-503):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "37ec575d9d23f6509134707910e0aee8d5af33907b502568d952bc8c1c72b7ab",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "39391a2cf54f5fa92b7dd6174164f8032af8383af4635df87b64fc7831382f11",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Function ENSJobPages._handleLockHook(IAGIJobManagerView,uint256,bool) (contracts/ens/ENSJobPages.sol#455-471) is not in mixedCase",
+        "rationale": "Function ENSJobPages._handleLockHook(IAGIJobManagerView,uint256,bool) intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "3dcbfcf908c07e2d5124bf1dea9aac2082443b25c11e929924313e6077bf8211",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager.createJob(string,uint256,uint256,string) (contracts/AGIJobManager.sol#723-752):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
+        "id": "42023577d4990a83249c26e489c76676cd5dbc0a126e996d9108b8f55b207265",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._setResolverBestEffort(uint8,uint256,bytes32,address) (contracts/ens/ENSJobPages.sol#555-572):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "435c39191f46238b4f0d30eb58cbea35a61adcf4c8e02e63723c48efe08b6f58",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "AGIJobManager.getHighestPayoutPercentage(address) (contracts/AGIJobManager.sol#1636-1662) uses assembly",
+        "rationale": "Each owner-registered NFT balance read is a gas-capped staticcall with a complete return-word check. A failed or short read contributes zero eligibility. The number of registered types is bounded, and returned holdings affect eligibility only, not the fixed job payout split.",
+        "evidence": "contracts/AGIJobManager.sol:getHighestPayoutPercentage; test/agiTypes.safety.test.js; test/payoutSplit.test.js"
+      },
+      {
+        "id": "44074eb6ac657554ae48e49dd1d834c72305dd4fabfc3e31bb569827720b7966",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._details (contracts/AGIJobManager.sol#723) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._details intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "46f3e130878db61be2ba85be6cec16e8ff0b30df9bd96a700312ed4f2638773e",
+        "check": "unindexed-event-address",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Event AGIJobManager.ReputationUpdated(address,uint256) (contracts/AGIJobManager.sol#425) has address parameters but no indexed parameters",
+        "rationale": "This existing event ABI stores its address in log data. Receipt consumers can decode it correctly; lack of an indexed topic affects filtering efficiency, not authorization or settlement correctness. Changing indexing would alter the published event encoding and existing consumer expectations. New owner limit events are indexed, while existing compatible event encodings are retained.",
+        "evidence": "contracts/AGIJobManager.sol:events; docs/REFERENCE/CONTRACT_INTERFACE.md; test/securityRegression.test.js"
+      },
+      {
+        "id": "49166e142dc0263dad840b00e89957b9ab6a4c3d44106758c613d02b2e2eb6f2",
+        "check": "low-level-calls",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Low level call in AGIJobManager.rescueETH(uint256) (contracts/AGIJobManager.sol#1528-1531):",
+        "rationale": "Only the owner can rescue accidental native ETH, and nonReentrant prevents nested guarded operations. ETH is not the escrow currency; the send targets the current owner and its success is checked. USDC reserves remain under separate withdrawal guards.",
+        "evidence": "contracts/AGIJobManager.sol:rescueETH; test/mainnetRescueAndMint.test.js; docs/OWNER_CONTROLS.md"
+      },
+      {
+        "id": "4bc2d9bbc74a5b830cce7e77d9d5ab67e565a243a1ab7e52d5f90b723fe78df7",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateEnsRegistry(address)._newEnsRegistry (contracts/AGIJobManager.sol#1022) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateEnsRegistry(address)._newEnsRegistry intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "4be5d10f8dd6cee3cdf9948a3221c620c89058f43192c0a8c6c428ac6416bea8",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.enforceReputationGrowth(address,uint256)._user (contracts/AGIJobManager.sol#1239) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.enforceReputationGrowth(address,uint256)._user intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "4c042ef419c032c5f3aac5a8d591ce11c8b7a7b68486de21c6950f8ab57b71e0",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager._recordValidatorVote(uint256,string,bytes32[],bool) (contracts/AGIJobManager.sol#831-898):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
+        "id": "4d85b5ef9e4f0881f21502e9c82d7b33c788365824ba1ba1aae30d370a9dc8fd",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.applyForJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#754) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.applyForJob(uint256,string,bytes32[])._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "5958a4d95b277023334cb369c66d0e2886e0428e5dbb9374643544d5569da5e2",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.blacklistAgent(address,bool)._agent (contracts/AGIJobManager.sol#1001) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.blacklistAgent(address,bool)._agent intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "5f9857a9d00b1d4493cda4087a0e5358140fbc5c35c971d2cdb224b99d9803ed",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setBaseIpfsUrl(string)._url (contracts/AGIJobManager.sol#1064) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setBaseIpfsUrl(string)._url intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "605432c71ad7c7a728de24fe04a096474f66313d0d173195d0afaeb7e962b786",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setRequiredValidatorDisapprovals(uint256)._disapprovals (contracts/AGIJobManager.sol#1075) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setRequiredValidatorDisapprovals(uint256)._disapprovals intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "6167c10b7618b4b75b2dd3868f1525e8de32ccfcc19cd9a14e48c3a5fc1a625b",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1544-1557) uses assembly",
+        "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
+        "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
+      },
+      {
+        "id": "6a657bd713879619e5cbbaf89c2e47cbd624af78c1d10d2863200ebae8370b4d",
+        "check": "unused-return",
         "impact": "Medium",
         "confidence": "Medium",
-        "location": "Reentrancy in AGIJobManager._settleValidators(AGIJobManager.Job,bool,uint256,uint256,uint256) (contracts/AGIJobManager.sol#1343-1389):",
-        "rationale": "The post-transfer write is validator reputation, not escrow authority. All settlement entry points hold nonReentrant and terminal state/reserve debits precede transfers. Native Circle USDC transfer does not invoke recipient hooks; a view of reputation cannot reenter guarded money-moving paths. This review does not approve substituting an arbitrary callback token.",
-        "evidence": "contracts/AGIJobManager.sol:_completeJob,_refundEmployer,_settleValidators,finalizeJob,resolveDisputeWithCode,resolveStaleDispute; test/securityRegression.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js"
+        "location": "ENSJobPages._handleAssignHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#427-430) ignores return value by (None,agent,None,None,None,None,None,None,None) = managerView.getJobCore(jobId) (contracts/ens/ENSJobPages.sol#428)",
+        "rationale": "This call intentionally destructures only the job fields needed for this metadata operation. The unused tuple fields are unrelated payout, duration, or status fields; return decoding and call failure are still enforced by Solidity/try-catch.",
+        "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "f5719769deceddbe19d7e61b9f3a052e700b8279a05b6cdd3e88b833114aa917",
+        "id": "6af74a9c1481209b1e448240cf80cd21df8b550bf5a50b5dca0db7964e347e0d",
+        "check": "divide-before-multiply",
+        "impact": "Medium",
+        "confidence": "Medium",
+        "location": "AGIJobManager._settleValidators(AGIJobManager.Job,bool,uint256,uint256,uint256) (contracts/AGIJobManager.sol#1365-1420) performs a multiplication on the result of a division:",
+        "rationale": "The slash is intentionally floored for each incorrect validator. Multiplying that per-validator slash by the incorrect-validator count exactly equals the sum withheld from individual bonds; multiplying before flooring could allocate more than was withheld. Remaining USDC is routed to the winning party.",
+        "evidence": "contracts/AGIJobManager.sol:_settleValidators; test/validatorVoting.bonds.test.js; test/escrowAccounting.invariants.test.js; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "6c88202661e438d2b2ca052beb79b1a30d8cfb3713aa56a3b8f8064eb12465d6",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._lockJobENS(uint256,address,address,bool) (contracts/ens/ENSJobPages.sol#510-533):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "6da64b95e39ddac466c0f33a61b9f045f38578d9ec9486241d82f84029404b39",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setCompletionReviewPeriod(uint256)._period (contracts/AGIJobManager.sol#1109) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setCompletionReviewPeriod(uint256)._period intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "6ffe3d53c9086b9eff7d45f884486dbfbafbe9560f59ce10b5e185c88590382a",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.finalizeJob(uint256) (contracts/AGIJobManager.sol#1286-1325) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "719909ae40fdbec663e85d8e2af9ceb13ab97454afa186ff5e383ea08b5dadcc",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "71b4cf55d5f2bb454f8cb7a64405ae4585152a6f1e56a0bb0239ea7c8bccc932",
+        "check": "unused-return",
+        "impact": "Medium",
+        "confidence": "Medium",
+        "location": "ENSJobPages._handleRevokeHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#437-453) ignores return value by (employer,agent) = managerView.getJobCore(jobId) (contracts/ens/ENSJobPages.sol#438-452)",
+        "rationale": "This call intentionally destructures only the job fields needed for this metadata operation. The unused tuple fields are unrelated payout, duration, or status fields; return decoding and call failure are still enforced by Solidity/try-catch.",
+        "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "724b6880bdfda54090c43bab226bfe2c8bf478003d848f1b276406d9f5f52769",
+        "check": "low-level-calls",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Low level call in TransferUtils._safeBalanceOf(address,address) (contracts/utils/TransferUtils.sol#28-34):",
+        "rationale": "The ERC20 balance query is a staticcall; call success and exactly 32 bytes are required before decoding. Incoming escrow/bond transfers are accepted only if the measured destination balance increases by the exact amount. Malformed token responses fail closed.",
+        "evidence": "contracts/utils/TransferUtils.sol:_safeBalanceOf,safeTransferFromExact; test/escrowAccounting.invariants.test.js; forge-test/unit/AGIJobManagerSecurityVerification.t.sol"
+      },
+      {
+        "id": "742dffadb57c9d4da2e9b28cc46843ef9eed4eb489da6d56222d94440f3a73f7",
+        "check": "cache-array-length",
+        "impact": "Optimization",
+        "confidence": "High",
+        "location": "Loop condition i < agiTypes.length (contracts/AGIJobManager.sol#1594) should use cached array length instead of referencing `length` member of the storage array.",
+        "rationale": "This bounded AGI-type traversal is correct with direct storage-length reads. MAX_AGI_TYPES limits the work, owner registration guards growth, and balance queries use gas-capped staticcall so they cannot mutate the array. Caching would be a micro-optimization, not a vulnerability repair; no correctness or liveness defect was established.",
+        "evidence": "contracts/AGIJobManager.sol:MAX_AGI_TYPES,addAGIType,getHighestPayoutPercentage; test/agiTypes.safety.test.js"
+      },
+      {
+        "id": "74d188b185a19f06f1e85c999b3903190e5ecc972bebfa4b23ec179530cf1a5c",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "ENSJobPages._staticcallWord(address,bytes) (contracts/ens/ENSJobPages.sol#862-873) uses assembly",
+        "rationale": "The read is gas-capped, copies at most one complete return word, and treats short/failed returndata as failure. Address consumers now reject nonzero upper address bits; bool consumers require 0 or 1. Failed ENS reads cannot manufacture ownership.",
+        "evidence": "contracts/ens/ENSJobPages.sol:_staticcallWord,_staticcallAddress,_staticcallBool; forge-test/unit/AGIJobManagerV091Security.t.sol"
+      },
+      {
+        "id": "74f072166b9de6928202a2504079030cb64d908ec9858f1fcf0e34ffa9a7976d",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.finalizeJob(uint256)._jobId (contracts/AGIJobManager.sol#1286) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.finalizeJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "7786d788de6f368ea6f52e20033cd8786bdbd6d727b572a039745c2ef7a96063",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.resolveDisputeWithCode(uint256,uint8,string)._jobId (contracts/AGIJobManager.sol#958) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.resolveDisputeWithCode(uint256,uint8,string)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "7ccfab96bb5fc23e5cf311cf6d9ce4af2a9a62bb4de789052fdbfd3605febc33",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._lockJobENS(uint256,address,address,bool) (contracts/ens/ENSJobPages.sol#510-533):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "7ea2489baf088c15b39326a8602315bdc623b92d4b83ea8e4c0cdc6efc728bfe",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.handleHook(uint8,uint256) (contracts/ens/ENSJobPages.sol#355-419):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "7eebcd6cb143c08d1dd85a514eaf87a13fc600a415b3b42c21ec8512b567d03c",
+        "check": "unindexed-event-address",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Event AGIJobManager.NameWrapperUpdated(address) (contracts/AGIJobManager.sol#436) has address parameters but no indexed parameters",
+        "rationale": "This existing event ABI stores its address in log data. Receipt consumers can decode it correctly; lack of an indexed topic affects filtering efficiency, not authorization or settlement correctness. Changing indexing would alter the published event encoding and existing consumer expectations. New owner limit events are indexed, while existing compatible event encodings are retained.",
+        "evidence": "contracts/AGIJobManager.sol:events; docs/REFERENCE/CONTRACT_INTERFACE.md; test/securityRegression.test.js"
+      },
+      {
+        "id": "7f33db6ee007e52765905bc4ea82e70f02b9e71303f17d317a4da6a06bcaf282",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.disputeJob(uint256)._jobId (contracts/AGIJobManager.sol#928) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.disputeJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "845b0fbdc303b3d61d9c2d57c0ba2bcab9bb281204133cb45399b5b39eda151f",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobId (contracts/AGIJobManager.sol#793) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.requestJobCompletion(uint256,string)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "86d52431aa9c8e8febadeebb82721e27ac2315ec698e8828c907f016326021e2",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
         "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "885776ed679e4e85a5f359e1679e4081e096cbc6408232c7d7725f9699b822aa",
+        "check": "too-many-digits",
+        "impact": "Informational",
+        "confidence": "Medium",
+        "location": "AGIJobManager.slitherConstructorVariables() (contracts/AGIJobManager.sol#284-1663) uses literals with too many digits:",
+        "rationale": "The default duration limit is exactly 10000000 seconds (less than 365 days), retained for economic/deployment compatibility. Numeric digit count does not alter its meaning; the setter bounds future values and timing tests cover the maximum supported duration.",
+        "evidence": "contracts/AGIJobManager.sol:jobDurationLimit,setJobDurationLimit; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "8b8c1873e2f7c4a04bf6e28c6246b855c9f4d6bab2f1063e27fb9f17d6427174",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#928-954):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
+        "id": "91caeb3584fb1a16b6ccdeb8dab23b0813a22cba5850e6791df07496bf450a1a",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.blacklistAgent(address,bool)._status (contracts/AGIJobManager.sol#1001) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.blacklistAgent(address,bool)._status intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "91ecdc5b4f367ba28de83a2f0fd9ae77fa54acc36695e9c05b2903afbafd60ff",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._setAuthorisationBestEffort(uint8,uint256,bytes32,address,bool) (contracts/ens/ENSJobPages.sol#587-603):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "93b8e6fdbb9b825a89b6840c3b14e194f19d596ad0e6095ffc1117c689e848fb",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Function ENSJobPages._handleRevokeHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#437-453) is not in mixedCase",
+        "rationale": "Function ENSJobPages._handleRevokeHook(IAGIJobManagerView,uint256) intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "9928cd80ab6d7e4278a16a53936b72edc71adf769bc243acd532da4d27a93cb5",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._duration (contracts/AGIJobManager.sol#723) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._duration intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "9b3eeab1b835c45c0a13b8917e1b610e032549399b8233faa5212638ca7a1f8d",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager._cancelJobAndRefund(uint256,AGIJobManager.Job) (contracts/AGIJobManager.sol#619-625):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
+        "id": "9fca5bf28e3a9f132745e1dd9a95f432ccfd8fad3549f00e6fc8bf8e44616f2f",
+        "check": "cyclomatic-complexity",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "AGIJobManager.constructor(address,string,address[2],bytes32[4],bytes32[2],address[2]) (contracts/AGIJobManager.sol#491-521) has a high cyclomatic complexity (12).",
+        "rationale": "The constructor performs independent chain/token/recipient/address/root validation before initialization and paused launch. Reducing its checks to satisfy a complexity threshold would weaken commissioning. The checked branch count is small and constructor execution is one-time; deployment rejection tests cover invalid inputs.",
+        "evidence": "contracts/AGIJobManager.sol:constructor; hardhat/test/deployment-preflight.test.cjs; forge-test/unit/AGIJobManagerSecurityVerification.t.sol"
+      },
+      {
+        "id": "9fd0237cbe1be0bce0dab9da2137ddded21ab8b4de917ceb163603c18c46fcd9",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.resolveStaleDispute(uint256,bool) (contracts/AGIJobManager.sol#986-999) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "a37ff1686fd19025883bdacf87f985c5555b7d03317545b023e3d97cecbff8bd",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.validateJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#815) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.validateJob(uint256,string,bytes32[])._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "a450fab4fd6f5e9cb763c36aa295c9f27ee573e98b35e8240a45557e9246fb6f",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setJobDurationLimit(uint256)._limit (contracts/AGIJobManager.sol#1097) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setJobDurationLimit(uint256)._limit intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "a48b078ebb4f1d4febae8af6b65fe96167eef82b8935c8f03fd569a030b3c8a9",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._payout (contracts/AGIJobManager.sol#723) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._payout intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "a4b63bbdf8751f13452016c2b14f41d2ae313b19a06e0eb06ecde7dabb7aea85",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.expireJob(uint256) (contracts/AGIJobManager.sol#1259-1275) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "a6e4e653f7bda92b9a3076ea9fd2e07361d7acfaf767f7e928a887052527f019",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Function ENSJobPages._handleCompletionHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#432-435) is not in mixedCase",
+        "rationale": "Function ENSJobPages._handleCompletionHook(IAGIJobManagerView,uint256) intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "a71f39ac16fa531501a0adfa8b4e58e5a83e98549b90ffc1da0994c067859264",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._setResolverBestEffort(uint8,uint256,bytes32,address) (contracts/ens/ENSJobPages.sol#555-572):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "a72b0878e2f972c5c4d43ba821908cd624c5a7fc2ff0b9cf27249ab032a1258d",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setDisputeReviewPeriod(uint256)._period (contracts/AGIJobManager.sol#1116) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setDisputeReviewPeriod(uint256)._period intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "a918e328c13e8fe452288708b9f5b986ae092dee0d784cd85c640922fe8eb49d",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.blacklistValidator(address,bool)._validator (contracts/AGIJobManager.sol#1005) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.blacklistValidator(address,bool)._validator intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "aa23ffd4d483033a92adf8bd24a827daed693982068ddc9b1bd739f5bc19f967",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.handleHook(uint8,uint256) (contracts/ens/ENSJobPages.sol#355-419):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "b0d06427340bba997631f4190fe2769e0fc65e908e721822ad864d8e58de9380",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaAgentRootNode (contracts/AGIJobManager.sol#1047) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaAgentRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "b64c5bc0cccbf0627d98e9524c6bdf7146e037cdc9b91386bf2e6a996e58b2bf",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._jobSpecURI (contracts/AGIJobManager.sol#723) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.createJob(string,uint256,uint256,string)._jobSpecURI intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "b75b16067a0dc8f0e54425f7363249328d901ec320c3ccd551a20c92780e782a",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.addModerator(address)._moderator (contracts/AGIJobManager.sol#1016) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.addModerator(address)._moderator intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "b8e03156eb6515d5c09696b93ce61826f676a06dd0d2464ec81f74bc63c12ae9",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.resolveStaleDispute(uint256,bool)._jobId (contracts/AGIJobManager.sol#986) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.resolveStaleDispute(uint256,bool)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "be47c03fcca08a7294b0fc28f9dd49e159e4c814df67cfdb12b860a4f3719e47",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#928-954) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "c18f5be884ef9b08680419482ae1d61fc635bba48cfcb0f824c4af071a792240",
+        "check": "unused-return",
+        "impact": "Medium",
+        "confidence": "Medium",
+        "location": "ENSJobPages._jobAuthStateForMigration(uint256) (contracts/ens/ENSJobPages.sol#314-324) ignores return value by (employer,assignedAgent,None,None,None,completed,None,expired,None) = IAGIJobManagerView(jobManager).getJobCore(jobId) (contracts/ens/ENSJobPages.sol#321)",
+        "rationale": "This call intentionally destructures only the job fields needed for this metadata operation. The unused tuple fields are unrelated payout, duration, or status fields; return decoding and call failure are still enforced by Solidity/try-catch.",
+        "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "c5e77c3c6f111bfedfb83ebea9accca5481ca7cb251aef432b26d9b12fff181b",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._setTextBestEffort(uint8,uint256,bytes32,string,string) (contracts/ens/ENSJobPages.sol#574-585):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "c79f41ba82eb3631bdb3dbe325651bbed167ad66a3f1c5189f0454b0e698b9be",
+        "check": "too-many-digits",
+        "impact": "Informational",
+        "confidence": "Medium",
+        "location": "AGIJobManager._supportsERC721(address) (contracts/AGIJobManager.sol#1607-1633) uses literals with too many digits:",
+        "rationale": "The long hexadecimal value is an intentionally left-aligned four-byte ABI selector followed by zero padding in a 32-byte memory word. It is not a decimal amount or address. Selector/return-data tests and strict ERC165 checks establish the expected call encoding.",
+        "evidence": "contracts/AGIJobManager.sol:_supportsERC721,getHighestPayoutPercentage; forge-test/unit/AGIJobManagerV091Security.t.sol; test/agiTypes.safety.test.js"
+      },
+      {
+        "id": "c93368ee046e564180eab50d9cc964f40cb962192c423d5993812fe62f21a0d7",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.disapproveJob(uint256,string,bytes32[])._jobId (contracts/AGIJobManager.sol#823) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.disapproveJob(uint256,string,bytes32[])._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "ca2147462b0bd8d7df7f3a137bec670cca8a5fc215604838e95fd244fce75801",
+        "check": "unused-return",
+        "impact": "Medium",
+        "confidence": "Medium",
+        "location": "ENSJobPages._handleLockHook(IAGIJobManagerView,uint256,bool) (contracts/ens/ENSJobPages.sol#455-471) ignores return value by (employer,agent) = managerView.getJobCore(jobId) (contracts/ens/ENSJobPages.sol#456-470)",
+        "rationale": "This call intentionally destructures only the job fields needed for this metadata operation. The unused tuple fields are unrelated payout, duration, or status fields; return decoding and call failure are still enforced by Solidity/try-catch.",
+        "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "caf8424a081a270a8d01ca674404cf23b96d22a0b8adec43319b0c625164c92d",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager._completeJob(uint256,bool) (contracts/AGIJobManager.sol#1329-1363):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
+        "id": "cd3da0263d0dd98a1a867aa821a78c1c29824b1ef2f662fb0859f7d067c3ef02",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "UriUtils.completionURI(address,uint256,string,string) (contracts/utils/UriUtils.sol#27-72) uses assembly",
+        "rationale": "Assembly bounds ENS staticcall gas and copied returndata, checks ABI offset/string length/padded bounds, and falls back if the optional response is unusable. Free-memory allocation is rounded to full words. The metadata response cannot authorize transfers or block settlement through unbounded returndata copying.",
+        "evidence": "contracts/utils/UriUtils.sol:completionURI; forge-test/unit/AGIJobManagerSecurityVerification.t.sol:test_ENSHookRevertAndMalformedURIAreGraceful; test/jobMetadataRoutingAndMappings.test.js"
+      },
+      {
+        "id": "cf1a93cf919a085761759afe3fe5e7438325d8cd57c3410537c962343d220389",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Function ENSJobPages._handleCreateHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#421-425) is not in mixedCase",
+        "rationale": "Function ENSJobPages._handleCreateHook(IAGIJobManagerView,uint256) intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "cf504e0a39e11e186f93e50c35c9ef9bd666d607b875fdcc075e489f4cf6a696",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setRequiredValidatorApprovals(uint256)._approvals (contracts/AGIJobManager.sol#1068) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setRequiredValidatorApprovals(uint256)._approvals intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "d0a63a379fa5dc5394285596bb8c33c6521e967cc629854665847d84ad7966e1",
+        "check": "unindexed-event-address",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Event AGIJobManager.EnsRegistryUpdated(address) (contracts/AGIJobManager.sol#435) has address parameters but no indexed parameters",
+        "rationale": "This existing event ABI stores its address in log data. Receipt consumers can decode it correctly; lack of an indexed topic affects filtering efficiency, not authorization or settlement correctness. Changing indexing would alter the published event encoding and existing consumer expectations. New owner limit events are indexed, while existing compatible event encodings are retained.",
+        "evidence": "contracts/AGIJobManager.sol:events; docs/REFERENCE/CONTRACT_INTERFACE.md; test/securityRegression.test.js"
+      },
+      {
+        "id": "d491b41f16c9379163315f0f656b7041cfef7476efa85efa612d35bdfcb3084e",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.handleHook(uint8,uint256) (contracts/ens/ENSJobPages.sol#355-419):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "d7da381f2f20b7f18e8e97be9b729958e73e8000a3a50f65e82a0181d23123b8",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "d7f7ae2f6f91a2d35ccd03f3c5a15a7a4e0c5385e51fcffb3b1c767d33424803",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._agentRootNode (contracts/AGIJobManager.sol#1045) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._agentRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "dae4b6fa7f275d550eca9ecee343082c6f94d9f40b49050c9b02859dcd7ee1e1",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "TransferUtils._callOptionalReturn(address,bytes) (contracts/utils/TransferUtils.sol#36-49) uses assembly",
+        "rationale": "Assembly decodes exactly one full return word after a 32-byte length check. Failed calls, false/noncanonical booleans and malformed nonempty returndata revert; supported no-return ERC20 calls are allowed only for contract targets. Exact incoming balance deltas reject transfer fees.",
+        "evidence": "contracts/utils/TransferUtils.sol; forge-test/unit/AGIJobManagerSecurityVerification.t.sol:test_FeeOnTransferTokenRevertsExactTransferFlow; test/mainnetRescueAndMint.test.js"
+      },
+      {
+        "id": "db7106663ef01a62e73cf027150e2f3a99ff46c4dcdddf3b98326518b0eac927",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setMaxJobPayout(uint256)._maxPayout (contracts/AGIJobManager.sol#1092) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setMaxJobPayout(uint256)._maxPayout intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "dbda13e7c2ae44433df6013f118020fc76403834372f4304d2051f8f36114b3a",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._clubRootNode (contracts/AGIJobManager.sol#1044) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._clubRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "dcb719ceaa5fc19b1e100ce1b20032a2df13e2d7e9ad9a0233578c6cd01b59bc",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.handleHook(uint8,uint256) (contracts/ens/ENSJobPages.sol#355-419):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "ddc995397817d04f029d62962c0fa3534b69494abbbf05eb23aed18606496251",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "e0ba2c0ac4840a954954881bb069604f717ee62d7c36a880cf5b22dd108bda5b",
+        "check": "unused-return",
+        "impact": "Medium",
+        "confidence": "Medium",
+        "location": "ENSJobPages._handleCreateHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#421-425) ignores return value by (employer,None,None,None,None,None,None,None,None) = managerView.getJobCore(jobId) (contracts/ens/ENSJobPages.sol#423)",
+        "rationale": "This call intentionally destructures only the job fields needed for this metadata operation. The unused tuple fields are unrelated payout, duration, or status fields; return decoding and call failure are still enforced by Solidity/try-catch.",
+        "evidence": "contracts/ens/ENSJobPages.sol; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "e0eb6772a14ea6022ba91806e8ccc70ee97b1cb824e7d2921e771136b663c069",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.expireJob(uint256)._jobId (contracts/AGIJobManager.sol#1259) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.expireJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "e2bc69f446bc0246d1e1c8d68bed5a25b3d2c0ed0beb9b3f2c4458adfc896288",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "AGIJobManager._callEnsJobPagesHook(uint8,uint256) (contracts/AGIJobManager.sol#1478-1492) uses assembly",
+        "rationale": "Assembly sends an exact 68-byte selector/hook/job payload with ENS_HOOK_GAS_LIMIT and zero value, requesting no returndata. The optional hook is best effort and its success flag is recorded; it cannot consume unbounded copied returndata or reenter guarded money-moving paths.",
+        "evidence": "contracts/AGIJobManager.sol:_callEnsJobPagesHook; forge-test/unit/AGIJobManagerSecurityVerification.t.sol:test_ENSSelectorAndCalldataCompatibility; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "e3f1163974e46f70a9a1dc64160c5af51be4b1eac54e3555abd0ca4a490f9267",
+        "check": "low-level-calls",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Low level call in AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1544-1557):",
+        "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
+        "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
+      },
+      {
+        "id": "e55c8f919f6586b2eba79edeaabeedee72df22d20a18e21b37346241b6424e74",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.enforceReputationGrowth(address,uint256)._points (contracts/AGIJobManager.sol#1239) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.enforceReputationGrowth(address,uint256)._points intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "e92a266b9eb545198caa4d6c9e3ba7b9a8c2c2b240a578c86b16722884af1e71",
+        "check": "assembly",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "ENSOwnership._staticcallWord(address,bytes) (contracts/utils/ENSOwnership.sol#133-144) uses assembly",
+        "rationale": "The read is gas-capped, copies at most one complete return word, and rejects short/failed returndata. Address consumers now reject nonzero upper address bits; bool consumers require 0 or 1. Wrapper-owner, token-approval and resolver ownership routes are separately tested against malformed address responses.",
+        "evidence": "contracts/utils/ENSOwnership.sol; forge-test/unit/AGIJobManagerV091Security.t.sol"
+      },
+      {
+        "id": "eb32de6642f222f2cc1bf19a3e7f2540099ab7522c2b32784160777955260e5c",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.blacklistValidator(address,bool)._status (contracts/AGIJobManager.sol#1005) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.blacklistValidator(address,bool)._status intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "ecc4928c6866ea8bbbaa482bd1230972598ccdfda5a87dafb3f2963afc2e3377",
+        "check": "cache-array-length",
+        "impact": "Optimization",
+        "confidence": "High",
+        "location": "Loop condition i < agiTypes.length (contracts/AGIJobManager.sol#1638) should use cached array length instead of referencing `length` member of the storage array.",
+        "rationale": "This bounded AGI-type traversal is correct with direct storage-length reads. MAX_AGI_TYPES limits the work, owner registration guards growth, and balance queries use gas-capped staticcall so they cannot mutate the array. Caching would be a micro-optimization, not a vulnerability repair; no correctness or liveness defect was established.",
+        "evidence": "contracts/AGIJobManager.sol:MAX_AGI_TYPES,addAGIType,getHighestPayoutPercentage; test/agiTypes.safety.test.js"
+      },
+      {
+        "id": "ee4f7c117f5d553963b75762c826e3c89068f14428402cd5a2bce73c6b33d421",
+        "check": "mapping-deletion",
+        "impact": "Medium",
+        "confidence": "High",
+        "location": "AGIJobManager._cancelJobAndRefund(uint256,AGIJobManager.Job) (contracts/AGIJobManager.sol#619-625) deletes AGIJobManager.Job (contracts/AGIJobManager.sol#365-393) which contains a mapping:",
+        "rationale": "Cancellation/delisting requires an unassigned job. Voting requires assignment and completion, so approvals/disapprovals mappings have no populated entries on this deletion path. Job IDs advance monotonically and are not reused. Both external cancellation entry points hold the reentrancy guard.",
+        "evidence": "contracts/AGIJobManager.sol:cancelJob,delistJob,_recordValidatorVote,createJob; test/delistJob.reentrancy.test.js; test/securityRegression.test.js"
+      },
+      {
+        "id": "f71282dc659423040d8cce499f6ee8bbe55f036422465b5c64fa25f9e43f2a9f",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaClubRootNode (contracts/AGIJobManager.sol#1046) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateRootNodes(bytes32,bytes32,bytes32,bytes32)._alphaClubRootNode intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "f7f2f918b0d7d0384507cc0224339e3b2e0e835dbb8f6c727fb1e0904f135b2c",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager._recordValidatorVote(uint256,string,bytes32[],bool) (contracts/AGIJobManager.sol#831-898) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "fa4ac7cc61d1bd391cad49d305352869da6e35f117bae75d3c94012172d4a25e",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._agentMerkleRoot (contracts/AGIJobManager.sol#1056) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateMerkleRoots(bytes32,bytes32)._agentMerkleRoot intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "fae504098d23c567245ae2daeddac91aa52a8ae990a39f9ba8a003c602dcbbb9",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.setPremiumReputationThreshold(uint256)._threshold (contracts/AGIJobManager.sol#1082) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.setPremiumReputationThreshold(uint256)._threshold intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "fd007540205bc78f2ffdef14837cd2e8540118ac01b24c2973a89657bda4d21d",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.delistJob(uint256)._jobId (contracts/AGIJobManager.sol#1010) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.delistJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "fd069f40ab37ddafc4b86cc23cfe1b83ebe0c267d5c501a254739768ef51ced7",
+        "check": "reentrancy-benign",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in AGIJobManager.applyForJob(uint256,string,bytes32[]) (contracts/AGIJobManager.sol#754-791):",
+        "rationale": "This manager path executes under a nonReentrant external entry point. Incoming transfers are counted only after the exact balance delta is verified; outgoing paths commit terminal state/reserve debits before interactions. Completion NFT callbacks cannot enter guarded settlement/withdrawal/wallet-rotation paths. Canonical USDC is fixed and no arbitrary callback token is approved for production.",
+        "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
+      },
+      {
+        "id": "ff419e864cec0ee6f1a00f3a032c500c0ccb7d7e1c364c2549279d923fd6dfb1",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "ff6b50fdb97bf5c4d8617b47b2f85f99c78a70185e45e9419e06bd9b2fb47852",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+      },
+      {
+        "id": "fff659591e167ef4bbcaf5e035fb13664f1579ae7a2cea9687dcd9459a9a31f7",
+        "check": "naming-convention",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Parameter AGIJobManager.updateNameWrapper(address)._newNameWrapper (contracts/AGIJobManager.sol#1028) is not in mixedCase",
+        "rationale": "Parameter AGIJobManager.updateNameWrapper(address)._newNameWrapper intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
+        "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       }
     ]
   }

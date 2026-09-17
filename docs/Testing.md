@@ -2,44 +2,36 @@
 
 ## Local prerequisites
 
-- Node.js + npm
-- Truffle (via `npx truffle`)
-- Ganache (for the `development` network)
+Use Node.js 22.23.2 and npm with both committed lockfiles. Hardhat 3 provides the local EVM, and Mocha runs the existing regression tests through the repository's compatibility adapter. Truffle and Ganache are no longer required or installed.
 
 ## Install dependencies
 
-```bash
-npm install
-```
-
-## Start a local chain (Ganache)
+From the repository root:
 
 ```bash
-npx ganache -p 8545
+npm ci
+npm --prefix hardhat ci
 ```
 
 ## Compile contracts
 
 ```bash
-npx truffle compile
+npm run build
 ```
 
-By default the Truffle config keeps `viaIR` disabled. Stack-too-deep issues are avoided by
-keeping the large `jobs` getter internal and providing smaller read-model getters.
+This invokes the qualified Hardhat compiler profile and exports the artifacts used by repository scripts. Preserve the committed compiler settings when comparing release bytecode.
 
-## Run the full test suite
+## Run the full contract test suite
 
 ```bash
-npx truffle test
+npm test
 ```
+
+The runner starts and closes its disposable Hardhat chain automatically. No external RPC, signing key or `.env` file is needed. See [the complete testing guide](TESTING.md) for the separate UI, deployment, fuzz, invariant and security gates.
 
 ## Scenario/state-machine tests (escrow + NFT issuance)
 
-Run the deterministic economic lifecycle scenarios:
-
-```bash
-npx truffle test test/scenarioEconomicStateMachine.test.js
-```
+The full command above includes `test/scenarioEconomicStateMachine.test.js`, which exercises the deterministic economic lifecycle scenarios.
 
 Coverage highlights:
 - Happy path lifecycle (escrow funding → apply → completion → validator approvals → settlement → NFT issuance).
@@ -59,8 +51,7 @@ The test suite relies on minimal mocks under `contracts/test/`:
 - `MockENS`, `MockResolver`, `MockNameWrapper`: deterministic ENS ownership gating in tests.
 - `MockERC721`: simulate AGIType NFT boosts.
 
-Local tests run entirely against the in-memory Truffle chain (or a Ganache `development` network)
-and do not require any `.env` configuration for the default setup.
+Local tests run entirely against the in-memory Hardhat chain and do not require any `.env` configuration for the default setup.
 
 These mocks are **test-only** and are not deployed in production.
 
@@ -71,5 +62,5 @@ These mocks are **test-only** and are not deployed in production.
 ## Extending tests
 
 - Prefer reusing helper utilities in `test/helpers/`.
-- Use deterministic Truffle accounts (`accounts[0..]`).
+- Use the deterministic local accounts supplied by the test runtime (`accounts[0..]`).
 - Keep the suite fast by avoiding large loops; the contract already enforces a 50-validator cap.

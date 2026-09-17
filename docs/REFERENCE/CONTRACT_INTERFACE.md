@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `20a64e4f9928`.
-- Source snapshot fingerprint: `20a64e4f9928`.
+- Generated at (deterministic source fingerprint): `863fa33e67b9`.
+- Source snapshot fingerprint: `863fa33e67b9`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -146,9 +146,11 @@
 | `JobCreated` | `uint256 indexed jobId, string jobSpecURI, uint256 indexed payout, uint256 indexed duration, string details` |
 | `JobDisapproved` | `uint256 indexed jobId, address indexed validator` |
 | `JobDisputed` | `uint256 indexed jobId, address indexed disputant` |
+| `JobDurationLimitUpdated` | `uint256 indexed oldLimit, uint256 indexed newLimit` |
 | `JobExpired` | `uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout` |
 | `JobPayoutDistributed` | `uint256 indexed jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount` |
 | `JobValidated` | `uint256 indexed jobId, address indexed validator` |
+| `MaxJobPayoutUpdated` | `uint256 indexed oldPayout, uint256 indexed newPayout` |
 | `MerkleRootsUpdated` | `bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot` |
 | `NameWrapperUpdated` | `address newNameWrapper` |
 | `NFTIssued` | `uint256 indexed tokenId, address indexed employer, string tokenURI` |

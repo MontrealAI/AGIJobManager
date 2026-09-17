@@ -1,10 +1,11 @@
 [profile.default]
-solc = "0.8.23"
+solc = "0.8.37"
 src = "contracts"
 test = "forge-test"
 libs = ["lib", "node_modules"]
 optimizer = true
 optimizer_runs = 40
+via_ir = true
 evm_version = "shanghai"
 bytecode_hash = "none"
 revert_strings = "strip"

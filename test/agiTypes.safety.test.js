@@ -24,10 +24,10 @@ contract('agiTypes.safety', (accounts) => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
     const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
 
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType('0x0000000000000000000000000000000000000000', 10, { from: owner }));
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType(owner, 10, { from: owner }));
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType((await MockERC165Only.new()).address, 10, { from: owner }));
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType((await MockNoSupportsInterface.new()).address, 10, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.addAGIType('0x0000000000000000000000000000000000000000', 10, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.addAGIType(owner, 10, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.addAGIType((await MockERC165Only.new()).address, 10, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.addAGIType((await MockNoSupportsInterface.new()).address, 10, { from: owner }));
 
     const working = await MockERC721.new();
     await manager.addAGIType(working.address, 40, { from: owner });
@@ -53,7 +53,7 @@ contract('agiTypes.safety', (accounts) => {
     assert.equal(log.args.nftAddress, working.address);
     assert.equal(log.args.payoutPercentage.toString(), '0');
 
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.disableAGIType(agent, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.disableAGIType(agent, { from: owner }));
   });
 
   it('reuses disabled AGI type slots when max capacity is reached', async () => {
@@ -79,7 +79,7 @@ contract('agiTypes.safety', (accounts) => {
     assert.equal(slot.payoutPercentage.toString(), '2');
 
     const overflow = await MockERC721.new();
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType(overflow.address, 1, { from: owner }));
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType(overflow.address, 93, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.addAGIType(overflow.address, 1, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.addAGIType(overflow.address, 93, { from: owner }));
   });
 });

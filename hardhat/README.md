@@ -1,6 +1,6 @@
-# Hardhat deployment guide — v0.9.0
+# Hardhat deployment guide — v0.9.1
 
-This is the supported public-network deployment path. Root Truffle scripts are disposable local test fixtures only. v0.9.0 requires a fresh deployment and two real recipient wallets; this release does not deploy a contract or populate those addresses.
+This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. v0.9.1 requires a fresh deployment and two real recipient wallets; this release does not deploy a contract or populate those addresses.
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 
@@ -13,12 +13,12 @@ npm ci
 cd hardhat
 npm ci
 cp .env.example .env
-cp deploy.config.example.js deploy.config.js
+cp deploy.config.example.cjs deploy.config.cjs
 ```
 
-Review `deploy.config.js` as executable JavaScript from a trusted source. Set each network's `settlementWallets: [wallet30, wallet10]` and intended `finalOwner`; independently confirm control of these addresses. Review ENS registry, wrapper, four root nodes, two Merkle roots and metadata gateway. The example's historical identity roots and owner are not confirmation of your intended configuration. Prefer a tested multisignature owner for substantial funds.
+Review `deploy.config.cjs` as executable JavaScript from a trusted source. Set each network's `settlementWallets: [wallet30, wallet10]` and intended `finalOwner`; independently confirm control of these addresses. Review ENS registry, wrapper, four root nodes, two Merkle roots and metadata gateway. The example's historical identity roots and owner are not confirmation of your intended configuration. Prefer a tested multisignature owner for substantial funds.
 
-In the local environment, configure the selected RPC, `DEPLOY_CONFIG=./deploy.config.js`, and `ETHERSCAN_API_KEY`. Actual deployment additionally requires a funded, disposable deployer `PRIVATE_KEY`. Never commit keys, paste them into issue reports, or provide them to the legacy Truffle tools. Mainnet and Sepolia profiles are bound to chain IDs 1 and 11155111.
+In the local environment, configure the selected RPC, `DEPLOY_CONFIG=./deploy.config.cjs`, and `ETHERSCAN_API_KEY`. Actual deployment additionally requires a funded, disposable deployer `PRIVATE_KEY`. Never commit keys, paste them into issue reports, or provide them to untrusted tools. Mainnet and Sepolia profiles are bound to chain IDs 1 and 11155111.
 
 Native USDC is fixed to Circle's Ethereum or Sepolia address. All amounts use six decimals. USDC pause/blocklist checks run at one recorded preflight block. Both recipients must be distinct, nonzero and different from USDC; the contract also rejects itself as a recipient. [Circle's registry](https://developers.circle.com/stablecoins/usdc-contract-addresses) is the address authority.
 
@@ -36,7 +36,7 @@ DRY_RUN=1 npm run deploy:sepolia
 
 The fork command exposes only a local Hardhat chain, reads a pinned mainnet block, and sends no Ethereum transactions. It uses actual Circle USDC code and state. RPC failure is a failed qualification, not a skipped test. Rehearse the complete owner, employer, validator, agent and refund journeys on Sepolia using the intended operational setup before significant mainnet exposure.
 
-The qualified compiler is Solidity 0.8.23, optimizer 40 runs, Shanghai, `viaIR=false`, metadata bytecode hash disabled and revert strings stripped. The deployment script checks the compiler profile, artifact/build consistency and EIP-170 runtime sizes. Local deployment tests enforce Ethereum size limits. Do not change compiler settings to work around a failed size check.
+The qualified compiler is Solidity 0.8.37, optimizer 40 runs, Shanghai, `viaIR=true`, metadata bytecode hash disabled and revert strings stripped. The deployment script checks the compiler profile, artifact/build consistency, EIP-170 runtime size (24,576 bytes), EIP-3860 constructor data (49,152 bytes), and EIP-7825 transaction gas limit (16,777,216). Local deployment tests cover the manager, all five libraries and both optional metadata contracts. Use the release profile unchanged; a new compiler profile requires complete requalification. The [compiler compatibility note](../scripts/security/COMPILER_COMPATIBILITY.md) describes two identifier-only dependency patches applied without disabling compiler warnings.
 
 ## Review and deploy
 
@@ -63,7 +63,7 @@ A unique deployment journal is saved under `hardhat/deployments/<network>/` befo
 If all six contracts were broadcast but verification or a later step failed, recover verification from the saved journal without a private key:
 
 ```bash
-DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npx hardhat run scripts/reverify-deployment.js --network mainnet
+DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet
 ```
 
 This command checks successful canonical transaction receipts and confirmations, the recorded deployer and exact creation bytecode/constructor arguments, linked runtime and paused manager state, then retries explorer verification. It sends **zero blockchain transactions**; explorer source-verification requests still use the configured API key. A successful recovery writes a separate `.reverified.<block>.json` receipt and preserves the original journal. Use that new receipt for readiness. It reports whether ownership still needs a proposal and acceptance; it never performs either operation. Incomplete library-only deployments, inconsistent receipts, changed code and further verification failures remain blocked and require explicit operator reconciliation. Never edit verification fields merely to bypass a failed check.
@@ -83,7 +83,7 @@ DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run check:readin
 For Sepolia:
 
 ```bash
-DEPLOYMENT_RECEIPT=deployments/sepolia/<saved-receipt>.json npx hardhat run scripts/check-readiness.js --network sepolia
+DEPLOYMENT_RECEIPT=deployments/sepolia/<saved-receipt>.json npm run check:readiness:sepolia
 ```
 
 This validates the saved receipt's status and configuration hash, then checks one recorded block: exact linked runtime code, native USDC, accepted owner, no pending owner, paused intake, enabled settlement, both expected recipients, ENS/name-wrapper addresses, four identity root nodes, two Merkle roots, zero initial reserves, funded accounting and USDC transfer restrictions. The block hash is checked again before writing the report; a detected reorganization fails the check. Explorer verification in the report is evidence recorded in the receipt, not a fresh explorer query. The checker sends zero transactions.

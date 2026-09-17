@@ -5,11 +5,10 @@ const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
 const realEthers = require('ethers');
-const { ContractAlreadyVerifiedError } = require('@nomicfoundation/hardhat-verify/internal/errors');
 const temporaryFolders = new Set();
 test.after(() => { for (const folder of temporaryFolders) fs.rmSync(folder, { recursive: true, force: true }); });
 const hash = value => realEthers.zeroPadValue(realEthers.toBeHex(value), 32);
-const { parseBooleanSetting, isAlreadyVerifiedError, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('../scripts/deployment-safety');
+const { parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireInitcodeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('../scripts/deployment-safety.cjs');
 
 const TOKEN = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
 const A = `0x${'11'.repeat(20)}`;
@@ -104,19 +103,19 @@ test('runtime comparison checks immutable USDC and library self-address', () => 
   assert.equal(requireArtifactMatch({ artifact: library, buildInfo, address: B, code: `0x73${B.slice(2)}3014` }), 23);
 });
 
-function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, receiptOverride = {}, finalOwner = A } = {}) {
+function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', receiptOverride = {}, finalOwner = A } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-deployment-preflight-'));
   const scriptsDir = path.join(folder, 'scripts');
   fs.mkdirSync(scriptsDir);
-  const configPath = path.join(folder, 'config.js');
+  const configPath = path.join(folder, 'config.cjs');
   fs.writeFileSync(configPath, `module.exports = ${JSON.stringify({ mainnet: { usdcTokenAddress: TOKEN, finalOwner,
     baseIpfsUrl: 'ipfs://', ensConfig: [B, ZERO], rootNodes: Array(4).fill(`0x${'00'.repeat(32)}`),
     merkleRoots: Array(2).fill(`0x${'00'.repeat(32)}`), settlementWallets: [A, B] } })}`);
   let broadcasts = 0;
   let managerRuntimeReadFailed = false;
-  const input = { settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: false,
+  const input = { settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
-  const buildInfo = { solcVersion: '0.8.23', input, output: { contracts: {} } };
+  const buildInfo = { solcVersion: '0.8.37', input, output: { contracts: {} } };
   const mockArtifacts = {
     getBuildInfo: async () => buildInfo,
     readArtifact: async fqn => {
@@ -126,7 +125,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
       return { sourceName, contractName, bytecode: '0x6000', deployedBytecode: '0x6000', deployedLinkReferences: {} };
     },
   };
-  const provider = { getNetwork: async () => ({ chainId: 1n }), getBlock: async tag => ({ number: tag === 'latest' ? 1000 : tag, hash: hash(tag === 'latest' ? 1000 : tag) }), getCode: async () => {
+  const provider = { getNetwork: async () => ({ chainId: 1n }), getBlock: async tag => ({ number: tag === 'latest' ? 1000 : tag, hash: hash(tag === 'latest' ? 1000 : tag) }), estimateGas: async () => estimatedGas, getCode: async () => {
       if (failManagerRuntimeRead && broadcasts === 6 && !managerRuntimeReadFailed) {
         managerRuntimeReadFailed = true;
         throw new Error('Manager runtime RPC failed');
@@ -138,20 +137,22 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
   const manager = { paused: async () => true, owner: async () => A, pendingOwner: async () => ZERO, usdcToken: async () => TOKEN };
   const mockEthers = { ...realEthers, provider, getSigners: async () => noSigner ? [] : [{ address: A }],
     Contract: function () { return token(); }, getContractAt: async () => manager,
-    getContractFactory: async () => ({ getDeployTransaction: async () => ({ data: '0x6000' }), deploy: async () => {
+    getContractFactory: async () => ({ runner: { getAddress: async () => A }, getDeployTransaction: async () => ({ data: creationData }), deploy: async (...args) => {
+      assert.ok(args.at(-1).gasLimit <= 16777216n);
       broadcasts += 1;
       const nonce = broadcasts;
       const address = `0x${String(nonce + 100).padStart(40, '0')}`;
-      const tx = { hash: hash(nonce), wait: async () => ({ hash: hash(nonce), status: 1, blockHash: hash(123 + nonce), blockNumber: 123 + nonce, contractAddress: address, ...receiptOverride }) };
+      const tx = { hash: hash(nonce), wait: async () => ({ hash: hash(nonce), status: 1, gasUsed: 100000n, blockHash: hash(123 + nonce), blockNumber: 123 + nonce, contractAddress: address, ...receiptOverride }) };
       return { getAddress: async () => address, deploymentTransaction: () => tx,
         waitForDeployment: async () => { if (failConfirmation && nonce === failConfirmationAt) throw new Error('Confirmation RPC failed'); } };
     } }),
   };
   const module = { exports: {} };
   const mockRequire = name => {
-    if (name === 'hardhat') return { ethers: mockEthers, network: { name: 'mainnet' }, artifacts: mockArtifacts, config: { etherscan: { enabled: verifierEnabled } },
-      run: async () => { if (verificationError) throw verificationError; if (failVerification) throw new Error('Explorer unavailable'); } };
-    if (name === './deployment-safety') return require('../scripts/deployment-safety');
+    if (name === 'hardhat') return { ethers: mockEthers, network: { name: 'mainnet' }, artifacts: mockArtifacts, config: { verify: { etherscan: { enabled: verifierEnabled, apiKey: 'test-key' } } },
+      run: async () => { if (verificationError) throw verificationError; if (failVerification) throw new Error('Explorer unavailable'); return verificationResult; } };
+    if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
+    if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
     return require(name);
   };
   mockRequire.cache = require.cache;
@@ -159,7 +160,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
     process: { env: { DEPLOY_CONFIG: configPath, VERIFY_DELAY_MS: '0', DRY_RUN: dryRunValue ?? (dryRun ? '1' : ''),
       DEPLOY_CONFIRM_MAINNET: dryRun ? '' : 'I_UNDERSTAND_MAINNET_DEPLOYMENT', DEPLOYER_ADDRESS: deployerAddress }, cwd: () => folder },
     console: { log() {}, error() {} }, setTimeout };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy.cjs'), 'utf8'), context);
   return { main: module.exports.main, broadcasts: () => broadcasts, folder, program: module.exports, hardhat: mockRequire('hardhat'),
     receiptPath: () => { const directory = path.join(folder, 'deployments', 'mainnet'); return path.join(directory, fs.readdirSync(directory).find(name => name.startsWith('deployment.') && !name.endsWith('.solc-input.json'))); },
     constructor: module.exports.resolveConstructor, profile: require(configPath).mainnet,
@@ -231,7 +232,7 @@ test('explorer outage fails deployment outcome while preserving paused manager a
 });
 
 function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificationError, noSigner = false,
-  verifierEnabled = true, failAction, finalOwnerMismatch = false } = {}) {
+  verifierEnabled = true, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', runtimeCode = '0x6000', failAction, finalOwnerMismatch = false } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-ens-deployment-'));
   temporaryFolders.add(folder);
   let broadcasts = 0;
@@ -242,7 +243,7 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
   const makeTx = action => {
     actions.push(action);
     const nonce = actions.length;
-    return { hash: hash(nonce), wait: async () => ({ hash: hash(nonce), status: failAction === action ? 0 : 1,
+    return { hash: hash(nonce), wait: async () => ({ hash: hash(nonce), gasUsed: 100000n, status: failAction === action ? 0 : 1,
       blockHash: hash(124), blockNumber: 124, contractAddress: action === 'deploy' ? B : null }) };
   };
   let deploymentTx;
@@ -251,21 +252,22 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
     transferOwnership: async value => { currentOwner = value; return makeTx('transferOwnership'); },
     lockConfiguration: async () => { configLocked = true; return makeTx('lockConfiguration'); },
     owner: async () => finalOwnerMismatch ? ZERO : currentOwner, jobManager: async () => configuredManager, configLocked: async () => configLocked };
-  const provider = { getNetwork: async () => ({ chainId: BigInt(chainId) }), getCode: async () => '0x6000' };
+  const provider = { getNetwork: async () => ({ chainId: BigInt(chainId) }), estimateGas: async () => estimatedGas, getCode: async () => '0x6000' };
   const mockEthers = { ...realEthers, provider, getSigners: async () => noSigner ? [] : [{ address: A }],
     Contract: function (address) { return address === TOKEN ? { decimals: async () => 6 } : { usdcToken: async () => TOKEN }; },
     getContractAt: async () => ({ owner: async () => A }),
-    getContractFactory: async () => ({ deploy: async () => { broadcasts += 1; deploymentTx = makeTx('deploy'); return ensPages; } }),
+    getContractFactory: async () => ({ getDeployTransaction: async () => ({ data: creationData }), deploy: async (...args) => { assert.ok(args.at(-1).gasLimit <= 16777216n); broadcasts += 1; deploymentTx = makeTx('deploy'); return ensPages; } }),
   };
   const module = { exports: {} };
   const mockRequire = name => {
-    if (name === 'hardhat') return { ethers: mockEthers, network: { name: networkName }, config: { etherscan: { enabled: verifierEnabled } },
-      run: async () => { actions.push('verify'); if (verificationError) throw typeof verificationError === 'string' ? new Error(verificationError) : verificationError; } };
-    if (name === './deployment-safety') return require('../scripts/deployment-safety');
+    if (name === 'hardhat') return { ethers: mockEthers, network: { name: networkName }, artifacts: { readArtifact: async () => ({ deployedBytecode: runtimeCode }) }, config: { verify: { etherscan: { enabled: verifierEnabled, apiKey: 'test-key' } } },
+      run: async () => { actions.push('verify'); if (verificationError) throw typeof verificationError === 'string' ? new Error(verificationError) : verificationError; return verificationResult; } };
+    if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
+    if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
     if (name === '../../scripts/lib/usdc') return require('../../scripts/lib/usdc');
     return require(name);
   };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy-ens-job-pages.js'), 'utf8'), {
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy-ens-job-pages.cjs'), 'utf8'), {
     module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, VERIFY: '1',
       VERIFY_DELAY_MS: '0', DEPLOY_CONFIRM_MAINNET: 'I_UNDERSTAND_MAINNET_DEPLOYMENT', ...env } },
     console: { log() {}, error() {} }, setTimeout,
@@ -288,9 +290,9 @@ test('ENS requested verification failure returns an actionable error instead of 
   const harness = ensHarness({ verificationError: 'Explorer unavailable' });
   await assert.rejects(harness.main(), /was deployed but explorer verification failed/);
   assert.equal(harness.broadcasts(), 1);
-  const alreadyVerified = ensHarness({ verificationError: new ContractAlreadyVerifiedError('contracts/ens/ENSJobPages.sol:ENSJobPages', B) });
-  await alreadyVerified.main();
-  assert.equal(alreadyVerified.broadcasts(), 1);
+  const successful = ensHarness({ verificationResult: true });
+  await successful.main();
+  assert.equal(successful.broadcasts(), 1);
 });
 
 test('ENS dry-run requires no broadcast phrase and zero owner cannot be configured', async () => {
@@ -327,27 +329,32 @@ test('ENS rejects unrecognized dry-run, verification and locking settings before
   }
 });
 
-test('only a typed Hardhat verifier result establishes an already-verified outcome', () => {
-  assert.equal(isAlreadyVerifiedError(new ContractAlreadyVerifiedError('source:Manager', A)), true);
-  for (const message of ['not already verified', 'failed to check whether already verified', 'Contract has already been verified']) {
-    assert.equal(isAlreadyVerifiedError(new Error(message)), false);
+test('only an explicit successful explorer verifier result establishes verification', async () => {
+  for (const verificationResult of [undefined, null, false, 'true', {}]) {
+    const manager = deploymentHarness({ verificationResult: verificationResult === undefined ? null : verificationResult });
+    const ens = ensHarness({ verificationResult: verificationResult === undefined ? null : verificationResult });
+    try {
+      await assert.rejects(manager.main(), /verification incomplete/);
+      await assert.rejects(ens.main(), /verification failed/);
+      assert.equal(manager.receipt().verification.AGIJobManager.status, 'failed');
+      assert.equal(ens.receipt().verification.status, 'failed');
+    } finally { manager.cleanup(); }
   }
-  assert.equal(isAlreadyVerifiedError({ name: 'ContractAlreadyVerifiedError', message: 'already verified' }), false);
 });
 
-test('unrelated verifier error text cannot turn manager deployment into a verified result', async () => {
-  const failure = deploymentHarness({ verificationError: new Error('Unable to determine whether contract is already verified') });
-  const success = deploymentHarness({ verificationError: new ContractAlreadyVerifiedError('source:Manager', A) });
-  try {
-    await assert.rejects(failure.main(), /verification incomplete/);
-    assert.equal(failure.receipt().verification.AGIJobManager.status, 'failed');
-    await success.main();
-    assert.equal(success.receipt().verification.AGIJobManager.status, 'already_verified');
-  } finally { failure.cleanup(); success.cleanup(); }
+test('unrelated or legacy already-verified error text cannot establish verification', async () => {
+  for (const error of [new Error('Unable to determine whether contract is already verified'),
+    Object.assign(new Error('already verified'), { name: 'ContractAlreadyVerifiedError', pluginName: '@nomicfoundation/hardhat-verify', _isNomicLabsHardhatPluginError: true })]) {
+    const failure = deploymentHarness({ verificationError: error });
+    try {
+      await assert.rejects(failure.main(), /verification incomplete/);
+      assert.equal(failure.receipt().verification.AGIJobManager.status, 'failed');
+    } finally { failure.cleanup(); }
+  }
 });
 
 test('disabled explorer verification cannot silently pass a requested verification', async () => {
-  assert.throws(() => requireExplorerEnabled({ etherscan: { enabled: false } }), /must be enabled/);
+  assert.throws(() => requireExplorerEnabled({ verify: { etherscan: { enabled: false } } }), /must be enabled/);
   const manager = deploymentHarness({ verifierEnabled: false });
   const ens = ensHarness({ verifierEnabled: false });
   try {
@@ -435,14 +442,15 @@ function recoveryHarness(deployment, { failVerification = false } = {}) {
   const hardhat = { ...deployment.hardhat, getSigners: undefined };
   const mockRequire = name => {
     if (name === 'hardhat') return hardhat;
-    if (name === './deployment-safety') return require('../scripts/deployment-safety');
+    if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
+    if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
     if (name === '../../scripts/lib/usdc') return require('../../scripts/lib/usdc');
-    if (name === './deploy') return { ...deployment.program, verifyWithRetry: async params => {
+    if (name === './deploy.cjs') return { ...deployment.program, verifyWithRetry: async params => {
       verificationCalls.push(params.name); return { contract: params.name, status: failVerification ? 'failed' : 'verified', attempts: 1, error: failVerification ? 'Explorer unavailable' : null };
     } };
     return require(name);
   };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/reverify-deployment.js'), 'utf8'), {
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/reverify-deployment.cjs'), 'utf8'), {
     module, exports: module.exports, require: mockRequire, process: { env: { DEPLOYMENT_RECEIPT: deployment.receiptPath(), VERIFY_DELAY_MS: '0' }, cwd: () => deployment.folder },
     console: { log() {}, error() {} },
   });
@@ -550,4 +558,37 @@ test('verification recovery refuses incomplete journals and never converts a rep
     assert.equal(outage.broadcasts(), 6);
     assert.equal(fs.existsSync(recovery.recoveredPath()), false);
   } finally { incomplete.cleanup(); outage.cleanup(); }
+});
+
+test('creation checks include constructor bytes and block oversize before any gas estimation', async () => {
+  assert.equal(requireInitcodeSize('example', `0x${'00'.repeat(49152)}`), 49152);
+  let estimates = 0;
+  await assert.rejects(prepareDeployment({ name: 'example', from: A, factory: { getDeployTransaction: async () => ({ data: `0x${'00'.repeat(49153)}` }) },
+    provider: { estimateGas: async () => { estimates += 1; return 100000n; } } }), /EIP-3860/);
+  assert.equal(estimates, 0);
+});
+
+test('manager and ENS deployments reject oversized initcode and gas before broadcasting', async () => {
+  for (const options of [{ creationData: `0x${'00'.repeat(49153)}` }, { estimatedGas: 16777217n }, { estimatedGas: 0n }]) {
+    const manager = deploymentHarness(options), ens = ensHarness(options);
+    try {
+      await assert.rejects(manager.main(), /EIP-3860|EIP-7825/);
+      await assert.rejects(ens.main(), /EIP-3860|EIP-7825/);
+      assert.equal(manager.broadcasts(), 0);
+      assert.equal(ens.broadcasts(), 0);
+    } finally { manager.cleanup(); }
+  }
+});
+
+test('gas buffer stays within the protocol transaction cap and preserves the exact deployer', async () => {
+  let observed;
+  const prepared = await prepareDeployment({ name: 'example', from: A, factory: { getDeployTransaction: async () => ({ data: '0x6000' }) },
+    provider: { estimateGas: async request => { observed = request; return 16000000n; } } });
+  assert.equal(observed.from, A);
+  assert.equal(prepared.estimatedGas, 16000000n);
+  assert.equal(prepared.gasLimit, 16777216n);
+});
+
+test('missing explorer API credentials fail before production deployment', () => {
+  for (const apiKey of [undefined, null, '', ' ']) assert.throws(() => requireExplorerEnabled({ verify: { etherscan: { enabled: true, apiKey } } }), /ETHERSCAN_API_KEY/);
 });

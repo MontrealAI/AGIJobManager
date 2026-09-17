@@ -45,17 +45,13 @@ Dependencies not installed in the **same project** where command is run.
 
 ### Fix
 ```bash
-cd hardhat
+# From the repository root
 npm ci
-npm run compile
-```
-
-If using root Truffle flow instead:
-```bash
-cd /workspace/AGIJobManager
-npm ci
+npm --prefix hardhat ci
 npm run build
 ```
+
+The root build command invokes the same Hardhat compiler and exports compatibility artifacts for repository tooling. Truffle and Ganache are retired.
 
 ---
 
@@ -68,15 +64,13 @@ npm run build
 Install with lockfile-respecting command in current subproject:
 
 ```bash
-# Hardhat project
-cd hardhat && npm ci
-
-# Root project (Truffle/tests/docs tooling)
-cd /workspace/AGIJobManager && npm ci
+# From the repository root
+npm ci
+npm --prefix hardhat ci
 ```
 
 Why this happens:
-- `hardhat/` has its own `package.json` and `node_modules`.
+- The root and `hardhat/` projects have separate committed lockfiles. Install both; the deployment scripts invoke the root Hardhat 3 runtime.
 
 ---
 
@@ -111,11 +105,9 @@ Hardhat verify step fails or times out.
 - Sufficient block confirmations elapsed.
 
 ### Fixes
-- Increase delay and retry deployment script:
-  - `VERIFY_DELAY_MS=7000`
-- Use saved artifacts for manual standard-json verification:
-  - `hardhat/deployments/<network>/solc-input.json`
-  - `hardhat/deployments/<network>/verify-targets.json`
+- Preserve the deployment journal and use the verification recovery procedure in the [Hardhat guide](../hardhat/README.md), including `reverify:mainnet` or `reverify:sepolia` as appropriate.
+- Do not redeploy to retry source verification. Recover the existing addresses and constructor/linking data from the saved journal.
+- Use the preserved compiler input and verification artifacts when manual standard-JSON verification is needed.
 
 ---
 

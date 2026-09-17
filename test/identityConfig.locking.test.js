@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { BN, time } = require('@openzeppelin/test-helpers');
+const { BN, time } = require('../scripts/test-helpers.cjs');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 
@@ -31,13 +31,13 @@ contract('identityConfig.locking', (accounts) => {
     await manager.createJob('Qm', parseUSDCAmount('1000'), 5000, 'd', { from: employer });
     await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
     const altEns = await MockENS.new();
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateEnsRegistry(altEns.address, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.updateEnsRegistry(altEns.address, { from: owner }));
 
     await time.increase(6001);
     await manager.expireJob(0, { from: employer });
     await manager.updateEnsRegistry(altEns.address, { from: owner });
     await manager.lockIdentityConfiguration({ from: owner });
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateEnsRegistry(ens.address, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.updateEnsRegistry(ens.address, { from: owner }));
   });
 
   it('locks ENS identity wiring permanently after lockIdentityConfiguration', async () => {
@@ -48,8 +48,8 @@ contract('identityConfig.locking', (accounts) => {
     await manager.setEnsJobPages(pages.address, { from: owner });
     await manager.lockIdentityConfiguration({ from: owner });
 
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.setEnsJobPages('0x0000000000000000000000000000000000000000', { from: owner }));
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateEnsRegistry(ens.address, { from: owner }));
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.updateNameWrapper(nw.address, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.setEnsJobPages('0x0000000000000000000000000000000000000000', { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.updateEnsRegistry(ens.address, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.updateNameWrapper(nw.address, { from: owner }));
   });
 });

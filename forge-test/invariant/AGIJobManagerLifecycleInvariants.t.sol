@@ -95,7 +95,11 @@ contract AGIJobManagerLifecycleHandler is Test {
             }
         } else if (stage == 2) {
             (,,, uint256 duration, uint256 assignedAt,,,,) = manager.getJobCore(id);
+            // The handler's vm.warp clock deliberately selects the expiry or completion transition.
+            // forge-lint: disable-next-line(block-timestamp)
             if (block.timestamp > assignedAt + duration || routeSeed % 5 == 0) {
+                // Advance only when needed so the deterministic test clock never runs backwards.
+                // forge-lint: disable-next-line(block-timestamp)
                 if (block.timestamp <= assignedAt + duration) vm.warp(assignedAt + duration + 1);
                 manager.expireJob(id);
                 stages[slot] = 0;
@@ -107,6 +111,8 @@ contract AGIJobManagerLifecycleHandler is Test {
             // No-vote liveness, majority success, and tie-to-dispute all share this path.
             (,,, uint256 requestedAt,) = manager.getJobValidation(id);
             uint256 readyAt = requestedAt + manager.completionReviewPeriod() + 1;
+            // vm.warp crosses the completion deadline without moving the test clock backwards.
+            // forge-lint: disable-next-line(block-timestamp)
             if (block.timestamp < readyAt) vm.warp(readyAt);
             manager.finalizeJob(id);
             (, bool disputed,,) = manager.jobFlags(id);
@@ -122,6 +128,8 @@ contract AGIJobManagerLifecycleHandler is Test {
             if (routeSeed % 3 == 0) {
                 (,,,, uint256 disputedAt) = manager.getJobValidation(id);
                 uint256 readyAt = disputedAt + manager.disputeReviewPeriod() + 1;
+                // vm.warp crosses the dispute deadline without moving the test clock backwards.
+                // forge-lint: disable-next-line(block-timestamp)
                 if (block.timestamp < readyAt) vm.warp(readyAt);
                 vm.prank(manager.owner());
                 manager.resolveStaleDispute(id, employerWins);

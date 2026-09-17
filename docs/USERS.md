@@ -1,4 +1,4 @@
-# AGIJobManager v0.9.0 — User Guide
+# AGIJobManager v0.9.1 — User Guide
 
 AGIJobManager holds a job's USDC cost in escrow. The first eligible agent whose application succeeds is assigned immediately. The agent submits work, validators review it, and a separate finalization transaction settles the job when its timing and voting conditions allow. Moderators handle disputes.
 
@@ -72,4 +72,4 @@ New deployments start with intake paused until owner commissioning. Intake pause
 - [Common reverts](user-guide/common-reverts.md) and [troubleshooting](TROUBLESHOOTING.md)
 - [Contract reference](REFERENCE.md), [testing](TESTING.md), and [security practices](SECURITY_BEST_PRACTICES.md)
 
-For a disposable local demonstration, use the repository's tested fixtures and commands in [Testing](TESTING.md). Public-network deployment uses the Hardhat workflow; legacy Truffle configuration is retained for local regression tests.
+For a disposable local demonstration, use the repository's tested fixtures and commands in [Testing](TESTING.md). Public-network deployment uses the Hardhat workflow; local regression tests use Hardhat 3 through `npm test`.

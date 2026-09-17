@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { BN, time } = require('@openzeppelin/test-helpers');
+const { BN, time } = require('../scripts/test-helpers.cjs');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 
@@ -36,11 +36,11 @@ contract('disputes.moderator', (accounts) => {
     assert.equal(disputeBond.toString(), (await computeDisputeBond(manager, payout)).toString());
     await manager.disputeJob(0, { from: employer });
 
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.resolveDisputeWithCode(0, 1, 'x', { from: employer }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.resolveDisputeWithCode(0, 1, 'x', { from: employer }));
     await manager.resolveDisputeWithCode(0, 0, 'no action', { from: moderator });
     assert.equal((await manager.getJobCore(0)).disputed, true);
 
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.resolveStaleDispute(0, true, { from: owner }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.resolveStaleDispute(0, true, { from: owner }));
     await time.increase((await manager.disputeReviewPeriod()).toNumber() + 1);
     await manager.resolveStaleDispute(0, true, { from: owner });
     assert.equal((await manager.getJobCore(0)).completed, true);

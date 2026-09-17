@@ -1,6 +1,6 @@
-# Deployment and Release Operations — v0.9.0
+# Deployment and Release Operations — v0.9.1
 
-Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Root Truffle migrations and post-deploy scripts are disposable local fixtures; their public-network signing routes are retired. Publishing v0.9.0 does not deploy or upgrade any live contract.
+Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing v0.9.1 does not deploy or upgrade any live contract.
 
 The manager is non-upgradeable and starts intake paused in its constructor. It uses native Circle USDC, fixed 30% and 10% successful-job wallet shares, and a posting-time validator reward percentage. Supply and independently review both recipient wallets and the intended final owner before planning a public deployment.
 
@@ -10,7 +10,7 @@ The manager is non-upgradeable and starts intake paused in its constructor. It u
 | --- | --- | --- | --- |
 | Release qualification | [Test matrix](TESTING.md), [mainnet readiness](MAINNET_READINESS.md), committed lockfiles and release CI | Run the source-specific required gates | Test/static-analysis logs and release checksums |
 | Public deployment build | [Hardhat config](../hardhat/hardhat.config.js), [deployment script](../hardhat/scripts/deploy.js) | From `hardhat/`: `npm run compile` | Qualified artifacts/build input and bytecode-size checks |
-| Read-only plan | Trusted `hardhat/deploy.config.js`, [environment example](../hardhat/.env.example) | From `hardhat/`: `DRY_RUN=1 npm run deploy:mainnet` | Reviewed chain, constructor, owner and linked-build plan |
+| Read-only plan | Trusted `hardhat/deploy.config.cjs`, [environment example](../hardhat/.env.example) | From `hardhat/`: `DRY_RUN=1 npm run deploy:mainnet` | Reviewed chain, constructor, owner and linked-build plan |
 | Authorized deployment | [Hardhat guide](../hardhat/README.md) and reviewed plan | `npm run deploy:sepolia` or separately confirmed `npm run deploy:mainnet` | Per-transaction journal, runtime hashes and exact Solidity input |
 | Source verification | Saved deployment addresses and build input | Deployment workflow's explorer verification; finish any failed target explicitly | Verified source for manager and all five libraries |
 | Verification recovery | [Recovery script](../hardhat/scripts/reverify-deployment.js) and saved manager deployment journal | Keyless `reverify-deployment.js` command described below | Separate reverified receipt; original journal preserved; zero chain transactions |
@@ -22,7 +22,7 @@ The manager is non-upgradeable and starts intake paused in its constructor. It u
 
 ### 1. Freeze and qualify the release
 
-Check out the immutable v0.9.0 tag and verify downloaded checksums. Use Node 22.23.2 and the committed lockfiles. From the repository root:
+Check out the immutable v0.9.1 tag and verify downloaded checksums. Use Node 22.23.2 and the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
@@ -37,7 +37,7 @@ npm run docs:check
 
 These commands cover core and deployment checks; complete the remaining required UI, invariant and static-analysis gates in [mainnet qualification](MAINNET_READINESS.md). The mainnet fork test uses local execution and pinned historical USDC state. It does not replace fresh checks on an eventual live instance.
 
-Preserve the qualified Solidity 0.8.23 profile: optimizer 40 runs, Shanghai, `viaIR=false`, metadata bytecode hash disabled and revert strings stripped. Deployment checks enforce Ethereum runtime limits and exact linked artifact matching. Do not change the profile or disable size checks to force a deployment.
+Preserve the qualified Solidity 0.8.37 profile: optimizer 40 runs, Shanghai, `viaIR=true`, metadata bytecode hash disabled and revert strings stripped. Deployment checks enforce Ethereum runtime limits and exact linked artifact matching. Do not change the profile or disable size checks to force a deployment.
 
 ### 2. Review configuration and produce a plan
 
@@ -68,7 +68,7 @@ For a separately authorized mainnet deployment, follow the Hardhat guide's expli
 Verify the manager and all five libraries on the explorer against the exact saved build. The deployment script stops before proposing ownership if verification fails. When all six deployments were broadcast but verification or a later step failed, run this recovery command from `hardhat/` without a private key:
 
 ```bash
-DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npx hardhat run scripts/reverify-deployment.js --network mainnet
+DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet
 ```
 
 It reconciles successful canonical receipts, recorded deployer, exact creation input and runtime, then retries explorer source verification. It writes a separate `.reverified.<block>.json` receipt on success and preserves the original journal. It sends no blockchain transactions; explorer verification still requires its configured API access. It cannot complete a partial library-only deployment or recover the separate ENSJobPages workflow. Use the recovered receipt for readiness; do not manually mark failed verification entries successful.
@@ -77,7 +77,7 @@ A pending ownership proposal leaves authority with the deployer. If the recovery
 
 While intake remains paused, configure moderators, enabled NFT types, participant authorization, limits, bonds and review policy through the accepted owner. Check every setting against the [owner controls](OWNER_CONTROLS.md). Record successful transaction receipts and actual getter values; some role setters have no role-specific event.
 
-Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v0.9.0 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
+Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v0.9.1 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
 
 ### 5. Check the instance before opening intake
 
@@ -90,7 +90,7 @@ DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run check:readin
 For Sepolia:
 
 ```bash
-DEPLOYMENT_RECEIPT=deployments/sepolia/<saved-receipt>.json npx hardhat run scripts/check-readiness.js --network sepolia
+DEPLOYMENT_RECEIPT=deployments/sepolia/<saved-receipt>.json npm run check:readiness:sepolia
 ```
 
 The checker validates the deployment receipt and expected configuration, matches linked runtime code, and reads owner acceptance, recipient wallets, identity settings, USDC issuer state, pause flags and reserve accounting at a recorded block. It rechecks the block hash before writing a successful report. Preserve the report with the original journal, exact build input, explorer verification evidence and approved configuration.

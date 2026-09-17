@@ -2,6 +2,8 @@ const { requireCanonicalUSDC } = require('../../scripts/lib/usdc');
 
 const NETWORK_CHAINS = Object.freeze({ mainnet: 1, sepolia: 11155111 });
 const MAX_RUNTIME_BYTES = 24576;
+const MAX_INITCODE_BYTES = 49152;
+const MAX_TRANSACTION_GAS_LIMIT = 16777216n;
 const USDC_ABI = [
   'function decimals() view returns (uint8)',
   'function paused() view returns (bool)',
@@ -51,6 +53,23 @@ function requireRuntimeSize(name, deployedBytecode) {
   const bytes = (deployedBytecode.length - 2) / 2;
   if (!bytes || bytes > MAX_RUNTIME_BYTES) throw new Error(`${name} runtime ${bytes} bytes exceeds the valid 1..${MAX_RUNTIME_BYTES} range.`);
   return bytes;
+}
+
+function requireInitcodeSize(name, transactionData) {
+  if (typeof transactionData !== 'string' || !/^0x(?:[a-fA-F0-9]{2})+$/.test(transactionData)) throw new Error(`${name} has malformed creation transaction data.`);
+  const bytes = (transactionData.length - 2) / 2;
+  if (bytes > MAX_INITCODE_BYTES) throw new Error(`${name} creation transaction is ${bytes} bytes, exceeding EIP-3860's ${MAX_INITCODE_BYTES}-byte initcode limit, including constructor arguments.`);
+  return bytes;
+}
+
+async function prepareDeployment({ provider, factory, args = [], from, name }) {
+  const transaction = await factory.getDeployTransaction(...args);
+  const initcodeBytes = requireInitcodeSize(name, transaction.data);
+  const estimatedGas = BigInt(await provider.estimateGas({ ...transaction, from }));
+  if (estimatedGas <= 0n || estimatedGas > MAX_TRANSACTION_GAS_LIMIT) throw new Error(`${name} estimated deployment gas ${estimatedGas} is outside EIP-7825's 1..${MAX_TRANSACTION_GAS_LIMIT} transaction gas limit.`);
+  const bufferedGas = (estimatedGas * 120n + 99n) / 100n;
+  const gasLimit = bufferedGas > MAX_TRANSACTION_GAS_LIMIT ? MAX_TRANSACTION_GAS_LIMIT : bufferedGas;
+  return { initcodeBytes, estimatedGas, gasLimit };
 }
 
 async function requireCode(provider, address, label, blockTag) {
@@ -116,4 +135,4 @@ function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, to
   return requireRuntimeSize(artifact.contractName, code);
 }
 
-module.exports = { NETWORK_CHAINS, MAX_RUNTIME_BYTES, USDC_ABI, parseBooleanSetting, isAlreadyVerifiedError, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch };
+module.exports = { NETWORK_CHAINS, MAX_RUNTIME_BYTES, MAX_INITCODE_BYTES, MAX_TRANSACTION_GAS_LIMIT, USDC_ABI, parseBooleanSetting, isAlreadyVerifiedError, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireInitcodeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch };

@@ -200,7 +200,7 @@ sequenceDiagram
 
 ---
 
-## G. Local “perfect replay” (Truffle, ENS‑mocked)
+## G. Historical local “perfect replay” (ENS‑mocked)
 
 The local replay **mirrors the lifecycle** (create → apply → request → validate → complete) and enforces the same **safety rules** as the new contract. Because mainnet ENS state is not available on Ganache, **ENS / Resolver / NameWrapper are mocked** deterministically.
 
@@ -245,17 +245,13 @@ In the test:
 - **Completed job cannot be validated again** → revert
 - **Dispute agent‑win with zero validators** → no div‑by‑zero (completion succeeds)
 
-### Running locally
+### Running the maintained replay
 
-```bash
-npm install
-truffle compile
-truffle test
-```
+The original Truffle/Ganache commands from this case study are retired. `test/caseStudies.job12.replay.test.js` now runs in the Hardhat 3 regression suite via `npm test`; install both committed toolchains as described in [Testing](../TESTING.md). The historical analysis and replay assumptions above remain provenance, not evidence of a current production deployment.
 
 > ⚠️ **Replay fidelity note**: the test reproduces **identities, ENS structure, event sequence, and lifecycle**.  
 > Token amounts and tokenId are locally derived (Ganache state), not forced to match the real mainnet amounts/tokenId.  
-> Local accounts are **mapped** to the mainnet identities for determinism; a mainnet fork would be required to use the exact on‑chain private keys.
+> Local accounts are **mapped** to the mainnet identities for determinism; a mainnet fork can reproduce historical public state and impersonate accounts locally, but does not provide their private keys.
 
 ---
 

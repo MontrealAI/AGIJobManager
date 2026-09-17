@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const abi = require('web3-eth-abi');
+const { AbiCoder } = require('ethers');
 
 function parseArg(flag) {
   const idx = process.argv.indexOf(flag);
@@ -24,7 +24,7 @@ function main() {
     throw new Error('Receipt missing constructorArgs');
   }
 
-  const encoded = abi.encodeParameters(
+  const encoded = AbiCoder.defaultAbiCoder().encode(
     ['address', 'string', 'tuple(address,address)', 'tuple(bytes32,bytes32,bytes32,bytes32)', 'tuple(bytes32,bytes32)', 'address[2]'],
     [args.usdcTokenAddress, args.baseIpfsUrl, args.ensConfig, args.rootNodes, args.merkleRoots, args.settlementWallets],
   );

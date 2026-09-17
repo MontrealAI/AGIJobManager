@@ -1,8 +1,7 @@
-const base = require('./hardhat.config');
+import base from './hardhat.config.js';
 
-// No public-network signing configurations are exposed by this test runner.
-module.exports = {
+export default {
   ...base,
-  networks: { hardhat: { chainId: 1, allowUnlimitedContractSize: false } },
-  mocha: { timeout: 300000 },
+  networks: { hardhat: { ...base.networks.hardhat, chainId: 1, forking: { enabled: true,
+    url: process.env.MAINNET_FORK_RPC_URL || 'https://eth-mainnet.g.alchemy.com/public', blockNumber: 25997388 } } },
 };

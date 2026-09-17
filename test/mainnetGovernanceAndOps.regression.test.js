@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { BN, time, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN, time, expectRevert } = require('../scripts/test-helpers.cjs');
 
 const AGIJobManager = artifacts.require('AGIJobManager');
 const ReputationHarness = artifacts.require('ReputationHarness');

@@ -20,10 +20,10 @@ function getAbiFromExport(exportPayload) {
 }
 
 describe("UI ABI sync", () => {
-  it("matches the exported ABI with the Truffle artifact", () => {
+  it("matches the exported ABI with the compiler artifact", () => {
     const artifact = loadJson(
       artifactPath,
-      `Missing Truffle artifact at ${artifactPath}. Run "truffle compile" first.`,
+      `Missing compiler artifact at ${artifactPath}. Run "npm run build" first.`,
     );
     const exportPayload = loadJson(
       exportedAbiPath,
@@ -42,7 +42,7 @@ describe("UI ABI sync", () => {
   it("includes the UI-required interface", () => {
     const artifact = loadJson(
       artifactPath,
-      `Missing Truffle artifact at ${artifactPath}. Run "truffle compile" first.`,
+      `Missing compiler artifact at ${artifactPath}. Run "npm run build" first.`,
     );
     const requiredInterface = loadJson(
       requiredInterfacePath,

@@ -24,7 +24,7 @@ class ReviewGateTests(unittest.TestCase):
         self.root = Path(self.directory.name)
         self.out = self.root / "reports"
         self.out.mkdir()
-        names = ["contracts/Manager.sol", "foundry.toml", "package-lock.json", "scripts/security/slither-extended.config.json", "scripts/security/slither-reentrancy.config.json"]
+        names = ["contracts/Manager.sol", "foundry.toml", "package-lock.json", "scripts/security/slither-extended.config.json", "scripts/security/slither-reentrancy.config.json", "scripts/security/slither-all.config.json", "slither.config.json", "scripts/security/patch-openzeppelin-compiler.cjs", "scripts/security/openzeppelin-compiler-patches.json", "scripts/security/run-slither.sh", "scripts/security/run-slither-extended.sh"]
         for name in names:
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -33,7 +33,7 @@ class ReviewGateTests(unittest.TestCase):
         self.baseline = {
             "schema": 1, "slither_version": "0.11.6",
             "source_sha256": {name: hashlib.sha256((self.root / name).read_bytes()).hexdigest() for name in names},
-            "reports": {name: [dict(self.finding, rationale="Fixture rationale", evidence="Fixture evidence")] for name in ["slither-extended.json", "slither-reentrancy.json"]},
+            "reports": {name: [dict(self.finding, rationale="Fixture rationale", evidence="Fixture evidence")] for name in ["slither-extended.json", "slither-reentrancy.json", "slither-all.json"]},
         }
         REVIEW.ROOT = self.root
         REVIEW.BASELINE = self.root / "baseline.json"
@@ -114,6 +114,26 @@ class ReviewGateTests(unittest.TestCase):
     def test_rejects_missing_report(self):
         (self.out / "slither-reentrancy.json").unlink()
         self.rejects()
+
+    def test_rejects_all_detector_drift_with_primary_reports_unchanged(self):
+        path = self.out / "slither-all.json"
+        valid = path.read_text()
+        report = json.loads(valid)
+        for findings in [[], [dict(self.finding, id="b" * 64)], [dict(self.finding, impact="Informational")]]:
+            with self.subTest(findings=findings):
+                report["results"]["detectors"] = findings
+                path.write_text(json.dumps(report))
+                self.rejects()
+        path.write_text(valid)
+
+    def test_rejects_all_detector_configuration_and_dependency_patch_drift(self):
+        for name in ["scripts/security/slither-all.config.json", "scripts/security/patch-openzeppelin-compiler.cjs", "scripts/security/openzeppelin-compiler-patches.json"]:
+            with self.subTest(name=name):
+                path = self.root / name
+                original = path.read_text()
+                path.write_text(original + "changed")
+                self.rejects()
+                path.write_text(original)
 
 
 if __name__ == "__main__":

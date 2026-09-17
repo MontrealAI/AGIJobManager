@@ -1,25 +1,21 @@
 # Test Status
 
-## Latest deterministic validation snapshot
+## Source-specific qualification
 
-The repository's canonical local/CI-parity checks were executed from repo root and all completed successfully.
+Use the release's `VALIDATION.md`, `SOURCE_CI.json`, `RELEASE_MANIFEST.json` and `SHA256SUMS.txt` to identify the exact source commit, checks and artifacts. This navigation page does not claim a completed qualification run or carry forward test counts and bytecode sizes from older releases.
 
-### Commands and outcomes
+## Current local commands
 
-- `npm install` ✅
-- `npm run build` ✅
-- `npm test` ✅ (`260 passing`)
-- `npm run size` ✅
+From the repository root:
 
-### Environment notes
+```bash
+npm ci
+npm --prefix hardhat ci
+npm run lint
+npm test
+npm run size
+```
 
-- `npm` reports deprecation and vulnerability warnings from transitive dependencies during install; these did not block build or test execution.
-- `npm test` is the canonical test command and already uses Truffle's in-process `test` network (`truffle test --network test`), so no external Ganache process is required.
+`npm test` compiles the contracts and runs the recursively discovered regression suite through Hardhat 3 and Mocha. Its local chain starts automatically; Truffle and Ganache are no longer installed. The runner also executes standalone contract checks and contract-size checks. A successful contract test run does not by itself qualify the UI, static-analysis lanes, deployment recovery or mainnet fork behavior; see [Testing](TESTING.md) for those gates.
 
-### Size guard snapshot
-
-`npm test` runs `scripts/check-contract-sizes.js` and reports:
-
-- `AGIJobManager deployedBytecode size: 24574 bytes`
-
-This remains under the EIP-170 limit of 24,576 bytes.
+Read [dependency security](DEPENDENCY_SECURITY.md) for the current audit scope and [mainnet readiness](MAINNET_READINESS.md) for checks on the actual deployment. Older figures and environment notes remain in [the historical v0.9.0 version of this page](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/TEST_STATUS.md).

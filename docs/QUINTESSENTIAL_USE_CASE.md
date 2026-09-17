@@ -1,4 +1,4 @@
-# Quintessential Use Case — v0.9.0
+# Quintessential Use Case — v0.9.1
 
 Follow one USDC-funded job from posting through settlement, then rehearse refunds and disputes separately. All amounts passed to the contract are integers in six-decimal USDC units: **100 USDC = 100000000**. ETH pays transaction gas; it is not a job-payment token.
 
@@ -8,74 +8,32 @@ Successful jobs pay validators first, then 30% and 10% of the original job cost 
 
 ### Prerequisites
 
-Use Node 22.23.2 and a disposable local environment. Root Truffle/Ganache dependencies are local test tooling; do not supply production keys. From the repository root:
+Use Node 22.23.2 and the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
+npm --prefix hardhat ci
 npm run build
-npm test
+node scripts/local-job-demo.cjs
 ```
 
 ### Launch and deploy
 
-Run Ganache in one terminal:
+The command starts an isolated Hardhat chain in memory, deploys mock six-decimal USDC, a mock NFT credential, the five libraries and the manager, then closes the chain when the demonstration finishes. It always selects the local network and uses disposable accounts. It sends no public-network transactions and needs no RPC URL or private key.
 
-```bash
-npx ganache --wallet.totalAccounts 10 --wallet.defaultBalance 1000 --chain.chainId 1337
-```
+The demonstration verifies that construction starts paused, configures one eligible agent and validator, funds and approves their USDC, and opens local intake. It posts a 100 USDC job, assigns the agent, records completion and validator approval, advances the simulated clock, and finalizes. Its deliberately shortened review windows are test values, not production policy.
 
-In a second terminal, from the repository root:
+The output must show **8 / 30 / 10 / 52 USDC** for validator, first wallet, second wallet and agent. Balance comparisons start before assignment and voting, so returned bonds do not inflate those rewards. The script also asserts that all four reserves and the manager's USDC balance finish at zero. Any failed assertion exits unsuccessfully.
 
-```bash
-npx truffle migrate --network development --reset
-npx truffle console --network development
-```
+Read [the runnable example](../scripts/local-job-demo.cjs) for the exact calls and [the contract tests](../test/happyPath.test.js) for additional eligibility and NFT assertions. Use `npm test` for the complete regression suite, including refund, dispute and expiry alternatives. All these tests run real EVM bytecode locally.
 
-This migration deploys a **mock** six-decimal USDC and mock ENS components, assigns local accounts 8 and 9 as the settlement wallets, and explicitly unpauses the disposable manager. Public deployment uses Hardhat and keeps the constructor's intake pause in place.
-
-In the fresh Truffle console, set up a local employer, eligible agent and validator. The short review settings below are demo values, not recommended production policy. Re-pause intake while configuring:
-
-```javascript
-const addresses = await web3.eth.getAccounts();
-const [owner, employer, agent, validator, moderator] = addresses;
-const manager = await artifacts.require('AGIJobManager').deployed();
-const usdc = await artifacts.require('MockERC20').deployed();
-await manager.pauseIntake({ from: owner });
-const credential = await artifacts.require('MockERC721').new({ from: owner });
-await credential.mint(agent, { from: owner });
-await manager.addAGIType(credential.address, 1, { from: owner });
-await manager.addAdditionalAgent(agent, { from: owner });
-await manager.addAdditionalValidator(validator, { from: owner });
-await manager.addModerator(moderator, { from: owner });
-await manager.setRequiredValidatorApprovals(1, { from: owner });
-await manager.setChallengePeriodAfterApproval(1, { from: owner });
-await manager.setCompletionReviewPeriod(300, { from: owner });
-for (const account of [employer, agent, validator]) {
-  await usdc.mint(account, '100000000', { from: owner });
-  await usdc.approve(manager.address, '100000000', { from: account });
-}
-await manager.unpauseIntake({ from: owner });
-```
-
-An agent must satisfy **both** an authorization route (additional allowlist, valid Merkle proof or supported ENS ownership) and a positive enabled AGI-type ERC-721 holding. The credential's legacy `payoutPercentage` score enables eligibility; it does not replace the job's USDC payout split. The fixture uses the additional allowlist route, so its subdomain is empty and proof is `[]`.
-
-Post and complete the local example:
-
-```javascript
-const posted = await manager.createJob('ipfs://job-spec', '100000000', 3600, 'Local rehearsal', { from: employer });
-const jobId = posted.logs.find(log => log.event === 'JobCreated').args.jobId;
-await manager.applyForJob(jobId, '', [], { from: agent });
-await manager.requestJobCompletion(jobId, 'ipfs://job-result', { from: agent });
-await manager.validateJob(jobId, '', [], { from: validator });
-```
-
-Wait at least two seconds for this fixture's one-second challenge period, then call `await manager.finalizeJob(jobId, { from: employer })`. With no competing vote or dispute, this completes the job. Compare recipient balances with their balances **before assignment/voting** so returned bonds are not mistaken for extra rewards. Do not reuse the shortened thresholds/windows as production defaults.
+An agent must satisfy **both** an authorization route (additional allowlist, valid Merkle proof or supported ENS ownership) and a positive enabled AGI-type ERC-721 holding. The credential's legacy `payoutPercentage` score enables eligibility; it does not replace the job's USDC payout split. The demonstration uses the additional allowlist route, so its subdomain is empty and proof is `[]`.
 
 ### Step table
 
 | Step | Actor | Function/Command | Preconditions | Expected on-chain outcome | Events emitted | What to verify next |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Operator | `npx truffle migrate --network development --reset` | Disposable Ganache chain 1337; ten local accounts | Local fixture deployed and explicitly unpaused by migration | Deployment and pause events | Mock USDC, local recipients, owner and constructor wiring |
+| 1 | Operator | `node scripts/local-job-demo.cjs` | Root and Hardhat dependencies installed; current compiled artifacts | Local fixture deployed paused, configured, then explicitly unpaused | Deployment and pause events | Mock USDC, local recipients, owner and constructor wiring |
 | 2 | Owner | `pauseIntake`, `addAGIType`, role/allowlist setters, optional `updateMerkleRoots`, then `unpauseIntake` | Reviewed local accounts; enabled NFT held by agent; safe policy configuration | Eligibility and policy configured before posting | `AGITypeUpdated`, pause/parameter events; `MerkleRootsUpdated` if called | Read role/allowlist maps directly; these setters do not all emit role-specific events |
 | 3 | Employer | `createJob(jobSpecURI,payout,duration,details)` | Intake and settlement enabled; sufficient USDC/allowance; valid URI and limits | Job created, escrow locked, validator rate and agent percentage fixed at posting | `JobCreated`, USDC `Transfer` | `getJobCore`, posted terms and `lockedEscrow` |
 | 4 | Agent | `applyForJob(jobId,subdomain,proof)` | Authorized and NFT-eligible; not blacklisted; open capacity; sufficient bond balance/allowance | Agent assigned, deadline starts, agent bond fixed for that assignment | `JobApplied`, USDC `Transfer` when bond is nonzero | Assigned agent, `assignedAt`, unchanged posting-time payout percentage and reserves |
@@ -136,7 +94,7 @@ The diagram summarizes contract conditions, not automatic background execution. 
 
 ### Expected state checkpoints
 
-- **Post-deploy:** confirm `owner()`, `pendingOwner()`, `usdcToken()`, `wallet30()`, `wallet10()`, namespace roots and both pause flags. Public deployment remains paused; the disposable migration deliberately unpauses its fixture.
+- **Post-deploy:** confirm `owner()`, `pendingOwner()`, `usdcToken()`, `wallet30()`, `wallet10()`, namespace roots and both pause flags. Public deployment remains paused; the disposable demonstration explicitly opens intake after configuring its fixture.
 - **Post-config:** verify moderator/allowlist maps, Merkle roots, enabled NFT type and the agent's holding. Check the final owner's acceptance and policy before public activation.
 - **Post-create:** `getJobCore(jobId)` contains employer, payout, duration, unassigned state and the posting-time `agentPayoutPct`; `lockedEscrow` increases by the exact funded amount.
 - **Post-apply:** `assignedAgent` and `assignedAt` are set; the existing payout percentage is unchanged. Agent-bond reserves increase by the computed bond.
@@ -148,9 +106,9 @@ The diagram summarizes contract conditions, not automatic background execution. 
 
 ## B) Testnet/mainnet operator checklist
 
-1. **Release and scope:** verify v0.9.0 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
-2. **Signing:** use the [Hardhat guide](../hardhat/README.md), a disposable deployer and a reviewed final owner/signing arrangement. Never supply public-network keys to Truffle/Ganache tools.
-3. **Configuration:** review `hardhat/deploy.config.js` and `hardhat/.env.example`. Supply native Circle USDC, both distinct settlement wallets, intended owner, ENS/namespace settings and Merkle roots; do not use `migrations/deploy-config.js` for public deployment.
+1. **Release and scope:** verify v0.9.1 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
+2. **Signing:** use the [Hardhat guide](../hardhat/README.md), a disposable deployer and a reviewed final owner/signing arrangement. Local tests and demonstrations use disposable accounts only.
+3. **Configuration:** review `hardhat/deploy.config.cjs` and `hardhat/.env.example`. Supply native Circle USDC, both distinct settlement wallets, intended owner, ENS/namespace settings and Merkle roots; do not use `migrations/deploy-config.js` for public deployment.
 4. **Plan and rehearse:** from `hardhat/`, run `DRY_RUN=1 npm run deploy:sepolia` with reviewed settings, then perform a separately authorized Sepolia deployment. Rehearse eligibility, posting, validator payouts, refunds, disputes and the actual ownership handover.
 5. **Verify and accept:** preserve the deployment journal, verify all linked code and explorer sources, and have the proposed owner call `acceptOwnership()`. Keep public intake paused throughout configuration.
 6. **Prepare participants:** ensure agents satisfy both authorization and enabled NFT eligibility; fund participants with native USDC and ETH for gas. Check required token allowances, bonds, thresholds and review windows.

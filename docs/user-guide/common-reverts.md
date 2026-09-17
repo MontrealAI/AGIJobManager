@@ -1,4 +1,4 @@
-# Common reverts and fixes — v0.9.0
+# Common reverts and fixes — v0.9.1
 
 Start with the network, deployment address, connected wallet, `usdcToken()`, current job state, both pause states, and deadlines. Check USDC balance/allowance and ETH for gas. The console's preview can explain a failure before you sign.
 
@@ -34,4 +34,4 @@ Start with the network, deployment address, connected wallet, `usdcToken()`, cur
 | Identity configuration: `ConfigLocked` | The owner has irreversibly locked the protected identity configuration. |
 | Ownership acceptance | Only `pendingOwner` may call `acceptOwnership`; proposing a transfer does not change `owner` immediately. |
 
-Use [roles](roles.md) and the [walkthrough](happy-path.md) to check the expected sequence. There are no current internal NFT marketplace, reward-pool contribution, or string-based dispute-resolution calls; use the v0.9.0 interface/ABI.
+Use [roles](roles.md) and the [walkthrough](happy-path.md) to check the expected sequence. There are no current internal NFT marketplace, reward-pool contribution, or string-based dispute-resolution calls; use the v0.9.1 interface/ABI.

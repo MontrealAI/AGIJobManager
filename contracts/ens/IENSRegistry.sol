@@ -7,8 +7,8 @@ interface IENSRegistry {
     function setSubnodeRecord(
         bytes32 node,
         bytes32 label,
-        address owner,
-        address resolver,
+        address ownerAddress,
+        address resolverAddress,
         uint64 ttl
     ) external;
 }

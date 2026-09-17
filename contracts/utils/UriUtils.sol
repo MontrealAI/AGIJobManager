@@ -89,12 +89,12 @@ library UriUtils {
         bool baseEndsWithSlash = baseBytes[baseBytes.length - 1] == SLASH;
         bool uriStartsWithSlash = uriBytes.length > 0 && uriBytes[0] == SLASH;
         if (baseEndsWithSlash && uriStartsWithSlash) {
-            return string(abi.encodePacked(baseIpfsUrl, _sliceFrom(uriBytes, 1)));
+            return string.concat(baseIpfsUrl, string(_sliceFrom(uriBytes, 1)));
         }
         if (!baseEndsWithSlash && !uriStartsWithSlash) {
-            return string(abi.encodePacked(baseIpfsUrl, "/", uri));
+            return string.concat(baseIpfsUrl, "/", uri);
         }
-        return string(abi.encodePacked(baseIpfsUrl, uri));
+        return string.concat(baseIpfsUrl, uri);
     }
 
     function _hasScheme(bytes memory uriBytes) private pure returns (bool) {

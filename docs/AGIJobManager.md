@@ -1,4 +1,4 @@
-# AGIJobManager Contract Documentation — v0.9.0
+# AGIJobManager Contract Documentation — v0.9.1
 
 This document provides a comprehensive, code‑accurate overview of the `AGIJobManager` contract. It is intended for engineers, integrators, reviewers, and operators. The ABI‑exact reference lives in [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
 
@@ -182,9 +182,9 @@ Identity routing uses `_isAuthorized` and the linked `ENSOwnership` library. Aft
 
 For detailed call sequences, revert conditions, and events, see [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
 
-## Quickstart examples (Truffle + web3)
+## Quickstart entry points
 
-Legacy Truffle tools are retained for disposable local regression tests. For current user transactions, use the [USDC console](../ui/agijobmanager-usdc.html) and [end-to-end walkthrough](user-guide/happy-path.md); for public-chain deployment, use [Hardhat](../hardhat/README.md). Avoid reusing historical constructor snippets or assuming test credentials/bond funding exist on a live chain.
+Local regression tests use Hardhat 3 and Mocha through `npm test`; Truffle and Ganache have been removed. For current user transactions, use the [USDC console](../ui/agijobmanager-usdc.html) and [end-to-end walkthrough](user-guide/happy-path.md); for public-chain deployment, use [Hardhat](../hardhat/README.md). Avoid reusing historical constructor snippets or assuming test credentials/bond funding exist on a live chain.
 
 ## Owner maintenance and fixed rules
 

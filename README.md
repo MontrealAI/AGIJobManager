@@ -1,12 +1,12 @@
-# AGIJobManager v0.9.0 — USDC settlement and safer operations
+# AGIJobManager v0.9.1 — USDC settlement and security hardening
 
 All job payments, escrow, bonds, rewards, refunds and treasury withdrawals use six-decimal native Circle USDC. **A fresh USDC manager deployment is required.** This software release does not upgrade old contracts. Start with the [USDC migration and deployment guide](docs/USDC_MIGRATION.md).
 
-Successful jobs pay validators first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and **all remaining USDC to the agent**. For a 100 USDC job: 8 / 30 / 10 / 52. The two wallet addresses are required at deployment. The owner can rotate them only with intake paused and zero outstanding escrow or bonds; [ownership transfers require acceptance](docs/OWNER_CONTROLS.md). Validator terms are fixed when the job is posted. NFT credentials affect eligibility only; they cannot increase or reduce the agent’s payment share. See the [v0.9.0 payout and migration specification](docs/USDC_PAYOUT_SPLIT.md).
+Successful jobs pay validators first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and **all remaining USDC to the agent**. For a 100 USDC job: 8 / 30 / 10 / 52. The two wallet addresses are required at deployment. The owner can rotate them only with intake paused and zero outstanding escrow or bonds; [ownership transfers require acceptance](docs/OWNER_CONTROLS.md). Validator terms are fixed when the job is posted. NFT credentials affect eligibility only; they cannot increase or reduce the agent’s payment share. See the [v0.9.1 payout and migration specification](docs/USDC_PAYOUT_SPLIT.md).
 
 **[Start here](docs/START_HERE.md)** for the download, the five-step job journey, role-specific guidance and recovery from a failed or pending transaction.
 
-New deployments start with intake paused. v0.9.0 strengthens deployment flag handling, transaction review, qualification and operator documentation while retaining the v0.8.0 contract safeguards. See [mainnet readiness](docs/MAINNET_READINESS.md) for verified scope and the steps required for an actual deployment.
+New deployments start with intake paused. v0.9.1 hardens contract decoding and settlement ordering, replaces discontinued test dependencies, and strengthens deployment and security qualification. See [mainnet readiness](docs/MAINNET_READINESS.md) for verified scope and the steps required for an actual deployment.
 
 [![CI][ci-badge]][ci-url]
 [![Security Verification][security-verification-badge]][security-verification-url]
@@ -17,14 +17,14 @@ New deployments start with intake paused. v0.9.0 strengthens deployment flag han
 AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreements, with optional ENS-backed job pages managed by `ENSJobPages`.
 
 > [!IMPORTANT]
-> **New here? Download the [v0.9.0 USDC Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html).**
+> **New here? Download the [v0.9.1 USDC Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.1/agijobmanager-usdc.html).**
 > This is the fastest operator/reviewer entry point for the standalone mainnet UI.  
 > **Repo-pinned equivalent artifact:** `ui/agijobmanager-usdc.html`  
 > **Operator guide:** `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 
 ## Quick links
 
-- **Launch Genesis Console:** `https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html`
+- **Launch Genesis Console:** `https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.1/agijobmanager-usdc.html`
 - **Read the operator guide:** `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 - **Inspect the pinned standalone artifact:** `ui/agijobmanager-usdc.html`
 - **Deployment / contract operations:** `hardhat/README.md` and `docs/DEPLOYMENT/README.md`
@@ -37,7 +37,7 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **Contract owner (Etherscan-first):** start with [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md), then [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md).
 - **ENSJobPages replacement operator:** use one canonical flow in [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Troubleshooting during deployment/cutover:** go to [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
-- **Standalone HTML UI operator/reviewer:** start with the [Genesis Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html), then read [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). For the repo-pinned standalone artifact, see [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html).
+- **Standalone HTML UI operator/reviewer:** start with the [Genesis Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.1/agijobmanager-usdc.html), then read [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). For the repo-pinned standalone artifact, see [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html).
 - **Broader/full UI contributor:** use [`docs/ui/README.md`](docs/ui/README.md) for Next.js UI roadmap, runbooks, and release/testing docs.
 
 ## Canonical operator answers (quick reference)
@@ -78,14 +78,14 @@ Irreversible actions (delay until validated):
 - **Smart contracts (authoritative protocol state):** `contracts/` (AGIJobManager + ENSJobPages integration).
 - **Deployment/operator tooling (official):** `hardhat/` with runbooks in `docs/DEPLOYMENT/`.
 - **ENS identity layer (additive):** ENSJobPages docs in `docs/ENS/` and replacement flow in `docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`.
-- **Standalone Genesis Console surfaces:** canonical newcomer entry is the versioned USDC Console (`https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html`); the repo-pinned versioned standalone artifact is [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html); the operator guide is [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md); artifact inventory and broader UI references remain in [`docs/ui/STANDALONE_HTML_UIS.md`](docs/ui/STANDALONE_HTML_UIS.md), [`ui/README.md`](ui/README.md), and [`docs/ui/README.md`](docs/ui/README.md).
+- **Standalone Genesis Console surfaces:** canonical newcomer entry is the versioned USDC Console (`https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.1/agijobmanager-usdc.html`); the repo-pinned versioned standalone artifact is [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html); the operator guide is [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md); artifact inventory and broader UI references remain in [`docs/ui/STANDALONE_HTML_UIS.md`](docs/ui/STANDALONE_HTML_UIS.md), [`ui/README.md`](ui/README.md), and [`docs/ui/README.md`](docs/ui/README.md).
 - **Broader/full UI in development:** Next.js app and UI docs in [`ui/`](ui/) and [`docs/ui/README.md`](docs/ui/README.md).
 
 ### UI routing (pick the right interface quickly)
 
 | If you need to... | Use this | Why |
 | --- | --- | --- |
-| Configure the versioned USDC interface after deployment | `https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html` + [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) | Fastest newcomer/operator entry point for the standalone mainnet console. |
+| Configure the versioned USDC interface after deployment | `https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.1/agijobmanager-usdc.html` + [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) | Fastest newcomer/operator entry point for the standalone mainnet console. |
 | Inspect the pinned standalone artifact in-repo | [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html) | Repo-pinned equivalent artifact for review, provenance, and versioned inspection. |
 | Build/test the broader UI stack | [`ui/`](ui/) + [`docs/ui/README.md`](docs/ui/README.md) | Broader UI effort and development docs. |
 | Deploy/replace contracts and ENS components | [`hardhat/README.md`](hardhat/README.md) + [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md) | Canonical deployment/operator runbooks; UI is not a deployment substitute. |
@@ -99,7 +99,7 @@ Irreversible actions (delay until validated):
 
 ### Deployment tooling
 - `hardhat/`: **official/recommended** deployment and Etherscan verification flow.
-- Root Truffle config + migration scripts: local test/development tooling; legacy snapshot migrations are retired.
+- Root contract tests: maintained Hardhat network and ethers compatibility helpers; Truffle/Ganache dependencies and historical migrations are retired.
 
 ### Documentation entry points
 - Canonical deployment index: [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md)
@@ -107,7 +107,7 @@ Irreversible actions (delay until validated):
 - ENSJobPages replacement runbook (mainnet): [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - ENS naming/behavior reference: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_JOB_PAGES_OVERVIEW.md)
 - Deployment troubleshooting: [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
-- USDC Console (versioned download): `https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html`
+- USDC Console (versioned download): `https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.1/agijobmanager-usdc.html`
 - Genesis Console operator guide: [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md)
 - Pinned standalone artifact (repo): [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html)
 - UI directory inventory: [`ui/README.md`](ui/README.md)
@@ -119,8 +119,8 @@ Use Hardhat for production deployment and verification of `AGIJobManager`, and f
 
 Start here: [`hardhat/README.md`](hardhat/README.md)
 
-### Legacy (supported): Truffle
-Truffle remains available for local tests. Historical production migration scripts are retired in v0.5.0; use the USDC Hardhat deployment guide.
+### Retired: Truffle
+Truffle and Ganache are removed from v0.9.1. `npm test` runs the preserved contract regression suites on a local Hardhat network. Use the Hardhat guide for public-network deployment; historical Truffle commands are unsupported.
 
 Legacy docs:
 - [`docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md`](docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)

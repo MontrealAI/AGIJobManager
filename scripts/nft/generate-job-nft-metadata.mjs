@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import Web3 from "web3";
+import { Contract, JsonRpcProvider } from "ethers";
 
 const DEFAULT_IMAGE_IPFS = "ipfs://Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1";
 const DEFAULT_IMAGE_GATEWAY = "https://ipfs.io/ipfs/Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1";
@@ -79,7 +79,7 @@ if (!rpcUrl || !managerAddress || jobIds.length === 0) {
   process.exit(1);
 }
 
-const web3 = new Web3(rpcUrl);
+const provider = new JsonRpcProvider(rpcUrl);
 const abi = [
   { "inputs": [{ "internalType": "uint256", "name": "jobId", "type": "uint256" }], "name": "getJobCore", "outputs": [
     { "internalType": "address", "name": "employer", "type": "address" },
@@ -103,15 +103,16 @@ const abi = [
   { "inputs": [{ "internalType": "uint256", "name": "jobId", "type": "uint256" }], "name": "getJobCompletionURI", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" },
 ];
 
-const manager = new web3.eth.Contract(abi, managerAddress);
-const chainId = await web3.eth.getChainId();
+const manager = new Contract(managerAddress, abi, provider);
+try {
+const { chainId } = await provider.getNetwork();
 fs.mkdirSync(outDir, { recursive: true });
 
 for (const jobId of jobIds) {
-  const core = await manager.methods.getJobCore(jobId).call();
-  const validation = await manager.methods.getJobValidation(jobId).call();
-  const jobSpecURI = await manager.methods.getJobSpecURI(jobId).call();
-  const jobCompletionURI = await manager.methods.getJobCompletionURI(jobId).call();
+  const core = await manager.getJobCore(jobId);
+  const validation = await manager.getJobValidation(jobId);
+  const jobSpecURI = await manager.getJobSpecURI(jobId);
+  const jobCompletionURI = await manager.getJobCompletionURI(jobId);
   const externalUrl = externalUrlBase ? `${externalUrlBase.replace(/\/$/, "")}/${jobId}` : "";
 
   const metadata = stableMetadata({
@@ -133,4 +134,8 @@ for (const jobId of jobIds) {
   fs.writeFileSync(outPath, `${JSON.stringify(metadata, null, 2)}\n`);
   console.log(`Wrote ${outPath}`);
   console.log(`Suggested tokenURI: ipfs://<CID>/${jobId}.json`);
+}
+
+} finally {
+  provider.destroy();
 }

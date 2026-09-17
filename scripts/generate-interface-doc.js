@@ -5,7 +5,7 @@ const artifactPath = path.join(__dirname, '..', 'build', 'contracts', 'AGIJobMan
 const outputPath = path.join(__dirname, '..', 'docs', 'Interface.md');
 
 if (!fs.existsSync(artifactPath)) {
-  throw new Error('Missing build/contracts/AGIJobManager.json. Run `npx truffle compile` first.');
+  throw new Error('Missing build/contracts/AGIJobManager.json. Run `npm run build` first.');
 }
 
 const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));

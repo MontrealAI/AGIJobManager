@@ -23,6 +23,7 @@
 ## Explicit limitations
 
 - Not a trustless court; moderators and owner are privileged.
+- Validator authorization applies to wallet addresses. An employer or agent may vote if also validator-authorized; distinct wallets or ENS names do not prove independent people. Eligibility governance must account for conflicts of interest and collusion.
 - ENS hooks/tokenURI are convenience integrations.
 - Off-chain metadata availability and quality are out-of-contract guarantees.
 - No-vote finalization after the review window favors the agent without independently validating the work. Validators must actively participate; time elapsing does not execute transactions.

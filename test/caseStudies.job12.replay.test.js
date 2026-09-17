@@ -1,7 +1,7 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
-const { BN, expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
+const { BN, expectEvent, expectRevert, time } = require("../scripts/test-helpers.cjs");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");

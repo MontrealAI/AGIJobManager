@@ -1,4 +1,4 @@
-# Identity Layer Console (ENSJobPages v0.2.0)
+# Identity Layer Console (ENSJobPages)
 
 The Sovereign Ops Console includes a dedicated `#/identity` route for ENS Job Pages operations on Ethereum mainnet.
 
@@ -8,11 +8,13 @@ AGIJobManager is designed for autonomous agent workflows with human owner/operat
 
 ## Mainnet registry
 
-- ENSJobPages: `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94`
-- Connected AGIJobManager: a newly deployed and verified v0.5.0 USDC manager (required; no default)
-- Deployment log baseline block: `24531331`
+- ENSJobPages: deployment and manager wiring required; no official v0.9.1 address is configured.
+- Connected AGIJobManager: a newly deployed and verified v0.9.1 USDC manager (required; no default).
+- Active registry: [`config/usdc-deployment.json`](../../config/usdc-deployment.json), currently `deployment-required`.
 - Root namespace: `alpha.jobs.agi.eth`
 - Derived format: `job-<jobId>.alpha.jobs.agi.eth`
+
+The historical ENSJobPages v0.2.0 address `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94` and baseline block `24531331` are legacy references, not a verified v0.9.1 deployment. Follow the [replacement and wiring guide](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) before configuring an identity deployment.
 
 ## Operational workflow
 

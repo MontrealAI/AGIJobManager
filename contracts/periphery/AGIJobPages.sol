@@ -103,8 +103,8 @@ contract AGIJobPages is Ownable {
             return "";
         }
         if (!useJobIdJsonSuffix) {
-            return string(abi.encodePacked(baseMetadataURI, jobId.toString()));
+            return string.concat(baseMetadataURI, jobId.toString());
         }
-        return string(abi.encodePacked(baseMetadataURI, jobId.toString(), ".json"));
+        return string.concat(baseMetadataURI, jobId.toString(), ".json");
     }
 }

@@ -1,5 +1,5 @@
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectRevert } = require("../scripts/test-helpers.cjs");
 
 const UtilsHarness = artifacts.require("UtilsHarness");
 const MockERC20 = artifacts.require("MockERC20");

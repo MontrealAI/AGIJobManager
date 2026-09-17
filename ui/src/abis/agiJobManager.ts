@@ -588,6 +588,25 @@ export const agiJobManagerAbi = [
       {
         "indexed": true,
         "internalType": "uint256",
+        "name": "oldLimit",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "newLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "JobDurationLimitUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
         "name": "jobId",
         "type": "uint256"
       },
@@ -667,6 +686,25 @@ export const agiJobManagerAbi = [
       }
     ],
     "name": "JobValidated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "oldPayout",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "newPayout",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxJobPayoutUpdated",
     "type": "event"
   },
   {

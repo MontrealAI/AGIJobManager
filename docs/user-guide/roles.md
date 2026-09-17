@@ -1,4 +1,4 @@
-# Roles guide — v0.9.0
+# Roles guide — v0.9.1
 
 All job escrow, rewards, and bonds use native USDC. Each sender needs ETH for transaction gas. Verify the network and deployment before approving exact USDC amounts.
 

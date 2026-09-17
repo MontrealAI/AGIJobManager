@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { expectRevert } = require('@openzeppelin/test-helpers');
+const { expectRevert } = require('../scripts/test-helpers.cjs');
 const { buildInitConfig, deployActive } = require('./helpers/deploy');
 const Manager = artifacts.require('AGIJobManager');
 const USDC = artifacts.require('MockUSDCControls');
