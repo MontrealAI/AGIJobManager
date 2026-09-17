@@ -7,6 +7,7 @@ import pathlib
 import re
 import subprocess
 import time
+from urllib.parse import quote
 
 root = pathlib.Path(__file__).resolve().parents[2]
 meta = root / 'docs/releases/v0.9.2'
@@ -17,9 +18,12 @@ parser.add_argument('--publish', action='store_true')
 args = parser.parse_args()
 
 
-def gh(*command, data=None):
+def gh(*command, data=None, timeout=180):
     try:
-        return subprocess.run(['gh', *command], cwd=root, input=data, capture_output=True, text=True, check=True).stdout
+        return subprocess.run(['gh', *command], cwd=root, input=data, capture_output=True, text=True, check=True, timeout=timeout).stdout
+    except subprocess.TimeoutExpired:
+        print(f'GitHub request timed out after {timeout} seconds.', flush=True)
+        raise
     except subprocess.CalledProcessError as error:
         # Keep the HTTP failure visible without exposing redirected signed URLs.
         detail = re.sub(r'https?://\S+', '[URL]', error.stderr or '')
@@ -62,6 +66,54 @@ def tag_target(ref):
         assert obj['type'] == 'tag', 'Unexpected tag object type.'
         obj = api(f'git/tags/{obj["sha"]}')['object']
     raise RuntimeError('Unexpected nested tag depth.')
+
+
+def upload_asset(release, file, digest):
+    """Upload by known draft ID; reconcile ambiguous responses before retrying."""
+    endpoint = f'releases/{release["id"]}'
+    upload_url = release['upload_url'].split('{', 1)[0]
+    assert upload_url == f'https://uploads.github.com/repos/{repo}/releases/{release["id"]}/assets', 'Unexpected release upload endpoint.'
+    name, size = file.name, file.stat().st_size
+    expected_digest = 'sha256:' + digest
+    content_type = {'.zip': 'application/zip', '.html': 'text/html',
+                    '.json': 'application/json', '.txt': 'text/plain'}[file.suffix]
+
+    def verify_asset(asset):
+        assert asset['name'] == name and asset['size'] == size and asset['state'] == 'uploaded', 'Uploaded asset identity or state differs.'
+        assert asset.get('digest') == expected_digest, 'Existing asset differs; refusing to replace.'
+        return asset
+
+    def find_uploaded():
+        current = api(endpoint)
+        assert current['id'] == release['id'] and current['draft'], 'Upload requires the same unpublished draft.'
+        assert current['tag_name'] == tag and current['target_commitish'] == source, 'Draft source identity changed.'
+        matches = [asset for asset in current['assets'] if asset['name'] == name]
+        assert len(matches) <= 1, 'Duplicate draft asset names.'
+        return verify_asset(matches[0]) if matches else None
+
+    for attempt in range(3):
+        existing = find_uploaded()
+        if existing is not None:
+            print(f'Confirmed existing asset: {name} ({size} bytes)', flush=True)
+            return existing
+        print(f'Uploading asset: {name} ({size} bytes; attempt {attempt + 1}/3)', flush=True)
+        try:
+            uploaded = json.loads(gh('api', upload_url + '?name=' + quote(name, safe=''),
+                                     '--method', 'POST', '--input', str(file),
+                                     '--header', 'Content-Type: ' + content_type, timeout=180))
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            # A lost response can follow a successful upload. Never repeat the
+            # POST until the exact draft has been inspected for that asset.
+            existing = find_uploaded()
+            if existing is not None:
+                print(f'Confirmed uploaded asset after transport failure: {name} ({size} bytes)', flush=True)
+                return existing
+            if attempt == 2:
+                raise
+            time.sleep(2 ** attempt)
+            continue
+        return verify_asset(uploaded)
+    raise RuntimeError('Release asset upload exhausted its attempts.')
 
 
 assert os.environ.get('GITHUB_REPOSITORY') == repo, 'Repository identity mismatch.'
@@ -155,15 +207,7 @@ assert release['draft'] and release['tag_name'] == tag
 assets = {a['name']: a for a in release['assets']}
 for name in expected:
     if name not in assets:
-        for attempt in range(6):
-            try:
-                gh('release', 'upload', tag, str(out / name), '--repo', repo)
-                break
-            except subprocess.CalledProcessError as error:
-                # A just-created draft can briefly be absent from tag lookup.
-                if attempt == 5 or not any(t in error.stderr for t in ['HTTP 404', 'release not found']):
-                    raise
-                time.sleep(2 ** attempt)
+        upload_asset(release, out / name, expected[name])
 wanted = {name: 'sha256:' + digest for name, digest in expected.items()}
 wait_for(release_endpoint, lambda r: {a['name']: a.get('digest') for a in r['assets']} == wanted)
 api(release_endpoint, 'PATCH', {'draft': False, 'prerelease': False, 'make_latest': 'true'})
