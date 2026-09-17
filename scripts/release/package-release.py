@@ -1,4 +1,4 @@
-"""Create a deterministic, checksum-verified archive of the pinned v0.4.0 source."""
+"""Create a deterministic, checksum-verified archive of the pinned v0.5.0 source."""
 import argparse
 import hashlib
 import io
@@ -8,10 +8,10 @@ import subprocess
 import zipfile
 
 root = pathlib.Path(__file__).resolve().parents[2]
-meta = root / 'docs/releases/v0.4.0'
+meta = root / 'docs/releases/v0.5.0'
 config = json.loads((meta / 'release.json').read_text())
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--out', type=pathlib.Path, default=root / 'build/release/v0.4.0')
+parser.add_argument('--out', type=pathlib.Path, default=root / 'build/release/v0.5.0')
 out = parser.parse_args().out.resolve()
 out.mkdir(parents=True, exist_ok=True)
 if any(out.iterdir()):
@@ -33,7 +33,7 @@ subprocess.run(['git', 'merge-base', '--is-ancestor', source, 'HEAD'], cwd=root,
 for name, digest in config['evidenceDigests'].items():
     assert sha((meta / name).read_bytes()) == digest, f'Evidence digest mismatch: {name}'
 inventory = json.loads((meta / 'CHANGES.json').read_text())
-actual = [dict(zip(['status', 'path'], line.split('\t'))) for line in git('diff', '--name-status', config['previousTag'], source).decode().splitlines()]
+actual = [dict(zip(['status', 'path'], line.split('\t'))) for line in git('diff', '--no-renames', '--name-status', config['previousTag'], source).decode().splitlines()]
 assert inventory['sourceCommit'] == source and inventory['previousTag'] == config['previousTag']
 assert actual == inventory['changes'], 'Application delta does not match the recorded inventory.'
 assert not git('diff', config['previousTag'], source, '--', *config['unchangedPaths']), 'Protected protocol or application paths changed.'
@@ -48,7 +48,7 @@ payload[ui_name] = (git('show', source + ':' + config['primaryUI']), 0o100644)
 payload['LICENSE'] = (git('show', source + ':LICENSE'), 0o100644)
 for name in ['START_HERE.md', 'RELEASE_NOTES.md', 'VALIDATION.md', 'release.json', *config['evidenceDigests']]:
     payload[name] = ((meta / name).read_bytes(), 0o100644)
-for name in ['package-release.py', 'verify-genesis-ui.mjs', 'publish-release.py']:
+for name in ['package-release.py', 'verify-usdc-ui.mjs', 'publish-release.py']:
     payload['release-tooling/' + name] = ((root / 'scripts/release' / name).read_bytes(), 0o100644)
 payload['release-tooling/current-state-release.yml'] = ((root / '.github/workflows/current-state-release.yml').read_bytes(), 0o100644)
 manifest = dict(config, files={name: {'sha256': sha(data), 'bytes': len(data)} for name, (data, _) in sorted(payload.items())})
