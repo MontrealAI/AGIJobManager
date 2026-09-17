@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "73a632f75cb513977d892b0d4bc6dd412b0cba32",
+  "sourceCommit": "f777e050cc047323200aca7f2170914c1af852dd",
   "previousTag": "v0.4.0",
   "changes": [
     {
@@ -965,6 +965,10 @@
     {
       "status": "M",
       "path": "ui/scripts/build-ipfs.mjs"
+    },
+    {
+      "status": "M",
+      "path": "ui/scripts/generate-contract-interface.mjs"
     },
     {
       "status": "M",

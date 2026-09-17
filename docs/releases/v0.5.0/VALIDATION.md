@@ -1,7 +1,7 @@
 # v0.5.0 validation
 
-Application commit: `73a632f75cb513977d892b0d4bc6dd412b0cba32`.
-Application tree: `80276ef5a9d44a3c832694b3cde6659469023c7a`.
+Application commit: `f777e050cc047323200aca7f2170914c1af852dd`.
+Application tree: `9fb76c70894d58ed83b41916c3073e7b4022aaec`.
 
 ## Source CI evidence
 
@@ -9,10 +9,10 @@ Publication requires every run below to report **completed / success** for the e
 
 | Gate | Evidence |
 | --- | --- |
-| Solidity lint, build, size, full Truffle regressions, ABI smoke and browser smoke | [CI run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176057838) |
-| Documentation and generated reference consistency | [Docs run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176057812) |
-| Foundry unit/fuzz, invariants and configured Slither analysis | [Security run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176057774) |
-| UI lint/types/build, unit/property/runtime tests, browser end-to-end/accessibility/header checks and deterministic artifact checks | [UI run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176057805) |
+| Solidity lint, build, size, full Truffle regressions, ABI smoke and browser smoke | [CI run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176499302) |
+| Documentation and generated reference consistency | [Docs run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176499311) |
+| Foundry unit/fuzz, invariants and configured Slither analysis | [Security run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176499270) |
+| UI lint/types/build, unit/property/runtime tests, browser end-to-end/accessibility/header checks and deterministic artifact checks | [UI run](https://github.com/MontrealAI/AGIJobManager/actions/runs/35176499253) |
 
 ## USDC-specific coverage
 
