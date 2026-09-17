@@ -50,8 +50,9 @@ sequenceDiagram
     alt No dispute and finalizable
       anyone->>M: finalizeJob(jobId)
       alt approvals dominate
-        M-->>A: payout + bond return
         M-->>V: settle validator rewards/slash
+        Note over M: Pay 30% and 10% wallets
+        M-->>A: remaining USDC + bond return
       else disapprovals dominate
         M-->>E: refund (minus validator reward budget when validators exist)
       end
@@ -79,32 +80,8 @@ sequenceDiagram
 
 ### Agent-win payout decomposition
 
-- `validatorBudget = payout * validationRewardPercentage / 100`
-- `agentPayout = payout * agentPayoutPct / 100`
-- `retained = payout - agentPayout - validatorBudget` (emits `PlatformRevenueAccrued`; retained stays in contract).
+See [USDC payout distribution](USDC_PAYOUT_SPLIT.md). Pay validators using the posting-time budget (8% default), then 30% and 10% of the original cost to `wallet30` and `wallet10`, then all remaining USDC to the agent. Bond returns/slashing are accounted separately. Rounding and unused validator rewards reach the agent; no job-cost remainder is retained.
 
-```mermaid
-flowchart LR
-    Escrow[Payout escrow] --> Agent[Agent payout]
-    Escrow --> Val[Validator budget]
-    Escrow --> Retained[Retained platform revenue]
-    AgentBond[Agent bond] --> AgentOrPool[Agent return or validator-side pool]
-    ValBond[Validator bonds] --> Correct[Correct-side validators]
-    ValBond --> Wrong[Wrong-side validators less slash]
-    DisputeBond[Dispute bond] --> Winner[Winner side transfer]
-    Retained --> Treasury[withdrawableUSDC when paused]
-```
-
-### `withdrawableUSDC`
-
-`withdrawableUSDC = usdcToken.balanceOf(this) - (lockedEscrow + lockedValidatorBonds + lockedAgentBonds + lockedDisputeBonds)`; if balance is below locked total, call reverts with `InsolventEscrowBalance`.
-
-`withdrawUSDC` requires:
-- owner only,
-- `whenSettlementNotPaused`,
-- `whenPaused`,
-- amount > 0,
-- amount <= `withdrawableUSDC`.
 
 ## Invariants and guardrails
 
@@ -131,7 +108,7 @@ flowchart LR
 | `JobCompleted` | Agent-win settlement | `jobId,agent,reputationPoints` | Successful completions |
 | `JobExpired` | Timeout before completion request | `jobId,employer,payout` | Liveness failures |
 | `JobCancelled` | Unassigned cancellation | `jobId` | Unassigned churn |
-| `PlatformRevenueAccrued` | Agent-win retained remainder | `jobId,amount` | Treasury accrual |
+| `JobPayoutDistributed` | Successful USDC distribution | `jobId,validatorBudget,wallet30Amount,wallet10Amount,agentAmount` | Recipient payments |
 | `USDCWithdrawn` | Owner treasury withdrawal | `to,amount,remainingWithdrawable` | Governance-sensitive movement |
 | `SettlementPauseSet` | Settlement gate toggled | `setter,paused` | Emergency mode changes |
 | `EnsHookAttempted` | Hook call attempted | `hook,jobId,target` | ENS integration health |

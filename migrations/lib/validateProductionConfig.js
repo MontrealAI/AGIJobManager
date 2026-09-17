@@ -124,15 +124,13 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
   }
 
   const valPct = Number(protocolParameters.validationRewardPercentage ?? 8);
-  assert(Number.isInteger(valPct) && valPct >= 1 && valPct <= 100, 'protocolParameters.validationRewardPercentage must be 1..100.');
-  const maxPayoutPct = 100 - valPct;
+  assert(Number.isInteger(valPct) && valPct >= 1 && valPct <= 60, 'protocolParameters.validationRewardPercentage must be 1..60.');
   assert(Array.isArray(config.agiTypes), 'agiTypes must be an array.');
   for (let i = 0; i < config.agiTypes.length; i += 1) {
     const agiType = config.agiTypes[i];
     agiType.nftAddress = normalizeAddress(agiType.nftAddress, `agiTypes[${i}].nftAddress`, web3);
     const pct = Number(agiType.payoutPercentage);
     assert(Number.isInteger(pct) && pct >= 1 && pct <= 100, `agiTypes[${i}].payoutPercentage must be 1..100.`);
-    assert(pct <= maxPayoutPct, `agiTypes[${i}].payoutPercentage must be <= ${maxPayoutPct}.`);
     await assertAddressHasCode(web3, `agiTypes[${i}].nftAddress`, agiType.nftAddress);
   }
 

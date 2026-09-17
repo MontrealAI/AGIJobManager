@@ -589,27 +589,11 @@ module.exports = async function postdeployConfig(callback) {
       }
     }
 
-    const currentHeadroom = 100 - Number(currentValidationReward.toString());
-    const desiredHeadroom = 100 - validationRewardTargetNumber;
-    const needsValidationFirst = validationRewardNeedsUpdate && desiredMaxAgiPayout > currentHeadroom;
-    const needsOtherFirst = validationRewardNeedsUpdate && currentMaxAgiPayout > desiredHeadroom;
-
-    if (needsValidationFirst && needsOtherFirst) {
-      throw new Error(
-        "Validation reward and payout updates require conflicting order; check AGI type headroom"
-      );
+    if (!Number.isInteger(validationRewardTargetNumber) || validationRewardTargetNumber < 1 || validationRewardTargetNumber > 60) {
+      throw new Error('Validator rewards must be 1..60%; fixed wallet shares consume 40% of the job cost.');
     }
-
-    if (needsValidationFirst) {
-      await addValidationRewardOp();
-      ops.push(...agiTypeOps);
-    } else if (needsOtherFirst) {
-      ops.push(...agiTypeOps);
-      await addValidationRewardOp();
-    } else {
-      ops.push(...agiTypeOps);
-      await addValidationRewardOp();
-    }
+    ops.push(...agiTypeOps);
+    await addValidationRewardOp();
 
     const listOps = [
       {

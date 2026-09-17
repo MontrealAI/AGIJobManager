@@ -18,7 +18,7 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 | What you tried to do | What you saw | What it means | How to fix it | Where to learn more |
 | --- | --- | --- | --- | --- |
 | Apply for a job | `NotAuthorized` | Your wallet did not pass the agent eligibility checks. | Make sure **one** of the following is true: (1) you’re in `additionalAgents`, (2) you provided a valid Merkle proof, (3) you own the ENS NameWrapper subdomain, or (4) your ENS resolver.addr points to your wallet. Also **use the label only**. | [Roles → Agent](roles.md#agent), [Merkle proofs](merkle-proofs.md) |
-| Apply for a job | `IneligibleAgentPayout` | Your agent payout tier is 0%, so the job cannot be accepted. | Hold an eligible AGI‑type NFT with a nonzero payout tier before applying. | [Roles → Agent](roles.md#agent) |
+| Apply for a job | `IneligibleAgentPayout` | You hold no eligible NFT credential. | Hold an eligible AGI‑type NFT with a nonzero eligibility score before applying. | [Roles → Agent](roles.md#agent) |
 | Apply for a job | `InvalidState` | Job already has an assigned agent. | Pick another open job. | [Happy path](happy-path.md) |
 | Apply for a job | `Blacklisted` | Your wallet is blacklisted as an agent. | Contact the operator/owner for remediation. | [Roles → Agent](roles.md#agent) |
 | Request job completion | `NotAuthorized` | Only the assigned agent can request completion. | Ensure you are the assigned agent for that job. | [Roles → Agent](roles.md#agent) |
@@ -42,7 +42,7 @@ This guide maps what you tried to do → what you saw → how to fix it. All ite
 | Add AGI type (owner) | `InvalidParameters` | Address is zero or payout percentage outside 1–100. | Provide a valid NFT address and percentage. | [Roles → Owner](roles.md#owner) |
 | Any token transfer | `TransferFailed` | Token transfer or transferFrom returned false. | Ensure you have enough USDC balance and **approved** the contract for the needed amount. | [Happy path](happy-path.md) |
 | Any job action | `JobNotFound` | The job ID does not exist. | Double‑check the job ID. | [Happy path](happy-path.md) |
-| Set validation reward percentage (owner) | `InvalidParameters` | Percentage must be between 1 and 100. | Use a value from 1–100. | [Roles → Owner](roles.md#owner) |
+| Set validation reward percentage (owner) | `InvalidParameters` | Validator percentage must be between 1 and 60. | Use a value from 1–60; it affects only new jobs. | [Roles → Owner](roles.md#owner) |
 | Actions protected by pause | `Pausable: paused` | The contract is paused, so `whenNotPaused` actions are blocked. | Wait for the owner to unpause before retrying. | [Roles → Owner](roles.md#owner) |
 
 ## If you still can’t proceed

@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `382dcfc36a89`.
-- Source snapshot fingerprint: `382dcfc36a89`.
+- Generated at (deterministic source fingerprint): `aad2c39b5efd`.
+- Source snapshot fingerprint: `aad2c39b5efd`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -143,11 +143,11 @@
 | `JobDisapproved` | `uint256 indexed jobId, address indexed validator` |
 | `JobDisputed` | `uint256 indexed jobId, address indexed disputant` |
 | `JobExpired` | `uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout` |
+| `JobPayoutDistributed` | `uint256 indexed jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount` |
 | `JobValidated` | `uint256 indexed jobId, address indexed validator` |
 | `MerkleRootsUpdated` | `bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot` |
 | `NameWrapperUpdated` | `address newNameWrapper` |
 | `NFTIssued` | `uint256 indexed tokenId, address indexed employer, string tokenURI` |
-| `PlatformRevenueAccrued` | `uint256 indexed jobId, uint256 indexed amount` |
 | `ReputationUpdated` | `address user, uint256 newReputation` |
 | `RequiredValidatorApprovalsUpdated` | `uint256 indexed oldApprovals, uint256 indexed newApprovals` |
 | `RequiredValidatorDisapprovalsUpdated` | `uint256 indexed oldDisapprovals, uint256 indexed newDisapprovals` |

@@ -116,7 +116,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     assert.equal(tokenUri, "ipfs://base/ipfs-complete", "tokenURI should match completion URI");
     assert.equal(await manager.ownerOf(tokenId), employer, "employer should receive job NFT");
 
-    const agentExpected = payout.muln(92).divn(100);
+    const agentExpected = payout.muln(52).divn(100);
     const validatorExpected = payout.muln(8).divn(100).divn(2);
 
     const balancesAfter = {

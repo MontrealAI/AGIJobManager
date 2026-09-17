@@ -34,6 +34,7 @@ function buildInitConfig(
   alphaAgentRootNode,
   validatorMerkleRoot,
   agentMerkleRoot,
+  settlementWallets,
 ) {
   return [
     tokenAddress,
@@ -41,6 +42,7 @@ function buildInitConfig(
     [ensAddress, nameWrapperAddress],
     [clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode],
     [validatorMerkleRoot, agentMerkleRoot],
+    settlementWallets,
   ];
 }
 

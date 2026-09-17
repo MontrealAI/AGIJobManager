@@ -87,13 +87,13 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
 ## C. Lifecycle map with incentive commentary
 
 ### Economics snapshot (payouts + bonds)
-- **Escrow payout split**: on agent wins, the payout is allocated between the agent payout (snapshotted at `applyForJob`) and the validator reward budget (`validationRewardPercentage`). If no validators participate, the validator budget is returned to the employer.
+- **Escrow payout split**: successful jobs pay the posting-time validator budget, 30% and 10% of the original cost to two immutable wallets, then all remaining USDC to the agent. With no votes, the unused validator budget goes to the agent.
 - **Agent bond**: posted at `applyForJob` using `agentBondBps` with `agentBond`/`agentBondMax` caps; **scaled upward by duration** when `jobDurationLimit` is set; returned on agent wins and forfeited to the employer on employer wins or expiry.
 - **Validator bond + slashing**: posted per vote (`validatorBondBps` with min/max caps); correct‑side validators earn rewards and get bond back, incorrect‑side validators are slashed by `validatorSlashBps`.
 - **Dispute bond**: posted by the disputant in `disputeJob` (bounded by `DISPUTE_BOND_BPS/MIN/MAX`); paid to the winning side when the dispute resolves.
 - **Employer refunds**: if validators participated and the employer wins, the refund is reduced by the validator reward pool (validators still get paid).
 
-**Example (numbers):** with a 1,000 USDC payout, a 80% agent payout tier, and a 5% validator reward percentage, the agent receives 800 USDC, the validator pool is 50 USDC split across validators who voted with the final outcome, and any remainder stays in the contract balance (withdrawable only under the `withdrawableUSDC()` rules).
+**Example:** a 1,000 USDC successful job at the default validator rate pays an 80 USDC validator budget, 300 USDC to wallet one, 100 USDC to wallet two, and 520 USDC to the agent. Bond slashing and rounding follow the [v0.6.0 rules](USDC_PAYOUT_SPLIT.md).
 
 Below is the **real settlement path** with incentives at each step. For contract‑accurate rules, see [`contract-behavior.md`](contract-behavior.md).
 
@@ -102,7 +102,7 @@ Below is the **real settlement path** with incentives at each step. For contract
    - **Best response**: set realistic duration and clear deliverables to reduce disputes.
 
 2) **`applyForJob` (Agent)**
-   - Agent posts a bond and locks the payout tier at this moment; bond + effort is the agent’s **costly** move.
+   - Agent posts a bond; the job's financial terms were already fixed at posting; bond + effort is the agent’s **costly** move.
    - **Best response**: accept only jobs where expected value exceeds bond + opportunity cost.
 
 3) **`requestJobCompletion` (Agent)**

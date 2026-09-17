@@ -197,7 +197,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       assert.equal(employerBalanceAfter.toString(), employerBalanceBefore.toString());
       assert.equal(
         agentBalanceAfter.sub(agentBalanceBefore).toString(),
-        web3.utils.toBN(parseUSDCAmount("92")).add(agentBond).toString()
+        web3.utils.toBN(parseUSDCAmount("52")).add(agentBond).toString()
       );
       assert.equal(validatorBalanceAfter.sub(validatorBalanceBefore).toString(), parseUSDCAmount("8"));
 
@@ -343,7 +343,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       const agentBalanceAfter = web3.utils.toBN(await token.balanceOf(agent));
 
       const agentBond = await computeAgentBond(manager, web3.utils.toBN(payout), web3.utils.toBN(1000));
-      const expectedPayout = web3.utils.toBN(payout).div(web3.utils.toBN(100)).add(agentBond).add(disputeBond);
+      const expectedPayout = web3.utils.toBN(payout).muln(60).divn(100).add(agentBond).add(disputeBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
 
       const jobAfter = await manager.getJobCore(jobId);

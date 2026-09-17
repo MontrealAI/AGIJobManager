@@ -47,7 +47,7 @@ for (const [label,chain,token,decimals,code,pass] of [
   const ctx = vm.createContext({
     USDC_ADDRESS:canonical, AGI_JOB_MANAGER:manager, AGIJobManagerABI:[], ERC20ABI:[],
     usdcDeploymentValidated:true, usdcToken:{stale:true}, tokenDecimals:18,
-    agiJobManager:{options:{address:manager},methods:{usdcToken:()=>({call:async()=>token})}},
+    agiJobManager:{options:{address:manager},methods:{usdcToken:()=>({call:async()=>token}),wallet30:()=>({call:async()=> '0x3333333333333333333333333333333333333333'}),wallet10:()=>({call:async()=> '0x4444444444444444444444444444444444444444'})}},
     web3:{utils:{isAddress:()=>true},eth:{getChainId:async()=>chain,getCode:async()=>code,
       Contract:function(){return {methods:{decimals:()=>({call:async()=>decimals})}};}}},
     el:()=>({textContent:''}),updateWriteGate:()=>{gateCalls++;}

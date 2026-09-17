@@ -20,7 +20,7 @@ AGIJobManager is centralized by design. Users must trust the owner and moderator
 - Withdraw treasury funds **only while paused** (never escrow or bonded funds).
 - Manage allowlists/blacklists and additional agents/validators.
 - Update economic parameters (validator thresholds, reward percentages, payout caps, duration limits, review periods, bonds).
-- Manage moderators and AGI payout tiers (AGI types).
+- Manage moderators and NFT eligibility scores (AGI types).
 - Configure identity wiring before lock (token/ENS/NameWrapper/root nodes).
 - Delist unassigned jobs via `delistJob` (owner‑only).
 
@@ -63,8 +63,8 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 - `withdrawUSDC()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableUSDC()`.
 
 **What becomes treasury**
-- Payout remainder when `agentPayoutPct + validationRewardPercentage < 100`.
-- Rounding dust from integer division.
+- Unreserved direct USDC donations only; successful jobs distribute their full cost.
+- Job and validator rounding dust goes to the winning agent, not treasury.
 - Direct contributions via `contributeToRewardPool` (no segregation or automated distribution; funds remain in the general contract balance).
 
 **Simple example**

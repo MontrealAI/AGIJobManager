@@ -163,13 +163,13 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     const validatorBudget = payout.mul(await manager.validationRewardPercentage()).divn(100);
     assert.equal(
       agentAfter.sub(agentBefore).toString(),
-      payout.muln(90).divn(100).add(agentBond).toString(),
-      "agent should be paid on no-vote finalize"
+      payout.muln(60).divn(100).add(agentBond).toString(),
+      "agent receives the unused validator budget on no-vote finalize"
     );
     assert.equal(
       employerAfter.sub(employerBefore).toString(),
-      validatorBudget.toString(),
-      "employer should receive validator budget rebate on no-vote finalize"
+      "0",
+      "successful jobs distribute the entire cost"
     );
   });
 
@@ -304,7 +304,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await manager.finalizeJob(jobId, { from: other });
     const agentAfter = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
-    const expected = payout.muln(90).divn(100).add(agentBond);
+    const expected = payout.muln(52).divn(100).add(agentBond);
     assert.equal(agentAfter.sub(agentBefore).toString(), expected.toString(), "agent should be paid");
   });
 

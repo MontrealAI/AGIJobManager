@@ -1,5 +1,5 @@
 {
-  "version": "0.5.0",
+  "version": "0.6.0",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -13,5 +13,16 @@
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
   },
   "addressSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-  "note": "Software release only. No USDC manager has been deployed or verified by this release. Existing pre-v0.5.0 deployment receipts are historical and are not USDC deployments."
+  "note": "Software release only. A fresh v0.6.0 USDC manager with two explicit immutable settlement wallets is required. Earlier deployments do not implement this payout split.",
+  "settlementWallets": {
+    "wallet30": "",
+    "wallet10": ""
+  },
+  "settlement": {
+    "wallet30Percentage": 30,
+    "wallet10Percentage": 10,
+    "defaultValidatorPercentage": 8,
+    "validatorRateSnapshot": "job-posting",
+    "agent": "remaining balance"
+  }
 }

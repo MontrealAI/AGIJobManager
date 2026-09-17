@@ -10,7 +10,7 @@ contract AGIJobManagerHarness is AGIJobManager {
         address[2] memory ensConfig,
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
-    ) AGIJobManager(usdcTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots) {}
+    ) AGIJobManager(usdcTokenAddress, baseIpfs, ensConfig, rootNodes, merkleRoots, [address(0x301), address(0x101)]) {}
 
     function activeJobsByAgentView(address agent) external view returns (uint256) {
         return activeJobsByAgent[agent];

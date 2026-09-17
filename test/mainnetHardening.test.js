@@ -373,14 +373,14 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
 
     await manager.disableAGIType(nft.address, { from: owner });
-    await manager.setValidationRewardPercentage(80, { from: owner });
+    await manager.setValidationRewardPercentage(60, { from: owner });
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
     await manager.finalizeJob(0, { from: employer });
 
-    assert.equal((await token.balanceOf(agent)).toString(), payout.muln(95).divn(100).toString());
-    assert.equal((await token.balanceOf(employer)).toString(), payout.muln(5).divn(100).toString());
+    assert.equal((await token.balanceOf(agent)).toString(), payout.muln(60).divn(100).toString());
+    assert.equal((await token.balanceOf(employer)).toString(), "0");
   });
 
   it("does not auto-dispute when disapproval threshold is disabled", async () => {

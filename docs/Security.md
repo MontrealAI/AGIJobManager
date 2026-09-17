@@ -1,54 +1,12 @@
-# Security model and limitations
+# Security — v0.6.0
 
-This document summarizes security considerations specific to the current `AGIJobManager` contract. It should be read alongside the test suite and interface reference.
+The authoritative current settlement rules are in [USDC payout distribution](USDC_PAYOUT_SPLIT.md). Successful jobs pay validators (8% default), then 30% and 10% of the original USDC job cost to two immutable wallets, then the remaining amount to the agent. Validator terms are fixed at posting; NFT eligibility scores do not set payout shares. No successful-job cost remains in treasury.
 
-## Threat model overview
+- [Deployment and cutover](USDC_MIGRATION.md): a fresh manager and two real recipient addresses are required.
+- [Protocol flow and escrow accounting](PROTOCOL_FLOW.md): completion, refunds, bonds and disputes.
+- [Generated contract interface](REFERENCE/CONTRACT_INTERFACE.md): current functions and constructor.
+- [Generated events and errors](REFERENCE/EVENTS_AND_ERRORS.md): current ABI reference.
 
-**Assets at risk**
-- Escrowed ERC‑20 funds held by the contract.
-- Job NFTs minted on completion.
-- Reputation mappings used for premium access gating.
+`setValidationRewardPercentage` accepts 1–60 and changes only newly posted jobs. Both settlement wallets and the USDC address are immutable. `withdrawUSDC` requires intake pause, unpaused settlement and surplus beyond all locked escrow and bonds. Issuer transfer restrictions revert the entire settlement; there is no partial payment or automatic recipient replacement.
 
-**Audit status**
-- No public audit report is included in this repository. Treat deployments as experimental until independently reviewed.
-
-**Primary trust assumptions (centralization risks)**
-- **Owner powers**: can pause flows, update token address and parameters, manage allowlists/blacklists, add AGI types, and withdraw ERC‑20 while paused (limited to `withdrawableUSDC()`).
-- **Policy control**: owner can update Merkle roots, validation thresholds, and payout percentages, which can materially change who can validate jobs and how funds are split.
-- **Moderator powers**: resolve disputes with typed action codes via `resolveDisputeWithCode`. Code `0` (NO_ACTION) logs a reason and keeps the dispute active; `1` (AGENT_WIN) pays the agent; `2` (EMPLOYER_WIN) refunds the employer. The legacy string-based `resolveDispute` is deprecated and maps exact `agent win` / `employer win` strings to the corresponding codes.
-- **Validator set**: validators are allowlisted or ENS/Merkle‑gated; the contract does not enforce decentralization or slashing.
-
-## Hardened improvements (vs. historical v0)
-The regression suite documents the following safer behaviors in the current contract:
-- **Phantom job IDs blocked**: `_job` rejects non‑existent jobs.
-- **Pre‑apply takeover blocked**: agents cannot claim assignments before a job exists.
-- **Double completion blocked**: employer‑win dispute resolution closes the job.
-- **Division‑by‑zero avoided**: agent‑win disputes complete safely when no validators voted.
-- **Validator double‑votes blocked**: validators cannot both approve and disapprove the same job.
-- **Transfer checks enforced**: ERC‑20 transfers must return true or the call reverts.
-- **Failed refunds revert**: `cancelJob` and refunds do not silently drop escrow.
-
-See [`REGRESSION_TESTS.md`](REGRESSION_TESTS.md) for details.
-
-## Reentrancy posture
-`ReentrancyGuard` is applied to:
-- `createJob`, `applyForJob`, `validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `resolveDisputeWithCode`, `resolveStaleDispute`, `cancelJob`, `expireJob`, `finalizeJob`, `withdrawUSDC`, `contributeToRewardPool`.
-
-Functions without `nonReentrant` include `requestJobCompletion`. External ERC‑20 transfer paths (`createJob`, `withdrawUSDC`, `contributeToRewardPool`, dispute resolution, settlement) are guarded where they cross token boundaries.
-
-## Known limitations and assumptions
-- **Root immutability**: ENS root nodes are fixed at deployment and cannot be changed on-chain. Merkle roots **can** be updated by the owner via `updateMerkleRoots`; misconfigured roots can be corrected without redeploying, but updates should follow a strict governance process.
-- **ENS dependency**: ownership checks rely on ENS registry, NameWrapper, and resolver behavior.
-- **ERC‑20 compatibility**: transfers must either return `true` or return no data; calls that revert, return `false`, or return malformed data revert.
-- **Agent payout snapshot enforced**: agents must have a nonzero AGI‑type payout tier at apply time; the payout percentage is snapshotted on assignment and used at completion, preventing later NFT transfers from changing settlement for an accepted job. This resolves the earlier 0%/allowlist default payout gap.
-- **Validator payout sharing**: all validators who voted share equally; there is no weighting or slashing.
-- **Validator cap**: each job records at most `MAX_VALIDATORS_PER_JOB` unique validators to bound settlement gas. Owner‑set thresholds must fit within this cap (each ≤ cap and approvals + disapprovals ≤ cap) to keep completion/dispute reachable without exceeding the loop bound.
-- **Owner‑controlled parameters**: thresholds and limits can be changed post‑deployment by the owner.
-- **Time enforcement gap**: only `requestJobCompletion` enforces job duration; validators can still approve/disapprove after the deadline unless off‑chain policy prevents it.
-
-## Operational monitoring
-- Index and alert on `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, and `ReputationUpdated` events.
-- Track `OwnershipVerified` to monitor ENS/Merkle ownership checks.
-
-## Disclosure
-Report security issues privately via [`SECURITY.md`](../SECURITY.md).
+Previous detailed instructions that describe NFT-based payout shares or retained job-cost revenue are historical and remain in [v0.5.0](https://github.com/MontrealAI/AGIJobManager/tree/v0.5.0). Do not use them to configure v0.6.0.

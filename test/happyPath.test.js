@@ -95,7 +95,7 @@ contract("AGIJobManager happy path", (accounts) => {
     assert.equal(ownerOfToken, employer, "employer should own the NFT");
 
     const agentBalance = await token.balanceOf(agent);
-    const agentExpected = payout.muln(92).divn(100);
+    const agentExpected = payout.muln(52).divn(100);
     const agentBond = await computeAgentBond(manager, payout, toBN(3600));
     assert.equal(
       agentBalance.sub(agentBalanceBefore).toString(),

@@ -1,6 +1,6 @@
 # Events and Errors Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `382dcfc36a89`.
+- Generated at (deterministic source fingerprint): `aad2c39b5efd`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Events catalog
@@ -27,11 +27,11 @@
 | `JobDisapproved` | `uint256 indexed jobId, address indexed validator` | Validator disapproval vote | Alert when disapproval velocity accelerates |
 | `JobDisputed` | `uint256 indexed jobId, address indexed disputant` | Dispute lane entered | Page moderator operations queue |
 | `JobExpired` | `uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout` | Job missed deadline and expired | Track employer protection triggers |
+| `JobPayoutDistributed` | `uint256 indexed jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `JobValidated` | `uint256 indexed jobId, address indexed validator` | Validator approval vote | Track validator participation and threshold trajectory |
 | `MerkleRootsUpdated` | `bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `NameWrapperUpdated` | `address newNameWrapper` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `NFTIssued` | `uint256 indexed tokenId, address indexed employer, string tokenURI` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
-| `PlatformRevenueAccrued` | `uint256 indexed jobId, uint256 indexed amount` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `ReputationUpdated` | `address user, uint256 newReputation` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `RequiredValidatorApprovalsUpdated` | `uint256 indexed oldApprovals, uint256 indexed newApprovals` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `RequiredValidatorDisapprovalsUpdated` | `uint256 indexed oldDisapprovals, uint256 indexed newDisapprovals` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |

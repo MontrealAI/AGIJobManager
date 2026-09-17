@@ -18,7 +18,7 @@ This document provides a comprehensive, code‑accurate overview of the `AGIJobM
 ## Key components
 
 - **Jobs**: funded by employers, assigned to a single agent, validated by a bounded set of validators, optionally disputed and resolved by moderators.
-- **Agents**: apply for jobs if allowlisted/Merkle/ENS‑verified and not blacklisted. Agent payout is snapshotted at assignment time based on AGIType NFT holdings. Agents post a performance bond at apply time.
+- **Agents**: apply for jobs if allowlisted/Merkle/ENS‑verified and not blacklisted. The validator rate and base agent remainder are snapshotted at job posting; NFT holdings only establish eligibility. Agents post a performance bond at apply time.
 - **Validators**: approve/disapprove job completion if allowlisted/Merkle/ENS‑verified and not blacklisted. Validators post a bond per vote and are rewarded/slashed based on the final outcome.
 - **Moderators**: resolve disputes using typed resolution codes.
 - **Dispute bonds**: the disputant posts a bond that is paid to the winning side on resolution.
@@ -93,7 +93,7 @@ stateDiagram-v2
 | `JobExpired` | `expireJob` | Expired without completion request. |
 | `EnsRegistryUpdated` / `NameWrapperUpdated` | owner updates | ENS wiring updates (before lock). |
 | `RootNodesUpdated` / `MerkleRootsUpdated` | owner updates | Identity allowlist updates. |
-| `AGITypeUpdated` | `addAGIType` | Payout percentage per AGI type NFT. |
+| `AGITypeUpdated` | `addAGIType` | Eligibility score per AGI type NFT (legacy field name). |
 | `NFTIssued` | `_mintCompletionNFT` | ERC‑721 minted to employer. |
 | `RewardPoolContribution` | `contributeToRewardPool` | Additional reward pool contributions. |
 | `CompletionReviewPeriodUpdated` / `DisputeReviewPeriodUpdated` | owner updates | Review period changes. |
@@ -119,7 +119,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 | `TransferFailed` | ERC‑20 transfer/transferFrom failed or returned false or amount mismatch. |
 | `ValidatorLimitReached` | Validator cap reached for a job. |
 | `InvalidValidatorThresholds` | Approval/disapproval thresholds exceed caps. |
-| `IneligibleAgentPayout` | Agent has 0% payout tier at apply time. |
+| `IneligibleAgentPayout` | Agent has no eligible NFT at apply time. |
 | `InsufficientWithdrawableBalance` | Withdrawal exceeds `withdrawableUSDC()`. |
 | `InsolventEscrowBalance` | Contract balance < locked totals. |
 | `ConfigLocked` | Identity configuration already locked. |
@@ -138,7 +138,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 - **Agent bond**: `applyForJob` transfers the agent bond into the contract and increments `lockedAgentBonds`. On agent win the bond is returned to the agent; on employer win the bond is refunded to the employer (or pooled for validators if disapproval threshold was reached).
 - **Validator bond**: each validator vote transfers a bond (computed from `validatorBondBps`, `validatorBondMin`, `validatorBondMax`) and increments `lockedValidatorBonds`. Correct validators earn rewards; incorrect validators are slashed by `validatorSlashBps`.
 - **Dispute bond**: `disputeJob` transfers a bond based on `DISPUTE_BOND_BPS` with min/max caps. The bond is paid to the winner on resolution.
-- **Agent payout**: on completion, the agent receives `job.payout * agentPayoutPct / 100`, where `agentPayoutPct` is snapshotted on `applyForJob` based on the highest `AGIType` NFT percentage the agent holds.
+- **Agent payout**: all USDC remaining after correct-side validator rewards, 30% and 10% of the original cost to the immutable wallets. See [exact payout rules](USDC_PAYOUT_SPLIT.md).
 - **Validator payout**: on completion, **correct‑side** validators split `job.payout * validationRewardPercentage / 100` plus any pooled bond amounts, **only if** there is at least one validator. Incorrect validators receive their bond minus the slashed portion, and if no validators participate the validator budget is returned to the employer.
 - **Refunds**:
   - `cancelJob`/`delistJob` return the full escrow to the employer if no agent was assigned.

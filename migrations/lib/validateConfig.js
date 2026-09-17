@@ -72,7 +72,7 @@ async function validateConfig(config, web3) {
   validateUint('parameters.validationRewardPercentage', config.parameters.validationRewardPercentage);
   if (config.parameters.validationRewardPercentage !== null && config.parameters.validationRewardPercentage !== undefined) {
     const rewardPct = Number(config.parameters.validationRewardPercentage);
-    assert(rewardPct > 0 && rewardPct <= 100, 'parameters.validationRewardPercentage must be in (0,100].');
+    assert(rewardPct > 0 && rewardPct <= 60, 'parameters.validationRewardPercentage must be in (0,60].');
   }
   validateUint('parameters.premiumReputationThreshold', config.parameters.premiumReputationThreshold);
   validateUint('parameters.maxJobPayout', config.parameters.maxJobPayout);
@@ -152,23 +152,12 @@ async function validateConfig(config, web3) {
   validateAddressList('roles.blacklistedValidators', config.roles.blacklistedValidators);
 
   assert(Array.isArray(config.agiTypes), 'agiTypes must be an array.');
-  const validationRewardPct = Number(
-    config.parameters.validationRewardPercentage === null || config.parameters.validationRewardPercentage === undefined
-      ? 8
-      : config.parameters.validationRewardPercentage
-  );
-  const maxAGITypePayoutPct = 100 - validationRewardPct;
-  assert(maxAGITypePayoutPct >= 0, 'parameters.validationRewardPercentage must be <= 100.');
   config.agiTypes.forEach((entry, i) => {
     assert(typeof entry === 'object' && entry !== null, `agiTypes[${i}] must be an object.`);
     if (entry.enabled === false) return;
     validateAddressField(`agiTypes[${i}].nftAddress`, entry.nftAddress, web3);
     validateUint(`agiTypes[${i}].payoutPercentage`, entry.payoutPercentage);
     assert(entry.payoutPercentage > 0 && entry.payoutPercentage <= 100, `agiTypes[${i}].payoutPercentage must be in (0,100].`);
-    assert(
-      Number(entry.payoutPercentage) <= maxAGITypePayoutPct,
-      `agiTypes[${i}].payoutPercentage must be <= ${maxAGITypePayoutPct} when validationRewardPercentage=${validationRewardPct}.`
-    );
   });
 
   validateOptionalAddressField('postDeployIdentity.ensJobPages', config.postDeployIdentity.ensJobPages, web3, { allowZero: true });

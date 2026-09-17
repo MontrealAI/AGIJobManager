@@ -62,8 +62,8 @@ function evaluateInvariants({
   });
   results.push({
     key: "validationRewardPercentage",
-    status: validationRewardNum > 0 && validationRewardNum <= 100 ? CHECK.PASS : CHECK.FAIL,
-    message: "validationRewardPercentage must be in 1..100",
+    status: validationRewardNum > 0 && validationRewardNum <= 60 ? CHECK.PASS : CHECK.FAIL,
+    message: "validationRewardPercentage must be in 1..60",
   });
   results.push({
     key: "maxJobPayout",
@@ -77,8 +77,8 @@ function evaluateInvariants({
   });
   results.push({
     key: "combinedPayouts",
-    status: validationRewardNum + maxAgentPayoutNum <= 100 ? CHECK.PASS : CHECK.FAIL,
-    message: "validationRewardPercentage + maxAgentPayoutPercentage must be <= 100",
+    status: validationRewardNum + 30 + 10 <= 100 ? CHECK.PASS : CHECK.FAIL,
+    message: "validationRewardPercentage + fixed 30% + fixed 10% must be <= 100",
   });
 
   return results;

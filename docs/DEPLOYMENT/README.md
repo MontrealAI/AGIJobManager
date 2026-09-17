@@ -1,6 +1,6 @@
 # Deployment Documentation Index
 
-> v0.5.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.5.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+> v0.6.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.6.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
 
 ## Start here by deployment task
 - Fresh deployment (official path): [../../hardhat/README.md](../../hardhat/README.md)

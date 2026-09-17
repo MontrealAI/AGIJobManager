@@ -202,7 +202,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const validatorPayoutTotal = payout.muln(8).divn(100);
       const validatorPayoutEach = validatorPayoutTotal.divn(3);
       const validatorRemainder = validatorPayoutTotal.sub(validatorPayoutEach.muln(3));
-      const agentPayout = payout.muln(92).divn(100);
+      const agentPayout = payout.muln(52).divn(100);
       const agentBond = await computeAgentBond(manager, payout, duration);
       const expectedAgentPayout = agentPayout.add(validatorRemainder).add(agentBond);
 
@@ -381,7 +381,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       const agentBalanceAfter = await token.balanceOf(agent);
 
       const agentBond = await computeAgentBond(manager, payout, duration);
-      const expectedPayout = payout.muln(92).divn(100).add(agentBond).add(disputeBond);
+      const expectedPayout = payout.muln(60).divn(100).add(agentBond).add(disputeBond);
       assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
       const job = await manager.getJobCore(0);
       assert.equal(job.completed, true);
@@ -529,7 +529,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       expectEvent(resolutionReceipt, "DisputeResolvedWithCode", { jobId: new BN(0), resolver: moderator });
       const agentBalanceAfter = await token.balanceOf(agent);
       const agentBond = await computeAgentBond(manager, payout, duration);
-      const expectedPayout = payout.muln(92).divn(100).add(agentBond).add(disputeBond);
+      const expectedPayout = payout.muln(60).divn(100).add(agentBond).add(disputeBond);
       assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expectedPayout.toString());
 
       const newJobId = await manager.nextJobId();
