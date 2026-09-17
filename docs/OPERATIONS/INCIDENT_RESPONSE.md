@@ -1,4 +1,4 @@
-# Incident Response — v0.9.1
+# Incident Response — v0.9.2
 
 For an active exploit or suspected immediate risk to escrow, the authorized owner should call `pauseAll()` and verify **both** `paused()` and `settlementPaused()` are true. `pause()` only stops intake; it leaves settlement paths available. Preserve transaction hashes, block numbers, affected jobs and the observed balances before attempting recovery.
 

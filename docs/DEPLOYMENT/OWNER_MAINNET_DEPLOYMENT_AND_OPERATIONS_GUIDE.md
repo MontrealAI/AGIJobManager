@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v0.9.1
+# Owner Mainnet Deployment & Operations Guide — v0.9.2
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -32,7 +32,7 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v0.9.1 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v0.9.2 source and checksums. From the repository root:
 
 ```bash
 npm ci
@@ -147,16 +147,16 @@ Read [owner controls](../OWNER_CONTROLS.md), the [owner runbook](../OWNER_RUNBOO
 
 ## 9) Optional ENSJobPages replacement
 
-ENS job pages are an optional metadata integration, separate from escrow settlement and participant authorization. Follow the [replacement guide](ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) with reviewed network addresses. Before any broadcast, review `JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, intended owner, `VERIFY` and `LOCK_CONFIG`.
+ENS job pages are an optional metadata integration, separate from escrow settlement and participant authorization. A fresh USDC launch needs a dedicated helper and namespace and must preserve the original mainnet manager, helper, root and jobs; follow the [cutover qualification](../qualification/USDC_CUTOVER.md). The [replacement guide](ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) covers a separately reviewed helper replacement on the same USDC manager. Before any broadcast, review `JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, intended owner, `VERIFY` and `LOCK_CONFIG`.
 
 | Step | Responsible party and expected behavior |
 | --- | --- |
 | Deploy replacement | Hardhat script deploys ENSJobPages, sets its job manager and journals transaction receipts. Request source verification and reconcile any failure before using it. |
 | Optional script lock/transfer | Requested verification happens before optional lock/ownership writes. Keep `LOCK_CONFIG=0` until the intended integration has been validated. ENSJobPages ownership transfers in **one step**, unlike the manager's proposal/acceptance flow. |
-| Grant wrapped-root approval | Wrapped-root owner calls NameWrapper `setApprovalForAll(newEnsJobPages,true)`. The deployment script does not grant this approval. |
+| Establish root authority | For a fresh USDC launch, the ENS parent owner creates the dedicated root owned directly by the new helper. Broader NameWrapper authority is a separate same-manager replacement decision, with its scope explicitly reviewed. The deployment script performs neither action. |
 | Connect manager | Manager owner calls `setEnsJobPages(newEnsJobPages)` while identity configuration remains unlocked. The deployment script does not switch this pointer. |
-| Preserve legacy labels | ENSJobPages owner reviews and calls `migrateLegacyWrappedJobPage(jobId,exactLabel)` where required. Migration decisions are manual. |
-| Verify cutover | Read both manager/job-page pointers, owner, configured root/resolver/wrapper, active approval and a future hook result. Reconcile the legacy-label inventory. |
+| Preserve existing jobs | Fresh USDC deployment leaves the original manager and its pages unchanged. Only a same-manager helper replacement can require the helper owner to call `migrateLegacyWrappedJobPage(jobId,exactLabel)` for that manager’s existing pages. |
+| Verify cutover | Read both new manager/helper pointers, their separate owners and configured root/resolver/wrapper authority. Require creation, delegated writes and terminal revocation without skipped/failed ENS hooks. Reconcile the preserved legacy inventory. |
 | Consider locks | Respective owner reviews `lockIdentityConfiguration()` or `lockConfiguration()` only after final validation and understanding the lost repair options. |
 
 Names use `<prefix><jobId>.<jobsRootName>`, with `agijob` as the default prefix. Check the actual configured root rather than copying an example domain. Existing snapshotted labels remain historical unless explicitly migrated/imported. Optional hook failure must not be treated as a reversed or missing USDC settlement; reconcile the core transaction separately.

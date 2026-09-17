@@ -4,17 +4,17 @@ This document describes ENS naming and hook behavior from the current on-chain c
 
 ## In one minute
 - Canonical name shape is `<prefix><jobId>.<jobsRootName>`.
-- Defaults are `prefix=agijob`, `jobsRootName=alpha.jobs.agi.eth`, so names look like `agijob0.alpha.jobs.agi.eth`.
+- The default prefix is `agijob`; `jobsRootName` must be explicitly reviewed. Fresh USDC uses a dedicated root, with `usdc-v092.alpha.jobs.agi.eth` as the fork-rehearsed proposal (not a live deployment).
 - Settlement and dispute progression live in `AGIJobManager`; ENS writes in `ENSJobPages` are best-effort and non-fatal to settlement.
 - Legacy jobs may need explicit snapshot migration to avoid `JobLabelNotSnapshotted` write failures.
 
 ---
 
 
-## Canonical defaults used in current operator docs
+## Naming example used in the qualified fork
 - `jobLabelPrefix = agijob`
-- `jobsRootName = alpha.jobs.agi.eth`
-- Example names: `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`
+- `jobsRootName = usdc-v092.alpha.jobs.agi.eth`
+- Example names: `agijob0.usdc-v092.alpha.jobs.agi.eth`, `agijob1.usdc-v092.alpha.jobs.agi.eth`
 
 If your deployment uses different values, update your runbooks so operators still reason using the same `<prefix><jobId>.<jobsRootName>` model.
 
@@ -34,9 +34,9 @@ Effective name format:
 <jobLabelPrefix><jobId>.<jobsRootName>
 ```
 
-Example with defaults:
-- `agijob0.alpha.jobs.agi.eth`
-- `agijob1.alpha.jobs.agi.eth`
+Example with the reviewed proposal:
+- `agijob0.usdc-v092.alpha.jobs.agi.eth`
+- `agijob1.usdc-v092.alpha.jobs.agi.eth`
 
 ---
 
@@ -54,7 +54,9 @@ Operationally:
 
 ---
 
-## 3) Why some legacy jobs need migration
+## 3) Why existing pages may need same-manager helper migration
+
+This applies only to pages of the same manager when replacing its helper. A fresh USDC manager must preserve the original mainnet manager’s pages and wiring and use a separate namespace.
 
 Write paths (`onAgentAssigned`, `onCompletionRequested`, `revokePermissions`, `lockJobENS`) resolve nodes via the snapshotted label map.
 

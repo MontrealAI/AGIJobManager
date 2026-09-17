@@ -2,13 +2,14 @@
 
 ## Start here if you are
 - **Owner/operator:** perform checklisted parameter/incident actions and record tx hashes.
-- **ENS cutover operator:** complete wrapper approval + `setEnsJobPages` before expecting new hook behavior.
+- **ENS cutover operator:** establish dedicated-root ownership and both new manager/helper pointers; follow the [cutover plan](../qualification/USDC_CUTOVER.md) and preserve original jobs/wiring.
 
 ## ENS cutover expected result
 - `AGIJobManager.ensJobPages` points to the new ENSJobPages address.
-- NameWrapper reports active approval for the new ENSJobPages (or token-level equivalent).
+- ENS Registry reports the new helper as owner of the dedicated root; broader wrapper authority requires a separate same-manager replacement review.
+- Creation, actual delegated writes and terminal revocation succeed without skipped/failed ENS hooks.
 - Future jobs resolve under `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
-- Legacy jobs keep historical snapshotted labels unless explicitly migrated.
+- Legacy jobs and labels remain on their original manager/helper; same-manager helper replacement migrations are separately reviewed.
 
 ## Never do this by accident
 - Do not lock identity/config before validating all addresses and operational wiring.
@@ -35,7 +36,8 @@
 
 | Control | Intended usage | Caution |
 | --- | --- | --- |
-| `pause()` | Emergency stop for broad risk events | Also pauses normal throughput |
+| `pauseIntake()` / `pause()` | Stop new jobs while safe existing work settles | Leaves settlement enabled unless separately paused |
+| `pauseAll()` | Contain an active exploit affecting funds | Verify both intake and settlement flags; follow the incident playbook |
 | `setSettlementPaused(true)` | Stop new settlement-sensitive paths while preserving controlled operations | Use with communication plan |
 | `blacklistAgent/Validator` | Isolate malicious actor | Requires case file evidence |
 | `lockIdentityConfiguration()` | Permanently freeze token/ENS/root wiring after hardening | Irreversible |

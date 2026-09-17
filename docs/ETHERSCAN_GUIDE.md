@@ -6,9 +6,9 @@ Use this guide if you only have:
 
 ## In one minute (Etherscan-first safety)
 
-- Deployments are done with scripts (Hardhat recommended); owner cutover/governance writes are safe on Etherscan.
-- ENS replacement is additive and manual for key wiring: `setApprovalForAll(newEnsJobPages, true)` then `setEnsJobPages(newEnsJobPages)`.
-- ENS naming is `<prefix><jobId>.<jobsRootName>` (defaults: `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`).
+- Deployments use the reviewed Hardhat workflow. A verified explorer can submit owner writes after checking the network, contract, signer and exact inputs; explorer use alone does not establish safety.
+- Fresh USDC cutover uses a separate helper and dedicated root directly owned by it, then `setEnsJobPages` on the new manager. Preserve the original manager, helper, root and existing jobs. Broad NameWrapper approval is not the default.
+- ENS naming is `<prefix><jobId>.<jobsRootName>`; `agijob` is the default prefix and the new dedicated root must be configured explicitly.
 - ENS writes are best-effort: settlement can succeed even if ENS side effects fail.
 - Treat `lockIdentityConfiguration()` and `lockConfiguration()` as irreversible and postpone until full post-cutover validation.
 
@@ -23,13 +23,13 @@ Use this guide if you only have:
 
 ## ENS replacement (owner-focused) quick path
 
-Use this order on mainnet to avoid partial cutovers:
-1. Wrapped-root owner on NameWrapper: `setApprovalForAll(newEnsJobPages, true)`.
-2. AGIJobManager owner on AGIJobManager: `setEnsJobPages(newEnsJobPages)`.
-3. ENSJobPages owner (if needed): `migrateLegacyWrappedJobPage(jobId, exactLabel)` for affected legacy jobs.
-4. Verify `status=1` receipts and read fields before considering lock calls.
+Follow the [qualified cutover plan](qualification/USDC_CUTOVER.md) for a fresh USDC launch:
+1. ENS parent owner creates the dedicated jobs root owned directly by the new helper. Verify `ENS.owner(jobsRootNode)`.
+2. New AGIJobManager owner calls `setEnsJobPages(newEnsJobPages)` on the new manager; verify the reverse helper pointer.
+3. Preserve the original mainnet manager, helper, root, approvals and jobs.
+4. Require successful creation, delegated resolver writes and terminal revocation without skipped or failed ENS hooks before considering locks. Successful core receipts alone do not establish ENS success.
 
-Expected outcome: new job hooks resolve through the new ENSJobPages; legacy jobs retain historical labels unless migrated.
+For helper replacement on the same manager, use the [replacement runbook](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md). Only that separately reviewed procedure may require broader wrapped-root authority or migration of that manager’s historical page labels.
 
 Do not call irreversible lock functions until these checks are complete.
 
@@ -42,23 +42,24 @@ Do not call irreversible lock functions until these checks are complete.
 
 | Action | Required signer | Safe to do on Etherscan? |
 | --- | --- | --- |
-| `setApprovalForAll(newEnsJobPages, true)` on NameWrapper | wrapped-root owner | Yes |
+| Create dedicated root with helper as owner | ENS parent owner | Yes, after checking the parent and reviewed child configuration |
+| Broader NameWrapper approval for a reviewed same-manager replacement | wrapped-root owner | Only after reviewing authority over every wrapped name of that account |
 | `setEnsJobPages(newEnsJobPages)` on AGIJobManager | AGIJobManager owner | Yes |
 | `migrateLegacyWrappedJobPage(jobId, exactLabel)` on ENSJobPages | ENSJobPages owner | Yes |
 | `lockIdentityConfiguration()` / `lockConfiguration()` | owner(s) | Yes, but irreversible |
 
 ### Expected result after ENS replacement cutover checks
 - AGIJobManager `ensJobPages()` returns the new address.
-- NameWrapper approval is active for the same address.
-- At least one future job emits expected ENS hook processing events.
-- Any legacy jobs needing historical labels are either migrated or explicitly tracked.
+- Dedicated-root ownership or the separately approved wrapped-root authority matches the intended configuration.
+- Creation, actual delegated writes and terminal revocation pass with successful ENS hook events.
+- The original legacy inventory is preserved; same-manager page migrations, if applicable, are separately reconciled.
 
 
 ### What is safe from Etherscan vs what still needs deploy scripts
 
-- **Safe and expected on Etherscan:** owner/admin writes (`setEnsJobPages`, pause controls, allowlists, roots), NameWrapper approval by wrapped-root owner, read-based verification.
+- **Supported on a verified explorer:** reviewed owner/admin writes (`setEnsJobPages`, pause controls, allowlists, roots), authorized dedicated-root setup and read-based verification.
 - **Do with scripts first:** contract deployment and source verification workflow (Hardhat recommended).
-- **Never assume automated:** NameWrapper approval and `setEnsJobPages` are always explicit manual transactions.
+- **Never assume automated:** dedicated-root setup and `setEnsJobPages` require the appropriate owner’s explicit transactions.
 
 ---
 
@@ -283,10 +284,11 @@ node scripts/etherscan/prepare_inputs.js --action resolve-dispute --jobId 42 --c
 ## Operator safety notes for ENSJobPages cutover
 
 - **Scripted/deploy-tool actions:** deploy contracts, run verification attempts, emit deployment artifacts.
-- **Manual Etherscan actions:** NameWrapper `setApprovalForAll(newEnsJobPages, true)` and AGIJobManager `setEnsJobPages(newEnsJobPages)`.
+- **Manual explorer actions:** reviewed dedicated-root creation and `setEnsJobPages(newEnsJobPages)` on the intended manager.
 - **Role split:**
-  - `setApprovalForAll(...)` must be sent by the **wrapped-root owner**.
-  - `setEnsJobPages(...)` must be sent by the **AGIJobManager owner**.
+  - Dedicated-root creation requires the **ENS parent owner**.
+  - `setEnsJobPages(...)` requires the **AGIJobManager owner**.
+  - Broader NameWrapper approval requires the **wrapped-root owner** and a separate same-manager replacement review; it is not the fresh-USDC default.
 - **Irreversible actions:** `lockConfiguration()` on ENSJobPages and `lockIdentityConfiguration()` on AGIJobManager.
 - **Do not lock early:** lock only after post-cutover validation and any required legacy migrations.
 

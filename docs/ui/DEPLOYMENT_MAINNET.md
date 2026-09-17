@@ -2,9 +2,9 @@
 
 ## Official release
 
-AGIJobManager v0.9.1. Status: **deployment-required**.
+AGIJobManager v0.9.2. Status: **deployment-required**.
 
-Software release only. Deploy a fresh v0.9.1 USDC manager with two explicit settlement wallets. Intake starts paused in the constructor. Complete deployment verification and two-step ownership acceptance before the owner opens intake. Recipient rotation requires paused intake and zero outstanding escrow and bonds.
+Software release only. Deploy a fresh v0.9.2 USDC manager with two explicit settlement wallets. Intake starts paused in the constructor. Complete deployment verification and two-step ownership acceptance before the owner opens intake. Recipient rotation requires paused intake and zero outstanding escrow and bonds.
 
 - Chain ID: 1
 - Manager: Not deployed

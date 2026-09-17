@@ -1,4 +1,4 @@
-# Identity lock and treasury controls — v0.9.1
+# Identity lock and treasury controls — v0.9.2
 
 Use [owner controls](OWNER_CONTROLS.md) for transaction steps and [trust model](trust-model-and-security-overview.md) for authority and accounting assumptions.
 

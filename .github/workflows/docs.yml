@@ -15,7 +15,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+
+      - name: Verify qualified source checkout
+        env:
+          QUALIFICATION_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          actual=$(git rev-parse HEAD)
+          test "$actual" = "$QUALIFICATION_SOURCE"
+          printf 'QUALIFIED_SOURCE_COMMIT=%s\n' "$actual"
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
