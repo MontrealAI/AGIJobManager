@@ -15,6 +15,7 @@ The 30% and 10% shares are calculated from the **original job cost** and are inc
 
 - **Controlled wallet maintenance:** the owner can change both payout recipients only while intake is paused and all job escrow and bonds are settled. Existing job funds cannot be redirected; reentrancy protection also blocks callback-time rotation.
 - **Two-step ownership:** the current owner proposes and the recipient accepts. Renunciation is disabled to preserve maintenance and pause recovery. The owner remains trusted for operational controls.
+- **Verified browser startup:** per-request CSP nonces allow framework hydration while blocking untrusted HTML scripts; wallet controls meet contrast checks.
 - **Clear owner console:** reviewed actions for recipient rotation, ownership proposal and acceptance; on-chain preflight checks, current/pending owner display, account-change protection and useful errors. Manager controls work without optional ENS job pages.
 - **Safer deployment handover:** Hardhat pauses intake after deployment and records whether ownership acceptance is still required. A proposal is never reported as a completed handover.
 - **Updated dependencies and tooling:** Node 22.23.2, Next 15.5.24, updated wallet libraries, ethers 6.17.0, integrity-pinned Web3 4.16.0 and patched dependency overrides. Production/deployment audit checks run in CI.
@@ -33,7 +34,7 @@ Read the [owner guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/d
 
 ## Verification and remaining limits
 
-Local verification includes 397 contract tests, 126 UI tests, 35 frozen-console checks, clean-install owner/payout regressions, build/lint/type checks and standalone verification. Publication requires successful contract, browser/UI, documentation and security CI on the exact source commit, plus reproducible archives and verified asset digests.
+Local verification includes 397 contract tests, 126 UI tests, 35 frozen-console checks, 15 browser/navigation/accessibility/header cases (including the injected-script regression), clean-install owner/payout regressions, build/lint/type checks and standalone verification. Publication requires successful contract, browser/UI, documentation and security CI on the exact source commit, plus reproducible archives and verified asset digests.
 
 At preparation, UI and root production dependency audits report zero known findings. The full Hardhat audit has 14 low findings and no moderate/high/critical findings. **Legacy local Truffle/Ganache test dependencies retain high and critical advisories** and must not receive production keys. See [dependency security scope](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/DEPENDENCY_SECURITY.md). Automated verification is not an independent security audit or certification of a live deployment.
 

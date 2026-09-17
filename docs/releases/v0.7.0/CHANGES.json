@@ -1,6 +1,6 @@
 {
   "previousTag": "v0.6.0",
-  "sourceCommit": "c77647a513966eb47bae55bba53303a59b0a9d84",
+  "sourceCommit": "897b3ebc30c0c9b3c087160ade5beb399a8e390a",
   "changes": [
     {
       "status": "M",
@@ -240,6 +240,10 @@
     },
     {
       "status": "M",
+      "path": "docs/ui/SECURITY_MODEL.md"
+    },
+    {
+      "status": "M",
       "path": "docs/ui/VERSIONS.md"
     },
     {
@@ -328,6 +332,14 @@
     },
     {
       "status": "M",
+      "path": "ui/e2e/headers.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "ui/e2e/smoke.spec.ts"
+    },
+    {
+      "status": "M",
       "path": "ui/next-env.d.ts"
     },
     {
@@ -364,11 +376,23 @@
     },
     {
       "status": "M",
+      "path": "ui/src/app/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/components/providers.tsx"
+    },
+    {
+      "status": "M",
       "path": "ui/src/generated/deployments.ts"
     },
     {
       "status": "M",
       "path": "ui/src/lib/usdc.ts"
+    },
+    {
+      "status": "A",
+      "path": "ui/src/middleware.ts"
     },
     {
       "status": "A",
