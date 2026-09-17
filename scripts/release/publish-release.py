@@ -4,11 +4,12 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import subprocess
 import time
 
 root = pathlib.Path(__file__).resolve().parents[2]
-meta = root / 'docs/releases/v0.9.1'
+meta = root / 'docs/releases/v0.9.2'
 config = json.loads((meta / 'release.json').read_text())
 repo, tag, source = (config[k] for k in ['repository', 'tag', 'sourceCommit'])
 parser = argparse.ArgumentParser(description=__doc__)
@@ -63,6 +64,7 @@ assert {item['workflow'] for item in config['requiredSourceRuns'].values()} == r
 assert len(config['requiredSourceRuns']) == len(required_workflows), 'Duplicate source qualification workflows.'
 evidence = json.loads((meta / 'SOURCE_CI.json').read_text())
 assert evidence['sourceCommit'] == source and evidence['sourceTree'] == config['sourceTree']
+assert evidence['checkoutCommit'] == source, 'Qualification must check out the frozen source commit itself.'
 checkout = api(f'git/commits/{evidence["checkoutCommit"]}')
 assert checkout['tree']['sha'] == config['sourceTree'], 'CI checkout tree differs from the frozen application.'
 for item in config['requiredSourceRuns'].values():
@@ -81,14 +83,22 @@ for item in config['requiredSourceRuns'].values():
         page += 1
     assert {job['name'] for job in jobs} == set(item['requiredJobs']), 'Required source jobs differ.'
     assert len(jobs) == len(item['requiredJobs']) and all(job['status'] == 'completed' and job['conclusion'] == 'success' for job in jobs), 'Every required source job must succeed.'
+    for job in jobs:
+        checks = [step for step in job.get('steps', []) if step['name'] == 'Verify qualified source checkout']
+        assert len(checks) == 1 and checks[0]['status'] == 'completed' and checks[0]['conclusion'] == 'success', 'Every source job must verify its actual checkout.'
+        # The dedicated step prints git rev-parse HEAD after checking the expected
+        # source. Anchor the emitted line so echoed shell commands cannot qualify.
+        logs = gh('api', f'repos/{repo}/actions/jobs/{job["id"]}/logs', '--method', 'GET')
+        observed = re.findall(r'^(?:\d{4}-\d{2}-\d{2}T\S+[ \t]+)?QUALIFIED_SOURCE_COMMIT=([0-9a-f]{40})[ \t]*\r?$', logs, re.MULTILINE)
+        assert observed == [source], f'Checkout log evidence differs or is missing for job {job["name"]}.'
     print(f'Confirmed source CI evidence: {run["name"]} at {source} ({run["html_url"]})')
 if not args.publish:
     raise SystemExit(0)
 assert os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_REF') == 'refs/heads/main', 'Publication requires a main push.'
 subprocess.run(['git', 'merge-base', '--is-ancestor', source, 'HEAD'], cwd=root, check=True)
 changes = subprocess.check_output(['git', 'diff', '--name-only', source, 'HEAD'], cwd=root, text=True).splitlines()
-assert changes and all(p.startswith(('docs/releases/v0.9.1/', 'scripts/release/')) or p == '.github/workflows/current-state-release.yml' for p in changes), 'Release preparation must not change the frozen application.'
-out = root / 'build/release/v0.9.1'
+assert changes and all(p.startswith(('docs/releases/v0.9.2/', 'scripts/release/')) or p == '.github/workflows/current-state-release.yml' for p in changes), 'Release preparation must not change the frozen application.'
+out = root / 'build/release/v0.9.2'
 expected = {}
 for line in (out / 'SHA256SUMS.txt').read_text().splitlines():
     digest, name = line.split('  ', 1)
@@ -96,7 +106,7 @@ for line in (out / 'SHA256SUMS.txt').read_text().splitlines():
     assert hashlib.sha256((out / name).read_bytes()).hexdigest() == digest
     expected[name] = digest
 expected['SHA256SUMS.txt'] = hashlib.sha256((out / 'SHA256SUMS.txt').read_bytes()).hexdigest()
-assert set(expected) == {'AGIJobManager-v0.9.1-COMPLETE.zip', pathlib.Path(config['primaryUI']).name, 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}
+assert set(expected) == {'AGIJobManager-v0.9.2-COMPLETE.zip', pathlib.Path(config['primaryUI']).name, 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}
 assert {p.name for p in out.iterdir()} == set(expected), 'Unexpected local release assets.'
 matches = []
 page = 1

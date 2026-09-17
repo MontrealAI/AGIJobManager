@@ -1,0 +1,570 @@
+{
+  "sourceCommit": "1318ba1aea9c00c9226696da40baa90662f1a620",
+  "previousTag": "v0.9.1",
+  "changes": [
+    {
+      "status": "M",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/current-state-release.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/docs.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/mainnet-fork.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/security-verification.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/ui.yml"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "config/usdc-deployment.json"
+    },
+    {
+      "status": "M",
+      "path": "contracts/ens/ENSJobPages.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/ens/IPublicResolver.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/test/MockPublicResolver.sol"
+    },
+    {
+      "status": "M",
+      "path": "docs/00_INDEX.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJOBMANAGER.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager_Interface.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager_Operator_Guide.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager_Security.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONFIGURATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONFIGURATION_REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONFIGURE_ONCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONTRACTS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONTRACTS/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPENDENCY_SECURITY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/MAINNET_BETA_DEPLOYMENT_RECORD.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/TRUFFLE_MAINNET_DEPLOY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/TRUFFLE_PRODUCTION_DEPLOY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT_OPERATIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT_PROFILE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOY_DAY_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOY_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/Deployment.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ENS/ENS_JOB_PAGES_OVERVIEW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ENSJOBPAGES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ENS_INTEGRATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ETHERSCAN_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/FAQ.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/GOVERNANCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/KNOWN_ISSUES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_MIGRATION_FROM_LEGACY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_OPERATIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_OPS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_READINESS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/INCIDENT_RESPONSE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/JOB_LIFECYCLE_ETHERSCAN_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OVERVIEW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OWNER_CONTROLS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OWNER_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/PROTOCOL_FLOW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ParameterSafety.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/QUICKSTART.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/QUINTESSENTIAL_USE_CASE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/ENS_REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REPOSITORY_INVENTORY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REPO_MAP.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/SCRIPTS_REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/Security.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TESTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TEST_PLAN.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/USDC_MIGRATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/USDC_PAYOUT_SPLIT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/USERS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/VERIFY_ON_ETHERSCAN.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/agijobmanager_ui.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/bytecode-and-getters.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/contract-behavior.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/contracts/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/contracts/ENSJobPages.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/contracts/Interfaces.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/deployment-checklist.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/deployments-and-bridging.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ens-job-pages.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/game-theory.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/guides/HAPPY_PATH.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/identity-lock-and-treasury.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/mainnet-deployment-and-security-overview.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/mainnet-deployment-and-verification.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/operator-runbook.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ops/parameter-safety.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/USDC_CUTOVER.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/mainnet-cutover.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/static-review-delta.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.1/CHANGES.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.1/PREVIOUS_RELEASE.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.1/RELEASE_NOTES.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.1/SOURCE_CI.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.1/START_HERE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.1/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.1/release.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/AGENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/EMPLOYER.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/MODERATOR.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/OWNER_OPERATOR.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/VALIDATOR.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/trust-model-and-security-overview.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/CONTRACT_INTERFACE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/DEPLOYMENT_MAINNET.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/IDENTITY_LAYER.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/common-reverts.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/glossary.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/happy-path.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/merkle-proofs.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/roles.md"
+    },
+    {
+      "status": "A",
+      "path": "hardhat.cutover-fork.config.mjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/README.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package.json"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/qualification/cutover-pin.json"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/qualification/legacy-snapshot.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/deploy-ens-job-pages.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/deployment-preflight.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/test/mainnet-cutover.test.js"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/package-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/publish-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/test-release-gates.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/slither-reviewed-findings.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "ui/agijobmanager-usdc.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/dist-ipfs/agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/package.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/app/admin/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/app/identity/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/generated/deployments.ts"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/lib/usdc.ts"
+    }
+  ]
+}

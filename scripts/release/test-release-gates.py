@@ -19,7 +19,7 @@ PUBLISHER = Path(__file__).with_name('publish-release.py')
 REPOSITORY = 'MontrealAI/AGIJobManager'
 SOURCE = 'a' * 40
 TREE = 'b' * 40
-CHECKOUT = 'c' * 40
+CHECKOUT = SOURCE
 WORKFLOWS = {
     'ci.yml': ['build (0)', 'build (1)', 'build (2)', 'build (3)'],
     'ui.yml': ['ui'],
@@ -37,10 +37,10 @@ class ReleaseGateTests(unittest.TestCase):
         self.script = self.root / 'scripts/release/publish-release.py'
         self.script.parent.mkdir(parents=True)
         self.script.write_text(PUBLISHER.read_text())
-        self.meta = self.root / 'docs/releases/v0.9.1'
+        self.meta = self.root / 'docs/releases/v0.9.2'
         self.meta.mkdir(parents=True)
         self.config = {
-            'repository': REPOSITORY, 'tag': 'v0.9.1', 'sourceCommit': SOURCE,
+            'repository': REPOSITORY, 'tag': 'v0.9.2', 'sourceCommit': SOURCE,
             'sourceTree': TREE,
             'requiredSourceRuns': {
                 workflow: {'id': index, 'workflow': workflow, 'requiredJobs': jobs[:]}
@@ -58,10 +58,17 @@ class ReleaseGateTests(unittest.TestCase):
                 'name': item['workflow'], 'html_url': 'https://github.invalid/' + endpoint,
             }
             self.responses[endpoint + '/jobs?per_page=100&page=1'] = {
-                'jobs': [{'name': name, 'status': 'completed', 'conclusion': 'success'}
-                         for name in item['requiredJobs']],
+                'jobs': [self.job(item['id'] * 1000 + index, name)
+                         for index, name in enumerate(item['requiredJobs'])],
             }
         self.calls = []
+
+    def job(self, job_id, name):
+        self.responses[f'actions/jobs/{job_id}/logs'] = (
+            '2026-09-17T12:00:00.0000000Z unrelated log output\n'
+            f'2026-09-17T12:00:00.0000000Z QUALIFIED_SOURCE_COMMIT={SOURCE}\n')
+        return {'id': job_id, 'name': name, 'status': 'completed', 'conclusion': 'success',
+                'steps': [{'name': 'Verify qualified source checkout', 'status': 'completed', 'conclusion': 'success'}]}
 
     def fake_run(self, command, **kwargs):
         prefix = ['gh', 'api', f'repos/{REPOSITORY}/']
@@ -76,7 +83,7 @@ class ReleaseGateTests(unittest.TestCase):
         response = self.responses[endpoint]
         if isinstance(response, Exception):
             raise response
-        return subprocess.CompletedProcess(command, 0, stdout=json.dumps(response), stderr='')
+        return subprocess.CompletedProcess(command, 0, stdout=response if isinstance(response, str) else json.dumps(response), stderr='')
 
     def verify(self):
         (self.meta / 'release.json').write_text(json.dumps(self.config))
@@ -98,13 +105,12 @@ class ReleaseGateTests(unittest.TestCase):
             self.verify()
         self.assertEqual(result.exception.code, 0)
         self.assertEqual(set(self.calls), set(self.responses))
-        self.assertEqual(len(self.calls), 11)
+        self.assertEqual(len(self.calls), 19)
 
     def test_jobs_pagination_is_fully_checked(self):
         item = self.config['requiredSourceRuns']['ci.yml']
         item['requiredJobs'] = [f'qualification ({index})' for index in range(101)]
-        jobs = [{'name': name, 'status': 'completed', 'conclusion': 'success'}
-                for name in item['requiredJobs']]
+        jobs = [self.job(10000 + index, name) for index, name in enumerate(item['requiredJobs'])]
         endpoint = f'actions/runs/{item["id"]}/jobs?per_page=100&page='
         self.responses[endpoint + '1'] = {'jobs': jobs[:100]}
         self.responses[endpoint + '2'] = {'jobs': jobs[100:]}
@@ -125,6 +131,51 @@ class ReleaseGateTests(unittest.TestCase):
 
     def test_rejects_different_checkout_tree(self):
         self.responses[f'git/commits/{CHECKOUT}']['tree']['sha'] = 'd' * 40
+        self.rejects()
+
+    def test_rejects_unrelated_checkout_even_with_identical_tree(self):
+        other = 'c' * 40
+        self.evidence['checkoutCommit'] = other
+        self.responses[f'git/commits/{other}'] = {'tree': {'sha': TREE}}
+        self.rejects()
+
+    def test_rejects_missing_duplicate_or_unsuccessful_checkout_assertion(self):
+        job = self.responses['actions/runs/1/jobs?per_page=100&page=1']['jobs'][0]
+        step = job['steps'][0]
+        cases = [[], [step, dict(step)], [dict(step, name='unrelated step')],
+                 [dict(step, status='queued', conclusion=None)],
+                 [dict(step, conclusion='skipped')], [dict(step, conclusion='failure')]]
+        for index, steps in enumerate(cases):
+            with self.subTest(case=index):
+                job['steps'] = steps
+                self.rejects()
+
+    def test_rejects_missing_wrong_duplicate_or_echoed_checkout_marker(self):
+        for item in self.config['requiredSourceRuns'].values():
+            jobs = self.responses[f'actions/runs/{item["id"]}/jobs?per_page=100&page=1']['jobs']
+            for job in jobs:
+                endpoint = f'actions/jobs/{job["id"]}/logs'
+                original = self.responses[endpoint]
+                cases = ['', original.replace(SOURCE, 'c' * 40), original + original,
+                         f'2026-09-17T12:00:00Z echo QUALIFIED_SOURCE_COMMIT={SOURCE}\n']
+                for index, logs in enumerate(cases):
+                    with self.subTest(job=job['name'], case=index):
+                        self.responses[endpoint] = logs
+                        self.rejects()
+                self.responses[endpoint] = original
+
+    def test_accepts_plain_and_crlf_checkout_log_lines(self):
+        for logs in [f'QUALIFIED_SOURCE_COMMIT={SOURCE}\n',
+                     f'2026-09-17T12:00:00.0000000Z QUALIFIED_SOURCE_COMMIT={SOURCE}\r\n']:
+            with self.subTest(logs=logs):
+                self.responses['actions/jobs/1000/logs'] = logs
+                with self.assertRaises(SystemExit) as result:
+                    self.verify()
+                self.assertEqual(result.exception.code, 0)
+
+    def test_rejects_unavailable_checkout_logs(self):
+        self.responses['actions/jobs/1000/logs'] = subprocess.CalledProcessError(
+            1, ['gh', 'api'], stderr='HTTP 404: Not Found')
         self.rejects()
 
     def test_rejects_wrong_source_workflow_or_repository(self):
