@@ -1,124 +1,39 @@
-# Deployment guide (Truffle)
+# Deployment guide — v0.9.1
 
-> **v0.9.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+The supported Ethereum mainnet and Sepolia workflow uses **Hardhat 3 and ethers 6**. Truffle and Ganache are removed; their historical migration and signing commands are retired.
 
-This guide documents the deployment and verification workflow defined in `truffle-config.js` and the migration scripts in `migrations/`.
-For the **configure-once, minimal-governance** deployment profile, see [`docs/DEPLOYMENT_PROFILE.md`](DEPLOYMENT_PROFILE.md).
+Start with the [Hardhat deployment guide](../hardhat/README.md). It covers executable configuration, keyless dry runs, exact compiler inputs, library linking, source verification, transaction journals, recovery, ownership acceptance and read-only instance checks.
 
-## Prerequisites
-- Node.js and npm (CI uses Node 22.23.2).
-- Truffle (installed via `npm install`).
-- RPC access for Sepolia or Mainnet (or a local Ganache instance).
+## Install and qualify
 
-## Environment variables
-
-The configuration supports both direct RPC URLs and provider keys. `PRIVATE_KEYS` is required for Sepolia/Mainnet deployments.
-
-| Variable | Purpose | Notes |
-| --- | --- | --- |
-| `PRIVATE_KEYS` | Deployer keys | Comma‑separated, no spaces. Required for Sepolia/Mainnet deployments. |
-| `SEPOLIA_RPC_URL` | Sepolia RPC URL | Optional if using Alchemy or Infura. |
-| `MAINNET_RPC_URL` | Mainnet RPC URL | Optional if using Alchemy or Infura. |
-| `ALCHEMY_KEY` | Alchemy key for Sepolia | Used if `SEPOLIA_RPC_URL` is empty. |
-| `ALCHEMY_KEY_MAIN` | Alchemy key for Mainnet | Falls back to `ALCHEMY_KEY` if empty. |
-| `INFURA_KEY` | Infura key | Used if no direct RPC URL or Alchemy key. |
-| `ETHERSCAN_API_KEY` | Verification key | Used by `truffle-plugin-verify`. |
-| `SEPOLIA_GAS` / `MAINNET_GAS` | Gas limit override | Defaults to 8,000,000. |
-| `SEPOLIA_GAS_PRICE_GWEI` / `MAINNET_GAS_PRICE_GWEI` | Gas price override | In Gwei. |
-| `SEPOLIA_CONFIRMATIONS` / `MAINNET_CONFIRMATIONS` | Confirmations to wait | Defaults to 2. |
-| `SEPOLIA_TIMEOUT_BLOCKS` / `MAINNET_TIMEOUT_BLOCKS` | Timeout blocks | Defaults to 500. |
-| `RPC_POLLING_INTERVAL_MS` | Provider polling interval | Defaults to 8000 ms. |
-| `SOLC_EVM_VERSION` | EVM version override | Defaults to `london` when unset. |
-| Compiler settings | Compiler settings | Pinned in `truffle-config.js` (solc `0.8.23`, runs `50`, `evmVersion` `london`). |
-| `GANACHE_MNEMONIC` | Local test mnemonic | Defaults to Ganache standard mnemonic if unset. |
-
-A template lives in [`.env.example`](../.env.example).
-
-> **Compiler note**: `AGIJobManager.sol` uses `pragma solidity ^0.8.19`, while the Truffle compiler is pinned to `0.8.23` in `truffle-config.js`. For reproducible verification, keep the solc version and optimizer runs consistent with the original deployment.
-
-## Runtime bytecode size (EIP-170)
-
-Ethereum mainnet enforces the Spurious Dragon / EIP-170 limit of **24,576 bytes** for deployed runtime bytecode. To measure the runtime size locally after compiling:
+From the repository root, using Node 22.23.2 and the committed lockfiles:
 
 ```bash
-node -e "const a=require('./build/contracts/AGIJobManager.json'); const b=(a.deployedBytecode||'').replace(/^0x/,''); console.log('AGIJobManager deployedBytecode bytes:', b.length/2)"
+npm ci
+npm --prefix hardhat ci
+npm run build
+npm run lint
+npm test
+npm --prefix hardhat run test:preflight
+npm --prefix hardhat run test:deployment
 ```
 
-The mainnet-safe compiler settings used in `truffle-config.js` are:
-- Optimizer enabled with **runs = 50**.
-- `viaIR = false` by default.
-- `debug.revertStrings = 'strip'`.
-- `metadata.bytecodeHash = 'none'`.
+The qualified compiler is Solidity 0.8.37, optimizer 40 runs, `viaIR=true`, Shanghai, no metadata bytecode hash and stripped revert strings. Preserve the profile and the hash-verified [dependency compatibility patches](../scripts/security/COMPILER_COMPATIBILITY.md). Any source or compiler change requires renewed qualification.
 
-For a deterministic size gate that covers `AGIJobManager`, use:
+## Mainnet limits
 
-```bash
-node scripts/check-bytecode-size.js
-```
+| Check | Limit | What is measured |
+| --- | ---: | --- |
+| EIP-170 | 24,576 bytes | Deployed runtime code |
+| EIP-3860 | 49,152 bytes | Creation bytecode plus actual constructor arguments |
+| EIP-7825 | 16,777,216 gas | Transaction gas limit, not only eventual gas used |
 
-## Networks configured
-- **test**: in‑process Ganache provider for `truffle test`.
-- **development**: local RPC at `127.0.0.1:8545` (Ganache).
-- **sepolia**: remote deployment via RPC (HDWalletProvider).
-- **mainnet**: remote deployment via RPC (HDWalletProvider).
+The manager, five linked libraries and optional metadata contracts must satisfy their applicable limits. Use `npm run size` and the deployment tests; actual deployment plans also validate constructor data and requested gas.
 
-The default `npm test` script compiles with `--all`, runs `truffle test --network test`, and then executes an additional JavaScript test harness. Use the `test` network for deterministic local runs.
+## Rehearse and deploy
 
-## Migration script notes
+The [local USDC walkthrough](QUINTESSENTIAL_USE_CASE.md) uses only disposable in-memory accounts. A [mainnet fork](MAINNET_READINESS.md) reads pinned historical USDC state and executes locally. Neither substitutes for a Sepolia rehearsal with the intended owner and signing arrangement.
 
-The deployment script in `migrations/1_deploy_contracts.js` reads constructor parameters from environment variables (token address, ENS registry, NameWrapper address, root nodes, Merkle roots). **Set these values** before deploying to any production network.
-The constructor now accepts a grouped config tuple (token, base IPFS URL, `[ENS, NameWrapper]`, `[club, agent, alpha club, alpha agent]`, `[validator Merkle, agent Merkle]`), so custom deployments should mirror the migration script’s ordering.
+For public networks, copy `hardhat/deploy.config.example.cjs` to `hardhat/deploy.config.cjs`, supply both real settlement recipients and the intended owner, and follow the Hardhat guide's explicit dry-run and broadcast gates. The manager starts paused. Preserve its deployment receipt, complete source verification and two-step ownership acceptance, and pass read-only readiness before opening intake.
 
-## Local deployment (Ganache)
-
-1. Start Ganache:
-   ```bash
-   npx ganache -p 8545
-   ```
-2. Deploy:
-   ```bash
-   npm run build
-   npx truffle migrate --network development
-   ```
-
-## Sepolia deployment
-
-1. Set environment variables (`PRIVATE_KEYS` plus RPC configuration).
-2. Deploy:
-   ```bash
-   npm run build
-   npx truffle migrate --network sepolia
-   ```
-
-## Mainnet deployment
-
-1. Set environment variables (`PRIVATE_KEYS` plus RPC configuration).
-2. Deploy:
-   ```bash
-   npm run build
-   npx truffle migrate --network mainnet
-   ```
-
-## Verification (Etherscan)
-
-When `ETHERSCAN_API_KEY` is set:
-
-```bash
-npx truffle run verify AGIJobManager --network sepolia
-```
-
-```bash
-npx truffle run verify AGIJobManager --network mainnet
-```
-
-### Verification tips
-- Keep the compiler settings from `truffle-config.js` identical to the original deployment (solc `0.8.23`, runs `50`, `evmVersion` `london`).
-- Ensure your migration constructor parameters match the deployed contract.
-- If the Etherscan plugin fails, re‑run with `--debug` to capture full output.
-- Etherscan’s **Standard-Json-Input** flow should include `viaIR: false`, `optimizer.runs: 50`, and `metadata.bytecodeHash: "none"` if you verify manually.
-
-## Troubleshooting
-- **Missing RPC URL**: set `SEPOLIA_RPC_URL` or `MAINNET_RPC_URL`, or provide `ALCHEMY_KEY` / `ALCHEMY_KEY_MAIN` / `INFURA_KEY`.
-- **Missing private keys**: ensure `PRIVATE_KEYS` is set and comma‑separated.
-- **Verification failures**: confirm compiler version and optimizer runs match the deployed bytecode.
-- **Nonce conflicts**: avoid running multiple deployment processes with the same keys.
+Code is non-upgradeable. This release does not deploy, activate or modify an existing contract. Existing instances require a deliberate migration to receive the new code protections.

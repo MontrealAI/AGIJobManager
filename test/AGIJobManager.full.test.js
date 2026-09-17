@@ -1,7 +1,7 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
-const { BN, expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
+const { BN, expectEvent, expectRevert, time } = require("../scripts/test-helpers.cjs");
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
 

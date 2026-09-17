@@ -5,7 +5,7 @@
 ```mermaid
 flowchart LR
   subgraph Test Runner
-    T[Truffle + Mocha]
+    T[Hardhat 3 + Mocha]
   end
 
   subgraph Core

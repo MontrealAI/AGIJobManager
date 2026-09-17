@@ -4,23 +4,21 @@ This walkthrough gives a complete setup and verification path for ENS integratio
 
 ## A) Local deterministic walkthrough (no external RPC)
 
-Local ENS fixtures already exist in this repo test suite (`MockENS`, `MockNameWrapper`, `MockResolver`, optional mock hooks). Use the existing Truffle harness under `test/`.
+Local ENS fixtures already exist in this repo test suite (`MockENS`, `MockNameWrapper`, `MockResolver`, optional mock hooks). Use the Hardhat 3 and Mocha regression harness under `test/`.
 
 ### Deterministic command bundle (copy/paste)
 
 ```bash
-# 1) Generate and validate ENS reference docs (must stay fresh)
+# Install the committed toolchains from the repository root
+npm ci
+npm --prefix hardhat ci
+
+# Generate and validate ENS reference docs
 npm run docs:ens:gen
 npm run docs:ens:check
 
-# 2) Run deterministic ENS integration vectors (local Truffle chain)
-npx truffle test --network test test/ensLabelAuthRouting.regression.test.js
-npx truffle test --network test test/ensHooks.integration.test.js
-npx truffle test --network test test/identityConfig.locking.test.js
-
-# 3) Optional hardening vectors for malformed labels and hook behavior
-npx truffle test --network test test/ensLabelHardening.test.js
-npx truffle test --network test test/ensJobPagesHooks.test.js
+# Run the complete local suite, including ENS routing, hooks and locking
+npm test
 ```
 
 The command bundle above demonstrates the canonical success/failure expectations required for this guide:
@@ -34,8 +32,8 @@ The command bundle above demonstrates the canonical success/failure expectations
 
 | Step | Actor | Action (function/script) | Preconditions | Expected outcome | Events/reads to verify |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Operator | `npx truffle test --network test test/adminOps.test.js` | Node deps installed; local chain from Truffle test harness | ENS wiring admin controls and lock behavior validated | `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `IdentityConfigurationLocked` assertions |
-| 2 | Operator | `npx truffle test --network test test/mainnetHardening.test.js` | Same | ENS hook + URI hardening and best-effort behavior validated | hook/URI assertions pass; no settlement-side regressions |
+| 1 | Operator | `npm test` includes `test/adminOps.test.js` | Both lockfiles installed; local chain created by the Hardhat test harness | ENS wiring admin controls and lock behavior validated | `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, `IdentityConfigurationLocked` assertions |
+| 2 | Operator | The same run includes `test/mainnetHardening.test.js` | Same | ENS hook + URI hardening and best-effort behavior validated | hook/URI assertions pass; no settlement-side regressions |
 | 3 | Owner | Deploy AGIJobManager with initial ENS addresses and roots (repo deployment flow) | constructor args prepared | Contract starts with expected identity wiring | reads: `ens()`, `nameWrapper()`, root node getters |
 | 4 | Owner | Optional: `setEnsJobPages(address)` and `setUseEnsJobTokenURI(bool)` | hook target deployed and reviewed | optional ENS pages/URI path enabled | read `ensJobPages()`, observe `NFTIssued` URI semantics |
 | 5 | Eligible actor | `applyForJob(jobId, subdomain, proof)` or validator vote with valid identity | open job + role requirements | successful ENS-eligible action | `JobApplied` / validator vote event |

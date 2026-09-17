@@ -1,11 +1,12 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require('assert');
+const { BrowserProvider } = require('ethers');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const { time } = require('@openzeppelin/test-helpers');
+const { time } = require('../scripts/test-helpers.cjs');
 
 const AGIJobManager = artifacts.require('AGIJobManager');
 const MockERC20 = artifacts.require('MockERC20');
@@ -15,6 +16,7 @@ const MockERC721 = artifacts.require('MockERC721');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 
 const { runExportMetrics, mergeDisputeResolutionEvents } = require('../scripts/erc8004/export_metrics');
+const { runExportFeedback } = require('../scripts/erc8004/export_feedback');
 const { buildInitConfig } = require('./helpers/deploy');
 const { fundValidators, fundAgents } = require('./helpers/bonds');
 
@@ -143,6 +145,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
 
     const first = await runExportMetrics({
       address: manager.address,
+      provider: new BrowserProvider(web3.currentProvider),
       fromBlock: 0,
       toBlock,
       outDir,
@@ -154,6 +157,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
 
     const second = await runExportMetrics({
       address: manager.address,
+      provider: new BrowserProvider(web3.currentProvider),
       fromBlock: 0,
       toBlock,
       outDir,
@@ -180,5 +184,20 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     assert.ok(metrics.validators[validatorKey], 'validator metrics should exist');
     assert.strictEqual(metrics.validators[validatorKey].approvals, 1);
     assert.strictEqual(metrics.validators[validatorKey].disapprovals, 2);
+
+    const provider = new BrowserProvider(web3.currentProvider);
+    try {
+      const feedback = await runExportFeedback({
+        address: manager.address, provider, fromBlock: 0, toBlock,
+        outDir: path.join(outDir, 'feedback-export'), network: 'test',
+        agentId: '9', identityRegistry: token.address, reputationRegistry: manager.address,
+      });
+      assert(feedback.generated.length > 0, 'native ethers feedback export should emit mapped signals');
+      assert.strictEqual(feedback.unresolved.length, 0);
+      const sample = JSON.parse(fs.readFileSync(path.join(feedback.outputDir, feedback.generated[0].file), 'utf8'));
+      assert.strictEqual(sample.agentId, '9');
+    } finally {
+      provider.destroy();
+    }
   });
 });

@@ -1,6 +1,6 @@
 # AGIJobManager Documentation Index
 
-**[Start here](START_HERE.md)** for the v0.9.0 USDC user journey and canonical operator paths.
+**[Start here](START_HERE.md)** for the v0.9.1 USDC user journey and canonical operator paths.
 
 Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 
@@ -22,9 +22,9 @@ Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 - `contracts/AGIJobManager.sol`
 - `contracts/ens/ENSJobPages.sol`
 - `contracts/utils/*.sol`
-- `hardhat/scripts/deploy.js`
-- `hardhat/scripts/deployment-safety.js`
-- `hardhat/scripts/check-readiness.js`
-- `hardhat/deploy.config.example.js`
+- `hardhat/scripts/deploy.cjs`
+- `hardhat/scripts/deployment-safety.cjs`
+- `hardhat/scripts/check-readiness.cjs`
+- `hardhat/deploy.config.example.cjs`
 - `package.json`
 - `.github/workflows/ci.yml`

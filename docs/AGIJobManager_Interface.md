@@ -1,4 +1,4 @@
-# AGIJobManager interface — v0.9.0
+# AGIJobManager interface — v0.9.1
 
 The complete callable interface is maintained from source in [REFERENCE/CONTRACT_INTERFACE.md](REFERENCE/CONTRACT_INTERFACE.md); the ABI-generated [Interface.md](Interface.md) includes constructor fields, outputs, events and custom errors. Use these generated references rather than copied signatures from older releases.
 

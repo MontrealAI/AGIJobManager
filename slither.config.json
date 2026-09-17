@@ -1,5 +1,5 @@
 {
-  "filter_paths": "(node_modules|lib|build|test|forge-test|contracts/legacy)",
+  "filter_paths": "(^|/)(node_modules|lib|build|forge-test|test)(/|$)|(^|/)contracts/(test|legacy)(/|$)",
   "exclude_dependencies": true,
   "exclude_informational": true,
   "exclude_low": true,
@@ -7,18 +7,5 @@
   "solc_remaps": [
     "@openzeppelin/=node_modules/@openzeppelin/"
   ],
-  "detectors_to_exclude": [
-    "reentrancy-no-eth",
-    "reentrancy-benign",
-    "reentrancy-events",
-    "reentrancy-unlimited-gas",
-    "reentrancy-eth",
-    "reentrancy-read-before-write",
-    "reentrancy-balance",
-    "divide-before-multiply",
-    "mapping-deletion",
-    "uninitialized-local",
-    "unused-return",
-    "encode-packed-collision"
-  ]
+  "detectors_to_exclude": []
 }

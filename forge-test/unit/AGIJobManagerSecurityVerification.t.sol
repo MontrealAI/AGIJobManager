@@ -117,7 +117,7 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         AGIJobManagerHarness feeManager =
             new AGIJobManagerHarness(address(feeToken), "", ensConfig, rootNodes, merkleRoots);
 
-        feeToken.transfer(employer, 100 * 1e6);
+        assertTrue(feeToken.transfer(employer, 100 * 1e6), "fee-token test funding failed");
         vm.prank(employer);
         feeToken.approve(address(feeManager), type(uint256).max);
 

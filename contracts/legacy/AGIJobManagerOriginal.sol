@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+// Historical comparison fixture only; never deploy this contract.
+// The six line-specific lint acknowledgments below preserve original unsafe behavior
+// for regression comparisons. They do not claim those legacy findings are repaired.
+
 /*
 
 [ P R E L I M I N A R Y  C O N C E P T S  E X C L U S I V E L Y ]
@@ -273,6 +277,8 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
 
     function requestJobCompletion(uint256 _jobId, string calldata _ipfsHash) external whenNotPaused {
         Job storage job = jobs[_jobId];
+        // Historical deadline logic is retained verbatim for comparison; this is not production timing policy.
+        // forge-lint: disable-next-line(block-timestamp)
         require(msg.sender == job.assignedAgent && block.timestamp <= job.assignedAt + job.duration, "Not authorized or expired");
         job.ipfsHash = _ipfsHash;
         job.completionRequested = true;
@@ -321,6 +327,8 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
         if (keccak256(abi.encodePacked(resolution)) == keccak256(abi.encodePacked("agent win"))) {
             _completeJob(_jobId);
         } else if (keccak256(abi.encodePacked(resolution)) == keccak256(abi.encodePacked("employer win"))) {
+            // Known legacy defect: dispute resolution ignores a false refund result. Preserve the comparison baseline.
+            // forge-lint: disable-next-line(erc20-unchecked-transfer)
             agiToken.transfer(job.employer, job.payout);
         }
         job.disputed = false;
@@ -338,6 +346,8 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
     function delistJob(uint256 _jobId) external onlyOwner {
         Job storage job = jobs[_jobId];
         require(!job.completed && job.assignedAgent == address(0), "Job already completed or assigned");
+        // Known legacy defect: delisting proceeds after a false refund result. Preserve the comparison baseline.
+        // forge-lint: disable-next-line(erc20-unchecked-transfer)
         agiToken.transfer(job.employer, job.payout);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
@@ -462,6 +472,8 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
     function cancelJob(uint256 _jobId) external nonReentrant {
         Job storage job = jobs[_jobId];
         require(msg.sender == job.employer && !job.completed && job.assignedAgent == address(0), "Not authorized or already completed/assigned");
+        // Known legacy defect: cancellation proceeds after a false refund result. Preserve the comparison baseline.
+        // forge-lint: disable-next-line(erc20-unchecked-transfer)
         agiToken.transfer(job.employer, job.payout);
         delete jobs[_jobId];
         emit JobCancelled(_jobId);
@@ -586,6 +598,8 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
 
     function withdrawAGI(uint256 amount) external onlyOwner nonReentrant {
         require(amount > 0 && amount <= agiToken.balanceOf(address(this)), "Invalid amount");
+        // Known legacy defect: withdrawal ignores a false transfer result. Preserve the comparison baseline.
+        // forge-lint: disable-next-line(erc20-unchecked-transfer)
         agiToken.transfer(msg.sender, amount);
     }
 
@@ -595,6 +609,8 @@ contract AGIJobManagerOriginal is Ownable, ReentrancyGuard, Pausable, ERC721URIS
 
     function contributeToRewardPool(uint256 amount) external whenNotPaused nonReentrant {
         require(amount > 0, "Invalid amount");
+        // Known legacy defect: contribution emits even after a false transfer result. Preserve the comparison baseline.
+        // forge-lint: disable-next-line(erc20-unchecked-transfer)
         agiToken.transferFrom(msg.sender, address(this), amount);
         emit RewardPoolContribution(msg.sender, amount);
     }

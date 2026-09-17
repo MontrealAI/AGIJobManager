@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v0.9.0
+# Owner Mainnet Deployment & Operations Guide — v0.9.1
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -32,19 +32,19 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v0.9.0 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v0.9.1 source and checksums. From the repository root:
 
 ```bash
 npm ci
 cd hardhat
 npm ci
 cp .env.example .env
-cp deploy.config.example.js deploy.config.js
+cp deploy.config.example.cjs deploy.config.cjs
 ```
 
-Review `deploy.config.js` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. Example owner/root values are not verified production instructions.
+Review `deploy.config.cjs` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. Example owner/root values are not verified production instructions.
 
-Configure the selected RPC, `DEPLOY_CONFIG`, intended `DEPLOYER_ADDRESS` for read-only planning, and explorer configuration. An actual deployment additionally requires a funded disposable deployer key through the supported Hardhat environment. Do not give production keys to local Truffle/Ganache tools, commit them or enter them into an explorer form. Prefer a tested multisignature owner when securing substantial funds.
+Configure the selected RPC, `DEPLOY_CONFIG`, intended `DEPLOYER_ADDRESS` for read-only planning, and explorer configuration. An actual deployment additionally requires a funded disposable deployer key through the supported Hardhat environment. Do not give production keys to local test tools, commit them or enter them into an explorer form. Prefer a tested multisignature owner when securing substantial funds.
 
 From `hardhat/`:
 
@@ -56,7 +56,7 @@ npm run test:mainnet-fork
 DRY_RUN=1 npm run deploy:mainnet
 ```
 
-The dry run sends no transactions. Boolean flags are validated; use the documented explicit value `DRY_RUN=1`. Preserve the qualified Solidity 0.8.23 compiler profile and Ethereum size checks. The fork test reads historical mainnet USDC and executes only locally; it is not a live deployment rehearsal with your real signers.
+The dry run sends no transactions. Boolean flags are validated; use the documented explicit value `DRY_RUN=1`. Preserve the qualified Solidity 0.8.37 compiler profile and Ethereum size checks. The fork test reads historical mainnet USDC and executes only locally; it is not a live deployment rehearsal with your real signers.
 
 Complete a separately authorized Sepolia rehearsal and the [mainnet qualification gates](../MAINNET_READINESS.md) before significant mainnet exposure. The actual mainnet broadcast requires the Hardhat guide's exact confirmation value, `I_UNDERSTAND_MAINNET_DEPLOYMENT`, in `DEPLOY_CONFIRM_MAINNET`, with dry-run mode disabled. Follow that guide for signing and confirmations rather than substituting a legacy migration command.
 
@@ -69,7 +69,7 @@ Preserve the journal under `hardhat/deployments/<network>/`, the exact Solidity 
 Verify all six contracts against the exact release build. Do not turn a failed verification result into a claimed success. If all six deployments were broadcast but verification or a later step failed, the supported recovery command from `hardhat/` is:
 
 ```bash
-DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npx hardhat run scripts/reverify-deployment.js --network mainnet
+DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet
 ```
 
 Recovery verifies canonical receipts, recorded deployer, exact creation input and linked runtime before retrying explorer verification. It sends no blockchain transactions and preserves the original journal, writing a separate `.reverified.<block>.json` receipt on success. Use that receipt for readiness. It requires explorer API access but no private key; it does not complete missing deployments, perform ownership actions or recover ENSJobPages. Follow the report and the [Hardhat recovery instructions](../../hardhat/README.md) for any unresolved condition.

@@ -1,6 +1,6 @@
-# Owner Runbook — v0.9.0
+# Owner Runbook — v0.9.1
 
-Use this runbook for configuration, ownership and incident decisions. Use the [Hardhat deployment guide](../hardhat/README.md) for public-network commands and the [owner controls guide](OWNER_CONTROLS.md) for the exact boundaries of each setting. Root Truffle tooling is for disposable local rehearsals only.
+Use this runbook for configuration, ownership and incident decisions. Use the [Hardhat deployment guide](../hardhat/README.md) for public-network commands and the [owner controls guide](OWNER_CONTROLS.md) for the exact boundaries of each setting. Local rehearsals use the maintained Hardhat 3 test runtime; Truffle and Ganache are retired.
 
 ## In one minute (owner/operator)
 
@@ -37,8 +37,8 @@ Before an ENS lock, confirm `ensJobPages()` points to the intended contract, wra
 
 ## 1) Deployment checklist
 
-1. Check out the immutable v0.9.0 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
-2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; do not substitute local Truffle artifacts for the public deployment build.
+1. Check out the immutable v0.9.1 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
+2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; use the exact release compiler profile and linked artifacts for the public deployment build.
 3. Review all six constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, and **two distinct settlement wallets ordered 30% then 10%**. Confirm the intended final owner separately. Example addresses and roots are not a reviewed production configuration.
 4. Run a read-only deployment plan, rehearse on Sepolia and review the saved plan before any authorized mainnet broadcast. Review the five library addresses and exact linked runtime code.
 5. Verify the manager and every linked library on Etherscan. A failed deployment command may already have broadcast transactions: inspect the deployment journal and reconcile receipts before retrying. Where all six deployments completed, use the Hardhat guide's read-only recovery procedure; preserve its separate reverified receipt and the original journal. Recovery does not propose or accept ownership.
@@ -129,7 +129,7 @@ Before manager `lockIdentityConfiguration()` or ENSJobPages `lockConfiguration()
 
 ## 7) High-risk actions (operator warnings)
 
-USDC is immutable and the 30% / 10% shares are fixed in v0.9.0. Recipient addresses can change only with paused intake and zero reserves; existing escrow cannot be redirected to a new wallet.
+USDC is immutable and the 30% / 10% shares are fixed in v0.9.1. Recipient addresses can change only with paused intake and zero reserves; existing escrow cannot be redirected to a new wallet.
 
 Ownership uses proposal then acceptance. Administrative authority stays with the current owner until acceptance; `renounceOwnership()` is disabled. Verify the recipient independently before proposing a change.
 

@@ -54,8 +54,8 @@ def verify(output_dir):
     baseline = load_object(BASELINE)
     if type(baseline.get("schema")) is not int or baseline["schema"] != 1 or baseline.get("slither_version") != "0.11.6":
         raise ValueError("Unrecognized review schema or analyzer version")
-    if not isinstance(baseline.get("reports"), dict) or set(baseline["reports"]) != {"slither-extended.json", "slither-reentrancy.json"}:
-        raise ValueError("Both the complete medium/high and full reentrancy reports are required")
+    if not isinstance(baseline.get("reports"), dict) or set(baseline["reports"]) != {"slither-extended.json", "slither-reentrancy.json", "slither-all.json"}:
+        raise ValueError("The complete medium/high, full reentrancy and all-detector reports are required")
     sources = {
         str(path.relative_to(ROOT))
         for path in (ROOT / "contracts").rglob("*.sol")
@@ -63,7 +63,10 @@ def verify(output_dir):
     }
     sources.update({
         "foundry.toml", "package-lock.json", "scripts/security/slither-extended.config.json",
-        "scripts/security/slither-reentrancy.config.json",
+        "scripts/security/slither-reentrancy.config.json", "scripts/security/slither-all.config.json",
+        "slither.config.json", "scripts/security/patch-openzeppelin-compiler.cjs",
+        "scripts/security/openzeppelin-compiler-patches.json",
+        "scripts/security/run-slither.sh", "scripts/security/run-slither-extended.sh",
     })
     if not isinstance(baseline.get("source_sha256"), dict) or sources != set(baseline["source_sha256"]):
         raise ValueError("The production source/configuration file set changed; repeat the review")

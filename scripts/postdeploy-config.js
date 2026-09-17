@@ -1,8 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const assert = require("assert");
-const Web3 = require("web3");
-const TruffleContract = require("@truffle/contract");
+const { loadManager, fetchAgiTypes, cliCallback } = require("./lib/operations");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -113,61 +111,6 @@ function resolveNetworkName(args) {
   return "development";
 }
 
-function resolveProvider(networkName) {
-  const truffleConfig = require(path.join(__dirname, "..", "truffle-config"));
-  const network = truffleConfig.networks?.[networkName];
-  if (!network) {
-    throw new Error(`Unknown Truffle network: ${networkName}`);
-  }
-  if (typeof network.provider === "function") {
-    return network.provider();
-  }
-  if (network.provider) {
-    return network.provider;
-  }
-  if (network.host && network.port) {
-    return new Web3.providers.HttpProvider(`http://${network.host}:${network.port}`);
-  }
-  throw new Error(`Unable to resolve provider for network: ${networkName}`);
-}
-
-async function loadContract(address, networkName) {
-  const provider = resolveProvider(networkName);
-  const web3 = new Web3(provider);
-
-  let Contract;
-  if (global.artifacts?.require) {
-    Contract = global.artifacts.require("AGIJobManager");
-    Contract.setProvider(provider);
-  } else {
-    const artifactPath = path.join(__dirname, "..", "build", "contracts", "AGIJobManager.json");
-    const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
-    Contract = TruffleContract(artifact);
-    Contract.setProvider(provider);
-  }
-
-  const instance = await Contract.at(address);
-  return { instance, web3 };
-}
-
-async function fetchAgiTypes(instance) {
-  const items = [];
-  let index = 0;
-  while (true) {
-    try {
-      const entry = await instance.agiTypes(index);
-      items.push({
-        nftAddress: entry.nftAddress,
-        payoutPercentage: entry.payoutPercentage.toString(),
-      });
-      index += 1;
-    } catch (error) {
-      break;
-    }
-  }
-  return items;
-}
-
 async function ensureAgiType(instance, configEntry) {
   const current = await fetchAgiTypes(instance);
   const currentEntry = current.find(
@@ -184,8 +127,10 @@ async function runTx(op, dryRun) {
   if (dryRun) {
     return;
   }
-  const receipt = await op.send();
-  console.log(`  tx: ${receipt.tx}`);
+  const transaction = await op.send();
+  const receipt = await transaction.wait();
+  if (!receipt || receipt.status !== 1) throw new Error(`Transaction failed: ${transaction.hash}`);
+  console.log(`  tx: ${transaction.hash}`);
   await op.verify();
 }
 
@@ -195,6 +140,7 @@ function normalizeAddress(address) {
 }
 
 module.exports = async function postdeployConfig(callback) {
+  let provider;
   try {
     const args = parseArgs(process.argv);
     const config = loadConfig(args);
@@ -205,10 +151,9 @@ module.exports = async function postdeployConfig(callback) {
     }
 
     const networkName = resolveNetworkName(args);
-    const { instance, web3 } = await loadContract(address, networkName);
-    const accounts = await web3.eth.getAccounts();
-    const txFrom = process.env.TX_FROM || accounts[0];
-    assert(txFrom, "Missing TX_FROM and unable to resolve a default account");
+    const loaded = await loadManager(address, networkName, { localWrite: true, dryRun: args.dryRun });
+    provider = loaded.provider;
+    const { instance } = loaded;
 
     const currentApprovals = await instance.requiredValidatorApprovals();
     const currentDisapprovals = await instance.requiredValidatorDisapprovals();
@@ -291,7 +236,7 @@ module.exports = async function postdeployConfig(callback) {
           label: "Set requiredValidatorApprovals",
           currentValue: currentApprovals,
           desiredValue: op.value,
-          send: () => instance.setRequiredValidatorApprovals(op.value, txFrom ? { from: txFrom } : {}),
+          send: () => instance.setRequiredValidatorApprovals(op.value),
           verify: async () => {
             const updated = await instance.requiredValidatorApprovals();
             if (updated.toString() !== op.value.toString()) {
@@ -306,7 +251,7 @@ module.exports = async function postdeployConfig(callback) {
           label: "Set requiredValidatorDisapprovals",
           currentValue: currentDisapprovals,
           desiredValue: op.value,
-          send: () => instance.setRequiredValidatorDisapprovals(op.value, txFrom ? { from: txFrom } : {}),
+          send: () => instance.setRequiredValidatorDisapprovals(op.value),
           verify: async () => {
             const updated = await instance.requiredValidatorDisapprovals();
             if (updated.toString() !== op.value.toString()) {
@@ -322,7 +267,7 @@ module.exports = async function postdeployConfig(callback) {
       label: "Set premiumReputationThreshold",
       currentValue: await instance.premiumReputationThreshold(),
       desiredValue: config.premiumReputationThreshold,
-      send: () => instance.setPremiumReputationThreshold(config.premiumReputationThreshold, txFrom ? { from: txFrom } : {}),
+      send: () => instance.setPremiumReputationThreshold(config.premiumReputationThreshold),
       verify: async () => {
         const updated = await instance.premiumReputationThreshold();
         if (updated.toString() !== toStringValue(config.premiumReputationThreshold)) {
@@ -332,41 +277,8 @@ module.exports = async function postdeployConfig(callback) {
     });
 
     const currentValidationReward = await instance.validationRewardPercentage();
-    const currentAgiTypes = await fetchAgiTypes(instance);
-    const desiredAgiTypes = Array.isArray(config.agiTypes) ? config.agiTypes : [];
-    const desiredAgiTypeMap = new Map(
-      desiredAgiTypes.map((entry) => [entry.nftAddress.toLowerCase(), toStringValue(entry.payoutPercentage)])
-    );
-    const mergedAgiTypes = currentAgiTypes.map((entry) => {
-      const desired = desiredAgiTypeMap.get(entry.nftAddress.toLowerCase());
-      if (desired !== undefined) {
-        return { ...entry, payoutPercentage: desired };
-      }
-      return entry;
-    });
-    for (const entry of desiredAgiTypes) {
-      const exists = currentAgiTypes.some(
-        (current) => current.nftAddress.toLowerCase() === entry.nftAddress.toLowerCase()
-      );
-      if (!exists) {
-        mergedAgiTypes.push({
-          nftAddress: entry.nftAddress,
-          payoutPercentage: toStringValue(entry.payoutPercentage),
-        });
-      }
-    }
-    const currentMaxAgiPayout = currentAgiTypes.reduce(
-      (max, entry) => Math.max(max, Number(entry.payoutPercentage || 0)),
-      0
-    );
-    const desiredMaxAgiPayout = mergedAgiTypes.reduce(
-      (max, entry) => Math.max(max, Number(entry.payoutPercentage || 0)),
-      0
-    );
     const desiredValidationReward = config.validationRewardPercentage;
     const validationRewardTarget = toStringValue(desiredValidationReward);
-    const validationRewardNeedsUpdate =
-      validationRewardTarget !== undefined && validationRewardTarget !== currentValidationReward.toString();
     const validationRewardTargetNumber =
       validationRewardTarget !== undefined ? Number(validationRewardTarget) : Number(currentValidationReward.toString());
 
@@ -378,8 +290,7 @@ module.exports = async function postdeployConfig(callback) {
         desiredValue: desiredValidationReward,
         send: () =>
           instance.setValidationRewardPercentage(
-            desiredValidationReward,
-            txFrom ? { from: txFrom } : {}
+            desiredValidationReward
           ),
         verify: async () => {
           const updated = await instance.validationRewardPercentage();
@@ -394,7 +305,7 @@ module.exports = async function postdeployConfig(callback) {
       label: "Set maxJobPayout",
       currentValue: await instance.maxJobPayout(),
       desiredValue: config.maxJobPayout,
-      send: () => instance.setMaxJobPayout(config.maxJobPayout, txFrom ? { from: txFrom } : {}),
+      send: () => instance.setMaxJobPayout(config.maxJobPayout),
       verify: async () => {
         const updated = await instance.maxJobPayout();
         if (updated.toString() !== toStringValue(config.maxJobPayout)) {
@@ -408,7 +319,7 @@ module.exports = async function postdeployConfig(callback) {
       label: "Set jobDurationLimit",
       currentValue: await instance.jobDurationLimit(),
       desiredValue: config.jobDurationLimit,
-      send: () => instance.setJobDurationLimit(config.jobDurationLimit, txFrom ? { from: txFrom } : {}),
+      send: () => instance.setJobDurationLimit(config.jobDurationLimit),
       verify: async () => {
         const updated = await instance.jobDurationLimit();
         if (updated.toString() !== toStringValue(config.jobDurationLimit)) {
@@ -422,7 +333,7 @@ module.exports = async function postdeployConfig(callback) {
       label: "Set completionReviewPeriod",
       currentValue: await instance.completionReviewPeriod(),
       desiredValue: config.completionReviewPeriod,
-      send: () => instance.setCompletionReviewPeriod(config.completionReviewPeriod, txFrom ? { from: txFrom } : {}),
+      send: () => instance.setCompletionReviewPeriod(config.completionReviewPeriod),
       verify: async () => {
         const updated = await instance.completionReviewPeriod();
         if (updated.toString() !== toStringValue(config.completionReviewPeriod)) {
@@ -436,7 +347,7 @@ module.exports = async function postdeployConfig(callback) {
       label: "Set disputeReviewPeriod",
       currentValue: await instance.disputeReviewPeriod(),
       desiredValue: config.disputeReviewPeriod,
-      send: () => instance.setDisputeReviewPeriod(config.disputeReviewPeriod, txFrom ? { from: txFrom } : {}),
+      send: () => instance.setDisputeReviewPeriod(config.disputeReviewPeriod),
       verify: async () => {
         const updated = await instance.disputeReviewPeriod();
         if (updated.toString() !== toStringValue(config.disputeReviewPeriod)) {
@@ -460,8 +371,7 @@ module.exports = async function postdeployConfig(callback) {
         desiredValue: config.termsAndConditionsIpfsHash,
         send: () =>
           instance.updateTermsAndConditionsIpfsHash(
-            config.termsAndConditionsIpfsHash,
-            txFrom ? { from: txFrom } : {}
+            config.termsAndConditionsIpfsHash
           ),
         verify: async () => {
           const updated = await instance.termsAndConditionsIpfsHash();
@@ -478,7 +388,7 @@ module.exports = async function postdeployConfig(callback) {
         label: "Set contactEmail",
         currentValue: await instance.contactEmail(),
         desiredValue: config.contactEmail,
-        send: () => instance.updateContactEmail(config.contactEmail, txFrom ? { from: txFrom } : {}),
+        send: () => instance.updateContactEmail(config.contactEmail),
         verify: async () => {
           const updated = await instance.contactEmail();
           if (updated !== config.contactEmail) {
@@ -494,7 +404,7 @@ module.exports = async function postdeployConfig(callback) {
         label: "Set additionalText1",
         currentValue: await instance.additionalText1(),
         desiredValue: config.additionalText1,
-        send: () => instance.updateAdditionalText1(config.additionalText1, txFrom ? { from: txFrom } : {}),
+        send: () => instance.updateAdditionalText1(config.additionalText1),
         verify: async () => {
           const updated = await instance.additionalText1();
           if (updated !== config.additionalText1) {
@@ -510,7 +420,7 @@ module.exports = async function postdeployConfig(callback) {
         label: "Set additionalText2",
         currentValue: await instance.additionalText2(),
         desiredValue: config.additionalText2,
-        send: () => instance.updateAdditionalText2(config.additionalText2, txFrom ? { from: txFrom } : {}),
+        send: () => instance.updateAdditionalText2(config.additionalText2),
         verify: async () => {
           const updated = await instance.additionalText2();
           if (updated !== config.additionalText2) {
@@ -526,7 +436,7 @@ module.exports = async function postdeployConfig(callback) {
         label: "Set additionalText3",
         currentValue: await instance.additionalText3(),
         desiredValue: config.additionalText3,
-        send: () => instance.updateAdditionalText3(config.additionalText3, txFrom ? { from: txFrom } : {}),
+        send: () => instance.updateAdditionalText3(config.additionalText3),
         verify: async () => {
           const updated = await instance.additionalText3();
           if (updated !== config.additionalText3) {
@@ -549,7 +459,7 @@ module.exports = async function postdeployConfig(callback) {
         key: "merkleRoots",
         label: `Update Merkle roots: validator ${currentValidatorMerkleRoot} -> ${desiredValidatorMerkleRoot}, agent ${currentAgentMerkleRoot} -> ${desiredAgentMerkleRoot}`,
         send: () =>
-          instance.updateMerkleRoots(desiredValidatorMerkleRoot, desiredAgentMerkleRoot, txFrom ? { from: txFrom } : {}),
+          instance.updateMerkleRoots(desiredValidatorMerkleRoot, desiredAgentMerkleRoot),
         verify: async () => {
           const updatedValidator = await instance.validatorMerkleRoot();
           const updatedAgent = await instance.agentMerkleRoot();
@@ -575,7 +485,7 @@ module.exports = async function postdeployConfig(callback) {
         agiTypeOps.push({
           key: `agiType:${entry.nftAddress}`,
           label: `Add/update AGI type ${entry.nftAddress} payout ${payout}`,
-          send: () => instance.addAGIType(entry.nftAddress, payout, txFrom ? { from: txFrom } : {}),
+          send: () => instance.addAGIType(entry.nftAddress, payout),
           verify: async () => {
             const updated = await fetchAgiTypes(instance);
             const found = updated.find(
@@ -600,31 +510,31 @@ module.exports = async function postdeployConfig(callback) {
         label: "moderator",
         list: config.moderators,
         check: (addr) => instance.moderators(addr),
-        add: (addr, options) => instance.addModerator(addr, options),
+        add: (addr) => instance.addModerator(addr),
       },
       {
         label: "additional validator",
         list: config.additionalValidators,
         check: (addr) => instance.additionalValidators(addr),
-        add: (addr, options) => instance.addAdditionalValidator(addr, options),
+        add: (addr) => instance.addAdditionalValidator(addr),
       },
       {
         label: "additional agent",
         list: config.additionalAgents,
         check: (addr) => instance.additionalAgents(addr),
-        add: (addr, options) => instance.addAdditionalAgent(addr, options),
+        add: (addr) => instance.addAdditionalAgent(addr),
       },
       {
         label: "blacklisted agent",
         list: config.blacklistedAgents,
         check: (addr) => instance.blacklistedAgents(addr),
-        add: (addr, options) => instance.blacklistAgent(addr, true, options),
+        add: (addr) => instance.blacklistAgent(addr, true),
       },
       {
         label: "blacklisted validator",
         list: config.blacklistedValidators,
         check: (addr) => instance.blacklistedValidators(addr),
-        add: (addr, options) => instance.blacklistValidator(addr, true, options),
+        add: (addr) => instance.blacklistValidator(addr, true),
       },
     ];
 
@@ -637,7 +547,7 @@ module.exports = async function postdeployConfig(callback) {
         ops.push({
           key: `${group.label}:${addr}`,
           label: `Add ${group.label} ${addr}`,
-          send: () => group.add(addr, txFrom ? { from: txFrom } : {}),
+          send: () => group.add(addr),
           verify: async () => {
             const updated = await group.check(addr);
             if (!updated) {
@@ -655,7 +565,7 @@ module.exports = async function postdeployConfig(callback) {
         ops.push({
           key: "transferOwnership",
           label: `Propose ownership transfer to ${transferOwnershipTo}; recipient must acceptOwnership()`,
-          send: () => instance.transferOwnership(transferOwnershipTo, txFrom ? { from: txFrom } : {}),
+          send: () => instance.transferOwnership(transferOwnershipTo),
           verify: async () => {
             const updated = await instance.pendingOwner();
             if (normalizeAddress(updated) !== transferOwnershipTo) {
@@ -685,5 +595,9 @@ module.exports = async function postdeployConfig(callback) {
     callback();
   } catch (error) {
     callback(error);
+  } finally {
+    provider?.destroy();
   }
 };
+
+if (require.main === module) module.exports(cliCallback);

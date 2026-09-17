@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { BN, expectEvent, time } = require('@openzeppelin/test-helpers');
+const { BN, expectEvent, time } = require('../scripts/test-helpers.cjs');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 
@@ -110,7 +110,7 @@ contract('jobLifecycle.core', (accounts) => {
 
   it('enforces bounds and challenge-window settlement gates', async () => {
     await token.approve(manager.address, payout, { from: employer });
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.createJob('', payout, duration, 'x', { from: employer }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.createJob('', payout, duration, 'x', { from: employer }));
     await manager.createJob('QmSpec', payout, duration, 'x', { from: employer });
 
     await manager.applyForJob(0, 'agent', agentTree.proofFor(agent), { from: agent });
@@ -119,7 +119,7 @@ contract('jobLifecycle.core', (accounts) => {
     await manager.validateJob(0, 'validator', validatorTree.proofFor(v2), { from: v2 });
     await manager.validateJob(0, 'validator', validatorTree.proofFor(v3), { from: v3 });
 
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.finalizeJob(0, { from: outsider }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.finalizeJob(0, { from: outsider }));
     const expectedValidatorBond = await computeValidatorBond(manager, payout);
     const expectedAgentBond = await computeAgentBond(manager, payout, duration);
     assert(expectedValidatorBond.gte(new BN(0)) && expectedAgentBond.gte(new BN(0)));

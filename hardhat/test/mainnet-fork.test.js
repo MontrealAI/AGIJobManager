@@ -1,5 +1,7 @@
-const assert = require('node:assert/strict');
-const { ethers, network } = require('hardhat');
+import assert from 'node:assert/strict';
+import runtime from '../scripts/runtime.cjs';
+const { ethers, network } = await runtime.getRuntime();
+const rpc = (method, params = []) => network.provider.request({ method, params });
 
 // All mutations below are sent to Hardhat's in-process fork, never to Ethereum.
 // These values identify the finalized state observed for the v0.8.0 qualification.
@@ -37,8 +39,8 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
   const reserves = () => Promise.all(['lockedEscrow', 'lockedAgentBonds', 'lockedValidatorBonds', 'lockedDisputeBonds'].map(name => manager[name]()));
 
   async function localSigner(address) {
-    await network.provider.send('hardhat_impersonateAccount', [address]);
-    await network.provider.send('hardhat_setBalance', [address, ethers.toQuantity(ethers.parseEther('10'))]);
+    await rpc('hardhat_impersonateAccount', [address]);
+    await rpc('hardhat_setBalance', [address, ethers.toQuantity(ethers.parseEther('10'))]);
     return ethers.getSigner(address);
   }
 
@@ -46,8 +48,7 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     assert.equal(network.name, 'hardhat', 'This test may run only on the in-process Hardhat network');
     assert.equal(network.config.chainId, 1, 'Use an isolated Hardhat fork configuration with chainId 1');
     assert.notEqual(network.config.allowUnlimitedContractSize, true, 'EIP-170 contract-size enforcement must remain enabled');
-    const jsonRpcUrl = process.env.MAINNET_FORK_RPC_URL || 'https://eth-mainnet.g.alchemy.com/public';
-    await network.provider.send('hardhat_reset', [{ forking: { jsonRpcUrl, blockNumber: PIN.blockNumber } }]);
+    assert.equal(Number(network.config.forking?.blockNumber), PIN.blockNumber, 'Use the pinned read-only fork configuration');
     assert.equal((await ethers.provider.getNetwork()).chainId, 1n);
     const block = await ethers.provider.getBlock(PIN.blockNumber);
     assert.equal(block.hash, PIN.blockHash, 'RPC returned the wrong pinned Ethereum block');
@@ -103,12 +104,12 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     await send(manager.unpause());
     baseline = await balances();
     console.log(`    Mainnet-sized deployment: ${runtimeSize} runtime bytes; intake paused until owner activation`);
-    snapshot = await network.provider.send('evm_snapshot');
+    snapshot = await rpc('evm_snapshot');
   });
 
   beforeEach(async function () {
-    assert.equal(await network.provider.send('evm_revert', [snapshot]), true);
-    snapshot = await network.provider.send('evm_snapshot');
+    assert.equal(await rpc('evm_revert', [snapshot]), true);
+    snapshot = await rpc('evm_snapshot');
   });
 
   async function ready() {
@@ -116,8 +117,8 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     await send(manager.connect(agent).applyForJob(0, '', []));
     await send(manager.connect(agent).requestJobCompletion(0, 'ipfs://completed'));
     await send(manager.connect(validator).validateJob(0, '', []));
-    await network.provider.send('evm_increaseTime', [Number(await manager.challengePeriodAfterApproval()) + 1]);
-    await network.provider.send('evm_mine');
+    await rpc('evm_increaseTime', [Number(await manager.challengePeriodAfterApproval()) + 1]);
+    await rpc('evm_mine');
   }
 
   async function assertSettled() {

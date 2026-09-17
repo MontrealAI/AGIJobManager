@@ -1,116 +1,18 @@
-# Mainnet migration from legacy AGIJobManager snapshot
+# Legacy mainnet snapshot migration — retired procedure
 
-> **v0.9.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+This page preserves the provenance of the earlier snapshot-based migration for the recorded legacy address `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`. Its Truffle deployment and signing procedure is retired and must not be used for v0.9.1.
 
-This runbook deploys `contracts/AGIJobManager.sol` from a deterministic, committed snapshot of the live legacy mainnet contract `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`.
+## Historical artifacts
 
-Artifacts in this repo:
+- Read-only snapshot extractor: [`scripts/snapshotLegacyConfig.mainnet.js`](../scripts/snapshotLegacyConfig.mainnet.js).
+- Committed snapshot: [`migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json`](../migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json).
+- Retired migration entry point: [`migrations/2_deploy_agijobmanager_from_legacy_mainnet.js`](../migrations/2_deploy_agijobmanager_from_legacy_mainnet.js).
+- Earlier instructions remain available in [the v0.9.0 historical document](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/MAINNET_MIGRATION_FROM_LEGACY.md); their commands are not current deployment instructions.
 
-- Snapshot extractor: `scripts/snapshotLegacyConfig.mainnet.js`
-- Committed snapshot: `migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json`
-- Hardcoded migration: `migrations/2_deploy_agijobmanager_from_legacy_mainnet.js`
+The snapshot is historical state evidence. It is not an approved source of current token units, settlement wallets, owner authority, live jobs or escrow balances.
 
-## 1) Prerequisites
+## Current migration path
 
-Required environment variables:
+Follow the [USDC migration guide](USDC_MIGRATION.md) and [Hardhat deployment guide](../hardhat/README.md). Existing jobs and balances remain on their original contracts; the current manager does not import their escrow or approvals.
 
-- `MAINNET_RPC_URL` (read-only snapshot RPC; migration RPC is from Truffle network config)
-- `ETHERSCAN_API_KEY` (ABI/source + tx/event reconstruction)
-- `PRIVATE_KEYS` (funded deployer key for Truffle mainnet network)
-
-Safety gates:
-
-- `CONFIRM_MAINNET_DEPLOY=1` is mandatory when `chainId == 1`.
-- Optional owner override: `NEW_OWNER=0x...` (must already be EIP-55 checksummed; migration rejects non-checksummed input).
-
-## 2) Generate deterministic snapshot (pin a block)
-
-Example pinned extraction:
-
-```bash
-MAINNET_RPC_URL=https://ethereum-rpc.publicnode.com \
-ETHERSCAN_API_KEY=... \
-node scripts/snapshotLegacyConfig.mainnet.js --block 24480106
-```
-
-Default block is `latest` if `--block` is omitted.
-
-The snapshot records:
-
-- `schemaVersion`, `generatedAt`
-- `snapshot.chainId`, `snapshot.blockNumber`, `snapshot.blockTimestamp`
-- constructor config (token/baseIpfs/ENS/nameWrapper/root nodes/merkle roots)
-- runtime config (owner, paused/settlementPaused/lockIdentityConfig, economic + timing params)
-- dynamic sets (moderators/additionals/blacklists) with provenance
-- AGI types as `{ nftAddress, payoutPercentage, enabled, source }`
-
-Implementation note: the extractor resolves ABI from Etherscan `getsourcecode` first ("Read as Proxy" compatible metadata path), then falls back to `getabi` only if needed.
-
-If any required state cannot be recovered deterministically, the script exits with a hard error.
-
-## 3) Review snapshot before deploy
-
-```bash
-cat migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477.json
-```
-
-Review at minimum:
-
-- owner + core addresses (`usdcToken`, ENS, NameWrapper)
-- root nodes + merkle roots
-- paused/settlement/identity lock booleans
-- validator threshold/quorum/reward/bond/slash/timing params
-- dynamic set counts and members
-- AGI type ordering and payout percentages
-
-## 4) Migration dry-run on a fork/local chain (recommended)
-
-If you have a local fork configured as `development`/`test`, run migration step 2 only:
-
-```bash
-MIGRATE_FROM_LEGACY_SNAPSHOT=1 \
-truffle migrate --network development --f 2 --to 2
-```
-
-Expected output includes library addresses, deployed `AGIJobManager` address, and `All assertions passed for mainnet legacy parity.`
-
-## 5) Mainnet deploy from committed snapshot
-
-```bash
-MIGRATE_FROM_LEGACY_SNAPSHOT=1 \
-CONFIRM_MAINNET_DEPLOY=1 \
-MAINNET_RPC_URL=... \
-PRIVATE_KEYS=... \
-truffle migrate --network mainnet --f 2 --to 2
-```
-
-Notes:
-
-- Migration uses **no runtime RPC/Etherscan lookups** for configuration replay.
-- It restores constructor config, runtime params, dynamic sets, AGI types, pause flags, identity lock, then ownership.
-- It executes post-deploy read-back assertions and fails loudly on mismatch.
-
-## 6) Post-deploy verification checklist (Etherscan Read Contract)
-
-Confirm:
-
-- `owner`, `usdcToken`, `ens`, `nameWrapper`
-- `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode`
-- `validatorMerkleRoot`, `agentMerkleRoot`
-- `paused`, `settlementPaused`, `lockIdentityConfig`
-- `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `voteQuorum`
-- `validationRewardPercentage`, `maxJobPayout`, `jobDurationLimit`
-- `completionReviewPeriod`, `disputeReviewPeriod`
-- `validatorBondBps/min/max`, `agentBondBps/min/max`, `validatorSlashBps`
-- dynamic set membership via public mappings
-- `agiTypes(i)` entries by index and payout
-
-Known getter limitation: `baseIpfsUrl` is not directly readable from a public getter.
-`useEnsJobTokenURI` / `ensJobPages` are asserted when their getters exist in the deployed bytecode.
-
-## 7) Etherscan verification with linked libraries
-
-Use the repository’s standard verification flow and pass:
-
-- the exact constructor args used in deployment
-- the linked library addresses printed by migration logs (`UriUtils`, `TransferUtils`, `BondMath`, `ReputationMath`, `ENSOwnership`)
+Prepare a fresh configuration using native six-decimal USDC, explicitly reviewed identity settings, and two distinct settlement wallets ordered 30% then 10%. Review monetary limits in USDC base units. Rehearse the deployment, verify the linked source and runtime, and complete two-step ownership acceptance while intake remains paused. The [owner controls](OWNER_CONTROLS.md) and [mainnet readiness guide](MAINNET_READINESS.md) describe the remaining operational checks.

@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { Contract } = require('ethers');
+const { providerFor, cliCallback } = require('../lib/operations');
 
 const ARG_PREFIX = '--';
 
@@ -52,10 +54,10 @@ function toCaipAddress({ namespace, chainId, address }) {
   return `${namespace}:${chainId}:${address}`;
 }
 
-function getIdentityRegistryContract(address) {
+function getIdentityRegistryContract(address, provider) {
   const abiPath = path.join(__dirname, '../../integrations/erc8004/abis/IdentityRegistry.json');
   const abi = readJson(abiPath);
-  return new web3.eth.Contract(abi, address);
+  return new Contract(address, abi, provider);
 }
 
 function mapAgentIds({ addresses, mapPath, singleAgentId }) {
@@ -63,7 +65,7 @@ function mapAgentIds({ addresses, mapPath, singleAgentId }) {
   if (mapPath) {
     const raw = readJson(mapPath);
     for (const [address, agentId] of Object.entries(raw)) {
-      mapping.set(normalizeAddress(address), agentId);
+      mapping.set(normalizeAddress(address), agentId.toString());
     }
   }
 
@@ -81,24 +83,24 @@ function mapAgentIds({ addresses, mapPath, singleAgentId }) {
   return { mapping, unresolved };
 }
 
-async function resolveWithIdentityRegistry({ identityRegistry, namespace, chainId, mapping, unresolved }) {
+async function resolveWithIdentityRegistry({ identityRegistry, provider, mapping, unresolved }) {
   if (!identityRegistry || unresolved.size === 0) return { mapping, unresolved };
-  const contract = getIdentityRegistryContract(identityRegistry);
+  const contract = getIdentityRegistryContract(identityRegistry, provider);
   const lookupMethods = [
     'getAgentIdByWallet',
     'agentIdByWallet',
     'getAgentIdForWallet',
     'agentIdForWallet',
   ];
-  const methodName = lookupMethods.find((name) => contract.methods[name]);
+  const methodName = lookupMethods.find((name) => contract.interface.hasFunction(name));
   if (!methodName) return { mapping, unresolved };
 
   const remaining = new Set(unresolved);
   for (const address of unresolved.values()) {
     try {
-      const agentId = await contract.methods[methodName](address).call();
+      const agentId = await contract[methodName](address);
       if (agentId && Number(agentId) !== 0) {
-        mapping.set(normalizeAddress(address), agentId);
+        mapping.set(normalizeAddress(address), agentId.toString());
         remaining.delete(address);
       }
     } catch (error) {
@@ -109,6 +111,8 @@ async function resolveWithIdentityRegistry({ identityRegistry, namespace, chainI
 }
 
 async function runExportFeedback(overrides = {}) {
+  const provider = overrides.provider || providerFor(overrides.network || getArgValue('network') || 'development');
+  try {
   const outDir = overrides.outDir
     || process.env.OUT_DIR
     || getArgValue('out-dir')
@@ -139,11 +143,11 @@ async function runExportFeedback(overrides = {}) {
     || getArgValue('client-address');
 
   const { runExportMetrics } = require('./export_metrics');
-  const metricsResult = await runExportMetrics(overrides);
+  const metricsResult = await runExportMetrics({ ...overrides, provider });
   const metrics = metricsResult.output;
   const resolvedChainId = chainIdOverrideRaw ? Number(chainIdOverrideRaw) : metrics.metadata.chainId;
-  if (!Number.isFinite(resolvedChainId)) {
-    throw new Error('Missing chainId. Provide CHAIN_ID or ensure web3 is connected.');
+  if (!Number.isSafeInteger(resolvedChainId) || resolvedChainId !== metrics.metadata.chainId || namespace !== 'eip155') {
+    throw new Error('Feedback must use namespace eip155 and the actual connected chain ID.');
   }
 
   const identityRegistry = identityRegistryInput
@@ -165,7 +169,7 @@ async function runExportFeedback(overrides = {}) {
   const blockTimestampCache = new Map();
   const getBlockTimestampIso = async (blockNumber) => {
     if (blockTimestampCache.has(blockNumber)) return blockTimestampCache.get(blockNumber);
-    const block = await web3.eth.getBlock(blockNumber);
+    const block = await provider.getBlock(blockNumber);
     const timestamp = block ? Number(block.timestamp) : Math.floor(Date.now() / 1000);
     const iso = new Date(timestamp * 1000).toISOString();
     blockTimestampCache.set(blockNumber, iso);
@@ -180,6 +184,7 @@ async function runExportFeedback(overrides = {}) {
   });
   ({ mapping: agentIdMap, unresolved: unresolvedAgents } = await resolveWithIdentityRegistry({
     identityRegistry,
+    provider,
     namespace,
     chainId: resolvedChainId,
     mapping: agentIdMap,
@@ -194,6 +199,7 @@ async function runExportFeedback(overrides = {}) {
   });
   ({ mapping: validatorIdMap, unresolved: unresolvedValidators } = await resolveWithIdentityRegistry({
     identityRegistry,
+    provider,
     namespace,
     chainId: resolvedChainId,
     mapping: validatorIdMap,
@@ -402,6 +408,9 @@ async function runExportFeedback(overrides = {}) {
     console.log(`Unresolved wallet mappings written to ${path.join(outDir, 'erc8004_unresolved_wallets.json')}`);
   }
   return { outputDir, summaryPath, generated, unresolved: unresolvedDetails };
+  } finally {
+    if (!overrides.provider) provider.destroy();
+  }
 }
 
 module.exports = function (callback) {
@@ -411,3 +420,5 @@ module.exports = function (callback) {
 };
 
 module.exports.runExportFeedback = runExportFeedback;
+
+if (require.main === module) module.exports(cliCallback);

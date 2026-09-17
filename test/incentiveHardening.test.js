@@ -11,7 +11,7 @@ const MockERC721 = artifacts.require("MockERC721");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundAgents, fundValidators, computeAgentBond, computeValidatorBond } = require("./helpers/bonds");
 const { expectCustomError } = require("./helpers/errors");
-const { time } = require("@openzeppelin/test-helpers");
+const { time } = require("../scripts/test-helpers.cjs");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];

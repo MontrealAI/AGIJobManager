@@ -1,7 +1,7 @@
 # ENS Reference (Generated)
 
 Generated at (UTC): 1970-01-01T00:00:00Z
-Source fingerprint: 876cf6c1365d0a40
+Source fingerprint: 123175e4667daa18
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -33,19 +33,19 @@ Source files used:
 
 ## Config and locks
 
-- `function _initRoots(bytes32[4] memory rootNodes, bytes32[2] memory merkleRoots) internal` ([contracts/AGIJobManager.sol#L546](../../contracts/AGIJobManager.sol#L546))
-- `function lockIdentityConfiguration() external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L716](../../contracts/AGIJobManager.sol#L716))
-- `function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` ([contracts/AGIJobManager.sol#L750](../../contracts/AGIJobManager.sol#L750))
-- `function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` ([contracts/AGIJobManager.sol#L809](../../contracts/AGIJobManager.sol#L809))
-- `function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` ([contracts/AGIJobManager.sol#L817](../../contracts/AGIJobManager.sol#L817))
-- `function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L1010](../../contracts/AGIJobManager.sol#L1010))
-- `function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L1016](../../contracts/AGIJobManager.sol#L1016))
-- `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L1022](../../contracts/AGIJobManager.sol#L1022))
-- `function updateRootNodes(` ([contracts/AGIJobManager.sol#L1031](../../contracts/AGIJobManager.sol#L1031))
-- `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` ([contracts/AGIJobManager.sol#L1044](../../contracts/AGIJobManager.sol#L1044))
-- `function lockJobENS(uint256 jobId, bool burnFuses) external` ([contracts/AGIJobManager.sol#L1261](../../contracts/AGIJobManager.sol#L1261))
-- `function tokenURI(uint256 tokenId) public view override returns (string memory)` ([contracts/AGIJobManager.sol#L1442](../../contracts/AGIJobManager.sol#L1442))
-- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` ([contracts/AGIJobManager.sol#L1447](../../contracts/AGIJobManager.sol#L1447))
+- `function _initRoots(bytes32[4] memory rootNodes, bytes32[2] memory merkleRoots) internal` ([contracts/AGIJobManager.sol#L548](../../contracts/AGIJobManager.sol#L548))
+- `function lockIdentityConfiguration() external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L718](../../contracts/AGIJobManager.sol#L718))
+- `function applyForJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` ([contracts/AGIJobManager.sol#L754](../../contracts/AGIJobManager.sol#L754))
+- `function validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` ([contracts/AGIJobManager.sol#L815](../../contracts/AGIJobManager.sol#L815))
+- `function disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` ([contracts/AGIJobManager.sol#L823](../../contracts/AGIJobManager.sol#L823))
+- `function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L1022](../../contracts/AGIJobManager.sol#L1022))
+- `function updateNameWrapper(address _newNameWrapper) external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L1028](../../contracts/AGIJobManager.sol#L1028))
+- `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L1034](../../contracts/AGIJobManager.sol#L1034))
+- `function updateRootNodes(` ([contracts/AGIJobManager.sol#L1043](../../contracts/AGIJobManager.sol#L1043))
+- `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` ([contracts/AGIJobManager.sol#L1056](../../contracts/AGIJobManager.sol#L1056))
+- `function lockJobENS(uint256 jobId, bool burnFuses) external` ([contracts/AGIJobManager.sol#L1279](../../contracts/AGIJobManager.sol#L1279))
+- `function tokenURI(uint256 tokenId) public view override returns (string memory)` ([contracts/AGIJobManager.sol#L1473](../../contracts/AGIJobManager.sol#L1473))
+- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` ([contracts/AGIJobManager.sol#L1478](../../contracts/AGIJobManager.sol#L1478))
 - `function setENSRegistry(address ensAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L160](../../contracts/ens/ENSJobPages.sol#L160))
 - `function setNameWrapper(address nameWrapperAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L168](../../contracts/ens/ENSJobPages.sol#L168))
 - `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L184](../../contracts/ens/ENSJobPages.sol#L184))
@@ -65,9 +65,9 @@ Source files used:
 - `event EnsRegistryUpdated(address newEnsRegistry);` ([contracts/AGIJobManager.sol#L435](../../contracts/AGIJobManager.sol#L435))
 - `event RootNodesUpdated(` ([contracts/AGIJobManager.sol#L437](../../contracts/AGIJobManager.sol#L437))
 - `event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);` ([contracts/AGIJobManager.sol#L443](../../contracts/AGIJobManager.sol#L443))
-- `event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);` ([contracts/AGIJobManager.sol#L451](../../contracts/AGIJobManager.sol#L451))
-- `event EnsJobPagesUpdated(address indexed oldEnsJobPages, address indexed newEnsJobPages);` ([contracts/AGIJobManager.sol#L457](../../contracts/AGIJobManager.sol#L457))
-- `event EnsHookAttempted(uint8 indexed hook, uint256 indexed jobId, address indexed target, bool success);` ([contracts/AGIJobManager.sol#L472](../../contracts/AGIJobManager.sol#L472))
+- `event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);` ([contracts/AGIJobManager.sol#L453](../../contracts/AGIJobManager.sol#L453))
+- `event EnsJobPagesUpdated(address indexed oldEnsJobPages, address indexed newEnsJobPages);` ([contracts/AGIJobManager.sol#L459](../../contracts/AGIJobManager.sol#L459))
+- `event EnsHookAttempted(uint8 indexed hook, uint256 indexed jobId, address indexed target, bool success);` ([contracts/AGIJobManager.sol#L474](../../contracts/AGIJobManager.sol#L474))
 - `error ENSNotConfigured();` ([contracts/ens/ENSJobPages.sol#L49](../../contracts/ens/ENSJobPages.sol#L49))
 - `error ENSNotAuthorized();` ([contracts/ens/ENSJobPages.sol#L50](../../contracts/ens/ENSJobPages.sol#L50))
 - `error InvalidParameters();` ([contracts/ens/ENSJobPages.sol#L51](../../contracts/ens/ENSJobPages.sol#L51))
@@ -86,9 +86,9 @@ Source files used:
 - @notice Total USDC locked as validator bonds for unsettled votes. ([contracts/AGIJobManager.sol#L346](../../contracts/AGIJobManager.sol#L346))
 - @notice Total USDC locked as dispute bonds for unsettled disputes. ([contracts/AGIJobManager.sol#L348](../../contracts/AGIJobManager.sol#L348))
 - @notice Freezes ENS/namewrapper/root nodes; USDC is immutable at deployment. Not a governance lock; ops remain owner-controlled. ([contracts/AGIJobManager.sol#L362](../../contracts/AGIJobManager.sol#L362))
-- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. ([contracts/AGIJobManager.sol#L1259](../../contracts/AGIJobManager.sol#L1259))
-- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. ([contracts/AGIJobManager.sol#L1260](../../contracts/AGIJobManager.sol#L1260))
-- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. ([contracts/AGIJobManager.sol#L1477](../../contracts/AGIJobManager.sol#L1477))
+- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. ([contracts/AGIJobManager.sol#L1277](../../contracts/AGIJobManager.sol#L1277))
+- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. ([contracts/AGIJobManager.sol#L1278](../../contracts/AGIJobManager.sol#L1278))
+- @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds. ([contracts/AGIJobManager.sol#L1508](../../contracts/AGIJobManager.sol#L1508))
 - @notice Prefix used when constructing ENS job labels as prefix + decimal(jobId). ([contracts/ens/ENSJobPages.sol#L117](../../contracts/ens/ENSJobPages.sol#L117))
 - @notice Updates the default prefix used for unsnapshotted/future job ENS labels. ([contracts/ens/ENSJobPages.sol#L148](../../contracts/ens/ENSJobPages.sol#L148))
 -      Legacy jobs that predate this contract must be migrated before hooks can mutate ENS records. ([contracts/ens/ENSJobPages.sol#L809](../../contracts/ens/ENSJobPages.sol#L809))

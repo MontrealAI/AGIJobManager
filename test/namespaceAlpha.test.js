@@ -14,7 +14,7 @@ const keccak256 = require("keccak256");
 const { namehash, subnode, setNameWrapperOwnership, setResolverOwnership } = require("./helpers/ens");
 const { buildInitConfig } = require("./helpers/deploy");
 const { fundValidators, fundAgents } = require("./helpers/bonds");
-const { expectRevert, time } = require("@openzeppelin/test-helpers");
+const { expectRevert, time } = require("../scripts/test-helpers.cjs");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];

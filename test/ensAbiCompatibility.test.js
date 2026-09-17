@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { time, expectEvent } = require("@openzeppelin/test-helpers");
+const { time, expectEvent } = require("../scripts/test-helpers.cjs");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const ENSJobPages = artifacts.require("ENSJobPages");

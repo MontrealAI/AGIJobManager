@@ -19,7 +19,7 @@ library ReputationMath {
             : 0;
         unchecked {
             uint256 payoutUnits = payout / 1e3;
-            uint256 timeBonus;
+            uint256 timeBonus = 0;
             if (duration > completionTime) {
                 timeBonus = (duration - completionTime) / 10000;
             }

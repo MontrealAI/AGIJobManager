@@ -1,6 +1,6 @@
 # AGIJobManager Documentation Hub
 
-> **v0.9.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v0.9.1: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
 Institutional documentation for operators, integrators, contributors, and auditors.
 
@@ -99,7 +99,7 @@ If another document conflicts with these in an operational detail, follow the ca
 ## Most common operator questions (fast answers)
 
 - **What is canonical if docs disagree?** Follow the canonical set above (Hardhat guide, ENS replacement runbook, ENS overview, deployment troubleshooting).
-- **What deployment path is recommended?** Hardhat is recommended/official; Truffle is restricted to disposable local tests and development.
+- **What deployment path is recommended?** Hardhat 3 is the supported deployment and local test runtime; Truffle and Ganache have been removed.
 - **What is manual vs automated during ENS replacement?** The optional ENS deployment script deploys and configures its own manager reference; NameWrapper approval + `setEnsJobPages` + legacy migration are manual.
 - **How are ENS names built?** `<prefix><jobId>.<jobsRootName>` where `AGIJobManager` provides `jobId` and `ENSJobPages` provides prefix/root.
 - **When is locking safe?** Only after post-cutover read/event checks and any legacy migration decisions are complete.
@@ -114,11 +114,11 @@ If another document conflicts with these in an operational detail, follow the ca
 - [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) (standalone HTML UI runbook)
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [DEPLOYMENT_OPERATIONS.md](./DEPLOYMENT_OPERATIONS.md)
-- [Deployment Documentation Index (Hardhat recommended, Truffle legacy)](./DEPLOYMENT/README.md)
+- [Deployment Documentation Index (Hardhat and retired guides)](./DEPLOYMENT/README.md)
 - [Ethereum Mainnet Beta Deployment Record](./DEPLOYMENT/MAINNET_BETA_DEPLOYMENT_RECORD.md)
 - [Official Mainnet Deployment Record](./DEPLOYMENT/MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md)
 - [Owner Mainnet Deployment & Operations Guide](./DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) (institutional, web-only owner operations)
-- [Ethereum Mainnet Deployment, Verification & Ownership Transfer Guide (Truffle)](./DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)
+- [Retired Truffle deployment guide](./DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md)
 - [SCRIPTS_REFERENCE.md](./SCRIPTS_REFERENCE.md)
 - [CONTRACTS/AGIJobManager.md](./CONTRACTS/AGIJobManager.md)
 - [CONTRACTS/INTEGRATIONS.md](./CONTRACTS/INTEGRATIONS.md)

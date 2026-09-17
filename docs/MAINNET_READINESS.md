@@ -1,6 +1,6 @@
-# v0.9.0 mainnet qualification
+# v0.9.1 mainnet qualification
 
-v0.9.0 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v0.9.1 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
 ## Settlement
 
@@ -25,16 +25,17 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 - Transaction reviews bind the connected account, network and manager through approvals and submission. Changed contexts require a new review. Failed receipts cannot be reported as successful.
 - Qualification includes contract regressions, issuer restrictions, bonds/disputes, exact transfer ordering, fuzzing, concurrent-job invariants, deployment rejection scenarios, browser tests and static-analysis triage.
 
-## v0.9.0 operational review
+## v0.9.1 operational review
 
-v0.9.0 retains the v0.8.0 production contract source and settlement semantics. Its changes address deployment flag parsing and recovery, wallet review consistency, vulnerable UI development tooling, clearer participant/incident procedures, and stronger non-vacuous lifecycle assertions. The release evidence records the final commands, counts and findings. Start with the [user journey](START_HERE.md), [owner runbook](OWNER_RUNBOOK.md) or [incident response](OPERATIONS/INCIDENT_RESPONSE.md) for the appropriate task.
+v0.9.1 changes production contract source to validate decoded addresses and order settlement state updates before transfers, while preserving the USDC payout rules. It replaces Truffle/Ganache and Hardhat 2 dependencies, enforces warning-free Forge builds, and adds constructor-data and transaction-gas deployment checks. The release evidence records the final commands, counts and findings. Start with the [user journey](START_HERE.md), [owner runbook](OWNER_RUNBOOK.md) or [incident response](OPERATIONS/INCIDENT_RESPONSE.md) for the appropriate task.
 
 ## Reproduce qualification
 
-Use Node 22.23.2 and the committed lockfiles. Root Truffle/Ganache tests require disposable local accounts only; see [dependency scope](DEPENDENCY_SECURITY.md).
+Use Node 22.23.2 and the committed lockfiles. Install the root and Hardhat workspaces before running the contract tests; all local tests use disposable accounts. See [dependency scope](DEPENDENCY_SECURITY.md).
 
 ```bash
 npm ci
+npm --prefix hardhat ci
 npm test
 node scripts/release/verify-usdc-ui.mjs
 npm run test:ui
@@ -52,6 +53,7 @@ The fork runner exposes only the local Hardhat network. It reads a pinned finali
 
 ```bash
 cd ..
+FOUNDRY_PROFILE=ci forge build --deny warnings
 FOUNDRY_PROFILE=ci forge test
 npm run slither
 npm run slither:extended
@@ -78,9 +80,9 @@ Follow the [Hardhat guide](../hardhat/README.md), complete source verification a
 - This is not a proxy. Code changes require a new deployment; supported owner settings remain available under their on-chain guards.
 - The owner and moderators remain trusted authorities. A compromised owner can misuse eligibility, pause or dispute powers even though reserved funds cannot be withdrawn as surplus.
 - Circle may pause USDC, block addresses or upgrade its implementation. A restricted recipient can prevent the entire settlement. Tests establish atomic rollback, not a way around issuer restrictions. Existing reserved jobs cannot be redirected by rotating the two wallets.
-- Validators can collude or misjudge off-chain work. Bonds and tests do not prove the truth of a submitted deliverable.
+- Validators can collude or misjudge off-chain work. Authorization is by wallet: an employer or agent can also vote if validator-authorized. Distinct addresses or ENS names do not establish independent people. Configure and monitor eligibility accordingly; bonds and tests do not prove the truth of a deliverable.
 - ENS and metadata are external dependencies. Optional job-page failures are bounded; identity availability and correct operational configuration still matter.
-- The manager remains close to Ethereum's runtime size limit. Preserve the qualified compiler settings and repeat bytecode/deployment checks after every source or compiler change.
-- UI/root production dependency audits are clean at qualification; the deployment toolchain retains low-severity advisories. Legacy local test tooling retains higher-severity advisories and must never receive production keys.
+- The qualified manager runtime is 24,409 bytes: 167 bytes below Ethereum's 24,576-byte limit. Preserve the qualified compiler settings and repeat bytecode/deployment checks after every source or compiler change.
+- CI audits the complete root, deployment and UI dependency trees and rejects advisories at every severity. Repeat those checks against the current registry before deployment; a clean advisory database result does not prove absence of unknown vulnerabilities.
 
 The [deploy-day runbook](DEPLOY_DAY_RUNBOOK.md), [owner controls](OWNER_CONTROLS.md) and [incident response](OPERATIONS/INCIDENT_RESPONSE.md) describe the operational steps.

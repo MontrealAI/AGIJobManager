@@ -1,4 +1,4 @@
-# Quickstart — v0.9.0
+# Quickstart — v0.9.1
 
 Choose the workflow below before running commands. A software release and passing tests do not deploy a manager or open it to deposits.
 
@@ -12,14 +12,21 @@ Choose the workflow below before running commands. A software release and passin
 
 ## 1) Install
 
-Check out the reviewed v0.9.0 release, use Node 22.23.2 and install the committed lockfiles. From the repository root:
+Check out the reviewed v0.9.1 release, use Node 22.23.2 and install the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
 npm --prefix hardhat ci
 ```
 
-Root Truffle/Ganache dependencies support local tests only. Keep production keys out of this environment; use the supported Hardhat deployment workflow for public-network signing. Review the [dependency security scope](DEPENDENCY_SECURITY.md).
+Local regression tests use Hardhat 3's disposable EDR chain and ethers-backed compatibility helpers. Truffle/Ganache dependencies have been removed. Use the supported Hardhat deployment workflow for public-network signing and review the [dependency security scope](DEPENDENCY_SECURITY.md).
+
+Audit both installed dependency trees, including development packages:
+
+```bash
+npm audit --audit-level=low
+npm --prefix hardhat audit --audit-level=low
+```
 
 ## 2) Compile
 
@@ -29,13 +36,13 @@ For the public deployment build:
 npm --prefix hardhat run compile
 ```
 
-For disposable local Truffle fixtures and their tests:
+To compile and export the artifacts used by the local JavaScript regression suites:
 
 ```bash
 npm run build
 ```
 
-Preserve the repository's qualified compiler profile. A size-limit failure requires investigation, not disabling Ethereum limits.
+Preserve the compiler, optimizer and EVM profile in [Hardhat configuration](../hardhat/hardhat.config.js) and [Foundry configuration](../foundry.toml). A size-limit failure requires investigation, not disabling Ethereum limits. Final runtime size and compiler identity are recorded in the release validation evidence.
 
 ## 3) Test
 
@@ -43,10 +50,15 @@ Run the contract regressions and deployment checks:
 
 ```bash
 npm test
+npm run size
+FOUNDRY_PROFILE=ci forge build --deny warnings
+FOUNDRY_PROFILE=ci forge test
 npm --prefix hardhat run test:preflight
 npm --prefix hardhat run test:deployment
 npm --prefix hardhat run test:mainnet-fork
 ```
+
+Install the Foundry version pinned in the [security workflow](../.github/workflows/security-verification.yml) before the Forge commands. `--deny warnings` rejects new compiler and Forge lint diagnostics; reviewed fixture/test annotations remain explicitly scoped.
 
 The fork test reads a pinned historical Ethereum block and executes transactions only on a local Hardhat chain. It uses actual Circle USDC state, fails if archive RPC access is unavailable, and never uses a production private key. An archive-capable endpoint can be selected with `MAINNET_FORK_RPC_URL`.
 
@@ -63,7 +75,7 @@ npm run docs:check
 
 Review generated changes before committing them. Generated interface references must match the final source and release metadata.
 
-## 5) Optional UI smoke test
+## 5) UI checks
 
 ```bash
 node scripts/release/verify-usdc-ui.mjs
@@ -74,14 +86,17 @@ For UI development, install its own lockfile and follow its workspace guide:
 
 ```bash
 npm --prefix ui ci
+npm --prefix ui audit --audit-level=low
 npm --prefix ui run lint
 npm --prefix ui run typecheck
 npm --prefix ui test
 ```
 
+Release qualification audits all three complete dependency trees at the low threshold and requires the full UI browser/accessibility/header/build gates. Do not omit development dependencies or interpret this quickstart subset as complete release qualification.
+
 ## 6) Prepare a public deployment
 
-Use the [Hardhat guide](../hardhat/README.md) to prepare the selected RPC and trusted `deploy.config.js`. Supply **both** recipient wallets in 30%/10% order, canonical six-decimal USDC, the intended final owner and reviewed identity settings. Release examples are not a populated production configuration.
+Use the [Hardhat guide](../hardhat/README.md) to prepare the selected RPC and trusted `deploy.config.cjs`. Supply **both** recipient wallets in 30%/10% order, canonical six-decimal USDC, the intended final owner and reviewed identity settings. Release examples are not a populated production configuration.
 
 From `hardhat/`, this explicit dry run validates a mainnet plan without broadcasting:
 
@@ -99,11 +114,11 @@ A public manager starts intake paused. Keep it paused while verifying linked cod
 | --- | --- | --- | --- | --- |
 | `npm ci` | Locked root dependency installation | Fresh local test checkout | Lockfile/toolchain mismatch | Use Node 22.23.2 and the committed lockfile; investigate drift |
 | `npm --prefix hardhat run compile` | Qualified Hardhat deployment artifacts | Public deployment preparation | Compiler/profile/size failure | Preserve release settings and resolve the failure before deployment |
-| `npm run build` | Local Truffle artifacts | Local fixtures and tests | Solidity compile error | Correct the source or fixture and rebuild |
+| `npm run build` | Hardhat artifacts exported for the JavaScript regression runner | Local fixtures and tests | Solidity compile error | Correct the source or fixture and rebuild |
 | `npm test` | Contract and regression tests | Release/PR validation | Local toolchain drift or failing assertion | Use the pinned toolchain and inspect the failing case |
 | `npm --prefix hardhat run test:mainnet-fork` | Pinned real-USDC compatibility scenarios on a local fork | Release qualification | Archive RPC unavailable or pinned-state mismatch | Supply a legitimate archive-capable RPC and investigate; do not skip the gate |
-| `npx truffle migrate --network development --reset` | Disposable local deployment | Local lifecycle rehearsal only | Ganache unavailable or insufficient local accounts | Follow the ten-account walkthrough; never substitute a public network |
-| `node scripts/postdeploy-config.js --network development --address <LOCAL_MANAGER>` | Local fixture configuration | Local rehearsal only | Wrong address or missing fixture config | Supply the local manager and reviewed fixture values; use the owner console for live controls |
+| `FOUNDRY_PROFILE=ci forge build --deny warnings` | Strict compiler and Forge lint gate | Release/PR validation | New diagnostic or mismatched compiler profile | Resolve the finding or document a justified line-specific exception; retain the strict gate |
+| `npm audit --audit-level=low` in root, `hardhat/` and `ui/` | Full dependency security checks | After locked installs and before qualification | Advisory or audit service failure | Resolve the dependency or retry a failed evidence read; keep the low threshold |
 | `DRY_RUN=1 npm run deploy:mainnet` from `hardhat/` | Read-only deployment plan | Before a separately authorized broadcast | Incomplete profile, chain mismatch or issuer restriction | Correct the plan and repeat the dry run |
 | `npm run check:readiness` from `hardhat/` with `DEPLOYMENT_RECEIPT` set | Read-only pre-activation report | After verification/configuration/ownership acceptance | Receipt, code, owner, identity, pause or balance mismatch | Resolve the discrepancy against the reviewed deployment evidence |
 | `npm run docs:check` | Documentation freshness and structure checks | Release/PR validation | Stale generated references or bad links | Regenerate references and review the resulting diff |

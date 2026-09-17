@@ -89,10 +89,12 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 
 ## 6) Exact deployment flow (mainnet)
 
+Start in the repository root. Install both locked workspaces so the pinned compiler and its compatibility patches are available. Preserve an existing reviewed `hardhat/.env`; copy `.env.example` only when creating the initial configuration.
+
 ```bash
+npm ci
 cd hardhat
 npm ci
-cp .env.example .env
 npm run compile
 
 DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:ens-job-pages:mainnet

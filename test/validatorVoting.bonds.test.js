@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { BN, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN, expectRevert } = require('../scripts/test-helpers.cjs');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 
@@ -35,7 +35,7 @@ contract('validatorVoting.bonds', (accounts) => {
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
 
     await manager.validateJob(0, 'validator', validatorTree.proofFor(v1), { from: v1 });
-    await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.validateJob(0, 'validator', validatorTree.proofFor(v1), { from: v1 }));
+    await require('../scripts/test-helpers.cjs').expectRevert.unspecified(manager.validateJob(0, 'validator', validatorTree.proofFor(v1), { from: v1 }));
 
     await manager.disapproveJob(0, 'validator', validatorTree.proofFor(v2), { from: v2 });
     await manager.disapproveJob(0, 'validator', validatorTree.proofFor(v3), { from: v3 });

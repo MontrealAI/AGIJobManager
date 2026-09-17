@@ -1,4 +1,4 @@
-# Known limitations and issue reporting — v0.9.0
+# Known limitations and issue reporting — v0.9.1
 
 This page records current operational limits. Exact test results and dependency counts belong to the release evidence and [dependency report](DEPENDENCY_SECURITY.md), rather than historical local logs.
 
@@ -17,8 +17,8 @@ This page records current operational limits. Exact test results and dependency 
 
 ## Tooling
 
-- The legacy root Truffle/Ganache test dependency tree retains high/critical advisories and deprecation warnings. It is restricted to disposable local tests; public-network signing is disabled. Use the supported Hardhat path and never expose production keys to the legacy tools.
-- Ganache may report that its optional native uWebSockets binary is unavailable on the pinned Node version and fall back to its JavaScript implementation. This warning is not a skipped test; CI must still finish every required test successfully.
+- Truffle/Ganache and Hardhat 2 are removed from the dependency trees. The preserved regression suites use local Hardhat 3 and ethers helpers; historical Truffle commands are unsupported.
+- Deliberately vulnerable historical Solidity fixtures remain under `contracts/legacy/` solely for comparative regression tests. They are excluded from production deployment. Their line-specific lint acknowledgments preserve the behavior the tests must detect.
 - Extended Slither reports are retained with individual rationale and source bindings. A successful reviewed-baseline gate does not mean the scanner returned no findings.
 - Native-USDC fork qualification depends on archive RPC availability at the pinned block. An unavailable RPC fails the gate rather than silently skipping it.
 

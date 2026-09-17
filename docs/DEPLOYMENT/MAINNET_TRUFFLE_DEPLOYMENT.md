@@ -1,7 +1,7 @@
-# MAINNET TRUFFLE DEPLOYMENT — superseded for v0.5.0
+# Truffle deployment retired
 
-> **v0.9.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+Truffle and Ganache are removed from the v0.9.1 dependency tree. Their public-network deployment commands are unsupported and must not be used.
 
-This pre-v0.5.0 guide or deployment record does not describe a USDC deployment. Its historical content is preserved in the [v0.4.0 source](https://github.com/MontrealAI/AGIJobManager/blob/v0.4.0/docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md).
+Use the [Hardhat deployment guide](../../hardhat/README.md) for compile, dry run, deployment, source verification and recovery. Supply native six-decimal USDC, both settlement wallets, and the intended owner. The manager starts paused; complete two-step ownership acceptance and the [readiness checks](../MAINNET_READINESS.md) before activation.
 
-For current deployment, token addresses, six-decimal amounts, API changes and cutover instructions, use the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/USDC_MIGRATION.md). The release requires a fresh deployment; no live USDC manager is configured by default.
+The previous instructions remain available in [the v0.9.0 source archive](https://github.com/MontrealAI/AGIJobManager/tree/v0.9.0/docs/DEPLOYMENT) for historical research. They are not a current signing path.

@@ -1,7 +1,7 @@
 # Repository Map (Generated)
 
-- Generated at (deterministic source fingerprint): `2d2c80a0b238`.
-- Source snapshot fingerprint: `2d2c80a0b238`.
+- Generated at (deterministic source fingerprint): `dfe387cd9029`.
+- Source snapshot fingerprint: `dfe387cd9029`.
 
 ## Curated high-signal map
 
@@ -10,14 +10,14 @@
 | `contracts/AGIJobManager.sol` | Primary escrow/settlement contract with role gating and disputes | On-chain source of truth |
 | `contracts/ens/` | ENS and NameWrapper integration interfaces/helpers | Best-effort identity checks |
 | `contracts/utils/` | Math, transfer, URI, and ENS ownership helpers | Used by core contract |
-| `hardhat/scripts/deploy.js` | Official public-network deployment and verification | Starts with intake paused; preserves transaction journals |
-| `hardhat/scripts/check-readiness.js` | Read-only instance qualification before activation | No transactions; inspect report and owner acceptance |
-| `migrations/1_deploy_contracts.js` | Disposable local Truffle fixture | Never use for public-network signing |
-| `migrations/deploy-config.js` | Legacy local fixture configuration | Use hardhat/deploy.config.example.js for public networks |
-| `test/` | Truffle and node-based security/regression suites | Primary CI safety net |
+| `hardhat/scripts/deploy.cjs` | Official public-network deployment and verification | Starts with intake paused; preserves transaction journals |
+| `hardhat/scripts/check-readiness.cjs` | Read-only instance qualification before activation | No transactions; inspect report and owner acceptance |
+| `migrations/1_deploy_contracts.js` | Retired Truffle fixture | Never use for public-network signing |
+| `migrations/deploy-config.js` | Archived legacy fixture configuration | Use hardhat/deploy.config.example.cjs for public networks |
+| `test/` | Hardhat-backed and node-based security/regression suites | Primary CI safety net |
 | `forge-test/` | Foundry fuzz/invariant suites | Mandatory security qualification gate |
-| `scripts/ops/validate-params.js` | Legacy local parameter sanity checker | Not a production readiness check |
-| `scripts/postdeploy-config.js` | Legacy local owner configuration routine | Use verified owner controls for live instances |
+| `scripts/ops/validate-params.js` | Read-only on-chain parameter checker | Not a full production readiness check |
+| `scripts/postdeploy-config.js` | Maintained local owner configuration routine | Public-chain writes are rejected; use verified owner controls for live instances |
 | `scripts/check-no-binaries.mjs` | Repository policy guard against binary additions | Docs governance + supply chain hygiene |
 | `ui/` | Next.js operator/demo frontend | Contains own docs and checks |
 | `.github/workflows/ci.yml` | Main build/lint/test workflow | PR and main branch gate |
@@ -49,8 +49,8 @@
 - [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
 - [`test/AGIJobManager.test.js`](../test/AGIJobManager.test.js)
 - [`hardhat/README.md`](../hardhat/README.md)
-- [`hardhat/scripts/deploy.js`](../hardhat/scripts/deploy.js)
-- [`hardhat/scripts/check-readiness.js`](../hardhat/scripts/check-readiness.js)
+- [`hardhat/scripts/deploy.cjs`](../hardhat/scripts/deploy.cjs)
+- [`hardhat/scripts/check-readiness.cjs`](../hardhat/scripts/check-readiness.cjs)
 - [`docs/START_HERE.md`](../docs/START_HERE.md)
 - [`docs/DEPLOYMENT_OPERATIONS.md`](../docs/DEPLOYMENT_OPERATIONS.md)
 - [`docs/SCRIPTS_REFERENCE.md`](../docs/SCRIPTS_REFERENCE.md)

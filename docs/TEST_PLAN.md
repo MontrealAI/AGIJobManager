@@ -1,73 +1,72 @@
-# Test Plan (Mainnet-Grade Deterministic Expansion)
+# Test plan — v0.9.1
 
-## Repository inventory (tooling and CI parity)
+This plan describes required coverage and how to reproduce it. Successful runs, exact test counts, compiler identity and runtime sizes are recorded in the final release's validation evidence for its frozen source commit.
 
-### Toolchain and scripts
+## Toolchain and source coverage
 
-- Test stack: **Truffle + Mocha** on Ganache in-memory provider (`network: test`, chainId `1337`).
-- Compiler profile: Solidity `0.8.23`, optimizer enabled (`runs=50`), `viaIR=false`, `evmVersion=london`.
-- Canonical scripts from `package.json`:
-  - `build`: `truffle compile`
-  - `lint`: `solhint "contracts/**/*.sol"`
-  - `size`: `node scripts/check-bytecode-size.js`
-  - `test`: `truffle compile --all && truffle test --network test && node test/AGIJobManager.test.js && node scripts/check-contract-sizes.js`
-  - `test:ui`: `node scripts/ui/run_ui_smoke_test.js`
+Use Node 22.23.2 and the committed lockfiles in the root, `hardhat/` and `ui/` workspaces. The contract regression runner uses Hardhat 3's local EDR chain, ethers and compatibility helpers for the existing JavaScript suites. The migration removes Truffle and Ganache dependencies while retaining the regression cases and assertions.
 
-### CI execution order mirrored locally
+The authoritative compiler settings are [hardhat/hardhat.config.js](../hardhat/hardhat.config.js) and [foundry.toml](../foundry.toml), with the compiler package pinned in the root lockfile. Both build paths must use the qualified profile. Never substitute compiler, optimizer or EVM settings from an earlier release to bypass a size failure.
 
-1. `npm install`
-2. `npm run lint`
-3. `npm run build`
-4. `npm run size`
-5. `npm run test`
-6. `npm run test:ui`
+The root commands are:
 
-### Current suite inventory highlights
+| Command | Required result |
+| --- | --- |
+| `npm run build` | Hardhat compilation and exported artifacts for the JavaScript regression runner |
+| `npm run lint` | Solidity lint passes |
+| `npm run size` | Production runtime bytecode remains within Ethereum's EIP-170 limit |
+| `npm test` | Existing regression suites and contract size assertions pass |
+| `npm run test:shard -- 0 4` through `3 4` | Every recursively discovered regression file belongs to one of the four required CI shards |
+| `npm run test:ui` | Contract ABI and browser transaction smoke checks pass |
 
-Existing suites already cover the requested mainnet-critical areas:
+Compile before invoking individual shards. Do not replace the discovered file list with a handpicked subset. Regression helpers and the standalone contract checks remain part of the runner's contract.
 
-- Lifecycle and settlement: `test/jobLifecycle.core.test.js`, `test/livenessTimeouts.test.js`, `test/escrowAccounting.test.js`, `test/completionSettlementInvariant.test.js`.
-- Permissioning and controls: `test/adminOps.test.js`, `test/pausing.accessControl.test.js`, `test/identityConfig.locking.test.js`.
-- Disputes and moderator flows: `test/disputeHardening.test.js`, `test/disputes.moderator.test.js`.
-- Invariants and economics: `test/invariants.solvency.test.js`, `test/escrowAccounting.invariants.test.js`, `test/validatorVoting.bonds.test.js`, `test/economicSafety.test.js`.
-- ENS integration and ENSJobPages: `test/ensHooks.integration.test.js`, `test/ensJobPagesHooks.test.js`, `test/ensJobPagesHelper.test.js`, `test/namespaceAlpha.test.js`.
-- Utilities: `test/utils.uri-transfer.test.js`, `test/invariants.libs.test.js`.
+## Required execution
 
-### Baseline results at HEAD
+From the repository root:
 
-- Full contract suite: **264 passing** (`npm run test`).
-- Runtime size gate: `AGIJobManager runtime bytecode size: 24574 bytes`.
+```bash
+npm ci
+npm --prefix hardhat ci
+npm --prefix ui ci
+npm audit --audit-level=low
+npm --prefix hardhat audit --audit-level=low
+npm --prefix ui audit --audit-level=low
+npm run lint
+npm test
+npm run size
+FOUNDRY_PROFILE=ci forge build --deny warnings
+FOUNDRY_PROFILE=ci forge test
+npm --prefix hardhat run test:preflight
+npm --prefix hardhat run test:deployment
+npm --prefix hardhat run test:mainnet-fork
+```
+
+Install the pinned Foundry/Slither tools and browser prerequisites as described in [TESTING.md](TESTING.md). Full dependency audits include development packages and fail at the low threshold. A network error or missing audit evidence must not be treated as a pass.
+
+The complete release also requires configured static analysis, UI unit/property/browser/accessibility/header suites, reproducible standalone builds, documentation checks and release evidence validation. [TESTING.md](TESTING.md) maps these commands to the five authoritative CI workflows.
 
 ## Deterministic execution model
 
-- Local-only execution on Truffle `test` network (in-memory Ganache).
-- No live RPC/ENS dependencies; ENS behaviors are validated with mocks.
-- Time-sensitive branches use deterministic `time.increase(...)` calls from OpenZeppelin test helpers.
+The JavaScript suites use local disposable accounts and mocked ENS contracts. Compatibility helpers expose controlled local time and JSON-RPC operations to the preserved suites. Foundry tests use `vm.warp` for exact deadline and lifecycle boundaries. No test requires production signing keys.
 
-## New suites in this update
+The separate actual-USDC suite reads a pinned historical Ethereum block into a local Hardhat fork. It verifies the expected issuer implementation and state before exercising settlement. It requires archive RPC access and fails when that evidence cannot be obtained; it does not send transactions to Ethereum mainnet or establish current issuer state.
 
-| Suite | Primary risks covered | Deterministic mechanism |
+## Coverage mapped to protocol risks
+
+| Area | Existing suites | Required behavior |
 | --- | --- | --- |
-| `test/jobLifecycle.core.test.js` | create/apply/completion/finalize/expire branch correctness, under-quorum and no-vote behavior | Fixed actors + fixed windows + explicit time jumps |
-| `test/validatorVoting.bonds.test.js` | double-vote prevention, dispute escalation, validator bond settlement behavior | Single known scenario with fixed voter set |
-| `test/disputes.moderator.test.js` | dispute bond sizing path, `NO_ACTION`, moderator-only resolution, stale dispute owner recovery | Controlled dispute timeline and explicit window advancement |
-| `test/escrowAccounting.invariants.test.js` | bounded multi-job invariants for `locked*` totals and `withdrawableUSDC` solvency equation | 6-iteration fixed pseudo-fuzz loop with deterministic pattern |
-| `test/pausing.accessControl.test.js` | `whenNotPaused` and settlement pause gating | Pause toggles in fixed order |
-| `test/agiTypes.safety.test.js` | AGIType ERC721/165 validation, broken-token isolation, disabled type behavior | Mock contracts with fixed responses |
-| `test/ensHooks.integration.test.js` | ENS hooks are best-effort and lock flow remains non-bricking | Local mock ENS registry/wrapper/resolver |
-| `test/identityConfig.locking.test.js` | identity updates blocked with active locks and permanently frozen after lock | single escrow lifecycle to terminal zero-lock state |
+| Job lifecycle | `test/jobLifecycle.core.test.js`, `test/livenessTimeouts.test.js` | Create/apply/completion/finalize/expire boundaries, no-vote paths and challenge windows |
+| Solvency and payouts | `test/escrowAccounting.invariants.test.js`, `test/validatorVoting.bonds.test.js`, `forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol` | Exact USDC flows, separate bonds, ordered validator/wallet/agent payments and reserve conservation |
+| Disputes | `test/disputeHardening.test.js`, `test/disputes.moderator.test.js` | Bond handling, moderator authorization, stale-dispute recovery and terminal accounting |
+| Owner controls | `test/pausing.accessControl.test.js`, `test/identityConfig.locking.test.js` | Pause semantics, protected identity changes and guarded authority |
+| Identity and ENS | `test/ensHooks.integration.test.js`, `test/ensJobPagesHelper.test.js`, `test/namespaceAlpha.test.js` | Namespace authorization, strict external returndata handling and isolated hook failures |
+| Adversarial dependencies | `test/agiTypes.safety.test.js`, `forge-test/unit/AGIJobManagerSecurityVerification.t.sol` | Reentrancy and malformed/reverting NFT, token and ENS behavior cannot corrupt core accounting |
+| Stateful lifecycle | `forge-test/invariant/` | Reserve identities hold across generated transitions; directed lifecycle drain reaches terminal states and clears reserves |
+| Deployment recovery | `hardhat/test/deployment-preflight.test.cjs`, `hardhat/test/deployment-readiness.test.cjs` | Invalid inputs fail closed, receipt and linked-code identity stay bound, and recovery preserves broadcast evidence |
 
-## Mapping to production risks
+Historical comparison contracts under `contracts/legacy/` deliberately retain original defects used by regression tests. Their line-specific lint acknowledgments document fixture behavior; they are not repairs or approval to deploy those contracts. Test-clock acknowledgments explain controlled timing, and new unacknowledged compiler or Forge warnings fail `--deny warnings`.
 
-1. **Escrow solvency / treasury safety**: bounded invariant loop asserts `balance >= lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`, and `withdrawableUSDC == balance - lockedTotal` after each terminal state.
-2. **Settlement liveness and fairness**: explicit checks for no-vote slow path, tie → dispute, and challenge-window gating.
-3. **Role concentration / operator trust model**: moderator-only and owner stale-dispute powers are verified and documented as intentional privileged controls.
-4. **Identity and namespace resiliency**: AGIType misbehavior and ENS failures are isolated from core settlement outcomes.
+## Release acceptance
 
-## Regression policy
-
-When changing settlement, bonds, pauses, AGIType checks, or ENS hooks:
-
-- Update the corresponding new suite(s) above.
-- Re-run `npm run build`, `npm run size`, `npm run lint`, `npm test`.
-- Confirm bytecode size guard remains below EIP-170 threshold.
+All required shards and workflows must succeed for the exact final application source. Preserve the inventory, review any compatibility-helper change against the assertions it supports, and resolve failures rather than weakening test expectations or skipping cases. Final release evidence must bind the source/tree, workflow and job results, dependency audits, bytecode sizes and artifact digests. A prior release's passing totals do not satisfy this gate.

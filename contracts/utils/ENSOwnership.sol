@@ -116,7 +116,9 @@ library ENSOwnership {
     function _staticcallAddress(address target, bytes memory payload) private view returns (bool ok, address result) {
         uint256 decoded;
         (ok, decoded) = _staticcallWord(target, payload);
-        if (!ok) return (false, address(0));
+        if (!ok || decoded > type(uint160).max) return (false, address(0));
+        // The preceding bound rejects malformed ABI address words instead of truncating them.
+        // forge-lint: disable-next-line(unsafe-typecast)
         result = address(uint160(decoded));
     }
 

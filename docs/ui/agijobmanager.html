@@ -318,7 +318,7 @@
             <span id="legacyAddress"></span>
           </p>
           <p class="muted">Active source: <span id="contractSource">—</span></p>
-          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.9.0 configuration file.</p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.9.1 configuration file.</p>
           <p class="muted">No contract is selected by default until you explicitly choose one.</p>
         </div>
       </div>
@@ -2194,11 +2194,11 @@
       const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
       if(Number(await token.decimals()) !== 6) throw new Error('USDC decimal verification failed; transactions disabled.');
       const pendingOwner = await state.readContract.pendingOwner();
-      if(!ethers.isAddress(pendingOwner)) throw new Error('A v0.9.0 manager with two-step ownership is required.');
+      if(!ethers.isAddress(pendingOwner)) throw new Error('A v0.9.1 manager with two-step ownership is required.');
       state.pendingOwner = pendingOwner;
       const wallets = await Promise.all([state.readContract.wallet30(), state.readContract.wallet10()]);
       const invalid = [ethers.ZeroAddress, state.contractAddress, tokenAddress].filter(Boolean).map(x=>x.toLowerCase());
-      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.9.0 settlement wallets.');
+      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.9.1 settlement wallets.');
       setText('settlementWallets', '30%: '+wallets[0]+' · 10%: '+wallets[1]);
       state.usdcTokenAddress = tokenAddress;
       state.usdcTokenDecimals = 6;

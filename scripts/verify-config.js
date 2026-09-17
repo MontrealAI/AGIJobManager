@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const Web3 = require("web3");
-const TruffleContract = require("@truffle/contract");
+const { loadManager, fetchAgiTypes, cliCallback } = require("./lib/operations");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -103,61 +102,6 @@ function resolveNetworkName(args) {
   return "development";
 }
 
-function resolveProvider(networkName) {
-  const truffleConfig = require(path.join(__dirname, "..", "truffle-config"));
-  const network = truffleConfig.networks?.[networkName];
-  if (!network) {
-    throw new Error(`Unknown Truffle network: ${networkName}`);
-  }
-  if (typeof network.provider === "function") {
-    return network.provider();
-  }
-  if (network.provider) {
-    return network.provider;
-  }
-  if (network.host && network.port) {
-    return new Web3.providers.HttpProvider(`http://${network.host}:${network.port}`);
-  }
-  throw new Error(`Unable to resolve provider for network: ${networkName}`);
-}
-
-async function loadContract(address, networkName) {
-  const provider = resolveProvider(networkName);
-  const web3 = new Web3(provider);
-
-  let Contract;
-  if (global.artifacts?.require) {
-    Contract = global.artifacts.require("AGIJobManager");
-    Contract.setProvider(provider);
-  } else {
-    const artifactPath = path.join(__dirname, "..", "build", "contracts", "AGIJobManager.json");
-    const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
-    Contract = TruffleContract(artifact);
-    Contract.setProvider(provider);
-  }
-
-  const instance = await Contract.at(address);
-  return { instance, web3 };
-}
-
-async function fetchAgiTypes(instance) {
-  const items = [];
-  let index = 0;
-  while (true) {
-    try {
-      const entry = await instance.agiTypes(index);
-      items.push({
-        nftAddress: entry.nftAddress,
-        payoutPercentage: entry.payoutPercentage.toString(),
-      });
-      index += 1;
-    } catch (error) {
-      break;
-    }
-  }
-  return items;
-}
-
 function normalizeAddress(address) {
   if (!address) return address;
   return address.toLowerCase();
@@ -173,6 +117,7 @@ function hasMethod(instance, name) {
 }
 
 module.exports = async function verifyConfig(callback) {
+  let provider;
   try {
     const args = parseArgs(process.argv);
     const config = loadConfig(args);
@@ -183,7 +128,9 @@ module.exports = async function verifyConfig(callback) {
     }
 
     const networkName = resolveNetworkName(args);
-    const { instance } = await loadContract(address, networkName);
+    const loaded = await loadManager(address, networkName);
+    provider = loaded.provider;
+    const { instance } = loaded;
 
     let failed = false;
 
@@ -294,5 +241,9 @@ module.exports = async function verifyConfig(callback) {
     callback();
   } catch (error) {
     callback(error);
+  } finally {
+    provider?.destroy();
   }
 };
+
+if (require.main === module) module.exports(cliCallback);

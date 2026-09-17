@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { createHash } = require('node:crypto');
 const ethers = require('ethers');
-const safety = require('../scripts/deployment-safety');
+const safety = require('../scripts/deployment-safety.cjs');
 
 const A = `0x${'11'.repeat(20)}`;
 const B = `0x${'22'.repeat(20)}`;
@@ -87,17 +87,18 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
   const buildInfo = { output: { contracts: { source: Object.fromEntries(NAMES.map(name => [name, { evm: { deployedBytecode: {} } }])) } } };
   const mockRequire = name => {
     if (name === 'fs') return mockedFs;
+    if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
     if (name === 'hardhat') return {
       ethers: { ...ethers, provider, Contract: function () { return token; }, getContractAt: async () => manager },
       network: { name: 'mainnet' },
       artifacts: { readArtifact: async fqn => ({ sourceName: 'source', contractName: fqn.split(':')[1], deployedBytecode: CODE }) },
     };
-    if (name === './deploy') return { FQNS, LIBRARIES, qualifiedBuild: async () => ({ buildInfo }) };
-    if (name === './deployment-safety') return safety;
+    if (name === './deploy.cjs') return { FQNS, LIBRARIES, qualifiedBuild: async () => ({ buildInfo }) };
+    if (name === './deployment-safety.cjs') return safety;
     return require(name);
   };
   const module = { exports: {} };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/check-readiness.js'), 'utf8'), {
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/check-readiness.cjs'), 'utf8'), {
     module, exports: module.exports, require: mockRequire,
     process: { env: { DEPLOYMENT_RECEIPT: receiptPath, ...(override === undefined ? {} : { READINESS_CONFIG: overridePath }) }, cwd: () => '/tmp/agi-readiness' },
     console: { log() {}, error() {} },

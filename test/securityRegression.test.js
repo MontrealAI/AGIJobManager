@@ -20,7 +20,7 @@ const {
   computeValidatorBond,
   computeAgentBond,
 } = require("./helpers/bonds");
-const { time } = require("@openzeppelin/test-helpers");
+const { time } = require("../scripts/test-helpers.cjs");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];

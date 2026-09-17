@@ -97,7 +97,7 @@ function main() {
     if (missingErrors.length) {
       lines.push(`- Missing errors: ${missingErrors.join(", ")}`);
     }
-    lines.push("Rebuild artifacts with `truffle compile` and update UI ABI if needed.");
+    lines.push("Rebuild artifacts with `npm run build` and update UI ABI if needed.");
     throw new Error(lines.join("\n"));
   }
 

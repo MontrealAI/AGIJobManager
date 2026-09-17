@@ -1,36 +1,40 @@
 {
   "name": "agijobmanager-hardhat",
   "private": true,
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Official Hardhat deployment + verification workflow for AGIJobManager",
   "scripts": {
-    "clean": "hardhat clean",
-    "compile": "hardhat compile",
-    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
-    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
-    "deploy:ens-job-pages:mainnet": "hardhat run scripts/deploy-ens-job-pages.js --network mainnet",
-    "deploy:ens-job-pages:sepolia": "hardhat run scripts/deploy-ens-job-pages.js --network sepolia",
-    "test:preflight": "node --test test/deployment-preflight.test.cjs test/deployment-readiness.test.cjs",
-    "test:deployment": "hardhat test test/mainnet-deployment.test.js",
-    "test:mainnet-fork": "hardhat test --config mainnet-fork.config.js test/mainnet-fork.test.js",
-    "check:readiness": "hardhat run scripts/check-readiness.js --network mainnet"
+    "clean": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs clean",
+    "compile": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs compile",
+    "deploy:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy.js --network sepolia",
+    "deploy:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy.js --network mainnet",
+    "deploy:ens-job-pages:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-ens-job-pages.js --network mainnet",
+    "deploy:ens-job-pages:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/deploy-ens-job-pages.js --network sepolia",
+    "test:preflight": "node --test test/*.test.cjs",
+    "test:deployment": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/mainnet-deployment.test.js",
+    "test:mainnet-fork": "node ../node_modules/hardhat/dist/src/cli.js test --config ../hardhat.mainnet-fork.config.mjs test/mainnet-fork.test.js",
+    "check:readiness": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network mainnet",
+    "postinstall": "node ../scripts/security/patch-openzeppelin-compiler.cjs",
+    "reverify:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network mainnet",
+    "reverify:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network sepolia",
+    "check:readiness:sepolia": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network sepolia"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-ethers": "^3.1.0",
-    "@nomicfoundation/hardhat-verify": "^2.1.1",
+    "@nomicfoundation/hardhat-ethers": "4.1.0",
+    "@nomicfoundation/hardhat-mocha": "3.1.0",
     "@openzeppelin/contracts": "4.9.6",
     "dotenv": "^16.6.1",
     "ethers": "6.17.0",
-    "hardhat": "^2.26.3"
+    "hardhat": "3.17.0",
+    "mocha": "11.8.0"
   },
   "engines": {
     "node": ">=22.23.2"
   },
+  "type": "module",
   "overrides": {
-    "undici": "6.28.1",
-    "adm-zip": "0.6.1",
-    "uuid": "11.1.1",
+    "diff": "8.0.3",
     "serialize-javascript": "7.0.5",
-    "tmp": "0.2.7"
+    "glob": "13.0.0"
   }
 }

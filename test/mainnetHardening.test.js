@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
-const { time } = require("@openzeppelin/test-helpers");
+const { time, expectRevert } = require("../scripts/test-helpers.cjs");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
 const MockERC20 = artifacts.require("MockERC20");
@@ -485,12 +485,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    try {
-      await deployActive(AGIJobManager, ...zeroTokenArgs, { from: owner });
-      assert.fail("expected constructor revert");
-    } catch (error) {
-      assert.include(String(error.message), "could not decode");
-    }
+    await expectRevert.unspecified(deployActive(AGIJobManager, ...zeroTokenArgs, { from: owner }));
 
     const nonZeroRootNoEns = buildInitConfig(
       token.address,
@@ -504,12 +499,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    try {
-      await deployActive(AGIJobManager, ...nonZeroRootNoEns, { from: owner });
-      assert.fail("expected constructor revert");
-    } catch (error) {
-      assert.include(String(error.message), "could not decode");
-    }
+    await expectRevert.unspecified(deployActive(AGIJobManager, ...nonZeroRootNoEns, { from: owner }));
 
 
     const wrapperOnly = await MockNameWrapper.new({ from: owner });
@@ -525,12 +515,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32,
       ZERO32
     );
-    try {
-      await deployActive(AGIJobManager, ...rootWithNameWrapperOnly, { from: owner });
-      assert.fail("expected constructor revert");
-    } catch (error) {
-      assert.include(String(error.message), "could not decode");
-    }
+    await expectRevert.unspecified(deployActive(AGIJobManager, ...rootWithNameWrapperOnly, { from: owner }));
   });
 
   it("rejects EOA addresses in token/ENS/namewrapper setters", async () => {

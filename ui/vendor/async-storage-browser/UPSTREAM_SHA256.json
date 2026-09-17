@@ -1,0 +1,11 @@
+{
+  "LICENSE": "212dbf14b113759356207347826f21ac3c81151943fdb89ce25da5dc6214831c",
+  "lib/commonjs/AsyncStorage.js": "b3799466894cbcdb525fe4dfe9faec08594388fd7e00e4ccfa340400422c6b15",
+  "lib/commonjs/AsyncStorage.js.map": "ca4d59ca79b2ae36c6340afd839731163e7287b1239e523a767d55b633465137",
+  "lib/typescript/AsyncStorage.d.ts": "bc7d5b291eea0230f601d93879ee242ee4c284d55879e815509ca617e0d3135c",
+  "lib/typescript/AsyncStorage.d.ts.map": "9e2d56e9b370426c7c62358c88cef03a0f0c513a026665200c23bffc5f0d1688",
+  "lib/typescript/types.d.ts": "a7cb079e30b36dd328c94d0d001b892c644e1362f20c71a2558bf7b8be69896e",
+  "lib/typescript/types.d.ts.map": "5a0fd9669d3976081595fb309f4f8d231c25274e516d002598244029b366d057",
+  "src/AsyncStorage.ts": "1364b89e3bbe5a8bcc3656c525bffd445c9142a66b481fe0209cd7674cb3c564",
+  "src/types.ts": "303870eeb2990814158005082907d52e5d6f268daf7434d018872bf4ddae0859"
+}

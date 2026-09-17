@@ -1,69 +1,46 @@
 # AGIJobManager UI smoke test (local)
 
-This checklist validates the static GitHub Pages UI against a local Ganache chain. It is intentionally short so regressions are obvious and repeatable.
+The automated smoke test exercises the static UI against a disposable Hardhat 3 chain. The runner starts the chain, deploys and funds its local fixture, serves the UI, injects the test wallet provider, and shuts everything down afterward. Truffle, Ganache and manually supplied signing keys are not used.
 
-## Prerequisites
+## Install and build
+
+From the repository root:
 
 ```bash
-npm install
+npm ci
+npm --prefix hardhat ci
 npm run build
 ```
 
-## Start Ganache (local)
+Install the Playwright browser separately before the first browser run:
 
 ```bash
-npx ganache --server.host 127.0.0.1 --server.port 8545 \
-  --wallet.mnemonic "test test test test test test test test test test test junk" \
-  --chain.chainId 1337 --chain.networkId 1337 --logging.quiet
+npx playwright install chromium
 ```
 
-## Deploy contracts locally
+On a Linux CI host that also needs browser system libraries, use `npx playwright install --with-deps chromium` during environment setup.
+
+## Run the smoke test
 
 ```bash
-npx truffle migrate --network development --reset
+npm run test:ui
 ```
 
-> The development migration deploys MockERC20/ENS/NameWrapper/Resolver and mints tokens to the first Ganache account.
+The command first runs the local indexer checks, then the Playwright scenario in `ui-tests/ui-smoke.spec.js`. It creates its own manager address and RPC endpoint; old `build/contracts` network addresses and retired migration commands are not inputs.
 
-## Serve the UI locally
+## What the browser scenario checks
 
-From the repo root:
+1. The contract ABI loads and the injected local wallet connects.
+2. Refreshing the snapshot returns owner and USDC-token data.
+3. The employer approves 10 mock USDC and receives a confirmed transaction result.
+4. The employer creates a job with a 1 USDC payout, a 3,600-second duration and an existing job specification URI.
+5. The job appears in the UI list, with no unexpected browser errors or dialogs.
 
-```bash
-python3 -m http.server 8000 --directory docs
-```
-
-Open:
-
-```
-http://localhost:8000/ui/agijobmanager.html?contract=0xYourDeployedAddress
-```
-
-To get the deployed address:
-
-```bash
-node -e "const a=require('./build/contracts/AGIJobManager.json'); console.log(a.networks['1337'].address)"
-```
-
-## Manual checklist
-
-### Connection + refresh
-1. Click **Connect Wallet** → status pill should read `Connected (...)` and account should populate.
-2. Click **Refresh snapshot** → contract metadata (owner, token, limits) should populate.
-3. Confirm Activity Log includes `External ABI loaded.`
-
-### Employer actions
-1. In **Approve USDC token**, enter `10` and click **Approve token** → Activity Log should show `Employer approve confirmed`.
-2. In **Create job**, set **Metadata source** to **Use existing job spec URI** and enter:
-   - Job spec URI: `ipfs://QmTestJobHash`
-   - Payout: `1`
-   - Duration: `3600`
-   - Details: `UI smoke test`
-   Click **Create job** → Activity Log should show `Create job confirmed`.
-3. Click **Load jobs** → table should show at least 1 row.
+This smoke test covers the local static UI transaction flow. The standalone USDC console and the Next.js application have additional checks described in [Testing](../TESTING.md); this test alone is not a mainnet readiness review.
 
 ## Common failures
-- **Wrong contract address**: Snapshot fields stay `—` and writes fail. Recheck the `?contract=` param.
-- **Wrong chainId**: The status pill shows unsupported chain; switch to Ganache (`1337`).
-- **No token balance**: Approve/create fails; ensure migrations ran and MockERC20 minted to account 0.
-- **ABI mismatch**: Activity Log shows `Fallback ABI used` or calls revert; run `npm run ui:abi` after contract changes.
+
+- **Browser executable missing:** complete the separate Playwright installation step above.
+- **Port already in use:** stop the process using port 4173 or choose an available port with `AGIJOBMANAGER_UI_PORT=4174 npm run test:ui`.
+- **Missing or stale artifacts:** run `npm run build`, then `npm run ui:abi:check`. Regenerate the UI ABI with `npm run ui:abi` when a reviewed contract change requires it.
+- **Fixture or transaction failure:** inspect the runner output and the browser activity-log assertion. The fixture is recreated on each run; do not substitute a live manager or funded wallet.

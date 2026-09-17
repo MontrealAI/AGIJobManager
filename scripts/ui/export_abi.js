@@ -9,7 +9,7 @@ const outputPath = path.join(outputDir, "AGIJobManager.json");
 function readArtifact() {
   if (!fs.existsSync(artifactPath)) {
     throw new Error(
-      `Missing build artifact at ${artifactPath}. Run "truffle compile" first.`,
+      `Missing build artifact at ${artifactPath}. Run "npm run build" first.`,
     );
   }
   const raw = fs.readFileSync(artifactPath, "utf8");

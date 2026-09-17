@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 contract ForceSendETH {
-    constructor() payable {}
+    constructor() payable {} /* Fixture must accept constructor ETH without other effects. */ // solhint-disable-line no-empty-blocks
 
     function boom(address payable target) external {
         bytes memory initCode = abi.encodePacked(hex"73", bytes20(address(target)), hex"ff");

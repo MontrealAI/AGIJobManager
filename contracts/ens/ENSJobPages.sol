@@ -275,14 +275,14 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         bytes32 labelHash = keccak256(bytes(label));
         node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
 
-        bool adopted;
-        bool created;
+        bool adopted = false;
+        bool created = false;
 
         if (_nodeExists(node)) {
             if (!_nodeManagedBySelf(node)) {
                 if (!_isWrappedRoot()) revert ENSNotAuthorized();
                 _requireWrapperAuthorization();
-                INameWrapperSubnameOwner(address(nameWrapper)).setSubnodeOwner(
+                bytes32 returnedNode = INameWrapperSubnameOwner(address(nameWrapper)).setSubnodeOwner(
                     jobsRootNode,
                     label,
                     address(this),
@@ -290,7 +290,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
                     type(uint64).max
                 );
 
-                node = keccak256(abi.encodePacked(jobsRootNode, keccak256(bytes(label))));
+                if (returnedNode != node) revert InvalidParameters();
                 if (!_nodeManagedBySelf(node)) revert ENSNotAuthorized();
                 adopted = true;
             }
@@ -360,7 +360,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
             return;
         }
 
-        bool success;
+        bool success = false;
         IAGIJobManagerView jobManagerView = IAGIJobManagerView(msg.sender);
 
         if (hook == HOOK_CREATE) {
@@ -534,22 +534,22 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
     function _createSubname(string memory label) internal returns (bytes32 node) {
         bytes32 labelHash = keccak256(bytes(label));
+        node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
 
         if (_isWrappedRoot()) {
             _requireWrapperAuthorization();
-            INameWrapperSubnameOwner(address(nameWrapper)).setSubnodeOwner(
+            bytes32 returnedNode = INameWrapperSubnameOwner(address(nameWrapper)).setSubnodeOwner(
                 jobsRootNode,
                 label,
                 address(this),
                 0,
                 type(uint64).max
             );
+            if (returnedNode != node) revert InvalidParameters();
         } else {
             if (ens.owner(jobsRootNode) != address(this)) revert ENSNotAuthorized();
             ens.setSubnodeRecord(jobsRootNode, labelHash, address(this), address(0), 0);
         }
-
-        node = keccak256(abi.encodePacked(jobsRootNode, labelHash));
     }
 
     function _setResolverBestEffort(uint8 hook, uint256 jobId, bytes32 node, address resolver) internal {
@@ -737,15 +737,15 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         bytes memory raw = bytes(prefix);
         uint256 len = raw.length;
         if (len == 0 || len > MAX_JOB_LABEL_PREFIX_LENGTH) return false;
-        if (raw[0] == bytes1("-")) return false;
+        if (raw[0] == 0x2d) return false;
         // Prefix is followed immediately by decimal(jobId), so the suffix boundary must be non-numeric.
-        if (raw[len - 1] >= bytes1("0") && raw[len - 1] <= bytes1("9")) return false;
+        if (raw[len - 1] >= 0x30 && raw[len - 1] <= 0x39) return false;
 
         for (uint256 i = 0; i < len; i++) {
             bytes1 ch = raw[i];
-            bool isDigit = ch >= bytes1("0") && ch <= bytes1("9");
-            bool isLower = ch >= bytes1("a") && ch <= bytes1("z");
-            bool isHyphen = ch == bytes1("-");
+            bool isDigit = ch >= 0x30 && ch <= 0x39;
+            bool isLower = ch >= 0x61 && ch <= 0x7a;
+            bool isHyphen = ch == 0x2d;
             if (!isDigit && !isLower && !isHyphen) return false;
         }
 
@@ -753,7 +753,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     }
 
     function _buildJobLabel(string memory prefix, uint256 jobId) internal pure returns (string memory) {
-        string memory label = string(abi.encodePacked(prefix, jobId.toString()));
+        string memory label = string.concat(prefix, jobId.toString());
         if (bytes(label).length > MAX_ENS_LABEL_LENGTH) revert InvalidParameters();
         return label;
     }
@@ -762,7 +762,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         bytes memory raw = bytes(label);
         uint256 len = raw.length;
         if (len == 0 || len > MAX_ENS_LABEL_LENGTH) return false;
-        if (raw[0] == bytes1("-")) return false;
+        if (raw[0] == 0x2d) return false;
 
         bytes memory idRaw = bytes(jobId.toString());
         uint256 idLen = idRaw.length;
@@ -770,9 +770,9 @@ contract ENSJobPages is Ownable, ERC1155Holder {
 
         for (uint256 i = 0; i < len; i++) {
             bytes1 ch = raw[i];
-            bool isDigit = ch >= bytes1("0") && ch <= bytes1("9");
-            bool isLower = ch >= bytes1("a") && ch <= bytes1("z");
-            bool isHyphen = ch == bytes1("-");
+            bool isDigit = ch >= 0x30 && ch <= 0x39;
+            bool isLower = ch >= 0x61 && ch <= 0x7a;
+            bool isHyphen = ch == 0x2d;
             if (!isDigit && !isLower && !isHyphen) return false;
         }
 
@@ -782,7 +782,7 @@ contract ENSJobPages is Ownable, ERC1155Holder {
         }
         if (suffixStart > 0) {
             bytes1 prev = raw[suffixStart - 1];
-            if (prev >= bytes1("0") && prev <= bytes1("9")) return false;
+            if (prev >= 0x30 && prev <= 0x39) return false;
         }
 
         bytes memory prefixRaw = new bytes(suffixStart);
@@ -846,7 +846,9 @@ contract ENSJobPages is Ownable, ERC1155Holder {
     function _staticcallAddress(address target, bytes memory payload) internal view returns (bool ok, address result) {
         uint256 decoded;
         (ok, decoded) = _staticcallWord(target, payload);
-        if (!ok) return (false, address(0));
+        if (!ok || decoded > type(uint160).max) return (false, address(0));
+        // The preceding bound rejects malformed ABI address words instead of truncating them.
+        // forge-lint: disable-next-line(unsafe-typecast)
         result = address(uint160(decoded));
     }
 

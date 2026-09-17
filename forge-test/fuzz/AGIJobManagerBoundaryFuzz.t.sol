@@ -103,8 +103,8 @@ contract AGIJobManagerBoundaryFuzz is Test {
         vm.prank(agent);
         manager.requestJobCompletion(jobId, "ipfs://done");
 
-        for (uint256 i = 0; i < 51; i++) {
-            address validator = address(uint160(0x7000 + i));
+        for (uint160 i = 0; i < 51; i++) {
+            address validator = address(0x7000 + i);
             manager.addAdditionalValidator(validator);
             token.mint(validator, 1000 * 1e6);
             vm.prank(validator);

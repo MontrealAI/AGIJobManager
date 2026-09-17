@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const MAX_RUNTIME_BYTES = 24575;
+const MAX_RUNTIME_BYTES = 24576;
 const artifactsDir = path.join(__dirname, "..", "build", "contracts");
 const defaultContracts = ["AGIJobManager"];
 
@@ -37,7 +37,7 @@ const targets = process.env.BYTECODE_CONTRACTS
   : defaultContracts;
 
 if (!fs.existsSync(artifactsDir)) {
-  console.error(`Missing Truffle artifacts directory: ${artifactsDir}`);
+  console.error(`Missing exported Hardhat artifacts directory: ${artifactsDir}`);
   process.exit(1);
 }
 

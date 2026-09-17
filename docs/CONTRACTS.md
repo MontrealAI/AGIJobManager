@@ -1,4 +1,4 @@
-# Contracts and Permissions — v0.9.0
+# Contracts and Permissions — v0.9.1
 
 ## Contract map
 

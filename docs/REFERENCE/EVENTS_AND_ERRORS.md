@@ -1,6 +1,6 @@
 # Events and Errors Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `20a64e4f9928`.
+- Generated at (deterministic source fingerprint): `6787f3604dff`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Events catalog
@@ -26,9 +26,11 @@
 | `JobCreated` | `uint256 indexed jobId, string jobSpecURI, uint256 indexed payout, uint256 indexed duration, string details` | New escrow obligation opened | Track escrow growth and job throughput |
 | `JobDisapproved` | `uint256 indexed jobId, address indexed validator` | Validator disapproval vote | Alert when disapproval velocity accelerates |
 | `JobDisputed` | `uint256 indexed jobId, address indexed disputant` | Dispute lane entered | Page moderator operations queue |
+| `JobDurationLimitUpdated` | `uint256 indexed oldLimit, uint256 indexed newLimit` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `JobExpired` | `uint256 indexed jobId, address indexed employer, address agent, uint256 indexed payout` | Job missed deadline and expired | Track employer protection triggers |
 | `JobPayoutDistributed` | `uint256 indexed jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `JobValidated` | `uint256 indexed jobId, address indexed validator` | Validator approval vote | Track validator participation and threshold trajectory |
+| `MaxJobPayoutUpdated` | `uint256 indexed oldPayout, uint256 indexed newPayout` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `MerkleRootsUpdated` | `bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `NameWrapperUpdated` | `address newNameWrapper` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `NFTIssued` | `uint256 indexed tokenId, address indexed employer, string tokenURI` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |

@@ -1,9 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const MAX_RUNTIME_BYTES = 24575;
+const MAX_RUNTIME_BYTES = 24576;
 const artifactsDir = path.join(__dirname, "..", "build", "contracts");
-const IGNORED_CONTRACTS = new Set(["ReputationHarness"]);
 
 function deployedSizeBytes(artifact) {
   const deployedBytecode =
@@ -23,7 +22,7 @@ function deployedSizeBytes(artifact) {
 }
 
 if (!fs.existsSync(artifactsDir)) {
-  console.error(`Missing Truffle artifacts directory: ${artifactsDir}`);
+  console.error(`Missing exported Hardhat artifacts directory: ${artifactsDir}`);
   process.exit(1);
 }
 
@@ -35,7 +34,7 @@ for (const file of artifacts) {
   const name = artifact.contractName || path.basename(file, ".json");
   const sizeBytes = deployedSizeBytes(artifact);
   console.log(`${name} deployedBytecode size: ${sizeBytes} bytes`);
-  if (sizeBytes > MAX_RUNTIME_BYTES && !IGNORED_CONTRACTS.has(name)) {
+  if (sizeBytes > MAX_RUNTIME_BYTES) {
     oversized.push({ name, sizeBytes });
   }
 }

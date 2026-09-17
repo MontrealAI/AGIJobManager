@@ -1,48 +1,30 @@
-require('dotenv').config();
-require('@nomicfoundation/hardhat-ethers');
-require('@nomicfoundation/hardhat-verify');
+import 'dotenv/config';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import hardhatEthers from '@nomicfoundation/hardhat-ethers';
+import hardhatMocha from '@nomicfoundation/hardhat-mocha';
 
-const path = require('path');
-const { subtask } = require('hardhat/config');
-const { TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD } = require('hardhat/builtin-tasks/task-names');
-subtask(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD).setAction(async ({ solcVersion }, _hre, runSuper) => {
-  if (solcVersion !== '0.8.23') return runSuper();
-  const compilerPath = require.resolve('solc/soljson.js', { paths: [path.resolve(__dirname, '..')] });
-  return { compilerPath, isSolcJs: true, version: solcVersion, longVersion: '0.8.23+commit.f704f362' };
-});
-
-const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
-
-function networkConfig(rpcUrl, chainId) {
-  if (!rpcUrl) return undefined;
-  return { url: rpcUrl, chainId, accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [] };
+const require = createRequire(import.meta.url);
+const directory = path.dirname(fileURLToPath(import.meta.url));
+const compilerPath = require.resolve('solc/soljson.js', { paths: [path.resolve(directory, '..')] });
+const compiler = { version: '0.8.37', path: compilerPath, preferWasm: true,
+  settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
+    metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
+const networks = {
+  hardhat: { type: 'edr-simulated', chainType: 'l1', chainId: 31337, hardfork: 'osaka',
+    allowUnlimitedContractSize: false, allowBlocksWithSameTimestamp: true, blockGasLimit: 100_000_000,
+    accounts: { mnemonic: 'test test test test test test test test test test test junk', count: 10 } },
+};
+for (const [name, key, chainId] of [['mainnet', 'MAINNET_RPC_URL', 1], ['sepolia', 'SEPOLIA_RPC_URL', 11155111]]) {
+  if (process.env[key]) networks[name] = { type: 'http', chainType: 'l1', url: process.env[key], chainId,
+    accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [] };
 }
-
-const networks = {};
-const mainnet = networkConfig(MAINNET_RPC_URL, 1);
-const sepolia = networkConfig(SEPOLIA_RPC_URL, 11155111);
-if (mainnet) networks.mainnet = mainnet;
-if (sepolia) networks.sepolia = sepolia;
-
-module.exports = {
-  solidity: {
-    version: '0.8.23',
-    settings: {
-      optimizer: { enabled: true, runs: 40 },
-      evmVersion: 'shanghai',
-      viaIR: false,
-      metadata: { bytecodeHash: 'none' },
-      debug: { revertStrings: 'strip' },
-    },
-  },
-  paths: {
-    root: path.resolve(__dirname, '..'),
-    sources: 'contracts',
-    artifacts: 'hardhat/artifacts',
-    cache: 'hardhat/cache',
-  },
+export default {
+  plugins: [hardhatEthers, hardhatMocha],
+  solidity: { profiles: { default: compiler, production: compiler } },
+  paths: { sources: 'contracts', artifacts: 'hardhat/artifacts', cache: 'hardhat/cache',
+    tests: { mocha: 'hardhat/test' } },
   networks,
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY || '',
-  },
+  test: { mocha: { timeout: 300000 } },
 };

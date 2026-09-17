@@ -1,6 +1,6 @@
 const { deployActive } = require('./helpers/deploy');
 const assert = require('assert');
-const { expectRevert } = require('@openzeppelin/test-helpers');
+const { expectRevert } = require('../scripts/test-helpers.cjs');
 const { parseUSDC, formatUSDC, requireCanonicalUSDC, USDC_ADDRESSES } = require('../scripts/lib/usdc');
 const { buildInitConfig } = require('./helpers/deploy');
 const Manager = artifacts.require('AGIJobManager');

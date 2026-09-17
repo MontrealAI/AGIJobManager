@@ -1,4 +1,4 @@
-const assert = require("assert");
+const { loadManager, cliCallback } = require("../lib/operations");
 
 const CHECK = {
   PASS: "PASS",
@@ -96,6 +96,8 @@ function parseArgs(argv) {
     if (arg === "--address" || arg === "-a") {
       args.address = argv[i + 1];
       i += 1;
+    } else if (arg === "--network") {
+      args.network = argv[++i];
     } else if (arg === "--from-block") {
       args.fromBlock = Number(argv[i + 1]);
       i += 1;
@@ -105,13 +107,10 @@ function parseArgs(argv) {
 }
 
 async function loadMaxAgentPayoutPercentage(contract, fromBlock) {
-  const events = await contract.getPastEvents("AGITypeUpdated", {
-    fromBlock,
-    toBlock: "latest",
-  });
+  const events = await contract.queryFilter("AGITypeUpdated", fromBlock, "latest");
   const payoutByNft = new Map();
   for (const event of events) {
-    payoutByNft.set(event.returnValues.nftAddress.toLowerCase(), Number(event.returnValues.payoutPercentage));
+    payoutByNft.set(event.args.nftAddress.toLowerCase(), Number(event.args.payoutPercentage));
   }
   let maxPayout = 0;
   for (const value of payoutByNft.values()) {
@@ -123,15 +122,16 @@ async function loadMaxAgentPayoutPercentage(contract, fromBlock) {
 }
 
 module.exports = async function validateParams(callback) {
+  let provider;
   try {
-    assert(global.artifacts, "This script must be run via truffle exec");
-    const { address, fromBlock } = parseArgs(process.argv);
+    const { address, fromBlock, network = "development" } = parseArgs(process.argv);
     if (!address) {
       throw new Error("Missing --address <AGIJobManagerAddress>");
     }
 
-    const AGIJobManager = artifacts.require("AGIJobManager");
-    const instance = await AGIJobManager.at(address);
+    const loaded = await loadManager(address, network);
+    provider = loaded.provider;
+    const { instance } = loaded;
 
     const [
       owner,
@@ -191,8 +191,12 @@ module.exports = async function validateParams(callback) {
     callback();
   } catch (error) {
     callback(error);
+  } finally {
+    provider?.destroy();
   }
 };
+
+if (require.main === module) module.exports(cliCallback);
 
 module.exports.evaluateInvariants = evaluateInvariants;
 module.exports.formatResult = formatResult;

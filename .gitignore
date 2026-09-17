@@ -148,5 +148,6 @@ migrations/config/agijobmanager.config.js
 
 # Foundry local compilation and invariant replay cache
 /cache/
+/test-results/
 __pycache__/
 *.py[cod]

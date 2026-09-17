@@ -1,4 +1,4 @@
-# AGIJobManager Deep Reference — v0.9.0
+# AGIJobManager Deep Reference — v0.9.1
 
 Primary source: [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol). Native USDC funds every escrow, reward and bond; ETH pays transaction gas. The deployed token and fixed 30%/10% gross-cost shares are immutable. Recipient wallets can rotate only with intake paused and all reserves zero; see [owner controls](OWNER_CONTROLS.md).
 
