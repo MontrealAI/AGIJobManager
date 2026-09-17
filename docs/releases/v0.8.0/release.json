@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.8.0",
+  "name": "v0.8.0 \u2014 USDC settlement and mainnet qualification",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "ebf6d1c421d0a72a92514eddc4b597ec094db869",
+  "sourceTree": "3fd1998d305ebe49a8113f59b11f3d8285376820",
+  "previousTag": "v0.7.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Native USDC jobs: validators first, fixed 30% and 10% gross-cost wallets, then agent remainder. Atomic paused launch, bounded owner configuration, hardened deployment and transaction review, actual-USDC local mainnet fork, adversarial/fuzz/invariant qualification and reviewed static analysis. Fresh deployment required; no live transactions or independent security audit.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "contracts/legacy",
+    "migrations/snapshots",
+    "lib"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "9c6cbfb9d293eaf368492c0d6b058718e4a4ec11f64732cde9eedb720b5ef886",
+    "PREVIOUS_RELEASE.json": "58c9a929e4678df9585294598e40fc3800e4c9978fcbaf8580a5a53e04fa4443",
+    "SOURCE_CI.json": "edd213e3123f02f9861e4b602eb77e657cfeea12c8d7499993c9e3c824919236"
+  },
+  "requiredSourceRuns": {
+    "ui": {
+      "id": 35228167582,
+      "workflow": "ui.yml"
+    },
+    "security-verification": {
+      "id": 35228167663,
+      "workflow": "security-verification.yml"
+    },
+    "docs": {
+      "id": 35228167661,
+      "workflow": "docs.yml"
+    },
+    "ci": {
+      "id": 35228167650,
+      "workflow": "ci.yml"
+    },
+    "mainnet-fork": {
+      "id": 35228167762,
+      "workflow": "mainnet-fork.yml"
+    }
+  }
+}
