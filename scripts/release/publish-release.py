@@ -18,7 +18,13 @@ args = parser.parse_args()
 
 
 def gh(*command, data=None):
-    return subprocess.run(['gh', *command], cwd=root, input=data, capture_output=True, text=True, check=True).stdout
+    try:
+        return subprocess.run(['gh', *command], cwd=root, input=data, capture_output=True, text=True, check=True).stdout
+    except subprocess.CalledProcessError as error:
+        # Keep the HTTP failure visible without exposing redirected signed URLs.
+        detail = re.sub(r'https?://\S+', '[URL]', error.stderr or '')
+        print(f'GitHub request failed (exit {error.returncode}): {detail.strip()[:800]}', flush=True)
+        raise
 
 
 def api(endpoint, method='GET', body=None):
