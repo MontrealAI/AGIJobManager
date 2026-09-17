@@ -115,6 +115,11 @@ test('readiness reports observed identity configuration, receipt-only verificati
   assert.equal(report.blockHash, BLOCK.hash);
   assert.deepEqual(report.identityConfig.observed, report.identityConfig.expected);
   assert.equal(report.identityConfig.reviewedOverride, null);
+  assert.equal(report.membership.roots.length, 4);
+  assert.equal(report.membership.roots[0].role, 'validators');
+  assert.equal(report.membership.roots[0].name, null);
+  assert.deepEqual(report.membership.merkleExceptions.map(value => value.enabled), [true, true]);
+  assert.match(report.membership.scope, /additional allowlist entries are not verified/);
   assert.match(report.explorerVerification.source, /receipt; no fresh explorer query/);
   assert.match(report.configurationScope, /Private baseIpfsUrl.*not validated/);
   assert.equal(run.writes[0].options.flag, 'wx');

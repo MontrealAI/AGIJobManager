@@ -8,12 +8,13 @@ const realEthers = require('ethers');
 const temporaryFolders = new Set();
 test.after(() => { for (const folder of temporaryFolders) fs.rmSync(folder, { recursive: true, force: true }); });
 const hash = value => realEthers.zeroPadValue(realEthers.toBeHex(value), 32);
-const { parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireInitcodeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('../scripts/deployment-safety.cjs');
+const { describeMembershipConfig, parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireInitcodeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('../scripts/deployment-safety.cjs');
 
 const TOKEN = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
 const A = `0x${'11'.repeat(20)}`;
 const B = `0x${'22'.repeat(20)}`;
 const C = `0x${'33'.repeat(20)}`;
+const D = `0x${'44'.repeat(20)}`;
 const ZERO = `0x${'00'.repeat(20)}`;
 const state = () => ({ owner: A, finalOwner: A, pendingOwner: ZERO, paused: true, settlementPaused: false,
   wallets: [A, B], expectedWallets: [A, B], reserves: [0n, 0n, 0n, 0n], balance: 0n });
@@ -109,9 +110,10 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
   fs.mkdirSync(scriptsDir);
   const configPath = path.join(folder, 'config.cjs');
   fs.writeFileSync(configPath, `module.exports = ${JSON.stringify({ mainnet: { usdcTokenAddress: TOKEN, finalOwner,
-    baseIpfsUrl: 'ipfs://', ensConfig: [B, ZERO], rootNodes: Array(4).fill(`0x${'00'.repeat(32)}`),
+    baseIpfsUrl: 'ipfs://', ensConfig: [D, ZERO], rootNodes: Array(4).fill(`0x${'00'.repeat(32)}`),
     merkleRoots: Array(2).fill(`0x${'00'.repeat(32)}`), settlementWallets: [A, B] } })}`);
   let broadcasts = 0;
+  const logs = [];
   let managerRuntimeReadFailed = false;
   const input = { settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
@@ -159,9 +161,9 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
   const context = { module, exports: module.exports, require: mockRequire, __dirname: scriptsDir,
     process: { env: { DEPLOY_CONFIG: configPath, VERIFY_DELAY_MS: '0', DRY_RUN: dryRunValue ?? (dryRun ? '1' : ''),
       DEPLOY_CONFIRM_MAINNET: dryRun ? '' : 'I_UNDERSTAND_MAINNET_DEPLOYMENT', DEPLOYER_ADDRESS: deployerAddress }, cwd: () => folder },
-    console: { log() {}, error() {} }, setTimeout };
+    console: { log: (...args) => logs.push(args), error() {} }, setTimeout };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy.cjs'), 'utf8'), context);
-  return { main: module.exports.main, broadcasts: () => broadcasts, folder, program: module.exports, hardhat: mockRequire('hardhat'),
+  return { main: module.exports.main, broadcasts: () => broadcasts, folder, configPath, env: context.process.env, logs, program: module.exports, hardhat: mockRequire('hardhat'),
     receiptPath: () => { const directory = path.join(folder, 'deployments', 'mainnet'); return path.join(directory, fs.readdirSync(directory).find(name => name.startsWith('deployment.') && !name.endsWith('.solc-input.json'))); },
     constructor: module.exports.resolveConstructor, profile: require(configPath).mainnet,
     receipt: () => {
@@ -178,6 +180,7 @@ test('constructor preflight rejects oversized UTF-8 metadata and invalid or dupl
     for (const settlementWallets of [[A, A], [A, ZERO], [A, TOKEN], [A]]) {
       assert.throws(() => harness.constructor('mainnet', { ...harness.profile, settlementWallets }), /distinct|non-zero|settlementWallets/);
     }
+    assert.throws(() => harness.constructor('mainnet', { ...harness.profile, settlementWallets: [A, D] }), /cannot be configured ENS dependencies/);
   } finally { harness.cleanup(); }
 });
 
@@ -187,7 +190,77 @@ test('mainnet dry-run validates the full plan without confirmation phrase, files
     await harness.main();
     assert.equal(harness.broadcasts(), 0);
     assert.equal(fs.existsSync(path.join(harness.folder, 'deployments')), false);
+    const plan = JSON.parse(harness.logs.find(args => typeof args[0] === 'string' && args[0].startsWith('{'))[0]);
+    assert.equal(plan.finalOwnerSource, 'deployment config profile');
+    assert.equal(plan.membership.roots.length, 4);
+    assert.equal(plan.membership.merkleExceptions.every(value => value.enabled === false), true);
   } finally { harness.cleanup(); }
+});
+
+test('default manager setup requires the reviewed config and never silently uses the example', async () => {
+  const harness = deploymentHarness({ dryRun: true });
+  try {
+    harness.env.DEPLOY_CONFIG = '';
+    fs.copyFileSync(harness.configPath, path.join(harness.folder, 'deploy.config.example.cjs'));
+    await assert.rejects(harness.main(), /Copy hardhat\/deploy.config.example.cjs.*example is never selected automatically/);
+    assert.equal(harness.broadcasts(), 0);
+    fs.copyFileSync(harness.configPath, path.join(harness.folder, 'deploy.config.cjs'));
+    await harness.main();
+    assert.equal(harness.broadcasts(), 0);
+  } finally { harness.cleanup(); }
+});
+
+test('manager reports malformed config exports and missing owner before broadcasting', async () => {
+  for (const config of ['null', '[]', JSON.stringify({ mainnet: { ...deploymentProfile(), finalOwner: '' } })]) {
+    const harness = deploymentHarness({ dryRun: true });
+    try {
+      fs.writeFileSync(harness.configPath, `module.exports = ${config}`);
+      await assert.rejects(harness.main(), /config must export an object|Unable to resolve finalOwner/);
+      assert.equal(harness.broadcasts(), 0);
+    } finally { harness.cleanup(); }
+  }
+});
+
+function deploymentProfile() {
+  return { usdcTokenAddress: TOKEN, finalOwner: A, baseIpfsUrl: 'ipfs://', ensConfig: [D, ZERO],
+    rootNodes: Array(4).fill(realEthers.ZeroHash), merkleRoots: Array(2).fill(realEthers.ZeroHash), settlementWallets: [A, B] };
+}
+
+test('manager rejects a configured dependency as owner and identifies an explicit owner override', async () => {
+  const harness = deploymentHarness({ dryRun: true });
+  try {
+    for (const owner of [TOKEN, D]) {
+      harness.env.FINAL_OWNER = owner;
+      await assert.rejects(harness.main(), /finalOwner cannot be the USDC token or a configured ENS dependency/);
+      assert.equal(harness.broadcasts(), 0);
+    }
+    harness.env.FINAL_OWNER = C;
+    await harness.main();
+    const plan = JSON.parse(harness.logs.find(args => typeof args[0] === 'string' && args[0].startsWith('{'))[0]);
+    assert.equal(plan.finalOwner, C);
+    assert.equal(plan.finalOwnerSource, 'FINAL_OWNER environment setting');
+  } finally { harness.cleanup(); }
+});
+
+test('example preserves canonical and alpha membership roots without historical owner or Merkle defaults', () => {
+  const example = require('../deploy.config.example.cjs');
+  const names = ['club.agi.eth', 'agent.agi.eth', 'alpha.club.agi.eth', 'alpha.agent.agi.eth'];
+  assert.deepEqual(example.mainnet.rootNodes, names.map(realEthers.namehash));
+  assert.deepEqual(example.mainnet.merkleRoots, [realEthers.ZeroHash, realEthers.ZeroHash]);
+  for (const profile of [example.mainnet, example.sepolia]) {
+    assert.equal(profile.finalOwner, '');
+    assert.deepEqual(profile.settlementWallets, ['', '']);
+  }
+  assert.deepEqual(example.sepolia.ensConfig, ['', '']);
+  assert.match(fs.readFileSync(path.join(__dirname, '../.env.example'), 'utf8'), /^FINAL_OWNER=$/m);
+  const summary = describeMembershipConfig(example.mainnet);
+  assert.deepEqual(summary.roots.map(root => root.name), names);
+  assert.match(summary.authorization, /alternative admission paths/);
+  assert.match(summary.scope, /Identity locking does not disable/);
+  const custom = describeMembershipConfig({ rootNodes: [hash(1), realEthers.ZeroHash, hash(3), hash(4)], merkleRoots: [hash(5), realEthers.ZeroHash] });
+  assert.equal(custom.roots[0].name, null);
+  assert.equal(custom.roots[1].enabled, false);
+  assert.deepEqual(custom.merkleExceptions.map(root => root.enabled), [true, false]);
 });
 
 test('read-only preflight accepts an explicit deployer address without a signing account; live deployment does not', async () => {
@@ -232,7 +305,9 @@ test('explorer outage fails deployment outcome while preserving paused manager a
 });
 
 function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificationError, noSigner = false,
-  verifierEnabled = true, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', runtimeCode = '0x6000', failAction, finalOwnerMismatch = false } = {}) {
+  verifierEnabled = true, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', runtimeCode = '0x6000', failAction, finalOwnerMismatch = false,
+  managerPendingOwner = ZERO, managerIntakePaused = true, missingBuildInfo = false, artifactMismatch = false,
+  compilerVersion = '0.8.37', observedRuntimeCode = '0x6000' } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-ens-deployment-'));
   temporaryFolders.add(folder);
   let broadcasts = 0;
@@ -252,23 +327,30 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
     transferOwnership: async value => { currentOwner = value; return makeTx('transferOwnership'); },
     lockConfiguration: async () => { configLocked = true; return makeTx('lockConfiguration'); },
     owner: async () => finalOwnerMismatch ? ZERO : currentOwner, jobManager: async () => configuredManager, configLocked: async () => configLocked };
-  const provider = { getNetwork: async () => ({ chainId: BigInt(chainId) }), estimateGas: async () => estimatedGas, getCode: async () => '0x6000' };
+  const provider = { getNetwork: async () => ({ chainId: BigInt(chainId) }), estimateGas: async () => estimatedGas, getCode: async () => observedRuntimeCode };
+  const managerToken = chainId === 11155111 ? '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' : TOKEN;
   const mockEthers = { ...realEthers, provider, getSigners: async () => noSigner ? [] : [{ address: A }],
-    Contract: function (address) { return address === TOKEN ? { decimals: async () => 6 } : { usdcToken: async () => TOKEN }; },
+    Contract: function (address) { return address === managerToken ? { decimals: async () => 6 } : { usdcToken: async () => managerToken,
+      owner: async () => A, pendingOwner: async () => managerPendingOwner, paused: async () => managerIntakePaused }; },
     getContractAt: async () => ({ owner: async () => A }),
     getContractFactory: async () => ({ getDeployTransaction: async () => ({ data: creationData }), deploy: async (...args) => { assert.ok(args.at(-1).gasLimit <= 16777216n); broadcasts += 1; deploymentTx = makeTx('deploy'); return ensPages; } }),
   };
   const module = { exports: {} };
+  const artifact = { sourceName: 'contracts/ens/ENSJobPages.sol', contractName: 'ENSJobPages', bytecode: creationData, deployedBytecode: runtimeCode };
+  const buildInfo = { solcVersion: compilerVersion, input: { language: 'Solidity', sources: { 'contracts/ens/ENSJobPages.sol': { content: '// reviewed fixture' } },
+    settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true, metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } },
+    output: { contracts: { [artifact.sourceName]: { ENSJobPages: { evm: { bytecode: { object: artifactMismatch ? '6001' : creationData.slice(2) }, deployedBytecode: { object: runtimeCode.slice(2) } } } } } } };
   const mockRequire = name => {
-    if (name === 'hardhat') return { ethers: mockEthers, network: { name: networkName }, artifacts: { readArtifact: async () => ({ deployedBytecode: runtimeCode }) }, config: { verify: { etherscan: { enabled: verifierEnabled, apiKey: 'test-key' } } },
+    if (name === 'hardhat') return { ethers: mockEthers, network: { name: networkName }, artifacts: { readArtifact: async () => artifact, getBuildInfo: async () => missingBuildInfo ? undefined : buildInfo }, config: { verify: { etherscan: { enabled: verifierEnabled, apiKey: 'test-key' } } },
       run: async () => { actions.push('verify'); if (verificationError) throw typeof verificationError === 'string' ? new Error(verificationError) : verificationError; return verificationResult; } };
     if (name === './runtime.cjs') return { getRuntime: async () => mockRequire('hardhat') };
+    if (name === './deploy.cjs') return require('../scripts/deploy.cjs');
     if (name === './deployment-safety.cjs') return require('../scripts/deployment-safety.cjs');
     if (name === '../../scripts/lib/usdc') return require('../../scripts/lib/usdc');
     return require(name);
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy-ens-job-pages.cjs'), 'utf8'), {
-    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, JOBS_ROOT_NAME: 'usdc-v092.alpha.jobs.agi.eth', VERIFY: '1',
+    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, JOBS_ROOT_NAME: 'usdc-v092.alpha.jobs.agi.eth', VERIFY: '1', FINAL_OWNER: C,
       VERIFY_DELAY_MS: '0', DEPLOY_CONFIRM_MAINNET: 'I_UNDERSTAND_MAINNET_DEPLOYMENT', ...env } },
     console: { log() {}, error() {} }, setTimeout,
   });
@@ -282,6 +364,36 @@ test('ENS deployment requires an explicit namespace before any broadcast', async
   const harness = ensHarness({ env: { JOBS_ROOT_NAME: '' } });
   await assert.rejects(harness.main(), /JOBS_ROOT_NAME is required.*legacy manager/);
   assert.equal(harness.broadcasts(), 0);
+});
+
+test('ENS deployment requires a reviewed owner, enabled verification and an accepted paused manager', async () => {
+  for (const [options, message] of [
+    [{ env: { FINAL_OWNER: '', NEW_OWNER: '' } }, /Set NEW_OWNER or FINAL_OWNER/],
+    [{ env: { VERIFY: 'false' } }, /Explorer verification is required/],
+    [{ managerPendingOwner: C }, /pending ownership acceptance/],
+    [{ managerIntakePaused: false }, /Pause intake on the reviewed USDC manager/],
+  ]) {
+    const harness = ensHarness(options);
+    await assert.rejects(harness.main(), message);
+    assert.equal(harness.broadcasts(), 0);
+  }
+  const defaultVerification = ensHarness({ env: { VERIFY: '' } });
+  await defaultVerification.main();
+  assert.equal(defaultVerification.receipt().verification.status, 'verified');
+  assert.equal(defaultVerification.receipt().currentOwner, C);
+});
+
+test('Sepolia ENS requires network-specific contracts and accepts an explicit unwrapped-root plan', async () => {
+  for (const env of [{}, { ENS_REGISTRY: A }, { ENS_REGISTRY: A, NAME_WRAPPER: ZERO }]) {
+    const harness = ensHarness({ chainId: 11155111, networkName: 'sepolia', env: { DRY_RUN: '1', ...env } });
+    await assert.rejects(harness.main(), /is required on sepolia/);
+    assert.equal(harness.broadcasts(), 0);
+  }
+  const complete = ensHarness({ chainId: 11155111, networkName: 'sepolia', env: {
+    DRY_RUN: '1', ENS_REGISTRY: A, NAME_WRAPPER: ZERO, PUBLIC_RESOLVER: A,
+  } });
+  await complete.main();
+  assert.equal(complete.broadcasts(), 0);
 });
 
 test('ENS deployment refuses the legacy manager namespace for a fresh mainnet USDC manager', async () => {
@@ -408,6 +520,31 @@ test('ENS verifies before irreversible locking and ownership handoff and preserv
   assert.equal(receipt.configLocked, true);
   assert.equal(receipt.verification.status, 'verified');
   assert.equal(receipt.transactions.length, 4);
+  assert.equal(receipt.runtimeCodeHash, realEthers.keccak256('0x6000'));
+  assert.equal(receipt.expectedRuntimeCodeHash, receipt.runtimeCodeHash);
+  assert.equal(receipt.compiler.version, '0.8.37');
+  const input = JSON.parse(fs.readFileSync(receipt.solcInputPath, 'utf8'));
+  assert.equal(input.language, 'Solidity');
+  assert.equal(input.sources['contracts/ens/ENSJobPages.sol'].content, '// reviewed fixture');
+  assert.equal(input.settings.optimizer.runs, 40);
+});
+
+test('ENS rejects missing or substituted compiler artifacts before deployment and preserves runtime mismatch evidence', async () => {
+  for (const [options, message] of [
+    [{ missingBuildInfo: true }, /build info missing/],
+    [{ compilerVersion: '0.8.36' }, /compiler settings do not match/],
+    [{ artifactMismatch: true }, /artifact differs from its compiler build/],
+  ]) {
+    const harness = ensHarness(options);
+    await assert.rejects(harness.main(), message);
+    assert.equal(harness.broadcasts(), 0);
+  }
+  const substituted = ensHarness({ observedRuntimeCode: '0x6001' });
+  await assert.rejects(substituted.main(), /deployed runtime differs/);
+  assert.deepEqual(substituted.actions, ['deploy']);
+  assert.equal(substituted.receipt().status, 'failed');
+  assert.equal(substituted.receipt().address, B);
+  assert.equal(fs.existsSync(substituted.receipt().solcInputPath), true);
 });
 
 test('ENS verifier outage leaves locking and ownership untouched with a recoverable journal', async () => {

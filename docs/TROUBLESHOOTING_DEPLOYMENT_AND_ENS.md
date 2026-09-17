@@ -105,7 +105,7 @@ Hardhat verify step fails or times out.
 - Sufficient block confirmations elapsed.
 
 ### Fixes
-- Preserve the deployment journal and use the verification recovery procedure in the [Hardhat guide](../hardhat/README.md), including `reverify:mainnet` or `reverify:sepolia` as appropriate.
+- For a manager deployment journal, use the [Hardhat recovery procedure](../hardhat/README.md), including `reverify:mainnet` or `reverify:sepolia` as appropriate. Those commands do not accept ENS helper journals. For an ENS helper, preserve its journal, exact compiler input and constructor arguments and use the [helper recovery instructions](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - Do not redeploy to retry source verification. Recover the existing addresses and constructor/linking data from the saved journal.
 - Use the preserved compiler input and verification artifacts when manual standard-JSON verification is needed.
 
@@ -120,7 +120,7 @@ ENSJobPages cannot create/adopt/manage wrapped subnames reliably.
 Wrapped-root owner did not grant NameWrapper approval to new ENSJobPages.
 
 ### Fix
-For a fresh USDC deployment, use the dedicated-root route and verify `ENS.owner(jobsRootNode) == newEnsJobPages`; blanket approval over the legacy owner’s names is unnecessary.
+For the qualified fresh-USDC route, verify `ENS.owner(jobsRootNode) == NameWrapper` and `NameWrapper.ownerOf(uint256(jobsRootNode)) == newEnsJobPages`. The helper owns the dedicated wrapped-root token; token approval is zero and the parent owner has not granted blanket operator approval. A separately configured unwrapped root instead requires Registry owner equal to the helper. Do not confuse those ownership models.
 
 Only for a separately reviewed same-manager wrapped-root replacement, verify the helper owns the wrapped root or has the required wrapper authority. If broad operator approval is intentionally selected, the wrapped-root owner calls `setApprovalForAll(newEnsJobPages, true)` and verifies `isApprovedForAll(rootOwner, newEnsJobPages)`. This authorizes every wrapped name of that account; review the scope and revocation plan first.
 
@@ -184,7 +184,7 @@ ENS updates are implemented as best-effort; hook and resolver operations can fai
 ### AGIJobManager (`Read Contract`)
 - `owner`
 - `ensJobPages`
-- `useEnsJobTokenURI`
+- Inspect an actual `tokenURI(tokenId)` and the reviewed `setUseEnsJobTokenURI` action; its private flag has no public getter.
 - ENS root-related fields and identity lock status as applicable
 
 ### ENSJobPages (`Read Contract`)

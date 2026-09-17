@@ -1,6 +1,6 @@
 # Truffle deployment retired
 
-Truffle and Ganache are removed from the v0.9.2 dependency tree. Their public-network deployment commands are unsupported and must not be used.
+Truffle and Ganache are removed from the v0.9.3 dependency tree. Their public-network deployment commands are unsupported and must not be used.
 
 Use the [Hardhat deployment guide](../../hardhat/README.md) for compile, dry run, deployment, source verification and recovery. Supply native six-decimal USDC, both settlement wallets, and the intended owner. The manager starts paused; complete two-step ownership acceptance and the [readiness checks](../MAINNET_READINESS.md) before activation.
 

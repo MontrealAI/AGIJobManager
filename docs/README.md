@@ -1,6 +1,6 @@
 # AGIJobManager Documentation Hub
 
-> **v0.9.2: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v0.9.3: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
 Institutional documentation for operators, integrators, contributors, and auditors.
 
@@ -63,7 +63,7 @@ If another document conflicts with these in an operational detail, follow the ca
 - **Name format:** `<prefix><jobId>.<jobsRootName>`
 - **Current defaults:** prefix `agijob` with names like `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`
 - **Responsibility split:** AGIJobManager decides numeric `jobId`; ENSJobPages decides prefix/root + snapshotting + ENS writes
-- **Cutover order:** deploy new ENSJobPages -> NameWrapper approval -> `setEnsJobPages` -> legacy migration (if needed) -> lock only after validation
+- **Fresh USDC cutover order:** deploy a separate helper -> have the ENS parent create its dedicated wrapped-root token owned by the helper -> wire only the new manager -> validate creation, delegated writes and terminal revocation -> consider locks. Preserve original jobs and wiring.
 - **Safety model:** ENS hooks are best-effort and non-fatal to settlement/dispute outcomes
 
 ## Start here if you are...
@@ -100,7 +100,7 @@ If another document conflicts with these in an operational detail, follow the ca
 
 - **What is canonical if docs disagree?** Follow the canonical set above (Hardhat guide, ENS replacement runbook, ENS overview, deployment troubleshooting).
 - **What deployment path is recommended?** Hardhat 3 is the supported deployment and local test runtime; Truffle and Ganache have been removed.
-- **What is manual vs automated during ENS replacement?** The optional ENS deployment script deploys and configures its own manager reference; NameWrapper approval + `setEnsJobPages` + legacy migration are manual.
+- **What is manual vs automated during ENS replacement?** The helper script deploys, checks runtime, sets its manager, verifies source and transfers to the explicit owner. Dedicated-root setup and the new manager pointer are manual. Same-manager page migration and any broad wrapper authority are separately reviewed; fresh USDC does not repoint original jobs.
 - **How are ENS names built?** `<prefix><jobId>.<jobsRootName>` where `AGIJobManager` provides `jobId` and `ENSJobPages` provides prefix/root.
 - **When is locking safe?** Only after post-cutover read/event checks and any legacy migration decisions are complete.
 
@@ -153,7 +153,7 @@ If another document conflicts with these in an operational detail, follow the ca
 
 ## Most common operator mistakes (avoid these)
 
-- Assuming Hardhat scripts automatically do NameWrapper approval or `setEnsJobPages(...)` (they do not).
+- Assuming Hardhat scripts create the dedicated root or call the new manager’s `setEnsJobPages(...)` (they do not), or granting unnecessary blanket authority over legacy names.
 - Locking ENS/identity configuration before post-cutover checks and legacy migration decisions are complete.
 - Expecting prefix changes to rename already snapshotted legacy labels.
 - Treating ENS hook failures as protocol settlement failures without checking AGIJobManager events first.
@@ -161,6 +161,6 @@ If another document conflicts with these in an operational detail, follow the ca
 
 ## Etherscan safety boundaries (owner/operator)
 
-- Safe and expected on Etherscan: owner reads, owner governance writes, NameWrapper approval, `setEnsJobPages`, migration calls.
+- A verified explorer supports read checks and reviewed owner writes. Verify network, contract, method, inputs and signer independently; using an explorer alone does not establish safety.
 - Script-first actions: contract deployment and source verification workflow.
-- Never assume automation: NameWrapper approval and AGIJobManager pointer switch are always explicit manual transactions.
+- Dedicated-root setup and the new manager pointer switch require the respective authorized owners. Same-manager page migration is a separate procedure, not a fresh-USDC step.

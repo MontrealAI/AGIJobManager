@@ -1,102 +1,47 @@
-# ENS Identity Gating — Technical Appendix (AGI.Eth alpha)
+# ENS participant identity — v0.9.3
 
-This appendix explains the **exact identity checks** used by `AGIJobManager` and how to derive the on‑chain node hashes for the **alpha** namespace.
+AGI Agents normally require membership under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. The wallet submitting the application or vote must satisfy the configured role's ownership, approval or resolver-address check. The legacy owner-managed additional lists and Merkle proofs remain explicit exceptions to ENS membership.
 
----
+Participant membership is separate from optional `ENSJobPages`. A job-page name, resolver text-edit permission or completion NFT does not automatically grant agent or validator membership. Agents separately need an eligible enabled AGI-type NFT credential.
 
-## 1) Contract checks (exact order)
+## Exact authorization order
 
-For agent and validator calls (`applyForJob`, `validateJob`, `disapproveJob`), `_verifyOwnership` runs these checks **in order**:
+`AGIJobManager._isAuthorized` evaluates:
 
-1. **Merkle allowlist**
-   - Leaf = `keccak256(abi.encodePacked(claimant))` (the wallet address).
-   - Proof is verified against `agentMerkleRoot` or `validatorMerkleRoot`.
-2. **NameWrapper ownership**
-   - Node = `subnode(rootNode, labelHash(subdomain))`.
-   - `ownerOf(uint256(node))` must equal the claimant.
-3. **ENS resolver address**
-   - `resolver(node)` must return a non‑zero resolver address.
-   - `resolver.addr(node)` must equal the claimant.
+1. The role-specific `additionalAgents` or `additionalValidators` entry. A true entry bypasses ENS and Merkle checks.
+2. A proof against `agentMerkleRoot` or `validatorMerkleRoot`, using leaf `keccak256(abi.encodePacked(claimant))`. A valid proof bypasses ENS.
+3. ENS membership under the role's primary root, then its alpha root. A zero root disables that branch.
 
-If all checks fail, the call reverts `NotAuthorized`.
+For each ENS root, the library derives the child node, then checks NameWrapper ownership, token approval or owner-wide operator approval. If no supported wrapper route authorizes the claimant, it checks that the Registry's resolver exists and its `addr(node)` equals the claimant. Calls are bounded and malformed or failed replies do not authorize the claimant.
 
----
+ENS labels must be 1–63 lowercase ASCII letters, digits or hyphens, with no dot or leading/trailing hyphen. This label validation occurs on the ENS route; an earlier additional-list or Merkle exception can bypass it. Blacklists, NFT eligibility for agents, lifecycle conditions and USDC bond funding are separate checks and still apply. An unsupported or wrong-role name fails unless an explicit owner-managed exception applies.
 
-## 2) How root nodes are set (alpha environment)
+## Root mapping
 
-The **alpha** namespace uses these root nodes at deployment time:
+| Role | Primary root getter | Alpha root getter |
+| --- | --- | --- |
+| AGI Agent | `agentRootNode = namehash("agent.agi.eth")` | `alphaAgentRootNode = namehash("alpha.agent.agi.eth")` |
+| AGI Validator | `clubRootNode = namehash("club.agi.eth")` | `alphaClubRootNode = namehash("alpha.club.agi.eth")` |
 
-- `clubRootNode = namehash("alpha.club.agi.eth")`
-- `agentRootNode = namehash("alpha.agent.agi.eth")`
+The current manager accepts either configured root for the role. Alpha and primary names are not mutually exclusive deployment modes. Confirm actual getter values; a configured deployment can select other hashes or disable a branch with zero.
 
-These root nodes are **immutable after deployment**, so a mismatch requires redeployment.
+The owner can call `updateRootNodes` before `lockIdentityConfiguration()` and only when every escrow/bond reserve is zero. The identity lock also freezes ENS Registry, NameWrapper and optional helper-pointer changes. It does not freeze additional lists or `updateMerkleRoots`, so it is not an ENS-only enforcement switch. USDC is independently immutable.
 
----
+## Derive the node and submit the label
 
-## 3) Subnode derivation (same as contract)
-
-The contract derives subnodes using:
-
-```
-subnode = keccak256(abi.encodePacked(rootNode, keccak256(label)))
-```
-
-Where `label` is the **left‑most** label only (e.g., `"helper"`).
-
-### JS helper (web3.js compatible)
+From the repository root, the pinned ethers dependency can derive a node:
 
 ```js
-const { soliditySha3, keccak256 } = web3.utils;
-
-function namehash(name) {
-  let node = "0x" + "00".repeat(32);
-  if (!name) return node;
-  const labels = name.toLowerCase().split(".").filter(Boolean);
-  for (let i = labels.length - 1; i >= 0; i -= 1) {
-    node = soliditySha3(
-      { type: "bytes32", value: node },
-      { type: "bytes32", value: keccak256(labels[i]) }
-    );
-  }
-  return node;
-}
-
-function subnode(rootNode, subdomain) {
-  return soliditySha3(
-    { type: "bytes32", value: rootNode },
-    { type: "bytes32", value: keccak256(subdomain) }
-  );
-}
+const { namehash, id, solidityPackedKeccak256 } = require("ethers");
+const root = namehash("alpha.agent.agi.eth");
+const label = "helper";
+const node = solidityPackedKeccak256(["bytes32", "bytes32"], [root, id(label)]);
 ```
 
-### Example (alpha agent)
+For `helper.alpha.agent.agi.eth`, pass `"helper"` as `subdomain` and `[]` as `proof` when using ENS. For an explicitly configured Merkle exception, pass its actual proof for the current role root and connected wallet. Never present an exception as proof that an ENS name is owned.
 
-- Full ENS name: `helper.alpha.agent.agi.eth`
-- `rootNode`: `namehash("alpha.agent.agi.eth")`
-- `subdomain`: `"helper"`
-- `subnode`: `keccak256(rootNode, keccak256("helper"))`
+## Verify authorization and its limits
 
----
+Read the four root getters, ENS Registry and NameWrapper addresses, relevant additional-list entry and role Merkle root. Inspect the intended name's wrapper/resolver state and simulate the actual role action in the correct wallet context. Successful applications emit `JobApplied`; successful votes emit `JobValidated` or `JobDisapproved`. The current manager does not emit the historical `OwnershipVerified` event.
 
-## 4) What to pass to the contract
-
-- `subdomain`: **left‑most label only** (e.g., `"helper"`, `"alice"`).
-- `proof`: Merkle proof array for allowlisted addresses, otherwise `[]`.
-
-Passing the full ENS name (e.g., `"helper.alpha.agent.agi.eth"`) will **not** work.
-
----
-
-## 5) Operational signals
-
-The contract emits two useful events for monitoring identity verification:
-
-- `OwnershipVerified(claimant, subdomain)` → identity check succeeded.
-
----
-
-## 6) Known limits of local tests
-
-Local tests use deterministic mocks of ENS, Resolver, and NameWrapper to simulate mainnet behavior. This proves the **verification logic** in isolation, but it does **not** assert real mainnet ownership or resolver data.
-
-See: [`TESTING.md`](TESTING.md)
+The [namespace test guide](TESTING.md) distinguishes deterministic mocks from the [mainnet-fork cutover qualification](../qualification/USDC_CUTOVER.md). Local impersonation proves the tested authorization behavior, not control of a production key or an independently operated participant. Recheck actual membership before launch.

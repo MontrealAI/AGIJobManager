@@ -1,4 +1,4 @@
-# AGIJobManager Contract Documentation — v0.9.2
+# AGIJobManager Contract Documentation — v0.9.3
 
 This document provides a comprehensive, code‑accurate overview of the `AGIJobManager` contract. It is intended for engineers, integrators, reviewers, and operators. The ABI‑exact reference lives in [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
 

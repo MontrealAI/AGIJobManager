@@ -24,7 +24,7 @@ Use this guide if you only have:
 ## ENS replacement (owner-focused) quick path
 
 Follow the [qualified cutover plan](qualification/USDC_CUTOVER.md) for a fresh USDC launch:
-1. ENS parent owner creates the dedicated jobs root owned directly by the new helper. Verify `ENS.owner(jobsRootNode)`.
+1. ENS parent owner creates the dedicated wrapped jobs-root token owned by the new helper. Verify Registry `owner(root) == NameWrapper` and wrapper `ownerOf(root) == newEnsJobPages`; the qualified route needs no new token/operator approval.
 2. New AGIJobManager owner calls `setEnsJobPages(newEnsJobPages)` on the new manager; verify the reverse helper pointer.
 3. Preserve the original mainnet manager, helper, root, approvals and jobs.
 4. Require successful creation, delegated resolver writes and terminal revocation without skipped or failed ENS hooks before considering locks. Successful core receipts alone do not establish ENS success.

@@ -67,10 +67,10 @@ flowchart TD
 | Merkle roots | `validatorMerkleRoot`, `agentMerkleRoot` | `onlyOwner` via `updateMerkleRoots` | getters + `MerkleRootsUpdated` | Always owner-updateable (not blocked by lock or escrow) | Primary long-lived allowlist governance lever; preserve prior authorized AI agents/validators unless intentionally removing access |
 | ENS hook target | `address public ensJobPages` | `onlyOwner` via `setEnsJobPages` | `ensJobPages()` + `EnsJobPagesUpdated` | Blocked by lock | Hook failures are intentionally non-fatal |
 | ENS URI toggle | `bool private useEnsJobTokenURI` | `onlyOwner` via `setUseEnsJobTokenURI` | Observe `NFTIssued` URI and `tokenURI(tokenId)` | Not blocked by identity lock | Enable only after hook target hardening |
-| Identity lock | `bool public lockIdentityConfig` | `onlyOwner` via `lockIdentityConfiguration` | `lockIdentityConfig()` + `IdentityConfigurationLocked` | Irreversible | Freezes token/ENS/wrapper/root/hook wiring |
+| Identity lock | `bool public lockIdentityConfig` | `onlyOwner` via `lockIdentityConfiguration` | `lockIdentityConfig()` + `IdentityConfigurationLocked` | Irreversible | Freezes ENS/wrapper/root/hook wiring; USDC is independently immutable |
 
 > **Safety warning**
-USDC is immutable at deployment; no token-address update function exists in v0.5.0.
+USDC is immutable at deployment; the current manager has no token-address setter.
 
 > **Operator note**
 > `lockIdentityConfiguration()` is not a full governance lock. It freezes ENS/identity rewiring guarded by `whenIdentityConfigurable`, but `updateMerkleRoots` remains intentionally owner-callable for long-lived AI-agent allowlist operations even after lock and during active escrow. See [`whenIdentityConfigurable`](../../contracts/AGIJobManager.sol#L558-L561), [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L1074-L1082), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L951-L954), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L1011-L1014), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L705-L721).

@@ -1,60 +1,19 @@
-# Minimal governance model
+# Identity lock and operating controls — v0.9.3
 
-This document explains the **identity wiring lock** and the intended “configure once → operate” posture.
+`lockIdentityConfiguration()` permanently disables selected identity wiring setters. It does not freeze all governance, force ENS-only membership, pause activity or repair a bad configuration. USDC is immutable independently of the lock.
 
-## What the identity wiring lock does
+| Setting | Guard before the lock | After the lock |
+| --- | --- | --- |
+| ENS Registry, NameWrapper, four role roots | Owner; all escrow/bond reserves zero | Frozen |
+| Optional ENS job-page pointer | Owner; zero or deployed-contract address | Frozen |
+| Additional agent/validator lists and Merkle roots | Owner | Remain mutable |
+| Pause controls, moderators and supported policy settings | Their own function-specific guards | Remain available under those guards |
+| Manager ownership | Two-step proposal/acceptance; renunciation disabled | Same two-step process |
 
-Calling `lockIdentityConfiguration()` permanently disables **identity wiring setters**. It is **one-way** and irreversible.
+Ordinary AGI Agent membership uses `agent.agi.eth` or `alpha.agent.agi.eth`; validator membership uses `club.agi.eth` or `alpha.club.agi.eth`. Additional lists and Merkle roots preserve owner-managed exceptions. Agents separately need an eligible NFT. Optional job pages do not replace participant identity checks.
 
-Once locked, the contract keeps operating for normal jobs, escrows, and dispute flows, but the **identity wiring surface** is frozen.
+Deploy the reviewed source with intake paused, verify source/runtime and ownership acceptance, then configure and rehearse identity, eligibility, policy and recovery. For optional ENS pages, verify both pointers, dedicated-root authority, actual delegated writes and terminal revocation. Preserve the original manager's jobs and namespace. Only then consider the irreversible locks; deployment-time locking is not the default. Historical Truffle migrations and their environment switches are retired.
 
-## Functions disabled after lock
+`pauseIntake()` stops new work while safe settlement can continue. `pauseAll()` contains an incident affecting funds; verify both flags. Dispute resolution and surplus withdrawal require settlement enabled and their other guards. `withdrawUSDC()` cannot withdraw escrow or bonds and requires intake paused. Do not relax an emergency pause merely to withdraw.
 
-These functions are guarded by `whenIdentityConfigurable` and **revert** once the identity wiring is locked:
-
-**Identity wiring**
-USDC is immutable at deployment; no token-address update function exists in v0.5.0.
-- `updateEnsRegistry` (only allowed before any job exists and before the lock)
-- `updateNameWrapper` (only allowed before any job exists and before the lock)
-- `updateRootNodes` (only allowed before any job exists and before the lock)
-
-> **Note:** ENS registry, NameWrapper, and root node updates are intentionally limited to pre‑first‑job and pre‑lock windows to preserve identity safety.
-
-## Functions still available after lock
-
-These are considered **break-glass** or operational safety controls and remain available after the lock:
-
-- `pause()` / `unpause()` — incident response.
-- `resolveStaleDispute()` — owner-only recovery after the dispute timeout (pause optional).
-- `addModerator()` / `removeModerator()` — optional moderator rotation for continuity.
-- `withdrawUSDC()` — surplus withdrawals while paused (escrow is always reserved).
-
-Other configuration knobs (thresholds, review periods, allowlists, metadata, etc.) remain **tunable** after lock because they are not part of the identity wiring surface.
-
-**Allowlists remain mutable after lock**:
-- `updateMerkleRoots` stays available post-lock so validator/agent allowlists can evolve.
-
-> **Note:** `transferOwnership` remains available via `Ownable`. Operators should decide whether to transfer ownership to a long-lived multisig or leave ownership unchanged after lock.
-
-## Recommended operational sequence
-
-1. **Deploy** (set ENS/NameWrapper/token/root nodes and Merkle roots).
-2. **Configure** (thresholds, payouts, metadata, moderators, allowlists).
-3. **Validate** (run sanity checks and real job flow).
-4. **Lock** (`lockIdentityConfiguration()` or `LOCK_IDENTITY_CONFIG=true` during migration).
-5. **Operate** (minimal governance with incident-response tools only).
-
-## Monitoring suggestions (post-lock)
-
-To keep operations low-touch, monitor the following invariants and events:
-
-- **Escrow solvency**: track `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` vs. token balance; `withdrawableUSDC()` must stay non‑negative.
-- **Identity wiring changes (pre-lock)**: watch `EnsRegistryUpdated`, `NameWrapperUpdated`, `RootNodesUpdated`, and `IdentityConfigurationLocked`.
-- **Allowlist updates**: `MerkleRootsUpdated` signals validator/agent allowlist changes (access only, not payout logic).
-- **Dispute recovery**: `DisputeTimeoutResolved` indicates break‑glass resolution by the owner.
-
-## Notes for Sepolia/local/private deployments
-
-- Keep **ENS registry** and **NameWrapper** addresses configurable (`AGI_ENS_REGISTRY`, `AGI_NAMEWRAPPER`).
-- Override the USDC token address for non-mainnet networks (`USDC_TOKEN_ADDRESS`).
-- Root nodes and Merkle roots should be set per environment.
+Monitor all four reserves against the USDC balance, owner/pending owner, issuer restrictions, eligibility changes, identity events and actual settlement transfers. Use the [Hardhat guide](../hardhat/README.md), [owner runbook](OWNER_RUNBOOK.md) and [incident response](OPERATIONS/INCIDENT_RESPONSE.md) for supported commands. Mainnet and Sepolia use their canonical immutable Circle USDC; arbitrary token overrides are not a supported production path.

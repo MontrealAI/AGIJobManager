@@ -3,6 +3,7 @@ let hre, ethers, run, network;
 const fs = require("fs");
 const path = require("path");
 const { randomUUID } = require("crypto");
+const { COMPILER_SETTINGS, stableObject } = require('./deploy.cjs');
 
 
 
@@ -11,7 +12,7 @@ const MAINNET_NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
 const MAINNET_PUBLIC_RESOLVER = "0xF29100983E058B709F3D539b0c765937B804AC15";
 const DEFAULT_JOB_MANAGER = ""; // Explicit verified USDC manager required.
 const { requireCanonicalUSDC } = require("../../scripts/lib/usdc");
-const { parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, prepareDeployment } = require("./deployment-safety.cjs");
+const { parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireArtifactMatch, prepareDeployment } = require("./deployment-safety.cjs");
 const MAINNET_SAFETY_PHRASE = "I_UNDERSTAND_MAINNET_DEPLOYMENT";
 
 function env(k, d = "") {
@@ -69,9 +70,14 @@ async function main() {
     }
   }
 
-  const ensRegistry = env("ENS_REGISTRY", MAINNET_ENS_REGISTRY);
-  const nameWrapper = env("NAME_WRAPPER", MAINNET_NAME_WRAPPER);
-  const publicResolver = env("PUBLIC_RESOLVER", MAINNET_PUBLIC_RESOLVER);
+  if (chainId !== 1) {
+    for (const key of ["ENS_REGISTRY", "NAME_WRAPPER", "PUBLIC_RESOLVER"]) {
+      if (!env(key)) throw new Error(`${key} is required on ${network.name}. Configure reviewed contracts for this network; mainnet ENS defaults are not reused. Use an explicit zero NAME_WRAPPER only for an unwrapped root.`);
+    }
+  }
+  const ensRegistry = env("ENS_REGISTRY", chainId === 1 ? MAINNET_ENS_REGISTRY : "");
+  const nameWrapper = env("NAME_WRAPPER", chainId === 1 ? MAINNET_NAME_WRAPPER : "");
+  const publicResolver = env("PUBLIC_RESOLVER", chainId === 1 ? MAINNET_PUBLIC_RESOLVER : "");
   const jobsRootNameInput = env("JOBS_ROOT_NAME");
   if (!jobsRootNameInput) throw new Error("JOBS_ROOT_NAME is required. A fresh USDC manager needs its own reviewed ENS namespace; never reuse the legacy manager's job names.");
   const jobsRootName = ethers.ensNormalize(jobsRootNameInput);
@@ -82,11 +88,14 @@ async function main() {
   const jobsRootNode = env("JOBS_ROOT_NODE", computedJobsRootNode);
   const jobManager = env("JOB_MANAGER", DEFAULT_JOB_MANAGER);
 
-  const verify = parseBooleanSetting(env("VERIFY"), "VERIFY");
+  const verify = parseBooleanSetting(env("VERIFY"), "VERIFY", true);
   const lockConfig = parseBooleanSetting(env("LOCK_CONFIG"), "LOCK_CONFIG");
+  if (!dryRun && !verify) throw new Error("Explorer verification is required before an ENS helper can be deployed for use. Remove VERIFY=false or set VERIFY=1; DRY_RUN=1 remains read-only.");
   if (verify && !dryRun) requireExplorerEnabled(hre.config);
 
   const ownerOverride = env("NEW_OWNER") || env("FINAL_OWNER") || "";
+
+  if (!ownerOverride) throw new Error("Set NEW_OWNER or FINAL_OWNER to the reviewed ENSJobPages owner. Ownership is transferred in one step; the deployer is not selected implicitly.");
 
   if (ownerOverride && (!ethers.isAddress(ownerOverride) || ownerOverride.toLowerCase() === ethers.ZeroAddress.toLowerCase())) {
     throw new Error(`Resolved owner override is not a valid address: ${ownerOverride}`);
@@ -104,8 +113,15 @@ async function main() {
   await requireCode(ensRegistry, "ENS_REGISTRY");
   await requireCode(publicResolver, "PUBLIC_RESOLVER");
   await requireCode(jobManager, "JOB_MANAGER");
-  const managerToken = await new ethers.Contract(jobManager, ["function usdcToken() view returns (address)"], ethers.provider).usdcToken();
+  const manager = new ethers.Contract(jobManager, ["function usdcToken() view returns (address)",
+    "function owner() view returns (address)", "function pendingOwner() view returns (address)",
+    "function paused() view returns (bool)"], ethers.provider);
+  const [managerToken, managerOwner, managerPendingOwner, managerIntakePaused] = await Promise.all([
+    manager.usdcToken(), manager.owner(), manager.pendingOwner(), manager.paused(),
+  ]);
   requireCanonicalUSDC(chainId, managerToken);
+  if (managerPendingOwner !== ethers.ZeroAddress) throw new Error("The USDC manager has pending ownership acceptance. Complete and verify its two-step handover before deploying the ENS helper.");
+  if (managerIntakePaused !== true) throw new Error("Pause intake on the reviewed USDC manager before deploying the ENS helper. Existing jobs can continue settlement while intake is paused.");
   if (ownerOverride && [ensRegistry, nameWrapper, publicResolver, jobManager, managerToken].some(address => address.toLowerCase() === ownerOverride.toLowerCase())) {
     throw new Error("The ENSJobPages owner cannot be a configured protocol dependency. Choose a reviewed wallet or governance contract able to operate owner functions.");
   }
@@ -130,7 +146,20 @@ async function main() {
   const currentRootOwner = await ens.owner(jobsRootNode);
   const constructorArgs = [ensRegistry, nameWrapper, publicResolver, jobsRootNode, jobsRootName];
   const factory = await ethers.getContractFactory("ENSJobPages");
-  const runtimeBytes = requireRuntimeSize('ENSJobPages', (await hre.artifacts.readArtifact('ENSJobPages')).deployedBytecode);
+  const artifact = await hre.artifacts.readArtifact('ENSJobPages');
+  const buildInfo = await hre.artifacts.getBuildInfo('contracts/ens/ENSJobPages.sol:ENSJobPages');
+  if (!buildInfo) throw new Error('ENSJobPages build info missing. Compile the qualified release before planning deployment.');
+  const settings = buildInfo.input.settings;
+  const actualSettings = { version: buildInfo.solcVersion, optimizer: settings.optimizer, evmVersion: settings.evmVersion,
+    viaIR: settings.viaIR || false, metadata: settings.metadata, debug: settings.debug };
+  if (JSON.stringify(stableObject(actualSettings)) !== JSON.stringify(stableObject(COMPILER_SETTINGS))) {
+    throw new Error('ENSJobPages compiler settings do not match the release-qualified deployment profile.');
+  }
+  const compiled = buildInfo.output.contracts[artifact.inputSourceName || artifact.sourceName]?.[artifact.contractName];
+  if (!compiled || `0x${compiled.evm.bytecode.object}` !== artifact.bytecode || `0x${compiled.evm.deployedBytecode.object}` !== artifact.deployedBytecode) {
+    throw new Error('ENSJobPages artifact differs from its compiler build. Clean and recompile the qualified release.');
+  }
+  const runtimeBytes = requireRuntimeSize('ENSJobPages', artifact.deployedBytecode);
   const prepared = await prepareDeployment({ provider: ethers.provider, factory, args: constructorArgs, from: deployer.address, name: 'ENSJobPages' });
 
   console.log("\n=== ENSJobPages deployment plan ===");
@@ -145,6 +174,8 @@ async function main() {
   console.log("current root owner:", currentRootOwner);
   console.log("root tokenId decimal:", BigInt(jobsRootNode).toString());
   console.log("JOB_MANAGER:", jobManager);
+  console.log("manager owner (no pending transfer):", managerOwner);
+  console.log("manager intake paused:", managerIntakePaused);
   console.log("LOCK_CONFIG:", lockConfig);
   console.log("resolved owner override:", ownerOverride || "(none)");
   console.log("VERIFY:", verify);
@@ -162,8 +193,11 @@ async function main() {
   const journalDirectory = path.join(__dirname, '..', 'deployments', network.name);
   fs.mkdirSync(journalDirectory, { recursive: true });
   const journalPath = path.join(journalDirectory, `ens-job-pages.${chainId}.${randomUUID()}.json`);
+  const solcInputPath = journalPath.replace(/\.json$/, '.solc-input.json');
+  fs.writeFileSync(solcInputPath, `${JSON.stringify(buildInfo.input, null, 2)}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
   const journal = { status: 'started', chainId, network: network.name, deployer: deployer.address,
-    constructorArgs, jobManager, finalOwner: ownerOverride || deployer.address, lockConfig,
+    constructorArgs, jobManager, managerOwner, managerIntakePaused, finalOwner: ownerOverride, lockConfig,
+    compiler: COMPILER_SETTINGS, solcInputPath, expectedRuntimeCodeHash: ethers.keccak256(artifact.deployedBytecode),
     runtimeBytes, initcodeBytes: prepared.initcodeBytes, estimatedGas: prepared.estimatedGas.toString(), gasLimit: prepared.gasLimit.toString(),
     verification: { status: verify ? 'pending' : 'not_requested' }, transactions: [] };
   const checkpoint = () => {
@@ -186,6 +220,10 @@ async function main() {
     journal.address = ensJobPagesAddress;
     await recordTransaction('deploy', ensJobPages.deploymentTransaction(), ensJobPagesAddress);
     await ensJobPages.waitForDeployment();
+    const code = await ethers.provider.getCode(ensJobPagesAddress);
+    requireArtifactMatch({ artifact, buildInfo, address: ensJobPagesAddress, code });
+    journal.runtimeCodeHash = ethers.keccak256(code);
+    checkpoint();
     console.log("\nENSJobPages deployed:", ensJobPagesAddress);
 
     console.log("Setting job manager...");
@@ -232,7 +270,7 @@ async function main() {
   }
 
   console.log("\nManual next steps (not automated):");
-  console.log("1) Have the ENS parent owner establish this dedicated jobs root with newEnsJobPages as its direct NameWrapper owner; verify the exact root and ownership.");
+  console.log("1) Have the ENS parent owner establish direct helper ownership of the reviewed dedicated jobs root. For the qualified wrapped route, verify Registry owner(root)=NameWrapper and NameWrapper.ownerOf(root)=newEnsJobPages; an unwrapped root instead requires Registry owner(root)=newEnsJobPages.");
   console.log("   A fresh USDC manager must keep the legacy manager, helper and jobs namespace unchanged. Do not grant blanket approval over legacy names.");
   console.log("   For a same-manager helper replacement, review the existing root authority and replacement runbook separately.");
   console.log("2) On the reviewed USDC AGIJobManager, its accepted owner calls setEnsJobPages(newEnsJobPages).");

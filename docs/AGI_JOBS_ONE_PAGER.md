@@ -1,6 +1,8 @@
-# AGI Jobs one‑pager (canonical narrative)
+# AGI Jobs concept one-pager — historical narrative
 
 > Source: `presentations/AGI_Eth_Institutional_v0.pptx` (AGI.Eth Namespace + AGI Jobs v0)
+
+This historical concept narrative is not a description of all implemented contract features. Alpha-work telemetry, emissions/burn policy, commit–reveal validation, one-click node deployment and institutional measurements below are conceptual. Current v0.9.3 operations use native Circle USDC, direct approval/disapproval votes and the [Hardhat deployment guide](../hardhat/README.md). The contract cannot change USDC supply or burn/emission policy.
 
 ## Institutional brief: identity → proof → settlement → governance
 
@@ -59,24 +61,9 @@ Actuators: fee splits · burn fraction · tier multipliers · quorum/slashing pa
 - Prefer reproducible builds + pinned deps; export audit packs by default.
 - Treat the env registry as the “source of truth” for official recognition.
 
-## Deployment (Green Path)
+## Current deployment path
 
-**Pilot → evidence → controls → one‑click**
-
-**Pilot (Green Path)**
-- Launch workspace (Codespaces recommended) and run `make operator:green`.
-- Pass criteria: ✅ Day‑One Utility banner + default uplift guardrail.
-- Review artifacts: JSON + HTML dashboard + PNG snapshot + owner controls snapshot.
-
-**Owner controls (fail‑closed)**
-- Pause/resume: `make owner-toggle`.
-- Restore defaults: `make owner-reset`.
-- Treat the “green wall” as deployable truth; block unsafe changes.
-
-**One‑click deploy (illustrative)**
-- `npm run deploy:checklist`
-- `npm run deploy:oneclick:auto -- --config deployment-config/<network>.json --network <network> --compose`
-- `docker compose --env-file deployment-config/oneclick.env up --build -d`
+The earlier Green Path and one-click commands in this concept narrative are retired and are not release qualification. Use the [Hardhat guide](../hardhat/README.md), [owner runbook](OWNER_RUNBOOK.md) and [cutover qualification](qualification/USDC_CUTOVER.md). Review explicit recipients, owner and membership roots; run the read-only plan, obtain the actual operational rehearsal, deploy with intake paused, verify source/runtime, accept ownership and complete live readiness before activation. Passing a dashboard or publishing a release does not deploy a contract or certify production operations.
 
 ## Adoption playbook
 

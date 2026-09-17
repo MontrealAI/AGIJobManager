@@ -1,4 +1,4 @@
-# Owner Runbook — v0.9.2
+# Owner Runbook — v0.9.3
 
 Use this runbook for configuration, ownership and incident decisions. Use the [Hardhat deployment guide](../hardhat/README.md) for public-network commands and the [owner controls guide](OWNER_CONTROLS.md) for the exact boundaries of each setting. Local rehearsals use the maintained Hardhat 3 test runtime; Truffle and Ganache are retired.
 
@@ -22,7 +22,7 @@ Use this runbook for configuration, ownership and incident decisions. Use the [H
 
 | Action | Responsible signer |
 | --- | --- |
-| Create dedicated jobs root owned directly by the new helper | ENS parent owner |
+| Create dedicated wrapped jobs-root token owned by the new helper | ENS parent owner |
 | Broader NameWrapper authority, only for a separately reviewed same-manager wrapped-root replacement | Wrapped-root owner |
 | Manager `setEnsJobPages(newEnsJobPages)` | AGIJobManager owner, while identity configuration remains unlocked |
 | `migrateLegacyWrappedJobPage(jobId, exactLabel)` for existing pages of the same manager only | ENSJobPages owner |
@@ -38,7 +38,7 @@ Before an ENS lock, confirm both new manager/helper pointers and root authority,
 
 ## 1) Deployment checklist
 
-1. Check out the immutable v0.9.2 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
+1. Check out the immutable v0.9.3 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
 2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; use the exact release compiler profile and linked artifacts for the public deployment build.
 3. Review all six constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, and **two distinct settlement wallets ordered 30% then 10%**. Confirm the intended final owner separately. Example addresses and roots are not a reviewed production configuration.
 4. Run a read-only deployment plan, rehearse on Sepolia and review the saved plan before any authorized mainnet broadcast. Review the five library addresses and exact linked runtime code.
@@ -130,7 +130,7 @@ Before manager `lockIdentityConfiguration()` or ENSJobPages `lockConfiguration()
 
 ## 7) High-risk actions (operator warnings)
 
-USDC is immutable and the 30% / 10% shares are fixed in v0.9.2. Recipient addresses can change only with paused intake and zero reserves; existing escrow cannot be redirected to a new wallet.
+USDC is immutable and the 30% / 10% shares are fixed in v0.9.3. Recipient addresses can change only with paused intake and zero reserves; existing escrow cannot be redirected to a new wallet.
 
 Ownership uses proposal then acceptance. Administrative authority stays with the current owner until acceptance; `renounceOwnership()` is disabled. Verify the recipient independently before proposing a change.
 

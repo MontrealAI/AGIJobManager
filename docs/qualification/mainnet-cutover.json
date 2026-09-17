@@ -58,15 +58,15 @@
     "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
     "hardhat.cutover-fork.config.mjs": "97ae65fb86ad2a6e7ac4b487a561e60fe4698bbc9bf6759105be330e4a5384f0",
     "hardhat/hardhat.config.js": "ff4c769f2e409186d29f569cb481ed49e975fa8d790105a0d2fda02bd4321a81",
-    "hardhat/package-lock.json": "86f8ebf0a32e5f341c13fb3b7278705458afb8a6b6f83b19ad5026408256807d",
-    "hardhat/package.json": "edf05ab713fecc93eb78755237de01b399f2e3b460735b609d5fd8ee0844aab3",
+    "hardhat/package-lock.json": "363223febbc487de132f6a932644fd8501d2d51b84e781ecae3cb6fed555a8fe",
+    "hardhat/package.json": "6c9c4963cd831b641bd92d9297df2223069f5a0c9e3893a9c33e3e53c6a60680",
     "hardhat/qualification/cutover-pin.json": "1da5c523c8d1e7629f2630844d02040bd6ca14a6961a41b259cf9af7bb7397d6",
     "hardhat/qualification/legacy-snapshot.cjs": "073b4e6ce4311246985d8c4740018fec967f7042e1b6a233a56142812daf6a31",
-    "hardhat/scripts/deployment-safety.cjs": "5b8aaa8192241df8f4bdcaac6a1b23cbacf1da25ee71f0f102b8612468d31584",
+    "hardhat/scripts/deployment-safety.cjs": "0eecbda26158524fb24f88a376ad51bb89e68542e5cf13a0678797e7cb09a845",
     "hardhat/scripts/runtime.cjs": "37818ccfd8fb317d12d156ac693a14e7f121680ef81d7d21e2b9e3dff3291cad",
-    "hardhat/test/mainnet-cutover.test.js": "1dc38b15a13d9224494322972378ca296fa963386a7c3f6d54102247f59b9b75",
-    "package-lock.json": "717ef43fad2d47f85fb41a2726669aa8dd940fa952c00c0e9d53e3e908ccca52",
-    "package.json": "75cc8c9a1e7261cd47c113cfa1523f8cca79c2ee83710ad268c907476c28d5c6",
+    "hardhat/test/mainnet-cutover.test.js": "523011b0d06c938ddfb06dbeee224b18baa5a2e5552f2415399a5c7852afd602",
+    "package-lock.json": "bc567320b90959c4eda0dbf5f52369ea82ac7f1580237235edaf2a383d158af9",
+    "package.json": "c0167abbf0ba6ffce660f3bcc62071650333316dfcf5ba6d025bc47978ed40f0",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116"
   },
@@ -446,10 +446,100 @@
       }
     ]
   },
-  "newEnsRoot": "usdc-v092.alpha.jobs.agi.eth",
+  "newEnsRoot": "usdc-v093.alpha.jobs.agi.eth",
+  "newEnsRootAuthority": {
+    "path": "NameWrapper token owner",
+    "registryOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+    "wrappedOwner": "0x9DB6fbB164c6195EF2FB1f533eFcc52853FeA68A",
+    "wrappedData": [
+      "0x9DB6fbB164c6195EF2FB1f533eFcc52853FeA68A",
+      "0",
+      "2007731864"
+    ],
+    "tokenApproved": "0x0000000000000000000000000000000000000000",
+    "parentOwnerOperatorApproval": false
+  },
+  "identityQualification": {
+    "scope": "local child-name fixtures on actual mainnet ENS; no production identity or signer-control certification",
+    "registry": {
+      "address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "runtimeCodeHash": "0xd6bfd5d6f1384a1f6ea57b8a8412de5552f138d42021cf7c4941e33206f529e4"
+    },
+    "nameWrapper": {
+      "address": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "runtimeCodeHash": "0xb2d3098f0579718d88a04ee65d3c6827a76823316ceed387945ad993fc6dbb6c"
+    },
+    "childResolver": {
+      "address": "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "runtimeCodeHash": "0x186d03e26f6e0224269c8f7f13a6334d625f1b83812db2045ac7de4f292e9336"
+    },
+    "roots": [
+      {
+        "name": "club.agi.eth",
+        "node": "0x39eb848f88bdfb0a6371096249dd451f56859dfe2cd3ddeab1e26d5bb68ede16",
+        "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+        "fuses": "327681",
+        "expiry": "2007731864",
+        "resolver": "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63"
+      },
+      {
+        "name": "agent.agi.eth",
+        "node": "0x2c9c6189b2e92da4d0407e9deb38ff6870729ad063af7e8576cb7b7898c88e2d",
+        "owner": "0x3B7205E05D015D06323B432E9813bCb3fe86adf7",
+        "fuses": "327681",
+        "expiry": "2007731864",
+        "resolver": "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63"
+      },
+      {
+        "name": "alpha.club.agi.eth",
+        "node": "0x6487f659ec6f3fbd424b18b685728450d2559e4d68768393f9c689b2b6e5405e",
+        "owner": "0xc0794B670346025738EE90D470862Bf76727BCf3",
+        "fuses": "327681",
+        "expiry": "2007731864",
+        "resolver": "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63"
+      },
+      {
+        "name": "alpha.agent.agi.eth",
+        "node": "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e",
+        "owner": "0x3B7205E05D015D06323B432E9813bCb3fe86adf7",
+        "fuses": "327681",
+        "expiry": "2007731864",
+        "resolver": "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63"
+      }
+    ],
+    "admissionRoutes": [
+      "wrapped owner",
+      "token approval",
+      "operator approval",
+      "resolver addr"
+    ],
+    "explicitExceptions": [
+      "owner-managed allowlist",
+      "address Merkle membership"
+    ],
+    "nftEligibility": "MockERC721 fixture; production NFT ownership and policy remain unqualified",
+    "localChildNamesOnly": true,
+    "fixtureNames": [
+      "agent.agent.agi.eth",
+      "validator.club.agi.eth",
+      "wrongrole-agent.club.agi.eth",
+      "wrongrole-validator.agent.agi.eth",
+      "agent.alpha.agent.agi.eth",
+      "validator.alpha.club.agi.eth",
+      "wrongrole-agent.alpha.club.agi.eth",
+      "wrongrole-validator.alpha.agent.agi.eth"
+    ]
+  },
   "assertions": [
     "keeps new intake closed through a two-step manager handover and removes all deployer owner authority",
     "creates, updates and revokes an isolated ENS job page through the real mainnet wrapper and resolver",
+    "admits real wrapped primary Agent and Club identities while rejecting unrelated and wrong-root claims",
+    "uses actual resolver addresses for primary membership and rejects revoked Agent and Club records",
+    "admits real wrapped alpha Agent and Club identities while rejecting unrelated and wrong-root claims",
+    "uses actual resolver addresses for alpha membership and rejects revoked Agent and Club records",
+    "rejects transferred-away wrapped identities without treating existing assignments as revoked jobs",
+    "qualifies actual token and operator approval admission and rejects revoked approvals",
+    "preserves explicit owner allowlist and Merkle admission exceptions without pretending they prove ENS membership",
     "settles native USDC exactly 8/30/10/52 with bonds separate while preserving every legacy job",
     "refunds exact micro-USDC on cancellation and rejects reuse of cancelled job IDs",
     "conserves USDC with three validators, indivisible rewards and the default three-approval threshold",
@@ -461,7 +551,7 @@
     "recovers from an emergency pause without stranding the new escrow or changing legacy pause state",
     "lets the actual unsettled legacy job exit on its original contract and original asset after the new launch"
   ],
-  "passed": 12,
+  "passed": 19,
   "publicTransactionsBroadcast": 0,
   "fixtureWallets": true,
   "productionActivationApproved": false

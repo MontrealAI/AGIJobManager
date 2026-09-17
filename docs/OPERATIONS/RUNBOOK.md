@@ -6,7 +6,7 @@
 
 ## ENS cutover expected result
 - `AGIJobManager.ensJobPages` points to the new ENSJobPages address.
-- ENS Registry reports the new helper as owner of the dedicated root; broader wrapper authority requires a separate same-manager replacement review.
+- ENS Registry reports NameWrapper as owner of the dedicated root; NameWrapper reports the new helper as wrapped-token owner. The qualified route uses no new token or blanket operator approval.
 - Creation, actual delegated writes and terminal revocation succeed without skipped/failed ENS hooks.
 - Future jobs resolve under `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
 - Legacy jobs and labels remain on their original manager/helper; same-manager helper replacement migrations are separately reviewed.
@@ -40,4 +40,4 @@
 | `pauseAll()` | Contain an active exploit affecting funds | Verify both intake and settlement flags; follow the incident playbook |
 | `setSettlementPaused(true)` | Stop new settlement-sensitive paths while preserving controlled operations | Use with communication plan |
 | `blacklistAgent/Validator` | Isolate malicious actor | Requires case file evidence |
-| `lockIdentityConfiguration()` | Permanently freeze token/ENS/root wiring after hardening | Irreversible |
+| `lockIdentityConfiguration()` | Permanently freeze ENS/wrapper/root/helper wiring after validation; USDC is independently immutable | Irreversible |

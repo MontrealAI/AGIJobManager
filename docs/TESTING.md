@@ -1,4 +1,4 @@
-# Testing v0.9.2
+# Testing v0.9.3
 
 ## Current strategy
 
@@ -22,6 +22,7 @@
 | Deployment preflight | Configuration and tool failure handling | `npm --prefix hardhat run test:preflight` | Fail-closed inputs, verification and receipt handling |
 | Local deployment | Actual deployment/readiness cases | `npm --prefix hardhat run test:deployment` | Paused construction, exact code, ownership, recovery and EVM size limits |
 | Native-USDC fork | Actual historical Ethereum token behavior | `npm --prefix hardhat run test:mainnet-fork` | Ordered settlement and issuer pause/blocklist rollback/retry |
+| USDC/ENS cutover fork | Real ENS participant membership, wrapped-root job pages and original-job preservation | `CUTOVER_REPORT=../build/qualification/mainnet-cutover.json npm --prefix hardhat run test:cutover` | Primary/alpha role admission and rejection; explicit exceptions; USDC settlement/recovery; legacy inventory and original-asset exit |
 | Static analysis | Configured scan and source-bound extended review | `npm run slither` and `npm run slither:extended` | Retained findings with explicit rationale; new or changed findings fail the gate |
 | UI unit | Interface behavior and transaction guards | `npm --prefix ui test` | Amounts, wallet/network changes, review and failed receipt handling |
 | UI browsers | User flow, accessibility and headers | From `ui/`: `npm run test:e2e`, `npm run test:a11y`, `npm run test:headers` | Browser behavior against the configured demo/test setup |

@@ -6,7 +6,7 @@ This runbook replaces `ENSJobPages` for the **same, verified USDC manager**. It 
 
 Canonical cutover flow:
 1. Deploy new `ENSJobPages` (Hardhat script).
-2. Establish the new helper's authority over the reviewed jobs root. Prefer a dedicated root owned by the helper; otherwise review the scope of any NameWrapper operator approval.
+2. Establish the new helper’s ownership of the dedicated wrapped jobs-root token, as qualified below. Any broader NameWrapper operator approval is a separate same-manager replacement decision.
 3. AGIJobManager owner manually calls `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
 4. For existing jobs of this same manager only, migrate historical page labels if needed (`migrateLegacyWrappedJobPage`). Never import the original mainnet manager’s pages or balances into a fresh USDC manager.
 5. Lock configuration only after validation is complete.
@@ -59,11 +59,11 @@ Typical replacement/migration drivers from current contract behavior:
 
 Example using the isolated namespace exercised in the fork rehearsal (a proposal, not a live deployment):
 - `jobLabelPrefix = "agijob"`
-- `jobsRootName = "usdc-v092.alpha.jobs.agi.eth"`
+- `jobsRootName = "usdc-v093.alpha.jobs.agi.eth"`
 
 So names are:
-- `agijob0.usdc-v092.alpha.jobs.agi.eth`
-- `agijob1.usdc-v092.alpha.jobs.agi.eth`
+- `agijob0.usdc-v093.alpha.jobs.agi.eth`
+- `agijob1.usdc-v093.alpha.jobs.agi.eth`
 - ...
 
 Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged.
@@ -83,7 +83,7 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 
 - You control deployer key and owner key(s) needed for manual wiring.
 - `hardhat/.env` is configured.
-- You know the intended AGIJobManager address for `JOB_MANAGER`.
+- You know the intended verified USDC manager address for `JOB_MANAGER`. Keep its intake paused and complete any pending manager ownership acceptance before helper deployment. Independently compare `owner()` with the intended owner in the reviewed manager receipt: the helper preflight’s zero `pendingOwner()` check alone cannot prove the intended handover occurred.
 - `JOBS_ROOT_NAME` is explicitly reviewed. The deployment script rejects the legacy `alpha.jobs.agi.eth` root for a new mainnet USDC helper.
 - The root owner is identified independently of the manager owner. At the qualification block they are different addresses.
 - You have identified whether your jobs root is wrapped or unwrapped.
@@ -101,27 +101,26 @@ npm ci
 npm run compile
 
 export JOB_MANAGER='<verified-new-USDC-manager-address>'
-export JOBS_ROOT_NAME='usdc-v092.alpha.jobs.agi.eth'
+export JOBS_ROOT_NAME='usdc-v093.alpha.jobs.agi.eth'
 export NEW_OWNER='<reviewed-final-helper-owner-address>'
 
-DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:ens-job-pages:mainnet
+DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
 
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 LOCK_CONFIG=0 npm run deploy:ens-job-pages:mainnet
 ```
 
-Required settings (via `.env` or the shell): `JOB_MANAGER` and `JOBS_ROOT_NAME`. The example also requires the reviewed final `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. `usdc-v092.alpha.jobs.agi.eth` is the tested proposal, not a pre-authorized live root. Verify authority and availability before adopting it.
+Required settings (via `.env` or the shell): `JOB_MANAGER`, `JOBS_ROOT_NAME` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. `usdc-v093.alpha.jobs.agi.eth` is the tested proposal, not a pre-authorized live root. Verify authority and availability before adopting it.
 
-Optional overrides:
-- `JOBS_ROOT_NODE` (must match `namehash(JOBS_ROOT_NAME)`)
-- `ENS_REGISTRY`
-- `NAME_WRAPPER`
-- `PUBLIC_RESOLVER`
-- `LOCK_CONFIG=1`
+Read-only planning needs a deployer address (`DEPLOYER_ADDRESS` when no key is configured), but no signing key, mainnet confirmation phrase or explorer API key. Public-network broadcasts require explorer verification; `VERIFY` defaults enabled and disabling it blocks the broadcast. Keep `LOCK_CONFIG=0` until actual wiring and the complete ENS lifecycle have been validated.
+
+Review mainnet address overrides for `ENS_REGISTRY`, `NAME_WRAPPER` and `PUBLIC_RESOLVER`, and any `JOBS_ROOT_NODE` override, which must equal the root namehash. Sepolia has no copied mainnet defaults for those ENS addresses: set all three explicitly, using zero NameWrapper only for an intentionally unwrapped configuration. Both public networks require paused manager intake and zero pending owner; existing reserves do not by themselves block a separately reviewed same-manager helper replacement.
 
 Expected result:
 - New ENSJobPages address deployed.
 - `setJobManager(JOB_MANAGER)` already executed by script.
-- Optional verification submitted.
+- Exact runtime matched against the qualified artifact; journal and its `solcInputPath` compiler input preserved.
+- Explorer verification completed successfully before the one-step helper ownership transfer.
+- Final helper owner, manager pointer and unlocked configuration match the reviewed plan.
 
 
 ### Common cutover mistakes
@@ -136,15 +135,15 @@ Expected result:
 ## 7) Required manual post-deploy wiring on mainnet
 
 What is automated vs manual:
-- Automated by deploy script: deploy contract, set `jobManager`, optional ownership transfer/verification.
+- Automated by deploy script: deploy contract, check runtime, set `jobManager`, complete required verification, transfer ownership to the explicit final helper owner and optionally lock only if requested. Keep deployment-time locking disabled.
 - Manual on mainnet: establish the reviewed root authority, then call `setEnsJobPages` on the intended manager. A fresh USDC cutover leaves all legacy pointers and approvals unchanged.
 
 
 ### Step 1 — Establish authority over the reviewed root
 
-For a fresh USDC deployment, the parent-root owner creates the dedicated child root with the new helper as its direct ENS Registry owner. The qualified fork exercises NameWrapper `setSubnodeOwner` on the observed wrapped parent; verify the parent, label, helper address, fuses and expiry for the actual transaction. Read `ENS.owner(jobsRootNode)` afterward and require the new helper address. No blanket NameWrapper approval is needed for this route.
+For a fresh USDC deployment, the parent-root owner creates the dedicated child root using NameWrapper `setSubnodeOwner`, with the new helper as owner of the **wrapped root token**. Verify the parent, label, helper address, fuses and expiry for the actual transaction. The qualified fork asserts `ENS.owner(jobsRootNode) == NameWrapper` and `NameWrapper.ownerOf(uint256(jobsRootNode)) == newEnsJobPages`; `getData(root)[0]` agrees. The helper is not the direct ENS Registry owner in this route. Token approval is zero and the parent owner has not granted the helper blanket operator approval. No new blanket approval is needed.
 
-For a separately reviewed replacement on the same manager with an existing wrapped jobs root, verify the helper owns that wrapped root or has the authority required by the wrapper. If operator approval is deliberately chosen, only its wrapped-root owner can call `setApprovalForAll(newEnsJobPages, true)`. This grants authority over **every wrapped name of that approving account**, so it is not a default cutover step. Record the scope and revocation plan. Do not transfer the original legacy manager’s root or revoke its helper authority to launch a new USDC manager.
+A directly owned **unwrapped** root is a separate supported configuration: its ENS Registry owner must be the helper. It is not the route exercised by the dedicated wrapped-root fixture. For a separately reviewed replacement on the same manager with an existing wrapped jobs root, verify the helper owns that wrapped token or has the authority required by the wrapper. If operator approval is deliberately chosen, only its wrapped-root owner can call `setApprovalForAll(newEnsJobPages, true)`. This grants authority over **every wrapped name of that approving account**, so it is not a default cutover step. Record the scope and revocation plan. Do not transfer the original legacy manager’s root or revoke its helper authority to launch a new USDC manager.
 
 ### Step 2 — Point AGIJobManager to the new ENSJobPages
 Caller: AGIJobManager owner account.
@@ -158,7 +157,7 @@ Why this matters:
 Expected result after wiring:
 - New hook calls route to the new ENSJobPages contract.
 - On AGIJobManager `Read Contract`, `ensJobPages` equals `newEnsJobPages`.
-- For the qualified dedicated-root route, ENS Registry `owner(jobsRootNode)` equals `newEnsJobPages`; for an intentionally reviewed wrapped-root replacement, the wrapper authority matches the approved plan.
+- For the qualified dedicated wrapped-root route, Registry `owner(jobsRootNode)` equals NameWrapper and `NameWrapper.ownerOf(uint256(jobsRootNode))` equals `newEnsJobPages`. Any separately reviewed authority configuration matches its approved plan.
 
 ---
 
@@ -213,16 +212,18 @@ On new ENSJobPages (`Read Contract`):
 On AGIJobManager (`Read Contract`):
 - `ensJobPages` equals new ENSJobPages address.
 
-On ENS Registry (`Read Contract`), for the qualified dedicated-root route:
-- `owner(jobsRootNode)` equals `newEnsJobPages`.
+For the qualified dedicated wrapped-root route, check:
+- ENS Registry `owner(jobsRootNode)` equals the configured NameWrapper.
+- NameWrapper `ownerOf(uint256(jobsRootNode))` and `getData(jobsRootNode)[0]` equal `newEnsJobPages`.
+- Token approval is zero and `isApprovedForAll(parentOwner,newEnsJobPages)` is false. The helper owns its own dedicated token and needs no blanket authority over the parent owner’s other names.
 
-Only for a separately reviewed wrapped-root replacement, inspect NameWrapper ownership/authority against the approved plan. A blanket approval is not an unconditional success criterion.
+A separately reviewed unwrapped-root configuration instead requires Registry owner equal to the helper. A blanket approval is not an unconditional success criterion for either route.
 
 On PublicResolver (`Read Contract`), through a full job lifecycle:
 - `isApprovedFor(newEnsJobPages, jobNode, actor)` matches the intended employer/agent authorization before settlement and is false afterward. Confirm actual allowed and rejected writes, not just a successful core transaction.
 
 Event checks:
-- ENSJobPages deployment tx + ownership transfer (if used).
+- ENSJobPages deployment transaction and one-step transfer to the reviewed final owner.
 - AGIJobManager `EnsJobPagesUpdated(old,new)` event.
 
 ---
@@ -232,14 +233,36 @@ Event checks:
 - If AGIJobManager was wired to the wrong ENSJobPages, owner can call `setEnsJobPages(previousAddress)` (if identity config still configurable).
 - If NameWrapper authority is incorrect, establish authority over the intended dedicated root. `setApprovalForAll` applies to every wrapped name of the approving account; never grant broad authority merely to avoid resolving a root-owner mismatch.
 - If legacy writes fail for specific jobs, run `migrateLegacyWrappedJobPage(jobId, exactLabel)` per affected job.
-- If verification API fails, use deployment artifact `solc-input.json` for manual standard-json verify.
+- If helper verification fails, use the specific manual procedure below. `reverify:mainnet` and `reverify:sepolia` recover manager deployments only; they do not accept ENS helper journals.
 
 ---
+
+### Recover helper verification without redeploying
+
+1. Preserve the failed `ens-job-pages.<chain>.<id>.json` journal, the compiler input at its `solcInputPath`, and all transaction receipts. Reconcile the deployment address and successful transactions against the selected chain. Read current helper `owner()`, `jobManager()` and `configLocked()`; a failed command may already have deployed and wired the helper.
+2. Check the deployed runtime against the qualified artifact and the journal’s `expectedRuntimeCodeHash`/`runtimeCodeHash`. A mismatch requires investigation; do not submit different source merely to obtain a verification badge.
+3. On the correct explorer’s source-verification form, select Solidity Standard-JSON input and the exact release compiler **0.8.37**. Upload the unchanged input referenced by `solcInputPath`; it already contains optimizer, IR, EVM and metadata settings. Select `contracts/ens/ENSJobPages.sol:ENSJobPages` if the form requests the contract name. Use the original five constructor arguments from `constructorArgs`. If ABI-encoded arguments are required, derive them read-only from `hardhat/`:
+
+```bash
+ENS_DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-ens-journal>.json node - <<'NODE'
+const fs = require("node:fs");
+const { AbiCoder } = require("ethers");
+const journal = JSON.parse(fs.readFileSync(process.env.ENS_DEPLOYMENT_RECEIPT, "utf8"));
+console.log(AbiCoder.defaultAbiCoder().encode(
+  ["address", "address", "address", "bytes32", "string"],
+  journal.constructorArgs
+).slice(2));
+NODE
+```
+
+4. Save the explorer result and a separate recovery record identifying the original journal, exact source/compiler input and verified address. Preserve the original failed journal; do not rewrite its status into a synthetic successful deployment. No blockchain transaction is needed for explorer verification.
+5. Only after successful verification, review which intended owner actions are still missing. The current helper owner performs only those actions, such as `setJobManager` if it never succeeded or the one-step `transferOwnership` to the reviewed final helper owner. Re-read the actual state and reconcile each receipt. Keep configuration unlocked until root authority, both pointers, delegated writes and terminal revocation are validated. Do not rerun the deployment command to resume these actions.
 
 ## 11) Operator “done successfully” checklist
 
 - [ ] Dry run reviewed and approved.
-- [ ] ENSJobPages deployed and (if required) verified.
+- [ ] ENSJobPages deployed, exact runtime matched and source verified.
+- [ ] Helper owner equals the explicit reviewed final owner; manager owner independently matches its reviewed receipt.
 - [ ] Dedicated-root ownership or separately reviewed wrapped-root authority verified.
 - [ ] AGIJobManager `setEnsJobPages(new)` executed.
 - [ ] Etherscan read checks pass on all key fields.
