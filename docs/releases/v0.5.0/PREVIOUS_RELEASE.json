@@ -1,0 +1,36 @@
+{
+  "id": 390235051,
+  "tag_name": "v0.4.0",
+  "name": "v0.4.0 — Genesis Console · Current-State Final Release",
+  "target_commitish": "5d3607e98672487ec67f856079c154d340c3e848",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2026-09-16T20:11:24Z",
+  "html_url": "https://github.com/MontrealAI/AGIJobManager/releases/tag/v0.4.0",
+  "assets": [
+    {
+      "name": "AGIJobManager-v0.4.0-COMPLETE.zip",
+      "size": 30499171,
+      "digest": "sha256:99cf4e2d2baaaacad906bb90b849ffb2f07858a8ed55e7dd2116963ad86a8a81",
+      "browser_download_url": "https://github.com/MontrealAI/AGIJobManager/releases/download/v0.4.0/AGIJobManager-v0.4.0-COMPLETE.zip"
+    },
+    {
+      "name": "agijobmanager_genesis_job_mainnet_2026-03-05-v33.html",
+      "size": 565425,
+      "digest": "sha256:a8e35dda24b513888f355c4ba528b8db0da183e6bf89f30a710ace92bfd50dd0",
+      "browser_download_url": "https://github.com/MontrealAI/AGIJobManager/releases/download/v0.4.0/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html"
+    },
+    {
+      "name": "RELEASE_MANIFEST.json",
+      "size": 101897,
+      "digest": "sha256:4b514cc2c8e9cb107428db27c32a1b1082100738f3c02ee0e47ae3e73be07b48",
+      "browser_download_url": "https://github.com/MontrealAI/AGIJobManager/releases/download/v0.4.0/RELEASE_MANIFEST.json"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 308,
+      "digest": "sha256:48f6a30bcbb4b8784e52a121b19abe9cac90dc4de47bd9a0f9c62c0cb55992da",
+      "browser_download_url": "https://github.com/MontrealAI/AGIJobManager/releases/download/v0.4.0/SHA256SUMS.txt"
+    }
+  ]
+}

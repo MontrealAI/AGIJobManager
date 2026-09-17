@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.5.0",
+  "name": "v0.5.0 \u2014 USDC-only settlement",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "73a632f75cb513977d892b0d4bc6dd412b0cba32",
+  "sourceTree": "80276ef5a9d44a3c832694b3cde6659469023c7a",
+  "previousTag": "v0.4.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "USDC-only software release. Fresh deployment required; no live contract deployment or upgrade.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "contracts/legacy",
+    "migrations/snapshots",
+    "lib"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "0b5e19a98e6f17e5873c9b959455139b4be7f11a9e3c718d680b4cdca37c60f7",
+    "PREVIOUS_RELEASE.json": "273d2299a001876f8dd68b7914607a7e64f8a67817c0a630a199b405b3b79f8a",
+    "SOURCE_CI.json": "b206adf4e2a4f4445441f150f3574bbb75581a48eadd679591ee064d5d3b869a"
+  },
+  "requiredSourceRuns": {
+    "ci": {
+      "id": 35176057838,
+      "workflow": "ci.yml"
+    },
+    "docs": {
+      "id": 35176057812,
+      "workflow": "docs.yml"
+    },
+    "security": {
+      "id": 35176057774,
+      "workflow": "security-verification.yml"
+    },
+    "ui": {
+      "id": 35176057805,
+      "workflow": "ui.yml"
+    }
+  }
+}
