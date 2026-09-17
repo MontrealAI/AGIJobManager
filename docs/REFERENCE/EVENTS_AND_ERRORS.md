@@ -1,6 +1,6 @@
 # Events and Errors Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `8c89e24c4c94`.
+- Generated at (deterministic source fingerprint): `d8bd6d632a1b`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Events catalog
@@ -20,7 +20,9 @@
 | `EnsJobPagesUpdated` | `address indexed oldEnsJobPages, address indexed newEnsJobPages` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `EnsRegistryUpdated` | `address newEnsRegistry` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `IdentityConfigurationLocked` | `address indexed locker, uint256 indexed atTimestamp` | Identity wiring permanently locked | Governance milestone (one-way control) |
+| `JobAccepted` | `uint256 indexed jobId, address indexed employer` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `JobApplied` | `uint256 indexed jobId, address indexed agent` | Agent assigned and bond locked | Detect assignment churn and anti-takeover posture |
+| `JobApprovalThresholdReached` | `uint256 indexed jobId, uint256 approvedAt` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `JobCancelled` | `uint256 indexed jobId` | Unassigned job cancelled | Confirm escrow release to employer |
 | `JobCompleted` | `uint256 indexed jobId, address indexed agent, uint256 indexed reputationPoints` | Settlement in favor of agent | Reconcile payout and validator reward flows |
 | `JobCompletionRequested` | `uint256 indexed jobId, address indexed agent, string jobCompletionURI` | Agent submitted completion metadata | Start completion review SLA timers |
@@ -41,10 +43,14 @@
 | `RootNodesUpdated` | `bytes32 indexed clubRootNode, bytes32 indexed agentRootNode, bytes32 indexed alphaClubRootNode, bytes32 alphaAgentRootNode` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `SettlementPauseSet` | `address indexed setter, bool indexed paused` | Settlement lane pause toggled | Critical operations-state alert |
 | `SettlementWalletsUpdated` | `address indexed wallet30, address indexed wallet10` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
+| `UnresolvedDisputeRefunded` | `uint256 indexed jobId` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
+| `USDCClaimed` | `address indexed beneficiary, uint256 amount` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
+| `USDCDeferred` | `address indexed beneficiary, uint256 amount` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `USDCWithdrawn` | `address indexed to, uint256 indexed amount, uint256 remainingWithdrawable` | Owner treasury withdrawal | High-severity treasury-control alert |
 | `ValidationRewardPercentageUpdated` | `uint256 indexed oldPercentage, uint256 indexed newPercentage` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `ValidatorBlacklisted` | `address indexed validator, bool indexed status` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `ValidatorBondParamsUpdated` | `uint256 indexed bps, uint256 indexed min, uint256 indexed max` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
+| `ValidatorCredentialUsed` | `uint256 indexed jobId, address indexed voter, bytes32 indexed credential, address controller` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `ValidatorSlashBpsUpdated` | `uint256 indexed oldBps, uint256 indexed newBps` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `VoteQuorumUpdated` | `uint256 indexed oldQuorum, uint256 indexed newQuorum` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 

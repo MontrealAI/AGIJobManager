@@ -1,10 +1,10 @@
-# Contracts and Permissions — v0.9.4
+# Contracts and Permissions — v0.9.5
 
 ## Contract map
 
 - `contracts/AGIJobManager.sol`: core escrow, role gating, validator voting, disputes, settlement, NFT minting.
 - `contracts/ens/ENSJobPages.sol`: optional ENS hook target for job subname creation and post-settlement lock/revoke.
-- Utility libraries used by `AGIJobManager`: `BondMath`, `ReputationMath`, `TransferUtils`, `UriUtils`, `ENSOwnership`, `NftEligibility`.
+- Utility libraries used by `AGIJobManager`: `BondMath`, `ReputationMath`, `TransferUtils`, `UriUtils`, `ENSOwnership`, `NftEligibility`, `JobSettlement`, `JobValidation`.
 
 The manager uses native USDC for escrow, rewards and bonds. Successful settlement pays validators first, then fixed 30%/10% shares of original cost to the configured wallets, then the agent remainder. NFT credentials establish eligibility only. See [payout rules](USDC_PAYOUT_SPLIT.md).
 

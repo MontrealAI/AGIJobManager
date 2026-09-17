@@ -450,11 +450,49 @@ export const agiJobManagerAbi = [
       {
         "indexed": true,
         "internalType": "address",
+        "name": "employer",
+        "type": "address"
+      }
+    ],
+    "name": "JobAccepted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "agent",
         "type": "address"
       }
     ],
     "name": "JobApplied",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "approvedAt",
+        "type": "uint256"
+      }
+    ],
+    "name": "JobApprovalThresholdReached",
     "type": "event"
   },
   {
@@ -985,6 +1023,44 @@ export const agiJobManagerAbi = [
       {
         "indexed": true,
         "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "USDCClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "USDCDeferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "to",
         "type": "address"
       },
@@ -1015,6 +1091,19 @@ export const agiJobManagerAbi = [
       }
     ],
     "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "UnresolvedDisputeRefunded",
     "type": "event"
   },
   {
@@ -1086,6 +1175,37 @@ export const agiJobManagerAbi = [
       {
         "indexed": true,
         "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "credential",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "controller",
+        "type": "address"
+      }
+    ],
+    "name": "ValidatorCredentialUsed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
         "name": "oldBps",
         "type": "uint256"
       },
@@ -1142,6 +1262,19 @@ export const agiJobManagerAbi = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptJob",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1535,6 +1668,19 @@ export const agiJobManagerAbi = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "claimUSDC",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "clubRootNode",
     "outputs": [
@@ -1692,6 +1838,24 @@ export const agiJobManagerAbi = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "executeUSDCTransfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_jobId",
         "type": "uint256"
@@ -1706,7 +1870,7 @@ export const agiJobManagerAbi = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_jobId",
+        "name": "jobId",
         "type": "uint256"
       }
     ],
@@ -1826,6 +1990,45 @@ export const agiJobManagerAbi = [
         "internalType": "uint8",
         "name": "agentPayoutPct",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getJobDeadlines",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "assignmentDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reviewEnd",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "settlementAfter",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ownerResolutionAfter",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "neutralRefundAfter",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1986,6 +2189,19 @@ export const agiJobManagerAbi = [
   {
     "inputs": [],
     "name": "lockedAgentBonds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lockedClaims",
     "outputs": [
       {
         "internalType": "uint256",
@@ -2212,6 +2428,25 @@ export const agiJobManagerAbi = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "pendingUSDC",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "premiumReputationThreshold",
     "outputs": [
@@ -2222,6 +2457,19 @@ export const agiJobManagerAbi = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "refundUnresolvedDispute",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -2274,7 +2522,7 @@ export const agiJobManagerAbi = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "account",
         "type": "address"
       }
     ],
@@ -2827,6 +3075,19 @@ export const agiJobManagerAbi = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "settlementPausedSeconds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes4",
@@ -3089,6 +3350,40 @@ export const agiJobManagerAbi = [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "claimant",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "label",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "proof",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "validatorCredential",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "credential",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "controller",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

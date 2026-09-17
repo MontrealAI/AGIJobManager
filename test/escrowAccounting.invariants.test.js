@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time } = require('../scripts/test-helpers.cjs');
@@ -39,7 +40,7 @@ contract('escrowAccounting.invariants', (accounts) => {
         await manager.validateJob(i, 'validator', validatorTree.proofFor(v2), { from: v2 });
         await manager.validateJob(i, 'validator', validatorTree.proofFor(v3), { from: v3 });
         await time.increase(2);
-        await manager.finalizeJob(i, { from: employer });
+        await finalizeAfterReview(manager, i, { from: employer });
       } else if (i % 3 === 1) {
         await time.increase(6001);
         await manager.expireJob(i, { from: employer });

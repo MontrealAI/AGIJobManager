@@ -1,4 +1,4 @@
-# Quickstart — v0.9.4
+# Quickstart — v0.9.5
 
 Choose the workflow below before running commands. A software release and passing tests do not deploy a manager or open it to deposits.
 
@@ -12,7 +12,7 @@ Choose the workflow below before running commands. A software release and passin
 
 ## 1) Install
 
-Check out the reviewed v0.9.4 release, use Node 22.23.2 and install the committed lockfiles. From the repository root:
+Check out the reviewed v0.9.5 release, use Node 22.23.2 and install the committed lockfiles. From the repository root:
 
 ```bash
 npm ci

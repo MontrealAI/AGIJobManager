@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -102,6 +103,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     await manager.setValidationRewardPercentage(10, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     const agiType = await MockERC721.new({ from: owner });
@@ -125,7 +127,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     const validatorBefore = await token.balanceOf(validator);
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const agentBalance = await token.balanceOf(agent);
     const validatorBalance = await token.balanceOf(validator);

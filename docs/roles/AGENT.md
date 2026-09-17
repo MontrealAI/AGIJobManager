@@ -1,4 +1,4 @@
-# Agent Guide — v0.9.4
+# Agent Guide — v0.9.5
 
 Agents earn USDC by completing assigned work. At the default validator budget, a successful 100 USDC job pays 8 USDC to correct-side validators, 30 USDC to `wallet30`, 10 USDC to `wallet10`, and 52 USDC to the agent, excluding bond returns and rounding.
 
@@ -21,11 +21,11 @@ You must not be blacklisted or already at `maxActiveJobsPerAgent`. Have enough U
 4. Call `requestJobCompletion(jobId, jobCompletionURI)` by `assignedAt + duration`. Submission does not itself pay you.
 5. Monitor votes and any dispute. After the relevant challenge/review window, anyone may call `finalizeJob`; you can submit that transaction yourself if eligible for settlement. Confirm `JobPayoutDistributed` and your USDC balance.
 
-A reached approval threshold starts a challenge window. Early finalization also requires approvals to exceed disapprovals. After the full review window, no votes allow completion with the unused validator budget remaining with the agent; ties or under-quorum voting open a dispute. See the [walkthrough](../user-guide/happy-path.md) for outcome rules.
+Ordinary finalization waits for the full review and any longer approval challenge, then requires quorum and a majority. No votes, ties or under-quorum votes open a dispute. The buyer may explicitly accept satisfactory submitted work immediately. See the [walkthrough](../user-guide/happy-path.md) for outcome rules.
 
 ## Payment and bonds
 
-The job's validator budget is fixed at posting (8% default, owner-selectable 1–60% for new jobs). Successful settlement pays validators first, then the fixed 30% and 10% shares of the original job cost, then all remaining USDC to you. Your original performance bond is returned on success; validator rounding/unallocated rewards and any awarded dispute bond follow contract rules. Reputation can also increase on qualifying outcomes; no-vote fallback does not earn reputation.
+The job's validator budget is fixed at posting (8% default, owner-selectable 1–60% for new jobs). Successful settlement pays validators first, then the fixed 30% and 10% shares of the original job cost, then all remaining USDC to you. Your original performance bond is returned on success; validator rounding/unallocated rewards and any awarded dispute bond follow contract rules. Reputation can also increase on qualifying outcomes; explicit buyer acceptance does not earn reputation.
 
 If the employer wins or the job expires without a completion request, your performance bond can be forfeited. During the completion review window, an unsettled job can be disputed by its employer or assigned agent; this requires a separate approved USDC dispute bond.
 
@@ -40,3 +40,5 @@ If the employer wins or the job expires without a completion request, your perfo
 | `TransferFailed` | USDC balance/allowance and token transfer restrictions |
 
 Relevant functions: `applyForJob`, `requestJobCompletion`, `finalizeJob`, `getJobCore`, `getJobValidation`, `getJobCompletionURI`. Relevant events: `JobApplied`, `JobCompletionRequested`, `JobPayoutDistributed`, `JobCompleted`, `ReputationUpdated`.
+
+The buyer may explicitly accept satisfactory submitted work. If arbitration remains unanswered, a neutral timeout returns the buyer's escrow and your own bond; it does not compensate your work. Inspect the acceptance criteria and moderator coverage before applying. Settlement pauses extend your submission deadline. Failed outgoing payments remain reserved for your wallet and can be retried with `claimUSDC`.

@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IAGIJobManagerCreateJob {
+    function acceptJob(uint256 jobId) external;
     function createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details) external;
 }
 
@@ -18,6 +19,8 @@ contract ERC721ReceiverEmployer is IERC721Receiver {
         manager = IAGIJobManagerCreateJob(managerAddress);
         token = IERC20(tokenAddress);
     }
+
+    function acceptJob(uint256 jobId) external { manager.acceptJob(jobId); }
 
     function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
         token.approve(address(manager), payout);
@@ -46,6 +49,8 @@ contract NonReceiverEmployer {
         token = IERC20(tokenAddress);
     }
 
+    function acceptJob(uint256 jobId) external { manager.acceptJob(jobId); }
+
     function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
         token.approve(address(manager), payout);
         manager.createJob(spec, payout, duration, details);
@@ -66,6 +71,8 @@ contract TokenURIReaderReceiver is IERC721Receiver {
         manager = IAGIJobManagerCreateJob(managerAddress);
         token = IERC20(tokenAddress);
     }
+
+    function acceptJob(uint256 jobId) external { manager.acceptJob(jobId); }
 
     function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
         token.approve(address(manager), payout);
@@ -90,6 +97,8 @@ contract GasGriefingReceiverEmployer is IERC721Receiver {
         manager = IAGIJobManagerCreateJob(managerAddress);
         token = IERC20(tokenAddress);
     }
+
+    function acceptJob(uint256 jobId) external { manager.acceptJob(jobId); }
 
     function createJob(string memory spec, uint256 payout, uint256 duration, string memory details) external {
         token.approve(address(manager), payout);

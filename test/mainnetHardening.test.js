@@ -94,7 +94,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     await prepareSimpleSettlement(manager, token);
     await malformed.setTokenURIBytes("0x1234", { from: owner });
-    let receipt = await manager.finalizeJob(0, { from: employer });
+    let receipt = await manager.acceptJob(0, { from: employer });
     let issued = receipt.logs.find((l) => l.event === "NFTIssued");
     assert.equal(await manager.tokenURI(issued.args.tokenId), "ipfs://base/QmCompletion");
 
@@ -103,7 +103,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager2.setUseEnsJobTokenURI(true, { from: owner });
     await prepareSimpleSettlement(manager2, token);
     await malformed.setTokenURIBytes(web3.eth.abi.encodeParameter("string", "ens://job.valid"), { from: owner });
-    receipt = await manager2.finalizeJob(0, { from: employer });
+    receipt = await manager2.acceptJob(0, { from: employer });
     issued = receipt.logs.find((l) => l.event === "NFTIssued");
     assert.equal(await manager2.tokenURI(issued.args.tokenId), "ens://job.valid");
 
@@ -118,7 +118,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       + "0000000000000000000000000000000000000000000000000000000000000000",
       { from: owner }
     );
-    receipt = await manager3.finalizeJob(0, { from: employer });
+    receipt = await manager3.acceptJob(0, { from: employer });
     issued = receipt.logs.find((l) => l.event === "NFTIssued");
     assert.equal(await manager3.tokenURI(issued.args.tokenId), "ipfs://base/QmCompletion");
   });
@@ -252,7 +252,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.setUseEnsJobTokenURI(true, { from: owner });
 
     await prepareSimpleSettlement(manager, token);
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
     const core = await manager.getJobCore(0);
     assert.equal(core.completed, true);
   });
@@ -378,7 +378,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
 
     assert.equal((await token.balanceOf(agent)).toString(), payout.muln(60).divn(100).toString());
     assert.equal((await token.balanceOf(employer)).toString(), "0");
@@ -566,7 +566,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "ipfs://completion-safe", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
-    await manager.finalizeJob(0, { from: owner });
+    await receiverEmployer.acceptJob(0, { from: owner });
     assert.equal((await receiverEmployer.receivedCount()).toString(), "1");
 
     await token.mint(nonReceiverEmployer.address, payout, { from: owner });
@@ -576,7 +576,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.applyForJob(1, "agent", [], { from: agent });
     await manager.requestJobCompletion(1, "ipfs://completion-unsafe", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
-    await manager.finalizeJob(1, { from: owner });
+    await nonReceiverEmployer.acceptJob(1, { from: owner });
     assert.equal(await manager.ownerOf(1), nonReceiverEmployer.address);
 
     await expectCustomError(
@@ -607,7 +607,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.requestJobCompletion(0, "ipfs://completion-grief", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
 
-    await manager.finalizeJob(0, { from: owner });
+    await gasGriefer.acceptJob(0, { from: owner });
     assert.equal(await manager.ownerOf(0), gasGriefer.address);
   });
 
@@ -632,7 +632,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.requestJobCompletion(0, "QmCallbackURI", { from: agent });
     await time.increase((await manager.completionReviewPeriod()).addn(1));
 
-    await manager.finalizeJob(0, { from: owner });
+    await receiver.acceptJob(0, { from: owner });
     assert.equal(await receiver.seenTokenUri(), "ipfs://base/QmCallbackURI");
   });
 

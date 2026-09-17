@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time, expectRevert } = require('../scripts/test-helpers.cjs');
@@ -133,7 +134,7 @@ contract('mainnet governance + ops regressions', (accounts) => {
 
     await ctx.manager.unpauseAll({ from: owner });
     await time.increase(3);
-    await ctx.manager.finalizeJob(0, { from: employer });
+    await finalizeAfterReview(ctx.manager, 0, { from: employer });
   });
 
   it('emits EnsHookAttempted with success and failure states without bricking flows', async () => {

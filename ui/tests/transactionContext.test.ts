@@ -152,7 +152,7 @@ function postingContext() {
   const { context, method } = primaryContext();
   const terms: Record<string, string | boolean> = {
     validationRewardPercentage: '8', wallet30: manager, wallet10: other,
-    maxJobPayout: '1000000000', jobDurationLimit: '31536000', paused: false, agentNftRequired: true
+    maxJobPayout: '1000000000', jobDurationLimit: '31536000', paused: false, agentNftRequired: true, completionReviewPeriod: '604800', challengePeriodAfterApproval: '86400', disputeReviewPeriod: '1209600', voteQuorum: '3'
   };
   const inputs: Record<string, {value: string}> = {
     jobSpecURI: { value: 'ipfs://example' }, jobDetails: { value: 'Deliver the agreed result' },

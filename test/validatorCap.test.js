@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -86,6 +87,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     );
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await expectCustomError(
       manager.setRequiredValidatorDisapprovals.call(cap, { from: owner }),
       "InvalidValidatorThresholds"
@@ -95,6 +97,7 @@ contract("AGIJobManager validator cap", (accounts) => {
   it("reverts additional votes once a dispute is triggered", async () => {
     const cap = (await manager.MAX_VALIDATORS_PER_JOB()).toNumber();
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(cap - 1, { from: owner });
 
     const payout = toBN(toWei("10"));
@@ -166,7 +169,7 @@ contract("AGIJobManager validator cap", (accounts) => {
     }
 
     await time.increase((await manager.challengePeriodAfterApproval()).addn(1));
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
     const job = await manager.getJobCore(jobId);
     assert.strictEqual(job.completed, true, "job should complete at the cap");
   });

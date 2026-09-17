@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time, expectEvent } = require("../scripts/test-helpers.cjs");
@@ -236,7 +237,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await manager.setUseEnsJobTokenURI(true, { from: owner });
 
     await seedSimpleJob(manager, token, nft);
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
 
     const uri = await manager.tokenURI(0);
     assert.equal(uri, "ens://job-0.alpha.jobs.agi.eth");
@@ -277,7 +278,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await manager.setUseEnsJobTokenURI(true, { from: owner });
 
     await seedSimpleJob(manager, token, nft);
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
 
     const uri = await manager.tokenURI(0);
     assert.equal(uri, `ens://agijob0.${rootName}`);

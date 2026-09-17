@@ -36,6 +36,7 @@ contract AGIJobManagerTimingFuzz is Test {
         manager.addAdditionalValidator(validator);
         manager.setSettlementPaused(false);
         manager.setRequiredValidatorApprovals(1);
+        manager.setVoteQuorum(1);
 
         agiType = new MockERC721();
         manager.addAGIType(address(agiType), 60);
@@ -75,6 +76,8 @@ contract AGIJobManagerTimingFuzz is Test {
 
     function testFuzz_challengePeriodBoundary(uint256 extra) external {
         uint256 jobId = _createAssignedJob();
+        (,,, uint256 requestedAt,) = manager.getJobValidation(jobId);
+        vm.warp(requestedAt + manager.completionReviewPeriod() - 1);
         vm.prank(validator);
         manager.validateJob(jobId, "", new bytes32[](0));
         (, uint256 approvedAt) = manager.jobValidatorApprovalState(jobId);

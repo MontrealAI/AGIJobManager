@@ -1,4 +1,4 @@
-# AGIJobManager Contract Documentation — v0.9.4
+# AGIJobManager Contract Documentation — v0.9.5
 
 This document provides a comprehensive, code‑accurate overview of the `AGIJobManager` contract. It is intended for engineers, integrators, reviewers, and operators. The ABI‑exact reference lives in [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
 
@@ -53,7 +53,7 @@ stateDiagram-v2
     CompletionRequested --> FinalizationWindow: completionReviewPeriod elapsed
     FinalizationWindow --> Completed: finalizeJob (approvals > disapprovals)
     FinalizationWindow --> Disputed: finalizeJob (quorum not met or tie)
-    FinalizationWindow --> Completed: finalizeJob (no votes -> agent wins, no reputation)
+    FinalizationWindow --> Completed: finalizeJob (quorum and approval majority)
     FinalizationWindow --> Completed: finalizeJob (employer wins)
 
     Disputed --> Completed: resolveDisputeWithCode(AGENT_WIN)
@@ -126,7 +126,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 
 ## Core invariants (implementation expectations)
 
-- **Escrow accounting**: `lockedEscrow` tracks total job escrow; withdrawals are limited to `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds - lockedDisputeBonds`.
+- **Escrow accounting**: `lockedEscrow` tracks total job escrow; withdrawals are limited to `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds - lockedDisputeBonds - lockedClaims`.
 - **Completion gating**: payout + NFT mint require a valid, non‑empty completion URI submitted via `requestJobCompletion`.
 - **Role gating**: agents/validators must pass allowlist/Merkle/ENS checks (or be in `additional*` allowlists) and not be blacklisted.
 - **Single‑settlement**: a job can be completed, expired, or deleted once; settlement functions guard against double‑finalization.
@@ -138,14 +138,14 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 - **Agent bond**: `applyForJob` transfers the agent bond into the contract and increments `lockedAgentBonds`. On agent win the bond is returned to the agent; on employer win the bond is refunded to the employer (or pooled for validators if disapproval threshold was reached).
 - **Validator bond**: each validator vote transfers a bond (computed from `validatorBondBps`, `validatorBondMin`, `validatorBondMax`) and increments `lockedValidatorBonds`. Correct validators earn rewards; incorrect validators are slashed by `validatorSlashBps`.
 - **Dispute bond**: `disputeJob` transfers a bond based on `DISPUTE_BOND_BPS` with min/max caps. The bond is paid to the winner on resolution.
-- **Agent payout**: all USDC remaining after correct-side validator rewards, 30% and 10% of the original cost to the configured wallets. Those recipients may rotate only between jobs with intake paused and all reserves zero; the USDC token and percentages remain fixed. See [exact payout rules](USDC_PAYOUT_SPLIT.md).
+- **Agent payout**: all USDC remaining after correct-side validator rewards, 30% and 10% of the original cost to the configured wallets. Those recipients may rotate only between jobs with intake paused and all live escrow/bond reserves zero (pending claims keep their original beneficiary); the USDC token and percentages remain fixed. See [exact payout rules](USDC_PAYOUT_SPLIT.md).
 - **Validator payout**: on completion, **correct‑side** validators split `floor(job.payout * job.validatorRewardPctSnapshot / 100)` plus any pooled bond amounts, **only if** there is at least one validator. Incorrect validators receive their bond minus the slashed portion, and if no validators participate no budget is deducted, leaving that amount with the agent on successful completion.
 - **Refunds**:
   - `cancelJob`/`delistJob` return the full escrow to the employer if no agent was assigned.
   - `expireJob` returns escrow after duration ends with no completion request and slashes the agent bond to the employer.
-  - Employer-win dispute resolution or finalization refunds escrow less the participating-validator budget, plus any residual reward/bond amounts assigned to the employer. It pays no 30%/10% shares and mints no completion NFT.
-- **No‑vote liveness**: after `completionReviewPeriod` with zero votes, `finalizeJob` settles in favor of the agent **without** reputation updates (`repEligible = false`).
-- **ERC‑20 safety**: the contract checks `transfer`/`transferFrom` return values and measures exact incoming amounts. Public-chain deployments are restricted to native USDC. Issuer pause/blocklist failures roll back the entire settlement, including previous transfers.
+  - Employer-win dispute resolution or finalization refunds the full escrow plus any unallocated forfeited collateral; reviewer rewards use forfeited collateral. It pays no 30%/10% shares and mints no completion NFT.
+Ordinary finalization requires the full review and any longer approval challenge to end, plus quorum and a strict majority. No votes, under-quorum votes or a tie open a dispute. The buyer may explicitly accept submitted work immediately. Use `getJobDeadlines` for pause-adjusted dates; see [buyer protection](BUYER_PROTECTION.md).
+- **ERC‑20 safety**: the contract checks `transfer`/`transferFrom` return values and measures exact incoming amounts. Public-chain deployments are restricted to native USDC. Failed outgoing transfers become protected claims, without blocking eligible recipients. Incoming transfers revert if they fail.
 
 ## ENS / NameWrapper / Merkle ownership verification
 
@@ -190,6 +190,6 @@ Local regression tests use Hardhat 3 and Mocha through `npm test`; Truffle and G
 
 The contract is non-upgradeable. Native USDC and the fixed 30%/10% gross-cost shares are immutable. The validator budget is 8% by default and can be set to 1–60% for future postings. Agent bonds are fixed at assignment; validator bonds are fixed at a job's first vote. Rule changes affecting active settlement require empty reserves where specified in [Configuration](CONFIGURATION.md).
 
-Recipient rotation requires intake paused and all reserves zero. Ownership changes require the proposed owner's acceptance; renunciation is disabled. Fresh deployments start with intake paused until commissioning.
+Recipient rotation requires intake paused and all live escrow/bond reserves zero (pending claims keep their original beneficiary). Ownership changes require the proposed owner's acceptance; renunciation is disabled. Fresh deployments start with intake paused until commissioning.
 
-`pause` blocks creation/application. `settlementPaused` additionally blocks completion, votes, disputes, settlement and withdrawals. Deadlines requiring elapsed windows use strict `>` comparisons. When the approval latch exists, its challenge must elapse even if the review window ends first. After that, an undisputed approval majority can settle early; otherwise the review-window quorum/tie/no-vote rules apply.
+`pause` blocks creation/application. `settlementPaused` additionally blocks completion, votes, disputes, settlement and withdrawals. Deadlines requiring elapsed windows use strict `>` comparisons. Both the full review and any approval challenge must elapse. An undisputed quorum majority determines the outcome; no votes, under-quorum votes or ties open a dispute. Use getJobDeadlines for pause-adjusted times.

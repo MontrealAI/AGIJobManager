@@ -1,4 +1,4 @@
-# AGIJobManager Contract Guide — v0.9.4
+# AGIJobManager Contract Guide — v0.9.5
 
 Source of truth: [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol). Every escrow, reward and bond uses native USDC; ETH pays gas. Successful settlement pays validators first, then 30% and 10% of the original job cost to the two configured wallets, then the remainder to the agent. See [exact economics](../USDC_PAYOUT_SPLIT.md).
 
@@ -29,7 +29,7 @@ stateDiagram-v2
   Created --> Cancelled: cancelJob or delistJob
   Assigned --> Review: requestJobCompletion
   Assigned --> Expired: expireJob after deadline, no submission
-  Review --> Completed: eligible finalizeJob, approval majority or no votes
+  Review --> Completed: eligible finalizeJob, quorum and approval majority
   Review --> Refunded: review elapsed, quorum and rejection majority
   Review --> Disputed: dispute, rejection threshold, or finalize tie/under-quorum
   Disputed --> Completed: moderator code 1 or stale owner agent win
@@ -40,7 +40,7 @@ stateDiagram-v2
   Cancelled --> [*]
 ```
 
-Once the approval threshold is latched, the challenge must strictly elapse even if the review period ends first. After that, an approval majority can finalize early if undisputed. Otherwise the completion-review rules apply: zero votes complete without validator rewards or reputation; nonzero under-quorum or tied votes open a dispute; a qualifying majority settles by its outcome. Read actual timers and states rather than relying only on this diagram.
+Ordinary finalization requires the full review and any longer approval challenge to end, plus quorum and a strict majority. No votes, under-quorum votes or a tie open a dispute. The buyer may explicitly accept submitted work immediately. Use `getJobDeadlines` for pause-adjusted dates; see [buyer protection](../BUYER_PROTECTION.md).
 
 ## Settlement and dispute sequence
 
@@ -72,7 +72,7 @@ sequenceDiagram
   end
 ```
 
-Moderator resolution itself settles the job; it does not require a subsequent finalization call. Numeric code `0` only records a note. A failed USDC transfer rolls back the entire settlement.
+Moderator resolution itself settles the job; it does not require a subsequent finalization call. Numeric code `0` only records a note. Failed outgoing transfers become protected claims for their original recipients.
 
 ## Config catalog
 

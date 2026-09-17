@@ -1,4 +1,4 @@
-# Configuration Reference — v0.9.4
+# Configuration Reference — v0.9.5
 
 The deployed manager has no implementation upgrade switch. Its native USDC address and fixed successful-job 30%/10% shares cannot change. Owner controls maintain selected operating parameters; they do not permit withdrawal of reserved escrow or bonds. See [owner controls](OWNER_CONTROLS.md) for transaction procedures.
 
@@ -15,7 +15,7 @@ All setters below are owner-only.
 | Variable | Setter | Guard conditions | Operational notes |
 | --- | --- | --- | --- |
 | `wallet30`, `wallet10` | `setSettlementWallets` | Intake paused; empty reserves; nonzero/distinct recipients; neither manager nor USDC address | Rotates future-job recipients; percentages stay fixed |
-| `requiredValidatorApprovals` | `setRequiredValidatorApprovals` | Empty reserves; each threshold and their sum at most 50 | Zero disables the early-approval latch |
+| `requiredValidatorApprovals` | `setRequiredValidatorApprovals` | Empty reserves; each threshold and their sum at most 50 | Zero disables the approval challenge latch |
 | `requiredValidatorDisapprovals` | `setRequiredValidatorDisapprovals` | Empty reserves; same threshold bounds | Zero disables the disapproval-threshold trigger |
 | `voteQuorum` | `setVoteQuorum` | Empty reserves; 1–50 | Review-window finalization quorum |
 | `validationRewardPercentage` | `setValidationRewardPercentage` | 1–60 | Recorded at posting; only future jobs use a changed rate |

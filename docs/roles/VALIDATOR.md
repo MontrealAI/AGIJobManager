@@ -1,4 +1,4 @@
-# Validator Guide — v0.9.4
+# Validator Guide — v0.9.5
 
 Validators review submitted work and vote once per job. Rewards and bonds use native USDC; signing transactions requires ETH for gas.
 
@@ -23,6 +23,12 @@ Correct-side validators share the job's recorded reward budget plus any pool ass
 
 The validator budget defaults to 8% of the original job cost and is fixed at posting. The owner can set 1–60% for future jobs. On success, validators are paid first; the contract then pays 30% and 10% of the original cost to the configured wallets and sends the remainder to the agent. Integer division can leave a small reward remainder; it goes to the agent on success or the employer on refund. Bond pools are separate from the cost percentages.
 
-The default slash is 80% of an incorrect vote's bond; read `validatorSlashBps` for the deployment's actual setting. Correct-side reputation can increase on qualifying settlement. If nobody votes, there are no validator rewards and no-vote completion earns no reputation.
+The default slash is 80% of an incorrect vote's bond; read `validatorSlashBps` for the deployment's actual setting. Correct-side reputation can increase on qualifying settlement. If nobody votes, finalization opens a dispute without payment. Neutral timeout returns each bond without reward or penalty.
 
 Common errors: `NotAuthorized`, `Blacklisted`, `InvalidState` (including duplicate/late votes), `ValidatorLimitReached`, and `TransferFailed`. See [common reverts](../user-guide/common-reverts.md).
+
+## Independence and refund rewards
+
+You cannot review a job where you are the buyer or assigned agent, including through their ENS controller. A credential or recorded controller can contribute only one vote per job, even using different operators or names. You and your recorded controller cannot arbitrate a job you reviewed. Separate wallets are not proof of separate people.
+
+On a buyer win, the full escrow returns to the buyer. The base reviewer reward is capped by forfeited agent collateral and can be below the posted reward budget; incorrect-validator slashes supplement it. A neutral arbitration timeout returns your bond without reward or penalty. A blocked payout remains a reserved claim for your original wallet.

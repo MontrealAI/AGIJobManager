@@ -1,6 +1,6 @@
-# AGIJobManager UI — v0.9.4
+# AGIJobManager UI — v0.9.5
 
-Start with the [versioned v0.9.4 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.4/agijobmanager-usdc.html), or the matching [repository artifact](agijobmanager-usdc.html), and read the [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). Verify release checksums and configure the independently verified new USDC manager address. No manager, recipient wallets or production owner is supplied by default.
+Start with the [versioned v0.9.5 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/agijobmanager-usdc.html), or the matching [repository artifact](agijobmanager-usdc.html), and read the [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). Verify release checksums and configure the independently verified new USDC manager address. No manager, recipient wallets or production owner is supplied by default.
 
 All current job payments and bonds use native Circle USDC with six decimals. This release requires a fresh deployment; the existing original-token mainnet manager remains a separate service with its own jobs and ENS wiring. Follow the [USDC migration guide](../docs/USDC_MIGRATION.md) and [Hardhat deployment guide](../hardhat/README.md).
 

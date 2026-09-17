@@ -27,12 +27,12 @@ A simple checklist template:
 ## 5) Vote within the review window
 - Voting requires a **validator bond**; it is **returned if you vote with the final outcome** and **partially slashed** if you are on the losing side (see `validatorSlashBps` in the contract docs).
 - Voting is only counted **before `completionReviewPeriod` ends**. Once a job is **disputed**, validator votes no longer advance settlement.
-- If no validators vote before the review window ends, the job can still settle via the **no‑vote liveness** rule (agent wins without reputation).
+- If no validators vote, finalization opens a dispute without paying the agent.
 
 ## 6) After you vote
 - If approvals reach the threshold, a short **challenge period** applies before settlement.
 - If disapprovals reach the threshold, the job enters **dispute**.
-- If the review window ends with no votes, the job settles automatically (no‑vote liveness rule).
+- No votes do not authorize payment; someone must call finalization to open a dispute.
 
 ## 7) Evidence expectations (minimum)
 - A completion JSON that maps to the spec’s deliverables.

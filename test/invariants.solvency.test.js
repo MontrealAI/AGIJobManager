@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -107,6 +108,7 @@ contract("AGIJobManager solvency invariants", (accounts) => {
     await manager.addModerator(moderator, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setVoteQuorum(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
@@ -138,7 +140,7 @@ contract("AGIJobManager solvency invariants", (accounts) => {
     await assertSolvent(manager, token);
 
     await advanceTime(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
     await assertSolvent(manager, token);
   });
 
@@ -157,7 +159,7 @@ contract("AGIJobManager solvency invariants", (accounts) => {
     await assertSolvent(manager, token);
 
     await advanceTime(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
     await assertSolvent(manager, token);
   });
 

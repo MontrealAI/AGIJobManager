@@ -81,7 +81,7 @@ contract('jobLifecycle.core', (accounts) => {
     assert.equal((await manager.lockedEscrow()).toString(), '0');
   });
 
-  it('forces dispute on tie under quorum and supports no-vote liveness path', async () => {
+  it('forces dispute on tie under quorum and escalates unreviewed submissions', async () => {
     await token.approve(manager.address, payout.muln(2), { from: employer });
     await manager.createJob('QmA', payout, duration, 'A', { from: employer });
     await manager.createJob('QmB', payout, duration, 'B', { from: employer });
@@ -99,7 +99,8 @@ contract('jobLifecycle.core', (accounts) => {
     await manager.finalizeJob(1, { from: outsider });
 
     const noVoteJob = await manager.getJobCore(1);
-    assert.equal(noVoteJob.completed, true);
+    assert.equal(noVoteJob.completed, false);
+    assert.equal(noVoteJob.disputed, true);
 
     await manager.finalizeJob(0, { from: outsider });
     const settledJob = await manager.getJobCore(0);

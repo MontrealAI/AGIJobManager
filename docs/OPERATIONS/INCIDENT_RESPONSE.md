@@ -1,4 +1,4 @@
-# Incident Response — v0.9.4
+# Incident Response — v0.9.5
 
 For an active exploit or suspected immediate risk to escrow, the authorized owner should call `pauseAll()` and verify **both** `paused()` and `settlementPaused()` are true. `pause()` only stops intake; it leaves settlement paths available. Preserve transaction hashes, block numbers, affected jobs and the observed balances before attempting recovery.
 
@@ -41,7 +41,7 @@ Use the [owner runbook](../OWNER_RUNBOOK.md) and [ENS integration guide](../INTE
 
 ## USDC issuer restrictions
 
-Check native USDC's pause status and blocklist state for the manager and affected senders/recipients. An issuer pause or blocked recipient can revert the entire settlement; prior transfers and reserve updates in that transaction roll back atomically. Confirm that outcome from on-chain reads rather than treating a failed transaction as partial payment.
+Check native USDC's pause status and blocklist state for the manager and affected senders/recipients. A blocked recipient or issuer pause turns failed outgoing transfers into protected claims. Check terminal job state, USDCDeferred events, pendingUSDC and lockedClaims; other eligible recipients may already be paid. Retry claimUSDC to the original beneficiary once restrictions resolve.
 
 Owner recipient rotation requires zero outstanding reserves and cannot redirect a blocked, already-funded job. Rescue functions do not bypass the issuer. Preserve the settlement state, contain new exposure and address the issuer restriction through its legitimate resolution process.
 
@@ -55,7 +55,7 @@ Owner recipient rotation requires zero outstanding reserves and cannot redirect 
 ## Recovery gates
 
 - Identify the cause and test the proposed correction against the affected scenario. The deployed manager is non-upgradeable; a software patch does not alter an existing instance.
-- Reconcile the manager's USDC balance with `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`. Confirm that `withdrawableUSDC()` reports only genuine surplus.
+- Reconcile the manager's USDC balance with `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds + lockedClaims`. Confirm that `withdrawableUSDC()` reports only genuine surplus.
 - Review affected deadlines, validator votes, assignments and the moderator queue. Record which jobs can safely continue through their normal lifecycle.
 - Verify owner authority, intended recipients, relevant identity controls and USDC transfer availability. Simulate recovery transactions before submitting them.
 - Have the authorized owner review the recovery evidence and monitoring plan before reopening any path.

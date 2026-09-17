@@ -1,6 +1,6 @@
-# v0.9.4 owner controls
+# v0.9.5 owner controls
 
-Jobs settle in native Circle USDC: validators first, then 30% and 10% of the original job cost to the two configured wallets, then the remaining amount to the agent. At the default validator budget of 8%, a successful 100 USDC job distributes 8 / 30 / 10 / 52 USDC. See the [complete payout rules](USDC_PAYOUT_SPLIT.md) for rounding, no-vote completion and refunds.
+Jobs settle in native Circle USDC: validators first, then 30% and 10% of the original job cost to the two configured wallets, then the remaining amount to the agent. At the default validator budget of 8%, a successful 100 USDC job distributes 8 / 30 / 10 / 52 USDC. See the [complete payout rules](USDC_PAYOUT_SPLIT.md) for rounding, explicit acceptance and refunds.
 
 ## What the owner can change
 
@@ -24,13 +24,13 @@ See the [NFT policy walkthrough](NFT_POLICY.md) for both modes, collection setup
 
 ## Rotate payout wallets
 
-1. Open the v0.9.4 USDC console, select the verified manager and connect as its owner. Confirm the network, manager and current wallet addresses.
+1. Open the v0.9.5 USDC console, select the verified manager and connect as its owner. Confirm the network, manager and current wallet addresses.
 2. Choose **pauseIntake**. Keep settlement enabled so existing jobs can finish or be refunded.
 3. Settle, cancel or otherwise close every outstanding job through its normal lifecycle. Read `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds` and `lockedDisputeBonds`; all four must be zero.
 4. Choose **Update payout wallets**. Enter the 30% recipient first and the 10% recipient second. Both must be distinct, nonzero, and different from the manager and USDC contract. Verify control of the addresses and their ability to receive USDC before submitting.
 5. Review the simulation and transaction. Verify `SettlementWalletsUpdated`, `wallet30()` and `wallet10()` afterward, then choose **unpauseIntake**.
 
-There is no extra per-job wallet snapshot storage cost: rotation is prohibited while any job funds remain reserved. Historical recipients can be reconstructed from configuration events and USDC transfer events; the wallet getters show the current configuration. A blocked recipient on an outstanding job must be resolved before that job can settle. This control does not bypass USDC issuer restrictions or reroute existing escrow.
+There is no extra per-job wallet snapshot storage cost: rotation is prohibited while any job funds remain reserved. Historical recipients can be reconstructed from configuration events and USDC transfer events; the wallet getters show the current configuration. A blocked recipient receives a reserved claim when the job settles. Claims remain protected by lockedClaims and keep their original beneficiary after wallet rotation; they cannot be redirected or withdrawn as surplus. This control does not bypass USDC issuer restrictions.
 
 ## Transfer ownership
 

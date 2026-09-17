@@ -13,7 +13,7 @@ const C = `0x${'33'.repeat(20)}`;
 const TOKEN = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
 const CODE = '0x6000';
 const BLOCK = { number: 123, hash: `0x${'aa'.repeat(32)}` };
-const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility'];
+const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility', 'JobSettlement', 'JobValidation'];
 const NAMES = [...LIBRARIES, 'AGIJobManager'];
 const FQNS = Object.fromEntries(NAMES.map(name => [name, `source:${name}`]));
 const NFT_POLICY = { agentNftRequired: true, agiTypes: [{ nftAddress: C, payoutPercentage: '1' }] };
@@ -48,13 +48,13 @@ function makeReceipt() {
   return receipt;
 }
 
-function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock = BLOCK, initialBlock = BLOCK, owner = A, code = CODE, nftPolicy = NFT_POLICY, nftEntries = NFT_POLICY.agiTypes, omitNftConfig = false } = {}) {
+function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock = BLOCK, initialBlock = BLOCK, owner = A, code = CODE, nftPolicy = NFT_POLICY, nftEntries = NFT_POLICY.agiTypes, omitNftConfig = false, balance = 0n } = {}) {
   const receipt = makeReceipt();
   mutateReceipt(receipt);
   const calls = [], writes = [];
   const values = {
     agentNftRequired: true, usdcToken: TOKEN, owner, pendingOwner: ethers.ZeroAddress, paused: true, settlementPaused: false, wallet30: A, wallet10: B,
-    lockedEscrow: 0n, lockedAgentBonds: 0n, lockedValidatorBonds: 0n, lockedDisputeBonds: 0n,
+    lockedEscrow: 0n, lockedAgentBonds: 0n, lockedValidatorBonds: 0n, lockedDisputeBonds: 0n, lockedClaims: 0n,
   };
   const originalArgs = makeReceipt().constructorArgs;
   for (const [field, getters] of Object.entries(CONFIG_GETTERS)) getters.forEach((getter, index) => { values[getter] = originalArgs[field][index]; });
@@ -72,7 +72,7 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
     decimals: async options => { calls.push({ method: 'decimals', options }); return 6; },
     paused: async options => { calls.push({ method: 'USDC.paused', options }); return false; },
     isBlacklisted: async (address, options) => { calls.push({ method: 'isBlacklisted', options }); return false; },
-    balanceOf: async (address, options) => { calls.push({ method: 'balanceOf', options }); return 0n; },
+    balanceOf: async (address, options) => { calls.push({ method: 'balanceOf', options }); return balance; },
   };
   const provider = {
     getNetwork: async () => { calls.push({ method: 'getNetwork' }); return { chainId: 1n }; },
@@ -322,4 +322,10 @@ test('NFT policy rejects malformed booleans, scores, duplicates and unknown fiel
     await assert.rejects(run.main(), /READINESS_NFT_CONFIG/);
     assert.equal(run.calls.length, 0);
   }
+});
+
+test('initial activation rejects a funded pending claim even after all live jobs have settled', async () => {
+  const run = harness({ observed: { lockedClaims: 1n }, balance: 1n });
+  await assert.rejects(run.main(), /payment claims/);
+  assert.equal(run.writes.length, 0);
 });

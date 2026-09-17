@@ -1,8 +1,8 @@
-# v0.9.4 mainnet qualification
+# v0.9.5 mainnet qualification
 
-v0.9.4 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v0.9.5 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
-The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v0.9.4, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
+The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v0.9.5, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
 
 ## Settlement
 
@@ -27,9 +27,9 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 - Transaction reviews bind the connected account, network and manager through approvals and submission. Changed contexts require a new review. Failed receipts cannot be reported as successful.
 - Qualification includes contract regressions, issuer restrictions, bonds/disputes, exact transfer ordering, fuzzing, concurrent-job invariants, deployment rejection scenarios, browser tests and static-analysis triage.
 
-## v0.9.4 operational review
+## v0.9.5 operational review
 
-v0.9.4 adds an owner-controlled NFT requirement fixed at posting, an empty-reserve guard on collection changes, and explicit NFT-policy readiness checks. It retains v0.9.2’s corrected PublicResolver `approve` call, dedicated jobs namespace, and USDC cutover rehearsal covering settlement, ownership and legacy preservation. It retains the address-decoding and settlement-ordering protections, maintained toolchains, warning-free Forge build and deployment checks introduced in v0.9.1. The manager changes and links a sixth library, `NftEligibility`; ENS and USDC settlement behavior are retained. The release evidence records the final commands, counts and findings. Start with the [user journey](START_HERE.md), [owner runbook](OWNER_RUNBOOK.md) or [incident response](OPERATIONS/INCIDENT_RESPONSE.md) for the appropriate task.
+v0.9.5 adds full buyer escrow refunds, no-vote dispute escalation, explicit acceptance, guaranteed full review, independent credential/controller checks, pause-aware deadlines, a neutral unresolved-dispute timeout, and reserved payment claims. The manager links eight fixed libraries. The per-job NFT policy, normal Agent/Club ENS membership, two-step manager ownership, and dedicated jobs namespace remain in force. The release evidence records the final source, checks and limits. Start with [buyer protection](BUYER_PROTECTION.md), [the owner runbook](OWNER_RUNBOOK.md), and [incident response](OPERATIONS/INCIDENT_RESPONSE.md).
 
 ## Reproduce qualification
 
@@ -50,9 +50,9 @@ npm run test:mainnet-fork
 CUTOVER_REPORT=../build/qualification/mainnet-cutover.json npm run test:cutover
 ```
 
-The qualified fork fixture pins Ethereum block **25,997,388**, hash `0x1495b5decf70b7757b60b8d4ba10d14a7cdb4512f55c4ae5400d8a97b9deedf9`, and checks USDC implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` plus its runtime hash. Eight cases cover paused launch, exact default-bond settlement and real issuer pause/blocklist rollback and recovery.
+The qualified fork fixture pins Ethereum block **25,997,388**, hash `0x1495b5decf70b7757b60b8d4ba10d14a7cdb4512f55c4ae5400d8a97b9deedf9`, and checks USDC implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` plus its runtime hash. Eight cases cover paused launch, exact default-bond settlement and real issuer pause/blocklist protected claims and recovery.
 
-The separate cutover fixture pins block **25,998,952**, hash `0xac9075441aff899351bf4ca9abf5be0edc4494b69a1c7543b389fd8cacaa159a`. Its 20 scenarios exercise the actual mainnet ENS contracts, all four participant membership roots and explicit exceptions, separate ownership paths, both NFT modes with unchanged ENS authorization and USDC settlement, further recovery cases, the preserved legacy inventory and the original-asset exit for job 11. See the [source-bound report](qualification/mainnet-cutover.json).
+The separate cutover fixture pins block **25,998,952**, hash `0xac9075441aff899351bf4ca9abf5be0edc4494b69a1c7543b389fd8cacaa159a`. Its 23 scenarios exercise the actual mainnet ENS contracts, all four participant membership roots and explicit exceptions, separate ownership paths, both NFT modes with unchanged ENS authorization and USDC settlement, further recovery cases, the preserved legacy inventory and the original-asset exit for job 11. See the [source-bound report](qualification/mainnet-cutover.json).
 
 The fork runner exposes only the local Hardhat network. It reads a pinned finalized Ethereum block and executes every transaction on that local fork. It never broadcasts transactions to Ethereum, does not use production private keys and fails if the remote state is unavailable. Fork evidence checks a historical state; USDC implementation and issuer configuration must be rechecked before an actual launch.
 
@@ -84,10 +84,10 @@ Follow the [Hardhat guide](../hardhat/README.md), complete source verification a
 
 - This is not a proxy. Code changes require a new deployment; supported owner settings remain available under their on-chain guards.
 - The owner and moderators remain trusted authorities. A compromised owner can misuse eligibility, pause or dispute powers even though reserved funds cannot be withdrawn as surplus.
-- Circle may pause USDC, block addresses or upgrade its implementation. A restricted recipient can prevent the entire settlement. Tests establish atomic rollback, not a way around issuer restrictions. Existing reserved jobs cannot be redirected by rotating the two wallets.
+- Circle may pause USDC, block addresses or upgrade its implementation. Failed outgoing transfers become protected claims; tests establish reserve conservation and same-beneficiary retries. Claims and existing jobs cannot be redirected by rotating wallets.
 - Validators can collude or misjudge off-chain work. Authorization is by wallet: an employer or agent can also vote if validator-authorized. Distinct addresses or ENS names do not establish independent people. Configure and monitor eligibility accordingly; bonds and tests do not prove the truth of a deliverable.
 - ENS and metadata are external dependencies. Optional job-page failures are bounded; identity availability and correct operational configuration still matter.
-- The qualified manager runtime is 24,130 bytes: 446 bytes below Ethereum's 24,576-byte limit. Preserve the qualified compiler settings and repeat bytecode/deployment checks after every source or compiler change.
+- The qualified manager runtime is 24,198 bytes: 378 bytes below Ethereum's 24,576-byte limit. Preserve the qualified compiler settings and repeat bytecode/deployment checks after every source or compiler change.
 - CI audits the complete root, deployment and UI dependency trees and rejects advisories at every severity. Repeat those checks against the current registry before deployment; a clean advisory database result does not prove absence of unknown vulnerabilities.
 
 The [deploy-day runbook](DEPLOY_DAY_RUNBOOK.md), [owner controls](OWNER_CONTROLS.md) and [incident response](OPERATIONS/INCIDENT_RESPONSE.md) describe the operational steps.

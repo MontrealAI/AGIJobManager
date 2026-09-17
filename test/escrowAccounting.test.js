@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -62,6 +63,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.addAdditionalValidator(validatorThree, { from: owner });
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
 
     await fundValidators(token, manager, [validator, validatorTwo, validatorThree], owner);
     await fundAgents(token, manager, [agent], owner);
@@ -179,6 +181,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
   it("slashes incorrect validators and rewards correct validators", async () => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
@@ -197,7 +200,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validatorThree });
 
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const validatorAfter = await token.balanceOf(validator);
     const validatorTwoAfter = await token.balanceOf(validatorTwo);
@@ -243,7 +246,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorThree });
 
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const employerAfter = await token.balanceOf(employer);
     const validatorAfter = await token.balanceOf(validator);
@@ -287,7 +290,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorTwo });
     await manager.disapproveJob(jobId, "", EMPTY_PROOF, { from: validatorThree });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const employerAfter = await token.balanceOf(employer);
     const validatorAfter = await token.balanceOf(validator);
@@ -320,6 +323,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
   it("routes agent bond to validator pool when disapprovals reach the threshold", async () => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(3, { from: owner });
 
     const payout = toBN(toWei("15"));
@@ -345,7 +349,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     const validatorThreeAfter = await token.balanceOf(validatorThree);
     const rewardPool = payout.mul(await manager.validationRewardPercentage()).divn(100);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
-    const expectedReward = rewardPool.add(agentBond).divn(3);
+    const expectedReward = (rewardPool.lt(agentBond) ? rewardPool : agentBond).divn(3);
     assert.equal(
       validatorAfter.sub(validatorBefore).toString(),
       expectedReward.toString(),
@@ -365,6 +369,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
   it("enforces the challenge window after validator approval", async () => {
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(100, { from: owner });
 
@@ -396,7 +401,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
 
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const agentAfter = await token.balanceOf(agent);
     const expectedPayout = payout.muln(52).divn(100).add(agentBond);
@@ -446,7 +451,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.requestJobCompletion(completeJobId, "ipfs-complete", { from: agent });
     await manager.validateJob(completeJobId, "", EMPTY_PROOF, { from: validator });
     await time.increase((await manager.challengePeriodAfterApproval()).addn(1));
-    await manager.finalizeJob(completeJobId, { from: employer });
+    await finalizeAfterReview(manager, completeJobId, { from: employer });
     assert.equal((await manager.lockedEscrow()).toString(), "0");
 
     const disputeJobId = await createJob(payout);
@@ -472,7 +477,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "", EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const expectedRemainder = toBN(0);
 

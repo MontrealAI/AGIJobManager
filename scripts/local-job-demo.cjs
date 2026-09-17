@@ -30,6 +30,7 @@ async function main() {
     await manager.addAdditionalAgent(agent);
     await manager.addAdditionalValidator(validator);
     await manager.setRequiredValidatorApprovals(1);
+    await manager.setVoteQuorum(1);
     await manager.setChallengePeriodAfterApproval(1);
     await manager.setCompletionReviewPeriod(300);
     for (const account of [employer, agent, validator]) {
@@ -44,13 +45,13 @@ async function main() {
     await manager.applyForJob(jobId, '', [], { from: agent });
     await manager.requestJobCompletion(jobId, 'ipfs://job-result', { from: agent });
     await manager.validateJob(jobId, '', [], { from: validator });
-    await connection.provider.request({ method: 'evm_increaseTime', params: [2] });
+    await connection.provider.request({ method: 'evm_increaseTime', params: [301] });
     await connection.provider.request({ method: 'evm_mine', params: [] });
     await manager.finalizeJob(jobId, { from: employer });
     const after = await Promise.all(recipients.map(async address => BigInt((await token.balanceOf(address)).toString())));
     const amounts = after.map((value, index) => value - before[index]);
     assert.deepEqual(amounts, [8_000_000n, 30_000_000n, 10_000_000n, 52_000_000n]);
-    for (const getter of ['lockedEscrow', 'lockedAgentBonds', 'lockedValidatorBonds', 'lockedDisputeBonds']) {
+    for (const getter of ['lockedEscrow', 'lockedAgentBonds', 'lockedValidatorBonds', 'lockedDisputeBonds', 'lockedClaims']) {
       assert.equal((await manager[getter]()).toString(), '0', getter);
     }
     assert.equal((await token.balanceOf(manager.address)).toString(), '0');

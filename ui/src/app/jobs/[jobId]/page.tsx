@@ -47,11 +47,14 @@ export default function JobDetail() {
 
   if (!j || !p || !status) return <div className="container-shell py-8">Loading...</div>;
 
-  const d = computeDeadlines(
+  const estimate = computeDeadlines(
     { assignedAgent: j.agent, assignedAt: j.assignedAt, duration: j.duration, completed: j.completed, disputed: j.disputed, expired: j.expired },
     { completionRequested: j.completionRequested, completionRequestedAt: j.completionRequestedAt, disputedAt: j.disputedAt },
     { completionReviewPeriod: p.completionReviewPeriod, disputeReviewPeriod: p.disputeReviewPeriod }
   );
+  const d = isDemoMode ? estimate : j.deadlines ? {
+    expiryTime: j.deadlines[0], completionReviewEnd: j.deadlines[1], disputeReviewEnd: j.deadlines[3]
+  } : null;
   const safeSpec = sanitizeUri(j.specUri);
   const activeRole = roleFromActor[actor];
   const actorActions = activeRole ? Object.entries(actions[activeRole]).filter(([, v]) => v).map(([k]) => k) : [];
@@ -61,9 +64,14 @@ export default function JobDetail() {
       <Card>
         <h1 className="font-serif text-2xl">Job #{String(jobId)} · {status.status}</h1>
         <p>Payout {fmtToken(j.payout)}</p>
-        <p>Expiry {fmtTime(d.expiryTime)}</p>
-        <p>Completion review end {fmtTime(d.completionReviewEnd)}</p>
-        <p>Dispute review end {fmtTime(d.disputeReviewEnd)}</p>
+        {!d ? <p>Deadlines unavailable. Refresh before acting.</p> : p.settlementPaused ? <p>Settlement is paused. Deadlines extend until settlement resumes.</p> : <>
+          <p>Submission deadline {fmtTime(d.expiryTime)}</p>
+          <p>Validator review end {fmtTime(d.completionReviewEnd)}</p>
+          <p>Owner arbitration available after {fmtTime(d.disputeReviewEnd)}</p>
+          {!isDemoMode && <><p>Payment possible after / dispute by {fmtTime(j.deadlines[2])}</p><p>Neutral refund available after {fmtTime(j.deadlines[4])}</p></>}
+        </>}
+        {isDemoMode && <p>Demo deadlines are illustrative estimates.</p>}
+        <p>No votes open a dispute; they do not approve payment. Buyers may explicitly accept satisfactory work. A buyer-win decision returns the full job escrow.</p>
       </Card>
       <Card>
         <h2 className="font-serif">URIs (untrusted)</h2>
@@ -84,7 +92,8 @@ export default function JobDetail() {
         </ul>
       </Card>
       <Card>
-        <h2 className="font-serif">Role-gated actions</h2>
+        <h2 className="font-serif">Actions by role</h2>
+        <p>These are possible actions for this status. Deadlines, pauses, identity checks and conflicts must also pass before a transaction can succeed.</p>
         {isDemoMode ? <p className='text-sm'>Demo actor <strong>{actor}</strong>: {actorActions.join(', ') || 'No actions'}.</p> : null}
         {Object.entries(actions).map(([role, g]) => (
           <p key={role} className="text-sm">{role}: {Object.entries(g).filter(([, v]) => v).map(([k]) => k).join(', ') || 'No actions'}</p>

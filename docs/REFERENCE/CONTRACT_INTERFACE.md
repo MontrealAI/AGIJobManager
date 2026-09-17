@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `8c89e24c4c94`.
-- Source snapshot fingerprint: `8c89e24c4c94`.
+- Generated at (deterministic source fingerprint): `d8bd6d632a1b`.
+- Source snapshot fingerprint: `d8bd6d632a1b`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -26,10 +26,6 @@
 | `ens` | `ENS` |
 | `ensJobPages` | `address` |
 | `jobDurationLimit` | `uint256` |
-| `lockedAgentBonds` | `uint256` |
-| `lockedDisputeBonds` | `uint256` |
-| `lockedEscrow` | `uint256` |
-| `lockedValidatorBonds` | `uint256` |
 | `lockIdentityConfig` | `bool` |
 | `maxActiveJobsPerAgent` | `uint256` |
 | `maxJobPayout` | `uint256` |
@@ -54,6 +50,7 @@
 
 | Signature | Visibility | Mutability | Returns |
 | --- | --- | --- | --- |
+| `acceptJob(uint256 jobId)` | external | nonpayable | — |
 | `addAdditionalAgent(address agent)` | external | nonpayable | — |
 | `addAdditionalValidator(address validator)` | external | nonpayable | — |
 | `addAGIType(address nftAddress, uint256 payoutPercentage)` | external | nonpayable | — |
@@ -62,29 +59,40 @@
 | `blacklistAgent(address _agent, bool _status)` | external | nonpayable | — |
 | `blacklistValidator(address _validator, bool _status)` | external | nonpayable | — |
 | `cancelJob(uint256 _jobId)` | external | nonpayable | — |
+| `claimUSDC(address beneficiary)` | external | nonpayable | — |
 | `createJob(string memory _jobSpecURI, uint256 _payout, uint256 _duration, string memory _details)` | external | nonpayable | — |
 | `delistJob(uint256 _jobId)` | external | nonpayable | — |
 | `disableAGIType(address nftAddress)` | external | nonpayable | — |
 | `disapproveJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` | external | nonpayable | — |
 | `disputeJob(uint256 _jobId)` | external | nonpayable | — |
+| `executeUSDCTransfer(address beneficiary, uint256 amount)` | external | nonpayable | — |
 | `expireJob(uint256 _jobId)` | external | nonpayable | — |
-| `finalizeJob(uint256 _jobId)` | external | nonpayable | — |
+| `finalizeJob(uint256 jobId)` | external | nonpayable | — |
 | `getHighestPayoutPercentage(address agent)` | public | view | `uint256` |
 | `getJobCompletionURI(uint256 jobId)` | external | view | `string memory` |
 | `getJobCore(uint256 jobId)` | external | view | `address employer, address assignedAgent, uint256 payout, uint256 duration, uint256 assignedAt, bool completed, bool disputed, bool expired, uint8 agentPayoutPct` |
+| `getJobDeadlines(uint256 jobId)` | external | view | `uint256 assignmentDeadline, uint256 reviewEnd, uint256 settlementAfter, uint256 ownerResolutionAfter, uint256 neutralRefundAfter` |
 | `getJobSpecURI(uint256 jobId)` | external | view | `string memory` |
 | `getJobValidation(uint256 jobId)` | external | view | `bool completionRequested, uint256 validatorApprovals, uint256 validatorDisapprovals, uint256 completionRequestedAt, uint256 disputedAt` |
 | `jobAgentNftRequired(uint256 jobId)` | external | view | `bool` |
+| `lockedAgentBonds()` | external | view | `uint256` |
+| `lockedClaims()` | external | view | `uint256` |
+| `lockedDisputeBonds()` | external | view | `uint256` |
+| `lockedEscrow()` | external | view | `uint256` |
+| `lockedValidatorBonds()` | external | view | `uint256` |
 | `lockIdentityConfiguration()` | external | nonpayable | — |
 | `lockJobENS(uint256 jobId, bool burnFuses)` | external | nonpayable | — |
 | `ownerOf(uint256 id)` | external | view | `address` |
 | `pause()` | external | nonpayable | — |
 | `pauseAll()` | external | nonpayable | — |
 | `pauseIntake()` | external | nonpayable | — |
+| `pendingUSDC(address beneficiary)` | external | view | `uint256` |
+| `refundUnresolvedDispute(uint256 jobId)` | external | nonpayable | — |
 | `removeAdditionalAgent(address agent)` | external | nonpayable | — |
 | `removeAdditionalValidator(address validator)` | external | nonpayable | — |
 | `removeModerator(address _moderator)` | external | nonpayable | — |
 | `renounceOwnership()` | public | pure | — |
+| `reputation(address account)` | external | view | `uint256` |
 | `requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI)` | external | nonpayable | — |
 | `rescueERC20(address token, address to, uint256 amount)` | external | nonpayable | — |
 | `rescueETH(uint256 amount)` | external | nonpayable | — |
@@ -109,6 +117,7 @@
 | `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | external | nonpayable | — |
 | `setSettlementPaused(bool paused)` | external | nonpayable | — |
 | `setSettlementWallets(address recipient30, address recipient10)` | external | nonpayable | — |
+| `settlementPausedSeconds()` | public | view | `uint256` |
 | `setUseEnsJobTokenURI(bool enabled)` | external | nonpayable | — |
 | `setValidationRewardPercentage(uint256 _percentage)` | external | nonpayable | — |
 | `setValidatorBondParams(uint256 bps, uint256 min, uint256 max)` | external | nonpayable | — |
@@ -123,6 +132,7 @@
 | `updateNameWrapper(address _newNameWrapper)` | external | nonpayable | — |
 | `updateRootNodes(bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _alphaClubRootNode, bytes32 _alphaAgentRootNode)` | external | nonpayable | — |
 | `validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` | external | nonpayable | — |
+| `validatorCredential(address claimant, string memory label, bytes32[] calldata proof)` | public | view | `bytes32 credential, address controller` |
 | `withdrawableUSDC()` | public | view | `uint256` |
 | `withdrawUSDC(uint256 amount)` | external | nonpayable | — |
 
@@ -143,7 +153,9 @@
 | `EnsJobPagesUpdated` | `address indexed oldEnsJobPages, address indexed newEnsJobPages` |
 | `EnsRegistryUpdated` | `address newEnsRegistry` |
 | `IdentityConfigurationLocked` | `address indexed locker, uint256 indexed atTimestamp` |
+| `JobAccepted` | `uint256 indexed jobId, address indexed employer` |
 | `JobApplied` | `uint256 indexed jobId, address indexed agent` |
+| `JobApprovalThresholdReached` | `uint256 indexed jobId, uint256 approvedAt` |
 | `JobCancelled` | `uint256 indexed jobId` |
 | `JobCompleted` | `uint256 indexed jobId, address indexed agent, uint256 indexed reputationPoints` |
 | `JobCompletionRequested` | `uint256 indexed jobId, address indexed agent, string jobCompletionURI` |
@@ -164,10 +176,14 @@
 | `RootNodesUpdated` | `bytes32 indexed clubRootNode, bytes32 indexed agentRootNode, bytes32 indexed alphaClubRootNode, bytes32 alphaAgentRootNode` |
 | `SettlementPauseSet` | `address indexed setter, bool indexed paused` |
 | `SettlementWalletsUpdated` | `address indexed wallet30, address indexed wallet10` |
+| `UnresolvedDisputeRefunded` | `uint256 indexed jobId` |
+| `USDCClaimed` | `address indexed beneficiary, uint256 amount` |
+| `USDCDeferred` | `address indexed beneficiary, uint256 amount` |
 | `USDCWithdrawn` | `address indexed to, uint256 indexed amount, uint256 remainingWithdrawable` |
 | `ValidationRewardPercentageUpdated` | `uint256 indexed oldPercentage, uint256 indexed newPercentage` |
 | `ValidatorBlacklisted` | `address indexed validator, bool indexed status` |
 | `ValidatorBondParamsUpdated` | `uint256 indexed bps, uint256 indexed min, uint256 indexed max` |
+| `ValidatorCredentialUsed` | `uint256 indexed jobId, address indexed voter, bytes32 indexed credential, address controller` |
 | `ValidatorSlashBpsUpdated` | `uint256 indexed oldBps, uint256 indexed newBps` |
 | `VoteQuorumUpdated` | `uint256 indexed oldQuorum, uint256 indexed newQuorum` |
 

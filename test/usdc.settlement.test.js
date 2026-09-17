@@ -34,7 +34,7 @@ contract('USDC-only settlement', ([owner, employer]) => {
     assert.equal((await usdc.balanceOf(employer)).toString(), '1');
     assert.equal((await manager.lockedEscrow()).toString(), '0');
   });
-  it('rolls back intake on paused transfers and refunds on blocked recipients', async () => {
+  it('rolls back failed intake and reserves a blocked buyer refund', async () => {
     const amount = parseUSDC('123.456789');
     await usdc.mint(employer, amount);
     await usdc.approve(manager.address, amount, {from: employer});
@@ -45,11 +45,12 @@ contract('USDC-only settlement', ([owner, employer]) => {
     await usdc.setPaused(false);
     await manager.createJob('ipfs://fractional', amount, 60, 'fractional', {from: employer});
     await usdc.setBlocked(employer, true);
-    await expectRevert.unspecified(manager.cancelJob(0, {from: employer}));
-    assert.equal((await manager.lockedEscrow()).toString(), amount);
+    await manager.cancelJob(0, {from: employer});
+    assert.equal((await manager.lockedEscrow()).toString(), '0');
+    assert.equal((await manager.pendingUSDC(employer)).toString(), amount);
     assert.equal((await usdc.balanceOf(manager.address)).toString(), amount);
     await usdc.setBlocked(employer, false);
-    await manager.cancelJob(0, {from: employer});
+    await manager.claimUSDC(employer);
     assert.equal((await usdc.balanceOf(employer)).toString(), amount);
   });
   it('scales every economic default to six decimals', async () => {

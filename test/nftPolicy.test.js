@@ -21,6 +21,7 @@ contract('v0.9.4 posting-time NFT policy', ([owner, employer, agent, validator, 
     await manager.setCompletionReviewPeriod(1);
     await manager.setChallengePeriodAfterApproval(1);
     await manager.setRequiredValidatorApprovals(1);
+    await manager.setVoteQuorum(1, { from: owner });
   });
   async function post() {
     const amount = parseUSDC('100');

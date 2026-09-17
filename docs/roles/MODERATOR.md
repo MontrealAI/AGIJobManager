@@ -1,4 +1,4 @@
-# Moderator Guide — v0.9.4
+# Moderator Guide — v0.9.5
 
 Moderators resolve active disputes through `resolveDisputeWithCode(jobId, resolutionCode, reason)`. The caller must be in the manager's `moderators` list and settlement must be enabled. Ownership alone does not grant this moderator role.
 
@@ -20,3 +20,5 @@ The reason is public explanatory text. It does not select the outcome. The curre
 A failed USDC transfer reverts the entire resolution; it does not partially pay recipients. Settlement can be retried after the underlying transfer restriction is resolved. ENS hook failure alone need not undo settlement.
 
 After `disputedAt + disputeReviewPeriod` has strictly passed, the owner can use `resolveStaleDispute(jobId, employerWins)`. This is a separate privileged recovery path. Read current timers and the [owner controls](../OWNER_CONTROLS.md).
+
+You cannot adjudicate a job where you are a party, voter, or recorded validator controller. Use `getJobDeadlines` for the pause-adjusted owner and neutral refund deadlines. After two unpaused dispute review periods, anyone can return the buyer escrow and each contributor's own bonds without deciding quality. Decide disputed evidence before that timeout if an adjudicated payout is warranted. Buyer wins refund the full escrow; failed outgoing transfers become claims, so verify pending payments separately.

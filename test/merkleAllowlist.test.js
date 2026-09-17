@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -57,6 +58,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     );
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -96,7 +98,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     const before = await token.balanceOf(agent);
     await manager.validateJob(jobId, "ignored", tree.getHexProof(validatorLeaf), { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
     const after = await token.balanceOf(agent);
 
     const agentBond = await computeAgentBond(manager, payout, toBN(3600));

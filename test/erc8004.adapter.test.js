@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require('assert');
@@ -68,6 +69,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.addAGIType(agiType.address, 80, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
@@ -125,7 +127,7 @@ contract('ERC-8004 adapter export (smoke test)', (accounts) => {
     await manager.requestJobCompletion(jobId1, 'ipfs-complete', { from: agent });
     await manager.validateJob(jobId1, 'club', EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId1, { from: employer });
+    await finalizeAfterReview(manager, jobId1, { from: employer });
 
     const jobId2 = await createJob();
     await manager.applyForJob(jobId2, 'agent', EMPTY_PROOF, { from: agent });

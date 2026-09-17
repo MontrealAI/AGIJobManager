@@ -161,7 +161,7 @@ contract AGIJobManagerV091SecurityTest is Test {
         manager.validateJob(id, "", new bytes32[](0));
         token.watchOther(secondValidator);
         token.watch(manager, VALIDATOR, id, false);
-        manager.finalizeJob(id);
+        _settle(manager, id);
         assertEq(token.callbacks(), 1);
         assertGt(token.observedReputation(), 0);
         assertEq(token.observedReputation(), manager.reputation(VALIDATOR));
@@ -171,27 +171,27 @@ contract AGIJobManagerV091SecurityTest is Test {
         assertTrue(manager.jobEscrowReleased(id));
     }
 
-    function test_RejectedTransferRollsBackReputationAndPermitsCleanRetry() external {
+    function test_RejectedTransferRollsBackTokenEffectsAndPreservesClaimForRetry() external {
         (V091ObservingUSDC token, AGIJobManagerHarness manager, uint256 id) = _readyJob();
-        uint256 reserves = manager.lockedEscrow() + manager.lockedAgentBonds() + manager.lockedValidatorBonds();
-        uint256 balance = token.balanceOf(address(manager));
         token.watch(manager, VALIDATOR, id, true);
-        vm.expectRevert(AGIJobManager.TransferFailed.selector);
-        manager.finalizeJob(id);
-        assertEq(manager.reputation(VALIDATOR), 0);
-        assertEq(token.callbacks(), 0);
-        assertFalse(manager.jobEscrowReleased(id));
-        assertEq(manager.lockedEscrow() + manager.lockedAgentBonds() + manager.lockedValidatorBonds(), reserves);
-        assertEq(token.balanceOf(address(manager)), balance);
-        token.watch(manager, VALIDATOR, id, false);
-        manager.finalizeJob(id);
-        assertTrue(manager.jobEscrowReleased(id));
+        _settle(manager, id);
         assertGt(manager.reputation(VALIDATOR), 0);
+        assertEq(token.callbacks(), 0);
+        assertTrue(manager.jobEscrowReleased(id));
+        uint256 due = manager.pendingUSDC(VALIDATOR);
+        assertGt(due, 0);
+        assertEq(manager.lockedClaims(), due);
+        assertEq(token.balanceOf(address(manager)), due);
+        token.watch(manager, VALIDATOR, id, false);
+        manager.claimUSDC(VALIDATOR);
+        assertEq(manager.lockedClaims(), 0);
+        assertEq(token.callbacks(), 1);
+        assertFalse(token.reentrySucceeded());
     }
 
     function test_ERC721RegistrationRequiresCanonicalERC165Responses() external {
         (, AGIJobManagerHarness manager, uint256 id) = _readyJob();
-        manager.finalizeJob(id);
+        _settle(manager, id);
         V091ERC165Response credential = new V091ERC165Response();
         uint256[3][4] memory invalid = [[uint256(2), 1, 0], [uint256(1), 2, 0], [uint256(1), 1, 1], [uint256(1), 1, 2]];
         for (uint256 i; i < invalid.length; ++i) {
@@ -245,6 +245,12 @@ contract AGIJobManagerV091SecurityTest is Test {
         assertEq(registry.owner(expectedNode), address(wrapper));
     }
 
+    function _settle(AGIJobManagerHarness manager, uint256 id) internal {
+        (,, uint256 settlementAfter,,) = manager.getJobDeadlines(id);
+        vm.warp(settlementAfter + 1);
+        manager.finalizeJob(id);
+    }
+
     function _readyJob() internal returns (V091ObservingUSDC token, AGIJobManagerHarness manager, uint256 id) {
         token = new V091ObservingUSDC();
         address[2] memory ens;
@@ -257,6 +263,7 @@ contract AGIJobManagerV091SecurityTest is Test {
         manager.addAdditionalAgent(AGENT);
         manager.addAdditionalValidator(VALIDATOR);
         manager.setRequiredValidatorApprovals(1);
+        manager.setVoteQuorum(1);
         address[3] memory actors = [EMPLOYER, AGENT, VALIDATOR];
         for (uint256 i; i < actors.length; ++i) {
             token.mint(actors[i], 1000e6);

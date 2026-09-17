@@ -1,4 +1,4 @@
-# AGIJobManager Deep Reference — v0.9.4
+# AGIJobManager Deep Reference — v0.9.5
 
 Primary source: [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol). Native USDC funds every escrow, reward and bond; ETH pays transaction gas. The deployed token and fixed 30%/10% gross-cost shares are immutable. Recipient wallets can rotate only with intake paused and all reserves zero; see [owner controls](OWNER_CONTROLS.md).
 
@@ -19,7 +19,7 @@ stateDiagram-v2
     Voting --> Disputed: disapprove threshold OR disputeJob OR finalize tie/under-quorum
     Voting --> CompletedAgentWin: eligible finalize, approval majority
     Voting --> RefundedEmployer: review elapsed, quorum and rejection majority
-    CompletionRequested --> CompletedAgentWin: finalize no-vote after review window
+    CompletionRequested --> CompletedAgentWin: buyer explicitly accepts work
 
     Disputed --> CompletedAgentWin: resolveDisputeWithCode(1)
     Disputed --> RefundedEmployer: resolveDisputeWithCode(2)
@@ -50,12 +50,12 @@ sequenceDiagram
 
     alt No dispute and finalizable
       E->>M: finalizeJob(jobId), callable by anyone
-      alt eligible approval majority or no-vote fallback
+      alt quorum approval majority or explicit buyer acceptance
         M-->>V: settle validator rewards/slash
         Note over M: Pay 30% and 10% wallets
         M-->>A: remaining USDC + bond return
       else disapprovals dominate
-        M-->>E: refund (minus validator reward budget when validators exist)
+        M-->>E: full escrow refund; reviewer rewards use forfeited collateral
       end
     else Disputed
       Note over E,M: Moderator resolves directly with typed code 1 or 2
@@ -92,7 +92,7 @@ See [USDC payout distribution](USDC_PAYOUT_SPLIT.md). Pay validators using the p
 - Votes are one-per-validator-per-job and only inside `completionReviewPeriod`.
 - Validator participation is hard-capped by `MAX_VALIDATORS_PER_JOB`.
 - Finalization has liveness branches:
-  - no votes => deterministic agent win after review period,
+  - no votes => dispute after full review and any longer challenge,
   - tie/under-quorum => dispute.
 - ENS integration is best-effort; settlement logic does not revert if hook calls fail.
 

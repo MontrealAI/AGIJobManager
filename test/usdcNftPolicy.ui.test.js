@@ -8,7 +8,7 @@ const source = (start, end) => html.slice(html.indexOf(start), html.indexOf(end,
 function harness({ required = true, score = '1', failedRead = false } = {}) {
   const calls = [];
   const values = { agentNftRequired: required, validationRewardPercentage: '8', wallet30: '0x30', wallet10: '0x10',
-    maxJobPayout: '1000000000', jobDurationLimit: '1000', paused: false };
+    maxJobPayout: '1000000000', jobDurationLimit: '1000', paused: false, completionReviewPeriod:'100', challengePeriodAfterApproval:'20', disputeReviewPeriod:'40', voteQuorum:'3' };
   const method = (name, value) => (...args) => ({ call: async () => { calls.push({ name, args }); return value(); } });
   const methods = Object.fromEntries(Object.keys(values).map(name => [name, method(name, () => values[name])]));
   methods.jobAgentNftRequired = method('jobAgentNftRequired', () => { if (failedRead) throw new Error('RPC unavailable'); return required; });

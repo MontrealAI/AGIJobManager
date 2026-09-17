@@ -12,6 +12,7 @@
 | --- | --- | --- |
 | `MAX_AGI_TYPES()` | view | uint256 |
 | `MAX_VALIDATORS_PER_JOB()` | view | uint256 |
+| `acceptJob(uint256 jobId)` | nonpayable | — |
 | `acceptOwnership()` | nonpayable | — |
 | `addAGIType(address nftAddress, uint256 payoutPercentage)` | nonpayable | — |
 | `addAdditionalAgent(address agent)` | nonpayable | — |
@@ -37,6 +38,7 @@
 | `blacklistedValidators(address)` | view | bool |
 | `cancelJob(uint256 _jobId)` | nonpayable | — |
 | `challengePeriodAfterApproval()` | view | uint256 |
+| `claimUSDC(address beneficiary)` | nonpayable | — |
 | `clubRootNode()` | view | bytes32 |
 | `completionReviewPeriod()` | view | uint256 |
 | `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)` | nonpayable | — |
@@ -47,12 +49,14 @@
 | `disputeReviewPeriod()` | view | uint256 |
 | `ens()` | view | address |
 | `ensJobPages()` | view | address |
+| `executeUSDCTransfer(address beneficiary, uint256 amount)` | nonpayable | — |
 | `expireJob(uint256 _jobId)` | nonpayable | — |
-| `finalizeJob(uint256 _jobId)` | nonpayable | — |
+| `finalizeJob(uint256 jobId)` | nonpayable | — |
 | `getApproved(uint256 tokenId)` | view | address |
 | `getHighestPayoutPercentage(address agent)` | view | uint256 |
 | `getJobCompletionURI(uint256 jobId)` | view | string |
 | `getJobCore(uint256 jobId)` | view | address, address, uint256, uint256, uint256, bool, bool, bool, uint8 |
+| `getJobDeadlines(uint256 jobId)` | view | uint256, uint256, uint256, uint256, uint256 |
 | `getJobSpecURI(uint256 jobId)` | view | string |
 | `getJobValidation(uint256 jobId)` | view | bool, uint256, uint256, uint256, uint256 |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
@@ -62,6 +66,7 @@
 | `lockIdentityConfiguration()` | nonpayable | — |
 | `lockJobENS(uint256 jobId, bool burnFuses)` | nonpayable | — |
 | `lockedAgentBonds()` | view | uint256 |
+| `lockedClaims()` | view | uint256 |
 | `lockedDisputeBonds()` | view | uint256 |
 | `lockedEscrow()` | view | uint256 |
 | `lockedValidatorBonds()` | view | uint256 |
@@ -79,12 +84,14 @@
 | `pauseIntake()` | nonpayable | — |
 | `paused()` | view | bool |
 | `pendingOwner()` | view | address |
+| `pendingUSDC(address beneficiary)` | view | uint256 |
 | `premiumReputationThreshold()` | view | uint256 |
+| `refundUnresolvedDispute(uint256 jobId)` | nonpayable | — |
 | `removeAdditionalAgent(address agent)` | nonpayable | — |
 | `removeAdditionalValidator(address validator)` | nonpayable | — |
 | `removeModerator(address _moderator)` | nonpayable | — |
 | `renounceOwnership()` | pure | — |
-| `reputation(address)` | view | uint256 |
+| `reputation(address account)` | view | uint256 |
 | `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)` | nonpayable | — |
 | `requiredValidatorApprovals()` | view | uint256 |
 | `requiredValidatorDisapprovals()` | view | uint256 |
@@ -119,6 +126,7 @@
 | `setValidatorSlashBps(uint256 bps)` | nonpayable | — |
 | `setVoteQuorum(uint256 _quorum)` | nonpayable | — |
 | `settlementPaused()` | view | bool |
+| `settlementPausedSeconds()` | view | uint256 |
 | `supportsInterface(bytes4 interfaceId)` | view | bool |
 | `symbol()` | view | string |
 | `tokenURI(uint256 tokenId)` | view | string |
@@ -137,6 +145,7 @@
 | `validatorBondBps()` | view | uint256 |
 | `validatorBondMax()` | view | uint256 |
 | `validatorBondMin()` | view | uint256 |
+| `validatorCredential(address claimant, string label, bytes32[] proof)` | view | bytes32, address |
 | `validatorMerkleRoot()` | view | bytes32 |
 | `validatorSlashBps()` | view | uint256 |
 | `voteQuorum()` | view | uint256 |
@@ -163,7 +172,9 @@
 | `EnsJobPagesUpdated(address oldEnsJobPages, address newEnsJobPages)` | indexed address oldEnsJobPages, indexed address newEnsJobPages |
 | `EnsRegistryUpdated(address newEnsRegistry)` | address newEnsRegistry |
 | `IdentityConfigurationLocked(address locker, uint256 atTimestamp)` | indexed address locker, indexed uint256 atTimestamp |
+| `JobAccepted(uint256 jobId, address employer)` | indexed uint256 jobId, indexed address employer |
 | `JobApplied(uint256 jobId, address agent)` | indexed uint256 jobId, indexed address agent |
+| `JobApprovalThresholdReached(uint256 jobId, uint256 approvedAt)` | indexed uint256 jobId, uint256 approvedAt |
 | `JobCancelled(uint256 jobId)` | indexed uint256 jobId |
 | `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)` | indexed uint256 jobId, indexed address agent, indexed uint256 reputationPoints |
 | `JobCompletionRequested(uint256 jobId, address agent, string jobCompletionURI)` | indexed uint256 jobId, indexed address agent, string jobCompletionURI |
@@ -188,11 +199,15 @@
 | `SettlementPauseSet(address setter, bool paused)` | indexed address setter, indexed bool paused |
 | `SettlementWalletsUpdated(address wallet30, address wallet10)` | indexed address wallet30, indexed address wallet10 |
 | `Transfer(address from, address to, uint256 tokenId)` | indexed address from, indexed address to, indexed uint256 tokenId |
+| `USDCClaimed(address beneficiary, uint256 amount)` | indexed address beneficiary, uint256 amount |
+| `USDCDeferred(address beneficiary, uint256 amount)` | indexed address beneficiary, uint256 amount |
 | `USDCWithdrawn(address to, uint256 amount, uint256 remainingWithdrawable)` | indexed address to, indexed uint256 amount, uint256 remainingWithdrawable |
 | `Unpaused(address account)` | address account |
+| `UnresolvedDisputeRefunded(uint256 jobId)` | indexed uint256 jobId |
 | `ValidationRewardPercentageUpdated(uint256 oldPercentage, uint256 newPercentage)` | indexed uint256 oldPercentage, indexed uint256 newPercentage |
 | `ValidatorBlacklisted(address validator, bool status)` | indexed address validator, indexed bool status |
 | `ValidatorBondParamsUpdated(uint256 bps, uint256 min, uint256 max)` | indexed uint256 bps, indexed uint256 min, indexed uint256 max |
+| `ValidatorCredentialUsed(uint256 jobId, address voter, bytes32 credential, address controller)` | indexed uint256 jobId, indexed address voter, indexed bytes32 credential, address controller |
 | `ValidatorSlashBpsUpdated(uint256 oldBps, uint256 newBps)` | indexed uint256 oldBps, indexed uint256 newBps |
 | `VoteQuorumUpdated(uint256 oldQuorum, uint256 newQuorum)` | indexed uint256 oldQuorum, indexed uint256 newQuorum |
 

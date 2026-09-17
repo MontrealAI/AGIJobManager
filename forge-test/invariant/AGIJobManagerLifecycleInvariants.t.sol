@@ -4,14 +4,14 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/StdInvariant.sol";
 import "forge-test/harness/AGIJobManagerHarness.sol";
-import "contracts/test/MockERC20.sol";
+import "contracts/test/MockUSDCControls.sol";
 import "contracts/test/MockERC721.sol";
 
 /// @dev Every selected call makes a valid transition or asserts a specific rejected attack.
 /// No unexpected revert is swallowed; three simultaneous jobs exercise reserve isolation.
 contract AGIJobManagerLifecycleHandler is Test {
     AGIJobManagerHarness public manager;
-    MockERC20 public token;
+    MockUSDCControls public token;
     address[2] public employers = [address(0xE001), address(0xE002)];
     address[2] public agents = [address(0xA001), address(0xA002)];
     address[3] public validators = [address(0xB001), address(0xB002), address(0xB003)];
@@ -29,7 +29,7 @@ contract AGIJobManagerLifecycleHandler is Test {
     uint256 public disputedJobs;
     uint256 public postedJobs;
 
-    constructor(AGIJobManagerHarness manager_, MockERC20 token_) {
+    constructor(AGIJobManagerHarness manager_, MockUSDCControls token_) {
         manager = manager_;
         token = token_;
         initialOwner = manager.owner();
@@ -94,13 +94,13 @@ contract AGIJobManagerLifecycleHandler is Test {
                 stages[slot] = 2;
             }
         } else if (stage == 2) {
-            (,,, uint256 duration, uint256 assignedAt,,,,) = manager.getJobCore(id);
+            (uint256 assignmentDeadline,,,,) = manager.getJobDeadlines(id);
             // The handler's vm.warp clock deliberately selects the expiry or completion transition.
             // forge-lint: disable-next-line(block-timestamp)
-            if (block.timestamp > assignedAt + duration || routeSeed % 5 == 0) {
+            if (block.timestamp > assignmentDeadline || routeSeed % 5 == 0) {
                 // Advance only when needed so the deterministic test clock never runs backwards.
                 // forge-lint: disable-next-line(block-timestamp)
-                if (block.timestamp <= assignedAt + duration) vm.warp(assignedAt + duration + 1);
+                if (block.timestamp <= assignmentDeadline) vm.warp(assignmentDeadline + 1);
                 manager.expireJob(id);
                 stages[slot] = 0;
                 ++expiredJobs;
@@ -109,8 +109,8 @@ contract AGIJobManagerLifecycleHandler is Test {
             }
         } else if (stage == 3) {
             // No-vote liveness, majority success, and tie-to-dispute all share this path.
-            (,,, uint256 requestedAt,) = manager.getJobValidation(id);
-            uint256 readyAt = requestedAt + manager.completionReviewPeriod() + 1;
+            (,, uint256 settlementAfter,,) = manager.getJobDeadlines(id);
+            uint256 readyAt = settlementAfter + 1;
             // vm.warp crosses the completion deadline without moving the test clock backwards.
             // forge-lint: disable-next-line(block-timestamp)
             if (block.timestamp < readyAt) vm.warp(readyAt);
@@ -126,8 +126,8 @@ contract AGIJobManagerLifecycleHandler is Test {
         } else {
             bool employerWins = routeSeed % 2 == 0;
             if (routeSeed % 3 == 0) {
-                (,,,, uint256 disputedAt) = manager.getJobValidation(id);
-                uint256 readyAt = disputedAt + manager.disputeReviewPeriod() + 1;
+                (,,, uint256 ownerResolutionAfter,) = manager.getJobDeadlines(id);
+                uint256 readyAt = ownerResolutionAfter + 1;
                 // vm.warp crosses the dispute deadline without moving the test clock backwards.
                 // forge-lint: disable-next-line(block-timestamp)
                 if (block.timestamp < readyAt) vm.warp(readyAt);
@@ -163,6 +163,27 @@ contract AGIJobManagerLifecycleHandler is Test {
         } else {
             stages[slot] = 3;
         }
+    }
+
+    function issuerRestriction(uint8 seed) external {
+        ++actionCalls;
+        address beneficiary = seed % 2 == 0 ? manager.wallet30() : manager.wallet10();
+        bool blocked = !token.blocked(beneficiary);
+        token.setBlocked(beneficiary, blocked);
+        if (!blocked && manager.pendingUSDC(beneficiary) != 0) manager.claimUSDC(beneficiary);
+        assertAccounting();
+    }
+
+    function pauseTime(uint32 secondsSeed) external {
+        ++actionCalls;
+        vm.prank(manager.owner());
+        manager.pauseAll();
+        // Exercise the contract's pause-aware clock, using only the test VM time control.
+        // forge-lint: disable-next-line(block-timestamp)
+        vm.warp(block.timestamp + bound(secondsSeed, 1, 30 days));
+        vm.prank(manager.owner());
+        manager.unpauseAll();
+        assertAccounting();
     }
 
     function changeProspectiveEconomics(uint8 rewardSeed, uint16 bondSeed) external {
@@ -228,7 +249,7 @@ contract AGIJobManagerLifecycleHandler is Test {
         manager.rescueERC20(address(token), oldOwner, surplus + 1);
         vm.expectRevert(AGIJobManager.InvalidParameters.selector);
         manager.rescueToken(address(token), abi.encodeWithSignature("transfer(address,uint256)", oldOwner, 1));
-        if (_reserves() != 0) {
+        if (_reserves() != manager.lockedClaims()) {
             vm.expectRevert(AGIJobManager.InvalidState.selector);
             manager.setSettlementWallets(address(0x303), address(0x103));
         } else {
@@ -271,6 +292,11 @@ contract AGIJobManagerLifecycleHandler is Test {
     /// @dev Proves all surviving randomized states remain settleable after owner changes.
     /// Called after every invariant sequence, never counted as a random target selector.
     function finishAllJobs() external {
+        address[4] memory recipients = [address(0x301), address(0x101), address(0x303), address(0x103)];
+        for (uint256 i; i < recipients.length; ++i) {
+            token.setBlocked(recipients[i], false);
+            if (manager.pendingUSDC(recipients[i]) != 0) manager.claimUSDC(recipients[i]);
+        }
         for (uint256 slot; slot < 3; ++slot) {
             for (uint256 attempts; stages[slot] != 0 && attempts < 3; ++attempts) {
                 this.advance(slot, 0, stages[slot] == 1 ? 5 : 1);
@@ -284,7 +310,7 @@ contract AGIJobManagerLifecycleHandler is Test {
 
     function _reserves() internal view returns (uint256) {
         return manager.lockedEscrow() + manager.lockedAgentBonds() + manager.lockedValidatorBonds()
-            + manager.lockedDisputeBonds();
+            + manager.lockedDisputeBonds() + manager.lockedClaims();
     }
 
     function assertAccounting() public view {
@@ -313,6 +339,11 @@ contract AGIJobManagerLifecycleHandler is Test {
         assertEq(manager.lockedAgentBonds(), agentBonds);
         assertEq(manager.lockedValidatorBonds(), validatorBonds);
         assertEq(manager.lockedDisputeBonds(), disputeBonds);
+        assertEq(
+            manager.lockedClaims(),
+            manager.pendingUSDC(address(0x301)) + manager.pendingUSDC(address(0x101))
+                + manager.pendingUSDC(address(0x303)) + manager.pendingUSDC(address(0x103))
+        );
         assertEq(token.balanceOf(address(manager)), _reserves() + surplus);
         assertEq(manager.withdrawableUSDC(), surplus);
         for (uint256 i; i < 2; ++i) {
@@ -338,18 +369,20 @@ contract AGIJobManagerLifecycleInvariants is StdInvariant, Test {
     AGIJobManagerLifecycleHandler internal handler;
 
     function setUp() external {
-        MockERC20 token = new MockERC20();
+        MockUSDCControls token = new MockUSDCControls();
         address[2] memory ens;
         bytes32[4] memory roots;
         bytes32[2] memory merkle;
         AGIJobManagerHarness manager = new AGIJobManagerHarness(address(token), "", ens, roots, merkle);
         handler = new AGIJobManagerLifecycleHandler(manager, token);
-        bytes4[] memory selectors = new bytes4[](5);
+        bytes4[] memory selectors = new bytes4[](7);
         selectors[0] = handler.advance.selector;
         selectors[1] = handler.changeProspectiveEconomics.selector;
         selectors[2] = handler.donateAndWithdraw.selector;
         selectors[3] = handler.ownerAndOutsiderAttacks.selector;
         selectors[4] = handler.transferOwner.selector;
+        selectors[5] = handler.issuerRestriction.selector;
+        selectors[6] = handler.pauseTime.selector;
         targetContract(address(handler));
         targetSelector(FuzzSelector(address(handler), selectors));
     }

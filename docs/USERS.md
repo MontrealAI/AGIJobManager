@@ -1,4 +1,4 @@
-# AGIJobManager v0.9.4 — User Guide
+# AGIJobManager v0.9.5 — User Guide
 
 AGIJobManager holds a job's USDC cost in escrow. The first eligible agent whose application succeeds is assigned immediately. The agent submits work, validators review it, and a separate finalization transaction settles the job when its timing and voting conditions allow. Moderators handle disputes.
 
@@ -29,14 +29,14 @@ Successful settlement distributes the original job cost in this order:
 
 The owner can set the validator budget from 1–60% for **new jobs**. Each job keeps the percentage recorded when it was posted. Both wallet percentages stay fixed. Amounts round down to whole USDC base units; the agent receives the remainder on success, including undistributed validator rewards. Bond returns and slashing are separate from these job-cost percentages.
 
-If nobody votes, successful finalization after the review window pays no validator reward: the agent receives the remainder after the two wallet shares. Cancelled, expired, and employer-win jobs do not pay the 30%/10% shares. An employer-win refund can be reduced by validator rewards and adjusted by bond settlement; it is not always a full refund.
+No votes open a dispute without paying the agent. Buyer-win outcomes return full escrow and pay reviewer rewards from forfeited collateral; no 30%/10% fees apply.
 
 ## Before a transaction
 
 1. Check the contract, network, role, current job state, and relevant deadlines in the console.
 2. Read the USDC amount required for the action. Approve that amount to the manager on the USDC contract. Approval and the job action are separate transactions; use the same wallet for both.
 3. Keep enough USDC for escrow or the relevant bond, plus ETH for gas. Avoid unlimited allowances; clear unused allowances when no longer needed.
-4. Review the action preview, then sign and wait for confirmation. A failed USDC transfer rolls the settlement back; some ENS metadata hooks can fail without undoing an otherwise successful settlement.
+4. Review the action preview, then sign and wait for confirmation. Failed outgoing USDC transfers become protected claims; some ENS metadata hooks can fail without undoing an otherwise successful settlement.
 
 AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on (the default). These participant identity checks are separate from optional ENS job-page metadata. Agents and validators must also fund their required USDC bonds; an identity exception does not waive a job’s required NFT, blacklist, lifecycle or funding checks. NFT credentials do not increase payment percentages.
 
@@ -46,16 +46,16 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 2. **Agent applies.** Call `applyForJob(jobId, subdomain, proof)` with enough approved USDC for the performance bond. The first successful eligible application assigns the job; there is no later employer-selection transaction.
 3. **Agent submits.** Call `requestJobCompletion(jobId, jobCompletionURI)` by the assignment deadline. Supply a valid metadata URI, such as `ipfs://...` or `https://...`.
 4. **Validators vote once each.** After completion is requested and within the review window, eligible validators call either `validateJob` or `disapproveJob`. Each vote transfers its required bond; a vote does not itself pay the job.
-5. **Someone finalizes.** Anyone can call `finalizeJob(jobId)` when allowed. A qualifying approval threshold starts a challenge window; early success requires that window to have passed, approvals to exceed disapprovals, and no active dispute. Otherwise, wait until the completion review window has passed: no votes complete the job; an under-quorum result or tie opens a dispute; a qualifying majority settles according to its outcome.
+Ordinary finalization requires the full review and any longer approval challenge to end, plus quorum and a strict majority. No votes, under-quorum votes or a tie open a dispute. The buyer may explicitly accept submitted work immediately. Use `getJobDeadlines` for pause-adjusted dates; see [buyer protection](BUYER_PROTECTION.md).
 6. **Verify settlement.** Successful work emits `JobPayoutDistributed`, `JobCompleted`, and `NFTIssued`, pays USDC, and mints an ERC-721 receipt to the employer. The receipt URI may use configured ENS metadata or the completion URI/base fallback. The contract has no built-in NFT marketplace.
 
-Read the deployment's actual timer values. Defaults are a seven-day completion review, one-day approval challenge, and fourteen-day stale-dispute review. Calls that require a window to have elapsed must be **strictly after** its boundary. Early finalization can happen before the full completion review window ends. When an approval threshold has already been reached, its challenge window must also strictly elapse before finalization, even if the completion review window ends first.
+Read the deployment's actual timer values. Defaults are a seven-day completion review, one-day approval challenge, and fourteen-day stale-dispute review. Calls that require a window to have elapsed must be **strictly after** its boundary. Ordinary finalization must wait for the full review and any longer approval challenge. Settlement pauses extend every lifecycle clock; use getJobDeadlines. Explicit buyer acceptance is a separate immediate-payment path.
 
 ## Cancel, expire, or dispute
 
 - The employer can `cancelJob` while the job remains unassigned. The owner can delist an unassigned job.
 - Anyone can `expireJob` strictly after the assignment deadline if no completion request or active dispute exists. Escrow and the forfeited agent bond go to the employer.
-- The employer or assigned agent can `disputeJob` after completion was requested, within its review window, and before settlement. Approve the dispute bond first. A reached disapproval threshold can also open a dispute.
+- The employer or assigned agent can `disputeJob` after completion was requested, through the displayed settlement cutoff, and before settlement. Approve the dispute bond first. A reached disapproval threshold can also open a dispute.
 - A moderator uses `resolveDisputeWithCode(jobId, code, reason)`: `0` records a note, `1` settles for the agent, `2` refunds the employer under the contract's reward/bond rules.
 - After the stale-dispute deadline, the owner can call `resolveStaleDispute`. These decisions require signed transactions; time passing alone never executes them.
 

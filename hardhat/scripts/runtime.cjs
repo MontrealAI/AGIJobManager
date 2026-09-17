@@ -36,7 +36,12 @@ async function initialize() {
           const source = key.slice(0, separator);
           return [`${resolveInputSource(info, source)}:${key.slice(separator + 1)}`, value];
         }));
-        return connection.ethers.getContractFactory(name, { ...options, libraries });
+        const artifact = await artifacts.readArtifact(name);
+        const required = new Set(Object.entries(artifact.linkReferences || {}).flatMap(([source, entries]) =>
+          Object.keys(entries).map(entry => `${source}:${entry}`)));
+        const selected = Object.fromEntries(Object.entries(libraries).filter(([key]) =>
+          required.has(key) || [...required].some(fqn => key === fqn.slice(fqn.lastIndexOf(':') + 1))));
+        return connection.ethers.getContractFactory(name, { ...options, libraries: selected });
       }
       return connection.ethers.getContractFactory(name, options);
     },

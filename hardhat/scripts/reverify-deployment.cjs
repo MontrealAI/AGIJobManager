@@ -41,7 +41,7 @@ async function main() {
     if (name !== 'AGIJobManager' && libraries?.[FQNS[name]]?.toLowerCase() !== recorded.address.toLowerCase()) throw new Error(`Saved ${name} link differs from its deployed address.`);
     const transactionReceipt = requireConfirmedReceipt(await ethers.provider.getTransactionReceipt(recorded.txHash), recorded.txHash, recorded.address);
     const transaction = await ethers.provider.getTransaction(recorded.txHash);
-    const factory = await ethers.getContractFactory(FQNS[name], name === 'AGIJobManager' ? { libraries } : {});
+    const factory = await ethers.getContractFactory(FQNS[name], { libraries });
     const expectedCreation = await factory.getDeployTransaction(...(name === 'AGIJobManager' ? managerArgs : []));
     if (!transaction || transaction.to !== null || transaction.from?.toLowerCase() !== receipt.deployer.toLowerCase() || transaction.data?.toLowerCase() !== expectedCreation.data.toLowerCase()) {
       throw new Error(`${name} creation transaction differs from the recorded deployer or exact constructor and linked creation code.`);
@@ -68,7 +68,7 @@ async function main() {
   const verification = {};
   for (const name of [...LIBRARIES, 'AGIJobManager']) {
     verification[name] = await verifyWithRetry({ name, record: contracts[name],
-      constructorArguments: name === 'AGIJobManager' ? managerArgs : [], libraries: name === 'AGIJobManager' ? libraries : undefined }, delay);
+      constructorArguments: name === 'AGIJobManager' ? managerArgs : [], libraries }, delay);
   }
   requireVerified(verification, [...LIBRARIES, 'AGIJobManager']);
   const sameBlock = await ethers.provider.getBlock(block.number);

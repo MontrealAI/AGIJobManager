@@ -1,4 +1,4 @@
-# Common reverts and fixes — v0.9.4
+# Common reverts and fixes — v0.9.5
 
 Start with the network, deployment address, connected wallet, `usdcToken()`, current job state, both pause states, and deadlines. Check USDC balance/allowance and ETH for gas. The console's preview can explain a failure before you sign.
 
@@ -24,7 +24,7 @@ Start with the network, deployment address, connected wallet, `usdcToken()`, cur
 | Cancel: `NotAuthorized` | Use the employer wallet that created the job. |
 | Cancel/delist: `InvalidState` | The job is already assigned or terminal. |
 | Job action: `JobNotFound` | The ID does not exist or an unassigned job was cancelled/deleted. |
-| USDC transfer: `TransferFailed` | Check the required USDC balance and exact allowance. Issuer pause/blocklist restrictions can also prevent transfers, including payouts. A failed settlement transfer rolls back the entire distribution. |
+| USDC transfer: `TransferFailed` | Check the required USDC balance and exact allowance. Issuer pause/blocklist restrictions can also prevent transfers, including payouts. Failed outgoing payments become protected claims. An explicit claim retry reverts without losing the entitlement if USDC still blocks it. |
 | Intake: `Pausable: paused` | Posting/application is disabled. A fresh deployment starts paused until the owner commissions it. |
 | Job action: `SettlementPaused` | The settlement lane is paused; this also blocks posting and application. Wait for owner recovery. |
 | Owner withdrawal: `InsufficientWithdrawableBalance` | Amount exceeds unreserved USDC. Use `withdrawableUSDC()`, not the manager's total balance. |
@@ -34,4 +34,4 @@ Start with the network, deployment address, connected wallet, `usdcToken()`, cur
 | Identity configuration: `ConfigLocked` | The owner has irreversibly locked the protected identity configuration. |
 | Ownership acceptance | Only `pendingOwner` may call `acceptOwnership`; proposing a transfer does not change `owner` immediately. |
 
-Use [roles](roles.md) and the [walkthrough](happy-path.md) to check the expected sequence. There are no current internal NFT marketplace, reward-pool contribution, or string-based dispute-resolution calls; use the v0.9.4 interface/ABI.
+Use [roles](roles.md) and the [walkthrough](happy-path.md) to check the expected sequence. There are no current internal NFT marketplace, reward-pool contribution, or string-based dispute-resolution calls; use the v0.9.5 interface/ABI.

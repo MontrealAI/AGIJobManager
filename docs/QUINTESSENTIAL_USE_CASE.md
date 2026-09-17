@@ -1,4 +1,4 @@
-# Quintessential Use Case — v0.9.4
+# Quintessential Use Case — v0.9.5
 
 Follow one USDC-funded job from posting through settlement, then rehearse refunds and disputes separately. All amounts passed to the contract are integers in six-decimal USDC units: **100 USDC = 100000000**. ETH pays transaction gas; it is not a job-payment token.
 
@@ -19,7 +19,7 @@ node scripts/local-job-demo.cjs
 
 ### Launch and deploy
 
-The command starts an isolated Hardhat chain in memory, deploys mock six-decimal USDC, a mock NFT credential, the six libraries and the manager, then closes the chain when the demonstration finishes. It always selects the local network and uses disposable accounts. It sends no public-network transactions and needs no RPC URL or private key.
+The command starts an isolated Hardhat chain in memory, deploys mock six-decimal USDC, a mock NFT credential, the eight libraries and the manager, then closes the chain when the demonstration finishes. It always selects the local network and uses disposable accounts. It sends no public-network transactions and needs no RPC URL or private key.
 
 The demonstration verifies that construction starts paused, configures one eligible agent and validator, funds and approves their USDC, and opens local intake. It posts a 100 USDC job, assigns the agent, records completion and validator approval, advances the simulated clock, and finalizes. Its deliberately shortened review windows are test values, not production policy.
 
@@ -79,7 +79,7 @@ stateDiagram-v2
   Assigned --> CompletionRequested: requestJobCompletion
   Assigned --> Expired: deadline elapsed without completion
   CompletionRequested --> Completed: approval and challenge conditions met
-  CompletionRequested --> Completed: no votes after review window
+  CompletionRequested --> Completed: buyer explicitly accepts work
   CompletionRequested --> Refunded: disapproving majority at quorum after review
   CompletionRequested --> Disputed: dispute request, threshold, tie or insufficient quorum
   Disputed --> Completed: agent-win resolution
@@ -106,7 +106,7 @@ The diagram summarizes contract conditions, not automatic background execution. 
 
 ## B) Testnet/mainnet operator checklist
 
-1. **Release and scope:** verify v0.9.4 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
+1. **Release and scope:** verify v0.9.5 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
 2. **Signing:** use the [Hardhat guide](../hardhat/README.md), a disposable deployer and a reviewed final owner/signing arrangement. Local tests and demonstrations use disposable accounts only.
 3. **Configuration:** review `hardhat/deploy.config.cjs` and `hardhat/.env.example`. Supply native Circle USDC, both distinct settlement wallets, intended owner, ENS/namespace settings and Merkle roots; do not use `migrations/deploy-config.js` for public deployment.
 4. **Plan and rehearse:** from `hardhat/`, run `DRY_RUN=1 npm run deploy:sepolia` with reviewed settings, then perform a separately authorized Sepolia deployment. Rehearse eligibility, posting, validator payouts, refunds, disputes and the actual ownership handover.

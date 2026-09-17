@@ -92,7 +92,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
     assert.equal((await ensJobPages.revokeCalls()).toString(), "1");
     assert.equal((await ensJobPages.lastHook()).toString(), "4", "REVOKE hook id must be 4");
 
@@ -135,7 +135,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
   });
 
   it("does not block cancel/expire when ENS hooks revert", async () => {
@@ -207,7 +207,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    const receipt = await manager.finalizeJob(0, { from: employer });
+    const receipt = await manager.acceptJob(0, { from: employer });
     const issued = receipt.logs.find((log) => log.event === "NFTIssued");
     assert.ok(issued, "NFTIssued event should be emitted");
     const tokenId = issued.args.tokenId.toString();
@@ -239,7 +239,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    const receipt = await manager.finalizeJob(0, { from: employer });
+    const receipt = await manager.acceptJob(0, { from: employer });
     const issued = receipt.logs.find((log) => log.event === "NFTIssued");
     const tokenId = issued.args.tokenId.toString();
     const tokenUri = await manager.tokenURI(tokenId);
@@ -270,7 +270,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    const receipt = await manager.finalizeJob(0, { from: employer });
+    const receipt = await manager.acceptJob(0, { from: employer });
     const issued = receipt.logs.find((log) => log.event === "NFTIssued");
     const tokenId = issued.args.tokenId.toString();
     const tokenUri = await manager.tokenURI(tokenId);
@@ -313,7 +313,7 @@ contract("AGIJobManager ENS job pages hooks", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    const receipt = await manager.finalizeJob(0, { from: employer });
+    const receipt = await manager.acceptJob(0, { from: employer });
     const issued = receipt.logs.find((log) => log.event === "NFTIssued");
     const tokenId = issued.args.tokenId.toString();
     const tokenUri = await manager.tokenURI(tokenId);
