@@ -398,7 +398,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentAfter = await token.balanceOf(agent);
-    const expectedPayout = payout.muln(50).divn(100).add(agentBond);
+    const expectedPayout = payout.muln(52).divn(100).add(agentBond);
     assert.equal(agentAfter.sub(agentBefore).toString(), expectedPayout.toString());
   });
 

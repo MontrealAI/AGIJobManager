@@ -69,7 +69,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await fundAgents(token, manager, [agent, other], owner);
   });
 
-  it("rejects agents with a eligible NFT credential", async () => {
+  it("rejects agents without an eligible NFT credential", async () => {
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
 

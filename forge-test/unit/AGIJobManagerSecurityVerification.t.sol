@@ -60,13 +60,15 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         vm.expectRevert(AGIJobManager.InvalidParameters.selector);
         new AGIJobManager(address(token), "", ensConfig, roots, merkle, [address(0x301), address(0x101)]);
         vm.etch(mainnetUSDC, address(token).code);
-        AGIJobManager mainnetManager = new AGIJobManager(mainnetUSDC, "", ensConfig, roots, merkle, [address(0x301), address(0x101)]);
+        AGIJobManager mainnetManager =
+            new AGIJobManager(mainnetUSDC, "", ensConfig, roots, merkle, [address(0x301), address(0x101)]);
         assertEq(address(mainnetManager.usdcToken()), mainnetUSDC);
         vm.chainId(11155111);
         vm.expectRevert(AGIJobManager.InvalidParameters.selector);
         new AGIJobManager(mainnetUSDC, "", ensConfig, roots, merkle, [address(0x301), address(0x101)]);
         vm.etch(sepoliaUSDC, address(token).code);
-        AGIJobManager sepoliaManager = new AGIJobManager(sepoliaUSDC, "", ensConfig, roots, merkle, [address(0x301), address(0x101)]);
+        AGIJobManager sepoliaManager =
+            new AGIJobManager(sepoliaUSDC, "", ensConfig, roots, merkle, [address(0x301), address(0x101)]);
         assertEq(address(sepoliaManager.usdcToken()), sepoliaUSDC);
         vm.chainId(137);
         vm.expectRevert(AGIJobManager.InvalidParameters.selector);
