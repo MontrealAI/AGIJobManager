@@ -163,13 +163,13 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
   describe("Job lifecycle happy path", () => {
     it("creates, assigns, completes, pays out, and mints NFT", async () => {
       const payout = parseUSDCAmount("100");
-      const jobId = await createJob({ manager, token, employer, payout });
-      const contractBalance = await token.balanceOf(manager.address);
-      assert.equal(contractBalance.toString(), payout.toString());
 
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });
       await manager.addAGIType(agiType.address, 92, { from: owner });
+      const jobId = await createJob({ manager, token, employer, payout });
+      const contractBalance = await token.balanceOf(manager.address);
+      assert.equal(contractBalance.toString(), payout.toString());
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       const jobInfo = await manager.getJobCore(jobId);
@@ -226,10 +226,10 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
     it("prevents double completion and follow-on payouts", async () => {
       const payout = parseUSDCAmount("50");
-      const jobId = await createJob({ manager, token, employer, payout });
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });
       await manager.addAGIType(agiType.address, 92, { from: owner });
+      const jobId = await createJob({ manager, token, employer, payout });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
@@ -245,10 +245,10 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
     it("avoids div-by-zero on agent-win dispute with no validators", async () => {
       const payout = parseUSDCAmount("10");
-      const jobId = await createJob({ manager, token, employer, payout });
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });
       await manager.addAGIType(agiType.address, 92, { from: owner });
+      const jobId = await createJob({ manager, token, employer, payout });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
@@ -305,10 +305,10 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
     it("dispute resolution respects typed outcomes and keeps NO_ACTION disputed", async () => {
       const payout = parseUSDCAmount("30");
-      const jobId = await createJob({ manager, token, employer, payout });
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });
       await manager.addAGIType(agiType.address, 92, { from: owner });
+      const jobId = await createJob({ manager, token, employer, payout });
 
       await manager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await manager.addModerator(moderator, { from: owner });
@@ -389,6 +389,9 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       });
       await failingManager.setRequiredValidatorApprovals(1, { from: owner });
       await failingManager.setChallengePeriodAfterApproval(1, { from: owner });
+      const agiType = await MockERC721.new({ from: owner });
+      await agiType.mint(agent, { from: owner });
+      await failingManager.addAGIType(agiType.address, 92, { from: owner });
 
       const jobId = await createJob({
         manager: failingManager,
@@ -396,9 +399,6 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
         employer,
         payout: parseUSDCAmount("50"),
       });
-      const agiType = await MockERC721.new({ from: owner });
-      await agiType.mint(agent, { from: owner });
-      await failingManager.addAGIType(agiType.address, 92, { from: owner });
       await fundAgents(failingToken, failingManager, [agent], owner);
       await failingManager.applyForJob(jobId, "agent", agentMerkle.proofFor(agent), { from: agent });
       await failingManager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });

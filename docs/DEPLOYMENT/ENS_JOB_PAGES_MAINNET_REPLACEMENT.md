@@ -59,11 +59,11 @@ Typical replacement/migration drivers from current contract behavior:
 
 Example using the isolated namespace exercised in the fork rehearsal (a proposal, not a live deployment):
 - `jobLabelPrefix = "agijob"`
-- `jobsRootName = "usdc-v093.alpha.jobs.agi.eth"`
+- `jobsRootName = "usdc-v094.alpha.jobs.agi.eth"`
 
 So names are:
-- `agijob0.usdc-v093.alpha.jobs.agi.eth`
-- `agijob1.usdc-v093.alpha.jobs.agi.eth`
+- `agijob0.usdc-v094.alpha.jobs.agi.eth`
+- `agijob1.usdc-v094.alpha.jobs.agi.eth`
 - ...
 
 Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged.
@@ -101,7 +101,7 @@ npm ci
 npm run compile
 
 export JOB_MANAGER='<verified-new-USDC-manager-address>'
-export JOBS_ROOT_NAME='usdc-v093.alpha.jobs.agi.eth'
+export JOBS_ROOT_NAME='usdc-v094.alpha.jobs.agi.eth'
 export NEW_OWNER='<reviewed-final-helper-owner-address>'
 
 DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
@@ -109,7 +109,7 @@ DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 LOCK_CONFIG=0 npm run deploy:ens-job-pages:mainnet
 ```
 
-Required settings (via `.env` or the shell): `JOB_MANAGER`, `JOBS_ROOT_NAME` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. `usdc-v093.alpha.jobs.agi.eth` is the tested proposal, not a pre-authorized live root. Verify authority and availability before adopting it.
+Required settings (via `.env` or the shell): `JOB_MANAGER`, `JOBS_ROOT_NAME` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. `usdc-v094.alpha.jobs.agi.eth` is the tested proposal, not a pre-authorized live root. Verify authority and availability before adopting it.
 
 Read-only planning needs a deployer address (`DEPLOYER_ADDRESS` when no key is configured), but no signing key, mainnet confirmation phrase or explorer API key. Public-network broadcasts require explorer verification; `VERIFY` defaults enabled and disabling it blocks the broadcast. Keep `LOCK_CONFIG=0` until actual wiring and the complete ENS lifecycle have been validated.
 

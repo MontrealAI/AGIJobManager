@@ -82,12 +82,12 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
   it("preserves the fixed remainder despite selling NFTs after assignment", async () => {
     const payout = toBN(toWei("100"));
-    const jobId = await createJob(payout);
 
     const agiType = await MockERC721.new({ from: owner });
     const tokenId = await agiType.mint.call(agent, { from: owner });
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 75, { from: owner });
+    const jobId = await createJob(payout);
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     const job = await manager.getJobCore(jobId);
@@ -110,7 +110,6 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
   it("preserves the fixed remainder despite buying NFTs after assignment", async () => {
     const payout = toBN(toWei("100"));
-    const jobId = await createJob(payout);
 
     const agiType25 = await MockERC721.new({ from: owner });
     await agiType25.mint(agent, { from: owner });
@@ -118,6 +117,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
     const agiType75 = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiType75.address, 75, { from: owner });
+    const jobId = await createJob(payout);
 
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     const job = await manager.getJobCore(jobId);
@@ -152,12 +152,12 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
   it("uses the fixed remainder for additional agents", async () => {
     const payout = toBN(toWei("100"));
-    const jobId = await createJob(payout);
 
     const agiType = await MockERC721.new({ from: owner });
     const tokenId = await agiType.mint.call(agent, { from: owner });
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 60, { from: owner });
+    const jobId = await createJob(payout);
     await manager.addAdditionalAgent(agent, { from: owner });
 
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });

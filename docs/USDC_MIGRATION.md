@@ -1,6 +1,6 @@
-# v0.9.3: USDC-only settlement
+# v0.9.4: USDC-only settlement
 
-Every payout, escrow, agent bond, validator bond, dispute bond, reward, refund and treasury withdrawal in v0.9.3 uses native Circle USDC with **six decimals**. One USDC is `1000000` base units; `0.000001` USDC is one base unit. No bridge, conversion, wrapped alternative or configurable settlement token is supported.
+Every payout, escrow, agent bond, validator bond, dispute bond, reward, refund and treasury withdrawal in v0.9.4 uses native Circle USDC with **six decimals**. One USDC is `1000000` base units; `0.000001` USDC is one base unit. No bridge, conversion, wrapped alternative or configurable settlement token is supported.
 
 ## Supported chains
 
@@ -18,7 +18,7 @@ Source: [Circle's USDC contract address registry](https://developers.circle.com/
 - Deployment key: `usdcTokenAddress`; environment key: `USDC_TOKEN_ADDRESS` (Next.js: `NEXT_PUBLIC_USDC_TOKEN_ADDRESS`).
 - Amounts are six-decimal integer base units throughout. Never reuse legacy raw amounts, approvals, cached forms or snapshots. UI parsers reject excess precision rather than truncate it; new storage namespaces isolate old drafts.
 - Standalone console: `ui/agijobmanager-usdc.html`. Old versioned consoles remain available in prior Git tags. The bridge/vault flow is retired.
-- Legacy snapshot deployment migrations are retired. Use a fresh Hardhat configuration and the v0.9.3 ABI.
+- Legacy snapshot deployment migrations are retired. Use a fresh Hardhat configuration and the v0.9.4 ABI.
 
 ## Economic defaults
 
@@ -31,13 +31,13 @@ Source: [Circle's USDC contract address registry](https://developers.circle.com/
 | Validator maximum bond | 88,888,888 | 88888888000000 |
 | Dispute minimum / maximum | 1 / 200 | 1000000 / 200000000 |
 
-Agent bond rate remains 500 bps with duration adjustment; validator bond rate remains 1500 bps; dispute rate remains 50 bps. Bond calculations are capped at payout, with integer flooring. The default validator budget remains 8%; v0.9.3 preserves the v0.6.0 successful-job distribution: validators, 30% wallet, 10% wallet, then the agent remainder. See [the payout specification](USDC_PAYOUT_SPLIT.md). Time periods and identity eligibility rules remain in place. These are nominal USDC defaults, not an exchange-rate conversion of old balances.
+Agent bond rate remains 500 bps with duration adjustment; validator bond rate remains 1500 bps; dispute rate remains 50 bps. Bond calculations are capped at payout, with integer flooring. The default validator budget remains 8%; v0.9.4 preserves the v0.6.0 successful-job distribution: validators, 30% wallet, 10% wallet, then the agent remainder. See [the payout specification](USDC_PAYOUT_SPLIT.md). Time periods and ENS authorization remain in place; the NFT requirement is now selected by the owner for future jobs and fixed for each job at posting. These are nominal USDC defaults, not an exchange-rate conversion of old balances.
 
 ## Deployment and cutover
 
-Read the [USDC cutover qualification and preservation plan](qualification/USDC_CUTOVER.md). The existing mainnet manager has live legacy obligations. Leave its manager, ENS helper, namespace, approvals and original-asset exits available. A fresh USDC manager needs a separate ENS helper and namespace because job IDs restart at zero. v0.9.3 retains the ENS resolver compatibility correction introduced in v0.9.2 and extends deployment and participant-membership qualification. The earlier frozen v0.9.1 assets do not contain that correction.
+Read the [USDC cutover qualification and preservation plan](qualification/USDC_CUTOVER.md). The existing mainnet manager has live legacy obligations. Leave its manager, ENS helper, namespace, approvals and original-asset exits available. A fresh USDC manager needs a separate ENS helper and namespace because job IDs restart at zero. v0.9.4 retains the ENS resolver compatibility correction introduced in v0.9.2 and extends deployment and participant-membership qualification. The earlier frozen v0.9.1 assets do not contain that correction.
 
-**This release publishes software. It does not deploy or upgrade a live contract.** Production Solidity is unchanged from v0.9.2; moving from the original-asset manager requires a fresh deployment, while an existing USDC instance must be checked against matching code, receipts and reviewed configuration. `config/usdc-deployment.json` records `deployment-required` and intentionally leaves manager and ENS addresses empty. Earlier receipts are historical evidence, never current v0.9.3 deployment configuration. v0.6.0 implements the payout split; guarded wallet rotation and two-step ownership arrived in v0.7.0 and paused construction in v0.8.0. v0.9.1 introduced ENS/ERC-165 decoding and settlement state-ordering protections and owner-limit events. v0.9.2 corrected resolver delegation in the separately deployed ENS helper; v0.9.3 retains those protections. Receiving these code protections requires a new deployment; installing a newer console does not modify an existing manager. Older releases have their own semantics.
+**This release publishes software. It does not deploy or upgrade a live contract.** The manager bytecode changes and now links `NftEligibility`. The new policy requires a fresh manager, including when moving from an older USDC manager. Preserve old jobs, balances, allowances, ownership, ENS helpers and namespaces on their original contracts. `config/usdc-deployment.json` records `deployment-required` and intentionally leaves manager and ENS addresses empty. Earlier receipts are historical evidence, never current v0.9.4 deployment configuration. v0.6.0 implements the payout split; guarded wallet rotation and two-step ownership arrived in v0.7.0 and paused construction in v0.8.0. v0.9.1 introduced ENS/ERC-165 decoding and settlement state-ordering protections and owner-limit events. v0.9.2 corrected resolver delegation in the separately deployed ENS helper; v0.9.3 retained those protections; v0.9.4 adds the [posting-time NFT policy](NFT_POLICY.md). Receiving these code protections requires a new deployment; installing a newer console does not modify an existing manager. Older releases have their own semantics.
 
 1. Inventory existing jobs and preserve their original contracts, assets, interfaces and ENS wiring. Close or settle them only through their original lifecycle; old obligations may remain alongside the new manager. Do not import escrow, job IDs or approvals into the USDC manager.
 2. Install pinned dependencies at the root and in `hardhat/`. Copy `hardhat/deploy.config.example.cjs` to the configured local deployment file and review owner, ENS, roots and allowlists. Supply both distinct `settlementWallets` addresses (30% first, 10% second).

@@ -1,4 +1,4 @@
-# User guide — v0.9.3
+# User guide — v0.9.4
 
 Start with the [main user guide](../USERS.md) for USDC amounts, the fixed 30%/10% shares, required bonds, and a complete job lifecycle.
 

@@ -4,7 +4,7 @@ This document describes ENS naming and hook behavior from the current on-chain c
 
 ## In one minute
 - Canonical name shape is `<prefix><jobId>.<jobsRootName>`.
-- The default prefix is `agijob`; `jobsRootName` must be explicitly reviewed. Fresh USDC uses a dedicated root, with `usdc-v093.alpha.jobs.agi.eth` as the fork-rehearsed proposal (not a live deployment).
+- The default prefix is `agijob`; `jobsRootName` must be explicitly reviewed. Fresh USDC uses a dedicated root, with `usdc-v094.alpha.jobs.agi.eth` as the fork-rehearsed proposal (not a live deployment).
 - Settlement and dispute progression live in `AGIJobManager`; ENS writes in `ENSJobPages` are best-effort and non-fatal to settlement.
 - Legacy jobs may need explicit snapshot migration to avoid `JobLabelNotSnapshotted` write failures.
 
@@ -13,8 +13,8 @@ This document describes ENS naming and hook behavior from the current on-chain c
 
 ## Naming example used in the qualified fork
 - `jobLabelPrefix = agijob`
-- `jobsRootName = usdc-v093.alpha.jobs.agi.eth`
-- Example names: `agijob0.usdc-v093.alpha.jobs.agi.eth`, `agijob1.usdc-v093.alpha.jobs.agi.eth`
+- `jobsRootName = usdc-v094.alpha.jobs.agi.eth`
+- Example names: `agijob0.usdc-v094.alpha.jobs.agi.eth`, `agijob1.usdc-v094.alpha.jobs.agi.eth`
 
 If your deployment uses different values, update your runbooks so operators still reason using the same `<prefix><jobId>.<jobsRootName>` model.
 
@@ -35,8 +35,8 @@ Effective name format:
 ```
 
 Example with the reviewed proposal:
-- `agijob0.usdc-v093.alpha.jobs.agi.eth`
-- `agijob1.usdc-v093.alpha.jobs.agi.eth`
+- `agijob0.usdc-v094.alpha.jobs.agi.eth`
+- `agijob1.usdc-v094.alpha.jobs.agi.eth`
 
 ---
 

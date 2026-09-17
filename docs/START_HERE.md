@@ -1,10 +1,10 @@
-# Start here — AGIJobManager v0.9.3
+# Start here — AGIJobManager v0.9.4
 
 AGIJobManager holds a job's USDC payment until the work reaches a settlement outcome. Employers post work, eligible agents take jobs, validators assess the submitted evidence, and moderators handle disputes. The owner configures the instance and can pause it.
 
 **This download supplies software, not a running marketplace.** A deployment operator must deploy and verify the manager, configure its owner and two recipients, arrange eligible participants, and open intake. No live manager address or recipient wallets are supplied.
 
-AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT. These participant identity checks are separate from optional ENS job-page metadata.
+AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on (the default). These participant identity checks are separate from optional ENS job-page metadata.
 
 ## Choose your next step
 
@@ -16,7 +16,7 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 | Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |
 | Evaluate the release | [Mainnet readiness](MAINNET_READINESS.md) and [testing](TESTING.md) | Source, release manifest, checksums and the linked CI evidence |
 
-Download the [v0.9.3 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.3/AGIJobManager-v0.9.3-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.3/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
+Download the [v0.9.4 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.4/AGIJobManager-v0.9.4-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.4/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
 
 ## Understand the payment before signing
 
@@ -36,7 +36,7 @@ No-vote completion after the review window pays the agent's 60% remainder with n
 ## Complete one job
 
 1. **Employer:** write the scope, acceptance criteria and evidence requirements; choose a USDC cost and duration. Confirm the deployed manager and both recipients, approve only the required USDC, then post the job. Approval alone does not create a job. Save its ID and transaction hash.
-2. **Agent:** confirm eligibility, the required qualifying NFT, the posted payment and current bond. The first eligible successful application assigns the job; the employer does not choose among an application queue. Approve the required bond and apply. The duration starts on assignment.
+2. **Agent:** confirm eligibility, the job’s recorded NFT requirement and any required credential, the posted payment and current bond. The first eligible successful application assigns the job; the employer does not choose among an application queue. Approve the required bond and apply. The duration starts on assignment.
 3. **Agent:** finish the work and submit its completion URI before the assignment deadline. The URI identifies evidence; it does not itself prove quality.
 4. **Validators:** review the work, confirm eligibility and the bond, then approve or disapprove during the review period. A validator can vote once per job. Votes can lead to approval, a dispute or a later finalization outcome.
 5. **Any caller:** after the applicable review/challenge conditions are satisfied, submit finalization. For a disputed job, follow the moderator or stale-dispute owner path. Inspect the receipt, job state and USDC transfers; the UI simulation is a precheck, not a promise of inclusion or success.

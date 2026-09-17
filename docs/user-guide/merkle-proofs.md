@@ -1,4 +1,4 @@
-# Merkle proofs — v0.9.3
+# Merkle proofs — v0.9.4
 
 Merkle proofs let the contract confirm your wallet is on an owner-managed allowlist without storing the full list on-chain. They are a preserved membership exception, not proof of an ENS name. Ordinary AGI Agent membership uses `agent.agi.eth` / `alpha.agent.agi.eth`; AGI Validator membership uses `club.agi.eth` / `alpha.club.agi.eth`.
 

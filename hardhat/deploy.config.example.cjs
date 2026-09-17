@@ -1,5 +1,8 @@
 // Copy to deploy.config.cjs (or set DEPLOY_CONFIG to a reviewed copy).
 // Fill the owner and both settlement wallets before even a read-only deployment plan.
+// New managers require an NFT by default and have no registered collections.
+// After accepting ownership, register collections or setAgentNftRequired(false), then
+// verify the explicit choice with READINESS_NFT_CONFIG before unpausing.
 // Membership roots identify agents/validators; they are separate from JOBS_ROOT_NAME.
 const ZERO_ROOT = '0x0000000000000000000000000000000000000000000000000000000000000000';
 

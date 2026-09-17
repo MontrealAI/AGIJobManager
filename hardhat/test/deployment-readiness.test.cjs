@@ -13,9 +13,10 @@ const C = `0x${'33'.repeat(20)}`;
 const TOKEN = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
 const CODE = '0x6000';
 const BLOCK = { number: 123, hash: `0x${'aa'.repeat(32)}` };
-const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership'];
+const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility'];
 const NAMES = [...LIBRARIES, 'AGIJobManager'];
 const FQNS = Object.fromEntries(NAMES.map(name => [name, `source:${name}`]));
+const NFT_POLICY = { agentNftRequired: true, agiTypes: [{ nftAddress: C, payoutPercentage: '1' }] };
 const CONFIG_GETTERS = {
   ensConfig: ['ens', 'nameWrapper'],
   rootNodes: ['clubRootNode', 'agentRootNode', 'alphaClubRootNode', 'alphaAgentRootNode'],
@@ -47,12 +48,12 @@ function makeReceipt() {
   return receipt;
 }
 
-function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock = BLOCK, initialBlock = BLOCK, owner = A, code = CODE } = {}) {
+function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock = BLOCK, initialBlock = BLOCK, owner = A, code = CODE, nftPolicy = NFT_POLICY, nftEntries = NFT_POLICY.agiTypes, omitNftConfig = false } = {}) {
   const receipt = makeReceipt();
   mutateReceipt(receipt);
   const calls = [], writes = [];
   const values = {
-    usdcToken: TOKEN, owner, pendingOwner: ethers.ZeroAddress, paused: true, settlementPaused: false, wallet30: A, wallet10: B,
+    agentNftRequired: true, usdcToken: TOKEN, owner, pendingOwner: ethers.ZeroAddress, paused: true, settlementPaused: false, wallet30: A, wallet10: B,
     lockedEscrow: 0n, lockedAgentBonds: 0n, lockedValidatorBonds: 0n, lockedDisputeBonds: 0n,
   };
   const originalArgs = makeReceipt().constructorArgs;
@@ -62,6 +63,11 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
     calls.push({ method, options });
     return value;
   }]));
+  manager.agiTypes = async (index, options) => {
+    calls.push({ method: 'agiTypes', options });
+    if (index < nftEntries.length) return nftEntries[index];
+    throw Object.assign(new Error('Array boundary'), { code: 'CALL_EXCEPTION', data: '0x' });
+  };
   const token = {
     decimals: async options => { calls.push({ method: 'decimals', options }); return 6; },
     paused: async options => { calls.push({ method: 'USDC.paused', options }); return false; },
@@ -80,6 +86,7 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
     readFileSync: file => {
       if (file === receiptPath) return JSON.stringify(receipt);
       if (file === overridePath) return overrideText;
+      if (file === '/tmp/agi-readiness/nft.json') return JSON.stringify(nftPolicy);
       throw new Error(`Unexpected file read: ${file}`);
     },
     writeFileSync: (file, text, options) => writes.push({ file, text, options }),
@@ -95,12 +102,13 @@ function harness({ mutateReceipt = () => {}, observed = {}, override, endBlock =
     };
     if (name === './deploy.cjs') return { FQNS, LIBRARIES, qualifiedBuild: async () => ({ buildInfo }) };
     if (name === './deployment-safety.cjs') return safety;
+    if (name === './nft-policy.cjs') return require('../scripts/nft-policy.cjs');
     return require(name);
   };
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/check-readiness.cjs'), 'utf8'), {
     module, exports: module.exports, require: mockRequire,
-    process: { env: { DEPLOYMENT_RECEIPT: receiptPath, ...(override === undefined ? {} : { READINESS_CONFIG: overridePath }) }, cwd: () => '/tmp/agi-readiness' },
+    process: { env: { DEPLOYMENT_RECEIPT: receiptPath, ...(omitNftConfig ? {} : { READINESS_NFT_CONFIG: '/tmp/agi-readiness/nft.json' }), ...(override === undefined ? {} : { READINESS_CONFIG: overridePath }) }, cwd: () => '/tmp/agi-readiness' },
     console: { log() {}, error() {} },
   });
   return { main: module.exports.main, calls, writes, receipt, overrideText, report: () => JSON.parse(writes[0].text) };
@@ -257,5 +265,61 @@ test('missing initial block identity, ownership mismatch and substituted runtime
     const run = harness(options);
     await assert.rejects(run.main(), message);
     assert.equal(run.writes.length, 0);
+  }
+});
+
+
+test('readiness requires an explicit NFT policy file before querying the chain', async () => {
+  const run = harness({ omitNftConfig: true });
+  await assert.rejects(run.main(), /Set READINESS_NFT_CONFIG/);
+  assert.equal(run.calls.length, 0);
+});
+
+test('NFT-required readiness records the exact registry, code hashes and reviewed file hash', async () => {
+  const run = harness(); await run.main();
+  const policy = run.report().nftPolicy;
+  assert.deepEqual(policy.expected, NFT_POLICY);
+  assert.deepEqual(policy.observed, NFT_POLICY);
+  assert.equal(policy.runtimeCodeHashes[C], ethers.keccak256(CODE));
+  assert.equal(policy.reviewedConfig.sha256, createHash('sha256').update(JSON.stringify(NFT_POLICY)).digest('hex'));
+});
+
+test('an explicitly reviewed optional NFT policy permits an empty registry', async () => {
+  const nftPolicy = { agentNftRequired: false, agiTypes: [] };
+  const run = harness({ nftPolicy, nftEntries: [], observed: { agentNftRequired: false } });
+  await run.main(); assert.deepEqual(run.report().nftPolicy.observed, nftPolicy);
+});
+
+test('NFT-required readiness rejects empty or entirely disabled registries', async () => {
+  for (const agiTypes of [[], [{ nftAddress: C, payoutPercentage: '0' }]]) {
+    const run = harness({ nftPolicy: { agentNftRequired: true, agiTypes } });
+    await assert.rejects(run.main(), /NFTs are required but no collection is enabled/);
+    assert.equal(run.calls.length, 0);
+  }
+});
+
+test('NFT readiness fails on unreviewed default changes, extra collections and score changes', async () => {
+  for (const options of [
+    { observed: { agentNftRequired: false } },
+    { nftEntries: [...NFT_POLICY.agiTypes, { nftAddress: B, payoutPercentage: '0' }] },
+    { nftEntries: [{ nftAddress: C, payoutPercentage: '2' }] },
+  ]) {
+    const run = harness(options);
+    await assert.rejects(run.main(), /NFT policy differs/);
+    assert.equal(run.writes.length, 0);
+  }
+});
+
+test('NFT policy rejects malformed booleans, scores, duplicates and unknown fields before RPC reads', async () => {
+  for (const nftPolicy of [
+    {}, { ...NFT_POLICY, agentNftRequired: 'false' }, { ...NFT_POLICY, surprise: true },
+    { ...NFT_POLICY, agiTypes: [{ nftAddress: C, payoutPercentage: '101' }] },
+    { ...NFT_POLICY, agiTypes: [{ nftAddress: C, payoutPercentage: -1 }] },
+    { ...NFT_POLICY, agiTypes: [{ nftAddress: ethers.ZeroAddress, payoutPercentage: 1 }] },
+    { ...NFT_POLICY, agiTypes: [...NFT_POLICY.agiTypes, ...NFT_POLICY.agiTypes] },
+  ]) {
+    const run = harness({ nftPolicy });
+    await assert.rejects(run.main(), /READINESS_NFT_CONFIG/);
+    assert.equal(run.calls.length, 0);
   }
 });

@@ -268,6 +268,7 @@ import "./utils/TransferUtils.sol";
 import "./utils/BondMath.sol";
 import "./utils/ReputationMath.sol";
 import "./utils/ENSOwnership.sol";
+import "./utils/NftEligibility.sol";
 
 // NOTE: keep utility libraries externally linked to avoid EIP-170 bytecode regressions.
 
@@ -306,7 +307,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
-    uint256 public constant MAX_AGI_TYPES = 32;
+    uint256 public constant MAX_AGI_TYPES = NftEligibility.MAX_AGI_TYPES;
     uint256 public requiredValidatorApprovals = 3;
     uint256 public requiredValidatorDisapprovals = 3;
     uint256 public voteQuorum = 3;
@@ -361,6 +362,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     bool private useEnsJobTokenURI;
     /// @notice Freezes ENS/namewrapper/root nodes; USDC is immutable at deployment. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
+    /// @notice Default for newly posted jobs; existing jobs keep their recorded requirement.
+    bool public agentNftRequired = true;
 
     struct Job {
         address employer;
@@ -387,14 +390,10 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         uint8 validatorRewardPctSnapshot;
         bool escrowReleased;
         bool validatorApproved;
+        bool agentNftRequired;
         uint256 validatorApprovedAt;
         uint256 validatorBondAmount;
         uint256 agentBondAmount;
-    }
-
-    struct AGIType {
-        address nftAddress;
-        uint256 payoutPercentage;
     }
 
     uint256 public nextJobId;
@@ -407,7 +406,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     mapping(address => bool) public blacklistedAgents;
     mapping(address => bool) public blacklistedValidators;
     mapping(address => uint256) internal activeJobsByAgent;
-    AGIType[] public agiTypes;
+    NftEligibility.AGIType[] public agiTypes;
     mapping(uint256 => string) private _tokenURIs;
 
     event JobCreated(
@@ -442,6 +441,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     );
     event MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot);
     event AGITypeUpdated(address indexed nftAddress, uint256 indexed payoutPercentage);
+    event AgentNftRequirementUpdated(bool required);
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event MaxJobPayoutUpdated(uint256 indexed oldPayout, uint256 indexed newPayout);
@@ -480,8 +480,6 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_LOCK = 5;
     uint8 private constant ENS_HOOK_LOCK_BURN = 6;
     uint256 internal constant ENS_HOOK_GAS_LIMIT = 500_000;
-    uint256 internal constant NFT_BALANCE_OF_GAS_LIMIT = 100_000;
-    uint256 internal constant ERC165_GAS_LIMIT = 50_000;
     uint256 internal constant SAFE_MINT_GAS_LIMIT = 250_000;
     uint256 internal constant MAX_JOB_SPEC_URI_BYTES = 2048;
     uint256 internal constant MAX_JOB_COMPLETION_URI_BYTES = 1024;
@@ -743,6 +741,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         // forge-lint: disable-next-line(unsafe-typecast)
         job.validatorRewardPctSnapshot = uint8(validationRewardPercentage);
         job.agentPayoutPct = 60 - job.validatorRewardPctSnapshot;
+        job.agentNftRequired = agentNftRequired;
         TransferUtils.safeTransferFromExact(address(usdcToken), msg.sender, address(this), _payout);
         unchecked {
             lockedEscrow += _payout;
@@ -765,7 +764,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         }
         if (activeJobsByAgent[msg.sender] >= maxActiveJobsPerAgent) revert InvalidState();
         // NFT types remain eligibility credentials; their legacy scores do not set payment shares.
-        if (getHighestPayoutPercentage(msg.sender) == 0) revert IneligibleAgentPayout();
+        if (job.agentNftRequired && getHighestPayoutPercentage(msg.sender) == 0) revert IneligibleAgentPayout();
         uint256 bond = BondMath.computeAgentBond(
             job.payout,
             job.duration,
@@ -1556,108 +1555,30 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-    function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
-        if (!(nftAddress != address(0) && payoutPercentage > 0 && payoutPercentage <= 100)) revert InvalidParameters();
-        if (!_supportsERC721(nftAddress)) {
-            revert InvalidParameters();
-        }
+    /// @notice Changes only the requirement recorded by future createJob calls.
+    function setAgentNftRequired(bool required) external onlyOwner {
+        agentNftRequired = required;
+        emit AgentNftRequirementUpdated(required);
+    }
 
-        if (!_updateAgiTypePayout(nftAddress, payoutPercentage)) {
-            uint256 length = agiTypes.length;
-            if (length < MAX_AGI_TYPES) {
-                agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
-            } else {
-                for (uint256 i = 0; i < length; ) {
-                    AGIType storage agiType = agiTypes[i];
-                    if (agiType.payoutPercentage == 0) {
-                        agiType.nftAddress = nftAddress;
-                        agiType.payoutPercentage = payoutPercentage;
-                        emit AGITypeUpdated(nftAddress, payoutPercentage);
-                        return;
-                    }
-                    unchecked {
-                        ++i;
-                    }
-                }
-                revert InvalidParameters();
-            }
-        }
-        emit AGITypeUpdated(nftAddress, payoutPercentage);
+    /// @notice The immutable posting-time NFT requirement. Reverts for missing/deleted jobs.
+    function jobAgentNftRequired(uint256 jobId) external view returns (bool) {
+        return _job(jobId).agentNftRequired;
+    }
+
+    /// @notice Registry changes require zero outstanding job escrow and bonds.
+    function addAGIType(address nftAddress, uint256 payoutPercentage) external onlyOwner {
+        _requireEmptyEscrow();
+        NftEligibility.add(agiTypes, nftAddress, payoutPercentage);
     }
 
     function disableAGIType(address nftAddress) external onlyOwner {
-        if (!_updateAgiTypePayout(nftAddress, 0)) revert InvalidParameters();
-        emit AGITypeUpdated(nftAddress, 0);
+        _requireEmptyEscrow();
+        NftEligibility.disable(agiTypes, nftAddress);
     }
 
-    function _updateAgiTypePayout(address nftAddress, uint256 payoutPercentage) internal returns (bool) {
-        for (uint256 i = 0; i < agiTypes.length; ) {
-            AGIType storage agiType = agiTypes[i];
-            if (agiType.nftAddress == nftAddress) {
-                agiType.payoutPercentage = payoutPercentage;
-                return true;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        return false;
-    }
-
-    function _supportsERC721(address nftAddress) internal view returns (bool isSupported) {
-        assembly {
-            if gt(extcodesize(nftAddress), 0) {
-                let ptr := mload(0x40)
-                mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
-                mstore(add(ptr, 0x04), shl(224, 0x01ffc9a7))
-                isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
-                isSupported := and(isSupported, gt(returndatasize(), 0x1f))
-                isSupported := and(isSupported, eq(mload(ptr), 1))
-                if isSupported {
-                    mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
-                    mstore(add(ptr, 0x04), shl(224, 0x80ac58cd))
-                    isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
-                    isSupported := and(isSupported, gt(returndatasize(), 0x1f))
-                    isSupported := and(isSupported, eq(mload(ptr), 1))
-                }
-                if isSupported {
-                    // ERC-165 requires the invalid interface to return exactly false.
-                    mstore(ptr, 0x01ffc9a700000000000000000000000000000000000000000000000000000000)
-                    mstore(add(ptr, 0x04), shl(224, 0xffffffff))
-                    isSupported := staticcall(ERC165_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
-                    isSupported := and(isSupported, gt(returndatasize(), 0x1f))
-                    isSupported := and(isSupported, iszero(mload(ptr)))
-                }
-            }
-        }
-    }
-
-
+    /// @notice Legacy eligibility score; zero means no enabled credential. Not a payout rate.
     function getHighestPayoutPercentage(address agent) public view returns (uint256) {
-        uint256 highestPercentage = 0;
-        for (uint256 i = 0; i < agiTypes.length; ) {
-            AGIType storage agiType = agiTypes[i];
-            uint256 payoutPercentage = agiType.payoutPercentage;
-            if (payoutPercentage > highestPercentage) {
-                uint256 tokenBalance;
-                address nftAddress = agiType.nftAddress;
-                assembly {
-                    let ptr := mload(0x40)
-                    mstore(ptr, 0x70a0823100000000000000000000000000000000000000000000000000000000)
-                    mstore(add(ptr, 0x04), agent)
-                    let success := staticcall(NFT_BALANCE_OF_GAS_LIMIT, nftAddress, ptr, 0x24, ptr, 0x20)
-                    if and(success, gt(returndatasize(), 0x1f)) {
-                        tokenBalance := mload(ptr)
-                    }
-                }
-                if (tokenBalance > 0) {
-                    highestPercentage = payoutPercentage;
-                }
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        return highestPercentage;
+        return NftEligibility.highestScore(agiTypes, agent);
     }
 }

@@ -49,6 +49,12 @@ function loadJsonConfig(configPath) {
   return JSON.parse(raw);
 }
 
+function parseNftRequirement(value) {
+  if (value === true || value === 'true') return true;
+  if (value === false || value === 'false') return false;
+  throw new Error('agentNftRequired / AGI_AGENT_NFT_REQUIRED must be true or false.');
+}
+
 function loadConfig(args) {
   const envConfigPath = process.env.AGI_CONFIG_PATH;
   const fileConfig = loadJsonConfig(args.configPath || envConfigPath);
@@ -81,6 +87,7 @@ function loadConfig(args) {
     blacklistedValidators: process.env.AGI_BLACKLISTED_VALIDATORS
       ? parseEnvList(process.env.AGI_BLACKLISTED_VALIDATORS)
       : undefined,
+    agentNftRequired: process.env.AGI_AGENT_NFT_REQUIRED === undefined ? undefined : parseNftRequirement(process.env.AGI_AGENT_NFT_REQUIRED),
     agiTypes: process.env.AGI_TYPES_JSON ? JSON.parse(process.env.AGI_TYPES_JSON) : undefined,
     expectedOwner: process.env.AGI_EXPECTED_OWNER,
   };
@@ -121,6 +128,7 @@ module.exports = async function verifyConfig(callback) {
   try {
     const args = parseArgs(process.argv);
     const config = loadConfig(args);
+    if (config.agentNftRequired !== undefined) config.agentNftRequired = parseNftRequirement(config.agentNftRequired);
 
     const address = args.address || process.env.AGIJOBMANAGER_ADDRESS || config.address;
     if (!address) {
@@ -135,6 +143,7 @@ module.exports = async function verifyConfig(callback) {
     let failed = false;
 
     const checkSpecs = [
+      ["agentNftRequired", "agentNftRequired", true],
       ["requiredValidatorApprovals", "requiredValidatorApprovals", true],
       ["requiredValidatorDisapprovals", "requiredValidatorDisapprovals", true],
       ["premiumReputationThreshold", "premiumReputationThreshold", true],

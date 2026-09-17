@@ -430,7 +430,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("requires assignment and non-completion for votes", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await expectCustomError(manager.addAGIType.call(agiTypeNft.address, 92, { from: owner }), "InvalidState");
       await agiTypeNft.mint(agent);
 
       await manager.validateJob(0, "validator", [], { from: validatorOne });
@@ -454,7 +454,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
         "InvalidState"
       );
 
-      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await expectCustomError(manager.addAGIType.call(agiTypeNft.address, 92, { from: owner }), "InvalidState");
       await agiTypeNft.mint(agent);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
 
@@ -513,7 +513,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("resolves disputes with agent win, employer win, and neutral outcomes", async () => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
-      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await expectCustomError(manager.addAGIType.call(agiTypeNft.address, 92, { from: owner }), "InvalidState");
       await agiTypeNft.mint(agent);
 
       await manager.applyForJob(0, "agent", [], { from: agent });
@@ -550,7 +550,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.addAdditionalValidator(validatorTwo, { from: owner });
       await manager.addAdditionalValidator(validatorThree, { from: owner });
-      await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
+      await expectCustomError(manager.addAGIType.call(agiTypeNft.address, 92, { from: owner }), "InvalidState");
       await agiTypeNft.mint(agent);
 
       await manager.applyForJob(0, "agent", [], { from: agent });

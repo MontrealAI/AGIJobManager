@@ -46,11 +46,11 @@ async function loadManager(address, network, { provider: suppliedProvider, local
   }
 }
 
-async function fetchAgiTypes(instance) {
+async function fetchAgiTypes(instance, calls = {}) {
   const items = [];
   for (let index = 0; ; index += 1) {
     try {
-      const entry = await instance.agiTypes(index);
+      const entry = await instance.agiTypes(index, calls);
       items.push({ nftAddress: entry.nftAddress, payoutPercentage: entry.payoutPercentage.toString() });
     } catch (error) {
       // Generated public array getters revert with empty data at the end;

@@ -1,4 +1,4 @@
-# Configuration Reference — v0.9.3
+# Configuration Reference — v0.9.4
 
 The deployed manager has no implementation upgrade switch. Its native USDC address and fixed successful-job 30%/10% shares cannot change. Owner controls maintain selected operating parameters; they do not permit withdrawal of reserved escrow or bonds. See [owner controls](OWNER_CONTROLS.md) for transaction procedures.
 
@@ -41,9 +41,10 @@ All setters below are owner-only.
 | ENS root nodes | `updateRootNodes` | Identity unlocked; empty reserves | Agent/club roots and their alpha alternatives |
 | Merkle roots | `updateMerkleRoots` | Owner; remains available after identity lock | Live agent/validator allowlists; users must refresh proofs |
 | Moderators | `addModerator` / `removeModerator` | Owner | Only listed moderators use typed dispute resolution |
-| Additional allowlists | `add/removeAdditionalAgent`, `add/removeAdditionalValidator` | Owner | Identity bypass only; agent NFT credentials remain required |
+| Additional allowlists | `add/removeAdditionalAgent`, `add/removeAdditionalValidator` | Owner | Identity bypass only; a job’s required NFT credential remains enforced |
 | Blacklists | `blacklistAgent`, `blacklistValidator` | Owner | Blocks application or voting for that role |
-| NFT eligibility scores | `addAGIType`, `disableAGIType` | Add: ERC-721 support, score 1–100, at most 32 registered slots | Eligibility only; scores do not set the USDC payout |
+| Agent NFT default | `setAgentNftRequired` | Owner | Required by default; fixed per job at posting; default changes affect future jobs only |
+| NFT eligibility scores | `addAGIType`, `disableAGIType` | Zero outstanding escrow/bonds for every change; add: ERC-721 support, score 1–100, at most 32 slots | Eligibility only; scores do not set the USDC payout |
 
 The role-list setters do not reject every unsuitable account automatically. Review the intended accounts operationally. The current ABI has no legacy terms/contact/additional-text setters or additional-agent payout setter.
 
@@ -54,7 +55,7 @@ The role-list setters do not reject every unsuitable account automatically. Revi
 | Create a funded job | Any employer wallet while intake/settlement allow it |
 | Cancel an unassigned job | That job's employer |
 | Delist an unassigned job | Owner |
-| Apply | Eligible, non-blacklisted agent with NFT credential and required bond |
+| Apply | Eligible, non-blacklisted agent with the job’s required NFT (if any) and required bond |
 | Request completion | Assigned agent |
 | Validate/disapprove | Eligible, non-blacklisted validator with required bond; one vote per job |
 | Manual dispute | Employer or assigned agent after submission, within review, before settlement |

@@ -6,6 +6,8 @@ let ethers = require('ethers');
 const { qualifiedBuild, FQNS, LIBRARIES } = require('./deploy.cjs');
 const { USDC_ABI, describeMembershipConfig, requireDeploymentNetwork, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('./deployment-safety.cjs');
 
+const { normalizeNftPolicy, checkNftPolicy } = require('./nft-policy.cjs');
+
 const IDENTITY_FIELDS = { ensConfig: 2, rootNodes: 4, merkleRoots: 2 };
 
 function stableObject(value) {
@@ -89,6 +91,10 @@ async function main() {
   const receipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
   requireReceipt(receipt);
   const reviewedConfig = loadIdentityConfig(receipt);
+  if (!process.env.READINESS_NFT_CONFIG) throw new Error('Set READINESS_NFT_CONFIG to a reviewed JSON file containing agentNftRequired and the complete agiTypes registry.');
+  const nftConfigPath = path.resolve(process.cwd(), process.env.READINESS_NFT_CONFIG);
+  const nftConfigText = fs.readFileSync(nftConfigPath, 'utf8');
+  const expectedNftPolicy = normalizeNftPolicy(JSON.parse(nftConfigText));
   const chainId = Number((await ethers.provider.getNetwork()).chainId);
   requireDeploymentNetwork(network.name, chainId);
   if (receipt.chainId !== chainId || receipt.network !== network.name) throw new Error('Receipt network or chain does not match this provider.');
@@ -131,6 +137,14 @@ async function main() {
       }
     });
   }
+  const observedNftPolicy = await checkNftPolicy(manager, expectedNftPolicy, calls);
+  const nftCodeHashes = {};
+  for (const entry of observedNftPolicy.agiTypes) {
+    if (BigInt(entry.payoutPercentage) > 0n) {
+      const code = await requireCode(ethers.provider, entry.nftAddress, 'Enabled NFT collection', block.number);
+      nftCodeHashes[entry.nftAddress] = ethers.keccak256(code);
+    }
+  }
   const tokenState = await requireOperationalUSDC({ chainId, tokenAddress, token, recipients: [managerAddress, owner, wallet30, wallet10], blockTag: block.number });
   const confirmedBlock = await ethers.provider.getBlock(block.number);
   if (!confirmedBlock || confirmedBlock.number !== block.number || confirmedBlock.hash?.toLowerCase() !== block.hash.toLowerCase()) {
@@ -142,7 +156,11 @@ async function main() {
     settlementWallets: [wallet30, wallet10], blockNumber: block.number, blockHash: block.hash,
     identityConfig: { expected: reviewedConfig.expected, observed: observedConfig, reviewedOverride: reviewedConfig.override },
     membership: describeMembershipConfig(observedConfig),
-    configurationScope: 'ENS registry, name wrapper, root nodes and Merkle roots checked. Private baseIpfsUrl metadata and mutable operational policy settings are not validated by this check.',
+    nftPolicy: { expected: expectedNftPolicy, observed: observedNftPolicy,
+      reviewedConfig: { path: nftConfigPath, sha256: createHash('sha256').update(nftConfigText).digest('hex') },
+      runtimeCodeHashes: nftCodeHashes,
+      scope: 'Default and complete collection registry matched at this block. Per-job requirements are fixed at posting. Participant NFT balances, collection upgrade authority and future availability require separate operational review.' },
+    configurationScope: 'ENS registry, name wrapper, root nodes, Merkle roots and NFT policy checked. Private baseIpfsUrl metadata and other mutable operational policy settings are not validated by this check.',
     explorerVerification: { source: 'deployment receipt; no fresh explorer query', recorded: receipt.verification },
     accounting, tokenState, runtimeCodeHashes, transactionsBroadcast: 0,
   };

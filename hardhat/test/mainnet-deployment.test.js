@@ -61,6 +61,7 @@ describe('Release deployment under Ethereum code-size limits', function () {
     assert.equal(await manager.wallet30(), wallet30.address);
     assert.equal(await manager.wallet10(), wallet10.address);
     assert.equal(await manager.paused(), true);
+    assert.equal(await manager.agentNftRequired(), true);
     assert.equal(await manager.settlementPaused(), false);
   });
 

@@ -32,7 +32,7 @@ const USDC_ABI = [
 describe('USDC cutover alongside the actual legacy mainnet manager and ENS', function () {
   this.timeout(300_000);
   let deployer, owner, employer, agent, validator, wallet30, wallet10, outsider, moderator;
-  let token, manager, pages, wrapper, registry, resolver, rootOwner, blacklister, managerAddress, pagesAddress;
+  let token, manager, nft, pages, wrapper, registry, resolver, rootOwner, blacklister, managerAddress, pagesAddress;
   let baseline, snapshot, legacyChanged, rootName, rootNode, preservationFailures = 0;
   let identityEvidence, rootAuthority, memberWrapper, memberResolver;
   const memberRoots = new Map();
@@ -132,7 +132,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     await send(token.connect(minter).configureMinter(deployer.address, micro(10_000)));
     for (const signer of [employer, agent, validator]) await send(token.mint(signer.address, micro(2000)));
     const libraries = {};
-    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership']) {
+    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility']) {
       const instance = await (await ethers.getContractFactory(name)).deploy();
       await instance.waitForDeployment();
       libraries[name] = await instance.getAddress();
@@ -158,7 +158,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
       childResolver: { address: baseline.pages.publicResolver, runtimeCodeHash: ethers.keccak256(await ethers.provider.getCode(baseline.pages.publicResolver)) },
       roots: [], admissionRoutes: ['wrapped owner', 'token approval', 'operator approval', 'resolver addr'],
       explicitExceptions: ['owner-managed allowlist', 'address Merkle membership'],
-      nftEligibility: 'MockERC721 fixture; production NFT ownership and policy remain unqualified', localChildNamesOnly: true, fixtureNames: [] };
+      nftEligibility: 'Both posting-time modes, collection mutation guards and settlement qualified with MockERC721; actual production collection selection, holdings and upgrade authority require operator review', localChildNamesOnly: true, fixtureNames: [] };
     for (const name of MEMBERSHIP_ROOTS) {
       const node = ethers.namehash(name), data = await memberWrapper.getData(BigInt(node));
       assert.equal(await registry.owner(node), baseline.pages.nameWrapper);
@@ -167,14 +167,14 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
       memberRoots.set(name, { node, expiry: data[2], signer: await localSigner(data[0]) });
       identityEvidence.roots.push({ name, node, owner: data[0], fuses: data[1], expiry: data[2], resolver: await registry.resolver(node) });
     }
-    rootName = `usdc-v093.${baseline.pages.jobsRootName}`;
+    rootName = `usdc-v094.${baseline.pages.jobsRootName}`;
     rootNode = ethers.namehash(rootName);
     assert.equal(await registry.owner(rootNode), ethers.ZeroAddress, 'The rehearsal namespace must be unused at the pinned block');
     pages = await (await ethers.getContractFactory('ENSJobPages')).deploy(baseline.pages.ens, baseline.pages.nameWrapper,
       baseline.pages.publicResolver, rootNode, rootName);
     await pages.waitForDeployment();
     pagesAddress = await pages.getAddress();
-    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v093', pagesAddress, 0, BigInt(baseline.rootData[2])));
+    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v094', pagesAddress, 0, BigInt(baseline.rootData[2])));
     const wrappedRootData = Array.from(await memberWrapper.getData(BigInt(rootNode)));
     rootAuthority = { path: 'NameWrapper token owner', registryOwner: await registry.owner(rootNode),
       wrappedOwner: await memberWrapper.ownerOf(BigInt(rootNode)), wrappedData: wrappedRootData,
@@ -187,7 +187,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     assert.equal(rootAuthority.parentOwnerOperatorApproval, false, 'The helper owns only its dedicated wrapped root without blanket legacy-root authority');
     await send(pages.setJobManager(managerAddress));
     await send(manager.setEnsJobPages(pagesAddress));
-    const nft = await (await ethers.getContractFactory('MockERC721')).deploy();
+    nft = await (await ethers.getContractFactory('MockERC721')).deploy();
     await nft.waitForDeployment();
     await send(nft.mint(agent.address));
     await send(manager.addAGIType(await nft.getAddress(), 1));
@@ -375,6 +375,40 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     await send(manager.connect(owner).updateMerkleRoots(ethers.ZeroHash, ethers.ZeroHash));
     const third = await create();
     await rejectsAdmission(manager.connect(agent).applyForJob(third.id, 'unregistered', []));
+  });
+
+  it('preserves required and optional job policies while retaining actual ENS Agent and Club admission and exact native-USDC settlement', async function () {
+    await configureMembership();
+    await member('agent.agi.eth', 'agent', agent);
+    await member('club.agi.eth', 'validator', validator);
+    await activate();
+    const before = await balances();
+    const required = await create();
+    await send(manager.connect(owner).setAgentNftRequired(false));
+    const optional = await create();
+    await send(manager.connect(owner).setAgentNftRequired(true));
+    assert.equal(await manager.jobAgentNftRequired(required.id), true);
+    assert.equal(await manager.jobAgentNftRequired(optional.id), false);
+    await send(nft.connect(agent).transferFrom(agent.address, outsider.address, 1));
+    await rejects(manager.connect(agent).applyForJob(required.id, 'agent', []));
+    await rejectsAdmission(manager.connect(outsider).applyForJob(optional.id, 'unregistered', []));
+    await send(manager.connect(agent).applyForJob(optional.id, 'agent', []));
+    await rejects(manager.connect(owner).disableAGIType(await nft.getAddress()));
+    await rejects(manager.connect(owner).addAGIType(await nft.getAddress(), 100));
+    await send(nft.connect(outsider).transferFrom(outsider.address, agent.address, 1));
+    await send(manager.connect(agent).applyForJob(required.id, 'agent', []));
+    await send(nft.connect(agent).transferFrom(agent.address, outsider.address, 1));
+    for (const { id } of [required, optional]) {
+      await send(manager.connect(agent).requestJobCompletion(id, 'ipfs://nft-policy'));
+      await rejectsAdmission(manager.connect(outsider).validateJob(id, 'unregistered', []));
+      await send(manager.connect(validator).validateJob(id, 'validator', []));
+    }
+    await advanceReview();
+    for (const { id } of [required, optional]) await send(manager.finalizeJob(id));
+    assert.deepEqual((await balances()).map((value, index) => value - before[index]),
+      [-micro(200), micro(104), micro(16), micro(60), micro(20), 0n]);
+    assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+    await send(manager.connect(owner).disableAGIType(await nft.getAddress()));
   });
 
   it('settles native USDC exactly 8/30/10/52 with bonds separate while preserving every legacy job', async function () {

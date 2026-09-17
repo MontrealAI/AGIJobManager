@@ -1,4 +1,4 @@
-# Glossary — v0.9.3
+# Glossary — v0.9.4
 
 - **USDC:** Native Circle token used for every job escrow, reward, and bond. It uses six decimals; 1 USDC is 1000000 base units.
 - **ETH gas:** Ethereum's transaction fee, separate from USDC job economics.
@@ -8,7 +8,7 @@
 - **Bond:** A participant's separate USDC deposit; returned, awarded, or slashed according to the outcome.
 - **Employer:** Posts and funds a job; receives a completion NFT when work settles successfully.
 - **Agent:** The first eligible applicant assigned to a job; performs work and submits evidence.
-- **NFT credential:** An eligible AGI-type NFT required for agent assignment in addition to identity authorization. It does not increase the payout percentage.
+- **NFT credential:** An eligible AGI-type NFT needed for assignment when the job’s posting-time policy requires it, in addition to identity authorization. It does not increase the payout percentage.
 - **Validator:** Reviews submitted work and casts one bonded approval or disapproval vote.
 - **Moderator:** An explicitly listed account that decides active disputes with a numeric resolution code.
 - **Owner:** Account authorized to maintain bounded configuration, pause operations, and resolve stale disputes. Ownership changes require acceptance.

@@ -1,4 +1,4 @@
-# Agent Guide — v0.9.3
+# Agent Guide — v0.9.4
 
 Agents earn USDC by completing assigned work. At the default validator budget, a successful 100 USDC job pays 8 USDC to correct-side validators, 30 USDC to `wallet30`, 10 USDC to `wallet10`, and 52 USDC to the agent, excluding bond returns and rounding.
 
@@ -7,7 +7,7 @@ Agents earn USDC by completing assigned work. At the default validator budget, a
 You need **both**:
 
 1. AGI Agent membership under `agent.agi.eth` or `alpha.agent.agi.eth` through qualifying NameWrapper ownership/approval or resolver-address fallback for the connected wallet. Enter only the label, such as `alice`. The contract preserves the owner-managed `additionalAgents` list and valid agent Merkle proofs as explicit membership exceptions; those exceptions do not establish ENS membership.
-2. An eligible AGI-type NFT credential with a nonzero configured eligibility score. Credentials establish eligibility; their legacy “payout percentage” field does not boost the USDC share.
+2. When `jobAgentNftRequired(jobId)` is true, an eligible AGI-type NFT credential with a nonzero configured eligibility score. Credentials establish eligibility; their legacy “payout percentage” field does not boost the USDC share.
 
 Optional ENS job pages do not grant participant membership. The qualifying NFT is also separate from ENS ownership.
 

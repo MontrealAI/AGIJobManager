@@ -1,4 +1,4 @@
-# AGI.eth member namespaces — v0.9.3
+# AGI.eth member namespaces — v0.9.4
 
 AGIJobManager uses role-specific ENS names for ordinary AGI Agent and AGI Validator membership. It accepts the configured primary and alpha roots for each role. Names identify eligible wallets; they do not establish the truth of off-chain work or the independence of two validators.
 
@@ -15,7 +15,7 @@ For `helper.alpha.agent.agi.eth`, submit only `helper`. ENS inputs must be lower
 
 The contract preserves owner-managed `additionalAgents`/`additionalValidators` and valid role-specific Merkle proofs as explicit membership exceptions. Additional entries are checked first, then Merkle proofs, then ENS. An exception authorizes a wallet without proving ENS membership. It does not bypass blacklists, agent NFT eligibility, lifecycle requirements, limits or USDC bonds.
 
-Agents need an eligible enabled AGI-type NFT as well as identity authorization. That NFT's legacy score is an eligibility indicator and does not change the successful-job payment share. Validators require their own club-role authorization; an agent name alone is insufficient.
+Agents need identity authorization and, when their job requires it, an eligible enabled AGI-type NFT. That NFT's legacy score is an eligibility indicator and does not change the successful-job payment share. Validators require their own club-role authorization; an agent name alone is insufficient.
 
 ## Complete the job lifecycle
 

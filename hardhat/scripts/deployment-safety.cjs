@@ -154,7 +154,7 @@ function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, to
   if (immutableGroups.length) {
     let value;
     if (artifact.contractName === 'AGIJobManager' && immutableGroups.length === 1 && tokenAddress) value = tokenAddress;
-    else if (artifact.contractName === 'TransferUtils' && immutableGroups.length === 1 && immutableReferences.library_deploy_address) value = address;
+    else if (['TransferUtils', 'NftEligibility'].includes(artifact.contractName) && immutableGroups.length === 1 && immutableReferences.library_deploy_address) value = address;
     else throw new Error('Unrecognized immutable layout; review deployment verifier before continuing.');
     immutableGroups.flat().forEach(({ start, length }) => replace(start, length, value));
   }

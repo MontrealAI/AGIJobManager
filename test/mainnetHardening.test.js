@@ -373,7 +373,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "QmCompletion", { from: agent });
 
-    await manager.disableAGIType(nft.address, { from: owner });
+    await expectCustomError(manager.disableAGIType.call(nft.address, { from: owner }), "InvalidState");
     await manager.setValidationRewardPercentage(60, { from: owner });
 
     const reviewPeriod = await manager.completionReviewPeriod();

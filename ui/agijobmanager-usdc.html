@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.9.3</title>
+  <title>AGIJobManager · USDC v0.9.4</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.9.3: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v0.9.4: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1120,7 +1120,8 @@
             <div class="legendRow"><span>Wallet two · 10%</span><b id="legendWallet10Pct">10%</b></div>
           </div>
         </div>
-        <div class="tiny" style="margin-top:10px">The validator rate is fixed when the job is posted. The two wallets receive 30% and 10% of the original job cost; the agent receives the remainder. NFT holdings establish eligibility only.</div>
+        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Existing jobs keep their own setting.</div>
+        <div class="tiny" style="margin-top:10px">The validator rate is fixed when the job is posted. The two wallets receive 30% and 10% of the original job cost; the agent receives the remainder. NFTs affect eligibility only. Each job keeps the NFT requirement recorded when it was posted.</div>
       </div>
 
       <div class="card">
@@ -1170,11 +1171,11 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.9.3</h2>
+      <h2>USDC deployment · v0.9.4</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
-      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.9.3 deployment">
+      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.9.4 deployment">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
       <p id="usdcDeploymentStatus" role="status">Deployment required — transactions disabled.</p>
       <p id="settlementWallets" class="smallNote">Two owner-configurable settlement wallets must be verified before transactions.</p>
@@ -1251,7 +1252,7 @@
 
     <div class="card" id="verifyEnsSection">
       <h2 style="margin:0 0 12px">1) Verify your Agent or AGI Club ENS subname</h2>
-      <div class="helper" style="margin-bottom:12px">Enter only your label: <b>alice</b> verifies <b>alice.agent.agi.eth</b> for an Agent, or <b>alice.club.agi.eth</b> for an AGI Club validator. The Alpha buttons check the matching <b>alpha.agent.agi.eth</b> or <b>alpha.club.agi.eth</b> name. USDC settlement preserves these identity routes. Agents also need a configured NFT eligibility credential.</div>
+      <div class="helper" style="margin-bottom:12px">Enter only your label: <b>alice</b> verifies <b>alice.agent.agi.eth</b> for an Agent, or <b>alice.club.agi.eth</b> for an AGI Club validator. The Alpha buttons check the matching <b>alpha.agent.agi.eth</b> or <b>alpha.club.agi.eth</b> name. USDC settlement preserves these identity routes. Agents need an approved NFT only when their job requires one. ENS membership checks remain in both modes.</div>
       <div class="smallNote" style="margin-bottom:12px">The contract retains owner-managed allowlists and Merkle-proof authorization from the legacy manager. This console guides you through ENS verification. Optional ENS job pages are separate from member identity.</div>
       <div class="twoCol">
         <div>
@@ -2027,8 +2028,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.9.3 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.3 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v0.9.4 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.4 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2285,7 +2286,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.3/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.3 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.4/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.4 terms</a>
       </div>
     </div>
 
@@ -2438,6 +2439,10 @@ preserved in previous Git tags.</div></details></div>
 
 
 const AGIJobManagerABI = [
+      {"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"required","type":"bool"}],"name":"AgentNftRequirementUpdated","type":"event"},
+      {"inputs":[],"name":"agentNftRequired","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"jobAgentNftRequired","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"bool","name":"required","type":"bool"}],"name":"setAgentNftRequired","outputs":[],"stateMutability":"nonpayable","type":"function"},
 {"type": "function", "name": "pendingOwner", "stateMutability": "view", "inputs": [], "outputs": [{"type": "address"}]},
 {"type": "function", "name": "acceptOwnership", "stateMutability": "nonpayable", "inputs": [], "outputs": []},
 {"type": "function", "name": "transferOwnership", "stateMutability": "nonpayable", "inputs": [{"name": "newOwner", "type": "address"}], "outputs": []},
@@ -4539,7 +4544,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.3 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.4 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
@@ -4547,11 +4552,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
         const pendingOwner = String(await agiJobManager.methods.pendingOwner().call());
-        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.3 manager with two-step ownership is required.');
+        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.4 manager with two-step ownership is required.');
         const wallet30 = String(await agiJobManager.methods.wallet30().call());
         const wallet10 = String(await agiJobManager.methods.wallet10().call());
         const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
-        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.9.3 settlement wallets.');
+        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.9.4 settlement wallets.');
         if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
         usdcToken = token;
         tokenDecimals = 6;
@@ -4659,7 +4664,7 @@ async function updateSummary(){
         aMin,aBps,aMax,maxActive,
         vBps,vMin,vMax,vSlash,
         vReward,maxPayout,jobLimit,
-        pausedState,settlePausedRead,drpRead
+        pausedState,settlePausedRead,drpRead,nftRequiredRead
       ] = await Promise.all([
         agiJobManager.methods.agentBond().call(),
         agiJobManager.methods.agentBondBps().call(),
@@ -4674,7 +4679,8 @@ async function updateSummary(){
         agiJobManager.methods.jobDurationLimit().call(),
         agiJobManager.methods.paused().call(),
         runSafeReadStep('settlementPaused', ()=>agiJobManager.methods.settlementPaused().call(), {silent:true}),
-        runSafeReadStep('disputeReviewPeriod', ()=>agiJobManager.methods.disputeReviewPeriod().call(), {silent:true})
+        runSafeReadStep('disputeReviewPeriod', ()=>agiJobManager.methods.disputeReviewPeriod().call(), {silent:true}),
+        runSafeReadStep('agentNftRequired', ()=>readNftRequirement(), {silent:true})
       ]);
       const maxActiveSafe = maxActive?.__safeReadError ? '—' : maxActive;
       const settlePaused = settlePausedRead?.__safeReadError ? (prior.settlementPaused ?? null) : !!settlePausedRead;
@@ -4707,6 +4713,7 @@ async function updateSummary(){
         agentBondMax: String(aMax),
         jobDurationLimit: String(jobLimit)
       };
+      el('agentNftRequiredState').textContent = nftRequirementLabel(nftRequiredRead?.__safeReadError ? null : nftRequiredRead);
       el("validationRewardPct").textContent = String(vReward) + "%";
       el("maxJobPayout").textContent = formatUnitsToAmount(maxPayout);
       el("jobDurationLimit").textContent = jobLimit;
@@ -5139,10 +5146,27 @@ async function updateSummary(){
         </div>`;
     }
 
+    function nftRequirementLabel(required){
+      return required === true ? 'Required' : required === false ? 'Not required' : 'Unknown (read failed)';
+    }
+    async function readNftRequirement(jobId){
+      const method = jobId === undefined ? agiJobManager.methods.agentNftRequired() : agiJobManager.methods.jobAgentNftRequired(String(jobId));
+      const required = await method.call();
+      if(typeof required !== 'boolean') throw new Error('Unable to verify the NFT policy. Use the console matching your manager version and refresh.');
+      return required;
+    }
+    async function assertAgentNftEligibility(jobId){
+      const required = await readNftRequirement(jobId);
+      if(required && BigInt(await agiJobManager.methods.getHighestPayoutPercentage(userAccount).call()) === 0n) {
+        throw new Error('This job requires an NFT from an enabled collection. ENS authorization alone is insufficient.');
+      }
+      return required;
+    }
     async function fetchPostingTerms(){
       const contract = agiJobManager;
-      const names = ['validationRewardPercentage','wallet30','wallet10','maxJobPayout','jobDurationLimit','paused'];
+      const names = ['validationRewardPercentage','wallet30','wallet10','maxJobPayout','jobDurationLimit','paused','agentNftRequired'];
       const values = await Promise.all(names.map(name=>contract.methods[name]().call()));
+      if(typeof values[names.indexOf('agentNftRequired')] !== 'boolean') throw new Error('Unable to verify the NFT requirement for new jobs.');
       return Object.fromEntries(names.map((name,i)=>[name, String(values[i]).toLowerCase()]));
     }
     async function assertPostingTerms(expected){
@@ -5185,6 +5209,7 @@ async function updateSummary(){
           facts:[
             {label:'Job Spec URI', value: spec},
             {label:'On-chain details', value: details},
+            {label:'Agent NFT at posting', value: nftRequirementLabel(postingTerms.agentNftRequired === 'true') + '; recorded when the transaction executes. ENS authorization remains required.'},
             {label:'Payout escrow', value: `${formatUnitsToAmount(payoutUnits)} $USDC`},
             {label:`Validator budget (${postingTerms.validationRewardPercentage}%, paid first)`, value: `${formatUnitsToAmount(validatorBudget)} USDC`},
             {label:'30% of original job cost', value: `${formatUnitsToAmount(wallet30Amount)} USDC → ${postingTerms.wallet30}`},
@@ -5224,6 +5249,7 @@ async function updateSummary(){
       const reviewedLabel = verified.agent;
       const reviewedAlpha = verified.agentAlpha;
       try{
+        const nftRequired = await assertAgentNftEligibility(jobId);
         let probe = await buildJobBondTruthProbe(jobId);
         const payoutMismatchDetected = !probe.cachedVsFreshPayoutMatch;
         if(payoutMismatchDetected){
@@ -5260,6 +5286,7 @@ async function updateSummary(){
           body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. All displayed bond numbers and approval requirements are sourced from one fresh on-chain snapshot.',
           riskHtml: blockedBanner,
           facts:[
+            {label:'This job’s NFT requirement', value: nftRequirementLabel(nftRequired) + ' (fixed at posting)'},
             {label:'Fresh on-chain proof', value: formatProbeProofHtml(probe), html:true},
             {label:'Agent ENS', value: `${reviewedLabel}.${reviewedAlpha ? SUFFIX.alphaAgent : SUFFIX.agent}`},
             {label:'Fresh job payout (getJobCore)', value: `${formatRawAmountTrace(trace.payoutRaw)} $USDC`},
@@ -5279,6 +5306,7 @@ async function updateSummary(){
             ? 'Apply is blocked because fresh bond/payout invariants failed. Refresh and re-run review.'
             : 'If payout, duration, or protocol bond parameters drift before send, the UI blocks with Calculation mismatch and requires refresh.',
           run: async ()=>{
+            await assertAgentNftEligibility(jobId);
             const nowProbe = await buildJobBondTruthProbe(jobId);
             const nowFails = buildApplyProbeInvariants(nowProbe);
             if(nowFails.length) throw new Error(`Apply blocked: ${nowFails.join('; ')}`);
@@ -5290,6 +5318,7 @@ async function updateSummary(){
               postActionLabel: `applyForJob(${jobId},${reviewedLabel},[])`
             });
             if(!approval.ok) return;
+            await assertAgentNftEligibility(jobId);
             const finalProbe = await buildJobBondTruthProbe(jobId);
             const finalFails = buildApplyProbeInvariants(finalProbe);
             if(finalFails.length) throw new Error(`Apply blocked after approval: ${finalFails.join('; ')}`);
@@ -6322,6 +6351,7 @@ function normalizeIpfsToHttp(uri){
       const [timeline, ens] = await Promise.all([fetchJobTimeline(id), fetchEnsVisibility(id)]);
       currentLivePacket = buildLiveAutonomousPacket(job, sim, ens);
       const title = ens.ensName || ensLabelPreviewForJobId(id);
+      const jobNftRead = await runSafeReadStep('jobAgentNftRequired', ()=>readNftRequirement(id), {silent:true});
       el('jobDetailTitle').textContent = `Job #${id} · ${title}`;
       el('jobDetailSubtitle').innerHTML = `${statusPillFrom(job)} <span class="smallNote" style="margin-left:8px">${sim.headline}</span>`;
       el('jobOverview').innerHTML = [
@@ -6330,6 +6360,7 @@ function normalizeIpfsToHttp(uri){
         ['Agent base share (before unallocated rewards)', String(job.agentPayoutPct)+'%'], ['Validator reward pool', formatUnitsToAmount(sim.rewardPool)+' $USDC'],
         ['Validator bond', formatUnitsToAmount(sim.validatorBond)+' $USDC'], ['Dispute bond', formatUnitsToAmount(computeDisputeBondFromPayout(BigInt(job.payout)))+' $USDC'],
         ['Assigned at', formatDateTime(job.assignedAt)], ['Completion requested at', formatDateTime(job.completionRequestedAt)],
+        ['NFT requirement at posting', nftRequirementLabel(jobNftRead?.__safeReadError ? null : jobNftRead)],
         ['Disputed at', formatDateTime(job.disputedAt)], ['Votes', `${sim.approvals} approve / ${sim.disapprovals} disapprove`]
       ].map(([k,v])=>`<div class="kvCard"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
       const total = Math.max(1, sim.totalVotes, sim.quorum || 1);
@@ -6572,7 +6603,7 @@ function normalizeIpfsToHttp(uri){
     function postureBadge(ok, yes, no){ return `<span class="pill ${ok ? 'ok' : 'bad'}">${escapeHtml(ok ? yes : no)}</span>`; }
     function adminControlButton(target, method, danger=false){
       const cls = danger ? 'btn btn-danger' : 'btn';
-      return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'}).catch(error=>setToast(normalizedErrorMessage(error),'bad'))">${escapeHtml(({setSettlementWallets:'Update payout wallets',transferOwnership:'Propose new owner',acceptOwnership:'Accept ownership'})[method] || method)}</button>`;
+      return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'}).catch(error=>setToast(normalizedErrorMessage(error),'bad'))">${escapeHtml(({setAgentNftRequired:'NFT requirement for new jobs',setSettlementWallets:'Update payout wallets',transferOwnership:'Propose new owner',acceptOwnership:'Accept ownership'})[method] || method)}</button>`;
     }
     const ADMIN_METHOD_SCHEMAS = {
       pause:[], unpause:[], pauseIntake:[], unpauseIntake:[], pauseAll:[], unpauseAll:[],
@@ -6602,9 +6633,10 @@ function normalizeIpfsToHttp(uri){
       setValidatorSlashBps:[{name:'v',type:'uint256'}],
       setChallengePeriodAfterApproval:[{name:'v',type:'uint256'}],
       setValidationRewardPercentage:[{name:'v',type:'uint256'}],
+      setAgentNftRequired:[{name:'required',type:'bool',placeholder:'true = require an approved NFT; false = no NFT gate. Future jobs only.'}],
       addAdditionalValidator:[{name:'a',type:'address'}], removeAdditionalValidator:[{name:'a',type:'address'}],
       addAdditionalAgent:[{name:'a',type:'address'}], removeAdditionalAgent:[{name:'a',type:'address'}],
-      addAGIType:[{name:'token',type:'address'},{name:'agiType',type:'uint256'}], disableAGIType:[{name:'token',type:'address'}],
+      addAGIType:[{name:'token',type:'address'},{name:'eligibilityScore',type:'uint256',placeholder:'1–100 enables collection; this is not a payout percentage'}], disableAGIType:[{name:'token',type:'address'}],
       updateEnsRegistry:[{name:'newRegistry',type:'address'}], updateNameWrapper:[{name:'newWrapper',type:'address'}],
       updateRootNodes:[{name:'clubRoot',type:'bytes32'},{name:'alphaClubRoot',type:'bytes32'},{name:'agentRoot',type:'bytes32'},{name:'alphaAgentRoot',type:'bytes32'}],
       setEnsJobPages:[{name:'newEnsPages',type:'address'}], rescueETH:[{name:'amount',type:'uint256'}], rescueERC20:[{name:'token',type:'address'},{name:'to',type:'address'},{name:'amount',type:'uint256'}], rescueToken:[{name:'token',type:'address'},{name:'data',type:'bytes'}],
@@ -6694,6 +6726,10 @@ function normalizeIpfsToHttp(uri){
       if(args === null) return;
       assertWriteContext(writeContext);
       if(method === 'setJobDurationLimit' && (BigInt(args[0]) < 1n || BigInt(args[0]) > 31536000n)) throw new Error('Job duration limit must be 1–31,536,000 seconds (up to 365 days).');
+      if(['addAGIType','disableAGIType'].includes(method)) {
+        const reserves = await Promise.all(['lockedEscrow','lockedAgentBonds','lockedValidatorBonds','lockedDisputeBonds'].map(name=>contract.methods[name]().call()));
+        if(reserves.some(value=>BigInt(value)!==0n)) throw new Error('NFT collection changes require all job escrow and bonds to be cleared. Changing the default affects future jobs only.');
+      }
       if(method === 'setSettlementWallets') {
         const paused = await contract.methods.paused().call();
         const reserves = await Promise.all(['lockedEscrow','lockedAgentBonds','lockedValidatorBonds','lockedDisputeBonds'].map(name=>contract.methods[name]().call()));
@@ -6705,7 +6741,7 @@ function normalizeIpfsToHttp(uri){
       const ok = await requestActionConfirmation({
         writeContext,
         title: `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${method}`,
-        body: danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
+        body: method === 'setAgentNftRequired' ? 'Changes only jobs posted after this transaction. Existing jobs retain their NFT requirement. ENS authorization and USDC payments remain unchanged.' : danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
         checks:[{state:'Authorization', badge: 'warn', text:'Wallet must be owner or delegated moderator for this method.'}],
         method: `${method}(${args.join(', ')})`,
         confirmLabel: danger ? 'Submit high-risk action' : 'Submit admin action'
@@ -6757,7 +6793,7 @@ function normalizeIpfsToHttp(uri){
       if(el('managerModeratorPosture')) el('managerModeratorPosture').textContent = isModerator ? 'Connected wallet is moderator' : 'Connected wallet is not moderator';
       if(el('managerAdminPostureBadges')) el('managerAdminPostureBadges').innerHTML = [postureBadge(!!userAccount, 'Wallet connected', 'Wallet disconnected'),postureBadge(!!isManagerOwner, 'AGIJobManager owner', 'Not AGIJobManager owner'),postureBadge(!!isModerator, 'Moderator', 'Not moderator')].join(' ');
       if(el('ensAdminPostureBadges')) el('ensAdminPostureBadges').innerHTML = [postureBadge(!!userAccount, 'Wallet connected', 'Wallet disconnected'),postureBadge(!!isEnsOwner, 'ENSJobPages owner', 'Not ENSJobPages owner')].join(' ');
-      if(el('managerRoutineControls')) el('managerRoutineControls').innerHTML = ['pause','unpause','pauseIntake','unpauseIntake','pauseAll','unpauseAll','setSettlementPaused','addModerator','removeModerator','blacklistAgent','blacklistValidator','delistJob','withdrawUSDC','setUseEnsJobTokenURI','updateMerkleRoots','setBaseIpfsUrl','setRequiredValidatorApprovals','setRequiredValidatorDisapprovals','setPremiumReputationThreshold','setVoteQuorum','setMaxJobPayout','setJobDurationLimit','setMaxActiveJobsPerAgent','setCompletionReviewPeriod','setDisputeReviewPeriod','setValidatorBondParams','setAgentBondParams','setAgentBond','setValidatorSlashBps','setChallengePeriodAfterApproval','setValidationRewardPercentage','addAdditionalValidator','removeAdditionalValidator','addAdditionalAgent','removeAdditionalAgent','addAGIType','disableAGIType'].map(m=>adminControlButton('manager',m,false)).join(' ');
+      if(el('managerRoutineControls')) el('managerRoutineControls').innerHTML = ['pause','unpause','pauseIntake','unpauseIntake','pauseAll','unpauseAll','setSettlementPaused','addModerator','removeModerator','blacklistAgent','blacklistValidator','delistJob','withdrawUSDC','setUseEnsJobTokenURI','updateMerkleRoots','setBaseIpfsUrl','setRequiredValidatorApprovals','setRequiredValidatorDisapprovals','setPremiumReputationThreshold','setVoteQuorum','setMaxJobPayout','setJobDurationLimit','setMaxActiveJobsPerAgent','setCompletionReviewPeriod','setDisputeReviewPeriod','setValidatorBondParams','setAgentBondParams','setAgentBond','setValidatorSlashBps','setChallengePeriodAfterApproval','setValidationRewardPercentage','setAgentNftRequired','addAdditionalValidator','removeAdditionalValidator','addAdditionalAgent','removeAdditionalAgent','addAGIType','disableAGIType'].map(m=>adminControlButton('manager',m,false)).join(' ');
       if(el('managerDangerControls')) el('managerDangerControls').innerHTML = ['setSettlementWallets','transferOwnership','acceptOwnership','updateEnsRegistry','updateNameWrapper','updateRootNodes','setEnsJobPages','lockIdentityConfiguration','rescueETH','rescueERC20','rescueToken','resolveDisputeWithCode','resolveStaleDispute','withdrawUSDC'].map(m=>adminControlButton('manager',m,true)).join(' ');
       if(el('ensRoutineControls')) el('ensRoutineControls').innerHTML = ['setJobLabelPrefix','setENSRegistry','setNameWrapper','setPublicResolver','setJobsRoot','setJobManager','setUseEnsJobTokenURI','createJobPage','onAgentAssigned','onCompletionRequested','revokePermissions','lockJobENS'].map(m=>adminControlButton('ens',m,false)).join(' ');
       if(el('ensDangerControls')) el('ensDangerControls').innerHTML = ['lockConfiguration','migrateLegacyWrappedJobPage'].map(m=>adminControlButton('ens',m,true)).join(' ');

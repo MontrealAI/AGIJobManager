@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v0.9.3
+# Owner Mainnet Deployment & Operations Guide — v0.9.4
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -32,7 +32,7 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v0.9.3 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v0.9.4 source and checksums. From the repository root:
 
 ```bash
 npm ci
@@ -62,7 +62,7 @@ Complete a separately authorized Sepolia rehearsal and the [mainnet qualificatio
 
 ## 4) Deploy, verify and preserve evidence
 
-The manager workflow deploys five linked libraries and the manager, verifies runtime bytes, confirms paused intake and completes explorer source verification before proposing the intended ownership handover when needed. Failed verification stops before a proposal. It does not configure every operational role or open intake.
+The manager workflow deploys six linked libraries and the manager, verifies runtime bytes, confirms paused intake and completes explorer source verification before proposing the intended ownership handover when needed. Failed verification stops before a proposal. It does not configure every operational role or open intake.
 
 Preserve the journal under `hardhat/deployments/<network>/`, the exact Solidity input, constructor values, linked-library addresses, successful transaction receipts and verification results. **A failed command may already have broadcast transactions.** Reconcile the saved journal before retrying; do not blindly deploy again.
 
@@ -87,6 +87,7 @@ If reviewed ENS/wrapper, namespace or Merkle settings intentionally change from 
 From `hardhat/`, with the selected mainnet RPC configured and no private key needed:
 
 ```bash
+READINESS_NFT_CONFIG=./reviewed-nft-policy.json \
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run check:readiness
 ```
 
@@ -130,7 +131,7 @@ Inputs use full addresses, full `bytes32` values, integer base-unit amounts and 
 | Configure moderator | `addModerator` / `removeModerator` | Verify `moderators(address)` directly. Role setters do not all emit role-specific events. |
 | Add/remove authorization | Additional agent/validator setters; `updateMerkleRoots` | Review remaining authorization routes and publish proofs before root changes. No automatic grace period. |
 | Block future application/voting | Agent/validator blacklist functions | Verify maps/events. Blacklisting does not erase old votes or substitute for pausing unsafe settlement. |
-| Enable/disable NFT eligibility | `addAGIType` / `disableAGIType` | ERC-721 interface and score bounds enforced; verify agent holdings and `getHighestPayoutPercentage(agent)>0`. |
+| Manage accepted NFT collections | `addAGIType` / `disableAGIType` | Zero reserves required for all registry changes; ERC-721 interface and score bounds enforced; for required jobs verify holdings and `getHighestPayoutPercentage(agent)>0`. |
 | Change thresholds, quorum, review windows or validator slashing | Respective owner setters | Require zero escrow/bonds and valid bounds. Review periods are positive and at most 365 days. |
 | Change bond parameters or other limits | Respective owner setters | Function-specific bounds apply; some changes affect later assignment/voting on posted jobs. Job duration limit is 1–31,536,000 seconds. |
 | Change ENS registry/wrapper/namespace roots | `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes` | Identity unlocked and all reserves zero; verify each getter and authorization path. |
@@ -175,7 +176,7 @@ For an identity incident, contain the affected activity and follow [incident res
 
 Dispute, cancellation and expiry are alternative lifecycle paths. A moderator's code 1 resolves for the agent, code 2 for the employer, and code 0 leaves the dispute open. A completed flag can also represent an employer refund. See the [full scenario walkthrough](../QUINTESSENTIAL_USE_CASE.md) for exact checkpoints.
 
-For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
+For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on (the default). Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
 
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json

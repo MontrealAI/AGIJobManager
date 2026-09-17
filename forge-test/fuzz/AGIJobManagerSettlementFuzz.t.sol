@@ -86,6 +86,50 @@ contract AGIJobManagerSettlementFuzz is Test {
         assertEq(manager.activeJobsByAgentView(AGENT), 0);
     }
 
+    function testFuzz_nftPolicyPreservesJobTermsAndPayout(uint256 costSeed, bool firstRequired, uint8 rateSeed)
+        external
+    {
+        uint256 cost = bound(costSeed, 1, manager.maxJobPayout());
+        uint256 rate = bound(uint256(rateSeed), 1, 60);
+        manager.setValidationRewardPercentage(rate);
+        manager.setRequiredValidatorApprovals(1);
+        manager.setVoteQuorum(1);
+        (address collection,) = manager.agiTypes(0);
+        MockERC721 credential = MockERC721(collection);
+        vm.prank(AGENT);
+        credential.transferFrom(AGENT, EMPLOYER, 1);
+        for (uint256 i = 0; i < 2; ++i) {
+            bool required = i == 0 ? firstRequired : !firstRequired;
+            manager.setAgentNftRequired(required);
+            uint256 id = _post(cost);
+            manager.setAgentNftRequired(!required);
+            assertEq(manager.jobAgentNftRequired(id), required);
+            uint256 credentialId;
+            if (required) {
+                vm.expectRevert(AGIJobManager.IneligibleAgentPayout.selector);
+                vm.prank(AGENT);
+                manager.applyForJob(id, "", new bytes32[](0));
+                credentialId = credential.mint(AGENT);
+            }
+            _request(id);
+            if (required) {
+                vm.prank(AGENT);
+                credential.transferFrom(AGENT, EMPLOYER, credentialId);
+            }
+            _vote(id, VALIDATOR_A, true);
+            (, uint256 approvedAt) = manager.jobValidatorApprovalState(id);
+            vm.warp(approvedAt + manager.challengePeriodAfterApproval() + 1);
+            manager.finalizeJob(id);
+            assertEq(manager.jobAgentNftRequired(id), required);
+            _assertEmptyReserves();
+        }
+        uint256 budget = cost * rate / 100;
+        assertEq(token.balanceOf(VALIDATOR_A), FUNDING + 2 * budget);
+        assertEq(token.balanceOf(AGENT), FUNDING + 2 * (cost - budget - cost * 30 / 100 - cost * 10 / 100));
+        assertEq(token.balanceOf(manager.wallet30()), 2 * (cost * 30 / 100));
+        assertEq(token.balanceOf(manager.wallet10()), 2 * (cost * 10 / 100));
+    }
+
     function testFuzz_bondSnapshotsSurviveOwnerChangesBetweenVotes(uint256 costSeed, bool initiallyDisabled) external {
         uint256 cost = bound(costSeed, 1, manager.maxJobPayout());
         if (initiallyDisabled) manager.setValidatorBondParams(0, 0, 0);

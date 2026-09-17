@@ -1,4 +1,4 @@
-# Quickstart — v0.9.3
+# Quickstart — v0.9.4
 
 Choose the workflow below before running commands. A software release and passing tests do not deploy a manager or open it to deposits.
 
@@ -12,7 +12,7 @@ Choose the workflow below before running commands. A software release and passin
 
 ## 1) Install
 
-Check out the reviewed v0.9.3 release, use Node 22.23.2 and install the committed lockfiles. From the repository root:
+Check out the reviewed v0.9.4 release, use Node 22.23.2 and install the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
@@ -107,7 +107,7 @@ DRY_RUN=1 npm run deploy:mainnet
 
 Read-only planning can use `DEPLOYER_ADDRESS` without a private key. Boolean flags are validated; use the documented value `DRY_RUN=1`. Follow the guide's separate mainnet confirmation and signing steps only for an authorized deployment.
 
-A public manager starts intake paused. Keep it paused while verifying linked code, accepting ownership, configuring participants and running the read-only readiness check against the deployment receipt. The accepted owner opens intake only after reviewing those results and the operational gates. A qualifying agent needs an enabled NFT holding as well as authorization. ETH is required for gas; jobs, bonds, rewards and refunds use USDC.
+A public manager starts intake paused. Keep it paused while verifying linked code, accepting ownership, configuring participants and running the read-only readiness check against the deployment receipt. The accepted owner opens intake only after reviewing those results and the operational gates. A qualifying agent always needs authorization and needs an enabled NFT holding when the job requires it. ETH is required for gas; jobs, bonds, rewards and refunds use USDC.
 
 ## Command catalog
 
@@ -121,5 +121,5 @@ A public manager starts intake paused. Keep it paused while verifying linked cod
 | `FOUNDRY_PROFILE=ci forge build --deny warnings` | Strict compiler and Forge lint gate | Release/PR validation | New diagnostic or mismatched compiler profile | Resolve the finding or document a justified line-specific exception; retain the strict gate |
 | `npm audit --audit-level=low` in root, `hardhat/` and `ui/` | Full dependency security checks | After locked installs and before qualification | Advisory or audit service failure | Resolve the dependency or retry a failed evidence read; keep the low threshold |
 | `DRY_RUN=1 npm run deploy:mainnet` from `hardhat/` | Read-only deployment plan | Before a separately authorized broadcast | Incomplete profile, chain mismatch or issuer restriction | Correct the plan and repeat the dry run |
-| `npm run check:readiness` from `hardhat/` with `DEPLOYMENT_RECEIPT` set | Read-only pre-activation report | After verification/configuration/ownership acceptance | Receipt, code, owner, identity, pause or balance mismatch | Resolve the discrepancy against the reviewed deployment evidence |
+| `npm run check:readiness` from `hardhat/` with `DEPLOYMENT_RECEIPT` and `READINESS_NFT_CONFIG` set | Read-only pre-activation report | After verification/configuration/ownership acceptance | Receipt, code, owner, identity, pause or balance mismatch | Resolve the discrepancy against the reviewed deployment evidence |
 | `npm run docs:check` | Documentation freshness and structure checks | Release/PR validation | Stale generated references or bad links | Regenerate references and review the resulting diff |

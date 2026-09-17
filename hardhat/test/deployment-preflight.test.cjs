@@ -104,7 +104,7 @@ test('runtime comparison checks immutable USDC and library self-address', () => 
   assert.equal(requireArtifactMatch({ artifact: library, buildInfo, address: B, code: `0x73${B.slice(2)}3014` }), 23);
 });
 
-function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', receiptOverride = {}, finalOwner = A } = {}) {
+function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, verificationResult = true, estimatedGas = 100000n, creationData = '0x6000', receiptOverride = {}, finalOwner = A, initialNftRequired = true } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-deployment-preflight-'));
   const scriptsDir = path.join(folder, 'scripts');
   fs.mkdirSync(scriptsDir);
@@ -128,7 +128,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
     },
   };
   const provider = { getNetwork: async () => ({ chainId: 1n }), getBlock: async tag => ({ number: tag === 'latest' ? 1000 : tag, hash: hash(tag === 'latest' ? 1000 : tag) }), estimateGas: async () => estimatedGas, getCode: async () => {
-      if (failManagerRuntimeRead && broadcasts === 6 && !managerRuntimeReadFailed) {
+      if (failManagerRuntimeRead && broadcasts === 7 && !managerRuntimeReadFailed) {
         managerRuntimeReadFailed = true;
         throw new Error('Manager runtime RPC failed');
       }
@@ -136,7 +136,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
     },
     getTransactionReceipt: async transactionHash => { const nonce = Number(BigInt(transactionHash)); return { hash: transactionHash, status: 1, blockNumber: 123 + nonce, blockHash: hash(123 + nonce), contractAddress: `0x${String(nonce + 100).padStart(40, '0')}` }; },
     getTransaction: async () => ({ to: null, from: A, data: '0x6000' }) };
-  const manager = { paused: async () => true, owner: async () => A, pendingOwner: async () => ZERO, usdcToken: async () => TOKEN };
+  const manager = { agentNftRequired: async () => initialNftRequired, paused: async () => true, owner: async () => A, pendingOwner: async () => ZERO, usdcToken: async () => TOKEN };
   const mockEthers = { ...realEthers, provider, getSigners: async () => noSigner ? [] : [{ address: A }],
     Contract: function () { return token(); }, getContractAt: async () => manager,
     getContractFactory: async () => ({ runner: { getAddress: async () => A }, getDeployTransaction: async () => ({ data: creationData }), deploy: async (...args) => {
@@ -295,7 +295,7 @@ test('explorer outage fails deployment outcome while preserving paused manager a
   try {
     await assert.rejects(harness.main(), /verification incomplete/);
     const receipt = harness.receipt();
-    assert.equal(harness.broadcasts(), 6);
+    assert.equal(harness.broadcasts(), 7);
     assert.equal(receipt.status, 'failed');
     assert.equal(receipt.intakePaused, true);
     assert.equal(receipt.verification.AGIJobManager.status, 'failed');
@@ -616,12 +616,12 @@ test('verification recovery reconciles receipts and runtime without redeployment
     const recovery = recoveryHarness(deployment);
     await recovery.main();
     const recovered = recovery.recovered();
-    assert.equal(deployment.broadcasts(), 6);
+    assert.equal(deployment.broadcasts(), 7);
     assert.deepEqual(fs.readFileSync(deployment.receiptPath()), original);
     assert.equal(recovered.status, 'awaiting_readiness_review');
     assert.equal(recovered.recovery.blockchainTransactionsBroadcast, 0);
     assert.equal(recovered.ownershipTransfer.accepted, true);
-    assert.equal(recovery.verificationCalls.length, 6);
+    assert.equal(recovery.verificationCalls.length, 7);
     assert.match(recovered.configHash, /^0x[a-f0-9]{64}$/);
     await assert.rejects(recovery.main(), /EEXIST/);
   } finally { deployment.cleanup(); }
@@ -633,7 +633,7 @@ test('verification recovery preserves the need for explicit ownership proposal a
     await assert.rejects(deployment.main(), /verification incomplete/);
     const recovery = recoveryHarness(deployment);
     await recovery.main();
-    assert.equal(deployment.broadcasts(), 6);
+    assert.equal(deployment.broadcasts(), 7);
     assert.equal(recovery.recovered().ownershipTransfer.proposalRequired, true);
     assert.equal(recovery.recovered().ownershipTransfer.acceptanceRequired, true);
     assert.equal(recovery.recovered().ownershipTransfer.currentOwner, A);
@@ -642,33 +642,33 @@ test('verification recovery preserves the need for explicit ownership proposal a
 
 test('manager confirmation and runtime RPC failures retain links for keyless verification recovery', async () => {
   for (const [options, message] of [
-    [{ failConfirmation: true, failConfirmationAt: 6 }, /Confirmation RPC failed/],
+    [{ failConfirmation: true, failConfirmationAt: 7 }, /Confirmation RPC failed/],
     [{ failManagerRuntimeRead: true }, /Manager runtime RPC failed/],
   ]) {
     const deployment = deploymentHarness({ ...options, finalOwner: C });
     try {
       await assert.rejects(deployment.main(), message);
       const failed = deployment.receipt();
-      assert.equal(deployment.broadcasts(), 6);
+      assert.equal(deployment.broadcasts(), 7);
       assert.equal(failed.status, 'failed');
-      assert.equal(failed.contracts.AGIJobManager.txHash, hash(6));
+      assert.equal(failed.contracts.AGIJobManager.txHash, hash(7));
       const original = fs.readFileSync(deployment.receiptPath());
       deployment.hardhat.ethers.getSigners = async () => [];
       const recovery = recoveryHarness(deployment);
       await recovery.main();
       const recovered = recovery.recovered();
-      assert.equal(deployment.broadcasts(), 6);
+      assert.equal(deployment.broadcasts(), 7);
       assert.deepEqual(fs.readFileSync(deployment.receiptPath()), original);
       assert.equal(recovered.status, 'awaiting_readiness_review');
       assert.equal(recovered.recovery.blockchainTransactionsBroadcast, 0);
-      assert.equal(recovered.contracts.AGIJobManager.blockNumber, 129);
+      assert.equal(recovered.contracts.AGIJobManager.blockNumber, 130);
       assert.equal(recovered.contracts.AGIJobManager.runtimeCodeHash, realEthers.keccak256('0x6000'));
       for (const name of deployment.program.LIBRARIES) {
         assert.equal(recovered.libraries[deployment.program.FQNS[name]], recovered.contracts[name].address);
       }
       assert.equal(recovered.ownershipTransfer.proposalRequired, true);
       assert.equal(recovered.ownershipTransfer.acceptanceRequired, true);
-      assert.equal(recovery.verificationCalls.length, 6);
+      assert.equal(recovery.verificationCalls.length, 7);
     } finally { deployment.cleanup(); }
   }
 });
@@ -704,7 +704,7 @@ test('verification recovery refuses incomplete journals and never converts a rep
     await assert.rejects(outage.main(), /verification incomplete/);
     const recovery = recoveryHarness(outage, { failVerification: true });
     await assert.rejects(recovery.main(), /verification incomplete/);
-    assert.equal(outage.broadcasts(), 6);
+    assert.equal(outage.broadcasts(), 7);
     assert.equal(fs.existsSync(recovery.recoveredPath()), false);
   } finally { incomplete.cleanup(); outage.cleanup(); }
 });
@@ -740,4 +740,30 @@ test('gas buffer stays within the protocol transaction cap and preserves the exa
 
 test('missing explorer API credentials fail before production deployment', () => {
   for (const apiKey of [undefined, null, '', ' ']) assert.throws(() => requireExplorerEnabled({ verify: { etherscan: { enabled: true, apiKey } } }), /ETHERSCAN_API_KEY/);
+});
+
+
+test('successful deployment records all six libraries, required NFT default and paused intake', async () => {
+  const harness = deploymentHarness();
+  try {
+    await harness.main();
+    const receipt = harness.receipt();
+    assert.equal(harness.broadcasts(), 7);
+    assert.equal(Object.keys(receipt.libraries).length, 6);
+    assert.equal(receipt.agentNftRequiredAtDeployment, true);
+    assert.equal(receipt.intakePaused, true);
+    assert.equal(receipt.ownershipTransfer.accepted, true);
+    assert.equal(receipt.verification.NftEligibility.status, 'verified');
+    assert.equal(receipt.verification.AGIJobManager.status, 'verified');
+  } finally { harness.cleanup(); }
+});
+
+test('an unexpected initial NFT policy blocks deployment completion before explorer verification', async () => {
+  const harness = deploymentHarness({ initialNftRequired: false });
+  try {
+    await assert.rejects(harness.main(), /did not start with the required NFT policy/);
+    assert.equal(harness.broadcasts(), 7);
+    assert.equal(harness.receipt().status, 'failed');
+    assert.equal(harness.receipt().verification.AGIJobManager, undefined);
+  } finally { harness.cleanup(); }
 });

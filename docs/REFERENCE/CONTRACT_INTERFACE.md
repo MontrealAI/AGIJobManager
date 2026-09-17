@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `6787f3604dff`.
-- Source snapshot fingerprint: `6787f3604dff`.
+- Generated at (deterministic source fingerprint): `8c89e24c4c94`.
+- Source snapshot fingerprint: `8c89e24c4c94`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -14,8 +14,9 @@
 | `agentBondBps` | `uint256` |
 | `agentBondMax` | `uint256` |
 | `agentMerkleRoot` | `bytes32` |
+| `agentNftRequired` | `bool` |
 | `agentRootNode` | `bytes32` |
-| `agiTypes` | `AGIType[]` |
+| `agiTypes` | `NftEligibility.AGIType[]` |
 | `alphaAgentRootNode` | `bytes32` |
 | `alphaClubRootNode` | `bytes32` |
 | `challengePeriodAfterApproval` | `uint256` |
@@ -73,6 +74,7 @@
 | `getJobCore(uint256 jobId)` | external | view | `address employer, address assignedAgent, uint256 payout, uint256 duration, uint256 assignedAt, bool completed, bool disputed, bool expired, uint8 agentPayoutPct` |
 | `getJobSpecURI(uint256 jobId)` | external | view | `string memory` |
 | `getJobValidation(uint256 jobId)` | external | view | `bool completionRequested, uint256 validatorApprovals, uint256 validatorDisapprovals, uint256 completionRequestedAt, uint256 disputedAt` |
+| `jobAgentNftRequired(uint256 jobId)` | external | view | `bool` |
 | `lockIdentityConfiguration()` | external | nonpayable | — |
 | `lockJobENS(uint256 jobId, bool burnFuses)` | external | nonpayable | — |
 | `ownerOf(uint256 id)` | external | view | `address` |
@@ -93,6 +95,7 @@
 | `safeMintCompletionNFT(address to, uint256 tokenId)` | external | nonpayable | — |
 | `setAgentBond(uint256 bond)` | external | nonpayable | — |
 | `setAgentBondParams(uint256 bps, uint256 min, uint256 max)` | external | nonpayable | — |
+| `setAgentNftRequired(bool required)` | external | nonpayable | — |
 | `setBaseIpfsUrl(string calldata _url)` | external | nonpayable | — |
 | `setChallengePeriodAfterApproval(uint256 period)` | external | nonpayable | — |
 | `setCompletionReviewPeriod(uint256 _period)` | external | nonpayable | — |
@@ -130,6 +133,7 @@
 | `AgentBlacklisted` | `address indexed agent, bool indexed status` |
 | `AgentBondMinUpdated` | `uint256 indexed oldMin, uint256 indexed newMin` |
 | `AgentBondParamsUpdated` | `uint256 indexed oldBps, uint256 indexed oldMin, uint256 indexed oldMax, uint256 newBps, uint256 newMin, uint256 newMax` |
+| `AgentNftRequirementUpdated` | `bool required` |
 | `AGITypeUpdated` | `address indexed nftAddress, uint256 indexed payoutPercentage` |
 | `ChallengePeriodAfterApprovalUpdated` | `uint256 indexed oldPeriod, uint256 indexed newPeriod` |
 | `CompletionReviewPeriodUpdated` | `uint256 indexed oldPeriod, uint256 indexed newPeriod` |

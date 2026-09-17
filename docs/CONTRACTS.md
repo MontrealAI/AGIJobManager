@@ -1,10 +1,10 @@
-# Contracts and Permissions — v0.9.3
+# Contracts and Permissions — v0.9.4
 
 ## Contract map
 
 - `contracts/AGIJobManager.sol`: core escrow, role gating, validator voting, disputes, settlement, NFT minting.
 - `contracts/ens/ENSJobPages.sol`: optional ENS hook target for job subname creation and post-settlement lock/revoke.
-- Utility libraries used by `AGIJobManager`: `BondMath`, `ReputationMath`, `TransferUtils`, `UriUtils`, `ENSOwnership`.
+- Utility libraries used by `AGIJobManager`: `BondMath`, `ReputationMath`, `TransferUtils`, `UriUtils`, `ENSOwnership`, `NftEligibility`.
 
 The manager uses native USDC for escrow, rewards and bonds. Successful settlement pays validators first, then fixed 30%/10% shares of original cost to the configured wallets, then the agent remainder. NFT credentials establish eligibility only. See [payout rules](USDC_PAYOUT_SPLIT.md).
 
@@ -43,7 +43,8 @@ The manager uses native USDC for escrow, rewards and bonds. Successful settlemen
 | Agent bond params | `500 / 1e6 / 88888888e6` | `setAgentBondParams` | bps ≤ 10000; min/max consistency; supports full disable via 0/0/0 |
 | `validatorSlashBps` | `8000` | `setValidatorSlashBps` | empty reserves; bps ≤10000 |
 | Merkle roots | deploy config | `updateMerkleRoots` | owner only |
-| AGI type table | empty | `addAGIType`, `disableAGIType` | ERC-721 support, at most 32 entries, eligibility score 1–100; no payout bonus |
+| Agent NFT requirement | true | `setAgentNftRequired`, `jobAgentNftRequired` | Future-posting default; existing job policy cannot change |
+| AGI type table | empty | `addAGIType`, `disableAGIType` | Zero reserves to change; ERC-721 support, at most 32 entries, score 1–100; no payout bonus |
 
 Notes:
 - Empty reserves means all job escrow, agent bonds, validator bonds and dispute bonds are zero.

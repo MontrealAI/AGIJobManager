@@ -1,4 +1,4 @@
-# AGI.eth member namespace quickstart — v0.9.3
+# AGI.eth member namespace quickstart — v0.9.4
 
 Use the verified manager on the intended chain. Ordinary participation requires the role's ENS membership; the contract retains owner-managed additional-list and Merkle exceptions. Optional ENS job pages are a separate metadata integration.
 
@@ -12,7 +12,7 @@ The current manager accepts either configured root for the role. Enter only the 
 ## Job actions
 
 1. Employer approves the exact six-decimal native USDC cost and calls `createJob(jobSpecURI, payout, duration, details)`. Save `(chainId, manager, jobId)`.
-2. Agent confirms membership or an explicit exception, a qualifying enabled NFT and the required USDC performance bond. Approve the bond and call `applyForJob(jobId, "helper", proof)`. Use `[]` when relying on ENS.
+2. Agent confirms membership or an explicit exception, a qualifying enabled NFT if the job requires it, and the required USDC performance bond. Approve the bond and call `applyForJob(jobId, "helper", proof)`. Use `[]` when relying on ENS.
 3. Assigned agent delivers the work and calls `requestJobCompletion(jobId, jobCompletionURI)` before the assignment deadline.
 4. Validator confirms club membership or an explicit exception, reviews the evidence and approves the required USDC bond. Call exactly one of `validateJob(jobId, "alice", proof)` or `disapproveJob(jobId, "alice", proof)` during the review window.
 5. After applicable timing/vote conditions, anyone can call `finalizeJob`; disputed jobs use the authorized moderator or stale-dispute owner path. Votes alone do not transfer the payout.
