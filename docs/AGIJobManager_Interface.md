@@ -1,230 +1,24 @@
-# AGIJobManager Interface Reference (ABI‑accurate)
+# AGIJobManager interface — v0.9.0
 
-For v0.8.0, see [USDC payout distribution](USDC_PAYOUT_SPLIT.md): new immutable `wallet30()` and `wallet10()` getters, sixth constructor argument `address[2] settlementWallets`, and `JobPayoutDistributed` replace retained job-cost revenue.
+The complete callable interface is maintained from source in [REFERENCE/CONTRACT_INTERFACE.md](REFERENCE/CONTRACT_INTERFACE.md); the ABI-generated [Interface.md](Interface.md) includes constructor fields, outputs, events and custom errors. Use these generated references rather than copied signatures from older releases.
 
-This reference is derived from the compiled ABI (`build/contracts/AGIJobManager.json`). It documents every public/external function, event, error, and public state variable. Regenerate the ABI with `npx truffle compile` before updating this document.
+## Settlement and configuration
 
-## Enums
+- Native Circle USDC with six decimals is immutable at deployment.
+- The sixth constructor argument is `address[2] settlementWallets`, in 30% then 10% order. `wallet30()` and `wallet10()` expose the current recipients. Their percentages are fixed; changing addresses requires paused intake and zero job escrow/agent/validator/dispute bond reserves.
+- `createJob` fixes the validator budget for that job. `getJobCore(...).agentPayoutPct` is the base 60% minus that budget; NFT eligibility scores do not set payment shares. See [payout rules](USDC_PAYOUT_SPLIT.md).
+- `transferOwnership` proposes a handover; `pendingOwner` identifies the proposed recipient; only that recipient can call `acceptOwnership`. Renunciation is disabled.
+- `resolveDisputeWithCode(jobId,code,reason)` uses 0 for no action, 1 for agent win and 2 for employer win. The old string-based dispute method and reward-pool contribution method are absent.
 
-- `DisputeResolutionCode` (numeric ordering is stable):
-  - `0 NO_ACTION`, `1 AGENT_WIN`, `2 EMPLOYER_WIN`.
+## Integration references
 
-## Custom errors (all zero‑argument)
+| Need | Reference |
+| --- | --- |
+| State machine, events and outcome accounting | [Protocol flow](PROTOCOL_FLOW.md) |
+| Exact USDC units, budgets, bonds and rounding | [Payout specification](USDC_PAYOUT_SPLIT.md) |
+| Owner update boundaries | [Owner controls](OWNER_CONTROLS.md), [configuration](CONFIGURATION.md) |
+| ENS selectors and hook behavior | [Generated ENS reference](REFERENCE/ENS_REFERENCE.md) |
+| Browser action review and signing | [Console guide](ui/GENESIS_JOB_MAINNET_HTML_UI.md) |
+| Deployment and actual code verification | [Hardhat guide](../hardhat/README.md) |
 
-Custom errors are used instead of revert strings for gas efficiency. Integrators should decode the error selector and map to these meanings:
-
-- `NotModerator`: caller is not in `moderators`.
-- `NotAuthorized`: caller fails role/ownership checks.
-- `Blacklisted`: caller is blacklisted (agent or validator).
-- `InvalidParameters`: invalid input values or invalid URI.
-- `InvalidState`: job/listing state does not allow the action.
-- `JobNotFound`: jobId does not exist or has been deleted.
-- `TransferFailed`: ERC‑20 transfer/transferFrom failed or returned false or amount mismatch.
-- `ValidatorLimitReached`: validator set would exceed `MAX_VALIDATORS_PER_JOB`.
-- `InvalidValidatorThresholds`: approval/disapproval thresholds violate limits.
-- `IneligibleAgentPayout`: agent has no AGI type payout eligibility.
-- `InsufficientWithdrawableBalance`: attempted withdrawal exceeds `withdrawableUSDC()`.
-- `InsolventEscrowBalance`: contract ERC‑20 balance is below locked totals.
-- `ConfigLocked`: identity configuration was locked.
-
-## Events
-
-Indexed parameters are marked **indexed**. Events should be used for off‑chain tracking.
-
-- `JobCreated(uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details)`
-- `JobApplied(uint256 jobId, address agent)`
-- `JobCompletionRequested(uint256 jobId, address agent, string jobCompletionURI)`
-- `JobValidated(uint256 jobId, address validator)`
-- `JobDisapproved(uint256 jobId, address validator)`
-- `JobDisputed(uint256 jobId, address disputant)`
-- `DisputeResolved(uint256 jobId, address resolver, string resolution)`
-- `DisputeResolvedWithCode(uint256 jobId, address resolver, uint8 resolutionCode, string reason)`
-- `JobCompleted(uint256 jobId, address agent, uint256 reputationPoints)`
-- `ReputationUpdated(address user, uint256 newReputation)`
-- `JobCancelled(uint256 jobId)`
-- `JobExpired(uint256 jobId, address employer, address agent, uint256 payout)`
-- `EnsRegistryUpdated(indexed address newEnsRegistry)`
-- `NameWrapperUpdated(indexed address newNameWrapper)`
-- `RootNodesUpdated(bytes32 clubRootNode, bytes32 agentRootNode, bytes32 alphaClubRootNode, bytes32 alphaAgentRootNode)`
-- `MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot)`
-- `AGITypeUpdated(indexed address nftAddress, uint256 payoutPercentage)`
-- `NFTIssued(indexed uint256 tokenId, indexed address employer, string tokenURI)`
-- `RewardPoolContribution(indexed address contributor, uint256 amount)`
-- `CompletionReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)`
-- `DisputeReviewPeriodUpdated(uint256 oldPeriod, uint256 newPeriod)`
-- `AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage)`
-- `ValidatorBondParamsUpdated(uint256 bps, uint256 min, uint256 max)`
-- `ChallengePeriodAfterApprovalUpdated(uint256 oldPeriod, uint256 newPeriod)`
-- `USDCWithdrawn(indexed address to, uint256 amount, uint256 remainingWithdrawable)`
-- `IdentityConfigurationLocked(indexed address locker, uint256 atTimestamp)`
-- `AgentBlacklisted(indexed address agent, bool status)`
-- `ValidatorBlacklisted(indexed address validator, bool status)`
-- Standard ERC‑721 events:
-  - `Transfer(indexed address from, indexed address to, indexed uint256 tokenId)`
-  - `Approval(indexed address owner, indexed address approved, indexed uint256 tokenId)`
-  - `ApprovalForAll(indexed address owner, indexed address operator, bool approved)`
-  - `Paused(address account)` / `Unpaused(address account)`
-  - `OwnershipTransferred(indexed address previousOwner, indexed address newOwner)`
-
-## Public state variables (selected)
-
-All are public and have autogenerated getters.
-
-- `usdcToken`: ERC‑20 token used for escrow and payouts.
-- `baseIpfsUrl`: base prefix for job NFT token URIs (used when completion URI is not a full URI).
-- `MAX_VALIDATORS_PER_JOB`: constant hard cap (50).
-- `requiredValidatorApprovals`, `requiredValidatorDisapprovals`: thresholds for completing/disputing a job.
-- `voteQuorum`: minimum total votes to avoid auto‑dispute in `finalizeJob`.
-- `validationRewardPercentage`: percent of payout reserved for validators.
-- `agentBondBps`, `agentBond`, `agentBondMax`: agent bond sizing parameters.
-- `validatorBondBps`, `validatorBondMin`, `validatorBondMax`: validator bond sizing parameters.
-- `validatorSlashBps`: slash rate for incorrect validator votes.
-- `challengePeriodAfterApproval`: delay after approval threshold before settlement.
-- `additionalAgentPayoutPercentage`: stored config value (not used in current payout logic).
-- `maxJobPayout`, `jobDurationLimit`: upper bounds for job creation.
-- `completionReviewPeriod`, `disputeReviewPeriod`: timeouts for `finalizeJob` and `resolveStaleDispute`.
-- `lockedEscrow`: total escrow reserved for unsettled jobs.
-- `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`: total locked bond balances.
-- `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode`: ENS root nodes for validators and agents.
-- `validatorMerkleRoot`, `agentMerkleRoot`: Merkle roots for allowlists.
-- `ens`, `nameWrapper`: ENS registry and NameWrapper addresses.
-- `lockIdentityConfig`: permanent identity wiring lock flag.
-- `nextJobId`, `nextTokenId`: monotonically increasing IDs for jobs and NFTs.
-- `reputation(user)`: on‑chain reputation score (capped by diminishing returns).
-- `moderators`, `additionalValidators`, `additionalAgents`, `blacklistedAgents`, `blacklistedValidators` mappings.
-- `agiTypes(index)`: AGI type NFT and eligibility-score configuration.
-
-## Function access matrix (state‑changing)
-
-**Job lifecycle**
-
-| Function | Caller | Preconditions | Effects | Reverts (custom errors / require) |
-| --- | --- | --- | --- | --- |
-| `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)` | Employer | `whenNotPaused`; payout/duration within limits; URI is non‑empty & no whitespace | Escrows `_payout`, stores job, emits `JobCreated`. | `InvalidParameters`, `TransferFailed`, `Pausable: paused`. |
-| `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)` | Agent | `whenNotPaused`; job unassigned; not blacklisted; ownership verified or allowlisted; active jobs < limit; AGI type payout > 0 | Assigns agent, preserves posting-time shares, collects agent bond, emits `JobApplied`. | `JobNotFound`, `InvalidState`, `Blacklisted`, `NotAuthorized`, `IneligibleAgentPayout`, `TransferFailed`, `Pausable: paused`. |
-| `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)` | Assigned agent | Job active; completion not already requested; valid URI; if not disputed, must be within duration | Stores completion URI and timestamp, emits `JobCompletionRequested`. | `JobNotFound`, `InvalidParameters`, `NotAuthorized`, `InvalidState`. |
-| `validateJob(uint256 _jobId, string subdomain, bytes32[] proof)` | Validator | `whenNotPaused`; job active; completion requested; not blacklisted; ownership verified or allowlisted; no prior vote; within review period | Records approval, collects validator bond, emits `JobValidated`; may set `validatorApproved`. | `JobNotFound`, `InvalidState`, `Blacklisted`, `NotAuthorized`, `ValidatorLimitReached`, `TransferFailed`, `Pausable: paused`. |
-| `disapproveJob(uint256 _jobId, string subdomain, bytes32[] proof)` | Validator | `whenNotPaused`; job active; completion requested; not blacklisted; ownership verified or allowlisted; no prior vote; within review period | Records disapproval, collects validator bond, emits `JobDisapproved`; may open dispute. | `JobNotFound`, `InvalidState`, `Blacklisted`, `NotAuthorized`, `ValidatorLimitReached`, `TransferFailed`, `Pausable: paused`. |
-| `disputeJob(uint256 _jobId)` | Employer or Agent | `whenNotPaused`; completion requested; not completed/expired; not already disputed; within review period | Collects dispute bond, opens dispute, emits `JobDisputed`. | `JobNotFound`, `InvalidState`, `NotAuthorized`, `TransferFailed`, `Pausable: paused`. |
-| `finalizeJob(uint256 _jobId)` | Anyone | completion requested; not disputed/completed/expired; if `validatorApproved` then challenge period elapsed; if review period elapsed, acts on votes/quorum | Settles to agent/employer or opens dispute; emits `JobCompleted` or `JobDisputed`. | `JobNotFound`, `InvalidState`, plus `_completeJob` errors on agent win. |
-| `expireJob(uint256 _jobId)` | Anyone | assigned; duration elapsed; no completion request; not disputed/completed/expired | Refunds escrow to employer, settles bonds, emits `JobExpired`. | `JobNotFound`, `InvalidState`. |
-| `cancelJob(uint256 _jobId)` | Employer | caller is employer; job unassigned; not completed | Refunds escrow, deletes job; emits `JobCancelled`. | `JobNotFound`, `NotAuthorized`, `InvalidState`. |
-| `delistJob(uint256 _jobId)` | Owner | job unassigned and not completed | Refunds escrow, deletes job; emits `JobCancelled`. | `JobNotFound`, `InvalidState`. |
-
-**Dispute resolution**
-
-| Function | Caller | Preconditions | Effects | Reverts |
-| --- | --- | --- | --- | --- |
-| `resolveDispute(uint256 _jobId, string resolution)` | Moderator | Job disputed and not expired | Resolves dispute for canonical strings or no‑action; emits `DisputeResolved` and `DisputeResolvedWithCode`. | `NotModerator`, `JobNotFound`, `InvalidState`, `InvalidParameters`, plus `_completeJob` errors on AGENT_WIN. |
-| `resolveDisputeWithCode(uint256 _jobId, uint8 resolutionCode, string reason)` | Moderator | Job disputed and not expired | Resolves dispute for resolution code; emits `DisputeResolved` and `DisputeResolvedWithCode`. | `NotModerator`, `JobNotFound`, `InvalidState`, `InvalidParameters`, plus `_completeJob` errors on AGENT_WIN. |
-| `resolveStaleDispute(uint256 _jobId, bool employerWins)` | Owner | Disputed; `disputedAt` set; timeout exceeded | Resolves dispute after timeout. | `JobNotFound`, `InvalidState`, plus `_completeJob` errors on agent win. |
-
-**Access control / configuration**
-
-| Function | Caller | Preconditions | Effects | Reverts |
-| --- | --- | --- | --- | --- |
-| `pause()` / `unpause()` | Owner | — | Pauses/unpauses contract; emits `Paused`/`Unpaused`. | Standard `Ownable` check. |
-| `lockIdentityConfiguration()` | Owner | `lockIdentityConfig == false` | Locks identity configuration; emits `IdentityConfigurationLocked`. | `ConfigLocked`. |
-| `blacklistAgent(address _agent, bool _status)` | Owner | — | Updates agent blacklist. | Standard `Ownable` check. |
-| `blacklistValidator(address _validator, bool _status)` | Owner | — | Updates validator blacklist. | Standard `Ownable` check. |
-| `addModerator(address _moderator)` / `removeModerator(address _moderator)` | Owner | — | Grants/revokes moderator role. | Standard `Ownable` check. |
-| `updateEnsRegistry(address _newEnsRegistry)` | Owner | identity config unlocked; no jobs/escrow | Updates ENS registry; emits `EnsRegistryUpdated`. | `ConfigLocked`, `InvalidParameters`, `InvalidState`. |
-| `updateNameWrapper(address _newNameWrapper)` | Owner | identity config unlocked; no jobs/escrow | Updates NameWrapper; emits `NameWrapperUpdated`. | `ConfigLocked`, `InvalidParameters`, `InvalidState`. |
-| `updateRootNodes(bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _alphaClubRootNode, bytes32 _alphaAgentRootNode)` | Owner | identity config unlocked; no jobs/escrow | Updates ENS root nodes; emits `RootNodesUpdated`. | `ConfigLocked`, `InvalidState`. |
-| `updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` | Owner | — | Updates Merkle roots; emits `MerkleRootsUpdated`. | Standard `Ownable` check. |
-| `setBaseIpfsUrl(string _url)` | Owner | — | Updates base URI prefix. | Standard `Ownable` check. |
-| `setRequiredValidatorApprovals(uint256 _approvals)` / `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | Owner | Thresholds valid | Updates approval/disapproval thresholds. | `InvalidValidatorThresholds`. |
-| `setVoteQuorum(uint256 _quorum)` | Owner | 1…`MAX_VALIDATORS_PER_JOB` | Updates quorum. | `InvalidParameters`. |
-| `setPremiumReputationThreshold(uint256 _threshold)` | Owner | — | Updates premium feature threshold. | Standard `Ownable` check. |
-| `setMaxJobPayout(uint256 _maxPayout)` / `setJobDurationLimit(uint256 _limit)` | Owner | — | Updates creation limits. | Standard `Ownable` check. |
-| `setCompletionReviewPeriod(uint256 _period)` / `setDisputeReviewPeriod(uint256 _period)` | Owner | 1…`MAX_REVIEW_PERIOD` | Updates review periods; emits update event. | `InvalidParameters`. |
-| `setValidatorBondParams(uint256 bps, uint256 min, uint256 max)` | Owner | bps ≤ 10,000; min ≤ max; valid zeroing rules | Updates validator bond parameters; emits `ValidatorBondParamsUpdated`. | `InvalidParameters`. |
-| `setAgentBondParams(uint256 bps, uint256 min, uint256 max)` | Owner | bps ≤ 10,000; min ≤ max; valid zeroing rules | Updates agent bond parameters. | `InvalidParameters`. |
-| `setAgentBond(uint256 bond)` | Owner | — | Directly sets `agentBond` minimum. | Standard `Ownable` check. |
-| `setValidatorSlashBps(uint256 bps)` | Owner | bps ≤ 10,000 | Updates validator slash rate. | `InvalidParameters`. |
-| `setChallengePeriodAfterApproval(uint256 period)` | Owner | 1…`MAX_REVIEW_PERIOD` | Updates challenge period; emits `ChallengePeriodAfterApprovalUpdated`. | `InvalidParameters`. |
-| `setAdditionalAgentPayoutPercentage(uint256 _percentage)` | Owner | 1…100 and compatible with validator reward | Stores config value; emits `AdditionalAgentPayoutPercentageUpdated`. | `InvalidParameters`. |
-| `updateTermsAndConditionsIpfsHash(string _hash)` | Owner | — | Updates metadata field. | Standard `Ownable` check. |
-| `updateContactEmail(string _email)` / `updateAdditionalText1/2/3(string _text)` | Owner | — | Updates metadata fields. | Standard `Ownable` check. |
-| `setValidationRewardPercentage(uint256 _percentage)` | Owner | 1…100 and compatible with AGI type max | Updates validator reward percentage. | `InvalidParameters`. |
-| `addAdditionalValidator(address validator)` / `removeAdditionalValidator(address validator)` | Owner | — | Manage explicit validator allowlist. | Standard `Ownable` check. |
-| `addAdditionalAgent(address agent)` / `removeAdditionalAgent(address agent)` | Owner | — | Manage explicit agent allowlist. | Standard `Ownable` check. |
-| `addAGIType(address nftAddress, uint256 payoutPercentage)` | Owner | Non‑zero address; percentage 1…100; compatible with validator reward | Adds/updates AGI type; emits `AGITypeUpdated`. | `InvalidParameters`. |
-| `contributeToRewardPool(uint256 amount)` | Anyone | `whenNotPaused`; amount > 0 | Transfers ERC‑20 into contract; emits `RewardPoolContribution`. | `InvalidParameters`, `TransferFailed`, `Pausable: paused`. |
-| `withdrawUSDC(uint256 amount)` | Owner | `whenPaused`; amount > 0; ≤ withdrawable | Transfers surplus ERC‑20; emits `USDCWithdrawn`. | `InvalidParameters`, `InsolventEscrowBalance`, `InsufficientWithdrawableBalance`, `TransferFailed`. |
-
-**ERC‑721 / ownership**
-
-| Function | Caller | Preconditions | Effects | Reverts |
-| --- | --- | --- | --- | --- |
-| `approve(address to, uint256 tokenId)` | Token owner/approved | ERC‑721 standard preconditions | Approves transfer; emits `Approval`. | ERC‑721 standard reverts. |
-| `setApprovalForAll(address operator, bool approved)` | Token owner | ERC‑721 standard preconditions | Approves operator; emits `ApprovalForAll`. | ERC‑721 standard reverts. |
-| `transferFrom(address from, address to, uint256 tokenId)` | Owner/approved | ERC‑721 standard preconditions | Transfers token; emits `Transfer`. | ERC‑721 standard reverts. |
-| `safeTransferFrom(address from, address to, uint256 tokenId)` / `safeTransferFrom(address from, address to, uint256 tokenId, bytes data)` | Owner/approved | ERC‑721 standard preconditions + receiver check | Safe transfer; emits `Transfer`. | ERC‑721 standard reverts. |
-| `transferOwnership(address newOwner)` / `renounceOwnership()` | Owner | — | Transfers/renounces ownership; emits `OwnershipTransferred`. | Standard `Ownable` check. |
-
-## View functions (all callable by anyone)
-
-| Function | Returns | Notes | Reverts |
-| --- | --- | --- | --- |
-| `MAX_VALIDATORS_PER_JOB()` | `uint256` | Hard cap for validators. | — |
-| `additionalAgentPayoutPercentage()` | `uint256` | Stored config value (not used in payout logic). | — |
-| `additionalAgents(address)` | `bool` | Explicit agent allowlist. | — |
-| `additionalValidators(address)` | `bool` | Explicit validator allowlist. | — |
-| `additionalText1()` / `additionalText2()` / `additionalText3()` | `string` | Informational metadata. | — |
-| `agentBond()` / `agentBondBps()` / `agentBondMax()` | `uint256` | Agent bond parameters. | — |
-| `agentMerkleRoot()` | `bytes32` | Merkle root for agents. | — |
-| `agentRootNode()` | `bytes32` | ENS root node for agents. | — |
-| `usdcToken()` | `address` | ERC‑20 token address. | — |
-| `agiTypes(uint256)` | `(address,uint256)` | AGI type NFT address + eligibility score. | — |
-| `alphaAgentRootNode()` / `alphaClubRootNode()` | `bytes32` | Secondary ENS roots. | — |
-| `balanceOf(address owner)` | `uint256` | ERC‑721 balance. | ERC‑721 standard reverts if `owner` is zero. |
-| `blacklistedAgents(address)` / `blacklistedValidators(address)` | `bool` | Blacklist mappings. | — |
-| `canAccessPremiumFeature(address user)` | `bool` | True if `reputation >= premiumReputationThreshold`. | — |
-| `challengePeriodAfterApproval()` | `uint256` | Validator challenge window. | — |
-| `clubRootNode()` | `bytes32` | ENS root node for validators. | — |
-| `completionReviewPeriod()` | `uint256` | Completion review period. | — |
-| `contactEmail()` | `string` | Informational metadata. | — |
-| `disputeReviewPeriod()` | `uint256` | Dispute review period. | — |
-| `ens()` / `nameWrapper()` | `address` | ENS registry / NameWrapper. | — |
-| `getApproved(uint256 tokenId)` | `address` | ERC‑721 approved address. | ERC‑721 standard reverts if token does not exist. |
-| `getHighestPayoutPercentage(address agent)` | `uint256` | Max NFT eligibility score (not a payment percentage). | — |
-| `getJobCore(uint256 jobId)` | `(address,address,uint256,uint256,uint256,bool,bool,bool,uint8)` | Core job fields. | `JobNotFound`. |
-| `getJobValidation(uint256 jobId)` | `(bool,uint256,uint256,uint256,uint256)` | Completion/dispute flags, counts, timestamps. | `JobNotFound`. |
-| `getJobSpecURI(uint256 jobId)` / `getJobCompletionURI(uint256 jobId)` | `string` | Job spec/completion URI. | `JobNotFound`. |
-| `isApprovedForAll(address owner, address operator)` | `bool` | ERC‑721 operator approval. | — |
-| `jobDurationLimit()` / `maxJobPayout()` | `uint256` | Job creation limits. | — |
-| `lockIdentityConfig()` | `bool` | Identity configuration locked flag. | — |
-| `lockedEscrow()` / `lockedAgentBonds()` / `lockedValidatorBonds()` / `lockedDisputeBonds()` | `uint256` | Locked balances. | — |
-| `moderators(address)` | `bool` | Moderator allowlist. | — |
-| `name()` / `symbol()` | `string` | ERC‑721 name/symbol. | — |
-| `nextJobId()` / `nextTokenId()` | `uint256` | Next IDs. | — |
-| `owner()` / `ownerOf(uint256 tokenId)` | `address` | Contract/NFT owner. | ERC‑721 standard reverts if token does not exist. |
-| `paused()` | `bool` | Pausable state. | — |
-| `premiumReputationThreshold()` | `uint256` | Reputation threshold for premium access. | — |
-| `reputation(address)` | `uint256` | Reputation score. | — |
-| `requiredValidatorApprovals()` / `requiredValidatorDisapprovals()` | `uint256` | Approval/disapproval thresholds. | — |
-| `supportsInterface(bytes4 interfaceId)` | `bool` | ERC‑165 support. | — |
-| `termsAndConditionsIpfsHash()` | `string` | Informational metadata. | — |
-| `tokenURI(uint256 tokenId)` | `string` | Stored token URI for job NFT. | ERC‑721 standard reverts if token does not exist. |
-| `validationRewardPercentage()` | `uint256` | Validator reward percentage. | — |
-| `validatorBondBps()` / `validatorBondMin()` / `validatorBondMax()` | `uint256` | Validator bond parameters. | — |
-| `validatorMerkleRoot()` | `bytes32` | Merkle root for validators. | — |
-| `validatorSlashBps()` | `uint256` | Validator slash rate. | — |
-| `voteQuorum()` | `uint256` | Finalization quorum. | — |
-| `withdrawableUSDC()` | `uint256` | `balanceOf(this) - lockedEscrow - lockedAgentBonds - lockedValidatorBonds - lockedDisputeBonds`. | `InsolventEscrowBalance`. |
-
-## Detailed behavior notes (selected)
-
-### Eligibility verification
-- The Merkle leaf is `keccak256(abi.encodePacked(claimant))` and is checked against either `agentMerkleRoot` or `validatorMerkleRoot` depending on which verification function is called.
-- ENS subnode is `keccak256(rootNode, keccak256(subdomain))`.
-- Ownership is verified by NameWrapper `ownerOf(uint256(subnode))` and Resolver `addr(subnode)`; both are guarded with `try/catch` and return `false` on failure.
-
-### Job completion & payout
-- `agentPayoutPct` is set at posting to `60 - validatorRate`; zero is valid when the validator budget is 60%.
-- If no validators participate, the validator payout is zero and the validator budget is returned to the employer.
-- Completion requires a non‑empty, whitespace‑free completion URI.
-
-### Marketplace
-- The contract does **not** implement listing or purchasing functions for NFTs. Transfers and approvals use standard ERC‑721 functions.
+No configured manager is supplied. A contract exposing expected getters is not authenticated merely by returning canonical USDC; verify the deployed code, linked libraries, owner and recipients before enabling writes.

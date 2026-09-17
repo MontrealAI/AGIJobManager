@@ -1,6 +1,6 @@
-# Hardhat deployment guide — v0.8.0
+# Hardhat deployment guide — v0.9.0
 
-This is the supported public-network deployment path. Root Truffle scripts are disposable local test fixtures only. v0.8.0 requires a fresh deployment and two real recipient wallets; this release does not deploy a contract or populate those addresses.
+This is the supported public-network deployment path. Root Truffle scripts are disposable local test fixtures only. v0.9.0 requires a fresh deployment and two real recipient wallets; this release does not deploy a contract or populate those addresses.
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 
@@ -46,21 +46,31 @@ A dry run validates configuration, chain, token state and compiled artifacts wit
 DRY_RUN=1 npm run deploy:mainnet
 ```
 
+Boolean settings (`DRY_RUN`, and the optional ENS script's `VERIFY`/`LOCK_CONFIG`) accept explicit `1`/`0`, `true`/`false`, `yes`/`no` or `on`/`off`. Unknown text is rejected before any transaction. `DRY_RUN=true` is also read-only. Keep the mainnet broadcast confirmation phrase unset during rehearsals.
+
 Review its plan before an independently authorized deployment. Mainnet requires at least three confirmations (`CONFIRMATIONS=3` by default). For actual mainnet deployment, remove `DRY_RUN=1` and set `DEPLOY_CONFIRM_MAINNET` to `I_UNDERSTAND_MAINNET_DEPLOYMENT` in the operator's local environment, then run:
 
 ```bash
 npm run deploy:mainnet
 ```
 
-The script deploys five linked libraries and the manager, compares deployed runtime bytes with the exact release artifacts, confirms paused intake, attempts explorer verification for every contract, and proposes ownership transfer when needed. It never opens intake. A proposal leaves the deployer in control until the proposed owner calls `acceptOwnership()`.
+The script deploys five linked libraries and the manager, validates successful transaction receipts, compares deployed runtime bytes with the exact release artifacts, confirms paused intake, and completes explorer verification for every contract before proposing ownership transfer when needed. Disabled verification or unrecognized verification errors fail closed. It never opens intake. A proposal leaves the deployer in control until the proposed owner calls `acceptOwnership()`.
 
 A unique deployment journal is saved under `hardhat/deployments/<network>/` before broadcasting and updated after each transaction. It records transaction hashes even if confirmation later fails. An adjacent `.solc-input.json` records the exact build input; `verify-targets.json` lists explorer targets. Preserve these files and their checksums outside the temporary deployment environment.
 
-**A failed command may have broadcast transactions.** Read the saved journal and reconcile transaction receipts before retrying. Do not blindly redeploy. Failed or incomplete explorer verification produces a nonzero exit status; intake remains paused. Finish verification for the saved addresses, preserve the evidence, and update the reviewed receipt's verification entries before the readiness check. Never mark an entry verified merely to bypass a failed check.
+**A failed command may have broadcast transactions.** Read the saved journal and reconcile transaction receipts before retrying. Do not blindly redeploy. Failed or incomplete explorer verification produces a nonzero exit status; intake remains paused and the script stops before proposing ownership transfer.
+
+If all six contracts were broadcast but verification or a later step failed, recover verification from the saved journal without a private key:
+
+```bash
+DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npx hardhat run scripts/reverify-deployment.js --network mainnet
+```
+
+This command checks successful canonical transaction receipts and confirmations, the recorded deployer and exact creation bytecode/constructor arguments, linked runtime and paused manager state, then retries explorer verification. It sends **zero blockchain transactions**; explorer source-verification requests still use the configured API key. A successful recovery writes a separate `.reverified.<block>.json` receipt and preserves the original journal. Use that new receipt for readiness. It reports whether ownership still needs a proposal and acceptance; it never performs either operation. Incomplete library-only deployments, inconsistent receipts, changed code and further verification failures remain blocked and require explicit operator reconciliation. Never edit verification fields merely to bypass a failed check.
 
 ## Accept ownership and verify the live instance
 
-The intended owner calls `acceptOwnership()` through its own wallet or verified explorer contract. Confirm `owner()` is the intended owner, `pendingOwner()` is zero, and the former owner no longer has authority.
+If `pendingOwner()` has not yet been set—for example, after recovering an explorer outage—the current owner first calls `transferOwnership(finalOwner)` with the reviewed address. The intended owner then calls `acceptOwnership()` through its own wallet or verified explorer contract. Confirm `owner()` is the intended owner, `pendingOwner()` is zero, and the former owner no longer has authority.
 
 Configure eligibility, moderators, job limits, review windows and bonds while intake stays paused. Job duration limits are 1–31,536,000 seconds. Validator budget changes affect newly posted jobs only; several other policy changes require all reserves to be zero. Confirm the exact scope in the [owner guide](../docs/OWNER_CONTROLS.md).
 
@@ -76,7 +86,11 @@ For Sepolia:
 DEPLOYMENT_RECEIPT=deployments/sepolia/<saved-receipt>.json npx hardhat run scripts/check-readiness.js --network sepolia
 ```
 
-This checks a single recorded block: exact linked runtime code, native USDC, accepted owner, no pending owner, paused intake, enabled settlement, both expected recipients, zero initial reserves, funded accounting and USDC transfer restrictions. It writes a block-number/hash readiness report and sends zero transactions. This is a technical pre-activation check; participant eligibility, signer security, monitoring and independent review remain operational responsibilities.
+This validates the saved receipt's status and configuration hash, then checks one recorded block: exact linked runtime code, native USDC, accepted owner, no pending owner, paused intake, enabled settlement, both expected recipients, ENS/name-wrapper addresses, four identity root nodes, two Merkle roots, zero initial reserves, funded accounting and USDC transfer restrictions. The block hash is checked again before writing the report; a detected reorganization fails the check. Explorer verification in the report is evidence recorded in the receipt, not a fresh explorer query. The checker sends zero transactions.
+
+By default, identity settings must match the deployment receipt. If the owner intentionally changed them during setup, provide a separately reviewed JSON file using `READINESS_CONFIG=./reviewed-identity.json` alongside `DEPLOYMENT_RECEIPT`. The only permitted keys are `ensConfig` (registry, wrapper), `rootNodes` (club, agent, alpha-club, alpha-agent) and `merkleRoots` (validator, agent). Include only fields whose expected values changed, using complete arrays of actual reviewed addresses or bytes32 roots. This file describes expected state; it performs no updates. The report records its path and SHA-256, and the original receipt remains unchanged. Unexpected keys or a mismatch with actual state fail.
+
+The report is a technical pre-activation snapshot. It does not validate the private metadata gateway, mutable operational policies, individual participant eligibility, signer security or monitoring. Review those settings and independent security findings separately before activation.
 
 Only after the reviewed checks pass should the accepted owner call `unpauseIntake()`. Start with deliberately limited exposure and reconcile the first successful job's validator/30%/10%/agent transfers and cleared reserves before scaling. ETH is still required for transaction gas.
 
@@ -89,6 +103,8 @@ DRY_RUN=1 npm run deploy:ens-job-pages:sepolia
 ```
 
 Review `JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, `NEW_OWNER`, `VERIFY` and `LOCK_CONFIG` before actual deployment. A mainnet broadcast requires the same explicit mainnet confirmation phrase.
+
+Set `VERIFY=1` for explorer verification. When requested, verification must succeed before configuration locking or ownership transfer. The ENS script writes an incremental `ens-job-pages.<chain>.<id>.json` journal, validates mined receipts and confirms final manager/owner/lock settings. ENSJobPages ownership transfers in **one step**, unlike the manager's two-step handoff; independently verify the recipient. Known protocol dependencies cannot be the ENSJobPages owner. A failed ENS command may have deployed the contract or configured its manager: preserve its journal and reconcile those addresses before retrying. The manager-only recovery command above does not resume ENS deployments. Keyless ENS dry runs also require `DEPLOYER_ADDRESS`.
 
 | Action | Signer |
 | --- | --- |

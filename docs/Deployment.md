@@ -1,6 +1,6 @@
 # Deployment guide (Truffle)
 
-> **v0.8.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+> **v0.9.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
 
 This guide documents the deployment and verification workflow defined in `truffle-config.js` and the migration scripts in `migrations/`.
 For the **configure-once, minimal-governance** deployment profile, see [`docs/DEPLOYMENT_PROFILE.md`](DEPLOYMENT_PROFILE.md).

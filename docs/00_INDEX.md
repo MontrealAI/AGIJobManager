@@ -1,5 +1,7 @@
 # AGIJobManager Documentation Index
 
+**[Start here](START_HERE.md)** for the v0.9.0 USDC user journey and canonical operator paths.
+
 Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 
 ## Core protocol docs
@@ -12,7 +14,7 @@ Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 - [Glossary](./GLOSSARY.md) — domain and contract terms used across this repository. *(All audiences)*
 
 ## Operations docs
-- [Deploy Runbook](./DEPLOY_RUNBOOK.md) — pre-deploy checklist, exact migration/config scripts, smoke tests, lockdown steps. *(Operator / Owner)*
+- [Deploy Runbook](./DEPLOY_RUNBOOK.md) — pre-deploy checklist, Hardhat deployment/readiness scripts, smoke tests, lockdown steps. *(Operator / Owner)*
 - [Testing Guide](./TESTING.md) — how CI and local test checks are executed. *(Developer / Auditor)*
 - [Repository Inventory](./REPOSITORY_INVENTORY.md) — codebase map, script inventory, and verified command list at HEAD. *(Operator / Developer / Auditor)*
 
@@ -20,9 +22,9 @@ Audience tags: **Operator / Owner**, **Integrator**, **Developer**, **Auditor**.
 - `contracts/AGIJobManager.sol`
 - `contracts/ens/ENSJobPages.sol`
 - `contracts/utils/*.sol`
-- `migrations/1_deploy_contracts.js`
-- `migrations/deploy-config.js`
-- `scripts/postdeploy-config.js`
-- `scripts/verify-config.js`
+- `hardhat/scripts/deploy.js`
+- `hardhat/scripts/deployment-safety.js`
+- `hardhat/scripts/check-readiness.js`
+- `hardhat/deploy.config.example.js`
 - `package.json`
 - `.github/workflows/ci.yml`

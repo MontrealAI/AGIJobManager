@@ -1,6 +1,6 @@
 # Mainnet migration from legacy AGIJobManager snapshot
 
-> **v0.8.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+> **v0.9.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
 
 This runbook deploys `contracts/AGIJobManager.sol` from a deterministic, committed snapshot of the live legacy mainnet contract `0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477`.
 

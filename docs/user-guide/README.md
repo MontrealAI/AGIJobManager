@@ -1,39 +1,17 @@
-# User guide (non-technical)
+# User guide — v0.9.0
 
-Welcome! This guide set is written for non-technical users in **any** role. You do **not** need to read Solidity to succeed.
+Start with the [main user guide](../USERS.md) for USDC amounts, the fixed 30%/10% shares, required bonds, and a complete job lifecycle.
 
-## Start here
+## Choose your next step
 
-1. **Roles & permissions** → [`roles.md`](roles.md)
-2. **Happy path walkthrough** → [`happy-path.md`](happy-path.md)
-3. **Common revert reasons (fixes)** → [`common-reverts.md`](common-reverts.md)
-4. **Merkle proof guidance** → [`merkle-proofs.md`](merkle-proofs.md)
-5. **Glossary** → [`glossary.md`](glossary.md)
+1. [Roles and permissions](roles.md)
+2. [Happy path walkthrough](happy-path.md)
+3. [Common reverts and fixes](common-reverts.md)
+4. [Merkle proof guidance](merkle-proofs.md)
+5. [Glossary](glossary.md)
 
-## Preferred ways to use the system
+Use the [USDC console](../../ui/agijobmanager-usdc.html) or the verified deployment's Etherscan Read/Write interface. The [operator console](../ui/agijobmanager.html) and [UI documentation](../ui/README.md) provide additional controls. Confirm that any console is configured for the deployment you intend to use; historical examples are not proof of a current live deployment.
 
-- **Web UI (recommended for non-technical users):**
-  - UI page: [`docs/ui/agijobmanager.html`](../ui/agijobmanager.html)
-  - UI usage guide: [`docs/ui/README.md`](../ui/README.md)
-- **Wallet + Etherscan “Read/Write Contract”** for simple tasks.
-- **Truffle console** for read-only checks when you need more detail.
+Before signing, verify the network, manager address, and `usdcToken()`. USDC has six decimals and pays escrow/rewards/bonds; ETH pays gas. Approve exact amounts rather than unlimited spending. When using ENS, enter only a label, such as `alice`, rather than `alice.club.agi.eth`. Agents separately need an eligible NFT credential.
 
-## ⚠️ Important safety notes
-
-- **Use the label only, not the full ENS name.**
-  - ✅ `helper`
-  - ❌ `helper.agent.agi.eth`
-  - ✅ `alice`
-  - ❌ `alice.club.agi.eth`
-  The contract derives the namehash from a fixed root node + label only.
-- **Approvals are real on-chain actions.** Approving ERC‑20 spending allows the contract to move your tokens. Verify the contract address and network first.
-- **Network matters.** Always confirm you’re on the same chain as the contract deployment.
-
-## How this guide is organized
-
-- **Roles** describes exactly what each role can do and what you need before starting.
-- **Happy path** provides a full end‑to‑end walkthrough of a typical job lifecycle.
-- **Common reverts** helps you fix “execution reverted” issues quickly.
-- **Merkle proofs** explains how allowlists work and how to obtain/format proofs.
-
-If you’re unsure about any term, check the glossary.
+A job is assigned by the first successful eligible application. Completion submission and validator votes do not automatically pay anyone: a finalization or dispute-resolution transaction must execute after the applicable conditions are satisfied.

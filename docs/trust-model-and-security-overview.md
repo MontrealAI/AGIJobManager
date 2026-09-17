@@ -1,108 +1,41 @@
-# Trust model and security overview
+# Trust model and security overview — v0.9.0
 
-This document provides a concise, audit-focused reference for how AGIJobManager
-is operated, what the owner can do, and the hard invariants enforced by the
-contract. It is a business‑operated escrow system, not a DAO.
+AGIJobManager is an owner-operated USDC escrow system. The contract enforces accounting and lifecycle guards; participants still trust owner/moderator decisions, validator judgment, issuer behavior and the configured identity systems. This release is internally qualified, not independently audited.
 
-## 1) Trust model (owner‑operated escrow)
+## Owner authority
 
-AGIJobManager is an owner‑operated escrow system. Users must trust the owner and
-moderators to operate honestly, while the contract enforces escrow accounting
-and settlement invariants.
+The owner can pause intake or settlement, manage eligibility and moderators, propose ownership transfer and update supported parameters under their guards. USDC and the 30%/10% successful-job shares cannot change. Wallet rotation requires paused intake and all four reserves empty; ownership requires acceptance by the proposed owner. Code is non-upgradeable.
 
-**Owner powers (as implemented)**
-- **Pause/unpause** the contract.
-- **Withdraw treasury** (non‑escrow balance) while paused only.
-- **Manage allowlists/blacklists** for agents and validators.
-- **Manage moderators** and NFT eligibility scores (AGI types).
-- **Adjust economic parameters** (validator thresholds, review periods, job
-  duration limits, payout caps, and validation reward percentages).
-- **Identity wiring before lock** (USDC token, ENS registry, NameWrapper, root
-  nodes), and **Merkle roots at any time**.
-- **Owner‑only job delist** for unassigned jobs.
+The validator budget is 1–60%, fixed per job at posting. Agent bonds are fixed at assignment; validator bond size is fixed at the first vote. Some owner changes therefore affect later actions on already posted jobs. Review/challenge periods, quorum, thresholds and slashing changes require all reserves empty. See [owner controls](OWNER_CONTROLS.md) and [configuration](CONFIGURATION.md).
 
-**Best‑practice operations**
-- Use a multisig for ownership.
-- Monitor escrow solvency continuously.
-- Maintain public incident reporting and change logs tied to emitted events.
+## Accounting
 
-## 2) Treasury vs escrow separation (hard invariant)
+`withdrawableUSDC()` is the USDC balance minus `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds` and `lockedDisputeBonds`; it reverts if reserves exceed balance. A withdrawal requires owner authority, paused intake, enabled settlement and an amount no greater than that surplus.
 
-**Escrow** is the sum of outstanding job payouts tracked by `lockedEscrow`.
-**Bonds** are tracked by `lockedAgentBonds` and `lockedValidatorBonds`.
-**Treasury** is any USDC held by the contract **above** escrow and locked bonds.
+Example: balance 1,000 USDC minus 700 escrow and 50 total bonds leaves 250 withdrawable. A 250 withdrawal can succeed under the required pause state; 300 must revert. Successful jobs distribute their entire original cost, including any unused validator allocation and rounding remainder. Direct unreserved donations can create surplus. There is no `contributeToRewardPool` API in this release.
 
-**Sources of treasury (as implemented)**
-- Unreserved direct USDC donations only; successful jobs distribute their full cost.
-- Job and validator rounding dust goes to the winning agent, not treasury.
-- `contributeToRewardPool` transfers (not segregated from treasury).
-- Any direct token transfers to the contract.
+## Pause semantics
 
-**Withdrawal semantics**
-- `withdrawableUSDC()` returns `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and reverts on insolvency.
-- `withdrawUSDC(amount)` is **owner‑only** and **paused‑only**.
+| Control state | Job creation/assignment | Completion, votes, disputes, settlement/refunds | Reads |
+| --- | --- | --- | --- |
+| Both flags false | Allowed under normal guards | Allowed under normal guards | Available |
+| Intake paused; settlement enabled | Blocked | Allowed under normal guards | Available |
+| Settlement paused, regardless of intake flag | Blocked | Blocked | Available |
 
-**Example**
-- Contract balance: 1,000 USDC
-- `lockedEscrow`: 700 USDC
-- `lockedAgentBonds + lockedValidatorBonds`: 50 USDC
-- `withdrawableUSDC()`: 250 USDC
-- `withdrawUSDC(400)` reverts; `withdrawUSDC(300)` succeeds while paused.
+`pauseAll()` sets both flags. Pauses do not stop timestamps or extend deadlines. Recover settlement with intake still paused before deciding to admit new jobs. See [incident response](OPERATIONS/INCIDENT_RESPONSE.md).
 
-## 3) Pause semantics (blocked vs allowed)
+## Identity lock
 
-Pausing is intended to stop new risk while preserving exits/settlement.
+`lockIdentityConfiguration()` permanently freezes the guarded ENS registry, NameWrapper, root-node and ENSJobPages-pointer setters. It does not lock Merkle roots, direct role lists, moderators, ordinary policy settings or ownership. USDC was already immutable at construction.
 
-**Blocked while paused**
-| Category | Functions |
-| --- | --- |
-| Job creation & onboarding | `createJob`, `applyForJob` |
-| Validation & dispute entry | `validateJob`, `disapproveJob`, `disputeJob` |
-| Reward pool funding | `contributeToRewardPool` |
+Registry/wrapper/root updates require empty escrow and bond reserves. The ENSJobPages pointer has its own code-address and identity-lock checks. Never apply an irreversible lock to repair a suspected bad configuration. Optional ENS hooks do not override job settlement outcomes.
 
-**Allowed while paused**
-| Category | Functions |
-| --- | --- |
-| Completion submission | `requestJobCompletion` |
-| Settlement & exits | `cancelJob`, `expireJob`, `finalizeJob` |
-| Dispute resolution | `resolveDispute`, `resolveDisputeWithCode` |
-| Owner recovery | `resolveStaleDispute` (owner‑only after `disputeReviewPeriod`; pause optional) |
-| Owner job delist | `delistJob` (owner‑only, unassigned only) |
-| Treasury withdrawal | `withdrawUSDC` (owner‑only, paused‑only) |
+## Residual operational risks
 
-**Rationale**: Pause is used to halt new obligations and risky actions, not to
-trap users or prevent settlement/exit paths.
+- USDC issuer pause or blocklisting can stop settlement or refunds; an atomic revert preserves state, but no completion time can be promised until the restriction is resolved.
+- A no-vote job can finalize for the agent after review expires. It earns no reputation through that fallback and is not independently validated work.
+- Moderators resolve active disputes; the owner can resolve stale disputes after the configured period. These are trusted decisions.
+- Incorrect validator bonds can be slashed. Correct-side validators can receive rewards and reputation according to the outcome; reputation is not an independent work-quality certificate.
+- Metadata may be unavailable, misleading or unsafe to open. A completion NFT is a receipt, not a guarantee of content or value.
 
-## 4) Identity configuration lock (scope and guarantees)
-
-`lockIdentityConfiguration()` is a one‑way switch that freezes **identity wiring**
-only; it is not a governance lock.
-
-**Locked once set**
-- `updateEnsRegistry`
-- `updateNameWrapper`
-- `updateRootNodes`
-
-**Not locked**
-- `updateMerkleRoots` (allowlist roots remain adjustable).
-- Operational controls (pause/unpause, allowlists/blacklists, parameter tuning).
-- Treasury withdrawals and dispute resolution.
-
-**Pre‑lock constraints**
-Even before locking, identity wiring updates require **no jobs created** and
-**no escrow outstanding** (`nextJobId == 0` and `lockedEscrow == 0`).
-
-## 5) Reputation system overview
-
-- Agent reputation is updated only on successful completion paths.
-- The points calculation is **log‑scaled** from payout and time, then
-  **diminished** by a quadratic factor and **capped** at `88888`.
-- Validator reputation increases only for approving validators.
-- There is **no slashing or decay** mechanism.
-- Premium access is a simple threshold check via `premiumReputationThreshold`.
-
-## 6) Notes on unused or future knobs
-
-- `additionalAgentPayoutPercentage` is **not used** in settlement logic today.
-- “Reward pool” contributions are **not segregated**; they are part of the
-  contract balance and therefore treasury (subject to escrow protections).
+Read [mainnet readiness](MAINNET_READINESS.md), [security model](SECURITY_MODEL.md) and the source-specific release evidence before activation.

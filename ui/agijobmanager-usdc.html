@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.8.0</title>
+  <title>AGIJobManager · USDC v0.9.0</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.8.0: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v0.9.0: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1170,11 +1170,11 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.8.0</h2>
+      <h2>USDC deployment · v0.9.0</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
-      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.8.0 deployment">
+      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.9.0 deployment">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
       <p id="usdcDeploymentStatus" role="status">Deployment required — transactions disabled.</p>
       <p id="settlementWallets" class="smallNote">Two owner-configurable settlement wallets must be verified before transactions.</p>
@@ -1987,7 +1987,7 @@ Evaluation methodology"></textarea>
       </div>
     </div>
 
-        <div id="adminArgsModal" class="modalBackdrop" aria-hidden="true">
+        <div id="adminArgsModal" class="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adminArgsTitle" aria-describedby="adminArgsSubtitle" aria-hidden="true">
       <div class="modalCard reviewModalCard">
         <div class="modalHeader">
           <div><div class="eyebrow">Administrative action builder</div><h2 id="adminArgsTitle" style="margin:4px 0 6px">Prepare admin transaction</h2><div class="helper" id="adminArgsSubtitle">Provide typed arguments for the selected method.</div></div>
@@ -1999,7 +1999,7 @@ Evaluation methodology"></textarea>
       </div>
     </div>
 
-<div id="actionReviewModal" class="modalBackdrop" aria-hidden="true">
+<div id="actionReviewModal" class="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="actionReviewTitle" aria-describedby="actionReviewBody" aria-hidden="true">
       <div class="modalCard reviewModalCard">
         <div class="modalHeader">
           <div>
@@ -2025,8 +2025,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.8.0 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.8.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v0.9.0 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2266,7 +2266,7 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-USDC settlement notice (v0.8.0)
+USDC settlement notice (v0.9.0)
 
 The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
 AGIJobManager does not issue USDC or define the issuer&#x27;s terms. The protocol&#x27;s job
@@ -2274,7 +2274,7 @@ refund and settlement rules apply to job escrow; they do not describe token purc
 or redemption rights. USDC issuer controls, including transfer pauses and blocked
 addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.8.0 settlement and are
+Historical project-token sale disclosures do not describe v0.9.0 settlement and are
 preserved in previous Git tags.</div></details></div>
     </div>
 
@@ -2283,7 +2283,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.8.0 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.0 terms</a>
       </div>
     </div>
 
@@ -2321,7 +2321,7 @@ preserved in previous Git tags.</div></details></div>
     const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
     const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
     let AGI_JOB_MANAGER = '';
-    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v080_manager') || ''; } catch {}
+    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v090_manager') || ''; } catch {}
     let usdcDeploymentValidated = false;
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const KNOWN_ENS_JOB_PAGES_FALLBACK = "";
@@ -2329,7 +2329,7 @@ preserved in previous Git tags.</div></details></div>
     const FREE_TRIAL_REGISTRAR_IDENTITY = "0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a";
     const ALPHA_AGENT_PARENT = "alpha.agent.agi.eth";
     const ALPHA_AGENT_PARENT_NODE = "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e";
-    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v080_v29_recent_alpha_names";
+    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v090_v29_recent_alpha_names";
     let resolvedEnsJobPagesAddress = "";
     let resolvedEnsJobPagesSource = "unavailable";
     const SUFFIX = { agent:"agent.agi.eth", club:"club.agi.eth", alphaAgent:"alpha.agent.agi.eth", alphaClub:"alpha.club.agi.eth" };
@@ -2785,6 +2785,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       APP_STATE.writeEpoch = (APP_STATE.writeEpoch || 0) + 1;
       usdcDeploymentValidated = false;
       if(typeof pendingActionConfirmResolver === 'function'){ const resolve = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolve(false); }
+      if(typeof closeActionReview === 'function') closeActionReview();
       pendingReviewedAction = null;
       activeJobIndexCache.ids = null;
       activeJobIndexCache.ts = 0;
@@ -2862,8 +2863,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
     }
 
-    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v080_v17_tx_activity";
-    const ELITE_PREFS_KEY = "agijobmanager_usdc_v080_v18_elite_prefs";
+    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v090_v17_tx_activity";
+    const ELITE_PREFS_KEY = "agijobmanager_usdc_v090_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
     function requestMainnetSwitch(){
@@ -2874,8 +2875,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function loadTxActivity(){
       try{
         const raw = localStorage.getItem(TX_ACTIVITY_KEY)
-          || localStorage.getItem('agijobmanager_usdc_v080_v27_tx_activity')
-          || localStorage.getItem('agijobmanager_usdc_v080_v17_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v090_v27_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v090_v17_tx_activity')
           || '[]';
         txActivity = JSON.parse(raw);
       }catch{ txActivity = []; }
@@ -3071,8 +3072,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       return receipt?.status === true || receipt?.status === 1 || receipt?.status === 1n || receipt?.status === '1' || receipt?.status === '0x1';
     }
     function openActionReview(config){
-      if(activeReviewedContext && !config.confirmationOnly) throw new Error('Finish or cancel the current transaction before reviewing another action.');
-      pendingReviewedAction = {...config, writeContext: activeReviewedContext || captureWriteContext()};
+      if(pendingReviewedAction) throw new Error('Finish or cancel the current review before opening another action.');
+      if(activeReviewedContext && (!config.confirmationOnly || !config.allowDuringAction)) throw new Error('Finish or cancel the current transaction before reviewing another action.');
+      const writeContext = config.writeContext || activeReviewedContext || captureWriteContext();
+      assertWriteContext(writeContext);
+      pendingReviewedAction = {...config, writeContext, returnFocus:typeof document === 'undefined' ? null : document.activeElement};
       if(el('actionReviewTitle')) el('actionReviewTitle').textContent = config.title || 'Review action';
       if(el('actionReviewBody')) el('actionReviewBody').textContent = config.body || '';
       if(el('actionReviewRisk')) el('actionReviewRisk').innerHTML = config.riskHtml || '<b>Review carefully</b><br>This UI will only open your wallet after you confirm the details below.';
@@ -3083,35 +3087,53 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('confirmActionReviewBtn')) { el('confirmActionReviewBtn').textContent = config.confirmLabel || 'Continue'; el('confirmActionReviewBtn').disabled = !!config.confirmDisabled; }
       el('actionReviewModal')?.classList.add('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','false');
+      el('cancelActionReviewBtn')?.focus?.();
     }
     let pendingActionConfirmResolver = null;
     function closeActionReview(resolveAsCancel=true){
+      const returnFocus = pendingReviewedAction?.returnFocus;
       pendingReviewedAction = null;
       el('actionReviewModal')?.classList.remove('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','true');
       if(el('confirmActionReviewBtn')) el('confirmActionReviewBtn').disabled = false;
       if(resolveAsCancel && pendingActionConfirmResolver){ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolver(false); }
+      returnFocus?.focus?.();
     }
+    function handleDialogKeydown(event, modalId, cancel){
+      if(event.key === 'Escape'){ event.preventDefault(); event.stopPropagation(); cancel(); return; }
+      if(event.key !== 'Tab') return;
+      const modal = el(modalId);
+      const controls = [...modal.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex="0"]')];
+      if(!controls.length) return;
+      const first = controls[0], last = controls[controls.length - 1];
+      if(event.shiftKey && document.activeElement === first){ event.preventDefault(); last.focus(); }
+      else if(!event.shiftKey && document.activeElement === last){ event.preventDefault(); first.focus(); }
+    }
+    function handleActionReviewKeydown(event){ handleDialogKeydown(event, 'actionReviewModal', closeActionReview); }
     function requestActionConfirmation(config){
-      return new Promise(resolve=>{
-        pendingActionConfirmResolver = resolve;
-        openActionReview({
-          ...config,
-          confirmationOnly: true,
-          run: async ()=>{ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; if(resolver) resolver(true); }
-        });
+      if(pendingReviewedAction || pendingActionConfirmResolver) return Promise.reject(new Error('Finish or cancel the current review before opening another action.'));
+      return new Promise((resolve, reject)=>{
+        const resolveConfirmation = (accepted)=>{
+          if(pendingActionConfirmResolver === resolveConfirmation) pendingActionConfirmResolver = null;
+          resolve(accepted);
+        };
+        try{
+          openActionReview({ ...config, confirmationOnly:true, run:async ()=>resolveConfirmation(true) });
+          pendingActionConfirmResolver = resolveConfirmation;
+        }catch(error){ reject(error); }
       });
     }
     async function confirmReviewedAction(){
       const review = pendingReviewedAction;
       if(!review?.run) return closeActionReview();
+      if(review.confirmDisabled) return;
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
       closeActionReview(false);
       const previousContext = activeReviewedContext;
+      if(!review.confirmationOnly) activeReviewedContext = review.writeContext;
       try{
         await assertLiveWriteContext(review.writeContext);
-        if(!review.confirmationOnly) activeReviewedContext = review.writeContext;
         await review.run();
       }catch(e){
         if(pendingActionConfirmResolver){ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolver(false); }
@@ -3723,7 +3745,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       try{return Number(await web3.eth.getChainId());}catch{return null;}
     }
 
-    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v080_builder_draft_v11_1";
+    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v090_builder_draft_v11_1";
     function builderFieldIds(){
       return ["jobTitle","jobCategory","jobTags","jobSummaryBuilder","jobDeliverables","jobAcceptance","jobRequirements","jobImageURI","jobExternalURI","jobSpecVersion","jobLocale","jobPayout","jobDuration","jobDetails","jobSpecURI"];
     }
@@ -3898,12 +3920,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         jwt: el("ipfsJwt")?.value || "",
         pinName: el("ipfsName")?.value || ""
       };
-      localStorage.setItem("agijobmanager_usdc_v080_ipfs_prefs_v11", JSON.stringify(prefs));
+      localStorage.setItem("agijobmanager_usdc_v090_ipfs_prefs_v11", JSON.stringify(prefs));
       setToast("IPFS browser settings saved locally on this device.", "ok");
     }
     function loadIpfsPrefs(){
       try{
-        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v080_ipfs_prefs_v11") || "{}");
+        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v090_ipfs_prefs_v11") || "{}");
         if(el("ipfsMode")) el("ipfsMode").value = prefs.mode || "pinata-jwt";
         if(el("ipfsEndpoint")) el("ipfsEndpoint").value = prefs.endpoint || "https://api.pinata.cloud/pinning/pinJSONToIPFS";
         if(el("ipfsJwt")) el("ipfsJwt").value = prefs.jwt || "";
@@ -3911,7 +3933,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }catch{}
     }
     function clearIpfsPrefs(){
-      localStorage.removeItem("agijobmanager_usdc_v080_ipfs_prefs_v11");
+      localStorage.removeItem("agijobmanager_usdc_v090_ipfs_prefs_v11");
       if(el("ipfsJwt")) el("ipfsJwt").value = "";
       setToast("Saved IPFS browser settings removed.", "ok");
     }
@@ -4209,10 +4231,13 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
       refreshIdentityState().catch(()=>{});
     }
+    let alphaMintReviewState = null;
     function openAlphaMintReview(){
+      if(!requireConnected() || !mustBeReadyToWrite()) return;
       const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
       const recipient = String(el('mintAlphaRecipient')?.value || '').trim() || userAccount;
       const full = `${local.label}.${ALPHA_AGENT_PARENT}`;
+      alphaMintReviewState = {label:local.label, recipient, writeContext:captureWriteContext()};
       if(el('alphaMintReviewFacts')) el('alphaMintReviewFacts').innerHTML = [
         ['Target contract', FREE_TRIAL_REGISTRAR],
         ['Method', 'registerSimple'],
@@ -4227,16 +4252,19 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       const modal = el('alphaMintReviewModal');
       if(modal){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
     }
-    function closeAlphaMintReview(){ const modal = el('alphaMintReviewModal'); if(modal){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); } }
+    function closeAlphaMintReview(){ alphaMintReviewState = null; const modal = el('alphaMintReviewModal'); if(modal){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); } }
     async function mintAlphaAgentName(){
       if(!requireConnected() || !mustBeReadyToWrite()) return;
+      const review = alphaMintReviewState;
+      if(!review) throw new Error('Review the ENS label and recipient before submitting.');
+      await assertLiveWriteContext(review.writeContext);
       if(!freeTrialRegistrar){
         if(!web3) return setToast('Wallet provider unavailable. Reconnect wallet and retry.', 'bad');
         freeTrialRegistrar = new web3.eth.Contract(FreeTrialSubdomainRegistrarABI, FREE_TRIAL_REGISTRAR);
       }
-      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      const local = validateAlphaLabelLocal(review.label);
       if(!local.ok) return setToast(local.reason, 'warn');
-      const recipient = String(el('mintAlphaRecipient')?.value || '').trim() || userAccount;
+      const recipient = review.recipient;
       if(!web3.utils.isAddress(recipient)) return setToast('Recipient address is invalid.', 'bad');
       const available = await freeTrialRegistrar.methods.available(namehash(`${local.label}.${ALPHA_AGENT_PARENT}`)).call().catch(()=>null);
       if(available === null){
@@ -4246,7 +4274,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
       if(!available) return setToast('Label unavailable.', 'warn');
       closeAlphaMintReview();
-      const receipt = await runTrackedTx(`Mint ${local.label}.${ALPHA_AGENT_PARENT}`, ()=>freeTrialRegistrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, local.label, recipient), {pendingDetail:'Submitting free-trial ENS registration…', successDetail:'Free-trial ENS registration confirmed.'});
+      const receipt = await runTrackedTx(`Mint ${local.label}.${ALPHA_AGENT_PARENT}`, ()=>freeTrialRegistrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, local.label, recipient), {writeContext:review.writeContext, pendingDetail:'Submitting free-trial ENS registration…', successDetail:'Free-trial ENS registration confirmed.'});
       const ev = receipt?.events?.NameRegistered?.returnValues || null;
       const node = ev?.node || namehash(`${local.label}.${ALPHA_AGENT_PARENT}`);
       const expiry = ev?.expiry ? formatTimestamp(ev.expiry) : (el('mintAlphaExpectedExpiry')?.textContent || '—');
@@ -4429,9 +4457,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       renderIdentityAdminControls(owner, pendingOwner);
       updateMissionControl();
     }
+    let alphaIdentityReviewState = null;
     function openAlphaIdentityReview(action){
+      if(!requireConnected() || !mustBeReadyToWrite()) return;
       const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
       const preview = APP_STATE.identity.preview;
+      alphaIdentityReviewState = {action, label:local.label, writeContext:captureWriteContext()};
       const facts = [
         ['Contract', FREE_TRIAL_REGISTRAR_IDENTITY],
         ['Method', action],
@@ -4447,10 +4478,13 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('confirmAlphaIdentityReviewBtn')) el('confirmAlphaIdentityReviewBtn').dataset.identityAction = action;
       const m=el('alphaIdentityReviewModal'); if(m){ m.classList.add('open'); m.setAttribute('aria-hidden','false'); }
     }
-    function closeAlphaIdentityReview(){ const m=el('alphaIdentityReviewModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } }
+    function closeAlphaIdentityReview(){ alphaIdentityReviewState = null; const m=el('alphaIdentityReviewModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } }
     async function runAlphaIdentityAction(action){
       if(!requireConnected() || !mustBeReadyToWrite()) return;
-      const local = validateAlphaLabelLocal(el('mintAlphaLabel')?.value || '');
+      const review = alphaIdentityReviewState;
+      if(!review || review.action !== action) throw new Error('Review this identity action before submitting.');
+      await assertLiveWriteContext(review.writeContext);
+      const local = validateAlphaLabelLocal(review.label);
       if(!local.ok) return setToast(local.reason,'warn');
       if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(FreeTrialSubdomainRegistrarIdentityABI, FREE_TRIAL_REGISTRAR_IDENTITY);
       closeAlphaIdentityReview();
@@ -4459,7 +4493,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(action==='claimIdentity') send = ()=>freeTrialRegistrarIdentity.methods.claimIdentity(local.label);
       if(action==='syncIdentityByLabel') send = ()=>freeTrialRegistrarIdentity.methods.syncIdentityByLabel(local.label);
       if(!send) return;
-      await runTrackedTx(`Alpha identity ${action} ${local.label}`, send, {pendingDetail:`Submitting ${action}…`, successDetail:`${action} confirmed.`});
+      await runTrackedTx(`Alpha identity ${action} ${local.label}`, send, {writeContext:review.writeContext, pendingDetail:`Submitting ${action}…`, successDetail:`${action} confirmed.`});
       if(el('agentSub')) el('agentSub').value = local.label;
       await verifySubdomain('agent', true);
       await refreshFreeTrialRegistrarState();
@@ -4503,7 +4537,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.8.0 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.0 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
@@ -4511,11 +4545,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
         const pendingOwner = String(await agiJobManager.methods.pendingOwner().call());
-        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.8.0 manager with two-step ownership is required.');
+        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.0 manager with two-step ownership is required.');
         const wallet30 = String(await agiJobManager.methods.wallet30().call());
         const wallet10 = String(await agiJobManager.methods.wallet10().call());
         const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
-        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.8.0 settlement wallets.');
+        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.9.0 settlement wallets.');
         if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
         usdcToken = token;
         tokenDecimals = 6;
@@ -4692,7 +4726,7 @@ async function updateSummary(){
 
     function loadJobPrefs(){
       try{
-        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v080_v10_prefs") || "{}");
+        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v090_v10_prefs") || "{}");
         jobFavorites = new Set(Array.isArray(raw.favorites) ? raw.favorites.map(x=>String(x)) : []);
         if(el("jobSearch")) el("jobSearch").value = raw.jobSearchText || "";
         if(el("jobStatusFilter")) el("jobStatusFilter").value = raw.jobStatusFilter || "all";
@@ -4707,12 +4741,12 @@ async function updateSummary(){
       }catch(e){}
     }
     function saveJobPrefs(){
-      localStorage.setItem("agijobmanager_usdc_v080_v10_prefs", JSON.stringify({
+      localStorage.setItem("agijobmanager_usdc_v090_v10_prefs", JSON.stringify({
         favorites: Array.from(jobFavorites),
         jobSearchText, jobStatusFilter, jobRoleFilter, jobSortMode, jobActionableOnly
       }));
     }
-    function notesKey(jobId){ return `agijobmanager_usdc_v080_job_notes_${jobId}`; }
+    function notesKey(jobId){ return `agijobmanager_usdc_v090_job_notes_${jobId}`; }
     function loadJobNotes(jobId){ try{ return localStorage.getItem(notesKey(jobId)) || ""; }catch{return "";} }
     function saveJobNotes(jobId, text){ try{ localStorage.setItem(notesKey(jobId), text || ""); }catch{} }
     function clearJobNotes(jobId){ try{ localStorage.removeItem(notesKey(jobId)); }catch{} }
@@ -5012,6 +5046,7 @@ async function updateSummary(){
       const targetApproval = needed;
       const reviewOk = await requestActionConfirmation({
         title:'Token approval required',
+        writeContext, allowDuringAction:true,
         body:`${actionLabel} needs token approval before ${spender} can spend ${tokenLabel}.`,
         facts:[
           {label:'Token', value: `${tokenLabel} (${tokenAddress})`},
@@ -5142,6 +5177,7 @@ async function updateSummary(){
         const wallet10Amount = payoutUnits * 10n / 100n;
         const agentRemainder = payoutUnits - validatorBudget - wallet30Amount - wallet10Amount;
         openActionReview({
+          writeContext:postingContext,
           title:`Create Job · escrow ${formatUnitsToAmount(payoutUnits)} $USDC`,
           body:'You are about to publish a new job and escrow the full payout into AGIJobManager. If token allowance is insufficient, the UI will guide you through approval first.',
           facts:[
@@ -5182,6 +5218,9 @@ async function updateSummary(){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
       if(!verified.agent){setToast("Verify your agent.agi.eth subdomain first.", "warn");return;}
+      const writeContext = captureWriteContext();
+      const reviewedLabel = verified.agent;
+      const reviewedAlpha = verified.agentAlpha;
       try{
         let probe = await buildJobBondTruthProbe(jobId);
         const payoutMismatchDetected = !probe.cachedVsFreshPayoutMatch;
@@ -5214,12 +5253,13 @@ async function updateSummary(){
           ? `<b>Blocking integrity failure</b><br>${escapeHtml(invariantFailures.join(' · '))}. Confirm is disabled until the snapshot is consistent.`
           : mismatchBanner;
         openActionReview({
+          writeContext,
           title:`Apply for Job #${jobId}`,
           body:'You are about to attempt the first-come application flow for this job using your verified agent ENS path. All displayed bond numbers and approval requirements are sourced from one fresh on-chain snapshot.',
           riskHtml: blockedBanner,
           facts:[
             {label:'Fresh on-chain proof', value: formatProbeProofHtml(probe), html:true},
-            {label:'Agent ENS', value: `${verified.agent}.${verified.agentAlpha ? SUFFIX.alphaAgent : SUFFIX.agent}`},
+            {label:'Agent ENS', value: `${reviewedLabel}.${reviewedAlpha ? SUFFIX.alphaAgent : SUFFIX.agent}`},
             {label:'Fresh job payout (getJobCore)', value: `${formatRawAmountTrace(trace.payoutRaw)} $USDC`},
             {label:'Duration', value: `${trace.durationRaw.toString()} seconds · ${secondsToHuman(trace.durationRaw.toString())}`},
             {label:'Exact agent bond (fresh)', value: `${formatRawAmountTrace(trace.finalBondRaw)} $USDC`},
@@ -5230,7 +5270,7 @@ async function updateSummary(){
             {state:'Bond', badge: invariantFailures.length ? 'warn' : 'good', text: invariantFailures.length ? 'Invariant check failed. Applying is blocked until fresh proof is coherent.' : 'Bond trace mirrors BondMath.computeAgentBond(...) with BigInt raw-unit math only.'},
             {state:'Allowance', badge:'warn', text:'A token approval may be requested before applyForJob is sent.'}
           ],
-          method:`applyForJob(jobId=${jobId}, subdomain=${JSON.stringify(verified.agent)}, proof=[])`,
+          method:`applyForJob(jobId=${jobId}, subdomain=${JSON.stringify(reviewedLabel)}, proof=[])`,
           confirmLabel:'Apply for job',
           confirmDisabled: invariantFailures.length > 0,
           footer: invariantFailures.length
@@ -5245,7 +5285,7 @@ async function updateSummary(){
               actionLabel: `applying for job #${jobId}`,
               approvalLabel: `${formatUnitsToAmount(nowProbe.trace.finalBondRaw)} $USDC`,
               explanation: 'The exact agent bond is computed from a fresh snapshot and revalidated again immediately before send.',
-              postActionLabel: `applyForJob(${jobId},${verified.agent},[])`
+              postActionLabel: `applyForJob(${jobId},${reviewedLabel},[])`
             });
             if(!approval.ok) return;
             const finalProbe = await buildJobBondTruthProbe(jobId);
@@ -5255,7 +5295,7 @@ async function updateSummary(){
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalProbe.trace.finalBondRaw || finalGate.allowance < finalProbe.trace.finalBondRaw) throw new Error(`Apply preflight drifted after approval: current required bond is ${formatUnitsToAmount(finalProbe.trace.finalBondRaw)} $USDC and allowance is insufficient. Refresh and retry.`);
             setToast("Submitting applyForJob transaction…", "warn");
-            await runTrackedTx(`Apply for job #${jobId}`, ()=>agiJobManager.methods.applyForJob(String(jobId), verified.agent, []), { pendingDetail:`Submitting applyForJob for job #${jobId}.`, successDetail:`Application for job #${jobId} confirmed.` });
+            await runTrackedTx(`Apply for job #${jobId}`, ()=>agiJobManager.methods.applyForJob(String(jobId), reviewedLabel, []), { pendingDetail:`Submitting applyForJob for job #${jobId}.`, successDetail:`Application for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5273,6 +5313,9 @@ async function updateSummary(){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
       if(!verified.club){setToast("Verify your club.agi.eth subdomain first.", "warn");return;}
+      const writeContext = captureWriteContext();
+      const reviewedLabel = verified.club;
+      const reviewedAlpha = verified.clubAlpha;
       try{
         const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
         const snap = await fetchValidatorBondSnapshot(jobId);
@@ -5289,10 +5332,11 @@ async function updateSummary(){
           ['final required bond', formatRawAmountTrace(trace.finalBondRaw)]
         ]);
         openActionReview({
+          writeContext,
           title:`Approve completion · Job #${jobId}`,
           body:'You are about to cast an on-chain validator approval. The bond shown here and the bond gating send use the same fresh trace snapshot.',
           facts:[
-            {label:'Validator ENS', value: `${verified.club}.${verified.clubAlpha ? SUFFIX.alphaClub : SUFFIX.club}`},
+            {label:'Validator ENS', value: `${reviewedLabel}.${reviewedAlpha ? SUFFIX.alphaClub : SUFFIX.club}`},
             {label:'Job payout', value: `${formatRawAmountTrace(trace.payoutRaw)} $USDC`},
             {label:'Validator bond', value: `${formatRawAmountTrace(trace.finalBondRaw)} $USDC`},
             {label:'Current votes', value: `${job?.approvals || 0} approve / ${job?.disapprovals || 0} disapprove`},
@@ -5303,7 +5347,7 @@ async function updateSummary(){
             {state:'Bond', badge:'warn', text:'Wrong-side votes can be slashed depending on final settlement.'},
             {state:'Allowance', badge:'warn', text:'A token approval may be requested before the approval vote is sent.'}
           ],
-          method:`validateJob(jobId=${jobId}, subdomain=${JSON.stringify(verified.club)}, proof=[])`,
+          method:`validateJob(jobId=${jobId}, subdomain=${JSON.stringify(reviewedLabel)}, proof=[])`,
           confirmLabel:'Approve job',
           footer:'If payout or validator-bond params drift before send, confirm is blocked with Calculation mismatch.',
           run: async ()=>{
@@ -5312,7 +5356,7 @@ async function updateSummary(){
             const approval = await ensureApproval(nowSnap.trace.finalBondRaw, {
               actionLabel: `approving job #${jobId}`,
               explanation: 'Validators post a per-vote bond. The UI recomputes the validator bond from fresh payout state before and after approval.',
-              postActionLabel: `validateJob(${jobId},${verified.club},[])`
+              postActionLabel: `validateJob(${jobId},${reviewedLabel},[])`
             });
             if(!approval.ok) return;
             const finalSnap = await fetchValidatorBondSnapshot(jobId);
@@ -5320,7 +5364,7 @@ async function updateSummary(){
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalSnap.trace.finalBondRaw || finalGate.allowance < finalSnap.trace.finalBondRaw) throw new Error('Validate preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting approval…", "warn");
-            await runTrackedTx(`Approve job #${jobId}`, ()=>agiJobManager.methods.validateJob(String(jobId), verified.club, []), { pendingDetail:`Submitting validator approval for job #${jobId}.`, successDetail:`Validator approval for job #${jobId} confirmed.` });
+            await runTrackedTx(`Approve job #${jobId}`, ()=>agiJobManager.methods.validateJob(String(jobId), reviewedLabel, []), { pendingDetail:`Submitting validator approval for job #${jobId}.`, successDetail:`Validator approval for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5331,6 +5375,9 @@ async function updateSummary(){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
       if(!verified.club){setToast("Verify your club.agi.eth subdomain first.", "warn");return;}
+      const writeContext = captureWriteContext();
+      const reviewedLabel = verified.club;
+      const reviewedAlpha = verified.clubAlpha;
       try{
         const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
         const snap = await fetchValidatorBondSnapshot(jobId);
@@ -5347,10 +5394,11 @@ async function updateSummary(){
           ['final required bond', formatRawAmountTrace(trace.finalBondRaw)]
         ]);
         openActionReview({
+          writeContext,
           title:`Disapprove completion · Job #${jobId}`,
           body:'You are about to cast an on-chain validator disapproval. This uses the exact same validator-bond trace and preflight gate as approval votes.',
           facts:[
-            {label:'Validator ENS', value: `${verified.club}.${verified.clubAlpha ? SUFFIX.alphaClub : SUFFIX.club}`},
+            {label:'Validator ENS', value: `${reviewedLabel}.${reviewedAlpha ? SUFFIX.alphaClub : SUFFIX.club}`},
             {label:'Validator bond', value: `${formatRawAmountTrace(trace.finalBondRaw)} $USDC`},
             {label:'Current votes', value: `${job?.approvals || 0} approve / ${job?.disapprovals || 0} disapprove`},
             {label:'Likely effect', value: 'If the threshold is reached, the job can move into dispute.'},
@@ -5361,7 +5409,7 @@ async function updateSummary(){
             {state:'Bond', badge:'warn', text:'The same validator bond and slash logic applies.'},
             {state:'Dispute', badge:'warn', text:'This vote may materially change the job path.'}
           ],
-          method:`disapproveJob(jobId=${jobId}, subdomain=${JSON.stringify(verified.club)}, proof=[])`,
+          method:`disapproveJob(jobId=${jobId}, subdomain=${JSON.stringify(reviewedLabel)}, proof=[])`,
           confirmLabel:'Disapprove job',
           footer:'Disapproval is not just a UI flag; it is a bonded on-chain vote.',
           run: async ()=>{
@@ -5370,7 +5418,7 @@ async function updateSummary(){
             const approval = await ensureApproval(nowSnap.trace.finalBondRaw, {
               actionLabel: `disapproving job #${jobId}`,
               explanation: 'Disapprovals post the same validator bond as approvals. The UI recomputes from fresh payout state before and after approval.',
-              postActionLabel: `disapproveJob(${jobId},${verified.club},[])`
+              postActionLabel: `disapproveJob(${jobId},${reviewedLabel},[])`
             });
             if(!approval.ok) return;
             const finalSnap = await fetchValidatorBondSnapshot(jobId);
@@ -5378,7 +5426,7 @@ async function updateSummary(){
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalSnap.trace.finalBondRaw || finalGate.allowance < finalSnap.trace.finalBondRaw) throw new Error('Disapprove preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting disapproval…", "warn");
-            await runTrackedTx(`Disapprove job #${jobId}`, ()=>agiJobManager.methods.disapproveJob(String(jobId), verified.club, []), { pendingDetail:`Submitting validator disapproval for job #${jobId}.`, successDetail:`Validator disapproval for job #${jobId} confirmed.` });
+            await runTrackedTx(`Disapprove job #${jobId}`, ()=>agiJobManager.methods.disapproveJob(String(jobId), reviewedLabel, []), { pendingDetail:`Submitting validator disapproval for job #${jobId}.`, successDetail:`Validator disapproval for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5388,10 +5436,12 @@ async function updateSummary(){
     async function finalizeJob(jobId){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
+      const writeContext = captureWriteContext();
       try{
-        const job = jobCache.get(String(jobId));
+        const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
         const sim = job ? simulateJobSettlement(job) : null;
         openActionReview({
+          writeContext,
           title:`Finalize Job #${jobId}`,
           body:'You are about to call finalizeJob. The contract determines whether this settles to agent-win, employer-win, or dispute based on current state and timing.',
           facts:[
@@ -5419,6 +5469,7 @@ async function updateSummary(){
     async function disputeJob(jobId){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
+      const writeContext = captureWriteContext();
       try{
         const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
         const snap = await fetchDisputeBondSnapshot(jobId);
@@ -5432,6 +5483,7 @@ async function updateSummary(){
           ['final required bond', formatRawAmountTrace(trace.finalBondRaw)]
         ]);
         openActionReview({
+          writeContext,
           title:`Start dispute · Job #${jobId}`,
           body:'You are about to escalate this job into the dispute path. The required bond is derived from one fresh on-chain payout snapshot and revalidated before send.',
           facts:[
@@ -5472,9 +5524,11 @@ async function updateSummary(){
     async function expireJob(jobId){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
+      const writeContext = captureWriteContext();
       try{
-        const job = jobCache.get(String(jobId));
+        const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
         openActionReview({
+          writeContext,
           title:`Expire Job #${jobId}`,
           body:'You are about to attempt the expireJob path. This only succeeds if the assignment duration has elapsed and no completion request exists.',
           facts:[
@@ -5502,9 +5556,11 @@ async function updateSummary(){
     async function cancelJob(jobId){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
+      const writeContext = captureWriteContext();
       try{
-        const job = jobCache.get(String(jobId));
+        const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
         openActionReview({
+          writeContext,
           title:`Cancel Job #${jobId}`,
           body:'You are about to cancel an unassigned job and refund the escrowed payout to the employer.',
           facts:[
@@ -5532,9 +5588,11 @@ async function updateSummary(){
     async function lockEns(jobId){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
+      const writeContext = captureWriteContext();
       try{
-        const job = jobCache.get(String(jobId));
+        const job = await fetchJobSnapshot(jobId, {forceRefresh:true});
         openActionReview({
+          writeContext,
           title:`Lock ENS records · Job #${jobId}`,
           body:'You are about to call the public ENS lock path for a terminal job. This is best-effort and depends on the ENSJobPages configuration and terminal state.',
           facts:[
@@ -5871,10 +5929,10 @@ function normalizeIpfsToHttp(uri){
       setToast(`Job Spec URI normalized to ${normalized.canonical}`, 'ok');
     }
     function loadCompletionDraft(jobId){
-      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v080_completion_draft_${jobId}`) || '{}'); }catch{return {};}
+      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v090_completion_draft_${jobId}`) || '{}'); }catch{return {};}
     }
     function saveCompletionDraft(jobId){
-      try{ localStorage.setItem(`agijobmanager_usdc_v080_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
+      try{ localStorage.setItem(`agijobmanager_usdc_v090_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
     }
     function runBondMathSelfTests(){
       const one = 1000000n;
@@ -6583,6 +6641,8 @@ function normalizeIpfsToHttp(uri){
       return value;
     }
     async function collectAdminArgs(target, method, danger){
+      if(el('adminArgsModal')?.classList.contains('open')) throw new Error('Finish or cancel the current admin form before preparing another action.');
+      const returnFocus = document.activeElement;
       const schema = ADMIN_METHOD_SCHEMAS[method] || [];
       return new Promise((resolve)=>{
         if(el('adminArgsTitle')) el('adminArgsTitle').textContent = `Prepare ${method}`;
@@ -6590,7 +6650,7 @@ function normalizeIpfsToHttp(uri){
         if(el('adminArgsRisk')) el('adminArgsRisk').textContent = danger ? 'High-risk action. Confirm authorization posture, arguments, and irreversible impact.' : 'Routine admin action. Confirm method arguments before wallet submission.';
         if(el('adminArgsFacts')) el('adminArgsFacts').innerHTML = `<div class="reviewFact"><span class="k">Target contract</span><span class="v">${escapeHtml(target === 'ens' ? 'ENSJobPages' : 'AGIJobManager')}</span></div><div class="reviewFact"><span class="k">Method</span><span class="v">${escapeHtml(method)}</span></div><div class="reviewFact"><span class="k">Authorization posture</span><span class="v">Wallet must already match owner/moderator constraints.</span></div>`;
         if(el('adminArgsForm')) el('adminArgsForm').innerHTML = schema.map((field, idx)=>`<div><label for="adminArg_${idx}">${escapeHtml(field.name)} <span class="muted">(${escapeHtml(field.type)})</span></label><input id="adminArg_${idx}" type="text" placeholder="${escapeHtml(field.placeholder || field.type)}"></div>`).join('') || '<div class="helper">This method takes no explicit arguments.</div>';
-        const close=(result)=>{ el('adminArgsModal')?.classList.remove('open'); el('adminArgsModal')?.setAttribute('aria-hidden','true'); resolve(result); };
+        const close=(result)=>{ el('adminArgsModal')?.classList.remove('open'); el('adminArgsModal')?.setAttribute('aria-hidden','true'); el('adminArgsModal').onkeydown = null; returnFocus?.focus?.(); resolve(result); };
         const confirmBtn = el('confirmAdminArgsBtn');
         const cancelBtn = el('cancelAdminArgsBtn');
         const closeBtn = el('closeAdminArgsModal');
@@ -6606,10 +6666,13 @@ function normalizeIpfsToHttp(uri){
         closeBtn.onclick = ()=>close(null);
         el('adminArgsModal')?.classList.add('open');
         el('adminArgsModal')?.setAttribute('aria-hidden','false');
+        el('adminArgsModal').onkeydown = (event)=>handleDialogKeydown(event, 'adminArgsModal', ()=>close(null));
+        (el('adminArgsForm')?.querySelector('input') || cancelBtn)?.focus?.();
       });
     }
     async function executeAdminControl(target, method, danger=false){
       if(!requireConnected() || !mustBeReadyToWrite()) return;
+      const writeContext = captureWriteContext();
       const contract = target === 'ens' ? ensJobPages : agiJobManager;
       const account = String(userAccount || '').toLowerCase();
       const managerOwner = String(APP_STATE.admin?.managerOwner || '').toLowerCase();
@@ -6627,6 +6690,7 @@ function normalizeIpfsToHttp(uri){
       }
       const args = await collectAdminArgs(target, method, danger);
       if(args === null) return;
+      assertWriteContext(writeContext);
       if(method === 'setJobDurationLimit' && (BigInt(args[0]) < 1n || BigInt(args[0]) > 31536000n)) throw new Error('Job duration limit must be 1–31,536,000 seconds (up to 365 days).');
       if(method === 'setSettlementWallets') {
         const paused = await contract.methods.paused().call();
@@ -6637,6 +6701,7 @@ function normalizeIpfsToHttp(uri){
       }
       await contract.methods[method](...args).call({from:userAccount});
       const ok = await requestActionConfirmation({
+        writeContext,
         title: `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${method}`,
         body: danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
         checks:[{state:'Authorization', badge: 'warn', text:'Wallet must be owner or delegated moderator for this method.'}],
@@ -6646,7 +6711,7 @@ function normalizeIpfsToHttp(uri){
       if(!ok) return;
       if(account !== String(userAccount || '').toLowerCase() || contract !== (target === 'ens' ? ensJobPages : agiJobManager) || !mustBeReadyToWrite()) throw new Error('Wallet, network or contract changed. Review the action again.');
       await contract.methods[method](...args).call({from:userAccount});
-      await runTrackedTx(`Admin ${method}`, ()=>contract.methods[method](...args), {pendingDetail:`Submitting ${method}.`, successDetail:`${method} confirmed.`});
+      await runTrackedTx(`Admin ${method}`, ()=>contract.methods[method](...args), {writeContext, pendingDetail:`Submitting ${method}.`, successDetail:`${method} confirmed.`});
       await refreshAll();
     }
     async function refreshAdminPanels(){
@@ -6746,7 +6811,10 @@ function normalizeIpfsToHttp(uri){
       if(el('closeActionReviewModal')) el('closeActionReviewModal').addEventListener('click', closeActionReview);
       if(el('cancelActionReviewBtn')) el('cancelActionReviewBtn').addEventListener('click', closeActionReview);
       if(el('confirmActionReviewBtn')) el('confirmActionReviewBtn').addEventListener('click', ()=>confirmReviewedAction().catch(e=>setToast(e.message||String(e),'bad')));
-      if(el('actionReviewModal')) el('actionReviewModal').addEventListener('click', (e)=>{ if(e.target.id === 'actionReviewModal') closeActionReview(); });
+      if(el('actionReviewModal')) {
+        el('actionReviewModal').addEventListener('click', (e)=>{ if(e.target.id === 'actionReviewModal') closeActionReview(); });
+        el('actionReviewModal').addEventListener('keydown', handleActionReviewKeydown);
+      }
       el("jobWatchToggleBtn").addEventListener("click", ()=>{ if(currentJobDetailId !== null) toggleFavorite(currentJobDetailId); });
       el("copyJobLinkBtn").addEventListener("click", ()=>copyJobLink().catch(e=>setToast(e.message||String(e),"bad")));
       el("copyJobReportBtn").addEventListener("click", ()=>copyJobReport().catch(e=>setToast(e.message||String(e),"bad")));
@@ -6857,7 +6925,7 @@ function normalizeIpfsToHttp(uri){
       agiJobManager = null;
       hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
       if(el('termsAccepted')) el('termsAccepted').checked = false;
-      try { localStorage.setItem('agijobmanager_usdc_v080_manager', value); } catch {}
+      try { localStorage.setItem('agijobmanager_usdc_v090_manager', value); } catch {}
       updateWriteGate();
       await connectWallet();
     });

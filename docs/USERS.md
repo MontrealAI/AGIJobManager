@@ -1,213 +1,75 @@
-# AGIJobManager — User Guide (Start Here)
+# AGIJobManager v0.9.0 — User Guide
 
-This guide is written for **all roles**, starting with non‑technical users. It explains how to safely use the AGIJobManager smart contract without needing to read Solidity. For deep technical details, see the role guides and reference docs.
+AGIJobManager holds a job's USDC cost in escrow. The first eligible agent whose application succeeds is assigned immediately. The agent submits work, validators review it, and a separate finalization transaction settles the job when its timing and voting conditions allow. Moderators handle disputes.
 
-> **Safety first**
-> - Always verify contract addresses and token addresses from trusted sources before sending any funds.
-> - Use **small test amounts** first.
-> - Never grant unlimited ERC‑20 approvals unless you fully trust the contract and your wallet is secured.
-> - Use a hardware wallet or multisig for owner/operator keys.
+## Start here
 
-## What this contract does (plain English)
-AGIJobManager lets an employer escrow an ERC‑20 payout, select an agent to do work, and request validation from validators. When validators approve, the agent is paid, validators are rewarded, and an NFT “receipt” is minted to the employer. A dispute path exists and is resolved by moderators.
+Open the [USDC console](../ui/agijobmanager-usdc.html) or use the verified contract's Etherscan Read/Write tabs. Confirm the deployment address, Ethereum network, and `usdcToken()` before approving spending. A published software release does not itself create a live deployment.
 
-## Roles & where to go next
-- **Employer**: post jobs, escrow AGI, cancel, dispute, receive NFT → [`docs/roles/EMPLOYER.md`](roles/EMPLOYER.md)
-- **Agent**: prove identity, apply, request completion, get paid, reputation → [`docs/roles/AGENT.md`](roles/AGENT.md)
-- **Validator**: approve/disapprove, vote rules, payouts, reputation → [`docs/roles/VALIDATOR.md`](roles/VALIDATOR.md)
-- **Moderator**: resolve disputes, resolution strings → [`docs/roles/MODERATOR.md`](roles/MODERATOR.md)
-- **Owner/Operator**: pause, allowlists, blacklists, parameter tuning, withdrawals → [`docs/roles/OWNER_OPERATOR.md`](roles/OWNER_OPERATOR.md)
+| Role | Next guide |
+| --- | --- |
+| Employer | [Post and fund a job](roles/EMPLOYER.md) |
+| Agent | [Qualify, apply, and submit work](roles/AGENT.md) |
+| Validator | [Review work and post a vote bond](roles/VALIDATOR.md) |
+| Moderator | [Resolve a disputed job](roles/MODERATOR.md) |
+| Owner/operator | [Configure and operate the deployment](roles/OWNER_OPERATOR.md) |
 
-## Contract lifecycle (visual)
-### Happy path (job → validation → payout + NFT)
-```mermaid
-sequenceDiagram
-  participant Employer
-  participant Agent
-  participant ValidatorA
-  participant ValidatorB
-  participant Contract
+## Money: USDC for jobs, ETH for gas
 
-  Employer->>Contract: createJob(jobSpecURI,payout,duration,details)
-  Agent->>Contract: applyForJob(jobId, subdomain, proof)
-  Agent->>Contract: requestJobCompletion(jobId, jobCompletionURI)
-  ValidatorA->>Contract: validateJob(jobId, subdomain, proof)
-  ValidatorB->>Contract: validateJob(jobId, subdomain, proof)
-  Contract-->>Agent: AGI payout (transfer)
-  Contract-->>ValidatorA: validation reward
-  Contract-->>ValidatorB: validation reward
-  Contract-->>Employer: NFT minted (tokenURI=jobCompletionURI)
-```
+Ethereum mainnet uses native Circle USDC at `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`. USDC has six decimals: **100 USDC = 100000000 base units**. Escrow, validator rewards, and agent/validator/dispute bonds all use USDC. Wallet transactions still require ETH for Ethereum gas.
 
-### Dispute path (disapproval or manual dispute → moderator resolution)
-```mermaid
-sequenceDiagram
-  participant Employer
-  participant Agent
-  participant Validator
-  participant Moderator
-  participant Contract
+Successful settlement distributes the original job cost in this order:
 
-  Employer->>Contract: createJob(...)
-  Agent->>Contract: applyForJob(...)
-  Validator->>Contract: disapproveJob(...)
-  Contract-->>Contract: job.disputed = true
-  Employer->>Contract: disputeJob(jobId)
-  Moderator->>Contract: resolveDisputeWithCode(jobId, code, reason)
-  Contract-->>Agent: payout if code == AGENT_WIN
-  Contract-->>Employer: refund if code == EMPLOYER_WIN
-```
+| Recipient | Default share | For a 100 USDC job |
+| --- | --- | --- |
+| Correct-side validators, first | 8% reward budget | 8 USDC shared |
+| `wallet30` | Fixed 30% of the original cost | 30 USDC |
+| `wallet10` | Fixed 10% of the original cost | 10 USDC |
+| Assigned agent | Remainder | 52 USDC |
 
-## Quickstart — Local Dev Chain (Truffle + Ganache)
-This path is best for experimentation and demos. It uses mock ENS/Resolver/NameWrapper contracts to satisfy identity checks.
+The owner can set the validator budget from 1–60% for **new jobs**. Each job keeps the percentage recorded when it was posted. Both wallet percentages stay fixed. Amounts round down to whole USDC base units; the agent receives the remainder on success, including undistributed validator rewards. Bond returns and slashing are separate from these job-cost percentages.
 
-### 1) Install dependencies
-```bash
-npm install
-```
+If nobody votes, successful finalization after the review window pays no validator reward: the agent receives the remainder after the two wallet shares. Cancelled, expired, and employer-win jobs do not pay the 30%/10% shares. An employer-win refund can be reduced by validator rewards and adjusted by bond settlement; it is not always a full refund.
 
-### 2) Open Truffle console
-```bash
-npx truffle console --network test
-```
+## Before a transaction
 
-### 3) Deploy mocks + AGIJobManager
-```javascript
-const MockERC20 = artifacts.require("MockERC20");
-const MockENS = artifacts.require("MockENS");
-const MockResolver = artifacts.require("MockResolver");
-const MockNameWrapper = artifacts.require("MockNameWrapper");
-const AGIJobManager = artifacts.require("AGIJobManager");
+1. Check the contract, network, role, current job state, and relevant deadlines in the console.
+2. Read the USDC amount required for the action. Approve that amount to the manager on the USDC contract. Approval and the job action are separate transactions; use the same wallet for both.
+3. Keep enough USDC for escrow or the relevant bond, plus ETH for gas. Avoid unlimited allowances; clear unused allowances when no longer needed.
+4. Review the action preview, then sign and wait for confirmation. A failed USDC transfer rolls the settlement back; some ENS metadata hooks can fail without undoing an otherwise successful settlement.
 
-const token = await MockERC20.new();
-const ens = await MockENS.new();
-const resolver = await MockResolver.new();
-const nameWrapper = await MockNameWrapper.new();
+Agents must pass an identity route **and** hold an eligible AGI-type NFT credential. An allowlist entry alone does not satisfy the NFT requirement. NFT credentials do not increase payment percentages. Validators pass the validator identity route and post the required USDC vote bond.
 
-const clubRoot = web3.utils.soliditySha3({ type: "string", value: "club-root" });
-const agentRoot = web3.utils.soliditySha3({ type: "string", value: "agent-root" });
-const zeroRoot = "0x" + "00".repeat(32);
+## Job lifecycle
 
-const manager = await AGIJobManager.new(
-  token.address,
-  "ipfs://base",
-  ens.address,
-  nameWrapper.address,
-  clubRoot,
-  agentRoot,
-  zeroRoot,
-  zeroRoot
-);
-```
+1. **Employer posts.** Call `createJob(jobSpecURI, payout, duration, details)` after approving the exact USDC cost. Duration is in seconds, within `jobDurationLimit`; its clock begins at assignment. Read the new ID from `JobCreated`.
+2. **Agent applies.** Call `applyForJob(jobId, subdomain, proof)` with enough approved USDC for the performance bond. The first successful eligible application assigns the job; there is no later employer-selection transaction.
+3. **Agent submits.** Call `requestJobCompletion(jobId, jobCompletionURI)` by the assignment deadline. Supply a valid metadata URI, such as `ipfs://...` or `https://...`.
+4. **Validators vote once each.** After completion is requested and within the review window, eligible validators call either `validateJob` or `disapproveJob`. Each vote transfers its required bond; a vote does not itself pay the job.
+5. **Someone finalizes.** Anyone can call `finalizeJob(jobId)` when allowed. A qualifying approval threshold starts a challenge window; early success requires that window to have passed, approvals to exceed disapprovals, and no active dispute. Otherwise, wait until the completion review window has passed: no votes complete the job; an under-quorum result or tie opens a dispute; a qualifying majority settles according to its outcome.
+6. **Verify settlement.** Successful work emits `JobPayoutDistributed`, `JobCompleted`, and `NFTIssued`, pays USDC, and mints an ERC-721 receipt to the employer. The receipt URI may use configured ENS metadata or the completion URI/base fallback. The contract has no built-in NFT marketplace.
 
-### 4) Run a happy‑path job end‑to‑end
-```javascript
-const accounts = await web3.eth.getAccounts();
-const [owner, employer, agent, validatorA, validatorB] = accounts;
+Read the deployment's actual timer values. Defaults are a seven-day completion review, one-day approval challenge, and fourteen-day stale-dispute review. Calls that require a window to have elapsed must be **strictly after** its boundary. Early finalization can happen before the full completion review window ends. When an approval threshold has already been reached, its challenge window must also strictly elapse before finalization, even if the completion review window ends first.
 
-// Mint tokens for employer
-await token.mint(employer, 100000000);
-await token.approve(manager.address, 100000000, { from: employer });
+## Cancel, expire, or dispute
 
-// Set NameWrapper ownership for agent/validators
-const subnode = (root, label) => web3.utils.soliditySha3(
-  { type: "bytes32", value: root },
-  { type: "bytes32", value: web3.utils.keccak256(label) }
-);
-await nameWrapper.setOwner(subnode(agentRoot, "agent"), agent);
-await nameWrapper.setOwner(subnode(clubRoot, "validator-a"), validatorA);
-await nameWrapper.setOwner(subnode(clubRoot, "validator-b"), validatorB);
+- The employer can `cancelJob` while the job remains unassigned. The owner can delist an unassigned job.
+- Anyone can `expireJob` strictly after the assignment deadline if no completion request or active dispute exists. Escrow and the forfeited agent bond go to the employer.
+- The employer or assigned agent can `disputeJob` after completion was requested, within its review window, and before settlement. Approve the dispute bond first. A reached disapproval threshold can also open a dispute.
+- A moderator uses `resolveDisputeWithCode(jobId, code, reason)`: `0` records a note, `1` settles for the agent, `2` refunds the employer under the contract's reward/bond rules.
+- After the stale-dispute deadline, the owner can call `resolveStaleDispute`. These decisions require signed transactions; time passing alone never executes them.
 
-// Create & complete job
-const jobTx = await manager.createJob("ipfs-job-spec", 100000000, 3600, "details", { from: employer });
-const jobId = jobTx.logs[0].args.jobId.toNumber();
+## What the owner can change
 
-await manager.applyForJob(jobId, "agent", [], { from: agent });
-await manager.requestJobCompletion(jobId, "ipfs-completion", { from: agent });
+The deployment has no implementation upgrade switch. Its USDC address and fixed 30%/10% shares cannot be changed. The owner can maintain allowlists, moderator roles, selected limits and bond settings. Existing agent bonds are fixed at assignment, and a job's validator bond is fixed by its first vote. Some rules can change only when every escrow/bond reserve is zero. Settlement recipients can rotate only then, with intake paused. Ownership transfer requires acceptance by the proposed owner. See the [owner controls](OWNER_CONTROLS.md) for exact restrictions.
 
-await manager.setRequiredValidatorApprovals(2, { from: owner });
-await manager.validateJob(jobId, "validator-a", [], { from: validatorA });
-await manager.validateJob(jobId, "validator-b", [], { from: validatorB });
-```
+New deployments start with intake paused until owner commissioning. Intake pause blocks posting/application; settlement pause also blocks completion, voting, disputes, and settlement. Check both states before acting.
 
-✅ At this point, the agent is paid, validators are rewarded, and the employer owns an NFT receipt.
+## More help
 
-## Quickstart — Testnet/Mainnet using Etherscan (non‑technical)
-This path uses the Etherscan **Write Contract** UI. You will need the contract address and ABI.
+- [End-to-end walkthrough](user-guide/happy-path.md)
+- [Identity and Merkle proofs](user-guide/merkle-proofs.md)
+- [Common reverts](user-guide/common-reverts.md) and [troubleshooting](TROUBLESHOOTING.md)
+- [Contract reference](REFERENCE.md), [testing](TESTING.md), and [security practices](SECURITY_BEST_PRACTICES.md)
 
-### Before you start
-1. Confirm the USDC token address and AGIJobManager contract address from a trusted source.
-2. Use a **small allowance** and **small payout** first.
-3. Know which **identity gate** your role uses:
-   - **ENS/NameWrapper ownership** (subdomain string), or
-   - **Merkle allowlist** (you need a Merkle proof), or
-   - **Additional allowlist** managed by the owner (additionalAgents/additionalValidators).
-
-### Approving ERC‑20 allowance (safe method)
-1. Go to the USDC token contract on Etherscan → **Write Contract**.
-2. Connect your wallet.
-3. Call `approve(spender, amount)` where:
-   - `spender` = AGIJobManager contract address
-   - `amount` = exact payout you want to escrow
-4. **After the job completes**, revoke or reduce the allowance by calling `approve(spender, 0)`.
-
-### Common calls (click‑by‑click)
-> **Tip:** Use the “Copy” icon in Etherscan to copy exact addresses.
-> **Screenshot placeholder:** (Add screenshot of Etherscan “Write Contract” tab with wallet connected.)
-
-**Employer**
-1. `createJob(jobSpecURI, payout, duration, details)`
-   - `jobSpecURI`: ERC‑721 metadata URI (full `ipfs://...` or `https://...` recommended)
-   - `payout`: integer in USDC base units (6 decimals)
-   - `duration`: seconds
-   - `details`: short plain text
-2. Optional: `cancelJob(jobId)` if no agent is assigned and not completed.
-3. Optional: `disputeJob(jobId)` if you disagree with completion.
-
-**Agent**
-1. `applyForJob(jobId, subdomain, proof)`
-   - `subdomain`: your ENS/NameWrapper subdomain label (ex: `alice`)
-   - `proof`: Merkle proof array if using allowlist, else `[]`
-2. `requestJobCompletion(jobId, jobCompletionURI)` after work is done.
-
-**Validator**
-1. `validateJob(jobId, subdomain, proof)` to approve.
-2. `disapproveJob(jobId, subdomain, proof)` to reject (may trigger dispute).
-
-**Moderator**
-1. `resolveDisputeWithCode(jobId, resolutionCode, reason)`
-   - Use `1` for agent win, `2` for employer win, `0` to log a note and keep the dispute active.
-
-**NFT Trading**
-AGI Jobs are standard ERC‑721 NFTs. They can be traded on external marketplaces using normal approvals and transfers. This contract does not implement an internal marketplace.
-
-## What happens on‑chain (events + balances)
-Every step emits events and changes state/balances.
-
-| Action | Events | Token movements | State changes |
-| --- | --- | --- | --- |
-| `createJob` | `JobCreated` | employer → contract escrow | new job stored |
-| `applyForJob` | `JobApplied` | none | `assignedAgent`, `assignedAt` |
-| `requestJobCompletion` | `JobCompletionRequested` | none | `completionRequested`, `jobCompletionURI` |
-| `validateJob` | `JobValidated` | none (until threshold) | `validatorApprovals`, validator maps |
-| `disapproveJob` | `JobDisapproved`, maybe `JobDisputed` | none | `validatorDisapprovals`, `disputed` |
-| `resolveDisputeWithCode(AGENT_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved`, `JobCompleted`, `NFTIssued` | contract → agent/validators | `completed`, reputation updates |
-| `resolveDisputeWithCode(EMPLOYER_WIN)` | `DisputeResolvedWithCode`, `DisputeResolved` | contract → employer refund | `completed` |
-
-Key events include:
-- `JobCreated`, `JobApplied`, `JobCompletionRequested`
-- `JobValidated`, `JobDisapproved`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
-- `JobCompleted`, `NFTIssued`
-
-Token movements:
-- **createJob**: employer → contract escrow
-- **completion**: contract → agent + validators
-- **employer win**: contract → employer refund
-
-## Safety & failure modes
-Common revert reasons include `NotAuthorized`, `InvalidState`, `JobNotFound`, and `TransferFailed`. For full diagnostics and fixes, see [`docs/TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
-
-## Developer deep‑dive
-- Full contract surface area: [`docs/REFERENCE.md`](REFERENCE.md)
-- Test instructions: [`docs/TESTING.md`](TESTING.md)
-- Security practices: [`docs/SECURITY_BEST_PRACTICES.md`](SECURITY_BEST_PRACTICES.md)
+For a disposable local demonstration, use the repository's tested fixtures and commands in [Testing](TESTING.md). Public-network deployment uses the Hardhat workflow; legacy Truffle configuration is retained for local regression tests.

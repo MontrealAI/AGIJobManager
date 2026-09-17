@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const requiredFiles = [
+  'docs/START_HERE.md','docs/MAINNET_READINESS.md','docs/OWNER_CONTROLS.md','docs/USDC_PAYOUT_SPLIT.md',
   'docs/README.md','docs/OVERVIEW.md','docs/REPO_MAP.md','docs/QUICKSTART.md','docs/QUINTESSENTIAL_USE_CASE.md','docs/ARCHITECTURE.md',
   'docs/CONTRACTS/AGIJobManager.md','docs/CONTRACTS/INTEGRATIONS.md','docs/OPERATIONS/RUNBOOK.md','docs/OPERATIONS/INCIDENT_RESPONSE.md',
   'docs/OPERATIONS/MONITORING.md','docs/SECURITY_MODEL.md','docs/TESTING.md','docs/TROUBLESHOOTING.md','docs/GLOSSARY.md',
@@ -68,6 +69,7 @@ const collect = (dir) => {
   }
 };
 collect(path.join(root, 'docs'));
+for (const entry of ['README.md', 'hardhat/README.md', 'ui/README.md']) mdFiles.push(path.join(root, entry));
 
 const linkRegex = /\[[^\]]+\]\(([^)]+)\)/g;
 for (const md of mdFiles) {

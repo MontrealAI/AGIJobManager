@@ -1,8 +1,8 @@
 # Repository Inventory and Verified Commands
 
-> v0.8.0: Root Truffle scripts are for local rehearsals only. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/OWNER_CONTROLS.md) for live configuration.
+> v0.9.0: Root Truffle scripts are for local rehearsals only. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/OWNER_CONTROLS.md) for live configuration.
 
-This file documents the current repository surface at HEAD and the canonical local/CI commands that were verified against the codebase.
+This file documents the current repository surface at HEAD and the canonical local/CI commands. Exact results are recorded per release and source commit.
 
 ## 1) Repository map (implementation-focused)
 
@@ -11,8 +11,10 @@ This file documents the current repository surface at HEAD and the canonical loc
 | Core contract | `contracts/AGIJobManager.sol` | Escrow, lifecycle, voting, disputes, NFT issuance, owner controls |
 | ENS integration | `contracts/ens/ENSJobPages.sol` + `contracts/ens/I*.sol` | Optional ENS hook target used by AGIJobManager best-effort calls |
 | Utility libraries | `contracts/utils/*.sol` | `BondMath`, `ReputationMath`, `ENSOwnership`, `TransferUtils`, `UriUtils` |
-| Deployment | `migrations/1_deploy_contracts.js`, `migrations/deploy-config.js` | Truffle deployment + network/environment wiring |
-| Post-deploy scripts | `scripts/postdeploy-config.js`, `scripts/verify-config.js` | Configure and verify runtime settings |
+| Public deployment | `hardhat/scripts/deploy.js`, `hardhat/scripts/deployment-safety.js` | Native-USDC preflight, paused deployment, verification and durable receipts |
+| Readiness | `hardhat/scripts/check-readiness.js` | Read-only instance checks before owner activation |
+| Local fixtures | `migrations/1_deploy_contracts.js`, `migrations/deploy-config.js` | Disposable Truffle tests only |
+| Post-deploy scripts | `scripts/postdeploy-config.js`, `scripts/verify-config.js` | Legacy disposable local rehearsals only |
 | Bytecode checks | `scripts/check-bytecode-size.js`, `scripts/check-contract-sizes.js` | EIP-170 safety checks |
 | Interface docs generator | `scripts/generate-interface-doc.js` | Re-generates interface documentation |
 | Test suites | `test/*.js`, `ui-tests/*.js` | Contract behavior, invariants, ENS hooks, economic/security regressions, UI smoke |
@@ -33,27 +35,15 @@ This file documents the current repository surface at HEAD and the canonical loc
 
 ## 3) CI command order
 
-From `.github/workflows/ci.yml`:
-1. `npm install`
-2. `npx playwright install --with-deps chromium`
-3. `npm run lint`
-4. `npm run build`
-5. `npm run size`
-6. `npm run test`
-7. `npm run test:ui`
+The contract workflow uses `npm ci`, Solidity lint, compile and EIP-170 checks. It runs all recursively discovered test files across four isolated shards via `npm run test:shard -- <index> 4`; every shard must succeed. Shard zero also runs the frozen USDC-console checks and browser transaction smoke test.
 
-## 4) Verified local execution
+Separate required workflows qualify the UI, deployment/fuzz/invariant/static-analysis toolchain, documentation and actual native USDC on a local mainnet fork. [Testing](TESTING.md) maps each gate to its command and scope.
 
-The following canonical commands were executed locally:
+## 4) Source-specific evidence
 
-- `npm install`
-- `npm run build`
-- `npm run test`
+The release archive includes `VALIDATION.md`, `SOURCE_CI.json`, `RELEASE_MANIFEST.json` and `SHA256SUMS.txt`. The manifest identifies the exact application commit/tree; CI links identify successful source-specific runs. Rebuild with the committed compiler configuration and lockfiles before comparing artifacts.
 
-Observed outcomes:
-- Build compiled successfully with solc `0.8.23` via Truffle.
-- Full test command completed successfully with **260 passing** tests.
-- Bytecode size report includes `AGIJobManager deployedBytecode size: 24574 bytes` (under EIP-170 cap of 24576 bytes).
+Avoid carrying test counts or bytecode sizes forward from earlier releases as current evidence. The application ABI is generated from the current source; [mainnet readiness](MAINNET_READINESS.md) distinguishes software qualification from instance-specific deployment checks.
 
 ## 5) Contract surface references
 

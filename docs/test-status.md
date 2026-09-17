@@ -1,35 +1,9 @@
-# Test status (local)
+# Test status and release evidence
 
-This file records the latest local test outcomes and any environment‑specific
-failures. Warnings are treated as failures for audit readiness.
+Use the immutable release's `VALIDATION.md` and `SOURCE_CI.json` for source-specific results. Older local counts and Node versions are historical; they do not qualify the current release.
 
-## Environment
-- OS: Linux (container)
-- Node: v20.19.6
-- Truffle: v5.11.5
-- Ganache: v7.9.1
-- Solidity (solc‑js): 0.8.23
+The required gates are contract CI (all four shards), UI CI, Security Verification, Docs Integrity and Mainnet USDC Fork Qualification. The release publisher checks the exact application commit, workflow paths and successful statuses before it creates the tag and publishes assets.
 
-## Install status
-```bash
-npm install
-```
-**Result:** succeeded, but emitted warnings treated as failures:
-- `npm warn Unknown env config "http-proxy"`.
-- Multiple deprecation warnings from transitive dependencies.
-- `npm audit` reports vulnerabilities (28 low, 12 moderate, 35 high, 13 critical).
+[Testing](TESTING.md) lists reproducible commands; [mainnet readiness](MAINNET_READINESS.md) explains what those checks establish and what remains instance-specific. [Known limitations](KNOWN_ISSUES.md) and [dependency security](DEPENDENCY_SECURITY.md) record residual issues without treating a passing test suite as a vulnerability-free certification.
 
-## Build + test commands
-```bash
-npm run build
-```
-**Result:** succeeded, but emitted compiler warnings treated as failures:
-- Name shadowing warning in `contracts/test/MockENSRegistry.sol` (`setOwner` argument).
-- Name shadowing warning in `contracts/test/MockPublicResolver.sol` (`setAuthorisation` argument).
-
-```bash
-npm test
-```
-**Result:** passed (`226 passing`), but emitted warnings treated as failures:
-- `npm warn Unknown env config "http-proxy"`.
-- The same compiler warnings from `npm run build`.
+Use Node 22.23.2, committed lockfiles and the compiler/tool versions pinned by CI. Testnet and local-fork results are not a live deployment or a production signing rehearsal.

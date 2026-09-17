@@ -1,59 +1,28 @@
-# Owner/Operator Guide
+# Owner/Operator Guide — v0.9.0
 
-This guide covers administrative operations and safety controls.
+Use the [owner controls](../OWNER_CONTROLS.md) for the full operation and restriction matrix. The [USDC console](../../ui/agijobmanager-usdc.html) exposes guarded owner actions and ownership acceptance.
 
-## Core responsibilities
-- Configure identity gates and allowlists.
-- Adjust risk parameters (payout limits, duration limits, validation rewards).
-- Manage moderators.
-- Pause/unpause the contract in emergencies.
-- Withdraw surplus AGI funds when appropriate.
+## What remains fixed
 
-## Administrative actions
-> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `pause`/`unpause` actions.
-### Pause / unpause
-- `pause()` stops most user actions.
-- `unpause()` restores normal operations.
+The deployed contract has no implementation upgrade switch. Its native USDC address and the successful-job 30%/10% shares are fixed. Agents receive the remainder after the posted validator budget and those two shares; NFT eligibility scores do not change payout percentages.
 
-### Allowlists and blacklists
-- `addAdditionalAgent(address)` / `removeAdditionalAgent(address)`
-- `addAdditionalValidator(address)` / `removeAdditionalValidator(address)`
-- `blacklistAgent(address, status)`
-- `blacklistValidator(address, status)`
+## Core operations
 
-### Moderators
-- `addModerator(address)`
-- `removeModerator(address)`
+| Operation | Key restriction |
+| --- | --- |
+| Commission a fresh deployment | Intake starts paused; verify configuration and ownership before enabling jobs |
+| Pause intake | `pause`/`pauseIntake` block posting and application; existing settlement actions can continue |
+| Pause settlement | `setSettlementPaused(true)` blocks completion, voting, disputes, and settlement as well as intake; `pauseAll` pauses both lanes |
+| Change validator reward budget | `setValidationRewardPercentage(1..60)` affects only newly posted jobs |
+| Change bond parameters | Agent bond is fixed at assignment; validator bond is fixed by the first vote on that job |
+| Change thresholds, quorum, review/challenge periods, or slash percentage | All four escrow/bond reserve counters must be zero |
+| Rotate payout wallets | Intake must be paused and all reserves zero; recipients must be distinct and valid |
+| Manage allowlists, blacklists, moderators, and NFT credentials | Role/eligibility changes are live; account for affected users and outstanding work |
+| Withdraw USDC | Intake paused, settlement enabled, and amount no greater than `withdrawableUSDC()`; reserved funds are unavailable |
+| Transfer ownership | `transferOwnership` proposes; the proposed wallet must call `acceptOwnership` |
 
-### Parameter tuning
-- `setRequiredValidatorApprovals(uint256)`
-- `setRequiredValidatorDisapprovals(uint256)`
-- `setValidationRewardPercentage(uint256)`
-- `setMaxJobPayout(uint256)`
-- `setJobDurationLimit(uint256)`
-- `setPremiumReputationThreshold(uint256)`
+`renounceOwnership` is disabled. A duration limit must be positive and at most 365 days. Identity configuration can be locked irreversibly; inspect the detailed guide before locking it. Parameter maintenance is not an upgrade of deployed code.
 
-### Metadata
-- `setBaseIpfsUrl(string)`
-- `updateTermsAndConditionsIpfsHash(string)`
-- `updateContactEmail(string)`
-- `updateAdditionalText1/2/3(string)`
+Use a suitably secured owner wallet, review network/address and previews, and maintain ETH for gas. Settlement wallet changes take effect only between jobs; they cannot redirect outstanding reserves. Owner deposits are not required for normal successful-job payouts because the original job cost is fully allocated.
 
-### Financial operations
-- `withdrawUSDC(amount)` withdraws surplus ERC‑20 while paused and reverts if `amount > withdrawableUSDC()`.
-
-## Safety checklist
-- Use a multisig or hardware wallet for the owner address.
-- Pause before making large parameter changes.
-- Keep allowlists curated and auditable.
-- Use small test payouts after any config change.
-
-## For developers
-### State to monitor
-- `requiredValidatorApprovals`, `requiredValidatorDisapprovals`
-- `maxJobPayout`, `jobDurationLimit`
-- `validationRewardPercentage`
-- `blacklistedAgents`, `blacklistedValidators`
-
-### Events to index
-`AGITypeUpdated`, `RewardPoolContribution`
+Monitor `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`, both pause states, `owner`, and `pendingOwner`. Relevant events include `SettlementPauseSet`, `SettlementWalletsUpdated`, `ValidationRewardPercentageUpdated`, `USDCWithdrawn`, and ownership events. There is no reward-pool contribution API in the current contract.

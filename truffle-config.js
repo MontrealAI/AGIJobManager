@@ -8,7 +8,7 @@ const n = (v, d) => {
 };
 const gweiToWei = (g) => Math.floor(n(g, 0) * 1e9);
 function providerFor(net) {
-  throw new Error(`Truffle ${net} signing is retired. Use the Hardhat deployment workflow or the v0.8.0 owner console.`);
+  throw new Error(`Truffle ${net} signing is retired. Use the Hardhat deployment workflow or the v0.9.0 owner console.`);
 }
 
 const mainnetGasPrice = process.env.MAINNET_GAS_PRICE_GWEI ? gweiToWei(process.env.MAINNET_GAS_PRICE_GWEI) : undefined;

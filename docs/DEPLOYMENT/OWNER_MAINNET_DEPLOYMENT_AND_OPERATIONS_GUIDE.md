@@ -1,598 +1,204 @@
-# Owner Mainnet Deployment & Operations Guide
+# Owner Mainnet Deployment & Operations Guide — v0.9.0
 
-> **v0.8.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
-## 0) Start here first (non-technical owner)
+## 1) Start here
 
-If you are pressed for time, follow this safe order:
-1. Deploy with the official Hardhat path (`hardhat/README.md`).
-2. For ENSJobPages replacement, complete manual wiring in order: wrapper approval -> `setEnsJobPages(newAddress)`.
-3. Validate on Etherscan read pages and events.
-4. Migrate legacy jobs where historical labels must be retained.
-5. Only then call irreversible lock functions.
+1. Review the release, canonical USDC, both settlement recipients and intended owner.
+2. Rehearse with Hardhat on Sepolia using the intended signer arrangement.
+3. For an authorized mainnet deployment, follow the reviewed Hardhat plan. The manager starts intake paused and the deploy script leaves it paused.
+4. Verify the manager and linked libraries, accept ownership where required, and configure participant eligibility and policy.
+5. Run the read-only readiness checker, review the operational gates, then have the accepted owner open intake.
+6. Reconcile a deliberately limited first job before increasing exposure.
 
-Irreversible owner actions:
-- `lockIdentityConfiguration()` (AGIJobManager)
-- `lockConfiguration()` (ENSJobPages)
+Publishing a software release does not perform these mainnet actions. This is a non-upgradeable contract: later code changes require a new deployment and a plan for existing jobs. Passing automated tests does not replace independent review of a high-stakes setup.
 
-## 0.1) Manual vs automated (ENS replacement)
+## 2) Participants, money and authority
 
-| Step | Automated by Hardhat deploy script | Manual Etherscan action |
-| --- | --- | --- |
-| Deploy new ENSJobPages | Yes | No |
-| `setJobManager(JOB_MANAGER)` on ENSJobPages | Yes | No |
-| NameWrapper approval for new ENSJobPages | No | Yes (wrapped-root owner) |
-| `AGIJobManager.setEnsJobPages(newAddress)` | No | Yes (AGIJobManager owner) |
-| Legacy migration `migrateLegacyWrappedJobPage` | No | Yes, if needed |
-
-Expected safe state before locking:
-- New ENSJobPages is deployed and referenced by AGIJobManager.
-- Wrapped-root approval is active for new ENSJobPages.
-- At least one future hook path succeeds.
-- Legacy migration status is complete or explicitly tracked.
-
-
-## 0.2) Role split and naming (must-know)
-
-- **AGIJobManager owner:** calls `setEnsJobPages(...)`, AGIJobManager governance, and (optionally) `lockIdentityConfiguration()`.
-- **wrapped-root owner:** calls NameWrapper `setApprovalForAll(newEnsJobPages, true)` for wrapped-root ENS operations.
-- **Canonical ENS name format:** `<prefix><jobId>.<jobsRootName>`.
-- **Current defaults:** prefix `agijob`, so names look like `agijob0.alpha.jobs.agi.eth`.
-- **Legacy behavior:** old snapshotted labels remain historical; prefix changes affect future/unsnapshotted jobs only.
-
-
-Expected result of a safe cutover:
-- Future jobs use `<prefix><jobId>.<jobsRootName>` under the new ENSJobPages wiring.
-- Legacy jobs keep historical snapshotted labels unless explicitly migrated.
-- Settlement remains authoritative even if ENS side effects are temporarily degraded.
-
-## 0.3) Start here by owner objective
-
-- **I only want safe manual cutover steps:** follow Section 0, then Section 8 verification checks.
-- **I need full deployment context too:** read `hardhat/README.md` first, then return here for owner-only execution.
-- **I am deciding whether to lock config:** complete all checks in Section 0 and migration status review before any lock call.
-
-
-> **Path clarity:** Hardhat is the official/recommended deployment workflow for current production operations. The Truffle deployment section in this document remains for legacy/supported environments and institutional reproducibility.
-
-## 1) Purpose and Audience
-
-This guide is for non-technical contract owners and owner-approved operators.
-
-AGIJobManager is intended for AI agents exclusively for normal protocol participation. Human owners can still deploy and administer the contract safely through web tools.
-
-## 2) Definitions
-
-| Term | Plain-language definition |
+| Role or term | Meaning |
 | --- | --- |
-| Owner | The address returned by `owner()`. This address controls owner-only governance and emergency functions. |
-| Operator | A human delegate authorized by the owner to execute approved procedures. |
-| Employer | A participant that creates a job and escrows USDC tokens. |
-| Agent | An AI participant that applies for jobs, performs work, and requests completion. |
-| Validator | An AI participant that approves or disapproves completion requests. |
-| Moderator | An address that can call `resolveDisputeWithCode`. Moderators are assigned by the owner. |
-| Escrow | USDC tokens held for job payout and not yet released. |
-| Bonds | USDC token collateral posted by agents, validators, and dispute initiators. |
-| Merkle root / proof | On-chain root plus off-chain `bytes32[]` proof used for allowlist authorization. |
-| ENS root node / subdomain | ENS namespace root configured by owner and a participant-owned subdomain label used for authorization. |
-| `paused` | Intake pause state from OpenZeppelin `Pausable`; blocks intake functions guarded by `whenNotPaused`. |
-| `settlementPaused` | Settlement pause state; blocks settlement and dispute progression functions guarded by `whenSettlementNotPaused`. |
+| Owner | Address returned by `owner()`; controls configuration, pauses, eligibility and stale-dispute decisions |
+| Pending owner | Address proposed by `transferOwnership`; it has no owner authority until it calls `acceptOwnership()` |
+| Operator | Person or system following the owner's procedures; the title itself grants no contract authority |
+| Employer | Posts a job and deposits its USDC cost |
+| Agent | Authorized participant with an enabled qualifying NFT holding; applies, posts a bond and submits completion |
+| Validator | Authorized participant that posts its required bond and votes during the review window |
+| Moderator | Address enabled in `moderators(address)`; can decide an active dispute |
+| Reserves | Job escrow plus agent, validator and dispute bonds; they are not owner-withdrawable revenue |
 
-## 3) What the Owner Can and Cannot Do
+Jobs, bonds, rewards and refunds use **native Circle USDC with six decimals**. Ethereum mainnet USDC is `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; confirm it using [Circle's registry](https://developers.circle.com/stablecoins/usdc-contract-addresses). ETH is required for gas.
 
-| Capability (plain language) | Contract function(s) | Who can call | Preconditions (code-level) | Etherscan web UI? | Web-only alternative for multisig owner |
-| --- | --- | --- | --- | --- | --- |
-| Pause intake lane | `pause()`, `pauseIntake()` | Owner | None | Yes | Safe Transaction Builder / Safe App contract interaction |
-| Unpause intake lane | `unpause()`, `unpauseIntake()` | Owner | None | Yes | Safe |
-| Pause both lanes | `pauseAll()` | Owner | None | Yes | Safe |
-| Unpause both lanes | `unpauseAll()` | Owner | None | Yes | Safe |
-| Pause/unpause settlement lane only | `setSettlementPaused(bool)` | Owner | None | Yes | Safe |
-| Add/remove moderator | `addModerator(address)`, `removeModerator(address)` | Owner | None | Yes | Safe |
-| Add/remove direct agent allowlist | `addAdditionalAgent(address)`, `removeAdditionalAgent(address)` | Owner | None | Yes | Safe |
-| Add/remove direct validator allowlist | `addAdditionalValidator(address)`, `removeAdditionalValidator(address)` | Owner | None | Yes | Safe |
-| Blacklist/unblacklist agent | `blacklistAgent(address,bool)` | Owner | None | Yes | Safe |
-| Blacklist/unblacklist validator | `blacklistValidator(address,bool)` | Owner | None | Yes | Safe |
-| Update Merkle roots | `updateMerkleRoots(bytes32,bytes32)` | Owner | None | Yes | Safe |
-| Update ENS registry | `updateEnsRegistry(address)` | Owner | `lockIdentityConfig == false`; address must be a contract; empty escrow/bonds required | Yes | Safe |
-| Update NameWrapper | `updateNameWrapper(address)` | Owner | `lockIdentityConfig == false`; address can be zero or a contract; empty escrow/bonds required | Yes | Safe |
-| Update ENS root nodes | `updateRootNodes(bytes32,bytes32,bytes32,bytes32)` | Owner | `lockIdentityConfig == false`; empty escrow/bonds required | Yes | Safe |
-| Update ENS job pages hook | `setEnsJobPages(address)` | Owner | `lockIdentityConfig == false`; address can be zero or a contract | Yes | Safe |
-| Permanently lock identity configuration | `lockIdentityConfiguration()` | Owner | `lockIdentityConfig == false`; one-way action | Yes | Safe |
-| Toggle ENS tokenURI mode | `setUseEnsJobTokenURI(bool)` | Owner | None | Yes | Safe |
-| Set base IPFS URL | `setBaseIpfsUrl(string)` | Owner | Input length must be `<= MAX_BASE_IPFS_URL_BYTES` | Yes | Safe |
-| Set validator approve threshold | `setRequiredValidatorApprovals(uint256)` | Owner | Empty escrow/bonds required; threshold pair must remain valid | Yes | Safe |
-| Set validator disapprove threshold | `setRequiredValidatorDisapprovals(uint256)` | Owner | Empty escrow/bonds required; threshold pair must remain valid | Yes | Safe |
-| Set vote quorum | `setVoteQuorum(uint256)` | Owner | Empty escrow/bonds required; `1..MAX_VALIDATORS_PER_JOB` | Yes | Safe |
-| Set completion review period | `setCompletionReviewPeriod(uint256)` | Owner | Empty escrow/bonds required; `>0` and `<=365 days` | Yes | Safe |
-| Set dispute review period | `setDisputeReviewPeriod(uint256)` | Owner | Empty escrow/bonds required; `>0` and `<=365 days` | Yes | Safe |
-| Set challenge period | `setChallengePeriodAfterApproval(uint256)` | Owner | Empty escrow/bonds required; `>0` and `<=365 days` | Yes | Safe |
-| Set validator bond params | `setValidatorBondParams(uint256,uint256,uint256)` | Owner | Bounds validation in code; no empty-escrow modifier | Yes | Safe |
-| Set agent bond params | `setAgentBondParams(uint256,uint256,uint256)` | Owner | Bounds validation in code; no empty-escrow modifier | Yes | Safe |
-| Set agent bond absolute amount | `setAgentBond(uint256)` | Owner | Must respect configured min/max and implied BPS bounds | Yes | Safe |
-| Set validator slash BPS | `setValidatorSlashBps(uint256)` | Owner | Empty escrow/bonds required; max bound enforced | Yes | Safe |
-| Set validation reward percentage | `setValidationRewardPercentage(uint256)` | Owner | Must keep AGI type payout compatibility (`max payout pct + reward <= 100`) | Yes | Safe |
-| Set premium reputation threshold | `setPremiumReputationThreshold(uint256)` | Owner | None | Yes | Safe |
-| Set max job payout | `setMaxJobPayout(uint256)` | Owner | None | Yes | Safe |
-| Set max job duration | `setJobDurationLimit(uint256)` | Owner | Must be non-zero | Yes | Safe |
-| Set max active jobs per agent | `setMaxActiveJobsPerAgent(uint256)` | Owner | Must satisfy contract range guard | Yes | Safe |
-| Add or update AGI NFT type | `addAGIType(address,uint256)` | Owner | NFT must support ERC-721; payout pct constraints apply | Yes | Safe |
-| Disable AGI NFT type | `disableAGIType(address)` | Owner | Type must exist | Yes | Safe |
-| Delist unassigned job | `delistJob(uint256)` | Owner | Settlement not paused; job must exist; not completed; no assigned agent | Yes | Safe |
-| Resolve stale dispute after review timeout | `resolveStaleDispute(uint256,bool)` | Owner | Settlement not paused; active dispute; current time past `disputeReviewPeriod` | Yes | Safe |
-| Withdraw only non-escrow AGI | `withdrawUSDC(uint256)` | Owner | `paused == true`; `settlementPaused == false`; amount `<= withdrawableUSDC()` | Yes | Safe |
-| Rescue ETH | `rescueETH(uint256)` | Owner | None | Yes | Safe |
-| Rescue ERC20 | `rescueERC20(address,address,uint256)` | Owner | For non-USDC token: normal transfer. For USDC token path: same gates as `withdrawUSDC` (`paused` true, settlement not paused, withdrawable bound). | Yes | Safe |
-| Low-level token call rescue | `rescueToken(address,bytes)` | Owner | Token must be a contract and cannot be the USDC token | Yes | Safe |
-| Owner cannot do these actions | N/A | N/A | Cannot reverse `lockIdentityConfiguration`; cannot force settlement while `settlementPaused == true`; cannot call `resolveDisputeWithCode` unless also a moderator; cannot withdraw escrow-backed AGI above `withdrawableUSDC()` | N/A | N/A |
+A successful job pays validators first, then 30% and 10% of its original cost to the configured wallets, then the agent remainder. The default validator budget is 8%; the owner may set 1–60% for **newly posted jobs**. A baseline 100 USDC job therefore allocates 8 / 30 / 10 / 52, subject to rounding and unused rewards. Bonds and slashing are separate. NFT type scores determine eligibility, not these percentages. Read the [payout rules](../USDC_PAYOUT_SPLIT.md).
 
-## 4) Web-Only Operations Promise
+## 3) Prepare the deployment
 
-### A) Owner is an EOA (hardware wallet recommended)
-
-You can use Etherscan directly:
-
-- Read state in **Read Contract**.
-- Execute writes in **Write Contract** after wallet connect.
-- Confirm each result in transaction logs and post-transaction reads.
-
-### B) Owner is a multisig (institutional recommendation)
-
-You still use Etherscan as the canonical reference:
-
-- Etherscan verified source/ABI is the authoritative interface reference.
-- Reads and verification are done on Etherscan.
-- Writes are executed in a web multisig UI (for example, Safe Transaction Builder using verified ABI).
-
-Tradeoff summary:
-
-- EOA path is simpler and faster.
-- Multisig path is slower but gives stronger operational control and approval separation.
-
-## 5) Pre-Deployment Decisions
-
-Use this checklist before any mainnet transaction.
-
-- [ ] Choose final owner address model: EOA or multisig.
-- [ ] Choose deployer address (temporary key) and confirm post-deploy ownership transfer plan.
-- [ ] Confirm USDC token address (`usdcTokenAddress`) on Ethereum mainnet.
-- [ ] Decide ENS authorization posture: enabled now, or disabled at launch.
-- [ ] Decide allowlist posture:
-  - [ ] Direct additional lists (`additionalAgents`, `additionalValidators`)
-  - [ ] Merkle roots (`agentMerkleRoot`, `validatorMerkleRoot`)
-  - [ ] ENS ownership path (root nodes + subdomain ownership)
-- [ ] Decide moderator policy (who can resolve disputes, and backup coverage).
-- [ ] Approve initial protocol parameters: validator thresholds, quorum, review windows, bonds, slash, max payout, max duration.
-- [ ] Decide identity-lock timing:
-  - [ ] Lock immediately after final identity setup.
-  - [ ] Keep unlocked temporarily under strict change control.
-
-Identity lock effect summary:
-
-USDC is immutable at deployment; no token-address update function exists in v0.5.0.
-- Lock does not block: pause controls, Merkle roots, direct allowlists, blacklists, thresholds, bonds, payout and timing parameters.
-
-## 6) Deployment Overview
-
-```mermaid
-flowchart TD
-    A[Prepare wallets and approved config] --> B[Configure migrations/config/agijobmanager.config.js]
-    B --> C[Dry run validation]
-    C --> D[Testnet rehearsal]
-    D --> E[Mainnet deploy via Truffle migration #6]
-    E --> F[Verify on Etherscan]
-    F --> G[Transfer ownership to final owner]
-    G --> H[Configure moderators and authorization roots]
-    H --> I{ENS enabled?}
-    I -->|Yes| I1[Set ENS registry, nameWrapper, root nodes, ensJobPages]
-    I -->|No| I2[Keep ENS config neutral]
-    I1 --> J{Merkle enabled?}
-    I2 --> J
-    J -->|Yes| J1[Publish deterministic proofs and update roots]
-    J -->|No| J2[Use direct allowlists and/or ENS]
-    J1 --> K{Lock identity config now?}
-    J2 --> K
-    K -->|Yes| K1[Call lockIdentityConfiguration]
-    K -->|No| K2[Operate unlocked with formal change controls]
-    K1 --> L[Operational readiness]
-    K2 --> L
-```
-
-## 7) Step-by-Step: Mainnet Deployment via Truffle Migration
-
-Production migration for mainnet operator workflow: `migrations/6_deploy_agijobmanager_production_operator.js`.
-
-Config template: `migrations/config/agijobmanager.config.example.js`.
-
-Working config file: `migrations/config/agijobmanager.config.js`.
-
-### Required software
-
-- Node.js 22.23.2 (matches CI workflows)
-- npm
-- Git
-- Truffle CLI (use `npx truffle ...`)
-- Ethereum mainnet RPC endpoint from your approved provider
-
-### What you do
+Use Node 22.23.2 and the immutable v0.9.0 source and checksums. From the repository root:
 
 ```bash
 npm ci
-cp migrations/config/agijobmanager.config.example.js migrations/config/agijobmanager.config.js
-npx truffle compile
+cd hardhat
+npm ci
+cp .env.example .env
+cp deploy.config.example.js deploy.config.js
 ```
 
-### What you should see
+Review `deploy.config.js` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. Example owner/root values are not verified production instructions.
 
-- Dependencies install without lockfile drift.
-- Contracts compile successfully.
-- Config file exists at `migrations/config/agijobmanager.config.js`.
+Configure the selected RPC, `DEPLOY_CONFIG`, intended `DEPLOYER_ADDRESS` for read-only planning, and explorer configuration. An actual deployment additionally requires a funded disposable deployer key through the supported Hardhat environment. Do not give production keys to local Truffle/Ganache tools, commit them or enter them into an explorer form. Prefer a tested multisignature owner when securing substantial funds.
 
-### Fill the config file
-
-Complete the values in `migrations/config/agijobmanager.config.js`:
-
-- `defaults.identity`
-- `defaults.authorizationRoots`
-- `defaults.merkleRoots`
-- `defaults.protocolParameters`
-- `defaults.dynamicLists`
-- `defaults.ownership.finalOwner`
-
-### Set environment variables safely
+From `hardhat/`:
 
 ```bash
-export MAINNET_RPC_URL="https://<your-mainnet-rpc>"
-export PRIVATE_KEYS="<deployer-private-key-or-comma-separated-keys>"
-export AGIJOBMANAGER_DEPLOY=1
-export DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET
+npm run compile
+npm run test:preflight
+npm run test:deployment
+npm run test:mainnet-fork
+DRY_RUN=1 npm run deploy:mainnet
 ```
 
-Store and inject keys through your institutional secret manager. Do not place real private keys in committed files.
+The dry run sends no transactions. Boolean flags are validated; use the documented explicit value `DRY_RUN=1`. Preserve the qualified Solidity 0.8.23 compiler profile and Ethereum size checks. The fork test reads historical mainnet USDC and executes only locally; it is not a live deployment rehearsal with your real signers.
 
-### Optional dry-run validation
+Complete a separately authorized Sepolia rehearsal and the [mainnet qualification gates](../MAINNET_READINESS.md) before significant mainnet exposure. The actual mainnet broadcast requires the Hardhat guide's exact confirmation value, `I_UNDERSTAND_MAINNET_DEPLOYMENT`, in `DEPLOY_CONFIRM_MAINNET`, with dry-run mode disabled. Follow that guide for signing and confirmations rather than substituting a legacy migration command.
+
+## 4) Deploy, verify and preserve evidence
+
+The manager workflow deploys five linked libraries and the manager, verifies runtime bytes, confirms paused intake and completes explorer source verification before proposing the intended ownership handover when needed. Failed verification stops before a proposal. It does not configure every operational role or open intake.
+
+Preserve the journal under `hardhat/deployments/<network>/`, the exact Solidity input, constructor values, linked-library addresses, successful transaction receipts and verification results. **A failed command may already have broadcast transactions.** Reconcile the saved journal before retrying; do not blindly deploy again.
+
+Verify all six contracts against the exact release build. Do not turn a failed verification result into a claimed success. If all six deployments were broadcast but verification or a later step failed, the supported recovery command from `hardhat/` is:
 
 ```bash
-DEPLOY_DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET npx truffle migrate --network mainnet --f 6 --to 6
+DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npx hardhat run scripts/reverify-deployment.js --network mainnet
 ```
 
-Expected result: configuration summary prints and deployment is skipped because `DEPLOY_DRY_RUN=1`.
+Recovery verifies canonical receipts, recorded deployer, exact creation input and linked runtime before retrying explorer verification. It sends no blockchain transactions and preserves the original journal, writing a separate `.reverified.<block>.json` receipt on success. Use that receipt for readiness. It requires explorer API access but no private key; it does not complete missing deployments, perform ownership actions or recover ENSJobPages. Follow the report and the [Hardhat recovery instructions](../../hardhat/README.md) for any unresolved condition.
 
-### Mainnet execution
+## 5) Accept ownership and configure while paused
+
+The current owner proposes a manager transfer using `transferOwnership(newOwner)`. After a recovered deployment, check whether this proposal is still required; verification recovery performs no ownership writes. The proposed owner independently checks the manager and calls `acceptOwnership()` through its own signing interface. Until acceptance, the deployer/current owner retains authority. Verify `owner()`, zero `pendingOwner()` and `OwnershipTransferred` afterward. Renunciation is disabled; a current owner can cancel an unaccepted proposal with `transferOwnership(address(0))`.
+
+Configure moderators, participant authorization, enabled NFT types, job limits, bonds and review policy while intake remains paused. The default vote thresholds/quorum are not a substitute for a reviewed validator operating model. A participant on an agent allowlist still needs an eligible ERC-721 holding; an enabled type's positive legacy score is not a payout percentage override.
+
+If reviewed ENS/wrapper, namespace or Merkle settings intentionally change from the constructor values before launch, preserve the original receipt and use a separate `READINESS_CONFIG` expectations file in the [readiness workflow](../../hardhat/README.md). This file tells the checker what to compare; it cannot modify the contract.
+
+## 6) Readiness and activation
+
+From `hardhat/`, with the selected mainnet RPC configured and no private key needed:
 
 ```bash
-DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET npx truffle migrate --network mainnet --f 6 --to 6
+DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run check:readiness
 ```
 
-Mainnet guard behavior: if chainId is `1`, migration reverts unless `DEPLOY_CONFIRM_MAINNET` exactly equals `I_UNDERSTAND_THIS_WILL_DEPLOY_TO_ETHEREUM_MAINNET`.
+The checker verifies receipt/configuration integrity, exact linked runtime code, accepted ownership, both recipients, identity settings, USDC restrictions, pause posture and zero initial reserves at a recorded block, then rechecks its hash. Preserve the resulting report. It does not certify participant eligibility, off-chain judgment, signer security or the completeness of an independent review.
 
-Expected result:
+Before activation, independently verify:
 
-- Libraries deploy and link.
-- `AGIJobManager` deploys.
-- Post-deploy owner configuration actions execute.
-- A deployment receipt JSON is written to `deployments/mainnet/`.
+| Read or evidence | Expected result |
+| --- | --- |
+| Chain, manager and linked-library code | Match the approved deployment and source build |
+| `owner()` / `pendingOwner()` | Intended final owner / zero pending owner |
+| `usdcToken()` | Canonical mainnet USDC |
+| `wallet30()` / `wallet10()` | Reviewed recipient pair in the correct order |
+| `paused()` / `settlementPaused()` | `true` / `false` before initial activation |
+| Four reserve counters | All zero before the first job |
+| `ens()`, `nameWrapper()`, namespace and Merkle getters | Reviewed current identity configuration |
+| Role/allowlist maps and agent NFT holding | Intended moderators and eligible participants |
+| Policy getters | Approved limits, validator budget, bonds, thresholds and windows |
+| USDC pause/blocklist status | Intended transfers currently permitted by the issuer |
+| Monitoring and incident rehearsal | Operator can detect and contain the relevant failures |
 
-Record immediately in your release log:
+Only after reviewing the technical and operational gates should the accepted owner call `unpauseIntake()`. Recheck state changed since the report. Start with deliberately limited exposure and reconcile the first job's ordered USDC transfers and cleared reserves before scaling.
 
-- Contract address
-- Library addresses
-- Transaction hashes
-- Config file path and config hash
-- Final owner address
+## 7) Use Etherscan or a multisignature owner safely
 
-## 8) Etherscan-First Verification
+An externally owned owner account can inspect **Read Contract** and submit **Write Contract** calls on the verified explorer page. A multisignature owner must execute through its own transaction builder/signing workflow; connecting one of its individual signers directly does not make that signer the contract owner.
 
-### Step-by-step
+For every write, verify network, manager address, current owner, method, exact arguments and expected state change. Simulate where available, review the wallet transaction, then confirm receipt success and read the resulting state. Use the compiled release interface and linked-runtime check alongside explorer verification.
 
-1. Open deployed contract address in Etherscan.
-2. Confirm deployment transaction and constructor arguments.
-3. Verify contract source with exact compiler version and optimizer settings from this repository.
-4. Provide linked library addresses when prompted (`BondMath`, `ENSOwnership`, `ReputationMath`, `TransferUtils`, `UriUtils`).
-5. Use **Read Contract** to confirm owner and launch configuration.
-6. If owner is EOA, execute one low-risk owner write and verify state change.
-7. If owner is multisig, submit that write via multisig web app and confirm on Etherscan.
+Inputs use full addresses, full `bytes32` values, integer base-unit amounts and seconds. **100 USDC is `100000000`**. Use actual generated Merkle proofs rather than shortened illustrative hashes. `[]` is appropriate only when the chosen authorization route or valid proof permits it.
 
-### Verification checklist
+## 8) Owner control reference
 
-| Check | What good looks like | Where to confirm |
+| Intent | Function or control | Boundary and verification |
 | --- | --- | --- |
-| Contract address | Matches deployment receipt | `deployments/mainnet/*.json` + Etherscan |
-| Linked libraries | Match receipt exactly | Etherscan verify form + receipt |
-| Owner | `owner()` is expected owner | Etherscan Read |
-| USDC token | `usdcToken()` matches approved token | Etherscan Read |
-| Merkle roots | `agentMerkleRoot()` and `validatorMerkleRoot()` match planned values | Etherscan Read |
-| ENS settings | `ens()`, `nameWrapper()`, root nodes and `ensJobPages()` match plan | Etherscan Read |
-| Pause posture | `paused()` / `settlementPaused()` match launch plan | Etherscan Read |
-| Role posture | `moderators(addr)`, allowlists, blacklists match release checklist | Etherscan Read |
+| Stop new work | `pauseIntake()` / `pause()` | Requires intake currently open; verify `paused=true`. Existing settlement remains available unless separately paused. |
+| Contain fund risk | `pauseAll()` | Verify both flags true; guarded refunds and dispute resolution also stop. Owner administration remains possible. |
+| Resume in stages | `setSettlementPaused(false)`, later `unpauseIntake()` | Clear containment only after incident recovery review. Avoid opening both paths prematurely. |
+| Rotate recipient wallets | `setSettlementWallets(wallet30,wallet10)` | Intake paused and all four reserves zero; recipients valid/distinct; verify getters and `SettlementWalletsUpdated`. Existing funded jobs cannot be redirected. |
+| Change validator budget | `setValidationRewardPercentage(pct)` | Integer 1–60%; fixes the rate for jobs posted afterward; default 8%. NFT scores do not constrain this rate. |
+| Configure moderator | `addModerator` / `removeModerator` | Verify `moderators(address)` directly. Role setters do not all emit role-specific events. |
+| Add/remove authorization | Additional agent/validator setters; `updateMerkleRoots` | Review remaining authorization routes and publish proofs before root changes. No automatic grace period. |
+| Block future application/voting | Agent/validator blacklist functions | Verify maps/events. Blacklisting does not erase old votes or substitute for pausing unsafe settlement. |
+| Enable/disable NFT eligibility | `addAGIType` / `disableAGIType` | ERC-721 interface and score bounds enforced; verify agent holdings and `getHighestPayoutPercentage(agent)>0`. |
+| Change thresholds, quorum, review windows or validator slashing | Respective owner setters | Require zero escrow/bonds and valid bounds. Review periods are positive and at most 365 days. |
+| Change bond parameters or other limits | Respective owner setters | Function-specific bounds apply; some changes affect later assignment/voting on posted jobs. Job duration limit is 1–31,536,000 seconds. |
+| Change ENS registry/wrapper/namespace roots | `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes` | Identity unlocked and all reserves zero; verify each getter and authorization path. |
+| Change optional job-page pointer | `setEnsJobPages` | Identity unlocked; zero or deployed-contract address. Verify hook behavior. |
+| Disable ENS token-URI mode | `setUseEnsJobTokenURI(false)` | Changes optional metadata presentation, not ENS participant authorization. |
+| Change base metadata URL | `setBaseIpfsUrl` | Length bound enforced; base URL is not exposed by a public getter. Preserve approved inputs and check newly minted metadata behavior. |
+| Cancel unassigned job | `delistJob` | Owner-only, settlement enabled; refunds and deletes an eligible unassigned job. |
+| Resolve stale dispute | `resolveStaleDispute(jobId,employerWins)` | Active dispute, its review deadline elapsed, settlement enabled. An owner is not automatically a moderator for ordinary resolution. |
+| Withdraw surplus USDC | `withdrawUSDC` | Positive amount at most `withdrawableUSDC()`, intake paused, settlement enabled; USDC goes to owner. |
+| Rescue assets | `rescueETH`, `rescueERC20`, `rescueToken` | USDC rescue retains surplus/pause guards; generic calls cannot target USDC or the manager itself. |
+| Permanently lock identity | `lockIdentityConfiguration()` | Irreversible; blocks protected identity setters. It is not a pause, complete governance freeze or incident repair. |
 
-## 9) Etherscan-First Operations (Owner Console)
+Read [owner controls](../OWNER_CONTROLS.md), the [owner runbook](../OWNER_RUNBOOK.md) and the [generated interface](../REFERENCE/CONTRACT_INTERFACE.md) before changing a setting. The owner cannot replace USDC, alter the fixed 30%/10% shares, withdraw reserved liabilities or upgrade this implementation in place.
 
-Input syntax notes for Etherscan forms:
+## 9) Optional ENSJobPages replacement
 
-- `address`: `0xabc...`
-- `bytes32`: `0x` + 64 hex characters
-- `bytes32[]`: `["0x111...","0x222..."]`
-- `uint256`: decimal string
-- `bool`: `true` or `false`
+ENS job pages are an optional metadata integration, separate from escrow settlement and participant authorization. Follow the [replacement guide](ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) with reviewed network addresses. Before any broadcast, review `JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, intended owner, `VERIFY` and `LOCK_CONFIG`.
 
-Etherscan field styling can change. Provide arrays in valid `bytes32[]` format.
+| Step | Responsible party and expected behavior |
+| --- | --- |
+| Deploy replacement | Hardhat script deploys ENSJobPages, sets its job manager and journals transaction receipts. Request source verification and reconcile any failure before using it. |
+| Optional script lock/transfer | Requested verification happens before optional lock/ownership writes. Keep `LOCK_CONFIG=0` until the intended integration has been validated. ENSJobPages ownership transfers in **one step**, unlike the manager's proposal/acceptance flow. |
+| Grant wrapped-root approval | Wrapped-root owner calls NameWrapper `setApprovalForAll(newEnsJobPages,true)`. The deployment script does not grant this approval. |
+| Connect manager | Manager owner calls `setEnsJobPages(newEnsJobPages)` while identity configuration remains unlocked. The deployment script does not switch this pointer. |
+| Preserve legacy labels | ENSJobPages owner reviews and calls `migrateLegacyWrappedJobPage(jobId,exactLabel)` where required. Migration decisions are manual. |
+| Verify cutover | Read both manager/job-page pointers, owner, configured root/resolver/wrapper, active approval and a future hook result. Reconcile the legacy-label inventory. |
+| Consider locks | Respective owner reviews `lockIdentityConfiguration()` or `lockConfiguration()` only after final validation and understanding the lost repair options. |
 
-### 9.1 Add/remove moderator
+Names use `<prefix><jobId>.<jobsRootName>`, with `agijob` as the default prefix. Check the actual configured root rather than copying an example domain. Existing snapshotted labels remain historical unless explicitly migrated/imported. Optional hook failure must not be treated as a reversed or missing USDC settlement; reconcile the core transaction separately.
 
-- Function(s): `addModerator(address)`, `removeModerator(address)`
-- Allowed when: always (owner only)
-- Inputs: moderator wallet address
-- Success signal: `moderators(address)` flips to `true` / `false`
-- Safety note: maintain moderator redundancy before opening dispute-heavy operations
+For an identity incident, contain the affected activity and follow [incident response](../OPERATIONS/INCIDENT_RESPONSE.md). **Never lock a suspected bad configuration as an emergency mitigation.**
 
-### 9.2 Add/remove additional agents and validators
+## 10) Participant journey and onboarding
 
-- Function(s): `addAdditionalAgent`, `removeAdditionalAgent`, `addAdditionalValidator`, `removeAdditionalValidator`
-- Allowed when: always (owner only)
-- Inputs: participant address
-- Success signal: `additionalAgents(address)` / `additionalValidators(address)` updates
-- Safety note: removing an address can immediately block new applications or validations for that address
+1. Confirm the intended manager and issuer-permitted native USDC before granting its allowance. Employer funds the job cost; agents/validators separately fund any required bonds and ETH gas.
+2. Employer posts a job. Verify `JobCreated`, exact escrow and the posting-time payout percentage.
+3. Authorized, NFT-eligible agent applies. Verify assignment, deadline and bond accounting.
+4. Assigned agent submits a valid completion URI within the permitted window.
+5. Authorized validators vote once each during review, posting required bonds. Check counters, dispute state and applicable timers.
+6. An eligible caller invokes finalization after its conditions are met. Anyone may finalize; outcomes depend on votes/timers and may open a dispute rather than settle immediately.
+7. On an agent win, verify validator rewards, 30% and 10% of original cost, agent remainder and separate bond settlement. The completion NFT is issued to the **employer**.
 
-### 9.3 Blacklist controls
+Dispute, cancellation and expiry are alternative lifecycle paths. A moderator's code 1 resolves for the agent, code 2 for the employer, and code 0 leaves the dispute open. A completed flag can also represent an employer refund. See the [full scenario walkthrough](../QUINTESSENTIAL_USE_CASE.md) for exact checkpoints.
 
-- Function(s): `blacklistAgent(address,bool)`, `blacklistValidator(address,bool)`
-- Allowed when: always (owner only)
-- Inputs: participant address, `true` to block or `false` to clear
-- Success signal: `blacklistedAgents(address)` / `blacklistedValidators(address)` updates and blacklist event emitted
-- Safety note: document incident reason before blacklisting
-
-### 9.4 Merkle root updates
-
-- Function: `updateMerkleRoots(bytes32 validatorRoot, bytes32 agentRoot)`
-- Allowed when: always (owner only)
-- Inputs: new root pair
-- Success signal: `validatorMerkleRoot()` and `agentMerkleRoot()` update; `MerkleRootsUpdated` emitted
-- Safety note: publish proofs to operators before root switch to avoid participant lockout
-
-### 9.5 ENS settings updates
-
-- Function(s): `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `setEnsJobPages`, `setUseEnsJobTokenURI`
-- Allowed when:
-  - `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `setEnsJobPages`: identity not locked
-  - `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`: empty escrow/bonds required
-  - `setUseEnsJobTokenURI`: always
-- Inputs: contract addresses or root-node bytes32 values
-- Success signal: corresponding read getters and events update
-- Safety note: make ENS changes in a maintenance window, then test one known authorized address
-
-### 9.6 Set base IPFS URL
-
-- Function: `setBaseIpfsUrl(string)`
-- Allowed when: always (owner only)
-- Inputs: base URI string (length-limited by contract)
-- Success signal: transaction succeeds (status = Success). `tokenURI` may change only for newly minted relative URIs; absolute/schemed URIs (for example `ipfs://` or `https://`) and ENS-derived absolute URIs can remain unchanged.
-- Safety note: set to stable, immutable storage URI strategy
-
-### 9.7 Update thresholds, periods, bonds, slash, payout caps
-
-- Functions:
-  - `setRequiredValidatorApprovals`
-  - `setRequiredValidatorDisapprovals`
-  - `setVoteQuorum`
-  - `setCompletionReviewPeriod`
-  - `setDisputeReviewPeriod`
-  - `setChallengePeriodAfterApproval`
-  - `setValidatorBondParams`
-  - `setAgentBondParams`
-  - `setAgentBond`
-  - `setValidatorSlashBps`
-  - `setValidationRewardPercentage`
-  - `setMaxJobPayout`
-  - `setJobDurationLimit`
-  - `setMaxActiveJobsPerAgent`
-  - `setPremiumReputationThreshold`
-- Allowed when: function-specific guards in Section 3 table
-- Success signal: matching getter values update; update events emitted for key parameters
-- Safety note: if a function requires empty escrow/bonds, first reach a fully settled state
-
-### 9.8 Pause and unpause controls
-
-- Functions: `pause`, `unpause`, `pauseAll`, `unpauseAll`, `setSettlementPaused`
-- Allowed when: always (owner only)
-- Success signal: `paused()` and/or `settlementPaused()` changes
-- Safety note: for treasury withdrawal use-case, required state is `paused=true` and `settlementPaused=false`
-
-### 9.9 Withdraw AGI
-
-- Function: `withdrawUSDC(uint256)`
-- Allowed when:
-  - `paused == true`
-  - `settlementPaused == false`
-  - amount is `<= withdrawableUSDC()`
-- Inputs: amount in token base units
-- Success signal: `USDCWithdrawn` event and token transfer to owner
-- Safety note: read `withdrawableUSDC()` before submitting; this function cannot extract escrow-backed funds
-
-### 9.10 Rescue actions
-
-- Functions: `rescueETH`, `rescueERC20`, `rescueToken`
-- Allowed when:
-  - `rescueETH`: always
-  - `rescueERC20` non-USDC token: always
-  - `rescueERC20` with USDC token: same gates as `withdrawUSDC`
-  - `rescueToken`: token cannot be USDC token
-- Success signal: transfer/call succeeds and on-chain balances reflect movement
-- Safety note: treat rescue calls as emergency controls with dual approval and post-action reconciliation
-
-### 9.11 Array input example for participant operations
-
-User-side call examples where arrays are required (for participant operations in Etherscan):
-
-- `applyForJob(uint256 jobId, string subdomain, bytes32[] proof)`
-- `validateJob(uint256 jobId, string subdomain, bytes32[] proof)`
-- `disapproveJob(uint256 jobId, string subdomain, bytes32[] proof)`
-
-Example `bytes32[]` input value:
-
-```text
-["0x3c7d...a1f2","0x9b11...77cd"]
-```
-
-If your proof is empty, Etherscan usually accepts:
-
-```text
-[]
-```
-
-## 10) Human-Usable Full Protocol Walkthrough (Web-only)
-
-### What you do / what you should see
-
-1. Employer approves USDC token allowance to the contract.
-   - Should see: ERC-20 `Approval` event.
-2. Employer calls `createJob(jobSpecURI,payout,duration,details)`.
-   - Should see: `JobCreated` and escrow increase.
-3. Agent calls `applyForJob(jobId,subdomain,proof)`.
-   - Should see: `JobApplied` and optional agent bond transfer.
-4. Agent calls `requestJobCompletion(jobId,jobCompletionURI)`.
-   - Should see: `JobCompletionRequested` and review window start.
-5. Validators call `validateJob` or `disapproveJob` during review period.
-   - Should see: validator vote events.
-6. Employer calls `finalizeJob(jobId)` after windows and threshold conditions.
-   - Should see: settlement event and NFT mint/transfer behavior.
-7. If disputed: employer or agent calls `disputeJob(jobId)`, moderator calls `resolveDisputeWithCode(jobId,code,reason)`.
-   - Should see: dispute resolution event and final settlement path.
-
-NFT metadata check:
-
-- Use Etherscan token view and `tokenURI(tokenId)`.
-- Confirm URI resolves to expected metadata in your metadata endpoint or marketplace indexer.
-
-```mermaid
-stateDiagram-v2
-    [*] --> Created
-    Created --> Assigned: applyForJob
-    Created --> Cancelled: cancelJob/delistJob
-    Assigned --> CompletionRequested: requestJobCompletion
-    Assigned --> Expired: expireJob
-    CompletionRequested --> ApprovedPath: validator approvals + quorum
-    CompletionRequested --> DisapprovedPath: validator disapprovals
-    CompletionRequested --> Disputed: disputeJob
-    ApprovedPath --> Finalized: finalizeJob
-    DisapprovedPath --> Finalized: finalizeJob
-    Disputed --> Resolved: resolveDisputeWithCode / resolveStaleDispute
-    Resolved --> Finalized
-    Finalized --> [*]
-    Cancelled --> [*]
-    Expired --> [*]
-```
-
-```mermaid
-sequenceDiagram
-    participant Employer
-    participant Agent
-    participant Validator
-    participant Contract as AGIJobManager
-
-    Employer->>Contract: createJob(jobSpecURI,payout,duration,details)
-    Agent->>Contract: applyForJob(jobId,subdomain,proof)
-    Agent->>Contract: requestJobCompletion(jobId,jobCompletionURI)
-    Validator->>Contract: validateJob(jobId,subdomain,proof)
-    Employer->>Contract: finalizeJob(jobId)
-    Contract-->>Employer: Settlement outcome + events
-    Contract-->>Agent: Payout/bond outcome + NFT state
-```
-
-```mermaid
-flowchart TD
-    A[Completion requested] --> B{Dispute opened?}
-    B -->|No| C[Finalize via validator outcome path]
-    B -->|Yes| D[disputeJob]
-    D --> E{Moderator resolves in time?}
-    E -->|Yes| F[resolveDisputeWithCode]
-    E -->|No| G[owner resolveStaleDispute after disputeReviewPeriod]
-    F --> H[Settlement + close]
-    G --> H
-```
-
-## 11) Adding New AI Agents/Validators Over Time
-
-The protocol supports three authorization paths:
-
-1. Direct owner allowlists (`additionalAgents`, `additionalValidators`)
-2. Merkle allowlists (`agentMerkleRoot`, `validatorMerkleRoot`)
-3. ENS ownership under configured root nodes
-
-### Merkle leaf format (authoritative)
-
-Leaf format is:
-
-```text
-keccak256(abi.encodePacked(claimantAddress))
-```
-
-This is implemented in `ENSOwnership.verifyMerkleOwnership`.
-
-### Deterministic proof generation (already available in repo)
-
-Use the deterministic helper script:
+For onboarding, choose an additional allowlist, a Merkle proof or a supported ENS ownership route. Agents also need a qualifying enabled NFT. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
 
 ```bash
-node scripts/merkle/export_merkle_proofs.js --input <input.json> --output <proofs.json>
+node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json
 ```
 
-Operational cycle:
+Distribute reviewed proofs before changing roots. ENS authorization uses the configured namespace and the contract's bounded wrapper/resolver checks; confirm the exact label and authority route in [ENS integration](../INTEGRATIONS/ENS.md).
 
-1. Prepare canonical participant address list.
-2. Generate root and proofs with the script.
-3. Publish proofs JSON to your operator channel.
-4. Call `updateMerkleRoots` in Etherscan.
-5. Ask one known participant to perform a proof-based test transaction.
+## 11) Troubleshooting and incident decisions
 
-### ENS ownership path
+| Symptom | Check and response |
+| --- | --- |
+| Deployment command fails | Read the saved journal first; transactions may already have been mined. Reconcile before retrying. |
+| Explorer source does not match | Compare exact compiler settings, build input, constructor arguments and linked libraries. Keep intake paused. |
+| Readiness rejects identity settings | Compare the original receipt, current getters and reviewed change records. Use `READINESS_CONFIG` only for intentional approved expectation changes. |
+| Owner transaction reverts | Confirm actual owner/signing context, current pause flags and function-specific reserve/lock guards. |
+| Agent is allowlisted but cannot apply | Check enabled NFT eligibility, blacklist, active-job cap, balance/allowance and job assignment state. |
+| Validator cannot vote | Check authorization, blacklist, prior vote, review deadline, dispute/terminal state and bond allowance. |
+| Settlement fails after apparent earlier payments | Inspect the receipt; transfers and accounting updates in a reverted transaction roll back together. Check issuer pause/blocklist status and actual balances. |
+| A funded job's recipient is blocked | Wallet rotation requires zero reserves; it cannot redirect that job. Address the issuer restriction through its legitimate process. |
+| Active exploit or immediate fund risk | Authorized owner calls `pauseAll()`, verifies both flags and follows the incident playbook. `pause()` alone leaves settlement active. |
 
-A participant can be authorized if they control the configured subdomain via NameWrapper ownership, approval, operator approval, or ENS resolver address match under configured root node(s).
+Successful job costs are fully distributed and do not accumulate as protocol treasury. Withdrawals and USDC rescue only use genuine surplus. Do not clear an emergency pause to perform a withdrawal or assume rescue can migrate escrow.
 
-## 12) Parameter Catalog
+## 12) Terms and scope
 
-| Parameter (plain language) | Getter | Setter | Default in contract/migration | Change constraints | Operational guidance |
-| --- | --- | --- | --- | --- | --- |
-| Validator approvals threshold | `requiredValidatorApprovals()` | `setRequiredValidatorApprovals` | `3` | Empty escrow/bonds; threshold pair valid | Change in maintenance window |
-| Validator disapprovals threshold | `requiredValidatorDisapprovals()` | `setRequiredValidatorDisapprovals` | `3` | Empty escrow/bonds; threshold pair valid | Change with paired threshold review |
-| Vote quorum | `voteQuorum()` | `setVoteQuorum` | `3` | Empty escrow/bonds; must be >0 and bounded | Align with expected validator availability |
-| Completion review period | `completionReviewPeriod()` | `setCompletionReviewPeriod` | `7 days` | Empty escrow/bonds; valid review period bound | Avoid frequent changes |
-| Dispute review period | `disputeReviewPeriod()` | `setDisputeReviewPeriod` | `14 days` | Empty escrow/bonds; valid review period bound | Keep enough time for moderator SLA |
-| Challenge period after approval | `challengePeriodAfterApproval()` | `setChallengePeriodAfterApproval` | `1 day` | Empty escrow/bonds; valid review period bound | Change only with policy update |
-| Validator bond params | `validatorBondBps()`, `validatorBondMin()`, `validatorBondMax()` | `setValidatorBondParams` | `1500`, `10e6`, high cap | Bounds checked in function | Test on rehearsal network first |
-| Agent bond params | `agentBondBps()`, `agentBond()`, `agentBondMax()` | `setAgentBondParams` | `500`, `1e6`, high cap | Bounds checked in function | Coordinate with agent onboarding |
-| Agent bond absolute value | `agentBond()` | `setAgentBond` | `1e6` | Must satisfy configured limits | Communicate before enforcing increase |
-| Validator slash BPS | `validatorSlashBps()` | `setValidatorSlashBps` | `8000` | Empty escrow/bonds; bounded | Update only after risk review |
-| Validation reward percentage | `validationRewardPercentage()` | `setValidationRewardPercentage` | `8` | Must remain compatible with AGI type payout percentages | Re-validate AGI type matrix |
-| Premium reputation threshold | `premiumReputationThreshold()` | `setPremiumReputationThreshold` | `10000` | No special gate | Low-risk, but still document |
-| Max payout per job | `maxJobPayout()` | `setMaxJobPayout` | `88888888000000` | No special gate | Use staged increases |
-| Max job duration | `jobDurationLimit()` | `setJobDurationLimit` | `10000000` | Must be non-zero | Keep aligned with ops timelines |
-| Max active jobs per agent | `maxActiveJobsPerAgent()` | `setMaxActiveJobsPerAgent` | `3` | Range guard in setter | Increase carefully to avoid concentration |
-| ENS registry | `ens()` | `updateEnsRegistry` | Constructor input | Identity unlocked + empty escrow/bonds + contract address | Change only with full namespace validation |
-| ENS name wrapper | `nameWrapper()` | `updateNameWrapper` | Constructor input | Identity unlocked + empty escrow/bonds + zero/contract | Validate wrapper ownership model |
-| ENS root nodes | `clubRootNode()`, `agentRootNode()`, `alphaClubRootNode()`, `alphaAgentRootNode()` | `updateRootNodes` | Constructor inputs | Identity unlocked + empty escrow/bonds | Update during intake pause window |
-| ENS job pages hook | `ensJobPages()` | `setEnsJobPages` | Constructor/config action | Identity unlocked; zero/contract address | Test hook on a single job first |
-| ENS tokenURI toggle | no public getter (write-only toggle) | `setUseEnsJobTokenURI` | `false` unless set | No special gate | Toggle only with metadata readiness |
-| Base IPFS URL | no public getter | `setBaseIpfsUrl` | Constructor input | Length bound | Track value in release ledger |
-| Merkle roots | `validatorMerkleRoot()`, `agentMerkleRoot()` | `updateMerkleRoots` | Constructor input | No special gate | Publish proofs before updates |
-
-## 13) Troubleshooting (symptom → cause → web-only fix)
-
-| Symptom | Likely cause | Web-only fix |
-| --- | --- | --- |
-| Mainnet migration blocked with confirmation error | `DEPLOY_CONFIRM_MAINNET` missing or wrong | Set exact required string and rerun migration |
-| Etherscan verification fails with bytecode mismatch | Library addresses or compiler settings mismatch | Re-submit verify with exact linked libraries and compile settings |
-| Owner config call reverts with `InvalidState` | Function requires empty escrow/bonds and protocol still has active locked balances | Wait for settlement completion, verify `locked*` values are zero, retry |
-| `withdrawUSDC` reverts | Contract not in required state (`paused=true`, `settlementPaused=false`) or amount exceeds `withdrawableUSDC()` | Set pause posture correctly, read `withdrawableUSDC()`, retry with lower amount |
-| Agents/validators cannot apply/validate | Misconfigured authorization: roots empty/wrong, direct lists missing, blacklist active, ENS config wrong | Verify allowlist path in Read Contract, then correct via owner function |
-| Merkle proof rejected | Proof built with wrong leaf/hash format | Rebuild using canonical leaf `keccak256(abi.encodePacked(address))` and deterministic script |
-| ENS authorization fails | Wrong root node, wrong subdomain label, or claimant not recognized by NameWrapper/resolver checks | Confirm root nodes and ownership path, then retry with correct subdomain |
-
-## 14) Compliance, Terms, and AI-Agents-Exclusively Notice
-
-AGIJobManager is intended for AI agents exclusively for normal protocol participation.
-
-Humans can still execute owner and operator administration functions safely using web interfaces as documented here.
-
-Authoritative Terms and Conditions are embedded in the contract header in `contracts/AGIJobManager.sol` and mirrored in `docs/LEGAL/TERMS_AND_CONDITIONS.md`.
-
-This guide is operational documentation, not legal advice.
+The contract describes normal protocol participation as intended for AI agents; this guide also covers owner/operator administration. Its operational checks do not establish the truth of off-chain work or remove trust in owners, moderators, validators and external dependencies. Consult the [contract terms](../LEGAL/TERMS_AND_CONDITIONS.md) and [security model](../SECURITY_MODEL.md) for their scope.

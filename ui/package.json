@@ -1,6 +1,6 @@
 {
   "name": "agi-job-manager-ui",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "engines": {
     "node": ">=22.23.2"
@@ -56,7 +56,7 @@
     "@axe-core/playwright": "4.10.2",
     "@playwright/test": "1.63.0",
     "@testing-library/react": "16.0.1",
-    "@types/node": "22.7.4",
+    "@types/node": "22.20.3",
     "@types/react": "18.3.9",
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.20",
@@ -67,7 +67,8 @@
     "postcss": "8.5.28",
     "tailwindcss": "3.4.13",
     "typescript": "5.6.2",
-    "vitest": "2.1.1"
+    "vitest": "4.1.11",
+    "vite": "7.3.6"
   },
   "overrides": {
     "postcss": "8.5.28",

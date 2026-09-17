@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { JSDOM } from 'jsdom';
 import { describe, expect, it, vi } from 'vitest';
 
 const primary = fs.readFileSync(path.resolve(__dirname, '../agijobmanager-usdc.html'), 'utf8');
@@ -207,5 +208,188 @@ describe('posting review economics', () => {
     expect(context.pendingReviewedAction).toBeNull();
     expect(context.ensureApproval).not.toHaveBeenCalled();
     expect(context.setToast).toHaveBeenCalledWith(expect.stringContaining('intake is paused'), 'bad');
+  });
+});
+
+describe('review preparation and confirmation ownership', () => {
+  it('does not replace an unresolved confirmation or its promise', async () => {
+    const { context } = primaryContext();
+    const first = context.requestActionConfirmation({ title: 'First approval' });
+    await expect(context.requestActionConfirmation({ title: 'Second approval' })).rejects.toThrow('current review');
+    expect(context.pendingReviewedAction.title).toBe('First approval');
+    await context.confirmReviewedAction();
+    await expect(first).resolves.toBe(true);
+  });
+  it('resolves the original confirmation as cancelled after a rejected replacement', async () => {
+    const { context } = primaryContext();
+    const first = context.requestActionConfirmation({ title: 'First approval' });
+    await expect(context.requestActionConfirmation({ title: 'Second approval' })).rejects.toThrow();
+    context.closeActionReview();
+    await expect(first).resolves.toBe(false);
+  });
+  it('reserves the reviewed action before waiting for live wallet checks', async () => {
+    const { context } = primaryContext();
+    let release!: (accounts: string[]) => void;
+    context.web3.currentProvider.request.mockImplementation(({ method }: { method: string }) => method === 'eth_accounts' ? new Promise<string[]>(resolve => { release = resolve; }) : Promise.resolve('0x1'));
+    const run = vi.fn(async () => undefined);
+    context.openActionReview({ title: 'First action', run });
+    const confirmation = context.confirmReviewedAction();
+    expect(() => context.openActionReview({ title: 'Racing action', run })).toThrow('current transaction');
+    release([account]); await confirmation;
+    expect(run).toHaveBeenCalledOnce();
+  });
+  it('requires explicit nesting for a confirmation inside an active action', async () => {
+    const { context } = primaryContext();
+    context.activeReviewedContext = context.captureWriteContext();
+    await expect(context.requestActionConfirmation({ title: 'Unrelated admin call' })).rejects.toThrow('current transaction');
+    const approval = context.requestActionConfirmation({ title: 'Nested exact approval', allowDuringAction: true });
+    await context.confirmReviewedAction();
+    await expect(approval).resolves.toBe(true);
+  });
+  it('does not execute a review blocked by an integrity check', async () => {
+    const { context } = primaryContext();
+    const run = vi.fn();
+    context.openActionReview({ title: 'Blocked bond', confirmDisabled: true, run });
+    await context.confirmReviewedAction();
+    expect(run).not.toHaveBeenCalled();
+    expect(context.pendingReviewedAction.title).toBe('Blocked bond');
+  });
+  it('rejects a caller context changed during async preparation before the review opens', () => {
+    const { context } = primaryContext();
+    const writeContext = context.captureWriteContext();
+    context.AGI_JOB_MANAGER = other;
+    expect(() => context.openActionReview({ writeContext, title: 'Old deployment action', run: vi.fn() })).toThrow('changed');
+    expect(context.pendingReviewedAction).toBeNull();
+  });
+  it('refreshes terminal-action facts and rejects deployment drift during the read', async () => {
+    const { context, method } = primaryContext();
+    Object.assign(context, {
+      requireConnected: () => true, mustBeReadyToWrite: () => true,
+      jobCache: new Map([['9', { payout: 1n }]]),
+      fetchJobSnapshot: vi.fn(async () => { context.AGI_JOB_MANAGER = other; return { payout: 100n }; }),
+      simulateJobSettlement: () => ({ headline: 'Fresh settlement', approvals: 2, disapprovals: 0 }), classifyJobStatus: () => 'Fresh review'
+    });
+    vm.runInContext(section(primary, '    async function finalizeJob(', '    async function disputeJob('), context);
+    await context.finalizeJob(9);
+    expect(context.fetchJobSnapshot).toHaveBeenCalledWith(9, { forceRefresh: true });
+    expect(context.pendingReviewedAction).toBeNull();
+    expect(context.setToast).toHaveBeenCalledWith(expect.stringContaining('changed'), 'bad');
+    expect(method.send).not.toHaveBeenCalled();
+  });
+  it('submits the validator label that was reviewed even if another label is verified later', async () => {
+    const { context, method } = primaryContext();
+    const trace = Object.fromEntries(['payoutRaw', 'bpsRaw', 'minBondRaw', 'maxBondRaw', 'baseBondRaw', 'afterMinClampRaw', 'afterMaxClampRaw', 'afterPayoutClampRaw', 'finalBondRaw'].map(key => [key, 1n]));
+    const validateJob = vi.fn(() => method);
+    Object.assign(context, {
+      requireConnected: () => true, mustBeReadyToWrite: () => true, verified: { club: 'reviewed-validator', clubAlpha: false }, SUFFIX: { club: 'club.agi.eth' },
+      fetchJobSnapshot: async () => ({ approvals: 1, disapprovals: 0 }), fetchValidatorBondSnapshot: async () => ({ ...trace, trace }),
+      buildTraceAuditHtml: () => '', formatRawAmountTrace: String, agiJobManager: { methods: { validateJob } },
+      ensureApproval: async () => ({ ok: true }), getTokenBalanceAndAllowance: async () => ({ balance: 10n, allowance: 10n }), refreshAll: async () => undefined
+    });
+    vm.runInContext(section(primary, '    function assertSnapshotMatch(', '    async function fetchAgentBondSnapshot('), context);
+    vm.runInContext(section(primary, '    async function validateJob(', '    async function disapproveJob('), context);
+    await context.validateJob(9);
+    context.verified.club = 'different-validator';
+    await context.confirmReviewedAction();
+    expect(validateJob).toHaveBeenCalledWith('9', 'reviewed-validator', []);
+    expect(method.send).toHaveBeenCalledOnce();
+  });
+});
+
+
+describe('transaction review keyboard access', () => {
+  it('labels the dialog, focuses Cancel, keeps Tab within the review, and restores the opener', () => {
+    const { context } = primaryContext();
+    const dom = new JSDOM(primary, { url: 'https://example.test/usdc.html' });
+    try {
+      const document = dom.window.document;
+      context.document = document;
+      context.el = (id: string) => document.getElementById(id);
+      const opener = document.createElement('button'); document.body.append(opener); opener.focus();
+      context.openActionReview({ title: 'Review refund', run: vi.fn() });
+      const modal = document.getElementById('actionReviewModal')!;
+      expect(modal.getAttribute('role')).toBe('dialog');
+      expect(modal.getAttribute('aria-labelledby')).toBe('actionReviewTitle');
+      expect(document.activeElement?.id).toBe('cancelActionReviewBtn');
+      document.getElementById('confirmActionReviewBtn')!.focus();
+      context.handleActionReviewKeydown(new dom.window.KeyboardEvent('keydown', { key: 'Tab', cancelable: true }));
+      expect(document.activeElement?.id).toBe('closeActionReviewModal');
+      context.handleActionReviewKeydown(new dom.window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true }));
+      expect(document.activeElement?.id).toBe('confirmActionReviewBtn');
+      context.handleActionReviewKeydown(new dom.window.KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
+      expect(context.pendingReviewedAction).toBeNull();
+      expect(document.activeElement).toBe(opener);
+      expect(modal.getAttribute('aria-hidden')).toBe('true');
+    } finally { dom.window.close(); }
+  });
+});
+
+function identityReviewContext() {
+  const { context, method } = primaryContext();
+  const fields: Record<string, any> = { mintAlphaLabel: { value: 'reviewed-agent' }, mintAlphaRecipient: { value: account } };
+  const fallback = context.el;
+  const register = vi.fn(() => method);
+  const registerSimple = vi.fn(() => method);
+  Object.assign(context, {
+    requireConnected: () => true, mustBeReadyToWrite: () => true,
+    el: (id: string) => fields[id] || { ...fallback(id), dataset: {} },
+    validateAlphaLabelLocal: (label: string) => ({ ok: true, label }),
+    FREE_TRIAL_REGISTRAR_IDENTITY: manager, FREE_TRIAL_REGISTRAR: manager,
+    ALPHA_AGENT_PARENT: 'alpha.agent.agi.eth', ALPHA_AGENT_PARENT_NODE: '0xroot', namehash: String,
+    freeTrialRegistrarIdentity: { methods: { register } },
+    freeTrialRegistrar: { methods: { registerSimple, available: () => ({ call: async () => true }) } },
+    verifySubdomain: async () => undefined, refreshFreeTrialRegistrarState: async () => undefined,
+    refreshIdentityState: async () => undefined, saveRecentAlphaAgentName() {}, updateMissionControl: async () => undefined
+  });
+  context.web3.utils = { isAddress: () => true };
+  context.APP_STATE.identity = { preview: null };
+  vm.runInContext(section(primary, '    let alphaIdentityReviewState', '    function renderIdentityAdminControls('), context);
+  vm.runInContext(section(primary, '    let alphaMintReviewState', '    function renderRegistrarAdminControls('), context);
+  return { context, method, fields, register, registerSimple };
+}
+
+describe('identity review intent', () => {
+  it('keeps the reviewed identity label when the form changes before confirmation', async () => {
+    const { context, fields, register, method } = identityReviewContext();
+    context.openAlphaIdentityReview('register');
+    fields.mintAlphaLabel.value = 'different-agent';
+    await context.runAlphaIdentityAction('register');
+    expect(register).toHaveBeenCalledWith('reviewed-agent');
+    expect(method.send).toHaveBeenCalledOnce();
+  });
+  it('blocks a reviewed identity action after the deployment changes', async () => {
+    const { context, method } = identityReviewContext();
+    context.openAlphaIdentityReview('register');
+    context.AGI_JOB_MANAGER = other;
+    await expect(context.runAlphaIdentityAction('register')).rejects.toThrow('changed');
+    expect(method.send).not.toHaveBeenCalled();
+  });
+  it('keeps the reviewed ENS recipient and label when fields change before confirmation', async () => {
+    const { context, fields, registerSimple, method } = identityReviewContext();
+    context.openAlphaMintReview();
+    fields.mintAlphaLabel.value = 'different-agent'; fields.mintAlphaRecipient.value = other;
+    await context.mintAlphaAgentName();
+    expect(registerSimple).toHaveBeenCalledWith('0xroot', 'reviewed-agent', account);
+    expect(method.send).toHaveBeenCalledOnce();
+  });
+});
+
+describe('admin argument dialog lifecycle', () => {
+  it('prevents replacing an unresolved admin form and supports cancelling with Escape', async () => {
+    const { context } = primaryContext();
+    const dom = new JSDOM(primary, { url: 'https://example.test/usdc.html' });
+    try {
+      const document = dom.window.document;
+      context.document = document; context.el = (id: string) => document.getElementById(id);
+      context.ADMIN_METHOD_SCHEMAS = { pauseIntake: [] };
+      const opener = document.createElement('button'); document.body.append(opener); opener.focus();
+      vm.runInContext(section(primary, '    async function collectAdminArgs(', '    async function executeAdminControl('), context);
+      const first = context.collectAdminArgs('manager', 'pauseIntake', false);
+      expect(document.activeElement?.id).toBe('cancelAdminArgsBtn');
+      await expect(context.collectAdminArgs('manager', 'pauseIntake', false)).rejects.toThrow('current admin form');
+      document.getElementById('adminArgsModal')!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await expect(first).resolves.toBeNull();
+      expect(document.activeElement).toBe(opener);
+    } finally { dom.window.close(); }
   });
 });

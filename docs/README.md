@@ -1,10 +1,13 @@
 # AGIJobManager Documentation Hub
 
-> v0.5.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.5.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+> **v0.9.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
 Institutional documentation for operators, integrators, contributors, and auditors.
 
 ## Start here in one minute
+
+- **Employer, agent or validator:** [Start here](START_HERE.md), then [participant guide](USERS.md).
+- **Release reviewer:** [testing](TESTING.md), [mainnet readiness](MAINNET_READINESS.md) and [dependency security](DEPENDENCY_SECURITY.md).
 
 If you only read one thing right now:
 - **Deploy or operate on mainnet (recommended):** [../hardhat/README.md](../hardhat/README.md)
@@ -18,7 +21,7 @@ If you only read one thing right now:
 
 | Surface | What it is now | Use this when | Canonical doc |
 | --- | --- | --- | --- |
-| Standalone HTML UI artifact | Versioned, single-file, mainnet-focused browser artifact (`v21`). | You need a direct operator/reviewer interface without running the full UI stack. | [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) |
+| Standalone HTML UI artifact | Versioned, single-file, mainnet-focused browser artifact (`ui/agijobmanager-usdc.html`). | You need a direct operator/reviewer interface without running the full UI stack. | [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) |
 | Broader/full UI effort | Next.js UI with ongoing development, test, and release tracks. | You are developing, testing, or evaluating the full UI roadmap. | [ui/README.md](./ui/README.md) and [../ui/README.md](../ui/README.md) |
 
 
@@ -33,7 +36,7 @@ If you only read one thing right now:
 
 ## Standalone HTML UI safety routing
 
-When you intentionally operate the single-file mainnet artifact (`v21`), use this order:
+When you intentionally operate the single-file mainnet artifact (`ui/agijobmanager-usdc.html`), use this order:
 
 1. [ui/GENESIS_JOB_MAINNET_HTML_UI.md](./ui/GENESIS_JOB_MAINNET_HTML_UI.md) for preconditions, gate checks, and action flow.
 2. [../ui/README.md](../ui/README.md) to confirm file inventory and artifact status in `ui/`.
@@ -96,8 +99,8 @@ If another document conflicts with these in an operational detail, follow the ca
 ## Most common operator questions (fast answers)
 
 - **What is canonical if docs disagree?** Follow the canonical set above (Hardhat guide, ENS replacement runbook, ENS overview, deployment troubleshooting).
-- **What deployment path is recommended?** Hardhat is recommended/official; Truffle is legacy/supported only.
-- **What is manual vs automated during ENS replacement?** Deploy + `setJobManager` are scripted; NameWrapper approval + `setEnsJobPages` + legacy migration are manual.
+- **What deployment path is recommended?** Hardhat is recommended/official; Truffle is restricted to disposable local tests and development.
+- **What is manual vs automated during ENS replacement?** The optional ENS deployment script deploys and configures its own manager reference; NameWrapper approval + `setEnsJobPages` + legacy migration are manual.
 - **How are ENS names built?** `<prefix><jobId>.<jobsRootName>` where `AGIJobManager` provides `jobId` and `ENSJobPages` provides prefix/root.
 - **When is locking safe?** Only after post-cutover read/event checks and any legacy migration decisions are complete.
 

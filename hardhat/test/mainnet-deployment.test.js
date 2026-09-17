@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const { ethers, artifacts, network } = require('hardhat');
 const { FQNS, LIBRARIES, qualifiedBuild } = require('../scripts/deploy');
-const { requireArtifactMatch } = require('../scripts/deployment-safety');
+const { requireArtifactMatch, requireConfirmedReceipt } = require('../scripts/deployment-safety');
 
 describe('Release deployment under Ethereum code-size limits', function () {
   this.timeout(120000);
@@ -35,6 +35,8 @@ describe('Release deployment under Ethereum code-size limits', function () {
 
   it('deploys the fully linked release and matches runtime, immutable token and every library', async function () {
     const address = await manager.getAddress();
+    const transaction = manager.deploymentTransaction();
+    requireConfirmedReceipt(await transaction.wait(), transaction.hash, address);
     const code = await ethers.provider.getCode(address);
     const runtimeBytes = requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS.AGIJobManager), buildInfo,
       address, libraries, tokenAddress: await token.getAddress(), code });

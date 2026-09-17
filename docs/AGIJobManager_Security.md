@@ -1,42 +1,18 @@
-# AGIJobManager Security Considerations
+# AGIJobManager security considerations — v0.9.0
 
-This document summarizes security posture, fixed issues, and remaining risks based on the current implementation.
+Read the [security model](SECURITY_MODEL.md), [trust model](trust-model-and-security-overview.md), [dependency scope](DEPENDENCY_SECURITY.md) and [source-specific verification report](../SECURITY_VERIFICATION_REPORT.md) together. A passing automated suite is not an independent audit or a guarantee that no vulnerability remains.
 
-## Reentrancy posture
+## Contract controls
 
-The contract inherits `ReentrancyGuard` and applies `nonReentrant` to state‑changing functions that handle funds or sensitive transitions, including:
-- Job escrow and settlement (`createJob`, `cancelJob`, `expireJob`, `finalizeJob`).
-- Validation and dispute resolution (`validateJob`, `disapproveJob`, `disputeJob`, `resolveDispute`, `resolveDisputeWithCode`, `resolveStaleDispute`).
-- Funds management (`withdrawUSDC`, `contributeToRewardPool`).
+- State guards reject nonexistent jobs, repeat votes and repeated settlement. Reserved USDC includes job escrow and all three bond categories.
+- Transfer helpers require successful ERC-20 calls and exact escrow/bond receipt. The supported token is native six-decimal Circle USDC, not a fee-on-transfer alternative.
+- Sensitive fund-moving paths use reentrancy guards; completion-NFT callbacks and optional ENS hooks are bounded and covered by dedicated regressions.
+- Settlement transfers and reserve changes are atomic. An issuer pause, blocked recipient or failed transfer reverts the whole operation and permits retry only after the cause is resolved.
+- Successful settlement pays correct-side validators, fixed 30%/10% gross-cost recipients, then the agent remainder; bonds are accounted separately. [Payout specification](USDC_PAYOUT_SPLIT.md).
+- Intake starts paused. Duration limits are bounded, wallet rotation requires empty reserves, ownership requires acceptance and USDC cannot be rescued or replaced.
 
-Functions without `nonReentrant` (e.g., `requestJobCompletion`) do not transfer funds and only update job metadata.
+## Human and external dependencies
 
-## Fixed issues vs. legacy v0
+The owner retains power over pauses, eligibility, moderators and stale disputes. Moderators decide disputes. Validators must assess real evidence; bonds do not prove honest judgment. A no-vote fallback favors the agent after review expiry without independent validation. ENS and metadata systems can fail or provide misleading information. Circle retains issuer powers over USDC.
 
-The contract explicitly addresses common issues observed in earlier variants:
-
-- **Phantom job IDs / takeover**: `_job` reverts when the job’s employer is the zero address. This prevents interacting with deleted or nonexistent job records.
-- **Double voting by validators**: `approvals` and `disapprovals` mappings enforce single‑vote behavior, and the contract reverts if a validator tries to vote twice or vote on both sides.
-- **Division by zero on validator payouts**: validator payouts are only computed if `validators.length > 0`; otherwise, the validator budget is returned to the employer.
-- **Employer‑win double completion**: `_refundEmployer` marks the job as completed and releases escrow, preventing additional settlement paths.
-- **Unchecked ERC‑20 transfers**: `_callOptionalReturn` and `_safeERC20TransferFromExact` enforce successful transfers and exact amount receipt; fee‑on‑transfer or non‑standard tokens will revert.
-- **Validator bonds & slashing**: bonded voting is accounted via `lockedValidatorBonds` and released on settlement; incorrect votes are slashed, while correct votes receive rewards.
-- **Challenge window**: after approvals reach threshold, `challengePeriodAfterApproval` prevents instant settlement to mitigate last‑block bribery.
-
-## Remaining risks and assumptions
-
-- **Owner centralization**: the owner can pause/unpause, modify parameters, update the escrow token (pre‑lock), add AGI types, and withdraw surplus funds. A compromised owner can disrupt or redirect flows.
-- **Moderator trust**: moderators can unilaterally decide disputes. There is no on‑chain appeal mechanism.
-- **External dependencies**: ENS, NameWrapper, and Resolver contracts are trusted for ownership validation.
-- **Merkle root management**: Merkle roots can be updated by the owner via `updateMerkleRoots`. Incorrect roots can be corrected without redeploying; use explicit allowlists for urgent recovery while governance approves an update.
-- **ERC‑20 behavior assumptions**: the token must return `true` on transfers or provide no return data, and it must transfer exact amounts (no transfer fees). Fee‑on‑transfer tokens are incompatible.
-- **Escrow solvency**: `withdrawableUSDC` reverts if the contract balance is below `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`. Operators must avoid draining escrowed funds or locked bonds by mistake.
-- **Dispute bonds**: the dispute bond is paid to the winning side, not refunded to the initiator unless they win. Ensure participants understand this risk.
-- **Vote quorum edge cases**: after the completion review period, jobs with low vote counts or ties are auto‑disputed, which relies on moderator availability or owner intervention after `disputeReviewPeriod`.
-
-## Recommended best practices
-
-- Use multi‑sig ownership and rotate moderators periodically.
-- Monitor `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` and ensure the contract’s ERC‑20 balance never drops below it.
-- Validator budgets must be 1–60%, frozen at job posting. Fixed wallet shares consume 40%; all remaining cost goes to the agent. NFT scores affect eligibility only.
-- Prefer explicit allowlisting when ENS/Merkle configuration is uncertain.
+The identity lock is irreversible and does not remove owner authority over other controls. Use a reviewed signing arrangement, explicit policy, monitoring and rehearsed [incident procedures](OPERATIONS/INCIDENT_RESPONSE.md). Complete [mainnet readiness](MAINNET_READINESS.md) for the actual instance before significant exposure.

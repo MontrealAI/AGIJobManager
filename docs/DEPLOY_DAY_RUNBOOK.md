@@ -1,10 +1,10 @@
-# Deploy Day Runbook — v0.8.0
+# Deploy Day Runbook — v0.9.0
 
 Use the [Hardhat deployment guide](../hardhat/README.md) for the supported public-network workflow. Root Truffle scripts are for local tests and historical reproduction only; public-network signing is disabled.
 
 ## Before deployment
 
-1. Check out the immutable v0.8.0 tag and verify the release asset checksums.
+1. Check out the immutable v0.9.0 tag and verify the release asset checksums.
 2. Use Node 22.23.2 and `npm ci` in each workspace; review the [dependency security scope](DEPENDENCY_SECURITY.md).
 3. Select Ethereum mainnet or Sepolia and verify the native six-decimal USDC address against Circle's registry.
 4. Provide two distinct, reviewed recipient addresses for the fixed 30% and 10% shares. No production recipient is supplied by the release.
@@ -17,7 +17,7 @@ Follow the environment setup and `deploy:sepolia` or `deploy:mainnet` commands i
 
 If the intended owner differs from the deployer, the script only proposes the transfer. That address must call `acceptOwnership()`. Verify `owner()` and zero `pendingOwner()`; the deployer retains authority until acceptance.
 
-While intake remains paused, use the v0.8.0 USDC owner console or the verified explorer contract to configure roles, limits, ENS and policy. Verify USDC, both recipient addresses, all reserves, validator rate and ownership directly on chain. Confirm that ordinary settlement is available before opening intake. The console simulates privileged writes and requires review.
+While intake remains paused, use the v0.9.0 USDC owner console or the verified explorer contract to configure roles, limits, ENS and policy. Verify USDC, both recipient addresses, all reserves, validator rate and ownership directly on chain. Confirm that ordinary settlement is available before opening intake. The console simulates privileged writes and requires review.
 
 ## Open intake
 

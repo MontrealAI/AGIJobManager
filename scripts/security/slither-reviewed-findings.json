@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "slither_version": "0.10.4",
+  "slither_version": "0.11.6",
   "review_date": "2026-09-17",
-  "scope": "Production Solidity, all medium/high detectors and all severities of five reentrancy detectors. Each finding is retained, individually reviewed, and bound to exact source/configuration/dependency hashes. This is an internal review, not an independent audit.",
+  "scope": "Production Solidity, all medium/high detectors and all severities of six reentrancy detectors. Each finding is retained, individually reviewed, and bound to exact source/configuration/dependency hashes. This is an internal review, not an independent audit.",
   "source_sha256": {
     "contracts/AGIJobManager.sol": "20a64e4f992864594b252586fa82860490f11c3b14acf61353cefcf47113e7fd",
     "contracts/ens/ENSJobPages.sol": "52d71e80d37e8ef653af4378169d6e7bdd272097af74d5448d8f599351095ae8",
@@ -18,9 +18,9 @@
     "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
     "contracts/utils/UriUtils.sol": "244d758a497bdd61c1f4655e0d094a434f86067b82ec5150f671acce33523e03",
     "foundry.toml": "129c697f553cd4fb849cf1f0916b0f1c0dce6b9e1f75cc2e6251f9f859384c01",
-    "package-lock.json": "87323470e43a16f1d906958ae2903ec0cba7a1c48c711b168aaebd56ccaf9613",
+    "package-lock.json": "4614e333c0c836fc1c2f72977e40d4922b12bde1a8410113167be74cb6da9d85",
     "scripts/security/slither-extended.config.json": "3b273bb8476e06ac03dba09f3d6bc68390ef344883ef3c7f59fbdd0b6317ca01",
-    "scripts/security/slither-reentrancy.config.json": "46ac5174f8efbd5538470bb8bdd36b1ff274f25ad64cd11ee52f31df424438bd"
+    "scripts/security/slither-reentrancy.config.json": "7c6e5346fe75f6fd15d5877a834042925f0486352caff80d930f9c877e5c2bba"
   },
   "reports": {
     "slither-extended.json": [

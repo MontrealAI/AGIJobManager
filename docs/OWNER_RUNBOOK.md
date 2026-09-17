@@ -1,139 +1,136 @@
-# OWNER RUNBOOK (Low-touch operations)
+# Owner Runbook — v0.9.0
 
-This runbook is optimized for autonomous, checklist-driven operations and Etherscan-first control.
+Use this runbook for configuration, ownership and incident decisions. Use the [Hardhat deployment guide](../hardhat/README.md) for public-network commands and the [owner controls guide](OWNER_CONTROLS.md) for the exact boundaries of each setting. Root Truffle tooling is for disposable local rehearsals only.
 
 ## In one minute (owner/operator)
-- Use Hardhat for deploy/replacement; use Etherscan for owner controls and verification reads.
-- ENSJobPages cutover is additive: deploy new ENSJobPages, grant wrapper approval, set AGIJobManager ENSJobPages pointer, migrate legacy jobs if needed, lock only after validation.
-- Never lock identity/configuration before validating addresses, approvals, and expected ENS hook behavior.
 
+- Deploy the reviewed release with Hardhat. The constructor starts intake paused; the deployment script never opens it.
+- Verify native Circle USDC, both settlement wallets, linked code, policy settings and the intended owner. A proposed ownership transfer still requires `acceptOwnership()`.
+- Complete the read-only readiness check and operational review before the accepted owner calls `unpauseIntake()`.
+- Use `pauseIntake()` to stop new jobs while existing work settles. For an active exploit affecting funds, use `pauseAll()` and verify both pause flags.
+- Identity locks are irreversible governance choices. They do not repair an incident or pause activity.
 
 ## Start here by owner intent
-- **I need to deploy or replace ENSJobPages now:** use `hardhat/README.md`, then `docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`.
-- **I only need manual owner actions on Etherscan:** use `docs/ETHERSCAN_GUIDE.md` and this runbook.
-- **I am about to lock config:** complete the lock preflight checklist below first.
 
+- **Deploy a manager:** [Hardhat guide](../hardhat/README.md), [deployment operations](DEPLOYMENT_OPERATIONS.md) and [deploy-day runbook](DEPLOY_DAY_RUNBOOK.md).
+- **Change recipient wallets or ownership:** [owner controls](OWNER_CONTROLS.md).
+- **Replace ENSJobPages:** [ENS replacement guide](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
+- **Use a verified explorer:** [Etherscan guide](ETHERSCAN_GUIDE.md); check every method against the current [contract interface](REFERENCE/CONTRACT_INTERFACE.md).
+- **Contain an incident:** [incident response](OPERATIONS/INCIDENT_RESPONSE.md).
 
 ## ENS replacement responsibilities (owner split)
-- **wrapped-root owner**: `NameWrapper.setApprovalForAll(newEnsJobPages, true)`.
-- **AGIJobManager owner**: `setEnsJobPages(newEnsJobPages)` on AGIJobManager.
-- **ENSJobPages owner (if needed)**: `migrateLegacyWrappedJobPage(jobId, exactLabel)` for legacy jobs missing snapshots.
 
-Expected result:
-- Future jobs resolve using `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`).
-- Legacy snapshotted labels remain stable unless explicitly migrated/imported.
+| Action | Responsible signer |
+| --- | --- |
+| NameWrapper `setApprovalForAll(newEnsJobPages, true)` | Wrapped-root owner |
+| Manager `setEnsJobPages(newEnsJobPages)` | AGIJobManager owner, while identity configuration remains unlocked |
+| `migrateLegacyWrappedJobPage(jobId, exactLabel)` where required | ENSJobPages owner |
+| Reviewed irreversible lock | Owner of the contract being locked |
 
+Future jobs use the configured `<prefix><jobId>.<jobsRootName>` label, with `agijob` as the default prefix. Existing snapshotted labels stay stable unless explicitly migrated or imported. Verify the actual root, prefix, approvals and legacy-label inventory before cutover.
 
 ## Manual vs automated (owner-safe expectations)
 
-- **Scripted:** deployment/verification workflows (Hardhat recommended).
-- **Manual on Etherscan:** NameWrapper approval, `setEnsJobPages`, optional legacy migration, lock calls.
-- **Never assume automated:** cutover wiring and migration decisions.
+The manager's Hardhat workflow builds, deploys, checks runtime code and completes explorer verification before proposing ownership transfer when needed. A verification failure stops before that proposal. It does not accept ownership, open intake, grant NameWrapper approvals or choose a migration policy for you.
 
-Expected result before lock calls:
-- `ensJobPages()` points at intended address.
-- NameWrapper approval for that address is active.
-- Future job hooks are behaving as expected.
-- Legacy migration status is complete or explicitly tracked.
+Before an ENS lock, confirm `ensJobPages()` points to the intended contract, wrapper approval is active, a future job hook succeeds, and legacy migration work is complete or explicitly tracked.
 
 ## 1) Deployment checklist
 
-1. Compile with repository defaults (Truffle + optimizer settings from `truffle-config.js`).
-2. Link external libraries exactly as deployment scripts/Truffle artifacts require.
-3. Deploy constructor args carefully:
-   - USDC token address,
-   - base IPFS URL,
-   - ENS config addresses,
-   - root nodes,
-   - initial Merkle roots.
-4. Verify AGIJobManager and linked libraries on Etherscan (see [`VERIFY_ON_ETHERSCAN.md`](VERIFY_ON_ETHERSCAN.md)).
-5. Verify ENSJobPages and ensure selector compatibility tests pass:
-   - `handleHook(uint8,uint256)` -> `0x1f76f7a2` / calldata `0x44`
-   - `jobEnsURI(uint256)` -> `0x751809b4` / calldata `0x24`
-6. Run post-deploy sanity reads: `paused`, `settlementPaused`, Merkle roots, root nodes, token address.
+1. Check out the immutable v0.9.0 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
+2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; do not substitute local Truffle artifacts for the public deployment build.
+3. Review all six constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, and **two distinct settlement wallets ordered 30% then 10%**. Confirm the intended final owner separately. Example addresses and roots are not a reviewed production configuration.
+4. Run a read-only deployment plan, rehearse on Sepolia and review the saved plan before any authorized mainnet broadcast. Review the five library addresses and exact linked runtime code.
+5. Verify the manager and every linked library on Etherscan. A failed deployment command may already have broadcast transactions: inspect the deployment journal and reconcile receipts before retrying. Where all six deployments completed, use the Hardhat guide's read-only recovery procedure; preserve its separate reverified receipt and the original journal. Recovery does not propose or accept ownership.
+6. Have the proposed final owner call `acceptOwnership()` where needed. Verify `owner()`, zero `pendingOwner()` and the completed transfer event.
+7. While intake stays paused, configure moderators, authorization routes, eligible agent NFT collections, limits, bonds and review periods. An agent needs both authorization and a qualifying enabled ERC-721 holding; allowlisting alone is insufficient.
+8. Run the read-only readiness checker with the reviewed deployment receipt and complete the operational gates in [mainnet readiness](MAINNET_READINESS.md). Confirm `paused()==true`, `settlementPaused()==false`, both recipient addresses, USDC issuer status and all four reserve counters.
 
-Use deterministic offline helpers before any write:
+ENSJobPages is optional. When enabled, verify selector compatibility and hook behavior:
+
+- `handleHook(uint8,uint256)` → `0x1f76f7a2`, calldata length `0x44`.
+- `jobEnsURI(uint256)` → `0x751809b4`, calldata length `0x24`.
+
+The offline state advisor can help review a recorded job state; it does not authorize a transaction or replace current on-chain reads:
+
 ```bash
-node scripts/etherscan/prepare_inputs.js --action approve --spender 0xAGIJobManagerAddress --amount 1200
 node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.json
 ```
 
 ## 2) Safe defaults + staged rollout
 
-- Phase 0: `pauseAll` enabled; configure params/roles.
-- Phase 1: keep settlement paused (`unpause` + `setSettlementPaused(true)`) for a controlled read-only warm-up; note this also blocks `createJob`/`applyForJob` writes because they require `whenSettlementNotPaused`.
-- Phase 2: enable live operations (`setSettlementPaused(false)`) once moderators/validators are ready; this opens both intake and settlement paths.
-- Use conservative thresholds/quorum first; ratchet only after observing production behavior.
+1. **Configure:** keep the constructor's intake pause in place. Settlement is initially enabled; no job can enter until intake is opened.
+2. **Verify:** finish source verification, accepted ownership, participant eligibility, read-only readiness and monitoring. Readiness is a point-in-time check; recheck any state changed afterward.
+3. **Activate:** the accepted owner calls `unpauseIntake()` only after reviewing those results. This opens new work; there is no separate automatic launch transaction in the deployment scripts.
+4. **Limit exposure:** execute and reconcile a deliberately small production job before increasing limits. With the default 8% validator budget, a 100 USDC job allocates 8 / 30 / 10 / 52 before considering rounding, unused rewards and separate bonds. See [payout rules](USDC_PAYOUT_SPLIT.md).
+
+Keep operational parameter changes reviewable. The validator percentage is fixed for each job at posting; changes to it affect new jobs. Review periods, voting thresholds, quorum and validator slashing require empty escrow and bonds. Other settings can affect later actions on already-posted jobs; do not assume every parameter is snapshotted.
 
 ## 3) Incident playbooks
 
-## A) Stop intake only (allow settlements to finish)
-1. `pause()` (or `pauseIntake()`).
-2. Keep `setSettlementPaused(false)`.
-3. Communicate: no new jobs, active jobs continue.
+### A) Stop intake only, allowing safe settlements to finish
 
-## B) Stop settlement lane (also blocks create/apply writes)
-1. `setSettlementPaused(true)`.
-2. Expect settlement actions **and** `createJob`/`applyForJob` writes to be paused by `whenSettlementNotPaused`.
-3. Keep `paused()` state unchanged so read/observability remains available.
-4. Communicate expected resume timing and that new intake writes are temporarily unavailable.
+Call `pauseIntake()` (or `pause()`) if intake is currently open. Verify `paused()==true` and the existing `settlementPaused()` value. Leave settlement enabled only when it is safe to continue; do not clear an existing emergency settlement pause merely to stop intake.
 
-## C) Full stop
-1. `pauseAll()`.
-2. Verify both lanes paused (`paused==true`, `settlementPaused==true`).
-3. Publish incident bulletin + next decision checkpoint.
+### B) Stop settlement and intake writes
 
-## 4) Revenue withdrawals without escrow risk
+Call `setSettlementPaused(true)`. This blocks completion, voting, dispute resolution, finalization, cancellation/refunds and `createJob`/`applyForJob`. It does not change `paused()`. Read-only queries remain available.
+
+### C) Active exploit or immediate fund risk
+
+Call `pauseAll()` through the authorized owner and verify both `paused()==true` and `settlementPaused()==true`. Preserve evidence and follow [incident response](OPERATIONS/INCIDENT_RESPONSE.md). These controls stop the guarded job paths; they do not revoke owner authority or stop blockchain time.
+
+## 4) Withdraw unreserved USDC without touching escrow
+
+Successful job costs are distributed directly to validators, the two recipient wallets and the agent. They do not accumulate as a manager treasury. `withdrawableUSDC()` exposes only balance above job escrow and all outstanding bonds, such as an unsolicited donation.
 
 Before `withdrawUSDC(amount)`:
-1. Read `withdrawableUSDC()`.
-2. Ensure `amount <= withdrawableUSDC()`.
-3. Confirm protocol is paused for withdrawals (`withdrawUSDC` requires `whenPaused` and settlement not paused).
-4. Execute withdrawal in small chunks when uncertain.
-5. Save transaction hash in operations log and re-check `withdrawableUSDC()` after each chunk.
 
-Never bypass solvency checks via rescue functions for AGI escrow assets.
+1. Reconcile the token balance against `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds` and `lockedDisputeBonds`.
+2. Read `withdrawableUSDC()` and choose a positive amount no greater than that value.
+3. Confirm intake is paused and settlement is enabled, as required by the function. Do not weaken incident containment just to withdraw surplus.
+4. Simulate, review and execute with the owner. Save the transaction hash and reconcile balances and reserves afterward.
+
+`rescueERC20` applies the same surplus and pause guards to USDC. Generic `rescueToken` cannot target USDC or the manager itself. Rescue functions are not an escrow migration mechanism and cannot bypass Circle's transfer restrictions.
 
 ## 5) Allowlist governance (Merkle roots)
 
-Rotation procedure:
-1. Build root + proofs offline from canonical address list.
-2. Peer-review generated root/proofs.
-3. Announce effective block/time and grace period.
-4. Call `updateMerkleRoots(validatorRoot, agentRoot)`.
-5. Publish proof file and rollback plan.
+1. Build address lists and proofs offline from the reviewed participant set.
+2. Review the generated roots, proofs, authority routes and impact on posted jobs.
+3. Distribute the new proofs and announce the planned change before submitting it. There is no built-in dual-root grace period.
+4. The owner calls `updateMerkleRoots(validatorRoot, agentRoot)` and verifies `MerkleRootsUpdated` plus both getters.
+5. Record the actual transaction/block and retain the prior roots and proofs for a reviewed rollback if appropriate.
 
-Use deterministic scripts:
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json
 ```
 
+Merkle roots and additional allowlists remain separate controls from the irreversible ENS identity lock. Eligibility changes do not reverse completed votes or settled payments.
+
 ## 6) ENS operations
 
-Role split reminder:
-- **wrapped-root owner** executes NameWrapper approvals.
-- **AGIJobManager owner** executes `setEnsJobPages` and AGIJobManager identity controls.
+- `updateEnsRegistry`, `updateNameWrapper` and `updateRootNodes` require unlocked identity configuration and zero outstanding escrow and bonds.
+- `setEnsJobPages` changes the optional job-page pointer only while identity configuration is unlocked; a zero address disables this integration.
+- `setUseEnsJobTokenURI(false)` disables the optional ENS token-URI presentation path. It does not change agent/validator authorization through ENS.
+- `lockIdentityConfiguration()` permanently disables the protected identity setters. It does not lock Merkle roots, freeze the entire contract or mitigate compromised identity configuration.
 
-
-- Configure ENS via `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`.
-- Point job pages with `setEnsJobPages`.
-- Enable/disable ENS-backed token URI path via `setUseEnsJobTokenURI`.
-- Lock identity config permanently with `lockIdentityConfiguration` only after full validation.
-
-`lockIdentityConfiguration` is irreversible. Delay until final addresses/nodes are battle-tested.
+Use the separate wrapped-root owner for NameWrapper approvals. Confirm the impact of revoking an old approval on existing pages before doing so.
 
 ## 6.1) Lock preflight (do not skip)
 
-Before `lockIdentityConfiguration()` or `lockConfiguration()`:
-- [ ] AGIJobManager points to the intended ENSJobPages.
-- [ ] NameWrapper approval is active for wrapped-root operations.
-- [ ] At least one future job hook path succeeds.
-- [ ] Legacy jobs that require historical labels are migrated or explicitly tracked.
-- [ ] You understand lock calls are irreversible.
+Before manager `lockIdentityConfiguration()` or ENSJobPages `lockConfiguration()`:
+
+- [ ] All addresses, namespace roots and manager/job-page relationships match the reviewed configuration.
+- [ ] NameWrapper approval is active for intended wrapped-root operations.
+- [ ] A future job hook path and intended authorization paths have succeeded in rehearsal.
+- [ ] Legacy labels requiring preservation are migrated or explicitly tracked.
+- [ ] The owner understands which future repairs and replacements the particular lock prevents.
+- [ ] There is no unresolved identity incident. Locking a bad configuration would preserve the problem.
 
 ## 7) High-risk actions (operator warnings)
 
-- `rescueERC20`, `rescueToken`: emergency-only, must not violate escrow solvency assumptions.
-USDC is immutable at deployment; no token-address update function exists in v0.5.0.
-- `updateEnsRegistry`/`updateNameWrapper`/`updateRootNodes`/`setEnsJobPages`: identity-critical; only before lock.
-- Parameter setters affecting incentives (`setValidatorBondParams`, `setAgentBondParams`, `setValidatorSlashBps`, `setVoteQuorum`, etc.) should use change tickets and announced effective times.
+USDC is immutable and the 30% / 10% shares are fixed in v0.9.0. Recipient addresses can change only with paused intake and zero reserves; existing escrow cannot be redirected to a new wallet.
+
+Ownership uses proposal then acceptance. Administrative authority stays with the current owner until acceptance; `renounceOwnership()` is disabled. Verify the recipient independently before proposing a change.
+
+Owner and moderator powers remain trusted. Document and simulate changes to bonds, thresholds, eligibility and dispute policy. This contract has no proxy upgrade route: code defects requiring a new implementation need a fresh deployment and a reviewed plan for existing jobs, rather than an assumed in-place upgrade.
