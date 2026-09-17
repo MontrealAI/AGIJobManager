@@ -1,0 +1,27 @@
+{
+  "sourceCommit": "897b3ebc30c0c9b3c087160ade5beb399a8e390a",
+  "sourceTree": "a91fb684053e40259a4c3e215a73402abdf419ca",
+  "policy": "Every run must report completed/success for this exact source commit. Publication rechecks the GitHub API before creating the tag or release.",
+  "runs": [
+    {
+      "id": 35223067129,
+      "workflow": "ui.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35223067129"
+    },
+    {
+      "id": 35223067131,
+      "workflow": "docs.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35223067131"
+    },
+    {
+      "id": 35223067169,
+      "workflow": "ci.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35223067169"
+    },
+    {
+      "id": 35223067139,
+      "workflow": "security-verification.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35223067139"
+    }
+  ]
+}
