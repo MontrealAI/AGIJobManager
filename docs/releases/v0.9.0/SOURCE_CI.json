@@ -1,0 +1,33 @@
+{
+  "sourceCommit": "ed5369094c6ff277f74b077b3cb26f86afa16a67",
+  "sourceTree": "c2555404b2691af4fa23700f5141f2aeea20a6b7",
+  "checkoutCommit": "f64722e86a154253da42a715b470dec3e01b7135",
+  "policy": "All five workflows and every required job must report completed/success for the frozen source. GitHub PR jobs check out a synthetic merge commit; its tree is verified identical to the tagged application tree. Publication rechecks repository, head SHA, workflow, job results and tree equality before creating the tag or release.",
+  "runs": [
+    {
+      "id": 35247258940,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35247258940",
+      "workflow": "security-verification.yml"
+    },
+    {
+      "id": 35247259527,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35247259527",
+      "workflow": "ui.yml"
+    },
+    {
+      "id": 35247259768,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35247259768",
+      "workflow": "mainnet-fork.yml"
+    },
+    {
+      "id": 35247258974,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35247258974",
+      "workflow": "ci.yml"
+    },
+    {
+      "id": 35247259065,
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35247259065",
+      "workflow": "docs.yml"
+    }
+  ]
+}

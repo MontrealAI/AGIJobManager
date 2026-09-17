@@ -8,7 +8,7 @@ import subprocess
 import time
 
 root = pathlib.Path(__file__).resolve().parents[2]
-meta = root / 'docs/releases/v0.8.0'
+meta = root / 'docs/releases/v0.9.0'
 config = json.loads((meta / 'release.json').read_text())
 repo, tag, source = (config[k] for k in ['repository', 'tag', 'sourceCommit'])
 parser = argparse.ArgumentParser(description=__doc__)
@@ -58,20 +58,37 @@ def tag_target(ref):
 
 
 assert os.environ.get('GITHUB_REPOSITORY') == repo, 'Repository identity mismatch.'
+required_workflows = {'ci.yml', 'ui.yml', 'docs.yml', 'security-verification.yml', 'mainnet-fork.yml'}
+assert {item['workflow'] for item in config['requiredSourceRuns'].values()} == required_workflows, 'The five application qualification workflows are required.'
+assert len(config['requiredSourceRuns']) == len(required_workflows), 'Duplicate source qualification workflows.'
+evidence = json.loads((meta / 'SOURCE_CI.json').read_text())
+assert evidence['sourceCommit'] == source and evidence['sourceTree'] == config['sourceTree']
+checkout = api(f'git/commits/{evidence["checkoutCommit"]}')
+assert checkout['tree']['sha'] == config['sourceTree'], 'CI checkout tree differs from the frozen application.'
 for item in config['requiredSourceRuns'].values():
     run = api(f'actions/runs/{item["id"]}')
     assert run['repository']['full_name'] == repo
     assert run['head_sha'] == source
     assert run['path'] == '.github/workflows/' + item['workflow']
     assert run['status'] == 'completed' and run['conclusion'] == 'success'
+    jobs = []
+    page = 1
+    while True:
+        batch = api(f'actions/runs/{item["id"]}/jobs?per_page=100&page={page}')['jobs']
+        jobs.extend(batch)
+        if len(batch) < 100:
+            break
+        page += 1
+    assert {job['name'] for job in jobs} == set(item['requiredJobs']), 'Required source jobs differ.'
+    assert len(jobs) == len(item['requiredJobs']) and all(job['status'] == 'completed' and job['conclusion'] == 'success' for job in jobs), 'Every required source job must succeed.'
     print(f'Confirmed source CI evidence: {run["name"]} at {source} ({run["html_url"]})')
 if not args.publish:
     raise SystemExit(0)
 assert os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_REF') == 'refs/heads/main', 'Publication requires a main push.'
 subprocess.run(['git', 'merge-base', '--is-ancestor', source, 'HEAD'], cwd=root, check=True)
 changes = subprocess.check_output(['git', 'diff', '--name-only', source, 'HEAD'], cwd=root, text=True).splitlines()
-assert changes and all(p.startswith(('docs/releases/v0.8.0/', 'scripts/release/')) or p == '.github/workflows/current-state-release.yml' for p in changes), 'Release preparation must not change the frozen application.'
-out = root / 'build/release/v0.8.0'
+assert changes and all(p.startswith(('docs/releases/v0.9.0/', 'scripts/release/')) or p == '.github/workflows/current-state-release.yml' for p in changes), 'Release preparation must not change the frozen application.'
+out = root / 'build/release/v0.9.0'
 expected = {}
 for line in (out / 'SHA256SUMS.txt').read_text().splitlines():
     digest, name = line.split('  ', 1)
@@ -79,7 +96,7 @@ for line in (out / 'SHA256SUMS.txt').read_text().splitlines():
     assert hashlib.sha256((out / name).read_bytes()).hexdigest() == digest
     expected[name] = digest
 expected['SHA256SUMS.txt'] = hashlib.sha256((out / 'SHA256SUMS.txt').read_bytes()).hexdigest()
-assert set(expected) == {'AGIJobManager-v0.8.0-COMPLETE.zip', pathlib.Path(config['primaryUI']).name, 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}
+assert set(expected) == {'AGIJobManager-v0.9.0-COMPLETE.zip', pathlib.Path(config['primaryUI']).name, 'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}
 assert {p.name for p in out.iterdir()} == set(expected), 'Unexpected local release assets.'
 matches = []
 page = 1

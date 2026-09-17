@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.0",
+  "name": "v0.9.0 — Safer deployment recovery and USDC operations",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "ed5369094c6ff277f74b077b3cb26f86afa16a67",
+  "sourceTree": "c2555404b2691af4fa23700f5141f2aeea20a6b7",
+  "previousTag": "v0.8.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Deployment and verification recovery, transaction-context safety, corrected participant/owner guidance, patched UI development tools and stronger qualification. Production contracts and 8/30/10/52 default USDC settlement unchanged. No live deployment, activation or independent audit.",
+  "unchangedPaths": [
+    "contracts",
+    "hardhat/deployments",
+    "hardhat/hardhat.config.js",
+    "foundry.toml",
+    "migrations/snapshots",
+    "lib"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "e6235dfe31c73f3ccee2387981c41f7ce232ca13b0a4b4e2c645f318a2181380",
+    "PREVIOUS_RELEASE.json": "2c5987cdad0fde47b0e7769dd5581bcf51570aa233f4bf27e8896320aacb3a45",
+    "SOURCE_CI.json": "fcae5b8c0f93f2f2c6cc05fb9b6be00b714cc62893859eb7bb03e0b65ab52024"
+  },
+  "requiredSourceRuns": {
+    "security-verification": {
+      "id": 35247258940,
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ]
+    },
+    "ui": {
+      "id": 35247259527,
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ]
+    },
+    "mainnet-fork": {
+      "id": 35247259768,
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ]
+    },
+    "ci": {
+      "id": 35247258974,
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ]
+    },
+    "docs": {
+      "id": 35247259065,
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ]
+    }
+  }
+}
