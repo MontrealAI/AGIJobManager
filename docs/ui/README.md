@@ -2,7 +2,7 @@
 
 Next.js dApp and operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
 
-Current USDC entry: [v0.9.3 standalone console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.3/agijobmanager-usdc.html), with the [matching repository artifact](../../ui/agijobmanager-usdc.html). Verify checksums and configure a verified new manager; no live manager is supplied by default.
+Current USDC entry: [v0.9.4 standalone console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.4/agijobmanager-usdc.html), with the [matching repository artifact](../../ui/agijobmanager-usdc.html). Verify checksums and configure a verified new manager; no live manager is supplied by default.
 
 ## Quick links
 - [USDC standalone operator guide](./GENESIS_JOB_MAINNET_HTML_UI.md)

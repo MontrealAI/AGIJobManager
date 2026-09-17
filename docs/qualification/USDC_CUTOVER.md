@@ -6,7 +6,7 @@ The USDC settlement code passes the targeted technical qualification below. The 
 
 This is an internal source review and executable rehearsal, not an independent security audit. Every transaction in the rehearsal is local. Circle-role and owner impersonation proves contract authorization behavior; it does not prove access to a production key or governance signer.
 
-**v0.9.3 retains the ENS correction first published in v0.9.2 and extends deployment and participant-membership qualification.** The earlier frozen v0.9.1 release does not contain the correction. The manager's settlement source and five linked library sources are unchanged from v0.9.1; v0.9.2’s production Solidity correction was confined to the ENS helper/interface. All production Solidity is unchanged between v0.9.2 and v0.9.3. Use matching v0.9.3 source and artifacts and verify the deployed source; do not combine old helper artifacts with the corrected source.
+**v0.9.4 adds the per-job NFT policy and a sixth linked library, NftEligibility.** The default is required; switching affects future jobs only, and collection changes require cleared reserves. The manager therefore needs a fresh deployment. USDC settlement and the ENS correction introduced in v0.9.2 are retained. Existing managers keep their original bytecode and obligations. The earlier frozen v0.9.1 release does not contain the ENS correction. Use matching v0.9.4 source and artifacts.
 
 ## Existing mainnet system
 
@@ -31,7 +31,7 @@ The manager owner and wrapped-root owner are different EOAs. A manager ownership
 
 ## Findings and corrections
 
-### ENS resolver API mismatch — corrected in v0.9.2, retained in v0.9.3
+### ENS resolver API mismatch — corrected in v0.9.2, retained in v0.9.4
 
 The v0.9.1 helper called `setAuthorisation(bytes32,address,bool)`. The deployed NameWrapper-aware resolver at `0xF29100983E058B709F3D539b0c765937B804AC15` uses `approve(bytes32,address,bool)` and `isApprovedFor(address,bytes32,address)`.
 
@@ -43,13 +43,13 @@ The helper now calls `approve`. The regression checks actual employer/agent dele
 
 A fresh manager restarts numeric job IDs at zero. Reusing the legacy root and prefix would collide with existing job names. A successful job transaction alone would not establish successful ENS creation because hooks are best-effort.
 
-`JOBS_ROOT_NAME` is now explicit, and the mainnet ENS deployment script rejects the reserved legacy root `alpha.jobs.agi.eth`. The rehearsal creates the distinct wrapped root `usdc-v093.alpha.jobs.agi.eth` through the observed parent owner’s authorization. ENS Registry reports NameWrapper as its owner; NameWrapper `ownerOf(root)` and `getData(root)[0]` report the new helper as owner of the wrapped token. Token approval is zero and the parent owner has not granted the new helper operator approval. This is ownership of a dedicated wrapped token, not direct Registry ownership. This name is a tested proposal, not an existing production deployment. No new blanket operator approval is granted over the legacy owner's wrapped names. The new root has fuses `0` and inherits expiry `2007731864`; the rehearsal does not remove parent-owner control or establish an immutable namespace. Review that retained authority and expiry before a production choice.
+`JOBS_ROOT_NAME` is now explicit, and the mainnet ENS deployment script rejects the reserved legacy root `alpha.jobs.agi.eth`. The rehearsal creates the distinct wrapped root `usdc-v094.alpha.jobs.agi.eth` through the observed parent owner’s authorization. ENS Registry reports NameWrapper as its owner; NameWrapper `ownerOf(root)` and `getData(root)[0]` report the new helper as owner of the wrapped token. Token approval is zero and the parent owner has not granted the new helper operator approval. This is ownership of a dedicated wrapped token, not direct Registry ownership. This name is a tested proposal, not an existing production deployment. No new blanket operator approval is granted over the legacy owner's wrapped names. The new root has fuses `0` and inherits expiry `2007731864`; the rehearsal does not remove parent-owner control or establish an immutable namespace. Review that retained authority and expiry before a production choice.
 
 ### Participant membership — exercised against real ENS
 
 Ordinary AGI Agents use `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators use `club.agi.eth` or `alpha.club.agi.eth`. Seven additional scenarios exercise both primary and alpha role roots against the actual Registry, NameWrapper and PublicResolver. They admit wrapped owners and resolver-address members; reject unrelated/wrong-role claims; reject revoked resolver records and transferred-away ownership; test token/operator approvals and their revocation; and preserve explicit owner allowlist and Merkle exceptions. Existing assignments are not retroactively erased when membership is transferred.
 
-For ENS admission cases, additional lists and Merkle roots are disabled. Separate exception cases demonstrate their actual bypass semantics without calling them proof of ENS membership. Agents still require a mock NFT fixture, so these cases do not qualify a real production NFT collection.
+For ENS admission cases, additional lists and Merkle roots are disabled. Separate exception cases demonstrate their actual bypass semantics without calling them proof of ENS membership. The original membership cases retain the required-NFT default. An additional scenario toggles both modes around job posting, rejects NFT-less applications to older required jobs, admits an ENS-authorized agent to an optional job, rejects unrelated agent/validator claims, protects the collection registry and settles both jobs exactly with native USDC after the agent transfers away its NFT. It uses MockERC721, so it does not qualify a real production collection.
 
 | Membership parent | Observed owner at the pinned block |
 | --- | --- |
@@ -73,14 +73,15 @@ A separate fork scenario expires the actual overdue legacy job 11 on its origina
 | Precision and policy | One-micro-USDC refunds/remainders; three validators with indivisible rewards; posting-time reward-rate snapshot |
 | Adversarial transfers | Issuer pause; blocked manager/validator/agent/recipients; disputed agent payment and employer refund; atomic retry |
 | Ownership | Paused deployment; manager two-step acceptance; wrong caller rejection; deployer loses owner controls; helper ownership verified separately |
+| NFT policy | Required/optional posting snapshots; unchanged ENS admission and USDC shares; registry protection while funded |
 | Participant membership | All four primary/alpha roots; real wrapper ownership/approval and resolver admission; unrelated/wrong-root/revoked rejection; explicit owner/Merkle exceptions |
 | ENS job pages | Real wrapper and resolver; helper-owned dedicated wrapped-root token; actual delegated writes and revocation |
 | Recovery | Concurrent-job reserve isolation; treasury withdrawal protection; recipient rotation guards; emergency pause/resume |
 | Legacy continuity | All recorded legacy inventory preserved during new operations; original-asset exit remains usable |
 
-Local results: **19 cutover scenarios and 85 deployment/preflight/verifier cases passed for v0.9.3.** The retained qualification inventory includes 8 original actual-USDC fork scenarios, 419 contract regression cases, 10 actual deployment/size cases and 36 Foundry unit/fuzz/invariant tests; consult the release validation record and exact-commit CI for their final rerun results. Compilation has zero compiler errors or warnings. The manager remains below Ethereum runtime and initcode limits. Workflow results should be checked for the exact proposed commit as well.
+Local results: **20 cutover scenarios and 93 deployment/preflight/verifier cases are included in v0.9.4.** The retained qualification inventory includes 8 original actual-USDC fork scenarios, 434 contract and console regression cases, 10 actual deployment/size cases and 37 Foundry unit/fuzz/invariant tests; consult the release validation record and exact-commit CI for their final rerun results. Compilation has zero compiler errors or warnings. The manager remains below Ethereum runtime and initcode limits. Workflow results should be checked for the exact proposed commit as well.
 
-The full static scan still retains 116 reviewed observations: 0 high, 7 medium, 36 low, 71 informational and 2 optimization. Detector descriptions affected by the resolver selector/line changes were compared with the previous raw reports; no classification or other normalized finding changed. See the [focused static-review delta](static-review-delta.json). These observations have not been relabeled as zero findings.
+The full static scan retains **114** reviewed observations: **0 high, 7 medium, 36 low, 71 informational and 0 optimization**. Existing observations match after source-line normalization and the exact NFT-library relocation. Two array-length caching observations are no longer reported for storage-reference library parameters; the loops still read their length directly, so this is not a claimed security fix. See the [v0.9.4 source and static review](nft-policy-static-review.json). Raw reports remain available through the source-qualified Security Verification workflow. These observations have not been relabeled as zero findings.
 
 ## Reproduce without production keys
 
@@ -106,7 +107,7 @@ The fork URL is public by default; `MAINNET_FORK_RPC_URL` may select a compatibl
 3. **Rehearse with the actual operating setup.** Exercise the intended owner and root-owner signing paths and a complete testnet lifecycle/recovery. The local fork does not substitute for this operational exercise or independent review before significant exposure.
 4. **Deploy the qualified source with intake paused.** Preserve the incremental deployment journal. Verify linked libraries, bytecode, constructor arguments and explorer source. Do not repoint the legacy manager or reuse its helper for the new manager.
 5. **Wire only the new system.** Create the reviewed separate root with the root owner's authorization. Set the new helper's manager and the new manager's helper in both directions. Verify namehash, resolver, wrapper authority and helper owner. Manager ownership requires `acceptOwnership`; ENSJobPages ownership is a separate one-step transfer. Lock configuration only after the reviewed wiring is exercised.
-6. **Check the actual instance.** Run `DEPLOYMENT_RECEIPT=... npm --prefix hardhat run check:readiness` from the appropriate documented working directory. Separately inspect ENS hook events and `isApprovedFor(newHelper,node,actor)` through a lifecycle; the existing readiness command does not certify resolver delegation or all operational policy settings.
+6. **Check the actual instance.** From `hardhat/`, run `READINESS_NFT_CONFIG=./reviewed-nft-policy.json DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run check:readiness` with the reviewed [NFT policy](../NFT_POLICY.md). Separately inspect ENS hook events and `isApprovedFor(newHelper,node,actor)` through a lifecycle; the readiness command does not certify resolver delegation or all operational policy settings.
 7. **Activate with bounded exposure and monitoring.** After launch review, complete a small real-USDC job, reconcile every transfer/reserve and verify terminal ENS revocation before increasing exposure. Monitor both old and new managers until original obligations are closed.
 
 Outstanding launch evidence is explicit: actual recipient addresses, demonstrated signing access for the intended manager/helper owners and required ENS parent authorities, intended operational policy/eligibility, live deployment and verification receipts, live readiness, and independent review appropriate to the funds at risk. No mainnet or Sepolia transaction was broadcast by this qualification.

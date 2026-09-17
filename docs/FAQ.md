@@ -1,4 +1,4 @@
-# FAQ — v0.9.3 (USDC console and Etherscan)
+# FAQ — v0.9.4 (USDC console and Etherscan)
 
 ## How is a successful job paid?
 
@@ -8,7 +8,7 @@ USDC uses six decimals. Ethereum transactions still require ETH for gas. The mai
 
 ## Who chooses the agent?
 
-The first eligible applicant whose `applyForJob` transaction succeeds is assigned immediately. There is no separate employer-selection step. Agents need an identity authorization route **and** an eligible AGI-type NFT credential, plus the required USDC bond. NFT credentials do not boost payment percentages.
+The first eligible applicant whose `applyForJob` transaction succeeds is assigned immediately. There is no separate employer-selection step. Agents need an identity authorization route and the required USDC bond. Jobs with the NFT requirement enabled also need an eligible AGI-type NFT credential. NFT credentials do not boost payment percentages.
 
 ## Do approval votes automatically pay a job?
 

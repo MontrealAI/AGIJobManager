@@ -1,7 +1,7 @@
 {
   "scope": "isolated local Ethereum fork; no public transactions or live signer-control proof",
   "sourceSha256": {
-    "contracts/AGIJobManager.sol": "6787f3604dff7c7e51549da3470381e9ab8f310fa6bae5a956152c815c32d5c7",
+    "contracts/AGIJobManager.sol": "8c89e24c4c94575046b19c927aa4df47b4d0484e733c0eed7310bebc004a9dfc",
     "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
     "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
@@ -53,20 +53,21 @@
     "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
     "contracts/utils/ENSOwnership.sol": "8f6ddf455fe74489693e47979485770b9627c2e717d381a69a9445ab71974944",
     "contracts/utils/EnsLabelUtils.sol": "e7bf88fa5c3ecd85472e066c73dd76c2ce3b9f1f9700db27c4781e0577b358db",
+    "contracts/utils/NftEligibility.sol": "f08254fbcdaad64a1e22c8f79b2cfc3ade0ee41c76dbb7c659bdfd196f7637dc",
     "contracts/utils/ReputationMath.sol": "c742c3e7cb05a412405e8fe29d5283b1464e6c377ce98e2d8a360f96f3e3522c",
     "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
     "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
     "hardhat.cutover-fork.config.mjs": "97ae65fb86ad2a6e7ac4b487a561e60fe4698bbc9bf6759105be330e4a5384f0",
     "hardhat/hardhat.config.js": "ff4c769f2e409186d29f569cb481ed49e975fa8d790105a0d2fda02bd4321a81",
-    "hardhat/package-lock.json": "363223febbc487de132f6a932644fd8501d2d51b84e781ecae3cb6fed555a8fe",
-    "hardhat/package.json": "6c9c4963cd831b641bd92d9297df2223069f5a0c9e3893a9c33e3e53c6a60680",
+    "hardhat/package-lock.json": "272278c7aa371837c2305e2268b400268d698171fc7e2dbbbc9d5a07b468486e",
+    "hardhat/package.json": "a393f6f03617001398b4603c7b1f7ae57b8596f698d91324b657442011edc492",
     "hardhat/qualification/cutover-pin.json": "1da5c523c8d1e7629f2630844d02040bd6ca14a6961a41b259cf9af7bb7397d6",
     "hardhat/qualification/legacy-snapshot.cjs": "073b4e6ce4311246985d8c4740018fec967f7042e1b6a233a56142812daf6a31",
-    "hardhat/scripts/deployment-safety.cjs": "0eecbda26158524fb24f88a376ad51bb89e68542e5cf13a0678797e7cb09a845",
+    "hardhat/scripts/deployment-safety.cjs": "3c1437e4548e9b981d52261c9d0c68785e455ec4c3f466c3ed89ae0d4f4d9cd9",
     "hardhat/scripts/runtime.cjs": "37818ccfd8fb317d12d156ac693a14e7f121680ef81d7d21e2b9e3dff3291cad",
-    "hardhat/test/mainnet-cutover.test.js": "523011b0d06c938ddfb06dbeee224b18baa5a2e5552f2415399a5c7852afd602",
-    "package-lock.json": "bc567320b90959c4eda0dbf5f52369ea82ac7f1580237235edaf2a383d158af9",
-    "package.json": "c0167abbf0ba6ffce660f3bcc62071650333316dfcf5ba6d025bc47978ed40f0",
+    "hardhat/test/mainnet-cutover.test.js": "83cdbefef0dbabab027b1e40cdd879d4acf22f8c8ed7f3fc5c98ee53e0f8f7fc",
+    "package-lock.json": "90f581c91d04e543ac29bd2af1571065902138b7f2e099966ac74558911eaac4",
+    "package.json": "e92057666d27af07c75e74705bafd9c551cd9c4397f3e5bf6084f11dde2bd068",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116"
   },
@@ -446,13 +447,13 @@
       }
     ]
   },
-  "newEnsRoot": "usdc-v093.alpha.jobs.agi.eth",
+  "newEnsRoot": "usdc-v094.alpha.jobs.agi.eth",
   "newEnsRootAuthority": {
     "path": "NameWrapper token owner",
     "registryOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
-    "wrappedOwner": "0x9DB6fbB164c6195EF2FB1f533eFcc52853FeA68A",
+    "wrappedOwner": "0xae925410505F101d53e78a0bf4b101a30dFcB846",
     "wrappedData": [
-      "0x9DB6fbB164c6195EF2FB1f533eFcc52853FeA68A",
+      "0xae925410505F101d53e78a0bf4b101a30dFcB846",
       "0",
       "2007731864"
     ],
@@ -517,7 +518,7 @@
       "owner-managed allowlist",
       "address Merkle membership"
     ],
-    "nftEligibility": "MockERC721 fixture; production NFT ownership and policy remain unqualified",
+    "nftEligibility": "Both posting-time modes, collection mutation guards and settlement qualified with MockERC721; actual production collection selection, holdings and upgrade authority require operator review",
     "localChildNamesOnly": true,
     "fixtureNames": [
       "agent.agent.agi.eth",
@@ -540,6 +541,7 @@
     "rejects transferred-away wrapped identities without treating existing assignments as revoked jobs",
     "qualifies actual token and operator approval admission and rejects revoked approvals",
     "preserves explicit owner allowlist and Merkle admission exceptions without pretending they prove ENS membership",
+    "preserves required and optional job policies while retaining actual ENS Agent and Club admission and exact native-USDC settlement",
     "settles native USDC exactly 8/30/10/52 with bonds separate while preserving every legacy job",
     "refunds exact micro-USDC on cancellation and rejects reuse of cancelled job IDs",
     "conserves USDC with three validators, indivisible rewards and the default three-approval threshold",
@@ -551,7 +553,7 @@
     "recovers from an emergency pause without stranding the new escrow or changing legacy pause state",
     "lets the actual unsettled legacy job exit on its original contract and original asset after the new launch"
   ],
-  "passed": 19,
+  "passed": 20,
   "publicTransactionsBroadcast": 0,
   "fixtureWallets": true,
   "productionActivationApproved": false

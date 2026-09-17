@@ -13,30 +13,54 @@
 | `MAX_AGI_TYPES()` | view | uint256 |
 | `MAX_VALIDATORS_PER_JOB()` | view | uint256 |
 | `acceptOwnership()` | nonpayable | — |
+| `addAGIType(address nftAddress, uint256 payoutPercentage)` | nonpayable | — |
+| `addAdditionalAgent(address agent)` | nonpayable | — |
+| `addAdditionalValidator(address validator)` | nonpayable | — |
+| `addModerator(address _moderator)` | nonpayable | — |
 | `additionalAgents(address)` | view | bool |
 | `additionalValidators(address)` | view | bool |
 | `agentBond()` | view | uint256 |
 | `agentBondBps()` | view | uint256 |
 | `agentBondMax()` | view | uint256 |
 | `agentMerkleRoot()` | view | bytes32 |
+| `agentNftRequired()` | view | bool |
 | `agentRootNode()` | view | bytes32 |
 | `agiTypes(uint256)` | view | address, uint256 |
 | `alphaAgentRootNode()` | view | bytes32 |
 | `alphaClubRootNode()` | view | bytes32 |
+| `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `approve(address to, uint256 tokenId)` | nonpayable | — |
 | `balanceOf(address owner)` | view | uint256 |
+| `blacklistAgent(address _agent, bool _status)` | nonpayable | — |
+| `blacklistValidator(address _validator, bool _status)` | nonpayable | — |
 | `blacklistedAgents(address)` | view | bool |
 | `blacklistedValidators(address)` | view | bool |
+| `cancelJob(uint256 _jobId)` | nonpayable | — |
 | `challengePeriodAfterApproval()` | view | uint256 |
 | `clubRootNode()` | view | bytes32 |
 | `completionReviewPeriod()` | view | uint256 |
+| `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)` | nonpayable | — |
+| `delistJob(uint256 _jobId)` | nonpayable | — |
+| `disableAGIType(address nftAddress)` | nonpayable | — |
+| `disapproveJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
+| `disputeJob(uint256 _jobId)` | nonpayable | — |
 | `disputeReviewPeriod()` | view | uint256 |
 | `ens()` | view | address |
 | `ensJobPages()` | view | address |
+| `expireJob(uint256 _jobId)` | nonpayable | — |
+| `finalizeJob(uint256 _jobId)` | nonpayable | — |
 | `getApproved(uint256 tokenId)` | view | address |
+| `getHighestPayoutPercentage(address agent)` | view | uint256 |
+| `getJobCompletionURI(uint256 jobId)` | view | string |
+| `getJobCore(uint256 jobId)` | view | address, address, uint256, uint256, uint256, bool, bool, bool, uint8 |
+| `getJobSpecURI(uint256 jobId)` | view | string |
+| `getJobValidation(uint256 jobId)` | view | bool, uint256, uint256, uint256, uint256 |
 | `isApprovedForAll(address owner, address operator)` | view | bool |
+| `jobAgentNftRequired(uint256 jobId)` | view | bool |
 | `jobDurationLimit()` | view | uint256 |
 | `lockIdentityConfig()` | view | bool |
+| `lockIdentityConfiguration()` | nonpayable | — |
+| `lockJobENS(uint256 jobId, bool burnFuses)` | nonpayable | — |
 | `lockedAgentBonds()` | view | uint256 |
 | `lockedDisputeBonds()` | view | uint256 |
 | `lockedEscrow()` | view | uint256 |
@@ -50,21 +74,65 @@
 | `nextTokenId()` | view | uint256 |
 | `owner()` | view | address |
 | `ownerOf(uint256 tokenId)` | view | address |
+| `pause()` | nonpayable | — |
+| `pauseAll()` | nonpayable | — |
+| `pauseIntake()` | nonpayable | — |
 | `paused()` | view | bool |
 | `pendingOwner()` | view | address |
 | `premiumReputationThreshold()` | view | uint256 |
+| `removeAdditionalAgent(address agent)` | nonpayable | — |
+| `removeAdditionalValidator(address validator)` | nonpayable | — |
+| `removeModerator(address _moderator)` | nonpayable | — |
+| `renounceOwnership()` | pure | — |
 | `reputation(address)` | view | uint256 |
+| `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)` | nonpayable | — |
 | `requiredValidatorApprovals()` | view | uint256 |
 | `requiredValidatorDisapprovals()` | view | uint256 |
+| `rescueERC20(address token, address to, uint256 amount)` | nonpayable | — |
+| `rescueETH(uint256 amount)` | nonpayable | — |
+| `rescueToken(address token, bytes data)` | nonpayable | — |
+| `resolveDisputeWithCode(uint256 _jobId, uint8 resolutionCode, string reason)` | nonpayable | — |
+| `resolveStaleDispute(uint256 _jobId, bool employerWins)` | nonpayable | — |
+| `safeMintCompletionNFT(address to, uint256 tokenId)` | nonpayable | — |
 | `safeTransferFrom(address from, address to, uint256 tokenId)` | nonpayable | — |
 | `safeTransferFrom(address from, address to, uint256 tokenId, bytes data)` | nonpayable | — |
+| `setAgentBond(uint256 bond)` | nonpayable | — |
+| `setAgentBondParams(uint256 bps, uint256 min, uint256 max)` | nonpayable | — |
+| `setAgentNftRequired(bool required)` | nonpayable | — |
 | `setApprovalForAll(address operator, bool approved)` | nonpayable | — |
+| `setBaseIpfsUrl(string _url)` | nonpayable | — |
+| `setChallengePeriodAfterApproval(uint256 period)` | nonpayable | — |
+| `setCompletionReviewPeriod(uint256 _period)` | nonpayable | — |
+| `setDisputeReviewPeriod(uint256 _period)` | nonpayable | — |
+| `setEnsJobPages(address _ensJobPages)` | nonpayable | — |
+| `setJobDurationLimit(uint256 _limit)` | nonpayable | — |
+| `setMaxActiveJobsPerAgent(uint256 value)` | nonpayable | — |
+| `setMaxJobPayout(uint256 _maxPayout)` | nonpayable | — |
+| `setPremiumReputationThreshold(uint256 _threshold)` | nonpayable | — |
+| `setRequiredValidatorApprovals(uint256 _approvals)` | nonpayable | — |
+| `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | nonpayable | — |
+| `setSettlementPaused(bool paused)` | nonpayable | — |
+| `setSettlementWallets(address recipient30, address recipient10)` | nonpayable | — |
+| `setUseEnsJobTokenURI(bool enabled)` | nonpayable | — |
+| `setValidationRewardPercentage(uint256 _percentage)` | nonpayable | — |
+| `setValidatorBondParams(uint256 bps, uint256 min, uint256 max)` | nonpayable | — |
+| `setValidatorSlashBps(uint256 bps)` | nonpayable | — |
+| `setVoteQuorum(uint256 _quorum)` | nonpayable | — |
 | `settlementPaused()` | view | bool |
 | `supportsInterface(bytes4 interfaceId)` | view | bool |
 | `symbol()` | view | string |
+| `tokenURI(uint256 tokenId)` | view | string |
 | `transferFrom(address from, address to, uint256 tokenId)` | nonpayable | — |
 | `transferOwnership(address newOwner)` | nonpayable | — |
+| `unpause()` | nonpayable | — |
+| `unpauseAll()` | nonpayable | — |
+| `unpauseIntake()` | nonpayable | — |
+| `updateEnsRegistry(address _newEnsRegistry)` | nonpayable | — |
+| `updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` | nonpayable | — |
+| `updateNameWrapper(address _newNameWrapper)` | nonpayable | — |
+| `updateRootNodes(bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _alphaClubRootNode, bytes32 _alphaAgentRootNode)` | nonpayable | — |
 | `usdcToken()` | view | address |
+| `validateJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
 | `validationRewardPercentage()` | view | uint256 |
 | `validatorBondBps()` | view | uint256 |
 | `validatorBondMax()` | view | uint256 |
@@ -74,73 +142,8 @@
 | `voteQuorum()` | view | uint256 |
 | `wallet10()` | view | address |
 | `wallet30()` | view | address |
-| `setSettlementWallets(address recipient30, address recipient10)` | nonpayable | — |
-| `renounceOwnership()` | pure | — |
-| `pause()` | nonpayable | — |
-| `unpause()` | nonpayable | — |
-| `pauseIntake()` | nonpayable | — |
-| `unpauseIntake()` | nonpayable | — |
-| `pauseAll()` | nonpayable | — |
-| `unpauseAll()` | nonpayable | — |
-| `setSettlementPaused(bool paused)` | nonpayable | — |
-| `lockIdentityConfiguration()` | nonpayable | — |
-| `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)` | nonpayable | — |
-| `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
-| `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)` | nonpayable | — |
-| `validateJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
-| `disapproveJob(uint256 _jobId, string subdomain, bytes32[] proof)` | nonpayable | — |
-| `disputeJob(uint256 _jobId)` | nonpayable | — |
-| `resolveDisputeWithCode(uint256 _jobId, uint8 resolutionCode, string reason)` | nonpayable | — |
-| `resolveStaleDispute(uint256 _jobId, bool employerWins)` | nonpayable | — |
-| `blacklistAgent(address _agent, bool _status)` | nonpayable | — |
-| `blacklistValidator(address _validator, bool _status)` | nonpayable | — |
-| `delistJob(uint256 _jobId)` | nonpayable | — |
-| `addModerator(address _moderator)` | nonpayable | — |
-| `removeModerator(address _moderator)` | nonpayable | — |
-| `updateEnsRegistry(address _newEnsRegistry)` | nonpayable | — |
-| `updateNameWrapper(address _newNameWrapper)` | nonpayable | — |
-| `setEnsJobPages(address _ensJobPages)` | nonpayable | — |
-| `setUseEnsJobTokenURI(bool enabled)` | nonpayable | — |
-| `updateRootNodes(bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _alphaClubRootNode, bytes32 _alphaAgentRootNode)` | nonpayable | — |
-| `updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` | nonpayable | — |
-| `setBaseIpfsUrl(string _url)` | nonpayable | — |
-| `setRequiredValidatorApprovals(uint256 _approvals)` | nonpayable | — |
-| `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | nonpayable | — |
-| `setPremiumReputationThreshold(uint256 _threshold)` | nonpayable | — |
-| `setVoteQuorum(uint256 _quorum)` | nonpayable | — |
-| `setMaxJobPayout(uint256 _maxPayout)` | nonpayable | — |
-| `setJobDurationLimit(uint256 _limit)` | nonpayable | — |
-| `setMaxActiveJobsPerAgent(uint256 value)` | nonpayable | — |
-| `setCompletionReviewPeriod(uint256 _period)` | nonpayable | — |
-| `setDisputeReviewPeriod(uint256 _period)` | nonpayable | — |
-| `setValidatorBondParams(uint256 bps, uint256 min, uint256 max)` | nonpayable | — |
-| `setAgentBondParams(uint256 bps, uint256 min, uint256 max)` | nonpayable | — |
-| `setAgentBond(uint256 bond)` | nonpayable | — |
-| `setValidatorSlashBps(uint256 bps)` | nonpayable | — |
-| `setChallengePeriodAfterApproval(uint256 period)` | nonpayable | — |
-| `getJobCore(uint256 jobId)` | view | address, address, uint256, uint256, uint256, bool, bool, bool, uint8 |
-| `getJobValidation(uint256 jobId)` | view | bool, uint256, uint256, uint256, uint256 |
-| `getJobSpecURI(uint256 jobId)` | view | string |
-| `getJobCompletionURI(uint256 jobId)` | view | string |
-| `setValidationRewardPercentage(uint256 _percentage)` | nonpayable | — |
-| `cancelJob(uint256 _jobId)` | nonpayable | — |
-| `expireJob(uint256 _jobId)` | nonpayable | — |
-| `lockJobENS(uint256 jobId, bool burnFuses)` | nonpayable | — |
-| `finalizeJob(uint256 _jobId)` | nonpayable | — |
-| `safeMintCompletionNFT(address to, uint256 tokenId)` | nonpayable | — |
-| `tokenURI(uint256 tokenId)` | view | string |
-| `addAdditionalValidator(address validator)` | nonpayable | — |
-| `removeAdditionalValidator(address validator)` | nonpayable | — |
-| `addAdditionalAgent(address agent)` | nonpayable | — |
-| `removeAdditionalAgent(address agent)` | nonpayable | — |
-| `withdrawableUSDC()` | view | uint256 |
 | `withdrawUSDC(uint256 amount)` | nonpayable | — |
-| `rescueETH(uint256 amount)` | nonpayable | — |
-| `rescueERC20(address token, address to, uint256 amount)` | nonpayable | — |
-| `rescueToken(address token, bytes data)` | nonpayable | — |
-| `addAGIType(address nftAddress, uint256 payoutPercentage)` | nonpayable | — |
-| `disableAGIType(address nftAddress)` | nonpayable | — |
-| `getHighestPayoutPercentage(address agent)` | view | uint256 |
+| `withdrawableUSDC()` | view | uint256 |
 
 ## Events
 | Event | Indexed fields |
@@ -149,6 +152,7 @@
 | `AgentBlacklisted(address agent, bool status)` | indexed address agent, indexed bool status |
 | `AgentBondMinUpdated(uint256 oldMin, uint256 newMin)` | indexed uint256 oldMin, indexed uint256 newMin |
 | `AgentBondParamsUpdated(uint256 oldBps, uint256 oldMin, uint256 oldMax, uint256 newBps, uint256 newMin, uint256 newMax)` | indexed uint256 oldBps, indexed uint256 oldMin, indexed uint256 oldMax, uint256 newBps, uint256 newMin, uint256 newMax |
+| `AgentNftRequirementUpdated(bool required)` | bool required |
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |
 | `ApprovalForAll(address owner, address operator, bool approved)` | indexed address owner, indexed address operator, bool approved |
 | `ChallengePeriodAfterApprovalUpdated(uint256 oldPeriod, uint256 newPeriod)` | indexed uint256 oldPeriod, indexed uint256 newPeriod |
@@ -166,9 +170,11 @@
 | `JobCreated(uint256 jobId, string jobSpecURI, uint256 payout, uint256 duration, string details)` | indexed uint256 jobId, string jobSpecURI, indexed uint256 payout, indexed uint256 duration, string details |
 | `JobDisapproved(uint256 jobId, address validator)` | indexed uint256 jobId, indexed address validator |
 | `JobDisputed(uint256 jobId, address disputant)` | indexed uint256 jobId, indexed address disputant |
+| `JobDurationLimitUpdated(uint256 oldLimit, uint256 newLimit)` | indexed uint256 oldLimit, indexed uint256 newLimit |
 | `JobExpired(uint256 jobId, address employer, address agent, uint256 payout)` | indexed uint256 jobId, indexed address employer, address agent, indexed uint256 payout |
 | `JobPayoutDistributed(uint256 jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount)` | indexed uint256 jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount |
 | `JobValidated(uint256 jobId, address validator)` | indexed uint256 jobId, indexed address validator |
+| `MaxJobPayoutUpdated(uint256 oldPayout, uint256 newPayout)` | indexed uint256 oldPayout, indexed uint256 newPayout |
 | `MerkleRootsUpdated(bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot)` | bytes32 validatorMerkleRoot, bytes32 agentMerkleRoot |
 | `NFTIssued(uint256 tokenId, address employer, string tokenURI)` | indexed uint256 tokenId, indexed address employer, string tokenURI |
 | `NameWrapperUpdated(address newNameWrapper)` | address newNameWrapper |

@@ -27,9 +27,10 @@ const FQNS = {
   BondMath: 'contracts/utils/BondMath.sol:BondMath',
   ReputationMath: 'contracts/utils/ReputationMath.sol:ReputationMath',
   ENSOwnership: 'contracts/utils/ENSOwnership.sol:ENSOwnership',
+  NftEligibility: 'contracts/utils/NftEligibility.sol:NftEligibility',
 };
 
-const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership'];
+const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility'];
 
 function stableObject(value) {
   if (Array.isArray(value)) return value.map(stableObject);
@@ -307,6 +308,8 @@ async function main() {
     verifyDelayMs,
     constructorArgs,
     membership: describeMembershipConfig(constructorArgs),
+    nftPolicyAtDeployment: { agentNftRequired: true, agiTypes: [],
+      nextStep: 'Accepted owner registers reviewed ERC-721 collections or calls setAgentNftRequired(false) for future jobs; READINESS_NFT_CONFIG must match before activation.' },
     libraries: LIBRARIES,
     compiler: COMPILER_SETTINGS,
     runtimeBytes,
@@ -351,6 +354,7 @@ async function main() {
       [FQNS.BondMath]: deployments.BondMath.address,
       [FQNS.ReputationMath]: deployments.ReputationMath.address,
       [FQNS.ENSOwnership]: deployments.ENSOwnership.address,
+      [FQNS.NftEligibility]: deployments.NftEligibility.address,
     };
     journal.libraries = linkedLibraries;
     checkpoint();
@@ -372,6 +376,9 @@ async function main() {
     checkpoint();
     const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
     if (!(await manager.paused())) throw new Error('New manager did not start with intake paused. Do not activate this deployment.');
+    const initialNftRequired = await manager.agentNftRequired({ blockTag: managerDeployment.blockNumber });
+    if (initialNftRequired !== true) throw new Error('New manager did not start with the required NFT policy. Do not activate this deployment.');
+    journal.agentNftRequiredAtDeployment = initialNftRequired;
     journal.intakePaused = true;
     checkpoint();
     console.log('[intake] paused atomically by the constructor.');
@@ -458,6 +465,7 @@ async function main() {
       ownershipTransfer,
       intakePaused: await manager.paused(),
       intakePausedAtDeployment: true,
+      agentNftRequiredAtDeployment: initialNftRequired,
       verification: verificationResults,
       configHash,
     };

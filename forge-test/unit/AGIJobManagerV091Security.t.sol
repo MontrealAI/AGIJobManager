@@ -190,7 +190,8 @@ contract AGIJobManagerV091SecurityTest is Test {
     }
 
     function test_ERC721RegistrationRequiresCanonicalERC165Responses() external {
-        (, AGIJobManagerHarness manager,) = _readyJob();
+        (, AGIJobManagerHarness manager, uint256 id) = _readyJob();
+        manager.finalizeJob(id);
         V091ERC165Response credential = new V091ERC165Response();
         uint256[3][4] memory invalid = [[uint256(2), 1, 0], [uint256(1), 2, 0], [uint256(1), 1, 1], [uint256(1), 1, 2]];
         for (uint256 i; i < invalid.length; ++i) {

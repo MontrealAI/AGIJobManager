@@ -727,9 +727,9 @@ contract("AGIJobManager comprehensive", (accounts) => {
       await managerFailing.setRequiredValidatorApprovals(1, { from: owner });
       await managerFailing.setChallengePeriodAfterApproval(1, { from: owner });
       const jobId = (await managerFailing.nextJobId()).toNumber();
+      await managerFailing.addAGIType(nft.address, 92, { from: owner });
       await managerFailing.createJob("ipfs", parseUSDCAmount("10"), 1000, "details", { from: employer });
 
-      await managerFailing.addAGIType(nft.address, 92, { from: owner });
       await nft.mint(agent, { from: owner });
       await fundAgents(failing, managerFailing, [agent], owner);
       await managerFailing.applyForJob(jobId, "agent", buildProof(agentTree, agent), { from: agent });

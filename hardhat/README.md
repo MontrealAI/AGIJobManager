@@ -1,6 +1,6 @@
-# Hardhat deployment guide — v0.9.3
+# Hardhat deployment guide — v0.9.4
 
-This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. Production Solidity is unchanged from v0.9.2. An already deployed USDC instance must be requalified against the matching code, receipts and reviewed configuration; installing this release does not itself require redeploying unchanged bytecode.
+This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. v0.9.4 changes the manager and adds the sixth linked library, `NftEligibility`. The new per-job NFT policy requires a fresh deployment. Existing jobs stay on their original managers and use those versions’ interfaces. A new console cannot upgrade old bytecode.
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 
@@ -24,7 +24,7 @@ In the local environment, configure the selected RPC, `DEPLOY_CONFIG=./deploy.co
 
 ## Participant membership and optional job pages
 
-AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT. These participant identity checks are separate from optional ENS job-page metadata.
+AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on (the default). These participant identity checks are separate from optional ENS job-page metadata.
 
 Verify all four identity getters against the intended names:
 
@@ -52,7 +52,7 @@ DRY_RUN=1 npm run deploy:sepolia
 
 The two fork commands expose only a local Hardhat chain, read pinned mainnet blocks, and send no Ethereum transactions. They use actual Circle USDC code and state. The cutover fixture also exercises all four ENS participant roots against actual mainnet contracts with locally created membership names, including rejection and preserved owner-managed exceptions. RPC failure is a failed qualification, not a skipped test. Rehearse the complete owner, employer, validator, agent and refund journeys on Sepolia using the intended operational setup before significant mainnet exposure.
 
-The qualified compiler is Solidity 0.8.37, optimizer 40 runs, Shanghai, `viaIR=true`, metadata bytecode hash disabled and revert strings stripped. The deployment script checks the compiler profile, artifact/build consistency, EIP-170 runtime size (24,576 bytes), EIP-3860 constructor data (49,152 bytes), and EIP-7825 transaction gas limit (16,777,216). Local deployment tests cover the manager, all five libraries and both optional metadata contracts. Use the release profile unchanged; a new compiler profile requires complete requalification. The [compiler compatibility note](../scripts/security/COMPILER_COMPATIBILITY.md) describes the exact hash-verified identifier and assembly-annotation compatibility patches, applied without disabling compiler warnings.
+The qualified compiler is Solidity 0.8.37, optimizer 40 runs, Shanghai, `viaIR=true`, metadata bytecode hash disabled and revert strings stripped. The deployment script checks the compiler profile, artifact/build consistency, EIP-170 runtime size (24,576 bytes), EIP-3860 constructor data (49,152 bytes), and EIP-7825 transaction gas limit (16,777,216). Local deployment tests cover the manager, all six libraries and both optional metadata contracts. Use the release profile unchanged; a new compiler profile requires complete requalification. The [compiler compatibility note](../scripts/security/COMPILER_COMPATIBILITY.md) describes the exact hash-verified identifier and assembly-annotation compatibility patches, applied without disabling compiler warnings.
 
 ## Review and deploy
 
@@ -70,7 +70,7 @@ Review its plan, explicit owner source, membership-root mapping and exception po
 npm run deploy:mainnet
 ```
 
-The script deploys five linked libraries and the manager, validates successful transaction receipts, compares deployed runtime bytes with the exact release artifacts, confirms paused intake, and completes explorer verification for every contract before proposing ownership transfer when needed. Disabled verification or unrecognized verification errors fail closed. It never opens intake. A proposal leaves the deployer in control until the proposed owner calls `acceptOwnership()`.
+The script deploys six linked libraries and the manager, validates successful transaction receipts, compares deployed runtime bytes with the exact release artifacts, confirms paused intake, and completes explorer verification for every contract before proposing ownership transfer when needed. Disabled verification or unrecognized verification errors fail closed. It never opens intake. A proposal leaves the deployer in control until the proposed owner calls `acceptOwnership()`.
 
 A unique deployment journal is saved under `hardhat/deployments/<network>/` before broadcasting and updated after each transaction. It records transaction hashes even if confirmation later fails. An adjacent `.solc-input.json` records the exact build input; `verify-targets.json` lists explorer targets. Preserve these files and their checksums outside the temporary deployment environment.
 
@@ -90,25 +90,29 @@ If `pendingOwner()` has not yet been set—for example, after recovering an expl
 
 Configure and verify canonical/alpha participant membership, any explicitly approved additional/Merkle exceptions, eligible NFT credentials, moderators, job limits, review windows and bonds while intake stays paused. Job duration limits are 1–31,536,000 seconds. Validator budget changes affect newly posted jobs only; several other policy changes require all reserves to be zero. Confirm the exact scope in the [owner guide](../docs/OWNER_CONTROLS.md).
 
+New managers require NFTs by default but start with an empty collection registry. After accepting ownership, register reviewed collections with `addAGIType` or explicitly choose `setAgentNftRequired(false)`. Prepare `reviewed-nft-policy.json` as shown in the [NFT policy walkthrough](../docs/NFT_POLICY.md); the checker requires a boolean choice and the complete expected registry, including disabled entries. A required policy with no enabled collection fails readiness.
+
 Run the read-only checker without a private key. From `hardhat/`, with the mainnet RPC configured:
 
 ```bash
+READINESS_NFT_CONFIG=./reviewed-nft-policy.json \
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run check:readiness
 ```
 
 For Sepolia:
 
 ```bash
+READINESS_NFT_CONFIG=./reviewed-nft-policy.json \
 DEPLOYMENT_RECEIPT=deployments/sepolia/<saved-receipt>.json npm run check:readiness:sepolia
 ```
 
-This validates the saved receipt's status and configuration hash, then checks one recorded block: exact linked runtime code, native USDC, accepted owner, no pending owner, paused intake, enabled settlement, both expected recipients, ENS/name-wrapper addresses, four identity root nodes, two Merkle roots, zero initial reserves, funded accounting and USDC transfer restrictions. The block hash is checked again before writing the report; a detected reorganization fails the check. Explorer verification in the report is evidence recorded in the receipt, not a fresh explorer query. The checker sends zero transactions.
+This validates the saved receipt's status and configuration hash, then checks one recorded block: exact linked runtime code, native USDC, accepted owner, no pending owner, paused intake, enabled settlement, both expected recipients, ENS/name-wrapper addresses, four identity root nodes, two Merkle roots, the explicit NFT default and complete registry, enabled NFT code hashes, zero initial reserves, funded accounting and USDC transfer restrictions. The block hash is checked again before writing the report; a detected reorganization fails the check. Explorer verification in the report is evidence recorded in the receipt, not a fresh explorer query. The checker sends zero transactions.
 
 By default, identity settings must match the deployment receipt. If the owner intentionally changed them during setup, provide a separately reviewed JSON file using `READINESS_CONFIG=./reviewed-identity.json` alongside `DEPLOYMENT_RECEIPT`. The only permitted keys are `ensConfig` (registry, wrapper), `rootNodes` (club, agent, alpha-club, alpha-agent) and `merkleRoots` (validator, agent). Include only fields whose expected values changed, using complete arrays of actual reviewed addresses or bytes32 roots. This file describes expected state; it performs no updates. The report records its path and SHA-256, and the original receipt remains unchanged. Unexpected keys or a mismatch with actual state fail.
 
 The report also names the configured membership roots and shows Merkle exceptions; it does not enumerate every additional-list entry or prove individual ENS membership.
 
-The report is a technical pre-activation snapshot. It does not validate the private metadata gateway, mutable operational policies, individual participant eligibility, signer security or monitoring. Review those settings and independent security findings separately before activation.
+The report is a technical pre-activation snapshot. It does not validate the private metadata gateway, other mutable operational policies, individual participant eligibility, signer security or monitoring. Review those settings and independent security findings separately before activation.
 
 Only after the reviewed checks pass should the accepted owner call `unpauseIntake()`. Start with deliberately limited exposure and reconcile the first successful job's validator/30%/10%/agent transfers and cleared reserves before scaling. ETH is still required for transaction gas.
 
@@ -120,7 +124,7 @@ ENS job pages are optional metadata, separate from agent/validator membership. A
 DRY_RUN=1 npm run deploy:ens-job-pages:sepolia
 ```
 
-Review `JOB_MANAGER`, explicit `JOBS_ROOT_NAME`, matching `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, `NEW_OWNER`, `VERIFY` and `LOCK_CONFIG` before actual deployment. The script rejects reuse of the original `alpha.jobs.agi.eth` root for a new mainnet USDC helper. `usdc-v093.alpha.jobs.agi.eth` is the fork-rehearsed proposal, not a pre-authorized production name. Verify actual parent authority and root availability.
+Review `JOB_MANAGER`, explicit `JOBS_ROOT_NAME`, matching `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, `NEW_OWNER`, `VERIFY` and `LOCK_CONFIG` before actual deployment. The script rejects reuse of the original `alpha.jobs.agi.eth` root for a new mainnet USDC helper. `usdc-v094.alpha.jobs.agi.eth` is the fork-rehearsed proposal, not a pre-authorized production name. Verify actual parent authority and root availability.
 
 For the corresponding mainnet read-only plan, use `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` with the reviewed mainnet values and `DEPLOYER_ADDRESS`. An actual broadcast requires the explicit mainnet confirmation phrase, a funded deployer and `DRY_RUN` disabled. Keep `VERIFY=1` and `LOCK_CONFIG=0`, then run `npm run deploy:ens-job-pages:mainnet`. The final helper owner must be the separately reviewed `NEW_OWNER`.
 

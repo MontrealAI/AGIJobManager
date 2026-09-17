@@ -1,4 +1,4 @@
-# Deployment guide — v0.9.3
+# Deployment guide — v0.9.4
 
 The supported Ethereum mainnet and Sepolia workflow uses **Hardhat 3 and ethers 6**. Truffle and Ganache are removed; their historical migration and signing commands are retired.
 
@@ -28,7 +28,7 @@ The qualified compiler is Solidity 0.8.37, optimizer 40 runs, `viaIR=true`, Shan
 | EIP-3860 | 49,152 bytes | Creation bytecode plus actual constructor arguments |
 | EIP-7825 | 16,777,216 gas | Transaction gas limit, not only eventual gas used |
 
-The manager, five linked libraries and optional metadata contracts must satisfy their applicable limits. Use `npm run size` and the deployment tests; actual deployment plans also validate constructor data and requested gas.
+The manager, six linked libraries and optional metadata contracts must satisfy their applicable limits. Use `npm run size` and the deployment tests; actual deployment plans also validate constructor data and requested gas.
 
 ## Rehearse and deploy
 

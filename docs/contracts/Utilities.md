@@ -44,3 +44,7 @@ Auditors and developers reviewing low-level behavior.
 - [`../../contracts/utils/BondMath.sol`](../../contracts/utils/BondMath.sol)
 - [`../../contracts/utils/ReputationMath.sol`](../../contracts/utils/ReputationMath.sol)
 - [`../../contracts/utils/ENSOwnership.sol`](../../contracts/utils/ENSOwnership.sol)
+
+## `NftEligibility`
+
+The sixth externally linked library contains the bounded ERC-721 registry and eligibility-score checks. Manager wrappers enforce accepted-owner authority and empty reserves before registry mutations. Registration and balance reads retain their gas limits; scores never change USDC payments. See [the policy guide](../NFT_POLICY.md).

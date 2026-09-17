@@ -59,6 +59,12 @@ function loadJsonConfig(configPath) {
   return JSON.parse(raw);
 }
 
+function parseNftRequirement(value) {
+  if (value === true || value === 'true') return true;
+  if (value === false || value === 'false') return false;
+  throw new Error('agentNftRequired / AGI_AGENT_NFT_REQUIRED must be true or false.');
+}
+
 function loadConfig(args) {
   const envConfigPath = process.env.AGI_CONFIG_PATH;
   const fileConfig = loadJsonConfig(args.configPath || envConfigPath);
@@ -91,6 +97,7 @@ function loadConfig(args) {
       ? parseEnvList(process.env.AGI_BLACKLISTED_VALIDATORS)
       : undefined,
     transferOwnershipTo: process.env.AGI_TRANSFER_OWNERSHIP_TO,
+    agentNftRequired: process.env.AGI_AGENT_NFT_REQUIRED === undefined ? undefined : parseNftRequirement(process.env.AGI_AGENT_NFT_REQUIRED),
     agiTypes: process.env.AGI_TYPES_JSON ? JSON.parse(process.env.AGI_TYPES_JSON) : undefined,
   };
 
@@ -144,6 +151,7 @@ module.exports = async function postdeployConfig(callback) {
   try {
     const args = parseArgs(process.argv);
     const config = loadConfig(args);
+    if (config.agentNftRequired !== undefined) config.agentNftRequired = parseNftRequirement(config.agentNftRequired);
 
     const address = args.address || process.env.AGIJOBMANAGER_ADDRESS || config.address;
     if (!address) {
@@ -470,6 +478,15 @@ module.exports = async function postdeployConfig(callback) {
       });
     }
 
+    if (config.agentNftRequired !== undefined) {
+      await addParamOp({ key: 'agentNftRequired', label: 'Set NFT requirement for future jobs only',
+        currentValue: await instance.agentNftRequired(), desiredValue: config.agentNftRequired,
+        send: () => instance.setAgentNftRequired(config.agentNftRequired),
+        verify: async () => {
+          if (await instance.agentNftRequired() !== config.agentNftRequired) throw new Error('agentNftRequired did not update');
+        } });
+    }
+
     const agiTypeOps = [];
     if (Array.isArray(config.agiTypes)) {
       for (const entry of config.agiTypes) {
@@ -484,7 +501,7 @@ module.exports = async function postdeployConfig(callback) {
         if (!needsUpdate) continue;
         agiTypeOps.push({
           key: `agiType:${entry.nftAddress}`,
-          label: `Add/update AGI type ${entry.nftAddress} payout ${payout}`,
+          label: `Add/update AGI type ${entry.nftAddress} eligibility score ${payout}`,
           send: () => instance.addAGIType(entry.nftAddress, payout),
           verify: async () => {
             const updated = await fetchAgiTypes(instance);
@@ -492,7 +509,7 @@ module.exports = async function postdeployConfig(callback) {
               (item) => item.nftAddress.toLowerCase() === entry.nftAddress.toLowerCase()
             );
             if (!found || found.payoutPercentage !== payout) {
-              throw new Error(`AGI type ${entry.nftAddress} payout did not update`);
+              throw new Error(`AGI type ${entry.nftAddress} eligibility score did not update`);
             }
           },
         });
@@ -501,6 +518,10 @@ module.exports = async function postdeployConfig(callback) {
 
     if (!Number.isInteger(validationRewardTargetNumber) || validationRewardTargetNumber < 1 || validationRewardTargetNumber > 60) {
       throw new Error('Validator rewards must be 1..60%; fixed wallet shares consume 40% of the job cost.');
+    }
+    if (agiTypeOps.length) {
+      const reserves = await Promise.all(['lockedEscrow', 'lockedAgentBonds', 'lockedValidatorBonds', 'lockedDisputeBonds'].map(method => instance[method]()));
+      if (reserves.some(value => BigInt(value) !== 0n)) throw new Error('NFT registry changes require zero outstanding escrow and bonds. Settle or cancel existing jobs before changing collections.');
     }
     ops.push(...agiTypeOps);
     await addValidationRewardOp();

@@ -152,7 +152,7 @@ function postingContext() {
   const { context, method } = primaryContext();
   const terms: Record<string, string | boolean> = {
     validationRewardPercentage: '8', wallet30: manager, wallet10: other,
-    maxJobPayout: '1000000000', jobDurationLimit: '31536000', paused: false
+    maxJobPayout: '1000000000', jobDurationLimit: '31536000', paused: false, agentNftRequired: true
   };
   const inputs: Record<string, {value: string}> = {
     jobSpecURI: { value: 'ipfs://example' }, jobDetails: { value: 'Deliver the agreed result' },
@@ -168,7 +168,7 @@ function postingContext() {
   });
   vm.runInContext(section(primary, '    function parseAmountToUnits(', '    function secondsToHuman('), context);
   vm.runInContext(section(primary, '    function assertSnapshotMatch(', '    async function fetchAgentBondSnapshot('), context);
-  vm.runInContext(section(primary, '    async function fetchPostingTerms(', '    async function applyForJob('), context);
+  vm.runInContext(section(primary, '    function nftRequirementLabel(', '    async function applyForJob('), context);
   return { context, terms, method };
 }
 
@@ -183,10 +183,10 @@ describe('posting review economics', () => {
     expect(values.some((value: string) => value.startsWith('52 USDC;'))).toBe(true);
     expect(context.ensureApproval).not.toHaveBeenCalled();
   });
-  it.each(['validationRewardPercentage', 'wallet30', 'jobDurationLimit', 'paused'])('blocks a changed %s before approval', async term => {
+  it.each(['validationRewardPercentage', 'wallet30', 'jobDurationLimit', 'paused', 'agentNftRequired'])('blocks a changed %s before approval', async term => {
     const { context, terms, method } = postingContext();
     await context.createJob();
-    terms[term] = term === 'paused' ? true : term === 'wallet30' ? account : '12';
+    terms[term] = term === 'agentNftRequired' ? false : term === 'paused' ? true : term === 'wallet30' ? account : '12';
     await context.confirmReviewedAction();
     expect(context.ensureApproval).not.toHaveBeenCalled();
     expect(method.send).not.toHaveBeenCalled();

@@ -1,6 +1,6 @@
 # Events and Errors Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `6787f3604dff`.
+- Generated at (deterministic source fingerprint): `8c89e24c4c94`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Events catalog
@@ -10,6 +10,7 @@
 | `AgentBlacklisted` | `address indexed agent, bool indexed status` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `AgentBondMinUpdated` | `uint256 indexed oldMin, uint256 indexed newMin` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `AgentBondParamsUpdated` | `uint256 indexed oldBps, uint256 indexed oldMin, uint256 indexed oldMax, uint256 newBps, uint256 newMin, uint256 newMax` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
+| `AgentNftRequirementUpdated` | `bool required` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `AGITypeUpdated` | `address indexed nftAddress, uint256 indexed payoutPercentage` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `ChallengePeriodAfterApprovalUpdated` | `uint256 indexed oldPeriod, uint256 indexed newPeriod` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `CompletionReviewPeriodUpdated` | `uint256 indexed oldPeriod, uint256 indexed newPeriod` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |

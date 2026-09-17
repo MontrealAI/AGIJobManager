@@ -76,7 +76,7 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
       await send(token.mint(signer.address, micro(amount)));
     }
     const libraries = {};
-    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership']) {
+    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility']) {
       const library = await (await ethers.getContractFactory(name)).deploy();
       await library.waitForDeployment();
       libraries[name] = await library.getAddress();

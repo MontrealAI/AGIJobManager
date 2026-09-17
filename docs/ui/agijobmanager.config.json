@@ -1,5 +1,5 @@
 {
   "defaultNetwork": "mainnet",
   "preferredContract": "",
-  "notes": "USDC v0.9.3 deployment required. Enter a verified new manager address; legacy deployments are unsupported."
+  "notes": "USDC v0.9.4 deployment required. Enter a verified new manager address; legacy deployments are unsupported."
 }

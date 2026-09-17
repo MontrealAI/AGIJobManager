@@ -1,4 +1,4 @@
-# Contract behavior summary — v0.9.3
+# Contract behavior summary — v0.9.4
 
 This document summarizes the current contract implementation. A software release does not itself deploy a live contract. See the [user guide](USERS.md), [payout specification](USDC_PAYOUT_SPLIT.md), and [configuration reference](CONFIGURATION.md).
 

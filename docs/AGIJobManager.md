@@ -1,4 +1,4 @@
-# AGIJobManager Contract Documentation — v0.9.3
+# AGIJobManager Contract Documentation — v0.9.4
 
 This document provides a comprehensive, code‑accurate overview of the `AGIJobManager` contract. It is intended for engineers, integrators, reviewers, and operators. The ABI‑exact reference lives in [`AGIJobManager_Interface.md`](AGIJobManager_Interface.md).
 
@@ -18,7 +18,7 @@ This document provides a comprehensive, code‑accurate overview of the `AGIJobM
 ## Key components
 
 - **Jobs**: funded by employers, assigned immediately to the first successful eligible applicant, validated by a bounded set of validators, optionally disputed and resolved by moderators.
-- **Agents**: apply for jobs if allowlisted/Merkle/ENS‑verified and not blacklisted. The validator rate and base agent remainder are snapshotted at job posting; an eligible NFT credential is required in addition to identity authorization and does not boost payments. Agents post a performance bond at apply time.
+- **Agents**: apply for jobs if allowlisted/Merkle/ENS‑verified and not blacklisted. The validator rate and base agent remainder are snapshotted at job posting; an eligible NFT credential is required when the job’s recorded NFT policy is on, in addition to identity authorization and does not boost payments. Agents post a performance bond at apply time.
 - **Validators**: approve/disapprove job completion if allowlisted/Merkle/ENS‑verified and not blacklisted. Validators post a bond per vote and are rewarded/slashed based on the final outcome.
 - **Moderators**: resolve disputes using typed resolution codes.
 - **Dispute bonds**: the disputant posts a bond that is paid to the winning side on resolution.
