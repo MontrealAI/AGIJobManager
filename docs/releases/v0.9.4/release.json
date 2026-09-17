@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.4",
+  "name": "v0.9.4 — Optional agent NFTs with preserved job terms",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "fbe6eb73f8d02c15190fb4c3ca5892eb18004024",
+  "sourceTree": "82b63b386f1f6aae6bddf420e9eb66e1742f2569",
+  "previousTag": "v0.9.3",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Owner-controlled NFT requirement, snapshotted per posted job, with protected collection registry, preserved ENS authorization and unchanged USDC settlement. Updated linked-library deployment, policy readiness, console and operator documentation. Software publication only; fresh deployment and instance-specific production activation remain separate.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2",
+    "docs/releases/v0.9.3"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "116ac0da33fed48bc2ebc809f8411ed1cfd55887e2758bf478085fb1549d47ed",
+    "PREVIOUS_RELEASE.json": "67e1789711319b4b7ef32fb3f29fc5bfc4dccfbb4350e836591f816241c1f45b",
+    "SOURCE_CI.json": "f75c7248e2733dc07fab93f3d057d2d7976ec5c9ce4675d3e424cd826766dd47"
+  },
+  "requiredSourceRuns": {
+    "docs": {
+      "id": 35280559705,
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ]
+    },
+    "ci": {
+      "id": 35280559730,
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ]
+    },
+    "ui": {
+      "id": 35280559759,
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ]
+    },
+    "mainnet-fork": {
+      "id": 35280559780,
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ]
+    },
+    "security-verification": {
+      "id": 35280559754,
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ]
+    }
+  },
+  "preservationCommit": "6eccf1741b1f3f71ed85f3a214b59faf66cfca44"
+}
