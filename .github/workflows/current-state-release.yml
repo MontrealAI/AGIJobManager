@@ -1,22 +1,22 @@
-name: USDC Release v0.7.0
+name: USDC Release v0.8.0
 
 on:
   pull_request:
     paths:
-      - 'docs/releases/v0.7.0/**'
+      - 'docs/releases/v0.8.0/**'
       - 'scripts/release/**'
       - '.github/workflows/current-state-release.yml'
   push:
     branches: [main]
     paths:
-      - 'docs/releases/v0.7.0/release.json'
+      - 'docs/releases/v0.8.0/release.json'
 
 permissions:
   contents: read
   actions: read
 
 concurrency:
-  group: current-state-release-v0.7.0
+  group: current-state-release-v0.8.0
   cancel-in-progress: false
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
           node-version: 22.23.2
       - name: Verify frozen USDC console
         run: |
-          git worktree add --detach /tmp/usdc-release-source 897b3ebc30c0c9b3c087160ade5beb399a8e390a
+          git worktree add --detach /tmp/usdc-release-source 65e568ba8a064860a824568b3e1144ab6ee54ed9
           node scripts/release/verify-usdc-ui.mjs /tmp/usdc-release-source
       - name: Verify recorded successful source CI
         run: python3 scripts/release/publish-release.py
@@ -43,7 +43,7 @@ jobs:
         run: |
           python3 scripts/release/package-release.py
           python3 scripts/release/package-release.py --out /tmp/usdc-release-rebuild
-          diff -r build/release/v0.7.0 /tmp/usdc-release-rebuild
+          diff -r build/release/v0.8.0 /tmp/usdc-release-rebuild
 
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
