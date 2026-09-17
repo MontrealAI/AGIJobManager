@@ -4,6 +4,8 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract FeeOnTransferToken is ERC20 {
+    function decimals() public pure override returns (uint8) { return 6; }
+
     uint256 public feeBps;
 
     constructor(uint256 initialSupply, uint256 _feeBps) ERC20("FeeOnTransferToken", "FEE") {

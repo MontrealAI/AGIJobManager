@@ -85,7 +85,7 @@ These steps assume you are using a block explorer like Etherscan and have the co
 3. **Create a job**
    - Call `createJob(jobSpecURI, payout, duration, details)`
    - `jobSpecURI`: ERC‑721 metadata URI (full `ipfs://...` or `https://...` recommended)
-   - `payout`: token amount in **wei** (18 decimals)
+   - `payout`: token amount in **USDC base units** (6 decimals)
    - `duration`: seconds
 4. **Track your jobId** from the `JobCreated` event.
 

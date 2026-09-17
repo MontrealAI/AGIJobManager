@@ -111,7 +111,7 @@ These schemas define **conventions** only. They do **not** require contract chan
       "job_id": 42,
       "chain_id": 1,
       "contract_address": "0x1234...ABCD",
-      "payout_raw": "1000000000000000000",
+      "payout_raw": "1000000",
       "duration_seconds": 604800,
       "summary": "Normalize a dataset and provide a report"
     }

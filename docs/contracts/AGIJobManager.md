@@ -23,7 +23,7 @@ Smart contract engineers, auditors, operators.
 ## Key state and accounting
 | Category | Variables |
 |---|---|
-| Escrow solvency | `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`, `withdrawableAGI()` |
+| Escrow solvency | `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`, `withdrawableUSDC()` |
 | Validator controls | `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `voteQuorum`, `validationRewardPercentage`, validator bond/slash params, `challengePeriodAfterApproval` |
 | Agent controls | `agentBond`, `agentBondBps`, `agentBondMax`, `maxJobPayout`, `jobDurationLimit` |
 | Timers | `completionReviewPeriod`, `disputeReviewPeriod` |
@@ -62,7 +62,7 @@ Checks include payout bounds, duration bounds, allowlist/ENS eligibility, blackl
 ### 5) Treasury and pause controls
 - `pause()` / `unpause()`
 - `setSettlementPaused(bool)`
-- `withdrawAGI(uint256 amount)` only when paused and settlement not paused.
+- `withdrawUSDC(uint256 amount)` only when paused and settlement not paused.
 
 ## Job lifecycle sequence
 ```mermaid
@@ -88,7 +88,7 @@ sequenceDiagram
 ```
 
 ## Invariants / assumptions
-- Escrow and bonds remain solvent against token balance (`withdrawableAGI()` checks).
+- Escrow and bonds remain solvent against token balance (`withdrawableUSDC()` checks).
 - Settlement paths should release locked accounting exactly once.
 - External ENS hook calls must not break settlement progress.
 - Loops over validators and AGI types are bounded by constants.

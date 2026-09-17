@@ -8,7 +8,7 @@ const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND';
 
 const DEFAULTS = {
   identity: {
-    agiTokenAddress: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA',
+    usdcTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
     ensRegistry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
     nameWrapper: '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401',
@@ -144,7 +144,7 @@ function parseJsonArray(value, label) {
 function applyEnvOverrides(config) {
   const out = deepClone(config);
 
-  out.identity.agiTokenAddress = envOr(process.env.AGI_TOKEN_ADDRESS, out.identity.agiTokenAddress);
+  out.identity.usdcTokenAddress = envOr(process.env.USDC_TOKEN_ADDRESS, out.identity.usdcTokenAddress);
   out.identity.baseIpfsUrl = envOr(process.env.AGI_BASE_IPFS_URL, out.identity.baseIpfsUrl);
   out.identity.ensRegistry = envOr(process.env.AGI_ENS_REGISTRY, out.identity.ensRegistry);
   out.identity.nameWrapper = envOr(process.env.AGI_NAMEWRAPPER, out.identity.nameWrapper);
@@ -303,7 +303,7 @@ function toChecksumAddress(address, web3) {
 function normalizeAddresses(config, web3) {
   const out = deepClone(config);
 
-  out.identity.agiTokenAddress = toChecksumAddress(out.identity.agiTokenAddress, web3);
+  out.identity.usdcTokenAddress = toChecksumAddress(out.identity.usdcTokenAddress, web3);
   out.identity.ensRegistry = toChecksumAddress(out.identity.ensRegistry, web3);
   out.identity.nameWrapper = toChecksumAddress(out.identity.nameWrapper, web3);
 
@@ -358,7 +358,7 @@ function buildResolvedConfig({ network, chainId, web3 }) {
       chainId,
     },
     constructorArgs: {
-      agiTokenAddress: merged.identity.agiTokenAddress,
+      usdcTokenAddress: merged.identity.usdcTokenAddress,
       baseIpfsUrl: merged.identity.baseIpfsUrl,
       ensConfig: [merged.identity.ensRegistry, merged.identity.nameWrapper],
       rootNodes: [

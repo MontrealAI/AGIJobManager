@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -30,7 +31,7 @@ contract("AGIJobManager seeded invariant sequences", (accounts) => {
 
     assert.ok(balance >= lockedTotal, "solvency invariant violated");
 
-    const withdrawable = BigInt((await manager.withdrawableAGI()).toString());
+    const withdrawable = BigInt((await manager.withdrawableUSDC()).toString());
     assert.equal(withdrawable.toString(), (balance - lockedTotal).toString(), "withdrawable mismatch");
 
   }
@@ -65,7 +66,7 @@ contract("AGIJobManager seeded invariant sequences", (accounts) => {
     await manager.addAdditionalValidator(validatorB, { from: owner });
     await manager.setRequiredValidatorApprovals(2, { from: owner });
 
-    const funded = web3.utils.toWei("200");
+    const funded = parseUSDCAmount("200");
     for (const acct of [employerA, employerB, agentA, agentB, validatorA, validatorB]) {
       await token.mint(acct, funded, { from: owner });
       await token.approve(manager.address, funded, { from: acct });
@@ -83,7 +84,7 @@ contract("AGIJobManager seeded invariant sequences", (accounts) => {
       try {
         if (action === 0) {
           const employer = employers[rng() % employers.length];
-          const payout = web3.utils.toWei(String((rng() % 5) + 1));
+          const payout = parseUSDCAmount(String((rng() % 5) + 1));
           await manager.createJob("ipfs://spec", payout, 300, "seeded", { from: employer });
           const jobId = Number((await manager.nextJobId()).toString()) - 1;
           activeJobs.push(jobId);

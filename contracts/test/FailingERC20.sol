@@ -4,6 +4,8 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract FailingERC20 is ERC20 {
+    function decimals() public pure override returns (uint8) { return 6; }
+
     bool public failTransfers;
     bool public failTransferFroms;
 

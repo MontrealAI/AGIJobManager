@@ -56,11 +56,11 @@ npm run slither
 Handler actions include:
 - create/apply/request completion/vote/finalize/dispute/resolve stale/expire/cancel/delist
 - owner pause toggles and settlement pause toggles
-- owner `withdrawAGI` and `rescueERC20` under guarded preconditions
+- owner `withdrawUSDC` and `rescueERC20` under guarded preconditions
 
 Invariants enforced:
 1. **Solvency:** contract AGI balance is always >= all locked totals.
-2. **Withdraw safety:** `withdrawableAGI()` remains callable without reverting during valid operation.
+2. **Withdraw safety:** `withdrawableUSDC()` remains callable without reverting during valid operation.
 3. **Locked accounting consistency:** aggregate locked totals exactly equal recomputed sums over live jobs.
 4. **Vote accounting sanity:** `validators.length == approvals + disapprovals` per job.
 5. **Terminal sanity:** mutually exclusive invalid flag combinations are disallowed.

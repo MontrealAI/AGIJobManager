@@ -93,7 +93,7 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
 - **Dispute bond**: posted by the disputant in `disputeJob` (bounded by `DISPUTE_BOND_BPS/MIN/MAX`); paid to the winning side when the dispute resolves.
 - **Employer refunds**: if validators participated and the employer wins, the refund is reduced by the validator reward pool (validators still get paid).
 
-**Example (numbers):** with a 1,000 AGI payout, a 80% agent payout tier, and a 5% validator reward percentage, the agent receives 800 AGI, the validator pool is 50 AGI split across validators who voted with the final outcome, and any remainder stays in the contract balance (withdrawable only under the `withdrawableAGI()` rules).
+**Example (numbers):** with a 1,000 USDC payout, a 80% agent payout tier, and a 5% validator reward percentage, the agent receives 800 USDC, the validator pool is 50 USDC split across validators who voted with the final outcome, and any remainder stays in the contract balance (withdrawable only under the `withdrawableUSDC()` rules).
 
 Below is the **real settlement path** with incentives at each step. For contract‑accurate rules, see [`contract-behavior.md`](contract-behavior.md).
 

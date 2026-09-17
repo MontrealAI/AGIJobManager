@@ -53,7 +53,7 @@ node -e "const a=require('./build/contracts/AGIJobManager.json'); console.log(a.
 3. Confirm Activity Log includes `External ABI loaded.`
 
 ### Employer actions
-1. In **Approve AGI token**, enter `10` and click **Approve token** → Activity Log should show `Employer approve confirmed`.
+1. In **Approve USDC token**, enter `10` and click **Approve token** → Activity Log should show `Employer approve confirmed`.
 2. In **Create job**, set **Metadata source** to **Use existing job spec URI** and enter:
    - Job spec URI: `ipfs://QmTestJobHash`
    - Payout: `1`

@@ -45,11 +45,11 @@ async function assertAddressHasCode(label, address, web3) {
 }
 
 async function validateConfig(config, web3) {
-  validateAddressField('identity.agiTokenAddress', config.identity.agiTokenAddress, web3);
+  validateAddressField('identity.usdcTokenAddress', config.identity.usdcTokenAddress, web3);
   validateAddressField('identity.ensRegistry', config.identity.ensRegistry, web3, { allowZero: true });
   validateAddressField('identity.nameWrapper', config.identity.nameWrapper, web3, { allowZero: true });
 
-  await assertAddressHasCode('identity.agiTokenAddress', config.identity.agiTokenAddress, web3);
+  await assertAddressHasCode('identity.usdcTokenAddress', config.identity.usdcTokenAddress, web3);
   if (config.identity.ensRegistry.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) {
     await assertAddressHasCode('identity.ensRegistry', config.identity.ensRegistry, web3);
   }
@@ -94,8 +94,8 @@ async function validateConfig(config, web3) {
   const asBigInt = (value) => BigInt(String(value));
 
   const effectiveValidatorBondBps = asBigInt(config.parameters.validatorBondBps ?? 1500);
-  const effectiveValidatorBondMin = asBigInt(config.parameters.validatorBondMin ?? '10000000000000000000');
-  const effectiveValidatorBondMax = asBigInt(config.parameters.validatorBondMax ?? '88888888000000000000000000');
+  const effectiveValidatorBondMin = asBigInt(config.parameters.validatorBondMin ?? '10000000');
+  const effectiveValidatorBondMax = asBigInt(config.parameters.validatorBondMax ?? '88888888000000');
   assert(effectiveValidatorBondBps <= 10000n, 'parameters.validatorBondBps must be <= 10000.');
   assert(effectiveValidatorBondMin <= effectiveValidatorBondMax, 'parameters.validatorBondMin must be <= parameters.validatorBondMax.');
   if (effectiveValidatorBondBps == 0n && effectiveValidatorBondMin == 0n) {
@@ -108,8 +108,8 @@ async function validateConfig(config, web3) {
   }
 
   const effectiveAgentBondBps = asBigInt(config.parameters.agentBondBps ?? 500);
-  const effectiveAgentBondMin = asBigInt(config.parameters.agentBondMin ?? '1000000000000000000');
-  const effectiveAgentBondMax = asBigInt(config.parameters.agentBondMax ?? '88888888000000000000000000');
+  const effectiveAgentBondMin = asBigInt(config.parameters.agentBondMin ?? '1000000');
+  const effectiveAgentBondMax = asBigInt(config.parameters.agentBondMax ?? '88888888000000');
   assert(effectiveAgentBondBps <= 10000n, 'parameters.agentBondBps must be <= 10000.');
   assert(effectiveAgentBondMin <= effectiveAgentBondMax, 'parameters.agentBondMin must be <= parameters.agentBondMax.');
   if (!(effectiveAgentBondBps == 0n && effectiveAgentBondMin == 0n && effectiveAgentBondMax == 0n)) {

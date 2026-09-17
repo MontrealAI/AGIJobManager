@@ -3,6 +3,13 @@ require('@nomicfoundation/hardhat-ethers');
 require('@nomicfoundation/hardhat-verify');
 
 const path = require('path');
+const { subtask } = require('hardhat/config');
+const { TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD } = require('hardhat/builtin-tasks/task-names');
+subtask(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD).setAction(async ({ solcVersion }, _hre, runSuper) => {
+  if (solcVersion !== '0.8.23') return runSuper();
+  const compilerPath = require.resolve('solc/soljson.js', { paths: [path.resolve(__dirname, '..')] });
+  return { compilerPath, isSolcJs: true, version: solcVersion, longVersion: '0.8.23+commit.f704f362' };
+});
 
 const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 

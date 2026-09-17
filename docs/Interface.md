@@ -5,7 +5,7 @@
 > `node scripts/generate-interface-doc.js`
 
 ## Constructor
-`constructor(address agiTokenAddress, string baseIpfs, address[2] ensConfig, bytes32[4] rootNodes, bytes32[2] merkleRoots)`
+`constructor(address usdcTokenAddress, string baseIpfs, address[2] ensConfig, bytes32[4] rootNodes, bytes32[2] merkleRoots)`
 
 ## Functions
 | Signature | State mutability | Returns |
@@ -19,7 +19,7 @@
 | `additionalValidators(address)` | view | bool |
 | `agentMerkleRoot()` | view | bytes32 |
 | `agentRootNode()` | view | bytes32 |
-| `agiToken()` | view | address |
+| `usdcToken()` | view | address |
 | `agiTypes(uint256)` | view | address, uint256 |
 | `alphaAgentRootNode()` | view | bytes32 |
 | `alphaClubRootNode()` | view | bytes32 |
@@ -79,7 +79,6 @@
 | `delistJob(uint256 _jobId)` | nonpayable | — |
 | `addModerator(address _moderator)` | nonpayable | — |
 | `removeModerator(address _moderator)` | nonpayable | — |
-| `updateAGITokenAddress(address _newTokenAddress)` | nonpayable | — |
 | `updateEnsRegistry(address _newEnsRegistry)` | nonpayable | — |
 | `updateNameWrapper(address _newNameWrapper)` | nonpayable | — |
 | `updateRootNodes(bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _alphaClubRootNode, bytes32 _alphaAgentRootNode)` | nonpayable | — |
@@ -114,8 +113,8 @@
 | `removeAdditionalValidator(address validator)` | nonpayable | — |
 | `addAdditionalAgent(address agent)` | nonpayable | — |
 | `removeAdditionalAgent(address agent)` | nonpayable | — |
-| `withdrawableAGI()` | view | uint256 |
-| `withdrawAGI(uint256 amount)` | nonpayable | — |
+| `withdrawableUSDC()` | view | uint256 |
+| `withdrawUSDC(uint256 amount)` | nonpayable | — |
 | `canAccessPremiumFeature(address user)` | view | bool |
 | `contributeToRewardPool(uint256 amount)` | nonpayable | — |
 | `addAGIType(address nftAddress, uint256 payoutPercentage)` | nonpayable | — |
@@ -125,7 +124,7 @@
 | Event | Indexed fields |
 | --- | --- |
 | `AGITypeUpdated(address nftAddress, uint256 payoutPercentage)` | indexed address nftAddress, uint256 payoutPercentage |
-| `AGIWithdrawn(address to, uint256 amount, uint256 remainingWithdrawable)` | indexed address to, uint256 amount, uint256 remainingWithdrawable |
+| `USDCWithdrawn(address to, uint256 amount, uint256 remainingWithdrawable)` | indexed address to, uint256 amount, uint256 remainingWithdrawable |
 | `AdditionalAgentPayoutPercentageUpdated(uint256 newPercentage)` | uint256 newPercentage |
 | `AgentBlacklisted(address agent, bool status)` | indexed address agent, bool status |
 | `Approval(address owner, address approved, uint256 tokenId)` | indexed address owner, indexed address approved, indexed uint256 tokenId |

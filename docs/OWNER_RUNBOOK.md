@@ -41,7 +41,7 @@ Expected result before lock calls:
 1. Compile with repository defaults (Truffle + optimizer settings from `truffle-config.js`).
 2. Link external libraries exactly as deployment scripts/Truffle artifacts require.
 3. Deploy constructor args carefully:
-   - AGI token address,
+   - USDC token address,
    - base IPFS URL,
    - ENS config addresses,
    - root nodes,
@@ -85,12 +85,12 @@ node scripts/advisor/state_advisor.js --input scripts/advisor/sample_job_state.j
 
 ## 4) Revenue withdrawals without escrow risk
 
-Before `withdrawAGI(amount)`:
-1. Read `withdrawableAGI()`.
-2. Ensure `amount <= withdrawableAGI()`.
-3. Confirm protocol is paused for withdrawals (`withdrawAGI` requires `whenPaused` and settlement not paused).
+Before `withdrawUSDC(amount)`:
+1. Read `withdrawableUSDC()`.
+2. Ensure `amount <= withdrawableUSDC()`.
+3. Confirm protocol is paused for withdrawals (`withdrawUSDC` requires `whenPaused` and settlement not paused).
 4. Execute withdrawal in small chunks when uncertain.
-5. Save transaction hash in operations log and re-check `withdrawableAGI()` after each chunk.
+5. Save transaction hash in operations log and re-check `withdrawableUSDC()` after each chunk.
 
 Never bypass solvency checks via rescue functions for AGI escrow assets.
 
@@ -134,6 +134,6 @@ Before `lockIdentityConfiguration()` or `lockConfiguration()`:
 ## 7) High-risk actions (operator warnings)
 
 - `rescueERC20`, `rescueToken`: emergency-only, must not violate escrow solvency assumptions.
-- `updateAGITokenAddress`: identity-critical; only before lock.
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - `updateEnsRegistry`/`updateNameWrapper`/`updateRootNodes`/`setEnsJobPages`: identity-critical; only before lock.
 - Parameter setters affecting incentives (`setValidatorBondParams`, `setAgentBondParams`, `setValidatorSlashBps`, `setVoteQuorum`, etc.) should use change tickets and announced effective times.

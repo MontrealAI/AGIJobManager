@@ -112,7 +112,7 @@ test.describe("AGIJobManager UI smoke", () => {
 
     await page.click("#refreshSnapshot");
     await expect(page.locator("#contractOwner")).not.toHaveText("—");
-    await expect(page.locator("#agiToken")).not.toHaveText("—");
+    await expect(page.locator("#usdcToken")).not.toHaveText("—");
 
     await page.click("#refreshRoles");
     await expect(page.locator("#approveToken")).toBeEnabled();

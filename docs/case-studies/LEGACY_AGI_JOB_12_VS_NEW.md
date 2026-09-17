@@ -33,20 +33,20 @@ This case study maps a **real mainnet legacy job completion** to the **new `AGIJ
 
 ### ERC‑20 payouts observed (legacy contract → recipients)
 
-Token: **AGI ALPHA AGENT (AGIALPHA)**  
+Token: **AGI ALPHA AGENT (USDC)**  
 Contract: `0x2e8fb54c3ec41f55f06c1f082c081a609eaa4ebe` (6 decimals, per token contract header on Etherscan)
 
 | Recipient | Raw value (event log) | Human‑readable (6 decimals) |
 |---|---:|---:|
-| **Agent** `0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A` | `71,110,400,000` | `71,110.4` AGIALPHA |
-| **Validator 1** `0x21301d901DB04724597D1B6012aC49878157580d` | `888,880,000` | `888.88` AGIALPHA |
-| **Validator 2** `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` | `888,880,000` | `888.88` AGIALPHA |
-| **Validator 3** `0xeCb97519EFd7d9D9d279e7C284B286BBE10AFaa9` | `888,880,000` | `888.88` AGIALPHA |
-| **Validator 4** `0x5e5F40346387874922E17b177f55a8880dd432cB` | `888,880,000` | `888.88` AGIALPHA |
-| **Validator 5** `0x2fDC910574113DFE6A4DB5971E166E286813c79F` | `888,880,000` | `888.88` AGIALPHA |
-| **Validator 6** `0x88692DE2a896C6534E544976DEFd41064904C730` | `888,880,000` | `888.88` AGIALPHA |
-| **Validator 7** `0xA46Cea0A1871b875eE8A1798848C0089a321e588` | `888,880,000` | `888.88` AGIALPHA |
-| **Validator 8 (tx sender)** `0x9DbBBCc3c603903702BC323C4A4A8a597280a89B` | `888,880,000` | `888.88` AGIALPHA |
+| **Agent** `0x5ff14ac26a21B3ceB4421F86fB5aaa4B9F084f2A` | `71,110,400,000` | `71,110.4` USDC |
+| **Validator 1** `0x21301d901DB04724597D1B6012aC49878157580d` | `888,880,000` | `888.88` USDC |
+| **Validator 2** `0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201` | `888,880,000` | `888.88` USDC |
+| **Validator 3** `0xeCb97519EFd7d9D9d279e7C284B286BBE10AFaa9` | `888,880,000` | `888.88` USDC |
+| **Validator 4** `0x5e5F40346387874922E17b177f55a8880dd432cB` | `888,880,000` | `888.88` USDC |
+| **Validator 5** `0x2fDC910574113DFE6A4DB5971E166E286813c79F` | `888,880,000` | `888.88` USDC |
+| **Validator 6** `0x88692DE2a896C6534E544976DEFd41064904C730` | `888,880,000` | `888.88` USDC |
+| **Validator 7** `0xA46Cea0A1871b875eE8A1798848C0089a321e588` | `888,880,000` | `888.88` USDC |
+| **Validator 8 (tx sender)** `0x9DbBBCc3c603903702BC323C4A4A8a597280a89B` | `888,880,000` | `888.88` USDC |
 
 **Events observed (Etherscan → Event Logs)** — see [`#eventlog`](https://etherscan.io/tx/0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac#eventlog) and [`#tokentxns`](https://etherscan.io/tx/0xbd3f652ba96154388186a47e4e6620f3e97d05c7384d5e6954460a39c666c6ac#tokentxns)
 
@@ -63,7 +63,7 @@ Contract: `0x2e8fb54c3ec41f55f06c1f082c081a609eaa4ebe` (6 decimals, per token co
 This single transaction is the **final validator approval**. In legacy v0, the final validation **also completes the job**, executes **all payouts**, and **mints the NFT** in the same call.
 
 1) **A job already existed and was escrowed** — not visible in this tx alone
-   - The job with `jobId = 13` must have been created earlier with escrowed AGIALPHA.
+   - The job with `jobId = 13` must have been created earlier with escrowed USDC.
    - The `createJob(...)` parameters are not present in this tx.
 
 2) **An agent was already assigned** — not visible in this tx alone
@@ -93,7 +93,7 @@ This single transaction is the **final validator approval**. In legacy v0, the f
 The **user‑visible lifecycle is preserved** — same role flow, same function names — but the new contract introduces critical safety gates. Below is the **same job flow**, using the same participant identities and subdomains from the legacy tx.
 
 1) **Employer creates job** — `createJob(...)`  
-   Escrows AGI token in the contract.
+   Escrows USDC token in the contract.
 
 2) **Agent applies** — `applyForJob(jobId, "888.node.agi.eth", proof)`  
    **New guard**: `_job(...)` requires job existence, preventing pre‑claim/phantom job takeover.
@@ -162,8 +162,8 @@ sequenceDiagram
     Agent->>Legacy: requestJobCompletion(...)
     Validator->>Legacy: validateJob(13, "bluebutterfli", [])
     Legacy->>Legacy: _completeJob(13)
-    Legacy-->>Agent: AGIALPHA payout (71,110.4)
-    Legacy-->>Validator: AGIALPHA split (888.88 each)
+    Legacy-->>Agent: USDC payout (71,110.4)
+    Legacy-->>Validator: USDC split (888.88 each)
     Legacy-->>Employer: Mint AGIJobs TokenID 12
     Legacy-->>All: Emit JobCompleted + NFTIssued
 ```
@@ -194,8 +194,8 @@ sequenceDiagram
 ### Payouts (legacy case)
 
 **Payout breakdown (from tx logs):**
-- **Agent**: `71,110.4` AGIALPHA → `0x5ff14...` (888.node.agi.eth)
-- **Validators**: `888.88` AGIALPHA each → eight validator addresses listed above
+- **Agent**: `71,110.4` USDC → `0x5ff14...` (888.node.agi.eth)
+- **Validators**: `888.88` USDC each → eight validator addresses listed above
 - **Employer**: receives AGIJobs NFT TokenID `12`
 
 ---
@@ -226,7 +226,7 @@ In the test:
 - **Mocks used**: `MockENS`, `MockResolver`, `MockNameWrapper`, `MockERC20`, `MockERC721`
 
 **Lifecycle asserted in the test**
-1) Employer approves AGI token allowance
+1) Employer approves USDC token allowance
 2) `createJob`
 3) Agent `applyForJob` using ENS‑mocked subdomain (`888.node.agi.eth`)
 4) Agent `requestJobCompletion`
@@ -235,7 +235,7 @@ In the test:
    - `JobCompleted` + `NFTIssued`
    - NFT minted to employer
    - `tokenURI = jobCompletionURI` (full URI or `baseIpfsUrl + "/" + cid`)
-   - AGI token balances updated as expected
+   - USDC token balances updated as expected
 
 **Better‑only assertions in the replay test**
 - Apply for a **non‑existent jobId** → revert (takeover fix)

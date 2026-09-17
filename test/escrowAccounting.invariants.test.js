@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -17,7 +18,7 @@ const mkTree = (list) => { const t = new MerkleTree(list.map(leafFor), keccak256
 
 contract('escrowAccounting.invariants', (accounts) => {
   const [owner, employer, agent, v1, v2, v3] = accounts;
-  const payout = new BN(web3.utils.toWei('1000'));
+  const payout = new BN(parseUSDCAmount('1000'));
 
   it('keeps solvency invariants through bounded mixed outcomes', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
@@ -53,7 +54,7 @@ contract('escrowAccounting.invariants', (accounts) => {
       const balance = await token.balanceOf(manager.address);
       const locked = lockedEscrow.add(lockedAgent).add(lockedValidator).add(lockedDispute);
       assert(balance.gte(locked), `insolvent after scenario ${i}`);
-      assert((await manager.withdrawableAGI()).eq(balance.sub(locked)));
+      assert((await manager.withdrawableUSDC()).eq(balance.sub(locked)));
     }
   });
 });

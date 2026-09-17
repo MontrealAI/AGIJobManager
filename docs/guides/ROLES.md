@@ -12,7 +12,7 @@ This guide explains each role in plain language. Use it as a quick “what can I
 - Receive the job NFT after completion.
 
 **What you need**
-- A wallet with enough AGI tokens to fund the job payout.
+- A wallet with enough USDC tokens to fund the job payout.
 - The correct network (usually Ethereum mainnet).
 - The correct contract address (set in the UI).
 
@@ -23,8 +23,8 @@ This guide explains each role in plain language. Use it as a quick “what can I
 
 **Happy path checklist**
 - [ ] Connect wallet and set the contract address.
-- [ ] Check **AGI Token balance** and **AGI allowance** in “Your role flags”.
-- [ ] Use **Approve AGI token** to set allowance (if needed).
+- [ ] Check **USDC Token balance** and **USDC allowance** in “Your role flags”.
+- [ ] Use **Approve USDC token** to set allowance (if needed).
 - [ ] Use **Create job** with a **job spec metadata URI**, payout, duration, and details.
 - [ ] Generate `jobSpec.v1.json`, upload it to IPFS, and paste the resulting URI (advanced users can paste an existing URI).
 - [ ] Wait for an agent to apply and validators to approve.
@@ -112,7 +112,7 @@ This guide explains each role in plain language. Use it as a quick “what can I
 - Add/remove moderators.
 - Manage allowlists/blacklists.
 - Update protocol parameters.
-- Withdraw escrowed AGI tokens.
+- Withdraw escrowed USDC tokens.
 
 **What you need**
 - The wallet that is the contract **owner**.

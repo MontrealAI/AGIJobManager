@@ -100,7 +100,7 @@ stateDiagram-v2
 | `AdditionalAgentPayoutPercentageUpdated` | owner update | Stored config value (not used in payouts). |
 | `ValidatorBondParamsUpdated` | `setValidatorBondParams` | Validator bond parameter changes. |
 | `ChallengePeriodAfterApprovalUpdated` | `setChallengePeriodAfterApproval` | Validator approval challenge window updates. |
-| `AGIWithdrawn` | `withdrawAGI` | Withdraws only surplus over locked balances. |
+| `USDCWithdrawn` | `withdrawUSDC` | Withdraws only surplus over locked balances. |
 | `IdentityConfigurationLocked` | `lockIdentityConfiguration` | One‑way lock for ENS/token wiring. |
 | `AgentBlacklisted` / `ValidatorBlacklisted` | owner updates | Eligibility gating. |
 
@@ -120,7 +120,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 | `ValidatorLimitReached` | Validator cap reached for a job. |
 | `InvalidValidatorThresholds` | Approval/disapproval thresholds exceed caps. |
 | `IneligibleAgentPayout` | Agent has 0% payout tier at apply time. |
-| `InsufficientWithdrawableBalance` | Withdrawal exceeds `withdrawableAGI()`. |
+| `InsufficientWithdrawableBalance` | Withdrawal exceeds `withdrawableUSDC()`. |
 | `InsolventEscrowBalance` | Contract balance < locked totals. |
 | `ConfigLocked` | Identity configuration already locked. |
 
@@ -184,15 +184,15 @@ For detailed call sequences, revert conditions, and events, see [`AGIJobManager_
 
 ## Quickstart examples (Truffle + web3)
 
-> These snippets assume a Truffle environment (`truffle exec` or test context) and that `agiToken` is a standard ERC‑20 with `approve`/`transferFrom`.
+> These snippets assume a Truffle environment (`truffle exec` or test context) and that `usdcToken` is a standard ERC‑20 with `approve`/`transferFrom`.
 
 ### Approve ERC‑20 then create a job (employer)
 
 ```javascript
-const agi = await IERC20.at(agiTokenAddress);
+const agi = await IERC20.at(usdcTokenAddress);
 const mgr = await AGIJobManager.at(agiJobManagerAddress);
 
-const payout = web3.utils.toWei('100', 'ether');
+const payout = 100000000;
 const duration = 7 * 24 * 60 * 60;
 await agi.approve(mgr.address, payout, { from: employer });
 await mgr.createJob('ipfs://job-spec', payout, duration, 'details', { from: employer });

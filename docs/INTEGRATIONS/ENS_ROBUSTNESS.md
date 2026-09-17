@@ -136,5 +136,5 @@ Immediate containment transaction set (ordered):
 ### If configuration is locked
 
 - **Still mutable:** allowlists, blacklists, pause controls, settlement operations.
-- **Frozen:** `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `setEnsJobPages`, `updateRootNodes`.
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - **Recovery:** continue with remaining policy levers or execute a controlled contract migration.

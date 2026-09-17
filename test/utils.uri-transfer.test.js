@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const UtilsHarness = artifacts.require("UtilsHarness");
@@ -90,36 +91,36 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
   describe("TransferUtils exact-transfer semantics", () => {
     it("supports standard ERC20 safeTransfer and safeTransferFromExact", async () => {
       const token = await MockERC20.new({ from: owner });
-      await token.mint(harness.address, web3.utils.toWei("100"), { from: owner });
-      await token.mint(owner, web3.utils.toWei("100"), { from: owner });
-      await harness.safeTransfer(token.address, recipient, web3.utils.toWei("5"), { from: owner });
-      assert.equal((await token.balanceOf(recipient)).toString(), web3.utils.toWei("5"));
+      await token.mint(harness.address, parseUSDCAmount("100"), { from: owner });
+      await token.mint(owner, parseUSDCAmount("100"), { from: owner });
+      await harness.safeTransfer(token.address, recipient, parseUSDCAmount("5"), { from: owner });
+      assert.equal((await token.balanceOf(recipient)).toString(), parseUSDCAmount("5"));
 
-      await token.approve(harness.address, web3.utils.toWei("7"), { from: owner });
-      await harness.safeTransferFromExact(token.address, owner, spender, web3.utils.toWei("7"), { from: owner });
-      assert.equal((await token.balanceOf(spender)).toString(), web3.utils.toWei("7"));
+      await token.approve(harness.address, parseUSDCAmount("7"), { from: owner });
+      await harness.safeTransferFromExact(token.address, owner, spender, parseUSDCAmount("7"), { from: owner });
+      assert.equal((await token.balanceOf(spender)).toString(), parseUSDCAmount("7"));
     });
 
     it("accepts no-return ERC20 transfers", async () => {
       const token = await ERC20NoReturn.new({ from: owner });
-      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
-      await token.approve(harness.address, web3.utils.toWei("4"), { from: owner });
-      await harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("4"), { from: owner });
-      assert.equal((await token.balanceOf(recipient)).toString(), web3.utils.toWei("4"));
+      await token.mint(owner, parseUSDCAmount("10"), { from: owner });
+      await token.approve(harness.address, parseUSDCAmount("4"), { from: owner });
+      await harness.safeTransferFromExact(token.address, owner, recipient, parseUSDCAmount("4"), { from: owner });
+      assert.equal((await token.balanceOf(recipient)).toString(), parseUSDCAmount("4"));
     });
 
     it("reverts when token transfer/transferFrom returns false", async () => {
       const failing = await FailingERC20.new({ from: owner });
-      await failing.mint(owner, web3.utils.toWei("10"), { from: owner });
+      await failing.mint(owner, parseUSDCAmount("10"), { from: owner });
       await failing.setFailTransfers(true, { from: owner });
       await failing.setFailTransferFroms(true, { from: owner });
-      await failing.approve(harness.address, web3.utils.toWei("3"), { from: owner });
+      await failing.approve(harness.address, parseUSDCAmount("3"), { from: owner });
 
       await expectRevert.unspecified(
-        harness.safeTransfer(failing.address, recipient, web3.utils.toWei("1"), { from: owner })
+        harness.safeTransfer(failing.address, recipient, parseUSDCAmount("1"), { from: owner })
       );
       await expectRevert.unspecified(
-        harness.safeTransferFromExact(failing.address, owner, recipient, web3.utils.toWei("3"), { from: owner })
+        harness.safeTransferFromExact(failing.address, owner, recipient, parseUSDCAmount("3"), { from: owner })
       );
     });
 
@@ -127,20 +128,20 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
       const token = await RevertingERC20.new({ from: owner });
 
       await expectRevert.unspecified(
-        harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })
+        harness.safeTransfer(token.address, recipient, parseUSDCAmount("1"), { from: owner })
       );
 
       await expectRevert.unspecified(
-        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
+        harness.safeTransferFromExact(token.address, owner, recipient, parseUSDCAmount("1"), { from: owner })
       );
     });
 
     it("reverts on fee-on-transfer under-delivery for safeTransferFromExact", async () => {
-      const token = await FeeOnTransferToken.new(web3.utils.toWei("100"), 1000, { from: owner });
-      await token.approve(harness.address, web3.utils.toWei("10"), { from: owner });
+      const token = await FeeOnTransferToken.new(parseUSDCAmount("100"), 1000, { from: owner });
+      await token.approve(harness.address, parseUSDCAmount("10"), { from: owner });
 
       await expectRevert.unspecified(
-        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("10"), { from: owner })
+        harness.safeTransferFromExact(token.address, owner, recipient, parseUSDCAmount("10"), { from: owner })
       );
     });
 
@@ -159,40 +160,40 @@ contract("Utility libraries: UriUtils + TransferUtils", (accounts) => {
 
     it("reverts when balanceOf staticcalls revert during exact-transfer checks", async () => {
       const token = await RevertingBalanceOfERC20.new({ from: owner });
-      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
-      await token.approve(harness.address, web3.utils.toWei("2"), { from: owner });
+      await token.mint(owner, parseUSDCAmount("10"), { from: owner });
+      await token.approve(harness.address, parseUSDCAmount("2"), { from: owner });
 
       await expectRevert.unspecified(
-        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("2"), { from: owner })
+        harness.safeTransferFromExact(token.address, owner, recipient, parseUSDCAmount("2"), { from: owner })
       );
     });
 
 
     it("reverts on invalid bool word returns (not 0/1)", async () => {
       const token = await InvalidBoolReturnERC20.new({ from: owner });
-      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
-      await token.approve(harness.address, web3.utils.toWei("10"), { from: owner });
+      await token.mint(owner, parseUSDCAmount("10"), { from: owner });
+      await token.approve(harness.address, parseUSDCAmount("10"), { from: owner });
 
       await expectRevert.unspecified(
-        harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })
+        harness.safeTransfer(token.address, recipient, parseUSDCAmount("1"), { from: owner })
       );
 
       await expectRevert.unspecified(
-        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
+        harness.safeTransferFromExact(token.address, owner, recipient, parseUSDCAmount("1"), { from: owner })
       );
     });
 
     it("reverts on malformed ERC20 return data", async () => {
       const token = await MalformedReturnERC20.new({ from: owner });
-      await token.mint(owner, web3.utils.toWei("10"), { from: owner });
-      await token.approve(harness.address, web3.utils.toWei("10"), { from: owner });
+      await token.mint(owner, parseUSDCAmount("10"), { from: owner });
+      await token.approve(harness.address, parseUSDCAmount("10"), { from: owner });
 
       await expectRevert.unspecified(
-        harness.safeTransfer(token.address, recipient, web3.utils.toWei("1"), { from: owner })
+        harness.safeTransfer(token.address, recipient, parseUSDCAmount("1"), { from: owner })
       );
 
       await expectRevert.unspecified(
-        harness.safeTransferFromExact(token.address, owner, recipient, web3.utils.toWei("1"), { from: owner })
+        harness.safeTransferFromExact(token.address, owner, recipient, parseUSDCAmount("1"), { from: owner })
       );
     });
   });

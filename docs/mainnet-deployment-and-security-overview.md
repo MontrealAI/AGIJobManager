@@ -55,12 +55,12 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 - **Stale dispute recovery**: `resolveStaleDispute` is owner‑only after `disputeReviewPeriod` (pause optional; often used during incident response).
 
 ## 4) Treasury vs escrow separation (hard invariant)
-**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Bonds** are tracked by `lockedAgentBonds`, `lockedValidatorBonds`, and `lockedDisputeBonds`. **Treasury** is the AGI balance minus escrow and locked bonds.
+**Escrow** is tracked by `lockedEscrow` (sum of unsettled job payouts). **Bonds** are tracked by `lockedAgentBonds`, `lockedValidatorBonds`, and `lockedDisputeBonds`. **Treasury** is the USDC balance minus escrow and locked bonds.
 
 **Why this matters**: it defines the hard boundary auditors and users rely on to ensure escrowed job funds cannot be withdrawn by the operator.
 
-- `withdrawableAGI()` = `agiToken.balanceOf(this) - lockedEscrow - lockedAgentBonds - lockedValidatorBonds - lockedDisputeBonds` and **reverts** if obligations exceed balance.
-- `withdrawAGI()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableAGI()`.
+- `withdrawableUSDC()` = `usdcToken.balanceOf(this) - lockedEscrow - lockedAgentBonds - lockedValidatorBonds - lockedDisputeBonds` and **reverts** if obligations exceed balance.
+- `withdrawUSDC()` is **owner‑only** and **paused‑only**, and cannot exceed `withdrawableUSDC()`.
 
 **What becomes treasury**
 - Payout remainder when `agentPayoutPct + validationRewardPercentage < 100`.
@@ -68,10 +68,10 @@ The job struct encodes the state machine via fields like `assignedAgent`, `compl
 - Direct contributions via `contributeToRewardPool` (no segregation or automated distribution; funds remain in the general contract balance).
 
 **Simple example**
-- Contract balance = 10,000 AGI
-- `lockedEscrow` = 9,000 AGI
-- `lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` = 250 AGI
-- `withdrawableAGI()` = 750 AGI (and `withdrawAGI` cannot exceed this)
+- Contract balance = 10,000 USDC
+- `lockedEscrow` = 9,000 USDC
+- `lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` = 250 USDC
+- `withdrawableUSDC()` = 750 USDC (and `withdrawUSDC` cannot exceed this)
 
 Escrowed funds can only be released through settlement paths (completion, refund, cancel, expire). The owner cannot sweep escrowed funds.
 
@@ -83,7 +83,6 @@ The identity lock is a one‑way switch intended to freeze identity wiring after
 **Why this matters**: it freezes the core ENS/token wiring to prevent identity spoofing while still allowing day‑to‑day operational controls.
 
 **Locked after `lockIdentityConfiguration()`**
-- `updateAGITokenAddress`
 - `updateEnsRegistry`
 - `updateNameWrapper`
 - `setEnsJobPages`
@@ -127,11 +126,11 @@ unpause intake last.
 | `finalizeJob` | Any | Allowed | Finalizes after review windows/challenge periods; blocked by `settlementPaused`. |
 | `resolveDispute` / `resolveDisputeWithCode` | Moderator | Allowed | Dispute resolution remains available during pauses; blocked by `settlementPaused`. |
 | `delistJob` | Owner | Allowed | Owner can delist unassigned jobs; blocked by `settlementPaused`. |
-| `withdrawAGI` | Owner | **Allowed only while paused** | Treasury withdrawals are pause‑gated and blocked by `settlementPaused`. |
+| `withdrawUSDC` | Owner | **Allowed only while paused** | Treasury withdrawals are pause‑gated and blocked by `settlementPaused`. |
 | `resolveStaleDispute` | Owner | Allowed | Only after `disputeReviewPeriod`; blocked by `settlementPaused`. |
 
 ## 7) Security posture (operational highlights)
-- **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `withdrawAGI`, dispute resolution, settlement).
+- **ReentrancyGuard** protects external state‑changing entrypoints that cross ERC‑20 boundaries (e.g., `createJob`, `withdrawUSDC`, dispute resolution, settlement).
 - **Exact ERC‑20 transfer checks** are used where escrow integrity matters (`createJob`, `contributeToRewardPool`), preventing fee‑on‑transfer / rebasing tokens from under‑funding escrow. Payout transfers use standard ERC‑20 transfer checks.
 - **Bounded loops**: validator lists are capped at `MAX_VALIDATORS_PER_JOB` (50).
 - **ENS/NameWrapper lookups** use `try/catch` and are view‑only; failures just return false.
@@ -194,13 +193,13 @@ Index and alert on the following events (as emitted in the current contract):
 - **Job lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobCompleted`, `JobExpired`, `JobCancelled`.
 - **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`.
 - **NFT issuance**: `NFTIssued`.
-- **Treasury/ops**: `AGIWithdrawn`, `RewardPoolContribution`, `PlatformRevenueAccrued`, `Paused`, `Unpaused`.
+- **Treasury/ops**: `USDCWithdrawn`, `RewardPoolContribution`, `PlatformRevenueAccrued`, `Paused`, `Unpaused`.
 - **Identity wiring**: `EnsRegistryUpdated`.
 - **Reputation**: `ReputationUpdated`.
 - **Blacklists**: `AgentBlacklisted`, `ValidatorBlacklisted`.
 
 **Solvency invariant**
-Always ensure: `agiToken.balanceOf(contract) >= lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`.
+Always ensure: `usdcToken.balanceOf(contract) >= lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`.
 
 **Operational monitoring suggestions**
 - Alert on owner actions (pause, withdrawals, identity lock, parameter changes).

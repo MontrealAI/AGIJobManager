@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time, expectEvent } = require("@openzeppelin/test-helpers");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -42,13 +43,13 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await nft.mint(agent, { from: owner });
     await manager.addAdditionalAgent(agent, { from: owner });
 
-    const payout = web3.utils.toWei("5");
+    const payout = parseUSDCAmount("5");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 
     await manager.createJob("ipfs://spec.json", payout, 1, "details", { from: employer });
-    await token.mint(agent, web3.utils.toWei("2"), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei("2"), { from: agent });
+    await token.mint(agent, parseUSDCAmount("2"), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount("2"), { from: agent });
     await manager.applyForJob(0, "agent", [], { from: agent });
     await manager.requestJobCompletion(0, "ipfs://completion.json", { from: agent });
     const reviewPeriod = await manager.completionReviewPeriod();
@@ -297,7 +298,7 @@ contract("ENS ABI compatibility + URI path", (accounts) => {
     await pages.setJobManager(manager.address, { from: owner });
     await manager.setEnsJobPages(pages.address, { from: owner });
 
-    const payout = web3.utils.toWei("1");
+    const payout = parseUSDCAmount("1");
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
 

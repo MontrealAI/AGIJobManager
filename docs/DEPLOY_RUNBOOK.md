@@ -89,7 +89,7 @@ Use local `test` network or testnet scripts/tests:
 - apply agent and verify `lockedAgentBonds` behavior.
 - request completion and cast validator votes.
 - finalize and verify expected payout path and NFT mint.
-- verify `withdrawableAGI()` excludes all locked balances.
+- verify `withdrawableUSDC()` excludes all locked balances.
 
 ENS smoke check (if configured):
 - confirm `EnsHookAttempted` emissions across create/assign/completion/revoke.
@@ -105,7 +105,7 @@ ENS smoke check (if configured):
 ## 7) Rollback / incident notes
 
 - **ENS misconfigured**: if identity is **not locked**, update `ensJobPages` to a healthy contract or set it to zero address; if identity is already locked, this remediation path is unavailable and ENS issues must be handled off-chain while core settlement remains functional.
-- **Wrong token/identity addresses pre-jobs**: use `updateAGITokenAddress` / identity setters while identity still configurable and locked balances are zero.
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - **Wrong token address after activity**: direct replacement blocked by empty-lock requirement; pause, drain obligations via normal settlement, then reconfigure if still unlocked.
 
 ```mermaid

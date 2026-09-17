@@ -17,22 +17,21 @@ Owner operators, reviewers, and incident responders.
 | `requiredValidatorDisapprovals` | 3 | `setRequiredValidatorDisapprovals` | Keep `<= MAX_VALIDATORS_PER_JOB`. |
 | `voteQuorum` | 3 | `setVoteQuorum` | Enforced positive; align with thresholds. |
 | `validationRewardPercentage` | 8 | `setValidationRewardPercentage` | Must satisfy `(max AGIType payout + validationRewardPercentage) <= 100`. |
-| `maxJobPayout` | 88,888,888e18 | `setMaxJobPayout` | Must be `>0`; cap should match treasury risk appetite. |
+| `maxJobPayout` | 88,888,888e6 | `setMaxJobPayout` | Must be `>0`; cap should match treasury risk appetite. |
 | `jobDurationLimit` | 10,000,000 | `setJobDurationLimit` | Must be `>0`. |
 | `completionReviewPeriod` | 7 days | `setCompletionReviewPeriod` | `1..365 days`. |
 | `disputeReviewPeriod` | 14 days | `setDisputeReviewPeriod` | `1..365 days`. |
-| `validatorBondBps/min/max` | 1500 / 10e18 / 88,888,888e18 | `setValidatorBondParams` | Percentage in bps with clamps; bond capped at payout. |
+| `validatorBondBps/min/max` | 1500 / 10e6 / 88,888,888e6 | `setValidatorBondParams` | Percentage in bps with clamps; bond capped at payout. |
 | `validatorSlashBps` | 8000 | `setValidatorSlashBps` | Upper bounded at 10000 bps. |
 | `challengePeriodAfterApproval` | 1 day | `setChallengePeriodAfterApproval` | `<= 365 days`. |
-| `agentBond` (min floor) | 1e18 | `setAgentBond` | Must not exceed `agentBondMax` or payout cap paths become restrictive. |
-| `agentBondBps/min/max` | 500 / 1e18 / 88,888,888e18 | `setAgentBondParams` | Duration-adjusted by `BondMath.computeAgentBond`. |
+| `agentBond` (min floor) | 1e6 | `setAgentBond` | Must not exceed `agentBondMax` or payout cap paths become restrictive. |
+| `agentBondBps/min/max` | 500 / 1e6 / 88,888,888e6 | `setAgentBondParams` | Duration-adjusted by `BondMath.computeAgentBond`. |
 | `premiumReputationThreshold` | 10000 | `setPremiumReputationThreshold` | Product policy threshold; no hard upper bound in setter. |
 | `baseIpfsUrl` | constructor-supplied | `setBaseIpfsUrl` | Used by URI composition when no scheme present. |
 
 ## Identity and eligibility wiring
 | Variable | Setter | Lock status after `lockIdentityConfiguration()` |
 |---|---|---|
-| `agiToken` | `updateAGITokenAddress` | **Immutable after lock** |
 | `ens` | `updateEnsRegistry` | **Immutable after lock** |
 | `nameWrapper` | `updateNameWrapper` | **Immutable after lock** |
 | `ensJobPages` | `setEnsJobPages` | **Immutable after lock** |

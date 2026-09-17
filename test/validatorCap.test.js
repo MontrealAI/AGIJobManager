@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const { time } = require("@openzeppelin/test-helpers");
@@ -14,7 +15,8 @@ const { fundAgents, computeValidatorBond } = require("./helpers/bonds");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 async function sendSigned(to, account, data, gas = 500000) {
   const gasPrice = await web3.eth.getGasPrice();
@@ -105,7 +107,7 @@ contract("AGIJobManager validator cap", (accounts) => {
       await web3.eth.sendTransaction({
         from: owner,
         to: validator.address,
-        value: toWei("1"),
+        value: web3.utils.toWei("1"),
       });
       await manager.addAdditionalValidator(validator.address, { from: owner });
       await token.mint(validator.address, bond, { from: owner });
@@ -145,7 +147,7 @@ contract("AGIJobManager validator cap", (accounts) => {
       await web3.eth.sendTransaction({
         from: owner,
         to: validator.address,
-        value: toWei("1"),
+        value: web3.utils.toWei("1"),
       });
       await manager.addAdditionalValidator(validator.address, { from: owner });
       await token.mint(validator.address, bond, { from: owner });

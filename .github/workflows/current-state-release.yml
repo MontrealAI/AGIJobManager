@@ -4,8 +4,6 @@ on:
   pull_request:
     paths:
       - 'docs/releases/v0.4.0/**'
-      - 'scripts/release/**'
-      - '.github/workflows/current-state-release.yml'
   push:
     branches: [main]
     paths:

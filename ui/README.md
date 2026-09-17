@@ -1,10 +1,12 @@
 # AGIJobManager UI
 
+> v0.5.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.5.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+
 This directory contains **two additive UI surfaces**:
 
 1. A modern Next.js app (broader UI effort, still evolving).
 2. Versioned standalone HTML artifacts for direct browser use, including:
-   - `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html`
+   - `agijobmanager-usdc.html`
 
 Hosted newcomer/operator entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
 
@@ -17,16 +19,16 @@ For standalone HTML artifact routing and inventory, see `../docs/ui/STANDALONE_H
 ## 30-second routing
 
 - Need the **fastest newcomer/operator entry**: use the hosted Genesis Console at `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`, then follow the runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
-- Need a **single-file, versioned mainnet interface artifact** for review/operator workflows: use `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html` and the same runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
+- Need a **single-file, versioned mainnet interface artifact** for review/operator workflows: use `agijobmanager-usdc.html` and the same runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
 - Need to **develop/test the broader UI**: use the Next.js app in this folder and docs at `../docs/ui/README.md`.
 
 ## UI inventory (operator-friendly)
 
 | File / path | Purpose | Network / environment | Intended audience | Status | Docs |
 | --- | --- | --- | --- | --- | --- |
-| `agijobmanager_genesis_job_mainnet_2026-03-05-v33.html` | Standalone browser interface for the Genesis mainnet flow: wallet connect, role/readiness checks, live jobs table, create/apply/validate/dispute/finalize actions, completion submission, and $AGIALPHA bridge/conversion helpers. | Ethereum mainnet-focused (`chainId 1`) with embedded mainnet contract addresses. | Operators, contract-adjacent power users, demos/reviewers who need a single-file interface artifact. | Versioned standalone artifact (additive, active snapshot). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
-| `agijobmanager_genesis_job_mainnet_2026-03-05-v13.html` ... `v20.html` | Adjacent standalone snapshots for historical comparison and reproducibility. | Mainnet-oriented standalone snapshots. | Auditors/reviewers comparing versions and behavior deltas. | Versioned historical/iterative snapshots (do not treat as canonical operator default unless explicitly chosen). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
-| `agijobmanager_genesis_job_mainnet_2026-03-05-v22.html` and `v23.html` | Selected standalone snapshots useful for comparative review and iterative testing. | Mainnet-oriented standalone snapshots. | Auditors/reviewers and UI maintainers comparing revisions. | Additive snapshots (use intentionally; `v33` remains canonical in this repo runbook). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
+| `agijobmanager-usdc.html` | Standalone browser interface for the Genesis mainnet flow: wallet connect, role/readiness checks, live jobs table, create/apply/validate/dispute/finalize actions, completion submission, and $USDC bridge/conversion helpers. | Ethereum mainnet-focused (`chainId 1`) with embedded mainnet contract addresses. | Operators, contract-adjacent power users, demos/reviewers who need a single-file interface artifact. | Versioned standalone artifact (additive, active snapshot). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
+| `agijobmanager-usdc.html` ... `v20.html` | Adjacent standalone snapshots for historical comparison and reproducibility. | Mainnet-oriented standalone snapshots. | Auditors/reviewers comparing versions and behavior deltas. | Versioned historical/iterative snapshots (do not treat as canonical operator default unless explicitly chosen). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
+| `agijobmanager-usdc.html` and `v23.html` | Selected standalone snapshots useful for comparative review and iterative testing. | Mainnet-oriented standalone snapshots. | Auditors/reviewers and UI maintainers comparing revisions. | Additive snapshots (use intentionally; `v33` remains canonical in this repo runbook). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
 | `dist-ipfs/agijobmanager.html` | Built single-file artifact generated from the Next.js UI pipeline (IPFS/distribution output). | Environment depends on build-time config. | Release operators and distribution workflow maintainers. | Generated build output. | `../docs/ui/IPFS_DEPLOYMENT.md` |
 | `package.json`, `next.config.*`, `tests/`, `e2e/`, `scripts/` | Full Next.js UI codebase, testing, and deterministic build/documentation tooling. | Local dev/demo + deployment pipelines. | UI developers/operators. | Broader/full UI in development. | `../docs/ui/README.md` |
 
@@ -82,7 +84,7 @@ python3 -m http.server 8000
 Open:
 
 ```text
-http://127.0.0.1:8000/agijobmanager_genesis_job_mainnet_2026-03-05-v33.html
+http://127.0.0.1:8000/agijobmanager-usdc.html
 ```
 
 Pre-sign trust check (recommended):

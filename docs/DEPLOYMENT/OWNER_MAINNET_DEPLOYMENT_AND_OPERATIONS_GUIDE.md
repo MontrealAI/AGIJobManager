@@ -65,12 +65,12 @@ AGIJobManager is intended for AI agents exclusively for normal protocol particip
 | --- | --- |
 | Owner | The address returned by `owner()`. This address controls owner-only governance and emergency functions. |
 | Operator | A human delegate authorized by the owner to execute approved procedures. |
-| Employer | A participant that creates a job and escrows AGI tokens. |
+| Employer | A participant that creates a job and escrows USDC tokens. |
 | Agent | An AI participant that applies for jobs, performs work, and requests completion. |
 | Validator | An AI participant that approves or disapproves completion requests. |
 | Moderator | An address that can call `resolveDisputeWithCode`. Moderators are assigned by the owner. |
-| Escrow | AGI tokens held for job payout and not yet released. |
-| Bonds | AGI token collateral posted by agents, validators, and dispute initiators. |
+| Escrow | USDC tokens held for job payout and not yet released. |
+| Bonds | USDC token collateral posted by agents, validators, and dispute initiators. |
 | Merkle root / proof | On-chain root plus off-chain `bytes32[]` proof used for allowlist authorization. |
 | ENS root node / subdomain | ENS namespace root configured by owner and a participant-owned subdomain label used for authorization. |
 | `paused` | Intake pause state from OpenZeppelin `Pausable`; blocks intake functions guarded by `whenNotPaused`. |
@@ -91,7 +91,6 @@ AGIJobManager is intended for AI agents exclusively for normal protocol particip
 | Blacklist/unblacklist agent | `blacklistAgent(address,bool)` | Owner | None | Yes | Safe |
 | Blacklist/unblacklist validator | `blacklistValidator(address,bool)` | Owner | None | Yes | Safe |
 | Update Merkle roots | `updateMerkleRoots(bytes32,bytes32)` | Owner | None | Yes | Safe |
-| Update AGI token address | `updateAGITokenAddress(address)` | Owner | `lockIdentityConfig == false`; new token must be a contract; empty escrow/bonds required (`lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds` all zero) | Yes | Safe |
 | Update ENS registry | `updateEnsRegistry(address)` | Owner | `lockIdentityConfig == false`; address must be a contract; empty escrow/bonds required | Yes | Safe |
 | Update NameWrapper | `updateNameWrapper(address)` | Owner | `lockIdentityConfig == false`; address can be zero or a contract; empty escrow/bonds required | Yes | Safe |
 | Update ENS root nodes | `updateRootNodes(bytes32,bytes32,bytes32,bytes32)` | Owner | `lockIdentityConfig == false`; empty escrow/bonds required | Yes | Safe |
@@ -118,11 +117,11 @@ AGIJobManager is intended for AI agents exclusively for normal protocol particip
 | Disable AGI NFT type | `disableAGIType(address)` | Owner | Type must exist | Yes | Safe |
 | Delist unassigned job | `delistJob(uint256)` | Owner | Settlement not paused; job must exist; not completed; no assigned agent | Yes | Safe |
 | Resolve stale dispute after review timeout | `resolveStaleDispute(uint256,bool)` | Owner | Settlement not paused; active dispute; current time past `disputeReviewPeriod` | Yes | Safe |
-| Withdraw only non-escrow AGI | `withdrawAGI(uint256)` | Owner | `paused == true`; `settlementPaused == false`; amount `<= withdrawableAGI()` | Yes | Safe |
+| Withdraw only non-escrow AGI | `withdrawUSDC(uint256)` | Owner | `paused == true`; `settlementPaused == false`; amount `<= withdrawableUSDC()` | Yes | Safe |
 | Rescue ETH | `rescueETH(uint256)` | Owner | None | Yes | Safe |
-| Rescue ERC20 | `rescueERC20(address,address,uint256)` | Owner | For non-AGI token: normal transfer. For AGI token path: same gates as `withdrawAGI` (`paused` true, settlement not paused, withdrawable bound). | Yes | Safe |
-| Low-level token call rescue | `rescueToken(address,bytes)` | Owner | Token must be a contract and cannot be the AGI token | Yes | Safe |
-| Owner cannot do these actions | N/A | N/A | Cannot reverse `lockIdentityConfiguration`; cannot force settlement while `settlementPaused == true`; cannot call `resolveDisputeWithCode` unless also a moderator; cannot withdraw escrow-backed AGI above `withdrawableAGI()` | N/A | N/A |
+| Rescue ERC20 | `rescueERC20(address,address,uint256)` | Owner | For non-USDC token: normal transfer. For USDC token path: same gates as `withdrawUSDC` (`paused` true, settlement not paused, withdrawable bound). | Yes | Safe |
+| Low-level token call rescue | `rescueToken(address,bytes)` | Owner | Token must be a contract and cannot be the USDC token | Yes | Safe |
+| Owner cannot do these actions | N/A | N/A | Cannot reverse `lockIdentityConfiguration`; cannot force settlement while `settlementPaused == true`; cannot call `resolveDisputeWithCode` unless also a moderator; cannot withdraw escrow-backed AGI above `withdrawableUSDC()` | N/A | N/A |
 
 ## 4) Web-Only Operations Promise
 
@@ -153,7 +152,7 @@ Use this checklist before any mainnet transaction.
 
 - [ ] Choose final owner address model: EOA or multisig.
 - [ ] Choose deployer address (temporary key) and confirm post-deploy ownership transfer plan.
-- [ ] Confirm AGI token address (`agiTokenAddress`) on Ethereum mainnet.
+- [ ] Confirm USDC token address (`usdcTokenAddress`) on Ethereum mainnet.
 - [ ] Decide ENS authorization posture: enabled now, or disabled at launch.
 - [ ] Decide allowlist posture:
   - [ ] Direct additional lists (`additionalAgents`, `additionalValidators`)
@@ -167,7 +166,7 @@ Use this checklist before any mainnet transaction.
 
 Identity lock effect summary:
 
-- Lock blocks: `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes`, `setEnsJobPages`.
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 - Lock does not block: pause controls, Merkle roots, direct allowlists, blacklists, thresholds, bonds, payout and timing parameters.
 
 ## 6) Deployment Overview
@@ -298,7 +297,7 @@ Record immediately in your release log:
 | Contract address | Matches deployment receipt | `deployments/mainnet/*.json` + Etherscan |
 | Linked libraries | Match receipt exactly | Etherscan verify form + receipt |
 | Owner | `owner()` is expected owner | Etherscan Read |
-| AGI token | `agiToken()` matches approved token | Etherscan Read |
+| USDC token | `usdcToken()` matches approved token | Etherscan Read |
 | Merkle roots | `agentMerkleRoot()` and `validatorMerkleRoot()` match planned values | Etherscan Read |
 | ENS settings | `ens()`, `nameWrapper()`, root nodes and `ensJobPages()` match plan | Etherscan Read |
 | Pause posture | `paused()` / `settlementPaused()` match launch plan | Etherscan Read |
@@ -398,23 +397,23 @@ Etherscan field styling can change. Provide arrays in valid `bytes32[]` format.
 
 ### 9.9 Withdraw AGI
 
-- Function: `withdrawAGI(uint256)`
+- Function: `withdrawUSDC(uint256)`
 - Allowed when:
   - `paused == true`
   - `settlementPaused == false`
-  - amount is `<= withdrawableAGI()`
+  - amount is `<= withdrawableUSDC()`
 - Inputs: amount in token base units
-- Success signal: `AGIWithdrawn` event and token transfer to owner
-- Safety note: read `withdrawableAGI()` before submitting; this function cannot extract escrow-backed funds
+- Success signal: `USDCWithdrawn` event and token transfer to owner
+- Safety note: read `withdrawableUSDC()` before submitting; this function cannot extract escrow-backed funds
 
 ### 9.10 Rescue actions
 
 - Functions: `rescueETH`, `rescueERC20`, `rescueToken`
 - Allowed when:
   - `rescueETH`: always
-  - `rescueERC20` non-AGI token: always
-  - `rescueERC20` with AGI token: same gates as `withdrawAGI`
-  - `rescueToken`: token cannot be AGI token
+  - `rescueERC20` non-USDC token: always
+  - `rescueERC20` with USDC token: same gates as `withdrawUSDC`
+  - `rescueToken`: token cannot be USDC token
 - Success signal: transfer/call succeeds and on-chain balances reflect movement
 - Safety note: treat rescue calls as emergency controls with dual approval and post-action reconciliation
 
@@ -442,7 +441,7 @@ If your proof is empty, Etherscan usually accepts:
 
 ### What you do / what you should see
 
-1. Employer approves AGI token allowance to the contract.
+1. Employer approves USDC token allowance to the contract.
    - Should see: ERC-20 `Approval` event.
 2. Employer calls `createJob(jobSpecURI,payout,duration,details)`.
    - Should see: `JobCreated` and escrow increase.
@@ -557,16 +556,15 @@ A participant can be authorized if they control the configured subdomain via Nam
 | Completion review period | `completionReviewPeriod()` | `setCompletionReviewPeriod` | `7 days` | Empty escrow/bonds; valid review period bound | Avoid frequent changes |
 | Dispute review period | `disputeReviewPeriod()` | `setDisputeReviewPeriod` | `14 days` | Empty escrow/bonds; valid review period bound | Keep enough time for moderator SLA |
 | Challenge period after approval | `challengePeriodAfterApproval()` | `setChallengePeriodAfterApproval` | `1 day` | Empty escrow/bonds; valid review period bound | Change only with policy update |
-| Validator bond params | `validatorBondBps()`, `validatorBondMin()`, `validatorBondMax()` | `setValidatorBondParams` | `1500`, `10e18`, high cap | Bounds checked in function | Test on rehearsal network first |
-| Agent bond params | `agentBondBps()`, `agentBond()`, `agentBondMax()` | `setAgentBondParams` | `500`, `1e18`, high cap | Bounds checked in function | Coordinate with agent onboarding |
-| Agent bond absolute value | `agentBond()` | `setAgentBond` | `1e18` | Must satisfy configured limits | Communicate before enforcing increase |
+| Validator bond params | `validatorBondBps()`, `validatorBondMin()`, `validatorBondMax()` | `setValidatorBondParams` | `1500`, `10e6`, high cap | Bounds checked in function | Test on rehearsal network first |
+| Agent bond params | `agentBondBps()`, `agentBond()`, `agentBondMax()` | `setAgentBondParams` | `500`, `1e6`, high cap | Bounds checked in function | Coordinate with agent onboarding |
+| Agent bond absolute value | `agentBond()` | `setAgentBond` | `1e6` | Must satisfy configured limits | Communicate before enforcing increase |
 | Validator slash BPS | `validatorSlashBps()` | `setValidatorSlashBps` | `8000` | Empty escrow/bonds; bounded | Update only after risk review |
 | Validation reward percentage | `validationRewardPercentage()` | `setValidationRewardPercentage` | `8` | Must remain compatible with AGI type payout percentages | Re-validate AGI type matrix |
 | Premium reputation threshold | `premiumReputationThreshold()` | `setPremiumReputationThreshold` | `10000` | No special gate | Low-risk, but still document |
-| Max payout per job | `maxJobPayout()` | `setMaxJobPayout` | `88888888000000000000000000` | No special gate | Use staged increases |
+| Max payout per job | `maxJobPayout()` | `setMaxJobPayout` | `88888888000000` | No special gate | Use staged increases |
 | Max job duration | `jobDurationLimit()` | `setJobDurationLimit` | `10000000` | Must be non-zero | Keep aligned with ops timelines |
 | Max active jobs per agent | `maxActiveJobsPerAgent()` | `setMaxActiveJobsPerAgent` | `3` | Range guard in setter | Increase carefully to avoid concentration |
-| AGI token address | `agiToken()` | `updateAGITokenAddress` | Constructor input | Identity unlocked + empty escrow/bonds + contract address | Treat as major migration event |
 | ENS registry | `ens()` | `updateEnsRegistry` | Constructor input | Identity unlocked + empty escrow/bonds + contract address | Change only with full namespace validation |
 | ENS name wrapper | `nameWrapper()` | `updateNameWrapper` | Constructor input | Identity unlocked + empty escrow/bonds + zero/contract | Validate wrapper ownership model |
 | ENS root nodes | `clubRootNode()`, `agentRootNode()`, `alphaClubRootNode()`, `alphaAgentRootNode()` | `updateRootNodes` | Constructor inputs | Identity unlocked + empty escrow/bonds | Update during intake pause window |
@@ -582,7 +580,7 @@ A participant can be authorized if they control the configured subdomain via Nam
 | Mainnet migration blocked with confirmation error | `DEPLOY_CONFIRM_MAINNET` missing or wrong | Set exact required string and rerun migration |
 | Etherscan verification fails with bytecode mismatch | Library addresses or compiler settings mismatch | Re-submit verify with exact linked libraries and compile settings |
 | Owner config call reverts with `InvalidState` | Function requires empty escrow/bonds and protocol still has active locked balances | Wait for settlement completion, verify `locked*` values are zero, retry |
-| `withdrawAGI` reverts | Contract not in required state (`paused=true`, `settlementPaused=false`) or amount exceeds `withdrawableAGI()` | Set pause posture correctly, read `withdrawableAGI()`, retry with lower amount |
+| `withdrawUSDC` reverts | Contract not in required state (`paused=true`, `settlementPaused=false`) or amount exceeds `withdrawableUSDC()` | Set pause posture correctly, read `withdrawableUSDC()`, retry with lower amount |
 | Agents/validators cannot apply/validate | Misconfigured authorization: roots empty/wrong, direct lists missing, blacklist active, ENS config wrong | Verify allowlist path in Read Contract, then correct via owner function |
 | Merkle proof rejected | Proof built with wrong leaf/hash format | Rebuild using canonical leaf `keccak256(abi.encodePacked(address))` and deterministic script |
 | ENS authorization fails | Wrong root node, wrong subdomain label, or claimant not recognized by NameWrapper/resolver checks | Confirm root nodes and ownership path, then retry with correct subdomain |

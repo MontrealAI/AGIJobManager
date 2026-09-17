@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -53,8 +54,9 @@ const mustIncludeSources = [
   'src/lib/eip1193.ts',
   'src/lib/web3/queries.ts',
   'src/components/header.tsx',
-  'hardhat/deployments/mainnet/deployment.1.24522684.json',
-  'hardhat/deployments/mainnet/ens-job-pages/deployment.1.24531331.json'
+  'config/usdc-deployment.json',
+  'src/lib/usdc.ts',
+  'src/abis/agiJobManager.ts'
 ];
 
 for (const key of mustIncludeSources) {
@@ -64,8 +66,11 @@ for (const key of mustIncludeSources) {
 }
 
 const htmlBytes = Buffer.byteLength(html, 'utf8');
-if (htmlBytes < 1000000) {
-  throw new Error(`Single-file artifact is unexpectedly small (${htmlBytes} bytes). Expected full runtime bundle >= 1000000 bytes.`);
+if (runtimeBundle.sourcesSha256 !== crypto.createHash('sha256').update(JSON.stringify(runtimeBundle.sources)).digest('hex')) {
+  throw new Error('Embedded source registry checksum mismatch.');
+}
+if (sourceKeys.some((key) => key.startsWith('hardhat/deployments/'))) {
+  throw new Error('Historical non-USDC deployment leaked into the active runtime bundle.');
 }
 
 console.log(`Runtime bundle markers verified (bytes=${htmlBytes}, embeddedSources=${sourceKeys.length}).`);

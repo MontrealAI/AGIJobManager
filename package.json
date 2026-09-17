@@ -1,6 +1,6 @@
 {
   "name": "agijobmanager",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Single-contract AGIJobManager",
   "scripts": {
@@ -25,7 +25,7 @@
     "forge:test": "forge test",
     "forge:invariant": "FOUNDRY_PROFILE=ci forge test --match-path forge-test/invariant/*.t.sol",
     "slither": "./scripts/security/run-slither.sh",
-    "deploy:agijobmanager:prod": "AGIJOBMANAGER_DEPLOY=1 npx truffle migrate --f 6 --to 6"
+    "deploy:agijobmanager:prod": "npm --prefix hardhat run deploy:mainnet"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"
@@ -38,6 +38,7 @@
     "ganache": "^7.9.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.6.0",
+    "solc": "0.8.23",
     "solhint": "^5.0.3",
     "truffle": "^5.11.5"
   }

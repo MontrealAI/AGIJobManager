@@ -38,5 +38,8 @@ jobs:
       - name: Test
         run: npm run test
 
+      - name: USDC console regression checks
+        run: node scripts/release/verify-usdc-ui.mjs
+
       - name: UI smoke test
         run: npm run test:ui

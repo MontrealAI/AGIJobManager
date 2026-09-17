@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -12,7 +13,8 @@ const { fundValidators, fundAgents, fundDisputeBond } = require("./helpers/bonds
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const EMPTY_PROOF = [];
 
-const { toBN, toWei, soliditySha3 } = web3.utils;
+const { toBN, soliditySha3 } = web3.utils;
+const toWei = parseUSDCAmount;
 
 function leaf(address) {
   return soliditySha3({ type: "address", value: address });

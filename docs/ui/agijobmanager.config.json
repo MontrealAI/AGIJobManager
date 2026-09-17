@@ -1,6 +1,5 @@
 {
   "defaultNetwork": "mainnet",
-  "legacyContract": "0x0178B6baD606aaF908f72135B8eC32Fc1D5bA477",
   "preferredContract": "",
-  "notes": "preferredContract intentionally blank until the new mainnet deployment is finalized"
+  "notes": "USDC v0.5.0 deployment required. Enter a verified new manager address; legacy deployments are unsupported."
 }

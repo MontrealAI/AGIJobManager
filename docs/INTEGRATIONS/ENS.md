@@ -70,7 +70,7 @@ flowchart TD
 | Identity lock | `bool public lockIdentityConfig` | `onlyOwner` via `lockIdentityConfiguration` | `lockIdentityConfig()` + `IdentityConfigurationLocked` | Irreversible | Freezes token/ENS/wrapper/root/hook wiring |
 
 > **Safety warning**
-> `updateAGITokenAddress`, `updateEnsRegistry`, `updateNameWrapper`, and `updateRootNodes` all enforce `_requireEmptyEscrow()` before allowing changes. See [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
+USDC is immutable at deployment; no token-address update function exists in v0.5.0.
 
 > **Operator note**
 > `lockIdentityConfiguration()` is not a full governance lock. It freezes ENS/identity rewiring guarded by `whenIdentityConfigurable`, but `updateMerkleRoots` remains intentionally owner-callable for long-lived AI-agent allowlist operations even after lock and during active escrow. See [`whenIdentityConfigurable`](../../contracts/AGIJobManager.sol#L558-L561), [`updateMerkleRoots`](../../contracts/AGIJobManager.sol#L1074-L1082), [`addAdditionalValidator`](../../contracts/AGIJobManager.sol#L951-L954), [`blacklistAgent`](../../contracts/AGIJobManager.sol#L1011-L1014), and pause controls in [`AGIJobManager.sol`](../../contracts/AGIJobManager.sol#L705-L721).

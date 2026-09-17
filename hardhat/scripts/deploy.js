@@ -1,3 +1,4 @@
+const { requireCanonicalUSDC } = require('../../scripts/lib/usdc');
 const fs = require('fs');
 const path = require('path');
 const { ethers, network, run } = require('hardhat');
@@ -97,14 +98,14 @@ function resolveConstructor(networkName, profile) {
   }
 
   const constructorArgs = {
-    agiTokenAddress: profile.agiTokenAddress,
+    usdcTokenAddress: profile.usdcTokenAddress,
     baseIpfsUrl: profile.baseIpfsUrl,
     ensConfig: profile.ensConfig,
     rootNodes: profile.rootNodes,
     merkleRoots: profile.merkleRoots,
   };
 
-  validateAddress('agiTokenAddress', constructorArgs.agiTokenAddress);
+  validateAddress('usdcTokenAddress', constructorArgs.usdcTokenAddress);
   if (typeof constructorArgs.baseIpfsUrl !== 'string' || constructorArgs.baseIpfsUrl.trim() === '') {
     throw new Error('baseIpfsUrl must be a non-empty string.');
   }
@@ -229,6 +230,9 @@ async function main() {
   const { config, configPath } = loadDeployConfig();
   const profile = config[network.name];
   const constructorArgs = resolveConstructor(network.name, profile);
+  requireCanonicalUSDC(chainId, constructorArgs.usdcTokenAddress);
+  const usdc = new ethers.Contract(constructorArgs.usdcTokenAddress, ['function decimals() view returns (uint8)'], ethers.provider);
+  if (Number(await usdc.decimals()) !== 6) throw new Error('USDC must use six decimals.');
   const resolvedFinalOwner = resolveFinalOwner(profile);
   const dryRun = process.env.DRY_RUN === '1';
 
@@ -281,7 +285,7 @@ async function main() {
   };
 
   const managerArgs = [
-    constructorArgs.agiTokenAddress,
+    constructorArgs.usdcTokenAddress,
     constructorArgs.baseIpfsUrl,
     constructorArgs.ensConfig,
     constructorArgs.rootNodes,

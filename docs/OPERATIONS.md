@@ -12,7 +12,7 @@
   - `JobDisputed`
   - `DisputeResolvedWithCode`
   - `SettlementPauseSet`
-  - `AGIWithdrawn`
+  - `USDCWithdrawn`
   - `EnsHookAttempted` (failed attempts)
 - Operational throughput:
   - `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `JobExpired`, `JobCancelled`
@@ -26,7 +26,7 @@
 Treat as incidents when:
 - Dispute rate spikes unexpectedly.
 - `EnsHookAttempted.success=false` spikes (ENS integration degradation).
-- Unexpected owner withdrawals (`AGIWithdrawn`).
+- Unexpected owner withdrawals (`USDCWithdrawn`).
 - Repeated settlement failures due to pause flags.
 
 ## Incident response playbooks

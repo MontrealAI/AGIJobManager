@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN } = require('@openzeppelin/test-helpers');
 
 const AGIJobManager = artifacts.require('AGIJobManager');
@@ -29,7 +30,7 @@ contract('operational durability', (accounts) => {
 
   it('makes max active jobs per agent owner-configurable with validation', async () => {
     const { token, manager } = await deployManager();
-    const payout = web3.utils.toWei('1');
+    const payout = parseUSDCAmount('1');
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
     await manager.addAGIType(agiType.address, 1, { from: owner });
@@ -39,8 +40,8 @@ contract('operational durability', (accounts) => {
     await expectCustomError(manager.setMaxActiveJobsPerAgent.call(0, { from: owner }), 'InvalidParameters');
     await expectCustomError(manager.setMaxActiveJobsPerAgent.call(10001, { from: owner }), 'InvalidParameters');
 
-    await token.mint(employer, web3.utils.toWei('10'), { from: owner });
-    await token.approve(manager.address, web3.utils.toWei('10'), { from: employer });
+    await token.mint(employer, parseUSDCAmount('10'), { from: owner });
+    await token.approve(manager.address, parseUSDCAmount('10'), { from: employer });
 
     for (let i = 0; i < 4; i += 1) {
       await manager.createJob(`ipfs://spec-${i}`, payout, 1000, 'details', { from: employer });
@@ -60,7 +61,7 @@ contract('operational durability', (accounts) => {
 
   it('allows bond parameter updates while escrow is locked for in-flight jobs', async () => {
     const { token, manager } = await deployManager();
-    const payout = web3.utils.toWei('2');
+    const payout = parseUSDCAmount('2');
 
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
@@ -69,16 +70,16 @@ contract('operational durability', (accounts) => {
     assert((await manager.lockedEscrow()).gt(new BN('0')), 'precondition: escrow should be locked');
 
     // Pre-change these owner operations reverted with InvalidState due to _requireEmptyEscrow().
-    await manager.setAgentBondParams(600, web3.utils.toWei('2'), web3.utils.toWei('20'), { from: owner });
-    await manager.setAgentBond(web3.utils.toWei('3'), { from: owner });
-    await manager.setValidatorBondParams(1700, web3.utils.toWei('2'), web3.utils.toWei('30'), { from: owner });
+    await manager.setAgentBondParams(600, parseUSDCAmount('2'), parseUSDCAmount('20'), { from: owner });
+    await manager.setAgentBond(parseUSDCAmount('3'), { from: owner });
+    await manager.setValidatorBondParams(1700, parseUSDCAmount('2'), parseUSDCAmount('30'), { from: owner });
 
     assert.equal((await manager.agentBondBps()).toString(), '600');
-    assert.equal((await manager.agentBond()).toString(), web3.utils.toWei('3'));
-    assert.equal((await manager.agentBondMax()).toString(), web3.utils.toWei('20'));
+    assert.equal((await manager.agentBond()).toString(), parseUSDCAmount('3'));
+    assert.equal((await manager.agentBondMax()).toString(), parseUSDCAmount('20'));
     assert.equal((await manager.validatorBondBps()).toString(), '1700');
-    assert.equal((await manager.validatorBondMin()).toString(), web3.utils.toWei('2'));
-    assert.equal((await manager.validatorBondMax()).toString(), web3.utils.toWei('30'));
+    assert.equal((await manager.validatorBondMin()).toString(), parseUSDCAmount('2'));
+    assert.equal((await manager.validatorBondMax()).toString(), parseUSDCAmount('30'));
   });
 
 });

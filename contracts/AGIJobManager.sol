@@ -19,8 +19,8 @@ IMPORTANT: The Protocol is experimental software. Smart contracts can fail, beha
 1. Definitions
 
 - "Protocol" / "AGIJobManager": The AGIJobManager smart contract(s) implementing job posting, assignment, escrow, bonds, validation, disputes, and settlement.
-- "$AGIALPHA": The ERC-20 token used by the Protocol for job payouts, validator rewards, agent/validator/dispute bonds, and any protocol-retained amounts.
-- "Employer": Any person or entity that posts a Job and escrows a payout in $AGIALPHA.
+- "$USDC": The ERC-20 token used by the Protocol for job payouts, validator rewards, agent/validator/dispute bonds, and any protocol-retained amounts.
+- "Employer": Any person or entity that posts a Job and escrows a payout in $USDC.
 - "Agent": Any person or entity that applies for, performs, and requests completion of a Job.
 - "Validator": Any person or entity that votes to approve or disapprove a Job completion request under the Protocol rules, posting any required validator bond.
 - "Moderator": An address designated by the Protocol owner with permission to resolve disputes through the Protocol's dispute-resolution functions.
@@ -28,8 +28,8 @@ IMPORTANT: The Protocol is experimental software. Smart contracts can fail, beha
 - "Job": A work request defined by an on-chain job id plus off-chain/on-chain references (e.g., jobSpecURI, details, and later jobCompletionURI).
 - "Job Spec URI": A URI describing the Job requested by the Employer.
 - "Job Completion URI": A URI submitted by the Agent describing or containing the completion deliverable(s).
-- "Escrow": The $AGIALPHA amount deposited by the Employer as the Job payout and held by the Protocol until settlement according to code.
-- "Bonds": Any $AGIALPHA amounts posted as Agent bonds, Validator bonds, or Dispute bonds per the Protocol.
+- "Escrow": The $USDC amount deposited by the Employer as the Job payout and held by the Protocol until settlement according to code.
+- "Bonds": Any $USDC amounts posted as Agent bonds, Validator bonds, or Dispute bonds per the Protocol.
 - "Settlement": The Protocol's distribution of escrowed payout and bonds according to the on-chain rules.
 - "User Content": Any Job Spec URI, Job Completion URI, details, or any referenced content (including IPFS/HTTP content) supplied by users.
 
@@ -59,7 +59,7 @@ The Employer is solely and exclusively responsible for:
 - The legality, accuracy, and completeness of the Job description, Job Spec URI, details, and any referenced content.
 - Ensuring the Job does not solicit or require unlawful acts, regulated acts without permits, infringement, malware, fraud, or rights violations.
 - Determining whether a Job creates (or could be interpreted as creating) an employment relationship, and satisfying all obligations associated with such classification, including payroll, withholding, insurance, benefits, reporting, and worker protections.
-- All tax obligations relating to posting the Job, escrowing $AGIALPHA, receiving any refunds, or any other token transfers.
+- All tax obligations relating to posting the Job, escrowing $USDC, receiving any refunds, or any other token transfers.
 - Any off-chain contracting, NDAs, IP assignments/licenses, confidentiality terms, acceptance criteria, warranties, or service levels for the Job.
 
 4.2 Agent Responsibilities (Exclusive)
@@ -67,7 +67,7 @@ The Agent is solely and exclusively responsible for:
 
 - Performing the Job in accordance with any off-chain agreement with the Employer.
 - Ensuring all deliverables and the Job Completion URI content are lawful and do not violate third-party rights.
-- All tax obligations relating to receiving $AGIALPHA payments, posting or forfeiting Agent bonds, or receiving any additional settlement amounts.
+- All tax obligations relating to receiving $USDC payments, posting or forfeiting Agent bonds, or receiving any additional settlement amounts.
 - Maintaining operational security of wallets, private keys, endpoints, and any systems used to perform Jobs.
 - Understanding that Agent bonds may be forfeited under certain settlement paths per the code.
 
@@ -92,7 +92,7 @@ This section summarizes expected mechanics; the deployed code controls.
 
 5.1 Posting a Job (Employer)
 
-- To post a Job, the Employer escrows the full payout amount in $AGIALPHA into the Protocol.
+- To post a Job, the Employer escrows the full payout amount in $USDC into the Protocol.
 - The Employer provides a Job Spec URI and optional details.
 - Jobs may have maximum payout and duration limits set by the Protocol.
 
@@ -135,7 +135,7 @@ This section summarizes expected mechanics; the deployed code controls.
 
 6. Disputes; Moderation; No Duty to Resolve
 
-1) Dispute initiation. A dispute may be initiated by an Employer or Agent (and/or may be triggered by validator disapproval thresholds) as permitted by the code. Disputes may require a Dispute bond in $AGIALPHA.
+1) Dispute initiation. A dispute may be initiated by an Employer or Agent (and/or may be triggered by validator disapproval thresholds) as permitted by the code. Disputes may require a Dispute bond in $USDC.
 2) Moderator resolution. Where enabled, Moderators may resolve disputes using the Protocol's dispute code mechanism (e.g., settle in favor of Agent or Employer).
 3) No obligation; no SLA. The Protocol, Owner, and Moderators have no obligation to resolve disputes within any timeframe (or at all), except as the code permits. Any reliance on moderator action is at user risk.
 4) Off-chain disputes remain off-chain. The Protocol cannot adjudicate legal questions (fraud, IP infringement, breach of contract, misrepresentation, employment classification, etc.). Those issues are solely between users and must be handled off-chain.
@@ -192,7 +192,7 @@ You acknowledge and accept, without limitation, the risks of:
 
 - Smart contract bugs, exploits, reentrancy, logic errors, and unforeseen interactions.
 - Chain congestion, MEV/front-running, reorgs, downtime, and client bugs.
-- Token volatility, illiquidity, and loss of value of $AGIALPHA.
+- Token volatility, illiquidity, and loss of value of $USDC.
 - Validator non-participation, collusion, bribery, or incorrect outcomes.
 - Irreversible transactions and the impossibility of guaranteed recovery.
 - Loss of private keys or compromised wallets.
@@ -242,67 +242,23 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-Regulatory Compliance & Legal Disclosures (Token and Program)
+USDC settlement notice (v0.5.0)
 
-1) Utility Token Only: $AGIALPHA is intended as a utility token used within an experimental system (including paying for protocol-defined interactions, payouts, and bonds). It is not intended to represent equity, ownership, profit-sharing, or voting rights in any entity.
-2) No Expectation of Profit: Any expectation of profit, yield, or return is unjustified.
-3) No Guarantee of Value: No party guarantees any value, price stability, or liquidity of $AGIALPHA.
-4) Non-Refundable Token Purchases: Where applicable, token acquisitions are final and non-refundable, subject to mandatory consumer laws that cannot be waived.
-5) User Compliance Responsibility: Users are solely responsible for ensuring acquisition, holding, and use of $AGIALPHA complies with all laws in their jurisdiction, including securities, commodities, consumer, tax, and AML-related obligations that may apply to them.
-
-Research Program Notice; No Warranty
-
-THIS IS PART OF AN ASPIRATIONAL RESEARCH PROGRAM WITH AN AMBITIOUS RESEARCH AGENDA. ANY EXPECTATION OF PROFIT OR RETURN IS UNJUSTIFIED. POSSESSION OF $AGIALPHA DOES NOT SIGNIFY OR ESTABLISH ANY ENTITLEMENT OR INTEREST, SHARE OR EQUITY, BOND OR ANALOGOUS ENTITLEMENT, OR ANY RIGHT TO OBTAIN ANY FUTURE INCOME. MATERIALS PROVIDED IN THIS SYSTEM ARE WITHOUT WARRANTY OF ANY KIND AND DO NOT CONSTITUTE ENDORSEMENT AND CAN BE MODIFIED AT ANY TIME. BY USING THE PRESENT SYSTEM, YOU AGREE TO THE $AGIALPHA TERMS AND CONDITIONS. ANY USE OF THIS SYSTEM, OR ANY OF THE INFORMATION CONTAINED HEREIN, FOR OTHER THAN THE PURPOSE FOR WHICH IT WAS DEVELOPED, IS EXPRESSLY PROHIBITED, EXCEPT AS AGI.ETH MAY OTHERWISE AGREE TO IN WRITING OFFICIALLY.
-
-OVERRIDING AUTHORITY: AGI.ETH
-
-By interacting with the AGIJobManager smart contract, you acknowledge that you have read, understood, and agree to be bound by these Terms.
-
---------------------------------------------------------------------------------
-
-[ R E G U L A T O R Y  C O M P L I A N C E  &  L E G A L  D I S C L O S U R E S ]
-
-Published by: ALPHA.AGI.ETH
-
-Approval Authority: ALPHA.AGI.ETH
-
-Office of Primary Responsibility: ALPHA.AGI.ETH
-
-Initial Terms & Conditions
-
-The Emergence of an AGI-Powered Alpha Agent.
-
-Ticker ($): AGIALPHA
-
-Rooted in the publicly disclosed 2017 "Multi-Agent AI DAO" prior art, the AGI ALPHA AGENT utilizes $AGIALPHA tokens purely as utility tokens—no equity, no profit-sharing—to grant users prepaid access to the AGI ALPHA AGENT’s capabilities. By structuring $AGIALPHA as an advance payment mechanism for leveraging ALPHA.AGENT.AGI.Eth’s AI-driven services, holders likely avoid securities classification complexities. By purchasing these tokens, you gain usage credits for future AI services from the AGI ALPHA AGENT. Instead of representing ownership or investment rights, these tokens simply secure the right to interact with and benefit from the AGI ALPHA AGENT’s intelligence and outputs. This model delivers a straightforward, compliance-friendly approach to accessing cutting-edge AI functionalities, ensuring a seamless, equity-free experience for all participants.
-
-1. Token Usage: $AGIALPHA tokens are strictly utility tokens—no equity, no profit-sharing—intended for the purchase of products/services by the AGI ALPHA AGENT (ALPHA.AGENT.AGI.Eth). They are not intended for investment or speculative purposes.
-
-2. Non-Refundable: Purchases of $AGIALPHA tokens are final and non-refundable.
-
-3. No Guarantee of Value: The issuer does not guarantee any specific value of the $AGIALPHA token in relation to fiat currencies or other cryptocurrencies.
-
-4. Regulatory Compliance: It is the user’s responsibility to ensure that the purchase and use of $AGIALPHA tokens comply with all applicable laws and regulations.
-
-5. User Responsibility: Users are responsible for complying with the laws in their own jurisdiction regarding the purchase and use of $AGIALPHA tokens.
-
-OVERRIDING AUTHORITY: AGI.Eth
-
-$AGIALPHA is experimental and part of an ambitious research agenda. Any expectation of profit is unjustified.
-
-Materials provided (including $AGIALPHA) are without warranty. By using $AGIALPHA, you agree to the $AGIALPHA Terms and Conditions.
-
-Changes to Terms: The issuer may revise these terms at any time, subject to regulatory compliance. Current Terms & Conditions: https://agialphaagent.com/.
-
-THIS IS PART OF AN ASPIRATIONAL RESEARCH PROGRAM WITH AN AMBITIOUS RESEARCH AGENDA. ANY EXPECTATION OF PROFIT OR RETURN IS UNJUSTIFIED. POSSESSION OF $AGIALPHA DOES NOT SIGNIFY OR ESTABLISH ANY ENTITLEMENT OR INTEREST, SHARE OR EQUITY, BOND OR ANALOGOUS ENTITLEMENT, OR ANY RIGHT TO OBTAIN ANY FUTURE INCOME. MATERIALS PROVIDED IN THIS SYSTEM ARE WITHOUT WARRANTY OF ANY KIND AND DO NOT CONSTITUTE ENDORSEMENT AND CAN BE MODIFIED AT ANY TIME. BY USING THE PRESENT SYSTEM, YOU AGREE TO THE $AGIALPHA TERMS AND CONDITIONS. ANY USE OF THIS SYSTEM, OR ANY OF THE INFORMATION CONTAINED HEREIN, FOR OTHER THAN THE PURPOSE FOR WHICH IT WAS DEVELOPED, IS EXPRESSLY PROHIBITED, EXCEPT AS AGI.ETH MAY OTHERWISE AGREE TO IN WRITING OFFICIALLY.
-
-OVERRIDING AUTHORITY: AGI.ETH
+The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
+AGIJobManager does not issue USDC or define the issuer's terms. The protocol's job
+refund and settlement rules apply to job escrow; they do not describe token purchases
+or redemption rights. USDC issuer controls, including transfer pauses and blocked
+addresses, may prevent a transfer and therefore revert a settlement operation.
+Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
+Historical project-token sale disclosures do not describe v0.5.0 settlement and are
+preserved in previous Git tags.
 
 */
 
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -344,7 +300,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error ConfigLocked();
     error SettlementPaused();
 
-    IERC20 public agiToken;
+    IERC20 public immutable usdcToken;
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
@@ -354,15 +310,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 public voteQuorum = 3;
     uint256 public premiumReputationThreshold = 10000;
     uint256 public validationRewardPercentage = 8;
-    uint256 public maxJobPayout = 88888888e18;
+    uint256 public maxJobPayout = 88888888e6;
     uint256 public jobDurationLimit = 10000000;
     uint256 public completionReviewPeriod = 7 days;
     uint256 public disputeReviewPeriod = 14 days;
     uint256 internal constant MAX_REVIEW_PERIOD = 365 days;
     bool public settlementPaused;
     uint256 internal constant DISPUTE_BOND_BPS = 50;
-    uint256 internal constant DISPUTE_BOND_MIN = 1e18;
-    uint256 internal constant DISPUTE_BOND_MAX = 200e18;
+    uint256 internal constant DISPUTE_BOND_MIN = 1e6;
+    uint256 internal constant DISPUTE_BOND_MAX = 200e6;
     /**
      * @notice Validator bond/slashing parameters and challenge window.
      * @dev Validators post a bond per vote; correct-side validators split rewards + slashed bonds.
@@ -371,23 +327,23 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
      *      participate and the employer wins, the refund is reduced by the validator reward pool.
      */
     uint256 public validatorBondBps = 1500;
-    uint256 public validatorBondMin = 10e18;
-    uint256 public validatorBondMax = 88888888e18;
+    uint256 public validatorBondMin = 10e6;
+    uint256 public validatorBondMax = 88888888e6;
     uint256 public validatorSlashBps = 8000;
     uint256 public challengePeriodAfterApproval = 1 days;
     /// @dev Validator incentives are final-outcome aligned; bonds + challenge windows mitigate bribery but do not eliminate it.
     /// @dev Minimum agent bond.
-    uint256 public agentBond = 1e18;
+    uint256 public agentBond = 1e6;
     uint256 public agentBondBps = 500;
-    uint256 public agentBondMax = 88888888e18;
-    /// @notice Total AGI reserved for unsettled job escrows.
+    uint256 public agentBondMax = 88888888e6;
+    /// @notice Total USDC reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
     uint256 public lockedEscrow;
-    /// @notice Total AGI locked as agent performance bonds for unsettled jobs.
+    /// @notice Total USDC locked as agent performance bonds for unsettled jobs.
     uint256 public lockedAgentBonds;
-    /// @notice Total AGI locked as validator bonds for unsettled votes.
+    /// @notice Total USDC locked as validator bonds for unsettled votes.
     uint256 public lockedValidatorBonds;
-    /// @notice Total AGI locked as dispute bonds for unsettled disputes.
+    /// @notice Total USDC locked as dispute bonds for unsettled disputes.
     uint256 public lockedDisputeBonds;
     uint256 public maxActiveJobsPerAgent = 3;
 
@@ -401,7 +357,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     NameWrapper public nameWrapper;
     address public ensJobPages;
     bool private useEnsJobTokenURI;
-    /// @notice Freezes token/ENS/namewrapper/root nodes. Not a governance lock; ops remain owner-controlled.
+    /// @notice Freezes ENS/namewrapper/root nodes; USDC is immutable at deployment. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
 
     struct Job {
@@ -487,7 +443,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event NFTIssued(uint256 indexed tokenId, address indexed employer, string tokenURI);
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
-    event AGIWithdrawn(address indexed to, uint256 indexed amount, uint256 remainingWithdrawable);
+    event USDCWithdrawn(address indexed to, uint256 indexed amount, uint256 remainingWithdrawable);
     event PlatformRevenueAccrued(uint256 indexed jobId, uint256 indexed amount);
     event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);
     event AgentBlacklisted(address indexed agent, bool indexed status);
@@ -495,7 +451,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event ValidatorBondParamsUpdated(uint256 indexed bps, uint256 indexed min, uint256 indexed max);
     event ChallengePeriodAfterApprovalUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event SettlementPauseSet(address indexed setter, bool indexed paused);
-    event AGITokenAddressUpdated(address indexed oldToken, address indexed newToken);
     event EnsJobPagesUpdated(address indexed oldEnsJobPages, address indexed newEnsJobPages);
     event VoteQuorumUpdated(uint256 indexed oldQuorum, uint256 indexed newQuorum);
     event RequiredValidatorApprovalsUpdated(uint256 indexed oldApprovals, uint256 indexed newApprovals);
@@ -532,19 +487,28 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint256 internal constant MAX_JOB_DETAILS_BYTES = 2048;
 
     constructor(
-        address agiTokenAddress,
+        address usdcTokenAddress,
         string memory baseIpfs,
         address[2] memory ensConfig,
         bytes32[4] memory rootNodes,
         bytes32[2] memory merkleRoots
     ) ERC721("AGIJobs", "Job") {
-        if (agiTokenAddress.code.length == 0) revert InvalidParameters();
+        if (usdcTokenAddress.code.length == 0) revert InvalidParameters();
+        if (IERC20Metadata(usdcTokenAddress).decimals() != 6) revert InvalidParameters();
+        if (block.chainid == 1) {
+            if (usdcTokenAddress != 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48) revert InvalidParameters();
+        } else if (block.chainid == 11155111) {
+            if (usdcTokenAddress != 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238) revert InvalidParameters();
+        } else if (block.chainid != 1337 && block.chainid != 31337) {
+            revert InvalidParameters();
+        }
+        usdcToken = IERC20(usdcTokenAddress);
         if (bytes(baseIpfs).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
         if ((rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
             if (ensConfig[0] == address(0) || ensConfig[0].code.length == 0) revert InvalidParameters();
         }
         if (ensConfig[1] != address(0) && ensConfig[1].code.length == 0) revert InvalidParameters();
-        _initAddressConfig(agiTokenAddress, baseIpfs, ensConfig[0], ensConfig[1]);
+        _initAddressConfig(baseIpfs, ensConfig[0], ensConfig[1]);
         _initRoots(rootNodes, merkleRoots);
 
         _validateValidatorThresholds(requiredValidatorApprovals, requiredValidatorDisapprovals);
@@ -566,12 +530,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _initAddressConfig(
-        address agiTokenAddress,
         string memory baseIpfs,
         address ensAddress,
         address nameWrapperAddress
     ) internal {
-        agiToken = IERC20(agiTokenAddress);
         baseIpfsUrl = baseIpfs;
         ens = ENS(ensAddress);
         nameWrapper = NameWrapper(nameWrapperAddress);
@@ -596,12 +558,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _t(address to, uint256 amount) internal {
         if (amount == 0) return;
-        TransferUtils.safeTransfer(address(agiToken), to, amount);
+        TransferUtils.safeTransfer(address(usdcToken), to, amount);
     }
 
     function _tf(address from, uint256 amount) internal {
         if (amount == 0) return;
-        TransferUtils.safeTransferFromExact(address(agiToken), from, address(this), amount);
+        TransferUtils.safeTransferFromExact(address(usdcToken), from, address(this), amount);
     }
 
 
@@ -759,7 +721,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.jobSpecURI = _jobSpecURI;
         job.payout = _payout;
         job.duration = _duration;
-        TransferUtils.safeTransferFromExact(address(agiToken), msg.sender, address(this), _payout);
+        TransferUtils.safeTransferFromExact(address(usdcToken), msg.sender, address(this), _payout);
         unchecked {
             lockedEscrow += _payout;
         }
@@ -1029,13 +991,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
     function removeModerator(address _moderator) external onlyOwner {
         _setAddressFlag(moderators, _moderator, false);
-    }
-    function updateAGITokenAddress(address _newTokenAddress) external onlyOwner whenIdentityConfigurable {
-        if (_newTokenAddress.code.length == 0) revert InvalidParameters();
-        _requireEmptyEscrow();
-        address oldToken = address(agiToken);
-        agiToken = IERC20(_newTokenAddress);
-        emit AGITokenAddressUpdated(oldToken, _newTokenAddress);
     }
     function updateEnsRegistry(address _newEnsRegistry) external onlyOwner whenIdentityConfigurable {
         if (_newEnsRegistry.code.length == 0) revert InvalidParameters();
@@ -1335,7 +1290,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     /// @dev On agent-win, any remainder after agent/validator allocations is intentional platform revenue.
-    /// @dev It stays in-contract and becomes withdrawable via withdrawAGI() when paused,
+    /// @dev It stays in-contract and becomes withdrawable via withdrawUSDC() when paused,
     /// @dev as long as lockedEscrow/locked*Bonds are fully covered.
     function _completeJob(uint256 _jobId, bool repEligible) internal {
         Job storage job = _job(_jobId);
@@ -1560,25 +1515,25 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _setAddressFlag(additionalAgents, agent, false);
     }
 
-    /// @notice Includes retained payout remainders; withdrawable only via withdrawAGI() when paused.
+    /// @notice Includes retained payout remainders; withdrawable only via withdrawUSDC() when paused.
     /// @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds.
-    function withdrawableAGI() public view returns (uint256) {
-        uint256 bal = agiToken.balanceOf(address(this));
+    function withdrawableUSDC() public view returns (uint256) {
+        uint256 bal = usdcToken.balanceOf(address(this));
         uint256 lockedTotal = lockedEscrow + lockedValidatorBonds + lockedAgentBonds + lockedDisputeBonds;
         if (bal < lockedTotal) revert InsolventEscrowBalance();
         return bal - lockedTotal;
     }
 
-    function _withdrawAGITo(address to, uint256 amount) internal {
+    function _withdrawUSDCTo(address to, uint256 amount) internal {
         if (amount == 0) revert InvalidParameters();
-        uint256 available = withdrawableAGI();
+        uint256 available = withdrawableUSDC();
         if (amount > available) revert InsufficientWithdrawableBalance();
         _t(to, amount);
-        emit AGIWithdrawn(to, amount, available - amount);
+        emit USDCWithdrawn(to, amount, available - amount);
     }
 
-    function withdrawAGI(uint256 amount) external onlyOwner whenSettlementNotPaused whenPaused nonReentrant {
-        _withdrawAGITo(msg.sender, amount);
+    function withdrawUSDC(uint256 amount) external onlyOwner whenSettlementNotPaused whenPaused nonReentrant {
+        _withdrawUSDCTo(msg.sender, amount);
     }
 
     function rescueETH(uint256 amount) external onlyOwner nonReentrant {
@@ -1588,17 +1543,17 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function rescueERC20(address token, address to, uint256 amount) external onlyOwner nonReentrant {
         if (token == address(0) || to == address(0) || amount == 0) revert InvalidParameters();
-        if (token == address(agiToken)) {
+        if (token == address(usdcToken)) {
             if (settlementPaused) revert SettlementPaused();
             if (!paused()) revert InvalidState();
-            _withdrawAGITo(to, amount);
+            _withdrawUSDCTo(to, amount);
         } else {
             TransferUtils.safeTransfer(token, to, amount);
         }
     }
 
     function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
-        if (token == address(agiToken)) revert InvalidParameters();
+        if (token == address(usdcToken)) revert InvalidParameters();
         if (token.code.length == 0) revert InvalidParameters();
         (bool ok, bytes memory ret) = token.call(data);
         if (!ok) revert TransferFailed();

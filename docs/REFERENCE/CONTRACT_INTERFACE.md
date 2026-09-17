@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `84f8ef0d34e6`.
-- Source snapshot fingerprint: `84f8ef0d34e6`.
+- Generated at (deterministic source fingerprint): `382dcfc36a89`.
+- Source snapshot fingerprint: `382dcfc36a89`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -15,7 +15,6 @@
 | `agentBondMax` | `uint256` |
 | `agentMerkleRoot` | `bytes32` |
 | `agentRootNode` | `bytes32` |
-| `agiToken` | `IERC20` |
 | `agiTypes` | `AGIType[]` |
 | `alphaAgentRootNode` | `bytes32` |
 | `alphaClubRootNode` | `bytes32` |
@@ -112,14 +111,13 @@
 | `unpause()` | external | nonpayable | — |
 | `unpauseAll()` | external | nonpayable | — |
 | `unpauseIntake()` | external | nonpayable | — |
-| `updateAGITokenAddress(address _newTokenAddress)` | external | nonpayable | — |
 | `updateEnsRegistry(address _newEnsRegistry)` | external | nonpayable | — |
 | `updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` | external | nonpayable | — |
 | `updateNameWrapper(address _newNameWrapper)` | external | nonpayable | — |
 | `updateRootNodes(bytes32 _clubRootNode, bytes32 _agentRootNode, bytes32 _alphaClubRootNode, bytes32 _alphaAgentRootNode)` | external | nonpayable | — |
 | `validateJob(uint256 _jobId, string memory subdomain, bytes32[] calldata proof)` | external | nonpayable | — |
-| `withdrawableAGI()` | public | view | `uint256` |
-| `withdrawAGI(uint256 amount)` | external | nonpayable | — |
+| `withdrawableUSDC()` | public | view | `uint256` |
+| `withdrawUSDC(uint256 amount)` | external | nonpayable | — |
 
 ## Events index
 
@@ -128,9 +126,7 @@
 | `AgentBlacklisted` | `address indexed agent, bool indexed status` |
 | `AgentBondMinUpdated` | `uint256 indexed oldMin, uint256 indexed newMin` |
 | `AgentBondParamsUpdated` | `uint256 indexed oldBps, uint256 indexed oldMin, uint256 indexed oldMax, uint256 newBps, uint256 newMin, uint256 newMax` |
-| `AGITokenAddressUpdated` | `address indexed oldToken, address indexed newToken` |
 | `AGITypeUpdated` | `address indexed nftAddress, uint256 indexed payoutPercentage` |
-| `AGIWithdrawn` | `address indexed to, uint256 indexed amount, uint256 remainingWithdrawable` |
 | `ChallengePeriodAfterApprovalUpdated` | `uint256 indexed oldPeriod, uint256 indexed newPeriod` |
 | `CompletionReviewPeriodUpdated` | `uint256 indexed oldPeriod, uint256 indexed newPeriod` |
 | `DisputeResolvedWithCode` | `uint256 indexed jobId, address indexed resolver, uint8 indexed resolutionCode, string reason` |
@@ -157,6 +153,7 @@
 | `RequiredValidatorDisapprovalsUpdated` | `uint256 indexed oldDisapprovals, uint256 indexed newDisapprovals` |
 | `RootNodesUpdated` | `bytes32 indexed clubRootNode, bytes32 indexed agentRootNode, bytes32 indexed alphaClubRootNode, bytes32 alphaAgentRootNode` |
 | `SettlementPauseSet` | `address indexed setter, bool indexed paused` |
+| `USDCWithdrawn` | `address indexed to, uint256 indexed amount, uint256 remainingWithdrawable` |
 | `ValidationRewardPercentageUpdated` | `uint256 indexed oldPercentage, uint256 indexed newPercentage` |
 | `ValidatorBlacklisted` | `address indexed validator, bool indexed status` |
 | `ValidatorBondParamsUpdated` | `uint256 indexed bps, uint256 indexed min, uint256 indexed max` |
@@ -185,7 +182,7 @@
 ## Notes on best-effort integrations
 
 - ENS ownership checks and ENS Job Pages hooks are integration conveniences, not safety preconditions for escrow accounting.
-- Settlement safety is enforced by AGI token balances, locked accounting buckets, and state transition guards.
+- Settlement safety is enforced by USDC token balances, locked accounting buckets, and state transition guards.
 
 ## Source files used
 

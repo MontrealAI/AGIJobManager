@@ -5,7 +5,8 @@ const { ethers, run, network } = hre;
 const MAINNET_ENS_REGISTRY = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 const MAINNET_NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
 const MAINNET_PUBLIC_RESOLVER = "0xF29100983E058B709F3D539b0c765937B804AC15";
-const DEFAULT_JOB_MANAGER = "0xB3AAeb69b630f0299791679c063d68d6687481d1";
+const DEFAULT_JOB_MANAGER = ""; // Explicit verified USDC manager required.
+const { requireCanonicalUSDC } = require("../../scripts/lib/usdc");
 const DEFAULT_ROOT_NAME = "alpha.jobs.agi.eth";
 const MAINNET_SAFETY_PHRASE = "I_UNDERSTAND_MAINNET_DEPLOYMENT";
 
@@ -94,6 +95,10 @@ async function main() {
   await requireCode(ensRegistry, "ENS_REGISTRY");
   await requireCode(publicResolver, "PUBLIC_RESOLVER");
   await requireCode(jobManager, "JOB_MANAGER");
+  const managerToken = await new ethers.Contract(jobManager, ["function usdcToken() view returns (address)"], ethers.provider).usdcToken();
+  requireCanonicalUSDC(chainId, managerToken);
+  const tokenDecimals = await new ethers.Contract(managerToken, ["function decimals() view returns (uint8)"], ethers.provider).decimals();
+  if (Number(tokenDecimals) !== 6) throw new Error("USDC must have six decimals");
   if (nameWrapper.toLowerCase() !== ethers.ZeroAddress.toLowerCase()) {
     await requireCode(nameWrapper, "NAME_WRAPPER");
   }

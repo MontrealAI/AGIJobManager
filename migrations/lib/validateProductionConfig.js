@@ -39,7 +39,7 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
   const protocolParameters = config.protocolParameters || {};
   const dynamicLists = config.dynamicLists || {};
 
-  identity.agiTokenAddress = normalizeAddress(identity.agiTokenAddress, 'identity.agiTokenAddress', web3);
+  identity.usdcTokenAddress = normalizeAddress(identity.usdcTokenAddress, 'identity.usdcTokenAddress', web3);
   identity.ensRegistry = normalizeAddress(identity.ensRegistry, 'identity.ensRegistry', web3, { allowZero: true });
   identity.nameWrapper = normalizeAddress(identity.nameWrapper, 'identity.nameWrapper', web3, { allowZero: true });
   if (identity.ensJobPages) {
@@ -48,7 +48,7 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
   assert(typeof identity.baseIpfsUrl === 'string', 'identity.baseIpfsUrl must be a string.');
   assert(Buffer.byteLength(identity.baseIpfsUrl, 'utf8') <= 512, 'identity.baseIpfsUrl must be <= 512 bytes.');
 
-  await assertAddressHasCode(web3, 'identity.agiTokenAddress', identity.agiTokenAddress);
+  await assertAddressHasCode(web3, 'identity.usdcTokenAddress', identity.usdcTokenAddress);
   if (identity.ensRegistry.toLowerCase() !== ZERO_ADDRESS.toLowerCase()) {
     await assertAddressHasCode(web3, 'identity.ensRegistry', identity.ensRegistry);
   }
@@ -105,15 +105,15 @@ async function validateProductionConfig({ config, constructorArgs, chainId, web3
   });
 
   const vBps = asBigInt(protocolParameters.validatorBondBps ?? '1500', 'protocolParameters.validatorBondBps');
-  const vMin = asBigInt(protocolParameters.validatorBondMin ?? '10000000000000000000', 'protocolParameters.validatorBondMin');
-  const vMax = asBigInt(protocolParameters.validatorBondMax ?? '88888888000000000000000000', 'protocolParameters.validatorBondMax');
+  const vMin = asBigInt(protocolParameters.validatorBondMin ?? '10000000', 'protocolParameters.validatorBondMin');
+  const vMax = asBigInt(protocolParameters.validatorBondMax ?? '88888888000000', 'protocolParameters.validatorBondMax');
   assert(vMin <= vMax, 'protocolParameters.validatorBondMin must be <= validatorBondMax.');
   if (vBps === 0n && vMin === 0n) assert(vMax === 0n, 'validator bond disabled mode must be (0,0,0).');
   if (!(vBps === 0n && vMin === 0n)) assert(vMax !== 0n && !(vBps > 0n && vMin === 0n), 'invalid validator bond parameters.');
 
   const aBps = asBigInt(protocolParameters.agentBondBps ?? '500', 'protocolParameters.agentBondBps');
-  const aMin = asBigInt(protocolParameters.agentBondMin ?? '1000000000000000000', 'protocolParameters.agentBondMin');
-  const aMax = asBigInt(protocolParameters.agentBondMax ?? '88888888000000000000000000', 'protocolParameters.agentBondMax');
+  const aMin = asBigInt(protocolParameters.agentBondMin ?? '1000000', 'protocolParameters.agentBondMin');
+  const aMax = asBigInt(protocolParameters.agentBondMax ?? '88888888000000', 'protocolParameters.agentBondMax');
   assert(aMin <= aMax, 'protocolParameters.agentBondMin must be <= agentBondMax.');
   if (!(aBps === 0n && aMin === 0n && aMax === 0n)) assert(aMax !== 0n, 'protocolParameters.agentBondMax must be non-zero when agent bond enabled.');
 

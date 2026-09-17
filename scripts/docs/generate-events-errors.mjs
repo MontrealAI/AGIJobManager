@@ -33,7 +33,7 @@ const eventUsage = {
   JobExpired: ['Job missed deadline and expired', 'Track employer protection triggers'],
   JobCancelled: ['Unassigned job cancelled', 'Confirm escrow release to employer'],
   SettlementPauseSet: ['Settlement lane pause toggled', 'Critical operations-state alert'],
-  AGIWithdrawn: ['Owner treasury withdrawal', 'High-severity treasury-control alert'],
+  USDCWithdrawn: ['Owner treasury withdrawal', 'High-severity treasury-control alert'],
   IdentityConfigurationLocked: ['Identity wiring permanently locked', 'Governance milestone (one-way control)']
 };
 
@@ -46,7 +46,7 @@ const errorUsage = {
   JobNotFound: ['Unknown job id or deleted/cancelled struct', 'Verify event history and live jobId range'],
   TransferFailed: ['ERC20 transfer/transferFrom failed or malformed return', 'Confirm balance/allowance and exact-transfer token semantics'],
   SettlementPaused: ['Settlement lane currently paused', 'Follow incident runbook; unpause only after safety checks'],
-  InsufficientWithdrawableBalance: ['Treasury withdrawal exceeds withdrawableAGI', 'Reconcile locked escrow/bonds before retry'],
+  InsufficientWithdrawableBalance: ['Treasury withdrawal exceeds withdrawableUSDC', 'Reconcile locked escrow/bonds before retry'],
   InsolventEscrowBalance: ['Escrow solvency guard tripped', 'Pause operations, investigate accounting divergence, run incident response']
 };
 

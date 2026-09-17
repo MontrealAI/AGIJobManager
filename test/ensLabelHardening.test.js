@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
@@ -47,7 +48,7 @@ contract("ENS label hardening", (accounts) => {
     let token;
     let manager;
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
 
     beforeEach(async () => {
       token = await MockERC20.new({ from: owner });
@@ -72,10 +73,10 @@ contract("ENS label hardening", (accounts) => {
 
       await token.mint(employer, payout, { from: owner });
       await token.approve(manager.address, payout, { from: employer });
-      await token.mint(agent, web3.utils.toWei("100"), { from: owner });
-      await token.approve(manager.address, web3.utils.toWei("100"), { from: agent });
-      await token.mint(validator, web3.utils.toWei("100"), { from: owner });
-      await token.approve(manager.address, web3.utils.toWei("100"), { from: validator });
+      await token.mint(agent, parseUSDCAmount("100"), { from: owner });
+      await token.approve(manager.address, parseUSDCAmount("100"), { from: agent });
+      await token.mint(validator, parseUSDCAmount("100"), { from: owner });
+      await token.approve(manager.address, parseUSDCAmount("100"), { from: validator });
 
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });
@@ -201,7 +202,7 @@ contract("ENS label hardening", (accounts) => {
       await strictAgiType.mint(agent, { from: owner });
       await strictManager.addAGIType(strictAgiType.address, 50, { from: owner });
       await token.approve(strictManager.address, payout, { from: employer });
-      await token.approve(strictManager.address, web3.utils.toWei("100"), { from: agent });
+      await token.approve(strictManager.address, parseUSDCAmount("100"), { from: agent });
 
       const createReceipt = await strictManager.createJob("ipfs-job", payout, 3600, "details", { from: employer });
       const jobId = createReceipt.logs[0].args.jobId.toNumber();
@@ -216,7 +217,7 @@ contract("ENS label hardening", (accounts) => {
     let token;
     let manager;
 
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
 
     beforeEach(async () => {
       token = await MockERC20.new({ from: owner });
@@ -239,10 +240,10 @@ contract("ENS label hardening", (accounts) => {
 
       await token.mint(employer, payout, { from: owner });
       await token.approve(manager.address, payout, { from: employer });
-      await token.mint(agent, web3.utils.toWei("100"), { from: owner });
-      await token.approve(manager.address, web3.utils.toWei("100"), { from: agent });
-      await token.mint(validator, web3.utils.toWei("100"), { from: owner });
-      await token.approve(manager.address, web3.utils.toWei("100"), { from: validator });
+      await token.mint(agent, parseUSDCAmount("100"), { from: owner });
+      await token.approve(manager.address, parseUSDCAmount("100"), { from: agent });
+      await token.mint(validator, parseUSDCAmount("100"), { from: owner });
+      await token.approve(manager.address, parseUSDCAmount("100"), { from: validator });
 
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });

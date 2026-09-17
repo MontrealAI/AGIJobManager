@@ -106,8 +106,8 @@ const accounts = await web3.eth.getAccounts();
 const [owner, employer, agent, validatorA, validatorB] = accounts;
 
 // Mint tokens for employer
-await token.mint(employer, web3.utils.toWei("100"));
-await token.approve(manager.address, web3.utils.toWei("100"), { from: employer });
+await token.mint(employer, 100000000);
+await token.approve(manager.address, 100000000, { from: employer });
 
 // Set NameWrapper ownership for agent/validators
 const subnode = (root, label) => web3.utils.soliditySha3(
@@ -119,7 +119,7 @@ await nameWrapper.setOwner(subnode(clubRoot, "validator-a"), validatorA);
 await nameWrapper.setOwner(subnode(clubRoot, "validator-b"), validatorB);
 
 // Create & complete job
-const jobTx = await manager.createJob("ipfs-job-spec", web3.utils.toWei("100"), 3600, "details", { from: employer });
+const jobTx = await manager.createJob("ipfs-job-spec", 100000000, 3600, "details", { from: employer });
 const jobId = jobTx.logs[0].args.jobId.toNumber();
 
 await manager.applyForJob(jobId, "agent", [], { from: agent });
@@ -136,7 +136,7 @@ await manager.validateJob(jobId, "validator-b", [], { from: validatorB });
 This path uses the Etherscan **Write Contract** UI. You will need the contract address and ABI.
 
 ### Before you start
-1. Confirm the AGI token address and AGIJobManager contract address from a trusted source.
+1. Confirm the USDC token address and AGIJobManager contract address from a trusted source.
 2. Use a **small allowance** and **small payout** first.
 3. Know which **identity gate** your role uses:
    - **ENS/NameWrapper ownership** (subdomain string), or
@@ -144,7 +144,7 @@ This path uses the Etherscan **Write Contract** UI. You will need the contract a
    - **Additional allowlist** managed by the owner (additionalAgents/additionalValidators).
 
 ### Approving ERC‑20 allowance (safe method)
-1. Go to the AGI token contract on Etherscan → **Write Contract**.
+1. Go to the USDC token contract on Etherscan → **Write Contract**.
 2. Connect your wallet.
 3. Call `approve(spender, amount)` where:
    - `spender` = AGIJobManager contract address
@@ -158,7 +158,7 @@ This path uses the Etherscan **Write Contract** UI. You will need the contract a
 **Employer**
 1. `createJob(jobSpecURI, payout, duration, details)`
    - `jobSpecURI`: ERC‑721 metadata URI (full `ipfs://...` or `https://...` recommended)
-   - `payout`: integer in token wei (18 decimals)
+   - `payout`: integer in USDC base units (6 decimals)
    - `duration`: seconds
    - `details`: short plain text
 2. Optional: `cancelJob(jobId)` if no agent is assigned and not completed.

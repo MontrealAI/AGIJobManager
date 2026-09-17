@@ -7,7 +7,7 @@ module.exports = {
   defaults: {
     identity: {
       // VERIFY BEFORE MAINNET
-      agiTokenAddress: '0xA61a3B3a130a9c20768EEBF97E21515A6046a1Fa',
+      usdcTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       baseIpfsUrl: 'https://ipfs.io/ipfs/',
       ensRegistry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
       nameWrapper: '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401',

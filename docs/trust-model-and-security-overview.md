@@ -17,7 +17,7 @@ and settlement invariants.
 - **Manage moderators** and AGI payout tiers (AGI types).
 - **Adjust economic parameters** (validator thresholds, review periods, job
   duration limits, payout caps, and validation reward percentages).
-- **Identity wiring before lock** (AGI token, ENS registry, NameWrapper, root
+- **Identity wiring before lock** (USDC token, ENS registry, NameWrapper, root
   nodes), and **Merkle roots at any time**.
 - **Owner‑only job delist** for unassigned jobs.
 
@@ -39,15 +39,15 @@ and settlement invariants.
 - Any direct token transfers to the contract.
 
 **Withdrawal semantics**
-- `withdrawableAGI()` returns `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and reverts on insolvency.
-- `withdrawAGI(amount)` is **owner‑only** and **paused‑only**.
+- `withdrawableUSDC()` returns `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds` and reverts on insolvency.
+- `withdrawUSDC(amount)` is **owner‑only** and **paused‑only**.
 
 **Example**
-- Contract balance: 1,000 AGI
-- `lockedEscrow`: 700 AGI
-- `lockedAgentBonds + lockedValidatorBonds`: 50 AGI
-- `withdrawableAGI()`: 250 AGI
-- `withdrawAGI(400)` reverts; `withdrawAGI(300)` succeeds while paused.
+- Contract balance: 1,000 USDC
+- `lockedEscrow`: 700 USDC
+- `lockedAgentBonds + lockedValidatorBonds`: 50 USDC
+- `withdrawableUSDC()`: 250 USDC
+- `withdrawUSDC(400)` reverts; `withdrawUSDC(300)` succeeds while paused.
 
 ## 3) Pause semantics (blocked vs allowed)
 
@@ -68,7 +68,7 @@ Pausing is intended to stop new risk while preserving exits/settlement.
 | Dispute resolution | `resolveDispute`, `resolveDisputeWithCode` |
 | Owner recovery | `resolveStaleDispute` (owner‑only after `disputeReviewPeriod`; pause optional) |
 | Owner job delist | `delistJob` (owner‑only, unassigned only) |
-| Treasury withdrawal | `withdrawAGI` (owner‑only, paused‑only) |
+| Treasury withdrawal | `withdrawUSDC` (owner‑only, paused‑only) |
 
 **Rationale**: Pause is used to halt new obligations and risky actions, not to
 trap users or prevent settlement/exit paths.
@@ -79,7 +79,6 @@ trap users or prevent settlement/exit paths.
 only; it is not a governance lock.
 
 **Locked once set**
-- `updateAGITokenAddress`
 - `updateEnsRegistry`
 - `updateNameWrapper`
 - `updateRootNodes`

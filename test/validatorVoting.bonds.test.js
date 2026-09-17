@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, expectRevert } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -17,7 +18,7 @@ const mkTree = (list) => { const t = new MerkleTree(list.map(leafFor), keccak256
 
 contract('validatorVoting.bonds', (accounts) => {
   const [owner, employer, agent, v1, v2, v3] = accounts;
-  const payout = new BN(web3.utils.toWei('1000'));
+  const payout = new BN(parseUSDCAmount('1000'));
   const duration = new BN('5000');
 
   it('prevents double voting and settles with slashing/reward accounting', async () => {

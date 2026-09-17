@@ -54,7 +54,7 @@ cat migrations/legacy.snapshot.mainnet.0x0178B6baD606aaF908f72135B8eC32Fc1D5bA47
 
 Review at minimum:
 
-- owner + core addresses (`agiToken`, ENS, NameWrapper)
+- owner + core addresses (`usdcToken`, ENS, NameWrapper)
 - root nodes + merkle roots
 - paused/settlement/identity lock booleans
 - validator threshold/quorum/reward/bond/slash/timing params
@@ -92,7 +92,7 @@ Notes:
 
 Confirm:
 
-- `owner`, `agiToken`, `ens`, `nameWrapper`
+- `owner`, `usdcToken`, `ens`, `nameWrapper`
 - `clubRootNode`, `agentRootNode`, `alphaClubRootNode`, `alphaAgentRootNode`
 - `validatorMerkleRoot`, `agentMerkleRoot`
 - `paused`, `settlementPaused`, `lockIdentityConfig`

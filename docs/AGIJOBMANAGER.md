@@ -92,19 +92,19 @@ flowchart LR
     ValBond[Validator bonds] --> Correct[Correct-side validators]
     ValBond --> Wrong[Wrong-side validators less slash]
     DisputeBond[Dispute bond] --> Winner[Winner side transfer]
-    Retained --> Treasury[withdrawableAGI when paused]
+    Retained --> Treasury[withdrawableUSDC when paused]
 ```
 
-### `withdrawableAGI`
+### `withdrawableUSDC`
 
-`withdrawableAGI = agiToken.balanceOf(this) - (lockedEscrow + lockedValidatorBonds + lockedAgentBonds + lockedDisputeBonds)`; if balance is below locked total, call reverts with `InsolventEscrowBalance`.
+`withdrawableUSDC = usdcToken.balanceOf(this) - (lockedEscrow + lockedValidatorBonds + lockedAgentBonds + lockedDisputeBonds)`; if balance is below locked total, call reverts with `InsolventEscrowBalance`.
 
-`withdrawAGI` requires:
+`withdrawUSDC` requires:
 - owner only,
 - `whenSettlementNotPaused`,
 - `whenPaused`,
 - amount > 0,
-- amount <= `withdrawableAGI`.
+- amount <= `withdrawableUSDC`.
 
 ## Invariants and guardrails
 
@@ -132,7 +132,7 @@ flowchart LR
 | `JobExpired` | Timeout before completion request | `jobId,employer,payout` | Liveness failures |
 | `JobCancelled` | Unassigned cancellation | `jobId` | Unassigned churn |
 | `PlatformRevenueAccrued` | Agent-win retained remainder | `jobId,amount` | Treasury accrual |
-| `AGIWithdrawn` | Owner treasury withdrawal | `to,amount,remainingWithdrawable` | Governance-sensitive movement |
+| `USDCWithdrawn` | Owner treasury withdrawal | `to,amount,remainingWithdrawable` | Governance-sensitive movement |
 | `SettlementPauseSet` | Settlement gate toggled | `setter,paused` | Emergency mode changes |
 | `EnsHookAttempted` | Hook call attempted | `hook,jobId,target` | ENS integration health |
 
@@ -150,7 +150,7 @@ flowchart LR
 | `ValidatorLimitReached` | max validators hit | additional vote after cap |
 | `InvalidValidatorThresholds` | thresholds violate cap constraints | approvals/disapprovals > max or sum > max |
 | `IneligibleAgentPayout` | no eligible AGI type payout | agent has no qualifying NFT balance |
-| `InsufficientWithdrawableBalance` | owner withdraw request too high | amount > `withdrawableAGI` |
+| `InsufficientWithdrawableBalance` | owner withdraw request too high | amount > `withdrawableUSDC` |
 | `InsolventEscrowBalance` | accounting shortfall | token balance < locked totals |
 | `ConfigLocked` | identity config frozen | setters used after `lockIdentityConfiguration` |
 | `SettlementPaused` | settlement gate active | calling settlement-gated method while paused |
@@ -160,11 +160,11 @@ flowchart LR
 
 - `pause` (`Pausable`) blocks `whenNotPaused` entrypoints (e.g., create/apply/vote/dispute) but does not block all settlement-related paths.
 - `settlementPaused` blocks methods with `whenSettlementNotPaused` (e.g., finalize/cancel/expire/dispute resolution/withdraw).
-- `withdrawAGI` additionally requires `paused == true`, so treasury withdrawal is only possible during paused mode and while settlement is not paused.
+- `withdrawUSDC` additionally requires `paused == true`, so treasury withdrawal is only possible during paused mode and while settlement is not paused.
 
 ### Safe shutdown sequence
 
 1. `pause()` to stop new activity.
 2. Optionally keep `settlementPaused=false` to let existing jobs settle.
-3. Reconcile lock buckets and run `withdrawableAGI()` checks.
+3. Reconcile lock buckets and run `withdrawableUSDC()` checks.
 4. Use `setSettlementPaused(true)` only for hard incident freeze.

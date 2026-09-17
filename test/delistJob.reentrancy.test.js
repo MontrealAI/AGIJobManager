@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -10,7 +11,8 @@ const { buildInitConfig } = require("./helpers/deploy");
 const { expectCustomError } = require("./helpers/errors");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 contract("AGIJobManager delistJob reentrancy regression", (accounts) => {
   const [owner] = accounts;

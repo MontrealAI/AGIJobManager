@@ -1,6 +1,6 @@
 # Glossary (short)
 
-- **AGI token**: ERC‑20 token used for job payouts and rewards.
+- **USDC token**: ERC‑20 token used for job payouts and rewards.
 - **Allowance**: Permission you grant a contract to move your ERC‑20 tokens.
 - **Employer**: The job creator who funds escrow.
 - **Agent**: The worker who applies and completes a job.

@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -58,7 +59,7 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
   describe("Option A auth routing", () => {
     let token;
     let manager;
-    const payout = web3.utils.toWei("10");
+    const payout = parseUSDCAmount("10");
 
     beforeEach(async () => {
       token = await MockERC20.new({ from: owner });
@@ -82,11 +83,11 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
       await token.mint(employer, payout, { from: owner });
       await token.approve(manager.address, payout, { from: employer });
 
-      await token.mint(agent, web3.utils.toWei("100"), { from: owner });
-      await token.approve(manager.address, web3.utils.toWei("100"), { from: agent });
+      await token.mint(agent, parseUSDCAmount("100"), { from: owner });
+      await token.approve(manager.address, parseUSDCAmount("100"), { from: agent });
 
-      await token.mint(validator, web3.utils.toWei("100"), { from: owner });
-      await token.approve(manager.address, web3.utils.toWei("100"), { from: validator });
+      await token.mint(validator, parseUSDCAmount("100"), { from: owner });
+      await token.approve(manager.address, parseUSDCAmount("100"), { from: validator });
 
       const agiType = await MockERC721.new({ from: owner });
       await agiType.mint(agent, { from: owner });

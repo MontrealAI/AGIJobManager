@@ -3,9 +3,9 @@
 This guide is for job posters (employers). It shows how to safely create and manage a job, and how to handle disputes and NFTs.
 
 ## Prerequisites
-- AGI tokens in your wallet.
+- USDC tokens in your wallet.
 - The AGIJobManager contract address.
-- Confidence that the AGI token address is correct.
+- Confidence that the USDC token address is correct.
 
 ## Step‑by‑step (non‑technical)
 > **Screenshot placeholder:** Etherscan “Write Contract” tab showing `createJob` inputs filled in.
@@ -15,7 +15,7 @@ Use your wallet or Etherscan to approve **only the exact payout amount**.
 ### 2) Create a job
 Generate/upload the **job spec metadata** JSON and call `createJob(jobSpecURI, payout, duration, details)`.
 - **jobSpecURI**: ERC‑721 metadata URI (full `ipfs://...` or `https://...` is recommended)
-- **payout**: token amount (18 decimals)
+- **payout**: token amount (6 decimals)
 - **duration**: seconds (max `jobDurationLimit`)
 - **details**: short plain text
 

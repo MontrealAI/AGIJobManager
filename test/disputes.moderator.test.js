@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -17,7 +18,7 @@ const mkTree = (list) => { const t = new MerkleTree(list.map(leafFor), keccak256
 
 contract('disputes.moderator', (accounts) => {
   const [owner, employer, agent, v1, moderator] = accounts;
-  const payout = new BN(web3.utils.toWei('1000'));
+  const payout = new BN(parseUSDCAmount('1000'));
 
   it('enforces moderator/owner permissions and stale dispute flow', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();

@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, expectRevert, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -22,7 +23,7 @@ contract('pausing.accessControl', (accounts) => {
     const agentTree = mkTree([agent]);
     const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
-    const payout = new BN(web3.utils.toWei('1000'));
+    const payout = new BN(parseUSDCAmount('1000'));
     await token.mint(employer, payout);
     await token.mint(agent, payout);
     await token.approve(manager.address, payout, { from: agent });
@@ -73,7 +74,7 @@ contract('pausing.accessControl', (accounts) => {
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent);
 
-    const payout = new BN(web3.utils.toWei('1000'));
+    const payout = new BN(parseUSDCAmount('1000'));
     await token.mint(employer, payout.muln(3));
     await token.mint(agent, payout);
     await token.mint(validator, payout);
@@ -112,7 +113,7 @@ contract('pausing.accessControl', (accounts) => {
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent);
 
-    const payout = new BN(web3.utils.toWei('1000'));
+    const payout = new BN(parseUSDCAmount('1000'));
     await token.mint(employer, payout.muln(4));
     await token.mint(agent, payout);
     await token.mint(validator, payout);
@@ -151,19 +152,19 @@ contract('pausing.accessControl', (accounts) => {
   it('allows treasury withdrawals only while paused and when settlement is active', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
     const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), '0x' + '00'.repeat(32)), { from: owner });
-    const treasury = new BN(web3.utils.toWei('5'));
+    const treasury = new BN(parseUSDCAmount('5'));
 
     await token.mint(manager.address, treasury, { from: owner });
 
-    await expectRevert.unspecified(manager.withdrawAGI(1, { from: owner }));
+    await expectRevert.unspecified(manager.withdrawUSDC(1, { from: owner }));
     await manager.pause({ from: owner });
     await manager.setSettlementPaused(true, { from: owner });
-    await expectRevert.unspecified(manager.withdrawAGI(1, { from: owner }));
+    await expectRevert.unspecified(manager.withdrawUSDC(1, { from: owner }));
 
     await manager.setSettlementPaused(false, { from: owner });
-    await expectRevert.unspecified(manager.withdrawAGI(treasury.addn(1), { from: owner }));
+    await expectRevert.unspecified(manager.withdrawUSDC(treasury.addn(1), { from: owner }));
 
-    await manager.withdrawAGI(treasury, { from: owner });
+    await manager.withdrawUSDC(treasury, { from: owner });
     assert.equal((await token.balanceOf(owner)).toString(), treasury.toString());
   });
 });

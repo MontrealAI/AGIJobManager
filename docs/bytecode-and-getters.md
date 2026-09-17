@@ -42,5 +42,5 @@ If you change compiler settings for a new deployment, keep the version and optim
 
 ## Ops notes
 
-- Reward pool contributions add to the contract balance and are **not escrow-locked**. While paused, the owner can withdraw them via `withdrawAGI` (subject to `lockedEscrow`).  
+- Reward pool contributions add to the contract balance and are **not escrow-locked**. While paused, the owner can withdraw them via `withdrawUSDC` (subject to `lockedEscrow`).  
 - `additionalAgentPayoutPercentage` is currently **not used** in payout math and remains reserved/legacy configuration.

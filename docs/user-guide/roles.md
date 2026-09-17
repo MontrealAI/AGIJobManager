@@ -17,7 +17,7 @@ This guide explains what each role can do, what you need before starting, and co
  - Trade the job NFT externally using standard ERC‑721 approvals and transfers.
 
 ### What you need first
-- A wallet with enough **AGI token** balance for the job payout.
+- A wallet with enough **USDC token** balance for the job payout.
 - ERC‑20 **approval** for the contract to pull the payout from your wallet.
 - Correct **contract address** and **network**.
 
@@ -125,7 +125,7 @@ This guide explains what each role can do, what you need before starting, and co
 - Manage moderators and allowlists (`addModerator`, `addAdditionalAgent/Validator`).
 - Blacklist/un‑blacklist agents or validators.
 - Update parameters (limits, reward percentage, metadata fields).
-- Withdraw surplus AGI tokens (`withdrawAGI`, limited to `withdrawableAGI()`).
+- Withdraw surplus USDC tokens (`withdrawUSDC`, limited to `withdrawableUSDC()`).
 - Delist jobs before assignment (`delistJob`).
 - Manage AGI Types for agent payout bonuses (`addAGIType`).
 

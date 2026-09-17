@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../../scripts/lib/usdc");
 async function fundValidators(token, manager, validators, owner, multiplier = 5) {
   const bondMax = await manager.validatorBondMax();
   const amount = bondMax.muln(multiplier);
@@ -38,8 +39,8 @@ async function computeValidatorBond(manager, payout) {
 
 async function computeDisputeBond(manager, payout) {
   const bps = web3.utils.toBN("50");
-  const min = web3.utils.toBN(web3.utils.toWei("1"));
-  const max = web3.utils.toBN(web3.utils.toWei("200"));
+  const min = web3.utils.toBN(parseUSDCAmount("1"));
+  const max = web3.utils.toBN(parseUSDCAmount("200"));
   let bond = payout.mul(bps).divn(10000);
   if (bond.lt(min)) bond = min;
   if (bond.gt(max)) bond = max;

@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -11,7 +12,8 @@ const { fundAgents, fundValidators, fundDisputeBond } = require("./helpers/bonds
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 async function advanceTime(seconds) {
   await new Promise((resolve, reject) => {
@@ -65,8 +67,8 @@ async function assertSolvent(manager, token) {
     .add(lockedDisputeBonds);
   assert.ok(balance.gte(lockedTotal), "escrow solvency invariant failed");
 
-  const withdrawable = await manager.withdrawableAGI();
-  assert.ok(withdrawable.gte(toBN(0)), "withdrawableAGI should not revert");
+  const withdrawable = await manager.withdrawableUSDC();
+  assert.ok(withdrawable.gte(toBN(0)), "withdrawableUSDC should not revert");
 }
 
 contract("AGIJobManager solvency invariants", (accounts) => {

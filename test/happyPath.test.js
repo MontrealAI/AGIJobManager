@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -14,7 +15,8 @@ const { time } = require("@openzeppelin/test-helpers");
 
 const ZERO_ROOT = "0x" + "00".repeat(32);
 const EMPTY_PROOF = [];
-const { toBN, toWei } = web3.utils;
+const { toBN } = web3.utils;
+const toWei = parseUSDCAmount;
 
 contract("AGIJobManager happy path", (accounts) => {
   const [owner, employer, agent, validatorA, validatorB] = accounts;

@@ -9,7 +9,7 @@ AGIJobManager is designed for autonomous agent workflows with human owner/operat
 ## Mainnet registry
 
 - ENSJobPages: `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94`
-- Connected AGIJobManager: `0xB3AAeb69b630f0299791679c063d68d6687481d1`
+- Connected AGIJobManager: a newly deployed and verified v0.5.0 USDC manager (required; no default)
 - Deployment log baseline block: `24531331`
 - Root namespace: `alpha.jobs.agi.eth`
 - Derived format: `job-<jobId>.alpha.jobs.agi.eth`

@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { expectEvent, expectRevert, BN, time } = require("@openzeppelin/test-helpers");
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
@@ -21,7 +22,7 @@ const MockResolver = artifacts.require("MockResolver");
 const MockNameWrapper = artifacts.require("MockNameWrapper");
 const MockERC721 = artifacts.require("MockERC721");
 
-const toWei = (value) => web3.utils.toWei(value.toString());
+const toWei = (value) => parseUSDCAmount(value.toString());
 
 const leafFor = (address) =>
   Buffer.from(web3.utils.soliditySha3({ type: "address", value: address }).slice(2), "hex");
@@ -129,8 +130,8 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
   describe("deployment & initialization", () => {
     it("deploys with expected constructor configuration", async () => {
-      const agiTokenAddress = await manager.agiToken();
-      assert.equal(agiTokenAddress, token.address);
+      const usdcTokenAddress = await manager.usdcToken();
+      assert.equal(usdcTokenAddress, token.address);
       assert.equal(await manager.requiredValidatorApprovals(), "3");
       assert.equal(await manager.requiredValidatorDisapprovals(), "3");
       assert.equal(await manager.validationRewardPercentage(), "8");
@@ -712,7 +713,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("restricts owner-only controls and updates config", async () => {
       await expectRevert.unspecified(manager.setBaseIpfsUrl("ipfs://new", { from: outsider }));
       await expectRevert.unspecified(
-        manager.updateAGITokenAddress(token.address, { from: outsider }));
+        manager.updateEnsRegistry(ens.address, { from: outsider }));
       await expectRevert.unspecified(manager.setMaxJobPayout(payout, { from: outsider }));
       await expectRevert.unspecified(manager.setJobDurationLimit(1, { from: outsider }));
       await expectRevert.unspecified(manager.addModerator(outsider, { from: outsider }));
@@ -720,7 +721,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await expectRevert.unspecified(manager.addAdditionalAgent(agent, { from: outsider }));
 
       await manager.setBaseIpfsUrl("ipfs://new", { from: owner });
-      await manager.updateAGITokenAddress(token.address, { from: owner });
+      assert.equal(manager.updateUSDCTokenAddress, undefined);
       await manager.setMaxJobPayout(payout.muln(10), { from: owner });
       await manager.setJobDurationLimit(9000, { from: owner });
       await manager.addModerator(validatorFour, { from: owner });
@@ -738,16 +739,16 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("withdraws AGI with bounds checks", async () => {
       await token.mint(manager.address, payout);
-      await expectRevert.unspecified(manager.withdrawAGI(payout, { from: owner }));
+      await expectRevert.unspecified(manager.withdrawUSDC(payout, { from: owner }));
       await manager.pause({ from: owner });
-      await expectCustomError(manager.withdrawAGI.call(0, { from: owner }), "InvalidParameters");
+      await expectCustomError(manager.withdrawUSDC.call(0, { from: owner }), "InvalidParameters");
       await expectCustomError(
-        manager.withdrawAGI.call(payout.muln(2), { from: owner }),
+        manager.withdrawUSDC.call(payout.muln(2), { from: owner }),
         "InsufficientWithdrawableBalance"
       );
 
       const ownerBalanceBefore = await token.balanceOf(owner);
-      await manager.withdrawAGI(payout, { from: owner });
+      await manager.withdrawUSDC(payout, { from: owner });
       const ownerBalanceAfter = await token.balanceOf(owner);
       assert.equal(ownerBalanceAfter.sub(ownerBalanceBefore).toString(), payout.toString());
     });

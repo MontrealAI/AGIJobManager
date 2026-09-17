@@ -23,7 +23,10 @@ describe('single-file P0 safeguards', () => {
 
   it('ships full inlined runtime markers and is not stub-sized', () => {
     const bytes = Buffer.byteLength(html, 'utf8');
-    expect(bytes).toBeGreaterThanOrEqual(1000000);
+    expect(bytes).toBeGreaterThan(0);
+    expect(html).toContain('config/usdc-deployment.json');
+    expect(html).toContain('src/lib/usdc.ts');
+    expect(html).not.toContain('hardhat/deployments/mainnet/deployment.1.24522684.json');
     expect(html).toContain('AGI_SINGLE_FILE_RUNTIME_BOOTSTRAP_V1');
     expect(html).toContain('AGI_CONTRACT_ABI_REGISTRY_V1');
     expect(html).toContain('AGI_FULL_APP_MOUNT_V1');

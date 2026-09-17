@@ -1,3 +1,4 @@
+const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, expectEvent, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -13,7 +14,7 @@ const MockENS = artifacts.require('MockENS');
 const MockNameWrapper = artifacts.require('MockNameWrapper');
 const MockERC721 = artifacts.require('MockERC721');
 
-const toWei = (v) => web3.utils.toWei(v.toString());
+const toWei = (v) => parseUSDCAmount(v.toString());
 const leafFor = (address) => Buffer.from(web3.utils.soliditySha3({ type: 'address', value: address }).slice(2), 'hex');
 const mkTree = (list) => {
   const t = new MerkleTree(list.map(leafFor), keccak256, { sortPairs: true });

@@ -1,8 +1,9 @@
 'use client'
 
+import { verifyUSDCDeployment, assertUSDCWriteTarget } from '@/lib/usdc'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { BaseError } from 'viem'
-import { useAccount, useChainId, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, usePublicClient, useSimulateContract, useWaitForTransactionReceipt, useWalletClient, useWriteContract } from 'wagmi'
 import { decodeError } from '@/lib/web3/errors'
 import { env } from '@/lib/env'
 
@@ -10,6 +11,8 @@ export function TxStepperButton({ children, disabled, simulateConfig, preflightE
   const [step, setStep] = useState<'idle' | 'preparing' | 'signature' | 'pending' | 'confirmed' | 'failed'>('idle')
   const chainId = useChainId()
   const { isConnected } = useAccount()
+  const publicClient = usePublicClient()
+  const { data: walletClient } = useWalletClient()
   const write = useWriteContract()
   const sim = useSimulateContract({ ...simulateConfig, query: { enabled: false } })
   const wait = useWaitForTransactionReceipt({ hash: write.data })
@@ -26,6 +29,9 @@ export function TxStepperButton({ children, disabled, simulateConfig, preflightE
       setStep('preparing')
       const simulated = await sim.refetch()
       if (!simulated.data?.request) throw new Error('Simulation failed')
+      const token = await verifyUSDCDeployment(publicClient, env.agiJobManagerAddress, chainId)
+      assertUSDCWriteTarget(simulateConfig.address, env.agiJobManagerAddress, token, simulateConfig.functionName, simulateConfig.args)
+      if (!walletClient || await walletClient.getChainId() !== env.chainId) throw new Error('Wallet network mismatch')
       setStep('signature')
       await write.writeContractAsync(simulated.data.request)
       setStep('pending')
