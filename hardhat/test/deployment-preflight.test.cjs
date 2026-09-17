@@ -104,7 +104,7 @@ test('runtime comparison checks immutable USDC and library self-address', () => 
   assert.equal(requireArtifactMatch({ artifact: library, buildInfo, address: B, code: `0x73${B.slice(2)}3014` }), 23);
 });
 
-function deploymentHarness({ dryRun = false, failConfirmation = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, receiptOverride = {}, finalOwner = A } = {}) {
+function deploymentHarness({ dryRun = false, failConfirmation = false, failConfirmationAt = 2, failManagerRuntimeRead = false, failVerification = false, noSigner = false, deployerAddress = '', dryRunValue, verifierEnabled = true, verificationError, receiptOverride = {}, finalOwner = A } = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'agi-deployment-preflight-'));
   const scriptsDir = path.join(folder, 'scripts');
   fs.mkdirSync(scriptsDir);
@@ -113,6 +113,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failVerif
     baseIpfsUrl: 'ipfs://', ensConfig: [B, ZERO], rootNodes: Array(4).fill(`0x${'00'.repeat(32)}`),
     merkleRoots: Array(2).fill(`0x${'00'.repeat(32)}`), settlementWallets: [A, B] } })}`);
   let broadcasts = 0;
+  let managerRuntimeReadFailed = false;
   const input = { settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: false,
     metadata: { bytecodeHash: 'none' }, debug: { revertStrings: 'strip' } } };
   const buildInfo = { solcVersion: '0.8.23', input, output: { contracts: {} } };
@@ -125,7 +126,13 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failVerif
       return { sourceName, contractName, bytecode: '0x6000', deployedBytecode: '0x6000', deployedLinkReferences: {} };
     },
   };
-  const provider = { getNetwork: async () => ({ chainId: 1n }), getBlock: async tag => ({ number: tag === 'latest' ? 1000 : tag, hash: hash(tag === 'latest' ? 1000 : tag) }), getCode: async () => '0x6000',
+  const provider = { getNetwork: async () => ({ chainId: 1n }), getBlock: async tag => ({ number: tag === 'latest' ? 1000 : tag, hash: hash(tag === 'latest' ? 1000 : tag) }), getCode: async () => {
+      if (failManagerRuntimeRead && broadcasts === 6 && !managerRuntimeReadFailed) {
+        managerRuntimeReadFailed = true;
+        throw new Error('Manager runtime RPC failed');
+      }
+      return '0x6000';
+    },
     getTransactionReceipt: async transactionHash => { const nonce = Number(BigInt(transactionHash)); return { hash: transactionHash, status: 1, blockNumber: 123 + nonce, blockHash: hash(123 + nonce), contractAddress: `0x${String(nonce + 100).padStart(40, '0')}` }; },
     getTransaction: async () => ({ to: null, from: A, data: '0x6000' }) };
   const manager = { paused: async () => true, owner: async () => A, pendingOwner: async () => ZERO, usdcToken: async () => TOKEN };
@@ -137,7 +144,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failVerif
       const address = `0x${String(nonce + 100).padStart(40, '0')}`;
       const tx = { hash: hash(nonce), wait: async () => ({ hash: hash(nonce), status: 1, blockHash: hash(123 + nonce), blockNumber: 123 + nonce, contractAddress: address, ...receiptOverride }) };
       return { getAddress: async () => address, deploymentTransaction: () => tx,
-        waitForDeployment: async () => { if (failConfirmation && nonce === 2) throw new Error('Confirmation RPC failed'); } };
+        waitForDeployment: async () => { if (failConfirmation && nonce === failConfirmationAt) throw new Error('Confirmation RPC failed'); } };
     } }),
   };
   const module = { exports: {} };
@@ -474,6 +481,39 @@ test('verification recovery preserves the need for explicit ownership proposal a
     assert.equal(recovery.recovered().ownershipTransfer.acceptanceRequired, true);
     assert.equal(recovery.recovered().ownershipTransfer.currentOwner, A);
   } finally { deployment.cleanup(); }
+});
+
+test('manager confirmation and runtime RPC failures retain links for keyless verification recovery', async () => {
+  for (const [options, message] of [
+    [{ failConfirmation: true, failConfirmationAt: 6 }, /Confirmation RPC failed/],
+    [{ failManagerRuntimeRead: true }, /Manager runtime RPC failed/],
+  ]) {
+    const deployment = deploymentHarness({ ...options, finalOwner: C });
+    try {
+      await assert.rejects(deployment.main(), message);
+      const failed = deployment.receipt();
+      assert.equal(deployment.broadcasts(), 6);
+      assert.equal(failed.status, 'failed');
+      assert.equal(failed.contracts.AGIJobManager.txHash, hash(6));
+      const original = fs.readFileSync(deployment.receiptPath());
+      deployment.hardhat.ethers.getSigners = async () => [];
+      const recovery = recoveryHarness(deployment);
+      await recovery.main();
+      const recovered = recovery.recovered();
+      assert.equal(deployment.broadcasts(), 6);
+      assert.deepEqual(fs.readFileSync(deployment.receiptPath()), original);
+      assert.equal(recovered.status, 'awaiting_readiness_review');
+      assert.equal(recovered.recovery.blockchainTransactionsBroadcast, 0);
+      assert.equal(recovered.contracts.AGIJobManager.blockNumber, 129);
+      assert.equal(recovered.contracts.AGIJobManager.runtimeCodeHash, realEthers.keccak256('0x6000'));
+      for (const name of deployment.program.LIBRARIES) {
+        assert.equal(recovered.libraries[deployment.program.FQNS[name]], recovered.contracts[name].address);
+      }
+      assert.equal(recovered.ownershipTransfer.proposalRequired, true);
+      assert.equal(recovered.ownershipTransfer.acceptanceRequired, true);
+      assert.equal(recovery.verificationCalls.length, 6);
+    } finally { deployment.cleanup(); }
+  }
 });
 
 test('verification recovery refuses reverted, noncanonical, underconfirmed or changed deployed code', async () => {

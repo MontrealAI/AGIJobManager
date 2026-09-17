@@ -333,6 +333,8 @@ async function main() {
       [FQNS.ReputationMath]: deployments.ReputationMath.address,
       [FQNS.ENSOwnership]: deployments.ENSOwnership.address,
     };
+    journal.libraries = linkedLibraries;
+    checkpoint();
 
     const managerArgs = [
       constructorArgs.usdcTokenAddress,
@@ -348,7 +350,6 @@ async function main() {
     requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS.AGIJobManager), buildInfo, address: managerDeployment.address, libraries: linkedLibraries, tokenAddress: constructorArgs.usdcTokenAddress, code: managerCode });
     managerDeployment.runtimeCodeHash = ethers.keccak256(managerCode);
     deployments.AGIJobManager = managerDeployment;
-    journal.libraries = linkedLibraries;
     checkpoint();
     const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
     if (!(await manager.paused())) throw new Error('New manager did not start with intake paused. Do not activate this deployment.');

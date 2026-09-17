@@ -9,6 +9,7 @@ Validated on 2026-09-17 with Node 22.23.2, npm 10.9.8 and the committed npm lock
 | `hardhat/` | Full audit: no moderate, high or critical findings; 14 low findings | Supported public-network deployment and verification |
 | Repository root | Production dependencies: zero known findings | OpenZeppelin contracts 4.9.6 |
 | Repository root | Local full-audit snapshot: 100 findings (17 low, 51 moderate, 22 high, 10 critical) | Legacy local Truffle/Ganache regression tests only |
+| Repository root | Clean-install CI snapshot: 120 findings (17 low, 55 moderate, 34 high, 14 critical) | The same legacy local test scope; see the installation-tree qualification below |
 
 The UI uses Next 15.5.24, updated wallet libraries, patched WebSocket/PostCSS/UUID dependencies and the upstream patched URI decoder. The decoder's small CommonJS adapter preserves upstream source and license; provenance and removal criteria are recorded in `ui/vendor/decode-uri-component/UPSTREAM.md`. Regression tests exercise malformed URI handling and module compatibility. The Base Account connector uses its published browser entry; server-only payment APIs are outside this wallet UI.
 
