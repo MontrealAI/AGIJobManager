@@ -1,6 +1,6 @@
 {
   "previousTag": "v0.7.0",
-  "sourceCommit": "ebf6d1c421d0a72a92514eddc4b597ec094db869",
+  "sourceCommit": "a4ef8ac621e5a8ed6241243428bb9b43b17dd5d5",
   "changes": [
     {
       "status": "M",
@@ -12,7 +12,15 @@
     },
     {
       "status": "M",
+      "path": ".github/workflows/pages.yml"
+    },
+    {
+      "status": "M",
       "path": ".github/workflows/security-verification.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/ui.yml"
     },
     {
       "status": "M",

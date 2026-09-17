@@ -6,6 +6,7 @@ on:
       - 'ui/**'
       - 'docs/ui/**'
       - '.github/workflows/ui.yml'
+      - '.github/workflows/pages.yml'
       - 'README.md'
       - 'agijobmanager.html'
       - 'config/usdc-deployment.json'

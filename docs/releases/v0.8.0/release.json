@@ -4,8 +4,8 @@
   "tag": "v0.8.0",
   "name": "v0.8.0 \u2014 USDC settlement and mainnet qualification",
   "releaseDate": "2026-09-17",
-  "sourceCommit": "ebf6d1c421d0a72a92514eddc4b597ec094db869",
-  "sourceTree": "3fd1998d305ebe49a8113f59b11f3d8285376820",
+  "sourceCommit": "a4ef8ac621e5a8ed6241243428bb9b43b17dd5d5",
+  "sourceTree": "5fc79aa5b009c200887b2e278657481e23733caf",
   "previousTag": "v0.7.0",
   "primaryUI": "ui/agijobmanager-usdc.html",
   "scope": "Native USDC jobs: validators first, fixed 30% and 10% gross-cost wallets, then agent remainder. Atomic paused launch, bounded owner configuration, hardened deployment and transaction review, actual-USDC local mainnet fork, adversarial/fuzz/invariant qualification and reviewed static analysis. Fresh deployment required; no live transactions or independent security audit.",
@@ -16,30 +16,30 @@
     "lib"
   ],
   "evidenceDigests": {
-    "CHANGES.json": "9c6cbfb9d293eaf368492c0d6b058718e4a4ec11f64732cde9eedb720b5ef886",
+    "CHANGES.json": "37b7e897ec430e57744e9daed44b68e411b8117ffff87a7115e9833d37924ecc",
     "PREVIOUS_RELEASE.json": "58c9a929e4678df9585294598e40fc3800e4c9978fcbaf8580a5a53e04fa4443",
-    "SOURCE_CI.json": "edd213e3123f02f9861e4b602eb77e657cfeea12c8d7499993c9e3c824919236"
+    "SOURCE_CI.json": "6310907e4a33c72a0eb7d126f757a67c9164de4a2c58eff755a2eab3c40021f7"
   },
   "requiredSourceRuns": {
-    "ui": {
-      "id": 35228167582,
-      "workflow": "ui.yml"
-    },
-    "security-verification": {
-      "id": 35228167663,
-      "workflow": "security-verification.yml"
-    },
-    "docs": {
-      "id": 35228167661,
-      "workflow": "docs.yml"
+    "mainnet-fork": {
+      "id": 35228876589,
+      "workflow": "mainnet-fork.yml"
     },
     "ci": {
-      "id": 35228167650,
+      "id": 35228876673,
       "workflow": "ci.yml"
     },
-    "mainnet-fork": {
-      "id": 35228167762,
-      "workflow": "mainnet-fork.yml"
+    "security-verification": {
+      "id": 35228876575,
+      "workflow": "security-verification.yml"
+    },
+    "ui": {
+      "id": 35228876658,
+      "workflow": "ui.yml"
+    },
+    "docs": {
+      "id": 35228876638,
+      "workflow": "docs.yml"
     }
   }
 }
