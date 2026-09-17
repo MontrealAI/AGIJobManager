@@ -13,6 +13,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -27,6 +31,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Chromium
+        if: matrix.shard == 0
         run: npx playwright install --with-deps chromium
 
       - name: Lint
@@ -39,10 +44,12 @@ jobs:
         run: npm run size
 
       - name: Test
-        run: npm run test
+        run: npm run test:shard -- ${{ matrix.shard }} 4
 
       - name: USDC console regression checks
+        if: matrix.shard == 0
         run: node scripts/release/verify-usdc-ui.mjs
 
       - name: UI smoke test
+        if: matrix.shard == 0
         run: npm run test:ui

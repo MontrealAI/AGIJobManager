@@ -1,7 +1,11 @@
 {
   "previousTag": "v0.7.0",
-  "sourceCommit": "a4ef8ac621e5a8ed6241243428bb9b43b17dd5d5",
+  "sourceCommit": "65e568ba8a064860a824568b3e1144ab6ee54ed9",
   "changes": [
+    {
+      "status": "M",
+      "path": ".github/workflows/ci.yml"
+    },
     {
       "status": "M",
       "path": ".github/workflows/current-state-release.yml"
@@ -379,6 +383,10 @@
       "path": "scripts/security/verify-slither-review.py"
     },
     {
+      "status": "A",
+      "path": "scripts/test-contract-shard.js"
+    },
+    {
       "status": "M",
       "path": "test/AGIJobManager.comprehensive.test.js"
     },
@@ -541,6 +549,10 @@
     {
       "status": "M",
       "path": "test/payoutSplit.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/regressions.better-only.js"
     },
     {
       "status": "M",

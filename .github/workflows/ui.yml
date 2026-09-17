@@ -2,14 +2,6 @@ name: UI CI
 
 on:
   pull_request:
-    paths:
-      - 'ui/**'
-      - 'docs/ui/**'
-      - '.github/workflows/ui.yml'
-      - '.github/workflows/pages.yml'
-      - 'README.md'
-      - 'agijobmanager.html'
-      - 'config/usdc-deployment.json'
 
 permissions:
   contents: read

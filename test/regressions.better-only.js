@@ -7,7 +7,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockENS = artifacts.require("MockENS");
 const FailTransferToken = artifacts.require("FailTransferToken");
 const MockERC721 = artifacts.require("MockERC721");
-const { buildInitConfig } = require("./helpers/deploy");
+const { buildInitConfig, deployActive } = require("./helpers/deploy");
 const { fundValidators, fundAgents, fundDisputeBond } = require("./helpers/bonds");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -50,7 +50,7 @@ async function deployManager(Contract, tokenAddress, agent, validator, owner) {
   const merkleArgs = [leaf(validator), leaf(agent)];
   if (Contract.contractName === "AGIJobManager") {
     const ens = await MockENS.new({ from: owner });
-    return Contract.new(
+    return deployActive(Contract,
       ...buildInitConfig(
         tokenAddress,
         "ipfs://base",

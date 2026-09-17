@@ -26,7 +26,8 @@
     "forge:invariant": "FOUNDRY_PROFILE=ci forge test --match-path forge-test/invariant/*.t.sol",
     "slither": "./scripts/security/run-slither.sh",
     "deploy:agijobmanager:prod": "npm --prefix hardhat run deploy:mainnet",
-    "slither:extended": "bash scripts/security/run-slither-extended.sh"
+    "slither:extended": "bash scripts/security/run-slither-extended.sh",
+    "test:shard": "node scripts/test-contract-shard.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

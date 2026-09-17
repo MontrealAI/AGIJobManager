@@ -4,8 +4,8 @@
   "tag": "v0.8.0",
   "name": "v0.8.0 \u2014 USDC settlement and mainnet qualification",
   "releaseDate": "2026-09-17",
-  "sourceCommit": "a4ef8ac621e5a8ed6241243428bb9b43b17dd5d5",
-  "sourceTree": "5fc79aa5b009c200887b2e278657481e23733caf",
+  "sourceCommit": "65e568ba8a064860a824568b3e1144ab6ee54ed9",
+  "sourceTree": "091662c5167c53b836b505410d172bd6876e8023",
   "previousTag": "v0.7.0",
   "primaryUI": "ui/agijobmanager-usdc.html",
   "scope": "Native USDC jobs: validators first, fixed 30% and 10% gross-cost wallets, then agent remainder. Atomic paused launch, bounded owner configuration, hardened deployment and transaction review, actual-USDC local mainnet fork, adversarial/fuzz/invariant qualification and reviewed static analysis. Fresh deployment required; no live transactions or independent security audit.",
@@ -16,29 +16,29 @@
     "lib"
   ],
   "evidenceDigests": {
-    "CHANGES.json": "37b7e897ec430e57744e9daed44b68e411b8117ffff87a7115e9833d37924ecc",
+    "CHANGES.json": "2e5458ba912f63ae83de7e4ca9b29cc05cead699946bfae54f4c6307ced2e48e",
     "PREVIOUS_RELEASE.json": "58c9a929e4678df9585294598e40fc3800e4c9978fcbaf8580a5a53e04fa4443",
-    "SOURCE_CI.json": "6310907e4a33c72a0eb7d126f757a67c9164de4a2c58eff755a2eab3c40021f7"
+    "SOURCE_CI.json": "5311e853fcfbfc886a76fc598ccf530260f531b262f2e60fcb741ca166eac936"
   },
   "requiredSourceRuns": {
     "mainnet-fork": {
-      "id": 35228876589,
+      "id": 35229921440,
       "workflow": "mainnet-fork.yml"
     },
-    "ci": {
-      "id": 35228876673,
-      "workflow": "ci.yml"
-    },
     "security-verification": {
-      "id": 35228876575,
+      "id": 35229921434,
       "workflow": "security-verification.yml"
     },
     "ui": {
-      "id": 35228876658,
+      "id": 35229921430,
       "workflow": "ui.yml"
     },
+    "ci": {
+      "id": 35229921453,
+      "workflow": "ci.yml"
+    },
     "docs": {
-      "id": 35228876638,
+      "id": 35229921419,
       "workflow": "docs.yml"
     }
   }

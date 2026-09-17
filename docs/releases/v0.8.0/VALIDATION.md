@@ -1,6 +1,6 @@
 # v0.8.0 validation
 
-Application commit: `a4ef8ac621e5a8ed6241243428bb9b43b17dd5d5`. Application tree: `5fc79aa5b009c200887b2e278657481e23733caf`.
+Application commit: `65e568ba8a064860a824568b3e1144ab6ee54ed9`. Application tree: `091662c5167c53b836b505410d172bd6876e8023`.
 
 ## Required exact-source CI
 
@@ -8,13 +8,13 @@ Every run below must be completed/success. The publication workflow rechecks rep
 
 | Gate | Evidence |
 | --- | --- |
-| mainnet-fork.yml | [Run 35228876589](https://github.com/MontrealAI/AGIJobManager/actions/runs/35228876589) |
-| ci.yml | [Run 35228876673](https://github.com/MontrealAI/AGIJobManager/actions/runs/35228876673) |
-| security-verification.yml | [Run 35228876575](https://github.com/MontrealAI/AGIJobManager/actions/runs/35228876575) |
-| ui.yml | [Run 35228876658](https://github.com/MontrealAI/AGIJobManager/actions/runs/35228876658) |
-| docs.yml | [Run 35228876638](https://github.com/MontrealAI/AGIJobManager/actions/runs/35228876638) |
+| mainnet-fork.yml | [Run 35229921440](https://github.com/MontrealAI/AGIJobManager/actions/runs/35229921440) |
+| security-verification.yml | [Run 35229921434](https://github.com/MontrealAI/AGIJobManager/actions/runs/35229921434) |
+| ui.yml | [Run 35229921430](https://github.com/MontrealAI/AGIJobManager/actions/runs/35229921430) |
+| ci.yml | [Run 35229921453](https://github.com/MontrealAI/AGIJobManager/actions/runs/35229921453) |
+| docs.yml | [Run 35229921419](https://github.com/MontrealAI/AGIJobManager/actions/runs/35229921419) |
 
-Contract CI runs lint, compilation, runtime-size checks, all contract regressions, 35 frozen-console checks and a browser transaction smoke test. UI CI runs lint/types/build, all unit tests, browser end-to-end/accessibility/header checks, production dependency audit, documentation and reproducible standalone builds. Security CI runs deployment tests/audit, Foundry fuzz/invariants, configured Slither and extended reviewed scans with raw JSON artifacts. The separate fork gate exercises actual native Circle USDC.
+Contract CI runs lint, compilation, runtime-size checks, all contract regressions across four isolated shards (all 61 recursively discovered test files, including legacy comparisons and helpers), 35 frozen-console checks and a browser transaction smoke test. UI CI runs lint/types/build, all unit tests, browser end-to-end/accessibility/header checks, production dependency audit, documentation and reproducible standalone builds. Security CI runs deployment tests/audit, Foundry fuzz/invariants, configured Slither and extended reviewed scans with raw JSON artifacts. The separate fork gate exercises actual native Circle USDC.
 
 ## Local qualification
 
