@@ -35,9 +35,11 @@ Agent bond rate remains 500 bps with duration adjustment; validator bond rate re
 
 ## Deployment and cutover
 
+Read the [USDC cutover qualification and preservation plan](qualification/USDC_CUTOVER.md). The existing mainnet manager has live legacy obligations. Leave its manager, ENS helper, namespace, approvals and original-asset exits available. A fresh USDC manager needs a separate ENS helper and namespace because job IDs restart at zero. The post-v0.9.1 ENS resolver compatibility correction is not contained in the frozen v0.9.1 release assets.
+
 **This release publishes software. It does not deploy or upgrade a live contract.** `config/usdc-deployment.json` records `deployment-required` and intentionally leaves manager and ENS addresses empty. Earlier receipts are historical evidence, never current v0.9.1 deployment configuration. v0.6.0 implements the payout split; guarded wallet rotation and two-step ownership arrived in v0.7.0 and paused construction in v0.8.0. v0.9.1 hardens ENS/ERC-165 decoding and settlement state ordering and adds owner-limit events. Receiving these code protections requires a new deployment; installing a newer console does not modify an existing manager. Older releases have their own semantics.
 
-1. Close or settle existing jobs on their original contracts using their original assets and interfaces. v0.9.1 cannot migrate escrow or approvals.
+1. Inventory existing jobs and preserve their original contracts, assets, interfaces and ENS wiring. Close or settle them only through their original lifecycle; old obligations may remain alongside the new manager. Do not import escrow, job IDs or approvals into the USDC manager.
 2. Install pinned dependencies at the root and in `hardhat/`. Copy `hardhat/deploy.config.example.cjs` to the configured local deployment file and review owner, ENS, roots and allowlists. Supply both distinct `settlementWallets` addresses (30% first, 10% second).
 3. Compile and rehearse on Sepolia with test USDC. Review all monetary limits in six-decimal units. Use the existing Hardhat dry-run and mainnet confirmation gates for an independently authorized deployment.
 4. Verify the new source, linked libraries, constructor arguments, chain, owner, `usdcToken()`, `wallet30()`, `wallet10()` and `decimals()`. Wire ENS to the new manager and verify hooks before locking configuration.

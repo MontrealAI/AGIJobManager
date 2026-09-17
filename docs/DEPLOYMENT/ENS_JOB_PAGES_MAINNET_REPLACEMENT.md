@@ -1,12 +1,12 @@
 # ENSJobPages Mainnet Replacement Runbook
 
-This runbook is for replacing the `ENSJobPages` contract used by AGIJobManager on Ethereum mainnet, without changing AGIJobManager protocol behavior.
+This runbook replaces `ENSJobPages` for the **same, verified USDC manager**. It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
 
 ## In one minute
 
 Canonical cutover flow:
 1. Deploy new `ENSJobPages` (Hardhat script).
-2. Wrapped-root owner manually calls `NameWrapper.setApprovalForAll(newEnsJobPages, true)`.
+2. Establish the new helper's authority over the reviewed jobs root. Prefer a dedicated root owned by the helper; otherwise review the scope of any NameWrapper operator approval.
 3. AGIJobManager owner manually calls `AGIJobManager.setEnsJobPages(newEnsJobPages)`.
 4. Migrate legacy jobs with historical labels if needed (`migrateLegacyWrappedJobPage`).
 5. Lock configuration only after validation is complete.
@@ -32,7 +32,7 @@ Canonical cutover flow:
 
 It determines:
 - job label prefix (`jobLabelPrefix`, default `agijob`),
-- job root suffix (`jobsRootName`, default in deploy script: `alpha.jobs.agi.eth`),
+- job root suffix (`jobsRootName`, explicitly required by the deploy script),
 - and stores snapshotted exact labels for each job.
 
 `AGIJobManager` contributes the numeric `jobId`; `ENSJobPages` builds names from that `jobId`.
@@ -56,13 +56,13 @@ Typical replacement/migration drivers from current contract behavior:
 - `ENSJobPages` decides `prefix`, `jobsRootName`, label snapshotting, and ENS write behavior.
 
 
-With script defaults + contract defaults:
+Example using the isolated namespace exercised in the fork rehearsal (a proposal, not a live deployment):
 - `jobLabelPrefix = "agijob"`
-- `jobsRootName = "alpha.jobs.agi.eth"`
+- `jobsRootName = "usdc-v091.alpha.jobs.agi.eth"`
 
 So names are:
-- `agijob0.alpha.jobs.agi.eth`
-- `agijob1.alpha.jobs.agi.eth`
+- `agijob0.usdc-v091.alpha.jobs.agi.eth`
+- `agijob1.usdc-v091.alpha.jobs.agi.eth`
 - ...
 
 Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged.
@@ -83,6 +83,8 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 - You control deployer key and owner key(s) needed for manual wiring.
 - `hardhat/.env` is configured.
 - You know the intended AGIJobManager address for `JOB_MANAGER`.
+- `JOBS_ROOT_NAME` is explicitly reviewed. The deployment script rejects the legacy `alpha.jobs.agi.eth` root for a new mainnet USDC helper.
+- The root owner is identified independently of the manager owner. At the qualification block they are different addresses.
 - You have identified whether your jobs root is wrapped or unwrapped.
 
 ---
@@ -97,14 +99,17 @@ cd hardhat
 npm ci
 npm run compile
 
+export JOB_MANAGER='<verified-new-USDC-manager-address>'
+export JOBS_ROOT_NAME='usdc-v091.alpha.jobs.agi.eth'
+
 DRY_RUN=1 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:ens-job-pages:mainnet
 
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 NEW_OWNER=0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201 npm run deploy:ens-job-pages:mainnet
 ```
 
-Optional overrides (via `.env`):
-- `JOB_MANAGER`
-- `JOBS_ROOT_NAME`
+Required settings (via `.env` or the shell): `JOB_MANAGER` and `JOBS_ROOT_NAME`.
+
+Optional overrides:
 - `JOBS_ROOT_NODE` (must match `namehash(JOBS_ROOT_NAME)`)
 - `ENS_REGISTRY`
 - `NAME_WRAPPER`
@@ -215,7 +220,7 @@ Event checks:
 ## 10) Rollback / recovery considerations
 
 - If AGIJobManager was wired to the wrong ENSJobPages, owner can call `setEnsJobPages(previousAddress)` (if identity config still configurable).
-- If NameWrapper approval is incorrect, correct with `setApprovalForAll(correctEnsJobPages, true)`.
+- If NameWrapper authority is incorrect, establish authority over the intended dedicated root. `setApprovalForAll` applies to every wrapped name of the approving account; never grant broad authority merely to avoid resolving a root-owner mismatch.
 - If legacy writes fail for specific jobs, run `migrateLegacyWrappedJobPage(jobId, exactLabel)` per affected job.
 - If verification API fails, use deployment artifact `solc-input.json` for manual standard-json verify.
 

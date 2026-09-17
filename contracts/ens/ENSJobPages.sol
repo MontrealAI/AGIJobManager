@@ -595,7 +595,8 @@ contract ENSJobPages is Ownable, ERC1155Holder {
             return;
         }
 
-        try publicResolver.setAuthorisation(node, account, authorised) {
+        // The NameWrapper-aware mainnet PublicResolver scopes delegates by owner and node.
+        try publicResolver.approve(node, account, authorised) {
             emit JobENSPermissionsUpdated(jobId, account, authorised);
         } catch {
             emit ENSHookBestEffortFailure(hook, jobId, "SET_AUTH");

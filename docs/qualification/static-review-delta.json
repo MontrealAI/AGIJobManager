@@ -1,0 +1,193 @@
+{
+  "scope": "Internal focused review of post-v0.9.1 ENS compatibility correction; not an independent audit",
+  "productionFilesChanged": [
+    "contracts/ens/ENSJobPages.sol",
+    "contracts/ens/IPublicResolver.sol"
+  ],
+  "semanticChange": "Call the modern PublicResolver approve(bytes32,address,bool) API instead of the unsupported setAuthorisation selector.",
+  "findingCount": 116,
+  "findingsBySeverity": {
+    "High": 0,
+    "Medium": 7,
+    "Low": 36,
+    "Informational": 71,
+    "Optimization": 2
+  },
+  "identityChanges": [
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "ff6b50fdb97bf5c4d8617b47b2f85f99c78a70185e45e9419e06bd9b2fb47852",
+      "currentId": "12c7c715d9f98255a9cb96cd07ad56ff6e6a228c890bdfb0130a092fa0e2e6de",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "35c70ae069ec79677066cb36e907b8a39021668cd4b4aeffe8347c761c8b973f",
+      "currentId": "192756a7a3d7a859faf2698461777f6b702fdbc0b070e66ff87d445b253a5423",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "91ecdc5b4f367ba28de83a2f0fd9ae77fa54acc36695e9c05b2903afbafd60ff",
+      "currentId": "2038f9386b60418815c3c1c318bcbfd6e6596b075b4b593868551a3c84500ea8",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "25ef3b54ee6043bd055edb1570922e4b2a644801fb89a0528332ab9731be9927",
+      "currentId": "2bb36030ea4104c5e5fd85977dfb6f224fee504b2ffab8029bf73a9ced37c279",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "3650b10c80d185b952d325c1ce3823c349b8fcc1cfc49cb1cc364059db823a8d",
+      "currentId": "3421f9a5535e3e2e87296aac44799663651f9a2475c3bbfff89e169f097464a2",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "06251002b6a3176c91104eea1f212ec5282377a622fa00a98b1115b1905a5573",
+      "currentId": "34a22ec815db9237177709313e7e21c9c9c45bd8c0c72da42a251ce1b683c602",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "7ccfab96bb5fc23e5cf311cf6d9ce4af2a9a62bb4de789052fdbfd3605febc33",
+      "currentId": "37a91a696b6cfc999b92a0260903f496be129747e80b0fe76b881be048941d02",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "37ec575d9d23f6509134707910e0aee8d5af33907b502568d952bc8c1c72b7ab",
+      "currentId": "4f83ce4f6ba1d8ed830bb77a1f636ae99ed0f207e39310173606b14c5951ebe5",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "ddc995397817d04f029d62962c0fa3534b69494abbbf05eb23aed18606496251",
+      "currentId": "88e4858221ee06bca358cb5c78e2af5768e39b9cf653bfdce334013416faa490",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "6c88202661e438d2b2ca052beb79b1a30d8cfb3713aa56a3b8f8064eb12465d6",
+      "currentId": "d0a62328c044cd245e61d48698cc88c8449acaed5f357da8b3599252c8fedb5d",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "d7da381f2f20b7f18e8e97be9b729958e73e8000a3a50f65e82a0181d23123b8",
+      "currentId": "d657d716b247cb6311ad0d3c371e5b68929538528da083070963cfe920673e6d",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-reentrancy.json",
+      "previousId": "ff419e864cec0ee6f1a00f3a032c500c0ccb7d7e1c364c2549279d923fd6dfb1",
+      "currentId": "e5cba8206b1271fcc31093b4464e27c1bc5a41af849c87b09d198c549908fe84",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "ff6b50fdb97bf5c4d8617b47b2f85f99c78a70185e45e9419e06bd9b2fb47852",
+      "currentId": "12c7c715d9f98255a9cb96cd07ad56ff6e6a228c890bdfb0130a092fa0e2e6de",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "35c70ae069ec79677066cb36e907b8a39021668cd4b4aeffe8347c761c8b973f",
+      "currentId": "192756a7a3d7a859faf2698461777f6b702fdbc0b070e66ff87d445b253a5423",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "91ecdc5b4f367ba28de83a2f0fd9ae77fa54acc36695e9c05b2903afbafd60ff",
+      "currentId": "2038f9386b60418815c3c1c318bcbfd6e6596b075b4b593868551a3c84500ea8",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "25ef3b54ee6043bd055edb1570922e4b2a644801fb89a0528332ab9731be9927",
+      "currentId": "2bb36030ea4104c5e5fd85977dfb6f224fee504b2ffab8029bf73a9ced37c279",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "3650b10c80d185b952d325c1ce3823c349b8fcc1cfc49cb1cc364059db823a8d",
+      "currentId": "3421f9a5535e3e2e87296aac44799663651f9a2475c3bbfff89e169f097464a2",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "06251002b6a3176c91104eea1f212ec5282377a622fa00a98b1115b1905a5573",
+      "currentId": "34a22ec815db9237177709313e7e21c9c9c45bd8c0c72da42a251ce1b683c602",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "7ccfab96bb5fc23e5cf311cf6d9ce4af2a9a62bb4de789052fdbfd3605febc33",
+      "currentId": "37a91a696b6cfc999b92a0260903f496be129747e80b0fe76b881be048941d02",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "37ec575d9d23f6509134707910e0aee8d5af33907b502568d952bc8c1c72b7ab",
+      "currentId": "4f83ce4f6ba1d8ed830bb77a1f636ae99ed0f207e39310173606b14c5951ebe5",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "ddc995397817d04f029d62962c0fa3534b69494abbbf05eb23aed18606496251",
+      "currentId": "88e4858221ee06bca358cb5c78e2af5768e39b9cf653bfdce334013416faa490",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "6c88202661e438d2b2ca052beb79b1a30d8cfb3713aa56a3b8f8064eb12465d6",
+      "currentId": "d0a62328c044cd245e61d48698cc88c8449acaed5f357da8b3599252c8fedb5d",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "d7da381f2f20b7f18e8e97be9b729958e73e8000a3a50f65e82a0181d23123b8",
+      "currentId": "d657d716b247cb6311ad0d3c371e5b68929538528da083070963cfe920673e6d",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "ff419e864cec0ee6f1a00f3a032c500c0ccb7d7e1c364c2549279d923fd6dfb1",
+      "currentId": "e5cba8206b1271fcc31093b4464e27c1bc5a41af849c87b09d198c549908fe84",
+      "check": "reentrancy-events",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    },
+    {
+      "report": "slither-all.json",
+      "previousId": "74d188b185a19f06f1e85c999b3903190e5ecc972bebfa4b23ec179530cf1a5c",
+      "currentId": "fe909eca6be5582f26c45f86ba06ba39c4347560907595856bba38d8071b01e7",
+      "check": "assembly",
+      "reason": "Resolver API corrected from setAuthorisation to approve; one added comment shifts later ENS source lines. Normalized detector description and severity are otherwise identical."
+    }
+  ]
+}

@@ -29,3 +29,17 @@ jobs:
         run: npm run test:mainnet-fork
         env:
           MAINNET_FORK_RPC_URL: https://eth-mainnet.g.alchemy.com/public
+      - name: Rehearse USDC and ENS cutover beside the actual legacy manager
+        working-directory: hardhat
+        run: npm run test:cutover
+        env:
+          MAINNET_FORK_RPC_URL: https://eth-mainnet.g.alchemy.com/public
+          CUTOVER_REPORT: ../build/qualification/mainnet-cutover.json
+      - name: Match the committed qualification to the executed source and observations
+        run: cmp docs/qualification/mainnet-cutover.json build/qualification/mainnet-cutover.json
+      - name: Preserve source-bound cutover evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: mainnet-cutover-qualification
+          path: build/qualification/mainnet-cutover.json
+          if-no-files-found: error

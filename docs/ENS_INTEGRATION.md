@@ -48,7 +48,7 @@ From `AGIJobManager` constants:
 4. Call `AGIJobManager.setEnsJobPages(ENSJobPages)`.
 5. Optionally enable NFT URI override through `AGIJobManager.setUseEnsJobTokenURI(true)`.
 
-Resolver `setText`/`setAuthorisation` writes are intentionally best-effort (try/catch). Large text payloads may exceed hook gas and should be retried directly by authorised actors.
+Resolver `setText`/`approve` writes are intentionally best-effort (try/catch). `approve(bytes32,address,bool)` is the delegation API of the configured NameWrapper-aware mainnet PublicResolver. Check `isApprovedFor(ENSJobPages,node,actor)` after grants and terminal revocations; transaction success alone does not prove hook success. Large text payloads may exceed hook gas and should be retried directly by authorised actors.
 
 ## Hook execution sequence
 

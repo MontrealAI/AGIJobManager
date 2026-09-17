@@ -13,6 +13,7 @@
     "test:preflight": "node --test test/*.test.cjs",
     "test:deployment": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs test test/mainnet-deployment.test.js",
     "test:mainnet-fork": "node ../node_modules/hardhat/dist/src/cli.js test --config ../hardhat.mainnet-fork.config.mjs test/mainnet-fork.test.js",
+    "test:cutover": "node ../node_modules/hardhat/dist/src/cli.js test --config ../hardhat.cutover-fork.config.mjs test/mainnet-cutover.test.js",
     "check:readiness": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/check-readiness.js --network mainnet",
     "postinstall": "node ../scripts/security/patch-openzeppelin-compiler.cjs",
     "reverify:mainnet": "node ../node_modules/hardhat/dist/src/cli.js --config ../hardhat.config.mjs run scripts/reverify-deployment.js --network mainnet",

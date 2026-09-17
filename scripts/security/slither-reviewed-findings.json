@@ -5,11 +5,11 @@
   "scope": "Production Solidity, all 102 enabled Slither detectors at every severity, plus separate all-medium/high and all-six-reentrancy reports. All findings are retained and individually reviewed against exact production/configuration/compiler/dependency-patch hashes. This is an internal review, not an independent audit.",
   "source_sha256": {
     "contracts/AGIJobManager.sol": "6787f3604dff7c7e51549da3470381e9ab8f310fa6bae5a956152c815c32d5c7",
-    "contracts/ens/ENSJobPages.sol": "b9ef3d109e1a15f63c21aa3e3ed52fbe2181117ceaa5667d36b27bbc04b3af3f",
+    "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
     "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
     "contracts/ens/INameWrapper.sol": "182065cbe99804d03abef665ec6d927cfa4d91cc0804301d7893fe6a57fc58d3",
-    "contracts/ens/IPublicResolver.sol": "a2fffdeba3181c798b3b61996ca76531b6bae635070674e13f7d50937275117e",
+    "contracts/ens/IPublicResolver.sol": "87c6e8d65d352ae4d69d802ab01b070531199078d41a79ea3be934a479d2b48e",
     "contracts/periphery/AGIJobPages.sol": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
     "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
     "contracts/utils/ENSOwnership.sol": "8f6ddf455fe74489693e47979485770b9627c2e717d381a69a9445ab71974944",
@@ -96,13 +96,13 @@
     ],
     "slither-reentrancy.json": [
       {
-        "id": "06251002b6a3176c91104eea1f212ec5282377a622fa00a98b1115b1905a5573",
+        "id": "34a22ec815db9237177709313e7e21c9c9c45bd8c0c72da42a251ce1b683c602",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "0dfdfabef93367f19f94ddbf2ebfdf893ff183013465cb4cbd59f87c609ebdf2",
@@ -123,13 +123,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "25ef3b54ee6043bd055edb1570922e4b2a644801fb89a0528332ab9731be9927",
+        "id": "2bb36030ea4104c5e5fd85977dfb6f224fee504b2ffab8029bf73a9ced37c279",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "33c29c69e01a2726e0662510e1e0290430d94074568c13ab27d26599da8b5d2b",
@@ -141,31 +141,31 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "35c70ae069ec79677066cb36e907b8a39021668cd4b4aeffe8347c761c8b973f",
+        "id": "192756a7a3d7a859faf2698461777f6b702fdbc0b070e66ff87d445b253a5423",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "3650b10c80d185b952d325c1ce3823c349b8fcc1cfc49cb1cc364059db823a8d",
+        "id": "3421f9a5535e3e2e87296aac44799663651f9a2475c3bbfff89e169f097464a2",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._revokePermissions(uint256,address,address) (contracts/ens/ENSJobPages.sol#498-503):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "37ec575d9d23f6509134707910e0aee8d5af33907b502568d952bc8c1c72b7ab",
+        "id": "4f83ce4f6ba1d8ed830bb77a1f636ae99ed0f207e39310173606b14c5951ebe5",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "3dcbfcf908c07e2d5124bf1dea9aac2082443b25c11e929924313e6077bf8211",
@@ -195,13 +195,13 @@
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
-        "id": "6c88202661e438d2b2ca052beb79b1a30d8cfb3713aa56a3b8f8064eb12465d6",
+        "id": "d0a62328c044cd245e61d48698cc88c8449acaed5f357da8b3599252c8fedb5d",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._lockJobENS(uint256,address,address,bool) (contracts/ens/ENSJobPages.sol#510-533):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "719909ae40fdbec663e85d8e2af9ceb13ab97454afa186ff5e383ea08b5dadcc",
@@ -213,13 +213,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "7ccfab96bb5fc23e5cf311cf6d9ce4af2a9a62bb4de789052fdbfd3605febc33",
+        "id": "37a91a696b6cfc999b92a0260903f496be129747e80b0fe76b881be048941d02",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._lockJobENS(uint256,address,address,bool) (contracts/ens/ENSJobPages.sol#510-533):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "7ea2489baf088c15b39326a8602315bdc623b92d4b83ea8e4c0cdc6efc728bfe",
@@ -249,13 +249,13 @@
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
-        "id": "91ecdc5b4f367ba28de83a2f0fd9ae77fa54acc36695e9c05b2903afbafd60ff",
+        "id": "2038f9386b60418815c3c1c318bcbfd6e6596b075b4b593868551a3c84500ea8",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in ENSJobPages._setAuthorisationBestEffort(uint8,uint256,bytes32,address,bool) (contracts/ens/ENSJobPages.sol#587-603):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "location": "Reentrancy in ENSJobPages._setAuthorisationBestEffort(uint8,uint256,bytes32,address,bool) (contracts/ens/ENSJobPages.sol#587-604):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "9b3eeab1b835c45c0a13b8917e1b610e032549399b8233faa5212638ca7a1f8d",
@@ -312,13 +312,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "d7da381f2f20b7f18e8e97be9b729958e73e8000a3a50f65e82a0181d23123b8",
+        "id": "d657d716b247cb6311ad0d3c371e5b68929538528da083070963cfe920673e6d",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "dcb719ceaa5fc19b1e100ce1b20032a2df13e2d7e9ad9a0233578c6cd01b59bc",
@@ -330,13 +330,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "ddc995397817d04f029d62962c0fa3534b69494abbbf05eb23aed18606496251",
+        "id": "88e4858221ee06bca358cb5c78e2af5768e39b9cf653bfdce334013416faa490",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "fd069f40ab37ddafc4b86cc23cfe1b83ebe0c267d5c501a254739768ef51ced7",
@@ -348,33 +348,33 @@
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
-        "id": "ff419e864cec0ee6f1a00f3a032c500c0ccb7d7e1c364c2549279d923fd6dfb1",
+        "id": "e5cba8206b1271fcc31093b4464e27c1bc5a41af849c87b09d198c549908fe84",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "ff6b50fdb97bf5c4d8617b47b2f85f99c78a70185e45e9419e06bd9b2fb47852",
+        "id": "12c7c715d9f98255a9cb96cd07ad56ff6e6a228c890bdfb0130a092fa0e2e6de",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       }
     ],
     "slither-all.json": [
       {
-        "id": "06251002b6a3176c91104eea1f212ec5282377a622fa00a98b1115b1905a5573",
+        "id": "34a22ec815db9237177709313e7e21c9c9c45bd8c0c72da42a251ce1b683c602",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "092e2e1c5ed41a765c90205ca9da8bbb5dde36ead15ad7bdb955243927da8d67",
@@ -485,13 +485,13 @@
         "evidence": "contracts/AGIJobManager.sol:_supportsERC721,getHighestPayoutPercentage; forge-test/unit/AGIJobManagerV091Security.t.sol; test/agiTypes.safety.test.js"
       },
       {
-        "id": "25ef3b54ee6043bd055edb1570922e4b2a644801fb89a0528332ab9731be9927",
+        "id": "2bb36030ea4104c5e5fd85977dfb6f224fee504b2ffab8029bf73a9ced37c279",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "278cbe1b1391fe9c0ed3867fd84a8656a230c7fe1c35a91175c6ccd3c424917e",
@@ -557,31 +557,31 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "35c70ae069ec79677066cb36e907b8a39021668cd4b4aeffe8347c761c8b973f",
+        "id": "192756a7a3d7a859faf2698461777f6b702fdbc0b070e66ff87d445b253a5423",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "3650b10c80d185b952d325c1ce3823c349b8fcc1cfc49cb1cc364059db823a8d",
+        "id": "3421f9a5535e3e2e87296aac44799663651f9a2475c3bbfff89e169f097464a2",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._revokePermissions(uint256,address,address) (contracts/ens/ENSJobPages.sol#498-503):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "37ec575d9d23f6509134707910e0aee8d5af33907b502568d952bc8c1c72b7ab",
+        "id": "4f83ce4f6ba1d8ed830bb77a1f636ae99ed0f207e39310173606b14c5951ebe5",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "39391a2cf54f5fa92b7dd6174164f8032af8383af4635df87b64fc7831382f11",
@@ -737,13 +737,13 @@
         "evidence": "contracts/AGIJobManager.sol:_settleValidators; test/validatorVoting.bonds.test.js; test/escrowAccounting.invariants.test.js; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
       {
-        "id": "6c88202661e438d2b2ca052beb79b1a30d8cfb3713aa56a3b8f8064eb12465d6",
+        "id": "d0a62328c044cd245e61d48698cc88c8449acaed5f357da8b3599252c8fedb5d",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._lockJobENS(uint256,address,address,bool) (contracts/ens/ENSJobPages.sol#510-533):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "6da64b95e39ddac466c0f33a61b9f045f38578d9ec9486241d82f84029404b39",
@@ -800,11 +800,11 @@
         "evidence": "contracts/AGIJobManager.sol:MAX_AGI_TYPES,addAGIType,getHighestPayoutPercentage; test/agiTypes.safety.test.js"
       },
       {
-        "id": "74d188b185a19f06f1e85c999b3903190e5ecc972bebfa4b23ec179530cf1a5c",
+        "id": "fe909eca6be5582f26c45f86ba06ba39c4347560907595856bba38d8071b01e7",
         "check": "assembly",
         "impact": "Informational",
         "confidence": "High",
-        "location": "ENSJobPages._staticcallWord(address,bytes) (contracts/ens/ENSJobPages.sol#862-873) uses assembly",
+        "location": "ENSJobPages._staticcallWord(address,bytes) (contracts/ens/ENSJobPages.sol#863-874) uses assembly",
         "rationale": "The read is gas-capped, copies at most one complete return word, and treats short/failed returndata as failure. Address consumers now reject nonzero upper address bits; bool consumers require 0 or 1. Failed ENS reads cannot manufacture ownership.",
         "evidence": "contracts/ens/ENSJobPages.sol:_staticcallWord,_staticcallAddress,_staticcallBool; forge-test/unit/AGIJobManagerV091Security.t.sol"
       },
@@ -827,13 +827,13 @@
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "7ccfab96bb5fc23e5cf311cf6d9ce4af2a9a62bb4de789052fdbfd3605febc33",
+        "id": "37a91a696b6cfc999b92a0260903f496be129747e80b0fe76b881be048941d02",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._lockJobENS(uint256,address,address,bool) (contracts/ens/ENSJobPages.sol#510-533):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "7ea2489baf088c15b39326a8602315bdc623b92d4b83ea8e4c0cdc6efc728bfe",
@@ -908,13 +908,13 @@
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "91ecdc5b4f367ba28de83a2f0fd9ae77fa54acc36695e9c05b2903afbafd60ff",
+        "id": "2038f9386b60418815c3c1c318bcbfd6e6596b075b4b593868551a3c84500ea8",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
-        "location": "Reentrancy in ENSJobPages._setAuthorisationBestEffort(uint8,uint256,bytes32,address,bool) (contracts/ens/ENSJobPages.sol#587-603):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "location": "Reentrancy in ENSJobPages._setAuthorisationBestEffort(uint8,uint256,bytes32,address,bool) (contracts/ens/ENSJobPages.sol#587-604):",
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "93b8e6fdbb9b825a89b6840c3b14e194f19d596ad0e6095ffc1117c689e848fb",
@@ -1187,13 +1187,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "d7da381f2f20b7f18e8e97be9b729958e73e8000a3a50f65e82a0181d23123b8",
+        "id": "d657d716b247cb6311ad0d3c371e5b68929538528da083070963cfe920673e6d",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "d7f7ae2f6f91a2d35ccd03f3c5a15a7a4e0c5385e51fcffb3b1c767d33424803",
@@ -1241,13 +1241,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
       },
       {
-        "id": "ddc995397817d04f029d62962c0fa3534b69494abbbf05eb23aed18606496251",
+        "id": "88e4858221ee06bca358cb5c78e2af5768e39b9cf653bfdce334013416faa490",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "e0ba2c0ac4840a954954881bb069604f717ee62d7c36a880cf5b22dd108bda5b",
@@ -1385,22 +1385,22 @@
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
-        "id": "ff419e864cec0ee6f1a00f3a032c500c0ccb7d7e1c364c2549279d923fd6dfb1",
+        "id": "e5cba8206b1271fcc31093b4464e27c1bc5a41af849c87b09d198c549908fe84",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "ff6b50fdb97bf5c4d8617b47b2f85f99c78a70185e45e9419e06bd9b2fb47852",
+        "id": "12c7c715d9f98255a9cb96cd07ad56ff6e6a228c890bdfb0130a092fa0e2e6de",
         "check": "reentrancy-events",
         "impact": "Low",
         "confidence": "Medium",
         "location": "Reentrancy in ENSJobPages._createJobPage(uint256,address,string) (contracts/ens/ENSJobPages.sol#326-353):",
-        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth.",
-        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js"
+        "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
+        "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
         "id": "fff659591e167ef4bbcaf5e035fb13664f1579ae7a2cea9687dcd9459a9a31f7",

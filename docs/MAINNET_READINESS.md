@@ -2,6 +2,8 @@
 
 v0.9.1 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
+The project already has a legacy mainnet manager with outstanding original-asset obligations. The [post-release USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, a corrected ENS resolver API mismatch, and a fork rehearsal preserving legacy jobs. The correction is newer than the frozen v0.9.1 assets; use the qualified corrective source and keep live-instance approval separate.
+
 ## Settlement
 
 Jobs, escrow, bonds, rewards and refunds use native Circle USDC with six decimal places. On Ethereum the immutable token is `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, checked against [Circle's address registry](https://developers.circle.com/stablecoins/usdc-contract-addresses).
