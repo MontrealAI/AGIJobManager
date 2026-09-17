@@ -400,7 +400,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: other });
 
     const jobCore = await manager.getJobCore(jobId);
-    assert.equal(jobCore.agentPayoutPct.toString(), "92", "valid AGI type should still be selected");
+    assert.equal(jobCore.agentPayoutPct.toString(), "52", "eligible agent receives the fixed remainder");
   });
 
   it("can disable and later re-enable an AGI type", async () => {

@@ -1,6 +1,8 @@
 # Hardhat Operator Guide (Official / Recommended)
 
-> v0.5.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.5.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+**v0.6.0 requires two immutable settlement recipients.** Fill `settlementWallets: [wallet30, wallet10]` in each profile before any deployment. Empty, zero, identical or USDC-token recipients are rejected. These wallets receive 30% and 10% of the original job cost on successful completion; see [the payout specification](../docs/USDC_PAYOUT_SPLIT.md). No live v0.6.0 manager is configured by this release.
+
+> v0.6.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.6.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
 
 This `hardhat/` project is the official deployment and verification workflow for AGIJobManager.
 
@@ -214,7 +216,7 @@ Defaults in the script for mainnet context:
 - ENS registry: `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`
 - NameWrapper: `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401`
 - Public resolver: `0xF29100983E058B709F3D539b0c765937B804AC15`
-- `JOB_MANAGER`: a newly deployed and verified v0.5.0 USDC manager (required; no default)
+- `JOB_MANAGER`: a newly deployed and verified v0.6.0 USDC manager (required; no default)
 - `JOBS_ROOT_NAME`: `alpha.jobs.agi.eth`
 
 You may override with `.env` values if needed (`JOB_MANAGER`, `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`).

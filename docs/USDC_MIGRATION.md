@@ -1,6 +1,6 @@
-# v0.5.0: USDC-only settlement
+# v0.6.0: USDC-only settlement
 
-Every payout, escrow, agent bond, validator bond, dispute bond, reward, refund and treasury withdrawal in v0.5.0 uses native Circle USDC with **six decimals**. One USDC is `1000000` base units; `0.000001` USDC is one base unit. No bridge, conversion, wrapped alternative or configurable settlement token is supported.
+Every payout, escrow, agent bond, validator bond, dispute bond, reward, refund and treasury withdrawal in v0.6.0 uses native Circle USDC with **six decimals**. One USDC is `1000000` base units; `0.000001` USDC is one base unit. No bridge, conversion, wrapped alternative or configurable settlement token is supported.
 
 ## Supported chains
 
@@ -18,7 +18,7 @@ Source: [Circle's USDC contract address registry](https://developers.circle.com/
 - Deployment key: `usdcTokenAddress`; environment key: `USDC_TOKEN_ADDRESS` (Next.js: `NEXT_PUBLIC_USDC_TOKEN_ADDRESS`).
 - Amounts are six-decimal integer base units throughout. Never reuse legacy raw amounts, approvals, cached forms or snapshots. UI parsers reject excess precision rather than truncate it; new storage namespaces isolate old drafts.
 - Standalone console: `ui/agijobmanager-usdc.html`. Old versioned consoles remain available in prior Git tags. The bridge/vault flow is retired.
-- Legacy snapshot deployment migrations are retired. Use a fresh Hardhat configuration and the v0.5.0 ABI.
+- Legacy snapshot deployment migrations are retired. Use a fresh Hardhat configuration and the v0.6.0 ABI.
 
 ## Economic defaults
 
@@ -31,16 +31,16 @@ Source: [Circle's USDC contract address registry](https://developers.circle.com/
 | Validator maximum bond | 88,888,888 | 88888888000000 |
 | Dispute minimum / maximum | 1 / 200 | 1000000 / 200000000 |
 
-Agent bond rate remains 500 bps with duration adjustment; validator bond rate remains 1500 bps; dispute rate remains 50 bps. Bond calculations are capped at payout, with integer flooring. Percentage rewards, time periods and identity rules are unchanged. These are nominal USDC defaults, not an exchange-rate conversion of old balances.
+Agent bond rate remains 500 bps with duration adjustment; validator bond rate remains 1500 bps; dispute rate remains 50 bps. Bond calculations are capped at payout, with integer flooring. The default validator budget remains 8%; v0.6.0 changes successful-job distribution to validators, 30% wallet, 10% wallet, then the agent remainder. See [the payout specification](USDC_PAYOUT_SPLIT.md). Time periods and identity eligibility rules remain in place. These are nominal USDC defaults, not an exchange-rate conversion of old balances.
 
 ## Deployment and cutover
 
-**This release publishes software. It does not deploy or upgrade a live contract.** `config/usdc-deployment.json` records `deployment-required` and intentionally leaves manager and ENS addresses empty. Pre-v0.5.0 receipts are historical evidence, never current USDC deployment configuration.
+**This release publishes software. It does not deploy or upgrade a live contract.** `config/usdc-deployment.json` records `deployment-required` and intentionally leaves manager and ENS addresses empty. Earlier receipts are historical evidence, never current v0.6.0 deployment configuration. A v0.5.0 USDC manager does not implement the new payout split.
 
-1. Close or settle existing jobs on their original contracts using their original assets and interfaces. v0.5.0 cannot migrate escrow or approvals.
-2. Install pinned dependencies at the root and in `hardhat/`. Copy `hardhat/deploy.config.example.js` to the configured local deployment file and review owner, ENS, roots and allowlists.
+1. Close or settle existing jobs on their original contracts using their original assets and interfaces. v0.6.0 cannot migrate escrow or approvals.
+2. Install pinned dependencies at the root and in `hardhat/`. Copy `hardhat/deploy.config.example.js` to the configured local deployment file and review owner, ENS, roots and allowlists. Supply both distinct `settlementWallets` addresses (30% first, 10% second).
 3. Compile and rehearse on Sepolia with test USDC. Review all monetary limits in six-decimal units. Use the existing Hardhat dry-run and mainnet confirmation gates for an independently authorized deployment.
-4. Verify the new source, linked libraries, constructor arguments, chain, owner, `usdcToken()` and `decimals()`. Wire ENS to the new manager and verify hooks before locking configuration.
+4. Verify the new source, linked libraries, constructor arguments, chain, owner, `usdcToken()`, `wallet30()`, `wallet10()` and `decimals()`. Wire ENS to the new manager and verify hooks before locking configuration.
 5. Record the real receipt; update `config/usdc-deployment.json` and regenerate the deployment registry. Configure each UI with the verified new manager. The release's default interfaces keep writes blocked until a USDC manager is configured and its chain/token checks pass.
 6. Approve only the USDC amount needed to the new manager, then rehearse a small complete lifecycle. Never approve a legacy manager through the USDC UI.
 

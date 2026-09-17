@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.5.0</title>
+  <title>AGIJobManager · USDC v0.6.0</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.5.0: one settlement asset — native USDC. Exact six-decimal amounts, a fixed settlement token and verified deployment gating throughout.</div>
+          <div class="smallNote" style="margin-top:10px">v0.6.0: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1108,6 +1108,7 @@
               <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
               <circle id="agentArc" cx="60" cy="60" r="44" fill="none" stroke="rgba(120,255,190,.95)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 276"/>
               <circle id="validatorArc" cx="60" cy="60" r="44" fill="none" stroke="rgba(255,210,120,.95)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 276"/>
+              <circle id="wallet10Arc" cx="60" cy="60" r="44" fill="none" stroke="rgba(240,180,60,.95)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 276"/>
               <circle id="retainedArc" cx="60" cy="60" r="44" fill="none" stroke="rgba(122,63,242,.95)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 276"/>
             </svg>
             <div class="ringCenter"><span class="tiny">Current model</span><b id="ringHeadline">—</b><span class="tiny">agent share</span></div>
@@ -1115,7 +1116,8 @@
           <div class="legend">
             <div class="legendRow"><span>Agent payout</span><b id="legendAgentPct">—</b></div>
             <div class="legendRow"><span>Validator pool</span><b id="legendValidatorPct">—</b></div>
-            <div class="legendRow"><span>Retained remainder</span><b id="legendRetainedPct">—</b></div>
+            <div class="legendRow"><span>Wallet one · 30%</span><b id="legendRetainedPct">30%</b></div>
+            <div class="legendRow"><span>Wallet two · 10%</span><b id="legendWallet10Pct">10%</b></div>
           </div>
         </div>
         <div class="tiny" style="margin-top:10px">The exact agent payout is snapshotted at assignment time from the highest eligible AGI type held by the applying agent. This chart updates with your currently verified agent profile if available.</div>
@@ -1168,13 +1170,14 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.5.0</h2>
+      <h2>USDC deployment · v0.6.0</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
-      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.5.0 deployment">
+      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.6.0 deployment">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
       <p id="usdcDeploymentStatus" role="status">Deployment required — transactions disabled.</p>
+      <p id="settlementWallets" class="smallNote">Two immutable settlement wallets must be verified before transactions.</p>
       <p class="smallNote">USDC: <code>0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</code> · Ethereum mainnet (chain 1)</p>
     </div>
 
@@ -2020,8 +2023,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.5.0 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.5.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v0.6.0 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v0.6.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2038,7 +2041,7 @@ IMPORTANT: The Protocol is experimental software. Smart contracts can fail, beha
 1. Definitions
 
 - &quot;Protocol&quot; / &quot;AGIJobManager&quot;: The AGIJobManager smart contract(s) implementing job posting, assignment, escrow, bonds, validation, disputes, and settlement.
-- &quot;$USDC&quot;: The ERC-20 token used by the Protocol for job payouts, validator rewards, agent/validator/dispute bonds, and any protocol-retained amounts.
+- &quot;$USDC&quot;: The ERC-20 token used by the Protocol for job payouts, validator rewards, agent/validator/dispute bonds, and settlement-wallet allocations.
 - &quot;Employer&quot;: Any person or entity that posts a Job and escrows a payout in $USDC.
 - &quot;Agent&quot;: Any person or entity that applies for, performs, and requests completion of a Job.
 - &quot;Validator&quot;: Any person or entity that votes to approve or disapprove a Job completion request under the Protocol rules, posting any required validator bond.
@@ -2120,7 +2123,7 @@ This section summarizes expected mechanics; the deployed code controls.
 - A Job may be assigned to the first eligible Agent who successfully applies under the Protocol rules.
 - Eligibility may depend on authorization mechanisms (e.g., allowlists, Merkle proofs, or ENS-based authorization).
 - The Protocol may require an Agent bond (computed by code) to be posted at application/assignment time.
-- The Agent&#x27;s payout percentage may be determined by the Agent&#x27;s holdings of specific NFT types configured in the Protocol and snapshotted at assignment time.
+- NFT holdings may establish eligibility but do not set payout percentages. The validator rate is snapshotted when a job is posted; the agent receives the remaining job cost after validator rewards and the fixed 30% and 10% wallet shares.
 
 5.3 Completion Request (Agent)
 
@@ -2138,7 +2141,7 @@ This section summarizes expected mechanics; the deployed code controls.
 5.5 Finalization / Settlement (Anyone may be able to call)
 
 - After the applicable review/challenge windows, settlement can occur according to the Protocol logic, including outcomes where:
-  - The Agent wins (payout to Agent, validator rewards distributed, remainder retained by protocol), or
+  - The Agent wins (validator rewards, 30% and 10% wallet shares, then remaining payout to Agent), or
   - The Employer wins (refund to Employer, validator settlement, possible agent bond forfeiture), or
   - A dispute is forced due to insufficient participation or ties.
 
@@ -2159,11 +2162,11 @@ This section summarizes expected mechanics; the deployed code controls.
 3) No obligation; no SLA. The Protocol, Owner, and Moderators have no obligation to resolve disputes within any timeframe (or at all), except as the code permits. Any reliance on moderator action is at user risk.
 4) Off-chain disputes remain off-chain. The Protocol cannot adjudicate legal questions (fraud, IP infringement, breach of contract, misrepresentation, employment classification, etc.). Those issues are solely between users and must be handled off-chain.
 
-7. Protocol Economics; Fees; Retained Remainder Disclosure
+7. Protocol Economics; USDC Distribution
 
 1) Validator reward budget. The Protocol may allocate a portion of the Job payout as a validator reward budget (as snapshotted per job) for distribution to participating Validators, subject to code rules.
 2) Bond returns and slashing. Validator bonds may be returned in full, partially slashed, or redistributed depending on whether a Validator ends up on the correct side of the final outcome, as defined by the code.
-3) Protocol-retained remainder (platform revenue). On certain settlement paths (including Agent-win), the Protocol may retain the remainder of the Job payout after Agent and Validator allocations. This remainder may become withdrawable by the Owner under conditions specified in the code (e.g., when paused and when not backing active escrows/bonds).
+3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct immutable settlement wallets. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
 4) No refunds from the Protocol. Token movements are governed by the smart contract; there is no guarantee of reversal, refunds, or discretionary recovery.
 5) Gas fees. Users pay their own gas/transaction fees and accept the risk of network congestion, failed transactions, MEV, reorgs, and other chain-level issues.
 
@@ -2261,7 +2264,7 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-USDC settlement notice (v0.5.0)
+USDC settlement notice (v0.6.0)
 
 The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
 AGIJobManager does not issue USDC or define the issuer&#x27;s terms. The protocol&#x27;s job
@@ -2269,7 +2272,7 @@ refund and settlement rules apply to job escrow; they do not describe token purc
 or redemption rights. USDC issuer controls, including transfer pauses and blocked
 addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.5.0 settlement and are
+Historical project-token sale disclosures do not describe v0.6.0 settlement and are
 preserved in previous Git tags.</div></details></div>
     </div>
 
@@ -2278,7 +2281,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.5.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.5.0 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.6.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.6.0 terms</a>
       </div>
     </div>
 
@@ -2314,7 +2317,7 @@ preserved in previous Git tags.</div></details></div>
     const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
     const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
     let AGI_JOB_MANAGER = '';
-    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v050_manager') || ''; } catch {}
+    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v060_manager') || ''; } catch {}
     let usdcDeploymentValidated = false;
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const KNOWN_ENS_JOB_PAGES_FALLBACK = "";
@@ -2322,7 +2325,7 @@ preserved in previous Git tags.</div></details></div>
     const FREE_TRIAL_REGISTRAR_IDENTITY = "0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a";
     const ALPHA_AGENT_PARENT = "alpha.agent.agi.eth";
     const ALPHA_AGENT_PARENT_NODE = "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e";
-    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v050_v29_recent_alpha_names";
+    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v060_v29_recent_alpha_names";
     let resolvedEnsJobPagesAddress = "";
     let resolvedEnsJobPagesSource = "unavailable";
     const SUFFIX = { agent:"agent.agi.eth", club:"club.agi.eth", alphaAgent:"alpha.agent.agi.eth", alphaClub:"alpha.club.agi.eth" };
@@ -2429,6 +2432,8 @@ preserved in previous Git tags.</div></details></div>
 
 
 const AGIJobManagerABI = [
+{"inputs": [], "name": "wallet30", "outputs": [{"type": "address"}], "stateMutability": "view", "type": "function"},
+{"inputs": [], "name": "wallet10", "outputs": [{"type": "address"}], "stateMutability": "view", "type": "function"},
       {"inputs":[],"name":"usdcToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"nextJobId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"nextTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -2847,8 +2852,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
     }
 
-    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v050_v17_tx_activity";
-    const ELITE_PREFS_KEY = "agijobmanager_usdc_v050_v18_elite_prefs";
+    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v060_v17_tx_activity";
+    const ELITE_PREFS_KEY = "agijobmanager_usdc_v060_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
     function requestMainnetSwitch(){
@@ -2859,8 +2864,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function loadTxActivity(){
       try{
         const raw = localStorage.getItem(TX_ACTIVITY_KEY)
-          || localStorage.getItem('agijobmanager_usdc_v050_v27_tx_activity')
-          || localStorage.getItem('agijobmanager_usdc_v050_v17_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v060_v27_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v060_v17_tx_activity')
           || '[]';
         txActivity = JSON.parse(raw);
       }catch{ txActivity = []; }
@@ -3598,13 +3603,15 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(txt) txt.textContent = label ?? (Math.round(p) + "%");
     }
     function renderPayoutChart(agentPct, validatorPct){
-      const a = Number(agentPct||0), v = Number(validatorPct||0), r = Math.max(0, 100 - a - v);
+      const v = Math.min(60, Math.max(0, Number(validatorPct||0))), a = 60 - v, r = 30;
       const C = 276.46;
       const aLen = C * a / 100, vLen = C * v / 100, rLen = C * r / 100;
       const aArc = el("agentArc"), vArc = el("validatorArc"), rArc = el("retainedArc");
       if(aArc){aArc.setAttribute("stroke-dasharray", `${aLen} ${C-aLen}`);aArc.setAttribute("stroke-dashoffset","0");}
       if(vArc){vArc.setAttribute("stroke-dasharray", `${vLen} ${C-vLen}`);vArc.setAttribute("stroke-dashoffset", String(-aLen));}
       if(rArc){rArc.setAttribute("stroke-dasharray", `${rLen} ${C-rLen}`);rArc.setAttribute("stroke-dashoffset", String(-(aLen+vLen)));}
+      const wArc = el("wallet10Arc");
+      if(wArc){wArc.setAttribute("stroke-dasharray", `${C/10} ${C*0.9}`);wArc.setAttribute("stroke-dashoffset", String(-(aLen+vLen+rLen)));}
       if(el("legendAgentPct")) el("legendAgentPct").textContent = a + "%";
       if(el("legendValidatorPct")) el("legendValidatorPct").textContent = v + "%";
       if(el("legendRetainedPct")) el("legendRetainedPct").textContent = r + "%";
@@ -3632,7 +3639,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       try{
         let agentPct = 0;
         if(verified.agent && agiJobManager && userAccount && isMainnet){
-          try{ agentPct = Number(await agiJobManager.methods.getHighestPayoutPercentage(userAccount).call()); }catch{}
+          try{ agentPct = 60 - Number(await agiJobManager.methods.validationRewardPercentage().call()); }catch{}
         }
         const validatorPct = Number((el("validationRewardPct")?.textContent.match(/[0-9]+/)||["0"])[0]);
         renderPayoutChart(agentPct, validatorPct);
@@ -3669,7 +3676,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       try{return Number(await web3.eth.getChainId());}catch{return null;}
     }
 
-    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v050_builder_draft_v11_1";
+    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v060_builder_draft_v11_1";
     function builderFieldIds(){
       return ["jobTitle","jobCategory","jobTags","jobSummaryBuilder","jobDeliverables","jobAcceptance","jobRequirements","jobImageURI","jobExternalURI","jobSpecVersion","jobLocale","jobPayout","jobDuration","jobDetails","jobSpecURI"];
     }
@@ -3844,12 +3851,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         jwt: el("ipfsJwt")?.value || "",
         pinName: el("ipfsName")?.value || ""
       };
-      localStorage.setItem("agijobmanager_usdc_v050_ipfs_prefs_v11", JSON.stringify(prefs));
+      localStorage.setItem("agijobmanager_usdc_v060_ipfs_prefs_v11", JSON.stringify(prefs));
       setToast("IPFS browser settings saved locally on this device.", "ok");
     }
     function loadIpfsPrefs(){
       try{
-        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v050_ipfs_prefs_v11") || "{}");
+        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v060_ipfs_prefs_v11") || "{}");
         if(el("ipfsMode")) el("ipfsMode").value = prefs.mode || "pinata-jwt";
         if(el("ipfsEndpoint")) el("ipfsEndpoint").value = prefs.endpoint || "https://api.pinata.cloud/pinning/pinJSONToIPFS";
         if(el("ipfsJwt")) el("ipfsJwt").value = prefs.jwt || "";
@@ -3857,7 +3864,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }catch{}
     }
     function clearIpfsPrefs(){
-      localStorage.removeItem("agijobmanager_usdc_v050_ipfs_prefs_v11");
+      localStorage.removeItem("agijobmanager_usdc_v060_ipfs_prefs_v11");
       if(el("ipfsJwt")) el("ipfsJwt").value = "";
       setToast("Saved IPFS browser settings removed.", "ok");
     }
@@ -4449,13 +4456,18 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.5.0 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.6.0 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
         if(tokenAddress.toLowerCase() !== USDC_ADDRESS.toLowerCase()) throw new Error('Rejected: manager settlement token is not native Circle USDC.');
         const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
+        const wallet30 = String(await agiJobManager.methods.wallet30().call());
+        const wallet10 = String(await agiJobManager.methods.wallet10().call());
+        const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
+        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.6.0 settlement wallets.');
+        if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
         usdcToken = token;
         tokenDecimals = 6;
         usdcDeploymentValidated = true;
@@ -4631,7 +4643,7 @@ async function updateSummary(){
 
     function loadJobPrefs(){
       try{
-        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v050_v10_prefs") || "{}");
+        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v060_v10_prefs") || "{}");
         jobFavorites = new Set(Array.isArray(raw.favorites) ? raw.favorites.map(x=>String(x)) : []);
         if(el("jobSearch")) el("jobSearch").value = raw.jobSearchText || "";
         if(el("jobStatusFilter")) el("jobStatusFilter").value = raw.jobStatusFilter || "all";
@@ -4646,12 +4658,12 @@ async function updateSummary(){
       }catch(e){}
     }
     function saveJobPrefs(){
-      localStorage.setItem("agijobmanager_usdc_v050_v10_prefs", JSON.stringify({
+      localStorage.setItem("agijobmanager_usdc_v060_v10_prefs", JSON.stringify({
         favorites: Array.from(jobFavorites),
         jobSearchText, jobStatusFilter, jobRoleFilter, jobSortMode, jobActionableOnly
       }));
     }
-    function notesKey(jobId){ return `agijobmanager_usdc_v050_job_notes_${jobId}`; }
+    function notesKey(jobId){ return `agijobmanager_usdc_v060_job_notes_${jobId}`; }
     function loadJobNotes(jobId){ try{ return localStorage.getItem(notesKey(jobId)) || ""; }catch{return "";} }
     function saveJobNotes(jobId, text){ try{ localStorage.setItem(notesKey(jobId), text || ""); }catch{} }
     function clearJobNotes(jobId){ try{ localStorage.removeItem(notesKey(jobId)); }catch{} }
@@ -5792,10 +5804,10 @@ function normalizeIpfsToHttp(uri){
       setToast(`Job Spec URI normalized to ${normalized.canonical}`, 'ok');
     }
     function loadCompletionDraft(jobId){
-      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v050_completion_draft_${jobId}`) || '{}'); }catch{return {};}
+      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v060_completion_draft_${jobId}`) || '{}'); }catch{return {};}
     }
     function saveCompletionDraft(jobId){
-      try{ localStorage.setItem(`agijobmanager_usdc_v050_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
+      try{ localStorage.setItem(`agijobmanager_usdc_v060_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
     }
     function runBondMathSelfTests(){
       const one = 1000000n;
@@ -5998,11 +6010,12 @@ function normalizeIpfsToHttp(uri){
       const approvals = Number(job.approvals || 0);
       const disapprovals = Number(job.disapprovals || 0);
       const totalVotes = approvals + disapprovals;
-      const validationPct = getNumericText("validationRewardPct");
-      const rewardPool = payout * validationPct / 100n;
-      const agentPct = BigInt(job.agentPayoutPct || 0);
-      const agentPayout = payout * agentPct / 100n;
-      const retained = payout > agentPayout + rewardPool ? payout - agentPayout - rewardPool : 0n;
+      const agentPct = BigInt(job.agentPayoutPct ?? 52);
+      const validationPct = 60n - agentPct;
+      const rewardPool = totalVotes === 0 ? 0n : payout * validationPct / 100n;
+      const wallet30Amount = payout * 30n / 100n;
+      const wallet10Amount = payout * 10n / 100n;
+      const agentPayout = payout - rewardPool - wallet30Amount - wallet10Amount;
       const validatorBond = computeValidatorBondFromPayout(payout);
       const slashBps = getNumericText("validatorSlashBps");
       const slashedPerIncorrect = validatorBond * slashBps / 10000n;
@@ -6025,7 +6038,7 @@ function normalizeIpfsToHttp(uri){
       else if(reviewEnded && disapprovals>approvals) { headline = "Finalize now → employer-win path"; rationale = "Disapprovals exceed approvals after the review window and quorum is satisfied."; }
       else if(approvals >= reqA && approvals > disapprovals) { headline = "Approval threshold reached"; rationale = "A positive finalize path is forming. The exact challenge-window countdown is not exposed by the current public view methods."; }
       else if(disapprovals >= reqD) { headline = "Dispute threshold reached"; rationale = "Required disapprovals can move the job into dispute before ordinary finalization."; }
-      return { payout, rewardPool, agentPayout, retained, validatorBond, slashedPerIncorrect, approvals, disapprovals, totalVotes, headline, rationale, quorum, reqA, reqD, reviewEnded };
+      return { payout, rewardPool, agentPayout, wallet30Amount, wallet10Amount, validatorBond, slashedPerIncorrect, approvals, disapprovals, totalVotes, headline, rationale, quorum, reqA, reqD, reviewEnded };
     }
     async function fetchJobTimeline(jobId){
       const names = ["JobCreated","JobApplied","JobCompletionRequested","JobValidated","JobDisapproved","JobDisputed","JobCompleted","JobExpired","NFTIssued","EnsHookAttempted"];
@@ -6185,7 +6198,7 @@ function normalizeIpfsToHttp(uri){
       el('jobOverview').innerHTML = [
         ['Employer', shortAddr(job.employer)], ['Assigned agent', job.assignedAgent==='0x0000000000000000000000000000000000000000' ? '—' : shortAddr(job.assignedAgent)],
         ['Payout', formatUnitsToAmount(job.payout)+' $USDC'], ['Duration', secondsToHuman(job.duration)],
-        ['Agent payout %', String(job.agentPayoutPct)+'%'], ['Validator reward pool', formatUnitsToAmount(sim.rewardPool)+' $USDC'],
+        ['Agent base share (before unallocated rewards)', String(job.agentPayoutPct)+'%'], ['Validator reward pool', formatUnitsToAmount(sim.rewardPool)+' $USDC'],
         ['Validator bond', formatUnitsToAmount(sim.validatorBond)+' $USDC'], ['Dispute bond', formatUnitsToAmount(computeDisputeBondFromPayout(BigInt(job.payout)))+' $USDC'],
         ['Assigned at', formatDateTime(job.assignedAt)], ['Completion requested at', formatDateTime(job.completionRequestedAt)],
         ['Disputed at', formatDateTime(job.disputedAt)], ['Votes', `${sim.approvals} approve / ${sim.disapprovals} disapprove`]
@@ -6221,7 +6234,7 @@ function normalizeIpfsToHttp(uri){
       }
       el('jobTimeline').innerHTML = timelineHtml.join('');
       el('jobSimulationCards').innerHTML = [
-        ['If the agent wins', `Agent receives about <b>${formatUnitsToAmount(sim.agentPayout)} $USDC</b> plus returned agent bond. Validators split the reward pool and slashed incorrect-side bonds. Protocol-retained remainder: <b>${formatUnitsToAmount(sim.retained)} $USDC</b>.`],
+        ['If the agent wins', `Agent receives about <b>${formatUnitsToAmount(sim.agentPayout)} $USDC</b> plus returned agent bond. Validators split the reward pool and slashed incorrect-side bonds. Wallet one: <b>${formatUnitsToAmount(sim.wallet30Amount)} USDC</b> (30%). Wallet two: <b>${formatUnitsToAmount(sim.wallet10Amount)} USDC</b> (10%). All percentages use the original job cost; unallocated rewards and rounding go to the agent.`],
         ['If the employer wins', `Employer refund path returns payout minus validator reward pool when validators participated. Incorrect-side validators are slashed; if dispute-threshold disapprovals were reached, the agent bond can join the correct-side validator pool.`],
         ['Current likely next outcome', `<b>${escapeHtml(sim.headline)}</b><br>${escapeHtml(sim.rationale)}`],
         ['Validator incentive snapshot', `Per-validator bond is about <b>${formatUnitsToAmount(sim.validatorBond)} $USDC</b>. Wrong-side slash per validator is about <b>${formatUnitsToAmount(sim.slashedPerIncorrect)} $USDC</b> under the current slash bps.`]
@@ -6336,7 +6349,8 @@ function normalizeIpfsToHttp(uri){
           agentPayoutPct: Number(job.agentPayoutPct || 0),
           agentPayout: formatUnitsToAmount(sim.agentPayout),
           validatorRewardPool: formatUnitsToAmount(sim.rewardPool),
-          retainedRemainder: formatUnitsToAmount(sim.retained),
+          wallet30Amount: formatUnitsToAmount(sim.wallet30Amount),
+          wallet10Amount: formatUnitsToAmount(sim.wallet10Amount),
           validatorBond: formatUnitsToAmount(sim.validatorBond),
           slashedPerIncorrect: formatUnitsToAmount(sim.slashedPerIncorrect)
         },
@@ -6757,7 +6771,7 @@ function normalizeIpfsToHttp(uri){
       agiJobManager = null;
       hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
       if(el('termsAccepted')) el('termsAccepted').checked = false;
-      try { localStorage.setItem('agijobmanager_usdc_v050_manager', value); } catch {}
+      try { localStorage.setItem('agijobmanager_usdc_v060_manager', value); } catch {}
       updateWriteGate();
       await connectWallet();
     });

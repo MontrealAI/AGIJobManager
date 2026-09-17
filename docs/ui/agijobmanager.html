@@ -314,11 +314,11 @@
             <button id="clearContract" class="secondary">Clear</button>
           </div>
           <p class="muted">
-            Preferred mainnet deployment (config/deployments): <span id="mainnetDeployment">TBD</span>. Settlement: USDC only.
+            Preferred mainnet deployment (config/deployments): <span id="mainnetDeployment">TBD</span>. Settlement: USDC only. Validators first (8% default), 30% to wallet one, 10% to wallet two, then the remaining job cost to the agent.
             <span id="legacyAddress"></span>
           </p>
           <p class="muted">Active source: <span id="contractSource">—</span></p>
-          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.5.0 configuration file.</p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.6.0 configuration file.</p>
           <p class="muted">No contract is selected by default until you explicitly choose one.</p>
         </div>
       </div>
@@ -352,6 +352,7 @@
           <p><strong>Next Token ID:</strong> <span id="contractNextToken">—</span></p>
         </div>
         <div>
+          <p><strong>Settlement wallets:</strong> <span id="settlementWallets">Not verified</span></p>
           <p><strong>USDC Token:</strong> <span id="usdcToken">—</span></p>
           <p><strong>Token Decimals:</strong> <span id="usdcTokenDecimals">—</span></p>
           <p><strong>Token Symbol:</strong> <span id="usdcTokenSymbol">—</span></p>
@@ -994,9 +995,9 @@
       preferredContract: "",
       notes: "",
     };
-    const storageKey = "agijobmanager_usdc_v050_contract";
-    const uiSettingsKey = "agijobmanager_usdc_v050_ui_settings_v1";
-    const indexCacheKey = "agijobmanager_usdc_v050_index_cache_v1";
+    const storageKey = "agijobmanager_usdc_v060_contract";
+    const uiSettingsKey = "agijobmanager_usdc_v060_ui_settings_v1";
+    const indexCacheKey = "agijobmanager_usdc_v060_index_cache_v1";
     const defaultPageSize = 50;
     const defaultIndexLookback = 20000;
     const supportedChainIds = new Set([1n, 11155111n, 1337n]);
@@ -1037,6 +1038,8 @@
       "function owner() view returns (address)",
       "function paused() view returns (bool)",
       "function usdcToken() view returns (address)",
+      "function wallet30() view returns (address)",
+      "function wallet10() view returns (address)",
       "function agentRootNode() view returns (bytes32)",
       "function clubRootNode() view returns (bytes32)",
       "function agentMerkleRoot() view returns (bytes32)",
@@ -1511,8 +1514,8 @@
     }
 
     const metadataStorageKeys = {
-      pinataJwt: "agijobmanager_usdc_v050_pinata_jwt",
-      nftStorageKey: "agijobmanager_usdc_v050_nft_storage_key",
+      pinataJwt: "agijobmanager_usdc_v060_pinata_jwt",
+      nftStorageKey: "agijobmanager_usdc_v060_nft_storage_key",
     };
 
     function updatePill(id, text, tone = "warn") {
@@ -2149,6 +2152,10 @@
       if(expected && tokenAddress.toLowerCase() !== expected.toLowerCase()) throw new Error('Manager does not use native Circle USDC.');
       const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
       if(Number(await token.decimals()) !== 6) throw new Error('USDC decimal verification failed; transactions disabled.');
+      const wallets = await Promise.all([state.readContract.wallet30(), state.readContract.wallet10()]);
+      const invalid = [ethers.ZeroAddress, state.contractAddress, tokenAddress].filter(Boolean).map(x=>x.toLowerCase());
+      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.6.0 settlement wallets.');
+      setText('settlementWallets', '30%: '+wallets[0]+' · 10%: '+wallets[1]);
       state.usdcTokenAddress = tokenAddress;
       state.usdcTokenDecimals = 6;
       state.usdcTokenSymbol = 'USDC';

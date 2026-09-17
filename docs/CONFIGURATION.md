@@ -43,7 +43,7 @@ It **does not** freeze operational controls like pause, settlement pause, thresh
 | Moderators | `addModerator/removeModerator` | Yes | nonzero address helper check | Dispute resolution role |
 | Additional allowlists | `add/removeAdditionalAgent`, `add/removeAdditionalValidator` | Yes | nonzero address | Bypass ENS/Merkle ownership checks |
 | Blacklists | `blacklistAgent`, `blacklistValidator` | Yes | none | Hard deny lists |
-| AGI payout tiers | `addAGIType`, `disableAGIType` | Yes | ERC721 support, max count, payout headroom checks | Controls agent payout % by NFT holdings |
+| NFT eligibility scores | `addAGIType`, `disableAGIType` | Yes | ERC721 support, max count, scores 1..100 | Eligibility only; payout is the remainder after validators and fixed 30% / 10% wallets |
 
 ## Roles and permissions matrix
 

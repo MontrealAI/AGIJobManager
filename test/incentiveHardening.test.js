@@ -170,7 +170,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.finalizeJob(jobSmall, { from: employer });
     const afterFinalize = await token.balanceOf(agentFast);
     assert(
-      afterFinalize.sub(beforeFinalize).eq(payoutSmall.muln(90).divn(100).add(bondSmall)),
+      afterFinalize.sub(beforeFinalize).eq(payoutSmall.muln(60).divn(100).add(bondSmall)),
       "bond should be snapshotted at assignment"
     );
   });
@@ -197,7 +197,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
     const agentAfterFinalize = await token.balanceOf(agentFast);
     assert(
-      agentAfterFinalize.sub(agentBeforeFinalize).eq(payout.muln(90).divn(100).add(agentBond)),
+      agentAfterFinalize.sub(agentBeforeFinalize).eq(payout.muln(60).divn(100).add(agentBond)),
       "agent should receive payout plus bond refund on win"
     );
 

@@ -14,7 +14,7 @@ and settlement invariants.
 - **Pause/unpause** the contract.
 - **Withdraw treasury** (non‑escrow balance) while paused only.
 - **Manage allowlists/blacklists** for agents and validators.
-- **Manage moderators** and AGI payout tiers (AGI types).
+- **Manage moderators** and NFT eligibility scores (AGI types).
 - **Adjust economic parameters** (validator thresholds, review periods, job
   duration limits, payout caps, and validation reward percentages).
 - **Identity wiring before lock** (USDC token, ENS registry, NameWrapper, root
@@ -30,11 +30,11 @@ and settlement invariants.
 
 **Escrow** is the sum of outstanding job payouts tracked by `lockedEscrow`.
 **Bonds** are tracked by `lockedAgentBonds` and `lockedValidatorBonds`.
-**Treasury** is any AGI held by the contract **above** escrow and locked bonds.
+**Treasury** is any USDC held by the contract **above** escrow and locked bonds.
 
 **Sources of treasury (as implemented)**
-- Any payout remainder when `agentPayoutPct + validationRewardPercentage < 100`.
-- Integer division rounding dust.
+- Unreserved direct USDC donations only; successful jobs distribute their full cost.
+- Job and validator rounding dust goes to the winning agent, not treasury.
 - `contributeToRewardPool` transfers (not segregated from treasury).
 - Any direct token transfers to the contract.
 

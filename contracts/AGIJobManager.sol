@@ -19,7 +19,7 @@ IMPORTANT: The Protocol is experimental software. Smart contracts can fail, beha
 1. Definitions
 
 - "Protocol" / "AGIJobManager": The AGIJobManager smart contract(s) implementing job posting, assignment, escrow, bonds, validation, disputes, and settlement.
-- "$USDC": The ERC-20 token used by the Protocol for job payouts, validator rewards, agent/validator/dispute bonds, and any protocol-retained amounts.
+- "$USDC": The ERC-20 token used by the Protocol for job payouts, validator rewards, agent/validator/dispute bonds, and settlement-wallet allocations.
 - "Employer": Any person or entity that posts a Job and escrows a payout in $USDC.
 - "Agent": Any person or entity that applies for, performs, and requests completion of a Job.
 - "Validator": Any person or entity that votes to approve or disapprove a Job completion request under the Protocol rules, posting any required validator bond.
@@ -101,7 +101,7 @@ This section summarizes expected mechanics; the deployed code controls.
 - A Job may be assigned to the first eligible Agent who successfully applies under the Protocol rules.
 - Eligibility may depend on authorization mechanisms (e.g., allowlists, Merkle proofs, or ENS-based authorization).
 - The Protocol may require an Agent bond (computed by code) to be posted at application/assignment time.
-- The Agent's payout percentage may be determined by the Agent's holdings of specific NFT types configured in the Protocol and snapshotted at assignment time.
+- NFT holdings may establish eligibility but do not set payout percentages. The validator rate is snapshotted when a job is posted; the agent receives the remaining job cost after validator rewards and the fixed 30% and 10% wallet shares.
 
 5.3 Completion Request (Agent)
 
@@ -119,7 +119,7 @@ This section summarizes expected mechanics; the deployed code controls.
 5.5 Finalization / Settlement (Anyone may be able to call)
 
 - After the applicable review/challenge windows, settlement can occur according to the Protocol logic, including outcomes where:
-  - The Agent wins (payout to Agent, validator rewards distributed, remainder retained by protocol), or
+  - The Agent wins (validator rewards, 30% and 10% wallet shares, then remaining payout to Agent), or
   - The Employer wins (refund to Employer, validator settlement, possible agent bond forfeiture), or
   - A dispute is forced due to insufficient participation or ties.
 
@@ -140,11 +140,11 @@ This section summarizes expected mechanics; the deployed code controls.
 3) No obligation; no SLA. The Protocol, Owner, and Moderators have no obligation to resolve disputes within any timeframe (or at all), except as the code permits. Any reliance on moderator action is at user risk.
 4) Off-chain disputes remain off-chain. The Protocol cannot adjudicate legal questions (fraud, IP infringement, breach of contract, misrepresentation, employment classification, etc.). Those issues are solely between users and must be handled off-chain.
 
-7. Protocol Economics; Fees; Retained Remainder Disclosure
+7. Protocol Economics; USDC Distribution
 
 1) Validator reward budget. The Protocol may allocate a portion of the Job payout as a validator reward budget (as snapshotted per job) for distribution to participating Validators, subject to code rules.
 2) Bond returns and slashing. Validator bonds may be returned in full, partially slashed, or redistributed depending on whether a Validator ends up on the correct side of the final outcome, as defined by the code.
-3) Protocol-retained remainder (platform revenue). On certain settlement paths (including Agent-win), the Protocol may retain the remainder of the Job payout after Agent and Validator allocations. This remainder may become withdrawable by the Owner under conditions specified in the code (e.g., when paused and when not backing active escrows/bonds).
+3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct immutable settlement wallets. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
 4) No refunds from the Protocol. Token movements are governed by the smart contract; there is no guarantee of reversal, refunds, or discretionary recovery.
 5) Gas fees. Users pay their own gas/transaction fees and accept the risk of network congestion, failed transactions, MEV, reorgs, and other chain-level issues.
 
@@ -242,7 +242,7 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-USDC settlement notice (v0.5.0)
+USDC settlement notice (v0.6.0)
 
 The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
 AGIJobManager does not issue USDC or define the issuer's terms. The protocol's job
@@ -250,7 +250,7 @@ refund and settlement rules apply to job escrow; they do not describe token purc
 or redemption rights. USDC issuer controls, including transfer pauses and blocked
 addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.5.0 settlement and are
+Historical project-token sale disclosures do not describe v0.6.0 settlement and are
 preserved in previous Git tags.
 
 */
@@ -301,6 +301,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error SettlementPaused();
 
     IERC20 public immutable usdcToken;
+    address public immutable wallet30;
+    address public immutable wallet10;
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
@@ -444,7 +446,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event CompletionReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event USDCWithdrawn(address indexed to, uint256 indexed amount, uint256 remainingWithdrawable);
-    event PlatformRevenueAccrued(uint256 indexed jobId, uint256 indexed amount);
+    event JobPayoutDistributed(uint256 indexed jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount);
     event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);
     event AgentBlacklisted(address indexed agent, bool indexed status);
     event ValidatorBlacklisted(address indexed validator, bool indexed status);
@@ -491,7 +493,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         string memory baseIpfs,
         address[2] memory ensConfig,
         bytes32[4] memory rootNodes,
-        bytes32[2] memory merkleRoots
+        bytes32[2] memory merkleRoots,
+        address[2] memory settlementWallets
     ) ERC721("AGIJobs", "Job") {
         if (usdcTokenAddress.code.length == 0) revert InvalidParameters();
         if (IERC20Metadata(usdcTokenAddress).decimals() != 6) revert InvalidParameters();
@@ -503,6 +506,14 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             revert InvalidParameters();
         }
         usdcToken = IERC20(usdcTokenAddress);
+        if (
+            settlementWallets[0] == address(0) || settlementWallets[1] == address(0)
+                || settlementWallets[0] == settlementWallets[1]
+                || settlementWallets[0] == address(this) || settlementWallets[1] == address(this)
+                || settlementWallets[0] == usdcTokenAddress || settlementWallets[1] == usdcTokenAddress
+        ) revert InvalidParameters();
+        wallet30 = settlementWallets[0];
+        wallet10 = settlementWallets[1];
         if (bytes(baseIpfs).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
         if ((rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
             if (ensConfig[0] == address(0) || ensConfig[0].code.length == 0) revert InvalidParameters();
@@ -661,20 +672,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         if (currentCount >= MAX_VALIDATORS_PER_JOB) revert ValidatorLimitReached();
     }
 
-    function _maxAGITypePayoutPercentage() internal view returns (uint256) {
-        uint256 maxPercentage = 0;
-        for (uint256 i = 0; i < agiTypes.length; ) {
-            uint256 pct = agiTypes[i].payoutPercentage;
-            if (pct > maxPercentage) {
-                maxPercentage = pct;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        return maxPercentage;
-    }
-
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
     function pauseIntake() external onlyOwner { _pause(); }
@@ -721,6 +718,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         job.jobSpecURI = _jobSpecURI;
         job.payout = _payout;
         job.duration = _duration;
+        job.validatorRewardPctSnapshot = uint8(validationRewardPercentage);
+        job.agentPayoutPct = uint8(60 - validationRewardPercentage);
         TransferUtils.safeTransferFromExact(address(usdcToken), msg.sender, address(this), _payout);
         unchecked {
             lockedEscrow += _payout;
@@ -742,11 +741,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             revert NotAuthorized();
         }
         if (activeJobsByAgent[msg.sender] >= maxActiveJobsPerAgent) revert InvalidState();
-        uint256 snapshotPct = getHighestPayoutPercentage(msg.sender);
-        if (snapshotPct == 0) revert IneligibleAgentPayout();
-        job.agentPayoutPct = uint8(snapshotPct);
-        job.validatorRewardPctSnapshot = uint8(validationRewardPercentage);
-        if (job.agentPayoutPct + job.validatorRewardPctSnapshot > 100) revert InvalidParameters();
+        // NFT types remain eligibility credentials; their legacy scores do not set payment shares.
+        if (getHighestPayoutPercentage(msg.sender) == 0) revert IneligibleAgentPayout();
         uint256 bond = BondMath.computeAgentBond(
             job.payout,
             job.duration,
@@ -1199,9 +1195,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function setValidationRewardPercentage(uint256 _percentage) external onlyOwner {
-        if (!(_percentage > 0 && _percentage <= 100)) revert InvalidParameters();
-        uint256 maxPct = _maxAGITypePayoutPercentage();
-        if (maxPct > 100 - _percentage) revert InvalidParameters();
+        if (!(_percentage > 0 && _percentage <= 60)) revert InvalidParameters();
         uint256 oldPercentage = validationRewardPercentage;
         validationRewardPercentage = _percentage;
         emit ValidationRewardPercentageUpdated(oldPercentage, _percentage);
@@ -1289,31 +1283,21 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     }
 
-    /// @dev On agent-win, any remainder after agent/validator allocations is intentional platform revenue.
-    /// @dev It stays in-contract and becomes withdrawable via withdrawUSDC() when paused,
-    /// @dev as long as lockedEscrow/locked*Bonds are fully covered.
+    /// @dev Successful jobs distribute validators first, then 30% and 10% of gross escrow,
+    /// @dev then all remaining USDC to the agent. Every transfer is atomic with settlement.
     function _completeJob(uint256 _jobId, bool repEligible) internal {
         Job storage job = _job(_jobId);
         _requireJobUnsettled(job);
         _requireAssignedAgent(job);
 
-        uint256 agentPayoutPercentage = job.agentPayoutPct;
-        uint256 validatorBudget;
-        uint256 agentPayout;
-        validatorBudget = (job.payout * job.validatorRewardPctSnapshot) / 100;
-        agentPayout = (job.payout * agentPayoutPercentage) / 100;
-        uint256 retained;
-        unchecked {
-            retained = job.payout - agentPayout - validatorBudget;
-        }
-        if (retained > 0) {
-            emit PlatformRevenueAccrued(_jobId, retained);
-        }
+        uint256 validatorBudget = job.validators.length == 0 ? 0 : (job.payout * job.validatorRewardPctSnapshot) / 100;
+        uint256 amount30 = (job.payout * 30) / 100;
+        uint256 amount10 = (job.payout * 10) / 100;
+        uint256 agentPayout = job.payout - validatorBudget - amount30 - amount10;
 
         job.completed = true;
         _decrementActiveJob(job);
         _releaseEscrow(job);
-        _settleAgentBond(job, true, false);
 
         uint256 reputationPoints = ReputationMath.computeReputationPoints(
             job.payout,
@@ -1324,14 +1308,12 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         );
         enforceReputationGrowth(job.assignedAgent, reputationPoints);
 
+        agentPayout += _settleValidators(job, true, reputationPoints, validatorBudget, 0);
+        _t(wallet30, amount30);
+        _t(wallet10, amount10);
         _t(job.assignedAgent, agentPayout);
-
-        if (job.validators.length == 0) {
-            // No validators participated: rebate the validator budget to the employer.
-            _t(job.employer, validatorBudget);
-        } else {
-            _settleValidators(job, true, reputationPoints, validatorBudget, 0);
-        }
+        emit JobPayoutDistributed(_jobId, validatorBudget, amount30, amount10, agentPayout);
+        _settleAgentBond(job, true, false);
         _mintCompletionNFT(_jobId, job);
         _settleDisputeBond(job, true);
 
@@ -1345,10 +1327,10 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         uint256 reputationPoints,
         uint256 escrowValidatorReward,
         uint256 extraPoolForCorrect
-    ) internal {
+    ) internal returns (uint256 remainder) {
         uint256 vCount = job.validators.length;
         if (vCount == 0) {
-            return;
+            return 0;
         }
         uint256 bond = job.validatorBondAmount;
         unchecked {
@@ -1384,7 +1366,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             poolForCorrect -= perCorrectReward * correctCount;
         }
-        _t(agentWins ? job.assignedAgent : job.employer, poolForCorrect);
+        return poolForCorrect;
     }
 
     function _mintCompletionNFT(uint256 jobId, Job storage job) internal {
@@ -1475,7 +1457,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             job.assignedAt,
             true
         );
-        _settleValidators(job, false, reputationPoints, escrowValidatorReward, agentBondPool);
+        employerRefund += _settleValidators(job, false, reputationPoints, escrowValidatorReward, agentBondPool);
         _t(job.employer, employerRefund);
         _settleDisputeBond(job, false);
         _callEnsJobPagesHook(ENS_HOOK_REVOKE, jobId);
@@ -1515,7 +1497,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         _setAddressFlag(additionalAgents, agent, false);
     }
 
-    /// @notice Includes retained payout remainders; withdrawable only via withdrawUSDC() when paused.
+    /// @notice Unreserved donations only; completed job costs are fully distributed.
     /// @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds.
     function withdrawableUSDC() public view returns (uint256) {
         uint256 bal = usdcToken.balanceOf(address(this));
@@ -1574,24 +1556,15 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         }
 
         bool exists;
-        uint256 maxPct = payoutPercentage;
         uint256 length = agiTypes.length;
         for (uint256 i = 0; i < length; ) {
             AGIType storage agiType = agiTypes[i];
-            uint256 pct = agiType.payoutPercentage;
             if (agiType.nftAddress == nftAddress) {
-                pct = payoutPercentage;
                 exists = true;
-            }
-            if (pct > maxPct) {
-                maxPct = pct;
             }
             unchecked {
                 ++i;
             }
-        }
-        if (maxPct > 100 - validationRewardPercentage) {
-            revert InvalidParameters();
         }
         if (exists) {
             _updateAgiTypePayout(nftAddress, payoutPercentage);

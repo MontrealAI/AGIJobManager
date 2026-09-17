@@ -38,5 +38,5 @@ The contract explicitly addresses common issues observed in earlier variants:
 
 - Use multi‑sig ownership and rotate moderators periodically.
 - Monitor `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds` and ensure the contract’s ERC‑20 balance never drops below it.
-- Ensure validator thresholds, AGI type percentages, and validation reward percentage maintain `agentPayoutPct + validationRewardPercentage <= 100`.
+- Validator budgets must be 1–60%, frozen at job posting. Fixed wallet shares consume 40%; all remaining cost goes to the agent. NFT scores affect eligibility only.
 - Prefer explicit allowlisting when ENS/Merkle configuration is uncertain.

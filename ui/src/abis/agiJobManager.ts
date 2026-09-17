@@ -1,4 +1,3 @@
-// Generated from the compiled v0.5.0 contract.
 export const agiJobManagerAbi = [
   {
     "inputs": [
@@ -26,6 +25,11 @@ export const agiJobManagerAbi = [
         "internalType": "bytes32[2]",
         "name": "merkleRoots",
         "type": "bytes32[2]"
+      },
+      {
+        "internalType": "address[2]",
+        "name": "settlementWallets",
+        "type": "address[2]"
       }
     ],
     "stateMutability": "nonpayable",
@@ -619,6 +623,43 @@ export const agiJobManagerAbi = [
         "type": "uint256"
       },
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "validatorBudget",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "wallet30Amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "wallet10Amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "agentAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "JobPayoutDistributed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "validator",
@@ -715,25 +756,6 @@ export const agiJobManagerAbi = [
       }
     ],
     "name": "Paused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "PlatformRevenueAccrued",
     "type": "event"
   },
   {
@@ -1916,6 +1938,32 @@ export const agiJobManagerAbi = [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wallet10",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wallet30",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

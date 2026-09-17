@@ -108,7 +108,7 @@ sequenceDiagram
   VC->>EV: fetch completionBundle + run checks
   VC->>JM: validateJob / disapproveJob (stake + vote)
   JM->>JM: finalizeJob(jobId) / dispute flow
-  JM->>TR: protocol-retained remainder accrues as treasury revenue (per contract rules)
+  JM->>TR: send fixed 30% and 10% shares to immutable settlement wallets
   TR->>WF: fund more workers + higher throughput
   TR->>TF: fund broader search + harder tasks
 ```

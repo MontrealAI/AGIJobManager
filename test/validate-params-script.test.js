@@ -2,12 +2,12 @@ const assert = require("assert");
 const { evaluateInvariants, CHECK } = require("../scripts/ops/validate-params");
 
 describe("validate-params invariant evaluator", () => {
-  it("flags invalid combined payout percentage", () => {
+  it("flags validator budgets that overcommit the fixed wallet shares", () => {
     const results = evaluateInvariants({
       requiredValidatorApprovals: 2,
       requiredValidatorDisapprovals: 2,
       maxValidators: 50,
-      validationRewardPercentage: 20,
+      validationRewardPercentage: 61,
       maxJobPayout: 1,
       jobDurationLimit: 1,
       maxAgentPayoutPercentage: 90,

@@ -103,6 +103,7 @@ function resolveConstructor(networkName, profile) {
     ensConfig: profile.ensConfig,
     rootNodes: profile.rootNodes,
     merkleRoots: profile.merkleRoots,
+    settlementWallets: profile.settlementWallets,
   };
 
   validateAddress('usdcTokenAddress', constructorArgs.usdcTokenAddress);
@@ -117,6 +118,15 @@ function resolveConstructor(networkName, profile) {
   }
   if (!Array.isArray(constructorArgs.merkleRoots) || constructorArgs.merkleRoots.length !== 2) {
     throw new Error('merkleRoots must be an array of exactly 2 bytes32 values.');
+  }
+
+  if (!Array.isArray(constructorArgs.settlementWallets) || constructorArgs.settlementWallets.length !== 2) {
+    throw new Error('settlementWallets must contain the 30% recipient followed by the 10% recipient.');
+  }
+  constructorArgs.settlementWallets.forEach((value, index) => validateAddress(`settlementWallets[${index}]`, value));
+  const wallets = constructorArgs.settlementWallets.map(value => value.toLowerCase());
+  if (wallets[0] === wallets[1] || wallets.includes(constructorArgs.usdcTokenAddress.toLowerCase())) {
+    throw new Error('Settlement wallets must be distinct and must not be the USDC token contract.');
   }
 
   constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value, { allowZero: index === 1 }));
@@ -290,6 +300,7 @@ async function main() {
     constructorArgs.ensConfig,
     constructorArgs.rootNodes,
     constructorArgs.merkleRoots,
+    constructorArgs.settlementWallets,
   ];
 
   const managerDeployment = await deployContract('AGIJobManager', managerArgs, { libraries: linkedLibraries }, confirmations);

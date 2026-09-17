@@ -9,6 +9,7 @@ function buildInitConfig(
   alphaAgentRootNode,
   validatorMerkleRoot,
   agentMerkleRoot,
+  settlementWallets = ['0x1111111111111111111111111111111111111111', '0x2222222222222222222222222222222222222222'],
 ) {
   return [
     token,
@@ -16,6 +17,7 @@ function buildInitConfig(
     [ens, nameWrapper],
     [clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode],
     [validatorMerkleRoot, agentMerkleRoot],
+    settlementWallets,
   ];
 }
 

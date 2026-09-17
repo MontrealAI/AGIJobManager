@@ -69,7 +69,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await fundAgents(token, manager, [agent, other], owner);
   });
 
-  it("rejects agents with a 0% payout tier", async () => {
+  it("rejects agents without an eligible NFT credential", async () => {
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
 
@@ -79,7 +79,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     );
   });
 
-  it("snapshots payout to prevent selling NFTs after assignment", async () => {
+  it("preserves the fixed remainder despite selling NFTs after assignment", async () => {
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
 
@@ -91,7 +91,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     const job = await manager.getJobCore(jobId);
     const snapshotPct = job[8];
-    assert.strictEqual(snapshotPct.toNumber(), 75);
+    assert.strictEqual(snapshotPct.toNumber(), 52);
 
     await agiType.transferFrom(agent, other, tokenId, { from: agent });
     const agentBalanceBefore = await token.balanceOf(agent);
@@ -103,11 +103,11 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
-    const expected = payout.muln(75).divn(100).add(agentBond);
+    const expected = payout.muln(52).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
 
-  it("snapshots payout to prevent buying NFTs after assignment", async () => {
+  it("preserves the fixed remainder despite buying NFTs after assignment", async () => {
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
 
@@ -121,7 +121,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     const job = await manager.getJobCore(jobId);
     const snapshotPct = job[8];
-    assert.strictEqual(snapshotPct.toNumber(), 25);
+    assert.strictEqual(snapshotPct.toNumber(), 52);
 
     await agiType75.mint(agent, { from: owner });
     const agentBalanceBefore = await token.balanceOf(agent);
@@ -133,11 +133,11 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
-    const expected = payout.muln(25).divn(100).add(agentBond);
+    const expected = payout.muln(52).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
 
-  it("rejects additional agents without a payout tier", async () => {
+  it("rejects additional agents without an eligible NFT credential", async () => {
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
 
@@ -149,7 +149,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     );
   });
 
-  it("snapshots payout for additional agents after assignment", async () => {
+  it("uses the fixed remainder for additional agents", async () => {
     const payout = toBN(toWei("100"));
     const jobId = await createJob(payout);
 
@@ -162,7 +162,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.applyForJob(jobId, "", EMPTY_PROOF, { from: agent });
     const job = await manager.getJobCore(jobId);
     const snapshotPct = job[8];
-    assert.strictEqual(snapshotPct.toNumber(), 60);
+    assert.strictEqual(snapshotPct.toNumber(), 52);
 
     await agiType.transferFrom(agent, other, tokenId, { from: agent });
     const agentBalanceBefore = await token.balanceOf(agent);
@@ -174,7 +174,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
-    const expected = payout.muln(60).divn(100).add(agentBond);
+    const expected = payout.muln(52).divn(100).add(agentBond);
     assert.equal(agentBalanceAfter.sub(agentBalanceBefore).toString(), expected.toString());
   });
 });

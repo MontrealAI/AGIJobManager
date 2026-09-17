@@ -35,7 +35,7 @@ contract("AGIJobManager economic safety", (accounts) => {
     agentRoot = rootNode("agent-root");
   });
 
-  it("prevents adding or updating AGI types that exceed payout headroom", async () => {
+  it("keeps NFT eligibility scores independent of payout headroom", async () => {
     const manager = await AGIJobManager.new(...buildInitConfig(
         token.address,
         "ipfs://base",
@@ -54,13 +54,13 @@ contract("AGIJobManager economic safety", (accounts) => {
     await manager.setValidationRewardPercentage(40, { from: owner });
 
     const agiType = await MockERC721.new({ from: owner });
-    await expectCustomError(manager.addAGIType.call(agiType.address, 61, { from: owner }), "InvalidParameters");
+    await manager.addAGIType(agiType.address, 61, { from: owner });
 
     await manager.addAGIType(agiType.address, 50, { from: owner });
-    await expectCustomError(manager.addAGIType.call(agiType.address, 70, { from: owner }), "InvalidParameters");
+    await manager.addAGIType(agiType.address, 70, { from: owner });
   });
 
-  it("prevents validation reward updates that exceed configured max agent payout", async () => {
+  it("rejects validator rewards above the 60% remaining budget", async () => {
     const manager = await AGIJobManager.new(...buildInitConfig(
         token.address,
         "ipfs://base",
@@ -78,7 +78,7 @@ contract("AGIJobManager economic safety", (accounts) => {
 
     const agiType = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiType.address, 75, { from: owner });
-    await expectCustomError(manager.setValidationRewardPercentage.call(30, { from: owner }), "InvalidParameters");
+    await expectCustomError(manager.setValidationRewardPercentage.call(61, { from: owner }), "InvalidParameters");
   });
 
 
@@ -130,13 +130,13 @@ contract("AGIJobManager economic safety", (accounts) => {
     const validatorBalance = await token.balanceOf(validator);
     const contractBalance = await token.balanceOf(manager.address);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
-    const agentPayout = payout.muln(80).divn(100);
+    const agentPayout = payout.muln(50).divn(100);
     const expectedAgentPayout = agentPayout.add(agentBond);
     const expectedValidatorPayout = payout.muln(10).divn(100);
 
     assert.equal(agentBalance.sub(agentBalanceBefore).toString(), expectedAgentPayout.toString());
     assert.equal(validatorBalance.sub(validatorBefore).toString(), expectedValidatorPayout.toString());
-    assert.equal(contractBalance.toString(), payout.sub(agentPayout).sub(expectedValidatorPayout).toString());
+    assert.equal(contractBalance.toString(), "0");
   });
 
   it("reverts job completion requests when completion metadata is empty (defensive)", async () => {

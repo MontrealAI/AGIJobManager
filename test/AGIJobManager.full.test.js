@@ -273,7 +273,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       expectEvent(finalizeReceipt, "JobCompleted", { jobId: new BN(jobId), agent });
       expectEvent(finalizeReceipt, "NFTIssued");
 
-      const agentPayout = payout.muln(90).divn(100);
+      const agentPayout = payout.muln(52).divn(100);
       const totalValidatorPayout = payout.muln(8).divn(100);
       const validatorPayout = totalValidatorPayout.divn(3);
       const validatorRemainder = totalValidatorPayout.sub(validatorPayout.muln(3));
@@ -385,7 +385,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       );
     });
 
-    it("snapshots agent payout percentage at apply time", async () => {
+    it("preserves the posting-time agent share after NFT transfer", async () => {
       await manager.addAGIType(nft.address, 90, { from: owner });
 
       const payout = new BN(parseUSDCAmount("12"));
@@ -393,7 +393,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await assignJob(manager, jobId, agent, buildProof(agentTree, agent));
-      assert.equal((await manager.getJobCore(jobId))[8].toString(), "90");
+      assert.equal((await manager.getJobCore(jobId))[8].toString(), "52");
 
       await nft.safeTransferFrom(agent, other, agentTokenId, { from: agent });
 
@@ -405,7 +405,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
 
       const agentBond = await computeAgentBond(manager, payout, new BN(1000));
-      const expectedPayout = payout.muln(90).divn(100).add(agentBond);
+      const expectedPayout = payout.muln(52).divn(100).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
     });
 
@@ -418,7 +418,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const { jobId } = await createJob(manager, token, employer, payout, 1000);
 
       await manager.applyForJob(jobId, "", [], { from: other });
-      assert.equal((await manager.getJobCore(jobId))[8].toString(), "1");
+      assert.equal((await manager.getJobCore(jobId))[8].toString(), "52");
 
       const agentBalanceBefore = new BN(await token.balanceOf(other));
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: other });
@@ -428,7 +428,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const agentBalanceAfter = new BN(await token.balanceOf(other));
 
       const agentBond = await computeAgentBond(manager, payout, new BN(1000));
-      const expectedPayout = payout.muln(1).divn(100).add(agentBond);
+      const expectedPayout = payout.muln(52).divn(100).add(agentBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(expectedPayout));
     });
   });
@@ -505,7 +505,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
 
       const agentBond = await computeAgentBond(manager, payout, new BN(1000));
-      const agentPayout = payout.muln(92).divn(100).add(agentBond).add(disputeBond);
+      const agentPayout = payout.muln(60).divn(100).add(agentBond).add(disputeBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(agentPayout));
       assert.equal((await manager.nextTokenId()).toNumber(), 1);
     });
@@ -613,7 +613,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       expectEvent(resolveReceipt, "DisputeResolvedWithCode", { jobId: new BN(jobId), resolver: moderator, resolutionCode: new BN(1) });
       const agentBalanceAfter = new BN(await token.balanceOf(agent));
       const agentBond = await computeAgentBond(manager, payout, new BN(1000));
-      const agentPayout = payout.muln(92).divn(100).add(agentBond).add(disputeBond);
+      const agentPayout = payout.muln(60).divn(100).add(agentBond).add(disputeBond);
       assert(agentBalanceAfter.sub(agentBalanceBefore).eq(agentPayout));
 
       await expectCustomError(manager.resolveDisputeWithCode(jobId, 1, "agent win", { from: moderator }), "InvalidState");

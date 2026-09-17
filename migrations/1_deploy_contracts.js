@@ -57,7 +57,8 @@ module.exports = async function (deployer, network, accounts) {
         ZERO_ROOT,
         ZERO_ROOT,
         ZERO_ROOT,
-        ZERO_ROOT
+        ZERO_ROOT,
+        [accounts[8], accounts[9]]
       )
     );
 
@@ -66,52 +67,5 @@ module.exports = async function (deployer, network, accounts) {
     return;
   }
 
-  const networkId = Number(deployer.network_id);
-  const {
-    tokenAddress,
-    baseIpfsUrl,
-    ensAddress,
-    nameWrapperAddress,
-    clubRootNode,
-    agentRootNode,
-    alphaClubRootNode,
-    alphaAgentRootNode,
-    validatorMerkleRoot,
-    agentMerkleRoot,
-    isMainnet,
-  } = resolveDeployConfig(network, networkId);
-
-  await deployer.deploy(
-    AGIJobManager,
-    ...buildInitConfig(
-      tokenAddress,
-      baseIpfsUrl,
-      ensAddress,
-      nameWrapperAddress,
-      clubRootNode,
-      agentRootNode,
-      alphaClubRootNode,
-      alphaAgentRootNode,
-      validatorMerkleRoot,
-      agentMerkleRoot
-    )
-  );
-
-  const manager = await AGIJobManager.deployed();
-  if (isTrue(process.env.LOCK_IDENTITY_CONFIG) || isTrue(process.env.LOCK_CONFIG)) {
-    await manager.lockIdentityConfiguration({ from: accounts[0] });
-  }
-
-  console.log("AGIJobManager deployment summary:");
-  console.log(`- network: ${network} (id ${networkId})`);
-  console.log(`- token: ${tokenAddress}`);
-  console.log(`- ENS registry: ${ensAddress}`);
-  console.log(`- NameWrapper: ${nameWrapperAddress}`);
-  console.log(`- club root: ${clubRootNode}`);
-  console.log(`- alpha club root: ${alphaClubRootNode}`);
-  console.log(`- agent root: ${agentRootNode}`);
-  console.log(`- alpha agent root: ${alphaAgentRootNode}`);
-  console.log(`- validator merkle root: ${validatorMerkleRoot}`);
-  console.log(`- agent merkle root: ${agentMerkleRoot}`);
-  console.log(`- identity config locked: ${await manager.lockIdentityConfig()}`);
+  throw new Error('Use the canonical-USDC Hardhat deployment with two explicit settlementWallets.');
 };

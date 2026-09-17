@@ -1,5 +1,7 @@
 # Protocol Flow and Economic Accounting
 
+See [the v0.6.0 payout specification](USDC_PAYOUT_SPLIT.md) for exact arithmetic, wallet configuration and rounding.
+
 ## Escrow accounting model
 
 `withdrawableUSDC()` defines treasury-only withdrawability:
@@ -62,7 +64,7 @@ Owner withdrawals (`withdrawUSDC`) are additionally restricted to **paused** mod
 
 | Terminal outcome | Escrow payout | Agent bond | Validator bonds | Dispute bond | NFT minted |
 |---|---|---|---|---|---|
-| Agent win (`_completeJob`) | Agent gets `%` by AGI type, validator budget distributed/refunded; remainder retained as platform revenue | Returned to agent | Settled with slashing/rewards to validators; residual dust to winner side | Paid to assigned agent (winner-side routing is independent of initiator) | Yes |
+| Agent win (`_completeJob`) | Validators receive the posting-time budget; 30% and 10% of gross cost go to immutable wallets; all remaining USDC goes to agent | Returned to agent | Settled with slashing/rewards to validators; residual dust to winner side | Paid to assigned agent (winner-side routing is independent of initiator) | Yes |
 | Employer win (`_refundEmployer`) | Employer refunded payout minus validator reward budget when validators exist | Slashed (to employer or validator pool depending on threshold condition) | Settled with slashing/rewards favoring disapprovers | Paid to employer (winner-side routing is independent of initiator) | No |
 | Expiry (`expireJob`) | Full payout returned to employer | Slashed to employer | none (no completion voting) | none | No |
 | Cancel/Delist before assignment | Full payout returned to employer | none | none | none | No |
@@ -81,6 +83,6 @@ Owner withdrawals (`withdrawUSDC`) are additionally restricted to **paused** mod
 | `JobExpired` | Assignment expired without completion request |
 | `JobCancelled` | Job cancelled/delisted pre-assignment |
 | `NFTIssued` | Completion NFT minted to employer |
-| `PlatformRevenueAccrued` | Agent-win retained remainder recorded |
+| `JobPayoutDistributed` | Validator budget, both wallet shares and agent transfer recorded |
 | `USDCWithdrawn` | Owner withdraws treasury surplus while paused |
 | `EnsHookAttempted` | AGIJobManager best-effort call to ENSJobPages |

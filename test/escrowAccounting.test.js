@@ -398,7 +398,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await manager.finalizeJob(jobId, { from: employer });
 
     const agentAfter = await token.balanceOf(agent);
-    const expectedPayout = payout.muln(50).divn(100).add(agentBond);
+    const expectedPayout = payout.muln(52).divn(100).add(agentBond);
     assert.equal(agentAfter.sub(agentBefore).toString(), expectedPayout.toString());
   });
 
@@ -463,7 +463,7 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     assert.equal((await manager.lockedEscrow()).toString(), "0");
   });
 
-  it("treats completion remainder and reward pool contributions as treasury", async () => {
+  it("fully distributes job costs and only treats donations as treasury", async () => {
     const payout = toBN(toWei("10"));
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
     const jobId = await createJob(payout);
@@ -473,16 +473,13 @@ contract("AGIJobManager escrow accounting", (accounts) => {
     await time.increase(2);
     await manager.finalizeJob(jobId, { from: employer });
 
-    const agentPct = await manager.getHighestPayoutPercentage(agent);
-    const validatorPct = await manager.validationRewardPercentage();
-    const remainderPct = toBN("100").sub(agentPct).sub(validatorPct);
-    const expectedRemainder = payout.mul(remainderPct).divn(100);
+    const expectedRemainder = toBN(0);
 
     const withdrawableAfterCompletion = await manager.withdrawableUSDC();
     assert.equal(
       withdrawableAfterCompletion.toString(),
       expectedRemainder.toString(),
-      "withdrawable should equal completion remainder"
+      "no job cost should remain withdrawable"
     );
 
     const contribution = toBN(toWei("1"));
