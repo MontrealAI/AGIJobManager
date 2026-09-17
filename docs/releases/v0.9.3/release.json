@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.3",
+  "name": "v0.9.3 — Clear deployment and preserved ENS membership",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "d681493cb824f2d855fe62fe6b1f0dfb0f2fab27",
+  "sourceTree": "44e1a0acb37abc1207aa441cf67acc1813e2fb3b",
+  "previousTag": "v0.9.2",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Reviewed explicit Hardhat configuration, verified ENS helper deployment/recovery, updated operator and participant guides, and real-ENS Agent/Club membership qualification alongside existing legacy jobs. Production Solidity unchanged from v0.9.2. Software publication only; actual deployment, recipients, signing authority and activation remain separate.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "05a078b2fa7b58a5d22335d795b50468d53c14ab29d9e977faeee568d09eb0ee",
+    "PREVIOUS_RELEASE.json": "449b422a5efaccc7f963f924b19083fc4421a446c4a485a6da0cd13e606be75a",
+    "SOURCE_CI.json": "5a21d6b9d35230ecbd229b093c6f0759643d305bd68c0f55dd3a170582127d01"
+  },
+  "requiredSourceRuns": {
+    "docs": {
+      "id": 35271284819,
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ]
+    },
+    "ci": {
+      "id": 35271284773,
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ]
+    },
+    "ui": {
+      "id": 35271284639,
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ]
+    },
+    "mainnet-fork": {
+      "id": 35271284714,
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ]
+    },
+    "security-verification": {
+      "id": 35271284744,
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ]
+    }
+  },
+  "preservationCommit": "2013b3bb09246faf665150a166c36ed196ab4a2c"
+}
