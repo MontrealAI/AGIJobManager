@@ -37,10 +37,10 @@ class ReleaseGateTests(unittest.TestCase):
         self.script = self.root / 'scripts/release/publish-release.py'
         self.script.parent.mkdir(parents=True)
         self.script.write_text(PUBLISHER.read_text())
-        self.meta = self.root / 'docs/releases/v0.9.0'
+        self.meta = self.root / 'docs/releases/v0.9.1'
         self.meta.mkdir(parents=True)
         self.config = {
-            'repository': REPOSITORY, 'tag': 'v0.9.0', 'sourceCommit': SOURCE,
+            'repository': REPOSITORY, 'tag': 'v0.9.1', 'sourceCommit': SOURCE,
             'sourceTree': TREE,
             'requiredSourceRuns': {
                 workflow: {'id': index, 'workflow': workflow, 'requiredJobs': jobs[:]}

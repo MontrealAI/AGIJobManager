@@ -1,0 +1,1146 @@
+{
+  "sourceCommit": "37ba9562b62051c983013241c996496d5b5c64e7",
+  "previousTag": "v0.9.0",
+  "changes": [
+    {
+      "status": "M",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/current-state-release.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/docs.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/mainnet-fork.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/pages.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/security-verification.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/ui.yml"
+    },
+    {
+      "status": "M",
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "config/usdc-deployment.json"
+    },
+    {
+      "status": "M",
+      "path": "contracts/AGIJobManager.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/ens/ENSJobPages.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/ens/IENSRegistry.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/legacy/AGIJobManagerOriginal.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/periphery/AGIJobPages.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/test/CompletionNFTHolders.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/test/MockGasGriefERC721.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/test/MockLoopingERC721.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/test/RescueMocks.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/utils/ENSOwnership.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/utils/ReputationMath.sol"
+    },
+    {
+      "status": "M",
+      "path": "contracts/utils/UriUtils.sol"
+    },
+    {
+      "status": "M",
+      "path": "docs/00_INDEX.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJOBMANAGER.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager_Interface.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager_Operator_Guide.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager_Security.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ARCHITECTURE_TESTS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONFIGURATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONFIGURATION_REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONFIGURE_ONCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONTRACTS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/CONTRACTS/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPENDENCY_SECURITY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/MAINNET_BETA_DEPLOYMENT_RECORD.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/MAINNET_TRUFFLE_DEPLOYMENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/TRUFFLE_MAINNET_DEPLOY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/TRUFFLE_PRODUCTION_DEPLOY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT_OPERATIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT_PROFILE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOY_DAY_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOY_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/Deployment.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/FAQ.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/GOVERNANCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/INTEGRATIONS/ENS_USE_CASE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/KNOWN_ISSUES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_MIGRATION_FROM_LEGACY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_OPERATIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_OPS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_READINESS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/INCIDENT_RESPONSE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/JOB_LIFECYCLE_ETHERSCAN_GUIDE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OPERATIONS/RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OVERVIEW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OWNER_CONTROLS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OWNER_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/PROTOCOL_FLOW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ParameterSafety.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/QUICKSTART.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/QUINTESSENTIAL_USE_CASE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/CONTRACT_INTERFACE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/ENS_REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/EVENTS_AND_ERRORS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REPOSITORY_INVENTORY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REPO_MAP.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/SCRIPTS_REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/SECURITY_MODEL.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/Security.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TESTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TEST_PLAN.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TEST_STATUS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/Testing.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/USDC_MIGRATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/USDC_PAYOUT_SPLIT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/USERS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/VERIFY_ON_ETHERSCAN.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/agijobmanager_ui.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/bytecode-and-getters.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/case-studies/LEGACY_AGI_JOB_12_VS_NEW.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/contract-behavior.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/contracts/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/deployment-checklist.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/deployments-and-bridging.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/game-theory.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/guides/HAPPY_PATH.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/identity-lock-and-treasury.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/mainnet-deployment-and-security-overview.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/mainnet-deployment-and-verification.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/namespace/TESTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/operator-runbook.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ops/parameter-safety.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/package.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.0/CHANGES.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.0/PREVIOUS_RELEASE.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.0/RELEASE_NOTES.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.0/SOURCE_CI.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.0/START_HERE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.0/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v0.9.0/release.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/AGENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/EMPLOYER.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/MODERATOR.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/OWNER_OPERATOR.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/VALIDATOR.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/security/v0.9.1-static-analysis.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/security/v0.9.1-ui-tooling.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/trust-model-and-security-overview.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/CONTRACT_INTERFACE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/DEPLOYMENT_MAINNET.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/IDENTITY_LAYER.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/SMOKE_TEST.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/abi/AGIJobManager.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/common-reverts.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/glossary.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/happy-path.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/merkle-proofs.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/roles.md"
+    },
+    {
+      "status": "M",
+      "path": "forge-test/fuzz/AGIJobManagerBoundaryFuzz.t.sol"
+    },
+    {
+      "status": "M",
+      "path": "forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol"
+    },
+    {
+      "status": "M",
+      "path": "forge-test/invariant/AGIJobManagerInvariants.t.sol"
+    },
+    {
+      "status": "M",
+      "path": "forge-test/invariant/AGIJobManagerLifecycleInvariants.t.sol"
+    },
+    {
+      "status": "M",
+      "path": "forge-test/unit/AGIJobManagerSecurityVerification.t.sol"
+    },
+    {
+      "status": "A",
+      "path": "forge-test/unit/AGIJobManagerV091Security.t.sol"
+    },
+    {
+      "status": "M",
+      "path": "foundry.toml"
+    },
+    {
+      "status": "A",
+      "path": "hardhat.config.mjs"
+    },
+    {
+      "status": "A",
+      "path": "hardhat.mainnet-fork.config.mjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/README.md"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/deploy.config.example.cjs"
+    },
+    {
+      "status": "D",
+      "path": "hardhat/deploy.config.example.js"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/hardhat.config.js"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/mainnet-fork.config.js"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package.json"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/check-readiness.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/check-readiness.js"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/deploy-ens-job-pages.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/deploy-ens-job-pages.js"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/deploy.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/deploy.js"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/deployment-safety.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/deployment-safety.js"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/reverify-deployment.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/reverify-deployment.js"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/runtime.cjs"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/scripts/verify-etherscan.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/deployment-preflight.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/deployment-readiness.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/mainnet-deployment.test.js"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/mainnet-fork.test.js"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/test/verify-etherscan.adversarial.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "hardhat/test/verify-etherscan.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "integrations/erc8004/README.md"
+    },
+    {
+      "status": "M",
+      "path": "lib/forge-std/src/Vm.sol"
+    },
+    {
+      "status": "M",
+      "path": "migrations/1_deploy_contracts.js"
+    },
+    {
+      "status": "A",
+      "path": "migrations/package.json"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/check-bytecode-size.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/check-contract-sizes.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/docs/generate-repo-map.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/docs/generate-versions.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/erc8004/export_feedback.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/erc8004/export_metrics.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/erc8004/generate_submit_actions.js"
+    },
+    {
+      "status": "A",
+      "path": "scripts/export-contract-artifacts.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/generate-interface-doc.js"
+    },
+    {
+      "status": "A",
+      "path": "scripts/lib/operations.js"
+    },
+    {
+      "status": "A",
+      "path": "scripts/local-job-demo.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/nft/generate-job-nft-metadata.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/ops/encode_constructor_args.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/ops/validate-params.js"
+    },
+    {
+      "status": "A",
+      "path": "scripts/package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/postdeploy-config.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/package-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/publish-release.py"
+    },
+    {
+      "status": "A",
+      "path": "scripts/release/test-release-gates.py"
+    },
+    {
+      "status": "A",
+      "path": "scripts/security/COMPILER_COMPATIBILITY.md"
+    },
+    {
+      "status": "A",
+      "path": "scripts/security/openzeppelin-compiler-patches.json"
+    },
+    {
+      "status": "A",
+      "path": "scripts/security/patch-openzeppelin-compiler.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/run-slither-extended.sh"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/run-slither.sh"
+    },
+    {
+      "status": "A",
+      "path": "scripts/security/slither-all.config.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/slither-reviewed-findings.json"
+    },
+    {
+      "status": "A",
+      "path": "scripts/security/test-artifact-diagnostics.cjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/security/test-compiler-compatibility.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/test-slither-review.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/verify-slither-review.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/test-contract-shard.js"
+    },
+    {
+      "status": "A",
+      "path": "scripts/test-helpers.cjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/test-runtime.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/ui/check_ui_abi.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/ui/export_abi.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/ui/run_ui_smoke_test.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/verify-config.js"
+    },
+    {
+      "status": "M",
+      "path": "slither.config.json"
+    },
+    {
+      "status": "M",
+      "path": "test/AGIJobManager.comprehensive.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/AGIJobManager.exhaustive.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/AGIJobManager.full.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/adminOps.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/agentPayoutSnapshot.truffle.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/agiTypes.safety.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/caseStudies.job12.replay.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/deploymentWiring.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/disputes.moderator.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/economicSafety.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/ensAbiCompatibility.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/ensHooks.integration.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/ensJobPagesHelper.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/ensJobPagesHooks.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/erc8004.adapter.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/escrowAccounting.invariants.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/escrowAccounting.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/happyPath.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/identityConfig.locking.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/incentiveHardening.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/invariantSeededSequence.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/jobLifecycle.core.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/jobMetadataRoutingAndMappings.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/jobStatus.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/mainnetGovernanceAndOps.regression.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/mainnetHardening.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/merkleAllowlist.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/namespaceAlpha.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/operationalDurability.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/operations.tooling.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/ownerControls.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/package.json"
+    },
+    {
+      "status": "M",
+      "path": "test/pausing.accessControl.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/payoutSplit.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/postdeploy-config.script.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/runtime.assertions.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/scenarioEconomicStateMachine.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/securityRegression.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/ui_abi_sync.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/usdc.settlement.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/utils.uri-transfer.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/v080.paused-launch.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/v080.usdc.adversarial.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/validatorCap.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/validatorVoting.bonds.test.js"
+    },
+    {
+      "status": "M",
+      "path": "truffle-config.js"
+    },
+    {
+      "status": "A",
+      "path": "ui-tests/package.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "ui/agijobmanager-usdc.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/dist-ipfs/agijobmanager.html"
+    },
+    {
+      "status": "A",
+      "path": "ui/eslint.config.mjs"
+    },
+    {
+      "status": "M",
+      "path": "ui/next.config.js"
+    },
+    {
+      "status": "M",
+      "path": "ui/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/package.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/scripts/generate-deployment-docs.mjs"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/abis/agiJobManager.ts"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/app/admin/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/app/identity/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/generated/deployments.ts"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/lib/usdc.ts"
+    },
+    {
+      "status": "A",
+      "path": "ui/tests/asyncStorageBrowser.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "ui/tests/termsParity.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/LICENSE"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/UPSTREAM.md"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/UPSTREAM_SHA256.json"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/lib/commonjs/AsyncStorage.js"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/lib/commonjs/AsyncStorage.js.map"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/lib/typescript/AsyncStorage.d.ts"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/lib/typescript/AsyncStorage.d.ts.map"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/lib/typescript/types.d.ts"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/lib/typescript/types.d.ts.map"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/package.json"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/src/AsyncStorage.ts"
+    },
+    {
+      "status": "A",
+      "path": "ui/vendor/async-storage-browser/src/types.ts"
+    }
+  ]
+}

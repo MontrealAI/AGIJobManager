@@ -1,4 +1,4 @@
-"""Create a deterministic, checksum-verified archive of the pinned v0.9.0 source."""
+"""Create a deterministic, checksum-verified archive of the pinned v0.9.1 source."""
 import argparse
 import hashlib
 import io
@@ -8,10 +8,10 @@ import subprocess
 import zipfile
 
 root = pathlib.Path(__file__).resolve().parents[2]
-meta = root / 'docs/releases/v0.9.0'
+meta = root / 'docs/releases/v0.9.1'
 config = json.loads((meta / 'release.json').read_text())
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--out', type=pathlib.Path, default=root / 'build/release/v0.9.0')
+parser.add_argument('--out', type=pathlib.Path, default=root / 'build/release/v0.9.1')
 out = parser.parse_args().out.resolve()
 out.mkdir(parents=True, exist_ok=True)
 if any(out.iterdir()):
@@ -36,7 +36,7 @@ inventory = json.loads((meta / 'CHANGES.json').read_text())
 actual = [dict(zip(['status', 'path'], line.split('\t'))) for line in git('diff', '--no-renames', '--name-status', config['previousTag'], source).decode().splitlines()]
 assert inventory['sourceCommit'] == source and inventory['previousTag'] == config['previousTag']
 assert actual == inventory['changes'], 'Application delta does not match the recorded inventory.'
-assert not git('diff', config['previousTag'], source, '--', *config['unchangedPaths']), 'Protected protocol or application paths changed.'
+assert not git('diff', config['previousTag'], source, '--', *config['unchangedPaths']), 'Protected historical release or deployment records changed.'
 
 payload = {}
 with zipfile.ZipFile(io.BytesIO(git('archive', '--format=zip', source))) as archive:

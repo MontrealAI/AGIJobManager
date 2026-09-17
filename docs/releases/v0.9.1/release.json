@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.1",
+  "name": "v0.9.1 — Contract hardening and audited toolchains",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "37ba9562b62051c983013241c996496d5b5c64e7",
+  "sourceTree": "c0adf137c5510acc8d4d7b3c70daba07eeb7b0a8",
+  "previousTag": "v0.9.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Contract validation and settlement hardening, maintained EVM/deployment tools, full dependency audits, strict compilation/lint and complete static-analysis evidence. Fresh deployment required for contract fixes. USDC payout rules unchanged. No live deployment, activation or independent audit.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "d3a4ba1c9c643f702e5d66cafa2f5a48b3da166e5d0975730ac91ec37f5f1e37",
+    "PREVIOUS_RELEASE.json": "cdad168ab403deb385c1c127b0de6e9ed169066652787354f29b61aa802e4da1",
+    "SOURCE_CI.json": "4a0ad4d59199bf213464690150aa561549b87536a9020e82ae776061fbef3beb"
+  },
+  "requiredSourceRuns": {
+    "docs": {
+      "id": 35256784938,
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ]
+    },
+    "ci": {
+      "id": 35256784819,
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ]
+    },
+    "ui": {
+      "id": 35256785006,
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ]
+    },
+    "mainnet-fork": {
+      "id": 35256784967,
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ]
+    },
+    "security-verification": {
+      "id": 35256784786,
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ]
+    }
+  }
+}
