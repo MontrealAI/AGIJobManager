@@ -1,4 +1,4 @@
-# AGIJobManager Contract Reference
+# AGIJobManager Contract Reference — v0.9.0
 
 ## Purpose
 Document operational and audit-critical behavior of `AGIJobManager`.
@@ -8,17 +8,23 @@ Smart contract engineers, auditors, operators.
 
 ## Preconditions / assumptions
 - Contract is non-upgradeable.
-- AGI ERC20 token is trusted to be transfer-compatible with `TransferUtils` checks.
+- Public-chain deployments use immutable native USDC with six decimals; issuer pause/blocklist authority remains a transfer dependency. ETH pays gas.
 - Owner/moderator authority is part of the intended business-operated trust model.
 
 ## Roles and permissions
 | Role | Key capabilities |
 |---|---|
 | Owner | Pause/unpause, settlement pause, config setters, allowlists/blacklists, moderators, withdraw surplus while paused, lock identity config. |
-| Moderator | Resolve disputes (`resolveDispute`, `resolveDisputeWithCode`). |
+| Moderator | Resolve disputes (`resolveDisputeWithCode`). |
 | Employer | Create/cancel/dispute jobs, receive refund or completion NFT. |
 | Agent | Apply, request completion, receive payout on successful settlement. |
 | Validator | Approve/disapprove completion with bonded vote. |
+
+## Successful-job economics
+
+Validators are paid first from the budget fixed at posting (8% default, owner-selectable 1–60% for new jobs). Next, `wallet30` and `wallet10` receive fixed 30% and 10% of the original job cost; the agent receives all remaining USDC. A default 100 USDC job yields 8/30/10/52, excluding separate bonds. No-vote completion charges no validator budget. Rounding and unallocated rewards go to the agent on success, or the employer on refund. Cancelled, expired and employer-win jobs pay no wallet shares.
+
+Recipient addresses can rotate only while intake is paused and all four reserves are zero. Percentages and token stay fixed. Fresh deployments start paused; ownership changes require acceptance. See [configuration](../CONFIGURATION.md) and [owner controls](../OWNER_CONTROLS.md).
 
 ## Key state and accounting
 | Category | Variables |
@@ -32,9 +38,9 @@ Smart contract engineers, auditors, operators.
 
 ## Event families (monitoring-critical)
 - **Lifecycle:** `JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobValidated`, `JobDisapproved`, `JobCompleted`, `JobCancelled`, `JobExpired`, `JobDisputed`.
-- **Dispute/settlement:** `DisputeResolved`, `DisputeResolvedWithCode`, `PlatformRevenueAccrued`.
+- **Dispute/settlement:** `DisputeResolvedWithCode`, `JobPayoutDistributed`, `USDCWithdrawn`.
 - **Config/admin:** `SettlementPauseSet`, threshold and bond parameter update events, identity wiring updates, `IdentityConfigurationLocked`.
-- **ENS integration:** `EnsHookAttempted`, `EnsJobPagesUpdated`, `UseEnsJobTokenURIUpdated`.
+- **ENS integration:** `EnsHookAttempted`, `EnsJobPagesUpdated`.
 
 ## Workflow reference
 
@@ -42,7 +48,7 @@ Smart contract engineers, auditors, operators.
 - `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)`
 - `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)`
 
-Checks include payout bounds, duration bounds, allowlist/ENS eligibility, blacklist enforcement, and active-job limits per agent.
+The first successful eligible application assigns the job immediately. Checks include cost/duration bounds, identity authorization plus a separate eligible NFT credential, blacklist enforcement, active-job limits, and USDC bond funding. NFT scores do not increase payouts.
 
 ### 2) Completion and voting
 - `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)`
@@ -55,8 +61,8 @@ Checks include payout bounds, duration bounds, allowlist/ENS eligibility, blackl
 - `cancelJob(uint256 _jobId)` handles pre-assignment cancellation.
 
 ### 4) Dispute resolution
-- `disputeJob(uint256 _jobId)` opens dispute with dispute bond.
-- `resolveDispute(uint256 _jobId, string resolution)` / `resolveDisputeWithCode(uint256 _jobId, uint8 resolutionCode, string reason)` moderator path.
+- `disputeJob(uint256 _jobId)` opens a bonded dispute after completion submission, within review, before settlement, for the employer or assigned agent.
+- `resolveDisputeWithCode(uint256 _jobId, uint8 resolutionCode, string reason)` moderator path: `0` note only, `1` agent win, `2` employer win. There is no current string-resolution API.
 - `resolveStaleDispute(uint256 _jobId, bool employerWins)` owner fallback after timeout.
 
 ### 5) Treasury and pause controls
@@ -70,7 +76,6 @@ sequenceDiagram
   participant Employer
   participant Agent
   participant Validator
-  participant Moderator
   participant C as AGIJobManager
 
   Employer->>C: createJob(...)
@@ -78,12 +83,14 @@ sequenceDiagram
   Agent->>C: requestJobCompletion(jobId,completionURI)
   Validator->>C: validateJob/disapproveJob
   alt approvals + challenge window satisfied
-    AnyCaller->>C: finalizeJob(jobId)
-    C-->>Agent: payout and bond settlement
+    Employer->>C: finalizeJob(jobId), callable by anyone
+    C-->>Validator: reward and bond settlement
+    Note over C: Pay 30% and 10% of original cost to configured wallets
+    C-->>Agent: remaining USDC and bond settlement
     C-->>Employer: NFTIssued
   else dispute opened
     Employer->>C: disputeJob(jobId)
-    Moderator->>C: resolveDisputeWithCode(jobId,1|2,reason)
+    Note over Employer,C: Listed moderator resolves directly with code 1 or 2
   end
 ```
 
@@ -94,9 +101,9 @@ sequenceDiagram
 - Loops over validators and AGI types are bounded by constants.
 
 ## Gotchas / failure modes
-- `setAdditionalAgentPayoutPercentage` is deprecated and intentionally reverts (`DeprecatedParameter`).
+- Approval votes do not automatically pay. Finalization requires the applicable windows to strictly elapse; once approval is latched its challenge must elapse even if the review window ends first.
 - `lockIdentityConfiguration()` is irreversible and only affects identity wiring setters.
-- `pause` and `settlementPaused` are orthogonal; operational playbooks must account for both.
+- Intake pause blocks creation/application. Settlement pause also blocks completion, voting, disputes, settlement and withdrawals. Use both states in operational checks.
 - Token URI source may switch to ENS URI mode when enabled and ENSJobPages is configured.
 
 ## References

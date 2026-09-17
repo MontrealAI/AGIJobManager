@@ -86,6 +86,41 @@ contract AGIJobManagerSettlementFuzz is Test {
         assertEq(manager.activeJobsByAgentView(AGENT), 0);
     }
 
+    function testFuzz_bondSnapshotsSurviveOwnerChangesBetweenVotes(uint256 costSeed, bool initiallyDisabled) external {
+        uint256 cost = bound(costSeed, 1, manager.maxJobPayout());
+        if (initiallyDisabled) manager.setValidatorBondParams(0, 0, 0);
+        else manager.setValidatorBondParams(10_000, 1, manager.maxJobPayout());
+        uint256 id = _post(cost);
+        _request(id);
+        uint256 agentBondSnapshot = manager.jobAgentBondAmount(id);
+        _vote(id, VALIDATOR_A, true);
+        uint256 validatorBondSnapshot = manager.jobValidatorBondAmount(id);
+        assertEq(validatorBondSnapshot, initiallyDisabled ? 1 : cost + 1);
+
+        // Later voters must use the first vote's bond, including its encoded zero.
+        manager.setAgentBondParams(0, 0, 0);
+        if (initiallyDisabled) manager.setValidatorBondParams(10_000, 1, manager.maxJobPayout());
+        else manager.setValidatorBondParams(0, 0, 0);
+        _vote(id, VALIDATOR_B, true);
+        _vote(id, VALIDATOR_C, true);
+        assertEq(manager.jobAgentBondAmount(id), agentBondSnapshot);
+        assertEq(manager.lockedAgentBonds(), agentBondSnapshot);
+        assertEq(manager.jobValidatorBondAmount(id), validatorBondSnapshot);
+        assertEq(manager.lockedValidatorBonds(), (validatorBondSnapshot - 1) * 3);
+        (, uint256 approvedAt) = manager.jobValidatorApprovalState(id);
+        vm.warp(approvedAt + manager.challengePeriodAfterApproval() + 1);
+        manager.finalizeJob(id);
+
+        uint256 budget = cost * 8 / 100;
+        assertEq(token.balanceOf(VALIDATOR_A), FUNDING + budget / 3);
+        assertEq(token.balanceOf(VALIDATOR_B), FUNDING + budget / 3);
+        assertEq(token.balanceOf(VALIDATOR_C), FUNDING + budget / 3);
+        assertEq(token.balanceOf(AGENT), FUNDING + cost - cost * 30 / 100 - cost * 10 / 100 - budget + budget % 3);
+        assertEq(token.balanceOf(manager.wallet30()), cost * 30 / 100);
+        assertEq(token.balanceOf(manager.wallet10()), cost * 10 / 100);
+        _assertEmptyReserves();
+    }
+
     function testFuzz_maximumDurationRemainsSettleable(uint256 costSeed, bool completed) external {
         uint256 cost = bound(costSeed, 1, manager.maxJobPayout());
         manager.setJobDurationLimit(365 days);

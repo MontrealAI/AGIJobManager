@@ -1,53 +1,37 @@
-# Common revert reasons (and fixes)
+# Common reverts and fixes — v0.9.0
 
-This guide maps what you tried to do → what you saw → how to fix it. All items below are derived directly from the contract logic and custom errors.
+Start with the network, deployment address, connected wallet, `usdcToken()`, current job state, both pause states, and deadlines. Check USDC balance/allowance and ETH for gas. The console's preview can explain a failure before you sign.
 
-> **Tip:** If you see a generic “execution reverted” error, scroll the error details to find the **custom error** name (e.g., `NotAuthorized`, `InvalidState`).
+| Action / error | Meaning and next step |
+| --- | --- |
+| Apply: `NotAuthorized` | Pass the agent allowlist, Merkle proof, or configured ENS route. Use your own wallet and the label only for ENS. See [proofs](merkle-proofs.md). |
+| Apply: `IneligibleAgentPayout` | Identity alone is insufficient: hold an eligible AGI-type NFT credential with a nonzero configured score. |
+| Apply: `InvalidState` | Another agent is assigned or your active-job limit is reached. Check `getJobCore` and your existing assignments. |
+| Apply/vote: `Blacklisted` | Your wallet is blocked for that role. Contact the operator for review. |
+| Submit: `NotAuthorized` | Only the assigned agent can request completion. |
+| Submit: `InvalidState` | The job is terminal, a completion request already exists, or the ordinary assignment deadline has passed. Inspect the state before retrying. |
+| Submit/create: `InvalidParameters` | Check positive amounts/duration, configured limits, URI format, and text/URI length bounds. |
+| Vote: `NotAuthorized` | Pass the validator identity route; agent eligibility does not grant validator eligibility. |
+| Vote: `InvalidState` | Completion has not been requested, the job is disputed/terminal, the review window ended, or you already voted. Each validator has one vote. |
+| Vote: `ValidatorLimitReached` | The job already has 50 validator votes. |
+| Finalize: `InvalidState` | The job is disputed/terminal, lacks a completion request, or the relevant challenge/review window has not strictly elapsed. A valid call can also open a dispute instead of paying. |
+| Expire: `InvalidState` | The job is unassigned, terminal/disputed, already has a completion request, or its assignment deadline has not strictly elapsed. |
+| Dispute: `NotAuthorized` | Only this job's employer or assigned agent can post a manual dispute. |
+| Dispute: `InvalidState` | Completion must already have been requested; the job must remain unsettled/undisputed and within its completion review window. |
+| Resolve: `NotModerator` | The calling wallet must be explicitly listed as a moderator. Ownership alone is insufficient for `resolveDisputeWithCode`. |
+| Resolve: `InvalidParameters` | Use numeric code `0`, `1`, or `2`; freeform reason text does not select the outcome. |
+| Resolve: `InvalidState` | No active dispute exists, or a stale-dispute owner call is too early. |
+| Cancel: `NotAuthorized` | Use the employer wallet that created the job. |
+| Cancel/delist: `InvalidState` | The job is already assigned or terminal. |
+| Job action: `JobNotFound` | The ID does not exist or an unassigned job was cancelled/deleted. |
+| USDC transfer: `TransferFailed` | Check the required USDC balance and exact allowance. Issuer pause/blocklist restrictions can also prevent transfers, including payouts. A failed settlement transfer rolls back the entire distribution. |
+| Intake: `Pausable: paused` | Posting/application is disabled. A fresh deployment starts paused until the owner commissions it. |
+| Job action: `SettlementPaused` | The settlement lane is paused; this also blocks posting and application. Wait for owner recovery. |
+| Owner withdrawal: `InsufficientWithdrawableBalance` | Amount exceeds unreserved USDC. Use `withdrawableUSDC()`, not the manager's total balance. |
+| Withdrawal: `InvalidParameters` | Amount must be positive. USDC withdrawal also requires intake paused and settlement enabled. |
+| Configuration/wallet rotation: `InvalidState` | The action requires all escrow and bond reserves to be zero. Wallet rotation additionally requires intake paused. |
+| Validation budget: `InvalidParameters` | Use 1–60%; changes apply only to new jobs. |
+| Identity configuration: `ConfigLocked` | The owner has irreversibly locked the protected identity configuration. |
+| Ownership acceptance | Only `pendingOwner` may call `acceptOwnership`; proposing a transfer does not change `owner` immediately. |
 
-## Quick troubleshooting checklist
-
-- ✅ Correct **network** and **contract address**
-- ✅ Correct **token address** via `usdcToken()`
-- ✅ Sufficient **token balance** and **allowance**
-- ✅ Correct **role** (employer vs agent vs validator)
-- ✅ Correct **job state** (created/assigned/completed/disputed)
-- ✅ **Label‑only** ENS input (`helper`, not `helper.agent.agi.eth`)
-
-## Revert reasons table
-
-| What you tried to do | What you saw | What it means | How to fix it | Where to learn more |
-| --- | --- | --- | --- | --- |
-| Apply for a job | `NotAuthorized` | Your wallet did not pass the agent eligibility checks. | Make sure **one** of the following is true: (1) you’re in `additionalAgents`, (2) you provided a valid Merkle proof, (3) you own the ENS NameWrapper subdomain, or (4) your ENS resolver.addr points to your wallet. Also **use the label only**. | [Roles → Agent](roles.md#agent), [Merkle proofs](merkle-proofs.md) |
-| Apply for a job | `IneligibleAgentPayout` | You hold no eligible NFT credential. | Hold an eligible AGI‑type NFT with a nonzero eligibility score before applying. | [Roles → Agent](roles.md#agent) |
-| Apply for a job | `InvalidState` | Job already has an assigned agent. | Pick another open job. | [Happy path](happy-path.md) |
-| Apply for a job | `Blacklisted` | Your wallet is blacklisted as an agent. | Contact the operator/owner for remediation. | [Roles → Agent](roles.md#agent) |
-| Request job completion | `NotAuthorized` | Only the assigned agent can request completion. | Ensure you are the assigned agent for that job. | [Roles → Agent](roles.md#agent) |
-| Request job completion | `InvalidState` | The job has expired or is in an invalid state. | Check `assignedAt + duration` and request completion before expiration. | [Happy path](happy-path.md) |
-| Validate or disapprove a job | `NotAuthorized` | Your wallet did not pass the validator eligibility checks. | Make sure **one** of the following is true: (1) you’re in `additionalValidators`, (2) you provided a valid Merkle proof, (3) you own the ENS NameWrapper subdomain, or (4) your ENS resolver.addr points to your wallet. Also **use the label only**. | [Roles → Validator](roles.md#validator), [Merkle proofs](merkle-proofs.md) |
-| Validate or disapprove a job | `InvalidState` | The job has no assigned agent, completion has not been requested, the job is already completed, or you already voted. | Validate only after the agent requests completion, and only once per job. | [Happy path](happy-path.md) |
-| Validate or disapprove a job | `Blacklisted` | Your wallet is blacklisted as a validator. | Contact the operator/owner for remediation. | [Roles → Validator](roles.md#validator) |
-| Dispute a job | `NotAuthorized` | Only the employer or assigned agent can dispute. | Ensure you are the employer or assigned agent for that job. | [Roles → Employer](roles.md#employer) |
-| Dispute a job | `InvalidState` | Job is already completed or already disputed. | Dispute only while the job is in progress. | [Happy path](happy-path.md) |
-| Resolve a dispute | `NotModerator` | Only moderators can resolve disputes. | Ask the owner to add your wallet as a moderator. | [Roles → Moderator](roles.md#moderator) |
-| Resolve a dispute | `InvalidState` | The job is not currently disputed. | Confirm the job is in dispute before resolving. | [Happy path](happy-path.md) |
-| Cancel a job | `NotAuthorized` | Only the employer can cancel. | Use the employer wallet that created the job. | [Roles → Employer](roles.md#employer) |
-| Cancel or delist a job | `InvalidState` | The job is completed or already assigned. | Only cancel/delist while the job is still unassigned. | [Happy path](happy-path.md) |
-| List an NFT | `NotAuthorized` | You are not the NFT owner. | Only the NFT owner can list it. | [Roles → Employer](roles.md#employer) |
-| List an NFT | `InvalidParameters` | Listing price is zero. | Set a non‑zero price. | [Roles → Employer](roles.md#employer) |
-| Purchase an NFT | `InvalidState` | Listing is inactive or already purchased. | Refresh listing state; buy only active listings. | [Happy path](happy-path.md) |
-| Delist an NFT | `NotAuthorized` | You are not the seller or listing is inactive. | Only the listing seller can delist. | [Roles → Employer](roles.md#employer) |
-| Create a job | `InvalidParameters` | Payout/duration is zero or above contract limits. | Use a positive payout and duration within limits (`maxJobPayout`, `jobDurationLimit`). | [Happy path](happy-path.md) |
-| Withdraw AGI (owner) | `InvalidParameters` | Amount is zero or exceeds contract balance. | Withdraw an amount within the contract’s USDC balance. | [Roles → Owner](roles.md#owner) |
-| Contribute to reward pool | `InvalidParameters` | Amount is zero. | Enter a positive amount. | [Happy path](happy-path.md) |
-| Add AGI type (owner) | `InvalidParameters` | Address is zero or payout percentage outside 1–100. | Provide a valid NFT address and percentage. | [Roles → Owner](roles.md#owner) |
-| Any token transfer | `TransferFailed` | Token transfer or transferFrom returned false. | Ensure you have enough USDC balance and **approved** the contract for the needed amount. | [Happy path](happy-path.md) |
-| Any job action | `JobNotFound` | The job ID does not exist. | Double‑check the job ID. | [Happy path](happy-path.md) |
-| Set validation reward percentage (owner) | `InvalidParameters` | Validator percentage must be between 1 and 60. | Use a value from 1–60; it affects only new jobs. | [Roles → Owner](roles.md#owner) |
-| Actions protected by pause | `Pausable: paused` | The contract is paused, so `whenNotPaused` actions are blocked. | Wait for the owner to unpause before retrying. | [Roles → Owner](roles.md#owner) |
-
-## If you still can’t proceed
-
-1. Confirm the **contract address** and **network**.
-2. Check the **job state** and your **role**.
-3. Verify allowance and balance.
-4. Review the [Merkle proof guide](merkle-proofs.md) if identity gating is involved.
+Use [roles](roles.md) and the [walkthrough](happy-path.md) to check the expected sequence. There are no current internal NFT marketplace, reward-pool contribution, or string-based dispute-resolution calls; use the v0.9.0 interface/ABI.

@@ -1,0 +1,52 @@
+# Start here — AGIJobManager v0.9.0
+
+AGIJobManager holds a job's USDC payment until the work reaches a settlement outcome. Employers post work, eligible agents take jobs, validators assess the submitted evidence, and moderators handle disputes. The owner configures the instance and can pause it.
+
+**This download supplies software, not a running marketplace.** A deployment operator must deploy and verify the manager, configure its owner and two recipients, arrange eligible participants, and open intake. No live manager address or recipient wallets are supplied.
+
+## Choose your next step
+
+| Your goal | Start with | What you need |
+| --- | --- | --- |
+| Post, perform or validate a job | [USDC console guide](ui/GENESIS_JOB_MAINNET_HTML_UI.md), then [participant guide](USERS.md) | A verified deployed manager, the correct wallet, USDC and ETH for gas |
+| Deploy the software | [Hardhat guide](../hardhat/README.md) | Reviewed configuration, both recipients, intended owner and a testnet rehearsal |
+| Operate an existing instance | [Owner runbook](OWNER_RUNBOOK.md) | The accepted owner wallet and verified on-chain configuration |
+| Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |
+| Evaluate the release | [Mainnet readiness](MAINNET_READINESS.md) and [testing](TESTING.md) | Source, release manifest, checksums and the linked CI evidence |
+
+Download the [v0.9.0 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/AGIJobManager-v0.9.0-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
+
+## Understand the payment before signing
+
+For a successful **100 USDC** job with the default 8% validator budget and qualifying approval votes:
+
+| Paid in this order | Amount from the original job cost |
+| --- | ---: |
+| Correct-side validators | 8 USDC total |
+| First configured wallet | 30 USDC |
+| Second configured wallet | 10 USDC |
+| Assigned agent | 52 USDC |
+
+The 30% and 10% shares are fixed and included in the job cost. The owner can set the validator percentage to 1–60% for future postings; every posted job retains its rate. Bond deposits, refunds and slashing are accounted separately. Integer rounding and unallocated rewards are described in the [payout specification](USDC_PAYOUT_SPLIT.md). USDC uses six decimals; ETH is required for gas.
+
+No-vote completion after the review window pays the agent's 60% remainder with no validator reward. It is a liveness fallback, not independent verification of the work. Voting, finalization and dispute resolution require transactions; elapsed time alone does not send payments.
+
+## Complete one job
+
+1. **Employer:** write the scope, acceptance criteria and evidence requirements; choose a USDC cost and duration. Confirm the deployed manager and both recipients, approve only the required USDC, then post the job. Approval alone does not create a job. Save its ID and transaction hash.
+2. **Agent:** confirm eligibility, the required qualifying NFT, the posted payment and current bond. The first eligible successful application assigns the job; the employer does not choose among an application queue. Approve the required bond and apply. The duration starts on assignment.
+3. **Agent:** finish the work and submit its completion URI before the assignment deadline. The URI identifies evidence; it does not itself prove quality.
+4. **Validators:** review the work, confirm eligibility and the bond, then approve or disapprove during the review period. A validator can vote once per job. Votes can lead to approval, a dispute or a later finalization outcome.
+5. **Any caller:** after the applicable review/challenge conditions are satisfied, submit finalization. For a disputed job, follow the moderator or stale-dispute owner path. Inspect the receipt, job state and USDC transfers; the UI simulation is a precheck, not a promise of inclusion or success.
+
+The employer can cancel before assignment. Expiry requires an assigned job whose duration has elapsed without a completion request. A completion request instead enters review/dispute rules. [Participant guidance](USERS.md) and [lifecycle reference](PROTOCOL_FLOW.md) explain these branches.
+
+## If a transaction does not finish
+
+- **Wallet/network changed:** return to the intended account and Ethereum mainnet, reload state and review again. Do not reuse a stale confirmation.
+- **Approval succeeded but the job action failed:** no job action occurred merely because approval succeeded. Check allowance and on-chain state before retrying; revoke unused allowance if abandoning the action.
+- **Transaction pending or receipt unavailable:** inspect its hash on the correct chain before sending a replacement. An RPC timeout is not proof that the transaction failed.
+- **Paused manager or changed terms:** read the current pause flags, limits, bond and job state. Ask the operator to resolve the cause; do not change networks or approve another token to bypass it.
+- **USDC paused or a recipient blocked:** settlement reverts atomically. Existing payments cannot be rerouted through a wallet rotation. Resolve the issuer restriction through the appropriate operator/issuer process before retrying.
+
+Only a successful receipt and verified resulting state establish the outcome. Source review, an independent operational security review and instance-specific [readiness checks](MAINNET_READINESS.md) remain necessary for a high-stakes launch.

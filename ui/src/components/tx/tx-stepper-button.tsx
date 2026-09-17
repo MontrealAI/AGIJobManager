@@ -1,6 +1,6 @@
 'use client'
 
-import { verifyUSDCDeployment, assertUSDCWriteTarget, assertUSDCWalletContext } from '@/lib/usdc'
+import { verifyUSDCDeployment, assertUSDCWriteTarget, assertUSDCWalletContext, assertSimulatedUSDCRequest } from '@/lib/usdc'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { BaseError } from 'viem'
 import { useAccount, useChainId, usePublicClient, useSimulateContract, useWaitForTransactionReceipt, useWalletClient, useWriteContract } from 'wagmi'
@@ -16,7 +16,7 @@ export function TxStepperButton({ children, disabled, simulateConfig, preflightE
   const { data: walletClient } = useWalletClient()
   const write = useWriteContract()
   const sim = useSimulateContract({ ...simulateConfig, account: address, chainId: env.chainId, query: { enabled: false } })
-  const wait = useWaitForTransactionReceipt({ hash: write.data })
+  const wait = useWaitForTransactionReceipt({ hash: write.data, chainId: env.chainId })
 
   const txLink = useMemo(() => {
     if (!write.data) return ''
@@ -27,13 +27,15 @@ export function TxStepperButton({ children, disabled, simulateConfig, preflightE
   const run = async () => {
     if (!isConnected || !address || chainId !== env.chainId || preflightError) return
     try {
+      const reviewedConfig = { ...simulateConfig, args: simulateConfig.args ? structuredClone(simulateConfig.args) : undefined }
       setLocalError(undefined)
       setStep('preparing')
       await assertUSDCWalletContext(walletClient, address, env.chainId)
       const simulated = await sim.refetch()
-      if (!simulated.data?.request) throw new Error('Simulation failed')
+      if (simulated.isError || simulated.error || !simulated.data?.request) throw simulated.error || new Error('Simulation failed')
       const token = await verifyUSDCDeployment(publicClient, env.agiJobManagerAddress, chainId)
-      assertUSDCWriteTarget(simulateConfig.address, env.agiJobManagerAddress, token, simulateConfig.functionName, simulateConfig.args)
+      assertUSDCWriteTarget(simulated.data.request.address, env.agiJobManagerAddress, token, simulated.data.request.functionName, simulated.data.request.args)
+      assertSimulatedUSDCRequest(simulated.data.request, reviewedConfig)
       await assertUSDCWalletContext(walletClient, address, env.chainId)
       setStep('signature')
       await write.writeContractAsync({ ...simulated.data.request, account: address, chainId: env.chainId })

@@ -1,156 +1,35 @@
-# Roles guide (non-technical)
+# Roles guide — v0.9.0
 
-This guide explains what each role can do, what you need before starting, and common mistakes.
-
-> **Reminder: use the label only** for ENS identity checks.
-> - ✅ `helper` (label)
-> - ❌ `helper.agent.agi.eth`
-> The contract derives the namehash from a fixed root node + label.
+All job escrow, rewards, and bonds use native USDC. Each sender needs ETH for transaction gas. Verify the network and deployment before approving exact USDC amounts.
 
 ## Employer
 
-### What you can do
-- Create a job with escrowed payout (`createJob`).
-- Cancel a job **before** an agent is assigned (`cancelJob`).
-- Dispute a job while it is in progress (`disputeJob`).
-- Receive the job NFT when the job completes (minted automatically).
- - Trade the job NFT externally using standard ERC‑721 approvals and transfers.
-
-### What you need first
-- A wallet with enough **USDC token** balance for the job payout.
-- ERC‑20 **approval** for the contract to pull the payout from your wallet.
-- Correct **contract address** and **network**.
-
-### Common mistakes
-- Forgetting to approve the token transfer before creating a job.
-- Using the wrong network or outdated contract address.
-- Trying to cancel after an agent is assigned (not allowed).
-
-### Typical workflow
-1. Approve token spend.
-2. Create a job (job spec metadata URI, payout, duration).
-3. Wait for an agent to apply.
-4. If needed, dispute the job.
-5. Receive the job NFT on completion.
-
----
+Post and fund jobs with `createJob`; cancel before assignment; request a bonded dispute after completion submission within the review window and before settlement. The first eligible successful application assigns the job automatically. Successful settlement mints the employer's completion NFT; there is no built-in NFT marketplace. See the [employer guide](../roles/EMPLOYER.md).
 
 ## Agent
 
-### What you can do
-- Apply for an open job (`applyForJob`).
-- Request job completion (`requestJobCompletion`).
-- Earn payout and reputation if the job completes.
+Apply for an unassigned job, perform its work, and request completion by the assignment deadline. You need an authorized agent identity **and** an eligible AGI-type NFT credential, plus the approved performance bond. Credentials establish eligibility, not a payout bonus. On success, receive the USDC remainder after validators and the fixed 30%/10% gross-cost shares, plus bond settlement. See the [agent guide](../roles/AGENT.md).
 
-### What you need first
-- A wallet **eligible** as an agent via **any** of:
-  - Explicit allowlist (`additionalAgents`).
-  - Merkle proof (allowlist).
-  - ENS NameWrapper ownership.
-  - ENS resolver.addr fallback.
-- The **subdomain label only** (not the full ENS name).
-- Optional: a Merkle proof if you’re allowlisted.
-
-### Common mistakes
-- Entering the full ENS name instead of the label.
-- Using a proof from a different allowlist or chain.
-- Applying for a job that is already assigned.
-- Requesting completion after the job duration expired.
-
-### Typical workflow
-1. Confirm eligibility (allowlist/Merkle/ENS).
-2. Apply for an open job.
-3. Deliver work off‑chain.
-4. Request completion with the completion metadata URI.
-
----
+Identity authorization can come from `additionalAgents`, the agent Merkle root/proof, or the configured ENS route. Use only the ENS label when that route applies. A Merkle proof must match the current root and your connected wallet.
 
 ## Validator
 
-### What you can do
-- Validate a job (approve or disapprove) (`validateJob`, `disapproveJob`).
-- Earn payout share and reputation when jobs complete.
+After work is submitted, review it and vote once with `validateJob` or `disapproveJob` within the review window. You need validator identity authorization, no blacklist entry, and an approved USDC vote bond. A job's first vote fixes the bond required for every later voter. Correct-side voters share rewards; incorrect-side votes can lose part of their bond. An approval vote never automatically pays the job. See the [validator guide](../roles/VALIDATOR.md).
 
-### What you need first
-- A wallet **eligible** as a validator via **any** of:
-  - Explicit allowlist (`additionalValidators`).
-  - Merkle proof (allowlist).
-  - ENS NameWrapper ownership.
-  - ENS resolver.addr fallback.
-- The **subdomain label only** (not the full ENS name).
-- Optional: a Merkle proof if you’re allowlisted.
-
-### Common mistakes
-- Trying to validate the same job twice.
-- Entering the full ENS name instead of the label.
-- Attempting to validate a job before the agent requests completion.
-
-### Typical workflow
-1. Confirm eligibility (allowlist/Merkle/ENS).
-2. Review job status and details.
-3. Wait for the agent’s completion request (completion metadata).
-4. Approve or disapprove.
-
----
+Validator authorization comes from `additionalValidators`, the validator Merkle root/proof, or the configured club ENS route. Agent eligibility does not automatically grant validator eligibility.
 
 ## Moderator
 
-### What you can do
-- Resolve disputes (`resolveDisputeWithCode`).
-  - **Resolution codes**:
-    - `NO_ACTION (0)` → log only; dispute remains active.
-    - `AGENT_WIN (1)` → pays agent and completes job.
-    - `EMPLOYER_WIN (2)` → refunds employer and closes job.
-  - The reason string is freeform and does not control settlement.
-
-### What you need first
-- A wallet that is listed as a moderator (`addModerator` by the owner).
-- Correct contract address and network.
-
-### Common mistakes
-- Using the deprecated `resolveDispute` with a non‑canonical string instead of selecting a typed action code.
-- Trying to resolve a dispute that is not actually marked as disputed.
-
-### Typical workflow
-1. Confirm the job is in dispute.
-2. Decide outcome off‑chain.
-3. Resolve with the correct canonical string.
-
----
+Resolve active disputes with `resolveDisputeWithCode`: `0` records a note, `1` settles for the agent, `2` refunds under employer-win rules. The public reason explains the decision but does not choose it. Your wallet must be explicitly listed as a moderator. The current contract has no string-based `resolveDispute` call. See the [moderator guide](../roles/MODERATOR.md).
 
 ## Owner
 
-### What you can do
-- Pause/unpause contract (`pause`, `unpause`).
-- Manage moderators and allowlists (`addModerator`, `addAdditionalAgent/Validator`).
-- Blacklist/un‑blacklist agents or validators.
-- Update parameters (limits, reward percentage, metadata fields).
-- Withdraw surplus USDC tokens (`withdrawUSDC`, limited to `withdrawableUSDC()`).
-- Delist jobs before assignment (`delistJob`).
-- Manage AGI Types for agent payout bonuses (`addAGIType`).
+Maintain roles, allowlists, NFT credentials and selected parameters; manage intake/settlement pauses; recover only unreserved USDC; and resolve stale disputes after their deadline. Some configuration requires every escrow/bond reserve to be zero. Rotating the two settlement recipients additionally requires intake paused. Ownership changes use proposal and acceptance; renunciation is disabled.
 
-### What you need first
-- The owner wallet configured at deployment.
-- Strong operational security (owner actions are highly privileged).
+The native USDC token and fixed 30%/10% shares cannot change. The deployed contract has no implementation upgrade switch. The validator percentage is fixed for each job when posted; agent bonds are fixed at assignment and validator bonds at first vote. See [owner/operator](../roles/OWNER_OPERATOR.md) and [owner controls](../OWNER_CONTROLS.md).
 
-### Common mistakes
-- Pausing during critical workflows and forgetting to unpause.
-- Misconfiguring payout limits or validator thresholds.
-- Using the wrong network when changing parameters.
+## Anyone
 
-### Typical workflow
-1. Monitor operations.
-2. Adjust allowlists and parameters as needed.
-3. Resolve operational incidents (pause/unpause, blacklist).
+Anyone may call `finalizeJob` when voting/timing conditions allow, or `expireJob` after an eligible unsubmitted job misses its assignment deadline. A valid role-specific action still requires that role; being able to finalize does not let a caller change recipients or choose a dispute outcome.
 
----
-
-## How roles interact (simple overview)
-
-- **Employer** creates and funds a job.
-- **Agent** applies, performs work, and requests completion.
-- **Validators** approve or disapprove the job outcome.
-- **Moderator** resolves disputes (if any).
-- **Owner** manages safety, parameters, and allowlists.
-
-For the full lifecycle, see the [Happy path walkthrough](happy-path.md).
+Follow the [happy path](happy-path.md) for the full sequence and [Merkle proofs](merkle-proofs.md) for identity inputs.

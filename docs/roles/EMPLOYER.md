@@ -1,58 +1,30 @@
-# Employer Guide
+# Employer Guide — v0.9.0
 
-This guide is for job posters (employers). It shows how to safely create and manage a job, and how to handle disputes and NFTs.
+An employer posts a job and escrows its total cost in native USDC. The first eligible agent whose application succeeds takes the job; there is no later selection or acceptance step for the employer.
 
-## Prerequisites
-- USDC tokens in your wallet.
-- The AGIJobManager contract address.
-- Confidence that the USDC token address is correct.
+## Before posting
 
-## Step‑by‑step (non‑technical)
-> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `createJob` inputs filled in.
-### 1) Approve escrow amount
-Use your wallet or Etherscan to approve **only the exact payout amount**.
+Verify the network, manager address, and `usdcToken()`. Have USDC for the full job cost and ETH for transaction gas. Use the [USDC console](../../ui/agijobmanager-usdc.html) or verified Etherscan interface.
 
-### 2) Create a job
-Generate/upload the **job spec metadata** JSON and call `createJob(jobSpecURI, payout, duration, details)`.
-- **jobSpecURI**: ERC‑721 metadata URI (full `ipfs://...` or `https://...` is recommended)
-- **payout**: token amount (6 decimals)
-- **duration**: seconds (max `jobDurationLimit`)
-- **details**: short plain text
+A successful 100 USDC job with the default validator budget pays 8 USDC to correct-side validators, 30 USDC to one configured wallet, 10 USDC to the other, and 52 USDC to the agent. The wallet shares always use the **original job cost**. Agent/validator bonds are funded separately by those participants.
 
-**On‑chain results**
-- Event: `JobCreated`
-- Token movement: employer → contract (escrow)
+## Post and monitor
 
-### 3) Monitor applications and completion
-Agents can apply and then request completion. You can monitor events:
-- `JobApplied`
-- `JobCompletionRequested`
+1. Approve exactly the escrow cost to the manager on the USDC token contract. USDC uses six decimals: 100 USDC is `100000000` base units.
+2. Call `createJob(jobSpecURI, payout, duration, details)`. Use valid [job metadata](../job-metadata.md), a positive cost within `maxJobPayout`, and a positive duration in seconds within `jobDurationLimit`.
+3. Read `jobId` from `JobCreated`. Funds are now escrowed. The duration starts when an agent is assigned, not when the job was posted.
+4. Monitor `JobApplied`, then `JobCompletionRequested` and validator votes. Approval votes do not immediately pay the job; someone must finalize after the applicable timing conditions.
+5. On successful settlement, confirm `JobPayoutDistributed`, `JobCompleted`, and `NFTIssued`. The completion NFT is minted to your wallet; its URI may use configured ENS metadata or the completion URI/base fallback.
 
-### 4) Cancel (if no agent assigned)
-If no agent has been assigned and the job is not completed, call `cancelJob(jobId)`.
+The completion NFT is a standard ERC-721 receipt. External transfers/marketplaces use normal ERC-721 permissions; AGIJobManager has no internal listing or purchasing functions.
 
-### 5) Dispute (if needed)
-Call `disputeJob(jobId)` if you disagree with the completion or validation direction.
+## Cancellation, expiry, and disputes
 
-### 6) Receive NFT receipt
-When a job completes, an NFT is minted to your wallet.
-- Event: `NFTIssued`
-- Token URI: points to the **job completion metadata** (`jobCompletionURI`, with `baseIpfsUrl` fallback)
+- **Before assignment:** call `cancelJob(jobId)` to recover the escrow.
+- **Missed assignment deadline:** if no completion request or dispute exists, anyone can call `expireJob` strictly after `assignedAt + duration`. The employer receives escrow and the forfeited agent bond.
+- **Disagreement after submission:** while the job remains unsettled and within its completion review window, approve the quoted dispute bond and call `disputeJob`. The bond is 0.5% of job cost, clamped to 1–200 USDC and never above the job cost.
+- **Disputed result:** a moderator resolves with typed code `1` (agent wins) or `2` (employer wins). An employer-win refund can be reduced by validator rewards and adjusted by bond outcomes. It does not pay the 30%/10% wallet shares or mint a completion receipt.
 
-## Common mistakes
-- **Insufficient allowance** → `TransferFailed`
-- **Job already assigned or completed** → `InvalidState`
-- **Wrong jobId** → `JobNotFound`
+Act promptly when work is submitted. Early finalization may be possible after the approval challenge window, before the full review window ends. Read the deployment's current timers in the console.
 
-## For developers
-### Key functions
-- `createJob` → escrows payout & emits `JobCreated`
-- `cancelJob` → refunds if no agent
-- `disputeJob` → triggers dispute mode
-
-### State fields to inspect
-- `getJobCore(jobId)` → assigned agent, completion/dispute flags
-- `getJobValidation(jobId)` → completionRequested flag
-
-### Events to index
-`JobCreated`, `JobApplied`, `JobCompletionRequested`, `JobCompleted`, `NFTIssued`, `JobDisputed`, `DisputeResolvedWithCode`, `DisputeResolved`
+Common errors: `TransferFailed` for balance/allowance or issuer transfer restrictions; `InvalidState` for assignment/deadline/state conflicts; `JobNotFound` for an unknown or cancelled job ID. See [common reverts](../user-guide/common-reverts.md).

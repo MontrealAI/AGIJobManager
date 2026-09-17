@@ -1,4 +1,4 @@
-# v0.8.0 owner controls
+# v0.9.0 owner controls
 
 Jobs settle in native Circle USDC: validators first, then 30% and 10% of the original job cost to the two configured wallets, then the remaining amount to the agent. At the default validator budget of 8%, a successful 100 USDC job distributes 8 / 30 / 10 / 52 USDC. See the [complete payout rules](USDC_PAYOUT_SPLIT.md) for rounding, no-vote completion and refunds.
 
@@ -20,7 +20,7 @@ The owner remains a trusted administrator for pauses, eligibility, moderators an
 
 ## Rotate payout wallets
 
-1. Open the v0.8.0 USDC console, select the verified manager and connect as its owner. Confirm the network, manager and current wallet addresses.
+1. Open the v0.9.0 USDC console, select the verified manager and connect as its owner. Confirm the network, manager and current wallet addresses.
 2. Choose **pauseIntake**. Keep settlement enabled so existing jobs can finish or be refunded.
 3. Settle, cancel or otherwise close every outstanding job through its normal lifecycle. Read `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds` and `lockedDisputeBonds`; all four must be zero.
 4. Choose **Update payout wallets**. Enter the 30% recipient first and the 10% recipient second. Both must be distinct, nonzero, and different from the manager and USDC contract. Verify control of the addresses and their ability to receive USDC before submitting.

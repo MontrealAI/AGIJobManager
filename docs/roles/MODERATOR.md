@@ -1,29 +1,22 @@
-# Moderator Guide
+# Moderator Guide — v0.9.0
 
-Moderators resolve disputed jobs. Only accounts listed in `moderators` can resolve disputes.
+Moderators resolve active disputes through `resolveDisputeWithCode(jobId, resolutionCode, reason)`. The caller must be in the manager's `moderators` list and settlement must be enabled. Ownership alone does not grant this moderator role.
 
-## Resolution codes (typed)
-Use `resolveDisputeWithCode(jobId, resolutionCode, reason)`:
-- `0 (NO_ACTION)` → log only; dispute remains active.
-- `1 (AGENT_WIN)` → pays the agent and completes the job.
-- `2 (EMPLOYER_WIN)` → refunds the employer and closes the job.
+| Code | Effect |
+| --- | --- |
+| `0` — no action | Records the reason; leaves the dispute active |
+| `1` — agent wins | Settles validators, the fixed 30%/10% gross-cost shares, and agent remainder in USDC; returns/awards bonds and mints the employer's completion NFT |
+| `2` — employer wins | Settles validator rewards/bonds and refunds the employer under the contract rules; no 30%/10% shares or completion NFT |
 
-The `reason` string is freeform for logs/UI and does not control settlement. The legacy `resolveDispute` string interface is deprecated and maps only the exact `"agent win"` / `"employer win"` strings to settlement actions.
+The reason is public explanatory text. It does not select the outcome. The current contract has no legacy string-based `resolveDispute` function; use the numeric code.
 
-## Step‑by‑step (non‑technical)
-> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `resolveDisputeWithCode` inputs filled in.
-1. Confirm the job is disputed (look for the `JobDisputed` event).
-2. Call `resolveDisputeWithCode(jobId, resolutionCode, reason)` with the typed code above.
-3. Verify the `DisputeResolvedWithCode` event (and `DisputeResolved` if the dispute was finalized).
+## Resolve a dispute
 
-## Expected moderation policy (recommended)
-- Require evidence from the agent (final work artifacts) and employer (requirements).
-- Record a plain‑English reason in the `reason` field for auditability.
-- Keep a public log of disputes and resolutions off‑chain.
+1. Verify the deployment and active dispute in the [USDC console](../../ui/agijobmanager-usdc.html) or `getJobCore`/`getJobValidation` reads.
+2. Review the employer's requirements, submitted work, and validator evidence.
+3. Select the numeric outcome, review the USDC settlement preview, enter a clear reason, and sign with a moderator wallet. Have ETH for gas.
+4. Confirm `DisputeResolvedWithCode`. Agent success additionally emits `JobPayoutDistributed`, `JobCompleted`, and `NFTIssued`. Read the terminal state and balances for employer-win refunds.
 
-## For developers
-### Key function
-- `resolveDisputeWithCode(jobId, resolutionCode, reason)`
+A failed USDC transfer reverts the entire resolution; it does not partially pay recipients. Settlement can be retried after the underlying transfer restriction is resolved. ENS hook failure alone need not undo settlement.
 
-### Events to index
-`DisputeResolvedWithCode` (and `DisputeResolved` for finalized settlements)
+After `disputedAt + disputeReviewPeriod` has strictly passed, the owner can use `resolveStaleDispute(jobId, employerWins)`. This is a separate privileged recovery path. Read current timers and the [owner controls](../OWNER_CONTROLS.md).

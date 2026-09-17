@@ -7,6 +7,6 @@
   "solc_remaps": [
     "@openzeppelin/=node_modules/@openzeppelin/"
   ],
-  "detectors_to_run": "reentrancy-eth,reentrancy-no-eth,reentrancy-benign,reentrancy-events,reentrancy-unlimited-gas",
+  "detectors_to_run": "reentrancy-balance,reentrancy-eth,reentrancy-no-eth,reentrancy-benign,reentrancy-events,reentrancy-unlimited-gas",
   "detectors_to_exclude": []
 }

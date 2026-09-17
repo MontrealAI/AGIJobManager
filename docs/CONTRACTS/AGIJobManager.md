@@ -1,40 +1,46 @@
-# AGIJobManager Contract Guide
+# AGIJobManager Contract Guide — v0.9.0
 
-Source of truth: [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol).
+Source of truth: [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol). Every escrow, reward and bond uses native USDC; ETH pays gas. Successful settlement pays validators first, then 30% and 10% of the original job cost to the two configured wallets, then the remainder to the agent. See [exact economics](../USDC_PAYOUT_SPLIT.md).
 
 ## Permissions matrix
 
+Roles can overlap; a checkmark indicates the authority required for that action. Anyone includes owners, moderators, employers, agents and validators when timing/state conditions allow.
+
 | Action | Owner | Moderator | Employer | Agent | Validator | Anyone |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pause / unpause | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Set parameters / roots / allowlists | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Create / cancel own job | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| Apply / completion request | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Validate / disapprove | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| Dispute | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
-| Resolve dispute | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Expire/finalize in eligible states | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ |
+| Pause / unpause | Yes | — | — | — | — | — |
+| Set parameters / roots / allowlists | Yes | — | — | — | — | — |
+| Create / cancel own job | — | — | Yes | — | — | — |
+| Apply / completion request | — | — | — | Yes | — | — |
+| Validate / disapprove | — | — | — | — | Yes | — |
+| Manual dispute after submission | — | — | Yes | Yes | — | — |
+| Resolve active dispute | — | Yes | — | — | — | — |
+| Resolve stale dispute after deadline | Yes | — | — | — | — | — |
+| Expire/finalize in eligible states | — | — | — | — | — | Yes |
 
 ## Lifecycle
 
+The first successful eligible application assigns the job. Agents need identity authorization plus an eligible NFT credential; both agent application and validator votes require any applicable USDC bond. Votes do not automatically pay the job.
+
 ```mermaid
 stateDiagram-v2
-  [*] --> Created
-  Created --> Assigned: applyForJob
-  Assigned --> CompletionRequested: requestJobCompletion
-  CompletionRequested --> Approved: validator threshold reached
-  CompletionRequested --> Disapproved: disapproval threshold reached
-  CompletionRequested --> Disputed: disputeJob
-  Disputed --> Approved: resolveDisputeWithCode(agent wins)
-  Disputed --> Disapproved: resolveDisputeWithCode(employer wins)
-  Approved --> Finalized: finalizeJob after challenge period
-  Disapproved --> Finalized: refund/settlement path
-  Assigned --> Expired: expireJob after duration
-  Created --> Cancelled: cancelJob / delistJob
-  Expired --> Finalized
+  [*] --> Created: createJob
+  Created --> Assigned: first eligible applyForJob
+  Created --> Cancelled: cancelJob or delistJob
+  Assigned --> Review: requestJobCompletion
+  Assigned --> Expired: expireJob after deadline, no submission
+  Review --> Completed: eligible finalizeJob, approval majority or no votes
+  Review --> Refunded: review elapsed, quorum and rejection majority
+  Review --> Disputed: dispute, rejection threshold, or finalize tie/under-quorum
+  Disputed --> Completed: moderator code 1 or stale owner agent win
+  Disputed --> Refunded: moderator code 2 or stale owner employer win
+  Completed --> [*]
+  Refunded --> [*]
+  Expired --> [*]
   Cancelled --> [*]
-  Finalized --> [*]
 ```
+
+Once the approval threshold is latched, the challenge must strictly elapse even if the review period ends first. After that, an approval majority can finalize early if undisputed. Otherwise the completion-review rules apply: zero votes complete without validator rewards or reputation; nonzero under-quorum or tied votes open a dispute; a qualifying majority settles by its outcome. Read actual timers and states rather than relying only on this diagram.
 
 ## Settlement and dispute sequence
 
@@ -46,33 +52,52 @@ sequenceDiagram
   participant M as Moderator
   participant C as AGIJobManager
 
-  E->>C: createJob
-  A->>C: applyForJob (+agent bond)
-  A->>C: requestJobCompletion(jobCompletionURI)
-  V->>C: validate/disapprove (+validator bond)
-  alt disputed
-    E->>C: disputeJob
-    M->>C: resolveDisputeWithCode(code, reason)
+  E->>C: createJob, escrow USDC
+  A->>C: applyForJob, post agent bond
+  A->>C: requestJobCompletion
+  V->>C: vote once each, post vote bonds
+  alt active dispute
+    M->>C: resolveDisputeWithCode, 1 or 2
+  else timing and votes permit
+    E->>C: finalizeJob, callable by anyone
   end
-  E->>C: finalizeJob (after window)
-  C-->>A: payout + bond return (agent-win)
-  C-->>E: refund + slashed bonds (employer-win/expiry)
+  alt agent success
+    C-->>V: validator rewards and bond settlement
+    Note over C: Pay 30% then 10% of original cost to configured wallets
+    C-->>A: remaining USDC, bond settlement
+    C-->>E: completion NFT
+  else employer win
+    C-->>V: correct-side rewards and bond settlement
+    C-->>E: adjusted refund, no wallet shares
+  end
 ```
+
+Moderator resolution itself settles the job; it does not require a subsequent finalization call. Numeric code `0` only records a note. A failed USDC transfer rolls back the entire settlement.
 
 ## Config catalog
 
 | Parameter | Purpose | Safe range guidance | Operational note | Where set |
 | --- | --- | --- | --- | --- |
-| `requiredValidatorApprovals` | Approval threshold | >0 and coherent with quorum/cap | Too high harms liveness | owner setter |
-| `requiredValidatorDisapprovals` | Disapproval threshold | >0 and coherent with quorum/cap | Too low increases false negatives | owner setter |
-| `completionReviewPeriod` | Voting window | Non-zero, operationally realistic | Affects finalize latency | owner setter |
-| `disputeReviewPeriod` | Moderator stale-dispute window | Non-zero with responder SLA | Needed for stale-dispute path | owner setter |
-| `challengePeriodAfterApproval` | Delay before finalize on approval | Non-zero and known to users | Protects against immediate closure | owner setter |
-| Agent/validator bond params | Anti-spam and incentive alignment | Must avoid unaffordable participation | Validate with ops script | owner setter |
+| `validationRewardPercentage` | Validator gross-cost budget | 1–60, default 8 | Fixed at posting; changes affect new jobs | owner setter |
+| `wallet30`, `wallet10` | Successful-job recipients | Distinct valid addresses | Intake paused and all reserves zero; shares fixed at 30%/10% | owner setter |
+| `requiredValidatorApprovals` | Early-approval latch | 0–50; threshold sum ≤50 | Empty reserves required; zero disables latch | owner setter |
+| `requiredValidatorDisapprovals` | Dispute trigger | 0–50; threshold sum ≤50 | Empty reserves required; zero disables trigger | owner setter |
+| `voteQuorum` | Full-review outcome quorum | 1–50 | Empty reserves required | owner setter |
+| `completionReviewPeriod` | Voting/manual-dispute window | Positive, ≤365 days | Empty reserves required | owner setter |
+| `disputeReviewPeriod` | Stale-dispute delay | Positive, ≤365 days | Empty reserves required | owner setter |
+| `challengePeriodAfterApproval` | Approval settlement delay | Positive, ≤365 days | Empty reserves required | owner setter |
+| Agent/validator bond parameters | Funded participation | Contract-enforced bps/min/max rules | Existing agent bonds fixed at assignment; validator bonds at first vote | owner setter |
+| `validatorSlashBps` | Incorrect-vote bond slash | 0–10000 | Empty reserves required | owner setter |
+| `jobDurationLimit` | New-job duration cap | Positive, ≤365 days | Also affects later agent-bond sizing | owner setter |
+
+See [Configuration](../CONFIGURATION.md) and [owner controls](../OWNER_CONTROLS.md) for the complete guards.
 
 ## Operational invariants
 
-- `withdrawableUSDC()` excludes locked escrow and all lock buckets.
-- Agent-win payout requires completion request metadata and settled state.
-- Disputes freeze validator voting effects until moderator/owner stale resolution.
-- Identity configuration lock is irreversible.
+- `withdrawableUSDC()` excludes job escrow and all bond reserves. Owner withdrawals require intake paused and settlement enabled.
+- USDC and the fixed 30%/10% shares are immutable. The manager has no implementation upgrade switch.
+- Successful cost distribution leaves no job-cost treasury remainder; bond settlement is separate. Refund/expiry/cancellation do not pay wallet shares.
+- All outstanding randomized job states must remain settleable once their valid timing/outcome conditions are met; paused/blocked USDC remains an external liveness dependency.
+- Agent-win settlement requires submitted completion metadata and an eligible unsettled state; double settlement is rejected.
+- Identity configuration lock is irreversible for its protected setters; operational Merkle-root updates remain available.
+- Fresh deployment starts intake-paused. Ownership handover requires the proposed owner to accept; renunciation is disabled.

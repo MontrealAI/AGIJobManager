@@ -9,6 +9,35 @@ const USDC_ABI = [
   'function balanceOf(address) view returns (uint256)',
 ];
 
+function parseBooleanSetting(value, label, fallback = false) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'y', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'n', 'off'].includes(normalized)) return false;
+  throw new Error(`${label} must be an explicit true/false or 1/0 value; received ${String(value)}. No transactions were authorized by this setting.`);
+}
+
+function isAlreadyVerifiedError(error) {
+  return error?.name === 'ContractAlreadyVerifiedError' && error.pluginName === '@nomicfoundation/hardhat-verify' && error._isNomicLabsHardhatPluginError === true;
+}
+
+function requireExplorerEnabled(config) {
+  if (!config?.etherscan || config.etherscan.enabled !== true) throw new Error('Etherscan verification must be enabled; a disabled verifier cannot establish deployment verification.');
+}
+
+function requireConfirmedReceipt(receipt, transactionHash, contractAddress) {
+  if (!receipt || Number(receipt.status) !== 1 || !Number.isSafeInteger(receipt.blockNumber) || receipt.blockNumber < 0) {
+    throw new Error(`Transaction ${transactionHash} has no successful mined receipt. Reconcile the saved journal before retrying.`);
+  }
+  if (receipt.hash?.toLowerCase() !== transactionHash.toLowerCase() || !/^0x[a-fA-F0-9]{64}$/.test(receipt.blockHash || '')) {
+    throw new Error(`Transaction ${transactionHash} receipt identity is inconsistent. Reconcile the saved journal before retrying.`);
+  }
+  if (contractAddress && receipt.contractAddress?.toLowerCase() !== contractAddress.toLowerCase()) {
+    throw new Error(`Transaction ${transactionHash} deployed an unexpected contract address.`);
+  }
+  return receipt;
+}
+
 function requireDeploymentNetwork(networkName, chainId) {
   if (!NETWORK_CHAINS[networkName] || NETWORK_CHAINS[networkName] !== Number(chainId)) {
     throw new Error(`Network ${networkName} must use chain ${NETWORK_CHAINS[networkName] || '(unsupported)'}, received ${chainId}.`);
@@ -43,7 +72,7 @@ async function requireOperationalUSDC({ chainId, tokenAddress, token, recipients
 }
 
 function requireVerified(verification, names) {
-  const failed = names.filter(name => !['verified', 'already_verified'].includes(verification[name]?.status));
+  const failed = names.filter(name => !['verified', 'already_verified'].includes(verification?.[name]?.status));
   if (failed.length) throw new Error(`Explorer verification incomplete for ${failed.join(', ')}. Intake must remain paused; use the saved deployment receipt to finish verification.`);
 }
 
@@ -87,4 +116,4 @@ function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, to
   return requireRuntimeSize(artifact.contractName, code);
 }
 
-module.exports = { NETWORK_CHAINS, MAX_RUNTIME_BYTES, USDC_ABI, requireDeploymentNetwork, requireRuntimeSize, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch };
+module.exports = { NETWORK_CHAINS, MAX_RUNTIME_BYTES, USDC_ABI, parseBooleanSetting, isAlreadyVerifiedError, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch };

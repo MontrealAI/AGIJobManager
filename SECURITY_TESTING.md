@@ -9,16 +9,17 @@ npm ci
 ## Required checks
 
 ```bash
-npm ci && npm test
-~/.foundry/bin/forge test
-slither . --config-file slither.config.json
+npm test
+FOUNDRY_PROFILE=ci forge test
+npm run slither
+npm run slither:extended
 ```
 
 ## Expected outcomes
 
 - Truffle unit/integration suite passes and bytecode size guard remains below EIP-170.
 - Foundry fuzz + invariants pass without invariant violations.
-- Slither reports no High/Medium issues on project contracts.
+- The configured Slither scan has no unaccepted medium/high findings; the mandatory extended scan retains every reviewed finding and fails on source/baseline drift or new/changed findings. A passing review gate is not a zero-findings claim.
 
 ## Echidna
 
@@ -34,6 +35,6 @@ This repository relies on Foundry invariant tests as the primary property-testin
 - `uninitialized-local`: false positives on Solidity default-initialized locals.
 - `unused-return`: intentional best-effort ENS/namewrapper interactions where failures must not brick core flows.
 
-## v0.8.0 extended gates
+## Mandatory extended gates
 
 Use `npm run slither:extended` for the source-bound review of previously excluded detector classes; reports are preserved as CI artifacts. Use `npm --prefix hardhat run test:preflight`, `npm --prefix hardhat run test:deployment` and `npm --prefix hardhat run test:mainnet-fork` for deployment and real USDC local-fork qualification. All fork writes remain local. See [mainnet readiness](docs/MAINNET_READINESS.md) for the exact scope.

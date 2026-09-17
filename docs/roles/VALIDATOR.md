@@ -1,51 +1,28 @@
-# Validator Guide
+# Validator Guide — v0.9.0
 
-Validators approve or disapprove work and are rewarded for correct participation.
+Validators review submitted work and vote once per job. Rewards and bonds use native USDC; signing transactions requires ETH for gas.
 
-## Identity gating (must pass at least one)
-You must satisfy **one** of these:
-1. **ENS/NameWrapper ownership** of your subdomain under the club root.
-2. **Merkle allowlist** proof.
-3. **additionalValidators** allowlist (owner‑managed).
+## Before voting
 
-## Step‑by‑step (non‑technical)
-> **Screenshot placeholder:** Etherscan “Write Contract” tab showing `validateJob` inputs filled in.
-### 1) Validate a job
-Call `validateJob(jobId, subdomain, proof)`.
+Pass a configured validator identity route: `additionalValidators`, a valid validator Merkle proof, or the configured club ENS route. The ENS route supports qualifying NameWrapper ownership/approval and resolver-address fallback. Use the label only. You must not be blacklisted.
 
-**On‑chain results**
-- Event: `JobValidated`
-- State: validator approval count increments
-- Bond: the contract transfers the required bond from your wallet (ensure allowance); bond is capped at the job payout.
+Review the job specification and completion evidence. Confirm that completion has been requested, the job is unsettled and undisputed, and the completion review window has not ended. Read and approve the required USDC bond. The first vote fixes that job's per-validator bond for all subsequent votes, even if the owner later changes bond settings. The bond never exceeds the job cost.
 
-### 2) Disapprove a job (if needed)
-Call `disapproveJob(jobId, subdomain, proof)`.
+## Cast one vote
 
-**On‑chain results**
-- Event: `JobDisapproved`
-- State: validator disapproval count increments
-- If disapprovals reach the threshold, the job becomes disputed.
-- Bond: the same per‑job bond is posted for disapprovals.
+- Approve work: `validateJob(jobId, subdomain, proof)`.
+- Reject work: `disapproveJob(jobId, subdomain, proof)`.
 
-## Vote rules (strict)
-- A validator **cannot vote twice**.
-- A validator **cannot both approve and disapprove** a single job.
+Each successful call posts its USDC bond and emits `JobValidated` or `JobDisapproved`. You cannot change, repeat, or cast both kinds of vote. At most 50 validators can vote on one job.
 
-## Rewards
-When a job completes:
-- Validators whose vote matches the final outcome split the reward pool and any slashed bonds.
-- Validators who vote against the final outcome recover only the un‑slashed portion of their bond.
-- Correct‑side validators gain reputation points (based on payout size and job duration).
+A reached approval threshold starts a challenge window; it does not automatically settle or pay anyone. A reached disapproval threshold opens a dispute. Anyone can later call `finalizeJob` when its timing and vote conditions allow. See the [walkthrough](../user-guide/happy-path.md).
 
-## Common mistakes
-- Voting twice → `InvalidState`
-- Not authorized (identity gate) → `NotAuthorized`
-- Blacklisted → `Blacklisted`
+## Rewards and slashing
 
-## For developers
-### Key functions
-- `validateJob`
-- `disapproveJob`
+Correct-side validators share the job's recorded reward budget plus any pool assigned by the bond rules, and receive their original bond back. Incorrect-side validators recover only the unslashed portion of their bond. “Correct” means matching the contract's final outcome: approvals on agent success, disapprovals on employer win.
 
-### Events to index
-`JobValidated`, `JobDisapproved`, `JobCompleted`, `ReputationUpdated`, `JobDisputed`
+The validator budget defaults to 8% of the original job cost and is fixed at posting. The owner can set 1–60% for future jobs. On success, validators are paid first; the contract then pays 30% and 10% of the original cost to the configured wallets and sends the remainder to the agent. Integer division can leave a small reward remainder; it goes to the agent on success or the employer on refund. Bond pools are separate from the cost percentages.
+
+The default slash is 80% of an incorrect vote's bond; read `validatorSlashBps` for the deployment's actual setting. Correct-side reputation can increase on qualifying settlement. If nobody votes, there are no validator rewards and no-vote completion earns no reputation.
+
+Common errors: `NotAuthorized`, `Blacklisted`, `InvalidState` (including duplicate/late votes), `ValidatorLimitReached`, and `TransferFailed`. See [common reverts](../user-guide/common-reverts.md).

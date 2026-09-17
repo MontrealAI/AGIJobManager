@@ -1,77 +1,16 @@
-# Operator runbook
+# Operator runbook — v0.9.0
 
-This runbook is for the **owner/operator** of AGIJobManager. It focuses on
-safe day‑to‑day operations, emergency procedures, and monitoring.
+The maintained operational procedure is the [owner runbook](OWNER_RUNBOOK.md). For a new deployment, follow [Hardhat](../hardhat/README.md), complete ownership acceptance, and run the read-only readiness check before opening intake.
 
-## Day‑to‑day operations
+| Task | Current procedure |
+| --- | --- |
+| Stop new work while existing jobs settle | `pauseIntake()`; keep settlement enabled |
+| Contain an active fund-moving incident | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md); `pauseAll()` when both lanes must stop |
+| Rotate 30%/10% recipients | Paused intake and zero in all four escrow/bond reserves; [owner controls](OWNER_CONTROLS.md) |
+| Withdraw genuine surplus | Read `withdrawableUSDC()`; owner, paused intake, settlement enabled |
+| Change job/vote policy | [Configuration](CONFIGURATION.md); review per-job snapshots and zero-reserve guards |
+| Investigate a delayed job | [Participant guide](USERS.md), [lifecycle](PROTOCOL_FLOW.md), transaction receipt and review/dispute deadlines |
 
-### 1) Pause / unpause
-**Use when**: incident response, parameter change review, treasury withdrawal.
+Monitor the USDC balance against `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`. Read both pause flags and track actual transaction outcomes. Exact callable functions and events are in the [generated interface](REFERENCE/CONTRACT_INTERFACE.md) and [event reference](REFERENCE/EVENTS_AND_ERRORS.md).
 
-- `pause()` blocks new activity (create/apply/vote/dispute/reward pool contribution) but preserves settlement exits.
-- `setSettlementPaused(true)` freezes settlement/exit paths (`cancelJob`, `expireJob`, `finalizeJob`, `delistJob`, `resolveDispute*`, `resolveStaleDispute`, `withdrawUSDC`) guarded by `whenSettlementNotPaused`.
-- **Incident sequence:** call `setSettlementPaused(true)` first to stop fund-out, then `pause()` to stop intake.
-- **Recovery:** unpause intake only after settlement is safe; keep `settlementPaused` on until final safety, then set it to false last.
-
-### 2) Treasury withdrawals (owner‑only, paused‑only)
-**Process**
-1. **Pause** the contract.
-2. Check `withdrawableUSDC()` = `balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds`.
-3. Withdraw up to `withdrawableUSDC()` using `withdrawUSDC(amount)`.
-4. **Unpause** after confirming balances.
-
-### 3) Blacklisting / allowlisting
-- Use `blacklistAgent` / `blacklistValidator` for emergency removals.
-- Use `addAdditionalAgent` / `addAdditionalValidator` for explicit overrides.
-- Rotate Merkle roots when a broad allowlist update is required.
-
-### 4) Moderator management
-- Add or remove moderators with `addModerator` / `removeModerator`.
-- Keep a published roster of active moderators.
-
-### 5) Parameter changes
-- Use `setRequiredValidatorApprovals` / `setRequiredValidatorDisapprovals` to
-  adjust thresholds.
-- Adjust duration and review period parameters with caution; changes affect
-  in‑flight jobs.
-- Update `validationRewardPercentage` only when payout headroom is safe.
-
-## Emergency playbooks
-
-### A) Critical bug discovered
-1. **Pause** immediately.
-2. Assess `lockedEscrow` vs token balance (solvency check).
-3. Review in‑flight jobs for settlement impact.
-4. Communicate status and expected timeline publicly.
-5. Decide whether to resolve disputes or exit jobs before redeploying.
-
-### B) Dispute backlog
-1. Review `JobDisputed` events and age.
-2. Prioritize by `disputedAt` and payout size.
-3. Resolve with `resolveDisputeWithCode` when evidence is sufficient.
-4. Use `resolveStaleDispute` only after the dispute review period (owner‑only;
-   pausing is optional but often used for incident response).
-
-## Monitoring checklist
-
-**Core invariants**
-- `usdcToken.balanceOf(contract) >= lockedEscrow`
-- `withdrawableUSDC()` does not revert
-
-**Events to index and alert**
-- **Lifecycle**: `JobCreated`, `JobApplied`, `JobCompletionRequested`,
-  `JobValidated`, `JobDisapproved`, `JobCompleted`, `JobFinalized`,
-  `JobExpired`, `JobCancelled`
-- **Disputes**: `JobDisputed`, `DisputeResolved`, `DisputeResolvedWithCode`,
-  `DisputeTimeoutResolved`
-- **NFT issuance**: `NFTIssued`
-- **Treasury/ops**: `USDCWithdrawn`, `Paused`, `Unpaused`, `RewardPoolContribution`
-- **Identity**: `IdentityConfigurationLocked`, `RootNodesUpdated`,
-  `MerkleRootsUpdated`, `EnsRegistryUpdated`, `NameWrapperUpdated`
-- **Blacklists**: `AgentBlacklisted`, `ValidatorBlacklisted`
-
-## Operational notes
-
-- Pause is designed to stop new risk while preserving settlement and exit paths.
-- Identity wiring should be locked once validated in production.
-- Avoid changing validator thresholds mid‑cycle unless required for safety.
+The earlier duplicated runbook is retained in the [v0.8.0 source](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/operator-runbook.md) as historical material, not current operational instructions.

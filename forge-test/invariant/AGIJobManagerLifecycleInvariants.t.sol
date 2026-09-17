@@ -160,8 +160,10 @@ contract AGIJobManagerLifecycleHandler is Test {
     function changeProspectiveEconomics(uint8 rewardSeed, uint16 bondSeed) external {
         ++actionCalls;
         uint256[3] memory previous;
+        bytes32[3] memory previousBonds;
         for (uint256 i; i < 3; ++i) {
             previous[i] = manager.jobValidatorRewardPct(jobIds[i]);
+            previousBonds[i] = _bondSnapshot(jobIds[i]);
         }
         vm.startPrank(manager.owner());
         manager.setValidationRewardPercentage(bound(rewardSeed, 1, 60));
@@ -171,6 +173,7 @@ contract AGIJobManagerLifecycleHandler is Test {
         vm.stopPrank();
         for (uint256 i; i < 3; ++i) {
             assertEq(manager.jobValidatorRewardPct(jobIds[i]), previous[i]);
+            assertEq(_bondSnapshot(jobIds[i]), previousBonds[i]);
         }
         assertAccounting();
     }
@@ -249,6 +252,28 @@ contract AGIJobManagerLifecycleHandler is Test {
         assertAccounting();
     }
 
+    function _bondSnapshot(uint256 id) internal view returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                manager.jobAgentBondAmount(id), manager.jobValidatorBondAmount(id), manager.jobDisputeBondAmount(id)
+            )
+        );
+    }
+
+    /// @dev Proves all surviving randomized states remain settleable after owner changes.
+    /// Called after every invariant sequence, never counted as a random target selector.
+    function finishAllJobs() external {
+        for (uint256 slot; slot < 3; ++slot) {
+            for (uint256 attempts; stages[slot] != 0 && attempts < 3; ++attempts) {
+                this.advance(slot, 0, stages[slot] == 1 ? 5 : 1);
+            }
+            assertEq(stages[slot], 0, "randomized job could not reach a terminal state");
+        }
+        assertAccounting();
+        assertEq(_reserves(), 0);
+        assertEq(token.balanceOf(address(manager)), surplus);
+    }
+
     function _reserves() internal view returns (uint256) {
         return manager.lockedEscrow() + manager.lockedAgentBonds() + manager.lockedValidatorBonds()
             + manager.lockedDisputeBonds();
@@ -325,9 +350,9 @@ contract AGIJobManagerLifecycleInvariants is StdInvariant, Test {
         handler.assertAccounting();
     }
 
-    function afterInvariant() external view {
+    function afterInvariant() external {
         assertGt(handler.actionCalls(), 0, "no handler action executed");
-        handler.assertAccounting();
+        handler.finishAllJobs();
     }
 
     function test_DirectedHandlerReachesAllTerminalPaths() external {

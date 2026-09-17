@@ -318,7 +318,7 @@
             <span id="legacyAddress"></span>
           </p>
           <p class="muted">Active source: <span id="contractSource">—</span></p>
-          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.8.0 configuration file.</p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.9.0 configuration file.</p>
           <p class="muted">No contract is selected by default until you explicitly choose one.</p>
         </div>
       </div>
@@ -1005,9 +1005,9 @@
       preferredContract: "",
       notes: "",
     };
-    const storageKey = "agijobmanager_usdc_v080_contract";
-    const uiSettingsKey = "agijobmanager_usdc_v080_ui_settings_v1";
-    const indexCacheKey = "agijobmanager_usdc_v080_index_cache_v1";
+    const storageKey = "agijobmanager_usdc_v090_contract";
+    const uiSettingsKey = "agijobmanager_usdc_v090_ui_settings_v1";
+    const indexCacheKey = "agijobmanager_usdc_v090_index_cache_v1";
     const defaultPageSize = 50;
     const defaultIndexLookback = 20000;
     const supportedChainIds = new Set([1n, 11155111n, 1337n]);
@@ -1542,8 +1542,8 @@
     }
 
     const metadataStorageKeys = {
-      pinataJwt: "agijobmanager_usdc_v080_pinata_jwt",
-      nftStorageKey: "agijobmanager_usdc_v080_nft_storage_key",
+      pinataJwt: "agijobmanager_usdc_v090_pinata_jwt",
+      nftStorageKey: "agijobmanager_usdc_v090_nft_storage_key",
     };
 
     function updatePill(id, text, tone = "warn") {
@@ -2194,11 +2194,11 @@
       const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
       if(Number(await token.decimals()) !== 6) throw new Error('USDC decimal verification failed; transactions disabled.');
       const pendingOwner = await state.readContract.pendingOwner();
-      if(!ethers.isAddress(pendingOwner)) throw new Error('A v0.8.0 manager with two-step ownership is required.');
+      if(!ethers.isAddress(pendingOwner)) throw new Error('A v0.9.0 manager with two-step ownership is required.');
       state.pendingOwner = pendingOwner;
       const wallets = await Promise.all([state.readContract.wallet30(), state.readContract.wallet10()]);
       const invalid = [ethers.ZeroAddress, state.contractAddress, tokenAddress].filter(Boolean).map(x=>x.toLowerCase());
-      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.8.0 settlement wallets.');
+      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.9.0 settlement wallets.');
       setText('settlementWallets', '30%: '+wallets[0]+' · 10%: '+wallets[1]);
       state.usdcTokenAddress = tokenAddress;
       state.usdcTokenDecimals = 6;
@@ -3686,7 +3686,6 @@
 
     ids("approveToken").addEventListener("click", async () => {
       try {
-        await ensureToken();
         const amount = parseTokenAmount(ids("approveAmount").value, "Approve amount");
         await approveToken(amount, "Employer");
         await updateRoleFlags();
@@ -3868,6 +3867,7 @@
 
     ids("createJob").addEventListener("click", async () => {
       try {
+        const context = captureTransactionContext();
         const metaSource = ids("jobMetaSource").value;
         let jobSpecUri = "";
         if (metaSource === "existing") {
@@ -3886,7 +3886,7 @@
         const summary = ids("jobSummary").value.trim();
         const title = ids("jobTitle").value.trim();
         const details = ids("jobDetails").value.trim() || summary || title;
-        await sendTx("createJob", [jobSpecUri, payout, duration, details], "Create job");
+        await sendTx("createJob", [jobSpecUri, payout, duration, details], "Create job", context);
         await updateSnapshot();
       } catch (error) {
         showAlert(error.message);
@@ -3982,6 +3982,7 @@
 
     ids("requestCompletion").addEventListener("click", async () => {
       try {
+        const context = captureTransactionContext();
         const jobId = parseUint(ids("completionJobId").value, "Job ID");
         const metaSource = ids("completionMetaSource").value;
         let completionUri = "";
@@ -3995,7 +3996,7 @@
           }
           completionUri = validateUri(ids("completionUri").value, "Completion URI");
         }
-        await sendTx("requestJobCompletion", [jobId, completionUri], "Request completion");
+        await sendTx("requestJobCompletion", [jobId, completionUri], "Request completion", context);
       } catch (error) {
         showAlert(error.message);
       }
@@ -4012,6 +4013,7 @@
 
     ids("validateJob").addEventListener("click", async () => {
       try {
+        const context = captureTransactionContext();
         const jobId = parseUint(ids("validateJobId").value, "Job ID");
         await updateValidatorActionState("validateJobId", "validateJob", "validateJobNotice");
         if (ids("validateJob").disabled) {
@@ -4020,7 +4022,7 @@
         const label = ids("validateSubdomain").value.trim();
         if (!label) throw new Error("Label is required.");
         const proof = parseProof(ids("validateProof").value);
-        await sendTx("validateJob", [jobId, label, proof], "Validate job");
+        await sendTx("validateJob", [jobId, label, proof], "Validate job", context);
       } catch (error) {
         showAlert(error.message);
       }
@@ -4028,6 +4030,7 @@
 
     ids("disapproveJob").addEventListener("click", async () => {
       try {
+        const context = captureTransactionContext();
         const jobId = parseUint(ids("disapproveJobId").value, "Job ID");
         await updateValidatorActionState("disapproveJobId", "disapproveJob", "disapproveJobNotice");
         if (ids("disapproveJob").disabled) {
@@ -4036,7 +4039,7 @@
         const label = ids("disapproveSubdomain").value.trim();
         if (!label) throw new Error("Label is required.");
         const proof = parseProof(ids("disapproveProof").value);
-        await sendTx("disapproveJob", [jobId, label, proof], "Disapprove job");
+        await sendTx("disapproveJob", [jobId, label, proof], "Disapprove job", context);
       } catch (error) {
         showAlert(error.message);
       }

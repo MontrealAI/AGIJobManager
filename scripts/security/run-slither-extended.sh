@@ -4,11 +4,11 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 export PATH="$HOME/.foundry/bin:$PATH"
 if ! command -v slither >/dev/null 2>&1; then
-  echo "Install slither-analyzer==0.10.4 before running the extended review." >&2
+  echo "Install slither-analyzer==0.11.6 before running the extended review." >&2
   exit 1
 fi
-if [[ "$(slither --version)" != "0.10.4" ]]; then
-  echo "The reviewed findings require Slither 0.10.4; review the baseline before changing versions." >&2
+if [[ "$(slither --version)" != "0.11.6" ]]; then
+  echo "The reviewed findings require Slither 0.11.6; review the baseline before changing versions." >&2
   exit 1
 fi
 

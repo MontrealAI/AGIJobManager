@@ -15,7 +15,7 @@ export default function Admin() {
   const { actor, isOwner } = useDemoRoleFlags();
   const owner = data?.owner?.toLowerCase();
   const demoOwner = isDemoMode && isOwner;
-  const controls = <Card><h2 className='font-serif'>v0.8.0 owner controls</h2><p>Use the USDC console to update payout wallets, propose an owner or accept ownership. Wallet changes require paused intake and no reserved escrow. A proposed owner can accept directly from the console.</p><p className='mt-2'><a className='underline' href='https://github.com/MontrealAI/AGIJobManager/releases/download/v0.8.0/agijobmanager-usdc.html'>Download the USDC console</a> · <a className='underline' href='https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/OWNER_CONTROLS.md' target='_blank' rel='noopener noreferrer'>Owner guide</a></p></Card>;
+  const controls = <Card><h2 className='font-serif'>v0.9.0 owner controls</h2><p>Use the USDC console to update payout wallets, propose an owner or accept ownership. Wallet changes require paused intake and no reserved escrow. A proposed owner can accept directly from the console.</p><p className='mt-2'><a className='underline' href='https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.0/agijobmanager-usdc.html'>Download the USDC console</a> · <a className='underline' href='https://github.com/MontrealAI/AGIJobManager/blob/v0.9.0/docs/OWNER_CONTROLS.md' target='_blank' rel='noopener noreferrer'>Owner guide</a></p></Card>;
   if ((!address || !owner || address.toLowerCase() !== owner) && !demoOwner) return <div className='container-shell py-8 space-y-3'>{controls}<Card>Connect the current owner wallet to view this dashboard.</Card></div>;
   return <div className='container-shell py-8 space-y-3'>
     {controls}

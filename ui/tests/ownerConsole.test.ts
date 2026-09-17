@@ -39,11 +39,15 @@ function consoleContext() {
     refreshAll: vi.fn(async () => undefined), setToast: vi.fn()
   });
   vm.runInContext(source, context);
+  context.captureWriteContext = () => ({ account: context.userAccount, epoch: context.APP_STATE.writeEpoch || 0 });
+  context.assertWriteContext = (review: any) => {
+    if (review.account !== context.userAccount || review.epoch !== (context.APP_STATE.writeEpoch || 0)) throw new Error('Wallet context changed.');
+  };
   context.collectAdminArgs = async () => [];
   return { context, nodes, manager, call, send };
 }
 
-describe('v0.8.0 owner console', () => {
+describe('v0.9.0 owner console', () => {
   it('keeps manager controls available without an ENS job-pages deployment', async () => {
     const { context, nodes } = consoleContext();
     await context.refreshAdminPanels();

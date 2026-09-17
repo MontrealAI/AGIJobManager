@@ -1,66 +1,25 @@
-# Configuration Reference
+# Configuration Reference — v0.9.0
 
-## Purpose
-Single reference for mutable parameters, defaults, and operational constraints.
+The maintained [configuration catalog](CONFIGURATION.md) contains every current setter, guard, default and snapshot rule. Use [owner controls](OWNER_CONTROLS.md) for reviewed transaction procedures and the [Hardhat guide](../hardhat/README.md) for public-network deployment.
 
-## Audience
-Owner operators, reviewers, and incident responders.
+## Core rules
 
-## Preconditions / assumptions
-- Values below reflect current contract defaults in `AGIJobManager.sol`.
-- `lockIdentityConfiguration()` freezes token/ENS/root wiring setters, but `updateMerkleRoots` remains mutable by owner.
+- Native USDC and the successful-job 30%/10% gross-cost shares are fixed. The deployment has no implementation upgrade switch.
+- The validator budget is 1–60% (default 8%), fixed for each job when posted. NFT scores establish eligibility only; there is no NFT-plus-validator percentage-sum rule.
+- Agent bonds are fixed at assignment; each job's validator bond is fixed by its first vote. Subsequent owner changes do not rewrite those amounts.
+- Threshold, quorum, review/challenge period and slash changes require all four escrow/bond reserves to be zero. Recipient rotation additionally requires intake paused.
+- `jobDurationLimit` must be positive and at most 365 days. Review/challenge periods are also positive and at most 365 days.
+- `lockIdentityConfiguration()` permanently freezes protected ENS/root wiring setters. USDC is already immutable; Merkle roots and other permitted operating controls remain owner-managed.
+- `withdrawUSDC` requires intake paused and settlement enabled, and cannot exceed `withdrawableUSDC()`. All escrow, agent, validator and dispute bonds remain reserved.
+- Ownership changes require proposal and acceptance. Renunciation is disabled; fresh deployments start with intake paused.
 
-## Runtime parameters
-| Parameter | Default | Setter | Notes / safe range guidance |
-|---|---:|---|---|
-| `requiredValidatorApprovals` | 3 | `setRequiredValidatorApprovals` | Keep `<= MAX_VALIDATORS_PER_JOB` and coordinated with quorum. |
-| `requiredValidatorDisapprovals` | 3 | `setRequiredValidatorDisapprovals` | Keep `<= MAX_VALIDATORS_PER_JOB`. |
-| `voteQuorum` | 3 | `setVoteQuorum` | Enforced positive; align with thresholds. |
-| `validationRewardPercentage` | 8 | `setValidationRewardPercentage` | Must satisfy `(max AGIType payout + validationRewardPercentage) <= 100`. |
-| `maxJobPayout` | 88,888,888e6 | `setMaxJobPayout` | Must be `>0`; cap should match treasury risk appetite. |
-| `jobDurationLimit` | 10,000,000 | `setJobDurationLimit` | Must be `>0`. |
-| `completionReviewPeriod` | 7 days | `setCompletionReviewPeriod` | `1..365 days`. |
-| `disputeReviewPeriod` | 14 days | `setDisputeReviewPeriod` | `1..365 days`. |
-| `validatorBondBps/min/max` | 1500 / 10e6 / 88,888,888e6 | `setValidatorBondParams` | Percentage in bps with clamps; bond capped at payout. |
-| `validatorSlashBps` | 8000 | `setValidatorSlashBps` | Upper bounded at 10000 bps. |
-| `challengePeriodAfterApproval` | 1 day | `setChallengePeriodAfterApproval` | `<= 365 days`. |
-| `agentBond` (min floor) | 1e6 | `setAgentBond` | Must not exceed `agentBondMax` or payout cap paths become restrictive. |
-| `agentBondBps/min/max` | 500 / 1e6 / 88,888,888e6 | `setAgentBondParams` | Duration-adjusted by `BondMath.computeAgentBond`. |
-| `premiumReputationThreshold` | 10000 | `setPremiumReputationThreshold` | Product policy threshold; no hard upper bound in setter. |
-| `baseIpfsUrl` | constructor-supplied | `setBaseIpfsUrl` | Used by URI composition when no scheme present. |
+## Change management
 
-## Identity and eligibility wiring
-| Variable | Setter | Lock status after `lockIdentityConfiguration()` |
-|---|---|---|
-| `ens` | `updateEnsRegistry` | **Immutable after lock** |
-| `nameWrapper` | `updateNameWrapper` | **Immutable after lock** |
-| `ensJobPages` | `setEnsJobPages` | **Immutable after lock** |
-| ENS root nodes | `updateRootNodes` | **Immutable after lock** |
-| Merkle roots | `updateMerkleRoots` | **Mutable after lock (owner-only)** |
-| `useEnsJobTokenURI` | `setUseEnsJobTokenURI` | Mutable after lock |
-
-## Lists and role toggles
-- `addModerator` / `removeModerator`
-- `addAdditionalValidator` / `removeAdditionalValidator`
-- `addAdditionalAgent` / `removeAdditionalAgent`
-- `blacklistAgent` / `blacklistValidator`
-- `addAGIType` / `disableAGIType` (bounded by `MAX_AGI_TYPES`)
-
-## Change-management checklist
-1. Announce intent and maintenance window.
-2. Optionally `pause()` before sensitive changes.
-3. Apply one config family at a time.
-4. Run:
-   - `node scripts/verify-config.js --network <net> --address <addr>`
-   - `truffle exec scripts/ops/validate-params.js --network <net> --address <addr>`
-5. Unpause only after smoke tests pass.
-
-## Gotchas / failure modes
-- `setAdditionalAgentPayoutPercentage` is deprecated and always reverts.
-- Bad threshold combinations revert via `InvalidValidatorThresholds`.
-- Identity-lock mistakes require redeploy; there is no upgrade path.
+Verify the network, deployed address, owner and exact current settings. Read the catalog's guard for the action, preview it in the [USDC console](../ui/agijobmanager-usdc.html), and verify the resulting state/event after confirmation. Use wallet/Etherscan owner operations; public-network Truffle signing is retired.
 
 ## References
-- [`../contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol)
-- [`../scripts/verify-config.js`](../scripts/verify-config.js)
-- [`../scripts/ops/validate-params.js`](../scripts/ops/validate-params.js)
+
+- [Contract source](../contracts/AGIJobManager.sol)
+- [Configuration catalog](CONFIGURATION.md)
+- [Owner controls](OWNER_CONTROLS.md)
+- [Mainnet readiness](MAINNET_READINESS.md)

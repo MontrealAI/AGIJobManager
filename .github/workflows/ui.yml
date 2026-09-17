@@ -26,7 +26,7 @@ jobs:
       - run: npm run check:no-binaries
         working-directory: .
       - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit --audit-level=high
       - run: npm run check:no-binaries
       - run: npm run lint
       - run: npm run typecheck

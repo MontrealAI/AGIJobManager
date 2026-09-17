@@ -1,6 +1,6 @@
-# v0.8.0 mainnet qualification
+# v0.9.0 mainnet qualification
 
-v0.8.0 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v0.9.0 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
 ## Settlement
 
@@ -15,7 +15,7 @@ Jobs, escrow, bonds, rewards and refunds use native Circle USDC with six decimal
 
 The owner may set the validator budget to 1–60% for newly posted jobs. Existing jobs retain their posting-time percentage. Rounding and unused validator allocations go to the agent. Bonds and slashing are accounted separately. Refund outcomes do not pay the two successful-job wallet shares. Read the [complete payout specification](USDC_PAYOUT_SPLIT.md).
 
-## Changes driven by review
+## Retained contract safeguards and qualification
 
 - Intake starts paused in the constructor, eliminating the interval between deployment and a separate pause transaction.
 - Job duration settings are bounded to 1–365 days in seconds, preventing owner configuration that can overflow lifecycle deadlines.
@@ -24,6 +24,10 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 - A read-only deployment check verifies the actual instance before opening intake; ownership acceptance remains explicit.
 - Transaction reviews bind the connected account, network and manager through approvals and submission. Changed contexts require a new review. Failed receipts cannot be reported as successful.
 - Qualification includes contract regressions, issuer restrictions, bonds/disputes, exact transfer ordering, fuzzing, concurrent-job invariants, deployment rejection scenarios, browser tests and static-analysis triage.
+
+## v0.9.0 operational review
+
+v0.9.0 retains the v0.8.0 production contract source and settlement semantics. Its changes address deployment flag parsing and recovery, wallet review consistency, vulnerable UI development tooling, clearer participant/incident procedures, and stronger non-vacuous lifecycle assertions. The release evidence records the final commands, counts and findings. Start with the [user journey](START_HERE.md), [owner runbook](OWNER_RUNBOOK.md) or [incident response](OPERATIONS/INCIDENT_RESPONSE.md) for the appropriate task.
 
 ## Reproduce qualification
 
@@ -61,7 +65,7 @@ npm run test:a11y
 npm run test:headers
 ```
 
-Use Foundry 1.7.1 and Slither 0.10.4. The extended static-analysis gate preserves raw findings and verifies a reviewed baseline instead of excluding whole detector classes. Consult the linked CI logs and release validation document for exact source-specific results.
+Use Foundry 1.7.1 and Slither 0.11.6. The extended static-analysis gate preserves raw findings and verifies a reviewed baseline instead of excluding whole detector classes. Consult the linked CI logs and release validation document for exact source-specific results.
 
 ## An actual high-stakes launch
 

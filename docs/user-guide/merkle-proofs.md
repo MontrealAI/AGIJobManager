@@ -1,15 +1,17 @@
-# Merkle proofs (plain‑language guide)
+# Merkle proofs — v0.9.0
 
 Merkle proofs let the contract confirm your wallet is on an allowlist **without** storing the full list on‑chain.
 
 ## How authorization works (OR‑logic)
 
-You are authorized **if any** of the following are true:
+The identity check succeeds if **any** of these role-specific routes succeeds:
 
 1. **Explicit allowlist** (`additionalAgents` / `additionalValidators`).
 2. **Merkle proof** membership (allowlist proof).
-3. **ENS NameWrapper ownership** of the subdomain label.
+3. **ENS NameWrapper ownership or qualifying approval** for the subdomain label.
 4. **ENS resolver.addr** points to your wallet (fallback).
+
+Agents must **also** hold an eligible AGI-type NFT credential. Identity authorization does not bypass that separate requirement, blacklists, active-job limits, or USDC bond funding. Validators require their own validator authorization; agent and validator roots are separate.
 
 > **Label‑only rule (important):** enter the **label only**, not the full ENS name.
 > - ✅ `helper`
@@ -44,21 +46,13 @@ Output includes:
 
 ### Option 1: Web UI (recommended)
 
-1. Open [`docs/ui/agijobmanager.html`](../ui/agijobmanager.html).
+1. Open the [USDC console](../../ui/agijobmanager-usdc.html) or [operator console](../ui/agijobmanager.html).
 2. Set the contract address and network.
 3. Use **Identity checks** and paste your proof.
 
-### Option 2: Truffle console (read‑only)
+### Option 2: Etherscan Read Contract
 
-```bash
-truffle console --network <network>
-```
-
-```javascript
-const instance = await AGIJobManager.at("0xYourContract");
-const agentRoot = await instance.agentMerkleRoot();
-const validatorRoot = await instance.validatorMerkleRoot();
-```
+Open the verified manager address on the correct network. Read `agentMerkleRoot()` or `validatorMerkleRoot()` for the role you will use. These reads do not require a transaction or token approval.
 
 Compare the root you were given with the on‑chain root for your role.
 

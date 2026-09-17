@@ -1,4 +1,7 @@
 const hre = require("hardhat");
+const fs = require("fs");
+const path = require("path");
+const { randomUUID } = require("crypto");
 
 const { ethers, run, network } = hre;
 
@@ -7,17 +10,13 @@ const MAINNET_NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
 const MAINNET_PUBLIC_RESOLVER = "0xF29100983E058B709F3D539b0c765937B804AC15";
 const DEFAULT_JOB_MANAGER = ""; // Explicit verified USDC manager required.
 const { requireCanonicalUSDC } = require("../../scripts/lib/usdc");
-const { requireDeploymentNetwork } = require("./deployment-safety");
+const { parseBooleanSetting, isAlreadyVerifiedError, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork } = require("./deployment-safety");
 const DEFAULT_ROOT_NAME = "alpha.jobs.agi.eth";
 const MAINNET_SAFETY_PHRASE = "I_UNDERSTAND_MAINNET_DEPLOYMENT";
 
 function env(k, d = "") {
   const v = process.env[k];
   return v === undefined || v === null || v === "" ? d : v;
-}
-
-function isTruthy(v) {
-  return ["1", "true", "yes", "y", "on"].includes(String(v || "").trim().toLowerCase());
 }
 
 function sleep(ms) {
@@ -53,7 +52,7 @@ async function main() {
   const net = await ethers.provider.getNetwork();
   const chainId = Number(net.chainId);
   requireDeploymentNetwork(network.name, chainId);
-  const dryRun = isTruthy(env("DRY_RUN"));
+  const dryRun = parseBooleanSetting(env("DRY_RUN"), "DRY_RUN");
 
   const confirmations = parseIntEnv("CONFIRMATIONS", 3, 1);
   if (chainId === 1 && confirmations < 3) throw new Error("Mainnet requires at least 3 confirmations.");
@@ -77,8 +76,9 @@ async function main() {
   const jobsRootNode = env("JOBS_ROOT_NODE", computedJobsRootNode);
   const jobManager = env("JOB_MANAGER", DEFAULT_JOB_MANAGER);
 
-  const verify = isTruthy(env("VERIFY"));
-  const lockConfig = isTruthy(env("LOCK_CONFIG"));
+  const verify = parseBooleanSetting(env("VERIFY"), "VERIFY");
+  const lockConfig = parseBooleanSetting(env("LOCK_CONFIG"), "LOCK_CONFIG");
+  if (verify && !dryRun) requireExplorerEnabled(hre.config);
 
   const ownerOverride = env("NEW_OWNER") || env("FINAL_OWNER") || "";
 
@@ -100,17 +100,26 @@ async function main() {
   await requireCode(jobManager, "JOB_MANAGER");
   const managerToken = await new ethers.Contract(jobManager, ["function usdcToken() view returns (address)"], ethers.provider).usdcToken();
   requireCanonicalUSDC(chainId, managerToken);
+  if (ownerOverride && [ensRegistry, nameWrapper, publicResolver, jobManager, managerToken].some(address => address.toLowerCase() === ownerOverride.toLowerCase())) {
+    throw new Error("The ENSJobPages owner cannot be a configured protocol dependency. Choose a reviewed wallet or governance contract able to operate owner functions.");
+  }
   const tokenDecimals = await new ethers.Contract(managerToken, ["function decimals() view returns (uint8)"], ethers.provider).decimals();
   if (Number(tokenDecimals) !== 6) throw new Error("USDC must have six decimals");
   if (nameWrapper.toLowerCase() !== ethers.ZeroAddress.toLowerCase()) {
     await requireCode(nameWrapper, "NAME_WRAPPER");
   }
 
-  const [deployer] = await ethers.getSigners();
+  let [deployer] = await ethers.getSigners();
+  if (!deployer && dryRun && env("DEPLOYER_ADDRESS")) {
+    const address = env("DEPLOYER_ADDRESS");
+    if (!ethers.isAddress(address) || address.toLowerCase() === ethers.ZeroAddress.toLowerCase()) throw new Error("DEPLOYER_ADDRESS must be a valid nonzero address.");
+    deployer = { address: ethers.getAddress(address) };
+  }
+  if (!deployer) throw new Error("A deployer account is required. For read-only DRY_RUN=1 without a key, set DEPLOYER_ADDRESS.");
   const ens = await ethers.getContractAt(
     ["function owner(bytes32 node) view returns (address)"],
     ensRegistry,
-    deployer,
+    ethers.provider,
   );
   const currentRootOwner = await ens.owner(jobsRootNode);
 
@@ -139,49 +148,78 @@ async function main() {
   }
 
   const constructorArgs = [ensRegistry, nameWrapper, publicResolver, jobsRootNode, jobsRootName];
-  const factory = await ethers.getContractFactory("ENSJobPages");
-  const ensJobPages = await factory.deploy(...constructorArgs);
-  await ensJobPages.waitForDeployment();
-  const deploymentTx = ensJobPages.deploymentTransaction();
-  if (deploymentTx && confirmations > 0) {
-    await deploymentTx.wait(confirmations);
-  }
+  const journalDirectory = path.join(__dirname, '..', 'deployments', network.name);
+  fs.mkdirSync(journalDirectory, { recursive: true });
+  const journalPath = path.join(journalDirectory, `ens-job-pages.${chainId}.${randomUUID()}.json`);
+  const journal = { status: 'started', chainId, network: network.name, deployer: deployer.address,
+    constructorArgs, jobManager, finalOwner: ownerOverride || deployer.address, lockConfig,
+    verification: { status: verify ? 'pending' : 'not_requested' }, transactions: [] };
+  const checkpoint = () => {
+    fs.writeFileSync(`${journalPath}.tmp`, `${JSON.stringify(journal, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+    fs.renameSync(`${journalPath}.tmp`, journalPath);
+  };
+  checkpoint();
+  console.log(`ENS deployment journal: ${journalPath}`);
+  const recordTransaction = async (action, tx, contractAddress) => {
+    const entry = { action, txHash: tx.hash, status: 'broadcast' };
+    journal.transactions.push(entry);
+    checkpoint();
+    const receipt = requireConfirmedReceipt(await tx.wait(confirmations), tx.hash, contractAddress);
+    Object.assign(entry, { status: 'confirmed', blockNumber: receipt.blockNumber, blockHash: receipt.blockHash });
+    checkpoint();
+  };
+  try {
+    const factory = await ethers.getContractFactory("ENSJobPages");
+    const ensJobPages = await factory.deploy(...constructorArgs);
+    const ensJobPagesAddress = await ensJobPages.getAddress();
+    journal.address = ensJobPagesAddress;
+    await recordTransaction('deploy', ensJobPages.deploymentTransaction(), ensJobPagesAddress);
+    await ensJobPages.waitForDeployment();
+    console.log("\nENSJobPages deployed:", ensJobPagesAddress);
 
-  const ensJobPagesAddress = await ensJobPages.getAddress();
-  console.log("\nENSJobPages deployed:", ensJobPagesAddress);
+    console.log("Setting job manager...");
+    await recordTransaction('setJobManager', await ensJobPages.setJobManager(jobManager));
 
-  console.log("Setting job manager...");
-  const setJobManagerTx = await ensJobPages.setJobManager(jobManager);
-  await setJobManagerTx.wait(confirmations);
-
-  if (lockConfig) {
-    console.log("Locking configuration...");
-    const lockTx = await ensJobPages.lockConfiguration();
-    await lockTx.wait(confirmations);
-  }
-
-  if (ownerOverride) {
-    console.log("Transferring ownership to:", ownerOverride);
-    const transferTx = await ensJobPages.transferOwnership(ownerOverride);
-    await transferTx.wait(confirmations);
-  }
-
-  if (verify && network.name !== "hardhat") {
-    try {
-      console.log(`\nWaiting ${verifyDelayMs}ms before verify...`);
-      await sleep(verifyDelayMs);
-      await run("verify:verify", {
-        address: ensJobPagesAddress,
-        constructorArguments: constructorArgs,
-      });
-      console.log("Verification submitted.");
-    } catch (err) {
-      const message = String(err?.message || err);
-      if (!/already (been )?verified/i.test(message)) {
-        throw new Error(`ENSJobPages ${ensJobPagesAddress} was deployed but explorer verification failed. Preserve this address and finish verification before use; do not redeploy blindly. ${message}`);
+    if (verify) {
+      try {
+        console.log(`\nWaiting ${verifyDelayMs}ms before verify...`);
+        await sleep(verifyDelayMs);
+        await run("verify:verify", { address: ensJobPagesAddress, constructorArguments: constructorArgs });
+        journal.verification = { status: 'verified' };
+      } catch (error) {
+        if (!isAlreadyVerifiedError(error)) {
+          journal.verification = { status: 'failed', error: String(error?.message || error) };
+          checkpoint();
+          throw new Error(`ENSJobPages ${ensJobPagesAddress} was deployed but explorer verification failed. Preserve ${journalPath} and finish verification before use; do not redeploy blindly. ${String(error?.message || error)}`);
+        }
+        journal.verification = { status: 'already_verified' };
       }
-      console.log("Contract was already verified.");
+      checkpoint();
     }
+
+    if (lockConfig) {
+      console.log("Locking configuration...");
+      await recordTransaction('lockConfiguration', await ensJobPages.lockConfiguration());
+    }
+    if (ownerOverride) {
+      console.log("Transferring ENSJobPages ownership in one step to:", ownerOverride);
+      await recordTransaction('transferOwnership', await ensJobPages.transferOwnership(ownerOverride));
+    }
+    const currentOwner = await ensJobPages.owner();
+    const configuredManager = await ensJobPages.jobManager();
+    const configLocked = await ensJobPages.configLocked();
+    if (currentOwner.toLowerCase() !== journal.finalOwner.toLowerCase() || configuredManager.toLowerCase() !== jobManager.toLowerCase() || configLocked !== lockConfig) {
+      throw new Error('ENSJobPages final configuration did not match the reviewed plan. Preserve the journal and reconcile before use.');
+    }
+    Object.assign(journal, { status: 'configured', currentOwner, configuredManager, configLocked });
+    checkpoint();
+    console.log(`ENSJobPages configured; verification=${journal.verification.status}. Receipt: ${journalPath}`);
+  } catch (error) {
+    journal.status = 'failed';
+    journal.error = String(error?.message || error);
+    checkpoint();
+    console.error(`ENS deployment incomplete. Preserve ${journalPath}; do not redeploy blindly.`);
+    throw error;
   }
 
   console.log("\nManual next steps (not automated):");

@@ -1,8 +1,8 @@
-# Security Verification Scope — v0.8.0 USDC
+# Security Verification Scope — v0.9.0 USDC
 
-This document describes the configured checks and residual assumptions. Exact run results belong to the v0.8.0 release evidence; this is not an independent audit.
+This document describes the configured checks and residual assumptions. Exact run results belong to the v0.9.0 release evidence; this is not an independent audit.
 
-The extended gate additionally runs all medium/high detectors and a dedicated reentrancy pass without detector-category exclusions. Its reviewed findings and source-bound baseline are preserved in [static analysis triage](docs/security/v0.8.0-static-analysis.md). A clean configured gate does not mean the extended scan returned no findings.
+The extended gate additionally runs all medium/high detectors and a dedicated reentrancy pass without detector-category exclusions. Its reviewed findings and source-bound baseline are preserved in [static analysis triage](docs/security/v0.9.0-static-analysis.md). A clean configured gate does not mean the extended scan returned no findings.
 
 See [mainnet readiness](docs/MAINNET_READINESS.md) for deployment checks and limitations.
 
@@ -14,7 +14,7 @@ See [mainnet readiness](docs/MAINNET_READINESS.md) for deployment checks and lim
 ## Tooling Versions
 - Foundry: 1.7.1 (pinned by CI)
 - Solidity compiler: `0.8.23` (from `foundry.toml`)
-- Slither: `0.10.4`
+- Slither: `0.11.6`
 - Echidna: not included (Foundry handler invariants already cover the multi-step state machine with deterministic CI runtime)
 
 ## Reproduction Commands
@@ -22,14 +22,16 @@ See [mainnet readiness](docs/MAINNET_READINESS.md) for deployment checks and lim
 npm ci
 
 # Foundry checks
-forge fmt --check
+forge fmt --check forge-test/**/*.sol contracts/test/MaliciousCompletionReceiver.sol
 FOUNDRY_PROFILE=ci forge build
 FOUNDRY_PROFILE=ci forge test --no-match-path "forge-test/invariant/*.t.sol"
 FOUNDRY_PROFILE=ci forge test --match-path "forge-test/invariant/*.t.sol"
 
 # Static analysis
-pip install slither-analyzer==0.10.4
+pip install slither-analyzer==0.11.6
 npm run slither
+npm run slither:extended
+python3 scripts/security/test-slither-review.py
 ```
 
 ## Added Verification Coverage
@@ -96,3 +98,11 @@ Invariants enforced:
 ## v0.8.0 qualification additions
 
 The constructor starts intake paused; unsafe duration limits and self-targeted rescue calls are rejected. New fuzzing covers exact USDC transfer order, snapshotted budgets, micro-unit rounding, issuer restrictions and maximum-duration boundaries. The directed lifecycle handler asserts successful transitions without swallowing unexpected reverts, while checking concurrent-job reserves, owner extraction guards and ownership transitions. CI uses 256 fuzz cases per fuzz test and 64×64 calls per stateful invariant. A separate local mainnet-fork gate exercises the actual Circle proxy at a pinned finalized block without sending live transactions. Deployment tests check compiler/runtime matching, EIP limits, preflight failures, partial receipts and incomplete verification.
+
+## v0.9.0 qualification additions
+
+Production contract source is unchanged from v0.8.0. UI regression coverage now rejects changes during asynchronous preparation, overlapping review dialogs, edited reviewed identities and stale/failed simulation requests; reviews support keyboard focus and cancellation. Deployment rejects malformed control flags and ambiguous verification outcomes, records recoverable failures and checks readiness against consistent chain state.
+
+Foundry adds bond-snapshot changes across the first and later votes, including zero-bond encoding. Stateful sequences must settle every remaining job and finish with zero reserves and the exact donation surplus; owner changes must preserve outstanding bond snapshots.
+
+Slither 0.11.6 broadens the general pass to 59 medium/high detectors and the focused pass to 6 reentrancy detectors. The same 50 distinct findings remain individually reviewed; no finding IDs were regenerated. Evidence JSON parsing rejects duplicate keys and malformed structures, with 9 committed test cases covering 27 rejection scenarios. The full UI dependency audit now includes development tooling and has zero findings at qualification. Root legacy development advisories remain disclosed in the dependency report.

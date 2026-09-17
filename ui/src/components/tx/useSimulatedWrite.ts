@@ -1,5 +1,5 @@
 'use client';
-import { verifyUSDCDeployment, assertUSDCWriteTarget, assertUSDCWalletContext } from '@/lib/usdc';
+import { verifyUSDCDeployment, assertUSDCWriteTarget, assertUSDCWalletContext, assertSimulatedUSDCRequest } from '@/lib/usdc';
 import { env } from '@/lib/env';
 import { useState } from 'react';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
@@ -14,14 +14,16 @@ export function useSimulatedWrite(){
   const [error,setError] = useState<string>();
   async function run(config: any, expectedChainId:number, preflight?:()=>Promise<void>|void){
     try {
+      const reviewedConfig = { ...config, args: config.args ? structuredClone(config.args) : undefined };
       setError(undefined); setStep('Preparing');
       if (!address || !walletClient) throw new Error('Connect wallet');
       if (chainId !== expectedChainId || !publicClient) throw new Error('Network mismatch');
       await assertUSDCWalletContext(walletClient, address, expectedChainId);
       await preflight?.();
-      const sim = await publicClient!.simulateContract({...config, account: address});
+      const sim = await publicClient!.simulateContract({...reviewedConfig, account: address});
       const token = await verifyUSDCDeployment(publicClient, env.agiJobManagerAddress, expectedChainId);
-      assertUSDCWriteTarget(config.address, env.agiJobManagerAddress, token, config.functionName, config.args);
+      assertUSDCWriteTarget(sim.request.address, env.agiJobManagerAddress, token, sim.request.functionName, sim.request.args);
+      assertSimulatedUSDCRequest(sim.request, reviewedConfig);
       await assertUSDCWalletContext(walletClient, address, expectedChainId);
       setStep('Awaiting signature');
       const hash = await walletClient.writeContract(sim.request);

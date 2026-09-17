@@ -53,12 +53,12 @@ function evaluateInvariants({
   results.push({
     key: "validatorApprovalsNonZero",
     status: approvals > 0 ? CHECK.PASS : CHECK.WARN,
-    message: "requiredValidatorApprovals is zero (single approval completes jobs)",
+    message: "requiredValidatorApprovals is zero (threshold-based early approval is disabled)",
   });
   results.push({
     key: "validatorDisapprovalsNonZero",
     status: disapprovals > 0 ? CHECK.PASS : CHECK.WARN,
-    message: "requiredValidatorDisapprovals is zero (single disapproval triggers dispute)",
+    message: "requiredValidatorDisapprovals is zero (threshold-based automatic dispute is disabled)",
   });
   results.push({
     key: "validationRewardPercentage",

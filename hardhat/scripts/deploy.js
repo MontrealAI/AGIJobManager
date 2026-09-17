@@ -1,7 +1,7 @@
-const { USDC_ABI, requireDeploymentNetwork, requireRuntimeSize, requireCode, requireOperationalUSDC, requireVerified, requireArtifactMatch } = require('./deployment-safety');
+const { USDC_ABI, parseBooleanSetting, isAlreadyVerifiedError, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireCode, requireOperationalUSDC, requireVerified, requireArtifactMatch } = require('./deployment-safety');
 const fs = require('fs');
 const path = require('path');
-const { ethers, network, run, artifacts } = require('hardhat');
+const { ethers, network, run, artifacts, config: hardhatConfig } = require('hardhat');
 
 const MAINNET_CONFIRMATION_VALUE = 'I_UNDERSTAND_MAINNET_DEPLOYMENT';
 const DEFAULT_VERIFY_DELAY_MS = 3500;
@@ -152,13 +152,15 @@ async function deployContract(name, args = [], options = {}, confirmations = DEF
   const tx = contract.deploymentTransaction();
   onBroadcast({ name, address: await contract.getAddress(), txHash: tx.hash, status: 'broadcast' });
   await contract.waitForDeployment();
-  const receipt = await tx.wait(confirmations);
+  const receipt = requireConfirmedReceipt(await tx.wait(confirmations), tx.hash, await contract.getAddress());
 
   return {
     name,
     address: await contract.getAddress(),
     txHash: tx.hash,
     blockNumber: receipt.blockNumber,
+    blockHash: receipt.blockHash,
+    status: 'confirmed',
   };
 }
 
@@ -185,8 +187,7 @@ async function verifyWithRetry(params, verifyDelayMs) {
       return verificationEntry;
     } catch (error) {
       const message = String(error?.message || error);
-      const lowered = message.toLowerCase();
-      if (lowered.includes('already verified') || lowered.includes('already been verified')) {
+      if (isAlreadyVerifiedError(error)) {
         verificationEntry.status = 'already_verified';
         verificationEntry.error = null;
         return verificationEntry;
@@ -238,7 +239,7 @@ function writeRecord(filePath, record) {
 async function main() {
   const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', DEFAULT_CONFIRMATIONS, 1);
   const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS, 0);
-  const dryRun = process.env.DRY_RUN === '1';
+  const dryRun = parseBooleanSetting(process.env.DRY_RUN, 'DRY_RUN');
   let [deployer] = await ethers.getSigners();
   if (!deployer && dryRun && process.env.DEPLOYER_ADDRESS) {
     validateAddress('DEPLOYER_ADDRESS', process.env.DEPLOYER_ADDRESS);
@@ -276,6 +277,7 @@ async function main() {
       throw new Error('Mainnet deployment requires a non-zero finalOwner.');
     }
   }
+  if (!dryRun) requireExplorerEnabled(hardhatConfig);
 
   const plan = {
     network: network.name,
@@ -331,6 +333,8 @@ async function main() {
       [FQNS.ReputationMath]: deployments.ReputationMath.address,
       [FQNS.ENSOwnership]: deployments.ENSOwnership.address,
     };
+    journal.libraries = linkedLibraries;
+    checkpoint();
 
     const managerArgs = [
       constructorArgs.usdcTokenAddress,
@@ -346,7 +350,6 @@ async function main() {
     requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS.AGIJobManager), buildInfo, address: managerDeployment.address, libraries: linkedLibraries, tokenAddress: constructorArgs.usdcTokenAddress, code: managerCode });
     managerDeployment.runtimeCodeHash = ethers.keccak256(managerCode);
     deployments.AGIJobManager = managerDeployment;
-    journal.libraries = linkedLibraries;
     checkpoint();
     const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
     if (!(await manager.paused())) throw new Error('New manager did not start with intake paused. Do not activate this deployment.');
@@ -372,6 +375,7 @@ async function main() {
     );
 
     checkpoint();
+    requireVerified(verificationResults, [...LIBRARIES, 'AGIJobManager']);
 
     let ownershipTransfer = {
       executed: false,
@@ -383,11 +387,12 @@ async function main() {
       const tx = await manager.transferOwnership(resolvedFinalOwner);
       journal.ownershipTransfer = { executed: true, txHash: tx.hash, status: 'broadcast', finalOwner: resolvedFinalOwner };
       checkpoint();
-      const transferReceipt = await tx.wait(confirmations);
+      const transferReceipt = requireConfirmedReceipt(await tx.wait(confirmations), tx.hash);
       ownershipTransfer = {
         executed: true,
         txHash: tx.hash,
         blockNumber: transferReceipt.blockNumber,
+        blockHash: transferReceipt.blockHash,
         reason: null,
       };
       console.log(`[owner] transferOwnership(${resolvedFinalOwner}) tx=${tx.hash}`);
@@ -421,6 +426,7 @@ async function main() {
           address: deployment.address,
           txHash: deployment.txHash,
           blockNumber: deployment.blockNumber,
+          blockHash: deployment.blockHash,
           runtimeCodeHash: deployment.runtimeCodeHash,
         }])
       ),
@@ -478,4 +484,4 @@ if (require.main === module) main().catch((error) => {
   process.exit(1);
 });
 
-module.exports = { resolveConstructor, parsePositiveInt, qualifiedBuild, FQNS, LIBRARIES, main };
+module.exports = { resolveConstructor, parsePositiveInt, qualifiedBuild, FQNS, LIBRARIES, stableObject, verifyWithRetry, main };

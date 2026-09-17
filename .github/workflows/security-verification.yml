@@ -62,13 +62,15 @@ jobs:
       - name: Install Slither
         run: |
           python -m pip install --upgrade pip
-          pip install slither-analyzer==0.10.4
+          pip install slither-analyzer==0.11.6
 
       - name: Run Slither
         run: npm run slither
 
       - name: Run and review extended Slither findings
-        run: npm run slither:extended
+        run: |
+          python3 scripts/security/test-slither-review.py
+          npm run slither:extended
 
       - name: Preserve static analysis evidence
         if: always()
