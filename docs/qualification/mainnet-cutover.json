@@ -1,0 +1,465 @@
+{
+  "scope": "isolated local Ethereum fork; no public transactions or live signer-control proof",
+  "sourceSha256": {
+    "contracts/AGIJobManager.sol": "6787f3604dff7c7e51549da3470381e9ab8f310fa6bae5a956152c815c32d5c7",
+    "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
+    "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
+    "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
+    "contracts/ens/INameWrapper.sol": "182065cbe99804d03abef665ec6d927cfa4d91cc0804301d7893fe6a57fc58d3",
+    "contracts/ens/IPublicResolver.sol": "87c6e8d65d352ae4d69d802ab01b070531199078d41a79ea3be934a479d2b48e",
+    "contracts/legacy/AGIJobManagerOriginal.sol": "3a98e0735e8d056c15327a533e088d996e5fee60febfa973cb8f6166aff2ec3b",
+    "contracts/periphery/AGIJobPages.sol": "21b0011e798c73717524708af6af2aa244bc63dc29ec9172ee149ad5c6e898ad",
+    "contracts/test/BoundedReturndataENSMocks.sol": "3530369cd9ef6567adc3516ba42b91ad9c600be90a467c4cdfb9172ad06a2b86",
+    "contracts/test/CompletionNFTHolders.sol": "cbef7553dea85df87cd1385ee0203cef78ba1858c8688bf4d83df08b14f3e177",
+    "contracts/test/ENSLivenessMocks.sol": "d07b05a427002f7f03b9311555bb30c6f957119447eeb0670c0e4be7ec7a1a54",
+    "contracts/test/ERC20NoReturn.sol": "d3bb3cb536cc476ed502ce0145b69fec50a927cdaebb196ccca0f8386f9e65f7",
+    "contracts/test/EnsLabelUtilsHarness.sol": "7404df55f522fbd28d24609f97a2f46502749f6f16e4366c6f1326dc82e7d618",
+    "contracts/test/FailTransferToken.sol": "46448e15779f275742381be1c7bc3892c371b57ffb6edad28bc59c5df1c65790",
+    "contracts/test/FailingERC20.sol": "d457213bf1af1c221ca60fa533de675b04dee7d2c8ac00ac3641441a6be644a6",
+    "contracts/test/FeeOnTransferToken.sol": "028ee1fbb20a243ec229ab10de1d75e9f851fa897a04db98db744f7538a31385",
+    "contracts/test/HookGasBurner.sol": "e31178d1105335ed79da11ff5e3a4c5e36eae4ec7cba3981b4524a8f587d3dc5",
+    "contracts/test/HookToken.sol": "0a1e2114c9e3da7bff82abb44b8d606d9f826848026fb03ac0f32714c2a744e7",
+    "contracts/test/InvalidBoolNameWrapper.sol": "93589a6f77ff3695a007fa826bf8ac3ab08f912a52368403b4212d37536982f3",
+    "contracts/test/InvalidBoolReturnERC20.sol": "638ca0ee304935e1598b30b4d7f0ec9e2dc359dde0bff160d92b3b11ef74bb4c",
+    "contracts/test/MalformedENSComponents.sol": "0e27bc2c0e8349257235fe2322142cade6d224e8fb309c0abbf05b683bdf87b5",
+    "contracts/test/MalformedReturnERC20.sol": "58dec19996b2956f355e7b3f8be31ae0e9a54c8c8449b575853489bcb929b1c1",
+    "contracts/test/MaliciousCompletionReceiver.sol": "ceb7ba77923c6421005509b5587c0a6acdbe4bd147b07de27ed525080d3e7d86",
+    "contracts/test/MockAGIJobManagerView.sol": "056c045321141486b59d3ba149d980a7445c0ed77bbb483df92ada740ed53e8f",
+    "contracts/test/MockBrokenERC721.sol": "478e2bd06f09bade70ebf4350be599e55cba858b4375a44e9d7137526733529b",
+    "contracts/test/MockENS.sol": "6458d3fbdaafd623aa44bde80c54e58823cca47530e238649fcd19f8accf58ff",
+    "contracts/test/MockENSJobPages.sol": "1186ad51ad6948468ecdcccc44e5b0df6320a1d5747eb10eb537d694c93ad867",
+    "contracts/test/MockENSJobPagesMalformed.sol": "48bced65862b0075f91e1643f655d2a1b0235f00df30d37843932b3c11e2ad8b",
+    "contracts/test/MockENSRegistry.sol": "5b361ae0815f930b008f1e948dadab1628ff52e929b8c367c80b291450fbbfd3",
+    "contracts/test/MockERC165Only.sol": "1c9426c75e830e6739acab4116eed18243e5e056b3d36a2e3cf78c833716ed7c",
+    "contracts/test/MockERC20.sol": "7710c6e658d39b8707d515a05902fb985572ff639b44a941aa70efe01f396504",
+    "contracts/test/MockERC721.sol": "b43e8fab5b8e467d4e886d07ea6d4c0567573ef49080c3fc018610e09d58bc6f",
+    "contracts/test/MockERC721Only.sol": "4b6ce80550f1219659bb4ff143bfb49af97b84c35c7921ca72926d52644f739d",
+    "contracts/test/MockGasGriefERC721.sol": "d670417e5a78060ad2f7222f248690c2b89d8240dce2dd312946e92cbe11c7a6",
+    "contracts/test/MockHookCaller.sol": "dafbc13035d9831586e430c1643b24f42ed0069e576e65b0d58ae33c6855e07b",
+    "contracts/test/MockLoopingERC721.sol": "3cbeba9b40a86ea2164bb1ca08f850cc64a6dfe7350c80d41123c04215d32e5f",
+    "contracts/test/MockNameWrapper.sol": "01bcaefd1cab244edbaaabe6350347b21552bd964d0cd5f28863b6fe673b28a1",
+    "contracts/test/MockNoSupportsInterface.sol": "45041384d4baa4d6aa9938b7d8eba36e5b196a0971581b40696bae2d250a3acc",
+    "contracts/test/MockPublicResolver.sol": "afd0f7e0248536ce64f3cc7c31fa88b548a5c87dd52f646a48017567ea1407ee",
+    "contracts/test/MockResolver.sol": "d77451f982723e3b58633c3510f4020a5caf834c3d56ac1571e480e0375a44cb",
+    "contracts/test/MockUSDCControls.sol": "0329914204c103f12f8ba64aa23433e6331dd4731960cc3ced1291b9eaf6d906",
+    "contracts/test/OwnerRotationReceiver.sol": "cebb0a358464f893b25e38759a302f4bbdadb9ff5d0f6568db6970e632a93c72",
+    "contracts/test/ReenteringEmployer.sol": "622235ed7e365db9e6c4d82106b9bd1c132f0c2eda9abad2f3e4d5a98d0e2919",
+    "contracts/test/ReputationHarness.sol": "ff279b44b02c1944366d6ae8b75f10ee26d2083df316b331935b21966eb2049a",
+    "contracts/test/RescueMocks.sol": "0f9277f7e599ca1ab36137dbcb45c9faf77bce6384e662c6b8a8e80c0050f083",
+    "contracts/test/RevertingBalanceOfERC20.sol": "e0832f3fb4336c5740766a7a7cde94728c11e2e2c3c51626255d9bfd7192995c",
+    "contracts/test/RevertingENSComponents.sol": "f7545235bc35c73611e8aae3ca679497e190ec96a900ea4da0abb159990ba0d7",
+    "contracts/test/RevertingERC20.sol": "b95d073d8f8ec609bbadb1328a9bed28cc3555cbe23c660f342e3c4d7bdabdc5",
+    "contracts/test/UtilsHarness.sol": "5345b58f2d3d3eb874fd2737216deae7b2f77065f4fb6bf74063a29a3d84ff29",
+    "contracts/utils/BondMath.sol": "f082b47230121bd98c9a2c4c5c0957734461f2fbf612b2386e249fa4b4b3fa30",
+    "contracts/utils/ENSOwnership.sol": "8f6ddf455fe74489693e47979485770b9627c2e717d381a69a9445ab71974944",
+    "contracts/utils/EnsLabelUtils.sol": "e7bf88fa5c3ecd85472e066c73dd76c2ce3b9f1f9700db27c4781e0577b358db",
+    "contracts/utils/ReputationMath.sol": "c742c3e7cb05a412405e8fe29d5283b1464e6c377ce98e2d8a360f96f3e3522c",
+    "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
+    "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
+    "hardhat.cutover-fork.config.mjs": "97ae65fb86ad2a6e7ac4b487a561e60fe4698bbc9bf6759105be330e4a5384f0",
+    "hardhat/hardhat.config.js": "ff4c769f2e409186d29f569cb481ed49e975fa8d790105a0d2fda02bd4321a81",
+    "hardhat/package-lock.json": "c519f0e4481f64e0c695f5bede3fee18ff3451e7b96173ce9ff7558ff6e53fea",
+    "hardhat/qualification/cutover-pin.json": "1da5c523c8d1e7629f2630844d02040bd6ca14a6961a41b259cf9af7bb7397d6",
+    "hardhat/qualification/legacy-snapshot.cjs": "073b4e6ce4311246985d8c4740018fec967f7042e1b6a233a56142812daf6a31",
+    "hardhat/scripts/runtime.cjs": "37818ccfd8fb317d12d156ac693a14e7f121680ef81d7d21e2b9e3dff3291cad",
+    "hardhat/test/mainnet-cutover.test.js": "65ac1297bb278f4edfb9efa47ac61a3d6c2882342a77f2507c8f3598d2e793b9",
+    "package-lock.json": "dc4d87c4722bb5f8713ae4bf8208cbbcfd38a7fca6c53129a60c3b747bef6886",
+    "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
+    "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116"
+  },
+  "pin": {
+    "chainId": 1,
+    "blockNumber": 25998952,
+    "blockHash": "0xac9075441aff899351bf4ca9abf5be0edc4494b69a1c7543b389fd8cacaa159a",
+    "legacyManager": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+    "legacyManagerCodeHash": "0x66d02468d15519fb461762ef448f9f395e1e67a54f5a8becd13547fd785f51df",
+    "legacyPages": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+    "legacyOwner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+    "legacyRootOwner": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+    "usdc": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "usdcImplementation": "0x43506849d7c04f9138d1a2050bbf3a0c054402dd",
+    "usdcImplementationCodeHash": "0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea"
+  },
+  "legacyBaseline": {
+    "address": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+    "runtimeCodeHash": "0x66d02468d15519fb461762ef448f9f395e1e67a54f5a8becd13547fd785f51df",
+    "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+    "agiToken": "0xA61a3B3a130a9c20768EEBF97E21515A6046a1fA",
+    "ensJobPages": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+    "nextJobId": "12",
+    "nextTokenId": "6",
+    "paused": false,
+    "settlementPaused": false,
+    "lockedEscrow": "10000000000000000000000",
+    "lockedAgentBonds": "2802400000000000000000",
+    "lockedValidatorBonds": "0",
+    "lockedDisputeBonds": "0",
+    "pages": {
+      "address": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+      "runtimeCodeHash": "0x878a8048ecb251e0ef835b1d19dbecdb838f97476d36307b5fa510f0919b62ed",
+      "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+      "jobManager": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+      "jobsRootName": "alpha.jobs.agi.eth",
+      "jobsRootNode": "0xc164c9558a3c429519a9b2eba9f650025731fccc46b3a5664283bcab84f7e690",
+      "jobLabelPrefix": "agijob",
+      "publicResolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+      "nameWrapper": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+      "ens": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "configLocked": false
+    },
+    "rootData": [
+      "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+      "327681",
+      "2007731864"
+    ],
+    "legacyWrapperApproval": true,
+    "tokenDecimals": "18",
+    "jobs": [
+      {
+        "id": 0,
+        "core": [
+          "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+          "0x3B7205E05D015D06323B432E9813bCb3fe86adf7",
+          "88888000000000000000000",
+          "259200",
+          "1772837867",
+          true,
+          false,
+          false,
+          "80"
+        ],
+        "spec": "ipfs://bafkreie75ykl5o5mg3yuihxjn26rwwce5nyz5mo4k66l4lc2wmgkkdi4qe",
+        "completion": "ipfs://bafkreigz2nznh42izu47ftvu5u67ofw2mm5qpua772m7dopaumqoukn3lu",
+        "ensName": "job-0.alpha.jobs.agi.eth",
+        "ensNode": "0x6fe9d56688e0cfc8463faa21ef6c0f52a4db56119c167229849d22b5ebda55df",
+        "ensOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+        "resolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+        "wrappedData": [
+          "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+          "0",
+          "2007731864"
+        ],
+        "records": {
+          "schema": "agijobmanager/v1",
+          "agijobs.spec.public": "ipfs://bafkreie75ykl5o5mg3yuihxjn26rwwce5nyz5mo4k66l4lc2wmgkkdi4qe",
+          "agijobs.completion.public": "ipfs://bafkreigz2nznh42izu47ftvu5u67ofw2mm5qpua772m7dopaumqoukn3lu"
+        }
+      },
+      {
+        "id": 1,
+        "core": [
+          "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+          "0xA442540F7365cCd43848C4B25576706A95fd3559",
+          "88888000000000000000000",
+          "259200",
+          "1773097127",
+          true,
+          false,
+          false,
+          "80"
+        ],
+        "spec": "ipfs://bafkreieqa2rbx3ic5ojtecod3am7kg4ylhtxr4e6cixfg6nwfem77weyja",
+        "completion": "ipfs://bafkreieqa2rbx3ic5ojtecod3am7kg4ylhtxr4e6cixfg6nwfem77weyja",
+        "ensName": "agijob1.alpha.jobs.agi.eth",
+        "ensNode": "0x6e43f8574ffa4fd140cf1e42ead17f55341a0490a2297bbf64f6f8ad8a5ef321",
+        "ensOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+        "resolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+        "wrappedData": [
+          "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+          "0",
+          "2007731864"
+        ],
+        "records": {
+          "schema": "agijobmanager/v1",
+          "agijobs.spec.public": "ipfs://bafkreieqa2rbx3ic5ojtecod3am7kg4ylhtxr4e6cixfg6nwfem77weyja",
+          "agijobs.completion.public": "ipfs://bafkreieqa2rbx3ic5ojtecod3am7kg4ylhtxr4e6cixfg6nwfem77weyja"
+        }
+      },
+      {
+        "id": 2,
+        "absent": true
+      },
+      {
+        "id": 3,
+        "core": [
+          "0x1bA171cd1FBFD0A0226CA9ecB50019ba8FB618b6",
+          "0x9DbBBCc3c603903702BC323C4A4A8a597280a89B",
+          "88888000000000000000000",
+          "604800",
+          "1773167519",
+          true,
+          false,
+          false,
+          "80"
+        ],
+        "spec": "ipfs://QmUZwJ4DLmDHDFsfosqzoe1igHeDiCgBTBabaCnwtYaTVH",
+        "completion": "ipfs://bafkreibnxj26aaw6nlx6xrbibcrzptl5a3cujunb5j76qltfk2eqvv52ea",
+        "ensName": "agijob3.alpha.jobs.agi.eth",
+        "ensNode": "0x8776541c161db368e4d05cefd6c991373bb71c367efc1983217b4058ec7c6dd8",
+        "ensOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+        "resolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+        "wrappedData": [
+          "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+          "0",
+          "2007731864"
+        ],
+        "records": {
+          "schema": "agijobmanager/v1",
+          "agijobs.spec.public": "ipfs://QmUZwJ4DLmDHDFsfosqzoe1igHeDiCgBTBabaCnwtYaTVH",
+          "agijobs.completion.public": "ipfs://bafkreibnxj26aaw6nlx6xrbibcrzptl5a3cujunb5j76qltfk2eqvv52ea"
+        }
+      },
+      {
+        "id": 4,
+        "core": [
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "1000000000000000000000",
+          "259200",
+          "1773603611",
+          true,
+          false,
+          false,
+          "60"
+        ],
+        "spec": "ipfs://QmNpms2iEgiCrV3uojvodeAGnknJmvVXzomfJ1JXmjTgRG",
+        "completion": "ipfs://QmPrQRsRyQSDYxPWsTTPWcPETRspFq3vfaEvTb75i7xBqP",
+        "ensName": "agijob4.alpha.jobs.agi.eth",
+        "ensNode": "0x2daeeeda44cc7109b16255bdef46abf01997cff2d29501d0f8f9c5e21d0b1e61",
+        "ensOwner": "0x0000000000000000000000000000000000000000",
+        "resolver": "0x0000000000000000000000000000000000000000",
+        "wrappedData": [
+          "0x0000000000000000000000000000000000000000",
+          "0",
+          "0"
+        ],
+        "records": {
+          "schema": "",
+          "agijobs.spec.public": "",
+          "agijobs.completion.public": ""
+        }
+      },
+      {
+        "id": 5,
+        "core": [
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "2000000000000000000000",
+          "345600",
+          "1773603635",
+          true,
+          false,
+          false,
+          "60"
+        ],
+        "spec": "ipfs://QmYqSDbr9uexuUQE8CuqLaMZ3LRcWMmAeMGrG6neG9Cn4d",
+        "completion": "ipfs://QmPGenR3STGuT6F5h1AcK5jyw9H75hVP3qXAVU7vFG8obQ",
+        "ensName": "agijob5.alpha.jobs.agi.eth",
+        "ensNode": "0x3a67762faca781f7f885a2a22f7a8f666cd5c726971cc56787e192b8ea4c0e03",
+        "ensOwner": "0x0000000000000000000000000000000000000000",
+        "resolver": "0x0000000000000000000000000000000000000000",
+        "wrappedData": [
+          "0x0000000000000000000000000000000000000000",
+          "0",
+          "0"
+        ],
+        "records": {
+          "schema": "",
+          "agijobs.spec.public": "",
+          "agijobs.completion.public": ""
+        }
+      },
+      {
+        "id": 6,
+        "core": [
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "2000000000000000000000",
+          "432000",
+          "1773603647",
+          true,
+          false,
+          false,
+          "60"
+        ],
+        "spec": "ipfs://Qma9mvr18j8YCA4UdsxN4VbyvXezkmNHJ4i1D9YDizyHAq",
+        "completion": "ipfs://QmdwPV7n8ZCVhp2dX5TmugABnD2n32F2g9MH7Fh7bbscXa",
+        "ensName": "agijob6.alpha.jobs.agi.eth",
+        "ensNode": "0x609460d1e9340559246fd07b6818bcec8b3b9ac0a046374cde68a0a9a031d2d8",
+        "ensOwner": "0x0000000000000000000000000000000000000000",
+        "resolver": "0x0000000000000000000000000000000000000000",
+        "wrappedData": [
+          "0x0000000000000000000000000000000000000000",
+          "0",
+          "0"
+        ],
+        "records": {
+          "schema": "",
+          "agijobs.spec.public": "",
+          "agijobs.completion.public": ""
+        }
+      },
+      {
+        "id": 7,
+        "absent": true
+      },
+      {
+        "id": 8,
+        "core": [
+          "0xA204b14eD9bc09501e3A47CDde379279FcD5D743",
+          "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99",
+          "500000000000000000000000",
+          "604800",
+          "1773603635",
+          true,
+          false,
+          false,
+          "80"
+        ],
+        "spec": "ipfs://bafkreif6slf4gnnzrnt54wnkve23owuf3mojeynykg2nlpwlk3ygb622we",
+        "completion": "ipfs://bafkreidp2qeuzjyrswthme3xvdt6njc73s77pcdsufdb4yaymijo4vkrwi",
+        "ensName": "agijob8.alpha.jobs.agi.eth",
+        "ensNode": "0x429f8774022da334ac3c42defb4c829abcd74fb45c548ea2f3b9e4526de72142",
+        "ensOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+        "resolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+        "wrappedData": [
+          "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+          "0",
+          "2007731864"
+        ],
+        "records": {
+          "schema": "agijobmanager/v1",
+          "agijobs.spec.public": "ipfs://bafkreif6slf4gnnzrnt54wnkve23owuf3mojeynykg2nlpwlk3ygb622we",
+          "agijobs.completion.public": "ipfs://bafkreidp2qeuzjyrswthme3xvdt6njc73s77pcdsufdb4yaymijo4vkrwi"
+        }
+      },
+      {
+        "id": 9,
+        "absent": true
+      },
+      {
+        "id": 10,
+        "absent": true
+      },
+      {
+        "id": 11,
+        "core": [
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+          "10000000000000000000000",
+          "1209600",
+          "1773807563",
+          false,
+          false,
+          false,
+          "60"
+        ],
+        "spec": "ipfs://QmQ5DHNAh6XF5kVUh5dmgp47KuAASDX5MsgixyyDcbsgvs",
+        "completion": "",
+        "ensName": "agijob11.alpha.jobs.agi.eth",
+        "ensNode": "0x2b880431b1793ea390fc8f150cc1c4f829e94d283a1a5064ba4c5fc3357bc379",
+        "ensOwner": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
+        "resolver": "0xF29100983E058B709F3D539b0c765937B804AC15",
+        "wrappedData": [
+          "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+          "0",
+          "2007731864"
+        ],
+        "records": {
+          "schema": "agijobmanager/v1",
+          "agijobs.spec.public": "ipfs://QmQ5DHNAh6XF5kVUh5dmgp47KuAASDX5MsgixyyDcbsgvs",
+          "agijobs.completion.public": ""
+        }
+      }
+    ],
+    "tokenAccounts": {
+      "0x1bA171cd1FBFD0A0226CA9ecB50019ba8FB618b6": {
+        "balance": "113022120422612689398280",
+        "allowance": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+      },
+      "0x3B7205E05D015D06323B432E9813bCb3fe86adf7": {
+        "balance": "9799490068055885714285715",
+        "allowance": "554800000000000000000"
+      },
+      "0x42629BC07618E07424d7Db62fD4089AF685E20d6": {
+        "balance": "1483686786024000000000012",
+        "allowance": "0"
+      },
+      "0x9DbBBCc3c603903702BC323C4A4A8a597280a89B": {
+        "balance": "287544444947219047619045",
+        "allowance": "8424802688000000000000"
+      },
+      "0xA204b14eD9bc09501e3A47CDde379279FcD5D743": {
+        "balance": "9998467144585839488551625",
+        "allowance": "0"
+      },
+      "0xA442540F7365cCd43848C4B25576706A95fd3559": {
+        "balance": "6355468752871428571428571",
+        "allowance": "0"
+      },
+      "0xB3AAeb69b630f0299791679c063d68d6687481d1": {
+        "balance": "84402400000000000000000",
+        "allowance": "0"
+      },
+      "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201": {
+        "balance": "8615855904046530955527790",
+        "allowance": "0"
+      },
+      "0xd76AD27a1Bcf8652e7e46BE603FA742FD1c10A99": {
+        "balance": "9969433285307000000000003",
+        "allowance": "756020000000000000000000"
+      }
+    },
+    "completionNFTs": [
+      {
+        "id": 0,
+        "owner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+        "uri": "ipfs://bafkreigz2nznh42izu47ftvu5u67ofw2mm5qpua772m7dopaumqoukn3lu"
+      },
+      {
+        "id": 1,
+        "owner": "0x1bA171cd1FBFD0A0226CA9ecB50019ba8FB618b6",
+        "uri": "ipfs://bafkreibnxj26aaw6nlx6xrbibcrzptl5a3cujunb5j76qltfk2eqvv52ea"
+      },
+      {
+        "id": 2,
+        "owner": "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+        "uri": "ipfs://QmPGenR3STGuT6F5h1AcK5jyw9H75hVP3qXAVU7vFG8obQ"
+      },
+      {
+        "id": 3,
+        "owner": "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+        "uri": "ipfs://QmdwPV7n8ZCVhp2dX5TmugABnD2n32F2g9MH7Fh7bbscXa"
+      },
+      {
+        "id": 4,
+        "owner": "0x42629BC07618E07424d7Db62fD4089AF685E20d6",
+        "uri": "ipfs://QmPrQRsRyQSDYxPWsTTPWcPETRspFq3vfaEvTb75i7xBqP"
+      },
+      {
+        "id": 5,
+        "owner": "0xA204b14eD9bc09501e3A47CDde379279FcD5D743",
+        "uri": "ipfs://bafkreidp2qeuzjyrswthme3xvdt6njc73s77pcdsufdb4yaymijo4vkrwi"
+      }
+    ]
+  },
+  "newEnsRoot": "usdc-v091.alpha.jobs.agi.eth",
+  "assertions": [
+    "keeps new intake closed through a two-step manager handover and removes all deployer owner authority",
+    "creates, updates and revokes an isolated ENS job page through the real mainnet wrapper and resolver",
+    "settles native USDC exactly 8/30/10/52 with bonds separate while preserving every legacy job",
+    "refunds exact micro-USDC on cancellation and rejects reuse of cancelled job IDs",
+    "conserves USDC with three validators, indivisible rewards and the default three-approval threshold",
+    "preserves posting-time validator rewards when the owner changes the rate for future jobs",
+    "conserves one-micro-USDC rounding and sends the full remainder to the agent without validator votes",
+    "atomically recovers all four reserve classes from a blocked disputed agent payout",
+    "atomically recovers all four reserve classes from a blocked disputed employer refund",
+    "isolates concurrent jobs and permits recipient rotation only after paused intake and complete settlement",
+    "recovers from an emergency pause without stranding the new escrow or changing legacy pause state",
+    "lets the actual unsettled legacy job exit on its original contract and original asset after the new launch"
+  ],
+  "passed": 12,
+  "publicTransactionsBroadcast": 0,
+  "fixtureWallets": true,
+  "productionActivationApproved": false
+}

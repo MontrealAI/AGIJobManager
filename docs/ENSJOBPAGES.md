@@ -33,10 +33,10 @@ sequenceDiagram
 
     alt hook=1
       P->>E: create subname (wrapped or unwrapped path)
-      P->>R: setAuthorisation(employer,true) best-effort
+      P->>R: approve(node,employer,true) best-effort
       P->>R: setText(schema/spec) best-effort
     else hook=2
-      P->>R: setAuthorisation(agent,true) best-effort
+      P->>R: approve(node,agent,true) best-effort
     else hook=3
       P->>R: setText(completion) best-effort
     else hook=4/5/6

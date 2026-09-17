@@ -21,6 +21,11 @@ contract MockPublicResolver {
         authorisations[node][target] = authorised;
     }
 
+    function approve(bytes32 node, address target, bool authorised) external {
+        if (revertSetAuthorisation) revert();
+        authorisations[node][target] = authorised;
+    }
+
     function isAuthorised(bytes32 node, address target) external view returns (bool) {
         return authorisations[node][target];
     }

@@ -12,7 +12,6 @@ const MAINNET_PUBLIC_RESOLVER = "0xF29100983E058B709F3D539b0c765937B804AC15";
 const DEFAULT_JOB_MANAGER = ""; // Explicit verified USDC manager required.
 const { requireCanonicalUSDC } = require("../../scripts/lib/usdc");
 const { parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, prepareDeployment } = require("./deployment-safety.cjs");
-const DEFAULT_ROOT_NAME = "alpha.jobs.agi.eth";
 const MAINNET_SAFETY_PHRASE = "I_UNDERSTAND_MAINNET_DEPLOYMENT";
 
 function env(k, d = "") {
@@ -73,8 +72,12 @@ async function main() {
   const ensRegistry = env("ENS_REGISTRY", MAINNET_ENS_REGISTRY);
   const nameWrapper = env("NAME_WRAPPER", MAINNET_NAME_WRAPPER);
   const publicResolver = env("PUBLIC_RESOLVER", MAINNET_PUBLIC_RESOLVER);
-  const jobsRootNameInput = env("JOBS_ROOT_NAME", DEFAULT_ROOT_NAME);
+  const jobsRootNameInput = env("JOBS_ROOT_NAME");
+  if (!jobsRootNameInput) throw new Error("JOBS_ROOT_NAME is required. A fresh USDC manager needs its own reviewed ENS namespace; never reuse the legacy manager's job names.");
   const jobsRootName = ethers.ensNormalize(jobsRootNameInput);
+  if (chainId === 1 && jobsRootName === 'alpha.jobs.agi.eth') {
+    throw new Error("The legacy alpha.jobs.agi.eth namespace is reserved for the existing manager. Choose a distinct root for new USDC jobs.");
+  }
   const computedJobsRootNode = namehash(jobsRootName);
   const jobsRootNode = env("JOBS_ROOT_NODE", computedJobsRootNode);
   const jobManager = env("JOB_MANAGER", DEFAULT_JOB_MANAGER);

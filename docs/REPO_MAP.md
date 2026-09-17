@@ -1,7 +1,7 @@
 # Repository Map (Generated)
 
-- Generated at (deterministic source fingerprint): `dfe387cd9029`.
-- Source snapshot fingerprint: `dfe387cd9029`.
+- Generated at (deterministic source fingerprint): `3d1b6aa759f7`.
+- Source snapshot fingerprint: `3d1b6aa759f7`.
 
 ## Curated high-signal map
 

@@ -2,6 +2,8 @@
 
 All job payments, escrow, bonds, rewards, refunds and treasury withdrawals use six-decimal native Circle USDC. **A fresh USDC manager deployment is required.** This software release does not upgrade old contracts. Start with the [USDC migration and deployment guide](docs/USDC_MIGRATION.md).
 
+**Post-release qualification:** the [real-mainnet cutover rehearsal](docs/qualification/USDC_CUTOVER.md) found and corrected an ENS resolver delegation mismatch. That correction is not in the frozen v0.9.1 release assets. Review the qualification evidence and legacy-preservation plan before a new production deployment.
+
 Successful jobs pay validators first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and **all remaining USDC to the agent**. For a 100 USDC job: 8 / 30 / 10 / 52. The two wallet addresses are required at deployment. The owner can rotate them only with intake paused and zero outstanding escrow or bonds; [ownership transfers require acceptance](docs/OWNER_CONTROLS.md). Validator terms are fixed when the job is posted. NFT credentials affect eligibility only; they cannot increase or reduce the agent’s payment share. See the [v0.9.1 payout and migration specification](docs/USDC_PAYOUT_SPLIT.md).
 
 **[Start here](docs/START_HERE.md)** for the download, the five-step job journey, role-specific guidance and recovery from a failed or pending transaction.

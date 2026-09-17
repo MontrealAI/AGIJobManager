@@ -1,0 +1,13 @@
+{
+  "chainId": 1,
+  "blockNumber": 25998952,
+  "blockHash": "0xac9075441aff899351bf4ca9abf5be0edc4494b69a1c7543b389fd8cacaa159a",
+  "legacyManager": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+  "legacyManagerCodeHash": "0x66d02468d15519fb461762ef448f9f395e1e67a54f5a8becd13547fd785f51df",
+  "legacyPages": "0x06188E77C1C38d392b16d9D9fB24673363ce1da0",
+  "legacyOwner": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+  "legacyRootOwner": "0xd57243B80FBc5CFB2560E5a644651FEcd7Dc2512",
+  "usdc": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  "usdcImplementation": "0x43506849d7c04f9138d1a2050bbf3a0c054402dd",
+  "usdcImplementationCodeHash": "0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea"
+}

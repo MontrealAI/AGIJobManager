@@ -268,7 +268,7 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
     return require(name);
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy-ens-job-pages.cjs'), 'utf8'), {
-    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, VERIFY: '1',
+    module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, JOBS_ROOT_NAME: 'usdc-v091.alpha.jobs.agi.eth', VERIFY: '1',
       VERIFY_DELAY_MS: '0', DEPLOY_CONFIRM_MAINNET: 'I_UNDERSTAND_MAINNET_DEPLOYMENT', ...env } },
     console: { log() {}, error() {} }, setTimeout,
   });
@@ -277,6 +277,18 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
     return JSON.parse(fs.readFileSync(path.join(directory, fs.readdirSync(directory).find(name => name.endsWith('.json'))), 'utf8'));
   } };
 }
+
+test('ENS deployment requires an explicit namespace before any broadcast', async () => {
+  const harness = ensHarness({ env: { JOBS_ROOT_NAME: '' } });
+  await assert.rejects(harness.main(), /JOBS_ROOT_NAME is required.*legacy manager/);
+  assert.equal(harness.broadcasts(), 0);
+});
+
+test('ENS deployment refuses the legacy manager namespace for a fresh mainnet USDC manager', async () => {
+  const harness = ensHarness({ env: { JOBS_ROOT_NAME: 'alpha.jobs.agi.eth' } });
+  await assert.rejects(harness.main(), /legacy alpha.jobs.agi.eth namespace is reserved/);
+  assert.equal(harness.broadcasts(), 0);
+});
 
 test('ENS deployment rejects mismatched RPC chains and unsafe confirmation counts before broadcasting', async () => {
   for (const args of [{ networkName: 'sepolia' }, { env: { CONFIRMATIONS: '0' } }, { env: { CONFIRMATIONS: '1' } }]) {
