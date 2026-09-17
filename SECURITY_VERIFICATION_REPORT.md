@@ -1,4 +1,6 @@
-# Security Verification Report
+# Security Verification Scope — v0.5.0 USDC
+
+This document describes the configured checks and residual assumptions. Exact run results belong to the v0.5.0 release evidence; this is not an independent audit.
 
 ## Scope
 - `contracts/AGIJobManager.sol`
@@ -6,8 +8,8 @@
 - ENS integration contracts and assembly call compatibility assumptions
 
 ## Tooling Versions
-- Foundry: `forge 1.5.1-stable (b0a9dd9ced)`
-- Solidity compiler: `0.8.19` (from `foundry.toml`)
+- Foundry: the stable toolchain selected by CI (exact version is recorded in run logs)
+- Solidity compiler: `0.8.23` (from `foundry.toml`)
 - Slither: `0.10.4`
 - Echidna: not included (Foundry handler invariants already cover the multi-step state machine with deterministic CI runtime)
 
@@ -48,7 +50,7 @@ npm run slither
 - Boundary fuzz for:
   - payout and duration validity envelope in `createJob`
   - job spec/details/completion URI caps
-  - dispute-bond floor/ceiling behavior (`[1 AGI, 200 AGI]`)
+  - dispute-bond floor/ceiling behavior (`[1 USDC, 200 USDC]`)
   - validator approvals/disapprovals accounting consistency at threshold/tie edges
   - hard validator cap enforcement (`MAX_VALIDATORS_PER_JOB = 50`)
 
@@ -59,7 +61,7 @@ Handler actions include:
 - owner `withdrawUSDC` and `rescueERC20` under guarded preconditions
 
 Invariants enforced:
-1. **Solvency:** contract AGI balance is always >= all locked totals.
+1. **Solvency:** contract USDC balance is always >= all locked totals.
 2. **Withdraw safety:** `withdrawableUSDC()` remains callable without reverting during valid operation.
 3. **Locked accounting consistency:** aggregate locked totals exactly equal recomputed sums over live jobs.
 4. **Vote accounting sanity:** `validators.length == approvals + disapprovals` per job.
@@ -78,9 +80,11 @@ Invariants enforced:
 ## Slither Findings Triage
 - **Accepted by design:** privileged owner/admin control surfaces (`onlyOwner`) per business-operated trust model.
 - **False positives / low-noise filtered:** currently controlled via repository `slither.config.json` path filters and detector exclusions for non-actionable categories.
-- **Fixed issues:** no new production-contract patches were required by this pass; focus stayed on verification harnesses and regression coverage.
+- **v0.5.0 scope:** settlement currency, economic/reputation scaling, immutable token configuration, and fail-closed UI guards changed. New USDC tests cover public-chain canonical addresses, six-decimal amounts and transfer restrictions.
 
 ## Residual Risks / Assumptions
 - Owner/operator privilege remains central by design.
 - Liveness and emergency controls (pause/settlement pause) are operational controls, not decentralized guarantees.
 - ENS integration remains optional/best-effort and intentionally non-blocking for escrow lifecycle safety.
+
+- USDC issuer pauses or blocked addresses can prevent transfers. Failed operations must preserve escrow accounting and be retried only after the underlying restriction is resolved.
