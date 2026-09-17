@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.7.0",
+  "name": "v0.7.0 — USDC settlement and guarded owner controls",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "c77647a513966eb47bae55bba53303a59b0a9d84",
+  "sourceTree": "e6577d65448ea14100196af07103096b722ee38c",
+  "previousTag": "v0.6.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Native USDC job payments: validators, fixed 30% and 10% wallets, then agent remainder. Guarded recipient rotation, two-step ownership, updated interfaces and deployment tooling. Fresh deployment required; no live contract or funds changed.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "contracts/legacy",
+    "migrations/snapshots",
+    "lib"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "06667461d3f3e851b7932bca2186aac9acedfdc8f563d1905db49600ca823201",
+    "PREVIOUS_RELEASE.json": "072c64f084f4863d2a7bae4a48ec534174b03e4416726719806960ccfd8ac01d",
+    "SOURCE_CI.json": "bb148aaeb2ba78ed60532eba9356b582acbfcaf5d11bb02e89224c386e3c6594"
+  },
+  "requiredSourceRuns": {
+    "ui": {
+      "id": 35221756381,
+      "workflow": "ui.yml"
+    },
+    "ci": {
+      "id": 35221756149,
+      "workflow": "ci.yml"
+    },
+    "security-verification": {
+      "id": 35221756309,
+      "workflow": "security-verification.yml"
+    },
+    "docs": {
+      "id": 35221756117,
+      "workflow": "docs.yml"
+    }
+  }
+}
