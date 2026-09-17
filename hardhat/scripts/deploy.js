@@ -305,6 +305,10 @@ async function main() {
 
   const managerDeployment = await deployContract('AGIJobManager', managerArgs, { libraries: linkedLibraries }, confirmations);
   deployments.AGIJobManager = managerDeployment;
+  const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
+  const pauseTx = await manager.pauseIntake();
+  await pauseTx.wait(confirmations);
+  console.log(`[intake] paused for configuration: ${pauseTx.hash}`);
   console.log(`[deployed] AGIJobManager ${managerDeployment.address} tx=${managerDeployment.txHash}`);
 
   for (const libName of LIBRARIES) {
@@ -322,7 +326,6 @@ async function main() {
     verifyDelayMs
   );
 
-  const manager = await ethers.getContractAt('AGIJobManager', managerDeployment.address, deployer);
   let ownershipTransfer = {
     executed: false,
     txHash: null,
@@ -342,6 +345,17 @@ async function main() {
   } else {
     console.log('[owner] transferOwnership skipped (deployer is final owner).');
   }
+
+  const currentOwner = await manager.owner();
+  const pendingOwner = await manager.pendingOwner();
+  const ownershipAccepted = currentOwner.toLowerCase() === resolvedFinalOwner.toLowerCase();
+  if (!ownershipAccepted && pendingOwner.toLowerCase() !== resolvedFinalOwner.toLowerCase()) {
+    throw new Error('Ownership proposal did not match the intended final owner.');
+  }
+  ownershipTransfer.accepted = ownershipAccepted;
+  ownershipTransfer.currentOwner = currentOwner;
+  ownershipTransfer.pendingOwner = pendingOwner;
+  ownershipTransfer.acceptanceRequired = !ownershipAccepted;
 
   const stablePayload = stableObject({ constructorArgs, libraries: linkedLibraries, finalOwner: resolvedFinalOwner });
   const configHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(stablePayload)));
@@ -366,6 +380,8 @@ async function main() {
     constructorArgs,
     libraries: linkedLibraries,
     ownershipTransfer,
+    intakePaused: await manager.paused(),
+    intakePauseTxHash: pauseTx.hash,
     verification: verificationResults,
     configHash,
   };
@@ -395,7 +411,9 @@ async function main() {
   console.log(`receipt: ${receiptPath}`);
   console.log(`solc-input: ${solcInputPath}`);
   console.log(`verify-targets: ${verifyTargetsPath}`);
-  console.log('Post-deploy on-chain actions performed: deployment + optional transferOwnership(finalOwner) only.');
+  console.log('Intake is paused. Configure and verify the manager before unpausing.');
+  if (!ownershipAccepted) console.log(`ACTION REQUIRED: ${resolvedFinalOwner} must call acceptOwnership(). Current owner remains ${currentOwner} until acceptance.`);
+  console.log('Post-deploy actions: pause intake and, if needed, propose ownership transfer.');
   console.log('All other operational configuration is manual via Etherscan runbook.');
 }
 

@@ -8,7 +8,7 @@ const NFT = artifacts.require('MockERC721');
 const Z = '0x' + '00'.repeat(32);
 const A0 = '0x' + '00'.repeat(20);
 
-contract('v0.6.0 USDC distribution', ([owner, employer, agent, validator, wallet30, wallet10, other]) => {
+contract('v0.7.0 USDC distribution', ([owner, employer, agent, validator, wallet30, wallet10, other]) => {
   let token, manager;
   const init = wallets => buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, wallets);
   beforeEach(async () => {
@@ -38,6 +38,42 @@ contract('v0.6.0 USDC distribution', ([owner, employer, agent, validator, wallet
     await time.increase(2);
   }
   async function balance(address) { return BigInt((await token.balanceOf(address)).toString()); }
+  it('uses rotated wallets for future jobs and never redirects an outstanding job', async () => {
+    const oldJob = await post(parseUSDC('100'));
+    await ready(oldJob);
+    await manager.pauseIntake();
+    await expectRevert.unspecified(manager.setSettlementWallets(other, owner));
+    await manager.finalizeJob(oldJob);
+    assert.equal(await balance(wallet30), BigInt(parseUSDC('30')));
+    assert.equal(await balance(wallet10), BigInt(parseUSDC('10')));
+    await manager.setSettlementWallets(other, owner);
+    await manager.unpauseIntake();
+    const nextJob = await post(parseUSDC('100'));
+    await ready(nextJob); await manager.finalizeJob(nextJob);
+    assert.equal(await balance(other), BigInt(parseUSDC('30')));
+    assert.equal(await balance(owner), BigInt(parseUSDC('10')));
+    assert.equal(await balance(wallet30), BigInt(parseUSDC('30')));
+    assert.equal(await balance(agent), BigInt(parseUSDC('104')));
+  });
+  it('blocks owner wallet rotation reentrancy during completion even after reserves reach zero', async () => {
+    const Receiver = artifacts.require('OwnerRotationReceiver');
+    const receiver = await Receiver.new(manager.address, other, owner);
+    const send = (target, method) => receiver.execute(target.address, method.encodeABI());
+    await token.mint(receiver.address, parseUSDC('100'));
+    await send(token, token.contract.methods.approve(manager.address, parseUSDC('100')));
+    await send(manager, manager.contract.methods.createJob('ipfs://job', parseUSDC('100'), 1000, ''));
+    await ready(0);
+    await manager.transferOwnership(receiver.address);
+    await send(manager, manager.contract.methods.acceptOwnership());
+    await send(manager, manager.contract.methods.pauseIntake());
+    await manager.finalizeJob(0);
+    assert.equal(await receiver.attempted(), true);
+    assert.equal(await receiver.succeeded(), false);
+    assert.equal(await manager.wallet30(), wallet30);
+    assert.equal((await manager.lockedEscrow()).toString(), '0');
+    assert.equal(await balance(wallet30), BigInt(parseUSDC('30')));
+    assert.equal(await balance(wallet10), BigInt(parseUSDC('10')));
+  });
   it('pays validators, 30%, 10%, then the agent, atomically in that order', async () => {
     const id = await post(parseUSDC('100'));
     await ready(id);
@@ -68,13 +104,12 @@ contract('v0.6.0 USDC distribution', ([owner, employer, agent, validator, wallet
     assert.equal(await balance(wallet30), BigInt(parseUSDC('60')));
     assert.equal(await balance(wallet10), BigInt(parseUSDC('20')));
   });
-  it('requires distinct nonzero immutable settlement wallets and bounds the validator budget', async () => {
+  it('requires distinct nonzero settlement wallets and bounds the validator budget', async () => {
     for (const wallets of [[A0, wallet10], [wallet30, A0], [wallet30, wallet30], [token.address, wallet10], [wallet30, token.address]]) {
       await assert.rejects(Manager.new(...init(wallets)), /revert|Custom error|code couldn.t be stored/);
     }
     assert.equal(await manager.wallet30(), wallet30);
     assert.equal(await manager.wallet10(), wallet10);
-    assert(!Manager.abi.some(x => /set.*wallet|update.*wallet/i.test(x.name || '')));
     for (const rate of [0, 61, 100]) await expectRevert.unspecified(manager.setValidationRewardPercentage(rate));
     await manager.setValidationRewardPercentage(60);
     const id = await post(parseUSDC('100')); await ready(id); await manager.finalizeJob(id);

@@ -1,5 +1,7 @@
 # AGIJobManager Truffle Production Deployment
 
+> **v0.7.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+
 ## Prerequisites
 - `npm ci`
 - RPC + signer env vars configured for `truffle-config.js` (`PRIVATE_KEYS`, `MAINNET_RPC_URL`/`SEPOLIA_RPC_URL` or Alchemy/Infura keys).

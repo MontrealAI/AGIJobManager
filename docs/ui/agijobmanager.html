@@ -318,7 +318,7 @@
             <span id="legacyAddress"></span>
           </p>
           <p class="muted">Active source: <span id="contractSource">—</span></p>
-          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.6.0 configuration file.</p>
+          <p class="muted">Supported sources: query param <code>?contract=0x...</code>, localStorage, v0.7.0 configuration file.</p>
           <p class="muted">No contract is selected by default until you explicitly choose one.</p>
         </div>
       </div>
@@ -714,7 +714,17 @@
         </div>
       </div>
       <div id="adminNotice" class="muted">Connect as the contract owner to use admin controls.</div>
+      <p>Pending owner: <span id="pendingOwnerAddress">—</span></p>
+      <button id="acceptOwnership" disabled>Accept ownership</button>
       <div id="adminControls" hidden>
+        <h3>Payout wallets and ownership</h3>
+        <p class="muted">Pause intake, settle or refund all outstanding jobs and bonds, update both wallets, then unpause intake. Keep settlement enabled while draining. These changes cannot redirect existing jobs.</p>
+        <label for="recipient30">Wallet receiving 30% of job cost</label><input id="recipient30" placeholder="0x..." />
+        <label for="recipient10">Wallet receiving 10% of job cost</label><input id="recipient10" placeholder="0x..." />
+        <button id="rotateWallets">Update payout wallets</button>
+        <label for="newOwner">Proposed owner (zero address cancels a pending proposal)</label><input id="newOwner" placeholder="0x..." />
+        <button id="proposeOwner">Propose new owner</button>
+        <p class="muted">The current owner retains authority until the proposed owner connects and accepts. Renunciation is disabled.</p>
         <div class="panel-row">
           <div>
             <h3>Pause control</h3>
@@ -722,7 +732,7 @@
               <button id="pauseContract" class="danger">Pause</button>
               <button id="unpauseContract">Unpause</button>
             </div>
-            <p class="muted">Pausing blocks state-changing actions except owner-only admin calls.</p>
+            <p class="muted">Pausing intake stops job posting and assignment. Existing jobs can still be completed or refunded while settlement remains enabled.</p>
           </div>
           <div>
             <h3>Moderator management (owner)</h3>
@@ -995,9 +1005,9 @@
       preferredContract: "",
       notes: "",
     };
-    const storageKey = "agijobmanager_usdc_v060_contract";
-    const uiSettingsKey = "agijobmanager_usdc_v060_ui_settings_v1";
-    const indexCacheKey = "agijobmanager_usdc_v060_index_cache_v1";
+    const storageKey = "agijobmanager_usdc_v070_contract";
+    const uiSettingsKey = "agijobmanager_usdc_v070_ui_settings_v1";
+    const indexCacheKey = "agijobmanager_usdc_v070_index_cache_v1";
     const defaultPageSize = 50;
     const defaultIndexLookback = 20000;
     const supportedChainIds = new Set([1n, 11155111n, 1337n]);
@@ -1006,6 +1016,7 @@
     const legacyDisputeResolvedIface = new ethers.Interface([legacyDisputeResolvedFragment]);
     const legacyDisputeResolvedTopic = ethers.id("DisputeResolved(uint256,address,string)");
     const writeButtonIds = [
+      "acceptOwnership",
       "approveToken",
       "createJob",
       "cancelJob",
@@ -1016,6 +1027,8 @@
       "validateJob",
       "disapproveJob",
       "resolveDispute",
+      "rotateWallets",
+      "proposeOwner",
       "pauseContract",
       "unpauseContract",
       "addModerator",
@@ -1036,6 +1049,15 @@
       "function name() view returns (string)",
       "function symbol() view returns (string)",
       "function owner() view returns (address)",
+      "function pendingOwner() view returns (address)",
+      "function lockedEscrow() view returns (uint256)",
+      "function lockedAgentBonds() view returns (uint256)",
+      "function lockedValidatorBonds() view returns (uint256)",
+      "function lockedDisputeBonds() view returns (uint256)",
+
+      "function acceptOwnership()",
+      "function transferOwnership(address)",
+      "function setSettlementWallets(address,address)",
       "function paused() view returns (bool)",
       "function usdcToken() view returns (address)",
       "function wallet30() view returns (address)",
@@ -1367,6 +1389,9 @@
       const controls = ids("adminControls");
       const isOwner = Boolean(state.walletAddress && state.contractOwner && state.walletAddress === state.contractOwner);
 
+      const isPendingOwner = Boolean(state.walletAddress && state.pendingOwner && state.walletAddress.toLowerCase() === state.pendingOwner.toLowerCase());
+      setText('pendingOwnerAddress', !state.pendingOwner || state.pendingOwner === ethers.ZeroAddress ? 'No pending transfer' : state.pendingOwner);
+      ids('acceptOwnership').disabled = !isPendingOwner || !hasWriteAccess();
       if (ownerStatus) {
         ownerStatus.textContent = isOwner ? "Connected as owner" : "Not owner";
       }
@@ -1379,7 +1404,9 @@
         controls.hidden = !isOwner;
       }
       [
-        "pauseContract",
+        "rotateWallets",
+      "proposeOwner",
+      "pauseContract",
         "unpauseContract",
         "addModerator",
         "removeModerator",
@@ -1514,8 +1541,8 @@
     }
 
     const metadataStorageKeys = {
-      pinataJwt: "agijobmanager_usdc_v060_pinata_jwt",
-      nftStorageKey: "agijobmanager_usdc_v060_nft_storage_key",
+      pinataJwt: "agijobmanager_usdc_v070_pinata_jwt",
+      nftStorageKey: "agijobmanager_usdc_v070_nft_storage_key",
     };
 
     function updatePill(id, text, tone = "warn") {
@@ -2152,9 +2179,12 @@
       if(expected && tokenAddress.toLowerCase() !== expected.toLowerCase()) throw new Error('Manager does not use native Circle USDC.');
       const token = new ethers.Contract(tokenAddress, erc20Abi, state.provider);
       if(Number(await token.decimals()) !== 6) throw new Error('USDC decimal verification failed; transactions disabled.');
+      const pendingOwner = await state.readContract.pendingOwner();
+      if(!ethers.isAddress(pendingOwner)) throw new Error('A v0.7.0 manager with two-step ownership is required.');
+      state.pendingOwner = pendingOwner;
       const wallets = await Promise.all([state.readContract.wallet30(), state.readContract.wallet10()]);
       const invalid = [ethers.ZeroAddress, state.contractAddress, tokenAddress].filter(Boolean).map(x=>x.toLowerCase());
-      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.6.0 settlement wallets.');
+      if(wallets.some(x=>!ethers.isAddress(x)||invalid.includes(x.toLowerCase())) || wallets[0].toLowerCase()===wallets[1].toLowerCase()) throw new Error('Invalid v0.7.0 settlement wallets.');
       setText('settlementWallets', '30%: '+wallets[0]+' · 10%: '+wallets[1]);
       state.usdcTokenAddress = tokenAddress;
       state.usdcTokenDecimals = 6;
@@ -2692,9 +2722,12 @@
       if (!state.contract) {
         throw new Error("Connect a wallet to send transactions.");
       }
-      if (!state.contractOwner || state.walletAddress !== state.contractOwner) {
-        throw new Error("Connect as the contract owner to use admin controls.");
+      const authority = method === 'acceptOwnership' ? state.pendingOwner : state.contractOwner;
+      if (!authority || !state.walletAddress || state.walletAddress.toLowerCase() !== authority.toLowerCase()) {
+        throw new Error(method === 'acceptOwnership' ? 'Connect as the proposed new owner.' : 'Connect as the current owner.');
       }
+      const reviewedAccount = state.walletAddress;
+      const reviewedContract = state.contract;
       await preflight(state.contract, method, args);
       const message = [
         `Admin action: ${description}`,
@@ -2706,6 +2739,9 @@
         logEvent(`⚠️ ${description} cancelled by user.`);
         return;
       }
+      if (reviewedAccount !== state.walletAddress || reviewedContract !== state.contract) throw new Error('Wallet or contract changed. Review again.');
+      await ensureToken();
+      await preflight(state.contract, method, args);
       const tx = await state.contract.getFunction(method)(...args);
       logEvent(`⏳ ${description} — ${formatTxLog(tx.hash)}`);
       await tx.wait();
@@ -4035,6 +4071,31 @@
 
     updateValidatorActionState("validateJobId", "validateJob", "validateJobNotice");
     updateValidatorActionState("disapproveJobId", "disapproveJob", "disapproveJobNotice");
+
+    ids("rotateWallets").addEventListener("click", async () => {
+      try {
+        const a = parseAddress(ids('recipient30').value.trim(), '30% wallet');
+        const b = parseAddress(ids('recipient10').value.trim(), '10% wallet');
+        const paused = await state.readContract.paused();
+        const reserves = await Promise.all(['lockedEscrow','lockedAgentBonds','lockedValidatorBonds','lockedDisputeBonds'].map(name=>state.readContract[name]()));
+        if(!paused || reserves.some(x=>BigInt(x)!==0n)) throw new Error('Pause intake and settle or refund all outstanding jobs and bonds before rotating wallets.');
+        await sendAdminTx('setSettlementWallets', [a,b], 'Update payout wallets', ['30% wallet: '+a,'10% wallet: '+b]);
+        await updateSnapshot(); await updateRoleFlags();
+      } catch(error) { showAlert(error.message); }
+    });
+    ids("proposeOwner").addEventListener("click", async () => {
+      try {
+        const address = parseAddress(ids('newOwner').value.trim(), 'Proposed owner');
+        await sendAdminTx('transferOwnership', [address], 'Propose new owner', ['Proposed owner: '+address,'Ownership changes only after this address accepts. Zero cancels a pending proposal.']);
+        await updateSnapshot(); await updateRoleFlags();
+      } catch(error) { showAlert(error.message); }
+    });
+    ids("acceptOwnership").addEventListener("click", async () => {
+      try {
+        await sendAdminTx('acceptOwnership', [], 'Accept ownership', ['The connected proposed owner will gain administrative authority.']);
+        await updateSnapshot(); await updateRoleFlags();
+      } catch(error) { showAlert(error.message); }
+    });
 
     ids("pauseContract").addEventListener("click", async () => {
       try {

@@ -144,7 +144,7 @@ This section summarizes expected mechanics; the deployed code controls.
 
 1) Validator reward budget. The Protocol may allocate a portion of the Job payout as a validator reward budget (as snapshotted per job) for distribution to participating Validators, subject to code rules.
 2) Bond returns and slashing. Validator bonds may be returned in full, partially slashed, or redistributed depending on whether a Validator ends up on the correct side of the final outcome, as defined by the code.
-3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct immutable settlement wallets. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
+3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct settlement wallets. The owner may rotate these wallets only while intake is paused and all job escrow and bonds have been settled. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
 4) No refunds from the Protocol. Token movements are governed by the smart contract; there is no guarantee of reversal, refunds, or discretionary recovery.
 5) Gas fees. Users pay their own gas/transaction fees and accept the risk of network congestion, failed transactions, MEV, reorgs, and other chain-level issues.
 
@@ -242,7 +242,7 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-USDC settlement notice (v0.6.0)
+USDC settlement notice (v0.7.0)
 
 The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
 AGIJobManager does not issue USDC or define the issuer's terms. The protocol's job
@@ -250,7 +250,7 @@ refund and settlement rules apply to job escrow; they do not describe token purc
 or redemption rights. USDC issuer controls, including transfer pauses and blocked
 addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.6.0 settlement and are
+Historical project-token sale disclosures do not describe v0.7.0 settlement and are
 preserved in previous Git tags.
 
 */
@@ -262,7 +262,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "./utils/UriUtils.sol";
 import "./utils/TransferUtils.sol";
 import "./utils/BondMath.sol";
@@ -281,7 +281,7 @@ interface NameWrapper {
 
 
 
-contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
+contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     // -----------------------
     // Custom errors (smaller bytecode than revert strings)
     // -----------------------
@@ -301,8 +301,8 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     error SettlementPaused();
 
     IERC20 public immutable usdcToken;
-    address public immutable wallet30;
-    address public immutable wallet10;
+    address public wallet30;
+    address public wallet10;
     string private baseIpfsUrl;
     // Conservative hard cap to bound settlement loops on mainnet.
     uint256 public constant MAX_VALIDATORS_PER_JOB = 50;
@@ -447,6 +447,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     event DisputeReviewPeriodUpdated(uint256 indexed oldPeriod, uint256 indexed newPeriod);
     event USDCWithdrawn(address indexed to, uint256 indexed amount, uint256 remainingWithdrawable);
     event JobPayoutDistributed(uint256 indexed jobId, uint256 validatorBudget, uint256 wallet30Amount, uint256 wallet10Amount, uint256 agentAmount);
+    event SettlementWalletsUpdated(address indexed wallet30, address indexed wallet10);
     event IdentityConfigurationLocked(address indexed locker, uint256 indexed atTimestamp);
     event AgentBlacklisted(address indexed agent, bool indexed status);
     event ValidatorBlacklisted(address indexed validator, bool indexed status);
@@ -477,9 +478,6 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
     uint8 private constant ENS_HOOK_LOCK = 5;
     uint8 private constant ENS_HOOK_LOCK_BURN = 6;
     uint256 internal constant ENS_HOOK_GAS_LIMIT = 500_000;
-    uint256 internal constant ENS_URI_GAS_LIMIT = 200_000;
-    uint256 internal constant ENS_URI_MAX_RETURN_BYTES = 2048;
-    uint256 internal constant ENS_URI_MAX_STRING_BYTES = 1024;
     uint256 internal constant NFT_BALANCE_OF_GAS_LIMIT = 100_000;
     uint256 internal constant ERC165_GAS_LIMIT = 50_000;
     uint256 internal constant SAFE_MINT_GAS_LIMIT = 250_000;
@@ -506,14 +504,7 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             revert InvalidParameters();
         }
         usdcToken = IERC20(usdcTokenAddress);
-        if (
-            settlementWallets[0] == address(0) || settlementWallets[1] == address(0)
-                || settlementWallets[0] == settlementWallets[1]
-                || settlementWallets[0] == address(this) || settlementWallets[1] == address(this)
-                || settlementWallets[0] == usdcTokenAddress || settlementWallets[1] == usdcTokenAddress
-        ) revert InvalidParameters();
-        wallet30 = settlementWallets[0];
-        wallet10 = settlementWallets[1];
+        _setSettlementWallets(settlementWallets[0], settlementWallets[1]);
         if (bytes(baseIpfs).length > MAX_BASE_IPFS_URL_BYTES) revert InvalidParameters();
         if ((rootNodes[0] | rootNodes[1] | rootNodes[2] | rootNodes[3]) != bytes32(0)) {
             if (ensConfig[0] == address(0) || ensConfig[0].code.length == 0) revert InvalidParameters();
@@ -631,6 +622,32 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
 
     function _requireEmptyEscrow() internal view {
         if ((lockedEscrow | lockedAgentBonds | lockedValidatorBonds | lockedDisputeBonds) != 0) revert InvalidState();
+    }
+
+    /// @notice Rotate recipients only between jobs, with intake paused and all reserves settled.
+    function setSettlementWallets(address recipient30, address recipient10) external onlyOwner whenPaused nonReentrant {
+        _requireEmptyEscrow();
+        _setSettlementWallets(recipient30, recipient10);
+    }
+
+    function _setSettlementWallets(address recipient30, address recipient10) internal {
+        if (recipient30 == recipient10) revert InvalidParameters();
+        _requireSettlementWallet(recipient30);
+        _requireSettlementWallet(recipient10);
+        wallet30 = recipient30;
+        wallet10 = recipient10;
+        emit SettlementWalletsUpdated(recipient30, recipient10);
+    }
+
+    function _requireSettlementWallet(address recipient) internal view {
+        if (recipient == address(0) || recipient == address(this) || recipient == address(usdcToken)) {
+            revert InvalidParameters();
+        }
+    }
+
+    /// @notice Preserve an accountable owner for pause recovery and configuration maintenance.
+    function renounceOwnership() public pure override {
+        revert InvalidState();
     }
 
     function _requireValidReviewPeriod(uint256 period) internal pure {
@@ -1374,52 +1391,9 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
         unchecked {
             ++nextTokenId;
         }
-        string memory tokenUriValue = job.jobCompletionURI;
-        if (useEnsJobTokenURI) {
-            address target = ensJobPages;
-            if (target.code.length != 0) {
-                bytes memory data;
-                assembly {
-                    let ptr := mload(0x40)
-                    mstore(ptr, shl(224, 0x751809b4))
-                    mstore(add(ptr, 4), jobId)
-
-                    if staticcall(ENS_URI_GAS_LIMIT, target, ptr, 0x24, 0, 0) {
-                        let rdsize := returndatasize()
-                        if gt(rdsize, ENS_URI_MAX_RETURN_BYTES) {
-                            rdsize := ENS_URI_MAX_RETURN_BYTES
-                        }
-
-                        data := mload(0x40)
-                        mstore(data, rdsize)
-                        returndatacopy(add(data, 32), 0, rdsize)
-                        mstore(0x40, add(add(data, 32), and(add(rdsize, 31), not(31))))
-                    }
-                }
-                if (data.length >= 64) {
-                    uint256 offset;
-                    uint256 strLen;
-                    assembly {
-                        offset := mload(add(data, 32))
-                        strLen := mload(add(data, 64))
-                    }
-                    if (offset == 32 && strLen > 0 && strLen <= ENS_URI_MAX_STRING_BYTES) {
-                        uint256 paddedLen;
-                        unchecked {
-                            paddedLen = (strLen + 31) & ~uint256(31);
-                        }
-                        if (64 + paddedLen <= data.length) {
-                            string memory ensUri;
-                            assembly {
-                                ensUri := add(data, 64)
-                            }
-                            tokenUriValue = ensUri;
-                        }
-                    }
-                }
-            }
-        }
-        tokenUriValue = UriUtils.applyBaseIpfs(tokenUriValue, baseIpfsUrl);
+        string memory tokenUriValue = UriUtils.completionURI(
+            useEnsJobTokenURI ? ensJobPages : address(0), jobId, job.jobCompletionURI, baseIpfsUrl
+        );
         _tokenURIs[tokenId] = tokenUriValue;
         if (job.employer.code.length != 0) {
             try this.safeMintCompletionNFT{ gas: SAFE_MINT_GAS_LIMIT }(job.employer, tokenId) {
@@ -1555,35 +1529,25 @@ contract AGIJobManager is Ownable, ReentrancyGuard, Pausable, ERC721 {
             revert InvalidParameters();
         }
 
-        bool exists;
-        uint256 length = agiTypes.length;
-        for (uint256 i = 0; i < length; ) {
-            AGIType storage agiType = agiTypes[i];
-            if (agiType.nftAddress == nftAddress) {
-                exists = true;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        if (exists) {
-            _updateAgiTypePayout(nftAddress, payoutPercentage);
-        } else if (length < MAX_AGI_TYPES) {
-            agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
-        } else {
-            for (uint256 i = 0; i < length; ) {
-                AGIType storage agiType = agiTypes[i];
-                if (agiType.payoutPercentage == 0) {
-                    agiType.nftAddress = nftAddress;
-                    agiType.payoutPercentage = payoutPercentage;
-                    emit AGITypeUpdated(nftAddress, payoutPercentage);
-                    return;
+        if (!_updateAgiTypePayout(nftAddress, payoutPercentage)) {
+            uint256 length = agiTypes.length;
+            if (length < MAX_AGI_TYPES) {
+                agiTypes.push(AGIType({ nftAddress: nftAddress, payoutPercentage: payoutPercentage }));
+            } else {
+                for (uint256 i = 0; i < length; ) {
+                    AGIType storage agiType = agiTypes[i];
+                    if (agiType.payoutPercentage == 0) {
+                        agiType.nftAddress = nftAddress;
+                        agiType.payoutPercentage = payoutPercentage;
+                        emit AGITypeUpdated(nftAddress, payoutPercentage);
+                        return;
+                    }
+                    unchecked {
+                        ++i;
+                    }
                 }
-                unchecked {
-                    ++i;
-                }
+                revert InvalidParameters();
             }
-            revert InvalidParameters();
         }
         emit AGITypeUpdated(nftAddress, payoutPercentage);
     }

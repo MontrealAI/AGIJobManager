@@ -1,40 +1,14 @@
 require('dotenv').config();
 const ganache = require('ganache');
-const HDWalletProvider = require('@truffle/hdwallet-provider');
-
-const pk = (process.env.PRIVATE_KEYS || '').split(',').map(s => s.trim()).filter(Boolean);
-const infura = (process.env.INFURA_KEY || '').trim();
-const alchemySepolia = (process.env.ALCHEMY_KEY || '').trim();
-const alchemyMain = (process.env.ALCHEMY_KEY_MAIN || process.env.ALCHEMY_KEY || '').trim();
-
+// Truffle/Ganache are retained for local regression tests only. Public-chain
+// signing uses the maintained Hardhat deployment path and the owner's wallet UI.
 const n = (v, d) => {
   const x = Number(v);
   return Number.isFinite(x) && x > 0 ? x : d;
 };
 const gweiToWei = (g) => Math.floor(n(g, 0) * 1e9);
-
-const pollingInterval = n(process.env.RPC_POLLING_INTERVAL_MS, 8000);
-
-function rpcUrl(net) {
-  const direct = (process.env[`${net.toUpperCase()}_RPC_URL`] || '').trim();
-  if (direct) return direct;
-
-  if (net === 'mainnet') {
-    if (alchemyMain) return `https://eth-mainnet.g.alchemy.com/v2/${alchemyMain}`;
-    if (infura) return `https://mainnet.infura.io/v3/${infura}`;
-  }
-  if (net === 'sepolia') {
-    if (alchemySepolia) return `https://eth-sepolia.g.alchemy.com/v2/${alchemySepolia}`;
-    if (infura) return `https://sepolia.infura.io/v3/${infura}`;
-  }
-  return '';
-}
-
 function providerFor(net) {
-  const url = rpcUrl(net);
-  if (!url) throw new Error(`Missing RPC URL for ${net}. Set ${net.toUpperCase()}_RPC_URL or ALCHEMY_KEY(_MAIN)/INFURA_KEY.`);
-  if (!pk.length) throw new Error('Missing PRIVATE_KEYS (comma-separated).');
-  return new HDWalletProvider({ privateKeys: pk, providerOrUrl: url, shareNonce: true, pollingInterval });
+  throw new Error(`Truffle ${net} signing is retired. Use the Hardhat deployment workflow or the v0.7.0 owner console.`);
 }
 
 const mainnetGasPrice = process.env.MAINNET_GAS_PRICE_GWEI ? gweiToWei(process.env.MAINNET_GAS_PRICE_GWEI) : undefined;

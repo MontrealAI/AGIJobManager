@@ -1,7 +1,7 @@
 # AGIJobManager Interface Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `aad2c39b5efd`.
-- Source snapshot fingerprint: `aad2c39b5efd`.
+- Generated at (deterministic source fingerprint): `4c6b1bfb9d66`.
+- Source snapshot fingerprint: `4c6b1bfb9d66`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Operator-facing interface
@@ -46,6 +46,8 @@
 | `validatorMerkleRoot` | `bytes32` |
 | `validatorSlashBps` | `uint256` |
 | `voteQuorum` | `uint256` |
+| `wallet10` | `address` |
+| `wallet30` | `address` |
 
 ### External/Public functions
 
@@ -80,6 +82,7 @@
 | `removeAdditionalAgent(address agent)` | external | nonpayable | — |
 | `removeAdditionalValidator(address validator)` | external | nonpayable | — |
 | `removeModerator(address _moderator)` | external | nonpayable | — |
+| `renounceOwnership()` | public | pure | — |
 | `requestJobCompletion(uint256 _jobId, string calldata _jobCompletionURI)` | external | nonpayable | — |
 | `rescueERC20(address token, address to, uint256 amount)` | external | nonpayable | — |
 | `rescueETH(uint256 amount)` | external | nonpayable | — |
@@ -102,6 +105,7 @@
 | `setRequiredValidatorApprovals(uint256 _approvals)` | external | nonpayable | — |
 | `setRequiredValidatorDisapprovals(uint256 _disapprovals)` | external | nonpayable | — |
 | `setSettlementPaused(bool paused)` | external | nonpayable | — |
+| `setSettlementWallets(address recipient30, address recipient10)` | external | nonpayable | — |
 | `setUseEnsJobTokenURI(bool enabled)` | external | nonpayable | — |
 | `setValidationRewardPercentage(uint256 _percentage)` | external | nonpayable | — |
 | `setValidatorBondParams(uint256 bps, uint256 min, uint256 max)` | external | nonpayable | — |
@@ -153,6 +157,7 @@
 | `RequiredValidatorDisapprovalsUpdated` | `uint256 indexed oldDisapprovals, uint256 indexed newDisapprovals` |
 | `RootNodesUpdated` | `bytes32 indexed clubRootNode, bytes32 indexed agentRootNode, bytes32 indexed alphaClubRootNode, bytes32 alphaAgentRootNode` |
 | `SettlementPauseSet` | `address indexed setter, bool indexed paused` |
+| `SettlementWalletsUpdated` | `address indexed wallet30, address indexed wallet10` |
 | `USDCWithdrawn` | `address indexed to, uint256 indexed amount, uint256 remainingWithdrawable` |
 | `ValidationRewardPercentageUpdated` | `uint256 indexed oldPercentage, uint256 indexed newPercentage` |
 | `ValidatorBlacklisted` | `address indexed validator, bool indexed status` |

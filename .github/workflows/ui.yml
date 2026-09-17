@@ -10,6 +10,9 @@ on:
       - 'agijobmanager.html'
       - 'config/usdc-deployment.json'
 
+permissions:
+  contents: read
+
 jobs:
   ui:
     runs-on: ubuntu-latest
@@ -17,12 +20,12 @@ jobs:
       run:
         working-directory: ui
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: 20.19.6
+          node-version: 22.23.2
           cache: npm
           cache-dependency-path: ui/package-lock.json
       - run: npm ci
@@ -30,6 +33,7 @@ jobs:
       - run: npm run check:no-binaries
         working-directory: .
       - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run check:no-binaries
       - run: npm run lint
       - run: npm run typecheck

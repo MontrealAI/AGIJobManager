@@ -15,8 +15,10 @@ export default function Admin() {
   const { actor, isOwner } = useDemoRoleFlags();
   const owner = data?.owner?.toLowerCase();
   const demoOwner = isDemoMode && isOwner;
-  if ((!address || !owner || address.toLowerCase() !== owner) && !demoOwner) return <div className='container-shell py-8'><Card>Not authorized (owner only).</Card></div>;
+  const controls = <Card><h2 className='font-serif'>v0.7.0 owner controls</h2><p>Use the USDC console to update payout wallets, propose an owner or accept ownership. Wallet changes require paused intake and no reserved escrow. A proposed owner can accept directly from the console.</p><p className='mt-2'><a className='underline' href='https://github.com/MontrealAI/AGIJobManager/releases/download/v0.7.0/agijobmanager-usdc.html'>Download the USDC console</a> · <a className='underline' href='https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/OWNER_CONTROLS.md' target='_blank' rel='noopener noreferrer'>Owner guide</a></p></Card>;
+  if ((!address || !owner || address.toLowerCase() !== owner) && !demoOwner) return <div className='container-shell py-8 space-y-3'>{controls}<Card>Connect the current owner wallet to view this dashboard.</Card></div>;
   return <div className='container-shell py-8 space-y-3'>
+    {controls}
     {isDemoMode && <Card className='text-sm'>Demo actor: <strong>{actor}</strong>. Owner-only console unlocked only for actor=owner.</Card>}
     <Card><h2 className='font-serif'>Safety toggles</h2><p>Pause/unpause and settlement pause with simulation-first writes.</p></Card>
     <Card><h2 className='font-serif'>Roles</h2><p>Manage moderators and allowlists / blacklists.</p></Card>

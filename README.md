@@ -1,8 +1,8 @@
-# AGIJobManager v0.6.0 — USDC payout distribution
+# AGIJobManager v0.7.0 — USDC payout distribution
 
 All job payments, escrow, bonds, rewards, refunds and treasury withdrawals use six-decimal native Circle USDC. **A fresh USDC manager deployment is required.** This software release does not upgrade old contracts. Start with the [USDC migration and deployment guide](docs/USDC_MIGRATION.md).
 
-Successful jobs pay validators first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and **all remaining USDC to the agent**. For a 100 USDC job: 8 / 30 / 10 / 52. The two wallet addresses are required at deployment and immutable. Validator terms are fixed when the job is posted. NFT credentials affect eligibility only; they cannot increase or reduce the agent’s payment share. See the [v0.6.0 payout and migration specification](docs/USDC_PAYOUT_SPLIT.md).
+Successful jobs pay validators first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and **all remaining USDC to the agent**. For a 100 USDC job: 8 / 30 / 10 / 52. The two wallet addresses are required at deployment. The owner can rotate them only with intake paused and zero outstanding escrow or bonds; [ownership transfers require acceptance](docs/OWNER_CONTROLS.md). Validator terms are fixed when the job is posted. NFT credentials affect eligibility only; they cannot increase or reduce the agent’s payment share. See the [v0.7.0 payout and migration specification](docs/USDC_PAYOUT_SPLIT.md).
 
 [![CI][ci-badge]][ci-url]
 [![Security Verification][security-verification-badge]][security-verification-url]
@@ -13,7 +13,7 @@ Successful jobs pay validators first (**8% default**), then **30% of the origina
 AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreements, with optional ENS-backed job pages managed by `ENSJobPages`.
 
 > [!IMPORTANT]
-> **New here? Start with the [Genesis Console](https://montrealai.github.io/agijobmanagerv0.html).**  
+> **New here? Download the [v0.7.0 USDC Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.7.0/agijobmanager-usdc.html).**
 > This is the fastest operator/reviewer entry point for the standalone mainnet UI.  
 > **Repo-pinned equivalent artifact:** `ui/agijobmanager-usdc.html`  
 > **Operator guide:** `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`

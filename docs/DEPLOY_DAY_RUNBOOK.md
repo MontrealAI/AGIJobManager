@@ -1,93 +1,33 @@
-# Deploy Day Runbook
+# Deploy Day Runbook — v0.7.0
 
-## Purpose
-Institutional deployment procedure for AGIJobManager and post-deploy hardening.
+Use the [Hardhat deployment guide](../hardhat/README.md) for the supported public-network workflow. Root Truffle scripts are for local tests and historical reproduction only; public-network signing is disabled.
 
-## Audience
-Owner operators, release managers, and auditors observing launch controls.
+## Before deployment
 
-## Preconditions / assumptions
-- Deployment keys are in secure custody (prefer multisig owner destination).
-- Environment variables are set locally; no secrets in repo.
-- Commit SHA and release tag are decided before deployment.
+1. Check out the immutable v0.7.0 tag and verify the release asset checksums.
+2. Use Node 22.23.2 and `npm ci` in each workspace; review the [dependency security scope](DEPENDENCY_SECURITY.md).
+3. Select Ethereum mainnet or Sepolia and verify the native six-decimal USDC address against Circle's registry.
+4. Provide two distinct, reviewed recipient addresses for the fixed 30% and 10% shares. No production recipient is supplied by the release.
+5. Review the intended owner, linked libraries, ENS settings, validator budget, bonds and review periods. Prefer a secured multisig for ownership.
+6. Confirm the release CI gates, source commit and compiler profile. Read [owner controls](OWNER_CONTROLS.md) before setting irreversible identity locks.
 
-## Phase 0 — stop/go gates
-- [ ] `npm ci`
-- [ ] `npm run build`
-- [ ] `npm test`
-- [ ] `npm run size`
-- [ ] Confirm runtime bytecode under EIP-170 threshold.
+## Deploy and configure
 
-## Phase 1 — deploy
-```bash
-truffle migrate --network <mainnet|sepolia> --reset
-```
+Follow the environment setup and `deploy:sepolia` or `deploy:mainnet` commands in the Hardhat guide. The script deploys a fresh non-upgradeable manager, pauses intake, verifies contracts, and records addresses, transactions, constructor inputs and ownership status.
 
-Capture artifacts immediately:
-- `chainId`
-- contract addresses (AGIJobManager + linked libs)
-- deployment tx hashes
-- compiler version/settings from `truffle-config.js`
-- git commit SHA
+If the intended owner differs from the deployer, the script only proposes the transfer. That address must call `acceptOwnership()`. Verify `owner()` and zero `pendingOwner()`; the deployer retains authority until acceptance.
 
-## Phase 2 — postdeploy configuration
-Apply policy/config using script:
-```bash
-node scripts/postdeploy-config.js --network <mainnet|sepolia> --address <AGIJOBMANAGER_ADDRESS>
-```
+While intake remains paused, use the v0.7.0 USDC owner console or the verified explorer contract to configure roles, limits, ENS and policy. Verify USDC, both recipient addresses, all reserves, validator rate and ownership directly on chain. Confirm that ordinary settlement is available before opening intake. The console simulates privileged writes and requires review.
 
-Dry-run mode supported:
-```bash
-node scripts/postdeploy-config.js --dry-run --network <mainnet|sepolia> --address <AGIJOBMANAGER_ADDRESS>
-```
+## Open intake
 
-## Phase 3 — verify applied config
-```bash
-node scripts/verify-config.js --network <mainnet|sepolia> --address <AGIJOBMANAGER_ADDRESS>
-truffle exec scripts/ops/validate-params.js --network <mainnet|sepolia> --address <AGIJOBMANAGER_ADDRESS>
-```
+1. Reconcile the deployment receipt with on-chain state and publish the reviewed deployment registry.
+2. Complete testnet rehearsal and a deliberately funded small-value production job if operationally authorized. Verify validator rewards, the gross-cost 30% and 10% transfers, the agent remainder and cleared reserves.
+3. Lock identity configuration only after its addresses and roots are final; understand that the lock is irreversible.
+4. Unpause intake after configuration and ownership acceptance are verified.
 
-Stop if any invariant is `FAIL`.
+## Maintenance and recovery
 
-## Phase 4 — explorer verification (if enabled)
-Use Truffle verify workflow configured via `truffle-plugin-verify` and `ETHERSCAN_API_KEY`.
-```bash
-truffle run verify AGIJobManager --network <mainnet|sepolia>
-```
+Pause intake to stop new jobs; normal settlement remains available. Settlement pause is a separate emergency control. Wallet rotation requires paused intake and all job escrow, agent bonds, validator bonds and dispute bonds to be zero. Existing commitments therefore cannot be redirected.
 
-## Phase 5 — smoke tests (mainnet-safe small values)
-- [ ] Create low-value job and verify `JobCreated`.
-- [ ] Apply from eligible agent and verify `JobApplied`.
-- [ ] Request completion and verify `JobCompletionRequested`.
-- [ ] Complete one validator path and settle via `finalizeJob`.
-- [ ] Confirm locked accounting decreases as expected.
-
-## Phase 6 — lock and go-live
-- [ ] Ensure identity wiring final (token/ENS/root/ensJobPages); decide Merkle-root change process post-lock.
-- [ ] Execute `lockIdentityConfiguration()`.
-- [ ] Confirm `IdentityConfigurationLocked` event.
-- [ ] `unpause()` (if paused for launch).
-
-## Role separation guidance
-- Keep deployer and owner separate where possible.
-- Transfer ownership to multisig after smoke test if not owner at deploy.
-- Restrict moderator assignment to governed process.
-
-## Rollback/redeploy strategy
-Because contract is non-upgradeable:
-1. Pause affected deployment.
-2. Redeploy clean instance.
-3. Reapply configuration and role lists.
-4. Communicate migration plan for users/jobs.
-
-## Gotchas / failure modes
-- Setting wrong identity roots before lock is a hard operational fault.
-- ENS hook failures do not imply escrow failure; check `EnsHookAttempted`.
-- Do not run treasury withdrawal during launch validation; it requires paused state.
-
-## References
-- [`../migrations/1_deploy_contracts.js`](../migrations/1_deploy_contracts.js)
-- [`../scripts/postdeploy-config.js`](../scripts/postdeploy-config.js)
-- [`../scripts/verify-config.js`](../scripts/verify-config.js)
-- [`../scripts/ops/validate-params.js`](../scripts/ops/validate-params.js)
-- [`../truffle-config.js`](../truffle-config.js)
+Code changes require a fresh deployment and a managed migration; this release does not upgrade or deploy any live instance. USDC issuer pauses or blocked recipients can revert the entire settlement. See [payout rules](USDC_PAYOUT_SPLIT.md) and [owner controls](OWNER_CONTROLS.md).

@@ -12,7 +12,8 @@ test('jobs list renders', async ({ page }) => {
 
 test('admin unauthorized', async ({ page }) => {
   await page.goto('/admin');
-  await expect(page.getByText(/Not authorized/)).toBeVisible();
+  await expect(page.getByText('Connect the current owner wallet to view this dashboard.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Download the USDC console' })).toBeVisible();
 });
 
 

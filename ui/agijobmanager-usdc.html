@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.6.0</title>
+  <title>AGIJobManager · USDC v0.7.0</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.6.0: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v0.7.0: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1120,7 +1120,7 @@
             <div class="legendRow"><span>Wallet two · 10%</span><b id="legendWallet10Pct">10%</b></div>
           </div>
         </div>
-        <div class="tiny" style="margin-top:10px">The exact agent payout is snapshotted at assignment time from the highest eligible AGI type held by the applying agent. This chart updates with your currently verified agent profile if available.</div>
+        <div class="tiny" style="margin-top:10px">The validator rate is fixed when the job is posted. The two wallets receive 30% and 10% of the original job cost; the agent receives the remainder. NFT holdings establish eligibility only.</div>
       </div>
 
       <div class="card">
@@ -1170,14 +1170,14 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.6.0</h2>
+      <h2>USDC deployment · v0.7.0</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
-      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.6.0 deployment">
+      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.7.0 deployment">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
       <p id="usdcDeploymentStatus" role="status">Deployment required — transactions disabled.</p>
-      <p id="settlementWallets" class="smallNote">Two immutable settlement wallets must be verified before transactions.</p>
+      <p id="settlementWallets" class="smallNote">Two owner-configurable settlement wallets must be verified before transactions.</p>
       <p class="smallNote">USDC: <code>0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</code> · Ethereum mainnet (chain 1)</p>
     </div>
 
@@ -1747,6 +1747,8 @@ Evaluation methodology"></textarea>
         <div class="softCard" style="padding:12px;border:1px solid hsl(var(--border));border-radius:12px">
           <h3 style="margin:0 0 8px">AGIJobManager Admin</h3>
           <div class="smallNote">Owner: <span id="managerOwnerAddress">—</span></div>
+          <div class="smallNote">Pending owner: <span id="managerPendingOwnerAddress">—</span></div>
+          <div class="helper">To rotate payout wallets: pause intake, settle or refund every outstanding job, update both recipients, then unpause intake. Keep settlement enabled while draining jobs. Ownership changes require the proposed owner to connect and accept; the current owner retains authority until then. Renunciation is disabled.</div>
           <div class="smallNote">Moderator posture: <span id="managerModeratorPosture">—</span></div>
           <div id="managerAdminPostureBadges" class="actions" style="margin:10px 0"></div>
           <div class="accordion">
@@ -2023,8 +2025,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.6.0 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.6.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v0.7.0 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v0.7.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2166,7 +2168,7 @@ This section summarizes expected mechanics; the deployed code controls.
 
 1) Validator reward budget. The Protocol may allocate a portion of the Job payout as a validator reward budget (as snapshotted per job) for distribution to participating Validators, subject to code rules.
 2) Bond returns and slashing. Validator bonds may be returned in full, partially slashed, or redistributed depending on whether a Validator ends up on the correct side of the final outcome, as defined by the code.
-3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct immutable settlement wallets. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
+3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct settlement wallets that the owner can rotate only while intake is paused and all job escrow and bonds are settled. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
 4) No refunds from the Protocol. Token movements are governed by the smart contract; there is no guarantee of reversal, refunds, or discretionary recovery.
 5) Gas fees. Users pay their own gas/transaction fees and accept the risk of network congestion, failed transactions, MEV, reorgs, and other chain-level issues.
 
@@ -2264,7 +2266,7 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-USDC settlement notice (v0.6.0)
+USDC settlement notice (v0.7.0)
 
 The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
 AGIJobManager does not issue USDC or define the issuer&#x27;s terms. The protocol&#x27;s job
@@ -2272,7 +2274,7 @@ refund and settlement rules apply to job escrow; they do not describe token purc
 or redemption rights. USDC issuer controls, including transfer pauses and blocked
 addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.6.0 settlement and are
+Historical project-token sale disclosures do not describe v0.7.0 settlement and are
 preserved in previous Git tags.</div></details></div>
     </div>
 
@@ -2281,13 +2283,13 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.6.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.6.0 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.7.0 terms</a>
       </div>
     </div>
 
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@4.8.0/dist/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js" integrity="sha384-Ptk2PWqkZWMoP7ivsQOoijqfM5hQC4AgIEmQ+WUgk2OY5eNAmVLXunFrfpnZhmkb" crossorigin="anonymous"></script>
   <script>
     let web3, userAccount, agiJobManager, usdcToken, ensJobPages, freeTrialRegistrar, freeTrialRegistrarIdentity, registrarWrapperContract, tokenDecimals = 6;
     let lastGeneratedMetadata = null;
@@ -2317,7 +2319,7 @@ preserved in previous Git tags.</div></details></div>
     const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
     const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
     let AGI_JOB_MANAGER = '';
-    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v060_manager') || ''; } catch {}
+    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v070_manager') || ''; } catch {}
     let usdcDeploymentValidated = false;
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const KNOWN_ENS_JOB_PAGES_FALLBACK = "";
@@ -2325,7 +2327,7 @@ preserved in previous Git tags.</div></details></div>
     const FREE_TRIAL_REGISTRAR_IDENTITY = "0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a";
     const ALPHA_AGENT_PARENT = "alpha.agent.agi.eth";
     const ALPHA_AGENT_PARENT_NODE = "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e";
-    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v060_v29_recent_alpha_names";
+    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v070_v29_recent_alpha_names";
     let resolvedEnsJobPagesAddress = "";
     let resolvedEnsJobPagesSource = "unavailable";
     const SUFFIX = { agent:"agent.agi.eth", club:"club.agi.eth", alphaAgent:"alpha.agent.agi.eth", alphaClub:"alpha.club.agi.eth" };
@@ -2432,6 +2434,10 @@ preserved in previous Git tags.</div></details></div>
 
 
 const AGIJobManagerABI = [
+{"type": "function", "name": "pendingOwner", "stateMutability": "view", "inputs": [], "outputs": [{"type": "address"}]},
+{"type": "function", "name": "acceptOwnership", "stateMutability": "nonpayable", "inputs": [], "outputs": []},
+{"type": "function", "name": "transferOwnership", "stateMutability": "nonpayable", "inputs": [{"name": "newOwner", "type": "address"}], "outputs": []},
+{"type": "function", "name": "setSettlementWallets", "stateMutability": "nonpayable", "inputs": [{"name": "recipient30", "type": "address"}, {"name": "recipient10", "type": "address"}], "outputs": []},
 {"inputs": [], "name": "wallet30", "outputs": [{"type": "address"}], "stateMutability": "view", "type": "function"},
 {"inputs": [], "name": "wallet10", "outputs": [{"type": "address"}], "stateMutability": "view", "type": "function"},
       {"inputs":[],"name":"usdcToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
@@ -2852,8 +2858,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
     }
 
-    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v060_v17_tx_activity";
-    const ELITE_PREFS_KEY = "agijobmanager_usdc_v060_v18_elite_prefs";
+    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v070_v17_tx_activity";
+    const ELITE_PREFS_KEY = "agijobmanager_usdc_v070_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
     function requestMainnetSwitch(){
@@ -2864,8 +2870,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function loadTxActivity(){
       try{
         const raw = localStorage.getItem(TX_ACTIVITY_KEY)
-          || localStorage.getItem('agijobmanager_usdc_v060_v27_tx_activity')
-          || localStorage.getItem('agijobmanager_usdc_v060_v17_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v070_v27_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v070_v17_tx_activity')
           || '[]';
         txActivity = JSON.parse(raw);
       }catch{ txActivity = []; }
@@ -3676,7 +3682,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       try{return Number(await web3.eth.getChainId());}catch{return null;}
     }
 
-    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v060_builder_draft_v11_1";
+    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v070_builder_draft_v11_1";
     function builderFieldIds(){
       return ["jobTitle","jobCategory","jobTags","jobSummaryBuilder","jobDeliverables","jobAcceptance","jobRequirements","jobImageURI","jobExternalURI","jobSpecVersion","jobLocale","jobPayout","jobDuration","jobDetails","jobSpecURI"];
     }
@@ -3851,12 +3857,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         jwt: el("ipfsJwt")?.value || "",
         pinName: el("ipfsName")?.value || ""
       };
-      localStorage.setItem("agijobmanager_usdc_v060_ipfs_prefs_v11", JSON.stringify(prefs));
+      localStorage.setItem("agijobmanager_usdc_v070_ipfs_prefs_v11", JSON.stringify(prefs));
       setToast("IPFS browser settings saved locally on this device.", "ok");
     }
     function loadIpfsPrefs(){
       try{
-        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v060_ipfs_prefs_v11") || "{}");
+        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v070_ipfs_prefs_v11") || "{}");
         if(el("ipfsMode")) el("ipfsMode").value = prefs.mode || "pinata-jwt";
         if(el("ipfsEndpoint")) el("ipfsEndpoint").value = prefs.endpoint || "https://api.pinata.cloud/pinning/pinJSONToIPFS";
         if(el("ipfsJwt")) el("ipfsJwt").value = prefs.jwt || "";
@@ -3864,7 +3870,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }catch{}
     }
     function clearIpfsPrefs(){
-      localStorage.removeItem("agijobmanager_usdc_v060_ipfs_prefs_v11");
+      localStorage.removeItem("agijobmanager_usdc_v070_ipfs_prefs_v11");
       if(el("ipfsJwt")) el("ipfsJwt").value = "";
       setToast("Saved IPFS browser settings removed.", "ok");
     }
@@ -4456,17 +4462,19 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.6.0 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.7.0 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
         if(tokenAddress.toLowerCase() !== USDC_ADDRESS.toLowerCase()) throw new Error('Rejected: manager settlement token is not native Circle USDC.');
         const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
+        const pendingOwner = String(await agiJobManager.methods.pendingOwner().call());
+        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.7.0 manager with two-step ownership is required.');
         const wallet30 = String(await agiJobManager.methods.wallet30().call());
         const wallet10 = String(await agiJobManager.methods.wallet10().call());
         const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
-        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.6.0 settlement wallets.');
+        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.7.0 settlement wallets.');
         if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
         usdcToken = token;
         tokenDecimals = 6;
@@ -4643,7 +4651,7 @@ async function updateSummary(){
 
     function loadJobPrefs(){
       try{
-        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v060_v10_prefs") || "{}");
+        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v070_v10_prefs") || "{}");
         jobFavorites = new Set(Array.isArray(raw.favorites) ? raw.favorites.map(x=>String(x)) : []);
         if(el("jobSearch")) el("jobSearch").value = raw.jobSearchText || "";
         if(el("jobStatusFilter")) el("jobStatusFilter").value = raw.jobStatusFilter || "all";
@@ -4658,12 +4666,12 @@ async function updateSummary(){
       }catch(e){}
     }
     function saveJobPrefs(){
-      localStorage.setItem("agijobmanager_usdc_v060_v10_prefs", JSON.stringify({
+      localStorage.setItem("agijobmanager_usdc_v070_v10_prefs", JSON.stringify({
         favorites: Array.from(jobFavorites),
         jobSearchText, jobStatusFilter, jobRoleFilter, jobSortMode, jobActionableOnly
       }));
     }
-    function notesKey(jobId){ return `agijobmanager_usdc_v060_job_notes_${jobId}`; }
+    function notesKey(jobId){ return `agijobmanager_usdc_v070_job_notes_${jobId}`; }
     function loadJobNotes(jobId){ try{ return localStorage.getItem(notesKey(jobId)) || ""; }catch{return "";} }
     function saveJobNotes(jobId, text){ try{ localStorage.setItem(notesKey(jobId), text || ""); }catch{} }
     function clearJobNotes(jobId){ try{ localStorage.removeItem(notesKey(jobId)); }catch{} }
@@ -5804,10 +5812,10 @@ function normalizeIpfsToHttp(uri){
       setToast(`Job Spec URI normalized to ${normalized.canonical}`, 'ok');
     }
     function loadCompletionDraft(jobId){
-      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v060_completion_draft_${jobId}`) || '{}'); }catch{return {};}
+      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v070_completion_draft_${jobId}`) || '{}'); }catch{return {};}
     }
     function saveCompletionDraft(jobId){
-      try{ localStorage.setItem(`agijobmanager_usdc_v060_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
+      try{ localStorage.setItem(`agijobmanager_usdc_v070_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
     }
     function runBondMathSelfTests(){
       const one = 1000000n;
@@ -6443,10 +6451,12 @@ function normalizeIpfsToHttp(uri){
     function postureBadge(ok, yes, no){ return `<span class="pill ${ok ? 'ok' : 'bad'}">${escapeHtml(ok ? yes : no)}</span>`; }
     function adminControlButton(target, method, danger=false){
       const cls = danger ? 'btn btn-danger' : 'btn';
-      return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'})">${escapeHtml(method)}</button>`;
+      return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'}).catch(error=>setToast(normalizedErrorMessage(error),'bad'))">${escapeHtml(({setSettlementWallets:'Update payout wallets',transferOwnership:'Propose new owner',acceptOwnership:'Accept ownership'})[method] || method)}</button>`;
     }
     const ADMIN_METHOD_SCHEMAS = {
       pause:[], unpause:[], pauseIntake:[], unpauseIntake:[], pauseAll:[], unpauseAll:[],
+      transferOwnership:[{name:'newOwner',type:'address',placeholder:'New owner; zero address cancels a pending proposal'}], acceptOwnership:[],
+      setSettlementWallets:[{name:'recipient30',type:'address',placeholder:'Wallet receiving 30% of job cost'},{name:'recipient10',type:'address',placeholder:'Wallet receiving 10% of job cost'}],
       lockIdentityConfiguration:[],
       setSettlementPaused:[{name:'paused',type:'bool',placeholder:'true or false'}],
       addModerator:[{name:'addr',type:'address'}], removeModerator:[{name:'addr',type:'address'}],
@@ -6515,7 +6525,7 @@ function normalizeIpfsToHttp(uri){
       const schema = ADMIN_METHOD_SCHEMAS[method] || [];
       return new Promise((resolve)=>{
         if(el('adminArgsTitle')) el('adminArgsTitle').textContent = `Prepare ${method}`;
-        if(el('adminArgsSubtitle')) el('adminArgsSubtitle').textContent = `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${resolvedEnsJobPagesAddress || 'unresolved address'}`;
+        if(el('adminArgsSubtitle')) el('adminArgsSubtitle').textContent = `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${(target === 'ens' ? resolvedEnsJobPagesAddress : AGI_JOB_MANAGER) || 'unresolved address'}`;
         if(el('adminArgsRisk')) el('adminArgsRisk').textContent = danger ? 'High-risk action. Confirm authorization posture, arguments, and irreversible impact.' : 'Routine admin action. Confirm method arguments before wallet submission.';
         if(el('adminArgsFacts')) el('adminArgsFacts').innerHTML = `<div class="reviewFact"><span class="k">Target contract</span><span class="v">${escapeHtml(target === 'ens' ? 'ENSJobPages' : 'AGIJobManager')}</span></div><div class="reviewFact"><span class="k">Method</span><span class="v">${escapeHtml(method)}</span></div><div class="reviewFact"><span class="k">Authorization posture</span><span class="v">Wallet must already match owner/moderator constraints.</span></div>`;
         if(el('adminArgsForm')) el('adminArgsForm').innerHTML = schema.map((field, idx)=>`<div><label for="adminArg_${idx}">${escapeHtml(field.name)} <span class="muted">(${escapeHtml(field.type)})</span></label><input id="adminArg_${idx}" type="text" placeholder="${escapeHtml(field.placeholder || field.type)}"></div>`).join('') || '<div class="helper">This method takes no explicit arguments.</div>';
@@ -6547,14 +6557,23 @@ function normalizeIpfsToHttp(uri){
       const isEnsOwner = !!account && !!ensOwner && account === ensOwner;
       const isModerator = !!APP_STATE.admin?.isModerator;
       const moderatorMethods = new Set(['resolveDisputeWithCode','resolveStaleDispute']);
-      const authorized = target === 'ens' ? isEnsOwner : (isManagerOwner || (isModerator && moderatorMethods.has(method)));
+      const isPendingOwner = !!account && account === String(APP_STATE.admin?.pendingOwner || '').toLowerCase();
+      const authorized = target === 'ens' ? isEnsOwner : method === 'acceptOwnership' ? isPendingOwner : moderatorMethods.has(method) ? isModerator : isManagerOwner;
       if(!authorized){
-        const needed = target === 'ens' ? 'ENSJobPages owner' : (moderatorMethods.has(method) ? 'AGIJobManager owner or moderator' : 'AGIJobManager owner');
+        const needed = target === 'ens' ? 'ENSJobPages owner' : method === 'acceptOwnership' ? 'proposed new owner' : (moderatorMethods.has(method) ? 'AGIJobManager moderator' : 'AGIJobManager owner');
         setToast(`Not authorized for ${method}. Required posture: ${needed}.`, 'bad');
         return;
       }
       const args = await collectAdminArgs(target, method, danger);
       if(args === null) return;
+      if(method === 'setSettlementWallets') {
+        const paused = await contract.methods.paused().call();
+        const reserves = await Promise.all(['lockedEscrow','lockedAgentBonds','lockedValidatorBonds','lockedDisputeBonds'].map(name=>contract.methods[name]().call()));
+        if(!paused || reserves.some(x=>BigInt(x)!==0n)) throw new Error('Pause intake and settle or refund all outstanding jobs and bonds before rotating wallets. Keep settlement enabled while draining jobs.');
+        const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
+        if(args.some(x=>invalid.includes(String(x).toLowerCase())) || args[0].toLowerCase()===args[1].toLowerCase()) throw new Error('Use two distinct nonzero recipient wallets, different from the manager and USDC contracts.');
+      }
+      await contract.methods[method](...args).call({from:userAccount});
       const ok = await requestActionConfirmation({
         title: `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${method}`,
         body: danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
@@ -6563,31 +6582,35 @@ function normalizeIpfsToHttp(uri){
         confirmLabel: danger ? 'Submit high-risk action' : 'Submit admin action'
       });
       if(!ok) return;
+      if(account !== String(userAccount || '').toLowerCase() || contract !== (target === 'ens' ? ensJobPages : agiJobManager) || !mustBeReadyToWrite()) throw new Error('Wallet, network or contract changed. Review the action again.');
+      await contract.methods[method](...args).call({from:userAccount});
       await runTrackedTx(`Admin ${method}`, ()=>contract.methods[method](...args).send({from:userAccount}), {pendingDetail:`Submitting ${method}.`, successDetail:`${method} confirmed.`});
       await refreshAll();
     }
     async function refreshAdminPanels(){
       if(!agiJobManager) return;
-      if(!ensJobPages) await resolveEnsJobPagesContract();
-      if(!ensJobPages) return;
-      const [mOwnerRead, eOwnerRead, moderatorRead, prefixRead, ensRegistryRead, nameWrapperRead, publicResolverRead, rootNodeRead, rootNameRead, jobManagerRead, useTokenUriRead, configLockedRead] = await Promise.all([
+      if(!ensJobPages) { try { await resolveEnsJobPagesContract(); } catch(_) { ensJobPages = null; } }
+      const [mOwnerRead, pendingOwnerRead, eOwnerRead, moderatorRead, prefixRead, ensRegistryRead, nameWrapperRead, publicResolverRead, rootNodeRead, rootNameRead, jobManagerRead, useTokenUriRead, configLockedRead] = await Promise.all([
         runSafeReadStep('owner', ()=>agiJobManager.methods.owner().call(), {silent:true}),
-        runSafeReadStep('ensOwner', ()=>ensJobPages.methods.owner().call(), {silent:true}),
+        runSafeReadStep('pendingOwner', ()=>agiJobManager.methods.pendingOwner().call(), {silent:true}),
+        runSafeReadStep('ensOwner', ()=>ensJobPages?.methods.owner().call(), {silent:true}),
         userAccount ? runSafeReadStep('moderators', ()=>agiJobManager.methods.moderators(userAccount).call(), {silent:true}) : false,
-        runSafeReadStep('jobLabelPrefix', ()=>ensJobPages.methods.jobLabelPrefix().call(), {silent:true}),
-        runSafeReadStep('ensRegistry', ()=>ensJobPages.methods.ens().call(), {silent:true}),
-        runSafeReadStep('nameWrapper', ()=>ensJobPages.methods.nameWrapper().call(), {silent:true}),
-        runSafeReadStep('publicResolver', ()=>ensJobPages.methods.publicResolver().call(), {silent:true}),
-        runSafeReadStep('jobsRootNode', ()=>ensJobPages.methods.jobsRootNode().call(), {silent:true}),
-        runSafeReadStep('jobsRootName', ()=>ensJobPages.methods.jobsRootName().call(), {silent:true}),
-        runSafeReadStep('jobManager', ()=>ensJobPages.methods.jobManager().call(), {silent:true}),
-        runSafeReadStep('useEnsJobTokenURI', ()=>ensJobPages.methods.useEnsJobTokenURI().call(), {silent:true}),
-        runSafeReadStep('configLocked', ()=>ensJobPages.methods.configLocked().call(), {silent:true})
+        runSafeReadStep('jobLabelPrefix', ()=>ensJobPages?.methods.jobLabelPrefix().call(), {silent:true}),
+        runSafeReadStep('ensRegistry', ()=>ensJobPages?.methods.ens().call(), {silent:true}),
+        runSafeReadStep('nameWrapper', ()=>ensJobPages?.methods.nameWrapper().call(), {silent:true}),
+        runSafeReadStep('publicResolver', ()=>ensJobPages?.methods.publicResolver().call(), {silent:true}),
+        runSafeReadStep('jobsRootNode', ()=>ensJobPages?.methods.jobsRootNode().call(), {silent:true}),
+        runSafeReadStep('jobsRootName', ()=>ensJobPages?.methods.jobsRootName().call(), {silent:true}),
+        runSafeReadStep('jobManager', ()=>ensJobPages?.methods.jobManager().call(), {silent:true}),
+        runSafeReadStep('useEnsJobTokenURI', ()=>ensJobPages?.methods.useEnsJobTokenURI().call(), {silent:true}),
+        runSafeReadStep('configLocked', ()=>ensJobPages?.methods.configLocked().call(), {silent:true})
       ]);
       const managerOwner = mOwnerRead?.__safeReadError ? 'unavailable' : mOwnerRead;
       const ensOwner = eOwnerRead?.__safeReadError ? 'unavailable' : eOwnerRead;
       const isModerator = !!moderatorRead && !moderatorRead?.__safeReadError && !!moderatorRead;
-      APP_STATE.admin = {managerOwner, ensOwner, isModerator};
+      const pendingOwner = pendingOwnerRead?.__safeReadError ? '' : pendingOwnerRead;
+      APP_STATE.admin = {managerOwner, pendingOwner, ensOwner, isModerator};
+      if(el('managerPendingOwnerAddress')) el('managerPendingOwnerAddress').textContent = !pendingOwner || /^0x0{40}$/i.test(pendingOwner) ? 'No pending transfer' : pendingOwner;
       if(el('managerOwnerAddress')) el('managerOwnerAddress').textContent = managerOwner || '—';
       if(el('ensOwnerAddress')) el('ensOwnerAddress').textContent = ensOwner || '—';
       if(el('ensAdminResolvedAddress')) el('ensAdminResolvedAddress').textContent = resolvedEnsJobPagesAddress || '—';
@@ -6606,7 +6629,7 @@ function normalizeIpfsToHttp(uri){
       if(el('managerAdminPostureBadges')) el('managerAdminPostureBadges').innerHTML = [postureBadge(!!userAccount, 'Wallet connected', 'Wallet disconnected'),postureBadge(!!isManagerOwner, 'AGIJobManager owner', 'Not AGIJobManager owner'),postureBadge(!!isModerator, 'Moderator', 'Not moderator')].join(' ');
       if(el('ensAdminPostureBadges')) el('ensAdminPostureBadges').innerHTML = [postureBadge(!!userAccount, 'Wallet connected', 'Wallet disconnected'),postureBadge(!!isEnsOwner, 'ENSJobPages owner', 'Not ENSJobPages owner')].join(' ');
       if(el('managerRoutineControls')) el('managerRoutineControls').innerHTML = ['pause','unpause','pauseIntake','unpauseIntake','pauseAll','unpauseAll','setSettlementPaused','addModerator','removeModerator','blacklistAgent','blacklistValidator','delistJob','withdrawUSDC','setUseEnsJobTokenURI','updateMerkleRoots','setBaseIpfsUrl','setRequiredValidatorApprovals','setRequiredValidatorDisapprovals','setPremiumReputationThreshold','setVoteQuorum','setMaxJobPayout','setJobDurationLimit','setMaxActiveJobsPerAgent','setCompletionReviewPeriod','setDisputeReviewPeriod','setValidatorBondParams','setAgentBondParams','setAgentBond','setValidatorSlashBps','setChallengePeriodAfterApproval','setValidationRewardPercentage','addAdditionalValidator','removeAdditionalValidator','addAdditionalAgent','removeAdditionalAgent','addAGIType','disableAGIType'].map(m=>adminControlButton('manager',m,false)).join(' ');
-      if(el('managerDangerControls')) el('managerDangerControls').innerHTML = ['updateEnsRegistry','updateNameWrapper','updateRootNodes','setEnsJobPages','lockIdentityConfiguration','rescueETH','rescueERC20','rescueToken','resolveDisputeWithCode','resolveStaleDispute','withdrawUSDC'].map(m=>adminControlButton('manager',m,true)).join(' ');
+      if(el('managerDangerControls')) el('managerDangerControls').innerHTML = ['setSettlementWallets','transferOwnership','acceptOwnership','updateEnsRegistry','updateNameWrapper','updateRootNodes','setEnsJobPages','lockIdentityConfiguration','rescueETH','rescueERC20','rescueToken','resolveDisputeWithCode','resolveStaleDispute','withdrawUSDC'].map(m=>adminControlButton('manager',m,true)).join(' ');
       if(el('ensRoutineControls')) el('ensRoutineControls').innerHTML = ['setJobLabelPrefix','setENSRegistry','setNameWrapper','setPublicResolver','setJobsRoot','setJobManager','setUseEnsJobTokenURI','createJobPage','onAgentAssigned','onCompletionRequested','revokePermissions','lockJobENS'].map(m=>adminControlButton('ens',m,false)).join(' ');
       if(el('ensDangerControls')) el('ensDangerControls').innerHTML = ['lockConfiguration','migrateLegacyWrappedJobPage'].map(m=>adminControlButton('ens',m,true)).join(' ');
       window.protocolState = {...(window.protocolState||{}), ensJobLabelPrefix: prefixRead?.__safeReadError ? '' : String(prefixRead || '') };
@@ -6771,7 +6794,7 @@ function normalizeIpfsToHttp(uri){
       agiJobManager = null;
       hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
       if(el('termsAccepted')) el('termsAccepted').checked = false;
-      try { localStorage.setItem('agijobmanager_usdc_v060_manager', value); } catch {}
+      try { localStorage.setItem('agijobmanager_usdc_v070_manager', value); } catch {}
       updateWriteGate();
       await connectWallet();
     });

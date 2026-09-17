@@ -1,6 +1,6 @@
 # Events and Errors Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `aad2c39b5efd`.
+- Generated at (deterministic source fingerprint): `4c6b1bfb9d66`.
 - Source: `contracts/AGIJobManager.sol`.
 
 ## Events catalog
@@ -37,6 +37,7 @@
 | `RequiredValidatorDisapprovalsUpdated` | `uint256 indexed oldDisapprovals, uint256 indexed newDisapprovals` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `RootNodesUpdated` | `bytes32 indexed clubRootNode, bytes32 indexed agentRootNode, bytes32 indexed alphaClubRootNode, bytes32 alphaAgentRootNode` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `SettlementPauseSet` | `address indexed setter, bool indexed paused` | Settlement lane pause toggled | Critical operations-state alert |
+| `SettlementWalletsUpdated` | `address indexed wallet30, address indexed wallet10` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `USDCWithdrawn` | `address indexed to, uint256 indexed amount, uint256 remainingWithdrawable` | Owner treasury withdrawal | High-severity treasury-control alert |
 | `ValidationRewardPercentageUpdated` | `uint256 indexed oldPercentage, uint256 indexed newPercentage` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |
 | `ValidatorBlacklisted` | `address indexed validator, bool indexed status` | Contract-defined emission point | Add event-specific monitors in SOC pipeline |

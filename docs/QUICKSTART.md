@@ -44,7 +44,7 @@ npm run test:ui
 | --- | --- | --- | --- | --- |
 | `npm ci` | Deterministic dependency install | Fresh clone / CI | Lockfile mismatch | Re-run on clean tree; avoid `npm install` drift in CI |
 | `npm run build` | Truffle compile and artifacts | Before tests/deploy | Solidity compile errors | Fix compiler errors in contracts/tests, then rebuild |
-| `npm test` | Contract + invariant/regression suites | Pre-PR safety gate | Local node/toolchain drift | Use Node 20 (CI baseline) and run `truffle compile --all` |
+| `npm test` | Contract + invariant/regression suites | Pre-PR safety gate | Local node/toolchain drift | Use Node 22.23.2 (CI baseline) and run `truffle compile --all` |
 | `truffle migrate --network development --reset` | Local deployment for operator rehearsal | Before local runbooks or Etherscan prep drills | Ganache not running / wrong chain id | Start Ganache first and verify `truffle-config.js` network settings |
 | `node scripts/postdeploy-config.js --network development --address <AGIJobManager>` | Applies post-deploy owner/operator configuration | After deployment in rehearsals | Missing contract address or env values for roots/lists | Provide `--address` (or set `AGIJOBMANAGER_ADDRESS`) and validate placeholder-safe config inputs |
 | `truffle exec scripts/ops/validate-params.js --network <network> --address <AGIJobManager>` | Parameter sanity on live config | Before owner param changes | Fails when not executed via Truffle or without address | Run via `truffle exec` and provide target contract address |
