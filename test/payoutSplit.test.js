@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const assert = require('assert');
 const { time, expectRevert } = require('@openzeppelin/test-helpers');
 const { buildInitConfig } = require('./helpers/deploy');
@@ -8,12 +9,12 @@ const NFT = artifacts.require('MockERC721');
 const Z = '0x' + '00'.repeat(32);
 const A0 = '0x' + '00'.repeat(20);
 
-contract('v0.7.0 USDC distribution', ([owner, employer, agent, validator, wallet30, wallet10, other]) => {
+contract('v0.8.0 USDC distribution', ([owner, employer, agent, validator, wallet30, wallet10, other]) => {
   let token, manager;
   const init = wallets => buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, wallets);
   beforeEach(async () => {
     token = await USDC.new();
-    manager = await Manager.new(...init([wallet30, wallet10]));
+    manager = await deployActive(Manager, ...init([wallet30, wallet10]));
     const nft = await NFT.new();
     await nft.mint(agent);
     await manager.addAGIType(nft.address, 1);
@@ -106,7 +107,7 @@ contract('v0.7.0 USDC distribution', ([owner, employer, agent, validator, wallet
   });
   it('requires distinct nonzero settlement wallets and bounds the validator budget', async () => {
     for (const wallets of [[A0, wallet10], [wallet30, A0], [wallet30, wallet30], [token.address, wallet10], [wallet30, token.address]]) {
-      await assert.rejects(Manager.new(...init(wallets)), /revert|Custom error|code couldn.t be stored/);
+      await assert.rejects(deployActive(Manager, ...init(wallets)), /revert|Custom error|code couldn.t be stored/);
     }
     assert.equal(await manager.wallet30(), wallet30);
     assert.equal(await manager.wallet10(), wallet10);

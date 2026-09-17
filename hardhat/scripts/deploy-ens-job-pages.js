@@ -7,6 +7,7 @@ const MAINNET_NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
 const MAINNET_PUBLIC_RESOLVER = "0xF29100983E058B709F3D539b0c765937B804AC15";
 const DEFAULT_JOB_MANAGER = ""; // Explicit verified USDC manager required.
 const { requireCanonicalUSDC } = require("../../scripts/lib/usdc");
+const { requireDeploymentNetwork } = require("./deployment-safety");
 const DEFAULT_ROOT_NAME = "alpha.jobs.agi.eth";
 const MAINNET_SAFETY_PHRASE = "I_UNDERSTAND_MAINNET_DEPLOYMENT";
 
@@ -42,7 +43,7 @@ function parseIntEnv(key, fallback, min = 0) {
   const raw = env(key, "");
   if (raw === "") return fallback;
   const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < min) {
+  if (!Number.isSafeInteger(parsed) || parsed < min) {
     throw new Error(`${key} must be an integer >= ${min}. Received: ${raw}`);
   }
   return parsed;
@@ -51,11 +52,14 @@ function parseIntEnv(key, fallback, min = 0) {
 async function main() {
   const net = await ethers.provider.getNetwork();
   const chainId = Number(net.chainId);
+  requireDeploymentNetwork(network.name, chainId);
+  const dryRun = isTruthy(env("DRY_RUN"));
 
-  const confirmations = parseIntEnv("CONFIRMATIONS", 3, 0);
+  const confirmations = parseIntEnv("CONFIRMATIONS", 3, 1);
+  if (chainId === 1 && confirmations < 3) throw new Error("Mainnet requires at least 3 confirmations.");
   const verifyDelayMs = parseIntEnv("VERIFY_DELAY_MS", 3500, 0);
 
-  if (chainId === 1) {
+  if (chainId === 1 && !dryRun) {
     const confirm = env("DEPLOY_CONFIRM_MAINNET");
     if (confirm !== MAINNET_SAFETY_PHRASE) {
       throw new Error(
@@ -75,11 +79,10 @@ async function main() {
 
   const verify = isTruthy(env("VERIFY"));
   const lockConfig = isTruthy(env("LOCK_CONFIG"));
-  const dryRun = isTruthy(env("DRY_RUN"));
 
   const ownerOverride = env("NEW_OWNER") || env("FINAL_OWNER") || "";
 
-  if (ownerOverride && !ethers.isAddress(ownerOverride)) {
+  if (ownerOverride && (!ethers.isAddress(ownerOverride) || ownerOverride.toLowerCase() === ethers.ZeroAddress.toLowerCase())) {
     throw new Error(`Resolved owner override is not a valid address: ${ownerOverride}`);
   }
 
@@ -173,7 +176,11 @@ async function main() {
       });
       console.log("Verification submitted.");
     } catch (err) {
-      console.warn("Verification skipped/failed:", err && err.message ? err.message : err);
+      const message = String(err?.message || err);
+      if (!/already (been )?verified/i.test(message)) {
+        throw new Error(`ENSJobPages ${ensJobPagesAddress} was deployed but explorer verification failed. Preserve this address and finish verification before use; do not redeploy blindly. ${message}`);
+      }
+      console.log("Contract was already verified.");
     }
   }
 
@@ -182,7 +189,9 @@ async function main() {
   console.log("2) On AGIJobManager, owner calls setEnsJobPages(newEnsJobPages).");
 }
 
-main().catch((err) => {
+if (require.main === module) main().catch((err) => {
   console.error(err);
   process.exitCode = 1;
 });
+
+module.exports = { main, parseIntEnv };

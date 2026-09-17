@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time } = require("@openzeppelin/test-helpers");
 
@@ -40,7 +41,7 @@ contract("AGIJobManager seeded invariant sequences", (accounts) => {
     const token = await MockERC20.new({ from: owner });
     const ens = await MockENS.new({ from: owner });
     const wrapper = await MockNameWrapper.new({ from: owner });
-    const manager = await AGIJobManager.new(
+    const manager = await deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         "ipfs://base",

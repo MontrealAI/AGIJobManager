@@ -13,14 +13,14 @@ subtask(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD).setAction(async ({ solcVersion }, 
 
 const { MAINNET_RPC_URL, SEPOLIA_RPC_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
-function networkConfig(rpcUrl) {
-  if (!rpcUrl || !PRIVATE_KEY) return undefined;
-  return { url: rpcUrl, accounts: [PRIVATE_KEY] };
+function networkConfig(rpcUrl, chainId) {
+  if (!rpcUrl) return undefined;
+  return { url: rpcUrl, chainId, accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [] };
 }
 
 const networks = {};
-const mainnet = networkConfig(MAINNET_RPC_URL);
-const sepolia = networkConfig(SEPOLIA_RPC_URL);
+const mainnet = networkConfig(MAINNET_RPC_URL, 1);
+const sepolia = networkConfig(SEPOLIA_RPC_URL, 11155111);
 if (mainnet) networks.mainnet = mainnet;
 if (sepolia) networks.sepolia = sepolia;
 

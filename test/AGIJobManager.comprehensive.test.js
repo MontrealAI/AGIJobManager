@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { expectEvent, expectRevert, BN, time } = require("@openzeppelin/test-helpers");
 const { MerkleTree } = require("merkletreejs");
@@ -99,7 +100,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     clubRoot = rootNode("club");
     agentRoot = rootNode("agent");
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         baseIpfsUrl,
         ens.address,
@@ -569,7 +570,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.setFailTransferFroms(true);
 
-      const altManager = await AGIJobManager.new(...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
           failingToken.address,
           baseIpfsUrl,
           ens.address,
@@ -595,7 +596,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
-      const altManager = await AGIJobManager.new(...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
           failingToken.address,
           baseIpfsUrl,
           ens.address,
@@ -632,7 +633,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
 
-      const altManager = await AGIJobManager.new(...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
           failingToken.address,
           baseIpfsUrl,
           ens.address,
@@ -677,7 +678,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await failingToken.mint(employer, payout);
       await failingToken.mint(buyer, payout);
 
-      const altManager = await AGIJobManager.new(...buildInitConfig(
+      const altManager = await deployActive(AGIJobManager, ...buildInitConfig(
           failingToken.address,
           baseIpfsUrl,
           ens.address,

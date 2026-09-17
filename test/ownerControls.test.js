@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const assert = require('assert');
 const { expectRevert } = require('@openzeppelin/test-helpers');
 const { buildInitConfig } = require('./helpers/deploy');
@@ -6,11 +7,11 @@ const USDC = artifacts.require('MockUSDCControls');
 const A0 = '0x' + '00'.repeat(20);
 const Z = '0x' + '00'.repeat(32);
 
-contract('v0.7.0 owner controls', ([owner, employer, nextOwner, outsider, wallet30, wallet10, replacement30, replacement10]) => {
+contract('v0.8.0 owner controls', ([owner, employer, nextOwner, outsider, wallet30, wallet10, replacement30, replacement10]) => {
   let token, manager;
   beforeEach(async () => {
     token = await USDC.new();
-    manager = await Manager.new(...buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
+    manager = await deployActive(Manager, ...buildInitConfig(token.address, '', A0, A0, Z, Z, Z, Z, Z, Z, [wallet30, wallet10]));
   });
   it('requires owner authorization, paused intake and zero outstanding job reserves for rotation', async () => {
     await expectRevert.unspecified(manager.setSettlementWallets(replacement30, replacement10));

@@ -19,9 +19,9 @@ runs = 512
 
 [invariant]
 runs = 64
-depth = 40
+depth = 80
 
 
 [profile.ci]
 fuzz = { runs = 256 }
-invariant = { runs = 48, depth = 35 }
+invariant = { runs = 64, depth = 64 }

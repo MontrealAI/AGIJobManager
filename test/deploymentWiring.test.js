@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const assert = require("assert");
 
 const AGIJobManager = artifacts.require("AGIJobManager");
@@ -24,7 +25,7 @@ contract("AGIJobManager deployment wiring", (accounts) => {
     const validatorMerkleRoot = web3.utils.soliditySha3("validator-root");
     const agentMerkleRoot = web3.utils.soliditySha3("agent-root");
 
-    const manager = await AGIJobManager.new(
+    const manager = await deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         "ipfs://base",

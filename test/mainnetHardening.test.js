@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { time } = require("@openzeppelin/test-helpers");
 
@@ -39,7 +40,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
   const ZERO32 = "0x" + "00".repeat(32);
 
   async function deployManager(token, ensAddress, nameWrapperAddress, baseIpfs = "ipfs://base") {
-    const manager = await AGIJobManager.new(
+    const manager = await deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         baseIpfs,
@@ -485,7 +486,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32
     );
     try {
-      await AGIJobManager.new(...zeroTokenArgs, { from: owner });
+      await deployActive(AGIJobManager, ...zeroTokenArgs, { from: owner });
       assert.fail("expected constructor revert");
     } catch (error) {
       assert.include(String(error.message), "could not decode");
@@ -504,7 +505,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32
     );
     try {
-      await AGIJobManager.new(...nonZeroRootNoEns, { from: owner });
+      await deployActive(AGIJobManager, ...nonZeroRootNoEns, { from: owner });
       assert.fail("expected constructor revert");
     } catch (error) {
       assert.include(String(error.message), "could not decode");
@@ -525,7 +526,7 @@ contract("AGIJobManager mainnet hardening", (accounts) => {
       ZERO32
     );
     try {
-      await AGIJobManager.new(...rootWithNameWrapperOnly, { from: owner });
+      await deployActive(AGIJobManager, ...rootWithNameWrapperOnly, { from: owner });
       assert.fail("expected constructor revert");
     } catch (error) {
       assert.include(String(error.message), "could not decode");

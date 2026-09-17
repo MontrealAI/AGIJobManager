@@ -21,4 +21,10 @@ function buildInitConfig(
   ];
 }
 
-module.exports = { buildInitConfig };
+async function deployActive(Artifact, ...args) {
+  const manager = await Artifact.new(...args);
+  await manager.unpause({ from: await manager.owner() });
+  return manager;
+}
+
+module.exports = { buildInitConfig, deployActive };

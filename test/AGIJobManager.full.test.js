@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 const { BN, expectEvent, expectRevert, time } = require("@openzeppelin/test-helpers");
@@ -172,7 +173,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     alphaClubRootNode = clubRootNode;
     alphaAgentRootNode = agentRootNode;
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         baseIpfsUrl,
         ens.address,
@@ -679,7 +680,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failing = await FailingERC20.new({ from: owner });
       await failing.mint(employer, parseUSDCAmount("10"), { from: owner });
 
-      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
           failing.address,
           baseIpfsUrl,
           ens.address,
@@ -707,7 +708,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failing = await FailingERC20.new({ from: owner });
       await failing.mint(employer, parseUSDCAmount("20"), { from: owner });
 
-      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
           failing.address,
           baseIpfsUrl,
           ens.address,
@@ -916,7 +917,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
       const failTransferToken = await FailTransferToken.new({ from: owner });
       await failTransferToken.mint(employer, payout, { from: owner });
 
-      const managerFailing = await AGIJobManager.new(...buildInitConfig(
+      const managerFailing = await deployActive(AGIJobManager, ...buildInitConfig(
           failTransferToken.address,
           baseIpfsUrl,
           ens.address,

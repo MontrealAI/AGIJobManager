@@ -242,7 +242,7 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-USDC settlement notice (v0.7.0)
+USDC settlement notice (v0.8.0)
 
 The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
 AGIJobManager does not issue USDC or define the issuer's terms. The protocol's job
@@ -250,7 +250,7 @@ refund and settlement rules apply to job escrow; they do not describe token purc
 or redemption rights. USDC issuer controls, including transfer pauses and blocked
 addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.7.0 settlement and are
+Historical project-token sale disclosures do not describe v0.8.0 settlement and are
 preserved in previous Git tags.
 
 */
@@ -514,6 +514,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         _initRoots(rootNodes, merkleRoots);
 
         _validateValidatorThresholds(requiredValidatorApprovals, requiredValidatorDisapprovals);
+        // Admission opens only after the owner has verified deployment and configuration.
+        _pause();
     }
 
     modifier onlyModerator() {
@@ -1079,7 +1081,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         maxJobPayout = _maxPayout;
     }
     function setJobDurationLimit(uint256 _limit) external onlyOwner {
-        if (_limit == 0) revert InvalidParameters();
+        if (_limit == 0 || _limit > 365 days) revert InvalidParameters();
         jobDurationLimit = _limit;
     }
     function setMaxActiveJobsPerAgent(uint256 value) external onlyOwner {
@@ -1509,7 +1511,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function rescueToken(address token, bytes calldata data) external onlyOwner nonReentrant {
-        if (token == address(usdcToken)) revert InvalidParameters();
+        if (token == address(usdcToken) || token == address(this)) revert InvalidParameters();
         if (token.code.length == 0) revert InvalidParameters();
         (bool ok, bytes memory ret) = token.call(data);
         if (!ok) revert TransferFailed();

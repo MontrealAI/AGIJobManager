@@ -1,5 +1,5 @@
 'use client';
-import { verifyUSDCDeployment, assertUSDCWriteTarget } from '@/lib/usdc';
+import { verifyUSDCDeployment, assertUSDCWriteTarget, assertUSDCWalletContext } from '@/lib/usdc';
 import { env } from '@/lib/env';
 import { useState } from 'react';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
@@ -16,21 +16,23 @@ export function useSimulatedWrite(){
     try {
       setError(undefined); setStep('Preparing');
       if (!address || !walletClient) throw new Error('Connect wallet');
-      if (chainId !== expectedChainId) throw new Error('Network mismatch');
+      if (chainId !== expectedChainId || !publicClient) throw new Error('Network mismatch');
+      await assertUSDCWalletContext(walletClient, address, expectedChainId);
       await preflight?.();
       const sim = await publicClient!.simulateContract({...config, account: address});
       const token = await verifyUSDCDeployment(publicClient, env.agiJobManagerAddress, expectedChainId);
       assertUSDCWriteTarget(config.address, env.agiJobManagerAddress, token, config.functionName, config.args);
-      if (await walletClient.getChainId() !== expectedChainId) throw new Error('Wallet network mismatch');
+      await assertUSDCWalletContext(walletClient, address, expectedChainId);
       setStep('Awaiting signature');
       const hash = await walletClient.writeContract(sim.request);
       setStep('Pending');
-      await publicClient!.waitForTransactionReceipt({ hash });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      if (receipt.status !== 'success') throw new Error('Transaction reverted. Check your wallet before retrying.');
       setStep('Confirmed');
       return hash;
     } catch (e:any) {
       const decoded = e?.data ? (()=>{ try{return decodeErrorResult({abi: config.abi, data: e.data});}catch{return undefined;} })() : undefined;
-      setError(translateError(decoded?.errorName) || e?.shortMessage || e?.message);
+      setError(decoded?.errorName ? translateError(decoded.errorName) : e?.shortMessage || e?.message || 'Transaction failed.');
       setStep('Failed');
       throw e;
     }

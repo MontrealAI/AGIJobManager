@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
@@ -45,7 +46,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     clubRoot = rootNode("club-root");
     agentRoot = rootNode("agent-root");
 
-    manager = await AGIJobManager.new(...buildInitConfig(
+    manager = await deployActive(AGIJobManager, ...buildInitConfig(
         token.address,
         "ipfs://base",
         ens.address,

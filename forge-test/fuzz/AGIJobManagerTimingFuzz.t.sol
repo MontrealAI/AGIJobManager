@@ -82,8 +82,13 @@ contract AGIJobManagerTimingFuzz is Test {
         vm.expectRevert();
         manager.finalizeJob(jobId);
 
-        vm.warp(approvedAt + challengePeriod + bound(extra, 0, 2));
-        try manager.finalizeJob(jobId) {} catch {}
+        vm.warp(approvedAt + challengePeriod);
+        vm.expectRevert();
+        manager.finalizeJob(jobId);
+
+        vm.warp(approvedAt + challengePeriod + bound(extra, 1, 2));
+        manager.finalizeJob(jobId);
+        assertTrue(manager.jobEscrowReleased(jobId));
     }
 
     function testFuzz_expiryBoundary(uint256 dt) external {
@@ -98,8 +103,13 @@ contract AGIJobManagerTimingFuzz is Test {
         vm.expectRevert();
         manager.expireJob(jobId);
 
+        vm.warp(assignedAt + duration);
+        vm.expectRevert();
+        manager.expireJob(jobId);
+
         vm.warp(assignedAt + duration + bound(dt, 1, 2));
-        try manager.expireJob(jobId) {} catch {}
+        manager.expireJob(jobId);
+        assertTrue(manager.jobEscrowReleased(jobId));
     }
 
     function testFuzz_disputeAndStaleResolutionBoundary(uint256 dt) external {
@@ -114,13 +124,14 @@ contract AGIJobManagerTimingFuzz is Test {
 
         vm.warp(reviewBoundary - 1);
         vm.prank(employer);
-        try manager.disputeJob(jobId) {}
-        catch {
-            return;
-        }
+        manager.disputeJob(jobId);
 
         (,,,, uint256 disputedAt) = manager.getJobValidation(jobId);
         vm.warp(disputedAt + manager.disputeReviewPeriod() - 1);
+        vm.expectRevert();
+        manager.resolveStaleDispute(jobId, true);
+
+        vm.warp(disputedAt + manager.disputeReviewPeriod());
         vm.expectRevert();
         manager.resolveStaleDispute(jobId, true);
 

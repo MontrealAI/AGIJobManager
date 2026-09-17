@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
@@ -64,7 +65,7 @@ contract("ENS label and auth routing deterministic regressions", (accounts) => {
     beforeEach(async () => {
       token = await MockERC20.new({ from: owner });
 
-      manager = await AGIJobManager.new(
+      manager = await deployActive(AGIJobManager,
         ...buildInitConfig(
           token.address,
           "ipfs://base",

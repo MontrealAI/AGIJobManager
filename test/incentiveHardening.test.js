@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
@@ -31,7 +32,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     ens = await MockENS.new({ from: owner });
     nameWrapper = await MockNameWrapper.new({ from: owner });
 
-    manager = await AGIJobManager.new(
+    manager = await deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         "ipfs://base",

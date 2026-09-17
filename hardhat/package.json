@@ -1,7 +1,7 @@
 {
   "name": "agijobmanager-hardhat",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Official Hardhat deployment + verification workflow for AGIJobManager",
   "scripts": {
     "clean": "hardhat clean",
@@ -9,7 +9,11 @@
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
     "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
     "deploy:ens-job-pages:mainnet": "hardhat run scripts/deploy-ens-job-pages.js --network mainnet",
-    "deploy:ens-job-pages:sepolia": "hardhat run scripts/deploy-ens-job-pages.js --network sepolia"
+    "deploy:ens-job-pages:sepolia": "hardhat run scripts/deploy-ens-job-pages.js --network sepolia",
+    "test:preflight": "node --test test/deployment-preflight.test.cjs",
+    "test:deployment": "hardhat test test/mainnet-deployment.test.js",
+    "test:mainnet-fork": "hardhat test --config mainnet-fork.config.js test/mainnet-fork.test.js",
+    "check:readiness": "hardhat run scripts/check-readiness.js --network mainnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.1.0",

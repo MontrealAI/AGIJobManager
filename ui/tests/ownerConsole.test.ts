@@ -35,7 +35,7 @@ function consoleContext() {
     },
     requireConnected: () => true, mustBeReadyToWrite: () => true,
     requestActionConfirmation: vi.fn(async () => true),
-    runTrackedTx: vi.fn(async (_name: string, action: () => any) => action()),
+    runTrackedTx: vi.fn(async (_name: string, action: () => any) => action().send()),
     refreshAll: vi.fn(async () => undefined), setToast: vi.fn()
   });
   vm.runInContext(source, context);
@@ -43,7 +43,7 @@ function consoleContext() {
   return { context, nodes, manager, call, send };
 }
 
-describe('v0.7.0 owner console', () => {
+describe('v0.8.0 owner console', () => {
   it('keeps manager controls available without an ENS job-pages deployment', async () => {
     const { context, nodes } = consoleContext();
     await context.refreshAdminPanels();

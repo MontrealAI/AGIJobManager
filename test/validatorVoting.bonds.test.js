@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, expectRevert } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
@@ -24,7 +25,7 @@ contract('validatorVoting.bonds', (accounts) => {
   it('prevents double voting and settles with slashing/reward accounting', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]); const validatorTree = mkTree([v1, v2, v3]);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
     await token.mint(employer, payout); await token.approve(manager.address, payout, { from: employer });
     await fundValidators(token, manager, [v1, v2, v3], owner); await fundAgents(token, manager, [agent], owner);
@@ -49,7 +50,7 @@ contract('validatorVoting.bonds', (accounts) => {
   it('keeps per-vote bond sizing consistent and enforces validator cap', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const agentTree = mkTree([agent]); const validatorTree = mkTree([v1, v2, v3]);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
 
     await manager.addAGIType(nft.address, 90, { from: owner });
     await nft.mint(agent);

@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { BN, time } = require('@openzeppelin/test-helpers');
 const { MerkleTree } = require('merkletreejs');
@@ -22,7 +23,7 @@ contract('identityConfig.locking', (accounts) => {
   it('blocks identity updates while funds are locked, then permits and permanently locks', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new(); const nft = await MockERC721.new();
     const validatorTree = mkTree([validator]); const agentTree = mkTree([agent]);
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), validatorTree.root, agentTree.root), { from: owner });
     await manager.addAGIType(nft.address, 90, { from: owner }); await nft.mint(agent);
     await token.mint(employer, new BN(parseUSDCAmount('1000'))); await token.approve(manager.address, parseUSDCAmount('1000'), { from: employer });
     await fundValidators(token, manager, [validator], owner); await fundAgents(token, manager, [agent], owner);
@@ -41,7 +42,7 @@ contract('identityConfig.locking', (accounts) => {
 
   it('locks ENS identity wiring permanently after lockIdentityConfiguration', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), '0x' + '00'.repeat(32)), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), '0x' + '00'.repeat(32)), { from: owner });
     const pages = await MockENSJobPages.new();
 
     await manager.setEnsJobPages(pages.address, { from: owner });

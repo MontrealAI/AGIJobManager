@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 
@@ -21,7 +22,7 @@ contract('agiTypes.safety', (accounts) => {
 
   it('rejects invalid AGI types and ignores broken/disabled types in payout checks', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
 
     await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType('0x0000000000000000000000000000000000000000', 10, { from: owner }));
     await require('@openzeppelin/test-helpers').expectRevert.unspecified(manager.addAGIType(owner, 10, { from: owner }));
@@ -43,7 +44,7 @@ contract('agiTypes.safety', (accounts) => {
 
   it('emits disable events and reverts when disabling unknown AGI type', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
 
     const working = await MockERC721.new();
     await manager.addAGIType(working.address, 40, { from: owner });
@@ -57,7 +58,7 @@ contract('agiTypes.safety', (accounts) => {
 
   it('reuses disabled AGI type slots when max capacity is reached', async () => {
     const token = await MockERC20.new(); const ens = await MockENS.new(); const nw = await MockNameWrapper.new();
-    const manager = await AGIJobManager.new(...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
+    const manager = await deployActive(AGIJobManager, ...buildInitConfig(token.address, 'ipfs://', ens.address, nw.address, rootNode('club'), rootNode('agent'), rootNode('club'), rootNode('agent'), '0x' + '00'.repeat(32), mkTree([agent]).root), { from: owner });
 
     const maxTypes = (await manager.MAX_AGI_TYPES()).toNumber();
     const agiTypes = [];

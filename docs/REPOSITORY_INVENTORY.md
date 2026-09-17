@@ -1,6 +1,6 @@
 # Repository Inventory and Verified Commands
 
-> v0.7.0: Root Truffle scripts are for local rehearsals only. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/OWNER_CONTROLS.md) for live configuration.
+> v0.8.0: Root Truffle scripts are for local rehearsals only. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/OWNER_CONTROLS.md) for live configuration.
 
 This file documents the current repository surface at HEAD and the canonical local/CI commands that were verified against the codebase.
 

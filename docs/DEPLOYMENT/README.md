@@ -1,6 +1,6 @@
 # Deployment Documentation Index
 
-> v0.7.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+> v0.8.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
 
 ## Start here by deployment task
 - Fresh deployment (official path): [../../hardhat/README.md](../../hardhat/README.md)
@@ -9,7 +9,7 @@
 
 ## Canonical answers for operators
 - Recommended deployment path: **Hardhat**.
-- Truffle status: **local tests and historical reproduction only**. Public-network signing is disabled in v0.7.0; use Hardhat and the [owner console](../OWNER_CONTROLS.md).
+- Truffle status: **local tests and historical reproduction only**. Public-network signing is disabled in v0.8.0; use Hardhat and the [owner console](../OWNER_CONTROLS.md).
 - ENS replacement is additive and requires manual post-deploy wiring.
 - Do not lock ENS/identity configuration until cutover + migration checks pass.
 
@@ -26,7 +26,7 @@
 - [Truffle Mainnet Deploy](./TRUFFLE_MAINNET_DEPLOY.md)
 - [Truffle Production Deploy](./TRUFFLE_PRODUCTION_DEPLOY.md)
 
-> Public-network commands in these historical guides are retired. Use the Hardhat guide above for v0.7.0 and later.
+> Public-network commands in these historical guides are retired. Use the Hardhat guide above for v0.8.0 and later.
 
 ## UI boundary during deployment operations
 

@@ -1,7 +1,7 @@
 # Repository Map (Generated)
 
-- Generated at (deterministic source fingerprint): `a4bf68e749c6`.
-- Source snapshot fingerprint: `a4bf68e749c6`.
+- Generated at (deterministic source fingerprint): `c9dacfc25d20`.
+- Source snapshot fingerprint: `c9dacfc25d20`.
 
 ## Curated high-signal map
 
@@ -13,7 +13,7 @@
 | `migrations/1_deploy_contracts.js` | Truffle deployment entrypoint | Reads deployment config |
 | `migrations/deploy-config.js` | Network-dependent deployment parameters | Operator-reviewed before deploy |
 | `test/` | Truffle and node-based security/regression suites | Primary CI safety net |
-| `forge-test/` | Foundry fuzz/invariant suites | Optional hardening lane |
+| `forge-test/` | Foundry fuzz/invariant suites | Mandatory security qualification gate |
 | `scripts/ops/validate-params.js` | Parameter sanity checker for operations | Run before live changes |
 | `scripts/postdeploy-config.js` | Post-deploy owner configuration routine | Operational setup automation |
 | `scripts/check-no-binaries.mjs` | Repository policy guard against binary additions | Docs governance + supply chain hygiene |

@@ -33,3 +33,7 @@ This repository relies on Foundry invariant tests as the primary property-testin
 - `mapping-deletion`: expected for deleting job structs containing mappings after terminal settlement.
 - `uninitialized-local`: false positives on Solidity default-initialized locals.
 - `unused-return`: intentional best-effort ENS/namewrapper interactions where failures must not brick core flows.
+
+## v0.8.0 extended gates
+
+Use `npm run slither:extended` for the source-bound review of previously excluded detector classes; reports are preserved as CI artifacts. Use `npm --prefix hardhat run test:preflight`, `npm --prefix hardhat run test:deployment` and `npm --prefix hardhat run test:mainnet-fork` for deployment and real USDC local-fork qualification. All fork writes remain local. See [mainnet readiness](docs/MAINNET_READINESS.md) for the exact scope.

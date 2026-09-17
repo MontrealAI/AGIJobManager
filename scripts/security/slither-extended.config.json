@@ -1,0 +1,11 @@
+{
+  "filter_paths": "(^|/)(node_modules|lib|build|forge-test|test)(/|$)|(^|/)contracts/(test|legacy)(/|$)",
+  "exclude_dependencies": true,
+  "exclude_informational": true,
+  "exclude_low": true,
+  "exclude_optimization": true,
+  "solc_remaps": [
+    "@openzeppelin/=node_modules/@openzeppelin/"
+  ],
+  "detectors_to_exclude": []
+}

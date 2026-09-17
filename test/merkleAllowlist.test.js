@@ -1,3 +1,4 @@
+const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
 
@@ -39,7 +40,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     const leaves = [agent, validator].map((addr) => Buffer.from(leafFor(addr).slice(2), "hex"));
     tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
 
-    manager = await AGIJobManager.new(
+    manager = await deployActive(AGIJobManager,
       ...buildInitConfig(
         token.address,
         "ipfs://base",

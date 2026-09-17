@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.7.0</title>
+  <title>AGIJobManager · USDC v0.8.0</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.7.0: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v0.8.0: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1170,11 +1170,11 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.7.0</h2>
+      <h2>USDC deployment · v0.8.0</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
-      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.7.0 deployment">
+      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.8.0 deployment">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
       <p id="usdcDeploymentStatus" role="status">Deployment required — transactions disabled.</p>
       <p id="settlementWallets" class="smallNote">Two owner-configurable settlement wallets must be verified before transactions.</p>
@@ -2025,8 +2025,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.7.0 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.7.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v0.8.0 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v0.8.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2266,7 +2266,7 @@ To the maximum extent permitted by law, you agree to defend, indemnify, and hold
 - Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
 - No Waiver: Failure to enforce any provision is not a waiver.
 
-USDC settlement notice (v0.7.0)
+USDC settlement notice (v0.8.0)
 
 The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
 AGIJobManager does not issue USDC or define the issuer&#x27;s terms. The protocol&#x27;s job
@@ -2274,7 +2274,7 @@ refund and settlement rules apply to job escrow; they do not describe token purc
 or redemption rights. USDC issuer controls, including transfer pauses and blocked
 addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.7.0 settlement and are
+Historical project-token sale disclosures do not describe v0.8.0 settlement and are
 preserved in previous Git tags.</div></details></div>
     </div>
 
@@ -2283,7 +2283,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.7.0 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.8.0 terms</a>
       </div>
     </div>
 
@@ -2312,6 +2312,8 @@ preserved in previous Git tags.</div></details></div>
     let autoRefreshIntervalSec = 30;
     let autoRefreshTimer = null;
     let pendingReviewedAction = null;
+    let activeReviewedContext = null;
+    let trackedTransactionPending = false;
     let commandPaletteItems = [];
     let commandPaletteIndex = 0;
     const jobCache = new Map();
@@ -2319,7 +2321,7 @@ preserved in previous Git tags.</div></details></div>
     const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
     const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
     let AGI_JOB_MANAGER = '';
-    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v070_manager') || ''; } catch {}
+    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v080_manager') || ''; } catch {}
     let usdcDeploymentValidated = false;
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const KNOWN_ENS_JOB_PAGES_FALLBACK = "";
@@ -2327,7 +2329,7 @@ preserved in previous Git tags.</div></details></div>
     const FREE_TRIAL_REGISTRAR_IDENTITY = "0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a";
     const ALPHA_AGENT_PARENT = "alpha.agent.agi.eth";
     const ALPHA_AGENT_PARENT_NODE = "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e";
-    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v070_v29_recent_alpha_names";
+    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v080_v29_recent_alpha_names";
     let resolvedEnsJobPagesAddress = "";
     let resolvedEnsJobPagesSource = "unavailable";
     const SUFFIX = { agent:"agent.agi.eth", club:"club.agi.eth", alphaAgent:"alpha.agent.agi.eth", alphaClub:"alpha.club.agi.eth" };
@@ -2780,7 +2782,9 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       return n == null ? fallback : secondsToHuman(n);
     }
     function resetRuntimeState(reason='context reset'){
+      APP_STATE.writeEpoch = (APP_STATE.writeEpoch || 0) + 1;
       usdcDeploymentValidated = false;
+      if(typeof pendingActionConfirmResolver === 'function'){ const resolve = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolve(false); }
       pendingReviewedAction = null;
       activeJobIndexCache.ids = null;
       activeJobIndexCache.ts = 0;
@@ -2858,8 +2862,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
     }
 
-    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v070_v17_tx_activity";
-    const ELITE_PREFS_KEY = "agijobmanager_usdc_v070_v18_elite_prefs";
+    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v080_v17_tx_activity";
+    const ELITE_PREFS_KEY = "agijobmanager_usdc_v080_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
     function requestMainnetSwitch(){
@@ -2870,8 +2874,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function loadTxActivity(){
       try{
         const raw = localStorage.getItem(TX_ACTIVITY_KEY)
-          || localStorage.getItem('agijobmanager_usdc_v070_v27_tx_activity')
-          || localStorage.getItem('agijobmanager_usdc_v070_v17_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v080_v27_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v080_v17_tx_activity')
           || '[]';
         txActivity = JSON.parse(raw);
       }catch{ txActivity = []; }
@@ -3048,8 +3052,27 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
       box.innerHTML = items.map(item=>`<div class="attentionItem"><div class="attentionHead"><div><div class="attentionTitle">${escapeHtml(item.title)}</div><div class="attentionReason">${escapeHtml(item.reason)}</div></div><span class="syncBadge ${item.priority <= 1 ? 'good' : item.priority <= 3 ? 'warn' : ''}">P${item.priority + 1}</span></div><div class="attentionMeta">${item.tags.map(tag=>`<span class="attentionTag">${escapeHtml(tag)}</span>`).join('')}</div><div class="attentionActions"><button class="btn btn-primary" onclick="${item.quick.fn}">${escapeHtml(item.quick.label)}</button><button class="btn" onclick="openJobDetails(${item.job.id})">Open details</button></div></div>`).join('');
     }
+    function captureWriteContext(){
+      return { account: String(userAccount || '').toLowerCase(), manager: String(AGI_JOB_MANAGER || '').toLowerCase(), provider: web3?.currentProvider || window.ethereum, epoch: APP_STATE.writeEpoch || 0 };
+    }
+    function assertWriteContext(context){
+      const current = captureWriteContext();
+      if(!context.account || !hasAcceptedTerms || !isMainnet || context.account !== current.account || context.manager !== current.manager || context.provider !== current.provider || context.epoch !== current.epoch) throw new Error('Wallet, network, deployment or accepted terms changed. Review the action again.');
+    }
+    async function assertLiveWriteContext(context){
+      assertWriteContext(context);
+      const [accounts, chainId] = await Promise.all([
+        context.provider.request({method:'eth_accounts'}), context.provider.request({method:'eth_chainId'})
+      ]);
+      assertWriteContext(context);
+      if(Number(chainId) !== 1 || String(accounts?.[0] || '').toLowerCase() !== context.account) throw new Error('Wallet account or network changed. Reconnect and review the action again.');
+    }
+    function receiptSucceeded(receipt){
+      return receipt?.status === true || receipt?.status === 1 || receipt?.status === 1n || receipt?.status === '1' || receipt?.status === '0x1';
+    }
     function openActionReview(config){
-      pendingReviewedAction = config;
+      if(activeReviewedContext && !config.confirmationOnly) throw new Error('Finish or cancel the current transaction before reviewing another action.');
+      pendingReviewedAction = {...config, writeContext: activeReviewedContext || captureWriteContext()};
       if(el('actionReviewTitle')) el('actionReviewTitle').textContent = config.title || 'Review action';
       if(el('actionReviewBody')) el('actionReviewBody').textContent = config.body || '';
       if(el('actionReviewRisk')) el('actionReviewRisk').innerHTML = config.riskHtml || '<b>Review carefully</b><br>This UI will only open your wallet after you confirm the details below.';
@@ -3074,6 +3097,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         pendingActionConfirmResolver = resolve;
         openActionReview({
           ...config,
+          confirmationOnly: true,
           run: async ()=>{ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; if(resolver) resolver(true); }
         });
       });
@@ -3083,25 +3107,42 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(!review?.run) return closeActionReview();
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
-      const runner = review.run;
       closeActionReview(false);
-      try{ if(runner) await runner(); }catch(e){ console.error(e); setToast(e?.message || String(e), 'bad'); }
-      finally{ if(btn) btn.disabled = false; }
-    }
-    async function runTrackedTx(label, sendFactory, options={}){
-      await verifyUSDCDeployment();
-      const pending = addTxActivity({ label, state:'pending', detail: options.pendingDetail || 'Waiting for wallet confirmation…' });
+      const previousContext = activeReviewedContext;
       try{
-        const promi = sendFactory();
+        await assertLiveWriteContext(review.writeContext);
+        if(!review.confirmationOnly) activeReviewedContext = review.writeContext;
+        await review.run();
+      }catch(e){
+        if(pendingActionConfirmResolver){ const resolver = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolver(false); }
+        console.error(e); setToast(e?.message || String(e), 'bad');
+      }finally{
+        if(!review.confirmationOnly) activeReviewedContext = previousContext;
+        if(btn) btn.disabled = false;
+      }
+    }
+    async function runTrackedTx(label, methodFactory, options={}){
+      if(trackedTransactionPending) throw new Error('A transaction is already in progress. Wait for its receipt before sending another.');
+      const context = options.writeContext || activeReviewedContext || captureWriteContext();
+      trackedTransactionPending = true;
+      let pending;
+      try{
+        await assertLiveWriteContext(context);
+        await verifyUSDCDeployment();
+        await assertLiveWriteContext(context);
+        const method = methodFactory();
+        const transaction = {from:context.account, value:'0'};
+        await method.call(transaction);
+        await assertLiveWriteContext(context);
+        pending = addTxActivity({ label, state:'pending', detail: options.pendingDetail || 'Waiting for wallet confirmation…' });
+        const promi = method.send(transaction);
         if(promi && typeof promi.on === 'function'){
           promi.on('transactionHash', hash=>{
             updateTxActivity(pending.id, { txHash: hash, detail: options.submittedDetail || 'Submitted to Ethereum mainnet. Waiting for confirmation…' });
           });
-          promi.on('receipt', receipt=>{
-            updateTxActivity(pending.id, { state:'success', txHash: receipt?.transactionHash || pending.txHash || '', detail: options.successDetail || 'Confirmed on-chain.' });
-          });
         }
         const receipt = await promi;
+        if(!receiptSucceeded(receipt)) throw new Error('Transaction reverted or its success could not be confirmed. Check the transaction in your wallet before retrying.');
         if(options.invalidateJobIndex !== false){
           activeJobIndexCache.ids = null;
           activeJobIndexCache.ts = 0;
@@ -3109,9 +3150,9 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         updateTxActivity(pending.id, { state:'success', txHash: receipt?.transactionHash || pending.txHash || '', detail: options.successDetail || 'Confirmed on-chain.' });
         return receipt;
       }catch(err){
-        updateTxActivity(pending.id, { state:'error', detail: err?.message || String(err) });
+        if(pending) updateTxActivity(pending.id, { state:'error', detail: err?.message || String(err) });
         throw err;
-      }
+      }finally{ trackedTransactionPending = false; }
     }
     function setMissionButtons(primary, secondary){
       const p = el('missionPrimaryBtn'), s = el('missionSecondaryBtn');
@@ -3682,7 +3723,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       try{return Number(await web3.eth.getChainId());}catch{return null;}
     }
 
-    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v070_builder_draft_v11_1";
+    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v080_builder_draft_v11_1";
     function builderFieldIds(){
       return ["jobTitle","jobCategory","jobTags","jobSummaryBuilder","jobDeliverables","jobAcceptance","jobRequirements","jobImageURI","jobExternalURI","jobSpecVersion","jobLocale","jobPayout","jobDuration","jobDetails","jobSpecURI"];
     }
@@ -3857,12 +3898,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         jwt: el("ipfsJwt")?.value || "",
         pinName: el("ipfsName")?.value || ""
       };
-      localStorage.setItem("agijobmanager_usdc_v070_ipfs_prefs_v11", JSON.stringify(prefs));
+      localStorage.setItem("agijobmanager_usdc_v080_ipfs_prefs_v11", JSON.stringify(prefs));
       setToast("IPFS browser settings saved locally on this device.", "ok");
     }
     function loadIpfsPrefs(){
       try{
-        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v070_ipfs_prefs_v11") || "{}");
+        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v080_ipfs_prefs_v11") || "{}");
         if(el("ipfsMode")) el("ipfsMode").value = prefs.mode || "pinata-jwt";
         if(el("ipfsEndpoint")) el("ipfsEndpoint").value = prefs.endpoint || "https://api.pinata.cloud/pinning/pinJSONToIPFS";
         if(el("ipfsJwt")) el("ipfsJwt").value = prefs.jwt || "";
@@ -3870,7 +3911,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }catch{}
     }
     function clearIpfsPrefs(){
-      localStorage.removeItem("agijobmanager_usdc_v070_ipfs_prefs_v11");
+      localStorage.removeItem("agijobmanager_usdc_v080_ipfs_prefs_v11");
       if(el("ipfsJwt")) el("ipfsJwt").value = "";
       setToast("Saved IPFS browser settings removed.", "ok");
     }
@@ -4205,7 +4246,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
       if(!available) return setToast('Label unavailable.', 'warn');
       closeAlphaMintReview();
-      const receipt = await runTrackedTx(`Mint ${local.label}.${ALPHA_AGENT_PARENT}`, ()=>freeTrialRegistrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, local.label, recipient).send({from:userAccount, value:'0'}), {pendingDetail:'Submitting free-trial ENS registration…', successDetail:'Free-trial ENS registration confirmed.'});
+      const receipt = await runTrackedTx(`Mint ${local.label}.${ALPHA_AGENT_PARENT}`, ()=>freeTrialRegistrar.methods.registerSimple(ALPHA_AGENT_PARENT_NODE, local.label, recipient), {pendingDetail:'Submitting free-trial ENS registration…', successDetail:'Free-trial ENS registration confirmed.'});
       const ev = receipt?.events?.NameRegistered?.returnValues || null;
       const node = ev?.node || namehash(`${local.label}.${ALPHA_AGENT_PARENT}`);
       const expiry = ev?.expiry ? formatTimestamp(ev.expiry) : (el('mintAlphaExpectedExpiry')?.textContent || '—');
@@ -4226,8 +4267,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       box.querySelectorAll('[data-registrar-admin]').forEach(btn=>btn.addEventListener('click', async ()=>{
         if(!requireConnected() || !mustBeReadyToWrite()) return;
         const m = btn.dataset.registrarAdmin;
-        if(m === 'setupDomain') await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods.setupDomain(ALPHA_AGENT_PARENT_NODE, true).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
-        else await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods[m](ALPHA_AGENT_PARENT_NODE).send({from:userAccount}), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
+        if(m === 'setupDomain') await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods.setupDomain(ALPHA_AGENT_PARENT_NODE, true), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
+        else await runTrackedTx(`Registrar ${m}`, ()=>freeTrialRegistrar.methods[m](ALPHA_AGENT_PARENT_NODE), {pendingDetail:`Submitting ${m}…`, successDetail:`${m} confirmed.`});
         await refreshFreeTrialRegistrarState();
       }));
     }
@@ -4414,9 +4455,9 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(!freeTrialRegistrarIdentity) freeTrialRegistrarIdentity = new web3.eth.Contract(FreeTrialSubdomainRegistrarIdentityABI, FREE_TRIAL_REGISTRAR_IDENTITY);
       closeAlphaIdentityReview();
       let send;
-      if(action==='register') send = ()=>freeTrialRegistrarIdentity.methods.register(local.label).send({from:userAccount, value:'0'});
-      if(action==='claimIdentity') send = ()=>freeTrialRegistrarIdentity.methods.claimIdentity(local.label).send({from:userAccount, value:'0'});
-      if(action==='syncIdentityByLabel') send = ()=>freeTrialRegistrarIdentity.methods.syncIdentityByLabel(local.label).send({from:userAccount, value:'0'});
+      if(action==='register') send = ()=>freeTrialRegistrarIdentity.methods.register(local.label);
+      if(action==='claimIdentity') send = ()=>freeTrialRegistrarIdentity.methods.claimIdentity(local.label);
+      if(action==='syncIdentityByLabel') send = ()=>freeTrialRegistrarIdentity.methods.syncIdentityByLabel(local.label);
       if(!send) return;
       await runTrackedTx(`Alpha identity ${action} ${local.label}`, send, {pendingDetail:`Submitting ${action}…`, successDetail:`${action} confirmed.`});
       if(el('agentSub')) el('agentSub').value = local.label;
@@ -4442,12 +4483,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       box.querySelectorAll('[data-alpha-admin]').forEach(btn=>btn.addEventListener('click', async ()=>{
         if(!requireConnected() || !mustBeReadyToWrite()) return;
         const a = btn.dataset.alphaAdmin;
-        if(a==='setRootActiveTrue') await runTrackedTx('Identity setRootActive(true)', ()=>freeTrialRegistrarIdentity.methods.setRootActive(true).send({from:userAccount}));
-        if(a==='setRootActiveFalse') await runTrackedTx('Identity setRootActive(false)', ()=>freeTrialRegistrarIdentity.methods.setRootActive(false).send({from:userAccount}));
-        if(a==='pause') await runTrackedTx('Identity pause', ()=>freeTrialRegistrarIdentity.methods.pause().send({from:userAccount}));
-        if(a==='unpause') await runTrackedTx('Identity unpause', ()=>freeTrialRegistrarIdentity.methods.unpause().send({from:userAccount}));
-        if(a==='acceptOwnership') await runTrackedTx('Identity acceptOwnership', ()=>freeTrialRegistrarIdentity.methods.acceptOwnership().send({from:userAccount}));
-        if(a==='renounceOwnership') await runTrackedTx('Identity renounceOwnership', ()=>freeTrialRegistrarIdentity.methods.renounceOwnership().send({from:userAccount}));
+        if(a==='setRootActiveTrue') await runTrackedTx('Identity setRootActive(true)', ()=>freeTrialRegistrarIdentity.methods.setRootActive(true));
+        if(a==='setRootActiveFalse') await runTrackedTx('Identity setRootActive(false)', ()=>freeTrialRegistrarIdentity.methods.setRootActive(false));
+        if(a==='pause') await runTrackedTx('Identity pause', ()=>freeTrialRegistrarIdentity.methods.pause());
+        if(a==='unpause') await runTrackedTx('Identity unpause', ()=>freeTrialRegistrarIdentity.methods.unpause());
+        if(a==='acceptOwnership') await runTrackedTx('Identity acceptOwnership', ()=>freeTrialRegistrarIdentity.methods.acceptOwnership());
+        if(a==='renounceOwnership') await runTrackedTx('Identity renounceOwnership', ()=>freeTrialRegistrarIdentity.methods.renounceOwnership());
         if(a==='transferOwnership') setToast('Use command palette/admin wallet tooling to call transferOwnership(address) with an explicit target.', 'warn');
         await refreshIdentityState();
       }));
@@ -4462,7 +4503,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.7.0 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.8.0 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
@@ -4470,11 +4511,11 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
         const pendingOwner = String(await agiJobManager.methods.pendingOwner().call());
-        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.7.0 manager with two-step ownership is required.');
+        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.8.0 manager with two-step ownership is required.');
         const wallet30 = String(await agiJobManager.methods.wallet30().call());
         const wallet10 = String(await agiJobManager.methods.wallet10().call());
         const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
-        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.7.0 settlement wallets.');
+        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.8.0 settlement wallets.');
         if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
         usdcToken = token;
         tokenDecimals = 6;
@@ -4651,7 +4692,7 @@ async function updateSummary(){
 
     function loadJobPrefs(){
       try{
-        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v070_v10_prefs") || "{}");
+        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v080_v10_prefs") || "{}");
         jobFavorites = new Set(Array.isArray(raw.favorites) ? raw.favorites.map(x=>String(x)) : []);
         if(el("jobSearch")) el("jobSearch").value = raw.jobSearchText || "";
         if(el("jobStatusFilter")) el("jobStatusFilter").value = raw.jobStatusFilter || "all";
@@ -4666,12 +4707,12 @@ async function updateSummary(){
       }catch(e){}
     }
     function saveJobPrefs(){
-      localStorage.setItem("agijobmanager_usdc_v070_v10_prefs", JSON.stringify({
+      localStorage.setItem("agijobmanager_usdc_v080_v10_prefs", JSON.stringify({
         favorites: Array.from(jobFavorites),
         jobSearchText, jobStatusFilter, jobRoleFilter, jobSortMode, jobActionableOnly
       }));
     }
-    function notesKey(jobId){ return `agijobmanager_usdc_v070_job_notes_${jobId}`; }
+    function notesKey(jobId){ return `agijobmanager_usdc_v080_job_notes_${jobId}`; }
     function loadJobNotes(jobId){ try{ return localStorage.getItem(notesKey(jobId)) || ""; }catch{return "";} }
     function saveJobNotes(jobId, text){ try{ localStorage.setItem(notesKey(jobId), text || ""); }catch{} }
     function clearJobNotes(jobId){ try{ localStorage.removeItem(notesKey(jobId)); }catch{} }
@@ -4949,6 +4990,8 @@ async function updateSummary(){
     }
 
     async function ensureTokenApprovalExact(tokenContract, spender, required, fmtDecimals, options={}){
+      const writeContext = activeReviewedContext || captureWriteContext();
+      await assertLiveWriteContext(writeContext);
       const needed = BigInt(required || 0);
       const owner = options.owner || userAccount;
       const actionLabel = options.actionLabel || 'this action';
@@ -4965,8 +5008,8 @@ async function updateSummary(){
       }
       if(initial.allowance >= needed) return { ok:true, needed, ...initial, postAllowance:initial.allowance, approvalTx:false, zeroResetUsed:false, tokenAddress, spender };
 
-      const approvalMode = options.approveMax ? 'max (opt-in)' : 'exact';
-      const targetApproval = options.approveMax ? (2n ** 256n - 1n) : needed;
+      const approvalMode = 'exact';
+      const targetApproval = needed;
       const reviewOk = await requestActionConfirmation({
         title:'Token approval required',
         body:`${actionLabel} needs token approval before ${spender} can spend ${tokenLabel}.`,
@@ -4980,28 +5023,17 @@ async function updateSummary(){
         ],
         checks:[
           {state:'Prerequisite', badge:'warn', text: explanation},
-          {state:'Zero-reset compatibility', badge:'warn', text:'If direct approve(amount) fails and allowance is non-zero, the UI will try approve(0) then approve(amount).'}
+          {state:'Exact approval', badge:'good', text:'Only the required USDC amount is approved. Failed or rejected requests stop here; no automatic retry or unlimited approval.'}
         ],
         method:`approve(${spender}, ${targetApproval.toString()})`,
         confirmLabel:'Approve token'
       });
       if(!reviewOk) return { ok:false, needed, ...initial, postAllowance:initial.allowance, approvalTx:false, zeroResetUsed:false, tokenAddress, spender };
 
-      let zeroResetUsed = false;
+      const zeroResetUsed = false;
+      await assertLiveWriteContext(writeContext);
       setToast(`Waiting for token approval for ${actionLabel}…`, 'warn');
-      try{
-        await runTrackedTx(`Approve ${tokenLabel} for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(targetApproval)).send({from:owner}), { pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
-      }catch(err){
-        if(isUserRejectedTx(err)) throw err;
-        if(initial.allowance > 0n){
-          zeroResetUsed = true;
-          setToast('Direct approve reverted; retrying with approve(0) then approve(amount).', 'warn');
-          await runTrackedTx(`Reset ${tokenLabel} allowance to zero`, ()=>tokenContract.methods.approve(spender, '0').send({from:owner}), { pendingDetail:'Submitting approve(0) zero-reset for ERC-20 compatibility.', successDetail:'Allowance reset to zero confirmed.' });
-          await runTrackedTx(`Approve ${tokenLabel} after zero-reset`, ()=>tokenContract.methods.approve(spender, String(targetApproval)).send({from:owner}), { pendingDetail:`Submitting token approval for ${actionLabel} after zero-reset.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
-        }else{
-          throw err;
-        }
-      }
+      await runTrackedTx(`Approve ${tokenLabel} for ${actionLabel}`, ()=>tokenContract.methods.approve(spender, String(targetApproval)), { writeContext, pendingDetail:`Submitting token approval for ${actionLabel}.`, successDetail:`Token approval confirmed for ${actionLabel}.` });
       const post = await getTokenBalanceAndAllowance({ tokenContract, spender, owner });
       if(post.allowance < needed){
         setToast(`Approval mined but allowance is still insufficient for ${actionLabel}. Needed ${formatAmount(needed)}, now ${formatAmount(post.allowance)}.`, 'bad');
@@ -5070,10 +5102,21 @@ async function updateSummary(){
         </div>`;
     }
 
+    async function fetchPostingTerms(){
+      const contract = agiJobManager;
+      const names = ['validationRewardPercentage','wallet30','wallet10','maxJobPayout','jobDurationLimit','paused'];
+      const values = await Promise.all(names.map(name=>contract.methods[name]().call()));
+      return Object.fromEntries(names.map((name,i)=>[name, String(values[i]).toLowerCase()]));
+    }
+    async function assertPostingTerms(expected){
+      const current = await fetchPostingTerms();
+      assertSnapshotMatch('job posting terms', expected, current, Object.keys(expected));
+    }
     async function createJob(){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
       try{
+        const postingContext = captureWriteContext();
         saveBuilderDraft(false);
         let spec = el("jobSpecURI").value.trim();
         const details = el("jobDetails").value.trim();
@@ -5087,7 +5130,17 @@ async function updateSummary(){
         if(el("jobSpecURI")) el("jobSpecURI").value = spec;
         const payoutUnits = parseAmountToUnits(payout);
         const durationInt = BigInt(duration);
-        if(durationInt <= 0n) throw new Error("Duration must be > 0.");
+        if(durationInt <= 0n || durationInt > 31536000n) throw new Error("Duration must be 1–31,536,000 seconds (up to 365 days), within the current on-chain limit.");
+        if(payoutUnits <= 0n) throw new Error("Job cost must be greater than zero USDC.");
+        const postingTerms = await fetchPostingTerms();
+        await assertLiveWriteContext(postingContext);
+        if(postingTerms.paused === 'true') throw new Error('New job intake is paused. Wait until the owner enables posting.');
+        if(payoutUnits > BigInt(postingTerms.maxJobPayout)) throw new Error(`Job cost exceeds the current limit of ${formatUnitsToAmount(postingTerms.maxJobPayout)} USDC.`);
+        if(durationInt > BigInt(postingTerms.jobDurationLimit)) throw new Error(`Duration exceeds the current limit of ${postingTerms.jobDurationLimit} seconds.`);
+        const validatorBudget = payoutUnits * BigInt(postingTerms.validationRewardPercentage) / 100n;
+        const wallet30Amount = payoutUnits * 30n / 100n;
+        const wallet10Amount = payoutUnits * 10n / 100n;
+        const agentRemainder = payoutUnits - validatorBudget - wallet30Amount - wallet10Amount;
         openActionReview({
           title:`Create Job · escrow ${formatUnitsToAmount(payoutUnits)} $USDC`,
           body:'You are about to publish a new job and escrow the full payout into AGIJobManager. If token allowance is insufficient, the UI will guide you through approval first.',
@@ -5095,6 +5148,10 @@ async function updateSummary(){
             {label:'Job Spec URI', value: spec},
             {label:'On-chain details', value: details},
             {label:'Payout escrow', value: `${formatUnitsToAmount(payoutUnits)} $USDC`},
+            {label:`Validator budget (${postingTerms.validationRewardPercentage}%, paid first)`, value: `${formatUnitsToAmount(validatorBudget)} USDC`},
+            {label:'30% of original job cost', value: `${formatUnitsToAmount(wallet30Amount)} USDC → ${postingTerms.wallet30}`},
+            {label:'10% of original job cost', value: `${formatUnitsToAmount(wallet10Amount)} USDC → ${postingTerms.wallet10}`},
+            {label:'Agent remainder after full validator budget', value: `${formatUnitsToAmount(agentRemainder)} USDC; unallocated validator rewards and rounding also go to the agent. Bonds are separate.`},
             {label:'Duration', value: `${durationInt.toString()} seconds · ${secondsToHuman(durationInt.toString())}`}
           ],
           checks:[
@@ -5106,12 +5163,14 @@ async function updateSummary(){
           confirmLabel:'Create job',
           footer:'After confirmation, the UI may first request approve() if your USDC allowance is below the escrow amount.',
           run: async ()=>{
+            await assertPostingTerms(postingTerms);
             const approval = await ensureApproval(payoutUnits, { actionLabel: 'creating this job', explanation: 'Job creation escrows the full payout amount into AGIJobManager.', postActionLabel:`createJob(${spec},${payoutUnits.toString()},${durationInt.toString()},details)` });
             if(!approval.ok) return;
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < payoutUnits || finalGate.allowance < payoutUnits) throw new Error('Create job preflight drifted after approval: allowance or balance is no longer sufficient for escrow. Refresh and retry.');
+            await assertPostingTerms(postingTerms);
             setToast('Sending createJob transaction…', 'warn');
-            await runTrackedTx('Create job', ()=>agiJobManager.methods.createJob(spec, String(payoutUnits), String(durationInt), details).send({from:userAccount}), { pendingDetail:'Escrowing payout and creating the job on-chain.', successDetail:'Job created successfully.' });
+            await runTrackedTx('Create job', ()=>agiJobManager.methods.createJob(spec, String(payoutUnits), String(durationInt), details), { pendingDetail:'Escrowing payout and creating the job on-chain.', successDetail:'Job created successfully.' });
             if(el('jobSpecURI')) el('jobSpecURI').value = spec;
             await refreshAll();
           }
@@ -5196,7 +5255,7 @@ async function updateSummary(){
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalProbe.trace.finalBondRaw || finalGate.allowance < finalProbe.trace.finalBondRaw) throw new Error(`Apply preflight drifted after approval: current required bond is ${formatUnitsToAmount(finalProbe.trace.finalBondRaw)} $USDC and allowance is insufficient. Refresh and retry.`);
             setToast("Submitting applyForJob transaction…", "warn");
-            await runTrackedTx(`Apply for job #${jobId}`, ()=>agiJobManager.methods.applyForJob(String(jobId), verified.agent, []).send({from:userAccount}), { pendingDetail:`Submitting applyForJob for job #${jobId}.`, successDetail:`Application for job #${jobId} confirmed.` });
+            await runTrackedTx(`Apply for job #${jobId}`, ()=>agiJobManager.methods.applyForJob(String(jobId), verified.agent, []), { pendingDetail:`Submitting applyForJob for job #${jobId}.`, successDetail:`Application for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5261,7 +5320,7 @@ async function updateSummary(){
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalSnap.trace.finalBondRaw || finalGate.allowance < finalSnap.trace.finalBondRaw) throw new Error('Validate preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting approval…", "warn");
-            await runTrackedTx(`Approve job #${jobId}`, ()=>agiJobManager.methods.validateJob(String(jobId), verified.club, []).send({from:userAccount}), { pendingDetail:`Submitting validator approval for job #${jobId}.`, successDetail:`Validator approval for job #${jobId} confirmed.` });
+            await runTrackedTx(`Approve job #${jobId}`, ()=>agiJobManager.methods.validateJob(String(jobId), verified.club, []), { pendingDetail:`Submitting validator approval for job #${jobId}.`, successDetail:`Validator approval for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5319,7 +5378,7 @@ async function updateSummary(){
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalSnap.trace.finalBondRaw || finalGate.allowance < finalSnap.trace.finalBondRaw) throw new Error('Disapprove preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting disapproval…", "warn");
-            await runTrackedTx(`Disapprove job #${jobId}`, ()=>agiJobManager.methods.disapproveJob(String(jobId), verified.club, []).send({from:userAccount}), { pendingDetail:`Submitting validator disapproval for job #${jobId}.`, successDetail:`Validator disapproval for job #${jobId} confirmed.` });
+            await runTrackedTx(`Disapprove job #${jobId}`, ()=>agiJobManager.methods.disapproveJob(String(jobId), verified.club, []), { pendingDetail:`Submitting validator disapproval for job #${jobId}.`, successDetail:`Validator disapproval for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5350,7 +5409,7 @@ async function updateSummary(){
           footer:'This call itself does not require token approval, but it may cause token settlement inside the contract.',
           run: async ()=>{
             setToast("Finalizing…", "warn");
-            await runTrackedTx(`Finalize job #${jobId}`, ()=>agiJobManager.methods.finalizeJob(String(jobId)).send({from:userAccount}), { pendingDetail:`Submitting finalizeJob for job #${jobId}.`, successDetail:`Finalize path for job #${jobId} confirmed.` });
+            await runTrackedTx(`Finalize job #${jobId}`, ()=>agiJobManager.methods.finalizeJob(String(jobId)), { pendingDetail:`Submitting finalizeJob for job #${jobId}.`, successDetail:`Finalize path for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5403,7 +5462,7 @@ async function updateSummary(){
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalSnap.trace.finalBondRaw || finalGate.allowance < finalSnap.trace.finalBondRaw) throw new Error('Dispute preflight drifted after approval: current dispute bond is no longer fully covered. Refresh and retry.');
             setToast("Disputing…", "warn");
-            await runTrackedTx(`Dispute job #${jobId}`, ()=>agiJobManager.methods.disputeJob(String(jobId)).send({from:userAccount}), { pendingDetail:`Submitting dispute for job #${jobId}.`, successDetail:`Dispute for job #${jobId} confirmed.` });
+            await runTrackedTx(`Dispute job #${jobId}`, ()=>agiJobManager.methods.disputeJob(String(jobId)), { pendingDetail:`Submitting dispute for job #${jobId}.`, successDetail:`Dispute for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5433,7 +5492,7 @@ async function updateSummary(){
           footer:'Use this only when the job is genuinely stale.',
           run: async ()=>{
             setToast("Expiring…", "warn");
-            await runTrackedTx(`Expire job #${jobId}`, ()=>agiJobManager.methods.expireJob(String(jobId)).send({from:userAccount}), { pendingDetail:`Submitting expireJob for job #${jobId}.`, successDetail:`Expire path for job #${jobId} confirmed.` });
+            await runTrackedTx(`Expire job #${jobId}`, ()=>agiJobManager.methods.expireJob(String(jobId)), { pendingDetail:`Submitting expireJob for job #${jobId}.`, successDetail:`Expire path for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5463,7 +5522,7 @@ async function updateSummary(){
           footer:'This is irreversible once confirmed on-chain.',
           run: async ()=>{
             setToast("Cancelling…", "warn");
-            await runTrackedTx(`Cancel job #${jobId}`, ()=>agiJobManager.methods.cancelJob(String(jobId)).send({from:userAccount}), { pendingDetail:`Submitting cancelJob for job #${jobId}.`, successDetail:`Job #${jobId} cancelled successfully.` });
+            await runTrackedTx(`Cancel job #${jobId}`, ()=>agiJobManager.methods.cancelJob(String(jobId)), { pendingDetail:`Submitting cancelJob for job #${jobId}.`, successDetail:`Job #${jobId} cancelled successfully.` });
             await refreshAll();
           }
         });
@@ -5492,7 +5551,7 @@ async function updateSummary(){
           footer:'This call itself does not require token approval.',
           run: async ()=>{
             setToast("Locking ENS…", "warn");
-            await runTrackedTx(`Lock ENS for job #${jobId}`, ()=>agiJobManager.methods.lockJobENS(String(jobId), false).send({from:userAccount}), { pendingDetail:`Submitting ENS lock for job #${jobId}.`, successDetail:`ENS lock for job #${jobId} confirmed.` });
+            await runTrackedTx(`Lock ENS for job #${jobId}`, ()=>agiJobManager.methods.lockJobENS(String(jobId), false), { pendingDetail:`Submitting ENS lock for job #${jobId}.`, successDetail:`ENS lock for job #${jobId} confirmed.` });
             await refreshAll();
           }
         });
@@ -5812,10 +5871,10 @@ function normalizeIpfsToHttp(uri){
       setToast(`Job Spec URI normalized to ${normalized.canonical}`, 'ok');
     }
     function loadCompletionDraft(jobId){
-      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v070_completion_draft_${jobId}`) || '{}'); }catch{return {};}
+      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v080_completion_draft_${jobId}`) || '{}'); }catch{return {};}
     }
     function saveCompletionDraft(jobId){
-      try{ localStorage.setItem(`agijobmanager_usdc_v070_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
+      try{ localStorage.setItem(`agijobmanager_usdc_v080_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
     }
     function runBondMathSelfTests(){
       const one = 1000000n;
@@ -5872,8 +5931,10 @@ function normalizeIpfsToHttp(uri){
       return job;
     }
     async function openCompletionAssistant(jobId){
+      const writeContext = captureWriteContext();
       const job = await fetchJobSnapshot(jobId);
-      completionAssistantState = { jobId:Number(jobId), inspected:null };
+      assertWriteContext(writeContext);
+      completionAssistantState = { jobId:Number(jobId), inspected:null, writeContext };
       const draft = loadCompletionDraft(jobId);
       if(el('completionUriInput')) el('completionUriInput').value = draft.uri || job.completionURI || '';
       if(el('completionFinalImageInput')) el('completionFinalImageInput').value = draft.finalImage || '';
@@ -5924,7 +5985,7 @@ function normalizeIpfsToHttp(uri){
       if(/Invalid/i.test(posture)) throw new Error('The completion URI is not ready yet.');
       saveCompletionDraft(jobId);
       setToast('Submitting requestJobCompletion…', 'warn');
-      await runTrackedTx(`Request completion for job #${jobId}`, ()=>agiJobManager.methods.requestJobCompletion(String(jobId), normalized.canonical).send({from:userAccount}), { pendingDetail:`Submitting requestJobCompletion for job #${jobId}.`, successDetail:`Completion request for job #${jobId} confirmed.` });
+      await runTrackedTx(`Request completion for job #${jobId}`, ()=>agiJobManager.methods.requestJobCompletion(String(jobId), normalized.canonical), { writeContext:completionAssistantState.writeContext, pendingDetail:`Submitting requestJobCompletion for job #${jobId}.`, successDetail:`Completion request for job #${jobId} confirmed.` });
       closeCompletionAssistant();
       await refreshAll();
     }
@@ -6471,7 +6532,7 @@ function normalizeIpfsToHttp(uri){
       setPremiumReputationThreshold:[{name:'v',type:'uint256'}],
       setVoteQuorum:[{name:'v',type:'uint256'}],
       setMaxJobPayout:[{name:'v',type:'uint256'}],
-      setJobDurationLimit:[{name:'v',type:'uint256'}],
+      setJobDurationLimit:[{name:'v',type:'uint256',placeholder:'1–31536000 seconds (maximum 365 days)'}],
       setMaxActiveJobsPerAgent:[{name:'v',type:'uint256'}],
       setCompletionReviewPeriod:[{name:'v',type:'uint256'}],
       setDisputeReviewPeriod:[{name:'v',type:'uint256'}],
@@ -6566,6 +6627,7 @@ function normalizeIpfsToHttp(uri){
       }
       const args = await collectAdminArgs(target, method, danger);
       if(args === null) return;
+      if(method === 'setJobDurationLimit' && (BigInt(args[0]) < 1n || BigInt(args[0]) > 31536000n)) throw new Error('Job duration limit must be 1–31,536,000 seconds (up to 365 days).');
       if(method === 'setSettlementWallets') {
         const paused = await contract.methods.paused().call();
         const reserves = await Promise.all(['lockedEscrow','lockedAgentBonds','lockedValidatorBonds','lockedDisputeBonds'].map(name=>contract.methods[name]().call()));
@@ -6584,7 +6646,7 @@ function normalizeIpfsToHttp(uri){
       if(!ok) return;
       if(account !== String(userAccount || '').toLowerCase() || contract !== (target === 'ens' ? ensJobPages : agiJobManager) || !mustBeReadyToWrite()) throw new Error('Wallet, network or contract changed. Review the action again.');
       await contract.methods[method](...args).call({from:userAccount});
-      await runTrackedTx(`Admin ${method}`, ()=>contract.methods[method](...args).send({from:userAccount}), {pendingDetail:`Submitting ${method}.`, successDetail:`${method} confirmed.`});
+      await runTrackedTx(`Admin ${method}`, ()=>contract.methods[method](...args), {pendingDetail:`Submitting ${method}.`, successDetail:`${method} confirmed.`});
       await refreshAll();
     }
     async function refreshAdminPanels(){
@@ -6749,6 +6811,7 @@ function normalizeIpfsToHttp(uri){
 
       if(window.ethereum){
         window.ethereum.on("accountsChanged", async (accounts)=>{
+          resetRuntimeState('wallet account changed');
           userAccount = accounts && accounts[0] ? accounts[0] : null; APP_STATE.wallet.account = userAccount;
           el("walletStatus").textContent = userAccount ? shortAddr(userAccount) : "Not connected";
           verified.agent = null; verified.club = null; verified.agentAlpha=false; verified.clubAlpha=false;
@@ -6794,7 +6857,7 @@ function normalizeIpfsToHttp(uri){
       agiJobManager = null;
       hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
       if(el('termsAccepted')) el('termsAccepted').checked = false;
-      try { localStorage.setItem('agijobmanager_usdc_v070_manager', value); } catch {}
+      try { localStorage.setItem('agijobmanager_usdc_v080_manager', value); } catch {}
       updateWriteGate();
       await connectWallet();
     });
