@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.6.0",
+  "name": "v0.6.0 — USDC job payout distribution",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "4b656a033929e5699d3c074fc4334502f8ca0ee8",
+  "sourceTree": "21a6eee1e021a2f1942661b91ebe1ae621b25b6e",
+  "previousTag": "v0.5.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "USDC job payments: validators, fixed 30% and 10% wallets, then agent remainder. Fresh deployment with two explicit recipients required; no live contract or funds changed.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "contracts/legacy",
+    "migrations/snapshots",
+    "lib"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "81391f0c797c0a836f6992d34e48147ca6a01b67441483fbd39a1a4e30ba3e74",
+    "PREVIOUS_RELEASE.json": "8393ce0bab183a92f0b7b3f709808fe60eb9c0c46f5289036bd4039b4f4b265a",
+    "SOURCE_CI.json": "f2b8126c667f15476f43cfbd009a81d8ae967bcf0aa73e0a22bb41ed6584a959"
+  },
+  "requiredSourceRuns": {
+    "ci": {
+      "id": 35181617954,
+      "workflow": "ci.yml"
+    },
+    "ui": {
+      "id": 35181617896,
+      "workflow": "ui.yml"
+    },
+    "security-verification": {
+      "id": 35181617986,
+      "workflow": "security-verification.yml"
+    },
+    "docs": {
+      "id": 35181617909,
+      "workflow": "docs.yml"
+    }
+  }
+}
