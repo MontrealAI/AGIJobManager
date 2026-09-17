@@ -1,10 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   generateBuildId: async () => "agijobmanager-ipfs-v1",
+  outputFileTracingRoot: __dirname,
+  transpilePackages: ['@base-org/account'],
   webpack: (config) => {
     config.resolve = config.resolve || {}
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
+      // Wallet connectors use the SDK's published browser entry. Its Node
+      // entry also exports server-only CDP payment APIs and optional x402 peers.
+      '@base-org/account$': require.resolve('@base-org/account/browser'),
       encoding: false,
       'pino-pretty': false
     }

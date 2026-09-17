@@ -1,5 +1,7 @@
 # AGIJobManager Web UI (static)
 
+> **v0.7.0 operational update:** Public-network Truffle signing is retired. Deployment and owner operations below are historical reference where they conflict with the [current Hardhat guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/hardhat/README.md), [USDC migration](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/USDC_MIGRATION.md) and [owner controls](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/OWNER_CONTROLS.md). Use native six-decimal USDC, supply both settlement wallets, and complete two-step ownership acceptance before opening intake.
+
 This static page provides a **non-custodial** interface to the AGIJobManager contract. It runs entirely in your browser, uses your wallet for signing, and does **not** require any backend or API keys. It is intended for careful, expert use and is **experimental research software**.
 
 ## What this page is

@@ -10,6 +10,7 @@ export default function DeploymentPage() {
       <dt>30% settlement wallet</dt><dd>{d.settlementWallets.wallet30 || 'Required at deployment'}</dd>
       <dt>10% settlement wallet</dt><dd>{d.settlementWallets.wallet10 || 'Required at deployment'}</dd>
       <dt>Successful job distribution</dt><dd>Validators first (8% default), then 30% and 10% of the original USDC job cost, then the remaining balance to the agent.</dd>
+      <dt>Owner maintenance</dt><dd>Payout wallets can change only while intake is paused and all escrow is settled. A new owner must accept an ownership proposal.</dd>
       <dt>ENS job pages</dt><dd>{d.ensJobPagesAddress || 'Not configured'}</dd>
     </dl>
     <a href={d.addressSource} target='_blank' rel='noopener noreferrer'>Circle USDC address reference</a>

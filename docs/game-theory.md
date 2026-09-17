@@ -87,13 +87,13 @@ Below, each role’s **goals**, **available actions**, **risks**, and **informat
 ## C. Lifecycle map with incentive commentary
 
 ### Economics snapshot (payouts + bonds)
-- **Escrow payout split**: successful jobs pay the posting-time validator budget, 30% and 10% of the original cost to two immutable wallets, then all remaining USDC to the agent. With no votes, the unused validator budget goes to the agent.
+- **Escrow payout split**: successful jobs pay the posting-time validator budget, 30% and 10% of the original cost to two configured wallets, then all remaining USDC to the agent. With no votes, the unused validator budget goes to the agent.
 - **Agent bond**: posted at `applyForJob` using `agentBondBps` with `agentBond`/`agentBondMax` caps; **scaled upward by duration** when `jobDurationLimit` is set; returned on agent wins and forfeited to the employer on employer wins or expiry.
 - **Validator bond + slashing**: posted per vote (`validatorBondBps` with min/max caps); correct‑side validators earn rewards and get bond back, incorrect‑side validators are slashed by `validatorSlashBps`.
 - **Dispute bond**: posted by the disputant in `disputeJob` (bounded by `DISPUTE_BOND_BPS/MIN/MAX`); paid to the winning side when the dispute resolves.
 - **Employer refunds**: if validators participated and the employer wins, the refund is reduced by the validator reward pool (validators still get paid).
 
-**Example:** a 1,000 USDC successful job at the default validator rate pays an 80 USDC validator budget, 300 USDC to wallet one, 100 USDC to wallet two, and 520 USDC to the agent. Bond slashing and rounding follow the [v0.6.0 rules](USDC_PAYOUT_SPLIT.md).
+**Example:** a 1,000 USDC successful job at the default validator rate pays an 80 USDC validator budget, 300 USDC to wallet one, 100 USDC to wallet two, and 520 USDC to the agent. Bond slashing and rounding follow the [v0.7.0 rules](USDC_PAYOUT_SPLIT.md).
 
 Below is the **real settlement path** with incentives at each step. For contract‑accurate rules, see [`contract-behavior.md`](contract-behavior.md).
 

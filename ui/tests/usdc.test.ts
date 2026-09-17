@@ -5,7 +5,7 @@ import { estimateDisputeBond } from '../src/lib/bonds';
 const manager = '0x1111111111111111111111111111111111111111';
 const client = (token = USDC_ADDRESSES[1], decimals = 6, chain = 1, code = '0x6000') => ({
   getChainId: vi.fn(async () => chain), getBytecode: vi.fn(async () => code),
-  readContract: vi.fn(async ({functionName}: {functionName: string}) => functionName === 'usdcToken' ? token : functionName === 'wallet30' ? '0x3333333333333333333333333333333333333333' : functionName === 'wallet10' ? '0x4444444444444444444444444444444444444444' : decimals)
+  readContract: vi.fn(async ({functionName}: {functionName: string}) => functionName === 'usdcToken' ? token : functionName === 'wallet30' ? '0x3333333333333333333333333333333333333333' : functionName === 'wallet10' ? '0x4444444444444444444444444444444444444444' : functionName === 'pendingOwner' ? '0x0000000000000000000000000000000000000000' : decimals)
 });
 describe('USDC transaction preflight', () => {
   it('requires a configured manager on the canonical chain with six-decimal USDC', async () => {
@@ -33,6 +33,14 @@ describe('USDC transaction preflight', () => {
     const read = old.readContract;
     old.readContract = vi.fn(async (args: {functionName: string}) => {
       if (args.functionName.startsWith('wallet')) throw new Error('Missing selector');
+      return read(args);
+    });
+    await expect(verifyUSDCDeployment(old, manager, 1)).rejects.toThrow();
+  });
+  it('rejects v0.6 managers without two-step ownership', async () => {
+    const old = client(); const read = old.readContract;
+    old.readContract = vi.fn(async (args: {functionName: string}) => {
+      if (args.functionName === 'pendingOwner') throw new Error('Missing selector');
       return read(args);
     });
     await expect(verifyUSDCDeployment(old, manager, 1)).rejects.toThrow();

@@ -67,7 +67,7 @@ flowchart TD
 - Rotate operators by updating moderator lists and runbook access.
 - Ownership transfer sequence:
   1. pre-announce maintenance window,
-  2. `transferOwnership(<NEW_OWNER>)`,
+  2. `transferOwnership(<NEW_OWNER>)` proposes the new owner; that address must call `acceptOwnership()`. Verify `owner()` and zero `pendingOwner()` before treating the handover as complete,
   3. verify owner on-chain,
   4. run pause/unpause sanity check.
 

@@ -2,9 +2,9 @@
 
 ## Official release
 
-AGIJobManager v0.6.0. Status: **deployment-required**.
+AGIJobManager v0.7.0. Status: **deployment-required**.
 
-Software release only. A fresh v0.6.0 USDC manager with two explicit immutable settlement wallets is required. Earlier deployments do not implement this payout split.
+Software release only. Deploy a fresh v0.7.0 USDC manager with two explicit settlement wallets. Owner rotation requires paused intake and zero outstanding escrow and bonds. Ownership transfers require acceptance by the proposed owner.
 
 - Chain ID: 1
 - Manager: Not deployed

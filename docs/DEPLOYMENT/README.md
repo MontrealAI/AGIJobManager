@@ -1,6 +1,6 @@
 # Deployment Documentation Index
 
-> v0.6.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.6.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+> v0.7.0 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.7.0/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
 
 ## Start here by deployment task
 - Fresh deployment (official path): [../../hardhat/README.md](../../hardhat/README.md)
@@ -9,7 +9,7 @@
 
 ## Canonical answers for operators
 - Recommended deployment path: **Hardhat**.
-- Truffle status: **legacy/supported** for backward compatibility.
+- Truffle status: **local tests and historical reproduction only**. Public-network signing is disabled in v0.7.0; use Hardhat and the [owner console](../OWNER_CONTROLS.md).
 - ENS replacement is additive and requires manual post-deploy wiring.
 - Do not lock ENS/identity configuration until cutover + migration checks pass.
 
@@ -20,13 +20,13 @@
 - [Ethereum Mainnet Beta Deployment Record](./MAINNET_BETA_DEPLOYMENT_RECORD.md)
 - [Official Mainnet Deployment Record](./MAINNET_OFFICIAL_DEPLOYMENT_RECORD.md)
 
-## 2) Truffle (legacy / supported)
+## 2) Truffle (historical reference only)
 
 - [Ethereum Mainnet Deployment, Verification & Ownership Transfer Guide (Truffle)](./MAINNET_TRUFFLE_DEPLOYMENT.md)
 - [Truffle Mainnet Deploy](./TRUFFLE_MAINNET_DEPLOY.md)
 - [Truffle Production Deploy](./TRUFFLE_PRODUCTION_DEPLOY.md)
 
-> Truffle migrations remain supported for backward compatibility and historical reproducibility.
+> Public-network commands in these historical guides are retired. Use the Hardhat guide above for v0.7.0 and later.
 
 ## UI boundary during deployment operations
 
@@ -35,4 +35,3 @@
   - `../ui/GENESIS_JOB_MAINNET_HTML_UI.md`
   - `../../ui/README.md`
 - For deployment/cutover decisions, this index and `../../hardhat/README.md` remain canonical.
-

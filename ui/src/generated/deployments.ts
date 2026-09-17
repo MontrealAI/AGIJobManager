@@ -1,6 +1,6 @@
 // Generated from config/usdc-deployment.json. Never infer deployment from historical receipts.
 export const OFFICIAL_DEPLOYMENTS = {
-  "version": "0.6.0",
+  "version": "0.7.0",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -14,7 +14,7 @@ export const OFFICIAL_DEPLOYMENTS = {
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
   },
   "addressSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-  "note": "Software release only. A fresh v0.6.0 USDC manager with two explicit immutable settlement wallets is required. Earlier deployments do not implement this payout split.",
+  "note": "Software release only. Deploy a fresh v0.7.0 USDC manager with two explicit settlement wallets. Owner rotation requires paused intake and zero outstanding escrow and bonds. Ownership transfers require acceptance by the proposed owner.",
   "settlementWallets": {
     "wallet30": "",
     "wallet10": ""

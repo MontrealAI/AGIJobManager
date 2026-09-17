@@ -1,7 +1,7 @@
 {
   "name": "agijobmanager-hardhat",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Official Hardhat deployment + verification workflow for AGIJobManager",
   "scripts": {
     "clean": "hardhat clean",
@@ -16,7 +16,17 @@
     "@nomicfoundation/hardhat-verify": "^2.1.1",
     "@openzeppelin/contracts": "4.9.6",
     "dotenv": "^16.6.1",
-    "ethers": "^6.15.0",
+    "ethers": "6.17.0",
     "hardhat": "^2.26.3"
+  },
+  "engines": {
+    "node": ">=22.23.2"
+  },
+  "overrides": {
+    "undici": "6.28.1",
+    "adm-zip": "0.6.1",
+    "uuid": "11.1.1",
+    "serialize-javascript": "7.0.5",
+    "tmp": "0.2.7"
   }
 }

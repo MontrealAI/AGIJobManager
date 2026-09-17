@@ -654,12 +654,12 @@ module.exports = async function postdeployConfig(callback) {
       if (normalizeAddress(currentOwner) !== transferOwnershipTo) {
         ops.push({
           key: "transferOwnership",
-          label: `Transfer ownership to ${transferOwnershipTo}`,
+          label: `Propose ownership transfer to ${transferOwnershipTo}; recipient must acceptOwnership()`,
           send: () => instance.transferOwnership(transferOwnershipTo, txFrom ? { from: txFrom } : {}),
           verify: async () => {
-            const updated = await instance.owner();
+            const updated = await instance.pendingOwner();
             if (normalizeAddress(updated) !== transferOwnershipTo) {
-              throw new Error("Ownership did not transfer");
+              throw new Error("Ownership proposal did not match the requested recipient");
             }
           },
         });
