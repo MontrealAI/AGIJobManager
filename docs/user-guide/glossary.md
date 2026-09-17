@@ -1,4 +1,4 @@
-# Glossary — v0.9.2
+# Glossary — v0.9.3
 
 - **USDC:** Native Circle token used for every job escrow, reward, and bond. It uses six decimals; 1 USDC is 1000000 base units.
 - **ETH gas:** Ethereum's transaction fee, separate from USDC job economics.

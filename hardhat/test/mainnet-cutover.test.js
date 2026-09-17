@@ -11,7 +11,15 @@ const PIN = JSON.parse(fs.readFileSync(new URL('../qualification/cutover-pin.jso
 const rpc = (method, params = []) => network.provider.request({ method, params });
 const send = async transaction => (await transaction).wait();
 const rejects = transaction => assert.rejects(() => send(transaction), /revert|CALL_EXCEPTION/);
+const rejectsAdmission = transaction => assert.rejects(() => send(transaction), /NotAuthorized/);
 const micro = value => BigInt(value) * 1_000_000n;
+const MEMBERSHIP_ROOTS = ['club.agi.eth', 'agent.agi.eth', 'alpha.club.agi.eth', 'alpha.agent.agi.eth'];
+const MEMBERSHIP_ROOT_OWNERS = {
+  'club.agi.eth': '0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201',
+  'agent.agi.eth': '0x3B7205E05D015D06323B432E9813bCb3fe86adf7',
+  'alpha.club.agi.eth': '0xc0794B670346025738EE90D470862Bf76727BCf3',
+  'alpha.agent.agi.eth': '0x3B7205E05D015D06323B432E9813bCb3fe86adf7',
+};
 const USDC_ABI = [
   'function balanceOf(address) view returns(uint256)', 'function allowance(address,address) view returns(uint256)',
   'function approve(address,uint256) returns(bool)', 'function transfer(address,uint256) returns(bool)',
@@ -26,6 +34,8 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
   let deployer, owner, employer, agent, validator, wallet30, wallet10, outsider, moderator;
   let token, manager, pages, wrapper, registry, resolver, rootOwner, blacklister, managerAddress, pagesAddress;
   let baseline, snapshot, legacyChanged, rootName, rootNode, preservationFailures = 0;
+  let identityEvidence, rootAuthority, memberWrapper, memberResolver;
+  const memberRoots = new Map();
   const reserveFields = ['lockedEscrow', 'lockedAgentBonds', 'lockedValidatorBonds', 'lockedDisputeBonds'];
   const reserves = () => Promise.all(reserveFields.map(field => manager[field]()));
   const recipients = () => [employer.address, agent.address, validator.address, wallet30.address, wallet10.address, managerAddress];
@@ -68,6 +78,29 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
   async function advanceReview() {
     await rpc('evm_increaseTime', [Number(await manager.completionReviewPeriod()) + Number(await manager.challengePeriodAfterApproval()) + 1]);
     await rpc('evm_mine');
+  }
+
+  async function configureMembership() {
+    await send(manager.updateRootNodes(...MEMBERSHIP_ROOTS.map(ethers.namehash)));
+    await send(manager.updateMerkleRoots(ethers.ZeroHash, ethers.ZeroHash));
+    await send(manager.removeAdditionalAgent(agent.address));
+    await send(manager.removeAdditionalValidator(validator.address));
+    assert.equal(await manager.additionalAgents(agent.address), false);
+    assert.equal(await manager.additionalValidators(validator.address), false);
+  }
+
+  async function member(root, label, holder, resolved = ethers.ZeroAddress) {
+    const parent = memberRoots.get(root), name = `${label}.${root}`, node = ethers.namehash(name);
+    assert.equal(await registry.owner(node), ethers.ZeroAddress, `Never overwrite an existing member name: ${name}`);
+    await send(memberWrapper.connect(parent.signer).setSubnodeOwner(parent.node, label, holder.address, 0, parent.expiry));
+    await send(memberWrapper.connect(holder).setResolver(node, baseline.pages.publicResolver));
+    await send(memberResolver.connect(holder)['setAddr(bytes32,address)'](node, resolved));
+    assert.equal(await registry.owner(node), baseline.pages.nameWrapper);
+    assert.equal(await memberWrapper.ownerOf(BigInt(node)), holder.address);
+    assert.equal(await registry.resolver(node), baseline.pages.publicResolver);
+    assert.equal(await memberResolver['addr(bytes32)'](node), resolved);
+    if (!identityEvidence.fixtureNames.includes(name)) identityEvidence.fixtureNames.push(name);
+    return node;
   }
 
   before(async function () {
@@ -113,14 +146,45 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     wrapper = new ethers.Contract(baseline.pages.nameWrapper, WRAPPER_ABI, rootOwner);
     registry = new ethers.Contract(baseline.pages.ens, REGISTRY_ABI, ethers.provider);
     resolver = new ethers.Contract(baseline.pages.publicResolver, RESOLVER_ABI, ethers.provider);
-    rootName = `usdc-v092.${baseline.pages.jobsRootName}`;
+    memberWrapper = new ethers.Contract(baseline.pages.nameWrapper, [...WRAPPER_ABI,
+      'function ownerOf(uint256) view returns(address)', 'function getApproved(uint256) view returns(address)',
+      'function setResolver(bytes32,address)', 'function approve(address,uint256)',
+      'function setApprovalForAll(address,bool)', 'function safeTransferFrom(address,address,uint256,uint256,bytes)'], ethers.provider);
+    memberResolver = new ethers.Contract(baseline.pages.publicResolver,
+      ['function addr(bytes32) view returns(address)', 'function setAddr(bytes32,address)'], ethers.provider);
+    identityEvidence = { scope: 'local child-name fixtures on actual mainnet ENS; no production identity or signer-control certification',
+      registry: { address: baseline.pages.ens, runtimeCodeHash: ethers.keccak256(await ethers.provider.getCode(baseline.pages.ens)) },
+      nameWrapper: { address: baseline.pages.nameWrapper, runtimeCodeHash: ethers.keccak256(await ethers.provider.getCode(baseline.pages.nameWrapper)) },
+      childResolver: { address: baseline.pages.publicResolver, runtimeCodeHash: ethers.keccak256(await ethers.provider.getCode(baseline.pages.publicResolver)) },
+      roots: [], admissionRoutes: ['wrapped owner', 'token approval', 'operator approval', 'resolver addr'],
+      explicitExceptions: ['owner-managed allowlist', 'address Merkle membership'],
+      nftEligibility: 'MockERC721 fixture; production NFT ownership and policy remain unqualified', localChildNamesOnly: true, fixtureNames: [] };
+    for (const name of MEMBERSHIP_ROOTS) {
+      const node = ethers.namehash(name), data = await memberWrapper.getData(BigInt(node));
+      assert.equal(await registry.owner(node), baseline.pages.nameWrapper);
+      assert.equal(data[0], MEMBERSHIP_ROOT_OWNERS[name]);
+      assert.equal(await ethers.provider.getCode(data[0]), '0x', 'Member-root authorization must not model a contract owner as an arbitrary signer');
+      memberRoots.set(name, { node, expiry: data[2], signer: await localSigner(data[0]) });
+      identityEvidence.roots.push({ name, node, owner: data[0], fuses: data[1], expiry: data[2], resolver: await registry.resolver(node) });
+    }
+    rootName = `usdc-v093.${baseline.pages.jobsRootName}`;
     rootNode = ethers.namehash(rootName);
     assert.equal(await registry.owner(rootNode), ethers.ZeroAddress, 'The rehearsal namespace must be unused at the pinned block');
     pages = await (await ethers.getContractFactory('ENSJobPages')).deploy(baseline.pages.ens, baseline.pages.nameWrapper,
       baseline.pages.publicResolver, rootNode, rootName);
     await pages.waitForDeployment();
     pagesAddress = await pages.getAddress();
-    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v092', pagesAddress, 0, BigInt(baseline.rootData[2])));
+    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v093', pagesAddress, 0, BigInt(baseline.rootData[2])));
+    const wrappedRootData = Array.from(await memberWrapper.getData(BigInt(rootNode)));
+    rootAuthority = { path: 'NameWrapper token owner', registryOwner: await registry.owner(rootNode),
+      wrappedOwner: await memberWrapper.ownerOf(BigInt(rootNode)), wrappedData: wrappedRootData,
+      tokenApproved: await memberWrapper.getApproved(BigInt(rootNode)),
+      parentOwnerOperatorApproval: await memberWrapper.isApprovedForAll(rootOwner.address, pagesAddress) };
+    assert.equal(rootAuthority.registryOwner, baseline.pages.nameWrapper);
+    assert.equal(rootAuthority.wrappedOwner, pagesAddress);
+    assert.equal(wrappedRootData[0], pagesAddress);
+    assert.equal(rootAuthority.tokenApproved, ethers.ZeroAddress);
+    assert.equal(rootAuthority.parentOwnerOperatorApproval, false, 'The helper owns only its dedicated wrapped root without blanket legacy-root authority');
     await send(pages.setJobManager(managerAddress));
     await send(manager.setEnsJobPages(pagesAddress));
     const nft = await (await ethers.getContractFactory('MockERC721')).deploy();
@@ -195,6 +259,122 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     assert.equal(await resolver.isApprovedFor(pagesAddress, node, agent.address), false);
     await rejects(resolver.connect(employer).setText(node, 'rehearsal', 'after settlement'));
     await rejects(resolver.connect(agent).setText(node, 'rehearsal', 'after settlement'));
+  });
+
+  for (const prefix of ['', 'alpha.']) {
+    const tier = prefix ? 'alpha' : 'primary';
+    it(`admits real wrapped ${tier} Agent and Club identities while rejecting unrelated and wrong-root claims`, async function () {
+      await configureMembership();
+      await member(`${prefix}agent.agi.eth`, 'agent', agent);
+      await member(`${prefix}club.agi.eth`, 'validator', validator);
+      await member(`${prefix}club.agi.eth`, 'wrongrole-agent', agent);
+      await member(`${prefix}agent.agi.eth`, 'wrongrole-validator', validator);
+      await activate();
+      const before = await balances(), { id } = await create();
+      await rejectsAdmission(manager.connect(outsider).applyForJob(id, 'agent', []));
+      await rejectsAdmission(manager.connect(agent).applyForJob(id, 'wrongrole-agent', []));
+      await send(manager.connect(agent).applyForJob(id, 'agent', []));
+      await send(manager.connect(agent).requestJobCompletion(id, 'ipfs://identity-completion'));
+      await rejectsAdmission(manager.connect(outsider).validateJob(id, 'validator', []));
+      await rejectsAdmission(manager.connect(validator).validateJob(id, 'wrongrole-validator', []));
+      await send(manager.connect(validator).validateJob(id, 'validator', []));
+      await advanceReview();
+      await send(manager.finalizeJob(id));
+      assert.deepEqual((await balances()).map((value, index) => value - before[index]),
+        [-micro(100), micro(52), micro(8), micro(30), micro(10), 0n]);
+      assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+    });
+
+    it(`uses actual resolver addresses for ${tier} membership and rejects revoked Agent and Club records`, async function () {
+      await configureMembership();
+      const agentNode = await member(`${prefix}agent.agi.eth`, 'agent', outsider, agent.address);
+      const validatorNode = await member(`${prefix}club.agi.eth`, 'validator', moderator, validator.address);
+      for (const [node, holder, claimant] of [[agentNode, outsider, agent], [validatorNode, moderator, validator]]) {
+        assert.equal(await memberWrapper.getApproved(BigInt(node)), ethers.ZeroAddress);
+        assert.equal(await memberWrapper.isApprovedForAll(holder.address, claimant.address), false);
+      }
+      await activate();
+      const { id } = await create();
+      await send(manager.connect(agent).applyForJob(id, 'agent', []));
+      await send(manager.connect(agent).requestJobCompletion(id, 'ipfs://resolver-membership'));
+      await send(memberResolver.connect(moderator)['setAddr(bytes32,address)'](validatorNode, ethers.ZeroAddress));
+      const before = await reserves();
+      await rejectsAdmission(manager.connect(validator).validateJob(id, 'validator', []));
+      assert.deepEqual(await reserves(), before);
+      await send(memberResolver.connect(moderator)['setAddr(bytes32,address)'](validatorNode, validator.address));
+      await send(manager.connect(validator).validateJob(id, 'validator', []));
+      const second = await create();
+      await send(memberResolver.connect(outsider)['setAddr(bytes32,address)'](agentNode, ethers.ZeroAddress));
+      await rejectsAdmission(manager.connect(agent).applyForJob(second.id, 'agent', []));
+      assert.equal((await manager.getJobCore(second.id)).assignedAgent, ethers.ZeroAddress);
+    });
+  }
+
+  it('rejects transferred-away wrapped identities without treating existing assignments as revoked jobs', async function () {
+    await configureMembership();
+    const agentNode = await member('agent.agi.eth', 'agent', agent);
+    const validatorNode = await member('club.agi.eth', 'validator', validator);
+    await activate();
+    const { id } = await create();
+    await send(memberWrapper.connect(agent).safeTransferFrom(agent.address, outsider.address, BigInt(agentNode), 1, '0x'));
+    await rejectsAdmission(manager.connect(agent).applyForJob(id, 'agent', []));
+    await send(memberWrapper.connect(outsider).safeTransferFrom(outsider.address, agent.address, BigInt(agentNode), 1, '0x'));
+    await send(manager.connect(agent).applyForJob(id, 'agent', []));
+    await send(memberWrapper.connect(agent).safeTransferFrom(agent.address, outsider.address, BigInt(agentNode), 1, '0x'));
+    await send(manager.connect(agent).requestJobCompletion(id, 'ipfs://assigned-agent-retains-exit'));
+    await send(memberWrapper.connect(validator).safeTransferFrom(validator.address, outsider.address, BigInt(validatorNode), 1, '0x'));
+    await rejectsAdmission(manager.connect(validator).validateJob(id, 'validator', []));
+    await send(memberWrapper.connect(outsider).safeTransferFrom(outsider.address, validator.address, BigInt(validatorNode), 1, '0x'));
+    await send(manager.connect(validator).validateJob(id, 'validator', []));
+    await advanceReview();
+    await send(manager.finalizeJob(id));
+    assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+  });
+
+  it('qualifies actual token and operator approval admission and rejects revoked approvals', async function () {
+    await configureMembership();
+    const agentNode = await member('agent.agi.eth', 'agent', outsider);
+    await member('club.agi.eth', 'validator', moderator);
+    await send(memberWrapper.connect(outsider).approve(agent.address, BigInt(agentNode)));
+    await send(memberWrapper.connect(moderator).setApprovalForAll(validator.address, true));
+    await activate();
+    const { id } = await create();
+    await send(manager.connect(agent).applyForJob(id, 'agent', []));
+    await send(manager.connect(agent).requestJobCompletion(id, 'ipfs://approved-membership'));
+    await send(memberWrapper.connect(moderator).setApprovalForAll(validator.address, false));
+    await rejectsAdmission(manager.connect(validator).validateJob(id, 'validator', []));
+    await send(memberWrapper.connect(moderator).setApprovalForAll(validator.address, true));
+    await send(manager.connect(validator).validateJob(id, 'validator', []));
+    const second = await create();
+    await send(memberWrapper.connect(outsider).approve(ethers.ZeroAddress, BigInt(agentNode)));
+    await rejectsAdmission(manager.connect(agent).applyForJob(second.id, 'agent', []));
+    assert.equal((await manager.getJobCore(second.id)).assignedAgent, ethers.ZeroAddress);
+  });
+
+  it('preserves explicit owner allowlist and Merkle admission exceptions without pretending they prove ENS membership', async function () {
+    await configureMembership();
+    await activate();
+    const first = await create();
+    await rejectsAdmission(manager.connect(agent).applyForJob(first.id, 'unregistered', []));
+    await send(manager.connect(owner).addAdditionalAgent(agent.address));
+    await send(manager.connect(agent).applyForJob(first.id, '', []));
+    await send(manager.connect(owner).removeAdditionalAgent(agent.address));
+    await send(manager.connect(agent).requestJobCompletion(first.id, 'ipfs://allowlist-exception'));
+    await rejectsAdmission(manager.connect(validator).validateJob(first.id, 'unregistered', []));
+    await send(manager.connect(owner).addAdditionalValidator(validator.address));
+    await send(manager.connect(validator).validateJob(first.id, '', []));
+    await send(manager.connect(owner).removeAdditionalValidator(validator.address));
+    const leaf = signer => ethers.solidityPackedKeccak256(['address'], [signer.address]);
+    await send(manager.connect(owner).updateMerkleRoots(leaf(validator), leaf(agent)));
+    const second = await create();
+    await rejectsAdmission(manager.connect(agent).applyForJob(second.id, 'unregistered', [ethers.id('incorrect proof')]));
+    await send(manager.connect(agent).applyForJob(second.id, '', []));
+    await send(manager.connect(agent).requestJobCompletion(second.id, 'ipfs://merkle-exception'));
+    await rejectsAdmission(manager.connect(outsider).validateJob(second.id, 'unregistered', []));
+    await send(manager.connect(validator).validateJob(second.id, '', []));
+    await send(manager.connect(owner).updateMerkleRoots(ethers.ZeroHash, ethers.ZeroHash));
+    const third = await create();
+    await rejectsAdmission(manager.connect(agent).applyForJob(third.id, 'unregistered', []));
   });
 
   it('settles native USDC exactly 8/30/10/52 with bonds separate while preserving every legacy job', async function () {
@@ -353,7 +533,8 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     collect('contracts');
     const sourceSha256 = Object.fromEntries(sources.sort().map(filename => [filename, createHash('sha256').update(fs.readFileSync(path.join(root, filename))).digest('hex')]));
     const report = { scope: 'isolated local Ethereum fork; no public transactions or live signer-control proof', sourceSha256,
-      pin: PIN, legacyBaseline: baseline, newEnsRoot: rootName, assertions: tests.map(test => test.title),
+      pin: PIN, legacyBaseline: baseline, newEnsRoot: rootName, newEnsRootAuthority: rootAuthority,
+      identityQualification: identityEvidence, assertions: tests.map(test => test.title),
       passed: tests.length, publicTransactionsBroadcast: 0, fixtureWallets: true, productionActivationApproved: false };
     const output = process.env.CUTOVER_REPORT || path.resolve('artifacts/cutover-qualification.json');
     fs.mkdirSync(path.dirname(output), { recursive: true });

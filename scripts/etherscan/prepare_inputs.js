@@ -78,7 +78,7 @@ function checklist(action) {
     ],
     apply: [
       '- Confirm authorization route (allowlist / merkle / ens) before signing',
-      '- If using merkle route, ensure proof array is not empty',
+      '- If using merkle route, verify the proof against your wallet and the current role root; a single-leaf proof is []',
     ],
     'request-completion': ['- Confirm caller is the assigned agent and job is still in progress'],
     validate: ['- Confirm review window is still open and caller is validator-authorized'],
@@ -158,7 +158,7 @@ function run() {
       `route: ${route}`,
       `subdomain: ${subdomain}`,
       `proof: ${proof}`,
-      route === 'merkle' && proof === '[]' ? 'note: replace [] with your real bytes32[] Merkle proof before submitting' : 'note: proof format must be bytes32[] values (0x + 64 hex chars each)',
+      route === 'merkle' && proof === '[]' ? 'note: [] is valid only when your wallet leaf equals the current nonzero role root; otherwise supply the matching bytes32[] proof' : 'note: proof format must be bytes32[] values (0x + 64 hex chars each)',
     ]);
   }
 
@@ -178,7 +178,7 @@ function run() {
       `route: ${route}`,
       `subdomain: ${subdomain}`,
       `proof: ${proof}`,
-      route === 'merkle' && proof === '[]' ? 'note: replace [] with your real bytes32[] Merkle proof before submitting' : 'note: proof format must be bytes32[] values (0x + 64 hex chars each)',
+      route === 'merkle' && proof === '[]' ? 'note: [] is valid only when your wallet leaf equals the current nonzero role root; otherwise supply the matching bytes32[] proof' : 'note: proof format must be bytes32[] values (0x + 64 hex chars each)',
     ]);
   }
 

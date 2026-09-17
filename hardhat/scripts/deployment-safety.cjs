@@ -1,4 +1,5 @@
 const { requireCanonicalUSDC } = require('../../scripts/lib/usdc');
+const { namehash, ZeroHash } = require('ethers');
 
 const NETWORK_CHAINS = Object.freeze({ mainnet: 1, sepolia: 11155111 });
 const MAX_RUNTIME_BYTES = 24576;
@@ -10,6 +11,24 @@ const USDC_ABI = [
   'function isBlacklisted(address) view returns (bool)',
   'function balanceOf(address) view returns (uint256)',
 ];
+
+function describeMembershipConfig({ rootNodes, merkleRoots }) {
+  const roots = [
+    ['clubRootNode', 'validators', 'club.agi.eth'],
+    ['agentRootNode', 'agents', 'agent.agi.eth'],
+    ['alphaClubRootNode', 'validators', 'alpha.club.agi.eth'],
+    ['alphaAgentRootNode', 'agents', 'alpha.agent.agi.eth'],
+  ];
+  return {
+    roots: roots.map(([field, role, knownName], index) => ({ field, role, node: rootNodes[index],
+      enabled: rootNodes[index].toLowerCase() !== ZeroHash,
+      name: rootNodes[index].toLowerCase() === namehash(knownName) ? knownName : null })),
+    merkleExceptions: ['validators', 'agents'].map((role, index) => ({ role, root: merkleRoots[index],
+      enabled: merkleRoots[index].toLowerCase() !== ZeroHash })),
+    authorization: 'Owner additional allowlist, then Merkle proof, then ENS ownership/delegation or resolver address. These are alternative admission paths.',
+    scope: 'Root names are identified only for known hashes. ENS membership validity and additional allowlist entries are not verified by this summary. Identity locking does not disable owner-managed Merkle or additional allowlist exceptions.',
+  };
+}
 
 function parseBooleanSetting(value, label, fallback = false) {
   if (value === undefined || value === null || value === '') return fallback;
@@ -144,4 +163,4 @@ function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, to
   return requireRuntimeSize(artifact.contractName, code);
 }
 
-module.exports = { NETWORK_CHAINS, MAX_RUNTIME_BYTES, MAX_INITCODE_BYTES, MAX_TRANSACTION_GAS_LIMIT, USDC_ABI, parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireInitcodeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, resolveInputSource, requireArtifactMatch };
+module.exports = { NETWORK_CHAINS, MAX_RUNTIME_BYTES, MAX_INITCODE_BYTES, MAX_TRANSACTION_GAS_LIMIT, USDC_ABI, describeMembershipConfig, parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, requireInitcodeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, resolveInputSource, requireArtifactMatch };

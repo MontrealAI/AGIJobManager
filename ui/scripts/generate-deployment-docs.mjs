@@ -9,14 +9,20 @@ AGIJobManager v${c.version}. Status: **${c.status}**.
 ${c.note}
 
 - Chain ID: ${c.chainId}
-- Manager: ${c.managerAddress || 'Not deployed'}
+- Manager: ${c.managerAddress || 'Not recorded'}
+- ENS job-page helper: ${c.ensJobPagesAddress || 'Not recorded (optional)'}
+- Final owner: ${c.finalOwner || 'Operator must supply and verify'}
+- 30% recipient: ${c.settlementWallets.wallet30 || 'Operator must supply and verify'}
+- 10% recipient: ${c.settlementWallets.wallet10 || 'Operator must supply and verify'}
 - USDC: ${c.usdc.address}
 - Decimals: ${c.usdc.decimals}
 - Address reference: ${c.addressSource}
 
 ## Constructor arguments
 
-Use the maintained Hardhat 3 deployment workflow in hardhat/ and the immutable canonical USDC address. Follow docs/MAINNET_READINESS.md and docs/DEPLOY_RUNBOOK.md, including the explicit settlement wallets and ownership acceptance. All monetary arguments use six decimal base units. A fresh deployment and explicit owner/identity configuration are required; legacy snapshots are incompatible.
+Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and accepted owner explicitly. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. An existing USDC instance must match the qualified bytecode and reviewed configuration; a documentation-only release does not itself require redeployment.
+
+AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validators use club.agi.eth or alpha.club.agi.eth. The contract preserves owner-managed allowlist and Merkle exceptions, and agents also need a configured NFT eligibility credential. Optional job-page ENS wiring is separate from member identity. Review the four membership root nodes and any exceptions in the deployment plan.
 
 ## Verification
 

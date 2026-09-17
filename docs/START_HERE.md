@@ -1,8 +1,10 @@
-# Start here — AGIJobManager v0.9.2
+# Start here — AGIJobManager v0.9.3
 
 AGIJobManager holds a job's USDC payment until the work reaches a settlement outcome. Employers post work, eligible agents take jobs, validators assess the submitted evidence, and moderators handle disputes. The owner configures the instance and can pause it.
 
 **This download supplies software, not a running marketplace.** A deployment operator must deploy and verify the manager, configure its owner and two recipients, arrange eligible participants, and open intake. No live manager address or recipient wallets are supplied.
+
+AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT. These participant identity checks are separate from optional ENS job-page metadata.
 
 ## Choose your next step
 
@@ -14,7 +16,7 @@ AGIJobManager holds a job's USDC payment until the work reaches a settlement out
 | Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |
 | Evaluate the release | [Mainnet readiness](MAINNET_READINESS.md) and [testing](TESTING.md) | Source, release manifest, checksums and the linked CI evidence |
 
-Download the [v0.9.2 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.2/AGIJobManager-v0.9.2-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.2/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
+Download the [v0.9.3 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.3/AGIJobManager-v0.9.3-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.3/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
 
 ## Understand the payment before signing
 

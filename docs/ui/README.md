@@ -1,11 +1,11 @@
 # AGIJobManager UI / Sovereign Ops Console
 
-Institutional-grade Next.js dApp + operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
+Next.js dApp and operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
 
-Hosted Genesis Console newcomer entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
+Current USDC entry: [v0.9.3 standalone console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.3/agijobmanager-usdc.html), with the [matching repository artifact](../../ui/agijobmanager-usdc.html). Verify checksums and configure a verified new manager; no live manager is supplied by default.
 
 ## Quick links
-- [Genesis Console operator guide (`v33` / hosted + repo-pinned)](./GENESIS_JOB_MAINNET_HTML_UI.md)
+- [USDC standalone operator guide](./GENESIS_JOB_MAINNET_HTML_UI.md)
 - [Standalone HTML artifact index (`ui/*.html`)](./STANDALONE_HTML_UIS.md)
 - [UI directory inventory (`/ui`)](../../ui/README.md)
 - [Overview](./OVERVIEW.md)
@@ -30,7 +30,7 @@ npm run dev
 
 ## Demo mode
 
-`.env.example` is prefilled with the official `v0.1.0-mainnet-beta` Ethereum mainnet deployment defaults.
+`.env.example` leaves the new USDC manager, owner, deployer and deployment block empty. It selects Ethereum mainnet and canonical USDC, which does not establish an actual deployment. Demo mode supplies synthetic data:
 ```bash
 NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
 ```
@@ -52,9 +52,9 @@ This folder is **text-only**. Binary assets are forbidden and CI-enforced by `np
 
 ## Standalone HTML artifact (additive)
 
-For the hosted Genesis Console (`https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`) and the repo-pinned single-file mainnet artifact `ui/agijobmanager-usdc.html`, use:
+For the versioned current USDC console and matching `ui/agijobmanager-usdc.html` artifact, use:
 
 - [GENESIS_JOB_MAINNET_HTML_UI.md](./GENESIS_JOB_MAINNET_HTML_UI.md)
 - [STANDALONE_HTML_UIS.md](./STANDALONE_HTML_UIS.md)
 
-This artifact is additive to the broader/full Next.js UI effort and is documented separately to keep operator guidance explicit and safe.
+The Pages `agijobmanagerv0.html` filename is a moving compatibility alias, not an immutable release or a default deployed manager. Historical console sources are linked in the artifact index. Participant ENS membership and its explicit owner-managed exceptions are separate from optional job-page metadata; see the [namespace guide](../namespace/AGI_ETH_NAMESPACE_ALPHA.md).

@@ -1,60 +1,26 @@
-# AGI.Eth Namespace (alpha) — Quickstart
+# AGI.eth member namespace quickstart — v0.9.3
 
-Use this checklist if you already know your role and just need the **correct inputs**.
+Use the verified manager on the intended chain. Ordinary participation requires the role's ENS membership; the contract retains owner-managed additional-list and Merkle exceptions. Optional ENS job pages are a separate metadata integration.
 
-## 1) Know your role
-
-| Role | ENS name pattern | Example | `subdomain` input |
+| Role | Primary name | Alpha name | Contract input |
 | --- | --- | --- | --- |
-| Validator | `<entity>.alpha.club.agi.eth` | `alice.alpha.club.agi.eth` | `"alice"` |
-| Agent | `<entity>.alpha.agent.agi.eth` | `helper.alpha.agent.agi.eth` | `"helper"` |
-| Node (convention) | `<entity>.alpha.node.agi.eth` | `gpu01.alpha.node.agi.eth` | `"gpu01"` |
+| AGI Agent | `helper.agent.agi.eth` | `helper.alpha.agent.agi.eth` | `"helper"` |
+| AGI Validator | `alice.club.agi.eth` | `alice.alpha.club.agi.eth` | `"alice"` |
 
-**Important:** `subdomain` is the left‑most label only. Do **not** pass the full ENS name.
+The current manager accepts either configured root for the role. Enter only the lowercase label; verify the connected wallet's qualifying wrapper ownership/approval or resolver address. `node.agi.eth` names do not grant either contract role. Owner-managed `additionalAgents`/`additionalValidators` and valid role Merkle proofs remain explicit membership exceptions, not proof of name ownership.
 
----
+## Job actions
 
-## 2) Identity method (pick one)
+1. Employer approves the exact six-decimal native USDC cost and calls `createJob(jobSpecURI, payout, duration, details)`. Save `(chainId, manager, jobId)`.
+2. Agent confirms membership or an explicit exception, a qualifying enabled NFT and the required USDC performance bond. Approve the bond and call `applyForJob(jobId, "helper", proof)`. Use `[]` when relying on ENS.
+3. Assigned agent delivers the work and calls `requestJobCompletion(jobId, jobCompletionURI)` before the assignment deadline.
+4. Validator confirms club membership or an explicit exception, reviews the evidence and approves the required USDC bond. Call exactly one of `validateJob(jobId, "alice", proof)` or `disapproveJob(jobId, "alice", proof)` during the review window.
+5. After applicable timing/vote conditions, anyone can call `finalizeJob`; disputed jobs use the authorized moderator or stale-dispute owner path. Votes alone do not transfer the payout.
 
-- **ENS / NameWrapper ownership**, or
-- **ENS resolver address** points to your wallet, or
-- **Merkle allowlist** proof, or
-- **Owner allowlist** via `additionalAgents` / `additionalValidators`.
+Blacklists, valid job state and sufficient USDC/ETH remain necessary. Agents' NFT credentials affect eligibility, not payment percentages. For exact outcomes and recovery, follow the [participant walkthrough](../user-guide/happy-path.md).
 
-If you are not using a Merkle allowlist, pass `[]` for `proof`.
+## Before launch
 
----
+Review both primary and alpha root getters, Registry/NameWrapper configuration, every additional-list entry and any nonzero Merkle root. Preserve original jobs on their original manager and token. Use the [Hardhat guide](../../hardhat/README.md) for the new deployment and [qualification record](../qualification/USDC_CUTOVER.md) for tested scope and remaining live checks.
 
-## 3) Common calls (Etherscan “Write Contract”)
-
-### Employer
-1. `approve(AGIJobManager, amount)` on the ERC‑20 token.
-2. `createJob(jobSpecURI, payout, duration, details)`.
-
-### Agent
-1. `applyForJob(jobId, "helper", proof)`.
-2. `requestJobCompletion(jobId, jobCompletionURI)`.
-
-### Validator
-1. `validateJob(jobId, "alice", proof)`.
-2. Or `disapproveJob(jobId, "alice", proof)`.
-
-### Moderator
-- `resolveDisputeWithCode(jobId, code, reason)` with `code = 0 (NO_ACTION)`, `1 (AGENT_WIN)`, or `2 (EMPLOYER_WIN)`.
-
----
-
-## 4) Safety checklist
-
-- ✅ Verify contract and token addresses.
-- ✅ Use small amounts first.
-- ✅ Avoid unlimited approvals; revoke afterward.
-- ✅ Confirm you are on the right network.
-
----
-
-## 5) Need more detail?
-
-- Full guide: [`AGI_ETH_NAMESPACE_ALPHA.md`](AGI_ETH_NAMESPACE_ALPHA.md)
-- Technical appendix: [`ENS_IDENTITY_GATING.md`](ENS_IDENTITY_GATING.md)
-- FAQ / troubleshooting: [`FAQ.md`](FAQ.md)
+Read the [full namespace guide](AGI_ETH_NAMESPACE_ALPHA.md), [technical appendix](ENS_IDENTITY_GATING.md) and [FAQ](FAQ.md) for identity details.

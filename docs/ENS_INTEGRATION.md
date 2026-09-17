@@ -40,7 +40,7 @@ From `AGIJobManager` constants:
 
 ## Deployment and configuration sequence (mainnet)
 
-For a fresh USDC manager, preserve the original manager, helper, root, approvals and jobs. Use a separate helper and dedicated root directly owned by it, as exercised in the [cutover rehearsal](qualification/USDC_CUTOVER.md). Broad NameWrapper authority is only a separately reviewed same-manager helper replacement option.
+For a fresh USDC manager, preserve the original manager, helper, root, approvals and jobs. Use a separate helper owning its dedicated wrapped-root token, as exercised in the [cutover rehearsal](qualification/USDC_CUTOVER.md): Registry owner is NameWrapper and wrapper token owner is the helper, without a new blanket operator approval. Broad NameWrapper authority is only a separately reviewed same-manager helper replacement option.
 
 1. Deploy `ENSJobPages` with ENS Registry, PublicResolver, optional NameWrapper, `jobsRootNode`, and `jobsRootName`.
 2. Ensure root authority before enabling hooks:
@@ -84,4 +84,4 @@ sequenceDiagram
 | Job settles but ENS records missing | Best-effort resolver writes failed | Query resolver text/authorisation for job node | Replay via owner `ENSJobPages` admin functions if needed |
 | Fuse burn not applied | Root not wrapped or authorization missing | Check ENS owner(root) and NameWrapper ownership/approval | Correct wrapper ownership/approval, then retry lock with burn |
 | `ENSNotAuthorized` in ENSJobPages direct calls | Contract lacks root authority | Verify root owner in ENS/NameWrapper | Transfer ownership or approve ENSJobPages operator |
-| NFT tokenURI is completion URI instead of `ens://` | `useEnsJobTokenURI` disabled or ENS URI empty/failing | Check manager `setUseEnsJobTokenURI` state and ENSJP `jobEnsURI` | Enable flag and ensure ENSJobPages reachable/configured |
+| NFT tokenURI is completion URI instead of `ens://` | `useEnsJobTokenURI` disabled or ENS URI empty/failing | Inspect actual `tokenURI`, the reviewed `setUseEnsJobTokenURI` action and ENSJP `jobEnsURI`; no public flag getter exists | Enable flag and ensure ENSJobPages reachable/configured |

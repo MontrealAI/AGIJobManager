@@ -1,125 +1,64 @@
-# AGIJobManager UI
+# AGIJobManager UI — v0.9.3
 
-> v0.9.2 uses immutable six-decimal USDC and requires a fresh deployment. Read the [USDC migration guide](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.2/docs/USDC_MIGRATION.md) before following operational examples. Historical receipts are not USDC deployments.
+Start with the [versioned v0.9.3 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.3/agijobmanager-usdc.html), or the matching [repository artifact](agijobmanager-usdc.html), and read the [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). Verify release checksums and configure the independently verified new USDC manager address. No manager, recipient wallets or production owner is supplied by default.
 
-This directory contains **two additive UI surfaces**:
+All current job payments and bonds use native Circle USDC with six decimals. This release requires a fresh deployment; the existing original-token mainnet manager remains a separate service with its own jobs and ENS wiring. Follow the [USDC migration guide](../docs/USDC_MIGRATION.md) and [Hardhat deployment guide](../hardhat/README.md).
 
-1. A modern Next.js app (broader UI effort, still evolving).
-2. Versioned standalone HTML artifacts for direct browser use, including:
-   - `agijobmanager-usdc.html`
+## Choose a surface
 
-Hosted newcomer/operator entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
+| Surface | Purpose | Configuration and status |
+| --- | --- | --- |
+| [USDC standalone console](agijobmanager-usdc.html) | Current single-file participant and owner interface | Ethereum mainnet; requires a verified new manager; no embedded live-manager default or token bridge |
+| [Operator interface](../docs/ui/agijobmanager.html) | Additional USDC role and owner workflows | Configure the intended manager and network |
+| Next.js app in this directory | Broader UI, development, simulation and demo workflows | Environment-driven; manager address starts empty |
+| `dist-ipfs/agijobmanager.html` | Generated single-file distribution | Built and verified from the UI source; configuration remains deployment-required |
+| [Historical console sources](https://github.com/MontrealAI/AGIJobManager/tree/v0.4.0/ui) | Reproduce earlier interfaces | Legacy evidence; do not use as current USDC deployment configuration |
 
-The standalone HTML page is **not** a replacement for the full UI roadmap.
+The Pages filename `agijobmanagerv0.html` is a historical compatibility alias. The repository workflow copies the current standalone source there, so it can change with `main`; its name is neither a release version nor evidence of a live deployment. Use an immutable release download and matching checksums for reproducible operations. See [Pages publishing](../docs/ui/GITHUB_PAGES.md).
 
-For broader/full UI status, planning, and runbooks, start at `../docs/ui/README.md`.
+## Before participant actions
 
-For standalone HTML artifact routing and inventory, see `../docs/ui/STANDALONE_HTML_UIS.md`.
+AGI Agents normally require membership under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Use only the label, and verify the connected wallet's supported NameWrapper authority or resolver address. The manager preserves owner-managed additional lists and Merkle proofs as explicit membership exceptions. Agents also require an eligible enabled NFT. Optional ENS job pages are separate metadata and do not grant either participant role.
 
-## 30-second routing
+Verify the chain, manager, canonical USDC, both recipients and current role/job state before signing. Review exact USDC allowance and bond requirements and retain ETH for gas. UI checks complement source/runtime verification; a wallet prompt or simulation does not guarantee inclusion or success.
 
-- Need the **fastest newcomer/operator entry**: use the hosted Genesis Console at `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`, then follow the runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
-- Need a **single-file, versioned mainnet interface artifact** for review/operator workflows: use `agijobmanager-usdc.html` and the same runbook at `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
-- Need to **develop/test the broader UI**: use the Next.js app in this folder and docs at `../docs/ui/README.md`.
+## Use the standalone console
 
-## UI inventory (operator-friendly)
+Open `agijobmanager-usdc.html` directly, or from the repository root serve this directory locally:
 
-| File / path | Purpose | Network / environment | Intended audience | Status | Docs |
-| --- | --- | --- | --- | --- | --- |
-| `agijobmanager-usdc.html` | Standalone browser interface for the Genesis mainnet flow: wallet connect, role/readiness checks, live jobs table, create/apply/validate/dispute/finalize actions, completion submission, and $USDC bridge/conversion helpers. | Ethereum mainnet-focused (`chainId 1`) with embedded mainnet contract addresses. | Operators, contract-adjacent power users, demos/reviewers who need a single-file interface artifact. | Versioned standalone artifact (additive, active snapshot). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
-| `agijobmanager-usdc.html` ... `v20.html` | Adjacent standalone snapshots for historical comparison and reproducibility. | Mainnet-oriented standalone snapshots. | Auditors/reviewers comparing versions and behavior deltas. | Versioned historical/iterative snapshots (do not treat as canonical operator default unless explicitly chosen). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
-| `agijobmanager-usdc.html` and `v23.html` | Selected standalone snapshots useful for comparative review and iterative testing. | Mainnet-oriented standalone snapshots. | Auditors/reviewers and UI maintainers comparing revisions. | Additive snapshots (use intentionally; `v33` remains canonical in this repo runbook). | `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md` |
-| `dist-ipfs/agijobmanager.html` | Built single-file artifact generated from the Next.js UI pipeline (IPFS/distribution output). | Environment depends on build-time config. | Release operators and distribution workflow maintainers. | Generated build output. | `../docs/ui/IPFS_DEPLOYMENT.md` |
-| `package.json`, `next.config.*`, `tests/`, `e2e/`, `scripts/` | Full Next.js UI codebase, testing, and deterministic build/documentation tooling. | Local dev/demo + deployment pipelines. | UI developers/operators. | Broader/full UI in development. | `../docs/ui/README.md` |
+```bash
+python3 -m http.server 8000 --bind 127.0.0.1 --directory ui
+```
 
+Open `http://127.0.0.1:8000/agijobmanager-usdc.html`. Browser wallets and network resources are still needed for live operations. Enter no seed phrase or private key into the page. Read [the console guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) for transaction/recovery behavior.
 
-## Canonical standalone artifact for this runbook
+## Develop the Next.js UI
 
-Hosted newcomer entry: `https://montrealai.github.io/AGIJobManager/agijobmanagerv0.html`
-
-For operator instructions in this repository, `v33` is the explicit repo-pinned standalone artifact documented in:
-
-- `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
-- `../docs/ui/STANDALONE_HTML_UIS.md`
-
-Later snapshots (for example `v21` ... `v32`) are retained in-repo as additive versions for comparison and iterative UI work; they do not change deployment/operator canon by themselves.
-
-### Operator-safe usage boundary
-
-- Use the standalone page for browser-based read/write interaction only.
-- Use `../hardhat/README.md` + deployment runbooks for deployment and ENS replacement operations.
-- If standalone artifact guidance and deployment docs ever differ, follow deployment/operator docs and on-chain behavior.
-
-## Quick start
-
-### Use the standalone HTML artifact
-
-Open the dedicated runbook first:
-- `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
-
-Recommended operator posture:
-- Start with the hosted Genesis Console when you want the fastest path, and treat `v33` as the repo-pinned versioned mainnet snapshot with embedded addresses.
-- Verify network + addresses in the runbook before signing wallet transactions.
-- Use the broader Next.js UI docs for roadmap/development workflows.
-
-Safety reminder:
-- UI convenience does not change protocol authority; AGIJobManager and ENSJobPages contracts remain authoritative.
-
-### Run the broader Next.js UI locally
+From the repository root, use Node 22.23.2 and the committed lockfile:
 
 ```bash
 cd ui
 npm ci
-cp .env.example .env.local
+if [ ! -e .env.local ] && [ ! -L .env.local ]; then cp .env.example .env.local; fi
 NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_DEMO_ACTOR=visitor npm run dev
 ```
 
-## Standalone artifact quick-open (copy/paste)
+The guarded copy preserves an existing environment. Demo mode uses synthetic data and does not establish production readiness. For live configuration, review the selected chain and verified manager/owner/deployment block; examples do not supply an official new USDC deployment.
+
+The [UI documentation hub](../docs/ui/README.md) covers architecture and development. From `ui/`, the supported qualification commands include:
 
 ```bash
-cd /workspace/AGIJobManager/ui
-python3 -m http.server 8000
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000/agijobmanager-usdc.html
-```
-
-Pre-sign trust check (recommended):
-- Confirm network is Ethereum mainnet (`chainId 1`).
-- Confirm contract addresses against `../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`.
-- Confirm you are intentionally using the standalone artifact (not the broader Next.js UI flow).
-
-## Required verification commands (Next.js UI workflow)
-
-```bash
-cd ui
 npm run check:no-binaries
 npm run lint
 npm run typecheck
-npm run test
+npm test
 npm run test:e2e
 npm run test:a11y
-npm run test:security
-npm run docs:versions
-npm run docs:contract
-npm run docs:check
+npm run test:headers
 npm run build:ipfs
 npm run verify:ipfs
 npm run verify:deterministic
 npm run verify:committed-html
 ```
 
-## Notes
-
-- Read-only behavior is available before wallet connection.
-- Write actions are still governed by deployed contracts and wallet signature prompts.
-- WalletConnect is optional in the Next.js app; extension wallets are sufficient for many flows.
-
-## Safety and scope notes
-
-- The standalone HTML artifact is **action-capable** on mainnet when a wallet is connected and terms are accepted in-page.
-- The standalone artifact can be opened directly from disk, but local HTTP serving is recommended for browser compatibility.
-- Neither UI surface replaces deployment/operator runbooks; use `../hardhat/README.md` and deployment docs for canonical contract operations.
+Use the repository's required CI gates and exact release evidence to assess a source revision. Deployment, manager ownership acceptance, ENS root authority and live-instance activation remain in the [operator runbooks](../docs/DEPLOYMENT/README.md); publishing an interface performs none of those transactions.

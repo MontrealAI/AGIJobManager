@@ -1,7 +1,7 @@
 # Versions Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `10427491e798`.
-- Source snapshot fingerprint: `10427491e798`.
+- Generated at (deterministic source fingerprint): `045c97c2d126`.
+- Source snapshot fingerprint: `045c97c2d126`.
 - Generation mode: deterministic from repository source files.
 
 ## Toolchain snapshot

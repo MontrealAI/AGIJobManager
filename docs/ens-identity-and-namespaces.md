@@ -43,6 +43,8 @@ whitelisted.
 
 AGIJobManager validates **agents** and **validators** via a layered model:
 
+The ordinary membership routes use agent/alpha-agent names for agents and club/alpha-club names for validators. Explicit additional lists and Merkle proofs are preserved owner-managed exceptions, not proof of ENS membership. These checks are separate from optional ENS job-page metadata.
+
 1) **Merkle allowlists**
    - `agentMerkleRoot` and `validatorMerkleRoot` allow proof‑based access.
 
@@ -50,7 +52,7 @@ AGIJobManager validates **agents** and **validators** via a layered model:
    - The contract stores **root nodes** for the agent and club namespaces.
    - It derives a subnode from the supplied `subdomain` and checks ownership.
    - Ownership checks are satisfied if **either**:
-     - `NameWrapper.ownerOf(subnode) == claimant`, **or**
+     - `NameWrapper.ownerOf(subnode) == claimant`, or a supported token/operator approval authorizes the claimant, **or**
      - the ENS resolver’s `addr(subnode)` returns the claimant address.
 
 3) **Explicit allow/deny overrides**
@@ -78,8 +80,6 @@ namespace grammar above is supported for both the base and `alpha` environments.
 
 - **Merkle roots** can be rotated using `updateMerkleRoots` if an allowlist must
   be updated quickly.
-- **Identity wiring** (token, ENS registry, NameWrapper, root nodes) should be
-  treated as infrastructure and locked using `lockIdentityConfiguration()` once
-  validated.
+- **Identity wiring** (ENS Registry, NameWrapper, four roots and optional helper pointer) should be validated before the irreversible identity lock. Registry/wrapper/root updates additionally require zero escrow/bond reserves. USDC is independently immutable. Additional lists and Merkle exceptions remain owner-managed after the lock.
 - **Lock timing**: lock after the first deployment and a successful validation
   of allowlists/ENS wiring, before broader production usage.

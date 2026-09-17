@@ -1,32 +1,33 @@
-# AGI.Eth Namespace (alpha) — FAQ
+# ENS membership FAQ — v0.9.3
 
-## Q1) Do I pass the full ENS name to the contract?
-**No.** You pass **only the left‑most label**. Example:
-- `helper.alpha.agent.agi.eth` → `subdomain = "helper"`
+## Which names identify agents and validators?
 
-## Q2) Why does `NotAuthorized` happen even though I own the name?
-Common causes:
-- You are using the **wrong environment** (non‑alpha vs alpha).
-- The deployment is configured with **alpha** root nodes, but you own a **non‑alpha** name.
-- The ENS resolver is not set to your wallet address.
-- You are not on the allowlist and were not added to `additionalAgents/Validators`.
+AGI Agents normally use `<label>.agent.agi.eth` or `<label>.alpha.agent.agi.eth`. AGI Validators use `<label>.club.agi.eth` or `<label>.alpha.club.agi.eth`. The connected wallet must pass the configured wrapper ownership/approval or resolver-address check. A node name or optional job-page name does not authorize these roles.
 
-## Q3) Can I use `helper.agent.agi.eth` with an alpha deployment?
-**No.** If the contract was deployed with `alpha.agent.agi.eth` and `alpha.club.agi.eth` root nodes, only the **alpha** names (e.g., `helper.alpha.agent.agi.eth`) will pass the ownership checks.
+## Do I pass the full name?
 
-## Q4) Can the root nodes or Merkle roots be changed after deployment?
-ENS root nodes are immutable after deployment. Merkle roots can be updated by the owner using `updateMerkleRoots`; use change control and publish updated allowlists when doing so.
+Pass only the label, such as `helper`. ENS labels must be 1–63 lowercase ASCII letters, digits or hyphens, with no dots or leading/trailing hyphen. Use `[]` for the proof when relying on ENS.
 
-## Q5) What if the ENS/NameWrapper contracts are down or revert?
-The contract continues evaluation for ENS failure paths, so you should monitor validation failures during integration testing to spot ENS issues.
+## Can primary and alpha names both work?
 
-## Q6) Which identity method is safest?
-Use the method that matches your operational policy. For institutions:
-- **ENS/NameWrapper ownership** is preferred for public accountability.
-- **Merkle allowlists** are useful for private or temporary access.
-- **additionalAgents/Validators** are a strong operational override but should be tightly controlled.
+Yes. The current contract checks both configured roots for each role. Read `agentRootNode`/`alphaAgentRootNode` or `clubRootNode`/`alphaClubRootNode`; a zero root disables that branch. A name under an unrelated or wrong-role root does not establish membership.
 
-## Q7) What if I don’t have a Merkle proof?
-You can still pass if:
-- You own the proper alpha ENS name, or
-- The owner has allowlisted your address in `additionalAgents/Validators`.
+## Why am I rejected despite owning a name?
+
+Check the connected wallet, network, manager, role-specific root and label. Confirm current wrapper authority or resolver `addr(node)`. Ownership of an agent name does not grant validator membership. Agents also need an eligible NFT; blacklists, job state, limits and USDC funding still apply.
+
+## Are additional lists and Merkle proofs still supported?
+
+Yes. `additionalAgents`/`additionalValidators` and valid role-specific Merkle proofs are preserved owner-managed membership exceptions. They can authorize a wallet without ENS membership, but do not waive separate NFT, blacklist, lifecycle or funding checks. Operators requiring ENS for ordinary participation must review and limit these exceptions explicitly.
+
+## Can roots change after deployment?
+
+ENS roots can change before the identity lock and only with all escrow/bond reserves zero. The irreversible identity lock freezes those roots, Registry, NameWrapper and optional job-page pointer. Additional lists and Merkle roots remain owner-updateable after the lock. USDC is independently immutable.
+
+## What if ENS is unavailable or authority is revoked?
+
+Failed or malformed ENS responses do not grant access. A still-valid configured owner/Merkle exception may independently authorize the wallet. Test both the positive and rejected paths and monitor current name authority; an old successful transaction does not prove current membership.
+
+## Is the optional ENS helper required for membership?
+
+No. Agent/validator membership is enforced by the manager's configured role roots and authorization routes. `ENSJobPages` publishes job metadata under a separate jobs root. Disabling optional job pages does not remove participant membership checks.

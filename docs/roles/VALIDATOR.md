@@ -1,10 +1,10 @@
-# Validator Guide — v0.9.2
+# Validator Guide — v0.9.3
 
 Validators review submitted work and vote once per job. Rewards and bonds use native USDC; signing transactions requires ETH for gas.
 
 ## Before voting
 
-Pass a configured validator identity route: `additionalValidators`, a valid validator Merkle proof, or the configured club ENS route. The ENS route supports qualifying NameWrapper ownership/approval and resolver-address fallback. Use the label only. You must not be blacklisted.
+AGI Validators normally require membership under `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy qualifying NameWrapper ownership/approval or resolver-address fallback; use only the label, such as `alice`. The contract preserves `additionalValidators` and valid validator Merkle proofs as explicit owner-managed membership exceptions. They are not proof of ENS membership. You must not be blacklisted. Agent namespace membership and optional job-page ENS ownership do not by themselves authorize validator votes.
 
 Review the job specification and completion evidence. Confirm that completion has been requested, the job is unsettled and undisputed, and the completion review window has not ended. Read and approve the required USDC bond. The first vote fixes that job's per-validator bond for all subsequent votes, even if the owner later changes bond settings. The bond never exceeds the job cost.
 

@@ -1,247 +1,42 @@
-# AGI.Eth Namespace (env = alpha) — User Guide
+# AGI.eth member namespaces — v0.9.3
 
-This guide is **non‑technical** and written for institutions and end users who want to use the **AGI.Eth Namespace (alpha environment)** with the existing `AGIJobManager` smart contract. It explains naming, roles, the exact inputs the contract expects, and practical step‑by‑step flows for common roles.
+AGIJobManager uses role-specific ENS names for ordinary AGI Agent and AGI Validator membership. It accepts the configured primary and alpha roots for each role. Names identify eligible wallets; they do not establish the truth of off-chain work or the independence of two validators.
 
-> **Scope**: This guide explains how to use the **alpha** namespace (e.g., `helper.alpha.agent.agi.eth`) with **AGIJobManager** deployments that are configured with alpha root nodes at deploy time.
-
----
-
-## 1) Quick orientation (plain English)
-
-The AGI.Eth Namespace is a human‑readable identity system for agents, validators, and nodes. For the **alpha** environment, names include the `alpha` layer in the middle of the name. Example:
-
-- **Agent**: `helper.alpha.agent.agi.eth`
-- **Validator**: `alice.alpha.club.agi.eth`
-- **Node (ecosystem convention)**: `gpu01.alpha.node.agi.eth`
-
-When AGIJobManager checks your identity, it **does not** use the full ENS name. Instead, it expects **only the left‑most label** as input:
-
-- `helper.alpha.agent.agi.eth` → `subdomain = "helper"`
-- `alice.alpha.club.agi.eth` → `subdomain = "alice"`
-
-The contract then combines your **subdomain label** with the **configured root node** (e.g., `alpha.agent.agi.eth` or `alpha.club.agi.eth`) to verify ownership.
-
----
-
-## 2) Naming scheme (institutional standard)
-
-The namespace grammar follows one rule:
-
-```
-<entity>.(<env>.)<role>.agi.eth
-```
-
-- **entity** = the unique name for the person/system (e.g., `alice`, `helper`, `gpu01`)
-- **env** = optional environment layer (e.g., `alpha`, `x`, etc.)
-- **role** = `agent`, `club` (validator), or `node`
-
-### Role examples (alpha vs non‑alpha)
-
-| Role | Non‑alpha | Alpha (env = alpha) | What the user passes to `subdomain` |
+| Role | Primary namespace | Alpha namespace | Example label input |
 | --- | --- | --- | --- |
-| Validator (club) | `alice.club.agi.eth` | `alice.alpha.club.agi.eth` | `"alice"` |
-| Agent | `helper.agent.agi.eth` | `helper.alpha.agent.agi.eth` | `"helper"` |
-| Node (convention) | `gpu01.node.agi.eth` | `gpu01.alpha.node.agi.eth` | `"gpu01"` |
+| AGI Agent | `agent.agi.eth` | `alpha.agent.agi.eth` | `helper` |
+| AGI Validator | `club.agi.eth` | `alpha.club.agi.eth` | `alice` |
 
-> **Important:** The contract does **not** accept the full ENS name as `subdomain`. Use only the left‑most label.
+The wider ecosystem also uses node and business names, but those names are not agent or validator credentials in this contract. Optional ENS job pages use a different root and mirror job metadata; holding or editing a job page grants no participant role.
 
-### What changes between alpha and non‑alpha (same label, different root)
+## Prove the role from the connected wallet
 
-| Example | Non‑alpha name | Alpha name | What changes for the user |
-| --- | --- | --- | --- |
-| Validator | `alice.club.agi.eth` | `alice.alpha.club.agi.eth` | The **root node** changes (`club.agi.eth` vs `alpha.club.agi.eth`), but the **`subdomain` label stays** `"alice"`. |
-| Agent | `helper.agent.agi.eth` | `helper.alpha.agent.agi.eth` | The **root node** changes (`agent.agi.eth` vs `alpha.agent.agi.eth`); you still pass `"helper"`. |
+For `helper.alpha.agent.agi.eth`, submit only `helper`. ENS inputs must be lowercase ASCII labels of 1–63 letters, digits or hyphens, with no dots or leading/trailing hyphen. The contract derives the node under each configured role root and checks qualifying NameWrapper ownership/approval or resolver `addr(node)` against the transaction sender. The primary and alpha roots are alternatives; inspect actual getters rather than assuming a deployment is alpha-only.
 
-**Operational implication:** an alpha‑configured deployment only accepts **alpha** names because its root nodes are fixed at deploy time.
+The contract preserves owner-managed `additionalAgents`/`additionalValidators` and valid role-specific Merkle proofs as explicit membership exceptions. Additional entries are checked first, then Merkle proofs, then ENS. An exception authorizes a wallet without proving ENS membership. It does not bypass blacklists, agent NFT eligibility, lifecycle requirements, limits or USDC bonds.
 
----
+Agents need an eligible enabled AGI-type NFT as well as identity authorization. That NFT's legacy score is an eligibility indicator and does not change the successful-job payment share. Validators require their own club-role authorization; an agent name alone is insufficient.
 
-## 3) What AGIJobManager checks (in order)
+## Complete the job lifecycle
 
-When you call `applyForJob` (agent) or `validateJob` / `disapproveJob` (validator), the contract checks **one** of the following identity methods, in this order:
+1. Employer confirms the verified manager, canonical USDC and both recipients, approves the exact six-decimal job cost and calls `createJob`.
+2. Eligible agent confirms and approves the required performance bond, then calls `applyForJob(jobId, label, proof)`. The first successful application assigns the job.
+3. Agent submits the completion metadata before its assignment deadline.
+4. Eligible validators review the evidence, approve their bond and cast one approval or disapproval vote during the review period.
+5. An eligible finalization transaction after the relevant timers settles or opens a dispute according to contract rules. An approval vote does not itself send payment. Authorized moderators handle active disputes; the owner can resolve a stale dispute after its deadline.
 
-1. **Merkle allowlist**: your wallet address is in the allowlist proof.
-2. **NameWrapper ownership**: you own the subdomain under the configured root node.
-3. **ENS resolver address**: the resolver for the subdomain points to your wallet.
+Use `[]` for proofs on the ENS route. A Merkle exception requires the real proof for the current role root and sender. Follow the [full walkthrough](../user-guide/happy-path.md) for deadlines, cancellation, expiry, refunds and bond accounting.
 
-If **any** of the above succeeds, you pass. If **all** fail, the transaction reverts.
+## Owner controls and preservation
 
-> **Owner‑managed bypass:** the contract owner can add you to `additionalAgents` or `additionalValidators`, which bypasses all identity checks.
+The owner may update the ENS Registry, NameWrapper and four roots only before `lockIdentityConfiguration()` and with every escrow/bond reserve zero. The optional job-page pointer is also blocked by that lock. Additional lists and Merkle roots remain owner-managed after locking; the lock does not force an ENS-only policy. Ownership itself requires proposal and acceptance.
 
-> **Blacklist:** the owner can also blacklist agents or validators, which always blocks access.
+Use `pauseIntake()` to stop new jobs while safe existing work settles, or `pauseAll()` for an incident affecting funds. The owner cannot withdraw escrow or bonds as surplus, replace immutable USDC, or alter the fixed 30%/10% shares. See [owner controls](../OWNER_CONTROLS.md).
 
----
+A fresh USDC manager must preserve the original mainnet manager, its original-token obligations and existing ENS wiring. New job IDs restart at zero, so new optional job pages need a separate helper and dedicated root. Follow the [cutover plan](../qualification/USDC_CUTOVER.md), not an assumed in-place migration.
 
-## 4) Step‑by‑step “click‑by‑click” guides by role
+## Check a rejection
 
-These steps assume you are using a block explorer like Etherscan and have the contract address.
+Inspect the intended manager, chain, sender, role roots, label and current wrapper/resolver authority. Then check blacklists, agent NFT eligibility, active-job limits, job state, allowance and balances. Revoked membership affects future role checks; a prior successful action does not establish current authority.
 
-### A) Employer — create and fund a job
-
-1. **Acquire tokens** (AGI or the configured ERC‑20).
-2. **Approve allowance** for the AGIJobManager contract.
-   - Go to the ERC‑20 contract → **Write Contract** → `approve(spender, amount)`
-   - Use a **small, exact amount** (avoid unlimited approvals).
-3. **Create a job**
-   - Call `createJob(jobSpecURI, payout, duration, details)`
-   - `jobSpecURI`: ERC‑721 metadata URI (full `ipfs://...` or `https://...` recommended)
-   - `payout`: token amount in **USDC base units** (6 decimals)
-   - `duration`: seconds
-4. **Track your jobId** from the `JobCreated` event.
-
-**What happens on-chain**
-- Tokens move into escrow when the job is created.
-- An NFT is minted to you only after the job is completed and validated.
-
----
-
-### B) Agent — apply and request completion
-
-1. **Confirm your identity method** (one of):
-   - You own `helper.alpha.agent.agi.eth` in NameWrapper, **or**
-   - The ENS resolver for your subdomain points to your wallet, **or**
-   - You are in the Merkle allowlist, **or**
-   - The owner added you to `additionalAgents`.
-2. **Apply for the job**
-   - Call `applyForJob(jobId, subdomain, proof)`
-   - `subdomain`: the left‑most label only (e.g., `"helper"`)
-   - `proof`: Merkle proof array if allowlisted; otherwise `[]` (empty array)
-3. **Request completion**
-   - Call `requestJobCompletion(jobId, jobCompletionURI)`
-   - Use a completion metadata URI (ERC‑721 JSON) that represents your deliverable.
-
-**What happens on‑chain**
-- `JobApplied` assigns you to the job.
-- `JobCompletionRequested` stores the job’s completion metadata URI.
-- You are paid when validators approve (or when a moderator resolves dispute as “agent win”).
-
----
-
-### C) Validator — approve or disapprove
-
-1. **Confirm your identity method** (one of):
-   - You own `alice.alpha.club.agi.eth` in NameWrapper, **or**
-   - The ENS resolver for your subdomain points to your wallet, **or**
-   - You are in the Merkle allowlist, **or**
-   - The owner added you to `additionalValidators`.
-2. **Approve the job**
-   - Call `validateJob(jobId, subdomain, proof)`
-3. **Disapprove if needed**
-   - Call `disapproveJob(jobId, subdomain, proof)`
-
-**Vote rules (strict)**
-- A validator **cannot vote twice**.
-- A validator **cannot both approve and disapprove** the same job.
-
----
-
-### D) Moderator — resolve disputes
-
-1. Call `resolveDisputeWithCode(jobId, resolutionCode, reason)`.
-2. Use one of the **typed** codes:
-   - `0 (NO_ACTION)` → logs a reason; dispute remains active.
-   - `1 (AGENT_WIN)` → triggers completion and payment to agent.
-   - `2 (EMPLOYER_WIN)` → refunds escrow to employer and finalizes job.
-
----
-
-### E) Owner / Operator — safety‑critical controls
-
-The owner can:
-- Pause/unpause the contract.
-- Add/remove `additionalAgents` / `additionalValidators`.
-- Manage blacklists.
-- Adjust economic parameters (payout caps, validator thresholds, reward percentages).
-- Withdraw escrowed ERC‑20.
-
-Use a hardware wallet or multisig for the owner key.
-
----
-
-## 5) Safety checklist (non‑technical)
-
-Before doing anything on-chain:
-
-- ✅ Confirm the **contract address** from a trusted source.
-- ✅ Confirm the **token address** (ERC‑20 used for payout).
-- ✅ Verify your ENS ownership in the ENS app.
-- ✅ Confirm your ENS **resolver address** points to the wallet you will use.
-- ✅ Use **small test amounts** first.
-- ✅ Approve **only the amount you need**.
-- ✅ Revoke approvals after completion (set allowance to 0).
-- ✅ Ensure you’re on the right network (mainnet vs testnet vs local).
-
----
-
-## 6) Practical troubleshooting
-
-If a call fails with `NotAuthorized`, check:
-
-- Are you passing only the left‑most label in `subdomain`?
-- Does the contract deployment use **alpha** root nodes?
-- Do you own the **alpha** ENS name or set the resolver correctly?
-- Are you on the allowlist, or has the owner added you to `additionalAgents/Validators`?
-
----
-
-## 7) Visual flows (Mermaid)
-
-### Identity verification flow
-```mermaid
-sequenceDiagram
-  participant User
-  participant Contract
-  participant NameWrapper
-  participant ENS
-  participant Resolver
-
-  User->>Contract: applyForJob / validateJob (subdomain, proof)
-  Contract->>Contract: Verify Merkle proof
-  Contract->>NameWrapper: ownerOf(namehash(subnode))
-  Contract->>ENS: resolver(subnode)
-  Contract->>Resolver: addr(subnode)
-  Contract-->>User: OwnershipVerified OR NotAuthorized
-```
-
-### Happy‑path job lifecycle
-```mermaid
-sequenceDiagram
-  participant Employer
-  participant Agent
-  participant Validator
-  participant Contract
-
-  Employer->>Contract: createJob(...)
-  Agent->>Contract: applyForJob(jobId, subdomain, proof)
-  Agent->>Contract: requestJobCompletion(jobId, jobCompletionURI)
-  Validator->>Contract: validateJob(jobId, subdomain, proof)
-  Contract-->>Agent: payout
-  Contract-->>Employer: NFT receipt
-```
-
-### Dispute lifecycle
-```mermaid
-sequenceDiagram
-  participant Employer
-  participant Agent
-  participant Validator
-  participant Moderator
-  participant Contract
-
-  Employer->>Contract: createJob(...)
-  Agent->>Contract: applyForJob(...)
-  Validator->>Contract: disapproveJob(...)
-  Contract-->>Contract: job.disputed = true
-  Moderator->>Contract: resolveDisputeWithCode(jobId, code, reason)
-  Contract-->>Agent: payout (only on "agent win")
-  Contract-->>Employer: refund (only on "employer win")
-```
-
----
-
-## 8) Next steps
-
-- **Quickstart checklist**: [`AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md`](AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md)
-- **Technical appendix**: [`ENS_IDENTITY_GATING.md`](ENS_IDENTITY_GATING.md)
-- **FAQ / troubleshooting**: [`FAQ.md`](FAQ.md)
-- **Testing coverage (local mocks)**: [`TESTING.md`](TESTING.md)
+See the [quickstart](AGI_ETH_NAMESPACE_ALPHA_QUICKSTART.md), [exact checks](ENS_IDENTITY_GATING.md), [FAQ](FAQ.md), and [testing scope](TESTING.md). A fork rehearsal uses local transactions and cannot prove production signing access or operational independence.

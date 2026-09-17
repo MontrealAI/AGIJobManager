@@ -4,7 +4,7 @@ const { createHash } = require('crypto');
 const { getRuntime } = require('./runtime.cjs');
 let ethers = require('ethers');
 const { qualifiedBuild, FQNS, LIBRARIES } = require('./deploy.cjs');
-const { USDC_ABI, requireDeploymentNetwork, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('./deployment-safety.cjs');
+const { USDC_ABI, describeMembershipConfig, requireDeploymentNetwork, requireCode, requireOperationalUSDC, requireVerified, requireReadinessState, requireArtifactMatch } = require('./deployment-safety.cjs');
 
 const IDENTITY_FIELDS = { ensConfig: 2, rootNodes: 4, merkleRoots: 2 };
 
@@ -141,6 +141,7 @@ async function main() {
     chainId, network: network.name, manager: managerAddress, owner, pendingOwner, intakePaused: paused,
     settlementWallets: [wallet30, wallet10], blockNumber: block.number, blockHash: block.hash,
     identityConfig: { expected: reviewedConfig.expected, observed: observedConfig, reviewedOverride: reviewedConfig.override },
+    membership: describeMembershipConfig(observedConfig),
     configurationScope: 'ENS registry, name wrapper, root nodes and Merkle roots checked. Private baseIpfsUrl metadata and mutable operational policy settings are not validated by this check.',
     explorerVerification: { source: 'deployment receipt; no fresh explorer query', recorded: receipt.verification },
     accounting, tokenState, runtimeCodeHashes, transactionsBroadcast: 0,

@@ -151,3 +151,6 @@ migrations/config/agijobmanager.config.js
 /test-results/
 __pycache__/
 *.py[cod]
+
+# Reviewed local operator configuration
+/hardhat/deploy.config.cjs

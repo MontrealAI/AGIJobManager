@@ -1,4 +1,4 @@
-const { USDC_ABI, parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireArtifactMatch } = require('./deployment-safety.cjs');
+const { USDC_ABI, describeMembershipConfig, parseBooleanSetting, requireExplorerEnabled, requireConfirmedReceipt, requireDeploymentNetwork, requireRuntimeSize, prepareDeployment, requireCode, requireOperationalUSDC, requireVerified, requireArtifactMatch } = require('./deployment-safety.cjs');
 const fs = require('fs');
 const path = require('path');
 const { getRuntime } = require('./runtime.cjs');
@@ -83,16 +83,19 @@ function validateBytes32(label, value) {
 async function loadDeployConfig() {
   const configPath = process.env.DEPLOY_CONFIG
     ? path.resolve(process.cwd(), process.env.DEPLOY_CONFIG)
-    : path.resolve(__dirname, '..', 'deploy.config.example.cjs');
+    : path.resolve(__dirname, '..', 'deploy.config.cjs');
 
   if (!fs.existsSync(configPath)) {
-    throw new Error(`Deployment config file not found: ${configPath}`);
+    throw new Error(`Deployment config file not found: ${configPath}. Copy hardhat/deploy.config.example.cjs to hardhat/deploy.config.cjs and review the owner, settlement wallets and membership settings, or set DEPLOY_CONFIG to your reviewed config. The example is never selected automatically.`);
   }
 
   delete require.cache[configPath];
   // eslint-disable-next-line global-require, import/no-dynamic-require
   const imported = require(configPath);
-  const config = imported.default || imported;
+  const config = imported?.default || imported;
+  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+    throw new Error('Deployment config must export an object with a mainnet or sepolia profile.');
+  }
   return { config, configPath };
 }
 
@@ -135,6 +138,9 @@ function resolveConstructor(networkName, profile) {
   }
 
   constructorArgs.ensConfig.forEach((value, index) => validateAddress(`ensConfig[${index}]`, value, { allowZero: index === 1 }));
+  if (constructorArgs.ensConfig.some(address => wallets.includes(address.toLowerCase()))) {
+    throw new Error('Settlement wallets cannot be configured ENS dependencies; supply reviewed recipient wallets able to operate their USDC.');
+  }
   constructorArgs.rootNodes.forEach((value, index) => validateBytes32(`rootNodes[${index}]`, value));
   constructorArgs.merkleRoots.forEach((value, index) => validateBytes32(`merkleRoots[${index}]`, value));
 
@@ -266,7 +272,9 @@ async function main() {
   const profile = config[network.name];
   const constructorArgs = resolveConstructor(network.name, profile);
   const resolvedFinalOwner = resolveFinalOwner(profile);
-  if (resolvedFinalOwner.toLowerCase() === constructorArgs.usdcTokenAddress.toLowerCase()) throw new Error('finalOwner cannot be the USDC token contract.');
+  if ([constructorArgs.usdcTokenAddress, ...constructorArgs.ensConfig].some(address => address.toLowerCase() === resolvedFinalOwner.toLowerCase())) {
+    throw new Error('finalOwner cannot be the USDC token or a configured ENS dependency. Choose a reviewed wallet or governance contract able to accept ownership and operate the manager.');
+  }
   const block = await ethers.provider.getBlock('latest');
   if (!block) throw new Error('Unable to resolve the preflight block.');
   const tokenCode = await requireCode(ethers.provider, constructorArgs.usdcTokenAddress, 'USDC', block.number);
@@ -293,10 +301,12 @@ async function main() {
     chainId,
     deployer: deployer.address,
     finalOwner: resolvedFinalOwner,
+    finalOwnerSource: process.env.FINAL_OWNER ? 'FINAL_OWNER environment setting' : 'deployment config profile',
     configPath,
     confirmations,
     verifyDelayMs,
     constructorArgs,
+    membership: describeMembershipConfig(constructorArgs),
     libraries: LIBRARIES,
     compiler: COMPILER_SETTINGS,
     runtimeBytes,
@@ -497,4 +507,4 @@ if (require.main === module) main().catch((error) => {
   process.exit(1);
 });
 
-module.exports = { resolveConstructor, parsePositiveInt, qualifiedBuild, FQNS, LIBRARIES, stableObject, verifyWithRetry, main };
+module.exports = { resolveConstructor, parsePositiveInt, qualifiedBuild, COMPILER_SETTINGS, FQNS, LIBRARIES, stableObject, verifyWithRetry, main };

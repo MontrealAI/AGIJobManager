@@ -1,4 +1,4 @@
-# AGIJobManager v0.9.2 — User Guide
+# AGIJobManager v0.9.3 — User Guide
 
 AGIJobManager holds a job's USDC cost in escrow. The first eligible agent whose application succeeds is assigned immediately. The agent submits work, validators review it, and a separate finalization transaction settles the job when its timing and voting conditions allow. Moderators handle disputes.
 
@@ -38,7 +38,7 @@ If nobody votes, successful finalization after the review window pays no validat
 3. Keep enough USDC for escrow or the relevant bond, plus ETH for gas. Avoid unlimited allowances; clear unused allowances when no longer needed.
 4. Review the action preview, then sign and wait for confirmation. A failed USDC transfer rolls the settlement back; some ENS metadata hooks can fail without undoing an otherwise successful settlement.
 
-Agents must pass an identity route **and** hold an eligible AGI-type NFT credential. An allowlist entry alone does not satisfy the NFT requirement. NFT credentials do not increase payment percentages. Validators pass the validator identity route and post the required USDC vote bond.
+AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT. These participant identity checks are separate from optional ENS job-page metadata. Agents and validators must also fund their required USDC bonds; an identity exception does not waive NFT, blacklist, lifecycle or funding checks. NFT credentials do not increase payment percentages.
 
 ## Job lifecycle
 

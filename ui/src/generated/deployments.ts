@@ -1,6 +1,6 @@
 // Generated from config/usdc-deployment.json. Never infer deployment from historical receipts.
 export const OFFICIAL_DEPLOYMENTS = {
-  "version": "0.9.2",
+  "version": "0.9.3",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -14,7 +14,7 @@ export const OFFICIAL_DEPLOYMENTS = {
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
   },
   "addressSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-  "note": "Software release only. Deploy a fresh v0.9.2 USDC manager with two explicit settlement wallets. Intake starts paused in the constructor. Complete deployment verification and two-step ownership acceptance before the owner opens intake. Recipient rotation requires paused intake and zero outstanding escrow and bonds.",
+  "note": "Software release only; no live USDC manager is recorded here. Moving from the legacy original-asset manager requires a separate USDC deployment with two explicit settlement wallets. Production Solidity is unchanged from v0.9.2. Verify the actual instance and ownership acceptance before opening intake. Recipient rotation requires paused intake and zero outstanding escrow and bonds.",
   "settlementWallets": {
     "wallet30": "",
     "wallet10": ""

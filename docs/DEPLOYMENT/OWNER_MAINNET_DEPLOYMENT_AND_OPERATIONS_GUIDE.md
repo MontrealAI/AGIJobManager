@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v0.9.2
+# Owner Mainnet Deployment & Operations Guide — v0.9.3
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -32,17 +32,17 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v0.9.2 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v0.9.3 source and checksums. From the repository root:
 
 ```bash
 npm ci
 cd hardhat
 npm ci
-cp .env.example .env
-cp deploy.config.example.cjs deploy.config.cjs
+if [ ! -e .env ] && [ ! -L .env ]; then cp .env.example .env; fi
+if [ ! -e deploy.config.cjs ] && [ ! -L deploy.config.cjs ]; then cp deploy.config.example.cjs deploy.config.cjs; fi
 ```
 
-Review `deploy.config.cjs` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. Example owner/root values are not verified production instructions.
+Review `deploy.config.cjs` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. The example supplies no final owner or recipients; the intended final owner must be explicit in `FINAL_OWNER` or profile `finalOwner`, including in a dry run. The private `deploy.config.cjs` is loaded by default; the script does not silently use example configuration.
 
 Configure the selected RPC, `DEPLOY_CONFIG`, intended `DEPLOYER_ADDRESS` for read-only planning, and explorer configuration. An actual deployment additionally requires a funded disposable deployer key through the supported Hardhat environment. Do not give production keys to local test tools, commit them or enter them into an explorer form. Prefer a tested multisignature owner when securing substantial funds.
 
@@ -151,9 +151,9 @@ ENS job pages are an optional metadata integration, separate from escrow settlem
 
 | Step | Responsible party and expected behavior |
 | --- | --- |
-| Deploy replacement | Hardhat script deploys ENSJobPages, sets its job manager and journals transaction receipts. Request source verification and reconcile any failure before using it. |
-| Optional script lock/transfer | Requested verification happens before optional lock/ownership writes. Keep `LOCK_CONFIG=0` until the intended integration has been validated. ENSJobPages ownership transfers in **one step**, unlike the manager's proposal/acceptance flow. |
-| Establish root authority | For a fresh USDC launch, the ENS parent owner creates the dedicated root owned directly by the new helper. Broader NameWrapper authority is a separate same-manager replacement decision, with its scope explicitly reviewed. The deployment script performs neither action. |
+| Deploy replacement | Keep target manager intake paused and complete any pending ownership acceptance first. The script requires an explicit final helper owner, deploys ENSJobPages, sets its manager and journals receipts/compiler input. Broadcasts require source verification; reconcile any failure before use. |
+| Optional script lock/transfer | Verification must succeed before optional lock/ownership writes. Keep `LOCK_CONFIG=0` until the intended integration has been validated. ENSJobPages ownership transfers in **one step**, unlike the manager's proposal/acceptance flow. |
+| Establish root authority | For a fresh USDC launch, the ENS parent owner creates the dedicated wrapped-root token owned by the new helper. Broader NameWrapper authority is a separate same-manager replacement decision, with its scope explicitly reviewed. The deployment script performs neither action. |
 | Connect manager | Manager owner calls `setEnsJobPages(newEnsJobPages)` while identity configuration remains unlocked. The deployment script does not switch this pointer. |
 | Preserve existing jobs | Fresh USDC deployment leaves the original manager and its pages unchanged. Only a same-manager helper replacement can require the helper owner to call `migrateLegacyWrappedJobPage(jobId,exactLabel)` for that manager’s existing pages. |
 | Verify cutover | Read both new manager/helper pointers, their separate owners and configured root/resolver/wrapper authority. Require creation, delegated writes and terminal revocation without skipped/failed ENS hooks. Reconcile the preserved legacy inventory. |
@@ -175,7 +175,7 @@ For an identity incident, contain the affected activity and follow [incident res
 
 Dispute, cancellation and expiry are alternative lifecycle paths. A moderator's code 1 resolves for the agent, code 2 for the employer, and code 0 leaves the dispute open. A completed flag can also represent an employer refund. See the [full scenario walkthrough](../QUINTESSENTIAL_USE_CASE.md) for exact checkpoints.
 
-For onboarding, choose an additional allowlist, a Merkle proof or a supported ENS ownership route. Agents also need a qualifying enabled NFT. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
+For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
 
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json
