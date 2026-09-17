@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.0",
+  "name": "v0.9.0 \u2014 USDC settlement and safer operations",
+  "releaseDate": "2026-09-17",
+  "sourceCommit": "eddd10f62414ca7d4f604f2f256dc33215df2bef",
+  "sourceTree": "eaaa07442c2f975d73dffc4509dac9b99ca28c0f",
+  "previousTag": "v0.8.0",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Native USDC jobs: validators first, fixed 30% and 10% gross-cost wallets, then agent remainder. Unchanged production contracts; safer deployment/recovery, bound UI reviews, current operational documentation, patched UI development dependencies and stronger qualification. No live deployment or independent audit.",
+  "unchangedPaths": [
+    "contracts",
+    "foundry.toml",
+    "hardhat/hardhat.config.js",
+    "hardhat/mainnet-fork.config.js",
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "lib"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "8143e8aa540f8600f9377e52cb8e5bf5c0e26d74cd69ab6422b22042d13ddde9",
+    "PREVIOUS_RELEASE.json": "2c5987cdad0fde47b0e7769dd5581bcf51570aa233f4bf27e8896320aacb3a45",
+    "SOURCE_CI.json": "50ef392b440ac264b3c366da2a2e5a4828eeafd9c79b2d6489df5003d79d2219"
+  },
+  "requiredSourceRuns": {
+    "mainnet-fork": {
+      "id": 35235068532,
+      "workflow": "mainnet-fork.yml"
+    },
+    "security-verification": {
+      "id": 35235068478,
+      "workflow": "security-verification.yml"
+    },
+    "ui": {
+      "id": 35235068479,
+      "workflow": "ui.yml"
+    },
+    "ci": {
+      "id": 35235068525,
+      "workflow": "ci.yml"
+    },
+    "docs": {
+      "id": 35235068452,
+      "workflow": "docs.yml"
+    }
+  }
+}
