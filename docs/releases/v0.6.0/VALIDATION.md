@@ -1,6 +1,6 @@
 # v0.6.0 validation
 
-Application commit: `529cbb028ad7ac973d33926d96479f94c6ba842f`. Application tree: `799d338c35bbbee1c82f18fae5e4ffd842ad0e38`.
+Application commit: `4b656a033929e5699d3c074fc4334502f8ca0ee8`. Application tree: `21a6eee1e021a2f1942661b91ebe1ae621b25b6e`.
 
 ## Required source CI
 
@@ -8,10 +8,10 @@ Every run below must report completed/success for this exact commit. The publish
 
 | Gate | Evidence |
 | --- | --- |
-| ci.yml | [Run 35181180156](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181180156) |
-| docs.yml | [Run 35181180168](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181180168) |
-| ui.yml | [Run 35181180180](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181180180) |
-| security-verification.yml | [Run 35181180129](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181180129) |
+| ci.yml | [Run 35181617954](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181617954) |
+| ui.yml | [Run 35181617896](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181617896) |
+| security-verification.yml | [Run 35181617986](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181617986) |
+| docs.yml | [Run 35181617909](https://github.com/MontrealAI/AGIJobManager/actions/runs/35181617909) |
 
 Contract CI includes lint, compiler build, EIP-170 bytecode size, full Truffle regressions, ABI checks and browser transaction smoke. UI CI includes lint/types/build, 117 unit/runtime/property tests, additional property checks, real-browser end-to-end/accessibility/header tests and reproducible standalone artifacts. The frozen primary console verifier exercises 35 checks. Security CI includes Foundry unit/fuzz/invariant runs and configured Slither analysis; detector/path exclusions remain documented in `slither.config.json`.
 

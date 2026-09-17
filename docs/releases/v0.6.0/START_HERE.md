@@ -7,7 +7,7 @@ A successful 100 USDC job pays validators 8 USDC by default, wallet one 30 USDC,
 Both recipient addresses must be supplied before a fresh contract deployment. This download neither deploys a contract nor moves live funds. Existing deployments are unchanged.
 
 1. Read `RELEASE_NOTES.md`, then the payout specification and `source/docs/USDC_MIGRATION.md`.
-2. Inspect the source and validation evidence at commit `529cbb028ad7ac973d33926d96479f94c6ba842f` (tree `799d338c35bbbee1c82f18fae5e4ffd842ad0e38`).
+2. Inspect the source and validation evidence at commit `4b656a033929e5699d3c074fc4334502f8ca0ee8` (tree `21a6eee1e021a2f1942661b91ebe1ae621b25b6e`).
 3. Verify downloads with `sha256sum -c SHA256SUMS.txt` (or `shasum -a 256 -c SHA256SUMS.txt` on macOS).
 4. Review the complete payload inventory in `RELEASE_MANIFEST.json`.
 

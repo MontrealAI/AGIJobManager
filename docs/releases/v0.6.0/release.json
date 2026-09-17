@@ -4,8 +4,8 @@
   "tag": "v0.6.0",
   "name": "v0.6.0 — USDC job payout distribution",
   "releaseDate": "2026-09-17",
-  "sourceCommit": "529cbb028ad7ac973d33926d96479f94c6ba842f",
-  "sourceTree": "799d338c35bbbee1c82f18fae5e4ffd842ad0e38",
+  "sourceCommit": "4b656a033929e5699d3c074fc4334502f8ca0ee8",
+  "sourceTree": "21a6eee1e021a2f1942661b91ebe1ae621b25b6e",
   "previousTag": "v0.5.0",
   "primaryUI": "ui/agijobmanager-usdc.html",
   "scope": "USDC job payments: validators, fixed 30% and 10% wallets, then agent remainder. Fresh deployment with two explicit recipients required; no live contract or funds changed.",
@@ -16,26 +16,26 @@
     "lib"
   ],
   "evidenceDigests": {
-    "CHANGES.json": "456e0370e6a831a03274253b56102690c227cf3a8de94653a6bb0b335fad0604",
+    "CHANGES.json": "81391f0c797c0a836f6992d34e48147ca6a01b67441483fbd39a1a4e30ba3e74",
     "PREVIOUS_RELEASE.json": "8393ce0bab183a92f0b7b3f709808fe60eb9c0c46f5289036bd4039b4f4b265a",
-    "SOURCE_CI.json": "3fb6efa48c94a61047e999e51f9c614b2d08af6b57e40b0b029c080c0d00cd59"
+    "SOURCE_CI.json": "f2b8126c667f15476f43cfbd009a81d8ae967bcf0aa73e0a22bb41ed6584a959"
   },
   "requiredSourceRuns": {
     "ci": {
-      "id": 35181180156,
+      "id": 35181617954,
       "workflow": "ci.yml"
     },
-    "docs": {
-      "id": 35181180168,
-      "workflow": "docs.yml"
-    },
     "ui": {
-      "id": 35181180180,
+      "id": 35181617896,
       "workflow": "ui.yml"
     },
     "security-verification": {
-      "id": 35181180129,
+      "id": 35181617986,
       "workflow": "security-verification.yml"
+    },
+    "docs": {
+      "id": 35181617909,
+      "workflow": "docs.yml"
     }
   }
 }

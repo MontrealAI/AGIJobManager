@@ -76,7 +76,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     );
   });
 
-  it("pays allowlisted agents based on AGIType payout tiers", async () => {
+  it("pays allowlisted agents the fixed remainder independently of NFT eligibility scores", async () => {
     const payoutTier = 60;
     const agiType = await MockERC721.new({ from: owner });
     await agiType.mint(agent, { from: owner });
@@ -99,7 +99,7 @@ contract("AGIJobManager Merkle allowlists", (accounts) => {
     const after = await token.balanceOf(agent);
 
     const agentBond = await computeAgentBond(manager, payout, toBN(3600));
-    const expected = payout.muln(payoutTier).divn(100).add(agentBond);
-    assert.equal(after.sub(before).toString(), expected.toString(), "payout should match AGIType tier");
+    const expected = payout.muln(52).divn(100).add(agentBond);
+    assert.equal(after.sub(before).toString(), expected.toString(), "payout should be the remaining 52% at the default validator rate");
   });
 });

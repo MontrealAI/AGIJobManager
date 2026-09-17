@@ -1,6 +1,6 @@
 {
   "previousTag": "v0.5.0",
-  "sourceCommit": "529cbb028ad7ac973d33926d96479f94c6ba842f",
+  "sourceCommit": "4b656a033929e5699d3c074fc4334502f8ca0ee8",
   "changes": [
     {
       "status": "M",
@@ -305,6 +305,10 @@
     {
       "status": "M",
       "path": "test/mainnetHardening.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/merkleAllowlist.test.js"
     },
     {
       "status": "A",
