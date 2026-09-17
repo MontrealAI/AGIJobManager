@@ -47,6 +47,7 @@ The qualified fork fixture pins Ethereum block **25,997,388**, hash `0x1495b5dec
 The fork runner exposes only the local Hardhat network. It reads a pinned finalized Ethereum block and executes every transaction on that local fork. It never broadcasts transactions to Ethereum, does not use production private keys and fails if the remote state is unavailable. Fork evidence checks a historical state; USDC implementation and issuer configuration must be rechecked before an actual launch.
 
 ```bash
+cd ..
 FOUNDRY_PROFILE=ci forge test
 npm run slither
 npm run slither:extended
