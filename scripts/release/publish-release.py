@@ -68,6 +68,17 @@ def tag_target(ref):
     raise RuntimeError('Unexpected nested tag depth.')
 
 
+def release_assets(release_id):
+    # The release object's assets field can omit failed starter records.
+    assets, page = [], 1
+    while True:
+        batch = api(f'releases/{release_id}/assets?per_page=100&page={page}')
+        assets.extend(batch)
+        if len(batch) < 100:
+            return assets
+        page += 1
+
+
 def upload_asset(release, file, digest):
     """Upload by known draft ID; reconcile ambiguous responses before retrying."""
     endpoint = f'releases/{release["id"]}'
@@ -83,13 +94,35 @@ def upload_asset(release, file, digest):
         assert asset.get('digest') == expected_digest, 'Existing asset differs; refusing to replace.'
         return asset
 
-    def find_uploaded():
+    def require_same_draft():
         current = api(endpoint)
         assert current['id'] == release['id'] and current['draft'], 'Upload requires the same unpublished draft.'
         assert current['tag_name'] == tag and current['target_commitish'] == source, 'Draft source identity changed.'
-        matches = [asset for asset in current['assets'] if asset['name'] == name]
+
+    def find_uploaded():
+        require_same_draft()
+        matches = [asset for asset in release_assets(release['id']) if asset['name'] == name]
         assert len(matches) <= 1, 'Duplicate draft asset names.'
-        return verify_asset(matches[0]) if matches else None
+        if not matches:
+            return None
+        asset = matches[0]
+        if asset['state'] != 'starter' or asset.get('digest') is not None:
+            return verify_asset(asset)
+        # GitHub documents starter records after a failed 502 upload as safe to
+        # delete. Re-read its exact ID and the draft before this narrow cleanup;
+        # a completed upload is reused only if its size and digest match.
+        asset_id = asset['id']
+        assert type(asset_id) is int and asset_id > 0, 'Invalid starter asset ID.'
+        fresh = api(f'releases/assets/{asset_id}')
+        assert fresh['id'] == asset_id and fresh['name'] == name, 'Starter asset identity changed.'
+        if fresh['state'] != 'starter' or fresh.get('digest') is not None:
+            return verify_asset(fresh)
+        require_same_draft()
+        print(f'Removing failed starter from draft {release["id"]}: {name} (asset {asset_id})', flush=True)
+        gh('api', f'repos/{repo}/releases/assets/{asset_id}', '--method', 'DELETE')
+        remaining = [item for item in release_assets(release['id']) if item['name'] == name]
+        assert not remaining, 'Failed starter cleanup was not confirmed; refusing another upload.'
+        return None
 
     for attempt in range(3):
         existing = find_uploaded()
@@ -183,9 +216,13 @@ if matches:
     assert existing['draft'], 'Published releases are immutable by policy; refusing to edit.'
     assert existing['name'] == config['name'] and existing['target_commitish'] == source
     assert existing['body'].strip() == notes.strip()
+    existing['assets'] = release_assets(existing['id'])
     assets = {a['name']: a for a in existing['assets']}
+    assert len(assets) == len(existing['assets']), 'Duplicate existing draft assets.'
     assert not set(assets) - set(expected), 'Unexpected existing draft assets.'
     for name, asset in assets.items():
+        if asset['state'] == 'starter' and asset.get('digest') is None:
+            continue  # The upload helper verifies and removes only this failed state.
         assert asset.get('digest') == 'sha256:' + expected[name], 'Existing asset differs; refusing to replace.'
 ref = optional_get(f'git/ref/tags/{tag}')
 if ref:
@@ -204,10 +241,8 @@ else:
     release = api('releases', 'POST', {'tag_name': tag, 'target_commitish': source, 'name': config['name'], 'body': notes, 'draft': True, 'prerelease': False, 'make_latest': 'false'})
 release_endpoint = f'releases/{release["id"]}'
 assert release['draft'] and release['tag_name'] == tag
-assets = {a['name']: a for a in release['assets']}
 for name in expected:
-    if name not in assets:
-        upload_asset(release, out / name, expected[name])
+    upload_asset(release, out / name, expected[name])
 wanted = {name: 'sha256:' + digest for name, digest in expected.items()}
 wait_for(release_endpoint, lambda r: {a['name']: a.get('digest') for a in r['assets']} == wanted)
 api(release_endpoint, 'PATCH', {'draft': False, 'prerelease': False, 'make_latest': 'true'})

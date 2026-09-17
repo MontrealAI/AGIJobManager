@@ -286,10 +286,11 @@ class ReleaseUploadTests(unittest.TestCase):
                         'draft': True, 'assets': [],
                         'upload_url': f'https://uploads.github.com/repos/{REPOSITORY}/releases/123/assets{{?name,label}}'}
         self.api = Mock(return_value=copy.deepcopy(self.release))
+        self.list_assets = Mock(return_value=[])
         self.gh = Mock(return_value=json.dumps(self.asset))
         self.clock = Mock()
         namespace = {'repo': REPOSITORY, 'tag': 'v0.9.4', 'source': SOURCE,
-                     'api': self.api, 'gh': self.gh, 'time': self.clock,
+                     'api': self.api, 'release_assets': self.list_assets, 'gh': self.gh, 'time': self.clock,
                      'json': json, 'subprocess': subprocess, 'quote': quote}
         # Isolate the real helper without executing publication or credentials.
         parsed = ast.parse(PUBLISHER.read_text())
@@ -313,13 +314,13 @@ class ReleaseUploadTests(unittest.TestCase):
             '--header', 'Content-Type: application/zip', timeout=180)
 
     def test_exact_existing_asset_is_reused_without_upload(self):
-        self.api.return_value = self.populated()
+        self.list_assets.return_value = [self.asset]
         self.assertEqual(self.run_upload(), self.asset)
         self.gh.assert_not_called()
 
     def test_lost_success_response_is_reconciled_without_reupload(self):
         self.gh.side_effect = subprocess.TimeoutExpired(['gh', 'api'], 180)
-        self.api.side_effect = [self.release, self.populated()]
+        self.list_assets.side_effect = [[], [self.asset]]
         self.assertEqual(self.run_upload(), self.asset)
         self.assertEqual(self.gh.call_count, 1)
         self.assertEqual(self.api.call_count, 2)
@@ -342,14 +343,14 @@ class ReleaseUploadTests(unittest.TestCase):
     def test_existing_conflicting_or_partial_assets_fail_closed(self):
         for changes in [{'digest': 'sha256:' + 'e' * 64}, {'size': 0}, {'state': 'starter'}, {'digest': None}]:
             with self.subTest(changes=changes):
-                self.api.return_value = self.populated(dict(self.asset, **changes))
+                self.list_assets.return_value = [dict(self.asset, **changes)]
                 with self.assertRaises(AssertionError):
                     self.run_upload()
                 self.gh.assert_not_called()
 
     def test_ambiguous_failure_with_conflict_is_not_retried(self):
         self.gh.side_effect = subprocess.TimeoutExpired(['gh', 'api'], 180)
-        self.api.side_effect = [self.release, self.populated(dict(self.asset, digest='sha256:' + 'e' * 64))]
+        self.list_assets.side_effect = [[], [dict(self.asset, digest='sha256:' + 'e' * 64)]]
         with self.assertRaises(AssertionError):
             self.run_upload()
         self.assertEqual(self.gh.call_count, 1)
@@ -368,7 +369,7 @@ class ReleaseUploadTests(unittest.TestCase):
 
     def test_draft_identity_changes_and_duplicate_assets_are_rejected(self):
         for changes in [{'id': 999}, {'draft': False}, {'tag_name': 'v0.9.1'},
-                        {'target_commitish': 'e' * 40}, {'assets': [self.asset, self.asset]}]:
+                        {'target_commitish': 'e' * 40}]:
             with self.subTest(changes=changes):
                 self.api.return_value = dict(self.release, **changes)
                 with self.assertRaises(AssertionError):
@@ -381,6 +382,87 @@ class ReleaseUploadTests(unittest.TestCase):
             self.run_upload()
         self.assertEqual(self.gh.call_count, 1)
         self.clock.sleep.assert_not_called()
+
+    def test_duplicate_assets_from_complete_listing_are_rejected(self):
+        self.list_assets.return_value = [self.asset, self.asset]
+        with self.assertRaises(AssertionError):
+            self.run_upload()
+        self.gh.assert_not_called()
+
+    def starter(self):
+        # A previous failed attempt can report its declared content length even
+        # though no completed asset/digest exists. It may predate repackaging.
+        return dict(self.asset, id=456, state='starter', digest=None, size=999)
+
+    def test_failed_starter_hidden_from_release_object_is_removed_before_upload(self):
+        starter = self.starter()
+        self.list_assets.side_effect = [[starter], []]
+        self.api.side_effect = [self.release, starter, self.release]
+        self.gh.side_effect = ['', json.dumps(self.asset)]
+        self.assertEqual(self.run_upload(), self.asset)
+        self.assertEqual(self.gh.call_args_list[0].args,
+                         ('api', f'repos/{REPOSITORY}/releases/assets/456', '--method', 'DELETE'))
+        self.assertEqual(self.gh.call_args_list[1].args[3], 'POST')
+        self.assertEqual(self.gh.call_count, 2)
+
+    def test_starter_completed_after_listing_is_verified_without_deletion(self):
+        self.list_assets.return_value = [self.starter()]
+        self.api.side_effect = [self.release, dict(self.asset, id=456)]
+        self.assertEqual(self.run_upload(), dict(self.asset, id=456))
+        self.gh.assert_not_called()
+
+    def test_starter_identity_or_completed_digest_change_is_rejected(self):
+        for changes in [{'id': 789}, {'name': 'unrelated.zip'},
+                        {'state': 'uploaded', 'digest': 'sha256:' + 'e' * 64},
+                        {'state': 'starter', 'digest': 'sha256:' + self.digest}]:
+            with self.subTest(changes=changes):
+                self.list_assets.return_value = [self.starter()]
+                self.api.side_effect = [self.release, dict(self.starter(), **changes)]
+                with self.assertRaises(AssertionError):
+                    self.run_upload()
+                self.gh.assert_not_called()
+
+    def test_draft_published_or_retargeted_before_starter_cleanup_is_rejected(self):
+        for changes in [{'draft': False}, {'id': 789}, {'tag_name': 'v0.9.3'},
+                        {'target_commitish': 'e' * 40}]:
+            with self.subTest(changes=changes):
+                self.list_assets.return_value = [self.starter()]
+                self.api.side_effect = [self.release, self.starter(), dict(self.release, **changes)]
+                with self.assertRaises(AssertionError):
+                    self.run_upload()
+                self.gh.assert_not_called()
+
+    def test_unconfirmed_starter_cleanup_blocks_another_upload(self):
+        self.list_assets.return_value = [self.starter()]
+        self.api.side_effect = [self.release, self.starter(), self.release]
+        self.gh.return_value = ''
+        with self.assertRaises(AssertionError):
+            self.run_upload()
+        self.assertEqual(self.gh.call_count, 1)
+        self.assertEqual(self.gh.call_args.args[-1], 'DELETE')
+
+    def test_502_starter_is_reconciled_before_bounded_retry(self):
+        self.list_assets.side_effect = [[], [self.starter()], [], []]
+        self.api.side_effect = [self.release, self.release, self.starter(), self.release, self.release]
+        self.gh.side_effect = [subprocess.CalledProcessError(1, ['gh', 'api'], stderr='HTTP 502'),
+                               '', json.dumps(self.asset)]
+        self.assertEqual(self.run_upload(), self.asset)
+        self.assertEqual(self.gh.call_count, 3)
+        self.assertEqual(self.gh.call_args_list[1].args[-1], 'DELETE')
+        self.assertEqual([call.args for call in self.clock.sleep.call_args_list], [(1,)])
+
+    def test_complete_asset_listing_paginates_before_returning(self):
+        api = Mock(side_effect=[[{'id': i} for i in range(100)], [self.starter()]])
+        namespace = {'api': api}
+        parsed = ast.parse(PUBLISHER.read_text())
+        helper = next(node for node in parsed.body if isinstance(node, ast.FunctionDef) and node.name == 'release_assets')
+        exec(compile(ast.Module(body=[helper], type_ignores=[]), str(PUBLISHER), 'exec'), namespace)
+        result = namespace['release_assets'](123)
+        self.assertEqual(len(result), 101)
+        self.assertEqual(result[-1], self.starter())
+        self.assertEqual([call.args for call in api.call_args_list],
+                         [('releases/123/assets?per_page=100&page=1',),
+                          ('releases/123/assets?per_page=100&page=2',)])
 
 
 if __name__ == '__main__':

@@ -37,7 +37,7 @@ The console reads the posting default and per-job requirement separately, blocks
 | Actual-mainnet local forks | 8 original USDC cases and 20 cutover scenarios, including both NFT modes with real ENS membership |
 | Foundry | 37 unit/fuzz/invariant tests; 256 fuzz samples per fuzz case, four 64 × 64 stateful invariants and one directed lifecycle invariant |
 | UI | 178 unit cases, 6 property cases, 9 browser flows, 4 accessibility cases, 2 header cases and 35 primary-console checks |
-| Release gates | 27 source-evidence/asset-upload tests, duplicate deterministic packages and uploaded asset digest checks |
+| Release gates | 35 source-evidence/asset-upload tests, duplicate deterministic packages and uploaded asset digest checks |
 
 The new settlement fuzz case varies job cost, validator reward rate and the order of the two NFT modes. It verifies fixed posting terms, payment shares and cleared reserves after credentials are transferred away. Existing invariant coverage includes 16,384 stateful calls. UI property cases are included in the unit suite and also run separately in CI.
 
@@ -63,7 +63,9 @@ ENS hooks remain best-effort. The exercised short metadata does not prove maximu
 
 The packager binds the frozen commit/tree, exact file delta since v0.9.3, evidence digests and historical records preserved against v0.9.3 publication commit `6eccf1741b1f3f71ed85f3a214b59faf66cfca44`. It verifies ancestry and protected paths, inventories every payload with SHA-256 and builds identical archives twice.
 
-The publisher uploads using the known draft release ID with bounded timeouts/retries. Ambiguous responses are reconciled by exact asset name, size and digest; mismatches are never overwritten. All four uploaded assets are checked before publication. Existing tags and published releases are never replaced. Publication preparation may change only this release's documents, release tooling and its workflow; the qualified application remains frozen.
+The publisher uploads using the known draft release ID with bounded timeouts/retries. Ambiguous responses are reconciled by exact asset name, size and digest; completed assets with mismatches are never overwritten. All four uploaded assets are checked before publication. Existing tags and published releases are never replaced. Publication preparation may change only this release's documents, release tooling and its workflow; the qualified application remains frozen.
+
+The [initial publication attempt](https://github.com/MontrealAI/AGIJobManager/actions/runs/35281168469) passed validation but received GitHub upload HTTP 502 responses and left the release as a draft. The complete asset-list endpoint exposed an incomplete `starter` record omitted from the release object's asset list. Recovery follows [GitHub's documented handling](https://docs.github.com/en/rest/releases/assets#upload-a-release-asset): only a `starter` with no digest, the expected name, and a freshly checked asset ID may be removed, after confirming the same source-pinned unpublished draft. Cleanup must be confirmed before another upload. A record that has completed is retained only after exact size/digest verification. Eight added regression cases cover this recovery, pagination, changed identity, publication races, duplicates and rejected mismatches. Source qualification remains unchanged.
 
 This release requires a fresh manager; existing managers cannot acquire this behavior through a toggle or proxy upgrade. Keep old jobs on their original managers, assets, helpers and namespaces. The release performs no public deployment, activation, repointing or migration. Actual owners/recipients, signing access, intended collection policy, operational rehearsal, source verification, live readiness and independent review appropriate to exposure remain production activation requirements. The pinned fork proves local contract behavior rather than present-day signer control or current chain state.
 
