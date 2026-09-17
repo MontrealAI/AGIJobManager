@@ -4,7 +4,7 @@
   "review_date": "2026-09-17",
   "scope": "Production Solidity, all 102 enabled Slither detectors at every severity, plus separate all-medium/high and all-six-reentrancy reports. All findings are retained and individually reviewed against exact production/configuration/compiler/dependency-patch hashes. This is an internal review, not an independent audit.",
   "source_sha256": {
-    "contracts/AGIJobManager.sol": "863fa33e67b9390643b609eea04eaad08463d1ec635fc3b960f8d466cbd89f60",
+    "contracts/AGIJobManager.sol": "6787f3604dff7c7e51549da3470381e9ab8f310fa6bae5a956152c815c32d5c7",
     "contracts/ens/ENSJobPages.sol": "b9ef3d109e1a15f63c21aa3e3ed52fbe2181117ceaa5667d36b27bbc04b3af3f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
     "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",

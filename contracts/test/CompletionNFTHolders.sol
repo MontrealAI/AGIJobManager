@@ -102,7 +102,7 @@ contract GasGriefingReceiverEmployer is IERC721Receiver {
         override
         returns (bytes4)
     {
-        while (true) {
+        while (true) { /* Deliberate out-of-gas ERC-721 receiver fixture. */ // solhint-disable-line no-empty-blocks
         }
         return IERC721Receiver.onERC721Received.selector;
     }

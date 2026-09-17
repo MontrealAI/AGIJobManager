@@ -7,7 +7,7 @@ contract MockLoopingERC721 {
     }
 
     function balanceOf(address) external pure returns (uint256) {
-        while (true) {}
+        while (true) {} /* Deliberate out-of-gas balanceOf fixture. */ // solhint-disable-line no-empty-blocks
         return 0;
     }
 }

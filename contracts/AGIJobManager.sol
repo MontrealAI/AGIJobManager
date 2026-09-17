@@ -1429,7 +1429,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         );
         _tokenURIs[tokenId] = tokenUriValue;
         if (job.employer.code.length != 0) {
-            try this.safeMintCompletionNFT{ gas: SAFE_MINT_GAS_LIMIT }(job.employer, tokenId) {
+            try this.safeMintCompletionNFT{ gas: SAFE_MINT_GAS_LIMIT }(job.employer, tokenId) { /* Successful safe mint already did the work; only failure needs fallback. */ // solhint-disable-line no-empty-blocks
             } catch {
                 _mint(job.employer, tokenId);
             }
