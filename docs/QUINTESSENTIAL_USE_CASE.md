@@ -1,4 +1,4 @@
-# Quintessential Use Case — v0.9.6
+# Quintessential Use Case — v0.9.7
 
 Follow one USDC-funded job from posting through settlement, then rehearse refunds and disputes separately. All amounts passed to the contract are integers in six-decimal USDC units: **100 USDC = 100000000**. ETH pays transaction gas; it is not a job-payment token.
 
@@ -23,7 +23,7 @@ The command starts an isolated Hardhat chain in memory, deploys mock six-decimal
 
 The demonstration verifies that construction starts paused, configures one eligible agent and validator, funds and approves their USDC, and opens local intake. It posts a 100 USDC job, assigns the agent, records completion and validator approval, advances the simulated clock, and finalizes. Its deliberately shortened review windows are test values, not production policy.
 
-The output must show **8 / 30 / 10 / 52 USDC** for validator, first wallet, second wallet and agent. Balance comparisons start before assignment and voting, so returned bonds do not inflate those rewards. The script also asserts that all four reserves and the manager's USDC balance finish at zero. Any failed assertion exits unsuccessfully.
+The output must show **8 / 30 / 10 / 52 USDC** for validator, first wallet, second wallet and agent. Balance comparisons start before assignment and voting, so returned bonds do not inflate those rewards. The script also asserts that all five reserves, including pending payment claims, and the manager's USDC balance finish at zero. Any failed assertion exits unsuccessfully.
 
 Read [the runnable example](../scripts/local-job-demo.cjs) for the exact calls and [the contract tests](../test/happyPath.test.js) for additional eligibility and NFT assertions. Use `npm test` for the complete regression suite, including refund, dispute and expiry alternatives. All these tests run real EVM bytecode locally.
 
@@ -43,7 +43,7 @@ An agent must satisfy **both** an authorization route (additional allowlist, val
 | 8 | Employer/agent; then moderator | `disputeJob`, then `resolveDisputeWithCode` | Completion requested; dispute opened within review window; initiator bond approved; moderator authorized | Code 1 settles for agent; code 2 refunds employer; code 0 leaves dispute open | `JobDisputed`, `DisputeResolvedWithCode`, outcome-dependent transfers/events | Resolution code, terminal state or still-open dispute |
 | 9 | Anyone | `expireJob(jobId)` | Assigned, not disputed/terminal, no completion request, assignment deadline exceeded | Employer recovery and terminal expiry | `JobExpired`, USDC `Transfer` | `expired` flag and released escrow/bonds |
 | 10 | Employer or owner | `cancelJob` or owner `delistJob` | Unassigned job; authorized caller; settlement enabled | Escrow refunded and job record deleted | `JobCancelled`, USDC `Transfer` | Refund event/balance; getters for the deleted job revert |
-| 11 | Operator | Current getters and event/transfer reconciliation | A job action has confirmed successfully | Remaining liabilities reconcile with token balance | Read-only monitoring | Balance is at least all four reserves; `withdrawableUSDC()` is only surplus |
+| 11 | Operator | Current getters and event/transfer reconciliation | A job action has confirmed successfully | Remaining liabilities reconcile with token balance | Read-only monitoring | Balance is at least all four job escrow/bond reserves; `withdrawableUSDC()` is only surplus |
 
 The dispute, expiry and cancellation rows are alternative scenarios. Rehearse each on a separate eligible job; they are not steps to run after a successful terminal settlement.
 
@@ -102,11 +102,11 @@ The diagram summarizes contract conditions, not automatic background execution. 
 - **Post-voting:** vote counters and validator-bond reserves reconcile with confirmed votes. Check dispute state before trying to finalize.
 - **Post-finalization/resolution:** verify the actual outcome from state and USDC transfers. `completed=true` can also represent an employer refund; an agent win additionally emits payout/NFT events. No 30%/10% shares are taken from employer-refund outcomes.
 - **Post-cancellation:** the refund is confirmed and `JobCancelled` is recorded; the deleted job is no longer available through job getters.
-- **Accounting:** compare total USDC balance with all four reserve counters across every remaining job. Fully distributed job costs do not create withdrawable protocol revenue.
+- **Accounting:** compare total USDC balance with all five reserve counters, including pending payment claims. Fully distributed job costs do not create withdrawable protocol revenue.
 
 ## B) Testnet/mainnet operator checklist
 
-1. **Release and scope:** verify v0.9.6 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
+1. **Release and scope:** verify v0.9.7 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
 2. **Signing:** use the [Hardhat guide](../hardhat/README.md), a disposable deployer and a reviewed final owner/signing arrangement. Local tests and demonstrations use disposable accounts only.
 3. **Configuration:** review `hardhat/deploy.config.cjs` and `hardhat/.env.example`. Supply native Circle USDC, both distinct settlement wallets, intended owner, ENS/namespace settings and Merkle roots; do not use `migrations/deploy-config.js` for public deployment.
 4. **Plan and rehearse:** from `hardhat/`, run `DRY_RUN=1 npm run deploy:sepolia` with reviewed settings, then perform a separately authorized Sepolia deployment. Rehearse eligibility, posting, validator payouts, refunds, disputes and the actual ownership handover.

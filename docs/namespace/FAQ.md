@@ -1,4 +1,4 @@
-# ENS membership FAQ — v0.9.6
+# ENS membership FAQ — v0.9.7
 
 ## Which names identify agents and validators?
 

@@ -1,4 +1,4 @@
-# Contract behavior — v0.9.6
+# Contract behavior — v0.9.7
 
 See [buyer protection](BUYER_PROTECTION.md) for a plain-language outcome table and [USDC distribution](USDC_PAYOUT_SPLIT.md) for arithmetic.
 

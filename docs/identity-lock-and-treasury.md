@@ -1,4 +1,4 @@
-# Identity lock and treasury controls — v0.9.6
+# Identity lock and treasury controls — v0.9.7
 
 Use [owner controls](OWNER_CONTROLS.md) for transaction steps and [trust model](trust-model-and-security-overview.md) for authority and accounting assumptions.
 
@@ -20,4 +20,4 @@ Use the [incident guide](OPERATIONS/INCIDENT_RESPONSE.md) for staged recovery. A
 
 `lockIdentityConfiguration()` freezes `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes` and `setEnsJobPages`. It does not freeze Merkle roots, direct eligibility lists, moderators, ownership or other supported owner settings. USDC is immutable independently of this lock.
 
-Validate the intended addresses, ENS ownership, hook behavior and recovery implications before locking. Registry/wrapper/root updates require all reserves empty; the hook pointer has distinct guards. Consult the [generated interface](REFERENCE/CONTRACT_INTERFACE.md) and [owner guide](OWNER_RUNBOOK.md). Never use the identity lock as an incident repair.
+Validate the intended addresses, ENS ownership, hook behavior and recovery implications before locking. Registry/wrapper/root updates require all live job escrow and bonds empty; the hook pointer has distinct guards. Consult the [generated interface](REFERENCE/CONTRACT_INTERFACE.md) and [owner guide](OWNER_RUNBOOK.md). Never use the identity lock as an incident repair.

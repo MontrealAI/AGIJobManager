@@ -1,14 +1,14 @@
-# AGIJobManager UI — v0.9.6
+# AGIJobManager UI — v0.9.7
 
-Use the [versioned v0.9.6 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.6/agijobmanager-usdc.html), matching [repository artifact](agijobmanager-usdc.html), and [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). Voting requires a fresh, verified v0.9.6 manager with `getJobBonds`; v0.9.5 and older managers do not expose it. See the [compatibility notes and earlier bond-quote limitation](../docs/qualification/BUYER_ECONOMICS_FOLLOWUP.md). Verify release checksums and the manager address independently. No manager, recipient wallets or production owner is supplied by default.
+Use the [versioned v0.9.7 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.7/agijobmanager-usdc.html), matching [repository artifact](agijobmanager-usdc.html), and [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). Verified v0.9.6 and v0.9.7 managers share the required ABI and executable bytecode. This console retains the v0.9.6 saved-context namespace, rechecking wallet, chain and manager before writes. v0.9.5 and older managers lack getJobBonds; keep their jobs on their original interfaces. See [compatibility](../docs/qualification/OPERATIONS_V097.md). No live manager, recipient wallets or production owner is supplied by default.
 
-All current job payments and bonds use native Circle USDC with six decimals. This release requires a fresh deployment; the existing original-token mainnet manager remains a separate service with its own jobs and ENS wiring. Follow the [USDC migration guide](../docs/USDC_MIGRATION.md) and [Hardhat deployment guide](../hardhat/README.md).
+All current job payments and bonds use native Circle USDC with six decimals. Verified v0.9.6 managers remain compatible. Moving from the original-token manager requires a fresh USDC deployment; the original manager keeps its own jobs and ENS wiring. Follow the [USDC migration guide](../docs/USDC_MIGRATION.md) and [Hardhat deployment guide](../hardhat/README.md).
 
 ## Choose a surface
 
 | Surface | Purpose | Configuration and status |
 | --- | --- | --- |
-| [USDC standalone console](agijobmanager-usdc.html) | Versioned single-file participant and owner interface | Ethereum mainnet; voting requires the new `getJobBonds` getter; no embedded live-manager default or token bridge |
+| [USDC standalone console](agijobmanager-usdc.html) | Versioned single-file participant and owner interface | Ethereum mainnet; voting requires the `getJobBonds` getter introduced in v0.9.6; no embedded live-manager default or token bridge |
 | [Operator interface](../docs/ui/agijobmanager.html) | Additional USDC role and owner workflows | Configure the intended manager and network |
 | Next.js app in this directory | Broader UI, development, simulation and demo workflows | Environment-driven; manager address starts empty |
 | `dist-ipfs/agijobmanager.html` | Generated single-file distribution | Built and verified from the UI source; configuration remains deployment-required |

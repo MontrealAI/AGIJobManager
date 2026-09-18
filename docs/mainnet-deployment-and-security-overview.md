@@ -1,8 +1,8 @@
-# Mainnet deployment and security — v0.9.6
+# Mainnet deployment and security — v0.9.7
 
 The supported current procedure is the [Hardhat deployment guide](../hardhat/README.md). It covers qualified compilation, strict dry runs, native-USDC checks, paused deployment, linked-library source verification, transaction journals, failure recovery, owner acceptance and the read-only readiness check.
 
-Truffle and Ganache have been removed. Local tests use Hardhat 3, and historical deployment migrations are retired. Do not use an old receipt or the legacy contract address as a v0.9.6 deployment.
+Truffle and Ganache have been removed. Local tests use Hardhat 3, and historical deployment migrations are retired. Do not use an old receipt or the legacy contract address as a v0.9.7 deployment.
 
 For owner operations use the [owner runbook](OWNER_RUNBOOK.md) and [owner controls](OWNER_CONTROLS.md). For a high-stakes launch complete [mainnet readiness](MAINNET_READINESS.md), including independent review and an actual signer/participant rehearsal. No live deployment is supplied by publication.
 

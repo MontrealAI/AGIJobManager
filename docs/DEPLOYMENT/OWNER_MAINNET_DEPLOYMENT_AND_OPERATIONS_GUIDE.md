@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v0.9.6
+# Owner Mainnet Deployment & Operations Guide — v0.9.7
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -21,7 +21,7 @@ Publishing a software release does not perform these mainnet actions. This is a 
 | Pending owner | Address proposed by `transferOwnership`; it has no owner authority until it calls `acceptOwnership()` |
 | Operator | Person or system following the owner's procedures; the title itself grants no contract authority |
 | Employer | Posts a job and deposits its USDC cost |
-| Agent | Authorized participant with an enabled qualifying NFT holding; applies, posts a bond and submits completion |
+| Agent | Authorized participant with an enabled qualifying NFT holding when the job requires it; applies, posts a bond and submits completion |
 | Validator | Authorized participant that posts its required bond and votes during the review window |
 | Moderator | Address enabled in `moderators(address)`; can decide an active dispute |
 | Reserves | Job escrow plus agent, validator and dispute bonds; they are not owner-withdrawable revenue |
@@ -32,7 +32,7 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v0.9.6 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v0.9.7 source and checksums. From the repository root:
 
 ```bash
 npm ci
@@ -66,7 +66,7 @@ The manager workflow deploys eight linked libraries and the manager, verifies ru
 
 Preserve the journal under `hardhat/deployments/<network>/`, the exact Solidity input, constructor values, linked-library addresses, successful transaction receipts and verification results. **A failed command may already have broadcast transactions.** Reconcile the saved journal before retrying; do not blindly deploy again.
 
-Verify all six contracts against the exact release build. Do not turn a failed verification result into a claimed success. If all nine deployments were broadcast but verification or a later step failed, the supported recovery command from `hardhat/` is:
+Verify all nine manager/library contracts against the exact release build. Do not turn a failed verification result into a claimed success. If all nine deployments were broadcast but verification or a later step failed, the supported recovery command from `hardhat/` is:
 
 ```bash
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet
@@ -126,7 +126,7 @@ Inputs use full addresses, full `bytes32` values, integer base-unit amounts and 
 | Stop new work | `pauseIntake()` / `pause()` | Requires intake currently open; verify `paused=true`. Existing settlement remains available unless separately paused. |
 | Contain fund risk | `pauseAll()` | Verify both flags true; guarded refunds and dispute resolution also stop. Owner administration remains possible. |
 | Resume in stages | `setSettlementPaused(false)`, later `unpauseIntake()` | Clear containment only after incident recovery review. Avoid opening both paths prematurely. |
-| Rotate recipient wallets | `setSettlementWallets(wallet30,wallet10)` | Intake paused and all four reserves zero; recipients valid/distinct; verify getters and `SettlementWalletsUpdated`. Existing funded jobs cannot be redirected. |
+| Rotate recipient wallets | `setSettlementWallets(wallet30,wallet10)` | Intake paused and all four job escrow/bond reserves zero; recipients valid/distinct; verify getters and `SettlementWalletsUpdated`. Existing funded jobs cannot be redirected. |
 | Change validator budget | `setValidationRewardPercentage(pct)` | Integer 1–60%; fixes the rate for jobs posted afterward; default 8%. NFT scores do not constrain this rate. |
 | Configure moderator | `addModerator` / `removeModerator` | Verify `moderators(address)` directly. Role setters do not all emit role-specific events. |
 | Add/remove authorization | Additional agent/validator setters; `updateMerkleRoots` | Review remaining authorization routes and publish proofs before root changes. No automatic grace period. |
@@ -134,7 +134,7 @@ Inputs use full addresses, full `bytes32` values, integer base-unit amounts and 
 | Manage accepted NFT collections | `addAGIType` / `disableAGIType` | Zero reserves required for all registry changes; ERC-721 interface and score bounds enforced; for required jobs verify holdings and `getHighestPayoutPercentage(agent)>0`. |
 | Change thresholds, quorum, review windows or validator slashing | Respective owner setters | Require zero escrow/bonds and valid bounds. Review periods are positive and at most 365 days. |
 | Change bond parameters or other limits | Respective owner setters | Function-specific bounds apply; some changes affect later assignment/voting on posted jobs. Job duration limit is 1–31,536,000 seconds. |
-| Change ENS registry/wrapper/namespace roots | `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes` | Identity unlocked and all reserves zero; verify each getter and authorization path. |
+| Change ENS registry/wrapper/namespace roots | `updateEnsRegistry`, `updateNameWrapper`, `updateRootNodes` | Identity unlocked and all live job escrow and bonds zero; verify each getter and authorization path. |
 | Change optional job-page pointer | `setEnsJobPages` | Identity unlocked; zero or deployed-contract address. Verify hook behavior. |
 | Disable ENS token-URI mode | `setUseEnsJobTokenURI(false)` | Changes optional metadata presentation, not ENS participant authorization. |
 | Change base metadata URL | `setBaseIpfsUrl` | Length bound enforced; base URL is not exposed by a public getter. Preserve approved inputs and check newly minted metadata behavior. |
@@ -195,7 +195,7 @@ Distribute reviewed proofs before changing roots. ENS authorization uses the con
 | Agent is allowlisted but cannot apply | Check enabled NFT eligibility, blacklist, active-job cap, balance/allowance and job assignment state. |
 | Validator cannot vote | Check authorization, blacklist, prior vote, review deadline, dispute/terminal state and bond allowance. |
 | Settlement fails after apparent earlier payments | Inspect the receipt; transfers and accounting updates in a reverted transaction roll back together. Check issuer pause/blocklist status and actual balances. |
-| A funded job's recipient is blocked | Wallet rotation requires zero reserves; it cannot redirect that job. Address the issuer restriction through its legitimate process. |
+| A funded job's recipient is blocked | Wallet rotation requires zero live job escrow and bonds; it cannot redirect that job. Address the issuer restriction through its legitimate process. |
 | Active exploit or immediate fund risk | Authorized owner calls `pauseAll()`, verifies both flags and follows the incident playbook. `pause()` alone leaves settlement active. |
 
 Successful job costs are fully distributed and do not accumulate as protocol treasury. Withdrawals and USDC rescue only use genuine surplus. Do not clear an emergency pause to perform a withdrawal or assume rescue can migrate escrow.

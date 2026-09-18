@@ -1,4 +1,4 @@
-# AGIJobManager Contract Reference — v0.9.6
+# AGIJobManager Contract Reference — v0.9.7
 
 ## Purpose
 Document operational and audit-critical behavior of `AGIJobManager`.
@@ -24,12 +24,12 @@ Smart contract engineers, auditors, operators.
 
 Validators are paid first from the budget fixed at posting (8% default, owner-selectable 1–60% for new jobs). Next, `wallet30` and `wallet10` receive fixed 30% and 10% of the original job cost; the agent receives all remaining USDC. A default 100 USDC job yields 8/30/10/52, excluding separate bonds. No-vote completion charges no validator budget. Rounding and unallocated rewards go to the agent on success, or the employer on refund. Cancelled, expired and employer-win jobs pay no wallet shares.
 
-Recipient addresses can rotate only while intake is paused and all four reserves are zero. Percentages and token stay fixed. Fresh deployments start paused; ownership changes require acceptance. See [configuration](../CONFIGURATION.md) and [owner controls](../OWNER_CONTROLS.md).
+Recipient addresses can rotate only while intake is paused and all four job escrow/bond reserves are zero. Percentages and token stay fixed. Fresh deployments start paused; ownership changes require acceptance. See [configuration](../CONFIGURATION.md) and [owner controls](../OWNER_CONTROLS.md).
 
 ## Key state and accounting
 | Category | Variables |
 |---|---|
-| Escrow solvency | `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`, `withdrawableUSDC()` |
+| Escrow solvency | `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`, `lockedClaims`, `withdrawableUSDC()` |
 | Validator controls | `requiredValidatorApprovals`, `requiredValidatorDisapprovals`, `voteQuorum`, `validationRewardPercentage`, validator bond/slash params, `challengePeriodAfterApproval` |
 | Agent controls | `agentBond`, `agentBondBps`, `agentBondMax`, `maxJobPayout`, `jobDurationLimit` |
 | Timers | `completionReviewPeriod`, `disputeReviewPeriod` |

@@ -1,4 +1,4 @@
-# Known limitations and issue reporting — v0.9.6
+# Known limitations and issue reporting — v0.9.7
 
 This page records current operational limits. Exact test results and dependency counts belong to the release evidence and [dependency report](DEPENDENCY_SECURITY.md), rather than historical local logs.
 
@@ -11,7 +11,7 @@ This page records current operational limits. Exact test results and dependency 
 ## Transfer and lifecycle availability
 
 - USDC's issuer can pause the token or block an address. Failed outgoing payments become protected claims; issuer restrictions still apply. Wallet rotation cannot redirect existing entitlements.
-- Pausing does not stop block timestamps. Review and dispute deadlines keep advancing. Read the [incident guide](OPERATIONS/INCIDENT_RESPONSE.md) before selecting pause controls or reopening intake.
+- Block timestamps continue advancing, but settlement pauses stop lifecycle clocks and extend their calendar deadlines. Intake-only pauses do not stop those clocks. Read the [incident guide](OPERATIONS/INCIDENT_RESPONSE.md) before selecting pause controls or reopening intake.
 - No-vote finalization opens a dispute. Unanswered arbitration permits neutral return of escrow and original bonds after two dispute review periods. Honest work may remain unpaid when arbitration is unavailable; configure and monitor reviewer/moderator participation.
 - A failed or unresponsive RPC is not evidence that a submitted transaction failed. Reconcile its hash and receipt before retrying.
 

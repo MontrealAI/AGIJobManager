@@ -1,10 +1,10 @@
-# Happy path walkthrough — v0.9.6
+# Happy path walkthrough — v0.9.7
 
 Use the maintained [end-to-end walkthrough](../user-guide/happy-path.md). It covers USDC funding, posting-time agent NFT policy, immediate assignment, participant bonds, one vote per validator, timing, explicit finalization, and the validator-first 30%/10%/agent distribution.
 
 ## Choose an interface
 
-- [Primary v0.9.6 USDC console](../../ui/agijobmanager-usdc.html): use the artifact from the release/tag you intend to operate.
+- [Primary v0.9.7 USDC console](../../ui/agijobmanager-usdc.html): use the artifact from the release/tag you intend to operate.
 - [Secondary operator console](../ui/agijobmanager.html): additional role and owner controls.
 - [Main user guide](../USERS.md): requirements and outcomes for every role.
 

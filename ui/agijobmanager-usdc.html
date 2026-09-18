@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.9.6</title>
+  <title>AGIJobManager · USDC v0.9.7</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.9.6 · Use a fresh, verified v0.9.6 manager for exact job bond reads. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v0.9.7 · Compatible with verified v0.9.6 and v0.9.7 managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1171,9 +1171,9 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.9.6</h2>
+      <h2>USDC deployment · v0.9.7</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
-      <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
+      <p class="helper">Enter the verified Ethereum mainnet address of a compatible v0.9.6 or v0.9.7 USDC manager. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
       <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified manager with getJobBonds">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
@@ -2045,8 +2045,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.9.6 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.6 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v0.9.7 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.7 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2302,9 +2302,9 @@ Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contra
 Historical project-token sale disclosures do not describe v0.8.0 settlement and are
 preserved in previous Git tags.</div></details></div>
       <div class="hintBox" style="margin-top:12px">
-        <b>How job escrow refunds work in v0.9.6</b>
+        <b>How job escrow refunds work in v0.9.7</b>
         <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
-        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v0.9.6, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v0.9.7, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
       </div>
     </div>
 
@@ -2313,7 +2313,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.6/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.6 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.7/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.7 terms</a>
       </div>
     </div>
 
@@ -4624,7 +4624,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.6 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.6 or v0.9.7 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
@@ -4632,13 +4632,13 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
         const pauseClock = String(await agiJobManager.methods.settlementPausedSeconds().call());
-        if(!/^\d+$/.test(pauseClock)) throw new Error('A v0.9.6 manager with buyer protection is required.');
+        if(!/^\d+$/.test(pauseClock)) throw new Error('A v0.9.6-compatible manager with buyer protection is required.');
         const pendingOwner = String(await agiJobManager.methods.pendingOwner().call());
-        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.6 manager with two-step ownership is required.');
+        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.6-compatible manager with two-step ownership is required.');
         const wallet30 = String(await agiJobManager.methods.wallet30().call());
         const wallet10 = String(await agiJobManager.methods.wallet10().call());
         const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
-        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.9.6 settlement wallets.');
+        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid USDC settlement wallets.');
         if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
         usdcToken = token;
         tokenDecimals = 6;
@@ -6760,7 +6760,7 @@ function normalizeIpfsToHttp(uri){
     function postureBadge(ok, yes, no){ return `<span class="pill ${ok ? 'ok' : 'bad'}">${escapeHtml(ok ? yes : no)}</span>`; }
     function adminControlButton(target, method, danger=false){
       const cls = danger ? 'btn btn-danger' : 'btn';
-      return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'}).catch(error=>setToast(normalizedErrorMessage(error),'bad'))">${escapeHtml(({setAgentNftRequired:'NFT requirement for new jobs',setSettlementWallets:'Update payout wallets',transferOwnership:'Propose new owner',acceptOwnership:'Accept ownership'})[method] || method)}</button>`;
+      return `<button type="button" class="${cls}" onclick="executeAdminControl('${target}','${method}', ${danger ? 'true' : 'false'}).catch(error=>setToast(normalizedErrorMessage(error),'bad'))">${escapeHtml(({setAgentNftRequired:'NFT requirement for new jobs',setSettlementWallets:'Update payout wallets',transferOwnership:'Propose new owner',acceptOwnership:'Accept ownership',resolveStaleDispute:'Resolve overdue dispute (owner)',resolveDisputeWithCode:'Review dispute (moderator)'})[method] || method)}</button>`;
     }
     const ADMIN_METHOD_SCHEMAS = {
       pause:[], unpause:[], pauseIntake:[], unpauseIntake:[], pauseAll:[], unpauseAll:[],
@@ -6870,13 +6870,13 @@ function normalizeIpfsToHttp(uri){
       const ensOwner = String(APP_STATE.admin?.ensOwner || '').toLowerCase();
       const isManagerOwner = !!account && !!managerOwner && account === managerOwner;
       const isEnsOwner = !!account && !!ensOwner && account === ensOwner;
-      const isModerator = !!APP_STATE.admin?.isModerator;
-      const moderatorMethods = new Set(['resolveDisputeWithCode','resolveStaleDispute']);
+      const isModerator = APP_STATE.admin?.isModerator === true;
+      const moderatorMethods = new Set(['resolveDisputeWithCode']);
       const isPendingOwner = !!account && account === String(APP_STATE.admin?.pendingOwner || '').toLowerCase();
       const authorized = target === 'ens' ? isEnsOwner : method === 'acceptOwnership' ? isPendingOwner : moderatorMethods.has(method) ? isModerator : isManagerOwner;
+      const requiredRole = target === 'ens' ? 'ENSJobPages owner' : method === 'acceptOwnership' ? 'proposed new owner' : moderatorMethods.has(method) ? 'AGIJobManager moderator' : 'AGIJobManager owner';
       if(!authorized){
-        const needed = target === 'ens' ? 'ENSJobPages owner' : method === 'acceptOwnership' ? 'proposed new owner' : (moderatorMethods.has(method) ? 'AGIJobManager moderator' : 'AGIJobManager owner');
-        setToast(`Not authorized for ${method}. Required posture: ${needed}.`, 'bad');
+        setToast(`Not authorized for ${method}. Required role: ${requiredRole}.`, 'bad');
         return;
       }
       const args = await collectAdminArgs(target, method, danger);
@@ -6898,8 +6898,8 @@ function normalizeIpfsToHttp(uri){
       const ok = await requestActionConfirmation({
         writeContext,
         title: `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${method}`,
-        body: method === 'setAgentNftRequired' ? 'Changes only jobs posted after this transaction. Existing jobs retain their NFT requirement. ENS authorization and USDC payments remain unchanged.' : danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
-        checks:[{state:'Authorization', badge: 'warn', text:'Wallet must be owner or delegated moderator for this method.'}],
+        body: method === 'setAgentNftRequired' ? 'Changes only jobs posted after this transaction. Existing jobs retain their NFT requirement. ENS authorization and USDC payments remain unchanged.' : method === 'setSettlementWallets' ? 'Changes future payment recipients only after live job escrow and bonds are cleared. Previously reserved claims remain payable to their original beneficiaries.' : method === 'resolveStaleDispute' ? 'Owner backstop for an unresolved dispute after its displayed deadline. Job parties, voters and recorded validator controllers cannot adjudicate it.' : danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
+        checks:[{state:'Authorization', badge: 'warn', text:`Required role: ${requiredRole}. The contract also checks job state, deadlines and conflicts of interest.`}],
         method: `${method}(${args.join(', ')})`,
         confirmLabel: danger ? 'Submit high-risk action' : 'Submit admin action'
       });
@@ -6929,7 +6929,7 @@ function normalizeIpfsToHttp(uri){
       ]);
       const managerOwner = mOwnerRead?.__safeReadError ? 'unavailable' : mOwnerRead;
       const ensOwner = eOwnerRead?.__safeReadError ? 'unavailable' : eOwnerRead;
-      const isModerator = !!moderatorRead && !moderatorRead?.__safeReadError && !!moderatorRead;
+      const isModerator = moderatorRead === true;
       const pendingOwner = pendingOwnerRead?.__safeReadError ? '' : pendingOwnerRead;
       APP_STATE.admin = {managerOwner, pendingOwner, ensOwner, isModerator};
       if(el('managerPendingOwnerAddress')) el('managerPendingOwnerAddress').textContent = !pendingOwner || /^0x0{40}$/i.test(pendingOwner) ? 'No pending transfer' : pendingOwner;

@@ -600,7 +600,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if ((ledger.escrow | ledger.agentBonds | ledger.validatorBonds | ledger.disputeBonds) != 0) revert InvalidState();
     }
 
-    /// @notice Rotate recipients only between jobs, with intake paused and all reserves settled.
+    /// @notice Rotate recipients with intake paused and empty job escrow/bonds; pending claims keep their beneficiaries.
     function setSettlementWallets(address recipient30, address recipient10) external onlyOwner whenPaused nonReentrant {
         _requireEmptyEscrow();
         _setSettlementWallets(recipient30, recipient10);

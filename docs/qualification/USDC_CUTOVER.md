@@ -1,6 +1,6 @@
 # USDC cutover qualification
 
-The checked-in machine report is regenerated for v0.9.6 and binds the manager source and package versions. All 23 fork cases pass with preserved legacy inventory and ENS/USDC outcomes. Published v0.9.5 evidence remains pinned to its release tag. See [the v0.9.6 review](BUYER_ECONOMICS_FOLLOWUP.md).
+The checked-in machine report is regenerated for v0.9.7 and binds the manager source and package versions. All 23 fork cases pass with preserved legacy inventory and ENS/USDC outcomes. Published v0.9.5 evidence remains pinned to its release tag. See [the v0.9.7 review](OPERATIONS_V097.md).
 
 ## Verdict and scope
 
@@ -33,7 +33,7 @@ The manager owner and wrapped-root owner are different EOAs. A manager ownership
 
 ## Findings and corrections
 
-### ENS resolver API mismatch — corrected in v0.9.2, retained in v0.9.6
+### ENS resolver API mismatch — corrected in v0.9.2, retained in v0.9.7
 
 The v0.9.1 helper called `setAuthorisation(bytes32,address,bool)`. The deployed NameWrapper-aware resolver at `0xF29100983E058B709F3D539b0c765937B804AC15` uses `approve(bytes32,address,bool)` and `isApprovedFor(address,bytes32,address)`.
 
@@ -81,7 +81,7 @@ A separate fork scenario expires the actual overdue legacy job 11 on its origina
 | Recovery | Concurrent-job reserve isolation; treasury withdrawal protection; recipient rotation guards; emergency pause/resume |
 | Legacy continuity | All recorded legacy inventory preserved during new operations; original-asset exit remains usable |
 
-Validation for v0.9.6 covers **23 cutover scenarios, 8 native-USDC fork scenarios, 94 deployment/preflight/verifier cases, 482 contract/console regressions and 10 actual deployment/size cases**. The Foundry suite contains 37 unit/fuzz/invariant tests. The release validation record binds their final CI results to the exact source commit. Compilation is warning-free; manager runtime is 24,359 bytes, 217 below Ethereum's limit.
+Validation for v0.9.7 covers **23 cutover scenarios, 8 native-USDC fork scenarios, 94 deployment/preflight/verifier cases, 489 contract/console regressions and 10 actual deployment/size cases**. The Foundry suite contains 37 unit/fuzz/invariant tests. The release validation record binds their final CI results to the exact source commit. Compilation is warning-free; manager runtime is 24,359 bytes, 217 below Ethereum's limit.
 
 The full static scan retains **115** individually reviewed observations: **0 high, 9 medium, 36 low, 70 informational and 0 optimization**. New or relocated findings include per-voter rounding, mapping deletion and guarded ledger updates across token calls; all have source-bound dispositions and evidence. See the [v0.9.5 buyer-protection review](buyer-protection-static-review.json) and the checked Slither baseline. The earlier [NFT-policy review](nft-policy-static-review.json) is historical v0.9.4 evidence. These are internal reviews, not an independent audit or zero-finding claim.
 

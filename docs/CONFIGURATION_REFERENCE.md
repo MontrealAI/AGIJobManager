@@ -1,4 +1,4 @@
-# Configuration Reference — v0.9.6
+# Configuration Reference — v0.9.7
 
 The maintained [configuration catalog](CONFIGURATION.md) contains every current setter, guard, default and snapshot rule. Use [owner controls](OWNER_CONTROLS.md) for reviewed transaction procedures and the [Hardhat guide](../hardhat/README.md) for public-network deployment.
 
@@ -10,7 +10,7 @@ The maintained [configuration catalog](CONFIGURATION.md) contains every current 
 - Threshold, quorum, review/challenge period and slash changes require all four escrow/bond reserves to be zero. Recipient rotation additionally requires intake paused.
 - `jobDurationLimit` must be positive and at most 365 days. Review/challenge periods are also positive and at most 365 days.
 - `lockIdentityConfiguration()` permanently freezes protected ENS/root wiring setters. USDC is already immutable; Merkle roots and other permitted operating controls remain owner-managed.
-- `withdrawUSDC` requires intake paused and settlement enabled, and cannot exceed `withdrawableUSDC()`. All escrow, agent, validator and dispute bonds remain reserved.
+- `withdrawUSDC` requires intake paused and settlement enabled, and cannot exceed `withdrawableUSDC()`. All escrow, agent, validator and dispute bonds, and pending payment claims remain reserved.
 - Ownership changes require proposal and acceptance. Renunciation is disabled; fresh deployments start with intake paused.
 
 ## Change management

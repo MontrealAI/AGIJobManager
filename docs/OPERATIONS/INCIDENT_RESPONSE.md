@@ -1,4 +1,4 @@
-# Incident Response — v0.9.6
+# Incident Response — v0.9.7
 
 For an active exploit or suspected immediate risk to escrow, the authorized owner should call `pauseAll()` and verify **both** `paused()` and `settlementPaused()` are true. `pause()` only stops intake; it leaves settlement paths available. Preserve transaction hashes, block numbers, affected jobs and the observed balances before attempting recovery.
 
@@ -25,7 +25,7 @@ flowchart TD
 | `blacklistAgent(address,true)` | Rejects future applications from that address | Does not cancel an assigned job or freeze every action by the address |
 | `blacklistValidator(address,true)` | Rejects future votes from that address | Does not erase existing votes or replace settlement containment |
 
-The explicit settlement control flag is `settlementPaused`, changed by `setSettlementPaused(bool)` or the combined pause methods. Settlement pause also blocks moderator/stale-dispute resolution, cancellations and refunds; there is no separate privileged resolution bypass while it is enabled. Job and review deadlines continue to advance during a pause.
+The explicit settlement control flag is `settlementPaused`, changed by `setSettlementPaused(bool)` or the combined pause methods. Settlement pause also blocks moderator/stale-dispute resolution, cancellations and refunds; there is no separate privileged resolution bypass while it is enabled. A settlement pause stops assignment, review, challenge and arbitration clocks; their calendar deadlines extend by the paused time. Claim retries are also blocked until settlement resumes. An intake-only pause does not stop lifecycle clocks.
 
 ## Identity or ENS incident
 
@@ -43,7 +43,7 @@ Use the [owner runbook](../OWNER_RUNBOOK.md) and [ENS integration guide](../INTE
 
 Check native USDC's pause status and blocklist state for the manager and affected senders/recipients. A blocked recipient or issuer pause turns failed outgoing transfers into protected claims. Check terminal job state, USDCDeferred events, pendingUSDC and lockedClaims; other eligible recipients may already be paid. Retry claimUSDC to the original beneficiary once restrictions resolve.
 
-Owner recipient rotation requires zero outstanding reserves and cannot redirect a blocked, already-funded job. Rescue functions do not bypass the issuer. Preserve the settlement state, contain new exposure and address the issuer restriction through its legitimate resolution process.
+Owner recipient rotation requires paused intake and zero outstanding job escrow and bonds. Pending payment claims may remain: they stay reserved for their original beneficiaries and cannot be redirected by wallet rotation. Rescue functions do not bypass the issuer. Preserve the settlement state, contain new exposure and address the issuer restriction through its legitimate resolution process.
 
 ## Communications protocol
 
