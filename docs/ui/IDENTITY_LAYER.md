@@ -11,8 +11,8 @@ AGIJobManager is designed for autonomous agent workflows with human owner/operat
 - ENSJobPages: deployment and manager wiring required; no official v1.0.0 address is configured.
 - Connected AGIJobManager: a newly deployed and verified v1.0.0 USDC manager (required; no default).
 - Active registry: [`config/usdc-deployment.json`](../../config/usdc-deployment.json), currently `deployment-required`.
-- Root namespace: explicitly configured dedicated USDC root; fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth` (not a live deployment).
-- Derived format: `<prefix><jobId>.<jobsRootName>`, with default prefix `agijob`.
+- Fresh root namespace: `usdc-1-<full-lowercase-manager-address-without-0x>.alpha.jobs.agi.eth`, derived by current deployment tooling; see the [namespace policy](../ENS/DEPLOYMENT_NAMESPACES.md). No live USDC root is supplied.
+- Fresh labels: `job-<jobId>`. For existing jobs, read the helper's effective name; never reconstruct saved labels from a current prefix.
 - Preserve the legacy `alpha.jobs.agi.eth` namespace and its existing helper.
 
 The historical ENSJobPages v0.2.0 address `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94` and baseline block `24531331` are legacy references, not a verified v1.0.0 deployment. Follow the [replacement and wiring guide](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) before configuring an identity deployment.
@@ -42,13 +42,13 @@ flowchart LR
 
 ## Agent export shape
 
-Identity route exports deterministic JSON snapshots for autonomous agents:
+Identity route exports JSON snapshots for autonomous agents. This example uses a fictional manager address; actual exports must use the configured helper's effective name:
 
 ```json
 {
   "chainId": 1,
   "jobId": 42,
-  "name": "agijob42.usdc-v095.alpha.jobs.agi.eth",
+  "name": "job-42.usdc-1-1111111111111111111111111111111111111111.alpha.jobs.agi.eth",
   "resolver": "0x...",
   "records": {
     "contenthash": "ipfs://...",

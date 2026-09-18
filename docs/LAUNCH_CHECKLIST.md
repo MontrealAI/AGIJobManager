@@ -15,7 +15,7 @@ v1.0.0 retains the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6
 | NFT policy | Explicit required/optional choice and the complete reviewed collection registry, including disabled entries |
 | Review and arbitration | Independent reviewers, admitted moderators, response times, evidence process and owner backstop signer |
 | Economics and limits | Agreed job scope, review effort and gas budget, shared reviewer reward, agent net earnings, bonds, timers and initial exposure limit |
-| Optional ENS job pages | Enable or omit; if enabled, verified parent authority, dedicated jobs root and helper owner, separate from legacy namespaces |
+| Optional ENS job pages | Enable or omit; if enabled, review the [derived namespace](ENS/DEPLOYMENT_NAMESPACES.md), parent authority, root availability, helper owner and `job-` prefix; preserve historical namespaces |
 
 **Do not miss the NFT default:** a fresh manager requires NFTs but starts with no registered collections. Before posting jobs, register reviewed collections or explicitly set the default to optional. Every job retains the policy recorded when posted. Optional NFTs do not waive ENS/exception authorization or bonds. See [NFT setup](NFT_POLICY.md), including the [free alpha-agent identity route](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route) and its expiry limitations.
 
@@ -36,6 +36,7 @@ Use the [Hardhat guide](../hardhat/README.md) for the complete setup and separat
 - [ ] If a command fails, reconcile recorded transactions before retrying. Where all nine manager/library deployments completed, the documented read-only recovery can retry verification; it does not accept ownership or launch the manager.
 - [ ] Complete `acceptOwnership()` through the intended owner. Verify `owner()` and zero `pendingOwner()`; a proposal alone does not remove deployer authority.
 - [ ] Configure and verify moderators, eligibility, NFT policy, bonds, limits and review periods. Keep intake paused and settlement enabled. Configure optional ENS job pages and confirm successful hooks before considering an irreversible identity lock.
+- [ ] For fresh ENS setup, confirm the journal's chain/manager-derived root and `job-` prefix, recheck availability before root creation, and verify wrapper ownership plus both manager/helper pointers. Same-manager replacement requires explicit replacement mode and an exact historical-label inventory.
 - [ ] Run the readiness checker with the deployment receipt and complete `READINESS_NFT_CONFIG`. Save the passing report's block/hash. Initial activation requires zero escrow, bonds and pending claims.
 - [ ] Independently check the items outside that checker: individual eligibility, private metadata gateway, mutable operating policies, signer security, reviewer/moderator availability, monitoring and incident response. Recheck any state changed after the report.
 - [ ] Publish the reviewed deployment registry and configure the console with the verified manager. A canonical USDC getter alone does not authenticate a deployment.

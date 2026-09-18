@@ -1,6 +1,6 @@
 # ENSJobPages Mainnet Replacement Runbook
 
-This runbook replaces `ENSJobPages` for the **same, verified USDC manager**. It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
+This runbook replaces `ENSJobPages` for the **same, verified USDC manager**. Use explicit replacement mode to preserve its existing root and names. For a fresh manager, follow the [deployment namespace policy](../ENS/DEPLOYMENT_NAMESPACES.md) and [USDC cutover preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve every historical manager's ENS wiring and original-asset exits.
 
 ## In one minute
 
@@ -19,6 +19,7 @@ Canonical cutover flow:
 | --- | --- | --- |
 | Deploy new `ENSJobPages` | Yes | deployer key |
 | `setJobManager(JOB_MANAGER)` on new ENSJobPages | Yes | deployer key |
+| Preserve existing `jobLabelPrefix` on replacement; set `job-` on fresh setup | Yes | deployer key |
 | Establish dedicated-root ownership by the new helper | No (manual) | ENS parent owner |
 | Broader NameWrapper approval, only for a separately reviewed same-manager wrapped-root replacement | No (manual) | wrapped-root owner |
 | `AGIJobManager.setEnsJobPages(newEnsJobPages)` | No (manual) | AGIJobManager owner |
@@ -32,8 +33,8 @@ Canonical cutover flow:
 `ENSJobPages` manages ENS job page naming and metadata writes for AGIJobManager hooks.
 
 It determines:
-- job label prefix (`jobLabelPrefix`, default `agijob`),
-- job root suffix (`jobsRootName`, explicitly required by the deploy script),
+- job label prefix (`jobLabelPrefix`, preserved from the replaced helper),
+- job root suffix (`jobsRootName`, also preserved on replacement; derived for fresh setup),
 - and stores snapshotted exact labels for each job.
 
 `AGIJobManager` contributes the numeric `jobId`; `ENSJobPages` builds names from that `jobId`.
@@ -57,16 +58,9 @@ Typical replacement/migration drivers from current contract behavior:
 - `ENSJobPages` decides `prefix`, `jobsRootName`, label snapshotting, and ENS write behavior.
 
 
-Example using the isolated namespace exercised in the fork rehearsal (a proposal, not a live deployment):
-- `jobLabelPrefix = "agijob"`
-- `jobsRootName = "usdc-v095.alpha.jobs.agi.eth"`
+A replacement keeps the existing root and default prefix. Read each historical job's exact label from the old helper; a current prefix is insufficient to reconstruct saved names. Fresh setup instead uses `job-<jobId>.usdc-<chainId>-<full-lowercase-manager-address-without-0x>.<parent>`. See the [namespace guide](../ENS/DEPLOYMENT_NAMESPACES.md) for concrete examples and the historical deployment catalog.
 
-So names are:
-- `agijob0.usdc-v095.alpha.jobs.agi.eth`
-- `agijob1.usdc-v095.alpha.jobs.agi.eth`
-- ...
-
-Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged.
+Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged across prefix changes, but a mutable global root is not frozen by those label snapshots.
 
 ---
 
@@ -84,7 +78,7 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 - You control deployer key and owner key(s) needed for manual wiring.
 - `hardhat/.env` is configured.
 - You know the intended verified USDC manager address for `JOB_MANAGER`. Keep its intake paused and complete any pending manager ownership acceptance before helper deployment. Independently compare `owner()` with the intended owner in the reviewed manager receipt: the helper preflight’s zero `pendingOwner()` check alone cannot prove the intended handover occurred.
-- `JOBS_ROOT_NAME` is explicitly reviewed. The deployment script rejects the legacy `alpha.jobs.agi.eth` root for a new mainnet USDC helper.
+- Set `ENS_DEPLOYMENT_MODE=replacement` and `REPLACES_ENS_JOB_PAGES` to the manager's current helper. Its manager and registry must match. The tool reads and preserves its root and prefix; optional `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE` and `JOB_LABEL_PREFIX` are assertions, not rename requests. Leave `JOBS_PARENT_NAME` unset.
 - The root owner is identified independently of the manager owner. At the qualification block they are different addresses.
 - You have identified whether your jobs root is wrapped or unwrapped.
 
@@ -100,8 +94,9 @@ cd hardhat
 npm ci
 npm run compile
 
-export JOB_MANAGER='<verified-new-USDC-manager-address>'
-export JOBS_ROOT_NAME='usdc-v095.alpha.jobs.agi.eth'
+export JOB_MANAGER='<verified-existing-USDC-manager-address>'
+export ENS_DEPLOYMENT_MODE=replacement
+export REPLACES_ENS_JOB_PAGES='<current-helper-address>'
 export NEW_OWNER='<reviewed-final-helper-owner-address>'
 
 DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
@@ -109,7 +104,9 @@ DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 LOCK_CONFIG=0 npm run deploy:ens-job-pages:mainnet
 ```
 
-Required settings (via `.env` or the shell): `JOB_MANAGER`, `JOBS_ROOT_NAME` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. `usdc-v095.alpha.jobs.agi.eth` is the tested proposal, not a pre-authorized live root. Verify authority and availability before adopting it.
+Required replacement settings (via `.env` or the shell): `JOB_MANAGER`, `ENS_DEPLOYMENT_MODE=replacement`, `REPLACES_ENS_JOB_PAGES` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. Remove any fresh-mode `JOBS_PARENT_NAME` from both the shell and `.env`. Review the preserved namespace in the printed plan before deployment.
+
+For a **fresh** manager, use `ENS_DEPLOYMENT_MODE=fresh`, omit `REPLACES_ENS_JOB_PAGES` and follow the [fresh setup steps](../ENS/DEPLOYMENT_NAMESPACES.md#fresh-deployment-what-the-operator-does). Mainnet defaults the parent to `alpha.jobs.agi.eth`; other networks require an explicit `JOBS_PARENT_NAME`. The root is derived automatically, must be unused, and is rechecked before deployment. Fresh mode requires no existing helper and no allocated job IDs.
 
 Read-only planning needs a deployer address (`DEPLOYER_ADDRESS` when no key is configured), but no signing key, mainnet confirmation phrase or explorer API key. Public-network broadcasts require explorer verification; `VERIFY` defaults enabled and disabling it blocks the broadcast. Keep `LOCK_CONFIG=0` until actual wiring and the complete ENS lifecycle have been validated.
 
@@ -118,6 +115,7 @@ Review mainnet address overrides for `ENS_REGISTRY`, `NAME_WRAPPER` and `PUBLIC_
 Expected result:
 - New ENSJobPages address deployed.
 - `setJobManager(JOB_MANAGER)` already executed by script.
+- Root and prefix read back exactly as recorded in the namespace plan; a differing constructor prefix is updated by the script.
 - Exact runtime matched against the qualified artifact; journal and its `solcInputPath` compiler input preserved.
 - Explorer verification completed successfully before the one-step helper ownership transfer.
 - Final helper owner, manager pointer and unlocked configuration match the reviewed plan.
@@ -135,7 +133,7 @@ Expected result:
 ## 7) Required manual post-deploy wiring on mainnet
 
 What is automated vs manual:
-- Automated by deploy script: deploy contract, check runtime, set `jobManager`, complete required verification, transfer ownership to the explicit final helper owner and optionally lock only if requested. Keep deployment-time locking disabled.
+- Automated by deploy script: check namespace, deploy contract, check runtime, set `jobManager` and the planned prefix, complete required verification, transfer ownership to the explicit final helper owner and optionally lock only if requested. Keep deployment-time locking disabled.
 - Manual on mainnet: establish the reviewed root authority, then call `setEnsJobPages` on the intended manager. A fresh USDC cutover leaves all legacy pointers and approvals unchanged.
 
 
@@ -196,7 +194,7 @@ Expected result:
 
 ## 8.1) Future jobs vs legacy jobs after cutover (expected behavior)
 
-- **Future/unsnapshotted jobs:** new creates use `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`) and should proceed once wiring is complete.
+- **Future/unsnapshotted jobs:** new creates use `<prefix><jobId>.<jobsRootName>` with the preserved default prefix and root, and should proceed once wiring is complete.
 - **Legacy snapshotted jobs:** keep their historical label; they do not auto-rename on prefix changes.
 - **Legacy unsnapshotted jobs:** may need `migrateLegacyWrappedJobPage(jobId, exactLabel)` before deterministic write hooks succeed.
 
@@ -239,7 +237,7 @@ Event checks:
 
 ### Recover helper verification without redeploying
 
-1. Preserve the failed `ens-job-pages.<chain>.<id>.json` journal, the compiler input at its `solcInputPath`, and all transaction receipts. Reconcile the deployment address and successful transactions against the selected chain. Read current helper `owner()`, `jobManager()` and `configLocked()`; a failed command may already have deployed and wired the helper.
+1. Preserve the failed `ens-job-pages.<chain>.<id>.json` journal, the compiler input at its `solcInputPath`, and all transaction receipts. Reconcile the deployment address and successful transactions against the selected chain. Read current helper `owner()`, `jobManager()`, `jobsRootName()`, `jobsRootNode()`, `jobLabelPrefix()` and `configLocked()`; a failed command may already have deployed or partly configured the helper. Compare the namespace to the saved plan.
 2. Check the deployed runtime against the qualified artifact and the journal’s `expectedRuntimeCodeHash`/`runtimeCodeHash`. A mismatch requires investigation; do not submit different source merely to obtain a verification badge.
 3. On the correct explorer’s source-verification form, select Solidity Standard-JSON input and the exact release compiler **0.8.37**. Upload the unchanged input referenced by `solcInputPath`; it already contains optimizer, IR, EVM and metadata settings. Select `contracts/ens/ENSJobPages.sol:ENSJobPages` if the form requests the contract name. Use the original five constructor arguments from `constructorArgs`. If ABI-encoded arguments are required, derive them read-only from `hardhat/`:
 
@@ -256,7 +254,7 @@ NODE
 ```
 
 4. Save the explorer result and a separate recovery record identifying the original journal, exact source/compiler input and verified address. Preserve the original failed journal; do not rewrite its status into a synthetic successful deployment. No blockchain transaction is needed for explorer verification.
-5. Only after successful verification, review which intended owner actions are still missing. The current helper owner performs only those actions, such as `setJobManager` if it never succeeded or the one-step `transferOwnership` to the reviewed final helper owner. Re-read the actual state and reconcile each receipt. Keep configuration unlocked until root authority, both pointers, delegated writes and terminal revocation are validated. Do not rerun the deployment command to resume these actions.
+5. Only after successful verification, review which intended owner actions are still missing. The current helper owner performs only those actions, such as `setJobManager`, `setJobLabelPrefix` with the journal's planned prefix, or the one-step `transferOwnership` to the reviewed final helper owner. Re-read the actual state and reconcile each receipt. Keep configuration unlocked until root authority, both pointers, delegated writes and terminal revocation are validated. Do not rerun the deployment command to resume these actions.
 
 ## 11) Operator “done successfully” checklist
 

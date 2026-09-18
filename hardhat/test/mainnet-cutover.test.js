@@ -4,6 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import runtime from '../scripts/runtime.cjs';
 import legacy from '../qualification/legacy-snapshot.cjs';
+import namespace from '../scripts/ens-namespace.cjs';
 
 const { ethers, network } = await runtime.getRuntime();
 const { snapshotLegacy, LEGACY_ABI, WRAPPER_ABI, REGISTRY_ABI, RESOLVER_ABI, json } = legacy;
@@ -167,14 +168,15 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
       memberRoots.set(name, { node, expiry: data[2], signer: await localSigner(data[0]) });
       identityEvidence.roots.push({ name, node, owner: data[0], fuses: data[1], expiry: data[2], resolver: await registry.resolver(node) });
     }
-    rootName = `usdc-v095.${baseline.pages.jobsRootName}`;
-    rootNode = ethers.namehash(rootName);
+    const freshNamespace = namespace.deriveNamespace({ chainId: 1, jobManager: managerAddress, parentName: baseline.pages.jobsRootName });
+    rootName = freshNamespace.jobsRootName;
+    rootNode = freshNamespace.jobsRootNode;
     assert.equal(await registry.owner(rootNode), ethers.ZeroAddress, 'The rehearsal namespace must be unused at the pinned block');
     pages = await (await ethers.getContractFactory('ENSJobPages')).deploy(baseline.pages.ens, baseline.pages.nameWrapper,
       baseline.pages.publicResolver, rootNode, rootName);
     await pages.waitForDeployment();
     pagesAddress = await pages.getAddress();
-    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v095', pagesAddress, 0, BigInt(baseline.rootData[2])));
+    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, freshNamespace.rootLabel, pagesAddress, 0, BigInt(baseline.rootData[2])));
     const wrappedRootData = Array.from(await memberWrapper.getData(BigInt(rootNode)));
     rootAuthority = { path: 'NameWrapper token owner', registryOwner: await registry.owner(rootNode),
       wrappedOwner: await memberWrapper.ownerOf(BigInt(rootNode)), wrappedData: wrappedRootData,
@@ -186,6 +188,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     assert.equal(rootAuthority.tokenApproved, ethers.ZeroAddress);
     assert.equal(rootAuthority.parentOwnerOperatorApproval, false, 'The helper owns only its dedicated wrapped root without blanket legacy-root authority');
     await send(pages.setJobManager(managerAddress));
+    await send(pages.setJobLabelPrefix(freshNamespace.jobLabelPrefix));
     await send(manager.setEnsJobPages(pagesAddress));
     nft = await (await ethers.getContractFactory('MockERC721')).deploy();
     await nft.waitForDeployment();
@@ -240,7 +243,8 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     assert(!hooks.some(event => ['ENSHookSkipped', 'ENSHookBestEffortFailure'].includes(event.name)),
       `ENS CREATE must not silently degrade: ${hooks.map(event => `${event.name}:${event.args}`).join('; ')}`);
     const node = await pages.jobEnsNode(id);
-    assert.equal(await pages.jobEnsName(id), `agijob0.${rootName}`);
+    assert.equal(await pages.jobEnsName(id), `job-0.${rootName}`);
+    assert.equal(rootName, `usdc-1-${managerAddress.slice(2).toLowerCase()}.alpha.jobs.agi.eth`);
     assert.equal(await registry.resolver(node), baseline.pages.publicResolver);
     assert.equal(await resolver.text(node, 'agijobs.spec.public'), 'ipfs://cutover-spec');
     assert.equal(await resolver.isApprovedFor(pagesAddress, node, employer.address), true);
@@ -615,6 +619,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     if (preservationFailures || tests.some(test => test.state !== 'passed')) return;
     const root = path.resolve(new URL('../..', import.meta.url).pathname);
     const sources = ['package.json', 'package-lock.json', 'hardhat/package.json', 'hardhat/package-lock.json', 'hardhat/hardhat.config.js', 'hardhat.cutover-fork.config.mjs',
+      'hardhat/scripts/ens-namespace.cjs', 'hardhat/scripts/deploy-ens-job-pages.cjs',
       'hardhat/test/mainnet-cutover.test.js', 'hardhat/qualification/legacy-snapshot.cjs', 'hardhat/qualification/cutover-pin.json',
       'hardhat/scripts/runtime.cjs', 'hardhat/scripts/deployment-safety.cjs', 'scripts/security/patch-openzeppelin-compiler.cjs', 'scripts/security/openzeppelin-compiler-patches.json'];
     function collect(directory) {

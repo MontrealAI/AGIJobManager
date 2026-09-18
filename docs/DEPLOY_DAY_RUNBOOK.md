@@ -6,7 +6,7 @@ Use the [launch checklist](LAUNCH_CHECKLIST.md) to record decisions, signers, re
 
 ## Before deployment
 
-1. Check out the immutable v1.0.0 tag and verify the release asset checksums.
+1. Freeze the exact reviewed source commit and its passing CI evidence. The current [ENS namespace tooling](ENS/DEPLOYMENT_NAMESPACES.md) postdates the immutable v1.0.0 download; use the current qualified source for that workflow. If assessing the frozen release separately, check out its tag and verify its asset checksums. Do not mix tooling or evidence across commits.
 2. Use Node 22.23.2 and `npm ci` in each workspace; review the [dependency security scope](DEPENDENCY_SECURITY.md).
 3. Select Ethereum mainnet or Sepolia and verify the native six-decimal USDC address against Circle's registry.
 4. Provide two distinct, reviewed recipient addresses for the fixed 30% and 10% shares. No production recipient is supplied by the release.

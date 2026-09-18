@@ -1,22 +1,23 @@
 # ENS Job Pages Behavior Overview
 
-This document describes ENS naming and hook behavior from the current on-chain contracts (`AGIJobManager` + `ENSJobPages`).
+This document describes ENS naming and hook behavior in the repository contracts (`AGIJobManager` + `ENSJobPages`) and current deployment tooling. Historical deployments retain their own configuration.
 
 ## In one minute
 - Canonical name shape is `<prefix><jobId>.<jobsRootName>`.
-- The default prefix is `agijob`; `jobsRootName` must be explicitly reviewed. Fresh USDC uses a dedicated root, with `usdc-v095.alpha.jobs.agi.eth` as the fork-rehearsed proposal (not a live deployment).
+- Fresh deployment tooling sets prefix `job-` and derives a root from the chain ID and full manager address. The Solidity constructor still defaults to `agijob`. See the [namespace policy and historical names](DEPLOYMENT_NAMESPACES.md).
 - Settlement and dispute progression live in `AGIJobManager`; ENS writes in `ENSJobPages` are best-effort and non-fatal to settlement.
 - Legacy jobs may need explicit snapshot migration to avoid `JobLabelNotSnapshotted` write failures.
 
 ---
 
 
-## Naming example used in the qualified fork
-- `jobLabelPrefix = agijob`
-- `jobsRootName = usdc-v095.alpha.jobs.agi.eth`
-- Example names: `agijob0.usdc-v095.alpha.jobs.agi.eth`, `agijob1.usdc-v095.alpha.jobs.agi.eth`
+## Naming used in the qualified fork
 
-If your deployment uses different values, update your runbooks so operators still reason using the same `<prefix><jobId>.<jobsRootName>` model.
+- `jobLabelPrefix = job-`
+- Mainnet root: `usdc-1-<full-lowercase-manager-address-without-0x>.alpha.jobs.agi.eth`
+- Names: `job-0.<derived-root>`, `job-1.<derived-root>`
+
+Angle-bracket values are placeholders. The [machine report](../qualification/mainnet-cutover.json) records the actual synthetic manager and root exercised locally; do not copy those addresses into a live deployment. The deployment script derives the root from your manager and checks availability. Same-manager helper replacement preserves the existing root and prefix.
 
 ---
 
@@ -24,7 +25,7 @@ If your deployment uses different values, update your runbooks so operators stil
 
 For a given job ENS name, each component comes from a different source:
 
-- **Prefix source:** `ENSJobPages.jobLabelPrefix` (default set in constructor: `"agijob"`).
+- **Prefix source:** `ENSJobPages.jobLabelPrefix` (constructor: `"agijob"`; maintained fresh-deployment script: `"job-"`).
 - **Numeric id source:** `AGIJobManager` job id (`jobId`).
 - **Root suffix source:** `ENSJobPages.jobsRootName`.
 
@@ -34,9 +35,7 @@ Effective name format:
 <jobLabelPrefix><jobId>.<jobsRootName>
 ```
 
-Example with the reviewed proposal:
-- `agijob0.usdc-v095.alpha.jobs.agi.eth`
-- `agijob1.usdc-v095.alpha.jobs.agi.eth`
+For fresh deployments, use the script's printed `firstJobName` to review the concrete name. For existing jobs, read `jobEnsName(jobId)` from the associated helper instead of assuming the current default prefix was used historically.
 
 ---
 
@@ -46,7 +45,7 @@ Example with the reviewed proposal:
 
 Implications:
 - Changing `jobLabelPrefix` only affects **unsnapshotted** jobs (future/preview labels).
-- Already snapshotted jobs keep their historical exact label permanently.
+- Already snapshotted jobs keep their historical exact label across prefix changes. The root is separate global configuration and remains owner-changeable until configuration is locked; a label snapshot alone does not freeze the full name.
 
 Operationally:
 - `jobEnsLabel(jobId)` returns snapshotted label if present; otherwise preview label from current prefix.
