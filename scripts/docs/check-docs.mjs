@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const requiredFiles = [
   'docs/LEGAL/README.md','docs/LEGAL/PUBLISHER_NOTICE.md','docs/LEGAL/TERMS_AND_CONDITIONS.md',
+  'docs/LEGAL/USER_DATA_RULES.md','docs/OPERATIONS/PRIVACY_RESPONSE.md',
   'docs/LEGAL/OPERATOR_NOTICE_TEMPLATE.md','docs/LEGAL/REGULATORY_SCOPE.md','docs/LEGAL/PRIVACY.md',
   'docs/START_HERE.md','docs/MAINNET_READINESS.md','docs/OWNER_CONTROLS.md','docs/USDC_PAYOUT_SPLIT.md',
   'docs/README.md','docs/OVERVIEW.md','docs/REPO_MAP.md','docs/QUICKSTART.md','docs/QUINTESSENTIAL_USE_CASE.md','docs/ARCHITECTURE.md',

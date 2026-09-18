@@ -14,14 +14,18 @@ function primaryContext() {
   const wallet = { account, chainId: '0x1' };
   const provider = { request: vi.fn(async ({ method }: { method: string }) => method === 'eth_accounts' ? [wallet.account] : wallet.chainId) };
   const method = { call: vi.fn(async () => undefined), send: vi.fn(async () => ({ status: 1n, transactionHash: '0x123' })) };
-  const element = { textContent: '', innerHTML: '', disabled: false, classList: { add() {}, remove() {} }, setAttribute() {} };
+  const elements = new Map<string, any>();
+  const element = (id: string) => {
+    if (!elements.has(id)) elements.set(id, { textContent: '', innerHTML: '', disabled: false, checked: false, style: {}, classList: { add() {}, remove() {} }, setAttribute() {} });
+    return elements.get(id);
+  };
   const context: any = vm.createContext({
     web3: { currentProvider: provider }, window: { ethereum: provider }, userAccount: account,
     AGI_JOB_MANAGER: manager, APP_STATE: { writeEpoch: 0 }, hasAcceptedTerms: true, isMainnet: true,
     activeReviewedContext: null, trackedTransactionPending: false, pendingReviewedAction: null, pendingActionConfirmResolver: null,
     verifyUSDCDeployment: vi.fn(async () => undefined), activeJobIndexCache: { ids: [1], ts: 1 },
     addTxActivity: vi.fn(() => ({ id: 'activity-1' })), updateTxActivity: vi.fn(),
-    el: () => element, escapeHtml: String, setToast: vi.fn(), console: { error() {} }
+    el: element, escapeHtml: String, setToast: vi.fn(), console: { error() {} }
   });
   vm.runInContext(section(primary, '    function captureWriteContext(', '    function setMissionButtons('), context);
   return { context, wallet, method };
@@ -190,6 +194,7 @@ describe('posting review economics', () => {
     const { context, terms, method } = postingContext();
     await context.createJob();
     terms[term] = term === 'agentNftRequired' ? false : term === 'paused' ? true : term === 'wallet30' ? account : '12';
+    context.el('actionReviewPrivacyAccepted').checked = true;
     await context.confirmReviewedAction();
     expect(context.ensureApproval).not.toHaveBeenCalled();
     expect(method.send).not.toHaveBeenCalled();
@@ -199,6 +204,7 @@ describe('posting review economics', () => {
     const { context, terms, method } = postingContext();
     await context.createJob();
     context.ensureApproval.mockImplementation(async () => { terms.validationRewardPercentage = '60'; return { ok: true }; });
+    context.el('actionReviewPrivacyAccepted').checked = true;
     await context.confirmReviewedAction();
     expect(context.ensureApproval).toHaveBeenCalledOnce();
     expect(method.send).not.toHaveBeenCalled();

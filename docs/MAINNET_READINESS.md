@@ -1,8 +1,8 @@
-# v1.0.4 mainnet qualification
+# v1.0.5 mainnet qualification
 
-v1.0.4 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v1.0.5 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
-The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v1.0.4, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
+The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v1.0.5, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
 
 ## Settlement
 
@@ -29,7 +29,7 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 
 ## Version 1.0 qualification scope
 
-Version 1.0.4 revises legal notices and console acknowledgement, preserving v1.0.3 ABI, creation/runtime bytecode and disabled NFT default. Existing managers keep their settings, jobs and agreements. See [release scope](V1_RELEASE_SCOPE.md), the [internal contract review](qualification/V1_CONTRACT_REVIEW.md), [v1.0.3 default review](qualification/V103_NFT_DEFAULT.md), [v1.0.4 change review](qualification/V104_OPERATOR_NOTICES.md), [acceptance protocol](V1_ACCEPTANCE.md) and [launch checklist](LAUNCH_CHECKLIST.md).
+Version 1.0.5 strengthens privacy notices, public-content review, credential handling and browser storage, preserving v1.0.3 ABI, creation/runtime bytecode and disabled NFT default. Existing managers keep their settings, jobs and agreements. See [release scope](V1_RELEASE_SCOPE.md), the [internal contract review](qualification/V1_CONTRACT_REVIEW.md), [v1.0.3 default review](qualification/V103_NFT_DEFAULT.md), [v1.0.4 notice review](qualification/V104_OPERATOR_NOTICES.md), [v1.0.5 privacy review](qualification/V105_PRIVACY.md), [acceptance protocol](V1_ACCEPTANCE.md) and [launch checklist](LAUNCH_CHECKLIST.md).
 
 The earlier [v0.9.7 operating review](qualification/OPERATIONS_V097.md) and [v0.9.6 exact-bond review](qualification/BUYER_ECONOMICS_FOLLOWUP.md) remain historical evidence. Full buyer escrow refunds, no-vote dispute escalation, explicit acceptance, full review, credential/controller conflict checks, pause-aware deadlines, neutral timeout and reserved payment claims are preserved. Final source CI and release validation establish the executed qualification scope; independent audit, real-user studies and live-instance readiness are separate evidence.
 

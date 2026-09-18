@@ -1,6 +1,6 @@
 # Publisher, license and brand notice
 
-**v1.0.4 · Published 18 September 2026**
+**v1.0.5 · Published 18 September 2026**
 
 The [MIT License](../../LICENSE) governs the covered software and associated documentation, including permission to use, modify, distribute and sell copies, required notices, warranty disclaimer and limitation of liability. Its protections apply to the extent permitted by law. This notice does not narrow those permissions or add a commercial-use fee, license condition or indemnity.
 

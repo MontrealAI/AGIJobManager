@@ -1,6 +1,6 @@
 # USDC cutover qualification
 
-The checked-in machine report is regenerated for v1.0.4 and binds the manager source and package versions. All 23 fork cases pass with preserved legacy inventory and ENS/USDC outcomes. Published v0.9.5 evidence remains pinned to its release tag. See [the v1.0.0 review](OPERATIONS_V097.md).
+The checked-in machine report is regenerated for v1.0.5 and binds the manager source and package versions. All 23 fork cases pass with preserved legacy inventory and ENS/USDC outcomes. Published v0.9.5 evidence remains pinned to its release tag. See [the v1.0.0 review](OPERATIONS_V097.md).
 
 ## Verdict and scope
 

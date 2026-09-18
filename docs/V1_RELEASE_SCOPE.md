@@ -14,10 +14,11 @@ The 1.0 label identifies this software edition. It does not certify a deployed b
 
 ## Published download versus current source
 
-The v1.0.4 edition clarifies publisher/operator responsibilities, legal-review scope and privacy, and prevents saved console acknowledgement from being restored. It preserves v1.0.3 contract behavior and the v1.0.1 ENS naming policy. Existing instances, jobs, agreements and prior published assets do not change.
+The v1.0.5 edition strengthens privacy rules and user responsibilities, adds fresh public-content reviews, and reduces saved browser content and credential exposure. It retains the v1.0.4 publisher/operator boundaries and fresh acknowledgement safeguards. It preserves v1.0.3 contract behavior and the v1.0.1 ENS naming policy. Existing instances, jobs, agreements and prior published assets do not change.
 
 | Edition | Contents |
 | --- | --- |
+| [v1.0.5](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.5) | Public-content rules, lawful user responsibility, private incident handling, explicit draft storage and reviewed credential-safe uploads; contract bytecode unchanged |
 | [v1.0.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.4) | MIT-compatible publisher and independent-owner notices, deployment-specific terms template, legal/privacy guidance, synchronized source notices and fresh console acknowledgement |
 | [v1.0.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.3) | Disabled NFT-admission default on fresh construction, owner opt-in, aligned deployment/readiness setup and regression coverage |
 | [v1.0.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.2) | Non-overwriting private configuration setup, offline profile validation, explicit Hardhat environment, complete configuration reference and refreshed operator guides |

@@ -102,7 +102,7 @@ export default function AdvancedPage() {
     <div className="container-shell py-8 space-y-4" data-testid="advanced-console">
       <Card>
         <h1 className="text-3xl font-serif">Advanced Contract Console</h1>
-        <p className="text-sm text-muted-foreground mt-2">Full ABI surface with simulation-first writes. Provide arguments as JSON array.</p>
+        <p className="text-sm text-muted-foreground mt-2">Full ABI surface with simulation-first writes. Provide arguments as JSON array. Even reads send arguments to the RPC provider. Do not add personal information, confidential material, secrets or private access links; transaction inputs can be public permanently.</p>
       </Card>
       {functions.map((fn) => {
         const isRead = fn.stateMutability === 'view' || fn.stateMutability === 'pure';

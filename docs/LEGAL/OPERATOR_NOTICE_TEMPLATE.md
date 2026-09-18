@@ -1,6 +1,6 @@
 # Deployment notice and operator terms template
 
-**Template v1.0.4 — not an adopted agreement or proof of legal clearance.**
+**Template v1.0.5 — not an adopted agreement or proof of legal clearance.**
 
 Complete this notice for your deployment, remove inapplicable promises and obtain review for the actual business and territories. Publish it before inviting paid use. Do not identify MONTREAL.AI as your operator, guarantor or contact unless that role is actually agreed. Keep keys, identity documents and privileged advice out of public records.
 
@@ -40,6 +40,10 @@ These are proposed clauses for an operator's **validly accepted service agreemen
 - **Separate roles; no personal guarantee.** Merely contributing code, holding a role address or signing as an authorized representative does not create a personal guarantee or agency. Actual commitments, authority, conduct and mandatory personal liability remain effective. Only authorized parties can contract for an entity.
 
 Use a lawfully established operating entity, separate business finances and appropriate insurance if advised for the real activities. Incorporation, insurance, multisignature wallets and overseas ownership do not guarantee protection from liability or regulation.
+
+### Privacy-specific user duties and recourse
+
+Incorporate the [user-data rules](USER_DATA_RULES.md) prospectively through a valid agreement: public-content restrictions, user authority and lawful private workflows, agent/provider responsibility, minimal private incident reporting and cooperation. Consider the narrowly scoped business-user recovery clause there, identifying beneficiaries including MONTREAL.AI or the contract owner only where an enforceable arrangement permits. Do not impose automatic escrow deductions or waive data-subject rights. No clause transfers an operator's statutory duties or excuses its own breach.
 
 ## 4. Agreement, complaints and language
 

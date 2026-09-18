@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v1.0.4</title>
+  <title>AGIJobManager · USDC v1.0.5</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -863,13 +863,13 @@
         </div>
         <div class="checkline">
           <input type="checkbox" id="termsAccepted">
-          <label for="termsAccepted" style="margin:0">I have read the v1.0.4 protocol notices and risks below. I understand that the selected deployment may have separate operator terms.</label>
+          <label for="termsAccepted" style="margin:0">I have read the v1.0.5 protocol notices and risks below. I understand that the selected deployment may have separate operator terms.</label>
         </div>
         <div class="actions" style="margin-top:12px">
           <button class="btn smallBtn" id="jumpToTermsBtn">Read Terms</button>
           <button class="btn smallBtn" id="expandTermsBtn">Expand All Terms</button>
           <button class="btn smallBtn" id="collapseTermsBtn">Collapse All Terms</button>
-          <a href="https://github.com/MontrealAI/AGIJobManager/tree/v1.0.4/docs/LEGAL" target="_blank" rel="noopener noreferrer">Legal notices and privacy</a>
+          <a href="https://github.com/MontrealAI/AGIJobManager/tree/v1.0.5/docs/LEGAL" target="_blank" rel="noopener noreferrer">Legal notices and privacy</a>
         </div>
       </div>
 
@@ -962,7 +962,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v1.0.4 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v1.0.5 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1131,7 +1131,7 @@
             <div class="legendRow"><span>Wallet two · 10%</span><b id="legendWallet10Pct">10%</b></div>
           </div>
         </div>
-        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Fresh v1.0.4 deployments start disabled. Existing jobs keep their own setting.</div>
+        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Fresh v1.0.5 deployments start disabled. Existing jobs keep their own setting.</div>
         <div class="tiny" style="margin-top:10px">The validator rate is fixed when the job is posted. The two wallets receive 30% and 10% of the original job cost; the agent receives the remainder. NFTs affect eligibility only. Each job keeps the NFT requirement recorded when it was posted.</div>
       </div>
 
@@ -1182,7 +1182,7 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v1.0.4</h2>
+      <h2>USDC deployment · v1.0.5</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">Enter the verified Ethereum mainnet address of a compatible v0.9.6, v0.9.7 or v1.0.x USDC manager. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
@@ -1427,6 +1427,7 @@
 
     <div class="card" id="createJobSection">
       <h2 style="margin:0 0 12px">2) Create a Job (Employer)</h2>
+      <div class="warnBox" id="publicContentNotice" style="margin-bottom:12px"><b>Public content only — no added personal information or secrets.</b><br>Check text, links, files, images and agent outputs before sharing. Do not include names, contact details, identity documents, private work, passwords or access links. Keep protected work in a separate authorized workspace. Wallet/ENS activity is already public; a hash or encryption does not guarantee anonymity. <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.0.5/docs/LEGAL/USER_DATA_RULES.md" target="_blank" rel="noopener noreferrer">User data responsibilities</a>.</div>
       <div class="helper" style="margin-bottom:12px">This flow keeps job creation local-first and single-page. You can compose a structured job spec, generate standards-friendly JSON metadata, optionally pin it to IPFS directly from the browser, preview the ENS job page details that the contract stack is designed to create, and then submit the final on-chain createJob transaction using the resulting URI.</div>
 
       <div class="builderGrid">
@@ -1501,10 +1502,12 @@ Evaluation methodology"></textarea>
               <button class="btn" id="copyMetadataBtn">Copy JSON</button>
               <button class="btn" id="downloadMetadataBtn">Download JSON</button>
               <button class="btn" id="fillDetailsBtn">Use builder summary as details</button>
-              <button class="btn" id="saveBuilderDraftBtn">Save draft</button>
+              <button class="btn" id="saveBuilderDraftBtn">Save draft on this device</button>
+              <button class="btn" id="loadBuilderDraftBtn">Load saved draft</button>
               <button class="btn" id="clearBuilderDraftBtn">Clear draft</button>
+              <button class="btn" id="clearSavedJobContentBtn">Clear saved job content</button>
             </div>
-            <div class="draftHint">Drafts are saved locally on this device only. Nothing is uploaded or sent on-chain until you choose to do so.</div>
+            <div class="draftHint">Typing does not autosave. Save only if you want an unencrypted copy on this device. Load restores a saved draft. Clear saved job content removes all saved builder/completion drafts and job notes on this browser origin; it cannot erase downloads or public copies. Previewing external content contacts its provider.</div>
           <div class="softCard" style="margin-top:12px">
             <div class="subtleTitle">Metadata Cover Preview</div>
             <div class="helper" style="margin-bottom:10px">This is the image that will be embedded into the generated metadata JSON.</div>
@@ -1532,7 +1535,7 @@ Evaluation methodology"></textarea>
               </div>
               <div>
                 <label for="ipfsJwt">Pinning credential / JWT</label>
-                <input id="ipfsJwt" type="text" placeholder="Optional. Stays in this browser unless you save it.">
+                <input id="ipfsJwt" type="password" autocomplete="off" spellcheck="false" placeholder="Pinata JWT — never saved by this console">
               </div>
               <div>
                 <label for="ipfsName">Pin name</label>
@@ -1541,9 +1544,10 @@ Evaluation methodology"></textarea>
             </div>
             <div class="builderActions">
               <button class="btn btn-primary" id="uploadMetadataBtn">Upload JSON to IPFS</button>
-              <button class="btn" id="saveIpfsPrefsBtn">Remember IPFS settings</button>
+              <button class="btn" id="saveIpfsPrefsBtn">Remember endpoint only</button>
               <button class="btn" id="clearIpfsPrefsBtn">Forget IPFS settings</button>
             </div>
+            <div class="draftHint">A JWT is sent only to api.pinata.cloud in Pinata mode. Custom mode sends JSON without the JWT. Both require HTTPS. Review the exact JSON before upload; public copies may persist after unpinning.</div>
             <div class="statusline" style="margin-top:12px">
               <div><b>Generated metadata URI</b>: <span id="generatedSpecURI">—</span></div>
               <div class="muted" style="margin-top:4px">CID / response: <span id="generatedSpecCID">—</span></div>
@@ -1923,9 +1927,9 @@ Evaluation methodology"></textarea>
               </div>
             </div>
             <div class="detailSection" style="margin-bottom:14px">
-              <h3>Private notes (local only)</h3>
-              <div class="smallNote">These notes stay in this browser on this device. They are not written on-chain and not sent anywhere.</div>
-              <textarea id="jobPrivateNotes" class="noteArea" placeholder="Keep due diligence notes, reminders, or negotiation context here."></textarea>
+              <h3>Device notes (unencrypted)</h3>
+              <div class="smallNote">Save explicitly to this browser. The console does not upload notes, but shared-device users or browser extensions may read them. Keep personal information, confidential work and secrets elsewhere.</div>
+              <textarea id="jobPrivateNotes" class="noteArea" placeholder="Non-sensitive reminders only."></textarea>
               <div class="actions" style="margin-top:10px">
                 <button class="btn" id="saveJobNotesBtn">Save notes</button>
                 <button class="btn" id="clearJobNotesBtn">Clear notes</button>
@@ -1957,6 +1961,7 @@ Evaluation methodology"></textarea>
           <div>
             <div class="detailSection" style="margin-bottom:14px">
               <h3>Submission input</h3>
+              <div class="warnBox">The completion URI and linked public metadata may be permanent. Do not add personal information, secrets or private access links. Inspect metadata only when you intend to contact its provider. Completion drafts stay in page memory.</div>
               <div class="helper" id="completionAssistantHint">Open an assigned job and click Request completion to use this assistant.</div>
               <div class="twoCol" style="margin-top:12px">
                 <div>
@@ -2044,6 +2049,7 @@ Evaluation methodology"></textarea>
         <div id="actionReviewRisk" class="assistantCallout"><b>Review carefully</b><br>This UI will only open your wallet after you confirm the details below.</div>
         <div id="actionReviewFacts" class="reviewFacts"></div>
         <div id="actionReviewChecklist" class="reviewChecklist"></div>
+        <div id="actionReviewPrivacy" class="warnBox" style="display:none;margin-top:12px"><label><input type="checkbox" id="actionReviewPrivacyAccepted"> I checked the text, links and public files: no added personal information, confidential material or secrets.</label><div class="smallNote">Public copies may persist. This local check is not a privacy waiver, consent receipt or automated content scan.</div></div>
         <div class="reviewMethodBox" id="actionReviewMethod">method: —</div>
         <div class="reviewFooter">
           <div class="helper" id="actionReviewFooterNote">You may still be asked for an approval transaction first if allowance is insufficient.</div>
@@ -2055,16 +2061,28 @@ Evaluation methodology"></textarea>
       </div>
     </div>
 
+    <div id="publicUploadReviewModal" class="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="publicUploadReviewTitle" aria-describedby="publicUploadReviewNotice" aria-hidden="true">
+      <div class="modalCard reviewModalCard">
+        <h2 id="publicUploadReviewTitle">Review public IPFS upload</h2>
+        <p id="publicUploadReviewNotice">The exact JSON below will be sent to the displayed provider and may be publicly copied indefinitely. Remove personal information, confidential material, private links and secrets. A hash or encryption does not make data anonymous.</p>
+        <div id="publicUploadReviewEndpoint" class="uriOutput"></div>
+        <pre id="publicUploadReviewPayload" class="exportBox" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:35vh;overflow:auto"></pre>
+        <label><input type="checkbox" id="publicUploadReviewAccepted"> I reviewed this JSON and its linked public content; it contains no added personal information, confidential material or secrets.</label>
+        <div class="smallNote">This is a local safety check, not a privacy waiver or automated scan.</div>
+        <div class="reviewFooter"><button class="btn" id="cancelPublicUploadReviewBtn">Cancel</button><button class="btn btn-primary" id="confirmPublicUploadReviewBtn" disabled>Publish reviewed JSON</button></div>
+      </div>
+    </div>
+
     <div class="card" id="termsSection">
       <h2>Protocol terms and notices</h2>
-      <p>Notices reproduced from the v1.0.4 source. MIT licensing, the actual operator's service agreement and USDC issuer terms are distinct. This checkbox is a local acknowledgement, not proof of legal clearance or universal contractual acceptance.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v1.0.4 protocol notices</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  -  P R O T O C O L  T E R M S  A N D  N O T I C E S ]
+      <p>Notices reproduced from the v1.0.5 source. MIT licensing, the actual operator's service agreement and USDC issuer terms are distinct. This checkbox is a local acknowledgement, not proof of legal clearance or universal contractual acceptance.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v1.0.5 protocol notices</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  -  P R O T O C O L  T E R M S  A N D  N O T I C E S ]
 
-Notice version: v1.0.4. Publication date: 18 September 2026.
+Notice version: v1.0.5. Publication date: 18 September 2026.
 Software publisher/rightsholder: MONTREAL.AI and the other identified rightsholders.
 Deployment operator: the actual person or entity identified for the selected instance;
 not determined by a brand, ENS name, source comment or wallet address alone.
-Legal center: https://github.com/MontrealAI/AGIJobManager/tree/v1.0.4/docs/LEGAL
+Legal center: https://github.com/MontrealAI/AGIJobManager/tree/v1.0.5/docs/LEGAL
 
 1. Scope, license and acceptance
 
@@ -2165,13 +2183,13 @@ absence of a separate written agreement.
 
 7. Public data and third parties
 
-On-chain addresses, names, actions, details, URIs and events can be public, linkable and
-persistent. Do not publish confidential or sensitive information in them. Use suitable
-private access controls for protected work. Hashing or encryption alone does not remove
-privacy duties; deleting local data or revoking an ENS record cannot erase public copies.
-Wallet, RPC, host, CDN, explorer and metadata services can process information under their
-own arrangements. Each actual data-processing operator must give an accurate notice and
-meet applicable duties. The software does not promise zero personal data or anonymity.
+Protocol addresses, ENS identities and activity can be personal data, linkable and permanent.
+Do not add personal information about yourself or others, confidential material or secrets to public text, links, files, ENS/IPFS/NFT metadata or support posts.
+Users bear responsibility for their selected data, instructions, disclosures and agent outputs to the fullest lawful extent; check authority, rights and public-safe content before submission.
+Keep protected work in a separately agreed lawful, access-controlled workflow. Mere software or contract use does not appoint MONTREAL.AI or an owner as its private-data custodian or processor.
+Actual processing roles and mandatory duties cannot be transferred by a disclaimer, checkbox or indemnity. No privacy rights are waived by a wallet transaction.
+Hashes, encryption and private-looking links do not guarantee anonymity; local deletion, unpinning or ENS changes cannot erase all public copies.
+Wallet, RPC, host and metadata providers can process connection data. Actual operators must provide accurate notices and applicable safeguards; no zero-data or regulatory-immunity claim is made.
 
 8. Operational commitments and risk
 
@@ -2205,7 +2223,7 @@ Any service cap requires a locally reviewed agreement specifying its amount and 
 10. Professional-user indemnity and representation
 
 An independent operator may seek a proportionate, locally reviewed business-user
-indemnity for third-party loss caused by that user&#39;s unlawful content, infringement,
+indemnity for third-party loss caused by that user&#39;s unlawful data disclosure, content,
 intentional misuse or breach. It requires valid agreement, identified beneficiaries,
 appropriate defense/settlement procedures and mandatory-law exceptions; it is not
 imposed by this notice or by MIT. It must not cover the protected party&#39;s own misconduct
@@ -2241,9 +2259,9 @@ accrued rights. Invalid provisions do not expand a disclaimer beyond lawful limi
 The MIT License and separate valid agreements remain distinct; this source notice is
 not a universal entire-agreement clause or additional restriction on software use.</div></details></div>
       <div class="hintBox" style="margin-top:12px">
-        <b>How job escrow refunds work in v1.0.4</b>
+        <b>How job escrow refunds work in v1.0.5</b>
         <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
-        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v1.0.4, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v1.0.5, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
       </div>
     </div>
 
@@ -2252,7 +2270,7 @@ not a universal entire-agreement clause or additional restriction on software us
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.0.4/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v1.0.4 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.0.5/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v1.0.5 terms</a>
       </div>
     </div>
 
@@ -2339,6 +2357,7 @@ not a universal entire-agreement clause or additional restriction on software us
       if(el('termsAccepted')) el('termsAccepted').checked = false;
       if(typeof pendingActionConfirmResolver === 'function'){ const resolve = pendingActionConfirmResolver; pendingActionConfirmResolver = null; resolve(false); }
       if(typeof closeActionReview === 'function') closeActionReview();
+      if(typeof closePublicUploadReview === 'function') closePublicUploadReview();
       pendingReviewedAction = null;
     }
     function updateWriteGate(){
@@ -2375,8 +2394,6 @@ not a universal entire-agreement clause or additional restriction on software us
       });
 
       loadIpfsPrefs();
-      loadBuilderDraft();
-      bindBuilderDraftAutosave();
       refreshJobImagePreview();
       ["jobTitle","jobCategory","jobTags","jobSummaryBuilder","jobDeliverables","jobAcceptance","jobRequirements","jobImageURI","jobExternalURI","jobSpecVersion","jobLocale","jobPayout","jobDuration","jobDetails"].forEach(id=>{
         const node = el(id);
@@ -2396,9 +2413,11 @@ not a universal entire-agreement clause or additional restriction on software us
       if(clearPrefsBtn) clearPrefsBtn.addEventListener("click", clearIpfsPrefs);
       if(el("fillDetailsBtn")) el("fillDetailsBtn").addEventListener("click", fillDetailsFromBuilder);
       if(el("saveBuilderDraftBtn")) el("saveBuilderDraftBtn").addEventListener("click", ()=>saveBuilderDraft(true));
+      if(el("loadBuilderDraftBtn")) el("loadBuilderDraftBtn").addEventListener("click", ()=>{ loadBuilderDraft(); generateMetadata().catch(()=>{}); });
+      if(el("clearSavedJobContentBtn")) el("clearSavedJobContentBtn").addEventListener("click", clearSavedJobContent);
       if(el("clearBuilderDraftBtn")) el("clearBuilderDraftBtn").addEventListener("click", ()=>clearBuilderDraft(true));
-      if(el("useDefaultCoverBtn")) el("useDefaultCoverBtn").addEventListener("click", ()=>{ if(el("jobImageURI")) el("jobImageURI").value = DEFAULT_METADATA_COVER_IMAGE; refreshJobImagePreview(); saveBuilderDraft(true); generateMetadata().catch(()=>{}); });
-      if(el("previewCoverBtn")) el("previewCoverBtn").addEventListener("click", ()=>{ refreshJobImagePreview(); setToast("Metadata cover preview refreshed.", "ok"); });
+      if(el("useDefaultCoverBtn")) el("useDefaultCoverBtn").addEventListener("click", ()=>{ if(el("jobImageURI")) el("jobImageURI").value = DEFAULT_METADATA_COVER_IMAGE; refreshJobImagePreview(); generateMetadata().catch(()=>{}); });
+      if(el("previewCoverBtn")) el("previewCoverBtn").addEventListener("click", ()=>{ refreshJobImagePreview(true); setToast("Metadata cover preview refreshed.", "ok"); });
       if(el("jobImageURI")) el("jobImageURI").addEventListener("input", ()=>{ refreshJobImagePreview(); generateMetadata().catch(()=>{}); });
       if(el("useGeneratedUriBtn")) el("useGeneratedUriBtn").addEventListener("click", useGeneratedUri);
       if(el("normalizeJobSpecUriBtn")) el("normalizeJobSpecUriBtn").addEventListener("click", normalizeJobSpecUriField);
@@ -3085,7 +3104,9 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(el('actionReviewChecklist')) el('actionReviewChecklist').innerHTML = (config.checks || []).map(x=>`<div class="reviewCheck"><span class="syncBadge ${x.badge || ''}">${escapeHtml(x.state || 'Check')}</span><div>${escapeHtml(x.text || '')}</div></div>`).join('');
       if(el('actionReviewMethod')) el('actionReviewMethod').textContent = config.method || 'method: —';
       if(el('actionReviewFooterNote')) el('actionReviewFooterNote').textContent = config.footer || 'You may still be asked for an approval transaction first if allowance is insufficient.';
-      if(el('confirmActionReviewBtn')) { el('confirmActionReviewBtn').textContent = config.confirmLabel || 'Continue'; el('confirmActionReviewBtn').disabled = !!config.confirmDisabled; }
+      if(el('actionReviewPrivacy')) el('actionReviewPrivacy').style.display = config.publicContent ? 'block' : 'none';
+      if(el('actionReviewPrivacyAccepted')) el('actionReviewPrivacyAccepted').checked = false;
+      if(el('confirmActionReviewBtn')) { el('confirmActionReviewBtn').textContent = config.confirmLabel || 'Continue'; el('confirmActionReviewBtn').disabled = !!config.confirmDisabled || !!config.publicContent; }
       el('actionReviewModal')?.classList.add('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','false');
       el('cancelActionReviewBtn')?.focus?.();
@@ -3094,6 +3115,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function closeActionReview(resolveAsCancel=true){
       const returnFocus = pendingReviewedAction?.returnFocus;
       pendingReviewedAction = null;
+      if(el('actionReviewPrivacyAccepted')) el('actionReviewPrivacyAccepted').checked = false;
       el('actionReviewModal')?.classList.remove('open');
       el('actionReviewModal')?.setAttribute('aria-hidden','true');
       if(el('confirmActionReviewBtn')) el('confirmActionReviewBtn').disabled = false;
@@ -3127,7 +3149,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     async function confirmReviewedAction(){
       const review = pendingReviewedAction;
       if(!review?.run) return closeActionReview();
-      if(review.confirmDisabled) return;
+      if(review.confirmDisabled || (review.publicContent && !el('actionReviewPrivacyAccepted')?.checked)) return;
       const btn = el('confirmActionReviewBtn');
       if(btn) btn.disabled = true;
       closeActionReview(false);
@@ -3824,25 +3846,35 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       generateMetadata().catch(()=>{});
       if(showToast) setToast("Local builder draft cleared.", "ok");
     }
-    function bindBuilderDraftAutosave(){
-      builderFieldIds().forEach(id=>{
-        const n = el(id);
-        if(!n) return;
-        n.addEventListener("input", ()=>saveBuilderDraft(false));
-        n.addEventListener("change", ()=>saveBuilderDraft(false));
-      });
+    function clearSavedJobContent(){
+      closeActionReview();
+      closePublicUploadReview();
+      try{
+        for(let i=localStorage.length-1;i>=0;i--){
+          const key = localStorage.key(i);
+          if(/^agijobmanager_usdc_v096_(builder_draft_|completion_draft_|job_notes_)/.test(key || '')) localStorage.removeItem(key);
+        }
+      }catch{ setToast('Unable to clear browser storage. Use the browser site-data controls.', 'bad'); return; }
+      completionDrafts.clear();
+      clearBuilderDraft(false);
+      if(el('jobPrivateNotes')) el('jobPrivateNotes').value = '';
+      if(el('completionUriInput')) el('completionUriInput').value = '';
+      if(el('completionFinalImageInput')) el('completionFinalImageInput').value = '';
+      setToast('Saved job content cleared on this browser origin. Downloads and public copies are unaffected.', 'ok');
     }
-
 
     const DEFAULT_METADATA_COVER_IMAGE = "https://ipfs.io/ipfs/Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1";
     function normalizeMetadataImageUri(value){
       const v = String(value || "").trim();
       return v || DEFAULT_METADATA_COVER_IMAGE;
     }
-    function refreshJobImagePreview(){
+    function refreshJobImagePreview(load=false){
       const uri = normalizeMetadataImageUri(el("jobImageURI")?.value || "");
       if(el("jobImageURI") && !String(el("jobImageURI").value || "").trim()) el("jobImageURI").value = DEFAULT_METADATA_COVER_IMAGE;
-      if(el("jobImagePreview")) el("jobImagePreview").src = uri;
+      if(el("jobImagePreview")){
+        el("jobImagePreview").removeAttribute('src');
+        if(load){ el("jobImagePreview").referrerPolicy = 'no-referrer'; el("jobImagePreview").src = normalizeIpfsToHttp(uri); }
+      }
       if(el("jobImagePreviewUri")) el("jobImagePreviewUri").textContent = uri;
     }
 
@@ -3916,21 +3948,13 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       (p.tags || []).slice(0,5).forEach(t=>chips.push("#"+t));
       if(p.payoutUSDC) chips.push(String(p.payoutUSDC) + " USDC");
       if(p.durationSeconds) chips.push(String(p.durationSeconds) + "s");
-      if(el("metadataChips")) el("metadataChips").innerHTML = chips.map(x=>`<span class="chip">${x}</span>`).join("");
+      if(el("metadataChips")) el("metadataChips").innerHTML = chips.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join("");
       const completeness = [p.title, p.summary, p.deliverables?.length, p.acceptanceCriteria?.length, p.payoutUSDC, p.durationSeconds].filter(Boolean).length;
       if(el("specReadiness")) el("specReadiness").textContent = Math.round(completeness/6*100) + "%";
       if(el("metadataUriStatus")) el("metadataUriStatus").textContent = lastUploadedMetadataURI ? "IPFS ready" : "Draft only";
       renderDraftPacket();
-      const image = obj.image;
       const box = el("coverPreview");
-      if(box){
-        if(image && isValidUriLoose(image)){
-          const src = normalizeIpfsToHttp(image);
-          box.innerHTML = `<img src="${src}" alt="Job cover preview" onerror="this.parentNode.textContent='Image unavailable'">`;
-        }else{
-          box.textContent = "No image";
-        }
-      }
+      if(box) box.textContent = 'Use Preview cover image to contact the image provider.';
     }
     async function generateMetadata(){
       const obj = await buildJobMetadata();
@@ -3954,59 +3978,98 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       setTimeout(()=>URL.revokeObjectURL(url), 1000);
       setToast("Metadata JSON downloaded.", "ok");
     }
+    function reviewedUploadEndpoint(raw, mode){
+      const endpoint = new URL(raw);
+      if(endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw new Error('Use an HTTPS upload endpoint without credentials, query parameters or fragments.');
+      if(!['pinata-jwt','custom-json-endpoint'].includes(mode)) throw new Error('Choose pinata-jwt or custom-json-endpoint.');
+      if(mode === 'pinata-jwt' && endpoint.origin !== 'https://api.pinata.cloud') throw new Error('Pinata JWTs may only be sent to https://api.pinata.cloud. Custom endpoints receive JSON without the JWT.');
+      return endpoint.href;
+    }
     function saveIpfsPrefs(){
-      const prefs = {
-        mode: el("ipfsMode")?.value || "",
-        endpoint: el("ipfsEndpoint")?.value || "",
-        jwt: el("ipfsJwt")?.value || "",
-        pinName: el("ipfsName")?.value || ""
-      };
-      localStorage.setItem("agijobmanager_usdc_v096_ipfs_prefs_v11", JSON.stringify(prefs));
-      setToast("IPFS browser settings saved locally on this device.", "ok");
+      try{
+        const mode = (el("ipfsMode")?.value || "pinata-jwt").trim();
+        const endpoint = reviewedUploadEndpoint((el("ipfsEndpoint")?.value || "").trim(), mode);
+        localStorage.setItem("agijobmanager_usdc_v096_ipfs_prefs_v11", JSON.stringify({ mode, endpoint }));
+        setToast("Upload endpoint remembered. Credentials and pin names are not saved.", "ok");
+      }catch(e){ setToast(e.message || 'Unable to remember endpoint.', 'bad'); }
     }
     function loadIpfsPrefs(){
+      if(el("ipfsJwt")) el("ipfsJwt").value = "";
       try{
-        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v096_ipfs_prefs_v11") || "{}");
+        const key = "agijobmanager_usdc_v096_ipfs_prefs_v11";
+        const raw = localStorage.getItem(key);
+        if(raw) localStorage.removeItem(key);
+        const prefs = JSON.parse(raw || "{}");
         if(el("ipfsMode")) el("ipfsMode").value = prefs.mode || "pinata-jwt";
         if(el("ipfsEndpoint")) el("ipfsEndpoint").value = prefs.endpoint || "https://api.pinata.cloud/pinning/pinJSONToIPFS";
-        if(el("ipfsJwt")) el("ipfsJwt").value = prefs.jwt || "";
-        if(el("ipfsName")) el("ipfsName").value = prefs.pinName || "";
+        if(raw) localStorage.setItem(key, JSON.stringify({mode:prefs.mode || "pinata-jwt", endpoint:prefs.endpoint || ""}));
       }catch{}
     }
     function clearIpfsPrefs(){
-      localStorage.removeItem("agijobmanager_usdc_v096_ipfs_prefs_v11");
+      try{ localStorage.removeItem("agijobmanager_usdc_v096_ipfs_prefs_v11"); }catch{}
       if(el("ipfsJwt")) el("ipfsJwt").value = "";
-      setToast("Saved IPFS browser settings removed.", "ok");
+      setToast("Saved IPFS settings and entered credential cleared.", "ok");
     }
+    let pendingPublicUploadReview = null;
+    function requestPublicUploadReview(endpoint, payload){
+      if(pendingPublicUploadReview) return Promise.reject(new Error('Finish or cancel the current upload review.'));
+      return new Promise(resolve=>{
+        pendingPublicUploadReview = {resolve, returnFocus:document.activeElement};
+        el('publicUploadReviewEndpoint').textContent = endpoint;
+        el('publicUploadReviewPayload').textContent = payload;
+        el('publicUploadReviewAccepted').checked = false;
+        el('confirmPublicUploadReviewBtn').disabled = true;
+        el('publicUploadReviewModal').classList.add('open');
+        el('publicUploadReviewModal').setAttribute('aria-hidden','false');
+        el('cancelPublicUploadReviewBtn').focus();
+      });
+    }
+    function closePublicUploadReview(accepted=false){
+      if(accepted && !el('publicUploadReviewAccepted')?.checked) return;
+      const pending = pendingPublicUploadReview;
+      pendingPublicUploadReview = null;
+      el('publicUploadReviewModal')?.classList.remove('open');
+      el('publicUploadReviewModal')?.setAttribute('aria-hidden','true');
+      if(el('publicUploadReviewAccepted')) el('publicUploadReviewAccepted').checked = false;
+      if(el('publicUploadReviewPayload')) el('publicUploadReviewPayload').textContent = '';
+      if(el('confirmPublicUploadReviewBtn')) el('confirmPublicUploadReviewBtn').disabled = true;
+      pending?.resolve(accepted);
+      pending?.returnFocus?.focus?.();
+    }
+    let metadataUploadPending = false;
     async function uploadMetadataToIPFS(){
-      const obj = lastGeneratedMetadata || await buildJobMetadata();
-      updateMetadataPreview(obj);
-      const endpoint = (el("ipfsEndpoint")?.value || "").trim();
-      const mode = (el("ipfsMode")?.value || "pinata-jwt").trim();
-      const jwt = (el("ipfsJwt")?.value || "").trim();
-      const pinName = (el("ipfsName")?.value || slugify((obj.properties||{}).title || "agijob-spec")).trim();
-      if(!endpoint) throw new Error("Missing IPFS endpoint.");
-      if(mode === "pinata-jwt" && !jwt) throw new Error("Provide a Pinata JWT to upload directly from the browser.");
-      setToast("Uploading metadata JSON to IPFS…", "warn");
-      const headers = {"Content-Type":"application/json"};
-      let body = JSON.stringify(obj);
-      if(mode === "pinata-jwt"){
-        headers["Authorization"] = "Bearer " + jwt;
-        body = JSON.stringify({pinataContent: obj, pinataMetadata: {name: pinName}});
+      if(metadataUploadPending) throw new Error('An upload or upload review is already in progress.');
+      metadataUploadPending = true;
+      try{
+        const obj = await buildJobMetadata();
+        updateMetadataPreview(obj);
+        const mode = (el("ipfsMode")?.value || "pinata-jwt").trim();
+        const endpoint = reviewedUploadEndpoint((el("ipfsEndpoint")?.value || "").trim(), mode);
+        const jwt = (el("ipfsJwt")?.value || "").trim();
+        const pinName = (el("ipfsName")?.value || slugify((obj.properties||{}).title || "agijob-spec")).trim();
+        if(mode === "pinata-jwt" && !jwt) throw new Error("Provide a Pinata JWT for this upload.");
+        const headers = {"Content-Type":"application/json"};
+        let body = JSON.stringify(obj);
+        if(mode === "pinata-jwt"){
+          headers["Authorization"] = "Bearer " + jwt;
+          body = JSON.stringify({pinataContent:obj, pinataMetadata:{name:pinName}});
+        }
+        if(!await requestPublicUploadReview(endpoint, body)) return;
+        setToast("Uploading the reviewed JSON to IPFS…", "warn");
+        const res = await fetch(endpoint, {method:"POST", headers, body, credentials:"omit", referrerPolicy:"no-referrer", redirect:"error"});
+        if(!res.ok) throw new Error('IPFS upload failed (' + res.status + '). Check your provider privately; response content is not displayed.');
+        const data = await res.json();
+        const cid = data.IpfsHash || data.cid || data.Hash || data.Value?.Cid?.["/"] || data.value?.cid || "";
+        lastUploadedMetadataURI = cid ? 'ipfs://' + cid : "";
+        if(el("generatedSpecURI")) el("generatedSpecURI").textContent = lastUploadedMetadataURI || "Upload succeeded (no CID returned)";
+        if(el("generatedSpecCID")) el("generatedSpecCID").textContent = cid || "No CID returned";
+        if(lastUploadedMetadataURI && el("jobSpecURI")) el("jobSpecURI").value = lastUploadedMetadataURI;
+        if(el("metadataUriStatus")) el("metadataUriStatus").textContent = lastUploadedMetadataURI ? "IPFS ready" : "Uploaded";
+        setToast(lastUploadedMetadataURI ? "Reviewed metadata uploaded. Verify its public contents." : "Upload succeeded; verify the response with your provider.", "ok");
+      }finally{
+        metadataUploadPending = false;
+        if(el("ipfsJwt")) el("ipfsJwt").value = "";
       }
-      const res = await fetch(endpoint, {method:"POST", headers, body});
-      if(!res.ok){
-        const tx = await res.text();
-        throw new Error(`IPFS upload failed (${res.status}): ${tx.slice(0,200)}`);
-      }
-      const data = await res.json();
-      const cid = data.IpfsHash || data.cid || data.Hash || data.Value?.Cid?.["/"] || data.value?.cid || "";
-      lastUploadedMetadataURI = cid ? `ipfs://${cid}` : "";
-      if(el("generatedSpecURI")) el("generatedSpecURI").textContent = lastUploadedMetadataURI || "Upload succeeded (no CID returned)";
-      if(el("generatedSpecCID")) el("generatedSpecCID").textContent = JSON.stringify(data);
-      if(lastUploadedMetadataURI && el("jobSpecURI")) el("jobSpecURI").value = lastUploadedMetadataURI;
-      if(el("metadataUriStatus")) el("metadataUriStatus").textContent = lastUploadedMetadataURI ? "IPFS ready" : "Uploaded";
-      setToast(lastUploadedMetadataURI ? "Metadata uploaded to IPFS and URI inserted into Job Spec URI." : "Metadata uploaded; inspect response for CID.", "ok");
     }
     function fillDetailsFromBuilder(){
       const title = (el("jobTitle")?.value || "").trim();
@@ -5238,7 +5301,6 @@ async function updateSummary(){
       if(!mustBeReadyToWrite()) return;
       try{
         const postingContext = captureWriteContext();
-        saveBuilderDraft(false);
         let spec = el("jobSpecURI").value.trim();
         const details = el("jobDetails").value.trim();
         const payout = el("jobPayout").value.trim();
@@ -5262,6 +5324,7 @@ async function updateSummary(){
         const {validatorBudget, wallet30:wallet30Amount, wallet10:wallet10Amount, agentBase:agentRemainder} = split;
         openActionReview({
           writeContext:postingContext,
+          publicContent:true,
           title:`Create Job · escrow ${formatUnitsToAmount(payoutUnits)} $USDC`,
           body:'You are about to publish a new job and escrow the full payout into AGIJobManager. If token allowance is insufficient, the UI will guide you through approval first.',
           facts:[
@@ -6064,11 +6127,11 @@ function normalizeIpfsToHttp(uri){
       field.value = normalized.canonical;
       setToast(`Job Spec URI normalized to ${normalized.canonical}`, 'ok');
     }
-    function loadCompletionDraft(jobId){
-      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v096_completion_draft_${jobId}`) || '{}'); }catch{return {};}
-    }
+    const completionDrafts = new Map();
+    function completionDraftKey(jobId){ return [AGI_JOB_MANAGER, userAccount, jobId].map(x=>String(x ?? '').toLowerCase()).join(':'); }
+    function loadCompletionDraft(jobId){ return completionDrafts.get(completionDraftKey(jobId)) || {}; }
     function saveCompletionDraft(jobId){
-      try{ localStorage.setItem(`agijobmanager_usdc_v096_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
+      completionDrafts.set(completionDraftKey(jobId), {uri:el('completionUriInput')?.value || '', finalImage:el('completionFinalImageInput')?.value || ''});
     }
     function runBondMathSelfTests(){
       const one = 1000000n;
@@ -6171,7 +6234,6 @@ function normalizeIpfsToHttp(uri){
       const modal = el('completionAssistantModal');
       if(modal){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
       updatePrimaryActionHints();
-      if((el('completionUriInput')?.value || '').trim()) await inspectCompletionUri(true);
     }
     function closeCompletionAssistant(){
       if(completionAssistantState.jobId != null) saveCompletionDraft(completionAssistantState.jobId);
@@ -6200,6 +6262,17 @@ function normalizeIpfsToHttp(uri){
       assertAssistantCurrent();
       const normalized = normalizeCompletionUriField(false);
       if(!normalized.valid) throw new Error('Enter a valid Job Completion URI. Bare CIDs can be normalized automatically.');
+      const publication = await requestActionConfirmation({
+        writeContext, publicContent:true, title:'Review public completion content',
+        body:'The completion URI and referenced public files may be copied permanently. Review them before any metadata inspection or transaction.',
+        facts:[{label:'Job',value:String(jobId)},{label:'Public completion URI',value:normalized.canonical}],
+        method:'requestJobCompletion(' + jobId + ', ' + JSON.stringify(normalized.canonical) + ')',
+        confirmLabel:'Review metadata and submit'
+      });
+      if(!publication) return;
+      assertAssistantCurrent();
+      const currentUri = normalizeCompletionUriField(false);
+      if(!currentUri.valid || currentUri.canonical !== normalized.canonical) throw new Error('Completion URI changed. Review the new public content before inspection or submission.');
       let inspection = assistant.inspected;
       if(!inspection || inspection.normalized?.canonical !== normalized.canonical){ inspection = await inspectCompletionUri(true); }
       assertAssistantCurrent();
@@ -6861,6 +6934,7 @@ function normalizeIpfsToHttp(uri){
       }
       const args = await collectAdminArgs(target, method, danger);
       if(args === null) return;
+      const publishesText = (ADMIN_METHOD_SCHEMAS[method] || []).some(field=>['string','bytes'].includes(field.type));
       assertWriteContext(writeContext);
       if(method === 'setJobDurationLimit' && (BigInt(args[0]) < 1n || BigInt(args[0]) > 31536000n)) throw new Error('Job duration limit must be 1–31,536,000 seconds (up to 365 days).');
       if(['addAGIType','disableAGIType'].includes(method)) {
@@ -6874,9 +6948,10 @@ function normalizeIpfsToHttp(uri){
         const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
         if(args.some(x=>invalid.includes(String(x).toLowerCase())) || args[0].toLowerCase()===args[1].toLowerCase()) throw new Error('Use two distinct nonzero recipient wallets, different from the manager and USDC contracts.');
       }
-      await contract.methods[method](...args).call({from:userAccount});
+      if(!publishesText) await contract.methods[method](...args).call({from:userAccount});
       const ok = await requestActionConfirmation({
         writeContext,
+        publicContent:publishesText,
         title: `${target === 'ens' ? 'ENSJobPages' : 'AGIJobManager'} · ${method}`,
         body: method === 'setAgentNftRequired' ? 'Changes only jobs posted after this transaction. Existing jobs retain their NFT requirement. ENS authorization and USDC payments remain unchanged.' : method === 'setSettlementWallets' ? 'Changes future payment recipients only after live job escrow and bonds are cleared. Previously reserved claims remain payable to their original beneficiaries.' : method === 'resolveStaleDispute' ? 'Owner backstop for an unresolved dispute after its displayed deadline. Job parties, voters and recorded validator controllers cannot adjudicate it.' : danger ? 'High-risk administrative call. Validate target, authorization posture, and irreversible impact before submitting.' : 'Administrative write call review.',
         checks:[{state:'Authorization', badge: 'warn', text:`Required role: ${requiredRole}. The contract also checks job state, deadlines and conflicts of interest.`}],
@@ -6990,6 +7065,13 @@ function normalizeIpfsToHttp(uri){
       if(el('closeActionReviewModal')) el('closeActionReviewModal').addEventListener('click', closeActionReview);
       if(el('cancelActionReviewBtn')) el('cancelActionReviewBtn').addEventListener('click', closeActionReview);
       if(el('confirmActionReviewBtn')) el('confirmActionReviewBtn').addEventListener('click', ()=>confirmReviewedAction().catch(e=>setToast(e.message||String(e),'bad')));
+      if(el('actionReviewPrivacyAccepted')) el('actionReviewPrivacyAccepted').addEventListener('change', ()=>{
+        if(el('confirmActionReviewBtn')) el('confirmActionReviewBtn').disabled = !pendingReviewedAction || !!pendingReviewedAction.confirmDisabled || (!!pendingReviewedAction.publicContent && !el('actionReviewPrivacyAccepted').checked);
+      });
+      el('publicUploadReviewAccepted')?.addEventListener('change', ()=>{ el('confirmPublicUploadReviewBtn').disabled = !pendingPublicUploadReview || !el('publicUploadReviewAccepted').checked; });
+      el('cancelPublicUploadReviewBtn')?.addEventListener('click', ()=>closePublicUploadReview());
+      el('confirmPublicUploadReviewBtn')?.addEventListener('click', ()=>closePublicUploadReview(true));
+      el('publicUploadReviewModal')?.addEventListener('keydown', event=>handleDialogKeydown(event, 'publicUploadReviewModal', ()=>closePublicUploadReview()));
       if(el('actionReviewModal')) {
         el('actionReviewModal').addEventListener('click', (e)=>{ if(e.target.id === 'actionReviewModal') closeActionReview(); });
         el('actionReviewModal').addEventListener('keydown', handleActionReviewKeydown);
@@ -7007,7 +7089,7 @@ function normalizeIpfsToHttp(uri){
           if(el('commandPaletteModal')?.classList.contains('open')) closeCommandPalette(); else openCommandPalette();
           return;
         }
-        if(e.key === "Escape"){ closeJobDetails(); closeCompletionAssistant(); closeCommandPalette(); closeActionReview(); closeAlphaMintReview(); return; }
+        if(e.key === "Escape"){ closeJobDetails(); closeCompletionAssistant(); closeCommandPalette(); closeActionReview(); closePublicUploadReview(); closeAlphaMintReview(); return; }
         if(!el('commandPaletteModal')?.classList.contains('open')) return;
         const input = el('commandPaletteInput');
         const items = filteredCommandItems(input?.value || '');
@@ -7077,7 +7159,7 @@ function normalizeIpfsToHttp(uri){
       }
     }
 
-    window.addEventListener("beforeunload", ()=>{ try{ saveBuilderDraft(false); if(completionAssistantState?.jobId != null) saveCompletionDraft(completionAssistantState.jobId); }catch{} });
+    window.addEventListener("pagehide", ()=>{ closePublicUploadReview(); if(el('ipfsJwt')) el('ipfsJwt').value = ''; });
     window.addEventListener("load", ()=>{
       bind();
       generateMetadata().catch(()=>{});
