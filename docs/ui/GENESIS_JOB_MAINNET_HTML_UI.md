@@ -1,6 +1,6 @@
 # USDC standalone console v1.0.0
 
-Use the [v1.0.0 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html) with a verified v0.9.6 or v1.0.0 USDC manager on Ethereum mainnet. No manager is configured by default. A verified v0.9.6 instance does not need redeployment for this update.
+Use the [v1.0.0 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html) with a verified v0.9.6 or v1.0.0 USDC manager on Ethereum mainnet. No manager is configured by default. A verified v0.9.6 instance does not need redeployment for this update.
 
 The [current repository console](../../ui/agijobmanager-usdc.html) includes clear cost and buyer guidance and requires `getJobBonds` for voting. v0.9.5 and older managers do not have that getter. See [compatibility and verification](../qualification/BUYER_ECONOMICS_FOLLOWUP.md), including the older console's bond-quote limitation. Existing jobs remain on their original contracts.
 

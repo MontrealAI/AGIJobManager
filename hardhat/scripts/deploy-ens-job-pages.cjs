@@ -29,6 +29,57 @@ function namehash(name) {
   return ethers.namehash(ethers.ensNormalize(name));
 }
 
+function deriveJobsRootName(chainId, managerAddress) {
+  const { getAddress, ZeroAddress } = require('ethers');
+  if (!Number.isSafeInteger(chainId) || chainId <= 0) throw new Error('Invalid ENS namespace chain ID.');
+  const manager = getAddress(managerAddress);
+  if (manager === ZeroAddress) throw new Error('JOB_MANAGER must be nonzero.');
+  return `usdc-${chainId}-${manager.slice(2).toLowerCase()}.alpha.jobs.agi.eth`;
+}
+
+async function resolveNamespacePlan({ chainId, jobManager, manager, ens, mode, rootNameInput, rootNodeInput, prefixInput }) {
+  if (!['fresh', 'replacement'].includes(mode)) throw new Error('ENS_DEPLOYMENT_MODE must be fresh or replacement.');
+  const [previousHelper, nextJobId] = await Promise.all([manager.ensJobPages(), manager.nextJobId()]);
+  let jobsRootName = deriveJobsRootName(chainId, jobManager);
+  let jobLabelPrefix = 'job-';
+  if (mode === 'fresh') {
+    if (previousHelper !== ethers.ZeroAddress || nextJobId !== 0n) {
+      throw new Error('Fresh ENS setup requires no existing helper and no posted jobs. Preserve the existing namespace; use replacement mode only for the same manager with an active helper.');
+    }
+  } else {
+    if (previousHelper === ethers.ZeroAddress) throw new Error('Replacement requires an existing helper on this same manager.');
+    await requireCode(previousHelper, 'Existing ENS helper');
+    const previous = new ethers.Contract(previousHelper, [
+      'function jobManager() view returns (address)', 'function jobsRootName() view returns (string)',
+      'function jobsRootNode() view returns (bytes32)', 'function jobLabelPrefix() view returns (string)',
+      'function ens() view returns (address)',
+    ], ethers.provider);
+    const [boundManager, root, node, prefix, registry] = await Promise.all([
+      previous.jobManager(), previous.jobsRootName(), previous.jobsRootNode(), previous.jobLabelPrefix(), previous.ens(),
+    ]);
+    if (boundManager.toLowerCase() !== jobManager.toLowerCase()) throw new Error('Existing ENS helper belongs to another manager.');
+    if (registry.toLowerCase() !== (await ens.getAddress()).toLowerCase()) throw new Error('Replacement must preserve the existing ENS registry.');
+    if (!root || ethers.ensNormalize(root) !== root || namehash(root) !== node) throw new Error('Existing ENS helper root name/node is inconsistent.');
+    if (!/^[a-z0-9][a-z0-9-]{0,31}$/.test(prefix) || /[0-9]$/.test(prefix)) throw new Error('Existing ENS helper prefix is invalid.');
+    jobsRootName = root;
+    jobLabelPrefix = prefix;
+  }
+  if (rootNameInput && ethers.ensNormalize(rootNameInput) !== jobsRootName) {
+    throw new Error(`JOBS_ROOT_NAME must match the ${mode} namespace: ${jobsRootName}. Historical namespaces must not be reused for another manager.`);
+  }
+  if (prefixInput && prefixInput !== jobLabelPrefix) throw new Error(`JOB_LABEL_PREFIX must be ${jobLabelPrefix} for this ${mode} plan.`);
+  if (chainId === 1 && jobsRootName === 'alpha.jobs.agi.eth') throw new Error('The legacy alpha.jobs.agi.eth namespace is reserved for the existing manager.');
+  const jobsRootNode = namehash(jobsRootName);
+  if (rootNodeInput && rootNodeInput.toLowerCase() !== jobsRootNode.toLowerCase()) throw new Error(`JOBS_ROOT_NODE mismatch: expected ${jobsRootNode}.`);
+  const [rootOwner, rootResolver] = await Promise.all([ens.owner(jobsRootNode), ens.resolver(jobsRootNode)]);
+  if (mode === 'fresh' && (rootOwner !== ethers.ZeroAddress || rootResolver !== ethers.ZeroAddress)) {
+    throw new Error('Fresh ENS namespace is already occupied or has resolver state. Reconcile its history and any prior deployment journal; do not overwrite or redeploy blindly.');
+  }
+  if (mode === 'replacement' && rootOwner === ethers.ZeroAddress) throw new Error('Existing ENS root has no owner. Recover the current setup before deploying a replacement.');
+  return { mode, chainId, managerAddress: ethers.getAddress(jobManager), previousHelper, jobsRootName, jobsRootNode, jobLabelPrefix,
+    rootOwner, rootResolver, exampleJobName: `${jobLabelPrefix}0.${jobsRootName}` };
+}
+
 async function requireCode(addr, label) {
   if (!ethers.isAddress(addr)) {
     throw new Error(`${label} must be a valid address. Received: ${String(addr)}`);
@@ -78,14 +129,6 @@ async function main() {
   const ensRegistry = env("ENS_REGISTRY", chainId === 1 ? MAINNET_ENS_REGISTRY : "");
   const nameWrapper = env("NAME_WRAPPER", chainId === 1 ? MAINNET_NAME_WRAPPER : "");
   const publicResolver = env("PUBLIC_RESOLVER", chainId === 1 ? MAINNET_PUBLIC_RESOLVER : "");
-  const jobsRootNameInput = env("JOBS_ROOT_NAME");
-  if (!jobsRootNameInput) throw new Error("JOBS_ROOT_NAME is required. A fresh USDC manager needs its own reviewed ENS namespace; never reuse the legacy manager's job names.");
-  const jobsRootName = ethers.ensNormalize(jobsRootNameInput);
-  if (chainId === 1 && jobsRootName === 'alpha.jobs.agi.eth') {
-    throw new Error("The legacy alpha.jobs.agi.eth namespace is reserved for the existing manager. Choose a distinct root for new USDC jobs.");
-  }
-  const computedJobsRootNode = namehash(jobsRootName);
-  const jobsRootNode = env("JOBS_ROOT_NODE", computedJobsRootNode);
   const jobManager = env("JOB_MANAGER", DEFAULT_JOB_MANAGER);
 
   const verify = parseBooleanSetting(env("VERIFY"), "VERIFY", true);
@@ -101,21 +144,13 @@ async function main() {
     throw new Error(`Resolved owner override is not a valid address: ${ownerOverride}`);
   }
 
-  if (!ethers.isHexString(jobsRootNode, 32)) {
-    throw new Error(`JOBS_ROOT_NODE must be bytes32. Received: ${jobsRootNode}`);
-  }
-  if (jobsRootNode.toLowerCase() !== computedJobsRootNode.toLowerCase()) {
-    throw new Error(
-      `JOBS_ROOT_NODE mismatch for JOBS_ROOT_NAME (${jobsRootName}). Expected ${computedJobsRootNode}, got ${jobsRootNode}`,
-    );
-  }
-
   await requireCode(ensRegistry, "ENS_REGISTRY");
   await requireCode(publicResolver, "PUBLIC_RESOLVER");
   await requireCode(jobManager, "JOB_MANAGER");
   const manager = new ethers.Contract(jobManager, ["function usdcToken() view returns (address)",
     "function owner() view returns (address)", "function pendingOwner() view returns (address)",
-    "function paused() view returns (bool)"], ethers.provider);
+    "function paused() view returns (bool)", "function ensJobPages() view returns (address)",
+    "function nextJobId() view returns (uint256)"], ethers.provider);
   const [managerToken, managerOwner, managerPendingOwner, managerIntakePaused] = await Promise.all([
     manager.usdcToken(), manager.owner(), manager.pendingOwner(), manager.paused(),
   ]);
@@ -139,11 +174,15 @@ async function main() {
   }
   if (!deployer) throw new Error("A deployer account is required. For read-only DRY_RUN=1 without a key, set DEPLOYER_ADDRESS.");
   const ens = await ethers.getContractAt(
-    ["function owner(bytes32 node) view returns (address)"],
+    ["function owner(bytes32 node) view returns (address)", "function resolver(bytes32 node) view returns (address)"],
     ensRegistry,
     ethers.provider,
   );
-  const currentRootOwner = await ens.owner(jobsRootNode);
+  const namespace = await resolveNamespacePlan({ chainId, jobManager, manager, ens,
+    mode: env('ENS_DEPLOYMENT_MODE', 'fresh'), rootNameInput: env('JOBS_ROOT_NAME'),
+    rootNodeInput: env('JOBS_ROOT_NODE'), prefixInput: env('JOB_LABEL_PREFIX') });
+  const { jobsRootName, jobsRootNode, jobLabelPrefix } = namespace;
+  const currentRootOwner = namespace.rootOwner;
   const constructorArgs = [ensRegistry, nameWrapper, publicResolver, jobsRootNode, jobsRootName];
   const factory = await ethers.getContractFactory("ENSJobPages");
   const artifact = await hre.artifacts.readArtifact('ENSJobPages');
@@ -171,6 +210,7 @@ async function main() {
   console.log("PUBLIC_RESOLVER:", publicResolver);
   console.log("JOBS_ROOT_NAME:", jobsRootName);
   console.log("JOBS_ROOT_NODE:", jobsRootNode);
+  console.log("ENS namespace plan:", JSON.stringify(namespace));
   console.log("current root owner:", currentRootOwner);
   console.log("root tokenId decimal:", BigInt(jobsRootNode).toString());
   console.log("JOB_MANAGER:", jobManager);
@@ -196,7 +236,7 @@ async function main() {
   const solcInputPath = journalPath.replace(/\.json$/, '.solc-input.json');
   fs.writeFileSync(solcInputPath, `${JSON.stringify(buildInfo.input, null, 2)}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
   const journal = { status: 'started', chainId, network: network.name, deployer: deployer.address,
-    constructorArgs, jobManager, managerOwner, managerIntakePaused, finalOwner: ownerOverride, lockConfig,
+    constructorArgs, namespace, jobManager, managerOwner, managerIntakePaused, finalOwner: ownerOverride, lockConfig,
     compiler: COMPILER_SETTINGS, solcInputPath, expectedRuntimeCodeHash: ethers.keccak256(artifact.deployedBytecode),
     runtimeBytes, initcodeBytes: prepared.initcodeBytes, estimatedGas: prepared.estimatedGas.toString(), gasLimit: prepared.gasLimit.toString(),
     verification: { status: verify ? 'pending' : 'not_requested' }, transactions: [] };
@@ -228,6 +268,13 @@ async function main() {
 
     console.log("Setting job manager...");
     await recordTransaction('setJobManager', await ensJobPages.setJobManager(jobManager));
+    await recordTransaction('setJobLabelPrefix', await ensJobPages.setJobLabelPrefix(jobLabelPrefix));
+    const [configuredRoot, configuredNode, configuredPrefix, configuredManagerAddress] = await Promise.all([
+      ensJobPages.jobsRootName(), ensJobPages.jobsRootNode(), ensJobPages.jobLabelPrefix(), ensJobPages.jobManager(),
+    ]);
+    if (configuredRoot !== jobsRootName || configuredNode !== jobsRootNode || configuredPrefix !== jobLabelPrefix || configuredManagerAddress.toLowerCase() !== jobManager.toLowerCase()) {
+      throw new Error('Configured ENS namespace differs from the plan. Stop before locking or ownership handoff.');
+    }
 
     if (verify) {
       try {
@@ -255,7 +302,11 @@ async function main() {
     const currentOwner = await ensJobPages.owner();
     const configuredManager = await ensJobPages.jobManager();
     const configLocked = await ensJobPages.configLocked();
-    if (currentOwner.toLowerCase() !== journal.finalOwner.toLowerCase() || configuredManager.toLowerCase() !== jobManager.toLowerCase() || configLocked !== lockConfig) {
+    const [actualRootName, actualRootNode, actualPrefix] = await Promise.all([
+      ensJobPages.jobsRootName(), ensJobPages.jobsRootNode(), ensJobPages.jobLabelPrefix(),
+    ]);
+    if (currentOwner.toLowerCase() !== journal.finalOwner.toLowerCase() || configuredManager.toLowerCase() !== jobManager.toLowerCase() || configLocked !== lockConfig ||
+        actualRootName !== jobsRootName || actualRootNode !== jobsRootNode || actualPrefix !== jobLabelPrefix) {
       throw new Error('ENSJobPages final configuration did not match the reviewed plan. Preserve the journal and reconcile before use.');
     }
     Object.assign(journal, { status: 'configured', currentOwner, configuredManager, configLocked });
@@ -270,6 +321,8 @@ async function main() {
   }
 
   console.log("\nManual next steps (not automated):");
+  console.log(`Namespace (${namespace.mode}): ${namespace.exampleJobName}`);
+  if (namespace.mode === 'replacement') console.log("Preserve the existing root and every historical job label. Reconcile the exact-label migration inventory before the same-manager cutover; do not create a new namespace.");
   console.log("1) Have the ENS parent owner establish direct helper ownership of the reviewed dedicated jobs root. For the qualified wrapped route, verify Registry owner(root)=NameWrapper and NameWrapper.ownerOf(root)=newEnsJobPages; an unwrapped root instead requires Registry owner(root)=newEnsJobPages.");
   console.log("   A fresh USDC manager must keep the legacy manager, helper and jobs namespace unchanged. Do not grant blanket approval over legacy names.");
   console.log("   For a same-manager helper replacement, review the existing root authority and replacement runbook separately.");
@@ -282,4 +335,4 @@ if (require.main === module) main().catch((err) => {
   process.exitCode = 1;
 });
 
-module.exports = { main, parseIntEnv };
+module.exports = { main, parseIntEnv, deriveJobsRootName, resolveNamespacePlan };

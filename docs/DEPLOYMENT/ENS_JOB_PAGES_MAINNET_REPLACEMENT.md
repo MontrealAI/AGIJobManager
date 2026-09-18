@@ -1,6 +1,6 @@
 # ENSJobPages Mainnet Replacement Runbook
 
-This runbook replaces `ENSJobPages` for the **same, verified USDC manager**. It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
+This runbook configures a fresh `ENSJobPages` or replaces it for the **same, verified USDC manager**. Use `ENS_DEPLOYMENT_MODE=fresh` (default) for a manager with no helper/jobs, or `ENS_DEPLOYMENT_MODE=replacement` to preserve the active helper’s namespace. See the [v1.0.1 naming policy](../ENS_DEPLOYMENT_NAMESPACES.md). It does not migrate the legacy mainnet manager to USDC. For that transition, use the [USDC cutover qualification and preservation plan](../qualification/USDC_CUTOVER.md): deploy a separate helper and namespace, and preserve the legacy manager's ENS wiring and original-asset exits.
 
 ## In one minute
 
@@ -32,8 +32,8 @@ Canonical cutover flow:
 `ENSJobPages` manages ENS job page naming and metadata writes for AGIJobManager hooks.
 
 It determines:
-- job label prefix (`jobLabelPrefix`, default `agijob`),
-- job root suffix (`jobsRootName`, explicitly required by the deploy script),
+- job label prefix (`jobLabelPrefix`, constructor default `agijob`; fresh deployment script sets `job-`),
+- job root suffix (`jobsRootName`, derived from chain and full manager address in fresh mode),
 - and stores snapshotted exact labels for each job.
 
 `AGIJobManager` contributes the numeric `jobId`; `ENSJobPages` builds names from that `jobId`.
@@ -57,14 +57,12 @@ Typical replacement/migration drivers from current contract behavior:
 - `ENSJobPages` decides `prefix`, `jobsRootName`, label snapshotting, and ENS write behavior.
 
 
-Example using the isolated namespace exercised in the fork rehearsal (a proposal, not a live deployment):
-- `jobLabelPrefix = "agijob"`
-- `jobsRootName = "usdc-v095.alpha.jobs.agi.eth"`
+Fresh scripted deployments use:
+- `jobLabelPrefix = "job-"`
+- `jobsRootName = "usdc-<chainId>-<manager40>.alpha.jobs.agi.eth"`
+- Names: `job-0.<derived-root>`, `job-1.<derived-root>`, and so on.
 
-So names are:
-- `agijob0.usdc-v095.alpha.jobs.agi.eth`
-- `agijob1.usdc-v095.alpha.jobs.agi.eth`
-- ...
+`manager40` is the complete lowercase manager address without `0x`. Replacement mode instead reads and preserves the active helper's root and prefix for that same manager. The older `usdc-v095.alpha.jobs.agi.eth` fork fixture remains historical qualification evidence, not the current fresh-deployment default.
 
 Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labels stay unchanged.
 
@@ -84,7 +82,7 @@ Prefix changes apply only to unsnapshotted/future jobs. Already snapshotted labe
 - You control deployer key and owner key(s) needed for manual wiring.
 - `hardhat/.env` is configured.
 - You know the intended verified USDC manager address for `JOB_MANAGER`. Keep its intake paused and complete any pending manager ownership acceptance before helper deployment. Independently compare `owner()` with the intended owner in the reviewed manager receipt: the helper preflight’s zero `pendingOwner()` check alone cannot prove the intended handover occurred.
-- `JOBS_ROOT_NAME` is explicitly reviewed. The deployment script rejects the legacy `alpha.jobs.agi.eth` root for a new mainnet USDC helper.
+- The printed namespace plan is reviewed. Fresh mode derives a distinct root and rejects occupied roots, existing jobs/helpers and mismatched overrides. Replacement mode validates the active helper’s manager back-reference and preserves its root/prefix.
 - The root owner is identified independently of the manager owner. At the qualification block they are different addresses.
 - You have identified whether your jobs root is wrapped or unwrapped.
 
@@ -101,7 +99,9 @@ npm ci
 npm run compile
 
 export JOB_MANAGER='<verified-new-USDC-manager-address>'
-export JOBS_ROOT_NAME='usdc-v095.alpha.jobs.agi.eth'
+export ENS_DEPLOYMENT_MODE='fresh'
+# For same-manager replacement, use replacement instead.
+# Leave JOBS_ROOT_NAME, JOBS_ROOT_NODE and JOB_LABEL_PREFIX empty unless asserting the expected values.
 export NEW_OWNER='<reviewed-final-helper-owner-address>'
 
 DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
@@ -109,7 +109,7 @@ DRY_RUN=1 npm run deploy:ens-job-pages:mainnet
 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT VERIFY=1 LOCK_CONFIG=0 npm run deploy:ens-job-pages:mainnet
 ```
 
-Required settings (via `.env` or the shell): `JOB_MANAGER`, `JOBS_ROOT_NAME` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. `usdc-v095.alpha.jobs.agi.eth` is the tested proposal, not a pre-authorized live root. Verify authority and availability before adopting it.
+Required settings (via `.env` or the shell): `JOB_MANAGER` and the explicit final helper owner (`NEW_OWNER` or `FINAL_OWNER`). Namespace inputs are optional assertions of the derived or preserved plan. The example uses `NEW_OWNER`; an observed historical owner address is not proof of current signing access or the intended owner. Verify actual parent authority and root availability before any root transaction. A dry run does not reserve the name.
 
 Read-only planning needs a deployer address (`DEPLOYER_ADDRESS` when no key is configured), but no signing key, mainnet confirmation phrase or explorer API key. Public-network broadcasts require explorer verification; `VERIFY` defaults enabled and disabling it blocks the broadcast. Keep `LOCK_CONFIG=0` until actual wiring and the complete ENS lifecycle have been validated.
 
@@ -117,7 +117,7 @@ Review mainnet address overrides for `ENS_REGISTRY`, `NAME_WRAPPER` and `PUBLIC_
 
 Expected result:
 - New ENSJobPages address deployed.
-- `setJobManager(JOB_MANAGER)` already executed by script.
+- `setJobManager(JOB_MANAGER)` and `setJobLabelPrefix(...)` executed by script; root, node and prefix readback match the journal.
 - Exact runtime matched against the qualified artifact; journal and its `solcInputPath` compiler input preserved.
 - Explorer verification completed successfully before the one-step helper ownership transfer.
 - Final helper owner, manager pointer and unlocked configuration match the reviewed plan.
@@ -135,7 +135,7 @@ Expected result:
 ## 7) Required manual post-deploy wiring on mainnet
 
 What is automated vs manual:
-- Automated by deploy script: deploy contract, check runtime, set `jobManager`, complete required verification, transfer ownership to the explicit final helper owner and optionally lock only if requested. Keep deployment-time locking disabled.
+- Automated by deploy script: deploy contract, check runtime, set and verify `jobManager` and the planned prefix/root, complete required verification, transfer ownership to the explicit final helper owner and optionally lock only if requested. Keep deployment-time locking disabled.
 - Manual on mainnet: establish the reviewed root authority, then call `setEnsJobPages` on the intended manager. A fresh USDC cutover leaves all legacy pointers and approvals unchanged.
 
 
@@ -196,7 +196,7 @@ Expected result:
 
 ## 8.1) Future jobs vs legacy jobs after cutover (expected behavior)
 
-- **Future/unsnapshotted jobs:** new creates use `<prefix><jobId>.<jobsRootName>` (default prefix `agijob`) and should proceed once wiring is complete.
+- **Future/unsnapshotted jobs:** new creates use `<prefix><jobId>.<jobsRootName>` (fresh scripted prefix `job-`; replacement preserves the previous default) and should proceed once wiring is complete.
 - **Legacy snapshotted jobs:** keep their historical label; they do not auto-rename on prefix changes.
 - **Legacy unsnapshotted jobs:** may need `migrateLegacyWrappedJobPage(jobId, exactLabel)` before deterministic write hooks succeed.
 
@@ -207,7 +207,7 @@ Expected result:
 On new ENSJobPages (`Read Contract`):
 - `jobManager` equals target AGIJobManager.
 - `jobsRootName` and `jobsRootNode` are expected values.
-- `jobLabelPrefix` expected default or configured value.
+- `jobLabelPrefix` equals `job-` in fresh mode or the preserved value in replacement mode.
 
 On AGIJobManager (`Read Contract`):
 - `ensJobPages` equals new ENSJobPages address.

@@ -2,7 +2,7 @@
 
 Next.js dApp and operations console with **read-only first**, **simulation-first writes**, and deterministic demo mode.
 
-USDC entry: [v1.0.0 standalone console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html) and current [repository console](../../ui/agijobmanager-usdc.html). [The frozen release and current console differ](../V1_RELEASE_SCOPE.md#published-download-versus-current-source); combined free-identity onboarding and later context/mobile fixes are in the repository console. Voting requires the `getJobBonds` getter, absent from v0.9.5 and older managers. Read the [compatibility notes and earlier bond-quote limitation](../qualification/BUYER_ECONOMICS_FOLLOWUP.md). Verify checksums and configure a verified v0.9.6 or v1.0.0 manager; no live manager is supplied by default.
+USDC entry: [v1.0.0 standalone console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html) and current [repository console](../../ui/agijobmanager-usdc.html). [The frozen release and current console differ](../V1_RELEASE_SCOPE.md#published-download-versus-current-source); combined free-identity onboarding and later context/mobile fixes are in the repository console. Voting requires the `getJobBonds` getter, absent from v0.9.5 and older managers. Read the [compatibility notes and earlier bond-quote limitation](../qualification/BUYER_ECONOMICS_FOLLOWUP.md). Verify checksums and configure a verified v0.9.6 or v1.0.0 manager; no live manager is supplied by default.
 
 ## Quick links
 - [USDC standalone operator guide](./GENESIS_JOB_MAINNET_HTML_UI.md)
