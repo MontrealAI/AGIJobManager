@@ -2194,7 +2194,7 @@ This section summarizes expected mechanics; the deployed code controls.
 1) Validator reward budget. The Protocol may allocate a portion of the Job payout as a validator reward budget (as snapshotted per job) for distribution to participating Validators, subject to code rules.
 2) Bond returns and slashing. Validator bonds may be returned in full, partially slashed, or redistributed depending on whether a Validator ends up on the correct side of the final outcome, as defined by the code.
 3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct settlement wallets. The owner may rotate these wallets only while intake is paused and all job escrow and bonds have been settled. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
-4) Job escrow refunds follow the smart-contract rules. Cancellation before assignment, expiry without submission, an employer-win outcome or the neutral arbitration timeout can return escrow when their on-chain conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed. A failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds.
+4) No refunds from the Protocol. Token movements are governed by the smart contract; there is no guarantee of reversal, refunds, or discretionary recovery.
 5) Gas fees. Users pay their own gas/transaction fees and accept the risk of network congestion, failed transactions, MEV, reorgs, and other chain-level issues.
 
 8. Taxes, Withholding, Reporting (Exclusive User Responsibility)
@@ -2301,6 +2301,11 @@ addresses, may prevent a transfer and therefore revert a settlement operation.
 Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
 Historical project-token sale disclosures do not describe v0.8.0 settlement and are
 preserved in previous Git tags.</div></details></div>
+      <div class="hintBox" style="margin-top:12px">
+        <b>How job escrow refunds work in v0.9.5</b>
+        <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
+        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v0.9.5, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+      </div>
     </div>
 
     <div class="card">
