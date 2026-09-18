@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.5",
+  "name": "v0.9.5 — Buyer protection and resilient USDC settlement",
+  "releaseDate": "2026-09-18",
+  "sourceCommit": "236d8789f0df4a8acae238d7b319bf01074ecef9",
+  "sourceTree": "8991843921e5039330c83165b8ab813f5d0308b4",
+  "previousTag": "v0.9.4",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Full buyer escrow refunds, no-vote escalation, explicit acceptance, full review, ENS credential/controller independence, pause-aware clocks, neutral arbitration timeout and protected USDC payment claims. Updated eight-library deployment, console and documentation. Software publication only; fresh deployment and instance-specific production activation remain separate.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2",
+    "docs/releases/v0.9.3",
+    "docs/releases/v0.9.4"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "3f63991f45c8a98753032a254e45bdcefa8a9006389eaa54bc58f60dec3c38c0",
+    "PREVIOUS_RELEASE.json": "88a85e1b0cf2394a14d9a772a8813d4fc6b98d16fdd3c4f2bd5af3047ea57c6e",
+    "SOURCE_CI.json": "89257ea87290d9b55b870914c07a83bbfcca80a120371522be4a0ecb96aa5293"
+  },
+  "requiredSourceRuns": {
+    "docs": {
+      "id": 35288922074,
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ]
+    },
+    "ci": {
+      "id": 35288921980,
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ]
+    },
+    "ui": {
+      "id": 35288922144,
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ]
+    },
+    "fork": {
+      "id": 35288922262,
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ]
+    },
+    "security": {
+      "id": 35288922054,
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ]
+    }
+  },
+  "preservationCommit": "5d883429792fa036c15df46e325c7a910321e159"
+}
