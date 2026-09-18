@@ -14,7 +14,7 @@ Yes. The current contract checks both configured roots for each role. Read `agen
 
 ## Why am I rejected despite owning a name?
 
-Check the connected wallet, network, manager, role-specific root and label. Confirm current wrapper authority or resolver `addr(node)`. Ownership of an agent name does not grant validator membership. Agents also need an eligible NFT; blacklists, job state, limits and USDC funding still apply.
+Check the connected wallet, network, manager, role-specific root and label. Confirm current wrapper authority or resolver `addr(node)`. Ownership of an agent name does not grant validator membership. Agents also need an eligible NFT when the job requires one; blacklists, job state, limits and USDC funding still apply.
 
 ## Are additional lists and Merkle proofs still supported?
 

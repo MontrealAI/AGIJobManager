@@ -12,6 +12,18 @@ AGIJobManager coordinates USDC-funded jobs, bonded review and buyer recovery. Th
 
 The 1.0 label identifies this software edition. It does not certify a deployed business, supply reviewers or moderators, promise future editions, or prove that honest participation is always profitable.
 
+## Published download versus current source
+
+The [published v1.0.0 release](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.0) is frozen at source `790facbcb0a9e9c2fea52a038b7c80fc2ba12795`. Its ZIP, console, manifest and checksums are unchanged. Documentation on `main` describes the current source, which includes later work.
+
+| Choose | What it contains | How to identify it |
+| --- | --- | --- |
+| Published v1.0.0 download | The original qualified 1.0 software and documentation | Use the release assets and verify their `SHA256SUMS.txt` |
+| Reviewed post-release console | Wallet/deployment/completion context fixes, mobile layout corrections and combined free name + identity NFT onboarding | [Pinned console source](https://github.com/MontrealAI/AGIJobManager/blob/14f745882db4b0b4294f30672aa669dee09e124a/ui/agijobmanager-usdc.html); select **Download raw file**, then open the saved HTML in your wallet-enabled browser |
+| Current repository documentation | Corrections and guidance added after the release | Record the commit you read; do not assume a frozen ZIP contains these updates |
+
+The reviewed console changes were merged in [PR #1517](https://github.com/MontrealAI/AGIJobManager/pull/1517). They did not change production contracts, ABI or payout rules and have not been repackaged into the v1.0.0 assets. For repeatable use, keep the pinned source commit with your downloaded console. A software download does not establish a live manager or readiness for paid intake.
+
 ## Compatibility
 
 | Existing manager | Use of the 1.0 console |

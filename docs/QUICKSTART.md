@@ -12,7 +12,7 @@ Choose the workflow below before running commands. A software release and passin
 
 ## 1) Install
 
-Check out the reviewed v1.0.0 release, use Node 22.23.2 and install the committed lockfiles. From the repository root:
+Choose and record the reviewed source commit using [release versus current-source guidance](V1_RELEASE_SCOPE.md#published-download-versus-current-source), use Node 22.23.2 and install the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
@@ -79,9 +79,13 @@ Review generated changes before committing them. Generated interface references 
 ## 5) UI checks
 
 ```bash
-node scripts/release/verify-usdc-ui.mjs
+node scripts/ui/verify-usdc-console.mjs
+npx playwright install --with-deps chromium
+npm run test:ui:usdc
 npm run test:ui
 ```
+
+These commands target the current repository console. The frozen v1.0.0 checkout instead uses its recorded `scripts/release/verify-usdc-ui.mjs`; it predates `test:ui:usdc`. The current browser runner uses mocked wallet/RPC responses and never signs or broadcasts; it loads the integrity-pinned Web3 dependency, or accepts a matching local file through `AGIJOBMANAGER_WEB3_PATH`.
 
 For UI development, install its own lockfile and follow its workspace guide:
 

@@ -2,7 +2,9 @@
 
 Use the [v1.0.0 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html) with a verified v0.9.6 or v1.0.0 USDC manager on Ethereum mainnet. No manager is configured by default. A verified v0.9.6 instance does not need redeployment for this update.
 
-The [matching repository console](../../ui/agijobmanager-usdc.html) includes clear cost and buyer guidance and requires `getJobBonds` for voting. v0.9.5 and older managers do not have that getter. See [compatibility and verification](../qualification/BUYER_ECONOMICS_FOLLOWUP.md), including the older console's bond-quote limitation. Existing jobs remain on their original contracts.
+The [current repository console](../../ui/agijobmanager-usdc.html) includes clear cost and buyer guidance and requires `getJobBonds` for voting. v0.9.5 and older managers do not have that getter. See [compatibility and verification](../qualification/BUYER_ECONOMICS_FOLLOWUP.md), including the older console's bond-quote limitation. Existing jobs remain on their original contracts.
+
+The repository console has post-release context/mobile fixes and a **Get free name + identity NFT** action that the frozen v1.0.0 asset does not contain. [Choose a version and download the pinned reviewed console](../V1_RELEASE_SCOPE.md#published-download-versus-current-source). Read the [agent journey](../roles/AGENT.md) for registration, expiry, job eligibility and payment.
 
 Before enabling writes the console checks chain ID 1, contract code, the manager's immutable `usdcToken()` address and six decimals. It repeats these checks before each transaction. Token identity checks do not prove source correctness; verify the deployment independently first.
 

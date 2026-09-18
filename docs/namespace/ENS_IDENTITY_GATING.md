@@ -2,7 +2,7 @@
 
 AGI Agents normally require membership under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. The wallet submitting the application or vote must satisfy the configured role's ownership, approval or resolver-address check. The legacy owner-managed additional lists and Merkle proofs remain explicit exceptions to ENS membership.
 
-Participant membership is separate from optional `ENSJobPages`. A job-page name, resolver text-edit permission or completion NFT does not automatically grant agent or validator membership. Agents separately need an eligible enabled AGI-type NFT credential.
+Participant membership is separate from optional `ENSJobPages`. A job-page name, resolver text-edit permission or completion NFT does not automatically grant agent or validator membership. Agents separately need an eligible enabled AGI-type NFT credential when `jobAgentNftRequired(jobId)` is true. The [free alpha-agent name + identity NFT](../guides/IDENTITY_AND_PROOFS.md#free-alpha-agent-name-and-identity-nft) can satisfy both checks if the owner enables that root and collection; NFT balance alone does not establish trial validity.
 
 ## Exact authorization order
 

@@ -64,7 +64,7 @@ sequenceDiagram
 
 ### Dispute and stale-dispute paths
 
-- `disputeJob`: employer or assigned agent can dispute during completion review window; dispute bond is transferred and locked.
+- `disputeJob`: employer or assigned agent can dispute after submission through the displayed settlement cutoff, before settlement and while undisputed; dispute bond is transferred and locked.
 - `resolveDisputeWithCode`: moderators resolve to agent win (`1`), employer win (`2`), or no-action (`0`, dispute remains active).
 - `resolveStaleDispute`: owner can resolve an active dispute strictly after `getJobDeadlines(jobId).ownerResolutionAfter`, including settlement-pause extensions.
 
@@ -74,10 +74,11 @@ sequenceDiagram
 
 | Bucket | Increases when | Decreases when |
 |---|---|---|
-| `lockedEscrow` | `createJob` payout transfer | settlement/cancel/expire via `_releaseEscrow` |
-| `lockedAgentBonds` | `applyForJob` agent bond | `_settleAgentBond` |
-| `lockedValidatorBonds` | validator votes transfer bond | `_settleValidators` |
-| `lockedDisputeBonds` | `disputeJob` bond | `_settleDisputeBond` |
+| `lockedEscrow` | `createJob` payout transfer | Successful settlement, cancellation, expiry or refund |
+| `lockedAgentBonds` | `applyForJob` agent bond | Return or forfeiture under the outcome rules |
+| `lockedValidatorBonds` | Validator votes transfer bond | Return or slashing under the outcome rules |
+| `lockedDisputeBonds` | `disputeJob` bond | Outcome distribution or neutral return |
+| `lockedClaims` | Failed outgoing USDC payment becomes a reserved claim | Successful `claimUSDC(beneficiary)` retry to the original beneficiary |
 
 ### Agent-win payout decomposition
 
@@ -88,7 +89,7 @@ See [USDC payout distribution](USDC_PAYOUT_SPLIT.md). Pay validators using the p
 
 - Escrow/bond solvency enforced by lock accounting and withdrawal checks.
 - A job cannot be settled twice (`_requireJobUnsettled`).
-- `applyForJob` restricted by allowlist or Merkle/ENS verification, blacklist checks, max active jobs per agent, and an eligible NFT credential in addition to identity authorization; NFT scores do not alter payout percentages.
+- `applyForJob` restricted by allowlist or Merkle/ENS verification, blacklist checks, max active jobs per agent, and an eligible NFT credential when `jobAgentNftRequired(jobId)` is true, in addition to identity authorization; NFT scores do not alter payout percentages.
 - Votes are one-per-validator-per-job and only inside `completionReviewPeriod`.
 - Validator participation is hard-capped by `MAX_VALIDATORS_PER_JOB`.
 - Finalization has liveness branches:
@@ -127,7 +128,7 @@ See [USDC payout distribution](USDC_PAYOUT_SPLIT.md). Pay validators using the p
 | `TransferFailed` | token transfer helper failure | non-compliant token / transfer failure |
 | `ValidatorLimitReached` | max validators hit | additional vote after cap |
 | `InvalidValidatorThresholds` | thresholds violate cap constraints | approvals/disapprovals > max or sum > max |
-| `IneligibleAgentPayout` | no eligible AGI-type NFT credential | agent has no qualifying NFT balance |
+| `IneligibleAgentPayout` | Job requires an enabled AGI-type NFT credential | Read `jobAgentNftRequired(jobId)` and check the approved collection balance |
 | `InsufficientWithdrawableBalance` | owner withdraw request too high | amount > `withdrawableUSDC` |
 | `InsolventEscrowBalance` | accounting shortfall | token balance < locked totals |
 | `ConfigLocked` | identity config frozen | setters used after `lockIdentityConfiguration` |

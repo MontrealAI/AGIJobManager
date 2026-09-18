@@ -4,11 +4,11 @@ All job escrow, rewards, and bonds use native USDC. Each sender needs ETH for tr
 
 ## Employer
 
-Post and fund jobs with `createJob`; cancel before assignment; request a bonded dispute after completion submission within the review window and before settlement. The first eligible successful application assigns the job automatically. Successful settlement mints the employer's completion NFT; there is no built-in NFT marketplace. See the [employer guide](../roles/EMPLOYER.md).
+Post and fund jobs with `createJob`; cancel before assignment; request a bonded dispute after completion submission through the displayed settlement cutoff, before settlement and while undisputed. The first eligible successful application assigns the job automatically. Successful settlement mints the employer's completion NFT; there is no built-in NFT marketplace. See the [employer guide](../roles/EMPLOYER.md).
 
 ## Agent
 
-Apply for an unassigned job, perform its work, and request completion by the assignment deadline. You need an authorized agent identity **and** an eligible AGI-type NFT credential, plus the approved performance bond. Credentials establish eligibility, not a payout bonus. On success, receive the USDC remainder after validators and the fixed 30%/10% gross-cost shares, plus bond settlement. See the [agent guide](../roles/AGENT.md).
+Apply for an unassigned job, perform its work, and request completion by the assignment deadline. You need an authorized agent identity, an eligible AGI-type NFT credential **when the job requires it**, and the approved performance bond. Credentials establish eligibility, not a payout bonus. On success, receive the USDC remainder after validators and the fixed 30%/10% gross-cost shares, plus bond settlement. See the [agent guide](../roles/AGENT.md).
 
 Ordinary AGI Agent membership uses `agent.agi.eth` or `alpha.agent.agi.eth`. Use only the label; the wallet must pass the configured wrapper/resolver check. Owner-managed `additionalAgents` and agent Merkle proofs remain explicit membership exceptions. A proof must match the current role root and your connected wallet.
 

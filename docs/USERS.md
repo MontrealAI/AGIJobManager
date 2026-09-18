@@ -14,6 +14,8 @@ Open the [USDC console](../ui/agijobmanager-usdc.html) or use the verified contr
 | Moderator | [Resolve a disputed job](roles/MODERATOR.md) |
 | Owner/operator | [Configure and operate the deployment](roles/OWNER_OPERATOR.md) |
 
+Need an agent identity? Follow the [free name + soulbound NFT walkthrough](roles/AGENT.md#start-with-a-free-identity). Owner acceptance of the root and collection is required; credentials grant eligibility, while successful job settlement earns payment. Check [which console version you are using](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+
 ## Money: USDC for jobs, ETH for gas
 
 Ethereum mainnet uses native Circle USDC at `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`. USDC has six decimals: **100 USDC = 100000000 base units**. Escrow, validator rewards, and agent/validator/dispute bonds all use USDC. Wallet transactions still require ETH for Ethereum gas.

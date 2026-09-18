@@ -26,13 +26,18 @@
 | Static analysis | Configured scan and source-bound extended review | `npm run slither` and `npm run slither:extended` | Retained findings with explicit rationale; new or changed findings fail the gate |
 | UI unit | Interface behavior and transaction guards | `npm --prefix ui test` | Amounts, wallet/network changes, review and failed receipt handling |
 | UI browsers | User flow, accessibility and headers | From `ui/`: `npm run test:e2e`, `npm run test:a11y`, `npm run test:headers` | Browser behavior against the configured demo/test setup |
-| Standalone builds | Frozen-console checks and reproducibility | `node scripts/release/verify-usdc-ui.mjs`; from `ui/`: `npm run verify:deterministic` and `npm run verify:committed-html` | Console regressions and byte-for-byte committed build freshness |
+| Primary USDC console | Current single-file console guards and browser journeys | `node scripts/ui/verify-usdc-console.mjs` and `npm run test:ui:usdc` | Exact repository HTML, mocked wallet/RPC, context changes, onboarding and mobile behavior; no signing/broadcast |
+| Standalone builds | Next.js artifact reproducibility | From `ui/`: `npm run verify:deterministic` and `npm run verify:committed-html` | Byte-for-byte committed build freshness |
 | Documentation | Generated references and links | `npm run docs:check` | API/version freshness and documentation integrity |
 | Dependency audit | Full root, deployment and UI dependency trees | `npm audit --audit-level=low`; repeat with `npm --prefix hardhat audit --audit-level=low` and `npm --prefix ui audit --audit-level=low` | Any reported severity blocks the gate, including development dependencies |
 
 ## Reproduce the required gates
 
 Use Node 22.23.2 and `npm ci` in the root, `hardhat/` and `ui/` workspaces. Compile before deployment tests. Install the Foundry and Slither versions pinned in [Security Verification](../.github/workflows/security-verification.yml). Install browser dependencies with `npx playwright install --with-deps chromium` in `ui/` before browser suites.
+
+For the primary console browser suite, also install Chromium from the repository root with `npx playwright install --with-deps chromium`. The runner fetches the console’s integrity-pinned Web3 dependency; `AGIJOBMANAGER_WEB3_PATH` may point to a local copy with the same required digest. Skipped tests, focused tests and expected failures do not qualify.
+
+[Current source differs from the frozen v1.0.0 download](V1_RELEASE_SCOPE.md#published-download-versus-current-source). The frozen release uses its recorded `scripts/release/verify-usdc-ui.mjs`; use the current console verifier above for `main`. Historical CI results qualify their recorded source, not later edits.
 
 Compiler version and optimizer/EVM settings are pinned in [Hardhat configuration](../hardhat/hardhat.config.js), [Foundry configuration](../foundry.toml) and the root lockfile. Preserve their parity when changing compiler versions. The tested runtime size and exact compiler profile belong in the final release evidence; historical size or pass counts do not qualify a new source tree.
 

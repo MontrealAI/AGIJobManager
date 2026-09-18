@@ -2,7 +2,11 @@
 
 > **v1.0.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
-Institutional documentation for operators, integrators, contributors, and auditors.
+Guides for buyers, agents, reviewers, operators and developers. **These are current repository docs:** [published v1.0.0 downloads and the newer console differ](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+
+- **Become an agent:** [free identity, eligibility, work and payment](roles/AGENT.md).
+- **Enable free agent identities:** [owner configuration walkthrough](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).
+- **Understand missing or poor work:** [buyer protection](BUYER_PROTECTION.md) and [job specification template](BUYER_JOB_TEMPLATE.md).
 
 ## Start here in one minute
 
