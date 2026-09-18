@@ -8,6 +8,7 @@ This development update follows the published v0.9.5 release. It makes buyer out
 - Posting and assignment distinguish total buyer escrow from agent earnings, wallet fees and the shared reviewer budget. Bonds and gas are separate. Unknown simulation amounts stay unknown instead of becoming guessed charges.
 - Job report export handles exact large integer amounts. Job details refresh deadlines and recorded bonds. “Settled” does not imply that the agent delivered acceptable work: a buyer-win refund is also a settlement.
 - The buyer guide explains missing delivery, a bad/inaccessible submission link, dispute funding, final acceptance, neutral timeout, deferred claims and gas costs. The copyable job template makes acceptance criteria explicit.
+- The console's payment terms distinguish contract-governed escrow refunds from final settlement; the previous blanket "no refunds" wording obscured the available buyer exits.
 - Lifecycle, role, permission and USDC guides now agree on no-vote escalation, full buyer escrow refunds and isolated outgoing payments. The economic guide includes reviewer income, collateral risk, conflicting identities, arbitration availability and the limits of capped dispute bonds.
 
 ## Compatibility

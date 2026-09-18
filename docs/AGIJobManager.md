@@ -97,10 +97,11 @@ stateDiagram-v2
 | `AGITypeUpdated` | `addAGIType` | Eligibility score per AGI type NFT (legacy field name). |
 | `NFTIssued` | `_mintCompletionNFT` | ERC‑721 minted to employer. |
 | `CompletionReviewPeriodUpdated` / `DisputeReviewPeriodUpdated` | owner updates | Review period changes. |
-| `ValidatorBondParamsUpdated` | `setValidatorBondParams` | Validator bond parameter changes. |
 | `ChallengePeriodAfterApprovalUpdated` | `setChallengePeriodAfterApproval` | Validator approval challenge window updates. |
 | `USDCWithdrawn` | `withdrawUSDC` | Withdraws only surplus over locked balances. |
 | `IdentityConfigurationLocked` | `lockIdentityConfiguration` | One-way lock for protected ENS wiring; the token is already immutable. |
+
+`ValidatorBondParamsUpdated` is declared in the ABI but the current setter does not emit it. Read the live defaults and the job's recorded bond when quoting collateral; do not infer current amounts from that event alone.
 | `AgentBlacklisted` / `ValidatorBlacklisted` | owner updates | Eligibility gating. |
 
 ## Error handling (custom errors + typical causes)
