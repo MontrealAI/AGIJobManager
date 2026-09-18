@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.7",
+  "name": "v0.9.7 \u2014 Correct console permissions and clear launch guidance",
+  "releaseDate": "2026-09-18",
+  "sourceCommit": "e947b5f3b599e1e13f2076e807d80309ea3b3193",
+  "sourceTree": "715b7f0751da0803f8731402c57a4d73190c5758",
+  "previousTag": "v0.9.6",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Correct owner/moderator console permissions, accurate pause and reserved-payment guidance, explicit production launch checklist, current versioned documentation and refreshed qualification evidence. Manager/library executable bytecode, ABI, successful-job economics and buyer protections are unchanged from v0.9.6. Verified v0.9.6 managers remain compatible. Software publication only; production deployment and activation remain separate.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2",
+    "docs/releases/v0.9.3",
+    "docs/releases/v0.9.4",
+    "docs/releases/v0.9.5",
+    "docs/releases/v0.9.6"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "b1904d5378a208ea37760286100522ad2522bcc0b18d7cc08f6b0a7ee79ab73c",
+    "PREVIOUS_RELEASE.json": "b2b97244f42b9c2853767b3e9435261800b158970cce69365e2a13c348d780a2",
+    "SOURCE_CI.json": "ede708100fc4d679aad87f1d812a4b178b79d4b99719433c0e629b780df2d7e3"
+  },
+  "requiredSourceRuns": {
+    "docs": {
+      "id": 35298438406,
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ]
+    },
+    "ci": {
+      "id": 35298438576,
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ]
+    },
+    "ui": {
+      "id": 35298438410,
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ]
+    },
+    "fork": {
+      "id": 35298438421,
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ]
+    },
+    "security": {
+      "id": 35298438433,
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ]
+    }
+  },
+  "preservationCommit": "16ad0958bf56da9a051be89d4a8c5100e62ce958"
+}
