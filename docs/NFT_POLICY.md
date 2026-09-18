@@ -1,4 +1,4 @@
-# Agent NFT policy — v1.0.0
+# Agent NFT policy — v1.0.2
 
 The owner can require or waive an approved NFT for **newly posted jobs**. NFTs are required by default. Each job records the choice when its `createJob` transaction executes, before assignment; changing the default never changes an existing job.
 
@@ -13,7 +13,7 @@ NFTs determine eligibility at application, not payment amounts. Successful settl
 
 ## Owner walkthrough
 
-1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html), select the verified v1.0.0 manager and connect the accepted owner wallet. Confirm the chain and contract address.
+1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.2/agijobmanager-usdc.html), select the verified v1.0.2 manager and connect the accepted owner wallet. Confirm the chain and contract address.
 2. In owner controls, choose **NFT requirement for new jobs**. Enter `true` to require an enabled NFT or `false` to waive it. Review and simulate the transaction, then submit through the owner's signing setup.
 3. Verify `AgentNftRequirementUpdated(required)` and `agentNftRequired()`. A pending owner has no authority until ownership is accepted. This operational setting remains available after identity configuration is locked.
 4. Agents and employers check `jobAgentNftRequired(jobId)` or the console's job detail/review for the actual job policy. Missing or cancelled jobs revert instead of reporting an optional policy.
@@ -57,7 +57,7 @@ The NFT registry remains owner-maintainable after the ENS identity lock, subject
 
 The supported deployment script deploys and verifies eight linked libraries, including `NftEligibility`, and the manager. It starts intake paused, retains the required default and empty registry, and proposes the configured ownership handover. It does not choose production collections or silently turn eligibility off.
 
-After ownership acceptance and on-chain configuration, create `hardhat/reviewed-nft-policy.json` describing the **complete expected registry**, including disabled entries. For a required policy:
+Run `npm --prefix hardhat run setup` to create a private policy example without overwriting existing files. After ownership acceptance and on-chain configuration, review `hardhat/reviewed-nft-policy.json` describing the **complete expected registry**, including disabled entries. For a required policy:
 
 ```json
 {
@@ -93,6 +93,6 @@ The local-only owner configuration CLI also accepts `agentNftRequired: true/fals
 
 ## Existing deployments and qualification
 
-The per-job NFT policy was introduced in v0.9.4. v1.0.0 retains the v0.9.6 ABI and executable bytecode, so a verified v0.9.6 manager remains compatible with this console. First deployments and moves from incompatible older versions require a fresh manager. There is no proxy upgrade or escrow migration. Keep every earlier job on its original manager, asset, helper and ENS namespace, using a compatible interface. A fresh manager needs a distinct jobs namespace because IDs restart at zero. Do not overwrite old receipts or relabel old addresses as v1.0.0 deployments.
+The per-job NFT policy was introduced in v0.9.4. v1.0.2 retains the v0.9.6 ABI and executable bytecode, so a verified v0.9.6 manager remains compatible with this console. First deployments and moves from incompatible older versions require a fresh manager. There is no proxy upgrade or escrow migration. Keep every earlier job on its original manager, asset, helper and ENS namespace, using a compatible interface. A fresh manager needs a distinct jobs namespace because IDs restart at zero. Do not overwrite old receipts or relabel old addresses as v1.0.2 deployments.
 
 The regression suite covers both modes, repeated default changes, accepted-owner authority, collection protection, eligibility, bonds and identical payouts after transferring away an NFT. Fuzzing exercises both policy orders and varying costs/reward rates. The pinned mainnet fork repeats both modes against actual Circle USDC and ENS contracts while comparing the legacy inventory. It uses a mock eligibility collection: actual production collections, owners, recipients, signer access and activation still require instance-specific review. See [qualification](qualification/USDC_CUTOVER.md) and [mainnet readiness](MAINNET_READINESS.md).

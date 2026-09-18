@@ -1,8 +1,8 @@
-# Hardhat deployment guide — v1.0.1
+# Hardhat deployment guide — v1.0.2
 
-v1.0.1 corrects operating guidance and console permissions while retaining the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6 instance does not need redeployment for this software update. First deployments and upgrades from incompatible older versions still require the reviewed manager and all eight library links; existing jobs stay on their original contracts. Start with the [launch checklist](../docs/LAUNCH_CHECKLIST.md) and [compatibility evidence](../docs/qualification/OPERATIONS_V097.md).
+v1.0.2 simplifies operator setup, adds offline configuration validation, and makes environment loading consistent. Production Solidity, the manager ABI, eight library links and payout rules are unchanged. A verified v0.9.6-compatible manager does not need redeployment for this software update. Start with the [launch checklist](../docs/LAUNCH_CHECKLIST.md), then use this guide in order. The [configuration reference](../docs/DEPLOYMENT_CONFIGURATION.md) lists every supported deployment setting and recovery command.
 
-This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. v1.0.1 preserves the eight-library v0.9.6 manager, including `JobSettlement` and `JobValidation`. A verified v0.9.6 manager remains compatible; older incompatible managers require a fresh deployment to gain the current features. All eight fixed links, including transitive library links, are verified. Existing jobs stay on their original managers and use those versions’ interfaces. A new console cannot upgrade old bytecode.
+This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. v1.0.2 preserves the eight-library v0.9.6 manager, including `JobSettlement` and `JobValidation`. A verified v0.9.6 manager remains compatible; older incompatible managers require a fresh deployment to gain the current features. All eight fixed links, including transitive library links, are verified. Existing jobs stay on their original managers and use those versions’ interfaces. A new console cannot upgrade old bytecode.
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 
@@ -12,17 +12,33 @@ Use Node 22.23.2 and the immutable release tag. Install from committed lockfiles
 
 ```bash
 npm ci
+npm --prefix hardhat ci
+npm --prefix hardhat run setup
 cd hardhat
-npm ci
-if [ ! -e .env ] && [ ! -L .env ]; then cp .env.example .env; fi
-if [ ! -e deploy.config.cjs ] && [ ! -L deploy.config.cjs ]; then cp deploy.config.example.cjs deploy.config.cjs; fi
 ```
 
-These commands preserve existing files. Inspect and update the reviewed files instead of copying examples over an established configuration. The deployment script loads private `deploy.config.cjs` by default and fails if it is absent; it does not silently deploy the example. Set `DEPLOY_CONFIG` only to another reviewed configuration.
+Run the first three commands from the repository root. `setup` creates private `.env`, `deploy.config.cjs` and `reviewed-nft-policy.json` files inside `hardhat/`. It never overwrites existing files or follows destination symlinks; on POSIX, new files have mode `0600`. Re-running setup preserves existing settings, so compare older files with the current examples. It makes no network requests or transactions.
+
+Hardhat always loads **`hardhat/.env`**, including when commands are launched from the repository root. Exported shell variables take precedence. The root `.env` is only for separate Node operator tools; retired Truffle keys are not deployment configuration. Relative paths inside environment settings use the command's working directory; the commands below run from `hardhat/`. `npm --prefix hardhat run <command>` from the root is equivalent.
+
+The deployment script loads private `deploy.config.cjs` by default and fails if it is absent; it never silently deploys the example. Set `DEPLOY_CONFIG` only to another reviewed configuration.
 
 Review `deploy.config.cjs` as executable JavaScript from a trusted source. Set each network's `settlementWallets: [wallet30, wallet10]` and intended `finalOwner`; independently confirm control of these addresses. Review ENS registry, wrapper, four root nodes, two Merkle roots and metadata gateway. `FINAL_OWNER` or the selected profile’s `finalOwner` must explicitly identify the intended final owner, including for a dry run; omission does not select the deployer. The mainnet example contains the four established ENS member roots and zero Merkle roots, with no recipient or owner supplied. Sepolia ENS addresses must be filled from the selected deployment; examples do not prove current signing access or namespace control. Prefer a tested multisignature owner for substantial funds.
 
 In the local environment, configure the selected RPC, `DEPLOY_CONFIG=./deploy.config.cjs`, and `ETHERSCAN_API_KEY`. Actual deployment additionally requires a funded, disposable deployer `PRIVATE_KEY`. Never commit keys, paste them into issue reports, or provide them to untrusted tools. Mainnet and Sepolia profiles are bound to chain IDs 1 and 11155111.
+
+## Check the configuration before connecting
+
+After entering the intended owner, both recipients and network settings, run the corresponding offline check from `hardhat/`:
+
+```bash
+npm run check:config:sepolia
+npm run check:config:mainnet
+```
+
+Run only the profile you have completed. This shares the deployment script's constructor/owner/native-USDC validation, checks confirmation settings and prints public configuration. It requires no RPC, key, compilation or explorer credentials. A pass validates local input only; it does not verify control of addresses, on-chain code or readiness. A custom `.cjs` configuration is executable code: review it before loading it with either command.
+
+The generated NFT example deliberately retains the contract's required/empty starting policy. It is **not ready for activation**. Choose the required/optional policy and complete registry using the [NFT walkthrough](../docs/NFT_POLICY.md), then configure that same policy on chain before readiness.
 
 ## Participant membership and optional job pages
 
@@ -58,7 +74,7 @@ The qualified compiler is Solidity 0.8.37, optimizer 40 runs, Shanghai, `viaIR=t
 
 ## Review and deploy
 
-A dry run validates configuration, chain, token state and compiled artifacts without broadcasting. With no private key configured, set `DEPLOYER_ADDRESS` to the intended deployer address for this read-only plan:
+A dry run validates configuration, chain, token state and compiled artifacts without broadcasting. The manager plan is not a total gas quote: each linked deployment is estimated immediately before its own broadcast, once prerequisite libraries exist. The helper dry run also estimates its single constructor transaction. With no private key configured, set `DEPLOYER_ADDRESS` to the intended deployer address for this read-only plan:
 
 ```bash
 DRY_RUN=1 npm run deploy:mainnet
@@ -66,10 +82,10 @@ DRY_RUN=1 npm run deploy:mainnet
 
 Boolean settings (`DRY_RUN`, and the optional ENS script's `VERIFY`/`LOCK_CONFIG`) accept explicit `1`/`0`, `true`/`false`, `yes`/`no` or `on`/`off`. Unknown text is rejected before any transaction. `DRY_RUN=true` is also read-only. Keep the mainnet broadcast confirmation phrase unset during rehearsals.
 
-Review its plan, explicit owner source, membership-root mapping and exception policy before an independently authorized deployment. Mainnet requires at least three confirmations (`CONFIRMATIONS=3` by default). For actual mainnet deployment, remove `DRY_RUN=1` and set `DEPLOY_CONFIRM_MAINNET` to `I_UNDERSTAND_MAINNET_DEPLOYMENT` in the operator's local environment, then run:
+Review its plan, explicit owner source, membership-root mapping and exception policy before an authorized deployment. Mainnet requires at least three confirmations (`CONFIRMATIONS=3` by default). For actual mainnet deployment, set `DRY_RUN=0` explicitly and set `DEPLOY_CONFIRM_MAINNET` to `I_UNDERSTAND_MAINNET_DEPLOYMENT` in the operator's local environment, then run:
 
 ```bash
-npm run deploy:mainnet
+DRY_RUN=0 npm run deploy:mainnet
 ```
 
 The script deploys eight linked libraries and the manager, validates successful transaction receipts, compares deployed runtime bytes with the exact release artifacts, confirms paused intake, and completes explorer verification for every contract before proposing ownership transfer when needed. Disabled verification or unrecognized verification errors fail closed. It never opens intake. A proposal leaves the deployer in control until the proposed owner calls `acceptOwnership()`.
@@ -128,7 +144,7 @@ DRY_RUN=1 npm run deploy:ens-job-pages:sepolia
 
 Review `JOB_MANAGER`, `ENS_DEPLOYMENT_MODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, `NEW_OWNER`, `VERIFY` and `LOCK_CONFIG`. Fresh mode automatically selects `job-<id>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`; it refuses existing jobs/helpers and occupied roots. `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE` and `JOB_LABEL_PREFIX` are optional assertions. Replacement mode preserves the active helper’s root and prefix for the same manager. Read the [naming policy](../docs/ENS_DEPLOYMENT_NAMESPACES.md), verify parent authority and keep configuration unlocked through lifecycle validation.
 
-For the corresponding mainnet read-only plan, use `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` with the reviewed mainnet values and `DEPLOYER_ADDRESS`. An actual broadcast requires the explicit mainnet confirmation phrase, a funded deployer and `DRY_RUN` disabled. Keep `VERIFY=1` and `LOCK_CONFIG=0`, then run `npm run deploy:ens-job-pages:mainnet`. The final helper owner must be the separately reviewed `NEW_OWNER`.
+For the corresponding mainnet read-only plan, use `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` with the reviewed mainnet values and `DEPLOYER_ADDRESS`. An actual broadcast requires the explicit mainnet confirmation phrase, a funded deployer and `DRY_RUN=0` explicitly. Keep `VERIFY=1` and `LOCK_CONFIG=0`, then run `npm run deploy:ens-job-pages:mainnet`. The final helper owner must be the separately reviewed `NEW_OWNER`.
 
 Helper broadcasts require explorer verification; `VERIFY` defaults enabled and disabling it blocks a public-network broadcast. A keyless read-only plan needs no explorer API key. The target manager must have intake paused and zero `pendingOwner()` on both supported public networks; complete manager ownership acceptance first and independently compare `owner()` to the reviewed manager receipt. Zero pending owner alone does not prove the intended owner is in control. This gate does not require empty reserves because a separately reviewed same-manager helper replacement may preserve existing jobs. Set the explicit final helper owner through `NEW_OWNER` or `FINAL_OWNER`; omission does not retain the deployer. On Sepolia, configure the actual `ENS_REGISTRY`, `NAME_WRAPPER` (zero is permitted for an unwrapped-only route) and `PUBLIC_RESOLVER` explicitly.
 

@@ -30,7 +30,7 @@ These mocks exercise the contract's identity-verification paths. They do not est
 
 ## Actual mainnet ENS fork
 
-The v1.0.0 [cutover fixture](../../hardhat/test/mainnet-cutover.test.js) includes seven participant-membership scenarios using real mainnet Registry, NameWrapper and PublicResolver contracts. Both primary and alpha agent/club roots are exercised with locally created names, including owner/resolver/approval admission, wrong-root and revoked rejection, and explicit allowlist/Merkle exceptions. The full cutover suite has 23 passing scenarios. The report records actual parent authority and stack code hashes. Local impersonation and a mock NFT fixture do not prove production signing access or qualify a real NFT collection. See the [scope and evidence](../qualification/USDC_CUTOVER.md).
+The v1.0.2 [cutover fixture](../../hardhat/test/mainnet-cutover.test.js) includes seven participant-membership scenarios using real mainnet Registry, NameWrapper and PublicResolver contracts. Both primary and alpha agent/club roots are exercised with locally created names, including owner/resolver/approval admission, wrong-root and revoked rejection, and explicit allowlist/Merkle exceptions. The full cutover suite has 23 passing scenarios. The report records actual parent authority and stack code hashes. Local impersonation and a mock NFT fixture do not prove production signing access or qualify a real NFT collection. See the [scope and evidence](../qualification/USDC_CUTOVER.md).
 
 ## How to run
 

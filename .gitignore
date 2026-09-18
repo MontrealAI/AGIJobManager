@@ -154,3 +154,5 @@ __pycache__/
 
 # Reviewed local operator configuration
 /hardhat/deploy.config.cjs
+/hardhat/reviewed-nft-policy.json
+/hardhat/reviewed-identity.json

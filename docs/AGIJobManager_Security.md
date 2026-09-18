@@ -1,4 +1,4 @@
-# AGIJobManager security considerations — v1.0.0
+# AGIJobManager security considerations — v1.0.2
 
 Read the [security model](SECURITY_MODEL.md), [trust model](trust-model-and-security-overview.md), [dependency scope](DEPENDENCY_SECURITY.md) and [source-specific verification report](../SECURITY_VERIFICATION_REPORT.md) together. A passing automated suite is not an independent audit or a guarantee that no vulnerability remains.
 

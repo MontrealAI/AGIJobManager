@@ -1,4 +1,4 @@
-# Quickstart — v1.0.0
+# Quickstart — v1.0.2
 
 Choose the workflow below before running commands. A software release and passing tests do not deploy a manager or open it to deposits.
 

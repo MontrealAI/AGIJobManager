@@ -1,4 +1,4 @@
-# Testing v1.0.0
+# Testing v1.0.2
 
 ## Current strategy
 
@@ -38,7 +38,7 @@ Use Node 22.23.2 and `npm ci` in the root, `hardhat/` and `ui/` workspaces. Comp
 
 For the primary console browser suite, also install Chromium from the repository root with `npx playwright install --with-deps chromium`. The runner fetches the console’s integrity-pinned Web3 dependency; `AGIJOBMANAGER_WEB3_PATH` may point to a local copy with the same required digest. Skipped tests, focused tests and expected failures do not qualify.
 
-[Current source differs from the frozen v1.0.0 download](V1_RELEASE_SCOPE.md#published-download-versus-current-source). The frozen release uses its recorded `scripts/release/verify-usdc-ui.mjs`; use the current console verifier above for `main`. Historical CI results qualify their recorded source, not later edits.
+[Compare published editions and their pinned source](V1_RELEASE_SCOPE.md#published-download-versus-current-source). The frozen release uses its recorded `scripts/release/verify-usdc-ui.mjs`; use the current console verifier above for `main`. Historical CI results qualify their recorded source, not later edits.
 
 Compiler version and optimizer/EVM settings are pinned in [Hardhat configuration](../hardhat/hardhat.config.js), [Foundry configuration](../foundry.toml) and the root lockfile. Preserve their parity when changing compiler versions. The tested runtime size and exact compiler profile belong in the final release evidence; historical size or pass counts do not qualify a new source tree.
 

@@ -1,5 +1,7 @@
 # Troubleshooting: Hardhat Deployment and ENSJobPages Operations
 
+For missing RPC, private profile, owner or NFT-policy settings, start with the [deployment configuration troubleshooting table](DEPLOYMENT_CONFIGURATION.md#resolve-a-blocked-step).
+
 This guide covers common production/operator issues for the current Hardhat + ENSJobPages workflow. Fresh USDC cutover uses a separate helper and dedicated root directly owned by it; preserve the original manager, helper, root and jobs. Same-manager helper replacement is a separate procedure in the [replacement runbook](DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 
 
@@ -89,7 +91,7 @@ DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT
 Example:
 ```bash
 cd hardhat
-DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
+DRY_RUN=0 DEPLOY_CONFIRM_MAINNET=I_UNDERSTAND_MAINNET_DEPLOYMENT npm run deploy:mainnet
 ```
 
 ---

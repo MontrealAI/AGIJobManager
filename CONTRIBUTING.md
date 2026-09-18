@@ -10,7 +10,8 @@ Thanks for your interest in contributing. This repository is security-sensitive 
 ## Development workflow
 1. **Install dependencies**
    ```bash
-   npm install
+   npm ci
+   npm --prefix hardhat ci
    ```
 2. **Compile**
    ```bash

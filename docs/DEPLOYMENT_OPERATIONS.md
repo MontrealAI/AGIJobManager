@@ -1,6 +1,6 @@
-# Deployment and Release Operations — v1.0.0
+# Deployment and Release Operations — v1.0.2
 
-Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing v1.0.0 does not deploy or upgrade any live contract.
+Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing v1.0.2 does not deploy or upgrade any live contract.
 
 The manager is non-upgradeable and starts intake paused in its constructor. It uses native Circle USDC, fixed 30% and 10% successful-job wallet shares, and a posting-time validator reward percentage. Supply and independently review both recipient wallets and the intended final owner before planning a public deployment.
 
@@ -18,11 +18,13 @@ The manager is non-upgradeable and starts intake paused in its constructor. It u
 | Pre-activation check | [Readiness checker](../hardhat/scripts/check-readiness.js), original deployment receipt and reviewed expectations | From `hardhat/`: `npm run check:readiness` with `DEPLOYMENT_RECEIPT` and `READINESS_NFT_CONFIG` | Read-only report with block number/hash and checked state |
 | Activation and handoff | [Deploy-day runbook](DEPLOY_DAY_RUNBOOK.md), owner approval and monitoring | Accepted owner calls `unpauseIntake()` | Activation receipt, reconciled canary job and operational records |
 
+Use the [configuration reference](DEPLOYMENT_CONFIGURATION.md) for private setup, the offline profile check, environment precedence and recovery commands.
+
 ## Deterministic deployment flow
 
 ### 1. Freeze and qualify the release
 
-Check out the immutable v1.0.0 tag and verify downloaded checksums. Use Node 22.23.2 and the committed lockfiles. From the repository root:
+Check out the immutable v1.0.2 tag and verify downloaded checksums. Use Node 22.23.2 and the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
@@ -77,7 +79,7 @@ A pending ownership proposal leaves authority with the deployer. If the recovery
 
 While intake remains paused, configure moderators, enabled NFT types, participant authorization, limits, bonds and review policy through the accepted owner. Check every setting against the [owner controls](OWNER_CONTROLS.md). Record successful transaction receipts and actual getter values; some role setters have no role-specific event.
 
-Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v1.0.0 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
+Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v1.0.2 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
 
 Prepare the [reviewed NFT policy JSON](NFT_POLICY.md) for `READINESS_NFT_CONFIG`: an explicit boolean and every collection/score, including disabled entries. The required default with an empty registry fails readiness.
 

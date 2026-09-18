@@ -1,4 +1,4 @@
-# Validator Guide — v1.0.0
+# Validator Guide — v1.0.2
 
 Validators review submitted work and vote once per job. Rewards and bonds use native USDC; signing transactions requires ETH for gas.
 

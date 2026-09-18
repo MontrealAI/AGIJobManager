@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -7,6 +6,7 @@ import hardhatMocha from '@nomicfoundation/hardhat-mocha';
 
 const require = createRequire(import.meta.url);
 const directory = path.dirname(fileURLToPath(import.meta.url));
+require('./scripts/load-env.cjs').loadDeploymentEnv(directory);
 const compilerPath = require.resolve('solc/soljson.js', { paths: [path.resolve(directory, '..')] });
 const compiler = { version: '0.8.37', path: compilerPath, preferWasm: true,
   settings: { optimizer: { enabled: true, runs: 40 }, evmVersion: 'shanghai', viaIR: true,
