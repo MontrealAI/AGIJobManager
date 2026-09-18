@@ -120,7 +120,7 @@ Irreversible actions (delay until validated):
 
 The current [Hardhat guide](hardhat/README.md) now pairs a five-step deployment overview with read-only defaults for missing/empty `DRY_RUN`. The offline check reports the selected mode; broadcasting requires explicit `DRY_RUN=0` and the existing safety gates. Published v1.0.5 downloads are unchanged. Use a pinned source and its matching [release/maintenance scope](docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
-## Documentation entry points
+### Documentation entry points
 - Canonical deployment index: [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md)
 - Official Hardhat operator guide: [`hardhat/README.md`](hardhat/README.md)
 - ENSJobPages replacement runbook (mainnet): [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)

@@ -43,7 +43,7 @@ Preserve the qualified Solidity 0.8.37 profile: optimizer 40 runs, Shanghai, `vi
 
 ### 2. Review configuration and produce a plan
 
-Run `npm --prefix hardhat run setup` from the root, then work from `hardhat/` as described in its guide. Review that file as executable JavaScript from a trusted source. Supply:
+Run `npm --prefix hardhat run setup` from the root, then work from `hardhat/` as described in its guide. Review `deploy.config.cjs` as executable JavaScript from a trusted source. Supply:
 
 - The selected network's canonical six-decimal Circle USDC address.
 - Distinct, nonzero recipient addresses ordered `[wallet30, wallet10]`, different from USDC and the manager. Verify control and USDC receive capability.
