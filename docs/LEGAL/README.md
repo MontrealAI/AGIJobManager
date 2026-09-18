@@ -1,6 +1,6 @@
 # Legal and operator protection center
 
-**v1.0.4 · English publication · 18 September 2026**
+**v1.0.5 · English publication · 18 September 2026**
 
 AGIJobManager is MIT-licensed software. Publishing it does not by itself make MONTREAL.AI the operator, employer, custodian, adviser or guarantor of someone else's deployment. An owner also does not guarantee every job simply by holding an administrative address. Actual activities, control, promises, payments and applicable law determine each person's responsibilities.
 
@@ -12,6 +12,8 @@ AGIJobManager is MIT-licensed software. Publishing it does not by itself make MO
 | What do the source and console notices mean? | [Protocol terms: authority, acceptance and versioning](TERMS_AND_CONDITIONS.md) |
 | What should an independent owner publish? | [Deployment notice and operator terms template](OPERATOR_NOTICE_TEMPLATE.md) |
 | Can open-source code or an overseas owner remove regulation? | [Activity and jurisdiction review](REGULATORY_SCOPE.md) |
+| What must users keep out of public submissions? | [User data responsibilities](USER_DATA_RULES.md) |
+| How should an operator handle a privacy incident? | [Privacy response procedure](../OPERATIONS/PRIVACY_RESPONSE.md) |
 | What happens to wallet information, drafts and public job data? | [Privacy and public-data notice](PRIVACY.md) |
 | What can an administrator actually do? | [Owner powers and limits](../OWNER_CONTROLS.md) |
 

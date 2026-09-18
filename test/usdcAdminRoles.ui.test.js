@@ -22,11 +22,21 @@ function harness(account, isModerator = false, rejectSimulation = false) {
     requestActionConfirmation: async review => { events.push({ kind: 'review', review }); return true; },
     runTrackedTx: async () => events.push({ kind: 'sent' }), refreshAll: async () => {},
   });
+  vm.runInContext(html.slice(html.indexOf('const ADMIN_METHOD_SCHEMAS ='), html.indexOf('function parseAdminArg(')), ctx);
   vm.runInContext(html.slice(start, end), ctx);
   return { ctx, events };
 }
 
 describe('USDC console administrative roles', () => {
+  it('does not send public text to an RPC before content review is accepted', async () => {
+    const {ctx,events}=harness('owner');
+    ctx.APP_STATE.admin.ensOwner='owner';
+    ctx.ensJobPages={methods:{setJobLabelPrefix:()=>({call:async()=>events.push({kind:'simulation'})})}};
+    ctx.collectAdminArgs=async()=>['public-job-'];
+    ctx.requestActionConfirmation=async review=>{ events.push({kind:'review',review}); return false; };
+    await ctx.executeAdminControl('ens','setJobLabelPrefix');
+    assert.equal(events.length,1); assert.equal(events[0].kind,'review'); assert.equal(events[0].review.publicContent,true);
+  });
   it('lets the owner use the overdue-dispute backstop without moderator membership', async () => {
     const { ctx, events } = harness('owner');
     await ctx.executeAdminControl('manager', 'resolveStaleDispute', true);

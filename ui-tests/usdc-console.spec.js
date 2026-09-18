@@ -148,6 +148,65 @@ async function assertNoExecution(page, errors) {
 }
 
 test.describe('Published USDC console in a real browser', () => {
+  test('drafts require explicit saving and loading, and can be cleared with old completion drafts and notes', async ({page}) => {
+    const errors=await openConsole(page), key='agijobmanager_usdc_v096_builder_draft_v11_1';
+    await page.locator('#jobTitle').fill('Public benchmark task');
+    await page.evaluate(()=>window.dispatchEvent(new Event('beforeunload')));
+    expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBeNull();
+    await page.locator('#saveBuilderDraftBtn').click();
+    await page.reload(); await expect(page.locator('#jobTitle')).toHaveValue('');
+    await page.locator('#loadBuilderDraftBtn').click(); await expect(page.locator('#jobTitle')).toHaveValue('Public benchmark task');
+    await page.evaluate(()=>{
+      localStorage.setItem('agijobmanager_usdc_v096_completion_draft_7','{"uri":"old-draft"}');
+      localStorage.setItem('agijobmanager_usdc_v096_job_notes_7','old notes');
+      localStorage.setItem('unrelated-preference','keep');
+    });
+    await page.locator('#clearSavedJobContentBtn').click();
+    expect(await page.evaluate(()=>Object.keys(localStorage).filter(key=>/_(builder_draft_|completion_draft_|job_notes_)/.test(key)))).toEqual([]);
+    expect(await page.evaluate(()=>localStorage.getItem('unrelated-preference'))).toBe('keep');
+    await assertNoExecution(page,errors);
+  });
+
+  test('pinning credentials are masked, never restored and not persisted by remembering settings', async ({page}) => {
+    const errors=await openConsole(page), key='agijobmanager_usdc_v096_ipfs_prefs_v11';
+    await page.evaluate(key=>localStorage.setItem(key,JSON.stringify({mode:'pinata-jwt',endpoint:'https://api.pinata.cloud/pinning/pinJSONToIPFS',jwt:'old-test-secret'})),key);
+    await page.reload(); await expect(page.locator('#ipfsJwt')).toHaveAttribute('type','password'); await expect(page.locator('#ipfsJwt')).toHaveValue('');
+    await page.locator('#ipfsJwt').fill('new-test-secret'); await page.locator('#saveIpfsPrefsBtn').click();
+    const prefs=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key); expect(Object.keys(prefs).sort()).toEqual(['endpoint','mode']);
+    await assertNoExecution(page,errors);
+  });
+
+  test('each posting review starts unchecked and cannot execute without the public-content check', async ({page}) => {
+    const errors=await openConsole(page); await connectReadyBuyer(page); await openPostingReview(page);
+    await expect(page.locator('#confirmActionReviewBtn')).toBeDisabled();
+    await page.evaluate(()=>confirmReviewedAction());
+    await expect(page.locator('#actionReviewModal')).toHaveAttribute('aria-hidden','false');
+    await page.locator('#actionReviewPrivacyAccepted').check(); await expect(page.locator('#confirmActionReviewBtn')).toBeEnabled();
+    await page.locator('#actionReviewPrivacyAccepted').uncheck(); await expect(page.locator('#confirmActionReviewBtn')).toBeDisabled();
+    await page.locator('#cancelActionReviewBtn').click(); await openPostingReview(page);
+    await expect(page.locator('#actionReviewPrivacyAccepted')).not.toBeChecked(); await expect(page.locator('#confirmActionReviewBtn')).toBeDisabled();
+    await assertNoExecution(page,errors);
+  });
+
+  test('public upload needs fresh confirmation and sends only the exact reviewed JSON', async ({page}) => {
+    const errors=await openConsole(page), uploads=[];
+    await page.route('https://upload.example/public',async route=>{
+      const headers={'access-control-allow-origin':'*','access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'content-type'};
+      if(route.request().method()==='OPTIONS') return route.fulfill({status:204,headers,body:''});
+      uploads.push(route.request().postDataJSON()); await route.fulfill({status:200,headers,contentType:'application/json',body:'{"cid":"bafy-public-receipt"}'});
+    });
+    await page.locator('#ipfsMode').fill('custom-json-endpoint'); await page.locator('#ipfsEndpoint').fill('https://upload.example/public'); await page.locator('#jobTitle').fill('Reviewed public task');
+    await page.locator('#uploadMetadataBtn').click(); await expect(page.locator('#publicUploadReviewModal')).toHaveAttribute('aria-hidden','false');
+    await expect(page.locator('#confirmPublicUploadReviewBtn')).toBeDisabled(); expect(uploads).toHaveLength(0);
+    await page.locator('#cancelPublicUploadReviewBtn').click(); expect(uploads).toHaveLength(0);
+    await page.locator('#uploadMetadataBtn').click(); await expect(page.locator('#publicUploadReviewAccepted')).not.toBeChecked();
+    const reviewed=JSON.parse(await page.locator('#publicUploadReviewPayload').textContent());
+    await page.evaluate(()=>{document.getElementById('jobTitle').value='Unreviewed replacement';});
+    await page.locator('#publicUploadReviewAccepted').check(); await page.locator('#confirmPublicUploadReviewBtn').click();
+    await expect(page.locator('#generatedSpecURI')).toHaveText('ipfs://bafy-public-receipt'); expect(uploads).toEqual([reviewed]);
+    await assertNoExecution(page,errors);
+  });
+
   test('boots disconnected and keeps write actions locked while navigating guides', async ({ page }) => {
     const errors = await openConsole(page);
     await expect(page.locator('#missionRole')).toHaveValue('employer');

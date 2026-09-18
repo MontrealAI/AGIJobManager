@@ -1,62 +1,21 @@
-# Privacy‑first storage & UX options
+# Publish a safe job receipt
 
-This guide explains how to publish job documents while protecting sensitive data.
+**Keep personal information, confidential work and secrets out of the public workflow.** Read the [privacy notice](LEGAL/PRIVACY.md) and [user rules](LEGAL/USER_DATA_RULES.md). Wallets and ENS identities can identify people; this is not a zero-personal-data system.
 
-## Privacy modes (choose one)
+1. Write a neutral description: “Evaluate the synthetic benchmark against agreed criteria.” Omit client names, emails, staff lists and private datasets.
+2. If private work is necessary, agree a lawful, access-controlled workflow with the actual parties. Keep credentials, sensitive paths and recipient lists there. Never put signed access links on-chain.
+3. Prepare a sanitized public receipt. Check text, filenames, images/EXIF, document properties, AI output and linked content.
+4. Inspect the exact JSON and transaction fields before confirming the console's public-content check. Software does not detect every personal detail or secret.
+5. Keep required records privately for a defined period. Clear saved browser content when no longer needed; downloads and public copies need separate handling.
 
-### 1) Public‑by‑default (IPFS/Arweave)
-- **Best for**: open research, public bounties.
-- **Trade‑offs**: everything is public forever once pinned.
+| Choice | Suitable use and limitations |
+| --- | --- |
+| Public IPFS/ENS content | Non-personal public descriptions and sanitized receipts; expect indexing, replication and no reliable global erasure. |
+| Separate private workspace | Protected artifacts shared only with authorized parties under appropriate arrangements. Publish no bearer link or personal identifier as the pointer. |
+| Managed provider | Reviewed roles, safeguards, retention and terms. A provider does not remove the customer's or operator's own duties. |
 
-### 2) Public receipt + private artifacts (recommended)
-- **Best for**: most real‑world employers.
-- **How it works**: publish public **spec + completion** receipts, but keep sensitive artifacts behind gated links.
-- **ENS** points to public receipts + **integrity hashes** for private files.
+**A hash, CID, pseudonym or encrypted file is not automatically anonymous.** A fingerprint can still link to a person, confirm possession or be tested against known content. Do not publish private-file fingerprints as a universal GDPR solution. Assess surrounding information; never publish a lookup table or access secret.
 
-### 3) Fully managed storage (best UX)
-- **Best for**: non‑technical users and enterprise workflows.
-- **How it works**: a trusted platform stores files and issues receipts.
-- **Trade‑offs**: centralized custody; requires a privacy agreement.
+A static browser can upload directly to a user-selected pinning endpoint after confirmation; that provider may need an account or payment. Do not embed shared service credentials in a public page. The console uses a supplied JWT for the requested HTTPS upload without remembering it. Pinning, gateways and hosting can incur costs and process connection information.
 
-## DO / DON’T (privacy)
-
-**Do**
-- Store **public receipts** and **hashes** on ENS.
-- Keep sensitive files behind private links or access control.
-- Use the `agijobs.integrity` record to publish hashes/CIDs.
-
-**Don’t**
-- Put secrets or private URLs in ENS text records.
-- Assume IPFS or Arweave is private (it isn’t).
-
-## ENS records are public
-ENS text records are public and indexed. **Never store secrets** in `text:` records. Instead, store **pointers** to public receipts and **hashes** for verification.
-
-## How documents get published (realistic patterns)
-
-**Does an employer need an IPFS account?**
-- **Not necessarily.** IPFS can be handled by a platform, a relay, or a pinning provider on the user’s behalf.
-
-**Can the platform be just a static site?**
-- **Yes, for browsing and read‑only flows.**
-- **No, for uploads that require authentication or payment** (someone must pin/pay).
-
-### Serverless‑friendly patterns
-1. **User‑provided pinning key** (most decentralized, worst UX)
-   - The user provides their own Pinata/web3.storage key.
-   - The UI uploads directly.
-
-2. **Wallet‑signed upload to a relay** (balanced)
-   - User signs an upload request.
-   - A relay pins on their behalf (still off‑chain infrastructure).
-
-3. **Managed pinning by the platform** (best UX)
-   - The platform pays and pins.
-   - Users get the easiest flow, at the cost of centralization.
-
-> **No free pinning**: someone pays for storage. Choose who funds it and document that choice.
-
-## Quick decision guide
-- **Privacy‑sensitive employer** → public receipt + private artifacts.
-- **Open/public bounty** → public‑by‑default.
-- **Non‑technical or enterprise** → managed storage.
+**Save draft on this device** and **Save notes** create unencrypted local copies. Typing does not autosave. Completion drafts stay in page memory. Use **Load saved draft** for an existing saved builder draft. **Clear saved job content** removes stored builder drafts, completion drafts and job notes on this origin; it cannot erase chain/IPFS records, backups, clipboard data or downloads. See the [privacy response procedure](OPERATIONS/PRIVACY_RESPONSE.md).

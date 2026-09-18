@@ -12,7 +12,7 @@ function deferred() {
   const promise = new Promise(r => { resolve = r; });
   return { promise, resolve };
 }
-function harness() {
+function harness(holdPrivacyReview = false) {
   const account = '0x1111111111111111111111111111111111111111';
   const managerA = '0x2222222222222222222222222222222222222222';
   const managerB = '0x3333333333333333333333333333333333333333';
@@ -30,9 +30,9 @@ function harness() {
     AGI_JOB_MANAGER: managerA, agiJobManager: contract(managerA), APP_STATE: { writeEpoch: 0 },
     hasAcceptedTerms: true, isMainnet: true, activeReviewedContext: null, trackedTransactionPending: false,
     requireConnected: () => true, mustBeReadyToWrite: () => true,
-    normalizeCompletionUriField: () => normalized,
-    inspectCompletionUri: async () => { inspectionStarted.resolve(); return inspection.promise; },
-    requestActionConfirmation: async config => { calls.push({ step: 'confirm', config }); confirmationStarted.resolve(); return confirmation.promise; },
+    normalizeCompletionUriField: () => ({ ...normalized }),
+    inspectCompletionUri: async () => { calls.push({ step: 'inspect' }); inspectionStarted.resolve(); return inspection.promise; },
+    requestActionConfirmation: async config => { calls.push({ step: 'confirm', config }); if(config.publicContent && !holdPrivacyReview) return true; confirmationStarted.resolve(); return confirmation.promise; },
     verifyUSDCDeployment: async () => {}, activeJobIndexCache: { ids: [], ts: 0 },
     addTxActivity: () => ({ id: 'activity' }), updateTxActivity: () => {},
     saveCompletionDraft: jobId => calls.push({ step: 'save', jobId }), setToast: () => {},
@@ -57,6 +57,29 @@ function harness() {
 }
 
 describe('USDC completion assistant asynchronous context', () => {
+  it('cancels before contacting metadata providers or sending a transaction when public-content review is declined', async () => {
+    const h = harness(true), pending = h.context.submitCompletionFromAssistant();
+    await h.confirmationStarted;
+    assert.equal(h.calls[0].config.publicContent, true);
+    h.confirmation.resolve(false); await pending;
+    assert.equal(h.calls.some(call => call.step === 'inspect' || call.step === 'simulate' || call.step === 'send' || call.step === 'save'), false);
+    assert.equal(h.original.inspected, null);
+  });
+
+  it('invalidates a public-content confirmation when the active assistant changes', async () => {
+    const h = harness(true), pending = h.context.submitCompletionFromAssistant();
+    await h.confirmationStarted; h.replaceAssistant(true); h.confirmation.resolve(true);
+    await assert.rejects(pending, /Completion assistant changed/);
+    assert.equal(h.calls.some(call => call.step === 'send' || call.step === 'save'), false);
+  });
+
+  it('rejects a completion URI changed during review before any metadata request', async () => {
+    const h = harness(true), pending = h.context.submitCompletionFromAssistant();
+    await h.confirmationStarted; h.normalized.canonical = 'https://unreviewed.example/private'; h.confirmation.resolve(true);
+    await assert.rejects(pending, /Completion URI changed/);
+    assert.equal(h.calls.some(call => ['inspect', 'simulate', 'send', 'save'].includes(call.step)), false);
+  });
+
   it('submits the originally reviewed job and URI after an unchanged metadata inspection', async () => {
     const h = harness(), pending = h.context.submitCompletionFromAssistant();
     await h.inspectionStarted; h.inspection.resolve({ posture: 'Metadata JSON' }); await pending;

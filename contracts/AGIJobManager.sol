@@ -4,11 +4,11 @@
 
 [ A G I J O B M A N A G E R  -  P R O T O C O L  T E R M S  A N D  N O T I C E S ]
 
-Notice version: v1.0.4. Publication date: 18 September 2026.
+Notice version: v1.0.5. Publication date: 18 September 2026.
 Software publisher/rightsholder: MONTREAL.AI and the other identified rightsholders.
 Deployment operator: the actual person or entity identified for the selected instance;
 not determined by a brand, ENS name, source comment or wallet address alone.
-Legal center: https://github.com/MontrealAI/AGIJobManager/tree/v1.0.4/docs/LEGAL
+Legal center: https://github.com/MontrealAI/AGIJobManager/tree/v1.0.5/docs/LEGAL
 
 1. Scope, license and acceptance
 
@@ -109,13 +109,13 @@ absence of a separate written agreement.
 
 7. Public data and third parties
 
-On-chain addresses, names, actions, details, URIs and events can be public, linkable and
-persistent. Do not publish confidential or sensitive information in them. Use suitable
-private access controls for protected work. Hashing or encryption alone does not remove
-privacy duties; deleting local data or revoking an ENS record cannot erase public copies.
-Wallet, RPC, host, CDN, explorer and metadata services can process information under their
-own arrangements. Each actual data-processing operator must give an accurate notice and
-meet applicable duties. The software does not promise zero personal data or anonymity.
+Protocol addresses, ENS identities and activity can be personal data, linkable and permanent.
+Do not add personal information about yourself or others, confidential material or secrets to public text, links, files, ENS/IPFS/NFT metadata or support posts.
+Users bear responsibility for their selected data, instructions, disclosures and agent outputs to the fullest lawful extent; check authority, rights and public-safe content before submission.
+Keep protected work in a separately agreed lawful, access-controlled workflow. Mere software or contract use does not appoint MONTREAL.AI or an owner as its private-data custodian or processor.
+Actual processing roles and mandatory duties cannot be transferred by a disclaimer, checkbox or indemnity. No privacy rights are waived by a wallet transaction.
+Hashes, encryption and private-looking links do not guarantee anonymity; local deletion, unpinning or ENS changes cannot erase all public copies.
+Wallet, RPC, host and metadata providers can process connection data. Actual operators must provide accurate notices and applicable safeguards; no zero-data or regulatory-immunity claim is made.
 
 8. Operational commitments and risk
 
@@ -149,7 +149,7 @@ Any service cap requires a locally reviewed agreement specifying its amount and 
 10. Professional-user indemnity and representation
 
 An independent operator may seek a proportionate, locally reviewed business-user
-indemnity for third-party loss caused by that user's unlawful content, infringement,
+indemnity for third-party loss caused by that user's unlawful data disclosure, content,
 intentional misuse or breach. It requires valid agreement, identified beneficiaries,
 appropriate defense/settlement procedures and mandatory-law exceptions; it is not
 imposed by this notice or by MIT. It must not cover the protected party's own misconduct
