@@ -1,4 +1,4 @@
-# Start here — AGIJobManager v0.9.5
+# Start here — AGIJobManager v0.9.6
 
 AGIJobManager holds a job's USDC payment until the work reaches a settlement outcome. Employers post work, eligible agents take jobs, validators assess the submitted evidence, and moderators handle disputes. The owner configures the instance and can pause it.
 
@@ -16,7 +16,7 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 | Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |
 | Evaluate the release | [Mainnet readiness](MAINNET_READINESS.md) and [testing](TESTING.md) | Source, release manifest, checksums and the linked CI evidence |
 
-Download the [v0.9.5 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/AGIJobManager-v0.9.5-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
+Download the [v0.9.6 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.6/AGIJobManager-v0.9.6-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.6/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
 
 ## Understand the payment before signing
 

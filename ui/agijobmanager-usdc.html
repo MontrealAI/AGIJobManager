@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC development console</title>
+  <title>AGIJobManager · USDC v0.9.6</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">Unreleased follow-up to v0.9.5 · Voting requires a manager with exact job bond reads. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v0.9.6 · Use a fresh, verified v0.9.6 manager for exact job bond reads. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1171,7 +1171,7 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · development console</h2>
+      <h2>USDC deployment · v0.9.6</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
@@ -2045,8 +2045,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.9.5 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.5 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v0.9.6 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.6 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2302,9 +2302,9 @@ Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contra
 Historical project-token sale disclosures do not describe v0.8.0 settlement and are
 preserved in previous Git tags.</div></details></div>
       <div class="hintBox" style="margin-top:12px">
-        <b>How job escrow refunds work in v0.9.5</b>
+        <b>How job escrow refunds work in v0.9.6</b>
         <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
-        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v0.9.5, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v0.9.6, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
       </div>
     </div>
 
@@ -2313,7 +2313,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.5/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.5 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.6/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.6 terms</a>
       </div>
     </div>
 
@@ -2351,7 +2351,7 @@ preserved in previous Git tags.</div></details></div>
     const nftRenderCache = { total:null, myHtml:'', allHtml:'', ts:0, myAccount:'' };
     const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
     let AGI_JOB_MANAGER = '';
-    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v090_manager') || ''; } catch {}
+    try { AGI_JOB_MANAGER = localStorage.getItem('agijobmanager_usdc_v096_manager') || ''; } catch {}
     let usdcDeploymentValidated = false;
     const NAME_WRAPPER = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
     const KNOWN_ENS_JOB_PAGES_FALLBACK = "";
@@ -2359,7 +2359,7 @@ preserved in previous Git tags.</div></details></div>
     const FREE_TRIAL_REGISTRAR_IDENTITY = "0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a";
     const ALPHA_AGENT_PARENT = "alpha.agent.agi.eth";
     const ALPHA_AGENT_PARENT_NODE = "0xc74b6c5e8a0d97ed1fe28755da7d06a84593b4de92f6582327bc40f41d6c2d5e";
-    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v090_v29_recent_alpha_names";
+    const RECENT_ALPHA_AGENT_KEY = "agijobmanager_usdc_v096_v29_recent_alpha_names";
     let resolvedEnsJobPagesAddress = "";
     let resolvedEnsJobPagesSource = "unavailable";
     const SUFFIX = { agent:"agent.agi.eth", club:"club.agi.eth", alphaAgent:"alpha.agent.agi.eth", alphaClub:"alpha.club.agi.eth" };
@@ -2913,8 +2913,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }
     }
 
-    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v090_v17_tx_activity";
-    const ELITE_PREFS_KEY = "agijobmanager_usdc_v090_v18_elite_prefs";
+    const TX_ACTIVITY_KEY = "agijobmanager_usdc_v096_v17_tx_activity";
+    const ELITE_PREFS_KEY = "agijobmanager_usdc_v096_v18_elite_prefs";
     function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
     function etherscanTxUrl(hash){ return hash ? `https://etherscan.io/tx/${hash}` : ""; }
     function requestMainnetSwitch(){
@@ -2925,8 +2925,8 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     function loadTxActivity(){
       try{
         const raw = localStorage.getItem(TX_ACTIVITY_KEY)
-          || localStorage.getItem('agijobmanager_usdc_v090_v27_tx_activity')
-          || localStorage.getItem('agijobmanager_usdc_v090_v17_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v096_v27_tx_activity')
+          || localStorage.getItem('agijobmanager_usdc_v096_v17_tx_activity')
           || '[]';
         txActivity = JSON.parse(raw);
       }catch{ txActivity = []; }
@@ -3663,7 +3663,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     async function readJobBonds(jobId, block = 'latest'){
       let raw;
       try{ raw = await agiJobManager.methods.getJobBonds(String(jobId)).call({}, block); }
-      catch{ throw new Error('Exact job bonds could not be read. Check your RPC and manager version. This console requires getJobBonds for voting; released v0.9.5 managers do not expose it.'); }
+      catch{ throw new Error('Exact job bonds could not be read. Check your RPC and manager version. This console requires getJobBonds for voting; v0.9.5 and older managers do not expose it.'); }
       const result = {};
       for(const [index,key] of [[0,'agentAmount'],[1,'validatorAmount'],[3,'disputeAmount']]){
         const value = String(raw[key] ?? raw[index]);
@@ -3832,7 +3832,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       try{return Number(await web3.eth.getChainId());}catch{return null;}
     }
 
-    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v090_builder_draft_v11_1";
+    const BUILDER_DRAFT_KEY = "agijobmanager_usdc_v096_builder_draft_v11_1";
     function builderFieldIds(){
       return ["jobTitle","jobCategory","jobTags","jobSummaryBuilder","jobDeliverables","jobAcceptance","jobRequirements","jobImageURI","jobExternalURI","jobSpecVersion","jobLocale","jobPayout","jobDuration","jobDetails","jobSpecURI"];
     }
@@ -4007,12 +4007,12 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         jwt: el("ipfsJwt")?.value || "",
         pinName: el("ipfsName")?.value || ""
       };
-      localStorage.setItem("agijobmanager_usdc_v090_ipfs_prefs_v11", JSON.stringify(prefs));
+      localStorage.setItem("agijobmanager_usdc_v096_ipfs_prefs_v11", JSON.stringify(prefs));
       setToast("IPFS browser settings saved locally on this device.", "ok");
     }
     function loadIpfsPrefs(){
       try{
-        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v090_ipfs_prefs_v11") || "{}");
+        const prefs = JSON.parse(localStorage.getItem("agijobmanager_usdc_v096_ipfs_prefs_v11") || "{}");
         if(el("ipfsMode")) el("ipfsMode").value = prefs.mode || "pinata-jwt";
         if(el("ipfsEndpoint")) el("ipfsEndpoint").value = prefs.endpoint || "https://api.pinata.cloud/pinning/pinJSONToIPFS";
         if(el("ipfsJwt")) el("ipfsJwt").value = prefs.jwt || "";
@@ -4020,7 +4020,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       }catch{}
     }
     function clearIpfsPrefs(){
-      localStorage.removeItem("agijobmanager_usdc_v090_ipfs_prefs_v11");
+      localStorage.removeItem("agijobmanager_usdc_v096_ipfs_prefs_v11");
       if(el("ipfsJwt")) el("ipfsJwt").value = "";
       setToast("Saved IPFS browser settings removed.", "ok");
     }
@@ -4624,7 +4624,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.5 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.6 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
@@ -4632,13 +4632,13 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
         const pauseClock = String(await agiJobManager.methods.settlementPausedSeconds().call());
-        if(!/^\d+$/.test(pauseClock)) throw new Error('A v0.9.5 manager with buyer protection is required.');
+        if(!/^\d+$/.test(pauseClock)) throw new Error('A v0.9.6 manager with buyer protection is required.');
         const pendingOwner = String(await agiJobManager.methods.pendingOwner().call());
-        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.5 manager with two-step ownership is required.');
+        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.6 manager with two-step ownership is required.');
         const wallet30 = String(await agiJobManager.methods.wallet30().call());
         const wallet10 = String(await agiJobManager.methods.wallet10().call());
         const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
-        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.9.5 settlement wallets.');
+        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid v0.9.6 settlement wallets.');
         if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
         usdcToken = token;
         tokenDecimals = 6;
@@ -4823,7 +4823,7 @@ async function updateSummary(){
 
     function loadJobPrefs(){
       try{
-        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v090_v10_prefs") || "{}");
+        const raw = JSON.parse(localStorage.getItem("agijobmanager_usdc_v096_v10_prefs") || "{}");
         jobFavorites = new Set(Array.isArray(raw.favorites) ? raw.favorites.map(x=>String(x)) : []);
         if(el("jobSearch")) el("jobSearch").value = raw.jobSearchText || "";
         if(el("jobStatusFilter")) el("jobStatusFilter").value = raw.jobStatusFilter || "all";
@@ -4838,12 +4838,12 @@ async function updateSummary(){
       }catch(e){}
     }
     function saveJobPrefs(){
-      localStorage.setItem("agijobmanager_usdc_v090_v10_prefs", JSON.stringify({
+      localStorage.setItem("agijobmanager_usdc_v096_v10_prefs", JSON.stringify({
         favorites: Array.from(jobFavorites),
         jobSearchText, jobStatusFilter, jobRoleFilter, jobSortMode, jobActionableOnly
       }));
     }
-    function notesKey(jobId){ return `agijobmanager_usdc_v090_job_notes_${jobId}`; }
+    function notesKey(jobId){ return `agijobmanager_usdc_v096_job_notes_${jobId}`; }
     function loadJobNotes(jobId){ try{ return localStorage.getItem(notesKey(jobId)) || ""; }catch{return "";} }
     function saveJobNotes(jobId, text){ try{ localStorage.setItem(notesKey(jobId), text || ""); }catch{} }
     function clearJobNotes(jobId){ try{ localStorage.removeItem(notesKey(jobId)); }catch{} }
@@ -6094,10 +6094,10 @@ function normalizeIpfsToHttp(uri){
       setToast(`Job Spec URI normalized to ${normalized.canonical}`, 'ok');
     }
     function loadCompletionDraft(jobId){
-      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v090_completion_draft_${jobId}`) || '{}'); }catch{return {};}
+      try{ return JSON.parse(localStorage.getItem(`agijobmanager_usdc_v096_completion_draft_${jobId}`) || '{}'); }catch{return {};}
     }
     function saveCompletionDraft(jobId){
-      try{ localStorage.setItem(`agijobmanager_usdc_v090_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
+      try{ localStorage.setItem(`agijobmanager_usdc_v096_completion_draft_${jobId}`, JSON.stringify({ uri: el('completionUriInput')?.value || '', finalImage: el('completionFinalImageInput')?.value || '' })); }catch{}
     }
     function runBondMathSelfTests(){
       const one = 1000000n;
@@ -7122,7 +7122,7 @@ function normalizeIpfsToHttp(uri){
       agiJobManager = null;
       hasAcceptedTerms = false; APP_STATE.wallet.termsAccepted = false;
       if(el('termsAccepted')) el('termsAccepted').checked = false;
-      try { localStorage.setItem('agijobmanager_usdc_v090_manager', value); } catch {}
+      try { localStorage.setItem('agijobmanager_usdc_v096_manager', value); } catch {}
       updateWriteGate();
       await connectWallet();
     });

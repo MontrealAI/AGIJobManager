@@ -4,7 +4,7 @@
   "review_date": "2026-09-18",
   "scope": "Production Solidity, all 102 enabled Slither detectors at every severity, plus separate all-medium/high and all-six-reentrancy reports. All findings are retained and individually reviewed against exact production/configuration/compiler/dependency-patch hashes. This is an internal review, not an independent audit.",
   "source_sha256": {
-    "contracts/AGIJobManager.sol": "1ed7c723a5382eedd109e59e428d2e094c17d28cdef01bf2410f630243d9209d",
+    "contracts/AGIJobManager.sol": "a25c1eb93cd0de5de952e94fad22126ddde1a928c2644d276945bf751af38757",
     "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
     "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
@@ -22,7 +22,7 @@
     "contracts/utils/TransferUtils.sol": "797242b5d1ac32547e065a0989d8f407a3f5a22618e98681a332d3e85197ce36",
     "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
     "foundry.toml": "fb098664cd6a2b8cba0b038924a4d1e3273096741d4b194c84308d670ad9098a",
-    "package-lock.json": "adb629fc9ca1d124e60715e9782b54a8c954c69b6ab3be0f0be2f6529ba288c8",
+    "package-lock.json": "8d869f654ceb8ba9871a20d65dd64857f57ed91e2b86b55d4e0694bd407ade65",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116",
     "scripts/security/run-slither-extended.sh": "ae23abf938d410c88ff340ec828f3bb30441fd6a22aaa0be34499f4fb72c38cb",
@@ -408,13 +408,13 @@
         "evidence": "contracts/AGIJobManager.sol; test/delistJob.reentrancy.test.js; test/ownerControls.test.js; test/v080.usdc.adversarial.test.js; test/completionSettlementInvariant.test.js"
       },
       {
-        "id": "0d479c7397feeee841af9decafeba9190a0542b4e38020bbb6fa3b0c559f34a8",
+        "id": "0b7a317b8ecec68840ba72668f9f5c3baebe8acba0bd4237338da0a6566cb863",
         "check": "assembly",
         "impact": "Informational",
         "confidence": "High",
-        "location": "AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1432-1445) uses assembly",
-        "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
-        "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
+        "location": "AGIJobManager._callEnsJobPagesHook(uint8,uint256) (contracts/AGIJobManager.sol#1367-1381) uses assembly",
+        "rationale": "Assembly sends an exact 68-byte selector/hook/job payload with ENS_HOOK_GAS_LIMIT and zero value, requesting no returndata. The optional hook is best effort and its success flag is recorded; it cannot consume unbounded copied returndata or reenter guarded money-moving paths.",
+        "evidence": "contracts/AGIJobManager.sol:_callEnsJobPagesHook; forge-test/unit/AGIJobManagerSecurityVerification.t.sol:test_ENSSelectorAndCalldataCompatibility; test/ensHooks.integration.test.js"
       },
       {
         "id": "0dfdfabef93367f19f94ddbf2ebfdf893ff183013465cb4cbd59f87c609ebdf2",
@@ -433,6 +433,15 @@
         "location": "Parameter AGIJobManager.setVoteQuorum(uint256)._quorum (contracts/AGIJobManager.sol#1093) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.setVoteQuorum(uint256)._quorum intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "11cf7c4716a811cfcfb48aca83e58e4beba3e03eef11103d6c8ad74a594b5f4f",
+        "check": "low-level-calls",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Low level call in AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1433-1446):",
+        "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
+        "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
       },
       {
         "id": "12c7c715d9f98255a9cb96cd07ad56ff6e6a228c890bdfb0130a092fa0e2e6de",
@@ -507,15 +516,6 @@
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
       },
       {
-        "id": "1f026151de46a1ae5edfdd42bceb46e579a84adbcc4ede2068710ebf96cc9f83",
-        "check": "timestamp",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "AGIJobManager.refundUnresolvedDispute(uint256) (contracts/AGIJobManager.sol#1310-1319) uses timestamp for comparisons",
-        "rationale": "This comparison implements the specified lifecycle deadline, using cumulative settlement-pause snapshots. It is not a randomness or price oracle. Review cannot end before the full review or any longer challenge; inclusive dispute/vote boundaries and strict settlement/timeout boundaries are intentional. Consensus timestamp granularity remains an operating limitation.",
-        "evidence": "contracts/AGIJobManager.sol:getJobDeadlines,_deadline,_settlementDeadline; contracts/utils/JobValidation.sol; test/buyerProtection.v095.test.js; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol"
-      },
-      {
         "id": "1f03ec3644d9500edd8364fec0381162e3e7c81702e9370abec1c8f84efe0302",
         "check": "assembly",
         "impact": "Informational",
@@ -579,6 +579,15 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
+        "id": "2ca21c5dfd0466df9a7f4bb46e7129829d81e991430c78dbadc2d81296e45869",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.refundUnresolvedDispute(uint256) (contracts/AGIJobManager.sol#1311-1320) uses timestamp for comparisons",
+        "rationale": "This comparison implements the specified lifecycle deadline, using cumulative settlement-pause snapshots. It is not a randomness or price oracle. Review cannot end before the full review or any longer challenge; inclusive dispute/vote boundaries and strict settlement/timeout boundaries are intentional. Consensus timestamp granularity remains an operating limitation.",
+        "evidence": "contracts/AGIJobManager.sol:getJobDeadlines,_deadline,_settlementDeadline; contracts/utils/JobValidation.sol; test/buyerProtection.v095.test.js; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol"
+      },
+      {
         "id": "32afac62c3f0517247a9ad4d56372a705681e2c0e433992948fde4bed093f4fc",
         "check": "low-level-calls",
         "impact": "Informational",
@@ -613,15 +622,6 @@
         "location": "Reentrancy in ENSJobPages.migrateLegacyWrappedJobPage(uint256,string) (contracts/ens/ENSJobPages.sol#257-311):",
         "rationale": "These are best-effort ENS metadata events after configured ENS/resolver calls or an onlySelf dispatch. Metadata entry points require onlyOwner, onlyJobManager, or onlySelf; an ordinary external callback cannot assume those roles. A compromised owner-selected integration can affect its own metadata/event ordering, but these events do not authorize USDC movement. Consumers must use manager job state and transaction/log order for settlement truth. Post-v0.9.1 cutover review: approve is the real PublicResolver delegate API; this metadata-only external call does not add custody access. The real-ENS fork exercises grants, actor writes and terminal revocation.",
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
-      },
-      {
-        "id": "35aea73e2bf369c51d38c26d690f2b169c1af396ce6d32af9f5dee240814bb45",
-        "check": "low-level-calls",
-        "impact": "Informational",
-        "confidence": "High",
-        "location": "Low level call in AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1432-1445):",
-        "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
-        "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
       },
       {
         "id": "37a91a696b6cfc999b92a0260903f496be129747e80b0fe76b881be048941d02",
@@ -694,6 +694,15 @@
         "location": "Parameter AGIJobManager.updateEnsRegistry(address)._newEnsRegistry (contracts/AGIJobManager.sol#1030) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.updateEnsRegistry(address)._newEnsRegistry intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "4c4fd3145b701115ae35a06532c7a75a6999c84da02fce51fc88558bdcba6423",
+        "check": "low-level-calls",
+        "impact": "Informational",
+        "confidence": "High",
+        "location": "Low level call in AGIJobManager.rescueETH(uint256) (contracts/AGIJobManager.sol#1417-1420):",
+        "rationale": "Only the owner can rescue accidental native ETH, and nonReentrant prevents nested guarded operations. ETH is not the escrow currency; the send targets the current owner and its success is checked. USDC reserves remain under separate withdrawal guards.",
+        "evidence": "contracts/AGIJobManager.sol:rescueETH; test/mainnetRescueAndMint.test.js; docs/OWNER_CONTROLS.md"
       },
       {
         "id": "4d85b5ef9e4f0881f21502e9c82d7b33c788365824ba1ba1aae30d370a9dc8fd",
@@ -903,13 +912,13 @@
         "evidence": "contracts/ens/ENSJobPages.sol:onlyJobManager,onlySelf,handleHook; contracts/AGIJobManager.sol:_callEnsJobPagesHook; test/ensHooks.integration.test.js; test/ensJobPagesHooks.test.js; hardhat/test/mainnet-cutover.test.js; docs/qualification/USDC_CUTOVER.md"
       },
       {
-        "id": "9126660240d329abf951b0a1f1251c14fb7adefc1f2771d28d830685813bc5c1",
-        "check": "low-level-calls",
+        "id": "89665aaf77c945afecd166430c45c306e558212d9ff763cf9b2f7921003d3fb0",
+        "check": "assembly",
         "impact": "Informational",
         "confidence": "High",
-        "location": "Low level call in AGIJobManager.rescueETH(uint256) (contracts/AGIJobManager.sol#1416-1419):",
-        "rationale": "Only the owner can rescue accidental native ETH, and nonReentrant prevents nested guarded operations. ETH is not the escrow currency; the send targets the current owner and its success is checked. USDC reserves remain under separate withdrawal guards.",
-        "evidence": "contracts/AGIJobManager.sol:rescueETH; test/mainnetRescueAndMint.test.js; docs/OWNER_CONTROLS.md"
+        "location": "AGIJobManager.rescueToken(address,bytes) (contracts/AGIJobManager.sol#1433-1446) uses assembly",
+        "rationale": "Assembly only reads a complete 32-byte return word after its exact length is checked; only bool true is accepted. The owner-only nonReentrant rescue forbids both USDC and the manager itself, preserving reserves and the self-call NFT boundary.",
+        "evidence": "contracts/AGIJobManager.sol:rescueToken; test/mainnetRescueAndMint.test.js; test/v080.usdc.adversarial.test.js"
       },
       {
         "id": "91caeb3584fb1a16b6ccdeb8dab23b0813a22cba5850e6791df07496bf450a1a",
@@ -928,6 +937,15 @@
         "location": "Function ENSJobPages._handleRevokeHook(IAGIJobManagerView,uint256) (contracts/ens/ENSJobPages.sol#437-453) is not in mixedCase",
         "rationale": "Function ENSJobPages._handleRevokeHook(IAGIJobManagerView,uint256) intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
+      },
+      {
+        "id": "95c9e26c889c7ca2d502942da7dac4aac728e90686d5ff9422c9abfebb5c1087",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.finalizeJob(uint256) (contracts/AGIJobManager.sol#1283-1298) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
       {
         "id": "9928cd80ab6d7e4278a16a53936b72edc71adf769bc243acd532da4d27a93cb5",
@@ -953,6 +971,15 @@
         "impact": "Low",
         "confidence": "Medium",
         "location": "AGIJobManager.disputeJob(uint256) (contracts/AGIJobManager.sol#933-960) uses timestamp for comparisons",
+        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
+        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
+      },
+      {
+        "id": "9d65819a53739a2c905a422a94d845350dd4be7b8ae233916d4bf5c86ecf5731",
+        "check": "timestamp",
+        "impact": "Low",
+        "confidence": "Medium",
+        "location": "AGIJobManager.expireJob(uint256) (contracts/AGIJobManager.sol#1255-1271) uses timestamp for comparisons",
         "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
         "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
@@ -1281,15 +1308,6 @@
         "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
       {
-        "id": "ddd433ac9677175ec1ff3435c250c7be967cd8ff2ebe298267b3be5826437e15",
-        "check": "timestamp",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "AGIJobManager.expireJob(uint256) (contracts/AGIJobManager.sol#1254-1270) uses timestamp for comparisons",
-        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
-        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
-      },
-      {
         "id": "e0ba2c0ac4840a954954881bb069604f717ee62d7c36a880cf5b22dd108bda5b",
         "check": "unused-return",
         "impact": "Medium",
@@ -1306,15 +1324,6 @@
         "location": "Parameter AGIJobManager.expireJob(uint256)._jobId (contracts/AGIJobManager.sol#1254) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.expireJob(uint256)._jobId intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
-      },
-      {
-        "id": "e19598ae54ffefe362c531df7c090aaae322de61283391cd16464ec8f403cbd5",
-        "check": "assembly",
-        "impact": "Informational",
-        "confidence": "High",
-        "location": "AGIJobManager._callEnsJobPagesHook(uint8,uint256) (contracts/AGIJobManager.sol#1366-1380) uses assembly",
-        "rationale": "Assembly sends an exact 68-byte selector/hook/job payload with ENS_HOOK_GAS_LIMIT and zero value, requesting no returndata. The optional hook is best effort and its success flag is recorded; it cannot consume unbounded copied returndata or reenter guarded money-moving paths.",
-        "evidence": "contracts/AGIJobManager.sol:_callEnsJobPagesHook; forge-test/unit/AGIJobManagerSecurityVerification.t.sol:test_ENSSelectorAndCalldataCompatibility; test/ensHooks.integration.test.js"
       },
       {
         "id": "e579931aabe5f7505810b8f14bf45317b9b0562e893dbf8dacc3efcedc506879",
@@ -1342,15 +1351,6 @@
         "location": "Parameter AGIJobManager.blacklistValidator(address,bool)._status (contracts/AGIJobManager.sol#1013) is not in mixedCase",
         "rationale": "Parameter AGIJobManager.blacklistValidator(address,bool)._status intentionally retains its established underscore convention. Parameter spelling does not change an ABI selector, and the external underscore hook dispatch methods remain onlySelf. This is a style observation, not an authorization or arithmetic defect; compatibility is preserved.",
         "evidence": "contracts/AGIJobManager.sol; contracts/ens/ENSJobPages.sol:onlySelf; docs/REFERENCE/CONTRACT_INTERFACE.md; test/ensHooks.integration.test.js"
-      },
-      {
-        "id": "efbde00f10c0caffd7b26f4bf3d85d01a836fab940b0ce5192558f20a8acde3c",
-        "check": "timestamp",
-        "impact": "Low",
-        "confidence": "Medium",
-        "location": "AGIJobManager.finalizeJob(uint256) (contracts/AGIJobManager.sol#1282-1297) uses timestamp for comparisons",
-        "rationale": "This comparison implements a documented assignment, review, challenge or stale-dispute deadline using Ethereum chain time; it is not randomness or a price oracle. Exact inclusive/exclusive boundaries are intentional and tested. Operators must allow inclusion latency and choose sensible periods; timestamps are not an off-chain service-level guarantee.",
-        "evidence": "contracts/AGIJobManager.sol; forge-test/fuzz/AGIJobManagerTimingFuzz.t.sol; forge-test/fuzz/AGIJobManagerSettlementFuzz.t.sol"
       },
       {
         "id": "f71282dc659423040d8cce499f6ee8bbe55f036422465b5c64fa25f9e43f2a9f",

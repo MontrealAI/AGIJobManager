@@ -2,9 +2,9 @@
 
 ## Official release
 
-AGIJobManager v0.9.5. Status: **deployment-required**.
+AGIJobManager v0.9.6. Status: **deployment-required**.
 
-Software release only; no live USDC manager is recorded here. v0.9.5 buyer-protection rules require a fresh manager and eight fixed linked libraries, including JobSettlement and JobValidation. Preserve every existing job on its original manager and namespace. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before opening intake. Initial activation requires zero escrow, bonds and pending claims. Later recipient and NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary.
+Software release only; no live USDC manager is recorded here. v0.9.6 buyer-protection rules require a fresh manager and eight fixed linked libraries, including JobSettlement and JobValidation. Preserve every existing job on its original manager and namespace. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before opening intake. Initial activation requires zero escrow, bonds and pending claims. Later recipient and NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary.
 
 - Chain ID: 1
 - Manager: Not recorded
@@ -18,7 +18,7 @@ Software release only; no live USDC manager is recorded here. v0.9.5 buyer-prote
 
 ## Constructor arguments
 
-Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and accepted owner explicitly. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. The v0.9.5 buyer-protection rules change manager bytecode and use eight fixed linked libraries, including JobSettlement and JobValidation. Using these rules requires a fresh manager; preserve existing jobs on their original contracts.
+Follow the [Hardhat deployment guide](../../hardhat/README.md), [readiness guide](../MAINNET_READINESS.md) and [deployment runbook](../DEPLOY_RUNBOOK.md). Supply the two settlement wallets and accepted owner explicitly. All monetary arguments use six-decimal base units. Preserve original-asset jobs on their existing manager; legacy deployment snapshots are not USDC configurations. The v0.9.6 buyer-protection interface changes manager bytecode and use eight fixed linked libraries, including JobSettlement and JobValidation. Exact job bond reads require the new getJobBonds getter and a fresh manager; preserve existing jobs on their original contracts.
 
 AGI Agents use agent.agi.eth or alpha.agent.agi.eth subnames; AGI Club validators use club.agi.eth or alpha.club.agi.eth. The contract preserves owner-managed allowlist and Merkle exceptions, and agents need a configured NFT eligibility credential only when their job requires it. NFTs are required by default; owner changes affect future jobs only. Readiness requires READINESS_NFT_CONFIG with the chosen mode and complete collection registry. Optional job-page ENS wiring is separate from member identity. Review the four membership root nodes and any exceptions in the deployment plan.
 

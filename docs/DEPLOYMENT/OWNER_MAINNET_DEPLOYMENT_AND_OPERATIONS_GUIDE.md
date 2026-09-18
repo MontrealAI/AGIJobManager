@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v0.9.5
+# Owner Mainnet Deployment & Operations Guide — v0.9.6
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -32,7 +32,7 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v0.9.5 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v0.9.6 source and checksums. From the repository root:
 
 ```bash
 npm ci

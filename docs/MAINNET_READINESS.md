@@ -1,10 +1,8 @@
-# v0.9.5 mainnet qualification
+# v0.9.6 mainnet qualification
 
-**Development follow-up:** the current source additionally exposes exact job bonds and has a 24,320-byte runtime (256 bytes of headroom). The v0.9.5 figures below describe that published release. The new source and console are unreleased; see [their verification and compatibility notes](qualification/BUYER_ECONOMICS_FOLLOWUP.md).
+v0.9.6 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
-v0.9.5 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
-
-The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v0.9.5, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
+The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v0.9.6, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
 
 ## Settlement
 
@@ -29,9 +27,9 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 - Transaction reviews bind the connected account, network and manager through approvals and submission. Changed contexts require a new review. Failed receipts cannot be reported as successful.
 - Qualification includes contract regressions, issuer restrictions, bonds/disputes, exact transfer ordering, fuzzing, concurrent-job invariants, deployment rejection scenarios, browser tests and static-analysis triage.
 
-## v0.9.5 operational review
+## v0.9.6 operational review
 
-v0.9.5 adds full buyer escrow refunds, no-vote dispute escalation, explicit acceptance, guaranteed full review, independent credential/controller checks, pause-aware deadlines, a neutral unresolved-dispute timeout, and reserved payment claims. The manager links eight fixed libraries. The per-job NFT policy, normal Agent/Club ENS membership, two-step manager ownership, and dedicated jobs namespace remain in force. The release evidence records the final source, checks and limits. Start with [buyer protection](BUYER_PROTECTION.md), [the owner runbook](OWNER_RUNBOOK.md), and [incident response](OPERATIONS/INCIDENT_RESPONSE.md).
+v0.9.6 adds exact job bond reads, observable validator-default changes and clearer cost/recovery guidance. It retains full buyer escrow refunds, no-vote dispute escalation, explicit acceptance, guaranteed full review, independent credential/controller checks, pause-aware deadlines, a neutral unresolved-dispute timeout, and reserved payment claims. The manager links eight fixed libraries. The per-job NFT policy, normal Agent/Club ENS membership, two-step manager ownership, and dedicated jobs namespace remain in force. The release evidence records the final source, checks and limits. Start with [buyer protection](BUYER_PROTECTION.md), [the owner runbook](OWNER_RUNBOOK.md), and [incident response](OPERATIONS/INCIDENT_RESPONSE.md).
 
 ## Reproduce qualification
 
@@ -87,9 +85,9 @@ Follow the [Hardhat guide](../hardhat/README.md), complete source verification a
 - This is not a proxy. Code changes require a new deployment; supported owner settings remain available under their on-chain guards.
 - The owner and moderators remain trusted authorities. A compromised owner can misuse eligibility, pause or dispute powers even though reserved funds cannot be withdrawn as surplus.
 - Circle may pause USDC, block addresses or upgrade its implementation. Failed outgoing transfers become protected claims; tests establish reserve conservation and same-beneficiary retries. Claims and existing jobs cannot be redirected by rotating wallets.
-- Validators can collude or misjudge off-chain work. Authorization is by wallet: an employer or agent can also vote if validator-authorized. Distinct addresses or ENS names do not establish independent people. Configure and monitor eligibility accordingly; bonds and tests do not prove the truth of a deliverable.
+- Validators can collude or misjudge off-chain work. The employer and assigned agent cannot vote on their own job; duplicate ENS credentials and recorded controllers are rejected. Distinct addresses or ENS names still do not establish independent people or rule out hidden common control. Configure and monitor eligibility accordingly; bonds and tests do not prove the truth of a deliverable.
 - ENS and metadata are external dependencies. Optional job-page failures are bounded; identity availability and correct operational configuration still matter.
-- The qualified manager runtime is 24,198 bytes: 378 bytes below Ethereum's 24,576-byte limit. Preserve the qualified compiler settings and repeat bytecode/deployment checks after every source or compiler change.
+- The qualified manager runtime is 24,359 bytes: 217 bytes below Ethereum's 24,576-byte limit. Preserve the qualified compiler settings and repeat bytecode/deployment checks after every source or compiler change.
 - CI audits the complete root, deployment and UI dependency trees and rejects advisories at every severity. Repeat those checks against the current registry before deployment; a clean advisory database result does not prove absence of unknown vulnerabilities.
 
 The [deploy-day runbook](DEPLOY_DAY_RUNBOOK.md), [owner controls](OWNER_CONTROLS.md) and [incident response](OPERATIONS/INCIDENT_RESPONSE.md) describe the operational steps.

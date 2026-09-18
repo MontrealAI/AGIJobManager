@@ -1,4 +1,4 @@
-# Buyer protection — v0.9.5
+# Buyer protection — v0.9.6
 
 **Your job cost stays in escrow until an authorized outcome. No votes do not mean approval.** This release improves the contract rules; people still have to assess whether the work meets the agreed requirements.
 
@@ -40,6 +40,6 @@ A moderator may decide a dispute immediately; the 14-day default delays the owne
 
 Moderators still judge off-chain quality. A colluding reviewer group can vote incorrectly, and an unavailable moderator can leave an honest agent unpaid until the neutral refund returns the buyer's escrow. Bond sizes do not prove that cheating is unprofitable for every job. Owner pauses can delay all exits, and USDC issuer restrictions can delay payment. See [economics and operating limits](game-theory.md).
 
-v0.9.5 requires a fresh manager and eight fixed linked libraries. Existing jobs, token allowances and ENS pages remain on their original contracts. Publishing this software does not activate it on Ethereum.
+v0.9.6 requires a fresh manager and eight fixed linked libraries. Existing jobs, token allowances and ENS pages remain on their original contracts. Publishing this software does not activate it on Ethereum.
 
 Explicit buyer acceptance does not slash dissenting validators or award reputation; it waives further review rather than adjudicating the truth of their votes. Normal adjudicated outcomes retain the configured slashing rules.
