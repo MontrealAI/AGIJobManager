@@ -1,7 +1,7 @@
 # Versions Reference (Generated)
 
-- Generated at (deterministic source fingerprint): `cabb64c54539`.
-- Source snapshot fingerprint: `cabb64c54539`.
+- Generated at (deterministic source fingerprint): `79d4036aa797`.
+- Source snapshot fingerprint: `79d4036aa797`.
 - Generation mode: deterministic from repository source files.
 
 ## Toolchain snapshot

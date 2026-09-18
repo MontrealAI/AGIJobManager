@@ -1,4 +1,4 @@
-# Owner Runbook — v1.0.5
+# Owner Runbook — v1.1.0
 
 Use this runbook for configuration, ownership and incident decisions. Use the [Hardhat deployment guide](../hardhat/README.md) for public-network commands and the [owner controls guide](OWNER_CONTROLS.md) for the exact boundaries of each setting. Local rehearsals use the maintained Hardhat 3 test runtime; Truffle and Ganache are retired.
 
@@ -132,7 +132,7 @@ Before manager `lockIdentityConfiguration()` or ENSJobPages `lockConfiguration()
 
 ## 7) High-risk actions (operator warnings)
 
-USDC is immutable and the 30% / 10% shares are fixed in v1.0.5. Recipient addresses can change only with paused intake and zero live job escrow and bonds. Previously reserved payment claims keep their original beneficiaries; wallet rotation does not redirect them.
+USDC is immutable and the 30% / 10% shares are fixed in v1.1.0. Recipient addresses can change only with paused intake and zero live job escrow and bonds. Previously reserved payment claims keep their original beneficiaries; wallet rotation does not redirect them.
 
 Ownership uses proposal then acceptance. Administrative authority stays with the current owner until acceptance; `renounceOwnership()` is disabled. Verify the recipient independently before proposing a change.
 

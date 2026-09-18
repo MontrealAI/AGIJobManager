@@ -1,4 +1,4 @@
-# v1.0.5 owner controls
+# v1.1.0 owner controls
 
 Jobs settle in native Circle USDC: validators first, then 30% and 10% of the original job cost to the two configured wallets, then the remaining amount to the agent. At the default validator budget of 8%, a successful 100 USDC job distributes 8 / 30 / 10 / 52 USDC. See the [complete payout rules](USDC_PAYOUT_SPLIT.md) for rounding, explicit acceptance and refunds.
 
@@ -8,7 +8,7 @@ Jobs settle in native Circle USDC: validators first, then 30% and 10% of the ori
 | --- | --- |
 | Two payout wallet addresses | `setSettlementWallets(recipient30, recipient10)` requires paused intake and zero outstanding job escrow, agent bonds, validator bonds and dispute bonds. It cannot redirect an existing job. |
 | Validator reward percentage | Integer 1–60%; default 8%. Each job fixes its rate at posting. Changes apply only to new jobs. |
-| Agent NFT requirement | `setAgentNftRequired(bool)` changes the default for future jobs only; disabled on fresh v1.0.5 deployments. Each posted job keeps its recorded policy. |
+| Agent NFT requirement | `setAgentNftRequired(bool)` changes the default for future jobs only; disabled on fresh v1.1.0 deployments. Each posted job keeps its recorded policy. |
 | NFT collection registry | `addAGIType` / `disableAGIType` require zero outstanding escrow and all bonds, even in optional mode. |
 | Ownership | Current owner proposes; only the proposed owner can accept. Renunciation is disabled. |
 | Review periods, challenge period, voting thresholds, quorum and slashing percentage | Existing guards require all outstanding escrow and bonds to be settled before these terms can change. |
@@ -26,7 +26,7 @@ See the [NFT policy walkthrough](NFT_POLICY.md) for both modes, collection setup
 
 ## Rotate payout wallets
 
-1. Open the v1.0.5 USDC console, select the verified manager and connect as its owner. Confirm the network, manager and current wallet addresses.
+1. Open the v1.1.0 USDC console, select the verified manager and connect as its owner. Confirm the network, manager and current wallet addresses.
 2. Choose **pauseIntake**. Keep settlement enabled so existing jobs can finish or be refunded.
 3. Settle, cancel or otherwise close every outstanding job through its normal lifecycle. Read `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds` and `lockedDisputeBonds`; all four must be zero.
 4. Choose **Update payout wallets**. Enter the 30% recipient first and the 10% recipient second. Both must be distinct, nonzero, and different from the manager and USDC contract. Verify control of the addresses and their ability to receive USDC before submitting.

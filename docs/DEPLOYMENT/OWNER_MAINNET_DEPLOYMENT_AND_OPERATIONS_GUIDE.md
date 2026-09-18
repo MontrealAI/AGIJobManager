@@ -59,7 +59,7 @@ DRY_RUN=1 npm run deploy:mainnet
 
 The dry run sends no transactions. Boolean flags are validated; use the documented explicit value `DRY_RUN=1`. Preserve the qualified Solidity 0.8.37 compiler profile and Ethereum size checks. The fork test reads historical mainnet USDC and executes only locally; it is not a live deployment rehearsal with your real signers.
 
-Complete a separately authorized Sepolia rehearsal and the [mainnet qualification gates](../MAINNET_READINESS.md) before significant mainnet exposure. The actual mainnet broadcast requires the Hardhat guide's exact confirmation value, `I_UNDERSTAND_MAINNET_DEPLOYMENT`, in `DEPLOY_CONFIRM_MAINNET`, with explicit `DRY_RUN=0`. Current maintenance tooling defaults to read-only; use explicit `DRY_RUN=1` for every plan, including on older releases. Follow that guide for signing and confirmations rather than substituting a legacy migration command.
+Complete a separately authorized Sepolia rehearsal and the [mainnet qualification gates](../MAINNET_READINESS.md) before significant mainnet exposure. The actual mainnet broadcast requires the Hardhat guide's exact confirmation value, `I_UNDERSTAND_MAINNET_DEPLOYMENT`, in `DEPLOY_CONFIRM_MAINNET`, with explicit `DRY_RUN=0`. v1.1.0 tooling defaults to read-only; use explicit `DRY_RUN=1` for every plan, including on older releases. Follow that guide for signing and confirmations rather than substituting a legacy migration command.
 
 ## 4) Deploy, verify and preserve evidence
 
@@ -177,7 +177,7 @@ For an identity incident, contain the affected activity and follow [incident res
 
 Dispute, cancellation and expiry are alternative lifecycle paths. A moderator's code 1 resolves for the agent, code 2 for the employer, and code 0 leaves the dispute open. A completed flag can also represent an employer refund. See the [full scenario walkthrough](../QUINTESSENTIAL_USE_CASE.md) for exact checkpoints.
 
-For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.0.5 managers start with that requirement disabled; owners can enable it for future jobs. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
+For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.1.0 managers start with that requirement disabled; owners can enable it for future jobs. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
 
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json
