@@ -1,5 +1,7 @@
 # v0.9.5 mainnet qualification
 
+**Development follow-up:** the current source additionally exposes exact job bonds and has a 24,320-byte runtime (256 bytes of headroom). The v0.9.5 figures below describe that published release. The new source and console are unreleased; see [their verification and compatibility notes](qualification/BUYER_ECONOMICS_FOLLOWUP.md).
+
 v0.9.5 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
 The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v0.9.5, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.

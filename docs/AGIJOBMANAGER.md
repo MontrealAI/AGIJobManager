@@ -66,7 +66,7 @@ sequenceDiagram
 
 - `disputeJob`: employer or assigned agent can dispute during completion review window; dispute bond is transferred and locked.
 - `resolveDisputeWithCode`: moderators resolve to agent win (`1`), employer win (`2`), or no-action (`0`, dispute remains active).
-- `resolveStaleDispute`: owner can resolve an active dispute strictly after `disputedAt + disputeReviewPeriod`.
+- `resolveStaleDispute`: owner can resolve an active dispute strictly after `getJobDeadlines(jobId).ownerResolutionAfter`, including settlement-pause extensions.
 
 ## Economic flows
 

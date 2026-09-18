@@ -1,6 +1,8 @@
 # USDC standalone console v0.9.5
 
-Open [the console](../../ui/agijobmanager-usdc.html). Configure the address of a newly deployed, source-verified v0.9.5 USDC manager on Ethereum mainnet. No manager is configured by default.
+For a v0.9.5 manager, use the [published v0.9.5 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/agijobmanager-usdc.html). Configure a newly deployed, source-verified USDC manager on Ethereum mainnet. No manager is configured by default.
+
+The [current development console](../../ui/agijobmanager-usdc.html) includes clearer cost and buyer guidance and requires the new `getJobBonds` getter for voting. Published v0.9.5 managers do not have that getter. This follow-up is unreleased; see [compatibility and verification](../qualification/BUYER_ECONOMICS_FOLLOWUP.md), including the older console's bond-quote limitation.
 
 Before enabling writes the console checks chain ID 1, contract code, the manager's immutable `usdcToken()` address and six decimals. It repeats these checks before each transaction. Token identity checks do not prove source correctness; verify the deployment independently first.
 

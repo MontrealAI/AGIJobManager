@@ -17,8 +17,8 @@ The reason is public explanatory text. It does not select the outcome. The curre
 3. Select the numeric outcome, review the USDC settlement preview, enter a clear reason, and sign with a moderator wallet. Have ETH for gas.
 4. Confirm `DisputeResolvedWithCode`. Agent success additionally emits `JobPayoutDistributed`, `JobCompleted`, and `NFTIssued`. Read the terminal state and balances for employer-win refunds.
 
-A failed USDC transfer reverts the entire resolution; it does not partially pay recipients. Settlement can be retried after the underlying transfer restriction is resolved. ENS hook failure alone need not undo settlement.
+An outgoing USDC transfer failure reserves that payment for its original recipient; other eligible recipients can still be paid and the job can settle. Check `pendingUSDC(recipient)` and actual transfers, then retry `claimUSDC(recipient)` when USDC permits it. Do not submit a second resolution for an already settled job. ENS hook failure alone need not undo settlement.
 
-After `disputedAt + disputeReviewPeriod` has strictly passed, the owner can use `resolveStaleDispute(jobId, employerWins)`. This is a separate privileged recovery path. Read current timers and the [owner controls](../OWNER_CONTROLS.md).
+After `getJobDeadlines(jobId).ownerResolutionAfter` has strictly passed, the owner can use `resolveStaleDispute(jobId, employerWins)`. This is a separate privileged recovery path. Read current timers and the [owner controls](../OWNER_CONTROLS.md).
 
 You cannot adjudicate a job where you are a party, voter, or recorded validator controller. Use `getJobDeadlines` for the pause-adjusted owner and neutral refund deadlines. After two unpaused dispute review periods, anyone can return the buyer escrow and each contributor's own bonds without deciding quality. Decide disputed evidence before that timeout if an adjudicated payout is warranted. Buyer wins refund the full escrow; failed outgoing transfers become claims, so verify pending payments separately.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.9.5</title>
+  <title>AGIJobManager · USDC development console</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -951,7 +951,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.9.5: USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">Unreleased follow-up to v0.9.5 · Voting requires a manager with exact job bond reads. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1171,11 +1171,11 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.9.5</h2>
+      <h2>USDC deployment · development console</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">This release requires a new USDC AGIJobManager deployment. Enter its verified Ethereum mainnet address. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
-      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified v0.9.5 deployment">
+      <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified manager with getJobBonds">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
       <p id="usdcDeploymentStatus" role="status">Deployment required — transactions disabled.</p>
       <p id="settlementWallets" class="smallNote">Two owner-configurable settlement wallets must be verified before transactions.</p>
@@ -1624,7 +1624,7 @@ Evaluation methodology"></textarea>
             <input id="jobDetails" type="text" placeholder="e.g. Build X by date Y">
           </div>
           <div>
-            <label for="jobPayout">Payout ($USDC)</label>
+            <label for="jobPayout">Total job cost (USDC, including success fees)</label>
             <input id="jobPayout" type="number" min="0" step="0.0001" placeholder="e.g. 100">
           </div>
           <div>
@@ -1638,6 +1638,19 @@ Evaluation methodology"></textarea>
           <button class="btn" id="useEnsUriPreviewBtn">Copy effective ens:// URI</button>
           <button class="btn btn-primary" id="createJobBtn" data-tx="1">Create Job</button>
         </div>
+        <div id="jobCostPreview" class="hintBox" role="status" aria-live="polite" style="margin-top:12px">Enter a job cost to see the fee split.</div>
+        <details class="softCard" style="margin-top:12px">
+          <summary><b>What if the agent does not deliver, or the work is poor?</b></summary>
+          <ul class="smallNote">
+            <li><b>No agent assigned:</b> cancel and recover your full escrow.</li>
+            <li><b>No submission by the deadline:</b> expire the job to recover escrow and the agent’s forfeited bond.</li>
+            <li><b>A submission contains poor, missing or inaccessible work:</b> open an on-chain dispute before the displayed cutoff. A link alone does not prove delivery. The quoted dispute bond and gas are additional upfront costs.</li>
+            <li><b>Buyer wins:</b> full escrow returns without the 30%/10% fees; your dispute bond also returns. Gas, lost time and outside costs are not reimbursed by this rule.</li>
+            <li><b>Nobody reviews:</b> finalization opens a dispute. If arbitration remains unanswered, the neutral refund action becomes available at its deadline.</li>
+            <li><b>Work is satisfactory:</b> inspect it, then use “Accept work and pay.” Acceptance is final.</li>
+          </ul>
+          <p class="smallNote">The first eligible application takes the job. Write measurable acceptance checks and arrange independent reviewers and an available moderator before posting. Use separate jobs for milestones; there are no built-in partial payments or revision rounds. Deadlines require a transaction to act, and settlement pauses extend them.</p>
+        </details>
         <div class="smallNote" id="createJobReadinessNote" style="margin-top:10px">Best practice: use a canonical <code>ipfs://...</code> Job Spec URI and keep the on-chain details field concise.</div>
         <div class="hintBox" style="margin-top:12px">
           <b>What happens next</b><br>
@@ -2454,6 +2467,7 @@ const AGIJobManagerABI = [
       {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beneficiary","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"USDCDeferred","type":"event"},
       {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"UnresolvedDisputeRefunded","type":"event"},
       {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"jobId","type":"uint256"},{"indexed":true,"internalType":"address","name":"voter","type":"address"},{"indexed":true,"internalType":"bytes32","name":"credential","type":"bytes32"},{"indexed":false,"internalType":"address","name":"controller","type":"address"}],"name":"ValidatorCredentialUsed","type":"event"},
+      {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"getJobBonds","outputs":[{"internalType":"uint256","name":"agentAmount","type":"uint256"},{"internalType":"uint256","name":"validatorAmount","type":"uint256"},{"internalType":"bool","name":"validatorFixed","type":"bool"},{"internalType":"uint256","name":"disputeAmount","type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"acceptJob","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address","name":"beneficiary","type":"address"}],"name":"claimUSDC","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"uint256","name":"jobId","type":"uint256"}],"name":"getJobDeadlines","outputs":[{"internalType":"uint256","name":"assignmentDeadline","type":"uint256"},{"internalType":"uint256","name":"reviewEnd","type":"uint256"},{"internalType":"uint256","name":"settlementAfter","type":"uint256"},{"internalType":"uint256","name":"ownerResolutionAfter","type":"uint256"},{"internalType":"uint256","name":"neutralRefundAfter","type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -3641,15 +3655,32 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       return job;
     }
     window.__agijobBondProbe = async (jobId) => toJsonSafe(await buildJobBondTruthProbe(jobId));
+    async function readJobBonds(jobId, block = 'latest'){
+      let raw;
+      try{ raw = await agiJobManager.methods.getJobBonds(String(jobId)).call({}, block); }
+      catch{ throw new Error('Exact job bonds could not be read. Check your RPC and manager version. This console requires getJobBonds for voting; released v0.9.5 managers do not expose it.'); }
+      const result = {};
+      for(const [index,key] of [[0,'agentAmount'],[1,'validatorAmount'],[3,'disputeAmount']]){
+        const value = String(raw[key] ?? raw[index]);
+        if(!/^[0-9]+$/.test(value) || BigInt(value) >= 2n**256n) throw new Error('Exact job bonds are unavailable. Refresh using a console that matches this manager.');
+        result[key] = value;
+      }
+      result.validatorFixed = raw.validatorFixed ?? raw[2];
+      if(typeof result.validatorFixed !== 'boolean' || (!result.validatorFixed && BigInt(result.validatorAmount) !== 0n)) throw new Error('Invalid job bond snapshot. Refresh before voting.');
+      return result;
+    }
     async function fetchValidatorBondSnapshot(jobId){
-      const [core, bpsRaw, minBondRaw, maxBondRaw] = await Promise.all([
-        agiJobManager.methods.getJobCore(String(jobId)).call(),
-        agiJobManager.methods.validatorBondBps().call(),
-        agiJobManager.methods.validatorBondMin().call(),
-        agiJobManager.methods.validatorBondMax().call()
+      const block = await web3.eth.getBlockNumber();
+      const call = name => agiJobManager.methods[name]().call({}, block);
+      const [core, bonds, bpsRaw, minBondRaw, maxBondRaw, slashBpsRaw] = await Promise.all([
+        agiJobManager.methods.getJobCore(String(jobId)).call({}, block), readJobBonds(jobId, block),
+        call('validatorBondBps'), call('validatorBondMin'), call('validatorBondMax'), call('validatorSlashBps')
       ]);
-      const trace = buildValidatorBondTrace(core?.payout || 0, { bpsRaw, minBondRaw, maxBondRaw });
-      return { jobId:String(jobId), payoutRaw:trace.payoutRaw.toString(), bpsRaw:trace.bpsRaw.toString(), minBondRaw:trace.minBondRaw.toString(), maxBondRaw:trace.maxBondRaw.toString(), finalBondRaw:trace.finalBondRaw.toString(), trace };
+      if(!/^[0-9]+$/.test(String(core?.payout)) || !/^[0-9]+$/.test(String(slashBpsRaw)) || BigInt(slashBpsRaw) > 10000n) throw new Error('Invalid bond or slashing quote. Refresh before voting.');
+      const trace = buildValidatorBondTrace(core.payout, { bpsRaw, minBondRaw, maxBondRaw });
+      if(bonds.validatorFixed) trace.finalBondRaw = BigInt(bonds.validatorAmount);
+      if(trace.finalBondRaw > BigInt(core.payout)) throw new Error('Job bond exceeds its escrow. Refresh before voting.');
+      return { jobId:String(jobId), payoutRaw:trace.payoutRaw.toString(), bpsRaw:trace.bpsRaw.toString(), minBondRaw:trace.minBondRaw.toString(), maxBondRaw:trace.maxBondRaw.toString(), finalBondRaw:trace.finalBondRaw.toString(), slashBpsRaw:String(slashBpsRaw), validatorFixed:bonds.validatorFixed, block:String(block), trace };
     }
     async function fetchDisputeBondSnapshot(jobId){
       const core = await agiJobManager.methods.getJobCore(String(jobId)).call();
@@ -3657,6 +3688,23 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       return { jobId:String(jobId), payoutRaw:trace.payoutRaw.toString(), finalBondRaw:trace.finalBondRaw.toString(), trace };
     }
     function computeDisputeBondFromPayout(payout){ return buildDisputeBondTrace(payout).finalBondRaw; }
+    function quoteSuccessCostSplit(payout, validatorPercentage){
+      if(!/^[0-9]+$/.test(String(payout)) || !/^[0-9]+$/.test(String(validatorPercentage))) throw new Error('Payment terms unavailable');
+      const cost = BigInt(payout), rate = BigInt(validatorPercentage);
+      if(cost <= 0n || cost >= 2n**256n || rate < 1n || rate > 60n) throw new Error('Payment terms out of range');
+      const validatorBudget = cost * rate / 100n, wallet30 = cost * 30n / 100n, wallet10 = cost * 10n / 100n;
+      return { cost, validatorBudget, wallet30, wallet10, agentBase:cost-validatorBudget-wallet30-wallet10, agentWithoutReviewers:cost-wallet30-wallet10 };
+    }
+    function renderJobCostPreview(){
+      const box = el('jobCostPreview');
+      if(!box) return;
+      try{
+        if(!usdcDeploymentValidated) throw new Error('Connect to a verified manager');
+        const split = quoteSuccessCostSplit(parseAmountToUnits(el('jobPayout').value.trim()), window.protocolState?.validationRewardPercentage);
+        box.innerHTML = `<b>Your total job cost: ${formatUnitsToAmount(split.cost)} USDC</b><br>On success: reviewers share up to ${formatUnitsToAmount(split.validatorBudget)}; the two wallet shares are ${formatUnitsToAmount(split.wallet30)} and ${formatUnitsToAmount(split.wallet10)}; agent base earnings are ${formatUnitsToAmount(split.agentBase)} USDC. These shares are included in your total. Bonds and ETH gas are separate.${split.agentBase===0n ? '<br><b>The current rate leaves no base earnings for the agent. Review whether these terms can fund the work.</b>' : ''}<br>Estimate for a new posting; the confirmation screen reads the actual terms again.`;
+      }catch{ box.textContent = 'Enter a job cost and connect to a verified manager to see the current fee split. The posted cost is the buyer’s total escrow, not the agent’s take-home earnings.'; }
+    }
+    function formatMoneyOrUnknown(value){ return value == null ? 'Unknown — refresh' : formatUnitsToAmount(value) + ' USDC'; }
     function updateCalculator(){
       const payoutRaw = (el("calcPayout")?.value || "").trim();
       const durationRaw = (el("calcDuration")?.value || "").trim();
@@ -4734,6 +4782,7 @@ async function updateSummary(){
         requiredValidatorApprovals: Number(ra),
         requiredValidatorDisapprovals: Number(rd),
         voteQuorum: Number(vq),
+        validationRewardPercentage: String(vReward),
         validatorBondBps: String(vBps),
         validatorBondMin: String(vMin),
         validatorBondMax: String(vMax),
@@ -4762,6 +4811,7 @@ async function updateSummary(){
 
       el("myJobs").textContent = "—";
       updateCalculator();
+      renderJobCostPreview();
       await updateDynamicInsights();
     }
 
@@ -4858,7 +4908,7 @@ async function updateSummary(){
       };
     }
     function dossierText(dossier){
-      return JSON.stringify(dossier, null, 2);
+      return JSON.stringify(toJsonSafe(dossier), null, 2);
     }
     function downloadTextFile(filename, body, type="application/json"){
       const blob = new Blob([body], {type});
@@ -4885,7 +4935,7 @@ async function updateSummary(){
     function statusPillFrom(job){
       if(job.expired) return `<span class="pill bad">Expired</span>`;
       if(job.disputed) return `<span class="pill warn">Disputed</span>`;
-      if(job.completed) return `<span class="pill ok">Completed</span>`;
+      if(job.completed) return `<span class="pill ok">Settled</span>`;
       if(job.completionRequested) return `<span class="pill warn">Completion requested</span>`;
       if(job.assignedAgent && job.assignedAgent !== "0x0000000000000000000000000000000000000000") return `<span class="pill">Assigned</span>`;
       return `<span class="pill">Open</span>`;
@@ -5232,10 +5282,8 @@ async function updateSummary(){
         if(postingTerms.paused === 'true') throw new Error('New job intake is paused. Wait until the owner enables posting.');
         if(payoutUnits > BigInt(postingTerms.maxJobPayout)) throw new Error(`Job cost exceeds the current limit of ${formatUnitsToAmount(postingTerms.maxJobPayout)} USDC.`);
         if(durationInt > BigInt(postingTerms.jobDurationLimit)) throw new Error(`Duration exceeds the current limit of ${postingTerms.jobDurationLimit} seconds.`);
-        const validatorBudget = payoutUnits * BigInt(postingTerms.validationRewardPercentage) / 100n;
-        const wallet30Amount = payoutUnits * 30n / 100n;
-        const wallet10Amount = payoutUnits * 10n / 100n;
-        const agentRemainder = payoutUnits - validatorBudget - wallet30Amount - wallet10Amount;
+        const split = quoteSuccessCostSplit(payoutUnits, postingTerms.validationRewardPercentage);
+        const {validatorBudget, wallet30:wallet30Amount, wallet10:wallet10Amount, agentBase:agentRemainder} = split;
         openActionReview({
           writeContext:postingContext,
           title:`Create Job · escrow ${formatUnitsToAmount(payoutUnits)} $USDC`,
@@ -5251,6 +5299,8 @@ async function updateSummary(){
             {label:'Agent remainder after full validator budget', value: `${formatUnitsToAmount(agentRemainder)} USDC; unallocated validator rewards and rounding also go to the agent. Bonds are separate.`},
             {label:'Assignment', value:'The first eligible agent who successfully applies takes the job. You do not choose afterward.'},
             {label:'Buyer protection', value:'No submission: escrow plus agent bond on expiry. Buyer wins: full escrow, with no wallet or validation fee deducted from it. Gas is separate.'},
+            {label:'Dispute cost if needed', value:`${formatUnitsToAmount(computeDisputeBondFromPayout(payoutUnits))} USDC upfront, plus gas. Returned if you win or receive a neutral refund; awarded to the agent if the agent wins.`},
+            {label:'Bad or inaccessible submission', value:'A submitted link starts review even if the work is missing. Open an on-chain dispute before the displayed cutoff; ordinary expiry is no longer available.'},
             {label:'Unreviewed submission', value:'No votes, insufficient votes or a tie escalate to dispute; they do not automatically pay the agent.'},
             {label:'Review and arbitration', value:`Review: ${secondsToHuman(postingTerms.completionReviewPeriod)}. Late approval can extend review by the challenge period. Unanswered disputes permit neutral escrow/bond returns after ${secondsToHuman(BigInt(postingTerms.disputeReviewPeriod) * 2n)}. Settlement pauses stop these clocks.`},
             {label:'Duration', value: `${durationInt.toString()} seconds · ${secondsToHuman(durationInt.toString())}`}
@@ -5296,6 +5346,7 @@ async function updateSummary(){
           probe = await buildJobBondTruthProbe(jobId);
         }
         const trace = probe.trace;
+        const earningSplit = quoteSuccessCostSplit(trace.payoutRaw, 60n - BigInt(probe.freshJobCore.agentPayoutPct));
         const invariantFailures = buildApplyProbeInvariants(probe);
         const reviewAudit = buildTraceAuditHtml('Agent bond formula audit', [
           ['payout', formatRawAmountTrace(trace.payoutRaw)],
@@ -5327,7 +5378,9 @@ async function updateSummary(){
             {label:'This job’s NFT requirement', value: nftRequirementLabel(nftRequired) + ' (fixed at posting)'},
             {label:'Fresh on-chain proof', value: formatProbeProofHtml(probe), html:true},
             {label:'Agent ENS', value: `${reviewedLabel}.${reviewedAlpha ? SUFFIX.alphaAgent : SUFFIX.agent}`},
-            {label:'Fresh job payout (getJobCore)', value: `${formatRawAmountTrace(trace.payoutRaw)} $USDC`},
+            {label:'Buyer’s total escrow', value: `${formatUnitsToAmount(trace.payoutRaw)} USDC`},
+            {label:'Your base earnings on success', value:`${formatUnitsToAmount(earningSplit.agentBase)} USDC after the full reviewer budget and 30%/10% wallet shares. Unused reviewer rewards and rounding may increase this.`},
+            {label:'Your bond and payment risk', value:'Your bond is separate from earnings. Non-delivery or a buyer-win decision forfeits it. An unanswered dispute can return your bond without paying for your work. Read the acceptance checks and moderator coverage before applying.'},
             {label:'Duration', value: `${trace.durationRaw.toString()} seconds · ${secondsToHuman(trace.durationRaw.toString())}`},
             {label:'Exact agent bond (fresh)', value: `${formatRawAmountTrace(trace.finalBondRaw)} $USDC`},
             {label:'Formula provenance', value: reviewAudit, html:true}
@@ -5407,9 +5460,11 @@ async function updateSummary(){
           facts:[
             {label:'Validator ENS', value: `${reviewedLabel}.${reviewedAlpha ? SUFFIX.alphaClub : SUFFIX.club}`},
             {label:'Job payout', value: `${formatRawAmountTrace(trace.payoutRaw)} $USDC`},
-            {label:'Validator bond', value: `${formatRawAmountTrace(trace.finalBondRaw)} $USDC`},
+            {label:'Your refundable vote bond', value: `${formatUnitsToAmount(trace.finalBondRaw)} USDC`},
+            {label:'Bond source', value: snap.validatorFixed ? 'Fixed by this job’s first vote; later owner settings do not change it.' : 'Current first-vote quote; checked again after approval.'},
+            {label:'Loss on an adjudicated wrong-side vote', value: `${formatUnitsToAmount(trace.finalBondRaw * BigInt(snap.slashBpsRaw) / 10000n)} USDC, plus gas. Rewards depend on the outcome and number of correct reviewers.`},
             {label:'Current votes', value: `${job?.approvals || 0} approve / ${job?.disapprovals || 0} disapprove`},
-            {label:'Formula provenance', value: reviewAudit, html:true}
+            {label:'Bond calculation details', value: snap.validatorFixed ? `Recorded job bond: ${formatUnitsToAmount(trace.finalBondRaw)} USDC at block ${snap.block}.` : reviewAudit, html:!snap.validatorFixed}
           ],
           checks:[
             {state:'Evidence', badge:'warn', text:'Review the completion URI and job spec independently before approving.'},
@@ -5418,18 +5473,18 @@ async function updateSummary(){
           ],
           method:`validateJob(jobId=${jobId}, subdomain=${JSON.stringify(reviewedLabel)}, proof=[])`,
           confirmLabel:'Approve job',
-          footer:'If payout or validator-bond params drift before send, confirm is blocked with Calculation mismatch.',
+          footer:'If the required bond or slash exposure changes before send, refresh and review the new amount.',
           run: async ()=>{
             const nowSnap = await fetchValidatorBondSnapshot(jobId);
-            assertSnapshotMatch('validateJob validator-bond snapshot', snap, nowSnap, ['payoutRaw','bpsRaw','minBondRaw','maxBondRaw','finalBondRaw']);
+            assertSnapshotMatch('validateJob validator-bond snapshot', snap, nowSnap, ['payoutRaw','finalBondRaw','slashBpsRaw']);
             const approval = await ensureApproval(nowSnap.trace.finalBondRaw, {
               actionLabel: `approving job #${jobId}`,
-              explanation: 'Validators post a per-vote bond. The UI recomputes the validator bond from fresh payout state before and after approval.',
+              explanation: 'Validators post a per-vote bond. The UI reads the job’s fixed bond, or the first-vote quote, before and after approval.',
               postActionLabel: `validateJob(${jobId},${reviewedLabel},[])`
             });
             if(!approval.ok) return;
             const finalSnap = await fetchValidatorBondSnapshot(jobId);
-            assertSnapshotMatch('validateJob post-approval snapshot', nowSnap, finalSnap, ['payoutRaw','bpsRaw','minBondRaw','maxBondRaw','finalBondRaw']);
+            assertSnapshotMatch('validateJob post-approval snapshot', nowSnap, finalSnap, ['payoutRaw','finalBondRaw','slashBpsRaw']);
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalSnap.trace.finalBondRaw || finalGate.allowance < finalSnap.trace.finalBondRaw) throw new Error('Validate preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting approval…", "warn");
@@ -5468,10 +5523,12 @@ async function updateSummary(){
           body:'You are about to cast an on-chain validator disapproval. This uses the exact same validator-bond trace and preflight gate as approval votes.',
           facts:[
             {label:'Validator ENS', value: `${reviewedLabel}.${reviewedAlpha ? SUFFIX.alphaClub : SUFFIX.club}`},
-            {label:'Validator bond', value: `${formatRawAmountTrace(trace.finalBondRaw)} $USDC`},
+            {label:'Your refundable vote bond', value: `${formatUnitsToAmount(trace.finalBondRaw)} USDC`},
+            {label:'Bond source', value: snap.validatorFixed ? 'Fixed by this job’s first vote; later owner settings do not change it.' : 'Current first-vote quote; checked again after approval.'},
+            {label:'Loss on an adjudicated wrong-side vote', value: `${formatUnitsToAmount(trace.finalBondRaw * BigInt(snap.slashBpsRaw) / 10000n)} USDC, plus gas. Rewards depend on the outcome and number of correct reviewers.`},
             {label:'Current votes', value: `${job?.approvals || 0} approve / ${job?.disapprovals || 0} disapprove`},
             {label:'Likely effect', value: 'If the threshold is reached, the job can move into dispute.'},
-            {label:'Formula provenance', value: reviewAudit, html:true}
+            {label:'Bond calculation details', value: snap.validatorFixed ? `Recorded job bond: ${formatUnitsToAmount(trace.finalBondRaw)} USDC at block ${snap.block}.` : reviewAudit, html:!snap.validatorFixed}
           ],
           checks:[
             {state:'Evidence', badge:'warn', text:'Only disapprove after reviewing the public completion evidence carefully.'},
@@ -5483,15 +5540,15 @@ async function updateSummary(){
           footer:'Disapproval is not just a UI flag; it is a bonded on-chain vote.',
           run: async ()=>{
             const nowSnap = await fetchValidatorBondSnapshot(jobId);
-            assertSnapshotMatch('disapproveJob validator-bond snapshot', snap, nowSnap, ['payoutRaw','bpsRaw','minBondRaw','maxBondRaw','finalBondRaw']);
+            assertSnapshotMatch('disapproveJob validator-bond snapshot', snap, nowSnap, ['payoutRaw','finalBondRaw','slashBpsRaw']);
             const approval = await ensureApproval(nowSnap.trace.finalBondRaw, {
               actionLabel: `disapproving job #${jobId}`,
-              explanation: 'Disapprovals post the same validator bond as approvals. The UI recomputes from fresh payout state before and after approval.',
+              explanation: 'Disapprovals post the same validator bond as approvals. The UI reads the job’s fixed bond, or the first-vote quote, before and after approval.',
               postActionLabel: `disapproveJob(${jobId},${reviewedLabel},[])`
             });
             if(!approval.ok) return;
             const finalSnap = await fetchValidatorBondSnapshot(jobId);
-            assertSnapshotMatch('disapproveJob post-approval snapshot', nowSnap, finalSnap, ['payoutRaw','bpsRaw','minBondRaw','maxBondRaw','finalBondRaw']);
+            assertSnapshotMatch('disapproveJob post-approval snapshot', nowSnap, finalSnap, ['payoutRaw','finalBondRaw','slashBpsRaw']);
             const finalGate = await getTokenBalanceAndAllowance();
             if(finalGate.balance < finalSnap.trace.finalBondRaw || finalGate.allowance < finalSnap.trace.finalBondRaw) throw new Error('Disapprove preflight drifted after approval: current validator bond is no longer fully covered. Refresh and retry.');
             setToast("Submitting disapproval…", "warn");
@@ -6110,7 +6167,8 @@ function normalizeIpfsToHttp(uri){
         id:Number(jobId), employer:core.employer, assignedAgent:core.assignedAgent, payout:core.payout, duration:core.duration, assignedAt:core.assignedAt,
         completed:core.completed, disputed:core.disputed, expired:core.expired, completionRequested:val.completionRequested,
         approvals:val.validatorApprovals, disapprovals:val.validatorDisapprovals, completionRequestedAt:val.completionRequestedAt, disputedAt:val.disputedAt,
-        agentPayoutPct:core.agentPayoutPct, completionURI, specURI:spec, deadlines:await readJobDeadlines(jobId)
+        agentPayoutPct:core.agentPayoutPct, completionURI, specURI:spec, deadlines:await readJobDeadlines(jobId),
+        bonds:await readJobBonds(jobId).catch(()=>null)
       };
       jobCache.set(String(jobId), job);
       return job;
@@ -6264,15 +6322,17 @@ function normalizeIpfsToHttp(uri){
       const approvals = Number(job.approvals || 0);
       const disapprovals = Number(job.disapprovals || 0);
       const totalVotes = approvals + disapprovals;
-      const agentPct = BigInt(job.agentPayoutPct ?? 52);
+      if(!/^[0-9]+$/.test(String(job.agentPayoutPct)) || BigInt(job.agentPayoutPct) > 59n) throw new Error('Job payment split unavailable. Refresh before acting.');
+      const agentPct = BigInt(job.agentPayoutPct);
       const validationPct = 60n - agentPct;
       const rewardPool = totalVotes === 0 ? 0n : payout * validationPct / 100n;
       const wallet30Amount = payout * 30n / 100n;
       const wallet10Amount = payout * 10n / 100n;
       const agentPayout = payout - rewardPool - wallet30Amount - wallet10Amount;
-      const validatorBond = computeValidatorBondFromPayout(payout);
-      const slashBps = getNumericText("validatorSlashBps");
-      const slashedPerIncorrect = validatorBond * slashBps / 10000n;
+      const validatorBond = job.bonds?.validatorFixed === true ? BigInt(job.bonds.validatorAmount) : null;
+      const slashText = el('validatorSlashBps')?.textContent?.trim();
+      const slashBps = /^[0-9]+$/.test(slashText || '') && BigInt(slashText) <= 10000n ? BigInt(slashText) : null;
+      const slashedPerIncorrect = validatorBond == null || slashBps == null ? null : validatorBond * slashBps / 10000n;
       const quorum = Number(el("voteQuorum")?.textContent || 0);
       const reqA = Number(el("reqApprovals")?.textContent || 0);
       const reqD = Number(el("reqDisapprovals")?.textContent || 0);
@@ -6438,6 +6498,7 @@ function normalizeIpfsToHttp(uri){
         };
         jobCache.set(String(id), job);
       }
+      [job.deadlines, job.bonds] = await Promise.all([readJobDeadlines(id), readJobBonds(id).catch(()=>null)]);
       const sim = simulateJobSettlement(job);
       const [timeline, ens] = await Promise.all([fetchJobTimeline(id), fetchEnsVisibility(id)]);
       currentLivePacket = buildLiveAutonomousPacket(job, sim, ens);
@@ -6485,10 +6546,10 @@ function normalizeIpfsToHttp(uri){
       }
       el('jobTimeline').innerHTML = timelineHtml.join('');
       el('jobSimulationCards').innerHTML = [
-        ['If the agent wins', `Agent receives about <b>${formatUnitsToAmount(sim.agentPayout)} $USDC</b> plus returned agent bond. Validators split the reward pool and slashed incorrect-side bonds. Wallet one: <b>${formatUnitsToAmount(sim.wallet30Amount)} USDC</b> (30%). Wallet two: <b>${formatUnitsToAmount(sim.wallet10Amount)} USDC</b> (10%). All percentages use the original job cost; unallocated rewards and rounding go to the agent.`],
+        ['If the agent wins', `Agent base allocation is <b>${formatUnitsToAmount(sim.agentPayout)} USDC</b> before any undistributed reward or bond-pool remainder, plus the returned agent bond. Validators split the reward pool and slashed incorrect-side bonds. Wallet one: <b>${formatUnitsToAmount(sim.wallet30Amount)} USDC</b> (30%). Wallet two: <b>${formatUnitsToAmount(sim.wallet10Amount)} USDC</b> (10%). All percentages use the original job cost; unallocated rewards and rounding go to the agent.`],
         ['If the employer wins', `The buyer receives the full escrow, plus applicable bond compensation. Correct disapprovers are paid from the forfeited agent bond (up to the reward budget) and slashed incorrect-side bonds; buyer escrow never funds failed-work validation. Gas is separate.`],
         ['Current likely next outcome', `<b>${escapeHtml(sim.headline)}</b><br>${escapeHtml(sim.rationale)}`],
-        ['Validator incentive snapshot', `Per-validator bond is about <b>${formatUnitsToAmount(sim.validatorBond)} $USDC</b>. Wrong-side slash per validator is about <b>${formatUnitsToAmount(sim.slashedPerIncorrect)} $USDC</b> under the current slash bps.`]
+        ['Validator incentive snapshot', `Recorded per-validator bond: <b>${formatMoneyOrUnknown(sim.validatorBond)}</b>. Adjudicated wrong-side loss: <b>${formatMoneyOrUnknown(sim.slashedPerIncorrect)}</b>, plus gas. Before the first vote, its confirmation screen quotes the bond. Rewards depend on reviewer count and outcome; buyer acceptance does not slash dissenters, and neutral refunds pay no rewards.`]
       ].map(([h,b])=>`<div class="simCard"><h4>${h}</h4><div class="smallNote">${b}</div></div>`).join('');
       el('jobFlowchart').innerHTML = [
         `<div class="flowStep"><b>1. Posted / assigned</b><br><span class="smallNote">Job escrow exists on-chain; if open, eligible agents may apply.</span></div>`,
@@ -6602,8 +6663,8 @@ function normalizeIpfsToHttp(uri){
           validatorRewardPool: formatUnitsToAmount(sim.rewardPool),
           wallet30Amount: formatUnitsToAmount(sim.wallet30Amount),
           wallet10Amount: formatUnitsToAmount(sim.wallet10Amount),
-          validatorBond: formatUnitsToAmount(sim.validatorBond),
-          slashedPerIncorrect: formatUnitsToAmount(sim.slashedPerIncorrect)
+          validatorBond: sim.validatorBond == null ? null : formatUnitsToAmount(sim.validatorBond),
+          slashedPerIncorrect: sim.slashedPerIncorrect == null ? null : formatUnitsToAmount(sim.slashedPerIncorrect)
         },
         nextLikelyOutcome: {
           headline: sim.headline,
@@ -6613,7 +6674,7 @@ function normalizeIpfsToHttp(uri){
           employer: {
             objective: 'Track escrowed job toward valid settlement while protecting payout quality.',
             likelyAction: !job.completionRequested ? 'wait or cancel before assignment if still open' : (job.disputed ? 'follow dispute path' : 'dispute or finalize when appropriate'),
-            actionSurface: ['cancelJob', 'disputeJob', 'finalizeJob']
+            actionSurface: ['cancelJob', 'expireJob', 'acceptJob', 'disputeJob', 'finalizeJob', 'refundUnresolvedDispute', 'claimUSDC']
           },
           agent: {
             objective: 'Move from application to completion request with strong evidence and minimal dispute risk.',
@@ -6929,6 +6990,8 @@ function normalizeIpfsToHttp(uri){
       renderRecentAlphaAgentNames();
       refreshIdentityState().catch(()=>{});
       el("createJobBtn").addEventListener("click", createJob);
+      el("jobPayout").addEventListener("input", renderJobCostPreview);
+      renderJobCostPreview();
 
       el("termsAccepted").addEventListener("change", (e)=>{ hasAcceptedTerms = !!e.target.checked; updateWriteGate(); });
       el("jumpToTermsBtn").addEventListener("click", ()=>document.getElementById("termsSection")?.scrollIntoView({behavior:"smooth", block:"start"}));

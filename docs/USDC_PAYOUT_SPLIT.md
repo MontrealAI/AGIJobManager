@@ -46,9 +46,9 @@ The interfaces require the v0.9.5 wallet and pending-owner getters and canonical
 
 ## Compatibility
 
-- v0.9.5 retains existing selectors and economics, and adds the [per-job NFT policy](NFT_POLICY.md) getters/setter/event. The successful-job split was introduced in v0.6.0; guarded wallet rotation and two-step ownership were introduced in v0.7.0. `transferOwnership` proposes a handover, `acceptOwnership` completes it, and renunciation is disabled. `PlatformRevenueAccrued` remains retired.
+- v0.9.5 retains the [per-job NFT policy](NFT_POLICY.md) introduced in v0.9.4 and adds the buyer-protection, pause-clock and reserved-payment interfaces. The successful-job split was introduced in v0.6.0; guarded wallet rotation and two-step ownership were introduced in v0.7.0. `transferOwnership` proposes a handover, `acceptOwnership` completes it, and renunciation is disabled. `PlatformRevenueAccrued` remains retired.
 - Existing `AGIType.payoutPercentage` / `getHighestPayoutPercentage` names remain for compatibility as NFT eligibility scores only. Positive registered NFT holdings are required to apply only when `jobAgentNftRequired(jobId)` is true; these scores do not affect payment amounts.
-- `withdrawableUSDC()` can expose unreserved donations. It does not retain any successful-job cost and still protects outstanding escrow and bonds.
+- `withdrawableUSDC()` can expose unreserved donations. It does not retain any successful-job cost and still protects outstanding escrow, bonds and reserved payment claims.
 - Previous releases and their exact economics remain available through immutable Git tags. No live contract was deployed by this software release.
 
 ## Verification

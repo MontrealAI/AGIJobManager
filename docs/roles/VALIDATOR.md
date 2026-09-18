@@ -19,7 +19,7 @@ A reached approval threshold starts a challenge window; it does not automaticall
 
 ## Rewards and slashing
 
-Correct-side validators share the job's recorded reward budget plus any pool assigned by the bond rules, and receive their original bond back. Incorrect-side validators recover only the unslashed portion of their bond. “Correct” means matching the contract's final outcome: approvals on agent success, disapprovals on employer win.
+On an adjudicated agent win, correct approvers share the recorded reward budget plus any incorrect-side slashes and receive their own bonds back. On a buyer win, correct disapprovers share a budget capped by forfeited agent collateral plus incorrect-side slashes; buyer escrow remains intact. Incorrect-side validators recover only the unslashed portion of their bond. “Correct” means matching the contract's final outcome: approvals on agent success, disapprovals on employer win.
 
 The validator budget defaults to 8% of the original job cost and is fixed at posting. The owner can set 1–60% for future jobs. On success, validators are paid first; the contract then pays 30% and 10% of the original cost to the configured wallets and sends the remainder to the agent. Integer division can leave a small reward remainder; it goes to the agent on success or the employer on refund. Bond pools are separate from the cost percentages.
 
@@ -27,8 +27,10 @@ The default slash is 80% of an incorrect vote's bond; read `validatorSlashBps` f
 
 Common errors: `NotAuthorized`, `Blacklisted`, `InvalidState` (including duplicate/late votes), `ValidatorLimitReached`, and `TransferFailed`. See [common reverts](../user-guide/common-reverts.md).
 
+Explicit buyer acceptance awards no reputation and returns dissenters' bonds without slashing them. Approval voters may share the budget; unused amounts go to the agent. Neutral timeout returns every original bond without paying for review. Evaluate the reward per reviewer, gas and collateral risk before voting.
+
 ## Independence and refund rewards
 
-You cannot review a job where you are the buyer or assigned agent, including through their ENS controller. A credential or recorded controller can contribute only one vote per job, even using different operators or names. You and your recorded controller cannot arbitrate a job you reviewed. Separate wallets are not proof of separate people.
+Neither your voting wallet nor the controller resolved for your validator credential may equal the buyer or assigned-agent wallet. A credential or recorded controller can contribute only one vote per job, even using different operators or names. You and your recorded controller cannot arbitrate a job you reviewed. The contract does not identify a party's other wallets or separately record the agent's ENS controller as a party; disclose those conflicts and do not review them. Separate wallets are not proof of separate people.
 
 On a buyer win, the full escrow returns to the buyer. The base reviewer reward is capped by forfeited agent collateral and can be below the posted reward budget; incorrect-validator slashes supplement it. A neutral arbitration timeout returns your bond without reward or penalty. A blocked payout remains a reserved claim for your original wallet.

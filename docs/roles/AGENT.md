@@ -18,7 +18,7 @@ You must not be blacklisted or already at `maxActiveJobsPerAgent`. Have enough U
 1. Open the [USDC console](../../ui/agijobmanager-usdc.html), verify the deployment, and select an unassigned job.
 2. Call `applyForJob(jobId, subdomain, proof)`. The first successful eligible application assigns the job immediately and transfers the USDC bond. Confirm `JobApplied` and your address in `getJobCore(jobId)`.
 3. Deliver the work and upload [completion metadata](../job-metadata.md).
-4. Call `requestJobCompletion(jobId, jobCompletionURI)` by `assignedAt + duration`. Submission does not itself pay you.
+4. Call `requestJobCompletion(jobId, jobCompletionURI)` by `getJobDeadlines(jobId).assignmentDeadline` (including settlement-pause extensions). Submission does not itself pay you.
 5. Monitor votes and any dispute. After the relevant challenge/review window, anyone may call `finalizeJob`; you can submit that transaction yourself if eligible for settlement. Confirm `JobPayoutDistributed` and your USDC balance.
 
 Ordinary finalization waits for the full review and any longer approval challenge, then requires quorum and a majority. No votes, ties or under-quorum votes open a dispute. The buyer may explicitly accept satisfactory submitted work immediately. See the [walkthrough](../user-guide/happy-path.md) for outcome rules.

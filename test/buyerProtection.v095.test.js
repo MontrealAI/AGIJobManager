@@ -45,6 +45,41 @@ contract('v0.9.5 buyer protection and payment isolation', accounts => {
   }
   beforeEach(async () => { await fixture(); });
 
+  it('exposes actual outstanding bonds and the validator amount fixed by the first vote', async () => {
+    const initial = await manager.getJobBonds(0);
+    assert.equal(initial.agentAmount.toString(), bond.toString());
+    assert.equal(initial.validatorAmount.toString(), '0');
+    assert.equal(initial.validatorFixed, false);
+    await submit(); await vote(alice, 'alice');
+    await manager.setValidatorBondParams(3000, '1000000', '1000000000');
+    const fixed = await manager.getJobBonds(0);
+    assert.equal(fixed.validatorAmount.toString(), '15000000');
+    assert.equal(fixed.validatorFixed, true);
+    const before = await balance(bob); await vote(bob, 'bob');
+    assert.equal(before - await balance(bob), 15000000n);
+    await manager.disputeJob(0, { from: buyer });
+    assert.equal((await manager.getJobBonds(0)).disputeAmount.toString(), '1000000');
+    await manager.resolveDisputeWithCode(0, 2, 'Work did not meet the criteria');
+    const settled = await manager.getJobBonds(0);
+    for (const key of ['agentAmount', 'validatorAmount', 'disputeAmount']) assert.equal(settled[key].toString(), '0');
+    assert.equal(settled.validatorFixed, false); await clean();
+  });
+  it('distinguishes a fixed zero validator bond from a job with no votes', async () => {
+    await manager.setValidatorBondParams(0, 0, 0); await submit(); await vote(alice, 'alice');
+    await manager.setValidatorBondParams(1500, '10000000', '1000000000');
+    const fixed = await manager.getJobBonds(0);
+    assert.equal(fixed.validatorAmount.toString(), '0'); assert.equal(fixed.validatorFixed, true);
+    const before = await balance(bob); await vote(bob, 'bob');
+    assert.equal(await balance(bob), before);
+    await manager.acceptJob(0, { from: buyer }); await clean();
+  });
+  it('rejects bond reads for missing and cancelled jobs', async () => {
+    await expectCustomError(manager.getJobBonds(99), 'JobNotFound');
+    await manager.createJob('ipfs://cancel', cost.toString(), 3600, 'Cancel before assignment', { from: buyer });
+    await manager.cancelJob(1, { from: buyer });
+    await expectCustomError(manager.getJobBonds(1), 'JobNotFound');
+  });
+
   it('escalates an unsupported submission instead of automatically paying the agent', async () => {
     await submit(); const before = await balance(agent); await advance(101); await manager.finalizeJob(0, { from: outsider });
     assert.equal((await manager.getJobCore(0)).disputed, true);

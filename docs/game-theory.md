@@ -8,6 +8,27 @@ A successful 100 USDC job at default rates allocates 8 USDC to correct-side vali
 
 The reward rate is fixed at posting and can be 1–60% for future jobs. At 60%, the base agent percentage is zero; operators should choose prices and rates that can fund the actual work and review. Participants also fund their own bonds and gas.
 
+### A concrete 100 USDC example
+
+These figures assume the default settings, a one-day job, a 10,000,000-second duration limit, and three independent reviewers voting on the eventual winning side. Read the actual manager settings before committing funds. One USDC has 1,000,000 integer units.
+
+| Item | Amount | Meaning |
+| --- | --- | --- |
+| Buyer escrow | 100 USDC | Total job cost, including successful-job fees |
+| Agent bond | 5.0432 USDC | Separate collateral; includes the duration premium |
+| Each reviewer's bond | 15 USDC | Separate collateral, fixed for this job at its first vote |
+| Buyer/agent dispute bond | 1 USDC | Posted by a party opening a dispute |
+| Successful-job wallet fees | 30 + 10 USDC | Paid only on an agent-win/accepted-work outcome |
+| Each of three correct approval reviewers | 2.666666 USDC reward | Own bond also returned; transaction gas is separate |
+| Agent's successful-job earnings | 52.000002 USDC | Includes two rounding units; own bond also returned |
+| Each of three correct rejection reviewers on a buyer win | 1.681066 USDC reward | Here the 5.0432 agent bond caps the reward funding; assumes no incorrect votes |
+| Buyer's refund in that rejection example | 100.000002 USDC | Full escrow plus two rounding units; the buyer's dispute bond, if posted, also returns |
+| Incorrect reviewer's penalty | 12 USDC | Default 80% of a 15 USDC bond; explicit buyer acceptance and neutral timeout do not slash |
+
+Reviewer rewards are **shared**, not paid at 8% to every reviewer. Review gas and effort can exceed a 2.666666 USDC reward, especially on mainnet. More correct reviewers divide the same budget further. Do not recruit reviewers on the assumption that voting is always profitable or that a bond is an additional fee.
+
+The neutral arbitration timeout returns the buyer's 100 USDC and everyone's own posted bond, but pays nothing for the agent's work or the reviewers' effort. The successful-job wallet fees do not create an on-chain obligation for those recipients to supply reviewers or moderation; publish the actual service commitments separately.
+
 ## What discourages bad behavior
 
 | Risk | Contract protection | Remaining limit |
@@ -21,6 +42,12 @@ The reward rate is fixed at posting and can be 1–60% for future jobs. At 60%, 
 | Buyer disputes correct work to delay payment | Dispute bond goes to the winning side | No oracle forces timely independent arbitration; dispute bond is capped |
 | Recipient cannot receive USDC | Protected payment claim; other recipients can be paid | USDC issuer can still restrict the recipient or entire manager |
 
+There is no random reviewer assignment or hidden-vote process. Votes are visible and the first 50 eligible voters fill the available slots. ENS membership limits admission; it does not establish independent human or organizational control. The contract compares voter/controller addresses with the buyer and assigned-agent wallets, but does not discover a party's other wallets or snapshot the agent's ENS controller as a separate party identity. Disclosed conflicts need an operating policy as well as the address-level checks. Buyer/agent self-dealing through cooperating identities can also distort reputation; reputation is not proof of external customer satisfaction.
+
+Quorum and early thresholds have different jobs. With default quorum 3, two approvals and one rejection form a valid majority after the full review window, even though the three-approval early threshold was not reached. Three early rejections open a dispute for adjudication; they do not instantly refund the buyer. Encourage independent inspection of the criteria before voting, not following the visible majority.
+
+The dispute bond is 0.5% of job cost, with a 1 USDC minimum and 200 USDC maximum, also capped by job cost. For a 100,000 USDC job, 200 USDC is only 0.2% of escrow. This discourages some frivolous disputes but does not prove that delay attacks are unprofitable. Large or subjective work needs funded milestones, prompt arbitration and exposure limits.
+
 ## Reviewer funding on a buyer win
 
 The buyer gets **100% of the job escrow back**. Correct disapprovers receive their bond plus a share of the smaller of the posted reward budget and forfeited agent bond, plus slashed incorrect-validator collateral. If there are no correct disapprovers, no base reviewer budget is taken. Rounding and unallocated collateral go to the buyer. The default agent bond can be smaller than an 8% reward budget, so failed-job review rewards are not guaranteed to equal 8% of job cost.
@@ -32,6 +59,8 @@ No-action arbitration timeout returns everyone's own funds without rewards or pe
 Use measurable acceptance criteria and accessible, content-addressed evidence. Separate large work into funded milestone jobs; there is no built-in partial settlement. Recruit enough genuinely independent reviewers before posting work, budget their gas and effort, and keep quorum within the participating group. Normal AGI Agent and Club ENS membership and the per-job NFT policy remain in force; treat allowlist/Merkle exceptions as explicit trusted governance decisions.
 
 Publish the fee split, all timers, collateral requirements, moderator availability and evidence process before users commit funds. Use a controlled canary and measured exposure limits, monitoring disputes, abstention, claim balances and time to payment. Owner pauses stop lifecycle clocks but can delay all exits indefinitely. A software release and fork rehearsal do not replace verification of the actual deployed wallets, owner and ENS control.
+
+Before opening paid intake, establish who will inspect work and arbitrate conflicts, how quickly they will act, and how users can submit evidence. Check that the agent's net earnings can fund the promised work and that each reviewer's expected reward can cover review effort, gas and collateral risk. Use the [buyer job template](BUYER_JOB_TEMPLATE.md). If those participants are unavailable or the economics do not cover their costs, reduce the scope or defer posting; the contract cannot supply them.
 
 Exact arithmetic: [USDC distribution](USDC_PAYOUT_SPLIT.md). User outcomes: [buyer protection](BUYER_PROTECTION.md). Deployment checks: [mainnet readiness](MAINNET_READINESS.md).
 

@@ -26,6 +26,6 @@
 - Validator authorization applies to wallet addresses. The buyer and assigned agent cannot vote on their own job. Duplicate ENS credentials/controllers cannot provide multiple votes; distinct wallets still do not prove independent people. Eligibility governance must account for conflicts of interest and collusion.
 - ENS hooks/tokenURI are convenience integrations.
 - Off-chain metadata availability and quality are out-of-contract guarantees.
-- No-vote finalization after the review window favors the agent without independently validating the work. Validators must actively participate; time elapsing does not execute transactions.
+- No-vote, under-quorum and tied finalization opens a dispute without agent payment. A submission URI does not prove delivery: a bogus or inaccessible submission must be reviewed and disputed before the cutoff. Time elapsing never executes a refund transaction.
 - The two fixed-share recipients cannot be rotated while any escrow or bond is reserved. A blocked outstanding-job recipient cannot be bypassed through this owner control.
 - Automated qualification and reviewed static findings are not an independent audit or an assurance that every adversarial scenario has been exhausted. Follow [mainnet readiness](MAINNET_READINESS.md) and [incident response](OPERATIONS/INCIDENT_RESPONSE.md).

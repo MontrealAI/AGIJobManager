@@ -76,4 +76,4 @@ The role-list setters do not reject every unsuitable account automatically. Revi
 - Agent bond: `500` bps, minimum `1e6`, maximum `88888888e6`; active-job limit: `3`.
 - Manual dispute bond constants: `50` bps, minimum `1e6`, maximum `200e6`, capped at job cost.
 
-Read the live deployment; an owner may have changed permitted settings. Agent bonds are fixed at assignment, validator bonds at the first vote, and validator reward percentages at posting. No-vote completion pays no validator reward. All money amounts use six-decimal USDC; ETH is still needed for gas.
+Read the live deployment; an owner may have changed permitted settings. Agent bonds are fixed at assignment, validator bonds at the first vote, and validator reward percentages at posting. No-vote finalization opens a dispute without payment. Explicit acceptance or authorized agent-win arbitration may pay an unreviewed job without validator rewards. All money amounts use six-decimal USDC; ETH is still needed for gas.
