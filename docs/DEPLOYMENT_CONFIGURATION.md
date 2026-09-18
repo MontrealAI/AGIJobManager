@@ -1,4 +1,4 @@
-# Deployment configuration — v1.0.2
+# Deployment configuration — v1.0.3
 
 Start with the [Hardhat guide](../hardhat/README.md). This reference answers which file to edit, which command to run, and whether it sends a transaction. Ethereum mainnet is chain **1**; Sepolia is **11155111**. No production owner, payment recipients or manager address is supplied.
 

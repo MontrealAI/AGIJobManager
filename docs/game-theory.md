@@ -1,4 +1,4 @@
-# Economics and operating limits — v1.0.2
+# Economics and operating limits — v1.0.3
 
 The contract provides escrow, bonded review, and a trusted arbitration backstop. It does not prove work quality or guarantee that honest behavior is always the most profitable choice.
 

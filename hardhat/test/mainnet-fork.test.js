@@ -98,6 +98,7 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     await nft.waitForDeployment();
     await send(nft.mint(agent.address));
     await send(manager.addAGIType(await nft.getAddress(), 1));
+    await send(manager.setAgentNftRequired(true)); // Explicitly qualify owner-enabled admission too.
     await send(manager.addAdditionalAgent(agent.address));
     await send(manager.addAdditionalValidator(validator.address));
     await send(manager.setRequiredValidatorApprovals(1));

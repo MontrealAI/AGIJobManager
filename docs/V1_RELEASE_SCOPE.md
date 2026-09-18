@@ -14,21 +14,22 @@ The 1.0 label identifies this software edition. It does not certify a deployed b
 
 ## Published download versus current source
 
-The v1.0.2 edition adds operator setup, offline configuration validation, consistent environment loading and refreshed deployment documentation. The v1.0.1 naming policy and all prior published assets remain unchanged.
+The v1.0.3 edition starts NFT admission disabled on fresh managers and aligns deployment checks, examples, guidance and tests with that default. Existing instances and job policies do not change on publication. The v1.0.1 naming policy and all prior published assets remain unchanged.
 
 | Edition | Contents |
 | --- | --- |
+| [v1.0.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.3) | Disabled NFT-admission default on fresh construction, owner opt-in, aligned deployment/readiness setup and regression coverage |
 | [v1.0.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.2) | Non-overwriting private configuration setup, offline profile validation, explicit Hardhat environment, complete configuration reference and refreshed operator guides |
 | [v1.0.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.1) | Automatic fresh ENS namespace and `job-` prefix, same-manager preservation, wallet/deployment/completion context fixes, mobile corrections, combined free name + identity NFT onboarding, and the historical Genesis simulation |
 | [v1.0.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.0) | Original frozen 1.0 software at `790facbcb0a9e9c2fea52a038b7c80fc2ba12795` |
 
-Use the selected edition's assets and `SHA256SUMS.txt`. Its manifest identifies the frozen source and qualification evidence. Production contracts, ABI and payout rules are unchanged. The [new ENS naming policy](ENS_DEPLOYMENT_NAMESPACES.md) applies to fresh deployments through the supported tooling; a console update keeps existing jobs and namespaces on their original manager. Software publication does not establish a live manager or readiness for paid intake.
+Use the selected edition's assets and `SHA256SUMS.txt`. Its manifest identifies the frozen source and qualification evidence. v1.0.3 changes the manager constructor default; its ABI, deployed runtime, library code and payout rules are preserved. The [new ENS naming policy](ENS_DEPLOYMENT_NAMESPACES.md) applies to fresh deployments through the supported tooling; a console update keeps existing jobs and namespaces on their original manager. Software publication does not establish a live manager or readiness for paid intake.
 
 ## Compatibility
 
 | Existing manager | Use of the 1.0 console |
 | --- | --- |
-| Verified v0.9.6 or v0.9.7 manager | Compatible; the release retains its executable bytecode and ABI. Keep original receipts and existing jobs |
+| Verified v0.9.6 or v0.9.7 manager | Compatible ABI and deployed runtime; construction defaults differ. Keep original receipts, on-chain settings and existing job policies |
 | New manager deployed from 1.0 | Verify the manager and all eight fixed library links, accept ownership and complete the launch checks before intake |
 | v0.9.5 or older manager | Keep its compatible interface for existing jobs; it lacks the exact-bond getter used by current voting |
 | Original-asset legacy manager | Preserve its original jobs, token, allowances and ENS namespace; the USDC release does not migrate them |

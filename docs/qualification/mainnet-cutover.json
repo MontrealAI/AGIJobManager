@@ -1,7 +1,7 @@
 {
   "scope": "isolated local Ethereum fork; no public transactions or live signer-control proof",
   "sourceSha256": {
-    "contracts/AGIJobManager.sol": "aae9d1bc02f9bbb0fc02ad2ae674fd24028fbbfb2d5e6a9e984f214b61c9dbe5",
+    "contracts/AGIJobManager.sol": "ffcea8584a6f0056c9014734cb07aa2de4449005aefd6ceff92f39486519abd3",
     "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
     "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
@@ -63,16 +63,16 @@
     "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
     "hardhat.cutover-fork.config.mjs": "97ae65fb86ad2a6e7ac4b487a561e60fe4698bbc9bf6759105be330e4a5384f0",
     "hardhat/hardhat.config.js": "3107bcfd3239cb05ef5580a368ec7b1b929e091b2caf3f15377733d3abfe6701",
-    "hardhat/package-lock.json": "99bf13380479573358806b6640b29668a14466b14a74038cd92032e869de6f3f",
-    "hardhat/package.json": "52ac9cc821860e83738a845ff8394361b3db6e764e107250fcc1a2d9fe2ed1ca",
+    "hardhat/package-lock.json": "4bbc4cd15221efb3e1749eb851abd7f0b231fcb5892db4da4a22495f26bff69c",
+    "hardhat/package.json": "581ac9febe49e015d620ab9b2621440e1775cbba1f06cde7304a85ce542dc641",
     "hardhat/qualification/cutover-pin.json": "1da5c523c8d1e7629f2630844d02040bd6ca14a6961a41b259cf9af7bb7397d6",
     "hardhat/qualification/legacy-snapshot.cjs": "073b4e6ce4311246985d8c4740018fec967f7042e1b6a233a56142812daf6a31",
     "hardhat/scripts/deployment-safety.cjs": "b228b076c6f09896a5ad55956d2e4b787d08d6c26045d7120e9bb4593bfe2d69",
     "hardhat/scripts/load-env.cjs": "7d7c6f331f4f57224d85e6a13de1e8323c649f0b0d3d6720f08b77f2f1fe0f78",
     "hardhat/scripts/runtime.cjs": "d4618f6912ac7bde79facd0c81f81547135a1b9691f850811d4013a676b4cca2",
-    "hardhat/test/mainnet-cutover.test.js": "9c2adab800296cded6b9bf59754a363a18ce711e49ab87f71e471e41c818a225",
-    "package-lock.json": "0986f5aada47e78646a66ff76311de8f116bb74c449365c4ca5d61eb8ad4a7d7",
-    "package.json": "73ac5d145c8322ddbc540fd0d6a200b7a7ba66a6823a1e55f72579f3f1bbeb4d",
+    "hardhat/test/mainnet-cutover.test.js": "a9627a0596b5b30c4b95c9f62a64aae2de00c47100af5a1a2c69431f43f5e516",
+    "package-lock.json": "8cc4d9f7d34bd0e03daae8d21355543d0e4e2a3588759d2ceb04aa951534bb6f",
+    "package.json": "58a9dcc2dd3f751408a5be18fd0e472b649e6c623f1cda1abf9af102e000f9da",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116"
   },
@@ -523,7 +523,7 @@
       "owner-managed allowlist",
       "address Merkle membership"
     ],
-    "nftEligibility": "Both posting-time modes, collection mutation guards and settlement qualified with MockERC721; actual production collection selection, holdings and upgrade authority require operator review",
+    "nftEligibility": "Fresh construction starts disabled; explicit owner opt-in, both posting-time modes, collection mutation guards and settlement qualified with MockERC721; actual production collection selection, holdings and upgrade authority require operator review",
     "localChildNamesOnly": true,
     "fixtureNames": [
       "agent.agent.agi.eth",

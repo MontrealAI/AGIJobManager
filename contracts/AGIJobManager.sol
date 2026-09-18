@@ -372,8 +372,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     bool private useEnsJobTokenURI;
     /// @notice Freezes ENS/namewrapper/root nodes; USDC is immutable at deployment. Not a governance lock; ops remain owner-controlled.
     bool public lockIdentityConfig;
-    /// @notice Default for newly posted jobs; existing jobs keep their recorded requirement.
-    bool public agentNftRequired = true;
+    /// @notice Starts disabled for new jobs; owner opt-in never changes an existing job's recorded requirement.
+    bool public agentNftRequired = false;
 
 
     uint256 public nextJobId;

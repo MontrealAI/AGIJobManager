@@ -8,14 +8,14 @@ AGIJobManager is designed for autonomous agent workflows with human owner/operat
 
 ## Mainnet registry
 
-- ENSJobPages: deployment and manager wiring required; no official v1.0.2 address is configured.
-- Connected AGIJobManager: a newly deployed and verified v1.0.2 USDC manager (required; no default).
+- ENSJobPages: deployment and manager wiring required; no official v1.0.3 address is configured.
+- Connected AGIJobManager: a newly deployed and verified v1.0.3 USDC manager (required; no default).
 - Active registry: [`config/usdc-deployment.json`](../../config/usdc-deployment.json), currently `deployment-required`.
 - Root namespace: explicitly configured dedicated USDC root; fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth` (not a live deployment).
 - Derived format: `<prefix><jobId>.<jobsRootName>`, with default prefix `agijob`.
 - Preserve the legacy `alpha.jobs.agi.eth` namespace and its existing helper.
 
-The historical ENSJobPages v0.2.0 address `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94` and baseline block `24531331` are legacy references, not a verified v1.0.2 deployment. Follow the [replacement and wiring guide](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) before configuring an identity deployment.
+The historical ENSJobPages v0.2.0 address `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94` and baseline block `24531331` are legacy references, not a verified v1.0.3 deployment. Follow the [replacement and wiring guide](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) before configuring an identity deployment.
 
 ## Operational workflow
 

@@ -1,4 +1,4 @@
-# AGIJobManager Contract Reference — v1.0.2
+# AGIJobManager Contract Reference — v1.0.3
 
 ## Purpose
 Document operational and audit-critical behavior of `AGIJobManager`.

@@ -44,18 +44,18 @@ contract('Local owner configuration CLI', accounts => {
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     try {
       const configFile = path.join(temporary, 'config.json');
-      fs.writeFileSync(configFile, JSON.stringify({ agentNftRequired: false, premiumReputationThreshold: '123', moderators: [moderator], transferOwnershipTo: nextOwner, expectedOwner: owner }));
+      fs.writeFileSync(configFile, JSON.stringify({ agentNftRequired: true, premiumReputationThreshold: '123', moderators: [moderator], transferOwnershipTo: nextOwner, expectedOwner: owner }));
       const env = { ...process.env, RPC_URL: `http://127.0.0.1:${server.address().port}`, TX_FROM: owner };
       const options = { cwd: path.resolve(__dirname, '..'), env, timeout: 60_000 };
       const args = ['--network', 'development', '--address', manager.address, '--config-path', configFile];
       const preview = await promisify(execFile)(process.execPath, ['scripts/postdeploy-config.js', ...args, '--dry-run'], options);
       assert.match(preview.stdout, /Post-deploy configuration plan/);
       assert.equal(sent, 0);
-      assert.equal(await manager.agentNftRequired(), true);
+      assert.equal(await manager.agentNftRequired(), false);
       assert.equal(await manager.moderators(moderator), false);
       await promisify(execFile)(process.execPath, ['scripts/postdeploy-config.js', ...args], options);
       assert.equal(sent, 4);
-      assert.equal(await manager.agentNftRequired(), false);
+      assert.equal(await manager.agentNftRequired(), true);
       assert.equal((await manager.premiumReputationThreshold()).toString(), '123');
       assert.equal(await manager.moderators(moderator), true);
       assert.equal(await manager.owner(), owner);
@@ -63,7 +63,7 @@ contract('Local owner configuration CLI', accounts => {
       const verified = await promisify(execFile)(process.execPath, ['scripts/verify-config.js', ...args], options);
       assert.match(verified.stdout, /PASS premiumReputationThreshold: 123/);
       assert.match(verified.stdout, /PASS owner:/);
-      assert.match(verified.stdout, /PASS agentNftRequired: false/);
+      assert.match(verified.stdout, /PASS agentNftRequired: true/);
     } finally {
       await new Promise(resolve => server.close(resolve));
       fs.rmSync(temporary, { recursive: true, force: true });

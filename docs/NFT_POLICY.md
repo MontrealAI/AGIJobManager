@@ -1,6 +1,6 @@
-# Agent NFT policy — v1.0.2
+# Agent NFT policy — v1.0.3
 
-The owner can require or waive an approved NFT for **newly posted jobs**. NFTs are required by default. Each job records the choice when its `createJob` transaction executes, before assignment; changing the default never changes an existing job.
+The owner can require or waive an approved NFT for **newly posted jobs**. Fresh v1.0.3 managers start with NFT eligibility **disabled** (`agentNftRequired() == false`) and no registered collections. The owner can opt in later. Each job records the choice when its `createJob` transaction executes, before assignment; changing the default never changes an existing job.
 
 | Job policy | Agent needs |
 | --- | --- |
@@ -13,7 +13,7 @@ NFTs determine eligibility at application, not payment amounts. Successful settl
 
 ## Owner walkthrough
 
-1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.2/agijobmanager-usdc.html), select the verified v1.0.2 manager and connect the accepted owner wallet. Confirm the chain and contract address.
+1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.3/agijobmanager-usdc.html), select the verified v1.0.3 manager and connect the accepted owner wallet. Confirm the chain and contract address.
 2. In owner controls, choose **NFT requirement for new jobs**. Enter `true` to require an enabled NFT or `false` to waive it. Review and simulate the transaction, then submit through the owner's signing setup.
 3. Verify `AgentNftRequirementUpdated(required)` and `agentNftRequired()`. A pending owner has no authority until ownership is accepted. This operational setting remains available after identity configuration is locked.
 4. Agents and employers check `jobAgentNftRequired(jobId)` or the console's job detail/review for the actual job policy. Missing or cancelled jobs revert instead of reporting an optional policy.
@@ -22,7 +22,7 @@ NFTs determine eligibility at application, not payment amounts. Successful settl
 
 ## Configure approved collections
 
-A fresh manager has **no registered collections**. Keeping the required default without configuring a collection prevents agents from applying. After accepting ownership, either register reviewed collections or explicitly choose the optional mode before activation.
+A fresh v1.0.3 manager has **no registered collections** and NFT admission is **disabled**. No NFT-setting transaction is needed to keep that starting policy. To opt in, the accepted owner registers reviewed collections and calls `setAgentNftRequired(true)` before the jobs that should require them are posted. Enabling the requirement with no enabled collection prevents agents from applying and fails readiness.
 
 `addAGIType(collection, score)` adds or updates an ERC-721 collection with an integer score from 1 to 100. `disableAGIType(collection)` sets its score to zero. There are at most 32 slots; disabled slots can be reused when full. The historical names `payoutPercentage` and `getHighestPayoutPercentage` are retained for compatibility: any positive score establishes eligibility and never increases the payment share. Select **1** unless compatibility with existing score reporting needs another value.
 
@@ -55,7 +55,7 @@ The NFT registry remains owner-maintainable after the ENS identity lock, subject
 
 ## Hardhat deployment and readiness
 
-The supported deployment script deploys and verifies eight linked libraries, including `NftEligibility`, and the manager. It starts intake paused, retains the required default and empty registry, and proposes the configured ownership handover. It does not choose production collections or silently turn eligibility off.
+The supported deployment script deploys and verifies eight linked libraries, including `NftEligibility`, and the manager. It starts intake paused with NFT admission disabled and an empty registry, checks the disabled state at the deployment block, and proposes the configured ownership handover. It does not choose production collections or enable NFT admission.
 
 Run `npm --prefix hardhat run setup` to create a private policy example without overwriting existing files. After ownership acceptance and on-chain configuration, review `hardhat/reviewed-nft-policy.json` describing the **complete expected registry**, including disabled entries. For a required policy:
 
@@ -68,7 +68,7 @@ Run `npm --prefix hardhat run setup` to create a private policy example without 
 }
 ```
 
-Replace the placeholder with the verified collection address. For an intentionally optional policy on a fresh manager with no registered collections:
+Replace the placeholder with the verified collection address and enable that policy on chain before checking readiness. The setup-generated policy matches fresh v1.0.3 construction:
 
 ```json
 {
@@ -93,6 +93,6 @@ The local-only owner configuration CLI also accepts `agentNftRequired: true/fals
 
 ## Existing deployments and qualification
 
-The per-job NFT policy was introduced in v0.9.4. v1.0.2 retains the v0.9.6 ABI and executable bytecode, so a verified v0.9.6 manager remains compatible with this console. First deployments and moves from incompatible older versions require a fresh manager. There is no proxy upgrade or escrow migration. Keep every earlier job on its original manager, asset, helper and ENS namespace, using a compatible interface. A fresh manager needs a distinct jobs namespace because IDs restart at zero. Do not overwrite old receipts or relabel old addresses as v1.0.2 deployments.
+The per-job NFT policy was introduced in v0.9.4. v1.0.3 changes the construction default from required to disabled and retains the v0.9.6 ABI and deployed runtime bytecode, so a verified v0.9.6 manager remains compatible with this console. Existing deployed settings do not change on publication: to disable the requirement on a compatible older instance, its accepted owner calls `setAgentNftRequired(false)` and verifies the resulting state. Earlier required jobs remain required. First deployments and moves from incompatible older versions require a fresh manager. There is no proxy upgrade or escrow migration. Keep every earlier job on its original manager, asset, helper and ENS namespace, using a compatible interface. A fresh manager needs a distinct jobs namespace because IDs restart at zero. Do not overwrite old receipts or relabel old addresses as v1.0.3 deployments.
 
 The regression suite covers both modes, repeated default changes, accepted-owner authority, collection protection, eligibility, bonds and identical payouts after transferring away an NFT. Fuzzing exercises both policy orders and varying costs/reward rates. The pinned mainnet fork repeats both modes against actual Circle USDC and ENS contracts while comparing the legacy inventory. It uses a mock eligibility collection: actual production collections, owners, recipients, signer access and activation still require instance-specific review. See [qualification](qualification/USDC_CUTOVER.md) and [mainnet readiness](MAINNET_READINESS.md).

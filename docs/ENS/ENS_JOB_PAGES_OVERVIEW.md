@@ -4,7 +4,7 @@ This document describes ENS naming and hook behavior from the current on-chain c
 
 ## In one minute
 - Canonical name shape is `<prefix><jobId>.<jobsRootName>`.
-- The constructor default is `agijob`; v1.0.2 fresh deployment tooling sets `job-` and derives the root from the chain and full manager address. Replacement mode preserves the active helper’s root and prefix. Read the [naming policy](../ENS_DEPLOYMENT_NAMESPACES.md).
+- The constructor default is `agijob`; v1.0.3 fresh deployment tooling sets `job-` and derives the root from the chain and full manager address. Replacement mode preserves the active helper’s root and prefix. Read the [naming policy](../ENS_DEPLOYMENT_NAMESPACES.md).
 - Settlement and dispute progression live in `AGIJobManager`; ENS writes in `ENSJobPages` are best-effort and non-fatal to settlement.
 - Legacy jobs may need explicit snapshot migration to avoid `JobLabelNotSnapshotted` write failures.
 

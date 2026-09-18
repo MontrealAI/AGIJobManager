@@ -1,4 +1,4 @@
-# FAQ — v1.0.2 (USDC console and Etherscan)
+# FAQ — v1.0.3 (USDC console and Etherscan)
 
 ## How would the first Genesis artwork job work now?
 

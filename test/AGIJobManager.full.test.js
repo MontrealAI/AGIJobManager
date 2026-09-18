@@ -194,6 +194,7 @@ contract("AGIJobManager comprehensive", (accounts) => {
     await token.mint(buyer, parseUSDCAmount("500"), { from: owner });
     await token.mint(other, parseUSDCAmount("500"), { from: owner });
     await manager.addAGIType(nft.address, 1, { from: owner });
+    await manager.setAgentNftRequired(true, { from: owner });
     const mintReceipt = await nft.mint(agent, { from: owner });
     agentTokenId = mintReceipt.logs[0].args.tokenId.toNumber();
 

@@ -1,6 +1,6 @@
 // Generated from config/usdc-deployment.json. Never infer deployment from historical receipts.
 export const OFFICIAL_DEPLOYMENTS = {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "status": "deployment-required",
   "chainId": 1,
   "explorerBaseUrl": "https://etherscan.io",
@@ -14,7 +14,7 @@ export const OFFICIAL_DEPLOYMENTS = {
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
   },
   "addressSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-  "note": "Software release only; no live USDC manager is recorded here. v1.0.2 retains the v0.9.6 manager ABI and executable bytecode and uses eight fixed linked libraries. A verified v0.9.6 or v0.9.7 instance can use this console; older incompatible managers require a fresh deployment to gain these features. Preserve existing jobs on their original manager and namespace. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before opening intake. A fresh manager requires NFTs but has no registered collections: register reviewed collections or explicitly disable the requirement. Initial activation requires zero escrow, bonds and pending claims. Later recipient and NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary.",
+  "note": "Software release only; no live USDC manager is recorded here. v1.0.3 changes fresh construction to disable NFT admission by default, while preserving the v0.9.6 manager ABI and eight fixed library links. Existing compatible instances can use this console but retain their on-chain settings and each job's recorded policy. Preserve existing jobs on their original manager and namespace. Verify accepted ownership, both recipients, ENS wiring and READINESS_NFT_CONFIG before opening intake. A fresh manager has no registered collections; owner opt-in requires reviewed collections and setAgentNftRequired(true). Initial activation requires zero escrow, bonds and pending claims. Later recipient and NFT collection changes require zero live escrow and bonds; old claims retain their beneficiary.",
   "settlementWallets": {
     "wallet30": "",
     "wallet10": ""
@@ -27,7 +27,7 @@ export const OFFICIAL_DEPLOYMENTS = {
     "agent": "remaining balance"
   },
   "nftPolicy": {
-    "defaultRequired": true,
+    "defaultRequired": false,
     "snapshot": "job-posting",
     "collectionChanges": "zero outstanding escrow and bonds",
     "payoutEffect": "none"

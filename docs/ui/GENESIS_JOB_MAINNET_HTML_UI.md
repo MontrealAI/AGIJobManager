@@ -1,6 +1,6 @@
-# USDC standalone console v1.0.2
+# USDC standalone console v1.0.3
 
-Use the [v1.0.2 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.2/agijobmanager-usdc.html) with a verified v0.9.6 or v1.0.2 USDC manager on Ethereum mainnet. No manager is configured by default. A verified v0.9.6 instance does not need redeployment for this update.
+Use the [v1.0.3 console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.3/agijobmanager-usdc.html) with a verified v0.9.6 or v1.0.3 USDC manager on Ethereum mainnet. No manager is configured by default. A verified v0.9.6 instance does not need redeployment for this update.
 
 The [current repository console](../../ui/agijobmanager-usdc.html) includes clear cost and buyer guidance and requires `getJobBonds` for voting. v0.9.5 and older managers do not have that getter. See [compatibility and verification](../qualification/BUYER_ECONOMICS_FOLLOWUP.md), including the older console's bond-quote limitation. Existing jobs remain on their original contracts.
 
@@ -8,7 +8,7 @@ The repository console has post-release context/mobile fixes and a **Get free na
 
 Before enabling writes the console checks chain ID 1, contract code, the manager's immutable `usdcToken()` address and six decimals. It repeats these checks before each transaction. Token identity checks do not prove source correctness; verify the deployment independently first.
 
-All amounts use USDC with at most six decimal places. Excess precision is rejected. Approval, escrow, bonds, settlement and withdrawals use the same USDC address. The old bridge/vault panel is retired, and saved forms and wallet context retain the v0.9.6 namespace because the ABI and executable bytecode are unchanged. The console still rechecks account, chain and manager before writing. Pre-v0.9.6 saved context is not imported.
+All amounts use USDC with at most six decimal places. Excess precision is rejected. Approval, escrow, bonds, settlement and withdrawals use the same USDC address. The old bridge/vault panel is retired, and saved forms and wallet context retain the v0.9.6 namespace because the ABI and deployed runtime remain compatible; v1.0.3 changes only the fresh NFT-admission default during construction. The console still rechecks account, chain and manager before writing. Pre-v0.9.6 saved context is not imported.
 
 Wallet/account/chain changes invalidate reviews and write eligibility. Review the exact amount and spender before signing; USDC approval is separate from a job transaction. ETH is required only for gas.
 

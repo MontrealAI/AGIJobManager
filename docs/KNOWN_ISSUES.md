@@ -1,4 +1,4 @@
-# Known limitations and issue reporting — v1.0.2
+# Known limitations and issue reporting — v1.0.3
 
 This page records current operational limits. Exact test results and dependency counts belong to the release evidence and [dependency report](DEPENDENCY_SECURITY.md), rather than historical local logs.
 

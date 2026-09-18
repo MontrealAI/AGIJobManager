@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v1.0.2</title>
+  <title>AGIJobManager · USDC v1.0.3</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -961,7 +961,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v1.0.2 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v1.0.3 · Compatible with verified v0.9.6/v0.9.7 and v1.0.x managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -1130,7 +1130,7 @@
             <div class="legendRow"><span>Wallet two · 10%</span><b id="legendWallet10Pct">10%</b></div>
           </div>
         </div>
-        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Existing jobs keep their own setting.</div>
+        <div class="tiny" style="margin-top:10px">NFT requirement for new jobs: <b id="agentNftRequiredState">Unknown — connect to read</b>. Fresh v1.0.3 deployments start disabled. Existing jobs keep their own setting.</div>
         <div class="tiny" style="margin-top:10px">The validator rate is fixed when the job is posted. The two wallets receive 30% and 10% of the original job cost; the agent receives the remainder. NFTs affect eligibility only. Each job keeps the NFT requirement recorded when it was posted.</div>
       </div>
 
@@ -1181,7 +1181,7 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v1.0.2</h2>
+      <h2>USDC deployment · v1.0.3</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
       <p class="helper">Enter the verified Ethereum mainnet address of a compatible v0.9.6, v0.9.7 or v1.0.x USDC manager. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
@@ -2056,8 +2056,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v1.0.2 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v1.0.2 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v1.0.3 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v1.0.3 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2313,9 +2313,9 @@ Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contra
 Historical project-token sale disclosures do not describe v0.8.0 settlement and are
 preserved in previous Git tags.</div></details></div>
       <div class="hintBox" style="margin-top:12px">
-        <b>How job escrow refunds work in v1.0.2</b>
+        <b>How job escrow refunds work in v1.0.3</b>
         <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
-        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v1.0.2, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v1.0.3, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
       </div>
     </div>
 
@@ -2324,7 +2324,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.0.2/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v1.0.2 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.0.3/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v1.0.3 terms</a>
       </div>
     </div>
 
