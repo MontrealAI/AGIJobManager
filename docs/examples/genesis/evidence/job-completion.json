@@ -1,0 +1,57 @@
+{
+  "name": "AGI Job Completion · Genesis Job 0 — Ceremonial Founding Image of AGIJobManager Mainnet",
+  "description": "Final completion package for Genesis Job 0. This metadata JSON serves as the Job Completion URI and resolves to the final submitted PNG via its \"image\" field for public validator review.",
+  "image": "ipfs://bafybeihuy6n7qifpcvzg267c2tsfr2d3xcei7l4hzikm5glzfncz4yfanq",
+  "attributes": [
+    {
+      "trait_type": "Kind",
+      "value": "job-completion"
+    },
+    {
+      "trait_type": "Job ID",
+      "value": "0"
+    },
+    {
+      "trait_type": "Category",
+      "value": "Genesis / Protocol Art / Mainnet Launch"
+    },
+    {
+      "trait_type": "Final Asset Type",
+      "value": "PNG"
+    },
+    {
+      "trait_type": "Locale",
+      "value": "en-US"
+    },
+    {
+      "trait_type": "Completion Standard",
+      "value": "Public IPFS deliverables"
+    }
+  ],
+  "properties": {
+    "schema": "agijobmanager/job-completion/v1",
+    "kind": "job-completion",
+    "version": "1.0.0",
+    "locale": "en-US",
+    "title": "Genesis Job 0 — Ceremonial Founding Image of AGIJobManager Mainnet",
+    "summary": "Submission of the final ceremonial founding image as a publicly accessible PNG on IPFS, with this metadata JSON serving as the Job Completion URI and pointing to the final image through its \"image\" field.",
+    "jobId": 0,
+    "jobSpecURI": "ipfs://bafkreie75ykl5o5mg3yuihxjn26rwwce5nyz5mo4k66l4lc2wmgkkdi4qe",
+    "jobSpecGatewayURI": "https://ipfs.io/ipfs/bafkreie75ykl5o5mg3yuihxjn26rwwce5nyz5mo4k66l4lc2wmgkkdi4qe",
+    "finalImageURI": "ipfs://bafybeihuy6n7qifpcvzg267c2tsfr2d3xcei7l4hzikm5glzfncz4yfanq",
+    "finalImageGatewayURI": "https://ipfs.io/ipfs/bafybeihuy6n7qifpcvzg267c2tsfr2d3xcei7l4hzikm5glzfncz4yfanq",
+    "deliverables": [
+      "One final square PNG image submitted at the finalImageURI",
+      "One public IPFS URI resolving directly to the final PNG",
+      "One Job Completion URI whose \"image\" field references the final PNG"
+    ],
+    "validatorNote": "Validate this submission by confirming that the \"image\" field resolves publicly to the final PNG and reviewing the artwork against the Job Spec URI acceptance criteria. ENS page resolution is not required for acceptance of this completion.",
+    "completionStatus": "submitted",
+    "chainId": 1,
+    "contract": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+    "createdVia": "OpenAI ChatGPT",
+    "generatedAt": "2026-03-06T23:37:48Z",
+    "submissionType": "Job Completion URI"
+  },
+  "external_url": "https://ipfs.io/ipfs/bafkreie75ykl5o5mg3yuihxjn26rwwce5nyz5mo4k66l4lc2wmgkkdi4qe"
+}

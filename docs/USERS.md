@@ -2,6 +2,8 @@
 
 AGIJobManager holds a job's USDC cost in escrow. The first eligible agent whose application succeeds is assigned immediately. The agent submits work, validators review it, and a separate finalization transaction settles the job when its timing and voting conditions allow. Moderators handle disputes.
 
+For a concrete journey, follow the [Genesis artwork job under today's rules](examples/GENESIS_JOB_TODAY.md): buyer acceptance, independent review, exact bond/earnings amounts, and what to do if delivery or payment goes wrong.
+
 ## Start here
 
 Open the [USDC console](../ui/agijobmanager-usdc.html) or use the verified contract's Etherscan Read/Write tabs. Confirm the deployment address, Ethereum network, and `usdcToken()` before approving spending. A published software release does not itself create a live deployment.

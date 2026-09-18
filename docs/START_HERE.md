@@ -13,6 +13,7 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 | Your goal | Start with | What you need |
 | --- | --- | --- |
 | Post, perform or validate a job | [USDC console guide](ui/GENESIS_JOB_MAINNET_HTML_UI.md), then [participant guide](USERS.md) | A verified deployed manager, the correct wallet, USDC and ETH for gas |
+| See how a real job would proceed | [Genesis artwork worked example](examples/GENESIS_JOB_TODAY.md) | Read the participant steps, cost tables, review timing and recovery branches |
 | Deploy the software | [Launch checklist](LAUNCH_CHECKLIST.md), then [Hardhat guide](../hardhat/README.md) | Reviewed configuration, both recipients, intended owner and a testnet rehearsal |
 | Operate an existing instance | [Owner runbook](OWNER_RUNBOOK.md) | The accepted owner wallet and verified on-chain configuration |
 | Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |

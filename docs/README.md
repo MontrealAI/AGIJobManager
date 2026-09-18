@@ -7,6 +7,7 @@ Guides for buyers, agents, reviewers, operators and developers. **These are curr
 - **Become an agent:** [free identity, eligibility, work and payment](roles/AGENT.md).
 - **Enable free agent identities:** [owner configuration walkthrough](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).
 - **Understand missing or poor work:** [buyer protection](BUYER_PROTECTION.md) and [job specification template](BUYER_JOB_TEMPLATE.md).
+- **Follow a real worked example:** [Genesis artwork job under today's rules](examples/GENESIS_JOB_TODAY.md), with historical evidence and a reproducible local simulation.
 
 ## Start here in one minute
 

@@ -1,5 +1,9 @@
 # FAQ — v1.0.0 (USDC console and Etherscan)
 
+## How would the first Genesis artwork job work now?
+
+See the [worked example and executable simulation](examples/GENESIS_JOB_TODAY.md). A satisfied buyer can accept submitted work immediately; ordinary finalization waits for the full review and any later approval challenge. The guide uses an illustrative new USDC price, explains the old AGIALPHA receipt, and walks through missed delivery, poor work, contested quality and payment recovery. It does not claim that a new mainnet instance has been commissioned.
+
 ## How is a successful job paid?
 
 Every job cost, reward, and bond uses native USDC. Successful settlement pays validators first, then 30% and 10% of the original job cost to `wallet30` and `wallet10`, then the remainder to the assigned agent. With the default 8% validator budget, 100 USDC becomes 8 / 30 / 10 / 52 USDC before separate bond returns/slashing. The owner can change the validator percentage from 1–60% for new jobs; already posted jobs retain their percentage. Rounding and undistributed validator rewards go to the agent on success.

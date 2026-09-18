@@ -2,6 +2,8 @@
 
 Use this before funding a job. Publish the final brief at the job specification URI so the agent, reviewers and moderator assess the same requirements. Keep credentials and confidential information out of public metadata.
 
+For an applied example, see the [Genesis artwork brief and participant journey](examples/GENESIS_JOB_TODAY.md#agree-on-a-usable-brief-before-funding).
+
 ```text
 Job title:
 Result I need:

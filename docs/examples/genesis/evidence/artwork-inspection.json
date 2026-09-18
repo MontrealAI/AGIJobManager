@@ -1,0 +1,13 @@
+{
+  "uri": "ipfs://bafybeihuy6n7qifpcvzg267c2tsfr2d3xcei7l4hzikm5glzfncz4yfanq",
+  "retrievalURL": "https://gateway.pinata.cloud/ipfs/bafybeihuy6n7qifpcvzg267c2tsfr2d3xcei7l4hzikm5glzfncz4yfanq",
+  "bytes": 9229472,
+  "sha256": "49ad71211fa974af57a790ddb861a5cfe262a1531f3adc9cb5f86b56313030c9",
+  "format": "PNG",
+  "width": 2048,
+  "height": 2048,
+  "square": true,
+  "minimum2048": true,
+  "retrievedAt": "2026-09-18T14:29:16Z",
+  "limits": "File decoding and SHA-256 checked; no full DAG-PB CID proof, licensing determination or future availability guarantee. PNG not included in this text-only repository."
+}

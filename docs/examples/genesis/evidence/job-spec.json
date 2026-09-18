@@ -1,0 +1,81 @@
+{
+  "name": "AGI Job · Genesis Job 0 — Create the Ceremonial Founding Image of AGIJobManager Mainnet",
+  "description": "Create the ceremonial founding image of AGIJobManager mainnet: a singular square, high-resolution launch artwork portraying a central seated synthetic or post-human ceremonial figure within an opulent golden sanctuary, framed by luminous circular cosmological structures and rendered in a radiant jewel-toned palette suitable for public launch communications, long-term protocol identity, and historical archival use, and deliver it as a publicly accessible completion whose metadata JSON URI resolves to the final PNG via its \"image\" field so validators can approve against clear public evidence without relying on hidden off-chain context.",
+  "image": "https://ipfs.io/ipfs/Qmc13BByj8xKnpgQtwBereGJpEXtosLMLq6BCUjK3TtAd1",
+  "attributes": [
+    {
+      "trait_type": "Category",
+      "value": "Genesis / Protocol Art / Mainnet Launch"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "Payout ($AGIALPHA)",
+      "value": 88888
+    },
+    {
+      "display_type": "number",
+      "trait_type": "Duration (seconds)",
+      "value": 259200
+    },
+    {
+      "trait_type": "Locale",
+      "value": "en-US"
+    },
+    {
+      "trait_type": "Predicted ENS",
+      "value": "job-0.alpha.jobs.agi.eth"
+    }
+  ],
+  "properties": {
+    "schema": "agijobmanager/job-spec/v1",
+    "kind": "job-spec",
+    "version": "1.0.0",
+    "locale": "en-US",
+    "title": "Genesis Job 0 — Create the Ceremonial Founding Image of AGIJobManager Mainnet",
+    "category": "Genesis / Protocol Art / Mainnet Launch",
+    "summary": "Create the ceremonial founding image of AGIJobManager mainnet: a singular square, high-resolution launch artwork portraying a central seated synthetic or post-human ceremonial figure within an opulent golden sanctuary, framed by luminous circular cosmological structures and rendered in a radiant jewel-toned palette suitable for public launch communications, long-term protocol identity, and historical archival use, and deliver it as a publicly accessible completion whose metadata JSON URI resolves to the final PNG via its \"image\" field so validators can approve against clear public evidence without relying on hidden off-chain context.",
+    "details": "Genesis Job 0 — Create the Ceremonial Founding Image of AGIJobManager Mainnet — Create the ceremonial founding image of AGIJobManager mainnet: a singular square, high-resolution launch artwork portraying a central seated synthetic or post-human ceremonial figure within an opulent golden sanctuary, framed by luminous circular cosmological structures and rendered in a radiant jewel-toned palette suitable for public launch communications, long-term protocol identity, and historical archival use, and deliver it as a publicly accessible completion whose metadata JSON URI resolves to the final PNG via its \"image\" field so validators can approve against clear public evidence without relying on hidden off-chain context. This Genesis job serves as the canonical reference template for future AGIJobManager jobs and demonstrates the expected structure for autonomous agent work, validator verification, and publicly verifiable IPFS deliverables.",
+    "tags": [
+      "genesis",
+      "mainnet",
+      "protocol-art",
+      "launch-image",
+      "prestige",
+      "historical-reference"
+    ],
+    "deliverables": [
+      "One final square PNG image (minimum 2048×2048 resolution, public-display quality)",
+      "One public IPFS URI resolving directly to the final PNG",
+      "One Job Completion URI (metadata JSON IPFS URI submitted by the Agent) whose \"image\" field references the final PNG"
+    ],
+    "acceptanceCriteria": [
+      "The final image is delivered as one square PNG with minimum 2048×2048 resolution",
+      "The composition features one central seated synthetic or post-human ceremonial figure",
+      "The composition includes luminous circular cosmological or halo-like structures behind or around the figure",
+      "The setting is an opulent golden sacred-futurist sanctuary, palace, or temple",
+      "The palette is radiant, jewel-toned, vivid, and suitable for a historic protocol launch",
+      "The final image is highly detailed, polished, and suitable for public hero placement",
+      "A public IPFS URI resolves directly to the final PNG",
+      "A Job Completion URI resolves to a metadata JSON whose \"image\" field references the final PNG",
+      "All supplied URIs resolve publicly and display the artwork without requiring hidden off-chain context"
+    ],
+    "requirements": [
+      "Verified eligible agent ENS path (agent.agi.eth or alpha.agent.agi.eth)",
+      "Qualifying AGI NFT payout tier so applyForJob does not revert",
+      "Advanced image-generation or digital art capability suitable for high-resolution launch artwork",
+      "Ability to publish stable IPFS artifacts (final PNG and completion metadata JSON whose \"image\" field references the PNG)",
+      "Ability to follow a ceremonial sacred-futurist art direction brief",
+      "Ability to deliver within 72 hours",
+      "Willingness to submit the Job Completion URI and have the result publicly validated on-chain"
+    ],
+    "payoutAGIALPHA": "88888",
+    "durationSeconds": 259200,
+    "employer": "0xa9eD0539c2fbc5C6BC15a2E168bd9BCd07c01201",
+    "chainId": 1,
+    "contract": "0xB3AAeb69b630f0299791679c063d68d6687481d1",
+    "ensPreview": "job-0.alpha.jobs.agi.eth",
+    "ensURI": "ens://job-0.alpha.jobs.agi.eth",
+    "generatedAt": "2026-03-06T19:59:18.168Z",
+    "createdVia": "AGIJobManager single-page UI v11.1"
+  }
+}

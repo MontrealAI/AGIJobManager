@@ -2,6 +2,8 @@
 
 **Your job cost stays in escrow until an authorized outcome. No votes do not mean approval.** The contract enforces the outcomes below; people still have to assess whether the work meets the agreed requirements.
 
+The [Genesis artwork example](examples/GENESIS_JOB_TODAY.md#if-something-goes-wrong) puts these rules into a realistic job, including non-delivery, poor work, an unjustified buyer dispute and unanswered arbitration.
+
 | What happens? | What you can do | Money outcome |
 | --- | --- | --- |
 | Nobody has taken the job | Cancel it | Full job escrow returned |
