@@ -1,0 +1,12 @@
+{
+  "name": "Genesis Job 0 \u2014 ceremonial founding image",
+  "png": true,
+  "minimumResolution": true,
+  "square": true,
+  "specMetadataCIDVerified": true,
+  "completionMetadataCIDVerified": true,
+  "completionReferencesSpec": true,
+  "imageReferenceConsistent": true,
+  "visualAssessment": "Observed a central seated synthetic/post-human figure, golden ornate sanctuary, luminous rings and a vivid jewel-toned palette. This supports the brief but is not independent validator certification or a rights/licensing review.",
+  "publicRetrieval": "Successful through the Pinata gateway; ipfs.io and dweb.link returned HTTP 403 in this environment. This establishes retrieval through an alternative gateway, not universal gateway availability or indefinite pinning."
+}

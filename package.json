@@ -30,7 +30,8 @@
     "slither:extended": "bash scripts/security/run-slither-extended.sh",
     "test:shard": "node scripts/test-contract-shard.js",
     "postinstall": "node scripts/security/patch-openzeppelin-compiler.cjs",
-    "economics:check": "node scripts/economics/assess.cjs"
+    "economics:check": "node scripts/economics/assess.cjs",
+    "simulate:genesis": "npm --prefix hardhat run compile && node scripts/simulate-genesis-job.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

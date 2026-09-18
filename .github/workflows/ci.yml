@@ -68,6 +68,18 @@ jobs:
         if: matrix.shard == 0
         run: node scripts/local-job-demo.cjs
 
+      - name: Rehearse the historical Genesis job under current rules
+        if: matrix.shard == 0
+        run: node scripts/simulate-genesis-job.mjs
+
+      - name: Retain Genesis simulation evidence
+        if: matrix.shard == 0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: genesis-job-simulation
+          path: build/qualification/genesis-job.json
+          if-no-files-found: error
+
       - name: USDC console regression checks
         if: matrix.shard == 0
         run: node scripts/ui/verify-usdc-console.mjs

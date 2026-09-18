@@ -1,0 +1,27 @@
+{
+  "recordedOn": "2026-09-18",
+  "chainId": 1,
+  "transaction": "0x3c586d674d22bc93fb2ffbb83f5a4797ad699cb3a5d3cd7c18629beb2f2c4a5a",
+  "stateBlocks": [
+    24609814,
+    24609815
+  ],
+  "sources": {
+    "transaction": "https://etherscan.io/tx/0x3c586d674d22bc93fb2ffbb83f5a4797ad699cb3a5d3cd7c18629beb2f2c4a5a",
+    "legacyABI": "https://etherscan.io/address/0xb3aaeb69b630f0299791679c063d68d6687481d1#code",
+    "rpc": "https://eth-mainnet.g.alchemy.com/public",
+    "metadataGateway": "https://gateway.pinata.cloud/ipfs/"
+  },
+  "scope": "Historical RPC responses and derived decodes, not a mainnet fork or cryptographic Ethereum state proof. ABI belongs to the legacy AGIALPHA manager. Metadata bytes preserved for raw-CID verification. No keys or authenticated RPC URLs.",
+  "sha256": {
+    "artwork-inspection.json": "8e0e458d8ad0df14230367197bf1f42452720072a8050ad267190b77ebdf068c",
+    "decoded-receipt.json": "ba02155b6c3980fa890460fd1b0be9e270a9677a59b603d4054fdc8ecfbcd540",
+    "deliverable-checks.json": "34bb4f422bf41e957b72e2f9d3009d11862733c546b51c200fccfaef6989dd13",
+    "historical-state-decoded.json": "63e32f132cf4c57750ce5367cdbb3abedbfb7d14d06685a9493754425e05bf26",
+    "historical-state-raw.json": "4454b9f5513a0ed6229abc6d6c240ca3b49fe3e67f14879783de151044f007e9",
+    "historical-transaction.json": "a3201f83907158745c20fce0c658f91112c582a989826675717fbbf80d7ba53c",
+    "job-completion.json": "d9d372d3f348cd39f2ceb4ed3df716da633b07d01ffe99f1b9e0a320ea29bb5d",
+    "job-spec.json": "9fee14bebbac36f1441ee96ebd1b5844eb719eb1dc57bcbe2c5ab30ca50d1c81",
+    "legacy-abi.json": "5377870c2e6feb13ff5014911c3091adf12b6cf47d80c83463bfd9a8c52c239a"
+  }
+}

@@ -132,6 +132,8 @@ https://<dapp-host>/ui/agijobmanager.html?contract=<address>&chainId=<id>&jobId=
 
 ## Examples
 
+For a new posting based on the original artwork brief, follow the [Genesis job worked example](examples/GENESIS_JOB_TODAY.md#agree-on-a-usable-brief-before-funding). Its archived JSON intentionally preserves historical AGIALPHA and old-manager fields. Publish new metadata for a USDC job; do not reuse those historical financial or deployment fields as current terms.
+
 - `docs/examples/jobSpec.v1.json`
 - `docs/examples/jobCompletion.v1.json`
 

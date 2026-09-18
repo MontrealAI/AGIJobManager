@@ -13,6 +13,7 @@
 | Suite | Purpose | Command | Validates |
 | --- | --- | --- | --- |
 | Contract suite | Hardhat compile, artifact export, existing JavaScript regressions and bytecode guard | `npm test` | Core protocol behavior; uses disposable local accounts |
+| Genesis worked example | Current contracts with archived historical inputs and explicit scenario assumptions | `npm run simulate:genesis` | 24 local scenarios: exact economics, review boundaries, buyer/agent dispute outcomes, claims, ENS failure and credential loss; see [scope and reproduction](examples/GENESIS_JOB_TODAY.md#reproduce-the-simulation) |
 | Contract CI shards | Same recursively discovered test files, four isolated runners | `npm run test:shard -- 0 4` through `3 4`, after `npm run build` | Complete file coverage with isolated chain state; all four shards are required |
 | Lint lane | Solidity lint rules | `npm run lint` | Style/safety linting |
 | Bytecode lane | EIP-170 guardrail | `npm run size` | Deployability constraints |

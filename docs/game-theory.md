@@ -2,6 +2,8 @@
 
 The contract provides escrow, bonded review, and a trusted arbitration backstop. It does not prove work quality or guarantee that honest behavior is always the most profitable choice.
 
+The [Genesis artwork simulation](examples/GENESIS_JOB_TODAY.md#what-each-participant-pays-and-earns) applies these rules to a 72-hour job, compares buyer acceptance with three or seven reviewers, and separates earned rewards from returned collateral.
+
 ## What the buyer purchases
 
 A successful 100 USDC job at default rates allocates 8 USDC to correct-side validators, 30 to one configured wallet, 10 to the other, and 52 to the agent. These charges are included in the posted job cost. With explicit buyer acceptance and no votes, the unspent validator budget goes to the agent: 30 / 10 / 60. No-vote finalization itself opens a dispute and pays nobody.
