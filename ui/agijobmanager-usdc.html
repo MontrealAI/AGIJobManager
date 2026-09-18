@@ -822,7 +822,9 @@
     .modalHeader{position:sticky;top:0;z-index:8;background:#fff;padding-top:4px;}
     .reviewFooter,#actionReviewModal .actions:last-child,#alphaMintReviewModal .actions:last-child,#alphaIdentityReviewModal .actions:last-child,#adminArgsModal .reviewFooter{position:sticky;bottom:0;z-index:9;background:linear-gradient(180deg,rgba(255,255,255,.7),#fff 35%);padding-bottom:var(--modal-safe-bottom);margin-bottom:0;}
     @media (max-width:900px){
+      .container,.modalCard,.commandModalCard,.reviewModalCard,#v26MobileSheet .v26-sheet-card{box-sizing:border-box;}
       .modalBackdrop{padding:0;align-items:flex-end;}
+      code{overflow-wrap:anywhere;word-break:break-word;}
       .modalCard,.commandModalCard,.reviewModalCard{width:100vw;max-width:100vw;max-height:calc(var(--app-vh, 1vh) * 100);min-height:min(560px,calc(var(--app-vh, 1vh) * 100));border-radius:20px 20px 0 0;padding:12px 12px calc(22px + var(--modal-safe-bottom));}
       body.v26-mobile-dock-ready{padding-bottom:calc(98px + env(safe-area-inset-bottom));}
     }
@@ -1292,17 +1294,17 @@
     </div>
 
     <div class="card" id="alphaAgentMintSection" data-surface="freeTrialRegistrarSection">
-      <h2 style="margin:0 0 12px">1.5) Mint Free Alpha-Agent ENS Access Key</h2>
-      <div class="helper" style="margin-bottom:10px">Claim a free-trial <b>*.alpha.agent.agi.eth</b> credential directly from the on-chain FreeTrialSubdomainRegistrar. Registration fee is <b>free</b>; you still pay normal Ethereum gas. Trial subnames expire and are not permanent entitlements.</div>
+      <h2 style="margin:0 0 12px">1.5) Get a free Alpha Agent name + identity NFT</h2>
+      <div class="helper" id="alphaIdentityOnboardingGuide" style="margin-bottom:10px">Recommended: enter a label, then choose <b>Get free name + identity NFT</b> below. FreeTrialSubdomainRegistrarIdentity creates both <b>your-label.alpha.agent.agi.eth</b> and its <b>soulbound Alpha Agent Identity NFT</b> for your connected wallet. Registration is free; you still pay Ethereum gas. Trial validity is up to <b>30 days</b>, capped by the parent name’s expiry. Check the live preview before signing. The <a href="https://opensea.io/collection/alpha-agent-identity" target="_blank" rel="noopener">OpenSea collection</a> displays the NFT; a listing can remain after the credential expires. Synchronization removes expired or desynchronized identity tokens. Job eligibility still depends on the manager’s configured ENS roots and NFT collections; holding this NFT alone does not grant access to every job.</div>
       <div class="mintGrid">
         <div>
           <label for="mintAlphaLabel">Desired label (lowercase a-z and 0-9, length 8–63)</label>
           <input id="mintAlphaLabel" type="text" placeholder="e.g. eliteagent01" autocomplete="off" spellcheck="false">
           <div class="inlineError" id="mintLabelValidation">Enter a label to begin.</div>
-          <label for="mintAlphaRecipient" style="margin-top:10px">Recipient (optional, defaults to connected wallet)</label>
+          <label for="mintAlphaRecipient" style="margin-top:10px">ENS-only recipient (optional, defaults to connected wallet)</label>
           <input id="mintAlphaRecipient" type="text" placeholder="0x... (optional)">
           <div class="row" style="justify-content:flex-start;margin-top:10px">
-            <button class="btn btn-primary" id="mintAlphaAgentBtn">Mint free-trial name</button>
+            <button class="btn" id="mintAlphaAgentBtn">ENS-only: get a trial name</button>
             <button class="btn" id="refreshRegistrarStateBtn">Refresh registrar state</button>
           </div>
           <div class="muted" id="mintAlphaStatus" style="margin-top:8px">Waiting for wallet + mainnet + terms.</div>
@@ -1336,10 +1338,11 @@
           <div class="line">Soulbound / locked: <b>true</b></div>
           <div class="line">Contract: <b id="alphaIdentityContractAddress">0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a</b></div>
           <div class="actions" style="margin-top:10px">
-            <button class="btn btn-primary" id="alphaIdentityRegisterBtn" type="button">Mint Alpha Agent Identity</button>
+            <button class="btn btn-primary" id="alphaIdentityRegisterBtn" type="button">Get free name + identity NFT</button>
             <button class="btn" id="alphaIdentityClaimBtn" type="button">Claim Alpha Agent Identity</button>
             <button class="btn" id="alphaIdentitySyncBtn" type="button">Sync Alpha Agent Identity</button>
           </div>
+          <div class="smallNote" style="margin-top:8px">Already own an unexpired wrapped alpha name? Claim Alpha Agent Identity adds or refreshes its NFT without extending the name’s expiry. Sync Alpha Agent Identity updates an existing token’s validity.</div>
           <div class="muted" id="alphaIdentityActionStatus" style="margin-top:8px">Identity flow locked until wallet + mainnet + terms + valid label.</div>
         </div>
         <div class="mintPreview" id="alphaIdentityTokenCard">
@@ -3359,10 +3362,10 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         secondary = {label:'Browse jobs', action:'jobs'};
       }else if(setupComplete && role === 'agent'){
         title = verified.agent ? 'Find work that fits your skills' : 'Verify your agent credential';
-        body = verified.agent ? 'Inspect the job requirements, net payment, bond and submission deadline before applying. Each job keeps its own NFT requirement. The first eligible application assigns the job.' : 'Use your existing agent ENS credential in this console. The contract also accepts owner-approved allowlist or Merkle-proof authorization through contract tooling. If you need an ENS identity, inspect the optional Alpha Agent section. Job eligibility and any required NFT are checked separately before applying.';
+        body = verified.agent ? 'Inspect the job requirements, net payment, bond and submission deadline before applying. Each job keeps its own NFT requirement. The first eligible application assigns the job.' : 'Use your existing agent ENS credential in this console. The contract also accepts owner-approved allowlist or Merkle-proof authorization through contract tooling. Need a credential? The optional Alpha Agent path provides a free, time-limited ENS name plus soulbound identity NFT; Ethereum gas is separate. Job eligibility and any required NFT are checked separately before applying.';
         pill = 'Agent guide · eligibility checked per job';
         primary = verified.agent ? {label:'Browse open jobs', action:'jobs'} : {label:'Verify agent credential', action:'verify'};
-        secondary = {label:'Explore agent identity', action:'mint-alpha'};
+        secondary = {label:'Explore free trial name + NFT', action:'mint-alpha'};
         if(p?.claimable){
           secondary = {label:'Inspect claimable identity', action:'mint-alpha'};
         }else if(p?.identityExists && (p.status===3 || p.status===4)){
@@ -4635,34 +4638,50 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     }
 
     async function verifyUSDCDeployment(){
+      const checkedWeb3 = web3;
+      const checkedProvider = checkedWeb3?.currentProvider;
+      const checkedManager = String(AGI_JOB_MANAGER || '');
+      const checkedEpoch = APP_STATE.writeEpoch || 0;
+      const checkId = (APP_STATE.deploymentCheckId || 0) + 1;
+      APP_STATE.deploymentCheckId = checkId;
+      const isCurrent = ()=> APP_STATE.deploymentCheckId === checkId && (APP_STATE.writeEpoch || 0) === checkedEpoch
+        && web3 === checkedWeb3 && web3?.currentProvider === checkedProvider
+        && String(AGI_JOB_MANAGER || '').toLowerCase() === checkedManager.toLowerCase();
+      const staleCheck = ()=> Object.assign(new Error('Wallet, network or deployment changed during verification. Review the current deployment again.'), {code:'STALE_DEPLOYMENT_CHECK'});
       usdcDeploymentValidated = false;
+      updateWriteGate();
       try {
-        if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.6, v0.9.7 or v1.0.0 USDC manager address.');
-        if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
-        if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
-        const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
+        if(!checkedWeb3 || Number(await checkedWeb3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
+        if(!isCurrent()) throw staleCheck();
+        if(!checkedWeb3.utils.isAddress(checkedManager) || /^0x0{40}$/i.test(checkedManager)) throw new Error('Enter a verified v0.9.6, v0.9.7 or v1.0.0 USDC manager address.');
+        const manager = new checkedWeb3.eth.Contract(AGIJobManagerABI, checkedManager);
+        if(await checkedWeb3.eth.getCode(checkedManager) === '0x') throw new Error('No manager contract exists at this address.');
+        const tokenAddress = String(await manager.methods.usdcToken().call());
         if(tokenAddress.toLowerCase() !== USDC_ADDRESS.toLowerCase()) throw new Error('Rejected: manager settlement token is not native Circle USDC.');
-        const token = new web3.eth.Contract(ERC20ABI, USDC_ADDRESS);
+        const token = new checkedWeb3.eth.Contract(ERC20ABI, USDC_ADDRESS);
         if(Number(await token.methods.decimals().call()) !== 6) throw new Error('Rejected: USDC decimal verification failed.');
-        const pauseClock = String(await agiJobManager.methods.settlementPausedSeconds().call());
+        const pauseClock = String(await manager.methods.settlementPausedSeconds().call());
         if(!/^\d+$/.test(pauseClock)) throw new Error('A v0.9.6-compatible manager with buyer protection is required.');
-        const pendingOwner = String(await agiJobManager.methods.pendingOwner().call());
-        if(!web3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.6-compatible manager with two-step ownership is required.');
-        const wallet30 = String(await agiJobManager.methods.wallet30().call());
-        const wallet10 = String(await agiJobManager.methods.wallet10().call());
-        const invalid = ['0x'+'0'.repeat(40), AGI_JOB_MANAGER, USDC_ADDRESS].map(x=>x.toLowerCase());
-        if([wallet30,wallet10].some(x=>!web3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid USDC settlement wallets.');
-        if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
+        const pendingOwner = String(await manager.methods.pendingOwner().call());
+        if(!checkedWeb3.utils.isAddress(pendingOwner)) throw new Error('A v0.9.6-compatible manager with two-step ownership is required.');
+        const wallet30 = String(await manager.methods.wallet30().call());
+        const wallet10 = String(await manager.methods.wallet10().call());
+        const invalid = ['0x'+'0'.repeat(40), checkedManager, USDC_ADDRESS].map(x=>x.toLowerCase());
+        if([wallet30,wallet10].some(x=>!checkedWeb3.utils.isAddress(x)||invalid.includes(x.toLowerCase())) || wallet30.toLowerCase()===wallet10.toLowerCase()) throw new Error('Invalid USDC settlement wallets.');
+        if(!isCurrent()) throw staleCheck();
+        agiJobManager = manager;
         usdcToken = token;
         tokenDecimals = 6;
         usdcDeploymentValidated = true;
-        if(el('usdcDeploymentStatus')) el('usdcDeploymentStatus').textContent = 'USDC settlement check passed: ' + AGI_JOB_MANAGER;
+        if(el('settlementWallets')) el('settlementWallets').textContent = '30%: ' + wallet30 + ' · 10%: ' + wallet10;
+        if(el('usdcDeploymentStatus')) el('usdcDeploymentStatus').textContent = 'USDC settlement check passed: ' + checkedManager;
       } catch(error) {
+        if(!isCurrent()) throw staleCheck();
+        usdcDeploymentValidated = false;
         usdcToken = null;
         if(el('usdcDeploymentStatus')) el('usdcDeploymentStatus').textContent = error.message + ' Transactions disabled.';
         throw error;
-      } finally { updateWriteGate(); }
+      } finally { if(isCurrent()) updateWriteGate(); }
     }
 
     async function connectWallet(){
@@ -4692,6 +4711,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         setToast("Connected. Loading data…", "ok");
         await refreshAll();
       }catch(e){
+        if(e?.code === 'STALE_DEPLOYMENT_CHECK') return;
         console.error(e);
         setToast(e.message || String(e), "bad");
       }
@@ -6131,7 +6151,7 @@ function normalizeIpfsToHttp(uri){
     function runAgentBondSelfTests(){
       const one = 1000000n;
       const caseA = { payout:1000n*one, duration:1209600n, bps:'2500', min:1000n*one, max:88888888n*one, durationLimit:10000000n, expected:1000n*one };
-      const caseB = { payout:10000n*one, duration:1209600n, bps:'2500', min:1000n*one, max:88888888n*one, durationLimit:10000000n, expected:2802400000000000000000n };
+      const caseB = { payout:10000n*one, duration:1209600n, bps:'2500', min:1000n*one, max:88888888n*one, durationLimit:10000000n, expected:2802400000n };
       const traceA = buildAgentBondTrace({ payout:String(caseA.payout), duration:String(caseA.duration) }, { bpsRaw:caseA.bps, minBondRaw:String(caseA.min), maxBondRaw:String(caseA.max), durationLimitRaw:String(caseA.durationLimit) });
       const traceB = buildAgentBondTrace({ payout:String(caseB.payout), duration:String(caseB.duration) }, { bpsRaw:caseB.bps, minBondRaw:String(caseB.min), maxBondRaw:String(caseB.max), durationLimitRaw:String(caseB.durationLimit) });
       const result = {
@@ -6232,23 +6252,32 @@ function normalizeIpfsToHttp(uri){
     async function submitCompletionFromAssistant(){
       if(!requireConnected()) return;
       if(!mustBeReadyToWrite()) return;
-      const jobId = completionAssistantState.jobId;
+      const assistant = completionAssistantState;
+      const jobId = assistant.jobId;
+      const writeContext = assistant.writeContext;
       if(jobId == null) throw new Error('Open an assigned job first.');
+      const assertAssistantCurrent = ()=>{
+        if(completionAssistantState !== assistant) throw new Error('Completion assistant changed. Open the intended job and review its submission again.');
+        assertWriteContext(writeContext);
+      };
+      assertAssistantCurrent();
       const normalized = normalizeCompletionUriField(false);
       if(!normalized.valid) throw new Error('Enter a valid Job Completion URI. Bare CIDs can be normalized automatically.');
-      let inspection = completionAssistantState.inspected;
+      let inspection = assistant.inspected;
       if(!inspection || inspection.normalized?.canonical !== normalized.canonical){ inspection = await inspectCompletionUri(true); }
+      assertAssistantCurrent();
       if(normalized.uriBytes > 1024) throw new Error('The completion URI exceeds the contract limit of 1024 bytes.');
       const posture = inspection?.posture || '';
       if(/direct image/i.test(posture)){
-        const ok = await requestActionConfirmation({title:'Direct image completion URI detected', body:'This completion URI appears to point directly to an image rather than metadata JSON. That can weaken downstream NFT display and indexer compatibility.', checks:[{state:'Metadata posture', badge:'warn', text:'Continue only if you explicitly want a direct-image URI.'}], method:'requestJobCompletion(jobId, completionURI)', confirmLabel:'Continue with direct image'});
+        const ok = await requestActionConfirmation({writeContext,title:'Direct image completion URI detected', body:'This completion URI appears to point directly to an image rather than metadata JSON. That can weaken downstream NFT display and indexer compatibility.', checks:[{state:'Metadata posture', badge:'warn', text:'Continue only if you explicitly want a direct-image URI.'}], method:'requestJobCompletion(jobId, completionURI)', confirmLabel:'Continue with direct image'});
         if(!ok) return;
       }
+      assertAssistantCurrent();
       if(/Invalid/i.test(posture)) throw new Error('The completion URI is not ready yet.');
       saveCompletionDraft(jobId);
       setToast('Submitting requestJobCompletion…', 'warn');
-      await runTrackedTx(`Request completion for job #${jobId}`, ()=>agiJobManager.methods.requestJobCompletion(String(jobId), normalized.canonical), { writeContext:completionAssistantState.writeContext, pendingDetail:`Submitting requestJobCompletion for job #${jobId}.`, successDetail:`Completion request for job #${jobId} confirmed.` });
-      closeCompletionAssistant();
+      await runTrackedTx(`Request completion for job #${jobId}`, ()=>agiJobManager.methods.requestJobCompletion(String(jobId), normalized.canonical), { writeContext, pendingDetail:`Submitting requestJobCompletion for job #${jobId}.`, successDetail:`Completion request for job #${jobId} confirmed.` });
+      if(completionAssistantState === assistant) closeCompletionAssistant();
       await refreshAll();
     }
 

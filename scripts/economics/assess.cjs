@@ -85,6 +85,7 @@ function assess(input) {
   return {
     report: 'Offline scenario analysis — not live quotes or certified readiness',
     assumptionSource: input.assumptionSource,
+    beneficiaryAssumption: 'Net figures assume separate beneficiaries for job-participant and settlement-wallet allocations. If a participant also receives a wallet share, add that share to their receipts and net. This tool does not identify common ownership.',
     inputs: { ...input },
     totalDepositedIncludingBondsUSDC: formatUSDC(total),
     limitations: [
@@ -100,7 +101,7 @@ function assess(input) {
 }
 
 function render(report) {
-  const lines = [report.report, `Assumptions: ${report.assumptionSource}`, `Deposited, including bonds: ${report.totalDepositedIncludingBondsUSDC} USDC`];
+  const lines = [report.report, `Assumptions: ${report.assumptionSource}`, `Beneficiaries: ${report.beneficiaryAssumption}`, `Deposited, including bonds: ${report.totalDepositedIncludingBondsUSDC} USDC`];
   const titles = { agentWin: 'Agent wins adjudicated/review outcome', buyerWin: 'Buyer wins adjudication/review outcome', buyerAcceptance: 'Buyer explicitly accepts undisputed work', neutralTimeout: 'Unanswered arbitration reaches neutral timeout' };
   for (const [name, s] of Object.entries(report.scenarios)) {
     lines.push('', titles[name]);

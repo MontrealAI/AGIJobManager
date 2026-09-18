@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 const { assess, render } = require('../scripts/economics/assess.cjs');
-const { formatUSDC } = require('../scripts/lib/usdc.js');
+const { formatUSDC, parseUSDC } = require('../scripts/lib/usdc.js');
 const example = require('../scripts/economics/example.json');
 
 describe('Offline USDC participant cost scenarios', () => {
@@ -126,5 +126,106 @@ describe('Offline USDC participant cost scenarios', () => {
     const invalid = spawnSync(process.execPath, [cli, '--example', '--ignore-costs'], { encoding: 'utf8' });
     assert.notEqual(invalid.status, 0);
     assert.match(invalid.stderr, /Usage:/);
+  });
+});
+
+contract('USDC scenario differential against local settlement', accounts => {
+  const { buildInitConfig } = require('./helpers/deploy');
+  const [owner, buyer, agent, alice, bob, carol, , , wallet30, wallet10] = accounts;
+  const voters = [alice, bob, carol], zero = '0x' + '00'.repeat(32);
+  const raw = amount => BigInt(parseUSDC(amount));
+  const rpc = (method, params = []) => web3.currentProvider.request({ method, params });
+  const advance = async seconds => { await rpc('evm_increaseTime', [seconds]); await rpc('evm_mine'); };
+  async function fixture(recipient30 = wallet30) {
+    const token = await artifacts.require('MockUSDCControls').new();
+    const ens = await artifacts.require('MockENSRegistry').new();
+    const wrapper = await artifacts.require('MockNameWrapper').new();
+    const manager = await artifacts.require('AGIJobManager').new(...buildInitConfig(token.address, 'ipfs://', ens.address, wrapper.address, zero, zero, zero, zero, zero, zero, [recipient30, wallet10]));
+    await manager.setAgentNftRequired(false);
+    await manager.addAdditionalAgent(agent);
+    for (const voter of voters) await manager.addAdditionalValidator(voter);
+    await manager.addModerator(owner);
+    await manager.setRequiredValidatorApprovals(0);
+    await manager.setRequiredValidatorDisapprovals(0);
+    await manager.setCompletionReviewPeriod(1000);
+    await manager.setDisputeReviewPeriod(10);
+    await manager.unpauseIntake();
+    for (const account of [buyer, agent, ...voters]) {
+      await token.mint(account, '1000000000000');
+      await token.approve(manager.address, '1000000000000', { from: account });
+    }
+    const amount = async account => BigInt((await token.balanceOf(account)).toString());
+    const claim = async account => BigInt((await manager.pendingUSDC(account)).toString());
+    return { token, manager, amount, claim };
+  }
+  async function prepare(f, input) {
+    const agentBond = raw(input.agentBondUSDC).toString(), reviewerBond = raw(input.reviewerBondUSDC).toString();
+    await f.manager.setAgentBondParams(0, agentBond, agentBond);
+    await f.manager.setValidatorBondParams(0, reviewerBond, reviewerBond);
+    await f.manager.setValidatorSlashBps(input.slashBps);
+    await f.manager.setValidationRewardPercentage(input.rewardPercentage);
+    await f.manager.createJob('ipfs://criteria', parseUSDC(input.jobCostUSDC), 1, 'Measured criteria', { from: buyer });
+    await f.manager.applyForJob(0, '', [], { from: agent });
+    await f.manager.requestJobCompletion(0, 'ipfs://evidence', { from: agent });
+    for (let i = 0; i < input.approvals + input.rejections; i++) await f.manager[i < input.approvals ? 'validateJob' : 'disapproveJob'](0, '', [], { from: voters[i] });
+  }
+
+  it('matches actual paid-or-reserved receipts for micro-USDC rounding, disabled/capped bonds and all four outcomes', async () => {
+    const f = await fixture();
+    const clean = await rpc('evm_snapshot');
+    let cleanSnapshot = clean;
+    const cases = [
+      ['0.000001', '0.000001', '0.000001', 60, 10000, 0, 0],
+      ['0.000002', '0', '0', 1, 0, 2, 1],
+      ['0.000003', '0.000001', '0.000001', 60, 8000, 2, 1],
+      ['0.000007', '0.000002', '0.000002', 8, 10000, 1, 2],
+      ['0.000011', '0', '0.000011', 60, 10000, 0, 3],
+      ['0.000099', '0.000099', '0.000099', 60, 9999, 3, 0],
+      ['100.000003', '5.0432', '15', 8, 8000, 2, 1],
+      ['100.000003', '0', '0', 60, 0, 1, 2],
+    ];
+    for (let index = 0; index < cases.length; index++) {
+      const [jobCostUSDC, agentBondUSDC, reviewerBondUSDC, rewardPercentage, slashBps, approvals, rejections] = cases[index];
+      const input = { ...example, jobCostUSDC, agentBondUSDC, reviewerBondUSDC, rewardPercentage, slashBps, approvals, rejections };
+      await prepare(f, input);
+      let submitted = await rpc('evm_snapshot');
+      for (const outcome of ['buyerAcceptance', 'agentWin', 'buyerWin', 'neutralTimeout']) {
+        const scenarioInput = { ...input };
+        if (outcome !== 'buyerAcceptance') {
+          const initiator = index % 2 ? agent : buyer;
+          await f.manager.disputeJob(0, { from: initiator });
+          scenarioInput.disputeInitiator = initiator === buyer ? 'buyer' : 'agent';
+          scenarioInput.disputeBondUSDC = formatUSDC((await f.manager.getJobBonds(0)).disputeAmount.toString());
+        }
+        if (index === cases.length - 1) await f.token.setBlocked(agent, true);
+        const expected = assess(scenarioInput).scenarios[outcome];
+        const expectedReceipts = new Map([[buyer, raw(expected.buyerReceiptUSDC)], [agent, raw(expected.agentReceiptIncludingReturnedBondsUSDC)], [wallet30, raw(expected.wallet30USDC)], [wallet10, raw(expected.wallet10USDC)]]);
+        for (let i = 0; i < approvals + rejections; i++) expectedReceipts.set(voters[i], raw((i < approvals ? expected.approvingReviewers : expected.rejectingReviewers).eachReceiptUSDC));
+        const before = new Map();
+        for (const account of expectedReceipts.keys()) before.set(account, await f.amount(account) + await f.claim(account));
+        if (outcome === 'buyerAcceptance') await f.manager.acceptJob(0, { from: buyer });
+        else if (outcome === 'neutralTimeout') { await advance(21); await f.manager.refundUnresolvedDispute(0); }
+        else await f.manager.resolveDisputeWithCode(0, outcome === 'agentWin' ? 1 : 2, 'Differential outcome');
+        for (const [account, expectedReceipt] of expectedReceipts) assert.equal(await f.amount(account) + await f.claim(account) - before.get(account), expectedReceipt, `${index}/${outcome}/${account}`);
+        assert.equal(await f.amount(f.manager.address), BigInt((await f.manager.lockedClaims()).toString()), `${index}/${outcome}/claim backing`);
+        assert.equal((await f.manager.withdrawableUSDC()).toString(), '0');
+        await rpc('evm_revert', [submitted]); submitted = await rpc('evm_snapshot');
+      }
+      await rpc('evm_revert', [cleanSnapshot]); cleanSnapshot = await rpc('evm_snapshot');
+    }
+  });
+
+  it('demonstrates why overlapping settlement beneficiaries must aggregate role allocations', async () => {
+    const f = await fixture(agent);
+    await prepare(f, example);
+    const before = await f.amount(agent);
+    await f.manager.acceptJob(0, { from: buyer });
+    const report = assess(example), expected = report.scenarios.buyerAcceptance;
+    assert.equal(await f.amount(agent) - before, raw(expected.agentReceiptIncludingReturnedBondsUSDC) + raw(expected.wallet30USDC));
+    assert.equal(await f.amount(agent) - before, 87043202n);
+    assert.equal(raw(expected.agentReceiptIncludingReturnedBondsUSDC), 57043202n);
+    assert.match(report.beneficiaryAssumption, /separate beneficiaries/);
+    assert.match(report.beneficiaryAssumption, /add that share to their receipts and net/);
+    assert.ok(render(report).includes(`Beneficiaries: ${report.beneficiaryAssumption}`));
   });
 });

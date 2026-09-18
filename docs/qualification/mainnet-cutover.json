@@ -71,7 +71,7 @@
     "hardhat/scripts/runtime.cjs": "d4618f6912ac7bde79facd0c81f81547135a1b9691f850811d4013a676b4cca2",
     "hardhat/test/mainnet-cutover.test.js": "e70c5a73fc3b37e98a17657dee60cd84e96dab8a527e47cfcb45108f1ccc83c2",
     "package-lock.json": "5a191212490843ecef205539dd3fe85fe11bf9dabf26f6e479b65689f5d92735",
-    "package.json": "fb65072cc964cdcec46a38a4d386a289f49cde5a924ded6bae68409f69edf776",
+    "package.json": "eb17e1fb22f1780d624e8937d4588fa4772354e33496d2bbc7b0af7d89904671",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116"
   },

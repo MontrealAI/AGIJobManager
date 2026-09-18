@@ -48,6 +48,10 @@ jobs:
         if: matrix.shard == 0
         run: npx playwright install --with-deps chromium
 
+      - name: Released USDC console browser checks
+        if: matrix.shard == 0
+        run: npm run test:ui:usdc
+
       - name: Lint
         run: npm run lint
 
@@ -66,7 +70,7 @@ jobs:
 
       - name: USDC console regression checks
         if: matrix.shard == 0
-        run: node scripts/release/verify-usdc-ui.mjs
+        run: node scripts/ui/verify-usdc-console.mjs
 
       - name: UI smoke test
         if: matrix.shard == 0

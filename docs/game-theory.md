@@ -75,7 +75,9 @@ Use the job's recorded reward percentage and actual posted bonds; for an unposte
 
 All USDC amounts must be quoted decimal strings with at most six decimal places; counts, the reward percentage and slash basis points are integers. Set `approvals` and `rejections` explicitly: reviewer rewards are shared only among voters matching the final outcome. Enter a single all-in `agentCostUSDC` and a per-voter `reviewerCostUSDC`, including effort, transaction gas converted using your own assumption, and any cost of locked capital. These estimates are applied consistently across the four counterfactuals; revise them for a different cost case. **Do not put returned bonds in the cost estimate:** the tool already subtracts each participant's own posted collateral when computing net income, so only forfeited collateral reduces that income. For a party-funded dispute, also supply its actual bond and initiator. Use `none` and `"0"` when no party bond is posted; automatic disputes can still exist in that case.
 
-For the bundled 100 USDC example, the assumed agent cost is 45 USDC and each reviewer's assumed cost is 3 USDC. Those costs are invented for illustration:
+Net figures treat job-participant and settlement-wallet allocations as going to separate beneficiaries. The contract permits a settlement wallet to be the agent, buyer or a reviewer. If a participant also receives that share, add it to their reported receipt and net; the tool has no addresses and cannot detect overlapping beneficiaries or common ownership. For example, an agent who also receives the 30% share on a 100 USDC job has 30 USDC more income than the agent-role figure alone. This does not change the total allocated by the protocol.
+
+For the bundled 100 USDC example, the assumed agent cost is 45 USDC and each reviewer's assumed cost is 3 USDC. Those costs are invented for illustration, and the table assumes separate settlement-wallet beneficiaries:
 
 | Outcome and vote assumption | Agent net after assumed cost | Each participating reviewer's net after assumed cost |
 | --- | --- | --- |

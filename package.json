@@ -15,6 +15,7 @@
     "lint": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "npm run build && node scripts/test-contract-shard.js 0 1",
     "test:ui": "node scripts/ui/run_ui_smoke_test.js",
+    "test:ui:usdc": "node scripts/ui/run_usdc_console_test.js",
     "ui:abi": "node scripts/ui/export_abi.js",
     "ui:abi:check": "node scripts/ui/check_ui_abi.js",
     "merkle:proof": "node scripts/merkle/generate_merkle_proof.js",
