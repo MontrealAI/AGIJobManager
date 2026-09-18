@@ -36,10 +36,10 @@ describe('Release deployment under Ethereum code-size limits', function () {
     await token.waitForDeployment();
     libraries = {};
     for (const name of LIBRARIES) {
-      const library = await deployWithinLimits(name);
+      const library = await deployWithinLimits(name, [], { libraries });
       const address = await library.getAddress();
       libraries[FQNS[name]] = address;
-      requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS[name]), buildInfo, address, code: await ethers.provider.getCode(address) });
+      requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS[name]), buildInfo, address, libraries, code: await ethers.provider.getCode(address) });
     }
   });
 

@@ -1,6 +1,6 @@
-# Hardhat deployment guide — v0.9.4
+# Hardhat deployment guide — v0.9.5
 
-This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. v0.9.4 changes the manager and adds the sixth linked library, `NftEligibility`. The new per-job NFT policy requires a fresh deployment. Existing jobs stay on their original managers and use those versions’ interfaces. A new console cannot upgrade old bytecode.
+This is the supported public-network deployment path. The root contract regression suites also use Hardhat 3; Truffle/Ganache dependencies are removed. Moving from the original-asset legacy manager requires a fresh USDC deployment with two real recipient wallets; this release does not deploy a contract or populate those addresses. v0.9.5 changes the manager and adds `JobSettlement` and `JobValidation` to the six existing libraries. Its buyer-protection rules require a fresh deployment. All eight fixed links, including transitive library links, are verified. Existing jobs stay on their original managers and use those versions’ interfaces. A new console cannot upgrade old bytecode.
 
 The manager starts with intake paused in its constructor. Successful jobs pay validators in USDC first, then 30% and 10% of the original job cost to the two wallets, then the agent remainder. The default validator budget is 8%. See [payout rules](../docs/USDC_PAYOUT_SPLIT.md), [owner controls](../docs/OWNER_CONTROLS.md) and [mainnet qualification](../docs/MAINNET_READINESS.md).
 
@@ -52,7 +52,7 @@ DRY_RUN=1 npm run deploy:sepolia
 
 The two fork commands expose only a local Hardhat chain, read pinned mainnet blocks, and send no Ethereum transactions. They use actual Circle USDC code and state. The cutover fixture also exercises all four ENS participant roots against actual mainnet contracts with locally created membership names, including rejection and preserved owner-managed exceptions. RPC failure is a failed qualification, not a skipped test. Rehearse the complete owner, employer, validator, agent and refund journeys on Sepolia using the intended operational setup before significant mainnet exposure.
 
-The qualified compiler is Solidity 0.8.37, optimizer 40 runs, Shanghai, `viaIR=true`, metadata bytecode hash disabled and revert strings stripped. The deployment script checks the compiler profile, artifact/build consistency, EIP-170 runtime size (24,576 bytes), EIP-3860 constructor data (49,152 bytes), and EIP-7825 transaction gas limit (16,777,216). Local deployment tests cover the manager, all six libraries and both optional metadata contracts. Use the release profile unchanged; a new compiler profile requires complete requalification. The [compiler compatibility note](../scripts/security/COMPILER_COMPATIBILITY.md) describes the exact hash-verified identifier and assembly-annotation compatibility patches, applied without disabling compiler warnings.
+The qualified compiler is Solidity 0.8.37, optimizer 40 runs, Shanghai, `viaIR=true`, metadata bytecode hash disabled and revert strings stripped. The deployment script checks the compiler profile, artifact/build consistency, EIP-170 runtime size (24,576 bytes), EIP-3860 constructor data (49,152 bytes), and EIP-7825 transaction gas limit (16,777,216). Local deployment tests cover the manager, all eight libraries and both optional metadata contracts. Use the release profile unchanged; a new compiler profile requires complete requalification. The [compiler compatibility note](../scripts/security/COMPILER_COMPATIBILITY.md) describes the exact hash-verified identifier and assembly-annotation compatibility patches, applied without disabling compiler warnings.
 
 ## Review and deploy
 
@@ -70,13 +70,13 @@ Review its plan, explicit owner source, membership-root mapping and exception po
 npm run deploy:mainnet
 ```
 
-The script deploys six linked libraries and the manager, validates successful transaction receipts, compares deployed runtime bytes with the exact release artifacts, confirms paused intake, and completes explorer verification for every contract before proposing ownership transfer when needed. Disabled verification or unrecognized verification errors fail closed. It never opens intake. A proposal leaves the deployer in control until the proposed owner calls `acceptOwnership()`.
+The script deploys eight linked libraries and the manager, validates successful transaction receipts, compares deployed runtime bytes with the exact release artifacts, confirms paused intake, and completes explorer verification for every contract before proposing ownership transfer when needed. Disabled verification or unrecognized verification errors fail closed. It never opens intake. A proposal leaves the deployer in control until the proposed owner calls `acceptOwnership()`.
 
 A unique deployment journal is saved under `hardhat/deployments/<network>/` before broadcasting and updated after each transaction. It records transaction hashes even if confirmation later fails. An adjacent `.solc-input.json` records the exact build input; `verify-targets.json` lists explorer targets. Preserve these files and their checksums outside the temporary deployment environment.
 
 **A failed command may have broadcast transactions.** Read the saved journal and reconcile transaction receipts before retrying. Do not blindly redeploy. Failed or incomplete explorer verification produces a nonzero exit status; intake remains paused and the script stops before proposing ownership transfer.
 
-If all six contracts were broadcast but verification or a later step failed, recover verification from the saved journal without a private key:
+If all nine contracts were broadcast but verification or a later step failed, recover verification from the saved journal without a private key:
 
 ```bash
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet
@@ -124,7 +124,7 @@ ENS job pages are optional metadata, separate from agent/validator membership. A
 DRY_RUN=1 npm run deploy:ens-job-pages:sepolia
 ```
 
-Review `JOB_MANAGER`, explicit `JOBS_ROOT_NAME`, matching `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, `NEW_OWNER`, `VERIFY` and `LOCK_CONFIG` before actual deployment. The script rejects reuse of the original `alpha.jobs.agi.eth` root for a new mainnet USDC helper. `usdc-v094.alpha.jobs.agi.eth` is the fork-rehearsed proposal, not a pre-authorized production name. Verify actual parent authority and root availability.
+Review `JOB_MANAGER`, explicit `JOBS_ROOT_NAME`, matching `JOBS_ROOT_NODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, `NEW_OWNER`, `VERIFY` and `LOCK_CONFIG` before actual deployment. The script rejects reuse of the original `alpha.jobs.agi.eth` root for a new mainnet USDC helper. `usdc-v095.alpha.jobs.agi.eth` is the fork-rehearsed proposal, not a pre-authorized production name. Verify actual parent authority and root availability.
 
 For the corresponding mainnet read-only plan, use `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` with the reviewed mainnet values and `DEPLOYER_ADDRESS`. An actual broadcast requires the explicit mainnet confirmation phrase, a funded deployer and `DRY_RUN` disabled. Keep `VERIFY=1` and `LOCK_CONFIG=0`, then run `npm run deploy:ens-job-pages:mainnet`. The final helper owner must be the separately reviewed `NEW_OWNER`.
 

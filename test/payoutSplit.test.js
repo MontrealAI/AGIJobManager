@@ -25,6 +25,7 @@ contract('v0.8.0 USDC distribution', ([owner, employer, agent, validator, wallet
     await manager.setCompletionReviewPeriod(1);
     await manager.setChallengePeriodAfterApproval(1);
     await manager.setRequiredValidatorApprovals(1);
+    await manager.setVoteQuorum(1);
   });
   async function post(amount) {
     await token.mint(employer, amount);
@@ -120,7 +121,8 @@ contract('v0.8.0 USDC distribution', ([owner, employer, agent, validator, wallet
   it('assigns rounding and unused validator budget to the agent without retaining micro-USDC', async () => {
     for (const [amount, vote] of [['1', true], ['101', true], ['999999', true], [parseUSDC('100'), false]]) {
       const before = [await balance(validator), await balance(wallet30), await balance(wallet10), await balance(agent)];
-      const id = await post(amount); await ready(id, vote); await manager.finalizeJob(id);
+      const id = await post(amount); await ready(id, vote);
+      if (vote) await manager.finalizeJob(id); else await manager.acceptJob(id, { from: employer });
       const p = BigInt(amount), v = vote ? p * 8n / 100n : 0n, a = p * 30n / 100n, b = p * 10n / 100n;
       const after = [await balance(validator), await balance(wallet30), await balance(wallet10), await balance(agent)];
       assert.deepEqual(after.map((x, i) => x - before[i]), [v, a, b, p - v - a - b]);
@@ -128,15 +130,18 @@ contract('v0.8.0 USDC distribution', ([owner, employer, agent, validator, wallet
     }
   });
   for (const recipient of ['validator', 'wallet30', 'wallet10', 'agent']) {
-    it(`rolls back every payment and state change when ${recipient} is blocked`, async () => {
+    it(`reserves only the blocked ${recipient} payment and settles other beneficiaries`, async () => {
       const id = await post(parseUSDC('100')); await ready(id);
       const address = { validator, wallet30, wallet10, agent }[recipient];
       await token.setBlocked(address, true);
-      await expectRevert.unspecified(manager.finalizeJob(id));
-      assert.equal((await manager.getJobCore(id)).completed, false);
-      assert.equal((await manager.lockedEscrow()).toString(), parseUSDC('100'));
-      for (const to of [validator, wallet30, wallet10, agent]) assert.equal(await balance(to), 0n);
-      await token.setBlocked(address, false); await manager.finalizeJob(id);
+      await manager.finalizeJob(id);
+      assert.equal((await manager.getJobCore(id)).completed, true);
+      assert.equal((await manager.lockedEscrow()).toString(), '0');
+      const entitlements = {validator:8n, wallet30:30n, wallet10:10n, agent:52n};
+      const deferred = entitlements[recipient] * 1000000n;
+      assert.equal((await manager.pendingUSDC(address)).toString(), deferred.toString());
+      for (const [role,to] of Object.entries({validator,wallet30,wallet10,agent})) assert.equal(await balance(to), role === recipient ? 0n : entitlements[role] * 1000000n);
+      await token.setBlocked(address, false); await manager.claimUSDC(address);
       assert.equal(await balance(manager.address), 0n);
     });
   }

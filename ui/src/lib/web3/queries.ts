@@ -36,7 +36,8 @@ export function useJobs(scenario?: DemoScenario) {
       const n = Number(nextJobId || 0n);
       const contracts = Array.from({ length: n }, (_, i) => ({ address: CONTRACT_ADDRESS, abi: agiJobManagerAbi, functionName: 'getJobCore' as const, args: [BigInt(i)] }));
       const vals = Array.from({ length: n }, (_, i) => ({ address: CONTRACT_ADDRESS, abi: agiJobManagerAbi, functionName: 'getJobValidation' as const, args: [BigInt(i)] }));
-      const [cores, validations] = await Promise.all([publicClient.multicall({ contracts, allowFailure: true }), publicClient.multicall({ contracts: vals, allowFailure: true })]);
+      const deadlines = Array.from({ length: n }, (_, i) => ({ address: CONTRACT_ADDRESS, abi: agiJobManagerAbi, functionName: 'getJobDeadlines' as const, args: [BigInt(i)] }));
+      const [cores, validations, clockReads] = await Promise.all([publicClient.multicall({ contracts, allowFailure: true }), publicClient.multicall({ contracts: vals, allowFailure: true }), publicClient.multicall({ contracts: deadlines, allowFailure: true })]);
       return cores.map((c, i) => ({ c, v: validations[i], i })).filter((x) => x.c.status === 'success' && x.c.result).map((x) => {
         const r = x.c.result as readonly any[];
         return {
@@ -52,6 +53,7 @@ export function useJobs(scenario?: DemoScenario) {
           completionRequested: x.v.status === 'success' ? x.v.result[0] : false,
           completionRequestedAt: x.v.status === 'success' ? x.v.result[3] : 0n,
           disputedAt: x.v.status === 'success' ? x.v.result[4] : 0n,
+          deadlines: clockReads[x.i].status === 'success' ? clockReads[x.i].result : null,
           specUri: '',
           completionUri: ''
         };

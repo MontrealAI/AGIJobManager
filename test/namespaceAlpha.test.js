@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -70,6 +71,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     );
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
     agiTypeNft = await MockERC721.new({ from: owner });
     await manager.addAGIType(agiTypeNft.address, 1, { from: owner });
@@ -103,7 +105,7 @@ contract("AGIJobManager alpha namespace gating", (accounts) => {
     const validatedEvent = tx.logs.find((log) => log.event === "JobValidated");
     assert.ok(validatedEvent, "JobValidated should be emitted");
     await time.increase(2);
-    const finalizeTx = await manager.finalizeJob(jobId, { from: employer });
+    const finalizeTx = await finalizeAfterReview(manager, jobId, { from: employer });
     const completedEvent = finalizeTx.logs.find((log) => log.event === "JobCompleted");
     assert.ok(completedEvent, "JobCompleted should be emitted after finalize");
 

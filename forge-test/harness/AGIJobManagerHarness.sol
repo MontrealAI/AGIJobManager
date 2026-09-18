@@ -15,7 +15,7 @@ contract AGIJobManagerHarness is AGIJobManager {
     }
 
     function activeJobsByAgentView(address agent) external view returns (uint256) {
-        return activeJobsByAgent[agent];
+        return ledger.activeJobs[agent];
     }
 
     function jobExists(uint256 jobId) external view returns (bool) {

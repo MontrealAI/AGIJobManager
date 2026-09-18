@@ -6,7 +6,7 @@ The USDC settlement code passes the targeted technical qualification below. The 
 
 This is an internal source review and executable rehearsal, not an independent security audit. Every transaction in the rehearsal is local. Circle-role and owner impersonation proves contract authorization behavior; it does not prove access to a production key or governance signer.
 
-**v0.9.4 adds the per-job NFT policy and a sixth linked library, NftEligibility.** The default is required; switching affects future jobs only, and collection changes require cleared reserves. The manager therefore needs a fresh deployment. USDC settlement and the ENS correction introduced in v0.9.2 are retained. Existing managers keep their original bytecode and obligations. The earlier frozen v0.9.1 release does not contain the ENS correction. Use matching v0.9.4 source and artifacts.
+**v0.9.5 changes settlement and review, with eight fixed linked libraries.** It preserves the per-job NFT policy, Agent/Club ENS membership, separate job-page namespace and existing-job inventory. The new rehearsal covers protected payment claims, full buyer escrow refunds, no-vote escalation, neutral timeout, pause-aware clocks and duplicate controller rejection.
 
 ## Existing mainnet system
 
@@ -31,7 +31,7 @@ The manager owner and wrapped-root owner are different EOAs. A manager ownership
 
 ## Findings and corrections
 
-### ENS resolver API mismatch — corrected in v0.9.2, retained in v0.9.4
+### ENS resolver API mismatch — corrected in v0.9.2, retained in v0.9.5
 
 The v0.9.1 helper called `setAuthorisation(bytes32,address,bool)`. The deployed NameWrapper-aware resolver at `0xF29100983E058B709F3D539b0c765937B804AC15` uses `approve(bytes32,address,bool)` and `isApprovedFor(address,bytes32,address)`.
 
@@ -43,7 +43,7 @@ The helper now calls `approve`. The regression checks actual employer/agent dele
 
 A fresh manager restarts numeric job IDs at zero. Reusing the legacy root and prefix would collide with existing job names. A successful job transaction alone would not establish successful ENS creation because hooks are best-effort.
 
-`JOBS_ROOT_NAME` is now explicit, and the mainnet ENS deployment script rejects the reserved legacy root `alpha.jobs.agi.eth`. The rehearsal creates the distinct wrapped root `usdc-v094.alpha.jobs.agi.eth` through the observed parent owner’s authorization. ENS Registry reports NameWrapper as its owner; NameWrapper `ownerOf(root)` and `getData(root)[0]` report the new helper as owner of the wrapped token. Token approval is zero and the parent owner has not granted the new helper operator approval. This is ownership of a dedicated wrapped token, not direct Registry ownership. This name is a tested proposal, not an existing production deployment. No new blanket operator approval is granted over the legacy owner's wrapped names. The new root has fuses `0` and inherits expiry `2007731864`; the rehearsal does not remove parent-owner control or establish an immutable namespace. Review that retained authority and expiry before a production choice.
+`JOBS_ROOT_NAME` is now explicit, and the mainnet ENS deployment script rejects the reserved legacy root `alpha.jobs.agi.eth`. The rehearsal creates the distinct wrapped root `usdc-v095.alpha.jobs.agi.eth` through the observed parent owner’s authorization. ENS Registry reports NameWrapper as its owner; NameWrapper `ownerOf(root)` and `getData(root)[0]` report the new helper as owner of the wrapped token. Token approval is zero and the parent owner has not granted the new helper operator approval. This is ownership of a dedicated wrapped token, not direct Registry ownership. This name is a tested proposal, not an existing production deployment. No new blanket operator approval is granted over the legacy owner's wrapped names. The new root has fuses `0` and inherits expiry `2007731864`; the rehearsal does not remove parent-owner control or establish an immutable namespace. Review that retained authority and expiry before a production choice.
 
 ### Participant membership — exercised against real ENS
 
@@ -71,7 +71,7 @@ A separate fork scenario expires the actual overdue legacy job 11 on its origina
 | --- | --- |
 | Real-USDC settlement | Exact 8/30/10/52 payout; separate nonzero bond returns; no repeat payment |
 | Precision and policy | One-micro-USDC refunds/remainders; three validators with indivisible rewards; posting-time reward-rate snapshot |
-| Adversarial transfers | Issuer pause; blocked manager/validator/agent/recipients; disputed agent payment and employer refund; atomic retry |
+| Adversarial transfers | Issuer pause; blocked manager/validator/agent/recipients; disputed agent payment and employer refund; reserved claims and original-beneficiary retry |
 | Ownership | Paused deployment; manager two-step acceptance; wrong caller rejection; deployer loses owner controls; helper ownership verified separately |
 | NFT policy | Required/optional posting snapshots; unchanged ENS admission and USDC shares; registry protection while funded |
 | Participant membership | All four primary/alpha roots; real wrapper ownership/approval and resolver admission; unrelated/wrong-root/revoked rejection; explicit owner/Merkle exceptions |
@@ -79,9 +79,9 @@ A separate fork scenario expires the actual overdue legacy job 11 on its origina
 | Recovery | Concurrent-job reserve isolation; treasury withdrawal protection; recipient rotation guards; emergency pause/resume |
 | Legacy continuity | All recorded legacy inventory preserved during new operations; original-asset exit remains usable |
 
-Local results: **20 cutover scenarios and 93 deployment/preflight/verifier cases are included in v0.9.4.** The retained qualification inventory includes 8 original actual-USDC fork scenarios, 434 contract and console regression cases, 10 actual deployment/size cases and 37 Foundry unit/fuzz/invariant tests; consult the release validation record and exact-commit CI for their final rerun results. Compilation has zero compiler errors or warnings. The manager remains below Ethereum runtime and initcode limits. Workflow results should be checked for the exact proposed commit as well.
+Local validation for v0.9.5 passes **23 cutover scenarios, 8 native-USDC fork scenarios, 94 deployment/preflight/verifier cases, 471 contract/console regressions and 10 actual deployment/size cases**. The Foundry suite contains 37 unit/fuzz/invariant tests. The release validation record binds their final CI results to the exact source commit. Compilation is warning-free; manager runtime is 24,198 bytes, 378 below Ethereum's limit.
 
-The full static scan retains **114** reviewed observations: **0 high, 7 medium, 36 low, 71 informational and 0 optimization**. Existing observations match after source-line normalization and the exact NFT-library relocation. Two array-length caching observations are no longer reported for storage-reference library parameters; the loops still read their length directly, so this is not a claimed security fix. See the [v0.9.4 source and static review](nft-policy-static-review.json). Raw reports remain available through the source-qualified Security Verification workflow. These observations have not been relabeled as zero findings.
+The full static scan retains **115** individually reviewed observations: **0 high, 9 medium, 36 low, 70 informational and 0 optimization**. New or relocated findings include per-voter rounding, mapping deletion and guarded ledger updates across token calls; all have source-bound dispositions and evidence. See the [v0.9.5 buyer-protection review](buyer-protection-static-review.json) and the checked Slither baseline. The earlier [NFT-policy review](nft-policy-static-review.json) is historical v0.9.4 evidence. These are internal reviews, not an independent audit or zero-finding claim.
 
 ## Reproduce without production keys
 

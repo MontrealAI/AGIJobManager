@@ -123,6 +123,11 @@ This section summarizes expected mechanics; the deployed code controls.
   - The Employer wins (refund to Employer, validator settlement, possible agent bond forfeiture), or
   - A dispute is forced due to insufficient participation or ties.
 
+- Ordinary finalization waits for the full review and any longer approval challenge. No votes, insufficient quorum, or tied votes open a dispute without automatic Agent payment.
+- The Employer may explicitly accept submitted, undisputed work and authorize immediate payment. Employer-win settlement preserves the full job escrow; reviewer rewards use forfeited collateral.
+- An unanswered dispute permits neutral return of escrow and each participant's own bonds after twice the dispute review period. Settlement pauses extend lifecycle clocks.
+- Failed outgoing USDC transfers are reserved for the original beneficiary and may be retried; a recorded completion does not guarantee immediate receipt by every recipient.
+
 5.6 Expiration
 
 - If conditions in the code are met (e.g., time elapsed without completion request), a Job may be expired, which can trigger refund mechanics and bond settlement.
@@ -269,6 +274,9 @@ import "./utils/BondMath.sol";
 import "./utils/ReputationMath.sol";
 import "./utils/ENSOwnership.sol";
 import "./utils/NftEligibility.sol";
+import "./utils/JobState.sol";
+import "./utils/JobSettlement.sol";
+import "./utils/JobValidation.sol";
 
 // NOTE: keep utility libraries externally linked to avoid EIP-170 bytecode regressions.
 
@@ -319,6 +327,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     uint256 public disputeReviewPeriod = 14 days;
     uint256 internal constant MAX_REVIEW_PERIOD = 365 days;
     bool public settlementPaused;
+    uint256 private settlementPauseStarted;
+    uint256 private completedSettlementPauseSeconds;
     uint256 internal constant DISPUTE_BOND_BPS = 50;
     uint256 internal constant DISPUTE_BOND_MIN = 1e6;
     uint256 internal constant DISPUTE_BOND_MAX = 200e6;
@@ -341,13 +351,13 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     uint256 public agentBondMax = 88888888e6;
     /// @notice Total USDC reserved for unsettled job escrows.
     /// @dev Tracks job payout escrows only.
-    uint256 public lockedEscrow;
+
     /// @notice Total USDC locked as agent performance bonds for unsettled jobs.
-    uint256 public lockedAgentBonds;
+
     /// @notice Total USDC locked as validator bonds for unsettled votes.
-    uint256 public lockedValidatorBonds;
+
     /// @notice Total USDC locked as dispute bonds for unsettled disputes.
-    uint256 public lockedDisputeBonds;
+
     uint256 public maxActiveJobsPerAgent = 3;
 
     bytes32 public clubRootNode;
@@ -365,47 +375,17 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     /// @notice Default for newly posted jobs; existing jobs keep their recorded requirement.
     bool public agentNftRequired = true;
 
-    struct Job {
-        address employer;
-        string jobSpecURI;
-        string jobCompletionURI;
-        uint256 payout;
-        uint256 duration;
-        address assignedAgent;
-        uint256 assignedAt;
-        bool completed;
-        bool completionRequested;
-        uint256 validatorApprovals;
-        uint256 validatorDisapprovals;
-        bool disputed;
-        address disputeInitiator;
-        uint256 disputeBondAmount;
-        mapping(address => bool) approvals;
-        mapping(address => bool) disapprovals;
-        address[] validators;
-        uint256 completionRequestedAt;
-        uint256 disputedAt;
-        bool expired;
-        uint8 agentPayoutPct;
-        uint8 validatorRewardPctSnapshot;
-        bool escrowReleased;
-        bool validatorApproved;
-        bool agentNftRequired;
-        uint256 validatorApprovedAt;
-        uint256 validatorBondAmount;
-        uint256 agentBondAmount;
-    }
 
     uint256 public nextJobId;
     uint256 public nextTokenId;
     mapping(uint256 => Job) internal jobs;
-    mapping(address => uint256) public reputation;
+    SettlementLedger internal ledger;
     mapping(address => bool) public moderators;
     mapping(address => bool) public additionalValidators;
     mapping(address => bool) public additionalAgents;
     mapping(address => bool) public blacklistedAgents;
     mapping(address => bool) public blacklistedValidators;
-    mapping(address => uint256) internal activeJobsByAgent;
+
     NftEligibility.AGIType[] public agiTypes;
     mapping(uint256 => string) private _tokenURIs;
 
@@ -472,6 +452,12 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     event AgentBondMinUpdated(uint256 indexed oldMin, uint256 indexed newMin);
     event ValidatorSlashBpsUpdated(uint256 indexed oldBps, uint256 indexed newBps);
     event EnsHookAttempted(uint8 indexed hook, uint256 indexed jobId, address indexed target, bool success);
+    event USDCDeferred(address indexed beneficiary, uint256 amount);
+    event USDCClaimed(address indexed beneficiary, uint256 amount);
+    event JobAccepted(uint256 indexed jobId, address indexed employer);
+    event UnresolvedDisputeRefunded(uint256 indexed jobId);
+    event JobApprovalThresholdReached(uint256 indexed jobId, uint256 approvedAt);
+    event ValidatorCredentialUsed(uint256 indexed jobId, address indexed voter, bytes32 indexed credential, address controller);
 
     uint8 private constant ENS_HOOK_CREATE = 1;
     uint8 private constant ENS_HOOK_ASSIGN = 2;
@@ -562,7 +548,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
 
     function _t(address to, uint256 amount) internal {
         if (amount == 0) return;
-        TransferUtils.safeTransfer(address(usdcToken), to, amount);
+        JobSettlement.pay(ledger, to, amount);
     }
 
     function _tf(address from, uint256 amount) internal {
@@ -575,7 +561,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (job.escrowReleased) return;
         job.escrowReleased = true;
         unchecked {
-            lockedEscrow -= job.payout;
+            ledger.escrow -= job.payout;
         }
     }
 
@@ -583,7 +569,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         uint256 bond = job.agentBondAmount;
         job.agentBondAmount = 0;
         unchecked {
-            lockedAgentBonds -= bond;
+            ledger.agentBonds -= bond;
         }
         if (agentWon) {
             _t(job.assignedAgent, bond);
@@ -596,21 +582,9 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         return 0;
     }
 
-    function _settleDisputeBond(Job storage job, bool agentWon) internal {
-        uint256 bond = job.disputeBondAmount;
-        job.disputeBondAmount = 0;
-        if (bond != 0) {
-            job.disputeInitiator = address(0);
-        }
-        unchecked {
-            lockedDisputeBonds -= bond;
-        }
-        _t(agentWon ? job.assignedAgent : job.employer, bond);
-    }
-
     function _decrementActiveJob(Job storage job) internal {
         unchecked {
-            activeJobsByAgent[job.assignedAgent]--;
+            ledger.activeJobs[job.assignedAgent]--;
         }
     }
 
@@ -623,7 +597,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _requireEmptyEscrow() internal view {
-        if ((lockedEscrow | lockedAgentBonds | lockedValidatorBonds | lockedDisputeBonds) != 0) revert InvalidState();
+        if ((ledger.escrow | ledger.agentBonds | ledger.validatorBonds | ledger.disputeBonds) != 0) revert InvalidState();
     }
 
     /// @notice Rotate recipients only between jobs, with intake paused and all reserves settled.
@@ -687,10 +661,6 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         }
     }
 
-    function _enforceValidatorCapacity(uint256 currentCount) internal pure {
-        if (currentCount >= MAX_VALIDATORS_PER_JOB) revert ValidatorLimitReached();
-    }
-
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
     function pauseIntake() external onlyOwner { _pause(); }
@@ -699,19 +669,103 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (!paused()) {
             _pause();
         }
-        settlementPaused = true;
-        emit SettlementPauseSet(msg.sender, true);
+        _setSettlementPaused(true);
     }
     function unpauseAll() external onlyOwner {
         if (paused()) {
             _unpause();
         }
-        settlementPaused = false;
-        emit SettlementPauseSet(msg.sender, false);
+        _setSettlementPaused(false);
     }
     function setSettlementPaused(bool paused) external onlyOwner {
-        settlementPaused = paused;
-        emit SettlementPauseSet(msg.sender, paused);
+        _setSettlementPaused(paused);
+    }
+
+    function _setSettlementPaused(bool value) internal {
+        if (value != settlementPaused) {
+            if (value) settlementPauseStarted = block.timestamp;
+            else {
+                completedSettlementPauseSeconds += block.timestamp - settlementPauseStarted;
+                settlementPauseStarted = 0;
+            }
+            settlementPaused = value;
+        }
+        emit SettlementPauseSet(msg.sender, value);
+    }
+
+    /// @notice Total past and current settlement-pause time; all lifecycle clocks exclude it.
+    function settlementPausedSeconds() public view returns (uint256) {
+        return completedSettlementPauseSeconds + (settlementPaused ? block.timestamp - settlementPauseStarted : 0);
+    }
+
+    function _deadline(uint256 started, uint256 period, uint256 pauseSnapshot) internal view returns (uint256) {
+        return started + period + settlementPausedSeconds() - pauseSnapshot;
+    }
+
+    function _settlementDeadline(Job storage job) internal view returns (uint256 deadline) {
+        deadline = _deadline(job.completionRequestedAt, completionReviewPeriod, job.completionPause);
+        if (job.validatorApproved) {
+            uint256 challengeEnd = _deadline(job.validatorApprovedAt, challengePeriodAfterApproval, job.approvalPause);
+            if (challengeEnd > deadline) deadline = challengeEnd;
+        }
+    }
+
+    /// @notice Current wall-clock deadlines; while paused they move forward as the clocks stop.
+    function getJobDeadlines(uint256 jobId) external view returns (
+        uint256 assignmentDeadline, uint256 reviewEnd, uint256 settlementAfter,
+        uint256 ownerResolutionAfter, uint256 neutralRefundAfter
+    ) {
+        Job storage job = _job(jobId);
+        if (job.assignedAgent != address(0)) assignmentDeadline = _deadline(job.assignedAt, job.duration, job.assignmentPause);
+        if (job.completionRequested) {
+            reviewEnd = _deadline(job.completionRequestedAt, completionReviewPeriod, job.completionPause);
+            settlementAfter = _settlementDeadline(job);
+        }
+        if (job.disputed) {
+            ownerResolutionAfter = _deadline(job.disputedAt, disputeReviewPeriod, job.disputePause);
+            neutralRefundAfter = _deadline(job.disputedAt, 2 * disputeReviewPeriod, job.disputePause);
+        }
+    }
+
+    function _openDispute(uint256 jobId, Job storage job) internal {
+        job.disputed = true;
+        job.disputedAt = block.timestamp;
+        job.disputePause = settlementPausedSeconds();
+        emit JobDisputed(jobId, msg.sender);
+    }
+
+    function _requireIndependentResolver(Job storage job) internal view {
+        if (msg.sender == job.employer || msg.sender == job.assignedAgent || job.approvals[msg.sender]
+            || job.disapprovals[msg.sender] || job.usedValidatorControllers[msg.sender]) revert NotAuthorized();
+    }
+
+    /// @notice Explicit owner/Merkle exceptions issue an address credential; ENS uses node and controller.
+    function validatorCredential(address claimant, string memory label, bytes32[] calldata proof)
+        public view returns (bytes32 credential, address controller)
+    {
+        if (additionalValidators[claimant] || ENSOwnership.verifyMerkleOwnership(claimant, proof, validatorMerkleRoot)) {
+            return (keccak256(abi.encode("AGI.validator.address", claimant)), claimant);
+        }
+        return ENSOwnership.validatorCredential(address(ens), address(nameWrapper), claimant, label, clubRootNode, alphaClubRootNode);
+    }
+
+    function lockedEscrow() external view returns (uint256) { return ledger.escrow; }
+    function lockedAgentBonds() external view returns (uint256) { return ledger.agentBonds; }
+    function lockedValidatorBonds() external view returns (uint256) { return ledger.validatorBonds; }
+    function lockedDisputeBonds() external view returns (uint256) { return ledger.disputeBonds; }
+    function lockedClaims() external view returns (uint256) { return ledger.claims; }
+    function pendingUSDC(address beneficiary) external view returns (uint256) { return ledger.pending[beneficiary]; }
+    function reputation(address account) external view returns (uint256) { return ledger.reputation[account]; }
+
+    /// @notice Anyone may retry a reserved payment, only to its original beneficiary.
+    function claimUSDC(address beneficiary) external whenSettlementNotPaused nonReentrant {
+        JobSettlement.claim(ledger, address(usdcToken), beneficiary);
+    }
+
+    /// @dev Isolated payout subcall. External callers and direct library calls cannot use it.
+    function executeUSDCTransfer(address beneficiary, uint256 amount) external {
+        if (msg.sender != address(this) || !_reentrancyGuardEntered()) revert NotAuthorized();
+        TransferUtils.safeTransfer(address(usdcToken), beneficiary, amount);
     }
     function lockIdentityConfiguration() external onlyOwner whenIdentityConfigurable {
         lockIdentityConfig = true;
@@ -744,7 +798,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         job.agentNftRequired = agentNftRequired;
         TransferUtils.safeTransferFromExact(address(usdcToken), msg.sender, address(this), _payout);
         unchecked {
-            lockedEscrow += _payout;
+            ledger.escrow += _payout;
         }
         emit JobCreated(jobId, _jobSpecURI, _payout, _duration, _details);
         _callEnsJobPagesHook(ENS_HOOK_CREATE, jobId);
@@ -762,7 +816,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (!_isAuthorized(msg.sender, subdomain, proof, additionalAgents, agentMerkleRoot, agentRootNode, alphaAgentRootNode)) {
             revert NotAuthorized();
         }
-        if (activeJobsByAgent[msg.sender] >= maxActiveJobsPerAgent) revert InvalidState();
+        if (ledger.activeJobs[msg.sender] >= maxActiveJobsPerAgent) revert InvalidState();
         // NFT types remain eligibility credentials; their legacy scores do not set payment shares.
         if (job.agentNftRequired && getHighestPayoutPercentage(msg.sender) == 0) revert IneligibleAgentPayout();
         uint256 bond = BondMath.computeAgentBond(
@@ -776,14 +830,15 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (bond > 0) {
             _tf(msg.sender, bond);
             unchecked {
-                lockedAgentBonds += bond;
+                ledger.agentBonds += bond;
             }
         }
         job.agentBondAmount = bond;
         job.assignedAgent = msg.sender;
         job.assignedAt = block.timestamp;
+        job.assignmentPause = settlementPausedSeconds();
         unchecked {
-            activeJobsByAgent[msg.sender]++;
+            ledger.activeJobs[msg.sender]++;
         }
         emit JobApplied(_jobId, msg.sender);
         _callEnsJobPagesHook(ENS_HOOK_ASSIGN, _jobId);
@@ -801,12 +856,13 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (job.completed || job.expired) revert InvalidState();
         // Assignment deadlines intentionally use chain time, with inclusive submission at the boundary.
         // forge-lint: disable-next-line(block-timestamp)
-        if (!job.disputed && block.timestamp > job.assignedAt + job.duration) revert InvalidState();
+        if (!job.disputed && block.timestamp > _deadline(job.assignedAt, job.duration, job.assignmentPause)) revert InvalidState();
         if (job.completionRequested) revert InvalidState();
         UriUtils.requireValidUri(_jobCompletionURI);
         job.jobCompletionURI = _jobCompletionURI;
         job.completionRequested = true;
         job.completionRequestedAt = block.timestamp;
+        job.completionPause = settlementPausedSeconds();
         emit JobCompletionRequested(_jobId, msg.sender, _jobCompletionURI);
         _callEnsJobPagesHook(ENS_HOOK_COMPLETION, _jobId);
     }
@@ -837,63 +893,13 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         _requireJobUnsettled(job);
         _requireAssignedAgent(job);
         if (blacklistedValidators[msg.sender]) revert Blacklisted();
-        if (!_isAuthorized(msg.sender, subdomain, proof, additionalValidators, validatorMerkleRoot, clubRootNode, alphaClubRootNode)) {
-            revert NotAuthorized();
-        }
-        if (!job.completionRequested) revert InvalidState();
-        // Voting is intentionally available through the recorded review deadline; not a randomness source.
-        // forge-lint: disable-next-line(block-timestamp)
-        if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
-        if (job.approvals[msg.sender] || job.disapprovals[msg.sender]) revert InvalidState();
-
-        uint256 bond = job.validatorBondAmount;
-        if (bond == 0) {
-            bond = BondMath.computeValidatorBond(job.payout, validatorBondBps, validatorBondMin, validatorBondMax);
-            unchecked {
-                job.validatorBondAmount = bond + 1;
-            }
-        } else {
-            unchecked {
-                bond -= 1;
-            }
-        }
-        if (bond > 0) {
-            _tf(msg.sender, bond);
-            unchecked {
-                lockedValidatorBonds += bond;
-            }
-        }
-        _enforceValidatorCapacity(job.validators.length);
-        if (approve) {
-            unchecked {
-                job.validatorApprovals++;
-            }
-            job.approvals[msg.sender] = true;
-        } else {
-            unchecked {
-                job.validatorDisapprovals++;
-            }
-            job.disapprovals[msg.sender] = true;
-        }
-        job.validators.push(msg.sender);
-        if (approve) {
-            emit JobValidated(_jobId, msg.sender);
-            if (
-                !job.validatorApproved &&
-                requiredValidatorApprovals > 0 &&
-                job.validatorApprovals >= requiredValidatorApprovals
-            ) {
-                job.validatorApproved = true;
-                job.validatorApprovedAt = block.timestamp;
-            }
-            return;
-        }
-        emit JobDisapproved(_jobId, msg.sender);
-        if (requiredValidatorDisapprovals > 0 && job.validatorDisapprovals >= requiredValidatorDisapprovals) {
-            job.disputed = true;
-            job.disputedAt = block.timestamp;
-            emit JobDisputed(_jobId, msg.sender);
-        }
+        (bytes32 credential, address controller) = validatorCredential(msg.sender, subdomain, proof);
+        if (credential == bytes32(0)) revert NotAuthorized();
+        JobValidation.record(
+            _jobId, job, ledger, address(usdcToken), approve, credential, controller,
+            [completionReviewPeriod, requiredValidatorApprovals, requiredValidatorDisapprovals,
+                validatorBondBps, validatorBondMin, validatorBondMax, settlementPausedSeconds()]
+        );
     }
 
     function _isAuthorized(
@@ -931,7 +937,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (!job.completionRequested) revert InvalidState();
         // A party may dispute through the same chain-time review deadline used by validator voting.
         // forge-lint: disable-next-line(block-timestamp)
-        if (block.timestamp > job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
+        if (block.timestamp > _settlementDeadline(job)) revert InvalidState();
         uint256 bond;
         unchecked {
             bond = (job.payout * DISPUTE_BOND_BPS) / 10_000;
@@ -942,13 +948,14 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         if (bond > 0) {
             _tf(msg.sender, bond);
             unchecked {
-                lockedDisputeBonds += bond;
+                ledger.disputeBonds += bond;
             }
             job.disputeInitiator = msg.sender;
         }
         job.disputeBondAmount = bond;
         job.disputed = true;
         job.disputedAt = block.timestamp;
+        job.disputePause = settlementPausedSeconds();
         emit JobDisputed(_jobId, msg.sender);
     }
 
@@ -964,6 +971,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     function _resolveDispute(uint256 _jobId, uint8 resolutionCode, string memory reason) internal {
         Job storage job = _job(_jobId);
         _requireActiveDispute(job);
+        _requireIndependentResolver(job);
 
         if (resolutionCode == 0) {
             emit DisputeResolvedWithCode(_jobId, msg.sender, resolutionCode, reason);
@@ -985,9 +993,10 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     function resolveStaleDispute(uint256 _jobId, bool employerWins) external onlyOwner whenSettlementNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         _requireActiveDispute(job);
+        _requireIndependentResolver(job);
         // Owner stale-dispute authority starts strictly after the recorded chain-time review deadline.
         // forge-lint: disable-next-line(block-timestamp)
-        if (block.timestamp <= job.disputedAt + disputeReviewPeriod) revert InvalidState();
+        if (block.timestamp <= _deadline(job.disputedAt, disputeReviewPeriod, job.disputePause)) revert InvalidState();
 
         _clearDispute(job);
         if (employerWins) {
@@ -1235,19 +1244,6 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         emit ValidationRewardPercentageUpdated(oldPercentage, _percentage);
     }
 
-    function enforceReputationGrowth(address _user, uint256 _points) internal {
-        uint256 current = reputation[_user];
-        uint256 updated;
-        unchecked {
-            updated = current + _points;
-        }
-        if (updated < current || updated > 88888) {
-            updated = 88888;
-        }
-        reputation[_user] = updated;
-        emit ReputationUpdated(_user, updated);
-    }
-
     function cancelJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
         Job storage job = _job(_jobId);
         if (msg.sender != job.employer) revert NotAuthorized();
@@ -1262,7 +1258,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         _requireAssignedAgent(job);
         // Expiry starts strictly after the submission deadline; tests cover both boundary sides.
         // forge-lint: disable-next-line(block-timestamp)
-        if (block.timestamp <= job.assignedAt + job.duration) revert InvalidState();
+        if (block.timestamp <= _deadline(job.assignedAt, job.duration, job.assignmentPause)) revert InvalidState();
 
         job.expired = true;
         _decrementActiveJob(job);
@@ -1282,140 +1278,54 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         _callEnsJobPagesHook(burnFuses ? ENS_HOOK_LOCK_BURN : ENS_HOOK_LOCK, jobId);
     }
 
-    function finalizeJob(uint256 _jobId) external whenSettlementNotPaused nonReentrant {
-        Job storage job = _job(_jobId);
+    /// @notice Review time is guaranteed; no votes, low participation and ties escalate.
+    function finalizeJob(uint256 jobId) external whenSettlementNotPaused nonReentrant {
+        Job storage job = _job(jobId);
+        _requireJobUnsettled(job);
+        // Intentional elapsed-time deadline, adjusted for settlement pauses; not a randomness source.
+        // forge-lint: disable-next-line(block-timestamp)
+        if (!job.completionRequested || block.timestamp <= _settlementDeadline(job)) revert InvalidState();
         uint256 approvals = job.validatorApprovals;
         uint256 disapprovals = job.validatorDisapprovals;
+        if (approvals + disapprovals < voteQuorum || approvals == disapprovals) {
+            _openDispute(jobId, job);
+        } else if (approvals > disapprovals) {
+            _completeJob(jobId, true);
+        } else {
+            _refundEmployer(jobId, job);
+        }
+    }
+
+    /// @notice The buyer may explicitly accept submitted, undisputed work at any time.
+    function acceptJob(uint256 jobId) external whenSettlementNotPaused nonReentrant {
+        Job storage job = _job(jobId);
+        if (msg.sender != job.employer) revert NotAuthorized();
         _requireJobUnsettled(job);
         if (!job.completionRequested) revert InvalidState();
-        if (job.validatorApproved) {
-            // Finalization must wait strictly beyond the chain-time challenge window.
-            // forge-lint: disable-next-line(block-timestamp)
-            if (block.timestamp <= job.validatorApprovedAt + challengePeriodAfterApproval) revert InvalidState();
-            if (approvals > disapprovals) {
-                _completeJob(_jobId, true);
-                return;
-            }
-        }
-
-        // The no-vote/majority fallback starts strictly after the chain-time review window.
-        // forge-lint: disable-next-line(block-timestamp)
-        if (block.timestamp <= job.completionRequestedAt + completionReviewPeriod) revert InvalidState();
-
-        uint256 totalVotes;
-        unchecked {
-            totalVotes = approvals + disapprovals;
-        }
-        if (totalVotes == 0) {
-            // No-vote liveness: after the review window, settle deterministically in favor of the agent.
-            _completeJob(_jobId, false);
-        } else if (totalVotes < voteQuorum || approvals == disapprovals) {
-            // Under-quorum or tie at/over quorum: force dispute to avoid low-participation outcomes.
-            job.disputed = true;
-            job.disputedAt = block.timestamp;
-            emit JobDisputed(_jobId, msg.sender);
-            return;
-        } else if (approvals > disapprovals) {
-            _completeJob(_jobId, true);
-        } else {
-            _refundEmployer(_jobId, job);
-        }
-
+        emit JobAccepted(jobId, msg.sender);
+        _completeJob(jobId, false);
     }
 
-    /// @dev Successful jobs distribute validators first, then 30% and 10% of gross escrow,
-    /// @dev then all remaining USDC to the agent. Every transfer is atomic with settlement.
-    function _completeJob(uint256 _jobId, bool repEligible) internal {
-        Job storage job = _job(_jobId);
+    /// @notice After both arbitration windows, anyone may return escrow and all bonds neutrally.
+    function refundUnresolvedDispute(uint256 jobId) external whenSettlementNotPaused nonReentrant {
+        Job storage job = _job(jobId);
+        _requireActiveDispute(job);
+        // Intentional elapsed-time deadline, adjusted for settlement pauses; not a randomness source.
+        // forge-lint: disable-next-line(block-timestamp)
+        if (block.timestamp <= _deadline(job.disputedAt, 2 * disputeReviewPeriod, job.disputePause)) revert InvalidState();
+        JobSettlement.unresolved(job, ledger);
+        emit UnresolvedDisputeRefunded(jobId);
+        _callEnsJobPagesHook(ENS_HOOK_REVOKE, jobId);
+    }
+
+    function _completeJob(uint256 jobId, bool repEligible) internal {
+        Job storage job = _job(jobId);
         _requireJobUnsettled(job);
         _requireAssignedAgent(job);
-
-        uint256 validatorBudget = job.validators.length == 0 ? 0 : (job.payout * job.validatorRewardPctSnapshot) / 100;
-        uint256 amount30 = (job.payout * 30) / 100;
-        uint256 amount10 = (job.payout * 10) / 100;
-        uint256 agentPayout = job.payout - validatorBudget - amount30 - amount10;
-
-        job.completed = true;
-        _decrementActiveJob(job);
-        _releaseEscrow(job);
-
-        uint256 reputationPoints = ReputationMath.computeReputationPoints(
-            job.payout,
-            job.duration,
-            job.completionRequestedAt,
-            job.assignedAt,
-            repEligible
-        );
-        enforceReputationGrowth(job.assignedAgent, reputationPoints);
-
-        agentPayout += _settleValidators(job, true, reputationPoints, validatorBudget, 0);
-        _t(wallet30, amount30);
-        _t(wallet10, amount10);
-        _t(job.assignedAgent, agentPayout);
-        emit JobPayoutDistributed(_jobId, validatorBudget, amount30, amount10, agentPayout);
-        _settleAgentBond(job, true, false);
-        _mintCompletionNFT(_jobId, job);
-        _settleDisputeBond(job, true);
-
-        emit JobCompleted(_jobId, job.assignedAgent, reputationPoints);
-        _callEnsJobPagesHook(ENS_HOOK_REVOKE, _jobId);
-    }
-
-    function _settleValidators(
-        Job storage job,
-        bool agentWins,
-        uint256 reputationPoints,
-        uint256 escrowValidatorReward,
-        uint256 extraPoolForCorrect
-    ) internal returns (uint256 remainder) {
-        uint256 vCount = job.validators.length;
-        if (vCount == 0) {
-            return 0;
-        }
-        uint256 bond = job.validatorBondAmount;
-        unchecked {
-            bond -= 1;
-            lockedValidatorBonds -= bond * vCount;
-        }
-        job.validatorBondAmount = 0;
-        uint256 correctCount = agentWins ? job.validatorApprovals : job.validatorDisapprovals;
-        uint256 slashedPerIncorrect;
-        uint256 poolForCorrect;
-        uint256 perCorrectReward = 0;
-        uint256 validatorReputationGain;
-        unchecked {
-            slashedPerIncorrect = (bond * validatorSlashBps) / 10_000;
-            poolForCorrect = escrowValidatorReward + extraPoolForCorrect + (slashedPerIncorrect * (vCount - correctCount));
-            if (correctCount > 0) {
-                perCorrectReward = poolForCorrect / correctCount;
-            }
-            validatorReputationGain = (reputationPoints * job.validatorRewardPctSnapshot) / 100;
-        }
-        // Commit every validator's reputation before any token interaction, including later loop entries.
-        if (validatorReputationGain > 0) {
-            for (uint256 i = 0; i < vCount; ) {
-                address validator = job.validators[i];
-                if (agentWins ? job.approvals[validator] : job.disapprovals[validator]) {
-                    enforceReputationGrowth(validator, validatorReputationGain);
-                }
-                unchecked {
-                    ++i;
-                }
-            }
-        }
-        for (uint256 i = 0; i < vCount; ) {
-            address validator = job.validators[i];
-            bool correct = agentWins ? job.approvals[validator] : job.disapprovals[validator];
-            uint256 payout = correct ? bond + perCorrectReward : bond - slashedPerIncorrect;
-            _t(validator, payout);
-            unchecked {
-                ++i;
-            }
-        }
-        unchecked {
-            poolForCorrect -= perCorrectReward * correctCount;
-        }
-        return poolForCorrect;
+        uint256 points = JobSettlement.complete(jobId, job, ledger, wallet30, wallet10, repEligible, validatorSlashBps);
+        _mintCompletionNFT(jobId, job);
+        emit JobCompleted(jobId, job.assignedAgent, points);
+        _callEnsJobPagesHook(ENS_HOOK_REVOKE, jobId);
     }
 
     function _mintCompletionNFT(uint256 jobId, Job storage job) internal {
@@ -1444,28 +1354,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     }
 
     function _refundEmployer(uint256 jobId, Job storage job) internal {
-        job.completed = true;
-        job.disputed = false;
-        _decrementActiveJob(job);
-        _releaseEscrow(job);
-        bool poolToValidators = (requiredValidatorDisapprovals != 0
-            && job.validatorDisapprovals >= requiredValidatorDisapprovals);
-        uint256 agentBondPool = _settleAgentBond(job, false, poolToValidators);
-        uint256 validatorCount = job.validators.length;
-        uint256 escrowValidatorReward = validatorCount > 0
-            ? (job.payout * job.validatorRewardPctSnapshot) / 100
-            : 0;
-        uint256 employerRefund = escrowValidatorReward > 0 ? job.payout - escrowValidatorReward : job.payout;
-        uint256 reputationPoints = ReputationMath.computeReputationPoints(
-            job.payout,
-            job.duration,
-            job.completionRequestedAt,
-            job.assignedAt,
-            true
-        );
-        employerRefund += _settleValidators(job, false, reputationPoints, escrowValidatorReward, agentBondPool);
-        _t(job.employer, employerRefund);
-        _settleDisputeBond(job, false);
+        JobSettlement.refund(job, ledger, validatorSlashBps);
         _callEnsJobPagesHook(ENS_HOOK_REVOKE, jobId);
     }
 
@@ -1504,10 +1393,10 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     }
 
     /// @notice Unreserved donations only; completed job costs are fully distributed.
-    /// @dev Owner withdrawals are limited to balances not backing lockedEscrow/locked*Bonds.
+    /// @dev Owner withdrawals are limited to balances not backing ledger.escrow/locked*Bonds.
     function withdrawableUSDC() public view returns (uint256) {
         uint256 bal = usdcToken.balanceOf(address(this));
-        uint256 lockedTotal = lockedEscrow + lockedValidatorBonds + lockedAgentBonds + lockedDisputeBonds;
+        uint256 lockedTotal = ledger.escrow + ledger.validatorBonds + ledger.agentBonds + ledger.disputeBonds + ledger.claims;
         if (bal < lockedTotal) revert InsolventEscrowBalance();
         return bal - lockedTotal;
     }

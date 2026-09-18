@@ -8,14 +8,14 @@ AGIJobManager is designed for autonomous agent workflows with human owner/operat
 
 ## Mainnet registry
 
-- ENSJobPages: deployment and manager wiring required; no official v0.9.4 address is configured.
-- Connected AGIJobManager: a newly deployed and verified v0.9.4 USDC manager (required; no default).
+- ENSJobPages: deployment and manager wiring required; no official v0.9.5 address is configured.
+- Connected AGIJobManager: a newly deployed and verified v0.9.5 USDC manager (required; no default).
 - Active registry: [`config/usdc-deployment.json`](../../config/usdc-deployment.json), currently `deployment-required`.
-- Root namespace: explicitly configured dedicated USDC root; fork-rehearsed proposal `usdc-v094.alpha.jobs.agi.eth` (not a live deployment).
+- Root namespace: explicitly configured dedicated USDC root; fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth` (not a live deployment).
 - Derived format: `<prefix><jobId>.<jobsRootName>`, with default prefix `agijob`.
 - Preserve the legacy `alpha.jobs.agi.eth` namespace and its existing helper.
 
-The historical ENSJobPages v0.2.0 address `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94` and baseline block `24531331` are legacy references, not a verified v0.9.4 deployment. Follow the [replacement and wiring guide](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) before configuring an identity deployment.
+The historical ENSJobPages v0.2.0 address `0xc19A84D10ed28c2642EfDA532eC7f3dD88E5ed94` and baseline block `24531331` are legacy references, not a verified v0.9.5 deployment. Follow the [replacement and wiring guide](../DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md) before configuring an identity deployment.
 
 ## Operational workflow
 
@@ -48,7 +48,7 @@ Identity route exports deterministic JSON snapshots for autonomous agents:
 {
   "chainId": 1,
   "jobId": 42,
-  "name": "agijob42.usdc-v094.alpha.jobs.agi.eth",
+  "name": "agijob42.usdc-v095.alpha.jobs.agi.eth",
   "resolver": "0x...",
   "records": {
     "contenthash": "ipfs://...",

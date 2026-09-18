@@ -37,6 +37,7 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         manager.addAdditionalValidator(validator);
         manager.setSettlementPaused(false);
         manager.setRequiredValidatorApprovals(1);
+        manager.setVoteQuorum(1);
 
         token.mint(employer, 1000 * 1e6);
         token.mint(agent, 1000 * 1e6);
@@ -87,8 +88,8 @@ contract AGIJobManagerSecurityVerificationTest is Test {
         vm.prank(validator);
         manager.validateJob(jobId, "", new bytes32[](0));
 
-        (, uint256 approvedAt) = manager.jobValidatorApprovalState(jobId);
-        vm.warp(approvedAt + manager.challengePeriodAfterApproval() + 1);
+        (,, uint256 settlementAfter,,) = manager.getJobDeadlines(jobId);
+        vm.warp(settlementAfter + 1);
     }
 
     function test_ENSSelectorAndCalldataCompatibility() external {
@@ -202,8 +203,8 @@ contract AGIJobManagerSecurityVerificationTest is Test {
 
         vm.prank(validator);
         manager.validateJob(jobId, "", new bytes32[](0));
-        (, uint256 approvedAt) = manager.jobValidatorApprovalState(jobId);
-        vm.warp(approvedAt + manager.challengePeriodAfterApproval() + 1);
+        (,, uint256 settlementAfter,,) = manager.getJobDeadlines(jobId);
+        vm.warp(settlementAfter + 1);
 
         vm.prank(address(receiver));
         receiver.finalize(jobId);

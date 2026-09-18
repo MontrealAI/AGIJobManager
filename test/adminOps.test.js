@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -273,7 +274,7 @@ contract("AGIJobManager admin ops", (accounts) => {
     assert.equal(slashEvent.args.newBps.toString(), "7000");
   });
 
-  it("reverts withdrawals on failed transfers", async () => {
+  it("reserves failed surplus withdrawals for the requesting owner", async () => {
     const failing = await FailingERC20.new({ from: owner });
     await failing.mint(owner, toBN(toWei("2")), { from: owner });
 
@@ -295,10 +296,9 @@ contract("AGIJobManager admin ops", (accounts) => {
     await failing.transfer(managerFailing.address, toBN(toWei("2")), { from: owner });
     await failing.setFailTransfers(true, { from: owner });
     await managerFailing.pause({ from: owner });
-    await expectCustomError(
-      managerFailing.withdrawUSDC.call(toBN(toWei("1")), { from: owner }),
-      "TransferFailed"
-    );
+    await managerFailing.withdrawUSDC(toBN(toWei("1")), { from: owner });
+    assert.equal((await managerFailing.pendingUSDC(owner)).toString(), toWei("1"));
+    assert.equal((await managerFailing.withdrawableUSDC()).toString(), toWei("1"));
   });
 
   it("locks configuration changes while retaining break-glass controls", async () => {
@@ -441,7 +441,7 @@ contract("AGIJobManager admin ops", (accounts) => {
 
     const reviewPeriod = await manager.completionReviewPeriod();
     await time.increase(reviewPeriod.addn(1));
-    await manager.finalizeJob(jobId, { from: employer });
+    await manager.acceptJob(jobId, { from: employer });
 
     await manager.updateEnsRegistry(newEns.address, { from: owner });
     assert.equal(await manager.ens(), newEns.address, "ENS may update after settlement");

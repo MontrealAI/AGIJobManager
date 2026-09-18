@@ -121,8 +121,8 @@ function requireReadinessState(state) {
   }
   if (state.wallets[0].toLowerCase() === state.wallets[1].toLowerCase()) throw new Error('Settlement wallets must be distinct.');
   const reserved = state.reserves.reduce((sum, amount) => sum + BigInt(amount), 0n);
-  if (BigInt(state.balance) < reserved) throw new Error('USDC balance is below reserved escrow and bonds.');
-  if (reserved !== 0n) throw new Error('Initial activation requires no existing job escrow or bonds.');
+  if (BigInt(state.balance) < reserved) throw new Error('USDC balance is below reserved escrow, bonds and claims.');
+  if (reserved !== 0n) throw new Error('Initial activation requires no existing job escrow, bonds or payment claims.');
   return { reserved: reserved.toString(), balance: String(state.balance) };
 }
 
@@ -154,7 +154,7 @@ function requireArtifactMatch({ artifact, buildInfo, address, libraries = {}, to
   if (immutableGroups.length) {
     let value;
     if (artifact.contractName === 'AGIJobManager' && immutableGroups.length === 1 && tokenAddress) value = tokenAddress;
-    else if (['TransferUtils', 'NftEligibility'].includes(artifact.contractName) && immutableGroups.length === 1 && immutableReferences.library_deploy_address) value = address;
+    else if (['TransferUtils', 'NftEligibility', 'JobSettlement', 'JobValidation'].includes(artifact.contractName) && immutableGroups.length === 1 && immutableReferences.library_deploy_address) value = address;
     else throw new Error('Unrecognized immutable layout; review deployment verifier before continuing.');
     immutableGroups.flat().forEach(({ start, length }) => replace(start, length, value));
   }

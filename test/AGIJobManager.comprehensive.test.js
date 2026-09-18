@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { expectEvent, expectRevert, BN, time } = require("../scripts/test-helpers.cjs");
@@ -194,7 +195,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await validateWithProof(0, validatorTwo);
       await validateWithProof(0, validatorThree);
       await time.increase(2);
-      const completionReceipt = await manager.finalizeJob(0, { from: employer });
+      const completionReceipt = await finalizeAfterReview(manager, 0, { from: employer });
       expectEvent(completionReceipt, "JobCompleted", { jobId: new BN(0), agent });
 
       const finalJob = await manager.getJobCore(0);
@@ -288,6 +289,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("prevents double completion and late validations", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
       await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
@@ -297,7 +299,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await requestCompletion(0);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
       await time.increase(2);
-      await manager.finalizeJob(0, { from: employer });
+      await finalizeAfterReview(manager, 0, { from: employer });
 
       await expectCustomError(
         manager.validateJob.call(0, "validator", [], { from: validatorOne }),
@@ -313,6 +315,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
     it("blocks dispute resolution after validator-driven completion", async () => {
       await manager.addAdditionalAgent(agent, { from: owner });
       await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
@@ -322,7 +325,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await requestCompletion(0);
       await manager.validateJob(0, "validator", [], { from: validatorOne });
       await time.increase(2);
-      await manager.finalizeJob(0, { from: employer });
+      await finalizeAfterReview(manager, 0, { from: employer });
 
       const tokenIdAfterCompletion = await manager.nextTokenId();
       await expectCustomError(
@@ -337,6 +340,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.addAdditionalAgent(agent, { from: owner });
       await manager.addAdditionalValidator(validatorOne, { from: owner });
       await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
 
       await createJob();
       await manager.applyForJob(0, "agent", [], { from: agent });
@@ -559,7 +563,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await manager.validateJob(0, "validator", [], { from: validatorTwo });
       await manager.validateJob(0, "validator", [], { from: validatorThree });
       await time.increase(2);
-      await manager.finalizeJob(0, { from: employer });
+      await finalizeAfterReview(manager, 0, { from: employer });
       await expectCustomError(manager.disputeJob.call(0, { from: employer }), "InvalidState");
     });
   });
@@ -591,7 +595,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       );
     });
 
-    it("reverts payouts when transfer returns false", async () => {
+    it("reserves payouts when transfer returns false", async () => {
       const failingToken = await FailingERC20.new();
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
@@ -622,13 +626,13 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.addModerator(moderator, { from: owner });
       await altManager.requestJobCompletion(0, updatedIpfs, { from: agent });
       await altManager.disputeJob(0, { from: agent });
-      await expectCustomError(
-        altManager.resolveDisputeWithCode.call(0, 1, "agent win", { from: moderator }),
-        "TransferFailed"
-      );
+      const reservesBefore = await failingToken.balanceOf(altManager.address);
+      await altManager.resolveDisputeWithCode(0, 1, "agent win", { from: moderator });
+      assert.equal((await altManager.lockedClaims()).toString(), reservesBefore.toString());
+      assert.equal((await altManager.withdrawableUSDC()).toString(), '0');
     });
 
-    it("reverts validator-driven completion when transfer returns false", async () => {
+    it("preserves entitlements on validator-driven completion when transfers fail", async () => {
       const failingToken = await FailingERC20.new();
       await failingToken.mint(employer, payout);
       await failingToken.mint(owner, payout);
@@ -649,6 +653,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.addAdditionalAgent(agent, { from: owner });
       await altManager.addAdditionalValidator(validatorOne, { from: owner });
       await altManager.setRequiredValidatorApprovals(1, { from: owner });
+      await altManager.setVoteQuorum(1, { from: owner });
       await altManager.setChallengePeriodAfterApproval(1, { from: owner });
       await altManager.addAGIType(agiTypeNft.address, 92, { from: owner });
       await agiTypeNft.mint(agent);
@@ -665,12 +670,12 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await altManager.validateJob(0, "validator", [], { from: validatorOne });
       await failingToken.setFailTransfers(true);
       await time.increase(2);
-      await expectCustomError(
-        altManager.finalizeJob.call(0, { from: employer }),
-        "TransferFailed"
-      );
+      const reservesBefore = await failingToken.balanceOf(altManager.address);
+      await finalizeAfterReview(altManager, 0, { from: employer });
       const job = await altManager.getJobCore(0);
-      assert.equal(job.completed, false);
+      assert.equal(job.completed, true);
+      assert.equal((await altManager.lockedClaims()).toString(), reservesBefore.toString());
+      assert.equal((await altManager.withdrawableUSDC()).toString(), '0');
     });
 
     it("reverts NFT purchases when transferFrom fails", async () => {
@@ -698,6 +703,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       await failingToken.approve(altManager.address, payout, { from: employer });
       await altManager.setRequiredValidatorApprovals(1, { from: owner });
+      await altManager.setVoteQuorum(1, { from: owner });
       await altManager.createJob(jobIpfs, payout, duration, jobDetails, { from: employer });
       await altManager.applyForJob(0, "agent", [], { from: agent });
       await altManager.addAdditionalValidator(validatorOne, { from: owner });
@@ -784,6 +790,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
     it("rejects invalid completion requests while paused", async () => {
       await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
       await createJob();
       await assignAgentWithProof(0);
 
@@ -809,7 +816,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
       await requestCompletion(completedJobId);
       await validateWithProof(completedJobId, validatorOne);
       await time.increase(2);
-      await manager.finalizeJob(completedJobId, { from: employer });
+      await finalizeAfterReview(manager, completedJobId, { from: employer });
 
       await manager.pause({ from: owner });
       await expectCustomError(
@@ -860,7 +867,7 @@ contract("AGIJobManager comprehensive suite", (accounts) => {
 
       const reviewPeriod = await manager.completionReviewPeriod();
       await time.increase(reviewPeriod.addn(1));
-      const finalizeReceipt = await manager.finalizeJob(jobDId, { from: employer });
+      const finalizeReceipt = await finalizeAfterReview(manager, jobDId, { from: employer });
     });
   });
 

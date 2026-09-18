@@ -28,9 +28,11 @@ const FQNS = {
   ReputationMath: 'contracts/utils/ReputationMath.sol:ReputationMath',
   ENSOwnership: 'contracts/utils/ENSOwnership.sol:ENSOwnership',
   NftEligibility: 'contracts/utils/NftEligibility.sol:NftEligibility',
+  JobSettlement: 'contracts/utils/JobSettlement.sol:JobSettlement',
+  JobValidation: 'contracts/utils/JobValidation.sol:JobValidation',
 };
 
-const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility'];
+const LIBRARIES = ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility', 'JobSettlement', 'JobValidation'];
 
 function stableObject(value) {
   if (Array.isArray(value)) return value.map(stableObject);
@@ -338,24 +340,19 @@ async function main() {
   const checkpoint = () => writeRecord(receiptPath, journal);
   const onBroadcast = (record) => { deployments[record.name] = record; checkpoint(); };
   try {
+    const linkedLibraries = {};
+    journal.libraries = linkedLibraries;
     for (const libName of LIBRARIES) {
-      const result = await deployContract(libName, [], {}, confirmations, onBroadcast);
+      const result = await deployContract(libName, [], { libraries: linkedLibraries }, confirmations, onBroadcast);
+      linkedLibraries[FQNS[libName]] = result.address;
       const code = await requireCode(ethers.provider, result.address, libName);
-      requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS[libName]), buildInfo, address: result.address, code });
+      requireArtifactMatch({ artifact: await artifacts.readArtifact(FQNS[libName]), buildInfo, address: result.address, libraries: linkedLibraries, code });
       result.runtimeCodeHash = ethers.keccak256(code);
       deployments[libName] = result;
       checkpoint();
       console.log(`[deployed] ${libName} ${result.address} tx=${result.txHash}`);
     }
 
-    const linkedLibraries = {
-      [FQNS.UriUtils]: deployments.UriUtils.address,
-      [FQNS.TransferUtils]: deployments.TransferUtils.address,
-      [FQNS.BondMath]: deployments.BondMath.address,
-      [FQNS.ReputationMath]: deployments.ReputationMath.address,
-      [FQNS.ENSOwnership]: deployments.ENSOwnership.address,
-      [FQNS.NftEligibility]: deployments.NftEligibility.address,
-    };
     journal.libraries = linkedLibraries;
     checkpoint();
 
@@ -386,7 +383,7 @@ async function main() {
 
     for (const libName of LIBRARIES) {
       await sleep(verifyDelayMs);
-      verificationResults[libName] = await verifyWithRetry({ name: libName, record: deployments[libName] }, verifyDelayMs);
+      verificationResults[libName] = await verifyWithRetry({ name: libName, record: deployments[libName], libraries: linkedLibraries }, verifyDelayMs);
       checkpoint();
     }
     await sleep(verifyDelayMs);

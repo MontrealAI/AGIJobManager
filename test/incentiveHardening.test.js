@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -60,6 +61,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.setCompletionReviewPeriod(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(100, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
 
     await fundAgents(token, manager, [agentFast, agentSlow], owner);
     await fundValidators(token, manager, [validator], owner);
@@ -87,8 +89,8 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     await time.increase(2);
     await time.increase(101);
-    await manager.finalizeJob(jobFast, { from: employer });
-    await manager.finalizeJob(jobSlow, { from: employer });
+    await finalizeAfterReview(manager, jobFast, { from: employer });
+    await finalizeAfterReview(manager, jobSlow, { from: employer });
 
     const repFast = await manager.reputation(agentFast);
     const repSlow = await manager.reputation(agentSlow);
@@ -116,8 +118,8 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     await time.increase(2);
     await time.increase(101);
-    await manager.finalizeJob(jobSmall, { from: employer });
-    await manager.finalizeJob(jobLarge, { from: employer });
+    await finalizeAfterReview(manager, jobSmall, { from: employer });
+    await finalizeAfterReview(manager, jobLarge, { from: employer });
 
     const repSmall = await manager.reputation(agentFast);
     const repLarge = await manager.reputation(agentSlow);
@@ -138,7 +140,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     await time.increase(2);
     await time.increase(101);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const rep = await manager.reputation(agentFast);
     assert(rep.lte(toBN(1)), "tiny payout should yield negligible reputation");
@@ -168,7 +170,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobSmall, "ipfs-small-complete", { from: agentFast });
     await time.increase(2);
     const beforeFinalize = await token.balanceOf(agentFast);
-    await manager.finalizeJob(jobSmall, { from: employer });
+    await manager.acceptJob(jobSmall, { from: employer });
     const afterFinalize = await token.balanceOf(agentFast);
     assert(
       afterFinalize.sub(beforeFinalize).eq(payoutSmall.muln(60).divn(100).add(bondSmall)),
@@ -195,7 +197,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-bond-complete", { from: agentFast });
     await time.increase(2);
     const agentBeforeFinalize = await token.balanceOf(agentFast);
-    await manager.finalizeJob(jobId, { from: employer });
+    await manager.acceptJob(jobId, { from: employer });
     const agentAfterFinalize = await token.balanceOf(agentFast);
     assert(
       agentAfterFinalize.sub(agentBeforeFinalize).eq(payout.muln(60).divn(100).add(agentBond)),
@@ -219,7 +221,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     );
   });
 
-  it("allows anyone to finalize when there are no validator votes", async () => {
+  it("allows anyone to escalate unreviewed work without paying the agent", async () => {
     const payout = toBN(toWei("10"));
     await token.mint(employer, payout, { from: owner });
 
@@ -230,7 +232,9 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-novotes-complete", { from: agentFast });
     await time.increase(2);
 
-    await manager.finalizeJob(jobId, { from: agentFast });
+    await finalizeAfterReview(manager, jobId, { from: agentFast });
+    assert.equal((await manager.getJobCore(jobId)).disputed, true);
+    assert.equal((await manager.lockedEscrow()).toString(), payout.toString());
   });
 
   it("throttles active jobs per agent and releases slots on completion", async () => {
@@ -255,7 +259,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.validateJob(jobIds[0], "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
     await time.increase(101);
-    await manager.finalizeJob(jobIds[0], { from: employer });
+    await finalizeAfterReview(manager, jobIds[0], { from: employer });
 
     await manager.applyForJob(blockedJobId, "agent-fast", EMPTY_PROOF, { from: agentFast });
   });
@@ -295,7 +299,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     await expectCustomError(manager.finalizeJob.call(jobId, { from: employer }), "InvalidState");
     await time.increase(101);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
   });
 
   it("does not award reputation when no validators or dispute outcomes exist", async () => {
@@ -310,7 +314,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-norep-complete", { from: agentFast });
 
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await manager.acceptJob(jobId, { from: employer });
 
     const rep = await manager.reputation(agentFast);
     assert(rep.isZero(), "no-validator completion should award zero reputation");
@@ -330,7 +334,7 @@ contract("AGIJobManager incentive hardening", (accounts) => {
 
     await time.increase(2);
     await time.increase(101);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const rep = await manager.reputation(agentFast);
     assert(rep.gt(toBN(0)), "validator participation should award reputation");

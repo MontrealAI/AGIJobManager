@@ -72,8 +72,8 @@ contract AGIJobManagerSettlementFuzz is Test {
         _vote(id, VALIDATOR_A, true);
         _vote(id, VALIDATOR_B, true);
         _vote(id, VALIDATOR_C, false);
-        (, uint256 approvedAt) = manager.jobValidatorApprovalState(id);
-        vm.warp(approvedAt + manager.challengePeriodAfterApproval() + 1);
+        (,, uint256 settlementAfter,,) = manager.getJobDeadlines(id);
+        vm.warp(settlementAfter + 1);
     }
 
     function _assertEmptyReserves() internal view {
@@ -81,6 +81,7 @@ contract AGIJobManagerSettlementFuzz is Test {
         assertEq(manager.lockedAgentBonds(), 0);
         assertEq(manager.lockedValidatorBonds(), 0);
         assertEq(manager.lockedDisputeBonds(), 0);
+        assertEq(manager.lockedClaims(), 0);
         assertEq(token.balanceOf(address(manager)), 0);
         assertEq(manager.withdrawableUSDC(), 0);
         assertEq(manager.activeJobsByAgentView(AGENT), 0);
@@ -117,8 +118,8 @@ contract AGIJobManagerSettlementFuzz is Test {
                 credential.transferFrom(AGENT, EMPLOYER, credentialId);
             }
             _vote(id, VALIDATOR_A, true);
-            (, uint256 approvedAt) = manager.jobValidatorApprovalState(id);
-            vm.warp(approvedAt + manager.challengePeriodAfterApproval() + 1);
+            (,, uint256 settlementAfter,,) = manager.getJobDeadlines(id);
+            vm.warp(settlementAfter + 1);
             manager.finalizeJob(id);
             assertEq(manager.jobAgentNftRequired(id), required);
             _assertEmptyReserves();
@@ -151,8 +152,8 @@ contract AGIJobManagerSettlementFuzz is Test {
         assertEq(manager.lockedAgentBonds(), agentBondSnapshot);
         assertEq(manager.jobValidatorBondAmount(id), validatorBondSnapshot);
         assertEq(manager.lockedValidatorBonds(), (validatorBondSnapshot - 1) * 3);
-        (, uint256 approvedAt) = manager.jobValidatorApprovalState(id);
-        vm.warp(approvedAt + manager.challengePeriodAfterApproval() + 1);
+        (,, uint256 settlementAfter,,) = manager.getJobDeadlines(id);
+        vm.warp(settlementAfter + 1);
         manager.finalizeJob(id);
 
         uint256 budget = cost * 8 / 100;
@@ -184,7 +185,8 @@ contract AGIJobManagerSettlementFuzz is Test {
             vm.prank(AGENT);
             manager.requestJobCompletion(id, "ipfs://proof");
             vm.warp(block.timestamp + manager.completionReviewPeriod() + 1);
-            manager.finalizeJob(id);
+            vm.prank(EMPLOYER);
+            manager.acceptJob(id);
             assertEq(token.balanceOf(AGENT), FUNDING + cost - cost * 30 / 100 - cost * 10 / 100);
         } else {
             uint256 agentBond = manager.jobAgentBondAmount(id);
@@ -231,49 +233,65 @@ contract AGIJobManagerSettlementFuzz is Test {
         manager.finalizeJob(id);
     }
 
-    function testFuzz_noVotesRefundUnusedValidatorBudgetToAgent(uint256 costSeed, uint8 pctSeed) external {
+    function testFuzz_noVotesEscalateAndUnansweredDisputesRefundNeutrally(uint256 costSeed, uint8 pctSeed) external {
         uint256 cost = bound(costSeed, 1, manager.maxJobPayout());
         manager.setValidationRewardPercentage(bound(pctSeed, 1, 60));
         uint256 id = _post(cost);
         _request(id);
         vm.warp(block.timestamp + manager.completionReviewPeriod() + 1);
         manager.finalizeJob(id);
-        assertEq(token.balanceOf(AGENT), FUNDING + cost - cost * 30 / 100 - cost * 10 / 100);
+        assertEq(manager.lockedEscrow(), cost);
+        assertFalse(manager.jobEscrowReleased(id));
+        vm.warp(block.timestamp + 2 * manager.disputeReviewPeriod() + 1);
+        manager.refundUnresolvedDispute(id);
+        assertEq(token.balanceOf(EMPLOYER), FUNDING);
+        assertEq(token.balanceOf(AGENT), FUNDING);
         assertEq(token.balanceOf(VALIDATOR_A), FUNDING);
-        assertEq(token.balanceOf(manager.wallet30()), cost * 30 / 100);
-        assertEq(token.balanceOf(manager.wallet10()), cost * 10 / 100);
+        assertEq(token.balanceOf(manager.wallet30()), 0);
+        assertEq(token.balanceOf(manager.wallet10()), 0);
+        assertEq(manager.nextTokenId(), 0);
         _assertEmptyReserves();
     }
 
-    function testFuzz_issuerRestrictionRollsBackAllTransfersAndAllowsRetry(uint256 costSeed, uint8 targetSeed)
+    function testFuzz_issuerRestrictionReservesClaimsWithoutBlockingOtherRecipients(uint256 costSeed, uint8 targetSeed)
         external
     {
         uint256 cost = bound(costSeed, 100, manager.maxJobPayout());
         uint256 id = _post(cost);
         _ready(id);
-        uint256 balance = token.balanceOf(address(manager));
-        uint256 agentBond = manager.lockedAgentBonds();
-        uint256 validatorBonds = manager.lockedValidatorBonds();
         address[5] memory targets = [VALIDATOR_B, manager.wallet30(), manager.wallet10(), AGENT, address(manager)];
         address target = targets[bound(targetSeed, 0, 4)];
         token.setBlocked(target, true);
-        vm.expectRevert();
         manager.finalizeJob(id);
-        assertEq(token.balanceOf(address(manager)), balance);
-        assertEq(manager.lockedEscrow(), cost);
-        assertEq(manager.lockedAgentBonds(), agentBond);
-        assertEq(manager.lockedValidatorBonds(), validatorBonds);
-        assertFalse(manager.jobEscrowReleased(id));
-        assertEq(token.balanceOf(manager.wallet30()), 0);
-        assertEq(token.balanceOf(manager.wallet10()), 0);
-        assertEq(manager.nextTokenId(), 0);
-        assertEq(manager.activeJobsByAgentView(AGENT), 1);
+        assertTrue(manager.jobEscrowReleased(id));
+        assertEq(manager.lockedEscrow(), 0);
+        assertEq(manager.lockedAgentBonds(), 0);
+        assertEq(manager.lockedValidatorBonds(), 0);
+        assertEq(manager.activeJobsByAgentView(AGENT), 0);
+        address[6] memory beneficiaries =
+            [VALIDATOR_A, VALIDATOR_B, VALIDATOR_C, manager.wallet30(), manager.wallet10(), AGENT];
+        uint256 due;
+        for (uint256 i; i < beneficiaries.length; ++i) {
+            due += manager.pendingUSDC(beneficiaries[i]);
+        }
+        assertGt(due, 0);
+        assertEq(manager.lockedClaims(), due);
+        assertEq(token.balanceOf(address(manager)), due);
+        assertEq(manager.withdrawableUSDC(), 0);
         token.setBlocked(target, false);
         token.setTransfersPaused(true);
-        vm.expectRevert();
-        manager.finalizeJob(id);
+        for (uint256 i; i < beneficiaries.length; ++i) {
+            if (manager.pendingUSDC(beneficiaries[i]) > 0) {
+                vm.expectRevert();
+                manager.claimUSDC(beneficiaries[i]);
+            }
+        }
+        assertEq(manager.lockedClaims(), due);
         token.setTransfersPaused(false);
-        manager.finalizeJob(id);
+        for (uint256 i; i < beneficiaries.length; ++i) {
+            if (manager.pendingUSDC(beneficiaries[i]) > 0) manager.claimUSDC(beneficiaries[i]);
+        }
+        assertEq(manager.lockedClaims(), 0);
         _assertEmptyReserves();
     }
 
@@ -321,9 +339,11 @@ contract AGIJobManagerSettlementFuzz is Test {
             manager.resolveDisputeWithCode(id, 2, "proof rejected");
         }
         uint256 slashed = validatorBond * manager.validatorSlashBps() / 10_000;
-        uint256 pool = cost * 8 / 100 + slashed;
-        uint256 employerNet = agentBond + pool % 2 + (employerDisputes ? 0 : disputeBond);
-        assertEq(token.balanceOf(EMPLOYER), FUNDING - cost * 8 / 100 + employerNet);
+        uint256 budget = cost * 8 / 100;
+        if (budget > agentBond) budget = agentBond;
+        uint256 pool = budget + slashed;
+        uint256 employerNet = agentBond - budget + pool % 2 + (employerDisputes ? 0 : disputeBond);
+        assertEq(token.balanceOf(EMPLOYER), FUNDING + employerNet);
         assertEq(token.balanceOf(AGENT), FUNDING - agentBond - (employerDisputes ? 0 : disputeBond));
         assertEq(token.balanceOf(VALIDATOR_A), FUNDING + pool / 2);
         assertEq(token.balanceOf(VALIDATOR_B), FUNDING + pool / 2);

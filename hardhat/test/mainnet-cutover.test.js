@@ -132,8 +132,8 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     await send(token.connect(minter).configureMinter(deployer.address, micro(10_000)));
     for (const signer of [employer, agent, validator]) await send(token.mint(signer.address, micro(2000)));
     const libraries = {};
-    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility']) {
-      const instance = await (await ethers.getContractFactory(name)).deploy();
+    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility', 'JobSettlement', 'JobValidation']) {
+      const instance = await (await ethers.getContractFactory(name, { libraries })).deploy();
       await instance.waitForDeployment();
       libraries[name] = await instance.getAddress();
     }
@@ -167,14 +167,14 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
       memberRoots.set(name, { node, expiry: data[2], signer: await localSigner(data[0]) });
       identityEvidence.roots.push({ name, node, owner: data[0], fuses: data[1], expiry: data[2], resolver: await registry.resolver(node) });
     }
-    rootName = `usdc-v094.${baseline.pages.jobsRootName}`;
+    rootName = `usdc-v095.${baseline.pages.jobsRootName}`;
     rootNode = ethers.namehash(rootName);
     assert.equal(await registry.owner(rootNode), ethers.ZeroAddress, 'The rehearsal namespace must be unused at the pinned block');
     pages = await (await ethers.getContractFactory('ENSJobPages')).deploy(baseline.pages.ens, baseline.pages.nameWrapper,
       baseline.pages.publicResolver, rootNode, rootName);
     await pages.waitForDeployment();
     pagesAddress = await pages.getAddress();
-    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v094', pagesAddress, 0, BigInt(baseline.rootData[2])));
+    await send(wrapper.setSubnodeOwner(baseline.pages.jobsRootNode, 'usdc-v095', pagesAddress, 0, BigInt(baseline.rootData[2])));
     const wrappedRootData = Array.from(await memberWrapper.getData(BigInt(rootNode)));
     rootAuthority = { path: 'NameWrapper token owner', registryOwner: await registry.owner(rootNode),
       wrappedOwner: await memberWrapper.ownerOf(BigInt(rootNode)), wrappedData: wrappedRootData,
@@ -195,6 +195,7 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     await send(manager.addAdditionalValidator(validator.address));
     await send(manager.addModerator(moderator.address));
     await send(manager.setRequiredValidatorApprovals(1));
+    await send(manager.setVoteQuorum(1));
     for (const signer of [employer, agent, validator]) await send(token.connect(signer).approve(managerAddress, micro(2000)));
     await assertLegacyPreserved();
     snapshot = await rpc('evm_snapshot');
@@ -469,32 +470,38 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     assert.deepEqual((await balances()).map((v, i) => v - before[i]), [0n, micro(52), micro(8), micro(30), micro(10), -micro(100)]);
   });
 
-  it('conserves one-micro-USDC rounding and sends the full remainder to the agent without validator votes', async function () {
+  it('conserves one-micro-USDC rounding when the buyer explicitly accepts unreviewed work', async function () {
     await activate();
     const before = await balances();
     const { id } = await ready(1n, false);
-    await advanceReview();
-    await send(manager.finalizeJob(id));
+    await send(manager.connect(employer).acceptJob(id));
     assert.deepEqual((await balances()).map((v, i) => v - before[i]), [-1n, 1n, 0n, 0n, 0n, 0n]);
     assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
   });
 
   for (const resolution of [1, 2]) {
-    it(`atomically recovers all four reserve classes from a blocked disputed ${resolution === 1 ? 'agent payout' : 'employer refund'}`, async function () {
+    it(`reserves and retries a blocked disputed ${resolution === 1 ? 'agent payout' : 'employer refund'}`, async function () {
       await activate();
       const { id } = await ready();
       await send(manager.connect(employer).disputeJob(id));
-      const beforeBalances = await balances(), beforeReserves = await reserves();
-      assert(beforeReserves.every(value => value > 0n));
+      assert((await reserves()).every(value => value > 0n));
       const blocked = resolution === 1 ? agent.address : employer.address;
+      const before = await token.balanceOf(blocked);
       await send(token.connect(blacklister).blacklist(blocked));
-      await rejects(manager.connect(moderator).resolveDisputeWithCode(id, resolution, 'rehearsal'));
-      assert.deepEqual(await balances(), beforeBalances);
-      assert.deepEqual(await reserves(), beforeReserves);
-      assert.equal((await manager.getJobCore(id)).completed, false);
-      await send(token.connect(blacklister).unBlacklist(blocked));
       await send(manager.connect(moderator).resolveDisputeWithCode(id, resolution, 'rehearsal'));
+      const claim = await manager.pendingUSDC(blocked);
+      assert(claim > 0n);
+      if (resolution === 2) assert(claim >= micro(100), 'Buyer retains the entire escrow');
+      assert.equal(await token.balanceOf(blocked), before);
       assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+      assert.equal(await manager.lockedClaims(), claim);
+      assert.equal(await token.balanceOf(managerAddress), claim);
+      assert.equal(await manager.withdrawableUSDC(), 0n);
+      await rejects(manager.claimUSDC(blocked));
+      await send(token.connect(blacklister).unBlacklist(blocked));
+      await send(manager.claimUSDC(blocked));
+      assert.equal(await token.balanceOf(blocked), before + claim);
+      assert.equal(await manager.lockedClaims(), 0n);
       assert.equal(await token.balanceOf(managerAddress), 0n);
       await rejects(manager.connect(moderator).resolveDisputeWithCode(id, resolution, 'duplicate'));
     });
@@ -529,6 +536,59 @@ describe('USDC cutover alongside the actual legacy mainnet manager and ENS', fun
     assert.equal(await manager.paused(), true);
     await send(manager.finalizeJob(id));
     assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+  });
+
+  it('keeps unreviewed work unpaid and returns all parties their own funds if arbitration times out', async function () {
+    await activate();
+    const before = await balances();
+    const { id } = await ready(micro(100), false);
+    await advanceReview();
+    await send(manager.finalizeJob(id));
+    assert.equal((await manager.getJobCore(id)).disputed, true);
+    assert.equal((await manager.getJobCore(id)).completed, false);
+    assert.equal(await manager.lockedEscrow(), micro(100));
+    const deadline = (await manager.getJobDeadlines(id)).neutralRefundAfter;
+    await rejects(manager.refundUnresolvedDispute(id));
+    await rpc('evm_setNextBlockTimestamp', [Number(deadline) + 1]);
+    await send(manager.connect(outsider).refundUnresolvedDispute(id));
+    assert.deepEqual(await balances(), before);
+    assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+    assert.equal(await manager.lockedClaims(), 0n);
+    await rejects(manager.refundUnresolvedDispute(id));
+  });
+
+  it('stops review clocks throughout a prolonged settlement pause', async function () {
+    await activate();
+    const { id } = await ready();
+    const original = await manager.getJobDeadlines(id);
+    await send(manager.connect(owner).pauseAll());
+    await rpc('evm_increaseTime', [30 * 86400]);
+    await rpc('evm_mine');
+    await send(manager.connect(owner).setSettlementPaused(false));
+    const adjusted = await manager.getJobDeadlines(id);
+    assert(adjusted.reviewEnd >= original.reviewEnd + 30n * 86400n);
+    await rejects(manager.finalizeJob(id));
+    await rpc('evm_setNextBlockTimestamp', [Number(adjusted.settlementAfter) + 1]);
+    await send(manager.finalizeJob(id));
+    assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+  });
+
+  it('rejects two operators or two subnames under the same Club controller as separate reviewers', async function () {
+    await configureMembership();
+    await member('agent.agi.eth', 'agent', agent);
+    await member('club.agi.eth', 'first-reviewer', moderator);
+    await member('club.agi.eth', 'second-reviewer', moderator);
+    await send(memberWrapper.connect(moderator).setApprovalForAll(validator.address, true));
+    await send(memberWrapper.connect(moderator).setApprovalForAll(outsider.address, true));
+    await activate();
+    const { id } = await create();
+    await send(manager.connect(agent).applyForJob(id, 'agent', []));
+    await send(manager.connect(agent).requestJobCompletion(id, 'ipfs://independent-review'));
+    await send(manager.connect(validator).validateJob(id, 'first-reviewer', []));
+    for (const label of ['first-reviewer', 'second-reviewer']) await rejects(manager.connect(outsider).validateJob(id, label, []));
+    await send(manager.connect(employer).disputeJob(id));
+    await rejects(manager.connect(moderator).resolveDisputeWithCode(id, 1, 'controller conflict'));
+    assert.equal((await manager.getJobValidation(id)).validatorApprovals, 1n);
   });
 
   it('lets the actual unsettled legacy job exit on its original contract and original asset after the new launch', async function () {

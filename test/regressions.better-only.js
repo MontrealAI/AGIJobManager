@@ -257,7 +257,7 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     await expectRevert(current.validateJob(currentJobId, "validator", EMPTY_PROOF, { from: validator }));
   });
 
-  it("reverts on failed refunds in current (original silently deletes job)", async () => {
+  it("reserves failed refunds in current (original silently loses the entitlement)", async () => {
     const payout = toBN(toWei("30"));
     const token = await FailTransferToken.new({ from: owner });
     await token.mint(employer, payout.muln(2), { from: owner });
@@ -277,13 +277,13 @@ contract("AGIJobManager better-only regressions", (accounts) => {
     const current = await deployManager(AGIJobManager, token.address, agent, validator, owner);
     const currentJobId = await createJob(current, token, employer, payout);
     const currentBalanceBeforeCancel = await token.balanceOf(employer);
-    await expectRevert(current.cancelJob(currentJobId, { from: employer }));
+    await current.cancelJob(currentJobId, { from: employer });
     const currentBalanceAfterCancel = await token.balanceOf(employer);
     assert(
       currentBalanceAfterCancel.eq(currentBalanceBeforeCancel),
-      "current should keep escrowed funds after revert"
+      "current preserves the cash backing the beneficiary claim"
     );
-    const currentJob = await current.getJobCore(currentJobId);
-    assert.equal(currentJob.employer, employer, "current should keep job after failed refund");
+    assert.equal((await current.pendingUSDC(employer)).toString(), payout.toString());
+    assert.equal((await current.withdrawableUSDC()).toString(), '0');
   });
 });

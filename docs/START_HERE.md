@@ -1,4 +1,4 @@
-# Start here — AGIJobManager v0.9.4
+# Start here — AGIJobManager v0.9.5
 
 AGIJobManager holds a job's USDC payment until the work reaches a settlement outcome. Employers post work, eligible agents take jobs, validators assess the submitted evidence, and moderators handle disputes. The owner configures the instance and can pause it.
 
@@ -16,7 +16,7 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 | Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |
 | Evaluate the release | [Mainnet readiness](MAINNET_READINESS.md) and [testing](TESTING.md) | Source, release manifest, checksums and the linked CI evidence |
 
-Download the [v0.9.4 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.4/AGIJobManager-v0.9.4-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.4/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
+Download the [v0.9.5 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/AGIJobManager-v0.9.5-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
 
 ## Understand the payment before signing
 
@@ -49,6 +49,6 @@ The employer can cancel before assignment. Expiry requires an assigned job whose
 - **Approval succeeded but the job action failed:** no job action occurred merely because approval succeeded. Check allowance and on-chain state before retrying; revoke unused allowance if abandoning the action.
 - **Transaction pending or receipt unavailable:** inspect its hash on the correct chain before sending a replacement. An RPC timeout is not proof that the transaction failed.
 - **Paused manager or changed terms:** read the current pause flags, limits, bond and job state. Ask the operator to resolve the cause; do not change networks or approve another token to bypass it.
-- **USDC paused or a recipient blocked:** settlement reverts atomically. Existing payments cannot be rerouted through a wallet rotation. Resolve the issuer restriction through the appropriate operator/issuer process before retrying.
+- **USDC paused or a recipient blocked:** failed outgoing payments stay reserved for the original beneficiary. Other eligible recipients can still be paid. Use **Retry my payment** after the issuer restriction resolves; wallet rotation cannot redirect existing entitlements.
 
 Only a successful receipt and verified resulting state establish the outcome. Source review, an independent operational security review and instance-specific [readiness checks](MAINNET_READINESS.md) remain necessary for a high-stakes launch.

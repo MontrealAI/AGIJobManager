@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -174,7 +175,7 @@ contract("Case study replay: legacy AGI Job 12", (accounts) => {
     await manager.validateJob(jobId, subdomains.validator2, EMPTY_PROOF, { from: validator2 });
     await manager.validateJob(jobId, subdomains.validator3, EMPTY_PROOF, { from: validator3 });
     await time.increase(2);
-    const receipt = await manager.finalizeJob(jobId, { from: employer });
+    const receipt = await finalizeAfterReview(manager, jobId, { from: employer });
 
     expectEvent(receipt, "JobCompleted", {
       jobId: new BN(jobId),

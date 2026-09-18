@@ -1,4 +1,4 @@
-# Trust model and security overview — v0.9.4
+# Trust model and security overview — v0.9.5
 
 AGIJobManager is an owner-operated USDC escrow system. The contract enforces accounting and lifecycle guards; participants still trust owner/moderator decisions, validator judgment, issuer behavior and the configured identity systems. This release is internally qualified, not independently audited.
 
@@ -32,8 +32,8 @@ Registry/wrapper/root updates require empty escrow and bond reserves. The ENSJob
 
 ## Residual operational risks
 
-- USDC issuer pause or blocklisting can stop settlement or refunds; an atomic revert preserves state, but no completion time can be promised until the restriction is resolved.
-- A no-vote job can finalize for the agent after review expires. It earns no reputation through that fallback and is not independently validated work.
+- USDC issuer pause or blocklisting can delay receipt of funds. Failed outgoing transfers become reserved claims; other eligible recipients can still be paid. Incoming transfers remain strict and atomic.
+- No-vote finalization opens a dispute without paying the agent. Explicit buyer acceptance can authorize immediate payment and earns no reputation.
 - Moderators resolve active disputes; the owner can resolve stale disputes after the configured period. These are trusted decisions.
 - Incorrect validator bonds can be slashed. Correct-side validators can receive rewards and reputation according to the outcome; reputation is not an independent work-quality certificate.
 - Metadata may be unavailable, misleading or unsafe to open. A completion NFT is a receipt, not a guarantee of content or value.

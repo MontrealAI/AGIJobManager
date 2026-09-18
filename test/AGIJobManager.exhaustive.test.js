@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const { expectRevert, time } = require("../scripts/test-helpers.cjs");
@@ -108,6 +109,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
 
     await token.mint(employer, parseUSDCAmount("1000"), { from: owner });
@@ -188,7 +190,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
 
       await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
       await time.increase(2);
-      await manager.finalizeJob(jobId, { from: employer });
+      await finalizeAfterReview(manager, jobId, { from: employer });
 
       const agentBalanceAfter = await token.balanceOf(agent);
       const validatorBalanceAfter = await token.balanceOf(validator);
@@ -235,7 +237,7 @@ contract("AGIJobManager exhaustive suite", (accounts) => {
       await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
       await manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validator), { from: validator });
       await time.increase(2);
-      await manager.finalizeJob(jobId, { from: employer });
+      await finalizeAfterReview(manager, jobId, { from: employer });
 
       await expectRevert.unspecified(
         manager.validateJob(jobId, "validator", validatorMerkle.proofFor(validatorTwo), { from: validatorTwo })

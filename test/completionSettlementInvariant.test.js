@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -83,6 +84,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     await manager.addModerator(moderator, { from: owner });
 
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await manager.setDisputeReviewPeriod(100, { from: owner });
 
@@ -155,7 +157,7 @@ contract("AGIJobManager completion settlement invariants", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await advanceTime(2);
-    const tx = await manager.finalizeJob(jobId, { from: employer });
+    const tx = await finalizeAfterReview(manager, jobId, { from: employer });
 
     const issued = tx.logs.find((log) => log.event === "NFTIssued");
     assert.ok(issued, "NFTIssued event should be emitted");

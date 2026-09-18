@@ -36,8 +36,7 @@ Verify that the URIs resolve and the evidence is complete.
 - Voting must happen **before `completionReviewPeriod` ends**.
 - **Dispute thresholds** freeze validator voting; once disputed, validators no longer
   affect settlement.
-- If **no votes** are cast before the review window ends, the job can finalize via
-  the **no‑vote liveness** rule (agent wins without reputation).
+- If no votes are cast, finalization after full review and any longer challenge opens a dispute without paying the agent.
 
 ## 6) Bonds, rewards, and slashing (conceptual)
 - **Validator bond** is posted per vote (`validatorBondBps`, with min/max caps).

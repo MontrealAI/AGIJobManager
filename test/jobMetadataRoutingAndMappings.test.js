@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -51,6 +52,7 @@ contract("AGIJobManager metadata routing", (accounts) => {
     await manager.addAdditionalAgent(agent, { from: owner });
     await manager.addAdditionalValidator(validator, { from: owner });
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setRequiredValidatorDisapprovals(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
     await fundValidators(token, manager, [validator], owner);
@@ -68,7 +70,7 @@ contract("AGIJobManager metadata routing", (accounts) => {
     await manager.requestJobCompletion(jobId, completionUri, { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    const finalizeTx = await manager.finalizeJob(jobId, { from: employer });
+    const finalizeTx = await finalizeAfterReview(manager, jobId, { from: employer });
     const tokenId = finalizeTx.logs.find((l) => l.event === "NFTIssued").args.tokenId.toNumber();
     return { jobId, tokenId };
   }

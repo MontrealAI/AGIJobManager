@@ -76,8 +76,8 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
       await send(token.mint(signer.address, micro(amount)));
     }
     const libraries = {};
-    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility']) {
-      const library = await (await ethers.getContractFactory(name)).deploy();
+    for (const name of ['UriUtils', 'TransferUtils', 'BondMath', 'ReputationMath', 'ENSOwnership', 'NftEligibility', 'JobSettlement', 'JobValidation']) {
+      const library = await (await ethers.getContractFactory(name, { libraries })).deploy();
       await library.waitForDeployment();
       libraries[name] = await library.getAddress();
     }
@@ -101,6 +101,7 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     await send(manager.addAdditionalAgent(agent.address));
     await send(manager.addAdditionalValidator(validator.address));
     await send(manager.setRequiredValidatorApprovals(1));
+    await send(manager.setVoteQuorum(1));
     await send(manager.unpause());
     baseline = await balances();
     console.log(`    Mainnet-sized deployment: ${runtimeSize} runtime bytes; intake paused until owner activation`);
@@ -117,7 +118,8 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     await send(manager.connect(agent).applyForJob(0, '', []));
     await send(manager.connect(agent).requestJobCompletion(0, 'ipfs://completed'));
     await send(manager.connect(validator).validateJob(0, '', []));
-    await rpc('evm_increaseTime', [Number(await manager.challengePeriodAfterApproval()) + 1]);
+    const { settlementAfter } = await manager.getJobDeadlines(0);
+    await rpc('evm_setNextBlockTimestamp', [Number(settlementAfter) + 1]);
     await rpc('evm_mine');
   }
 
@@ -125,6 +127,7 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
     assert.deepEqual((await balances()).map((balance, i) => balance - baseline[i]), [micro(8), micro(30), micro(10), micro(52)]);
     assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
     assert.equal(await token.balanceOf(managerAddress), 0n);
+    assert.equal(await manager.lockedClaims(), 0n);
     assert.equal(await manager.withdrawableUSDC(), 0n);
     assert.equal((await manager.getJobCore(0)).completed, true);
   }
@@ -159,34 +162,41 @@ describe('Pinned Ethereum mainnet fork: native Circle USDC', function () {
   });
 
   for (const blocked of ['validator', 'wallet30', 'wallet10', 'agent', 'manager']) {
-    it(`atomically rolls back every payment and reserve when native USDC blacklists ${blocked}`, async function () {
+    it(`reserves native USDC for blacklisted ${blocked} without holding up eligible recipients`, async function () {
       await ready();
       const address = { validator: validator.address, wallet30: wallet30.address, wallet10: wallet10.address, agent: agent.address, manager: managerAddress }[blocked];
-      const beforeBalances = await balances(), beforeReserves = await reserves();
-      const escrow = await token.balanceOf(managerAddress);
       await send(token.connect(blacklister).blacklist(address));
-      assert.equal(await token.isBlacklisted(address), true);
-      await rejectTransaction(manager.finalizeJob(0));
-      assert.deepEqual(await balances(), beforeBalances);
-      assert.deepEqual(await reserves(), beforeReserves);
-      assert.equal(await token.balanceOf(managerAddress), escrow);
-      assert.equal((await manager.getJobCore(0)).completed, false);
-      await send(token.connect(blacklister).unBlacklist(address));
       await send(manager.finalizeJob(0));
+      assert.equal((await manager.getJobCore(0)).completed, true);
+      assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+      const claims = await Promise.all(recipients().map(recipient => manager.pendingUSDC(recipient)));
+      for (let i = 0; i < claims.length; i++) {
+        const restricted = blocked === 'manager' || recipients()[i] === address;
+        assert.equal(claims[i] > 0n, restricted);
+        if (restricted) await rejectTransaction(manager.claimUSDC(recipients()[i]));
+      }
+      const reserved = claims.reduce((sum, value) => sum + value, 0n);
+      assert.equal(await manager.lockedClaims(), reserved);
+      assert.equal(await token.balanceOf(managerAddress), reserved);
+      assert.equal(await manager.withdrawableUSDC(), 0n);
+      await send(token.connect(blacklister).unBlacklist(address));
+      for (let i = 0; i < claims.length; i++) if (claims[i]) await send(manager.claimUSDC(recipients()[i]));
       await assertSettled();
     });
   }
 
-  it('preserves all escrow and bonds during an issuer-wide pause at settlement', async function () {
+  it('reserves every entitlement during an issuer pause and pays only after USDC resumes', async function () {
     await ready();
-    const beforeBalances = await balances(), beforeReserves = await reserves();
+    const beforeBalances = await balances(), escrow = await token.balanceOf(managerAddress);
     await send(token.connect(pauser).pause());
-    await rejectTransaction(manager.finalizeJob(0));
-    assert.deepEqual(await balances(), beforeBalances);
-    assert.deepEqual(await reserves(), beforeReserves);
-    assert.equal((await manager.getJobCore(0)).completed, false);
-    await send(token.connect(pauser).unpause());
     await send(manager.finalizeJob(0));
+    assert.deepEqual(await balances(), beforeBalances);
+    assert.deepEqual(await reserves(), [0n, 0n, 0n, 0n]);
+    assert.equal(await manager.lockedClaims(), escrow);
+    assert.equal(await manager.withdrawableUSDC(), 0n);
+    for (const recipient of recipients()) await rejectTransaction(manager.claimUSDC(recipient));
+    await send(token.connect(pauser).unpause());
+    for (const recipient of recipients()) await send(manager.claimUSDC(recipient));
     await assertSettled();
   });
 });

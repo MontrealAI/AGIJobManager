@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -64,6 +65,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, agentRoot, "agent", agent);
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator", validator);
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await fundValidators(token, manager, [validator], owner);
@@ -100,7 +102,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
@@ -130,7 +132,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));
@@ -171,7 +173,7 @@ contract("AGIJobManager agent payout snapshots", (accounts) => {
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
     await manager.validateJob(jobId, "validator", EMPTY_PROOF, { from: validator });
     await time.increase(2);
-    await manager.finalizeJob(jobId, { from: employer });
+    await finalizeAfterReview(manager, jobId, { from: employer });
 
     const agentBalanceAfter = await token.balanceOf(agent);
     const agentBond = await computeAgentBond(manager, payout, toBN(1000));

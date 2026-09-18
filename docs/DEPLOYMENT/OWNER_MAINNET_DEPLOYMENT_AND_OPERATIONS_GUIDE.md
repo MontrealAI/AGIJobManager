@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v0.9.4
+# Owner Mainnet Deployment & Operations Guide — v0.9.5
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -32,7 +32,7 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v0.9.4 source and checksums. From the repository root:
+Use Node 22.23.2 and the immutable v0.9.5 source and checksums. From the repository root:
 
 ```bash
 npm ci
@@ -62,11 +62,11 @@ Complete a separately authorized Sepolia rehearsal and the [mainnet qualificatio
 
 ## 4) Deploy, verify and preserve evidence
 
-The manager workflow deploys six linked libraries and the manager, verifies runtime bytes, confirms paused intake and completes explorer source verification before proposing the intended ownership handover when needed. Failed verification stops before a proposal. It does not configure every operational role or open intake.
+The manager workflow deploys eight linked libraries and the manager, verifies runtime bytes, confirms paused intake and completes explorer source verification before proposing the intended ownership handover when needed. Failed verification stops before a proposal. It does not configure every operational role or open intake.
 
 Preserve the journal under `hardhat/deployments/<network>/`, the exact Solidity input, constructor values, linked-library addresses, successful transaction receipts and verification results. **A failed command may already have broadcast transactions.** Reconcile the saved journal before retrying; do not blindly deploy again.
 
-Verify all six contracts against the exact release build. Do not turn a failed verification result into a claimed success. If all six deployments were broadcast but verification or a later step failed, the supported recovery command from `hardhat/` is:
+Verify all six contracts against the exact release build. Do not turn a failed verification result into a claimed success. If all nine deployments were broadcast but verification or a later step failed, the supported recovery command from `hardhat/` is:
 
 ```bash
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet

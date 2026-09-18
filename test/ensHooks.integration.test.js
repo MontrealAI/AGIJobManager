@@ -27,7 +27,7 @@ contract('ensHooks.integration', (accounts) => {
     await manager.applyForJob(0, 'agent', proof, { from: agent });
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
     await time.increase(2);
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
   }
 
   it('invokes ENS hooks best-effort and lockJobENS fuse burn path', async () => {
@@ -110,7 +110,7 @@ contract('ensHooks.integration', (accounts) => {
 
     await manager.requestJobCompletion(0, 'QmDone', { from: agent });
     await time.increase(2);
-    await manager.finalizeJob(0, { from: employer });
+    await manager.acceptJob(0, { from: employer });
 
     const employerAuthAfterRevoke = await resolver.isAuthorised(node, employer);
     const agentAuthAfterRevoke = await resolver.isAuthorised(node, agent);

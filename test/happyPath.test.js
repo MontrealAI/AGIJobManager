@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -63,6 +64,7 @@ contract("AGIJobManager happy path", (accounts) => {
     await setNameWrapperOwnership(nameWrapper, clubRoot, "validator-b", validatorB);
 
     await manager.setRequiredValidatorApprovals(2, { from: owner });
+    await manager.setVoteQuorum(2, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
     await fundValidators(token, manager, [validatorA, validatorB], owner);
@@ -86,7 +88,7 @@ contract("AGIJobManager happy path", (accounts) => {
     await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
     await time.increase(2);
     const agentBalanceBefore = await token.balanceOf(agent);
-    const finalTx = await manager.finalizeJob(jobId, { from: employer });
+    const finalTx = await finalizeAfterReview(manager, jobId, { from: employer });
 
     const tokenId = 0;
     const tokenUri = await manager.tokenURI(tokenId);

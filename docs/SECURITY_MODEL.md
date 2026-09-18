@@ -10,7 +10,7 @@
 | Metadata abuse (`jobSpecURI`) | Off-chain confusion/phishing | URI validation helpers and policy | Medium | Enforce URI hygiene and content review |
 | Gas griefing / liveness stress | Delayed settlement | Time windows + stale dispute resolution | Medium | Alert on aging jobs/disputes |
 | Owner parameter misconfiguration | Unexpected eligibility, incentives or delayed settlement | On-chain bounds, snapshots, zero-reserve guards and instance preflight | Depends on operator configuration | Simulate and read back each change; review which posted jobs it can affect |
-| USDC issuer restriction | Settlement or refunds temporarily unavailable | Atomic rollback preserves accounting; retry only after the cause is resolved | Issuer pause/blocklist authority is external | Monitor token state and all recipients; do not promise an on-chain bypass |
+| USDC issuer restriction | Settlement or refunds temporarily unavailable | Failed outgoing transfers become protected claims; retry only to the original beneficiary after restrictions resolve | Issuer pause/blocklist authority is external | Monitor token state and all recipients; do not promise an on-chain bypass |
 | Wallet/RPC or review-context change | A different account, chain or operation could be submitted | Pinned review context, live checks, simulation and receipt-status validation | State may still change before transaction inclusion | Re-review changed terms; reconcile transaction hash and final state |
 
 ## Controls
@@ -23,7 +23,7 @@
 ## Explicit limitations
 
 - Not a trustless court; moderators and owner are privileged.
-- Validator authorization applies to wallet addresses. An employer or agent may vote if also validator-authorized; distinct wallets or ENS names do not prove independent people. Eligibility governance must account for conflicts of interest and collusion.
+- Validator authorization applies to wallet addresses. The buyer and assigned agent cannot vote on their own job. Duplicate ENS credentials/controllers cannot provide multiple votes; distinct wallets still do not prove independent people. Eligibility governance must account for conflicts of interest and collusion.
 - ENS hooks/tokenURI are convenience integrations.
 - Off-chain metadata availability and quality are out-of-contract guarantees.
 - No-vote finalization after the review window favors the agent without independently validating the work. Validators must actively participate; time elapsing does not execute transactions.

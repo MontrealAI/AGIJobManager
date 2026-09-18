@@ -121,7 +121,7 @@ async function main() {
   const [owner, pendingOwner, paused, settlementPaused, wallet30, wallet10, balance, ...reserves] = await Promise.all([
     manager.owner(calls), manager.pendingOwner(calls), manager.paused(calls), manager.settlementPaused(calls),
     manager.wallet30(calls), manager.wallet10(calls), token.balanceOf(managerAddress, calls),
-    manager.lockedEscrow(calls), manager.lockedAgentBonds(calls), manager.lockedValidatorBonds(calls), manager.lockedDisputeBonds(calls),
+    manager.lockedEscrow(calls), manager.lockedAgentBonds(calls), manager.lockedValidatorBonds(calls), manager.lockedDisputeBonds(calls), manager.lockedClaims(calls),
   ]);
   const accounting = requireReadinessState({ owner, pendingOwner, paused, settlementPaused, wallets: [wallet30, wallet10],
     expectedWallets: receipt.constructorArgs.settlementWallets, finalOwner: receipt.finalOwner, balance, reserves });

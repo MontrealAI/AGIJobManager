@@ -1,6 +1,6 @@
-# Employer Guide — v0.9.4
+# Employer Guide — v0.9.5
 
-An employer posts a job and escrows its total cost in native USDC. The first eligible agent whose application succeeds takes the job; there is no later selection or acceptance step for the employer.
+An employer posts a job and escrows its total cost in native USDC. The first eligible agent whose application succeeds takes the job; there is no later agent-selection step. You can explicitly accept the submitted work when it is satisfactory.
 
 ## Before posting
 
@@ -21,10 +21,12 @@ The completion NFT is a standard ERC-721 receipt. External transfers/marketplace
 ## Cancellation, expiry, and disputes
 
 - **Before assignment:** call `cancelJob(jobId)` to recover the escrow.
-- **Missed assignment deadline:** if no completion request or dispute exists, anyone can call `expireJob` strictly after `assignedAt + duration`. The employer receives escrow and the forfeited agent bond.
-- **Disagreement after submission:** while the job remains unsettled and within its completion review window, approve the quoted dispute bond and call `disputeJob`. The bond is 0.5% of job cost, clamped to 1–200 USDC and never above the job cost.
-- **Disputed result:** a moderator resolves with typed code `1` (agent wins) or `2` (employer wins). An employer-win refund can be reduced by validator rewards and adjusted by bond outcomes. It does not pay the 30%/10% wallet shares or mint a completion receipt.
+- **Missed assignment deadline:** if no completion request or dispute exists, anyone can call `expireJob` strictly after `getJobDeadlines(jobId).assignmentDeadline`. The employer receives escrow and the forfeited agent bond.
+- **Disagreement after submission:** while the job remains unsettled and through its displayed settlement/dispute cutoff, approve the quoted dispute bond and call `disputeJob`. The bond is 0.5% of job cost, clamped to 1–200 USDC and never above the job cost.
+- **Disputed result:** a moderator resolves with typed code `1` (agent wins) or `2` (employer wins). An employer-win refund preserves the full job escrow; reviewer rewards use forfeited collateral. It does not pay the 30%/10% wallet shares or mint a completion receipt.
 
-Act promptly when work is submitted. Early finalization may be possible after the approval challenge window, before the full review window ends. Read the deployment's current timers in the console.
+Inspect submitted work promptly. **Accept work and pay** explicitly authorizes immediate payment and ends review. Otherwise ordinary finalization must wait for the full review and any longer approval challenge. No votes open a dispute rather than paying the agent. If arbitration remains unanswered, anyone can request neutral return of escrow and each participant's own bonds after the displayed deadline. Settlement pauses extend the clocks. Read the [buyer protection guide](../BUYER_PROTECTION.md).
+
+A failed outgoing refund becomes a reserved USDC payment. Use **Retry my payment** when USDC transfers are permitted; the original recipient cannot be changed.
 
 Common errors: `TransferFailed` for balance/allowance or issuer transfer restrictions; `InvalidState` for assignment/deadline/state conflicts; `JobNotFound` for an unknown or cancelled job ID. See [common reverts](../user-guide/common-reverts.md).

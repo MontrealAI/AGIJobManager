@@ -1,3 +1,4 @@
+const { finalizeAfterReview } = require('./helpers/settlement');
 const { deployActive } = require('./helpers/deploy');
 const { parseUSDC: parseUSDCAmount } = require("../scripts/lib/usdc");
 const assert = require("assert");
@@ -53,6 +54,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.addAdditionalValidator(validatorB, { from: owner });
     await manager.addModerator(moderator, { from: owner });
     await manager.setRequiredValidatorApprovals(2, { from: owner });
+    await manager.setVoteQuorum(2, { from: owner });
     await manager.setRequiredValidatorDisapprovals(2, { from: owner });
     await manager.setChallengePeriodAfterApproval(1, { from: owner });
 
@@ -103,7 +105,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     await manager.validateJob(jobId, "validator-a", EMPTY_PROOF, { from: validatorA });
     await manager.validateJob(jobId, "validator-b", EMPTY_PROOF, { from: validatorB });
     await time.increase(2);
-    const finalTx = await manager.finalizeJob(jobId, { from: employer });
+    const finalTx = await finalizeAfterReview(manager, jobId, { from: employer });
 
     const job = await manager.getJobCore(jobId);
     const jobValidation = await manager.getJobValidation(jobId);
@@ -173,6 +175,7 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
   it("rejects role violations, blacklists, and invalid state transitions", async () => {
     const payout = toBN(toWei("12"));
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
 
     const jobId = await createJob(payout);
@@ -275,11 +278,12 @@ contract("AGIJobManager economic state-machine scenarios", (accounts) => {
     const employerAfter = await token.balanceOf(employer);
     const validatorRewardTotal = payoutTwo.mul(await manager.validationRewardPercentage()).divn(100);
     const agentBondTwo = await computeAgentBond(manager, payoutTwo, toBN(3600));
-    const validatorReward = validatorRewardTotal.add(agentBondTwo).divn(2);
+    const fundedReward = validatorRewardTotal.lt(agentBondTwo) ? validatorRewardTotal : agentBondTwo;
+    const validatorReward = fundedReward.divn(2);
     assert.equal(
       employerAfter.toString(),
-      employerBefore.add(payoutTwo.sub(validatorRewardTotal)).toString(),
-      "employer should be refunded minus validator rewards; agent bond routes to disapprovers"
+      employerBefore.add(payoutTwo).add(agentBondTwo).sub(validatorReward.muln(2)).toString(),
+      "buyer escrow remains whole; forfeited agent collateral funds reviewers"
     );
     const validatorAAfter = await token.balanceOf(validatorA);
     const validatorBAfter = await token.balanceOf(validatorB);

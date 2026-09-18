@@ -83,7 +83,7 @@ stateDiagram-v2
   Open --> Assigned: applyForJob
   Assigned --> CompletionRequested: requestJobCompletion
 
-  CompletionRequested --> Finalized: finalizeJob / approvals / no-vote timeout
+  CompletionRequested --> Finalized: finalizeJob / quorum and approval majority
   CompletionRequested --> Disputed: disputeJob or disapproval threshold
   Disputed --> Finalized: resolveDisputeWithCode / resolveStaleDispute
 

@@ -66,6 +66,31 @@ library ENSOwnership {
         return MerkleProof.verifyCalldata(proof, merkleRoot, keccak256(abi.encodePacked(claimant)));
     }
 
+    /// @notice Stable ENS credential and its controller for per-job voting uniqueness.
+    function validatorCredential(
+        address ensAddress, address wrapper, address claimant, string memory label,
+        bytes32 primaryRoot, bytes32 secondaryRoot
+    ) external view returns (bytes32 node, address controller) {
+        EnsLabelUtils.requireValidLabel(label);
+        (node, controller) = _credential(ensAddress, wrapper, claimant, label, primaryRoot);
+        if (node == bytes32(0)) return _credential(ensAddress, wrapper, claimant, label, secondaryRoot);
+    }
+
+    function _credential(
+        address ensAddress, address wrapper, address claimant, string memory label, bytes32 root
+    ) private view returns (bytes32 node, address controller) {
+        if (root == bytes32(0)) return (bytes32(0), address(0));
+        node = keccak256(abi.encodePacked(root, keccak256(bytes(label))));
+        if (!_verifyNameWrapperOwnership(wrapper, claimant, node) && !_verifyResolverOwnership(ensAddress, claimant, node)) {
+            return (bytes32(0), address(0));
+        }
+        (, controller) = _staticcallAddress(wrapper, abi.encodeWithSelector(OWNER_OF_SELECTOR, uint256(node)));
+        if (controller == address(0)) {
+            (, controller) = _staticcallAddress(ensAddress, abi.encodeWithSignature("owner(bytes32)", node));
+        }
+        if (controller == address(0)) controller = claimant;
+    }
+
     function _verifyNameWrapperOwnership(
         address nameWrapperAddress,
         address claimant,

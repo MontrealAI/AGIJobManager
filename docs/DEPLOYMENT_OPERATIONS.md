@@ -1,6 +1,6 @@
-# Deployment and Release Operations — v0.9.4
+# Deployment and Release Operations — v0.9.5
 
-Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing v0.9.4 does not deploy or upgrade any live contract.
+Use [Hardhat](../hardhat/README.md) for Ethereum mainnet and Sepolia deployments. Truffle migrations are retired. Supported read-only operational commands use ethers; the legacy owner-configuration helper permits writes only on a disposable local chain. Publishing v0.9.5 does not deploy or upgrade any live contract.
 
 The manager is non-upgradeable and starts intake paused in its constructor. It uses native Circle USDC, fixed 30% and 10% successful-job wallet shares, and a posting-time validator reward percentage. Supply and independently review both recipient wallets and the intended final owner before planning a public deployment.
 
@@ -12,7 +12,7 @@ The manager is non-upgradeable and starts intake paused in its constructor. It u
 | Public deployment build | [Hardhat config](../hardhat/hardhat.config.js), [deployment script](../hardhat/scripts/deploy.js) | From `hardhat/`: `npm run compile` | Qualified artifacts/build input and bytecode-size checks |
 | Read-only plan | Trusted `hardhat/deploy.config.cjs`, [environment example](../hardhat/.env.example) | From `hardhat/`: `DRY_RUN=1 npm run deploy:mainnet` | Reviewed chain, constructor, owner and linked-build plan |
 | Authorized deployment | [Hardhat guide](../hardhat/README.md) and reviewed plan | `npm run deploy:sepolia` or separately confirmed `npm run deploy:mainnet` | Per-transaction journal, runtime hashes and exact Solidity input |
-| Source verification | Saved deployment addresses and build input | Deployment workflow's explorer verification; finish any failed target explicitly | Verified source for manager and all six libraries |
+| Source verification | Saved deployment addresses and build input | Deployment workflow's explorer verification; finish any failed target explicitly | Verified source for manager and all eight libraries |
 | Verification recovery | [Recovery script](../hardhat/scripts/reverify-deployment.js) and saved manager deployment journal | Keyless `reverify-deployment.js` command described below | Separate reverified receipt; original journal preserved; zero chain transactions |
 | Owner configuration | [Owner controls](OWNER_CONTROLS.md), accepted final owner and approved parameters | Owner console or verified explorer | Successful transaction receipts, events and current getter values |
 | Pre-activation check | [Readiness checker](../hardhat/scripts/check-readiness.js), original deployment receipt and reviewed expectations | From `hardhat/`: `npm run check:readiness` with `DEPLOYMENT_RECEIPT` and `READINESS_NFT_CONFIG` | Read-only report with block number/hash and checked state |
@@ -22,7 +22,7 @@ The manager is non-upgradeable and starts intake paused in its constructor. It u
 
 ### 1. Freeze and qualify the release
 
-Check out the immutable v0.9.4 tag and verify downloaded checksums. Use Node 22.23.2 and the committed lockfiles. From the repository root:
+Check out the immutable v0.9.5 tag and verify downloaded checksums. Use Node 22.23.2 and the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
@@ -61,11 +61,11 @@ The documented boolean form is `DRY_RUN=1`; malformed boolean flag values fail r
 
 Use a reviewed Sepolia profile and the intended operational signer arrangement. Rehearse ownership acceptance, agent authorization **and NFT eligibility**, posting, bonds, voting, successful settlement, cancellation, refunds, disputes and both pause controls. The [local walkthrough](QUINTESSENTIAL_USE_CASE.md) also provides a disposable mock-token fixture, but its shortened timers and local migration behavior are not public deployment defaults.
 
-For a separately authorized mainnet deployment, follow the Hardhat guide's explicit confirmation phrase and signing instructions. The script deploys six libraries plus the manager, checks their runtime code and preserves a journal. It does not open intake. Do not rerun a failed command until the journal's transaction hashes and chain receipts have been reconciled; failure may occur after one or more broadcasts.
+For a separately authorized mainnet deployment, follow the Hardhat guide's explicit confirmation phrase and signing instructions. The script deploys eight libraries plus the manager, checks their runtime code and preserves a journal. It does not open intake. Do not rerun a failed command until the journal's transaction hashes and chain receipts have been reconciled; failure may occur after one or more broadcasts.
 
 ### 4. Verify, accept ownership and configure
 
-Verify the manager and all six libraries on the explorer against the exact saved build. The deployment script stops before proposing ownership if verification fails. When all six deployments were broadcast but verification or a later step failed, run this recovery command from `hardhat/` without a private key:
+Verify the manager and all eight libraries on the explorer against the exact saved build. The deployment script stops before proposing ownership if verification fails. When all nine deployments were broadcast but verification or a later step failed, run this recovery command from `hardhat/` without a private key:
 
 ```bash
 DEPLOYMENT_RECEIPT=deployments/mainnet/<saved-receipt>.json npm run reverify:mainnet
@@ -77,7 +77,7 @@ A pending ownership proposal leaves authority with the deployer. If the recovery
 
 While intake remains paused, configure moderators, enabled NFT types, participant authorization, limits, bonds and review policy through the accepted owner. Check every setting against the [owner controls](OWNER_CONTROLS.md). Record successful transaction receipts and actual getter values; some role setters have no role-specific event.
 
-Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v0.9.4 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
+Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v0.9.5 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
 
 Prepare the [reviewed NFT policy JSON](NFT_POLICY.md) for `READINESS_NFT_CONFIG`: an explicit boolean and every collection/score, including disabled entries. The required default with an empty registry fails readiness.
 

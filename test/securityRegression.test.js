@@ -94,6 +94,7 @@ contract("AGIJobManager security regressions", (accounts) => {
   it("blocks double completion and employer-win follow-up", async () => {
     const payout = toBN(toWei("10"));
     await manager.setRequiredValidatorApprovals(1, { from: owner });
+    await manager.setVoteQuorum(1, { from: owner });
     await token.mint(employer, payout, { from: owner });
     await token.approve(manager.address, payout, { from: employer });
     const createTx = await manager.createJob("ipfs", payout, 1000, "details", { from: employer });

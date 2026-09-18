@@ -30,6 +30,7 @@ export function deriveStatus(core: JobCore, val: JobValidation): { status: Statu
   return { status: 'Assigned', terminal: false };
 }
 
+/** Demo estimates only. Live views must use getJobDeadlines, which accounts for pauses and late approvals. */
 export function computeDeadlines(core: JobCore, val: JobValidation, p: Params) {
   const expiryTime = core.assignedAt > 0n && core.duration > 0n ? core.assignedAt + core.duration : 0n;
   const completionReviewEnd = val.completionRequestedAt > 0n ? val.completionRequestedAt + p.completionReviewPeriod : 0n;
@@ -39,8 +40,10 @@ export function computeDeadlines(core: JobCore, val: JobValidation, p: Params) {
 
 export function getActionGate(status: Status, role: 'Employer' | 'Agent' | 'Validator' | 'Moderator' | 'Owner') {
   const matrix: Record<string, Status[]> = {
-    cancelJob: role === 'Employer' ? ['Open', 'Assigned'] : [],
-    finalizeJob: role === 'Employer' ? ['Completion Requested'] : [],
+    cancelJob: role === 'Employer' ? ['Open'] : [],
+    acceptJob: role === 'Employer' ? ['Completion Requested'] : [],
+    refundUnresolvedDispute: ['Disputed'],
+    finalizeJob: ['Completion Requested'],
     disputeJob: role === 'Employer' || role === 'Agent' ? ['Completion Requested'] : [],
     applyForJob: role === 'Agent' ? ['Open'] : [],
     requestJobCompletion: role === 'Agent' ? ['Assigned'] : [],

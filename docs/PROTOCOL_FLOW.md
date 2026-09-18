@@ -1,88 +1,29 @@
-# Protocol Flow and Economic Accounting
+# Protocol flow and accounting — v0.9.5
 
-See [the v0.9.4 payout specification](USDC_PAYOUT_SPLIT.md) for exact arithmetic, wallet configuration and rounding.
+Read [contract behavior](contract-behavior.md) for transitions and [USDC distribution](USDC_PAYOUT_SPLIT.md) for exact shares.
 
-## Escrow accounting model
+## Reserves
 
-`withdrawableUSDC()` defines treasury-only withdrawability:
+`withdrawableUSDC = USDC balance - lockedEscrow - lockedAgentBonds - lockedValidatorBonds - lockedDisputeBonds - lockedClaims`.
 
-- `lockedEscrow`: sum of unsettled job payouts.
-- `lockedAgentBonds`: active agent performance bonds.
-- `lockedValidatorBonds`: active validator vote bonds.
-- `lockedDisputeBonds`: active dispute bonds.
-- `withdrawableUSDC = usdcToken.balanceOf(this) - (all locked*)` (reverts if insolvent).
+The five reserves protect live job escrow, agent performance bonds, validator vote bonds, dispute bonds, and deferred recipient payments. Owner withdrawals require paused intake and enabled settlement and may use only surplus. Rotating wallets requires zero live escrow/bond obligations; existing claims keep their original beneficiary even after rotation.
 
-Owner withdrawals (`withdrawUSDC`) are additionally restricted to **paused** mode and blocked if `settlementPaused` is true.
+| Terminal outcome | Job escrow | Agent bond | Validator bonds | Dispute bond | Completion NFT |
+| --- | --- | --- | --- | --- | --- |
+| Agent win | Recorded validator budget, 30% wallet, 10% wallet, remainder to agent | Returned | Correct approvals: bond plus rewards; incorrect votes: unslashed amount | Agent | Yes |
+| Buyer win | Full escrow to buyer | Funds reviewer budget up to forfeited bond; unspent remainder to buyer | Correct disapprovals: bond plus collateral-funded rewards; incorrect votes: unslashed amount | Buyer | No |
+| Missed submission deadline | Full escrow to buyer | Forfeited to buyer | None | None | No |
+| Cancel/delist before assignment | Full escrow to buyer | None | None | None | No |
+| Unanswered arbitration timeout | Full escrow to buyer | Returned | Each returned in full | Original contributor | No |
 
-## Bonds and settlement logic
+Any failed outgoing transfer becomes a protected claim; the entitlement in the table is unchanged. An issuer pause or blocklist can still prevent receipt of the funds until the issuer restriction is resolved.
 
-### Agent bond
-- Computed on `applyForJob` with `BondMath.computeAgentBond(payout, duration, agentBondBps, agentBond, agentBondMax, jobDurationLimit)`.
-- Added to `lockedAgentBonds` at assignment.
-- Returned on agent-win paths (`_completeJob`).
-- Slashed on employer-win/expiry; routing:
-  - to employer on expiry or non-threshold employer wins,
-  - into validator reward pool when disapproval threshold triggered employer win.
+## Review and deadlines
 
-### Validator bond
-- Computed per job on first vote using `validatorBondBps/min/max`, then reused for all voters on that job.
-- Added to `lockedValidatorBonds` for each vote.
-- On settlement: validators on correct side receive bond + reward share; incorrect side receives bond minus slash (`validatorSlashBps`).
+The approval threshold starts the challenge clock; it cannot shorten the full completion review. Ordinary finalization after `settlementAfter` requires quorum and a strict majority to pay either side. No votes, under-quorum votes and ties open disputes. Buyer acceptance is explicit and immediate. Settlement pauses extend every active lifecycle deadline.
 
-### Dispute bond
-- Charged in `disputeJob` to the disputant (agent or employer):
-  - `payout * 50 bps` bounded by `1e6` min, `200e6` max, and `<= payout`.
-- Added to `lockedDisputeBonds`.
-- Returned to disputant if their side wins; otherwise sent to counterparty.
+Moderator arbitration, owner stale arbitration and neutral timeout use the [documented dispute rules](BUYER_PROTECTION.md). Quality is assessed off-chain; ENS credentials do not certify performance.
 
-## Validator voting, thresholds, and windows
+## Events to monitor
 
-- Voting requires completion requested, non-expired windows, authorization, and no prior vote.
-- `requiredValidatorApprovals`: early-approval latch (`validatorApproved=true`) and challenge-timer start.
-- `requiredValidatorDisapprovals`: automatic dispute transition.
-- `voteQuorum`: used in slow-path finalize decision after review window.
-
-`finalizeJob` logic:
-1. If approval latch set and challenge period elapsed, approvals>disapprovals => agent-win completion.
-2. Else after `completionReviewPeriod`:
-   - no votes => agent-win completion (liveness path, no validator reputation gain),
-   - under quorum or tie => disputed,
-   - approvals>disapprovals => agent-win completion,
-   - disapprovals>approvals => employer refund path.
-
-## Dispute lifecycle
-
-- Entered by `disputeJob` (manual) or disapproval threshold.
-- While disputed, validator settlement path is frozen.
-- Exits:
-  - `resolveDisputeWithCode(jobId, 1, reason)` => agent win.
-  - `resolveDisputeWithCode(jobId, 2, reason)` => employer win.
-  - `resolveDisputeWithCode(jobId, 0, reason)` => NO_ACTION, dispute stays active.
-  - `resolveStaleDispute(jobId, employerWins)` by owner after `disputeReviewPeriod`.
-
-## Funds accounting matrix
-
-| Terminal outcome | Escrow payout | Agent bond | Validator bonds | Dispute bond | NFT minted |
-|---|---|---|---|---|---|
-| Agent win (`_completeJob`) | Validators receive the posting-time budget; 30% and 10% of gross cost go to immutable wallets; all remaining USDC goes to agent | Returned to agent | Settled with slashing/rewards to validators; residual dust to winner side | Paid to assigned agent (winner-side routing is independent of initiator) | Yes |
-| Employer win (`_refundEmployer`) | Employer refunded payout minus validator reward budget when validators exist | Slashed (to employer or validator pool depending on threshold condition) | Settled with slashing/rewards favoring disapprovers | Paid to employer (winner-side routing is independent of initiator) | No |
-| Expiry (`expireJob`) | Full payout returned to employer | Slashed to employer | none (no completion voting) | none | No |
-| Cancel/Delist before assignment | Full payout returned to employer | none | none | none | No |
-
-## Key events emitted
-
-| Event | When emitted |
-|---|---|
-| `JobCreated` | Employer creates and funds job |
-| `JobApplied` | Agent successfully assigned |
-| `JobCompletionRequested` | Assigned agent submits completion URI |
-| `JobValidated` / `JobDisapproved` | Validator vote accepted |
-| `JobDisputed` | Manual dispute or disapproval-threshold escalation |
-| `DisputeResolved` / `DisputeResolvedWithCode` | Moderator resolves dispute |
-| `JobCompleted` | Agent-win completion path settles |
-| `JobExpired` | Assignment expired without completion request |
-| `JobCancelled` | Job cancelled/delisted pre-assignment |
-| `NFTIssued` | Completion NFT minted to employer |
-| `JobPayoutDistributed` | Validator budget, both wallet shares and agent transfer recorded |
-| `USDCWithdrawn` | Owner withdraws treasury surplus while paused |
-| `EnsHookAttempted` | AGIJobManager best-effort call to ENSJobPages |
+Monitor `JobCreated`, `JobApplied`, `JobCompletionRequested`, `ValidatorCredentialUsed`, `JobValidated`, `JobDisapproved`, `JobApprovalThresholdReached`, `JobDisputed`, `JobAccepted`, `DisputeResolvedWithCode`, `UnresolvedDisputeRefunded`, and terminal job events. For money, reconcile `JobPayoutDistributed`, `USDCDeferred`, `USDCClaimed`, token transfers, all five reserves and `withdrawableUSDC`. `NFTIssued` alone does not prove that every transfer succeeded.

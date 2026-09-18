@@ -145,33 +145,19 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
     await expectCustomError(manager.expireJob.call(jobId, { from: other }), "InvalidState");
   });
 
-  it("0 votes remains live", async () => {
-    const payout = toBN(toWei("25"));
-    await token.mint(employer, payout, { from: owner });
-
+  it("zero votes open a dispute and unanswered arbitration permits a neutral refund", async () => {
+    const payout = toBN(toWei("25")); await token.mint(employer, payout, { from: owner });
     const jobId = await createJob(payout, 1000);
     await manager.applyForJob(jobId, "agent", EMPTY_PROOF, { from: agent });
     await manager.requestJobCompletion(jobId, "ipfs-complete", { from: agent });
-
     await advanceTime(120);
-
-    const agentBefore = await token.balanceOf(agent);
-    const employerBefore = await token.balanceOf(employer);
+    const agentBefore = await token.balanceOf(agent), employerBefore = await token.balanceOf(employer);
     await manager.finalizeJob(jobId, { from: other });
-    const agentAfter = await token.balanceOf(agent);
-    const employerAfter = await token.balanceOf(employer);
-    const agentBond = await computeAgentBond(manager, payout, toBN(1000));
-    const validatorBudget = payout.mul(await manager.validationRewardPercentage()).divn(100);
-    assert.equal(
-      agentAfter.sub(agentBefore).toString(),
-      payout.muln(60).divn(100).add(agentBond).toString(),
-      "agent receives the unused validator budget on no-vote finalize"
-    );
-    assert.equal(
-      employerAfter.sub(employerBefore).toString(),
-      "0",
-      "successful jobs distribute the entire cost"
-    );
+    assert.equal((await manager.getJobCore(jobId)).disputed, true);
+    assert.equal((await token.balanceOf(agent)).toString(), agentBefore.toString());
+    await advanceTime(201); await manager.refundUnresolvedDispute(jobId, { from: other });
+    assert.equal((await token.balanceOf(employer)).sub(employerBefore).toString(), payout.toString());
+    assert.equal((await token.balanceOf(agent)).sub(agentBefore).toString(), (await computeAgentBond(manager,payout,toBN(1000))).toString());
   });
 
   it("under-quorum votes cannot flip the slow-path", async () => {
@@ -288,6 +274,7 @@ contract("AGIJobManager liveness timeouts", (accounts) => {
   });
 
   it("finalizes in favor of the agent when validators lean positive", async () => {
+    await manager.setVoteQuorum(2, { from: owner });
     const payout = toBN(toWei("5"));
     await token.mint(employer, payout, { from: owner });
     await manager.addAdditionalValidator(validatorTwo, { from: owner });
