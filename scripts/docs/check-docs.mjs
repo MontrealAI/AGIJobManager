@@ -5,6 +5,8 @@ import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const requiredFiles = [
+  'docs/LEGAL/README.md','docs/LEGAL/PUBLISHER_NOTICE.md','docs/LEGAL/TERMS_AND_CONDITIONS.md',
+  'docs/LEGAL/OPERATOR_NOTICE_TEMPLATE.md','docs/LEGAL/REGULATORY_SCOPE.md','docs/LEGAL/PRIVACY.md',
   'docs/START_HERE.md','docs/MAINNET_READINESS.md','docs/OWNER_CONTROLS.md','docs/USDC_PAYOUT_SPLIT.md',
   'docs/README.md','docs/OVERVIEW.md','docs/REPO_MAP.md','docs/QUICKSTART.md','docs/QUINTESSENTIAL_USE_CASE.md','docs/ARCHITECTURE.md',
   'docs/CONTRACTS/AGIJobManager.md','docs/CONTRACTS/INTEGRATIONS.md','docs/OPERATIONS/RUNBOOK.md','docs/OPERATIONS/INCIDENT_RESPONSE.md',
@@ -155,6 +157,7 @@ for (const [file, snippets] of requiredSectionSnippets) {
 }
 
 
+execFileSync('node', ['scripts/docs/sync-protocol-terms.mjs', '--check'], { cwd: root, stdio: 'inherit' });
 execFileSync('node', ['scripts/docs/check-ens-docs.mjs'], { cwd: root, stdio: 'inherit' });
 
 if (process.exitCode) process.exit(process.exitCode);

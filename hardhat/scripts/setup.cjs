@@ -32,6 +32,7 @@ if (require.main === module) {
   try {
     for (const result of setup()) console.log(`${result.status}: hardhat/${result.file}`);
     console.log('Review the owner, both recipients, RPC and membership settings. NFT admission starts disabled; review the optional/empty policy or configure owner opt-in before readiness.');
+    console.log('Before paid intake, identify the actual operator and fee beneficiaries and review docs/LEGAL/OPERATOR_NOTICE_TEMPLATE.md. Technical checks do not provide legal clearance.');
     console.log('Next: npm --prefix hardhat run check:config:sepolia (offline), then follow hardhat/README.md. No network requests or transactions were made.');
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

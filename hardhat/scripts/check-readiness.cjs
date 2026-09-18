@@ -151,7 +151,8 @@ async function main() {
     throw new Error('Readiness block changed or disappeared during verification. No report was written; rerun against a consistent chain state.');
   }
   const report = {
-    checksPassed: true, scope: 'read-only pre-activation technical checks; owner operational review and independent security review remain separate',
+    checksPassed: true, scope: 'read-only pre-activation technical checks; owner operational review, deployment-specific legal review and independent security review remain separate',
+    legalScope: 'Not assessed. Operator identity, fee beneficiaries, service terms, jurisdiction, required authorizations and privacy/language duties require separate review; see docs/LEGAL/README.md.',
     chainId, network: network.name, manager: managerAddress, owner, pendingOwner, intakePaused: paused,
     settlementWallets: [wallet30, wallet10], blockNumber: block.number, blockHash: block.hash,
     identityConfig: { expected: reviewedConfig.expected, observed: observedConfig, reviewedOverride: reviewedConfig.override },

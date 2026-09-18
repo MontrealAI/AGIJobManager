@@ -215,6 +215,49 @@ test.describe('Published USDC console in a real browser', () => {
     await assertNoExecution(page, errors);
   });
 
+  test('reopening ignores saved acknowledgement and preserves only access inputs', async ({ page }) => {
+    const errors = await openConsole(page);
+    await connectReadyBuyer(page);
+    await page.evaluate(() => {
+      const key = 'agijm_v33_session';
+      localStorage.setItem(key, JSON.stringify({ ...JSON.parse(localStorage.getItem(key) || '{}'), termsAccepted: true, agentSub: 'saved-agent' }));
+    });
+    await page.reload();
+    await expect(page.locator('#termsAccepted')).not.toBeChecked();
+    await expect(page.locator('#agentSub')).toHaveValue('saved-agent');
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
+    expect(await page.evaluate(() => Object.hasOwn(JSON.parse(localStorage.getItem('agijm_v33_session') || '{}'), 'termsAccepted'))).toBe(false);
+    await assertNoExecution(page, errors);
+  });
+
+  test('restoring a page invalidates the open transaction review and acknowledgement', async ({ page }) => {
+    const errors = await openConsole(page);
+    await connectReadyBuyer(page);
+    await openPostingReview(page);
+    await page.evaluate(() => {
+      localStorage.setItem('agijm_v33_session', JSON.stringify({ termsAccepted: true }));
+      window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    });
+    await expect(page.locator('#actionReviewModal')).toHaveAttribute('aria-hidden', 'true');
+    await expect(page.locator('#termsAccepted')).not.toBeChecked();
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
+    await assertNoExecution(page, errors);
+  });
+
+  test('withdrawing acknowledgement cancels an already open transaction review', async ({ page }) => {
+    const errors = await openConsole(page);
+    await connectReadyBuyer(page);
+    await openPostingReview(page);
+    await page.evaluate(() => {
+      const checkbox = document.getElementById('termsAccepted');
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await expect(page.locator('#actionReviewModal')).toHaveAttribute('aria-hidden', 'true');
+    await expect(page.locator('#createJobBtn')).toBeDisabled();
+    await assertNoExecution(page, errors);
+  });
+
   test('shows the real payment review and allows keyboard cancellation before wallet execution', async ({ page }) => {
     const errors = await openConsole(page);
     await connectReadyBuyer(page);

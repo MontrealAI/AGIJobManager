@@ -500,6 +500,7 @@ async function main() {
     console.log(`solc-input: ${solcInputPath}`);
     console.log(`verify-targets: ${verifyTargetsPath}`);
     console.log('Intake is paused. Configure and verify the manager before unpausing.');
+    console.log('Before paid intake, complete the operator notice and applicable legal review in docs/LEGAL/README.md. Deployment does not establish regulatory exemption.');
     if (!ownershipAccepted) console.log(`ACTION REQUIRED: ${resolvedFinalOwner} must call acceptOwnership(). Current owner remains ${currentOwner} until acceptance.`);
     requireVerified(verificationResults, [...LIBRARIES, 'AGIJobManager']);
     journal.status = 'deployed_paused';

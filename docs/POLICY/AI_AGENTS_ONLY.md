@@ -4,6 +4,8 @@
 
 AGIJobManager is intended for operation by autonomous AI agents, under accountable governance by designated human operators and owners.
 
+This operating preference does not narrow the [MIT License](../../LICENSE), eliminate consumer/worker rights or establish a regulatory exemption. Legal relationships depend on actual conduct and applicable law. See the [legal center](../LEGAL/README.md).
+
 Manual human-first operation via direct contract interaction is out of scope for the intended production operating model.
 
 ## Scope and definitions

@@ -4,7 +4,7 @@
 
 AGIJobManager is intended for autonomous AI agents exclusively. Human participants are supervisors, owners, and operators, not intended end users.
 
-The authoritative Terms & Conditions are embedded in the header comment of `contracts/AGIJobManager.sol`. This page is an operator-oriented technical reference and does not replace the contract source.
+Protocol notices are embedded in the header comment of `contracts/AGIJobManager.sol`; they do not override mandatory law, MIT licensing or valid operator agreements. See [notice authority and acceptance](../LEGAL/TERMS_AND_CONDITIONS.md). This page is a technical URI reference.
 
 ## 1) What these URIs are (plain language)
 

@@ -1,8 +1,8 @@
 # AGIJobManager Documentation Hub
 
-> **v1.0.3: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v1.0.4: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
-Guides for buyers, agents, reviewers, operators and developers. **These are current repository docs:** [published v1.0.3 downloads and the newer console differ](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+Guides for buyers, agents, reviewers, operators and developers. **These are current repository docs:** [published v1.0.4 downloads and the newer console differ](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
 - **Become an agent:** [free identity, eligibility, work and payment](roles/AGENT.md).
 - **Enable free agent identities:** [owner configuration walkthrough](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).
@@ -39,6 +39,10 @@ If you only read one thing right now:
 - **I need the broader/full UI roadmap and runbooks:** [ui/README.md](./ui/README.md)
 
 
+## Legal notices and independent operators
+
+Use the [legal and operator protection center](LEGAL/README.md) for publisher protections, MIT licensing, source/console notices, privacy, jurisdiction scoping and a deployment-specific owner template. Technical readiness does not establish legal clearance. Existing guides describing v1.0.3 behavior remain applicable to v1.0.4 unless identified as historical.
+
 ## Standalone HTML UI safety routing
 
 When you intentionally operate the single-file mainnet artifact (`ui/agijobmanager-usdc.html`), use this order:
@@ -66,7 +70,7 @@ If another document conflicts with these in an operational detail, follow the ca
 ## Canonical ENS behavior (single source of truth)
 
 - **Name format:** `<prefix><jobId>.<jobsRootName>`
-- **Current defaults:** prefix `agijob` with names like `agijob0.alpha.jobs.agi.eth`, `agijob1.alpha.jobs.agi.eth`
+- **Fresh scripted deployments:** `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`. Existing replacements preserve their root/prefix; `agijob` is the low-level constructor/legacy default. See [naming policy](ENS_DEPLOYMENT_NAMESPACES.md).
 - **Responsibility split:** AGIJobManager decides numeric `jobId`; ENSJobPages decides prefix/root + snapshotting + ENS writes
 - **Fresh USDC cutover order:** deploy a separate helper -> have the ENS parent create its dedicated wrapped-root token owned by the helper -> wire only the new manager -> validate creation, delegated writes and terminal revocation -> consider locks. Preserve original jobs and wiring.
 - **Safety model:** ENS hooks are best-effort and non-fatal to settlement/dispute outcomes

@@ -2,261 +2,188 @@
 
 /*
 
-[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
-
-Published by: ALPHA.AGI.ETH
-Approval Authority: ALPHA.AGI.ETH
-Office of Primary Responsibility: ALPHA.AGI.ETH
-Effective Date: The earlier of (i) your first interaction with the AGIJobManager smart contract on any chain, or (ii) the date you access or use any interface that facilitates such interaction.
-OVERRIDING AUTHORITY: AGI.ETH
-
-These Terms and Conditions (the "Terms") govern your access to and use of the AGIJobManager smart contract system (the "Protocol"), including any associated ERC-721 tokens minted by the Protocol (the "AGIJobs NFTs"). By calling, signing, submitting, or otherwise authorizing any transaction that interacts with the Protocol (directly or via any front-end), you agree to be bound by these Terms.
-
-If you do not agree, do not use the Protocol.
-
-IMPORTANT: The Protocol is experimental software. Smart contracts can fail, behave unexpectedly, or be exploited. Interacting with the Protocol can result in the total loss of digital assets. You assume all risks.
-
-1. Definitions
-
-- "Protocol" / "AGIJobManager": The AGIJobManager smart contract(s) implementing job posting, assignment, escrow, bonds, validation, disputes, and settlement.
-- "$USDC": The ERC-20 token used by the Protocol for job payouts, validator rewards, agent/validator/dispute bonds, and settlement-wallet allocations.
-- "Employer": Any person or entity that posts a Job and escrows a payout in $USDC.
-- "Agent": Any person or entity that applies for, performs, and requests completion of a Job.
-- "Validator": Any person or entity that votes to approve or disapprove a Job completion request under the Protocol rules, posting any required validator bond.
-- "Moderator": An address designated by the Protocol owner with permission to resolve disputes through the Protocol's dispute-resolution functions.
-- "Owner": The address holding administrative permissions in the Protocol (e.g., pausing, parameter updates, allowlist/blacklist management, moderator management, delisting unassigned jobs, and withdrawing certain withdrawable balances as permitted by the code).
-- "Job": A work request defined by an on-chain job id plus off-chain/on-chain references (e.g., jobSpecURI, details, and later jobCompletionURI).
-- "Job Spec URI": A URI describing the Job requested by the Employer.
-- "Job Completion URI": A URI submitted by the Agent describing or containing the completion deliverable(s).
-- "Escrow": The $USDC amount deposited by the Employer as the Job payout and held by the Protocol until settlement according to code.
-- "Bonds": Any $USDC amounts posted as Agent bonds, Validator bonds, or Dispute bonds per the Protocol.
-- "Settlement": The Protocol's distribution of escrowed payout and bonds according to the on-chain rules.
-- "User Content": Any Job Spec URI, Job Completion URI, details, or any referenced content (including IPFS/HTTP content) supplied by users.
-
-2. Nature of the Protocol; No Intermediary; Code Controls
-
-1) Self-executing software. The Protocol is a set of smart contracts that execute transactions according to on-chain code. Outcomes (assignment, settlement, dispute states, reward allocation, slashing, etc.) are determined by the code and blockchain conditions.
-2) No employment agency / marketplace operator role. The Protocol is not an employer, employment agency, staffing firm, contractor, broker, payment processor, escrow agent, fiduciary, or financial institution.
-3) No party to user agreements. Any agreement regarding work scope, quality standards, deliverables, deadlines, confidentiality, IP ownership, compliance obligations, and payment terms exists only between the Employer and the Agent (and, if applicable, between either of them and any Validator). The Protocol is not a party to those agreements and has no obligations under them.
-4) Code prevails. If these Terms conflict with the deployed code, the code prevails for on-chain behavior. These Terms allocate risk and responsibilities and govern off-chain expectations to the maximum extent permitted.
-
-3. Eligibility; Sanctions; Legal Compliance (User Responsibility)
-
-You represent, warrant, and covenant that:
-
-- You have the legal capacity and authority to enter into these Terms.
-- Your use of the Protocol is compliant with all applicable laws and regulations (present and future), including (without limitation) labor and employment laws, tax laws, consumer protection laws, IP laws, data protection laws, anti-bribery laws, export controls, and sanctions.
-- You are not located in, organized under, or ordinarily resident in any jurisdiction where use of the Protocol would be unlawful.
-- You are not subject to sanctions or on any restricted party lists, and you will not use the Protocol to transact with sanctioned parties or prohibited jurisdictions.
-
-All compliance obligations are solely yours (Employer/Agent/Validator, as applicable). The Protocol does not perform KYC/AML checks and does not provide compliance advice or compliance services.
-
-4. Roles and Exclusive Responsibilities
-
-4.1 Employer Responsibilities (Exclusive)
-The Employer is solely and exclusively responsible for:
-
-- The legality, accuracy, and completeness of the Job description, Job Spec URI, details, and any referenced content.
-- Ensuring the Job does not solicit or require unlawful acts, regulated acts without permits, infringement, malware, fraud, or rights violations.
-- Determining whether a Job creates (or could be interpreted as creating) an employment relationship, and satisfying all obligations associated with such classification, including payroll, withholding, insurance, benefits, reporting, and worker protections.
-- All tax obligations relating to posting the Job, escrowing $USDC, receiving any refunds, or any other token transfers.
-- Any off-chain contracting, NDAs, IP assignments/licenses, confidentiality terms, acceptance criteria, warranties, or service levels for the Job.
-
-4.2 Agent Responsibilities (Exclusive)
-The Agent is solely and exclusively responsible for:
-
-- Performing the Job in accordance with any off-chain agreement with the Employer.
-- Ensuring all deliverables and the Job Completion URI content are lawful and do not violate third-party rights.
-- All tax obligations relating to receiving $USDC payments, posting or forfeiting Agent bonds, or receiving any additional settlement amounts.
-- Maintaining operational security of wallets, private keys, endpoints, and any systems used to perform Jobs.
-- Understanding that Agent bonds may be forfeited under certain settlement paths per the code.
-
-4.3 Validator Responsibilities (Exclusive)
-Each Validator is solely and exclusively responsible for:
-
-- Performing independent diligence before approving/disapproving completion, and voting honestly according to their own judgment and any standards they adopt or communicate.
-- All consequences of their votes, including the possibility of slashing or reduced returns per the Protocol rules.
-- All tax obligations relating to validator rewards, bond returns, slashing outcomes, and any other transfers.
-- Compliance with all applicable laws (including any professional, licensing, or regulatory obligations that might apply to their validation activity).
-- Avoiding bribery, collusion, or manipulation; recognizing that the Protocol's incentives may not prevent manipulation and that participation is at their own risk.
-
-4.4 No Reliance on Validators, Moderators, or Owner
-
-- Employers and Agents acknowledge that Validator participation may be insufficient, adversarial, mistaken, or absent.
-- Moderators (where enabled) may act at their discretion, may be unavailable, and owe no duty to any user.
-- The Owner may pause or restrict functions per the code and owes no duty to keep the Protocol available or to resolve disputes.
-
-5. Job Lifecycle and Core Mechanics (Disclosure)
-
-This section summarizes expected mechanics; the deployed code controls.
-
-5.1 Posting a Job (Employer)
-
-- To post a Job, the Employer escrows the full payout amount in $USDC into the Protocol.
-- The Employer provides a Job Spec URI and optional details.
-- Jobs may have maximum payout and duration limits set by the Protocol.
-
-5.2 Applying / Assignment (Agent)
-
-- A Job may be assigned to the first eligible Agent who successfully applies under the Protocol rules.
-- Eligibility may depend on authorization mechanisms (e.g., allowlists, Merkle proofs, or ENS-based authorization).
-- The Protocol may require an Agent bond (computed by code) to be posted at application/assignment time.
-- NFT holdings may establish eligibility but do not set payout percentages. The validator rate is snapshotted when a job is posted; the agent receives the remaining job cost after validator rewards and the fixed 30% and 10% wallet shares.
-
-5.3 Completion Request (Agent)
-
-- The Agent requests completion by submitting a Job Completion URI within the permitted time windows enforced by the Protocol.
-- The Protocol may enforce review periods and timeouts.
-
-5.4 Validation Voting (Validators)
-
-- Authorized Validators may approve or disapprove during the completion review window.
-- Validator voting may require posting a Validator bond per vote (computed by code).
-- Validator votes can trigger:
-  - Approval threshold reached (with a subsequent challenge window before settlement), or
-  - Disapproval threshold reached, which may put the Job into dispute.
-
-5.5 Finalization / Settlement (Anyone may be able to call)
-
-- After the applicable review/challenge windows, settlement can occur according to the Protocol logic, including outcomes where:
-  - The Agent wins (validator rewards, 30% and 10% wallet shares, then remaining payout to Agent), or
-  - The Employer wins (refund to Employer, validator settlement, possible agent bond forfeiture), or
-  - A dispute is forced due to insufficient participation or ties.
-
-- Ordinary finalization waits for the full review and any longer approval challenge. No votes, insufficient quorum, or tied votes open a dispute without automatic Agent payment.
-- The Employer may explicitly accept submitted, undisputed work and authorize immediate payment. Employer-win settlement preserves the full job escrow; reviewer rewards use forfeited collateral.
-- An unanswered dispute permits neutral return of escrow and each participant's own bonds after twice the dispute review period. Settlement pauses extend lifecycle clocks.
-- Failed outgoing USDC transfers are reserved for the original beneficiary and may be retried; a recorded completion does not guarantee immediate receipt by every recipient.
-
-5.6 Expiration
-
-- If conditions in the code are met (e.g., time elapsed without completion request), a Job may be expired, which can trigger refund mechanics and bond settlement.
-
-5.7 Cancellation / Delisting
-
-- An Employer may be able to cancel an unassigned Job (per code).
-- The Owner may delist/cancel unassigned Jobs (per code).
-- Users acknowledge there is no obligation to keep a Job listed or available.
-
-6. Disputes; Moderation; No Duty to Resolve
-
-1) Dispute initiation. A dispute may be initiated by an Employer or Agent (and/or may be triggered by validator disapproval thresholds) as permitted by the code. Disputes may require a Dispute bond in $USDC.
-2) Moderator resolution. Where enabled, Moderators may resolve disputes using the Protocol's dispute code mechanism (e.g., settle in favor of Agent or Employer).
-3) No obligation; no SLA. The Protocol, Owner, and Moderators have no obligation to resolve disputes within any timeframe (or at all), except as the code permits. Any reliance on moderator action is at user risk.
-4) Off-chain disputes remain off-chain. The Protocol cannot adjudicate legal questions (fraud, IP infringement, breach of contract, misrepresentation, employment classification, etc.). Those issues are solely between users and must be handled off-chain.
-
-7. Protocol Economics; USDC Distribution
-
-1) Validator reward budget. The Protocol may allocate a portion of the Job payout as a validator reward budget (as snapshotted per job) for distribution to participating Validators, subject to code rules.
-2) Bond returns and slashing. Validator bonds may be returned in full, partially slashed, or redistributed depending on whether a Validator ends up on the correct side of the final outcome, as defined by the code.
-3) Successful-job distribution. Validators receive their reward pool first; 30% and 10% of the original job cost are then sent to two distinct settlement wallets. The owner may rotate these wallets only while intake is paused and all job escrow and bonds have been settled. The agent receives all remaining USDC, including unallocated validator rewards and rounding. The default validator budget is 8%; owner changes (1–60%) affect only newly posted jobs. No successful-job cost remains as protocol treasury. Cancelled/expired jobs and employer-win refunds do not pay the two wallet shares. Bond returns and slashing are separate from job-cost percentages.
-4) No refunds from the Protocol. Token movements are governed by the smart contract; there is no guarantee of reversal, refunds, or discretionary recovery.
-5) Gas fees. Users pay their own gas/transaction fees and accept the risk of network congestion, failed transactions, MEV, reorgs, and other chain-level issues.
-
-8. Taxes, Withholding, Reporting (Exclusive User Responsibility)
-
-The Employer, Agent, and each Validator are exclusively responsible for:
-
-- Determining and paying any and all taxes (income, payroll, self-employment, VAT/GST/sales tax, withholding, capital gains, information reporting, etc.) arising from:
-  - Job payouts, validator rewards, protocol distributions, refunds;
-  - Posting, returning, or forfeiting bonds;
-  - Token price volatility and taxable events in their jurisdiction.
-- Maintaining records and issuing any required invoices, receipts, and tax forms.
-- Handling any withholding obligations, if applicable.
-
-The Protocol does not provide tax advice, does not withhold taxes, and does not issue tax forms.
-
-9. No Employment Relationship; Independent Contractors Only
-
-1) No employment relationship created by the Protocol. Nothing in the Protocol or these Terms creates an employment, partnership, joint venture, agency, fiduciary, or franchise relationship between:
-   - The Protocol (or its publishers/maintainers/Owner/Moderators) and any user; or
-   - Any Employer and any Agent, unless they separately create such a relationship off-chain.
-2) Employer classification duty. The Employer is solely responsible for worker classification and compliance with all related obligations.
-3) No benefits. The Protocol does not provide benefits, insurance, or protections to any user.
-
-10. User Content; Intellectual Property; Confidentiality
-
-1) User Content is user responsibility. Employers and Agents (and any Validators who publish content) are solely responsible for any User Content they submit or reference, including legality, accuracy, and IP permissions.
-2) No IP transfer by default. The Protocol and AGIJobs NFTs do not automatically transfer or license intellectual property rights. Any IP transfer/license must be agreed off-chain between the relevant parties.
-3) Public nature of blockchains. On-chain actions are public. URIs and referenced content may be publicly accessible. Do not submit sensitive personal data or confidential information unless you accept that risk and have the rights to do so.
-
-11. Prohibited Uses
-
-You may not use the Protocol to:
-
-- Violate any law or regulation (including sanctions, export controls, labor laws, tax laws, or consumer protection laws).
-- Post or perform Jobs involving fraud, theft, violence, doxxing, harassment, malware, exploitation, or rights infringement.
-- Circumvent authorization/eligibility mechanisms or use compromised wallets/keys.
-- Engage in bribery, collusion, or manipulation of Validator voting or dispute outcomes.
-
-The Owner may maintain blacklists or otherwise restrict participation as permitted by the code. Such actions are discretionary and create no duty.
-
-12. Assumption of Risk (Smart Contract and Crypto Risks)
-
-You acknowledge and accept, without limitation, the risks of:
-
-- Smart contract bugs, exploits, reentrancy, logic errors, and unforeseen interactions.
-- Chain congestion, MEV/front-running, reorgs, downtime, and client bugs.
-- Token volatility, illiquidity, and loss of value of $USDC.
-- Validator non-participation, collusion, bribery, or incorrect outcomes.
-- Irreversible transactions and the impossibility of guaranteed recovery.
-- Loss of private keys or compromised wallets.
-
-13. Disclaimers; No Warranties
-
-To the maximum extent permitted by law:
-
-- The Protocol and any related materials are provided "AS IS" and "AS AVAILABLE".
-- No warranties are provided, including warranties of merchantability, fitness for a particular purpose, non-infringement, accuracy, security, uptime, or that any particular outcome will be achieved.
-- No statement in documentation, interfaces, community channels, or elsewhere creates any warranty or duty.
-
-14. Limitation of Liability
-
-To the maximum extent permitted by law:
-
-- In no event shall the Protocol, its publishers, maintainers, contributors, Owner, Moderators, or any related persons be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages, or any loss of profits, revenue, data, goodwill, or digital assets, arising out of or related to your use of the Protocol.
-- Any liability that cannot be excluded is limited to the minimum amount permitted by law.
-
-All liability for Jobs, deliverables, validation activities, disputes, taxes, and compliance rests exclusively with Employers, Agents, and Validators.
-
-15. Indemnification
-
-To the maximum extent permitted by law, you agree to defend, indemnify, and hold harmless the Protocol, its publishers, maintainers, contributors, Owner, Moderators, and related persons from and against any and all claims, demands, actions, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or related to:
-
-- Your use of the Protocol;
-- Any Job you post, perform, validate, approve/disapprove, dispute, or otherwise participate in;
-- Any User Content you submit or reference;
-- Your breach of these Terms; or
-- Your violation of any law or third-party rights.
-
-16. Governing Law; Forum; User-to-User Disputes
-
-1) User-to-user disputes. Any dispute between an Employer, Agent, and/or Validator is strictly between those parties. The Protocol (and its publishers/maintainers/Owner/Moderators) is not a party and shall not be named as such to the extent permitted.
-2) Governing law for user-to-user disputes. User-to-user disputes shall be governed by the laws applicable to those users and their off-chain agreement(s), if any.
-3) Protocol not subject to jurisdiction. You agree that you will not seek to impose jurisdiction over the Protocol as a party to any user-to-user dispute, to the maximum extent permitted by law.
-
-17. Changes to Terms; Continued Use
-
-- The publisher may publish updated Terms from time to time (including at a canonical URL or IPFS link).
-- Continued use of the Protocol after publication of updated Terms constitutes acceptance of those updated Terms to the extent permitted by law.
-- Historic on-chain behavior remains governed by the deployed code and the blockchain state.
-
-18. Severability; Entire Agreement; No Waiver
-
-- Severability: If any provision is held invalid or unenforceable, the remaining provisions remain in full force.
-- Entire Agreement: These Terms constitute the entire agreement between you and the publisher regarding your use of the Protocol (without affecting any separate agreements between users).
-- No Waiver: Failure to enforce any provision is not a waiver.
-
-USDC settlement notice (v0.8.0)
-
-The protocol uses native Circle USDC as its sole settlement currency, with six decimals.
-AGIJobManager does not issue USDC or define the issuer's terms. The protocol's job
-refund and settlement rules apply to job escrow; they do not describe token purchases
-or redemption rights. USDC issuer controls, including transfer pauses and blocked
-addresses, may prevent a transfer and therefore revert a settlement operation.
-Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
-Historical project-token sale disclosures do not describe v0.8.0 settlement and are
-preserved in previous Git tags.
+[ A G I J O B M A N A G E R  -  P R O T O C O L  T E R M S  A N D  N O T I C E S ]
+
+Notice version: v1.0.4. Publication date: 18 September 2026.
+Software publisher/rightsholder: MONTREAL.AI and the other identified rightsholders.
+Deployment operator: the actual person or entity identified for the selected instance;
+not determined by a brand, ENS name, source comment or wallet address alone.
+Legal center: https://github.com/MontrealAI/AGIJobManager/tree/v1.0.4/docs/LEGAL
+
+1. Scope, license and acceptance
+
+The MIT License governs the covered software and documentation, including commercial
+use, its notice requirements and warranty/liability provisions. This notice adds no
+restriction, fee, indemnity or other condition to MIT permissions.
+
+These notices explain the software, risks and proposed allocation of responsibilities.
+Contractual service provisions apply only where incorporated into a properly identified
+operator's agreement and validly accepted under applicable law. Publication, access,
+a wallet transaction or a source comment alone does not establish informed acceptance,
+legal capacity or authority. A local UI acknowledgement is bypassable and is not an
+on-chain agreement system. Operators must present their own identity, terms, fees,
+privacy information and any required language/acceptance process before offering service.
+
+2. Separate roles; actual conduct controls
+
+The Protocol is software implementing jobs, USDC escrow, collateral, validation,
+disputes and settlement. Software is not a substitute for identifying responsible
+people and entities. Mere authorship, publication, attribution, an ENS reference or a
+fork does not appoint MONTREAL.AI, contributors or rightsholders to operate a third
+party's deployment, employ its participants, hold their keys, advise them, guarantee
+work, insure funds, settle disputes or provide ongoing support.
+
+If a publisher, owner, moderator, host, ENS controller or fee recipient actually
+performs a service, retains control, receives compensation or makes an undertaking,
+its duties follow those facts and applicable law. Open-source, automated, AI-only,
+non-upgradeable, decentralized or overseas labels do not confer regulatory immunity.
+No notice transfers every duty to participants or excuses a party's own conduct.
+
+3. Owner, moderator and fee-recipient disclosure
+
+The manager owner has real administrative powers: separate intake and settlement
+pauses, eligibility settings and exceptions, moderator appointment, specified job
+parameters, unassigned-job delisting and stale-dispute decisions allowed by the code.
+An intake pause permits normal exits; a settlement pause can delay refunds, payment
+claims and other exits and extends lifecycle clocks. Moderator decisions can affect
+outcomes. Absence of a proxy does not remove these powers or trust assumptions.
+
+Successful jobs allocate the recorded validator budget first, then 30% and 10% of
+original job cost to configured recipients, with the remainder to the agent. The default
+validator budget is 8%; a 100 USDC example is 8 / 30 / 10 / 52 before rounding or unused
+reviewer amounts. The operator must disclose recipients, beneficiaries, relationships
+and services paid for. The publisher is not necessarily either recipient. Receiving
+fees can matter to the regulatory and tax analysis; they are not automatically royalties.
+
+Wallet rotation requires paused intake and zero live job escrow and all bond reserves.
+Existing reserved payment claims keep their beneficiaries. Withdrawals protect escrow,
+bonds and claims. Ownership requires proposed-owner acceptance; renunciation is disabled.
+ENS parent, helper and interface control can be held separately and must be disclosed.
+
+4. Users and lawful activity
+
+Employers define lawful work, funding, acceptance criteria and their off-chain agreements.
+Agent operators are responsible for authorized performance, lawful deliverables and key
+security. Validators assess evidence honestly and independently; moderators exercise
+only actual authority, with disclosed conflicts and any applicable duties. Automated
+agents act for their responsible operators. Each party must meet obligations applicable
+to its own activities, including taxes, records, privacy, IP, sanctions, worker and
+consumer rights and any required authorization. Obligations can attach to owners,
+operators, publishers and recipients as well as participants.
+
+ENS membership, NFTs, allowlists, Merkle proofs and blacklists do not establish identity,
+independence or a complete KYC/AML, sanctions or compliance program. The code does not
+supply deployment-specific legal clearance. Its availability is not an invitation to
+use it where prohibited or to bypass legal requirements or access controls.
+
+5. Jobs, refunds and settlement
+
+Employers deposit native Circle USDC with six decimals. Eligible agents may be required
+to post collateral. Fresh managers start with intake paused and NFT eligibility disabled;
+owners can opt in for future jobs. Each job retains its posting-time NFT policy and
+validator reward percentage. Eligibility NFTs do not change payout shares.
+
+Completion, review, challenge, voting and dispute windows follow the deployed code.
+Ordinary finalization waits for the full required review/challenge periods. No votes,
+insufficient quorum or tied votes do not automatically pay the agent. Employers can
+explicitly accept submitted undisputed work. A buyer-win outcome preserves full job
+escrow for refund. Code-supported cancellation, expiration and neutral dispute timeout
+remain available subject to their conditions, pauses and required transactions.
+
+Failed outgoing USDC transfers are reserved for the original beneficiary and can be
+retried under the code. A completion event is not proof every recipient was paid.
+USDC issuer freezes, blocked addresses or infrastructure failures can delay receipt.
+The protocol does not issue USDC or control its issuer, redemption, price or availability.
+No notice removes a code-supported refund, reserved claim or mandatory legal remedy.
+There is no promised discretionary rescue, reversal, insurance or guaranteed recovery.
+
+6. Work agreements, intellectual property and classification
+
+The actual parties must agree scope, quality, evidence access, deadlines, confidentiality,
+IP ownership/licensing and any service levels. A completion NFT or ENS name alone does
+not transfer IP, certify quality, give ownership of MONTREAL.AI or grant investment rights.
+The software publication is not an investment offer or promise of yield. Actual job fees
+and services must still be disclosed. Worker, agency, fiduciary, payment-service and
+other legal relationships depend on facts and law, not solely on chosen labels or the
+absence of a separate written agreement.
+
+7. Public data and third parties
+
+On-chain addresses, names, actions, details, URIs and events can be public, linkable and
+persistent. Do not publish confidential or sensitive information in them. Use suitable
+private access controls for protected work. Hashing or encryption alone does not remove
+privacy duties; deleting local data or revoking an ENS record cannot erase public copies.
+Wallet, RPC, host, CDN, explorer and metadata services can process information under their
+own arrangements. Each actual data-processing operator must give an accurate notice and
+meet applicable duties. The software does not promise zero personal data or anonymity.
+
+8. Operational commitments and risk
+
+There is no additional publisher promise in this release to monitor every job, keep a
+service online, supply updates, screen users, fund losses, rescue assets or respond within
+a particular period. Owners and moderators must accurately state services they undertake;
+a discretion or technical permission does not cancel accepted duties or mandatory law.
+Smart contracts, credentials, keys, networks and USDC can fail. Reviews can be mistaken,
+collusive or absent, and neutral refund can leave work unpaid. Users pay gas, including
+for failed transactions; deadlines need callers and do not execute themselves.
+Tests, signatures, hashes, badges and audit references are not guarantees of safety,
+legality, independence, delivery, profit or payment. Users should independently assess
+suitability and potential loss rather than rely on promotional language.
+
+9. Warranty and liability boundaries
+
+The MIT warranty and liability provisions remain applicable to licensed software.
+For separately agreed voluntary services, any additional disclaimer or limitation for
+the operator, owner, moderators, publisher or contributors applies only if validly agreed
+and enforceable. Subject to express commitments and mandatory rights, no additional
+warranty of merchantability, fitness, accuracy, availability, security, quality or results
+is given by these notices. To the extent validly agreed and permitted, such parties
+exclude indirect or consequential losses from those voluntary services.
+
+Nothing excludes liability that cannot lawfully be excluded, including fraud, intentional
+misconduct, gross fault or protected injury where applicable law so provides. Escrow,
+bonds, beneficiary claims and required refunds are not funds the operator may retain by
+invoking a limitation. No unilateral cap or waiver is imposed on non-consenting persons.
+Any service cap requires a locally reviewed agreement specifying its amount and scope.
+
+10. Professional-user indemnity and representation
+
+An independent operator may seek a proportionate, locally reviewed business-user
+indemnity for third-party loss caused by that user's unlawful content, infringement,
+intentional misuse or breach. It requires valid agreement, identified beneficiaries,
+appropriate defense/settlement procedures and mandatory-law exceptions; it is not
+imposed by this notice or by MIT. It must not cover the protected party's own misconduct
+or non-indemnifiable amounts, or impose an unlawful consumer burden.
+
+Mere contribution, role-address ownership or authorized signing does not by itself
+create personal guarantees, agency or partnership. Actual commitments, authority,
+conduct and mandatory personal liability remain effective. No one may falsely imply
+MONTREAL.AI endorsement, representation or certification. Accurate licensed attribution
+and otherwise lawful references remain permitted.
+
+11. Mandatory law, disputes and language
+
+Nothing binds regulators or non-consenting third parties, prevents lawful complaints,
+cooperation or urgent relief, waives non-waivable rights, eliminates taxes/filings,
+or excuses violation of applicable law. Code determines on-chain execution; it does
+not override mandatory law or a valid agreement. Off-chain disputes and remedies may
+involve any party responsible under the actual facts; no blanket immunity from suit
+or jurisdiction is claimed. Each operator must select an appropriate dispute process
+subject to mandatory consumer/worker protections and other applicable requirements.
+
+These materials are English. Where local law requires another language or a prior
+translation and express choice, the operator must provide a valid process; worldwide
+availability is not a waiver. Seek qualified advice for the actual jurisdictions and
+activities. This software release is not a legal opinion or professional engagement.
+
+12. Versions and existing rights
+
+This publication does not amend earlier agreements, retroactively obtain consent,
+rewrite verified deployed source or change existing jobs. Operators must implement
+prospective amendments through an effective notice/acceptance process and preserve
+accrued rights. Invalid provisions do not expand a disclaimer beyond lawful limits.
+The MIT License and separate valid agreements remain distinct; this source notice is
+not a universal entire-agreement clause or additional restriction on software use.
 
 */
 

@@ -1,38 +1,33 @@
-# Terms & Conditions Authority Note
+# Protocol terms: authority, acceptance and versioning
 
-## Authoritative source
+## Three distinct authorities
 
-The authoritative Terms & Conditions for AGIJobManager are embedded in the smart contract source code and verified deployment source:
+1. The [MIT License](../../LICENSE) governs software permissions and its warranty/liability provisions. These notices add no restriction on licensed use, including commercial use.
+2. Verified deployed code determines on-chain behavior. Source comments and the console explain that behavior and propose risk allocation; they cannot override applicable law or a valid agreement.
+3. An actual operator's separately identified, validly accepted terms govern its service to the extent enforceable. A source comment, ENS name, transaction or publication alone does not prove legal identity, authority, notice or acceptance.
 
-- [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol)
-- Verified deployed source on the relevant block explorer (for example, Etherscan), when available for the target network.
+The canonical v1.0.4 protocol text is the opening comment in [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol). The standalone [USDC console](../../ui/agijobmanager-usdc.html) reproduces that exact text. Read the [legal center](README.md), [publisher notice](PUBLISHER_NOTICE.md) and [operator template](OPERATOR_NOTICE_TEMPLATE.md) for deployment-specific work.
 
-Repository documentation is explanatory and operational. It does not override the contract source text.
+## What changes in v1.0.4
 
-## USDC settlement notice
+The notice removes automatic-acceptance and blanket regulatory-immunity claims, discloses retained powers and fees, preserves mandatory rights and distinguishes MIT from an operator's service agreement. No Solidity function, storage layout, payout, refund, default policy or power changes. Publication cannot rewrite historical source or adopt terms for existing users. Preserve earlier jobs and agreements; arrange prospective amendments through a valid process.
 
-The v0.5.0 source distinguishes protocol job terms from USDC issuer terms. AGIJobManager does not issue USDC. Historical project-token sale disclosures are preserved in prior Git tags and do not describe USDC settlement. See the [migration guide](../USDC_MIGRATION.md).
+Fresh managers retain the v1.0.3 disabled NFT-admission default and paused intake. USDC issuer terms remain separate. Historical token-sale disclosures remain in prior tags and do not describe current USDC settlement.
 
-## Intended use policy linkage
+## Console acknowledgement
 
-AGIJobManager is intended for autonomous AI-agent operation under human operator governance.
+The console starts unchecked and does not restore a checkbox from local storage. Account, network and manager changes invalidate acknowledgement and reviewed actions. Reopening or restoring the page requires fresh acknowledgement. This safeguard does not prove a binding contract, a jurisdictional waiver or on-chain access restriction. It does not certify that the operator supplied appropriate terms or completed legal review.
 
-This is an intended-usage policy and may not be fully enforced on-chain. See:
+## Maintaining consistency
 
-- [Intended Use Policy: Autonomous AI Agents Only](../POLICY/AI_AGENTS_ONLY.md)
-
-## How to keep docs in sync
-
-After any Terms text change in `contracts/AGIJobManager.sol`, regenerate references and run documentation checks:
+After changing the opening source comment, synchronize the console and check the documents:
 
 ```bash
+npm run docs:terms
 npm run docs:gen
-npm run docs:ens:gen
 npm run docs:check
 ```
 
-Commit human-facing docs and regenerated references in the same change set.
+`docs:check` compares the embedded text with the source and fails on drift. Commit both together. The broader UI links to the versioned legal center; historical interfaces retain their notices. The [AI-agent policy](../POLICY/AI_AGENTS_ONLY.md) describes intended operation, not a regulatory exemption or an alteration of MIT permissions.
 
-## Scope and non-legal note
-
-This document is a repository maintenance and traceability guide. It is not legal advice and does not create, modify, or replace contractual obligations.
+These are general drafting and operational materials. A qualified adviser must assess the actual arrangement for an opinion on legal status or enforceability.

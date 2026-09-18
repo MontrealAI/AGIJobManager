@@ -1,14 +1,15 @@
-# Launch checklist — v1.0.3
+# Launch checklist — v1.0.4
 
 Use this checklist for the actual instance before opening paid intake. The release contains tested software; it supplies no production manager, owner, payment recipients, reviewer service or independent audit. Every item below starts unconfirmed. Record the evidence beside each completed item in your deployment record.
 
-v1.0.3 retains the v0.9.6 manager ABI and deployed runtime bytecode; construction changes to initialize NFT admission as disabled. Existing instance settings are unchanged. A verified v0.9.6 manager can use this console without redeployment. First deployments and moves from incompatible older versions require the current manager and eight libraries; existing jobs stay on their original contracts.
+v1.0.4 preserves v1.0.3 ABI, creation/runtime bytecode and disabled NFT default; it updates notices and console acknowledgement. Verified v0.9.6-compatible managers can use the console without redeployment. Existing settings, jobs and agreements do not change. First deployments and moves from incompatible older versions require the current manager and eight libraries.
 
 ## 1. Decide who controls and operates the instance
 
 | Decision | Evidence to record |
 | --- | --- |
 | Final manager owner and signing arrangement | Reviewed public address, proof of signer control, recovery procedure and proposed-owner acceptance rehearsal |
+| Actual operator and applicable legal requirements | Completed [operator notice](LEGAL/OPERATOR_NOTICE_TEMPLATE.md), true role/fee-beneficiary disclosure, service scope, jurisdiction review and required terms/privacy/language arrangements; keep privileged evidence private |
 | 30% and 10% recipients | Two distinct reviewed public addresses and confirmation that the intended recipients control them |
 | Deployer and infrastructure | Deployer address, gas budget, working RPC and explorer verification setup; retain credentials only in the operator's secure environment |
 | Agent/Club membership | Verified four role roots, intended admission routes, actual participant wallets and every approved allowlist/Merkle exception |
@@ -17,12 +18,13 @@ v1.0.3 retains the v0.9.6 manager ABI and deployed runtime bytecode; constructio
 | Economics and limits | Agreed job scope, review effort and gas budget, shared reviewer reward, agent net earnings, bonds, timers and initial exposure limit |
 | Optional ENS job pages | Enable or omit; if enabled, verified parent authority, deployment-specific jobs root and helper owner; [fresh/replacement naming policy](ENS_DEPLOYMENT_NAMESPACES.md) |
 
-**NFT admission starts disabled:** a fresh v1.0.3 manager has no registered collections and does not require an eligibility NFT. Keep the reviewed readiness policy `false`/empty to retain that state. To opt in before posting jobs, register reviewed collections and call `setAgentNftRequired(true)`. Every job retains the policy recorded when posted. Optional NFTs do not waive ENS/exception authorization or bonds. See [NFT setup](NFT_POLICY.md), including the [free alpha-agent identity route](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route) and its expiry limitations.
+**NFT admission starts disabled:** a fresh v1.0.4 manager has no registered collections and does not require an eligibility NFT. Keep the reviewed readiness policy `false`/empty to retain that state. To opt in before posting jobs, register reviewed collections and call `setAgentNftRequired(true)`. Every job retains the policy recorded when posted. Optional NFTs do not waive ENS/exception authorization or bonds. See [NFT setup](NFT_POLICY.md), including the [free alpha-agent identity route](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route) and its expiry limitations.
 
 ## 2. Collect evidence before mainnet deployment
 
 - [ ] Verify the immutable release tag, checksums, exact compiler profile and all required source-CI results.
 - [ ] Review the accepted static-analysis findings and obtain independent security/operational review before substantial exposure. Release tests do not complete that external review.
+- [ ] Complete deployment-specific legal review for the actual parties, services, fees and territories, and implement applicable obligations. Publish the reviewed operator notice and use a valid acceptance process where contractual terms are needed. MIT licensing and a console checkbox do not establish regulatory exemption or bind every participant. See the [legal center](LEGAL/README.md).
 - [ ] Record observed buyer, agent, reviewer and operator sessions using [the acceptance protocol](V1_ACCEPTANCE.md). Do not substitute internal browser automation for user-study evidence.
 - [ ] Complete the Sepolia journey with the intended signing arrangement: post, apply, submit, vote, accept/finalize, cancel/expire, dispute and refund. Rehearse ownership acceptance and pause recovery. Historical fork impersonation does not prove control of real signers.
 - [ ] Preserve the existing-manager job and ENS inventory. No new deployment imports its jobs, token approvals, escrow or payment claims.
@@ -37,6 +39,7 @@ Use the [Hardhat guide](../hardhat/README.md) for the complete setup and separat
 - [ ] Complete `acceptOwnership()` through the intended owner. Verify `owner()` and zero `pendingOwner()`; a proposal alone does not remove deployer authority.
 - [ ] Configure and verify moderators, eligibility, NFT policy, bonds, limits and review periods. Keep intake paused and settlement enabled. Configure optional ENS job pages and confirm successful hooks before considering an irreversible identity lock.
 - [ ] Run the readiness checker with the deployment receipt and complete `READINESS_NFT_CONFIG`. Save the passing report's block/hash. Initial activation requires zero escrow, bonds and pending claims.
+- [ ] Confirm that the operator notice still matches actual owners, fee beneficiaries, service and data flows. A passing technical report does not mark legal review, authorizations or user agreement complete.
 - [ ] Independently check the items outside that checker: individual eligibility, private metadata gateway, mutable operating policies, signer security, reviewer/moderator availability, monitoring and incident response. Recheck any state changed after the report.
 - [ ] Publish the reviewed deployment registry and configure the console with the verified manager. A canonical USDC getter alone does not authenticate a deployment.
 
