@@ -27,6 +27,21 @@ function fixture() {
   return { ctx, state, calls };
 }
 describe('USDC console exact bond quotes and cost transparency', () => {
+  it('runs every embedded bond self-test using six-decimal USDC and renders both agent cases as passing', () => {
+    const elements = { agentBondSelfTestA: { textContent: '' }, agentBondSelfTestB: { textContent: '' } };
+    const ctx = vm.createContext({
+      window: {}, DISPUTE_BOND_BPS: 50n, DISPUTE_BOND_MIN_RAW: 1000000n, DISPUTE_BOND_MAX_RAW: 200000000n,
+      el: id => elements[id]
+    });
+    vm.runInContext(section('function buildAgentBondTrace(', 'function buildTraceAuditHtml('), ctx);
+    vm.runInContext(section('function runBondMathSelfTests(', 'async function readJobDeadlines('), ctx);
+    assert.equal(ctx.runBondMathSelfTests().pass, true);
+    const result = ctx.renderAgentBondSelfTests();
+    assert.equal(result.caseA.pass, true); assert.equal(result.caseB.pass, true);
+    assert.equal(result.caseB.actualRaw, '2802400000');
+    assert.equal(elements.agentBondSelfTestA.textContent, 'PASS');
+    assert.equal(elements.agentBondSelfTestB.textContent, 'PASS');
+  });
   it('quotes the recorded bond despite an owner default change, with all reads at one block', async () => {
     const { ctx, calls } = fixture(); const quote = await ctx.fetchValidatorBondSnapshot(7);
     assert.equal(quote.finalBondRaw, '15000000'); assert.equal(quote.bpsRaw, '3000');

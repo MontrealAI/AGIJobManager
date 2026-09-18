@@ -66,8 +66,12 @@ jobs:
 
       - name: USDC console regression checks
         if: matrix.shard == 0
-        run: node scripts/release/verify-usdc-ui.mjs
+        run: node scripts/ui/verify-usdc-console.mjs
 
       - name: UI smoke test
         if: matrix.shard == 0
         run: npm run test:ui
+
+      - name: Released USDC console browser checks
+        if: matrix.shard == 0
+        run: npm run test:ui:usdc

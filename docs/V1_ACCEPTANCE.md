@@ -4,6 +4,12 @@ This is a reusable acceptance protocol, not a report of completed user studies. 
 
 Recruit representative buyers, agents, reviewers and operators who did not build the interface. Give them goals instead of click-by-click instructions. Record where they hesitate, request help, misunderstand a fee or expect a refund that the contract does not provide. Do not record private keys, seed phrases or confidential deliverables.
 
+## Automated browser checks
+
+Run `npm run test:ui:usdc` after installing the root dependencies and Playwright Chromium (`npx playwright install --with-deps chromium`). This opens the actual `ui/agijobmanager-usdc.html` download in Chromium, with its integrity-pinned Web3 library and a deterministic wallet/RPC fixture. The fixture rejects signing and transaction requests; it broadcasts nothing. The runner downloads and verifies the pinned Web3 bytes before testing, or accepts an existing file through `AGIJOBMANAGER_WEB3_PATH` and verifies the same integrity hash.
+
+These checks complement `npm run test:ui`, which exercises the older documentation console against a disposable local chain. They do not establish production wallet compatibility, actual manager identity, transaction settlement, or participant understanding. Continue to record observed-user cases below separately.
+
 ## Cases and observable outcomes
 
 | Case | Ask the participant to do | Required observation |
