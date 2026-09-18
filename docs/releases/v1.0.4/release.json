@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v1.0.4",
+  "name": "v1.0.4 \u2014 Publisher and independent operator protections",
+  "releaseDate": "2026-09-18",
+  "sourceCommit": "042a998b72d528570e0252eca760f39b95491cf7",
+  "sourceTree": "03396c4ce457f31131de577bd468f95024121eec",
+  "previousTag": "v1.0.3",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "English publisher/operator notices, independent owner template, privacy and jurisdiction guidance, synchronized source/console notices, fresh browser acknowledgement and deployment/readiness scope. MIT license, executable Solidity, ABI, creation/runtime bytecode, payouts, disabled NFT default, ENS namespaces and dependency resolutions are preserved. No live deployment, automatic operator adoption or guarantee of regulatory immunity.",
+  "unchangedPaths": [
+    "contracts/ens",
+    "contracts/legacy",
+    "contracts/periphery",
+    "contracts/test",
+    "contracts/utils",
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2",
+    "docs/releases/v0.9.3",
+    "docs/releases/v0.9.4",
+    "docs/releases/v0.9.5",
+    "docs/releases/v0.9.6",
+    "docs/releases/v0.9.7",
+    "docs/releases/v1.0.0",
+    "docs/releases/v1.0.1",
+    "docs/releases/v1.0.2",
+    "docs/releases/v1.0.3",
+    "LICENSE"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "7481ae62d3e6fa5757038e3f8b0bdf973ac659b7b3dbf0a875d0c94e395494eb",
+    "PREVIOUS_RELEASE.json": "1f6c36959176c68a7e18d350b234475f272436e6a6d3fa9b08528033cd2497a6",
+    "SOURCE_CI.json": "cf227e3a86311171c6b6174b815685648adabc18a9e725e7fa42d9f33a2cad54"
+  },
+  "requiredSourceRuns": {
+    "ci": {
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ],
+      "id": 35387327583
+    },
+    "security": {
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ],
+      "id": 35387327597
+    },
+    "ui": {
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ],
+      "id": 35387327600
+    },
+    "fork": {
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ],
+      "id": 35387327581
+    },
+    "docs": {
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ],
+      "id": 35387327686
+    }
+  },
+  "preservationCommit": "59e7db3c1ca6d32b0c1422b10877da94bd47e100"
+}
