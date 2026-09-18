@@ -14,6 +14,8 @@ The 1.0 label identifies this software edition. It does not certify a deployed b
 
 ## Published download versus current source
 
+**Post-v1.0.5 deployment maintenance in this checkout:** manager and optional ENS helper scripts default to read-only when `DRY_RUN` is missing or empty. Broadcasts require an explicit false value (documented as `DRY_RUN=0`) plus the existing signer, verification and mainnet confirmation gates. The offline check reports the selected mode. Operator guides are corrected for the disabled NFT default, five initial reserve counters and deployment-specific ENS names. These changes do not modify published v1.0.5 tags/assets, legal terms, Solidity, ABI, bytecode or deployed contracts. Pin the reviewed commit and use its matching guide and CI evidence; v1.0.5 release evidence covers its frozen source only.
+
 The v1.0.5 edition strengthens privacy rules and user responsibilities, adds fresh public-content reviews, and reduces saved browser content and credential exposure. It retains the v1.0.4 publisher/operator boundaries and fresh acknowledgement safeguards. It preserves v1.0.3 contract behavior and the v1.0.1 ENS naming policy. Existing instances, jobs, agreements and prior published assets do not change.
 
 | Edition | Contents |

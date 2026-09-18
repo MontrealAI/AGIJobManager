@@ -269,7 +269,7 @@ async function main() {
   await initializeRuntime();
   const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', DEFAULT_CONFIRMATIONS, 1);
   const verifyDelayMs = parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', DEFAULT_VERIFY_DELAY_MS, 0);
-  const dryRun = parseBooleanSetting(process.env.DRY_RUN, 'DRY_RUN');
+  const dryRun = parseBooleanSetting(process.env.DRY_RUN, 'DRY_RUN', true);
   let [deployer] = await ethers.getSigners();
   if (!deployer && dryRun && process.env.DEPLOYER_ADDRESS) {
     validateAddress('DEPLOYER_ADDRESS', process.env.DEPLOYER_ADDRESS);
@@ -331,7 +331,7 @@ async function main() {
   console.log(JSON.stringify(plan, null, 2));
 
   if (dryRun) {
-    console.log('DRY_RUN=1 set; no transactions were broadcast.');
+    console.log('Read-only plan complete; no transactions were broadcast. Broadcasting requires explicit DRY_RUN=0 and the applicable network/signing/verification gates.');
     return;
   }
 

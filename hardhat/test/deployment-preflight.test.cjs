@@ -159,7 +159,7 @@ function deploymentHarness({ dryRun = false, failConfirmation = false, failConfi
   };
   mockRequire.cache = require.cache;
   const context = { module, exports: module.exports, require: mockRequire, __dirname: scriptsDir,
-    process: { env: { DEPLOY_CONFIG: configPath, VERIFY_DELAY_MS: '0', DRY_RUN: dryRunValue ?? (dryRun ? '1' : ''),
+    process: { env: { DEPLOY_CONFIG: configPath, VERIFY_DELAY_MS: '0', DRY_RUN: dryRunValue ?? (dryRun ? '1' : '0'),
       DEPLOY_CONFIRM_MAINNET: dryRun ? '' : 'I_UNDERSTAND_MAINNET_DEPLOYMENT', DEPLOYER_ADDRESS: deployerAddress }, cwd: () => folder },
     console: { log: (...args) => logs.push(args), error() {} }, setTimeout };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy.cjs'), 'utf8'), context);
@@ -368,7 +368,7 @@ function ensHarness({ chainId = 1, networkName = 'mainnet', env = {}, verificati
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../scripts/deploy-ens-job-pages.cjs'), 'utf8'), {
     module, exports: module.exports, require: mockRequire, __dirname: path.join(folder, 'scripts'), process: { env: { JOB_MANAGER: B, VERIFY: '1', FINAL_OWNER: C,
-      VERIFY_DELAY_MS: '0', DEPLOY_CONFIRM_MAINNET: 'I_UNDERSTAND_MAINNET_DEPLOYMENT', ...env } },
+      DRY_RUN: '0', VERIFY_DELAY_MS: '0', DEPLOY_CONFIRM_MAINNET: 'I_UNDERSTAND_MAINNET_DEPLOYMENT', ...env } },
     console: { log() {}, error() {} }, setTimeout,
   });
   return { main: module.exports.main, broadcasts: () => broadcasts, actions, receipt: () => {
@@ -463,6 +463,23 @@ test('manager true-valued dry-run and malformed flags cannot broadcast', async (
       else await assert.rejects(harness.main(), /DRY_RUN must be an explicit/);
       assert.equal(harness.broadcasts(), 0);
     } finally { harness.cleanup(); }
+  }
+});
+
+test('unset and empty deployment modes never broadcast even with a signer and mainnet confirmation', async () => {
+  for (const value of [undefined, '']) {
+    const manager = deploymentHarness();
+    if (value === undefined) delete manager.env.DRY_RUN;
+    else manager.env.DRY_RUN = value;
+    const helper = ensHarness({ env: { DRY_RUN: value } });
+    try {
+      await manager.main();
+      await helper.main();
+      assert.equal(manager.broadcasts(), 0);
+      assert.equal(helper.broadcasts(), 0);
+      assert.deepEqual(helper.actions, []);
+      assert.equal(fs.existsSync(path.join(manager.folder, 'deployments')), false);
+    } finally { manager.cleanup(); }
   }
 });
 

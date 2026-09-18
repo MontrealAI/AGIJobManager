@@ -11,7 +11,7 @@ The manager is non-upgradeable and starts intake paused in its constructor. It u
 | Release qualification | [Test matrix](TESTING.md), [mainnet readiness](MAINNET_READINESS.md), committed lockfiles and release CI | Run the source-specific required gates | Test/static-analysis logs and release checksums |
 | Public deployment build | [Hardhat config](../hardhat/hardhat.config.js), [deployment script](../hardhat/scripts/deploy.js) | From `hardhat/`: `npm run compile` | Qualified artifacts/build input and bytecode-size checks |
 | Read-only plan | Trusted `hardhat/deploy.config.cjs`, [environment example](../hardhat/.env.example) | From `hardhat/`: `DRY_RUN=1 npm run deploy:mainnet` | Reviewed chain, constructor, owner and linked-build plan |
-| Authorized deployment | [Hardhat guide](../hardhat/README.md) and reviewed plan | `npm run deploy:sepolia` or separately confirmed `npm run deploy:mainnet` | Per-transaction journal, runtime hashes and exact Solidity input |
+| Authorized deployment | [Hardhat guide](../hardhat/README.md) and reviewed plan | `DRY_RUN=0 npm run deploy:sepolia` or separately confirmed `DRY_RUN=0 npm run deploy:mainnet` | Per-transaction journal, runtime hashes and exact Solidity input |
 | Source verification | Saved deployment addresses and build input | Deployment workflow's explorer verification; finish any failed target explicitly | Verified source for manager and all eight libraries |
 | Verification recovery | [Recovery script](../hardhat/scripts/reverify-deployment.js) and saved manager deployment journal | Keyless `reverify-deployment.js` command described below | Separate reverified receipt; original journal preserved; zero chain transactions |
 | Owner configuration | [Owner controls](OWNER_CONTROLS.md), accepted final owner and approved parameters | Owner console or verified explorer | Successful transaction receipts, events and current getter values |
@@ -24,7 +24,7 @@ Use the [configuration reference](DEPLOYMENT_CONFIGURATION.md) for private setup
 
 ### 1. Freeze and qualify the release
 
-Check out the immutable v1.0.5 tag and verify downloaded checksums. Use Node 22.23.2 and the committed lockfiles. From the repository root:
+Choose and record the reviewed source commit or immutable release using [release scope](V1_RELEASE_SCOPE.md#published-download-versus-current-source). Verify release checksums when using a published download, and use the instructions and CI evidence belonging to that source. Use Node 22.23.2 and the committed lockfiles. From the repository root:
 
 ```bash
 npm ci
@@ -43,7 +43,7 @@ Preserve the qualified Solidity 0.8.37 profile: optimizer 40 runs, Shanghai, `vi
 
 ### 2. Review configuration and produce a plan
 
-From `hardhat/`, copy the example configuration as described in its guide. Review that file as executable JavaScript from a trusted source. Supply:
+Run `npm --prefix hardhat run setup` from the root, then work from `hardhat/` as described in its guide. Review `deploy.config.cjs` as executable JavaScript from a trusted source. Supply:
 
 - The selected network's canonical six-decimal Circle USDC address.
 - Distinct, nonzero recipient addresses ordered `[wallet30, wallet10]`, different from USDC and the manager. Verify control and USDC receive capability.
@@ -57,11 +57,11 @@ Run an explicit dry run with no production private key present:
 DRY_RUN=1 npm run deploy:mainnet
 ```
 
-The documented boolean form is `DRY_RUN=1`; malformed boolean flag values fail rather than being interpreted as permission to broadcast. Review the resulting plan and current issuer restrictions. The sample's historical owner and namespace settings are not confirmation of your intended deployment.
+The documented boolean form is `DRY_RUN=1`; malformed boolean flag values fail rather than being interpreted as permission to broadcast. Review the resulting plan and current issuer restrictions. The example leaves owner and recipients empty; its membership roots do not prove control of any names. Missing/empty `DRY_RUN` is read-only in this maintenance version; older releases require extra care, so retain the explicit planning flag.
 
 ### 3. Rehearse before an authorized broadcast
 
-Use a reviewed Sepolia profile and the intended operational signer arrangement. Rehearse ownership acceptance, agent authorization **and NFT eligibility**, posting, bonds, voting, successful settlement, cancellation, refunds, disputes and both pause controls. The [local walkthrough](QUINTESSENTIAL_USE_CASE.md) also provides a disposable mock-token fixture, but its shortened timers and local migration behavior are not public deployment defaults.
+Use a reviewed Sepolia profile and the intended operational signer arrangement. Rehearse ownership acceptance, agent authorization and the reviewed optional/required NFT policy, posting, bonds, voting, successful settlement, cancellation, refunds, disputes and both pause controls. The [local walkthrough](QUINTESSENTIAL_USE_CASE.md) also provides a disposable mock-token fixture, but its shortened timers and local migration behavior are not public deployment defaults.
 
 For a separately authorized mainnet deployment, follow the Hardhat guide's explicit confirmation phrase and signing instructions. The script deploys eight libraries plus the manager, checks their runtime code and preserves a journal. It does not open intake. Do not rerun a failed command until the journal's transaction hashes and chain receipts have been reconciled; failure may occur after one or more broadcasts.
 
@@ -81,7 +81,7 @@ While intake remains paused, configure moderators, enabled NFT types, participan
 
 Keep the original deployment receipt as evidence. If deliberately reviewed identity settings differ from the initial constructor values, the v1.0.5 readiness workflow can use a separate `READINESS_CONFIG` file for expected ENS/wrapper, namespace and Merkle values. It changes checker expectations only and sends no transactions. Follow the exact schema in the [Hardhat guide](../hardhat/README.md); do not rewrite historical constructor data to make a check pass.
 
-Prepare the [reviewed NFT policy JSON](NFT_POLICY.md) for `READINESS_NFT_CONFIG`: an explicit boolean and every collection/score, including disabled entries. The required default with an empty registry fails readiness.
+Prepare the [reviewed NFT policy JSON](NFT_POLICY.md) for `READINESS_NFT_CONFIG`: an explicit boolean and every collection/score, including disabled entries. Fresh managers default to `agentNftRequired: false` with an empty registry, which is valid for readiness. A deliberately enabled required policy with no enabled collection fails readiness. Existing deployments and posted jobs retain their own policies.
 
 ### 5. Check the instance before opening intake
 

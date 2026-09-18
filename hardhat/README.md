@@ -1,4 +1,16 @@
-# Hardhat deployment guide — v1.0.5
+# Hardhat deployment guide
+
+**Post-v1.0.5 maintenance:** these instructions match this checkout. Manager and helper commands now default to read-only when `DRY_RUN` is missing or empty. Published v1.0.5 downloads are unchanged; always use explicit `DRY_RUN=1` for plans on older tags. Record the reviewed commit with `git rev-parse HEAD` and use its matching scripts, documentation and CI results. See [release scope](../docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+
+## Deployment at a glance
+
+| Step | What you do | Result |
+| --- | --- | --- |
+| 1. Prepare | Install both lockfiles, run `setup`, fill the owner and both recipient wallets | Private configuration; no transactions |
+| 2. Check | Run the offline profile check, compile, then an explicit dry run | Configuration and live-state plan; no transactions |
+| 3. Rehearse | Complete the Sepolia journey with the intended signing setup | Testnet evidence |
+| 4. Deploy | Explicitly select broadcast mode after reviewing the mainnet plan | Eight libraries and manager deployed, verified, intake paused |
+| 5. Take control | Accept ownership, configure while paused, run readiness | Recorded technical checks; owner reviews launch gates before opening intake |
 
 v1.0.5 preserves v1.0.3 construction, ABI, bytecode, eight library links and payout rules. Fresh managers start with NFT admission disabled and an empty collection registry. Existing settings and job policies stay unchanged. Start with the [launch checklist](../docs/LAUNCH_CHECKLIST.md), then use this guide in order. The [configuration reference](../docs/DEPLOYMENT_CONFIGURATION.md) lists every supported deployment setting and recovery command.
 
@@ -12,7 +24,7 @@ The manager starts with intake paused in its constructor. Successful jobs pay va
 
 ## Prepare
 
-Use Node 22.23.2 and the immutable release tag. Install from committed lockfiles:
+Use Node 22.23.2 and a reviewed, pinned source commit or release tag with its matching guide. Install from committed lockfiles:
 
 ```bash
 npm ci
@@ -84,9 +96,9 @@ A dry run validates configuration, chain, token state and compiled artifacts wit
 DRY_RUN=1 npm run deploy:mainnet
 ```
 
-Boolean settings (`DRY_RUN`, and the optional ENS script's `VERIFY`/`LOCK_CONFIG`) accept explicit `1`/`0`, `true`/`false`, `yes`/`no` or `on`/`off`. Unknown text is rejected before any transaction. `DRY_RUN=true` is also read-only. Keep the mainnet broadcast confirmation phrase unset during rehearsals.
+Boolean settings (`DRY_RUN`, and the optional ENS script's `VERIFY`/`LOCK_CONFIG`) accept explicit `1`/`0`, `true`/`false`, `yes`/`no` or `on`/`off`. Unknown text is rejected before any transaction. Missing or empty `DRY_RUN` is read-only in this maintenance version; the published v1.0.5 scripts retain their earlier behavior. `DRY_RUN=true` is also read-only. Keep the mainnet broadcast confirmation phrase unset during rehearsals.
 
-Review its plan, explicit owner source, membership-root mapping and exception policy before an authorized deployment. Mainnet requires at least three confirmations (`CONFIRMATIONS=3` by default). For actual mainnet deployment, set `DRY_RUN=0` explicitly and set `DEPLOY_CONFIRM_MAINNET` to `I_UNDERSTAND_MAINNET_DEPLOYMENT` in the operator's local environment, then run:
+Review its plan, explicit owner source, membership-root mapping and exception policy before an authorized deployment. For an authorized Sepolia broadcast, use `DRY_RUN=0 npm run deploy:sepolia` with the Sepolia profile, funded testnet deployer and explorer key. Mainnet requires at least three confirmations (`CONFIRMATIONS=3` by default). For actual mainnet deployment, set `DRY_RUN=0` explicitly and set `DEPLOY_CONFIRM_MAINNET` to `I_UNDERSTAND_MAINNET_DEPLOYMENT` in the operator's local environment, then run:
 
 ```bash
 DRY_RUN=0 npm run deploy:mainnet
@@ -148,7 +160,7 @@ DRY_RUN=1 npm run deploy:ens-job-pages:sepolia
 
 Review `JOB_MANAGER`, `ENS_DEPLOYMENT_MODE`, `ENS_REGISTRY`, `NAME_WRAPPER`, `PUBLIC_RESOLVER`, `NEW_OWNER`, `VERIFY` and `LOCK_CONFIG`. Fresh mode automatically selects `job-<id>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`; it refuses existing jobs/helpers and occupied roots. `JOBS_ROOT_NAME`, `JOBS_ROOT_NODE` and `JOB_LABEL_PREFIX` are optional assertions. Replacement mode preserves the active helper’s root and prefix for the same manager. Read the [naming policy](../docs/ENS_DEPLOYMENT_NAMESPACES.md), verify parent authority and keep configuration unlocked through lifecycle validation.
 
-For the corresponding mainnet read-only plan, use `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` with the reviewed mainnet values and `DEPLOYER_ADDRESS`. An actual broadcast requires the explicit mainnet confirmation phrase, a funded deployer and `DRY_RUN=0` explicitly. Keep `VERIFY=1` and `LOCK_CONFIG=0`, then run `npm run deploy:ens-job-pages:mainnet`. The final helper owner must be the separately reviewed `NEW_OWNER`.
+For the corresponding mainnet read-only plan, use `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` with the reviewed mainnet values and `DEPLOYER_ADDRESS`. An actual broadcast requires the explicit mainnet confirmation phrase, a funded deployer and `DRY_RUN=0` explicitly. Keep `VERIFY=1` and `LOCK_CONFIG=0`, then run `DRY_RUN=0 npm run deploy:ens-job-pages:mainnet`. The final helper owner must be the separately reviewed `NEW_OWNER`.
 
 Helper broadcasts require explorer verification; `VERIFY` defaults enabled and disabling it blocks a public-network broadcast. A keyless read-only plan needs no explorer API key. The target manager must have intake paused and zero `pendingOwner()` on both supported public networks; complete manager ownership acceptance first and independently compare `owner()` to the reviewed manager receipt. Zero pending owner alone does not prove the intended owner is in control. This gate does not require empty reserves because a separately reviewed same-manager helper replacement may preserve existing jobs. Set the explicit final helper owner through `NEW_OWNER` or `FINAL_OWNER`; omission does not retain the deployer. On Sepolia, configure the actual `ENS_REGISTRY`, `NAME_WRAPPER` (zero is permitted for an unwrapped-only route) and `PUBLIC_RESOLVER` explicitly.
 

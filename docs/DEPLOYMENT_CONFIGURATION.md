@@ -1,10 +1,10 @@
-# Deployment configuration — v1.0.5
+# Deployment configuration — post-v1.0.5 maintenance
 
 Start with the [Hardhat guide](../hardhat/README.md). This reference answers which file to edit, which command to run, and whether it sends a transaction. Ethereum mainnet is chain **1**; Sepolia is **11155111**. No production owner, payment recipients or manager address is supplied.
 
 ## Set up once
 
-From the repository root, using Node 22.23.2 and the selected immutable release:
+From the repository root, using Node 22.23.2 and the selected reviewed source with its matching [Hardhat guide](../hardhat/README.md):
 
 ```bash
 npm ci
@@ -42,12 +42,12 @@ When upgrading an existing operator checkout, compare the example with your priv
 | `ETHERSCAN_API_KEY` | Required for broadcasts and verification recovery; dry-run plans and readiness need no explorer key |
 | `DEPLOY_CONFIG` | Optional reviewed `.cjs` override; default is the private Hardhat profile, never the example |
 | `FINAL_OWNER` | Optional override of the selected manager profile's `finalOwner`; one must explicitly identify the intended owner |
-| `DRY_RUN` | Example defaults to `1`; deployment commands require an explicit `0` to send when using that example |
+| `DRY_RUN` | Defaults to read-only (`1`), including when absent/empty; explicit `0` requests broadcast subject to all other gates |
 | `DEPLOY_CONFIRM_MAINNET` | Required for mainnet broadcasts: `I_UNDERSTAND_MAINNET_DEPLOYMENT`; unnecessary for read-only commands |
 | `CONFIRMATIONS` | Default 3; mainnet minimum 3, Sepolia minimum 1 |
 | `VERIFY_DELAY_MS` | Default 3500; nonnegative integer delay for explorer verification attempts |
 
-Boolean inputs accept `1/0`, `true/false`, `yes/no` and `on/off`; unknown values fail. An absent/empty `DRY_RUN` retains the script's historical broadcast behavior, subject to the other gates. Always set `DRY_RUN=1` explicitly for planning, especially with an older private environment file. `VERIFY` controls the ENS helper only: manager broadcasts always require verification.
+Boolean inputs accept `1/0`, `true/false`, `yes/no` and `on/off`; unknown values fail. In this maintenance version, absent/empty `DRY_RUN` is read-only for both manager and helper. Published v1.0.5 and earlier scripts retain the historical broadcast default; use explicit `DRY_RUN=1` for plans on every version. Existing private `.env` files with `DRY_RUN=0` still explicitly request broadcast; setup preserves them. Clear an old broadcast setting or override it for each plan. `VERIFY` controls the ENS helper only: manager broadcasts always require verification.
 
 ### Optional ENS helper settings
 
@@ -88,6 +88,7 @@ Run these from `hardhat/`; from the repository root, insert `--prefix hardhat` a
 | Review live deployment plan | `DRY_RUN=1 npm run deploy:mainnet` or `deploy:sepolia` | Chain reads; zero broadcasts |
 | Deploy after review | `DRY_RUN=0 npm run deploy:mainnet` or `deploy:sepolia` | Deployments and ownership proposal; mainnet phrase also required |
 | Plan optional helper | `DRY_RUN=1 npm run deploy:ens-job-pages:mainnet` or `deploy:ens-job-pages:sepolia` | Chain reads and constructor estimation; zero broadcasts |
+| Deploy optional helper after review | `DRY_RUN=0 npm run deploy:ens-job-pages:mainnet` or `deploy:ens-job-pages:sepolia` | Helper deployment/configuration/one-step ownership transfer; mainnet phrase also required |
 | Recover manager verification | `npm run reverify:mainnet` or `reverify:sepolia` | Chain reads and explorer verification requests; zero blockchain transactions |
 | Verify pre-activation state | `npm run check:readiness` or `check:readiness:sepolia` | Chain reads and a local report; zero broadcasts |
 
@@ -97,6 +98,7 @@ The offline check and live deployment share profile validation. Offline success 
 
 | Message or situation | Next action |
 | --- | --- |
+| Deployment command prints a plan and exits | Read-only is the default. Broadcast only after review with explicit `DRY_RUN=0`, a funded signer and required explorer/mainnet settings |
 | Network does not exist | Fill the selected RPC in `hardhat/.env`; root `.env` and retired provider-key aliases are not used |
 | Missing profile, owner or recipients | Run setup, review the selected profile, then rerun its offline check |
 | Deployer account required for dry run | Leave the key empty and supply the intended public `DEPLOYER_ADDRESS` |
