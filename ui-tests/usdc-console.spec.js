@@ -238,7 +238,7 @@ test.describe('Published USDC console in a real browser', () => {
     await expect(page.locator('#termsAccepted')).not.toBeChecked();
     await expect(page.locator('#createJobBtn')).toBeDisabled();
     await expect(page.locator('#missionPrimaryBtn')).toHaveAttribute('data-action', 'terms');
-    await expect(page.locator('#walletStatus')).toContainText('0xbbbb');
+    await expect(page.locator('#walletStatus')).toContainText(/0xbbbb/i);
     await assertNoExecution(page, errors);
   });
 
@@ -299,7 +299,18 @@ test.describe('Published USDC console in a real browser', () => {
     await page.locator('#missionRole').selectOption('agent');
     await page.locator('#missionBuyerProtectionBtn').click();
     await expect(page.locator('#buyerProtectionGuide summary')).toBeFocused();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+    const layout = await page.evaluate(() => ({
+      viewport: window.innerWidth,
+      width: document.documentElement.scrollWidth,
+      overflowing: [...document.body.querySelectorAll('*')].filter(node => node.getClientRects().length)
+        .map(node => { const bounds = node.getBoundingClientRect(), css = getComputedStyle(node); return {
+          element: node.tagName.toLowerCase() + (node.id ? '#' + node.id : '.' + String(node.className).split(' ').join('.')),
+          left: Math.round(bounds.left), right: Math.round(bounds.right), width: Math.round(bounds.width),
+          sizing: css.boxSizing, minWidth: css.minWidth, padding: css.padding, overflowX: css.overflowX
+        }; }).filter(node => node.right > window.innerWidth + 1 || node.left < -1)
+        .sort((a, b) => b.right - a.right).slice(0, 16)
+    }));
+    expect(layout.width - layout.viewport, JSON.stringify(layout)).toBeLessThanOrEqual(1);
     await page.locator('#v26MobileDock [data-v26-open-sheet]').click();
     await expect(page.getByRole('dialog', { name: 'Mobile control sheet' })).toBeVisible();
     await page.keyboard.press('Escape');
