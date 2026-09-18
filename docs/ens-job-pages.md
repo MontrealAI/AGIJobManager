@@ -41,7 +41,7 @@ Anyone can also call `AGIJobManager.lockJobENS(jobId, burnFuses)` after a job is
 ## ENS record conventions
 
 > **Privacy warning**: ENS text records are public and immutable in history. Do **not** store secrets.
-> Prefer URIs, hashes, or encrypted blobs with off‑chain key exchange.
+> Do not add personal information, confidential material or private access links. Publish only sanitized public references; hashes, encryption and CIDs do not guarantee anonymity or erasure. Keep protected work in a separately agreed access-controlled workflow. See [privacy and public-data rules](LEGAL/PRIVACY.md).
 
 ### Core keys (written by the platform, best‑effort)
 | Key | Example | Description |

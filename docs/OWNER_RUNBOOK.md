@@ -30,7 +30,7 @@ Complete the [launch checklist](LAUNCH_CHECKLIST.md) for the actual instance. It
 | `migrateLegacyWrappedJobPage(jobId, exactLabel)` for existing pages of the same manager only | ENSJobPages owner |
 | Reviewed irreversible lock | Owner of the contract being locked |
 
-A fresh USDC launch preserves the original manager, helper, namespace, approvals and jobs, and uses a separate helper/root. Future jobs use the configured `<prefix><jobId>.<jobsRootName>` label, with `agijob` as the default prefix. Existing snapshotted labels stay stable unless explicitly migrated or imported. Verify the actual root, prefix, approvals and legacy-label inventory before cutover.
+A fresh USDC launch preserves the original manager, helper, namespace, approvals and jobs, and uses a separate helper/root. Fresh scripted deployments use `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`. Same-manager replacement preserves the active root and prefix; `agijob` is the constructor/legacy default. See [naming policy](ENS_DEPLOYMENT_NAMESPACES.md). Existing snapshotted labels stay stable unless explicitly migrated or imported. Verify the actual root, prefix, approvals and legacy-label inventory before cutover.
 
 ## Manual vs automated (owner-safe expectations)
 
@@ -40,13 +40,13 @@ Before an ENS lock, confirm both new manager/helper pointers and root authority,
 
 ## 1) Deployment checklist
 
-1. Check out the immutable v1.0.5 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
+1. Pin the reviewed source or immutable release and use its matching [guide and qualification evidence](V1_RELEASE_SCOPE.md#published-download-versus-current-source); verify checksums for published downloads. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
 2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; use the exact release compiler profile and linked artifacts for the public deployment build.
 3. Review all six constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, and **two distinct settlement wallets ordered 30% then 10%**. Confirm the intended final owner separately. Example addresses and roots are not a reviewed production configuration.
 4. Run a read-only deployment plan, rehearse on Sepolia and review the saved plan before any authorized mainnet broadcast. Review the eight library addresses and exact linked runtime code.
 5. Verify the manager and every linked library on Etherscan. A failed deployment command may already have broadcast transactions: inspect the deployment journal and reconcile receipts before retrying. Where all nine manager/library deployments completed, use the Hardhat guide's read-only recovery procedure; preserve its separate reverified receipt and the original journal. Recovery does not propose or accept ownership.
 6. Have the proposed final owner call `acceptOwnership()` where needed. Verify `owner()`, zero `pendingOwner()` and the completed transfer event.
-7. While intake stays paused, configure moderators, authorization routes, eligible agent NFT collections, limits, bonds and review periods. Every agent needs identity authorization. A qualifying enabled ERC-721 holding is also required only when the job's posting-time NFT policy requires it; allowlisting does not bypass a required NFT. Configure the fresh manager's empty collection registry or explicitly select the optional policy before opening intake.
+7. While intake stays paused, configure moderators, authorization routes, eligible agent NFT collections, limits, bonds and review periods. Every agent needs identity authorization. A qualifying enabled ERC-721 holding is also required only when the job's posting-time NFT policy requires it; allowlisting does not bypass a required NFT. Fresh managers already have NFT admission disabled and an empty registry; retain that state or deliberately configure owner opt-in. Match the complete `READINESS_NFT_CONFIG` before opening intake.
 8. Run the read-only readiness checker with the reviewed deployment receipt and complete the operational gates in [mainnet readiness](MAINNET_READINESS.md). Confirm `paused()==true`, `settlementPaused()==false`, both recipient addresses, USDC issuer status and all five reserve counters, including `lockedClaims`.
 
 ENSJobPages is optional. When enabled, verify selector compatibility and hook behavior:

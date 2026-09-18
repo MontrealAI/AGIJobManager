@@ -106,7 +106,7 @@ async function main() {
   const net = await ethers.provider.getNetwork();
   const chainId = Number(net.chainId);
   requireDeploymentNetwork(network.name, chainId);
-  const dryRun = parseBooleanSetting(env("DRY_RUN"), "DRY_RUN");
+  const dryRun = parseBooleanSetting(env("DRY_RUN"), "DRY_RUN", true);
 
   const confirmations = parseIntEnv("CONFIRMATIONS", 3, 1);
   if (chainId === 1 && confirmations < 3) throw new Error("Mainnet requires at least 3 confirmations.");

@@ -44,7 +44,7 @@ Yes. A buyer-win outcome preserves the full job escrow. Reviewer rewards come fr
 
 ## ENS metadata in one minute
 - Settlement and ENS metadata are intentionally decoupled: settlement can succeed even if ENS writes fail.
-- ENS name format is `<prefix><jobId>.<jobsRootName>` with default prefix `agijob`.
+- Fresh scripted names use `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`; same-manager replacements preserve the active root/prefix. `agijob` is the constructor/legacy default. See [naming policy](ENS_DEPLOYMENT_NAMESPACES.md).
 - Prefix changes do not rename already snapshotted legacy labels.
 - ENSJobPages replacement requires manual NameWrapper approval and manual `setEnsJobPages(...)` wiring.
 

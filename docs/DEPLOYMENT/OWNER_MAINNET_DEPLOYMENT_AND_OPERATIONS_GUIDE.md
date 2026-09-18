@@ -1,4 +1,4 @@
-# Owner Mainnet Deployment & Operations Guide — v1.0.3
+# Owner Mainnet Deployment & Operations Guide — current USDC deployment
 
 Use this guide to commission a manager and operate it through a verified explorer or owner wallet. The [Hardhat guide](../../hardhat/README.md) is the supported public-network deployment procedure. The [v0.8.0 edition of this document](https://github.com/MontrealAI/AGIJobManager/blob/v0.8.0/docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md) is retained as historical reference; its retired public Truffle commands are not a current deployment path.
 
@@ -24,7 +24,7 @@ Publishing a software release does not perform these mainnet actions. This is a 
 | Agent | Authorized participant with an enabled qualifying NFT holding when the job requires it; applies, posts a bond and submits completion |
 | Validator | Authorized participant that posts its required bond and votes during the review window |
 | Moderator | Address enabled in `moderators(address)`; can decide an active dispute |
-| Reserves | Job escrow plus agent, validator and dispute bonds; they are not owner-withdrawable revenue |
+| Reserves | Job escrow, agent/validator/dispute bonds and pending payment claims (`lockedClaims`); none are owner-withdrawable revenue |
 
 Jobs, bonds, rewards and refunds use **native Circle USDC with six decimals**. Ethereum mainnet USDC is `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; confirm it using [Circle's registry](https://developers.circle.com/stablecoins/usdc-contract-addresses). ETH is required for gas.
 
@@ -32,33 +32,34 @@ A successful job pays validators first, then 30% and 10% of its original cost to
 
 ## 3) Prepare the deployment
 
-Use Node 22.23.2 and the immutable v1.0.3 source and checksums. From the repository root:
+Use Node 22.23.2 and record the reviewed commit or immutable release with its matching [guide and evidence](../V1_RELEASE_SCOPE.md#published-download-versus-current-source). From the repository root:
 
 ```bash
 npm ci
+npm --prefix hardhat ci
+npm --prefix hardhat run setup
 cd hardhat
-npm ci
-if [ ! -e .env ] && [ ! -L .env ]; then cp .env.example .env; fi
-if [ ! -e deploy.config.cjs ] && [ ! -L deploy.config.cjs ]; then cp deploy.config.example.cjs deploy.config.cjs; fi
 ```
 
-Review `deploy.config.cjs` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. The example supplies no final owner or recipients; the intended final owner must be explicit in `FINAL_OWNER` or profile `finalOwner`, including in a dry run. The private `deploy.config.cjs` is loaded by default; the script does not silently use example configuration.
+Setup creates missing private files, including `reviewed-nft-policy.json`, and preserves existing settings. Hardhat loads `hardhat/.env`; exported shell values take precedence. Review `deploy.config.cjs` as executable JavaScript from a trusted source. Review all six constructor inputs: USDC, base metadata URL, ENS address pair, four namespace roots, two Merkle roots and `[wallet30, wallet10]`. Supply two distinct, nonzero recipients different from USDC and the manager. Confirm the intended final owner separately. The example supplies no final owner or recipients; the intended final owner must be explicit in `FINAL_OWNER` or profile `finalOwner`, including in a dry run. The private `deploy.config.cjs` is loaded by default; the script does not silently use example configuration.
 
 Configure the selected RPC, `DEPLOY_CONFIG`, intended `DEPLOYER_ADDRESS` for read-only planning, and explorer configuration. An actual deployment additionally requires a funded disposable deployer key through the supported Hardhat environment. Do not give production keys to local test tools, commit them or enter them into an explorer form. Prefer a tested multisignature owner when securing substantial funds.
 
 From `hardhat/`:
 
 ```bash
+npm run check:config:mainnet
 npm run compile
 npm run test:preflight
 npm run test:deployment
 npm run test:mainnet-fork
+CUTOVER_REPORT=../build/qualification/mainnet-cutover.json npm run test:cutover
 DRY_RUN=1 npm run deploy:mainnet
 ```
 
 The dry run sends no transactions. Boolean flags are validated; use the documented explicit value `DRY_RUN=1`. Preserve the qualified Solidity 0.8.37 compiler profile and Ethereum size checks. The fork test reads historical mainnet USDC and executes only locally; it is not a live deployment rehearsal with your real signers.
 
-Complete a separately authorized Sepolia rehearsal and the [mainnet qualification gates](../MAINNET_READINESS.md) before significant mainnet exposure. The actual mainnet broadcast requires the Hardhat guide's exact confirmation value, `I_UNDERSTAND_MAINNET_DEPLOYMENT`, in `DEPLOY_CONFIRM_MAINNET`, with dry-run mode disabled. Follow that guide for signing and confirmations rather than substituting a legacy migration command.
+Complete a separately authorized Sepolia rehearsal and the [mainnet qualification gates](../MAINNET_READINESS.md) before significant mainnet exposure. The actual mainnet broadcast requires the Hardhat guide's exact confirmation value, `I_UNDERSTAND_MAINNET_DEPLOYMENT`, in `DEPLOY_CONFIRM_MAINNET`, with explicit `DRY_RUN=0`. Current maintenance tooling defaults to read-only; use explicit `DRY_RUN=1` for every plan, including on older releases. Follow that guide for signing and confirmations rather than substituting a legacy migration command.
 
 ## 4) Deploy, verify and preserve evidence
 
@@ -78,7 +79,7 @@ Recovery verifies canonical receipts, recorded deployer, exact creation input an
 
 The current owner proposes a manager transfer using `transferOwnership(newOwner)`. After a recovered deployment, check whether this proposal is still required; verification recovery performs no ownership writes. The proposed owner independently checks the manager and calls `acceptOwnership()` through its own signing interface. Until acceptance, the deployer/current owner retains authority. Verify `owner()`, zero `pendingOwner()` and `OwnershipTransferred` afterward. Renunciation is disabled; a current owner can cancel an unaccepted proposal with `transferOwnership(address(0))`.
 
-Configure moderators, participant authorization, enabled NFT types, job limits, bonds and review policy while intake remains paused. The default vote thresholds/quorum are not a substitute for a reviewed validator operating model. A participant on an agent allowlist still needs an eligible ERC-721 holding; an enabled type's positive legacy score is not a payout percentage override.
+Configure moderators, participant authorization, enabled NFT types, job limits, bonds and review policy while intake remains paused. The default vote thresholds/quorum are not a substitute for a reviewed validator operating model. Fresh managers start with NFT admission disabled and no collections: keep `agentNftRequired: false` and `agiTypes: []` in the reviewed policy to retain this default, with no NFT-setting transaction. An allowlisted agent needs an eligible ERC-721 only when the job's posting-time policy requires it. To opt in for future jobs, register reviewed collections and call `setAgentNftRequired(true)`; update the complete readiness policy. NFT scores never override payouts.
 
 If reviewed ENS/wrapper, namespace or Merkle settings intentionally change from the constructor values before launch, preserve the original receipt and use a separate `READINESS_CONFIG` expectations file in the [readiness workflow](../../hardhat/README.md). This file tells the checker what to compare; it cannot modify the contract.
 
@@ -102,9 +103,9 @@ Before activation, independently verify:
 | `usdcToken()` | Canonical mainnet USDC |
 | `wallet30()` / `wallet10()` | Reviewed recipient pair in the correct order |
 | `paused()` / `settlementPaused()` | `true` / `false` before initial activation |
-| Four reserve counters | All zero before the first job |
+| Five reserve counters | `lockedEscrow`, `lockedAgentBonds`, `lockedValidatorBonds`, `lockedDisputeBonds`, `lockedClaims`: all zero before initial activation |
 | `ens()`, `nameWrapper()`, namespace and Merkle getters | Reviewed current identity configuration |
-| Role/allowlist maps and agent NFT holding | Intended moderators and eligible participants |
+| Role/allowlist maps and job-specific NFT policy | Intended moderators and authorized participants; qualifying NFT only for jobs that require it |
 | Policy getters | Approved limits, validator budget, bonds, thresholds and windows |
 | USDC pause/blocklist status | Intended transfers currently permitted by the issuer |
 | Monitoring and incident rehearsal | Operator can detect and contain the relevant failures |
@@ -160,7 +161,7 @@ ENS job pages are an optional metadata integration, separate from escrow settlem
 | Verify cutover | Read both new manager/helper pointers, their separate owners and configured root/resolver/wrapper authority. Require creation, delegated writes and terminal revocation without skipped/failed ENS hooks. Reconcile the preserved legacy inventory. |
 | Consider locks | Respective owner reviews `lockIdentityConfiguration()` or `lockConfiguration()` only after final validation and understanding the lost repair options. |
 
-Names use `<prefix><jobId>.<jobsRootName>`, with `agijob` as the default prefix. Check the actual configured root rather than copying an example domain. Existing snapshotted labels remain historical unless explicitly migrated/imported. Optional hook failure must not be treated as a reversed or missing USDC settlement; reconcile the core transaction separately.
+Fresh scripted deployments use `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth`, where `manager40` is the full lowercase manager address without `0x`. Same-manager replacements preserve the active root and prefix. `agijob` is the low-level constructor/legacy default; see the [naming policy](../ENS_DEPLOYMENT_NAMESPACES.md). Check the actual configured root rather than copying an example domain. Existing snapshotted labels remain historical unless explicitly migrated/imported. Optional hook failure must not be treated as a reversed or missing USDC settlement; reconcile the core transaction separately.
 
 For an identity incident, contain the affected activity and follow [incident response](../OPERATIONS/INCIDENT_RESPONSE.md). **Never lock a suspected bad configuration as an emergency mitigation.**
 
@@ -168,7 +169,7 @@ For an identity incident, contain the affected activity and follow [incident res
 
 1. Confirm the intended manager and issuer-permitted native USDC before granting its allowance. Employer funds the job cost; agents/validators separately fund any required bonds and ETH gas.
 2. Employer posts a job. Verify `JobCreated`, exact escrow and the posting-time payout percentage.
-3. Authorized, NFT-eligible agent applies. Verify assignment, deadline and bond accounting.
+3. Authorized agent applies, satisfying the job-specific NFT requirement if enabled. Verify assignment, deadline and bond accounting.
 4. Assigned agent submits a valid completion URI within the permitted window.
 5. Authorized validators vote once each during review, posting required bonds. Check counters, dispute state and applicable timers.
 6. An eligible caller invokes finalization after its conditions are met. Anyone may finalize; outcomes depend on votes/timers and may open a dispute rather than settle immediately.
@@ -176,7 +177,7 @@ For an identity incident, contain the affected activity and follow [incident res
 
 Dispute, cancellation and expiry are alternative lifecycle paths. A moderator's code 1 resolves for the agent, code 2 for the employer, and code 0 leaves the dispute open. A completed flag can also represent an employer refund. See the [full scenario walkthrough](../QUINTESSENTIAL_USE_CASE.md) for exact checkpoints.
 
-For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.0.3 managers start with that requirement disabled; owners can enable it for future jobs. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
+For ordinary onboarding, AGI Agents need membership under `agent.agi.eth` or `alpha.agent.agi.eth`, and AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Verify the connected wallet’s supported wrapper authority or resolver address. Additional lists and Merkle proofs remain explicit owner-reviewed membership exceptions, not default proof of an ENS name. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on. Fresh v1.0.5 managers start with that requirement disabled; owners can enable it for future jobs. Canonical Merkle leaves use `keccak256(abi.encodePacked(claimantAddress))`; from the repository root:
 
 ```bash
 node scripts/merkle/export_merkle_proofs.js --input allowlist.json --output proofs.json
@@ -192,14 +193,16 @@ Distribute reviewed proofs before changing roots. ENS authorization uses the con
 | Explorer source does not match | Compare exact compiler settings, build input, constructor arguments and linked libraries. Keep intake paused. |
 | Readiness rejects identity settings | Compare the original receipt, current getters and reviewed change records. Use `READINESS_CONFIG` only for intentional approved expectation changes. |
 | Owner transaction reverts | Confirm actual owner/signing context, current pause flags and function-specific reserve/lock guards. |
-| Agent is allowlisted but cannot apply | Check enabled NFT eligibility, blacklist, active-job cap, balance/allowance and job assignment state. |
+| Agent is allowlisted but cannot apply | Check the job-specific NFT policy and any required holding, blacklist, active-job cap, balance/allowance and job assignment state. |
 | Validator cannot vote | Check authorization, blacklist, prior vote, review deadline, dispute/terminal state and bond allowance. |
-| Settlement fails after apparent earlier payments | Inspect the receipt; transfers and accounting updates in a reverted transaction roll back together. Check issuer pause/blocklist status and actual balances. |
+| Settlement succeeds but a recipient receives nothing | Inspect reserved payment claims and `lockedClaims`; failed outgoing transfers can be retried by the original beneficiary. Check issuer restrictions. A genuinely reverted transaction rolls back its transfers and accounting. |
 | A funded job's recipient is blocked | Wallet rotation requires zero live job escrow and bonds; it cannot redirect that job. Address the issuer restriction through its legitimate process. |
 | Active exploit or immediate fund risk | Authorized owner calls `pauseAll()`, verifies both flags and follows the incident playbook. `pause()` alone leaves settlement active. |
 
 Successful job costs are fully distributed and do not accumulate as protocol treasury. Withdrawals and USDC rescue only use genuine surplus. Do not clear an emergency pause to perform a withdrawal or assume rescue can migrate escrow.
 
 ## 12) Terms and scope
+
+Before paid intake, identify the actual operator, owner and fee beneficiaries in the [operator notice](../LEGAL/OPERATOR_NOTICE_TEMPLATE.md). Adopt applicable terms prospectively through a valid process. Follow the [public-content rules](../LEGAL/USER_DATA_RULES.md) and [privacy response procedure](../OPERATIONS/PRIVACY_RESPONSE.md); use a private contact for rights/incident reports. Keep personal information and secrets out of public job content, logs and issues. Readiness does not establish legal approval or user acceptance.
 
 The contract describes normal protocol participation as intended for AI agents; this guide also covers owner/operator administration. Its operational checks do not establish the truth of off-chain work or remove trust in owners, moderators, validators and external dependencies. Consult the [contract terms](../LEGAL/TERMS_AND_CONDITIONS.md) and [security model](../SECURITY_MODEL.md) for their scope.

@@ -12,11 +12,11 @@ async function main(networkName = process.argv[2]) {
   const confirmations = parsePositiveInt(process.env.CONFIRMATIONS, 'CONFIRMATIONS', 3, 1);
   if (networkName === 'mainnet' && confirmations < 3) throw new Error('Mainnet requires at least 3 confirmations.');
   parsePositiveInt(process.env.VERIFY_DELAY_MS, 'VERIFY_DELAY_MS', 3500, 0);
-  parseBooleanSetting(process.env.DRY_RUN, 'DRY_RUN');
+  const dryRun = parseBooleanSetting(process.env.DRY_RUN, 'DRY_RUN', true);
   const report = { checksPassed: true, scope: 'offline configuration only; no RPC, signer, runtime, explorer or readiness verification',
     network: networkName, chainId: networkName === 'mainnet' ? 1 : 11155111, configPath,
     finalOwner, settlementWallets: constructorArgs.settlementWallets, membership: describeMembershipConfig(constructorArgs),
-    confirmations, transactionsBroadcast: 0 };
+    confirmations, deploymentMode: dryRun ? 'read-only plan' : 'broadcast requested; deployment gates still required', transactionsBroadcast: 0 };
   console.log(JSON.stringify(report, null, 2));
   console.log(`Next: compile, then DRY_RUN=1 npm run deploy:${networkName} from hardhat/ with the reviewed RPC and DEPLOYER_ADDRESS.`);
   return report;
