@@ -1,10 +1,10 @@
-# Deploy Day Runbook — v0.9.5
+# Deploy Day Runbook — v0.9.6
 
 Use the [Hardhat deployment guide](../hardhat/README.md) for the supported public-network workflow. Truffle/Ganache dependencies and migration commands are retired; local regression tests use Hardhat 3.
 
 ## Before deployment
 
-1. Check out the immutable v0.9.5 tag and verify the release asset checksums.
+1. Check out the immutable v0.9.6 tag and verify the release asset checksums.
 2. Use Node 22.23.2 and `npm ci` in each workspace; review the [dependency security scope](DEPENDENCY_SECURITY.md).
 3. Select Ethereum mainnet or Sepolia and verify the native six-decimal USDC address against Circle's registry.
 4. Provide two distinct, reviewed recipient addresses for the fixed 30% and 10% shares. No production recipient is supplied by the release.
@@ -17,7 +17,7 @@ Follow the environment setup and `deploy:sepolia` or `deploy:mainnet` commands i
 
 If the intended owner differs from the deployer, the script only proposes the transfer. That address must call `acceptOwnership()`. Verify `owner()` and zero `pendingOwner()`; the deployer retains authority until acceptance.
 
-While intake remains paused, use the v0.9.5 USDC owner console or the verified explorer contract to configure roles, limits, ENS and policy. Verify USDC, both recipient addresses, all reserves, validator rate and ownership directly on chain. Confirm that ordinary settlement is available before opening intake. The console simulates privileged writes and requires review.
+While intake remains paused, use the v0.9.6 USDC owner console or the verified explorer contract to configure roles, limits, ENS and policy. Verify USDC, both recipient addresses, all reserves, validator rate and ownership directly on chain. Confirm that ordinary settlement is available before opening intake. The console simulates privileged writes and requires review.
 
 ## Open intake
 
@@ -30,6 +30,6 @@ While intake remains paused, use the v0.9.5 USDC owner console or the verified e
 
 Pause intake to stop new jobs; normal settlement remains available. Settlement pause is a separate emergency control. Wallet rotation requires paused intake and all job escrow, agent bonds, validator bonds and dispute bonds to be zero. Existing commitments therefore cannot be redirected.
 
-Code changes require a fresh deployment and a managed migration; this release does not upgrade or deploy any live instance. In v0.9.5, failed outgoing USDC transfers become reserved claims for their original recipients; other eligible recipients can still be paid. Issuer restrictions can delay receipt, and incoming escrow or bond transfers can still fail. See [payout rules](USDC_PAYOUT_SPLIT.md) and [owner controls](OWNER_CONTROLS.md).
+Code changes require a fresh deployment and a managed migration; this release does not upgrade or deploy any live instance. In v0.9.6, failed outgoing USDC transfers become reserved claims for their original recipients; other eligible recipients can still be paid. Issuer restrictions can delay receipt, and incoming escrow or bond transfers can still fail. See [payout rules](USDC_PAYOUT_SPLIT.md) and [owner controls](OWNER_CONTROLS.md).
 
 Before opening a new deployment, run the read-only [deployment readiness check](../hardhat/README.md). See [mainnet qualification and remaining deployment gates](MAINNET_READINESS.md).

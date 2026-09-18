@@ -1,4 +1,4 @@
-# AGIJobManager Contract Guide — v0.9.5
+# AGIJobManager Contract Guide — v0.9.6
 
 Source of truth: [`contracts/AGIJobManager.sol`](../../contracts/AGIJobManager.sol). Every escrow, reward and bond uses native USDC; ETH pays gas. Successful settlement pays validators first, then 30% and 10% of the original job cost to the two configured wallets, then the remainder to the agent. See [exact economics](../USDC_PAYOUT_SPLIT.md).
 

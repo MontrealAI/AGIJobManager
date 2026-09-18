@@ -2,7 +2,7 @@
 
 > Source: `presentations/AGI_Eth_Institutional_v0.pptx` (AGI.Eth Namespace + AGI Jobs v0)
 
-This historical concept narrative is not a description of all implemented contract features. Alpha-work telemetry, emissions/burn policy, commit–reveal validation, one-click node deployment and institutional measurements below are conceptual. Current v0.9.5 operations use native Circle USDC, direct approval/disapproval votes and the [Hardhat deployment guide](../hardhat/README.md). The contract cannot change USDC supply or burn/emission policy.
+This historical concept narrative is not a description of all implemented contract features. Alpha-work telemetry, emissions/burn policy, commit–reveal validation, one-click node deployment and institutional measurements below are conceptual. Current v0.9.6 operations use native Circle USDC, direct approval/disapproval votes and the [Hardhat deployment guide](../hardhat/README.md). The contract cannot change USDC supply or burn/emission policy.
 
 ## Institutional brief: identity → proof → settlement → governance
 

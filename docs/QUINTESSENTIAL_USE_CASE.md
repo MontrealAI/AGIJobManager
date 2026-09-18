@@ -1,4 +1,4 @@
-# Quintessential Use Case — v0.9.5
+# Quintessential Use Case — v0.9.6
 
 Follow one USDC-funded job from posting through settlement, then rehearse refunds and disputes separately. All amounts passed to the contract are integers in six-decimal USDC units: **100 USDC = 100000000**. ETH pays transaction gas; it is not a job-payment token.
 
@@ -106,7 +106,7 @@ The diagram summarizes contract conditions, not automatic background execution. 
 
 ## B) Testnet/mainnet operator checklist
 
-1. **Release and scope:** verify v0.9.5 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
+1. **Release and scope:** verify v0.9.6 source/checksums and its qualification evidence. Publishing software does not deploy a live manager or verify an operator's production setup.
 2. **Signing:** use the [Hardhat guide](../hardhat/README.md), a disposable deployer and a reviewed final owner/signing arrangement. Local tests and demonstrations use disposable accounts only.
 3. **Configuration:** review `hardhat/deploy.config.cjs` and `hardhat/.env.example`. Supply native Circle USDC, both distinct settlement wallets, intended owner, ENS/namespace settings and Merkle roots; do not use `migrations/deploy-config.js` for public deployment.
 4. **Plan and rehearse:** from `hardhat/`, run `DRY_RUN=1 npm run deploy:sepolia` with reviewed settings, then perform a separately authorized Sepolia deployment. Rehearse eligibility, posting, validator payouts, refunds, disputes and the actual ownership handover.

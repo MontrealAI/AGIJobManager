@@ -1139,6 +1139,7 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
         validatorBondBps = bps;
         validatorBondMin = min;
         validatorBondMax = max;
+        emit ValidatorBondParamsUpdated(bps, min, max);
     }
     function setAgentBondParams(uint256 bps, uint256 min, uint256 max) external onlyOwner {
         if (bps > 10_000) revert InvalidParameters();

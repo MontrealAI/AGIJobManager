@@ -1,7 +1,7 @@
 # ENS Reference (Generated)
 
 Generated at (UTC): 1970-01-01T00:00:00Z
-Source fingerprint: 2fb8a1ebc09b7b16
+Source fingerprint: c90f346ebac3880c
 
 Source files used:
 - `contracts/AGIJobManager.sol`
@@ -48,9 +48,9 @@ Source files used:
 - `function setEnsJobPages(address _ensJobPages) external onlyOwner whenIdentityConfigurable` ([contracts/AGIJobManager.sol#L1042](../../contracts/AGIJobManager.sol#L1042))
 - `function updateRootNodes(` ([contracts/AGIJobManager.sol#L1051](../../contracts/AGIJobManager.sol#L1051))
 - `function updateMerkleRoots(bytes32 _validatorMerkleRoot, bytes32 _agentMerkleRoot)` ([contracts/AGIJobManager.sol#L1064](../../contracts/AGIJobManager.sol#L1064))
-- `function lockJobENS(uint256 jobId, bool burnFuses) external` ([contracts/AGIJobManager.sol#L1274](../../contracts/AGIJobManager.sol#L1274))
-- `function tokenURI(uint256 tokenId) public view override returns (string memory)` ([contracts/AGIJobManager.sol#L1361](../../contracts/AGIJobManager.sol#L1361))
-- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` ([contracts/AGIJobManager.sol#L1366](../../contracts/AGIJobManager.sol#L1366))
+- `function lockJobENS(uint256 jobId, bool burnFuses) external` ([contracts/AGIJobManager.sol#L1275](../../contracts/AGIJobManager.sol#L1275))
+- `function tokenURI(uint256 tokenId) public view override returns (string memory)` ([contracts/AGIJobManager.sol#L1362](../../contracts/AGIJobManager.sol#L1362))
+- `function _callEnsJobPagesHook(uint8 hook, uint256 jobId) internal` ([contracts/AGIJobManager.sol#L1367](../../contracts/AGIJobManager.sol#L1367))
 - `function setENSRegistry(address ensAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L160](../../contracts/ens/ENSJobPages.sol#L160))
 - `function setNameWrapper(address nameWrapperAddress) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L168](../../contracts/ens/ENSJobPages.sol#L168))
 - `function setJobsRoot(bytes32 rootNode, string calldata rootName) external onlyOwner` ([contracts/ens/ENSJobPages.sol#L184](../../contracts/ens/ENSJobPages.sol#L184))
@@ -94,9 +94,9 @@ Source files used:
 - @notice Total past and current settlement-pause time; all lifecycle clocks exclude it. ([contracts/AGIJobManager.sol#L696](../../contracts/AGIJobManager.sol#L696))
 - @notice Current wall-clock deadlines; while paused they move forward as the clocks stop. ([contracts/AGIJobManager.sol#L713](../../contracts/AGIJobManager.sol#L713))
 - @notice Explicit owner/Merkle exceptions issue an address credential; ENS uses node and controller. ([contracts/AGIJobManager.sol#L742](../../contracts/AGIJobManager.sol#L742))
-- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. ([contracts/AGIJobManager.sol#L1272](../../contracts/AGIJobManager.sol#L1272))
-- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. ([contracts/AGIJobManager.sol#L1273](../../contracts/AGIJobManager.sol#L1273))
-- @dev Owner withdrawals are limited to balances not backing ledger.escrow/locked*Bonds. ([contracts/AGIJobManager.sol#L1396](../../contracts/AGIJobManager.sol#L1396))
+- @notice Anyone may lock ENS records after a job reaches a terminal state; only the owner may burn fuses. ([contracts/AGIJobManager.sol#L1273](../../contracts/AGIJobManager.sol#L1273))
+- @dev Fuse burning is irreversible and remains owner-only; ENS hook execution is best-effort. ([contracts/AGIJobManager.sol#L1274](../../contracts/AGIJobManager.sol#L1274))
+- @dev Owner withdrawals are limited to balances not backing ledger.escrow/locked*Bonds. ([contracts/AGIJobManager.sol#L1397](../../contracts/AGIJobManager.sol#L1397))
 - @notice Prefix used when constructing ENS job labels as prefix + decimal(jobId). ([contracts/ens/ENSJobPages.sol#L117](../../contracts/ens/ENSJobPages.sol#L117))
 - @notice Updates the default prefix used for unsnapshotted/future job ENS labels. ([contracts/ens/ENSJobPages.sol#L148](../../contracts/ens/ENSJobPages.sol#L148))
 -      Legacy jobs that predate this contract must be migrated before hooks can mutate ENS records. ([contracts/ens/ENSJobPages.sol#L810](../../contracts/ens/ENSJobPages.sol#L810))

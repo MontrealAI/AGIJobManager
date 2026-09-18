@@ -1,6 +1,6 @@
 {
   "name": "agi-job-manager-ui",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "private": true,
   "engines": {
     "node": ">=22.23.2"

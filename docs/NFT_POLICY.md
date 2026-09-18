@@ -1,4 +1,4 @@
-# Agent NFT policy — v0.9.5
+# Agent NFT policy — v0.9.6
 
 The owner can require or waive an approved NFT for **newly posted jobs**. NFTs are required by default. Each job records the choice when its `createJob` transaction executes, before assignment; changing the default never changes an existing job.
 
@@ -13,7 +13,7 @@ NFTs determine eligibility at application, not payment amounts. Successful settl
 
 ## Owner walkthrough
 
-1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/agijobmanager-usdc.html), select the verified v0.9.5 manager and connect the accepted owner wallet. Confirm the chain and contract address.
+1. Open the versioned [USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.6/agijobmanager-usdc.html), select the verified v0.9.6 manager and connect the accepted owner wallet. Confirm the chain and contract address.
 2. In owner controls, choose **NFT requirement for new jobs**. Enter `true` to require an enabled NFT or `false` to waive it. Review and simulate the transaction, then submit through the owner's signing setup.
 3. Verify `AgentNftRequirementUpdated(required)` and `agentNftRequired()`. A pending owner has no authority until ownership is accepted. This operational setting remains available after identity configuration is locked.
 4. Agents and employers check `jobAgentNftRequired(jobId)` or the console's job detail/review for the actual job policy. Missing or cancelled jobs revert instead of reporting an optional policy.
@@ -70,6 +70,6 @@ The local-only owner configuration CLI also accepts `agentNftRequired: true/fals
 
 ## Existing deployments and qualification
 
-This release changes manager bytecode. It requires a **fresh v0.9.5 manager**, even if an earlier USDC manager exists. There is no proxy upgrade or escrow migration. Keep every earlier job on its original manager, asset, helper and ENS namespace, using that version's interface. A fresh manager needs a distinct jobs namespace because IDs restart at zero. Do not overwrite old receipts or relabel old addresses as v0.9.5.
+This release changes manager bytecode. It requires a **fresh v0.9.6 manager**, even if an earlier USDC manager exists. There is no proxy upgrade or escrow migration. Keep every earlier job on its original manager, asset, helper and ENS namespace, using that version's interface. A fresh manager needs a distinct jobs namespace because IDs restart at zero. Do not overwrite old receipts or relabel old addresses as v0.9.6.
 
 The regression suite covers both modes, repeated default changes, accepted-owner authority, collection protection, eligibility, bonds and identical payouts after transferring away an NFT. Fuzzing exercises both policy orders and varying costs/reward rates. The pinned mainnet fork repeats both modes against actual Circle USDC and ENS contracts while comparing the legacy inventory. It uses a mock eligibility collection: actual production collections, owners, recipients, signer access and activation still require instance-specific review. See [qualification](qualification/USDC_CUTOVER.md) and [mainnet readiness](MAINNET_READINESS.md).

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v0.9.6",
+  "name": "v0.9.6 \u2014 Clear buyer outcomes and exact job economics",
+  "releaseDate": "2026-09-18",
+  "sourceCommit": "2b1169ceef161cdc6667aead23b5ca89633f8579",
+  "sourceTree": "cbc5566bf01f9b025a3614b8a4119533d6737464",
+  "previousTag": "v0.9.5",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Exact recorded job bonds and validator quotes, itemized participant costs, clear buyer outcomes and acceptance templates, observable validator-default updates, versioned console context and consistent operating guides. Successful-job split and v0.9.5 buyer protections are preserved. Software publication only; a fresh manager deployment and production activation remain separate.",
+  "unchangedPaths": [
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2",
+    "docs/releases/v0.9.3",
+    "docs/releases/v0.9.4",
+    "docs/releases/v0.9.5"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "feef06a9b5cdb290f2c3c0e46d10bd5c1a7c4268b4433cf7effe9a38e4c9f2dd",
+    "PREVIOUS_RELEASE.json": "70fa54ab9cfe6a9b5268c580efa41acb345d8f8b9346087cf23a08cc5f8e2366",
+    "SOURCE_CI.json": "032e22f18bee5970a297a7478bfb01e87c5980ad7f49af4be6482e7959039593"
+  },
+  "requiredSourceRuns": {
+    "docs": {
+      "id": 35295939262,
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ]
+    },
+    "ci": {
+      "id": 35295939183,
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ]
+    },
+    "ui": {
+      "id": 35295939320,
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ]
+    },
+    "fork": {
+      "id": 35295939290,
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ]
+    },
+    "security": {
+      "id": 35295939197,
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ]
+    }
+  },
+  "preservationCommit": "8be5e9b77d36e34bad5bbd9c9b396d7ab9ef1ead"
+}

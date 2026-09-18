@@ -51,7 +51,12 @@ contract('v0.9.5 buyer protection and payment isolation', accounts => {
     assert.equal(initial.validatorAmount.toString(), '0');
     assert.equal(initial.validatorFixed, false);
     await submit(); await vote(alice, 'alice');
-    await manager.setValidatorBondParams(3000, '1000000', '1000000000');
+    const updated = await manager.setValidatorBondParams(3000, '1000000', '1000000000');
+    const event = updated.logs.find(log => log.event === 'ValidatorBondParamsUpdated');
+    assert(event, 'collateral-policy changes must be observable');
+    assert.equal(event.args.bps.toString(), '3000');
+    assert.equal(event.args.min.toString(), '1000000');
+    assert.equal(event.args.max.toString(), '1000000000');
     const fixed = await manager.getJobBonds(0);
     assert.equal(fixed.validatorAmount.toString(), '15000000');
     assert.equal(fixed.validatorFixed, true);

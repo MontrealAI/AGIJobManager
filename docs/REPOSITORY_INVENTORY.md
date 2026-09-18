@@ -1,6 +1,6 @@
 # Repository Inventory and Verified Commands
 
-> v0.9.5: Contract tests use Hardhat 3 and Mocha; Truffle and Ganache have been removed. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.5/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.5/docs/OWNER_CONTROLS.md) for live configuration.
+> v0.9.6: Contract tests use Hardhat 3 and Mocha; Truffle and Ganache have been removed. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.6/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.6/docs/OWNER_CONTROLS.md) for live configuration.
 
 This file documents the current repository surface at HEAD and the canonical local/CI commands. Exact results are recorded per release and source commit.
 
