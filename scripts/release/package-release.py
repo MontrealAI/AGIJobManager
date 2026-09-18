@@ -1,4 +1,4 @@
-"""Create a deterministic, checksum-verified archive of the pinned v1.0.1 source."""
+"""Create a deterministic, checksum-verified archive of the pinned v1.0.2 source."""
 import argparse
 import hashlib
 import io
@@ -8,10 +8,10 @@ import subprocess
 import zipfile
 
 root = pathlib.Path(__file__).resolve().parents[2]
-meta = root / 'docs/releases/v1.0.1'
+meta = root / 'docs/releases/v1.0.2'
 config = json.loads((meta / 'release.json').read_text())
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--out', type=pathlib.Path, default=root / 'build/release/v1.0.1')
+parser.add_argument('--out', type=pathlib.Path, default=root / 'build/release/v1.0.2')
 out = parser.parse_args().out.resolve()
 out.mkdir(parents=True, exist_ok=True)
 if any(out.iterdir()):
