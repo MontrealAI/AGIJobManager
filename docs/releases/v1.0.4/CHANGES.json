@@ -1,0 +1,274 @@
+{
+  "sourceCommit": "042a998b72d528570e0252eca760f39b95491cf7",
+  "previousTag": "v1.0.3",
+  "changes": [
+    {
+      "status": "M",
+      "path": ".github/workflows/current-state-release.yml"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "config/usdc-deployment.json"
+    },
+    {
+      "status": "M",
+      "path": "contracts/AGIJobManager.sol"
+    },
+    {
+      "status": "M",
+      "path": "docs/00_INDEX.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT_CONFIGURATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT_OPERATIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOY_DAY_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/LAUNCH_CHECKLIST.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/LEGAL/OPERATOR_NOTICE_TEMPLATE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/LEGAL/PRIVACY.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/LEGAL/PUBLISHER_NOTICE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/LEGAL/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/LEGAL/REGULATORY_SCOPE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/LEGAL/TERMS_AND_CONDITIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_READINESS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OWNER_CONTROLS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/OWNER_RUNBOOK.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/POLICY/AI_AGENTS_ONLY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/CONTRACT_INTERFACE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/ENS_REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/EVENTS_AND_ERRORS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/URIS_JOBSPEC_AND_COMPLETION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/V1_RELEASE_SCOPE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/qualification/USDC_CUTOVER.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/V104_OPERATOR_NOTICES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/qualification/mainnet-cutover.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qualification/v104-slither-comment-review.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.3/CHANGES.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.3/PREVIOUS_RELEASE.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.3/RELEASE_NOTES.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.3/SOURCE_CI.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.3/START_HERE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.3/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.3/release.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/DEPLOYMENT_MAINNET.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/STANDALONE_HTML_UIS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/README.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/check-readiness.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/deploy.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/setup.cjs"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/docs/check-docs.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/docs/sync-protocol-terms.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/package-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/publish-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/test-release-gates.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/verify-usdc-ui.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/slither-reviewed-findings.json"
+    },
+    {
+      "status": "M",
+      "path": "ui-tests/usdc-console.spec.js"
+    },
+    {
+      "status": "M",
+      "path": "ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "ui/agijobmanager-usdc.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/dist-ipfs/agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/package.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/scripts/singlefile-template.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/components/layout/footer.tsx"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/generated/deployments.ts"
+    }
+  ]
+}
