@@ -2,15 +2,15 @@
 
 **Version 1.0:** [release scope and compatibility](docs/V1_RELEASE_SCOPE.md), [participant start](docs/START_HERE.md), and [launch checklist](docs/LAUNCH_CHECKLIST.md).
 
-**Release: [v1.0.0](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.0).** Correct owner/moderator console permissions, consistent pause and reserve guidance, and a single [launch checklist](docs/LAUNCH_CHECKLIST.md). The manager ABI and executable bytecode are unchanged from v0.9.6; a verified v0.9.6 manager remains compatible. v0.9.5 and older managers lack the exact bond getter. See [compatibility and verification](docs/qualification/OPERATIONS_V097.md).
+**Release: [v1.0.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.1).** Correct owner/moderator console permissions, consistent pause and reserve guidance, and a single [launch checklist](docs/LAUNCH_CHECKLIST.md). The manager ABI and executable bytecode are unchanged from v0.9.6; a verified v0.9.6 manager remains compatible. v0.9.5 and older managers lack the exact bond getter. See [compatibility and verification](docs/qualification/OPERATIONS_V097.md).
 
-**Current documentation and console:** `main` includes post-release improvements that are absent from the frozen v1.0.0 downloads. [Choose the correct console and source](docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source). Agents can follow the [free identity → job → USDC guide](docs/roles/AGENT.md); owners can use the [free-identity configuration walkthrough](docs/NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).
+**New in v1.0.1:** automatic deployment-specific ENS job namespaces, explicit same-manager helper replacement and preservation of historical names. [Read the naming policy](docs/ENS_DEPLOYMENT_NAMESPACES.md). This edition also packages the reviewed console and documentation improvements made after v1.0.0. [Release scope](docs/V1_RELEASE_SCOPE.md#published-download-versus-current-source). Agents can follow the [free identity → job → USDC guide](docs/roles/AGENT.md); owners can use the [free-identity configuration walkthrough](docs/NFT_POLICY.md#enable-the-free-alpha-agent-identity-route).
 
-All job payments, escrow, bonds, rewards, refunds and treasury withdrawals use six-decimal native Circle USDC. **Moving from the original-asset legacy manager requires a fresh USDC deployment.** The v0.9.6/v1.0.0 manager uses eight fixed linked libraries, including `JobSettlement` and `JobValidation`. Incompatible older deployments need a fresh manager to gain the current features; existing USDC and original-asset jobs stay on their original contracts. This software release does not upgrade old contracts. Start with the [USDC migration and deployment guide](docs/USDC_MIGRATION.md).
+All job payments, escrow, bonds, rewards, refunds and treasury withdrawals use six-decimal native Circle USDC. **Moving from the original-asset legacy manager requires a fresh USDC deployment.** The v0.9.6/v1.0.1 manager uses eight fixed linked libraries, including `JobSettlement` and `JobValidation`. Incompatible older deployments need a fresh manager to gain the current features; existing USDC and original-asset jobs stay on their original contracts. This software release does not upgrade old contracts. Start with the [USDC migration and deployment guide](docs/USDC_MIGRATION.md).
 
-**v1.0.0 protects full buyer escrow on a buyer win, removes automatic no-vote payments, requires the full review window, rejects duplicate/conflicted reviewers, freezes clocks during settlement pauses, and reserves failed outgoing payments for retry.** Buyers can explicitly accept satisfactory work; unanswered arbitration has a neutral refund deadline. [Read the simple buyer guide](docs/BUYER_PROTECTION.md). ENS membership and the per-job NFT policy remain in force. The [mainnet-fork rehearsal](docs/qualification/USDC_CUTOVER.md) covers USDC settlement, ownership, ENS wiring and preservation of existing jobs.
+**v1.0.1 protects full buyer escrow on a buyer win, removes automatic no-vote payments, requires the full review window, rejects duplicate/conflicted reviewers, freezes clocks during settlement pauses, and reserves failed outgoing payments for retry.** Buyers can explicitly accept satisfactory work; unanswered arbitration has a neutral refund deadline. [Read the simple buyer guide](docs/BUYER_PROTECTION.md). ENS membership and the per-job NFT policy remain in force. The [mainnet-fork rehearsal](docs/qualification/USDC_CUTOVER.md) covers USDC settlement, ownership, ENS wiring and preservation of existing jobs.
 
-Successful jobs pay validators first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and **all remaining USDC to the agent**. For a 100 USDC job: 8 / 30 / 10 / 52. The two wallet addresses are required at deployment. The owner can rotate them only with intake paused and zero outstanding escrow or bonds; [ownership transfers require acceptance](docs/OWNER_CONTROLS.md). The reward percentage is fixed when the job is posted; validator collateral is fixed at the first vote. NFT credentials affect eligibility only; they cannot increase or reduce the agent’s payment share. See the [v1.0.0 payout and migration specification](docs/USDC_PAYOUT_SPLIT.md).
+Successful jobs pay validators first (**8% default**), then **30% of the original job cost to wallet one**, **10% to wallet two**, and **all remaining USDC to the agent**. For a 100 USDC job: 8 / 30 / 10 / 52. The two wallet addresses are required at deployment. The owner can rotate them only with intake paused and zero outstanding escrow or bonds; [ownership transfers require acceptance](docs/OWNER_CONTROLS.md). The reward percentage is fixed when the job is posted; validator collateral is fixed at the first vote. NFT credentials affect eligibility only; they cannot increase or reduce the agent’s payment share. See the [v1.0.1 payout and migration specification](docs/USDC_PAYOUT_SPLIT.md).
 
 AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators through `club.agi.eth` or `alpha.club.agi.eth`. The connected wallet must satisfy the configured name's NameWrapper ownership/approval or resolver-address check. Enter only the label, such as `alice`. The contract preserves owner-managed `additionalAgents`/`additionalValidators` and role-specific Merkle proofs as explicit membership exceptions; those routes are not proof of ENS membership. Agents also need a qualifying enabled NFT when the job’s posting-time NFT requirement is on (the default). These participant identity checks are separate from optional ENS job-page metadata.
 
@@ -18,7 +18,7 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 
 **[See the first artwork job under today's rules](docs/examples/GENESIS_JOB_TODAY.md):** a practical buyer/agent walkthrough, exact USDC economics, review timing, failure outcomes and a reproducible 24-scenario local simulation grounded in the historical Genesis receipt.
 
-New deployments start with intake paused. v1.0.0 retains the contract and toolchain hardening introduced in v0.9.1 and the ENS correction introduced in v0.9.2. See [mainnet readiness](docs/MAINNET_READINESS.md) for verified scope and the steps required for an actual deployment.
+New deployments start with intake paused. v1.0.1 retains the contract and toolchain hardening introduced in v0.9.1 and the ENS correction introduced in v0.9.2. See [mainnet readiness](docs/MAINNET_READINESS.md) for verified scope and the steps required for an actual deployment.
 
 [![CI][ci-badge]][ci-url]
 [![Security Verification][security-verification-badge]][security-verification-url]
@@ -29,14 +29,14 @@ New deployments start with intake paused. v1.0.0 retains the contract and toolch
 AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreements, with optional ENS-backed job pages managed by `ENSJobPages`.
 
 > [!IMPORTANT]
-> **New here? Download the [v1.0.0 USDC Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html).**
+> **New here? Download the [v1.0.1 USDC Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html).**
 > This is the fastest operator/reviewer entry point for the standalone mainnet UI.  
 > **Matching repository artifact:** `ui/agijobmanager-usdc.html`
 > **Operator guide:** `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 
 ## Quick links
 
-- **Launch Genesis Console:** `https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html`
+- **Launch Genesis Console:** `https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html`
 - **Read the operator guide:** `docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`
 - **Inspect the pinned standalone artifact:** `ui/agijobmanager-usdc.html`
 - **Deployment / contract operations:** `hardhat/README.md` and `docs/DEPLOYMENT/README.md`
@@ -49,7 +49,7 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **Contract owner (Etherscan-first):** start with [`docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md`](docs/DEPLOYMENT/OWNER_MAINNET_DEPLOYMENT_AND_OPERATIONS_GUIDE.md), then [`docs/OWNER_RUNBOOK.md`](docs/OWNER_RUNBOOK.md).
 - **ENSJobPages replacement operator:** use one canonical flow in [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md).
 - **Troubleshooting during deployment/cutover:** go to [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md).
-- **Standalone HTML UI operator/reviewer:** start with the [Genesis Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html), then read [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). For the repo-pinned standalone artifact, see [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html).
+- **Standalone HTML UI operator/reviewer:** start with the [Genesis Console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html), then read [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). For the repo-pinned standalone artifact, see [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html).
 - **Broader/full UI contributor:** use [`docs/ui/README.md`](docs/ui/README.md) for Next.js UI roadmap, runbooks, and release/testing docs.
 
 ## Canonical operator answers (quick reference)
@@ -57,7 +57,7 @@ AGIJobManager is an Ethereum smart-contract system for escrowed AGI work agreeme
 - **Canonical deployment path:** Hardhat (`hardhat/README.md`). Legacy snapshot migrations are retired.
 - **Fresh USDC ENS cutover:** deploy a separate helper -> establish its ownership of a dedicated wrapped jobs-root token -> wire only the new manager and helper -> validate a full ENS lifecycle -> consider locks. Preserve the existing legacy manager, jobs, helper, root and approvals.
 - **Same-manager helper replacement:** use the [replacement runbook](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md); any existing-page migration or broader NameWrapper authority needs separate review.
-- **Canonical ENS naming format:** `<prefix><jobId>.<jobsRootName>` with default prefix `agijob`.
+- **Canonical ENS naming format:** `job-<jobId>.usdc-<chainId>-<manager40>.alpha.jobs.agi.eth` for fresh scripted deployments; existing-manager replacements preserve their root and prefix. [Details](docs/ENS_DEPLOYMENT_NAMESPACES.md).
 - **Canonical ownership split:**
   - `AGIJobManager owner` controls `setEnsJobPages(...)` and AGIJobManager governance.
   - `ENS parent owner` authorizes creation of the dedicated root; manager ownership alone grants no ENS parent authority.
@@ -93,14 +93,14 @@ Irreversible actions (delay until validated):
 - **Smart contracts (authoritative protocol state):** `contracts/` (AGIJobManager + ENSJobPages integration).
 - **Deployment/operator tooling (official):** `hardhat/` with runbooks in `docs/DEPLOYMENT/`.
 - **ENS identity layer (additive):** ENSJobPages docs in `docs/ENS/` and replacement flow in `docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`.
-- **Standalone Genesis Console surfaces:** canonical newcomer entry is the versioned USDC Console (`https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html`); the current development standalone artifact is [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html); the operator guide is [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md); artifact inventory and broader UI references remain in [`docs/ui/STANDALONE_HTML_UIS.md`](docs/ui/STANDALONE_HTML_UIS.md), [`ui/README.md`](ui/README.md), and [`docs/ui/README.md`](docs/ui/README.md).
+- **Standalone Genesis Console surfaces:** canonical newcomer entry is the versioned USDC Console (`https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html`); the current development standalone artifact is [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html); the operator guide is [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md); artifact inventory and broader UI references remain in [`docs/ui/STANDALONE_HTML_UIS.md`](docs/ui/STANDALONE_HTML_UIS.md), [`ui/README.md`](ui/README.md), and [`docs/ui/README.md`](docs/ui/README.md).
 - **Broader/full UI in development:** Next.js app and UI docs in [`ui/`](ui/) and [`docs/ui/README.md`](docs/ui/README.md).
 
 ### UI routing (pick the right interface quickly)
 
 | If you need to... | Use this | Why |
 | --- | --- | --- |
-| Configure the versioned USDC interface after deployment | `https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html` + [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) | Fastest newcomer/operator entry point for the standalone mainnet console. |
+| Configure the versioned USDC interface after deployment | `https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html` + [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md) | Fastest newcomer/operator entry point for the standalone mainnet console. |
 | Inspect the pinned standalone artifact in-repo | [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html) | Development artifact for review; its voting flow requires the new getter. |
 | Build/test the broader UI stack | [`ui/`](ui/) + [`docs/ui/README.md`](docs/ui/README.md) | Broader UI effort and development docs. |
 | Deploy/replace contracts and ENS components | [`hardhat/README.md`](hardhat/README.md) + [`docs/DEPLOYMENT/README.md`](docs/DEPLOYMENT/README.md) | Canonical deployment/operator runbooks; UI is not a deployment substitute. |
@@ -122,7 +122,7 @@ Irreversible actions (delay until validated):
 - ENSJobPages replacement runbook (mainnet): [`docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md`](docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md)
 - ENS naming/behavior reference: [`docs/ENS/ENS_JOB_PAGES_OVERVIEW.md`](docs/ENS/ENS_JOB_PAGES_OVERVIEW.md)
 - Deployment troubleshooting: [`docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md`](docs/TROUBLESHOOTING_DEPLOYMENT_AND_ENS.md)
-- USDC Console (versioned download): `https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html`
+- USDC Console (versioned download): `https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.1/agijobmanager-usdc.html`
 - Genesis Console operator guide: [`docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md`](docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md)
 - Pinned standalone artifact (repo): [`ui/agijobmanager-usdc.html`](ui/agijobmanager-usdc.html)
 - UI directory inventory: [`ui/README.md`](ui/README.md)
@@ -145,7 +145,7 @@ Legacy docs:
 ## ENSJobPages in one minute
 
 - `AGIJobManager` provides the numeric `jobId`.
-- `ENSJobPages` provides the label prefix (`jobLabelPrefix`, default `agijob`) and root suffix (`jobsRootName`, explicitly configured for the new deployment).
+- `ENSJobPages` provides the label prefix (`jobLabelPrefix`: constructor default `agijob`, fresh deployment script sets `job-`) and root suffix (`jobsRootName`, explicitly configured for the new deployment).
 - Effective ENS name format is: `<prefix><jobId>.<jobsRootName>`.
 - With the fork-rehearsed proposal `usdc-v095.alpha.jobs.agi.eth`, names are:
   - `agijob0.usdc-v095.alpha.jobs.agi.eth`

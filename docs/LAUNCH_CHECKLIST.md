@@ -1,8 +1,8 @@
-# Launch checklist — v1.0.0
+# Launch checklist — v1.0.1
 
 Use this checklist for the actual instance before opening paid intake. The release contains tested software; it supplies no production manager, owner, payment recipients, reviewer service or independent audit. Every item below starts unconfirmed. Record the evidence beside each completed item in your deployment record.
 
-v1.0.0 retains the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6 manager can use this console without redeployment. First deployments and moves from incompatible older versions require the current manager and eight libraries; existing jobs stay on their original contracts.
+v1.0.1 retains the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6 manager can use this console without redeployment. First deployments and moves from incompatible older versions require the current manager and eight libraries; existing jobs stay on their original contracts.
 
 ## 1. Decide who controls and operates the instance
 
@@ -15,7 +15,7 @@ v1.0.0 retains the v0.9.6 manager ABI and executable bytecode. A verified v0.9.6
 | NFT policy | Explicit required/optional choice and the complete reviewed collection registry, including disabled entries |
 | Review and arbitration | Independent reviewers, admitted moderators, response times, evidence process and owner backstop signer |
 | Economics and limits | Agreed job scope, review effort and gas budget, shared reviewer reward, agent net earnings, bonds, timers and initial exposure limit |
-| Optional ENS job pages | Enable or omit; if enabled, verified parent authority, dedicated jobs root and helper owner, separate from legacy namespaces |
+| Optional ENS job pages | Enable or omit; if enabled, verified parent authority, deployment-specific jobs root and helper owner; [fresh/replacement naming policy](ENS_DEPLOYMENT_NAMESPACES.md) |
 
 **Do not miss the NFT default:** a fresh manager requires NFTs but starts with no registered collections. Before posting jobs, register reviewed collections or explicitly set the default to optional. Every job retains the policy recorded when posted. Optional NFTs do not waive ENS/exception authorization or bonds. See [NFT setup](NFT_POLICY.md), including the [free alpha-agent identity route](NFT_POLICY.md#enable-the-free-alpha-agent-identity-route) and its expiry limitations.
 
