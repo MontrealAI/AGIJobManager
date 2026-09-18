@@ -1,4 +1,4 @@
-# Configuration Reference — v0.9.7
+# Configuration Reference — v1.0.0
 
 The maintained [configuration catalog](CONFIGURATION.md) contains every current setter, guard, default and snapshot rule. Use [owner controls](OWNER_CONTROLS.md) for reviewed transaction procedures and the [Hardhat guide](../hardhat/README.md) for public-network deployment.
 

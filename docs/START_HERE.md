@@ -1,4 +1,6 @@
-# Start here — AGIJobManager v0.9.7
+# Start here — AGIJobManager v1.0.0
+
+Read [what 1.0 includes and how existing managers remain compatible](V1_RELEASE_SCOPE.md).
 
 AGIJobManager holds a job's USDC payment until the work reaches a settlement outcome. Employers post work, eligible agents take jobs, validators assess the submitted evidence, and moderators handle disputes. The owner configures the instance and can pause it.
 
@@ -16,7 +18,9 @@ AGI Agents normally qualify through a name under `agent.agi.eth` or `alpha.agent
 | Respond to a problem | [Incident response](OPERATIONS/INCIDENT_RESPONSE.md) | Manager address, chain, transaction hashes and current pause/reserve state |
 | Evaluate the release | [Mainnet readiness](MAINNET_READINESS.md) and [testing](TESTING.md) | Source, release manifest, checksums and the linked CI evidence |
 
-Download the [v0.9.7 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.7/AGIJobManager-v0.9.7-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.7/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
+Download the [v1.0.0 complete package](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/AGIJobManager-v1.0.0-COMPLETE.zip) or [standalone USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v1.0.0/agijobmanager-usdc.html) from the repository's release page. Check its `SHA256SUMS.txt` before use. Open `agijobmanager-usdc.html` in a browser with an Ethereum wallet. It needs internet access for the integrity-pinned Web3 library, wallet/RPC communication and display resources; it is not an offline transaction application. Never enter a seed phrase or private key into the console.
+
+For a practical cost comparison, operators can run `npm run economics:check -- --example`, then replace its hypothetical assumptions with their own scenario. See [economics](game-theory.md).
 
 ## Understand the payment before signing
 

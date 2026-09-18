@@ -1,4 +1,4 @@
-# v0.9.7 — USDC job distribution
+# v1.0.0 — USDC job distribution
 
 Jobs are posted and fully escrowed in native Circle USDC. A successful completion distributes the original job cost in this order, in one settlement transaction, with failed outgoing transfers reserved as claims:
 
@@ -30,7 +30,7 @@ The constructor takes a sixth argument, `address[2] settlementWallets`, in this 
 1. The wallet receiving 30% of every successful job's original cost.
 2. A different wallet receiving 10%.
 
-Both addresses are required, nonzero, distinct, and cannot be the manager itself or the USDC token contract. In v0.9.7 the owner can rotate them with `setSettlementWallets`, but only while intake is paused and every outstanding job escrow and bond reserve is zero. Existing jobs cannot be redirected. Deferred claims do not prevent rotation for future jobs and retain their original recipient. Choose addresses controlled by the intended recipients and verify their ability to receive USDC before deployment. Follow the [owner rotation and ownership handover guide](OWNER_CONTROLS.md). USDC and the 30% / 10% shares remain fixed.
+Both addresses are required, nonzero, distinct, and cannot be the manager itself or the USDC token contract. In v1.0.0 the owner can rotate them with `setSettlementWallets`, but only while intake is paused and every outstanding job escrow and bond reserve is zero. Existing jobs cannot be redirected. Deferred claims do not prevent rotation for future jobs and retain their original recipient. Choose addresses controlled by the intended recipients and verify their ability to receive USDC before deployment. Follow the [owner rotation and ownership handover guide](OWNER_CONTROLS.md). USDC and the 30% / 10% shares remain fixed.
 
 No recipient addresses were supplied for this software release. `hardhat/deploy.config.example.cjs` therefore leaves both entries empty and deployment fails until real addresses are provided. `config/usdc-deployment.json` remains `deployment-required`, with no live manager configured. Do not substitute the deployer, owner, a test address, or a historical deployment receipt.
 
@@ -40,13 +40,13 @@ No recipient addresses were supplied for this software release. `hardhat/deploy.
 2. Rehearse on Sepolia with test USDC. Verify `usdcToken()`, `wallet30()`, `wallet10()`, six decimals, compiler settings, linked libraries and the full constructor arguments.
 3. For Ethereum mainnet, use Circle's native USDC at `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`. See [Circle's registry](https://developers.circle.com/stablecoins/usdc-contract-addresses).
 4. After a separately authorized deployment, record its receipt, update the deployment registry, regenerate the interfaces and verify a small complete job lifecycle before wider use.
-5. Close existing jobs on their original contracts and under their original economics. v0.9.7 cannot upgrade earlier immutable contracts, migrate escrow, or reuse old approvals.
+5. Close existing jobs on their original contracts and under their original economics. v1.0.0 cannot upgrade earlier immutable contracts, migrate escrow, or reuse old approvals.
 
-The interfaces require the v0.9.7 wallet and pending-owner getters and canonical USDC before enabling writes, display both recipient addresses, and use new browser storage namespaces. Token/network/getter checks complement source and bytecode verification; they do not authenticate arbitrary contracts supplied by a user.
+The interfaces require the v1.0.0 wallet and pending-owner getters and canonical USDC before enabling writes, display both recipient addresses, and use new browser storage namespaces. Token/network/getter checks complement source and bytecode verification; they do not authenticate arbitrary contracts supplied by a user.
 
 ## Compatibility
 
-- v0.9.7 retains the [per-job NFT policy](NFT_POLICY.md) introduced in v0.9.4, the buyer-protection, pause-clock and reserved-payment interfaces introduced in v0.9.5, and the exact-bond getter introduced in v0.9.6. The successful-job split was introduced in v0.6.0; guarded wallet rotation and two-step ownership were introduced in v0.7.0. `transferOwnership` proposes a handover, `acceptOwnership` completes it, and renunciation is disabled. `PlatformRevenueAccrued` remains retired.
+- v1.0.0 retains the [per-job NFT policy](NFT_POLICY.md) introduced in v0.9.4, the buyer-protection, pause-clock and reserved-payment interfaces introduced in v0.9.5, and the exact-bond getter introduced in v0.9.6. The successful-job split was introduced in v0.6.0; guarded wallet rotation and two-step ownership were introduced in v0.7.0. `transferOwnership` proposes a handover, `acceptOwnership` completes it, and renunciation is disabled. `PlatformRevenueAccrued` remains retired.
 - Existing `AGIType.payoutPercentage` / `getHighestPayoutPercentage` names remain for compatibility as NFT eligibility scores only. Positive registered NFT holdings are required to apply only when `jobAgentNftRequired(jobId)` is true; these scores do not affect payment amounts.
 - `withdrawableUSDC()` can expose unreserved donations. It does not retain any successful-job cost and still protects outstanding escrow, bonds and reserved payment claims.
 - Previous releases and their exact economics remain available through immutable Git tags. No live contract was deployed by this software release.

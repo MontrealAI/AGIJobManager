@@ -1,4 +1,4 @@
-# Deployment guide — v0.9.7
+# Deployment guide — v1.0.0
 
 The supported Ethereum mainnet and Sepolia workflow uses **Hardhat 3 and ethers 6**. Truffle and Ganache are removed; their historical migration and signing commands are retired.
 

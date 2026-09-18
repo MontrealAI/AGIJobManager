@@ -1,4 +1,4 @@
-# Employer Guide — v0.9.7
+# Employer Guide — v1.0.0
 
 An employer posts a job and escrows its total cost in native USDC. The first eligible agent whose application succeeds takes the job; there is no later agent-selection step. You can explicitly accept the submitted work when it is satisfactory.
 
