@@ -97,10 +97,11 @@ stateDiagram-v2
 | `AGITypeUpdated` | `addAGIType` | Eligibility score per AGI type NFT (legacy field name). |
 | `NFTIssued` | `_mintCompletionNFT` | ERC‑721 minted to employer. |
 | `CompletionReviewPeriodUpdated` / `DisputeReviewPeriodUpdated` | owner updates | Review period changes. |
-| `ValidatorBondParamsUpdated` | `setValidatorBondParams` | Validator bond parameter changes. |
 | `ChallengePeriodAfterApprovalUpdated` | `setChallengePeriodAfterApproval` | Validator approval challenge window updates. |
 | `USDCWithdrawn` | `withdrawUSDC` | Withdraws only surplus over locked balances. |
 | `IdentityConfigurationLocked` | `lockIdentityConfiguration` | One-way lock for protected ENS wiring; the token is already immutable. |
+
+`ValidatorBondParamsUpdated` is declared in the ABI but the current setter does not emit it. Read the live defaults and the job's recorded bond when quoting collateral; do not infer current amounts from that event alone.
 | `AgentBlacklisted` / `ValidatorBlacklisted` | owner updates | Eligibility gating. |
 
 ## Error handling (custom errors + typical causes)
@@ -135,9 +136,9 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 ## Token & escrow semantics
 
 - **Funding**: `createJob` transfers the job payout into the contract and increments `lockedEscrow`.
-- **Agent bond**: `applyForJob` transfers the agent bond into the contract and increments `lockedAgentBonds`. On agent win the bond is returned to the agent; on employer win the bond is refunded to the employer (or pooled for validators if disapproval threshold was reached).
-- **Validator bond**: each validator vote transfers a bond (computed from `validatorBondBps`, `validatorBondMin`, `validatorBondMax`) and increments `lockedValidatorBonds`. Correct validators earn rewards; incorrect validators are slashed by `validatorSlashBps`.
-- **Dispute bond**: `disputeJob` transfers a bond based on `DISPUTE_BOND_BPS` with min/max caps. The bond is paid to the winner on resolution.
+- **Agent bond**: `applyForJob` transfers the agent bond into the contract and increments `lockedAgentBonds`. On agent win it returns to the agent. On employer win, correct disapprovers share a reward budget capped by the forfeited agent bond; remaining collateral goes to the employer. The early disapproval threshold is not required for this allocation.
+- **Validator bond**: the first vote fixes the per-validator amount using `validatorBondBps`, `validatorBondMin` and `validatorBondMax`; later voters post that recorded amount, including a fixed zero. Correct validators earn rewards; adjudicated incorrect votes are slashed by `validatorSlashBps`. Explicit buyer acceptance does not slash dissenters. The development getter `getJobBonds` exposes outstanding collateral; it is absent from published v0.9.5 managers.
+- **Dispute bond**: `disputeJob` transfers a bond based on `DISPUTE_BOND_BPS` with min/max caps. The bond is paid to the winner on resolution. Neutral unresolved-dispute timeout returns each participant's own bond, with no rewards or penalties.
 - **Agent payout**: all USDC remaining after correct-side validator rewards, 30% and 10% of the original cost to the configured wallets. Those recipients may rotate only between jobs with intake paused and all live escrow/bond reserves zero (pending claims keep their original beneficiary); the USDC token and percentages remain fixed. See [exact payout rules](USDC_PAYOUT_SPLIT.md).
 - **Validator payout**: on completion, **correct‑side** validators split `floor(job.payout * job.validatorRewardPctSnapshot / 100)` plus any pooled bond amounts, **only if** there is at least one validator. Incorrect validators receive their bond minus the slashed portion, and if no validators participate no budget is deducted, leaving that amount with the agent on successful completion.
 - **Refunds**:
@@ -145,6 +146,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
   - `expireJob` returns escrow after duration ends with no completion request and slashes the agent bond to the employer.
   - Employer-win dispute resolution or finalization refunds the full escrow plus any unallocated forfeited collateral; reviewer rewards use forfeited collateral. It pays no 30%/10% shares and mints no completion NFT.
 Ordinary finalization requires the full review and any longer approval challenge to end, plus quorum and a strict majority. No votes, under-quorum votes or a tie open a dispute. The buyer may explicitly accept submitted work immediately. Use `getJobDeadlines` for pause-adjusted dates; see [buyer protection](BUYER_PROTECTION.md).
+
 - **ERC‑20 safety**: the contract checks `transfer`/`transferFrom` return values and measures exact incoming amounts. Public-chain deployments are restricted to native USDC. Failed outgoing transfers become protected claims, without blocking eligible recipients. Incoming transfers revert if they fail.
 
 ## ENS / NameWrapper / Merkle ownership verification

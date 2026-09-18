@@ -166,7 +166,10 @@ function postingContext() {
     normalizeIpfsLikeUri: (uri: string) => ({ valid: true, canonical: uri }), isValidUriLoose: () => true,
     ensureApproval: vi.fn(async () => ({ ok: true })), getTokenBalanceAndAllowance: async () => ({ balance: 100000000n, allowance: 100000000n }), refreshAll: async () => undefined
   });
+  Object.assign(context, { DISPUTE_BOND_BPS: 50n, DISPUTE_BOND_MIN_RAW: 1000000n, DISPUTE_BOND_MAX_RAW: 200000000n });
   vm.runInContext(section(primary, '    function parseAmountToUnits(', '    function secondsToHuman('), context);
+  vm.runInContext(section(primary, '    function buildDisputeBondTrace(', '    function buildTraceAuditHtml('), context);
+  vm.runInContext(section(primary, '    function computeDisputeBondFromPayout(', '    function renderJobCostPreview('), context);
   vm.runInContext(section(primary, '    function assertSnapshotMatch(', '    async function fetchAgentBondSnapshot('), context);
   vm.runInContext(section(primary, '    function nftRequirementLabel(', '    async function applyForJob('), context);
   return { context, terms, method };
@@ -282,8 +285,8 @@ describe('review preparation and confirmation ownership', () => {
     const validateJob = vi.fn(() => method);
     Object.assign(context, {
       requireConnected: () => true, mustBeReadyToWrite: () => true, verified: { club: 'reviewed-validator', clubAlpha: false }, SUFFIX: { club: 'club.agi.eth' },
-      fetchJobSnapshot: async () => ({ approvals: 1, disapprovals: 0 }), fetchValidatorBondSnapshot: async () => ({ ...trace, trace }),
-      buildTraceAuditHtml: () => '', formatRawAmountTrace: String, agiJobManager: { methods: { validateJob } },
+      fetchJobSnapshot: async () => ({ approvals: 1, disapprovals: 0 }), fetchValidatorBondSnapshot: async () => ({ ...trace, trace, slashBpsRaw: '8000', validatorFixed: false, block: '1' }),
+      buildTraceAuditHtml: () => '', formatRawAmountTrace: String, formatUnitsToAmount: String, agiJobManager: { methods: { validateJob } },
       ensureApproval: async () => ({ ok: true }), getTokenBalanceAndAllowance: async () => ({ balance: 10n, allowance: 10n }), refreshAll: async () => undefined
     });
     vm.runInContext(section(primary, '    function assertSnapshotMatch(', '    async function fetchAgentBondSnapshot('), context);

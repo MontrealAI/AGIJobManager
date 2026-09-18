@@ -1,7 +1,7 @@
 {
   "scope": "isolated local Ethereum fork; no public transactions or live signer-control proof",
   "sourceSha256": {
-    "contracts/AGIJobManager.sol": "d8bd6d632a1b09fe0b59566f5ddb0cbd6229f3e3acec656fe12a28835d032b14",
+    "contracts/AGIJobManager.sol": "1ed7c723a5382eedd109e59e428d2e094c17d28cdef01bf2410f630243d9209d",
     "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
     "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",

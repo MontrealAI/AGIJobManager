@@ -31,7 +31,7 @@ For a successful **100 USDC** job with the default 8% validator budget and quali
 
 The 30% and 10% shares are fixed and included in the job cost. The owner can set the validator percentage to 1–60% for future postings; every posted job retains its rate. Bond deposits, refunds and slashing are accounted separately. Integer rounding and unallocated rewards are described in the [payout specification](USDC_PAYOUT_SPLIT.md). USDC uses six decimals; ETH is required for gas.
 
-No-vote completion after the review window pays the agent's 60% remainder with no validator reward. It is a liveness fallback, not independent verification of the work. Voting, finalization and dispute resolution require transactions; elapsed time alone does not send payments.
+After the full review and any later approval challenge, finalization with no votes, insufficient participation, or a tie opens a dispute and pays nobody. Only explicit buyer acceptance or an authorized agent-win decision can pay unreviewed work; with no validators, the agent receives the 60% remainder. Voting, expiry, finalization and refunds require transactions; elapsed time alone never sends money. [See what to do if work is missing or poor](BUYER_PROTECTION.md).
 
 ## Complete one job
 

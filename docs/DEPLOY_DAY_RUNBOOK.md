@@ -30,6 +30,6 @@ While intake remains paused, use the v0.9.5 USDC owner console or the verified e
 
 Pause intake to stop new jobs; normal settlement remains available. Settlement pause is a separate emergency control. Wallet rotation requires paused intake and all job escrow, agent bonds, validator bonds and dispute bonds to be zero. Existing commitments therefore cannot be redirected.
 
-Code changes require a fresh deployment and a managed migration; this release does not upgrade or deploy any live instance. USDC issuer pauses or blocked recipients can revert the entire settlement. See [payout rules](USDC_PAYOUT_SPLIT.md) and [owner controls](OWNER_CONTROLS.md).
+Code changes require a fresh deployment and a managed migration; this release does not upgrade or deploy any live instance. In v0.9.5, failed outgoing USDC transfers become reserved claims for their original recipients; other eligible recipients can still be paid. Issuer restrictions can delay receipt, and incoming escrow or bond transfers can still fail. See [payout rules](USDC_PAYOUT_SPLIT.md) and [owner controls](OWNER_CONTROLS.md).
 
 Before opening a new deployment, run the read-only [deployment readiness check](../hardhat/README.md). See [mainnet qualification and remaining deployment gates](MAINNET_READINESS.md).

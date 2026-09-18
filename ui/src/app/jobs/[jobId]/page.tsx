@@ -72,6 +72,8 @@ export default function JobDetail() {
         </>}
         {isDemoMode && <p>Demo deadlines are illustrative estimates.</p>}
         <p>No votes open a dispute; they do not approve payment. Buyers may explicitly accept satisfactory work. A buyer-win decision returns the full job escrow.</p>
+        <p>A submission link does not prove delivery. Inspect the work against your acceptance criteria and dispute poor or inaccessible work before the displayed cutoff. Final acceptance cannot be undone. Refunds do not reimburse gas or lost time.</p>
+        <p>The posted cost is total buyer escrow. At the default 8% review rate, a successful 100 USDC job allocates 8 to reviewers, 30 and 10 to the configured wallets, and at least 52 to the agent. Bonds and gas are separate.</p>
       </Card>
       <Card>
         <h2 className="font-serif">URIs (untrusted)</h2>

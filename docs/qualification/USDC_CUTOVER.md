@@ -1,5 +1,7 @@
 # USDC cutover qualification
 
+The checked-in machine report has been rerun for the unreleased bond-getter follow-up; the only report difference from v0.9.5 is the reviewed manager source hash. All 23 fork cases pass. Published v0.9.5 evidence remains pinned to its release tag. See [follow-up review](BUYER_ECONOMICS_FOLLOWUP.md).
+
 ## Verdict and scope
 
 The USDC settlement code passes the targeted technical qualification below. The corrected ENS helper passes a complete lifecycle against the actual Ethereum mainnet NameWrapper and PublicResolver on an isolated fork. **Live production activation remains unqualified until the final recipients, actual signing setup, deployment receipts and instance checks are completed.**

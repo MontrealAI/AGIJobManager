@@ -51,7 +51,7 @@ The UI's chain/token checks do not replace source/bytecode verification. ETH is 
 
 ## USDC operational behavior
 
-USDC's issuer can pause transfers or block addresses. A failed token transfer reverts the whole job operation, preserving its escrow and accounting; operators must resolve the underlying transfer restriction before retrying. The regression suite models these failures and exact micro-USDC refunds. This release does not claim an independent security audit or immunity from issuer controls.
+USDC's issuer can pause transfers or block addresses. Incoming funding remains exact and atomic. Failed outgoing transfers become protected claims for their original recipients; other eligible payments and terminal accounting can complete. Retry `claimUSDC(recipient)` after the restriction resolves, and verify both pending claims and actual balances. The regression suite models these failures and exact micro-USDC refunds. This release does not claim an independent security audit or immunity from issuer controls.
 
 ## Amount examples
 

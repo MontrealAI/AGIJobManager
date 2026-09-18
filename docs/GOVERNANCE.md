@@ -25,18 +25,18 @@ Use emergency controls only for incidents or recovery; keep an audit log.
 - **Settlement pause** (`setSettlementPaused(true)`) blocks completion, votes, disputes and settlement as well as intake. Use `pauseAll()` when both lanes need containment.
   - Follow the [incident procedures](OPERATIONS/INCIDENT_RESPONSE.md); document the affected paths and restore them after remediation.
 - **Resolve stale disputes** (`resolveStaleDispute`)
-  - Owner-only, with settlement enabled and time strictly after `disputedAt + disputeReviewPeriod`; intake pause is not required.
+  - Owner-only, with settlement enabled and time strictly after `getJobDeadlines(jobId).ownerResolutionAfter` (which includes settlement-pause extensions); intake pause is not required.
   - Use when disputes exceed the review period and moderator action is unavailable.
 - **Withdraw unreserved USDC** (`withdrawUSDC`)
   - Requires intake paused and settlement enabled.
-  - Use `withdrawableUSDC()`, which protects `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds`. The total token balance is not the withdrawable amount.
+  - Use `withdrawableUSDC()`, which protects `lockedEscrow + lockedAgentBonds + lockedValidatorBonds + lockedDisputeBonds + lockedClaims`. The total token balance is not the withdrawable amount.
 
 ## Day‑to‑day operations (low‑touch)
 
 - Monitor core events (`JobCreated`, `JobCompleted`, `DisputeResolvedWithCode`, etc.).
 - Keep validator allowlists stable; update Merkle roots via `updateMerkleRoots` only with change control and published allowlist artifacts.
 - Preserve posted-job economics: validator rates are fixed at posting, agent bonds at assignment, and validator bonds at first vote. Thresholds, timers and slashing require empty reserves before changes.
-- The token and 30%/10% shares are fixed. Rotating recipients requires intake paused and every reserve zero; see [owner controls](OWNER_CONTROLS.md).
+- The token and 30%/10% shares are fixed. Rotating recipients requires intake paused and job escrow/bonds cleared; previously deferred claims remain bound to their original recipients; see [owner controls](OWNER_CONTROLS.md).
 
 ## Documentation & record‑keeping
 

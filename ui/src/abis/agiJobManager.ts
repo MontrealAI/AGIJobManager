@@ -1925,6 +1925,40 @@ export const agiJobManagerAbi = [
         "type": "uint256"
       }
     ],
+    "name": "getJobBonds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "validatorAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "validatorFixed",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "disputeAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
     "name": "getJobCompletionURI",
     "outputs": [
       {

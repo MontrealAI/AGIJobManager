@@ -1,35 +1,16 @@
-# Job lifecycle derivation
+# Deriving job status without confusing it with payment
 
-`AGIJobManager` now exposes granular getters (`getJobCore`, `getJobValidation`) and expects
-indexers/UIs to derive lifecycle status client‑side. The mapping below documents the canonical
-ordering used by off‑chain consumers.
+Use `getJobCore` and `getJobValidation`. Current getters do not return a numeric lifecycle enum. Cancelled/deleted jobs revert with `JobNotFound`; identify their history through `JobCancelled` rather than inventing a readable empty record.
 
-## Precedence order
+| Display status | Condition, in order |
+| --- | --- |
+| Settled | `completed` is true; includes an agent win or buyer refund |
+| Expired / neutral refund | `expired` is true; inspect `JobExpired` or `UnresolvedDisputeRefunded` |
+| Disputed | `disputed` is true |
+| Completion requested | `completionRequested` is true |
+| Open | Assigned agent is the zero address |
+| Assigned | An agent is assigned and no later state applies |
 
-When multiple flags could apply, the contract resolves status in this order:
+A deadline passing does not change the contract state. Show an eligible action such as **Expire and return escrow** separately; the job becomes terminal only after a successful transaction. Submitted work cannot use the non-delivery expiry path, even if its URI contains no useful work.
 
-1) **Completed**
-2) **Deleted**
-3) **Disputed**
-4) **Open**
-5) **CompletionRequested**
-6) **Expired**
-7) **InProgress**
-
-## Status table (canonical mapping)
-
-| Value | Name | Condition |
-| --- | --- | --- |
-| 0 | Deleted | `employer == address(0)` (cancel/delete representation). |
-| 1 | Open | Employer set, no assigned agent. |
-| 2 | InProgress | Assigned agent, no completion request, not completed, not disputed, not expired. |
-| 3 | CompletionRequested | `completionRequested == true` and not completed, not disputed. |
-| 4 | Disputed | `disputed == true` and not completed. |
-| 5 | Completed | `completed == true`. |
-| 6 | Expired | Assigned agent, `expireJob` called (flag set), not completed, not disputed, no completion request. |
-
-## Notes
-
-- **Deleted** is used for cancelled/deleted records and does not imply any on-chain settlement beyond the cancel path.
-- **Expired** is computed and **informational** unless an explicit expiry/settlement function is called.
-- **Expired** is still time‑derived off‑chain by comparing `assignedAt + duration` to the latest block timestamp, but the on‑chain flag only flips after `expireJob`.
+Use `getJobDeadlines` for live, pause-adjusted dates. Do not infer payment from a status badge: inspect the actual outcome events and USDC transfers. Failed outgoing payments remain reserved in `pendingUSDC`; settlement can be complete while receipt of money is delayed.

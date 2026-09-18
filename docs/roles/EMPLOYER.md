@@ -22,6 +22,7 @@ The completion NFT is a standard ERC-721 receipt. External transfers/marketplace
 
 - **Before assignment:** call `cancelJob(jobId)` to recover the escrow.
 - **Missed assignment deadline:** if no completion request or dispute exists, anyone can call `expireJob` strictly after `getJobDeadlines(jobId).assignmentDeadline`. The employer receives escrow and the forfeited agent bond.
+- **Bad, missing or inaccessible work behind a submitted link:** submission moves the job out of the non-delivery expiry path. Save evidence of unmet acceptance criteria and dispute before the cutoff; a complaint in a chat does not open an on-chain dispute.
 - **Disagreement after submission:** while the job remains unsettled and through its displayed settlement/dispute cutoff, approve the quoted dispute bond and call `disputeJob`. The bond is 0.5% of job cost, clamped to 1–200 USDC and never above the job cost.
 - **Disputed result:** a moderator resolves with typed code `1` (agent wins) or `2` (employer wins). An employer-win refund preserves the full job escrow; reviewer rewards use forfeited collateral. It does not pay the 30%/10% wallet shares or mint a completion receipt.
 

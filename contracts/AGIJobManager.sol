@@ -336,8 +336,8 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
      * @notice Validator bond/slashing parameters and challenge window.
      * @dev Validators post a bond per vote; correct-side validators split rewards + slashed bonds.
      *      Incorrect-side validators receive only the un-slashed bond portion. After approval
-     *      thresholds are met, a short challenge window prevents instant settlement. When validators
-     *      participate and the employer wins, the refund is reduced by the validator reward pool.
+     *      thresholds are met, a challenge window can extend the full review. On an employer win,
+     *      reviewer rewards use forfeited collateral; the buyer receives the full escrow.
      */
     uint256 public validatorBondBps = 1500;
     uint256 public validatorBondMin = 10e6;
@@ -1469,5 +1469,14 @@ contract AGIJobManager is Ownable2Step, ReentrancyGuard, Pausable, ERC721 {
     /// @notice Legacy eligibility score; zero means no enabled credential. Not a payout rate.
     function getHighestPayoutPercentage(address agent) public view returns (uint256) {
         return NftEligibility.highestScore(agiTypes, agent);
+    }
+
+    /// @notice Outstanding job bonds, including a fixed zero validator bond after the first vote.
+    function getJobBonds(uint256 jobId) external view returns (
+        uint256 agentAmount, uint256 validatorAmount, bool validatorFixed, uint256 disputeAmount
+    ) {
+        Job storage job = _job(jobId);
+        uint256 recorded = job.validatorBondAmount;
+        return (job.agentBondAmount, recorded == 0 ? 0 : recorded - 1, recorded != 0, job.disputeBondAmount);
     }
 }

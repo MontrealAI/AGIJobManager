@@ -1,6 +1,6 @@
 # AGIJobManager UI — v0.9.5
 
-Start with the [versioned v0.9.5 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/agijobmanager-usdc.html), or the matching [repository artifact](agijobmanager-usdc.html), and read the [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). Verify release checksums and configure the independently verified new USDC manager address. No manager, recipient wallets or production owner is supplied by default.
+For a v0.9.5 manager, use the [versioned v0.9.5 USDC console](https://github.com/MontrealAI/AGIJobManager/releases/download/v0.9.5/agijobmanager-usdc.html) and read the [operator guide](../docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md). The [repository development console](agijobmanager-usdc.html) adds exact job bond reads and requires a separately deployed manager with `getJobBonds` for voting. It is not the published v0.9.5 artifact. See the [compatibility notes and earlier bond-quote limitation](../docs/qualification/BUYER_ECONOMICS_FOLLOWUP.md). Verify release checksums and configure the independently verified manager address. No manager, recipient wallets or production owner is supplied by default.
 
 All current job payments and bonds use native Circle USDC with six decimals. This release requires a fresh deployment; the existing original-token mainnet manager remains a separate service with its own jobs and ENS wiring. Follow the [USDC migration guide](../docs/USDC_MIGRATION.md) and [Hardhat deployment guide](../hardhat/README.md).
 
@@ -8,7 +8,7 @@ All current job payments and bonds use native Circle USDC with six decimals. Thi
 
 | Surface | Purpose | Configuration and status |
 | --- | --- | --- |
-| [USDC standalone console](agijobmanager-usdc.html) | Current single-file participant and owner interface | Ethereum mainnet; requires a verified new manager; no embedded live-manager default or token bridge |
+| [USDC standalone development console](agijobmanager-usdc.html) | Unreleased single-file participant and owner interface | Ethereum mainnet; voting requires the new `getJobBonds` getter; no embedded live-manager default or token bridge |
 | [Operator interface](../docs/ui/agijobmanager.html) | Additional USDC role and owner workflows | Configure the intended manager and network |
 | Next.js app in this directory | Broader UI, development, simulation and demo workflows | Environment-driven; manager address starts empty |
 | `dist-ipfs/agijobmanager.html` | Generated single-file distribution | Built and verified from the UI source; configuration remains deployment-required |
@@ -18,7 +18,7 @@ The Pages filename `agijobmanagerv0.html` is a historical compatibility alias. T
 
 ## Before participant actions
 
-AGI Agents normally require membership under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Use only the label, and verify the connected wallet's supported NameWrapper authority or resolver address. The manager preserves owner-managed additional lists and Merkle proofs as explicit membership exceptions. Agents also require an eligible enabled NFT. Optional ENS job pages are separate metadata and do not grant either participant role.
+AGI Agents normally require membership under `agent.agi.eth` or `alpha.agent.agi.eth`; AGI Validators under `club.agi.eth` or `alpha.club.agi.eth`. Use only the label, and verify the connected wallet's supported NameWrapper authority or resolver address. The manager preserves owner-managed additional lists and Merkle proofs as explicit membership exceptions. Agents also require an eligible enabled NFT when the job's posting-time NFT requirement is on (the default). Optional ENS job pages are separate metadata and do not grant either participant role.
 
 Verify the chain, manager, canonical USDC, both recipients and current role/job state before signing. Review exact USDC allowance and bond requirements and retain ETH for gas. UI checks complement source/runtime verification; a wallet prompt or simulation does not guarantee inclusion or success.
 
