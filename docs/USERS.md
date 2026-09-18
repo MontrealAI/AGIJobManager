@@ -16,7 +16,7 @@ Open the [USDC console](../ui/agijobmanager-usdc.html) or use the verified contr
 | Moderator | [Resolve a disputed job](roles/MODERATOR.md) |
 | Owner/operator | [Configure and operate the deployment](roles/OWNER_OPERATOR.md) |
 
-Need an agent identity? Follow the [free name + soulbound NFT walkthrough](roles/AGENT.md#start-with-a-free-identity). Owner acceptance of the root and collection is required; credentials grant eligibility, while successful job settlement earns payment. Check [which console version you are using](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
+Need an agent identity? Follow the [free name + soulbound NFT walkthrough](roles/AGENT.md#start-with-a-free-identity). The manager must accept the ENS root for that identity route; an enabled NFT collection is needed only when the job requires an eligibility NFT. Fresh v1.0.3 managers start with NFT admission disabled. Credentials grant eligibility, while successful job settlement earns payment. Check [which console version you are using](V1_RELEASE_SCOPE.md#published-download-versus-current-source).
 
 ## Money: USDC for jobs, ETH for gas
 

@@ -32,7 +32,7 @@ Disabling the default does not waive the requirement for an older required job. 
 
 ## Enable the free Alpha Agent Identity route
 
-Use this setup only after reviewing the intended manager and collection. It describes supported configuration, not a claim that a live manager is already configured.
+Use this setup only after reviewing the intended manager and collection. It describes supported configuration, not a claim that a live manager is already configured. If jobs keep the disabled NFT default, agents still need authorization through ENS or an explicit exception, but registering an NFT collection is unnecessary. Follow the collection steps when opting into the NFT requirement.
 
 | Check | Required configuration |
 | --- | --- |
@@ -45,7 +45,7 @@ Use this setup only after reviewing the intended manager and collection. It desc
 1. Connect the **accepted owner** to the verified manager while intake is paused. Confirm all four escrow/bond counters are zero before changing roots or collections. Keep existing jobs on their normal settlement/refund paths.
 2. Read all four roots. If a correction is needed and `lockIdentityConfig()` is false, call `updateRootNodes(clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode)` with all four reviewed namehashes in that exact order. Preserve the intended other roots. A namehash is a `bytes32` value, not the name text or a simple hash of the full string. If already correct, no root transaction is needed; if locked and incorrect, this setter cannot repair it.
 3. On the **manager**, call `addAGIType(0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a, 1)`. The `1` is an eligibility score, not a 1% payout. Read back the collection's `agiTypes(index)` entry and include it in the complete reviewed readiness policy below.
-4. If the intended policy requires NFTs, verify `agentNftRequired()` is true; otherwise the accepted owner can set it for future jobs. Existing jobs keep their posting-time requirement.
+4. To require NFTs on future jobs, the accepted owner calls `setAgentNftRequired(true)` and verifies `agentNftRequired()`. To retain the fresh optional policy, leave it `false`. Existing jobs keep their posting-time requirement.
 5. Confirm the intended participant wallet’s ENS route, collection balance and `getHighestPayoutPercentage(wallet) > 0`. A positive score alone does not identify which collection qualified or prove complete eligibility. Complete the [launch checks](LAUNCH_CHECKLIST.md), including a separate rehearsal, before opening intake.
 6. After authorized activation, use a limited first job and simulate its application with the intended agent wallet and sufficient bond allowance before signing. Application simulation while intake is paused is expected to revert; do not bypass that guard.
 
