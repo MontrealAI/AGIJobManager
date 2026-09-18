@@ -1,7 +1,7 @@
 {
   "scope": "isolated local Ethereum fork; no public transactions or live signer-control proof",
   "sourceSha256": {
-    "contracts/AGIJobManager.sol": "a25c1eb93cd0de5de952e94fad22126ddde1a928c2644d276945bf751af38757",
+    "contracts/AGIJobManager.sol": "aae9d1bc02f9bbb0fc02ad2ae674fd24028fbbfb2d5e6a9e984f214b61c9dbe5",
     "contracts/ens/ENSJobPages.sol": "a53964a8fdc0968086978dc4ad97e6caf89ae98a5ee74d5ec2a744e5d57cdb7f",
     "contracts/ens/IENSJobPages.sol": "e063fd72c7c52886e461ebbfc2142430cc42f91a76b6c013af2f464ddae78f5f",
     "contracts/ens/IENSRegistry.sol": "432c7d37db76dba1f3ce522ca40013530ee2e1024197bc2a280366ff9f9ff9e4",
@@ -63,15 +63,15 @@
     "contracts/utils/UriUtils.sol": "b3d5b14eed8b89f71781d2d7258e1bd88113db6a77984e1967c4eb341178647b",
     "hardhat.cutover-fork.config.mjs": "97ae65fb86ad2a6e7ac4b487a561e60fe4698bbc9bf6759105be330e4a5384f0",
     "hardhat/hardhat.config.js": "ff4c769f2e409186d29f569cb481ed49e975fa8d790105a0d2fda02bd4321a81",
-    "hardhat/package-lock.json": "6173a4dd4ca19c254ed6e15906649ea2d9ba9a029b3eb8445f71118e4bbd4cfe",
-    "hardhat/package.json": "cb4ffc3061bac0209d6d8535d7b5f4ef0f22b30575ab036bd9f026d527ff8ec5",
+    "hardhat/package-lock.json": "8cc7c627f705595a7bf8648c4d5348db29fd097927d6c7fc5ac51cda755bcba4",
+    "hardhat/package.json": "19b7ac9b35ed2067c41399c64fa75f3a7ce2fe98c2ae8a6434aac2139618ff49",
     "hardhat/qualification/cutover-pin.json": "1da5c523c8d1e7629f2630844d02040bd6ca14a6961a41b259cf9af7bb7397d6",
     "hardhat/qualification/legacy-snapshot.cjs": "073b4e6ce4311246985d8c4740018fec967f7042e1b6a233a56142812daf6a31",
     "hardhat/scripts/deployment-safety.cjs": "b228b076c6f09896a5ad55956d2e4b787d08d6c26045d7120e9bb4593bfe2d69",
     "hardhat/scripts/runtime.cjs": "d4618f6912ac7bde79facd0c81f81547135a1b9691f850811d4013a676b4cca2",
     "hardhat/test/mainnet-cutover.test.js": "e70c5a73fc3b37e98a17657dee60cd84e96dab8a527e47cfcb45108f1ccc83c2",
-    "package-lock.json": "8d869f654ceb8ba9871a20d65dd64857f57ed91e2b86b55d4e0694bd407ade65",
-    "package.json": "6a5996466551e70ef6022d0627ef7179fae0bdd733555e8245e64c67468fd8c7",
+    "package-lock.json": "cc4d392cf1fb38b69bcedd876e2dc4bb06261da33366357d42e731a5a5410fd0",
+    "package.json": "c0864dd1413e297f28fffc04941d901376d4c3a67dd31ca5b9d6dc2d23054ab0",
     "scripts/security/openzeppelin-compiler-patches.json": "d6b26417b011ef55012d092486ae4558235d3a45ad6b38028d2204289c1d7236",
     "scripts/security/patch-openzeppelin-compiler.cjs": "4f673eb48f7ff62ed0b7305cbdb7e367a187b6468c9ef69698fe38468a395116"
   },

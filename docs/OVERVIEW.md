@@ -24,7 +24,7 @@ AGIJobManager is an owner-operated escrow and settlement contract for employer-a
 
 ## UI surfaces (current state)
 
-- **Standalone USDC console (v0.9.6):** a versioned, single-file mainnet-focused interface for direct browser-based operations/review.
+- **Standalone USDC console (v0.9.7):** a versioned, single-file mainnet-focused interface for direct browser-based operations/review.
 - **Broader/full UI:** Next.js UI stack in `ui/`, still under active development.
 - **Authority model:** UI surfaces are clients; AGIJobManager + ENSJobPages contracts remain authoritative.
 

@@ -39,10 +39,10 @@ class ReleaseGateTests(unittest.TestCase):
         self.script = self.root / 'scripts/release/publish-release.py'
         self.script.parent.mkdir(parents=True)
         self.script.write_text(PUBLISHER.read_text())
-        self.meta = self.root / 'docs/releases/v0.9.6'
+        self.meta = self.root / 'docs/releases/v0.9.7'
         self.meta.mkdir(parents=True)
         self.config = {
-            'repository': REPOSITORY, 'tag': 'v0.9.6', 'sourceCommit': SOURCE,
+            'repository': REPOSITORY, 'tag': 'v0.9.7', 'sourceCommit': SOURCE,
             'sourceTree': TREE,
             'requiredSourceRuns': {
                 workflow: {'id': index, 'workflow': workflow, 'requiredJobs': jobs[:]}
@@ -282,14 +282,14 @@ class ReleaseUploadTests(unittest.TestCase):
         self.digest = 'd' * 64
         self.asset = {'name': self.file.name, 'size': self.file.stat().st_size,
                       'state': 'uploaded', 'digest': 'sha256:' + self.digest}
-        self.release = {'id': 123, 'tag_name': 'v0.9.6', 'target_commitish': SOURCE,
+        self.release = {'id': 123, 'tag_name': 'v0.9.7', 'target_commitish': SOURCE,
                         'draft': True, 'assets': [],
                         'upload_url': f'https://uploads.github.com/repos/{REPOSITORY}/releases/123/assets{{?name,label}}'}
         self.api = Mock(return_value=copy.deepcopy(self.release))
         self.list_assets = Mock(return_value=[])
         self.gh = Mock(return_value=json.dumps(self.asset))
         self.clock = Mock()
-        namespace = {'repo': REPOSITORY, 'tag': 'v0.9.6', 'source': SOURCE,
+        namespace = {'repo': REPOSITORY, 'tag': 'v0.9.7', 'source': SOURCE,
                      'api': self.api, 'release_assets': self.list_assets, 'gh': self.gh, 'time': self.clock,
                      'json': json, 'subprocess': subprocess, 'quote': quote}
         # Isolate the real helper without executing publication or credentials.

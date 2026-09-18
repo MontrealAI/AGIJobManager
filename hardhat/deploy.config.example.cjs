@@ -9,7 +9,7 @@ const ZERO_ROOT = '0x00000000000000000000000000000000000000000000000000000000000
 module.exports = {
   mainnet: {
     usdcTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    settlementWallets: ['', ''], // Required: 30% wallet, then distinct 10% wallet. Owner rotation requires paused intake and zero reserves.
+    settlementWallets: ['', ''], // Required: 30% wallet, then distinct 10% wallet. Owner rotation requires paused intake and zero job escrow/bonds; pending claims retain their beneficiaries.
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
     ensConfig: [
       '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
@@ -31,7 +31,7 @@ module.exports = {
   sepolia: {
     // Supply verified Sepolia ENS contracts, controlled membership roots and the intended owner.
     usdcTokenAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
-    settlementWallets: ['', ''], // Required: 30% wallet, then distinct 10% wallet. Owner rotation requires paused intake and zero reserves.
+    settlementWallets: ['', ''], // Required: 30% wallet, then distinct 10% wallet. Owner rotation requires paused intake and zero job escrow/bonds; pending claims retain their beneficiaries.
     baseIpfsUrl: 'https://ipfs.io/ipfs/',
     ensConfig: [
       '', // Required: verified Sepolia ENS registry

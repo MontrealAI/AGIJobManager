@@ -1,6 +1,6 @@
-# AGIJobManager Deep Reference — v0.9.6
+# AGIJobManager Deep Reference — v0.9.7
 
-Primary source: [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol). Native USDC funds every escrow, reward and bond; ETH pays transaction gas. The deployed token and fixed 30%/10% gross-cost shares are immutable. Recipient wallets can rotate only with intake paused and all reserves zero; see [owner controls](OWNER_CONTROLS.md).
+Primary source: [`contracts/AGIJobManager.sol`](../contracts/AGIJobManager.sol). Native USDC funds every escrow, reward and bond; ETH pays transaction gas. The deployed token and fixed 30%/10% gross-cost shares are immutable. Recipient wallets can rotate only with intake paused and all live job escrow and bonds zero; see [owner controls](OWNER_CONTROLS.md).
 
 Assignment is immediate on the first successful eligible application. Approval votes do not automatically settle: someone must call finalization or dispute resolution. The validator budget (1–60%, default 8%) is fixed at posting; agent and validator bonds are fixed at assignment and first vote respectively. The approval challenge must strictly elapse once latched, even if the full review window ends sooner.
 

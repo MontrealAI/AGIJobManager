@@ -1,6 +1,6 @@
-# AGIJobManager consoles — v0.9.6
+# AGIJobManager consoles — v0.9.7
 
-Use the [primary v0.9.6 USDC console](../ui/agijobmanager-usdc.html) from the release/tag you intend to operate. The [secondary operator console](ui/agijobmanager.html) also supports role and owner workflows. Both require the intended deployment address and network; a released interface is not evidence that a new contract has been deployed.
+Use the [primary v0.9.7 USDC console](../ui/agijobmanager-usdc.html) from the release/tag you intend to operate. The [secondary operator console](ui/agijobmanager.html) also supports role and owner workflows. Both require the intended deployment address and network; a released interface is not evidence that a new contract has been deployed.
 
 ## User workflows
 

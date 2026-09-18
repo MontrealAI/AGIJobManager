@@ -1,4 +1,4 @@
-# Owner/Operator Guide — v0.9.6
+# Owner/Operator Guide — v0.9.7
 
 Use the [owner controls](../OWNER_CONTROLS.md) for the full operation and restriction matrix. The [USDC console](../../ui/agijobmanager-usdc.html) exposes guarded owner actions and ownership acceptance.
 
@@ -16,8 +16,8 @@ The deployed contract has no implementation upgrade switch. Its native USDC addr
 | Change validator reward budget | `setValidationRewardPercentage(1..60)` affects only newly posted jobs |
 | Change bond parameters | Agent bond is fixed at assignment; validator bond is fixed by the first vote on that job |
 | Change thresholds, quorum, review/challenge periods, or slash percentage | All four escrow/bond reserve counters must be zero |
-| Rotate payout wallets | Intake must be paused and all reserves zero; recipients must be distinct and valid |
-| Manage allowlists, blacklists, moderators, and NFT credentials | NFT default changes affect future postings; collection changes require zero reserves. Other role/eligibility changes remain live |
+| Rotate payout wallets | Intake must be paused and all live job escrow and bonds zero; recipients must be distinct and valid |
+| Manage allowlists, blacklists, moderators, and NFT credentials | NFT default changes affect future postings; collection changes require zero live job escrow and bonds. Other role/eligibility changes remain live |
 | Withdraw USDC | Intake paused, settlement enabled, and amount no greater than `withdrawableUSDC()`; reserved funds are unavailable |
 | Transfer ownership | `transferOwnership` proposes; the proposed wallet must call `acceptOwnership` |
 

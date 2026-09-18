@@ -1,8 +1,8 @@
-# v0.9.6 mainnet qualification
+# v0.9.7 mainnet qualification
 
-v0.9.6 is a software release for a fresh Ethereum deployment. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
+v0.9.7 is a software release for verified v0.9.6-compatible managers and new Ethereum deployments. It supplies no live manager, recipient wallets, owner-key verification or production signing authority. Automated qualification is evidence about the pinned source and tested scenarios; it is not an independent audit or a guarantee against every failure.
 
-The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v0.9.6, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
+The project already has a legacy mainnet manager with outstanding original-asset obligations. The [USDC cutover qualification](qualification/USDC_CUTOVER.md) records that live state, the ENS resolver correction first included in v0.9.2 and retained in v0.9.7, and a fork rehearsal preserving existing jobs. Software qualification and live-instance approval remain separate.
 
 ## Settlement
 
@@ -27,9 +27,9 @@ The owner may set the validator budget to 1–60% for newly posted jobs. Existin
 - Transaction reviews bind the connected account, network and manager through approvals and submission. Changed contexts require a new review. Failed receipts cannot be reported as successful.
 - Qualification includes contract regressions, issuer restrictions, bonds/disputes, exact transfer ordering, fuzzing, concurrent-job invariants, deployment rejection scenarios, browser tests and static-analysis triage.
 
-## v0.9.6 operational review
+## v0.9.7 operational review
 
-v0.9.6 adds exact job bond reads, observable validator-default changes and clearer cost/recovery guidance. It retains full buyer escrow refunds, no-vote dispute escalation, explicit acceptance, guaranteed full review, independent credential/controller checks, pause-aware deadlines, a neutral unresolved-dispute timeout, and reserved payment claims. The manager links eight fixed libraries. The per-job NFT policy, normal Agent/Club ENS membership, two-step manager ownership, and dedicated jobs namespace remain in force. The release evidence records the final source, checks and limits. Start with [buyer protection](BUYER_PROTECTION.md), [the owner runbook](OWNER_RUNBOOK.md), and [incident response](OPERATIONS/INCIDENT_RESPONSE.md).
+v0.9.7 corrects console permissions and operating guides while preserving the exact bond getter and settings event introduced in v0.9.6. Its ABI and executable bytecode remain compatible; see [release review](qualification/OPERATIONS_V097.md) and the [launch checklist](LAUNCH_CHECKLIST.md). It retains full buyer escrow refunds, no-vote dispute escalation, explicit acceptance, guaranteed full review, independent credential/controller checks, pause-aware deadlines, a neutral unresolved-dispute timeout, and reserved payment claims. The manager links eight fixed libraries. The per-job NFT policy, normal Agent/Club ENS membership, two-step manager ownership, and dedicated jobs namespace remain in force. The release evidence records the final source, checks and limits. Start with [buyer protection](BUYER_PROTECTION.md), [the owner runbook](OWNER_RUNBOOK.md), and [incident response](OPERATIONS/INCIDENT_RESPONSE.md).
 
 ## Reproduce qualification
 

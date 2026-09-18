@@ -1,4 +1,4 @@
-# Operator runbook — v0.9.6
+# Operator runbook — v0.9.7
 
 The maintained operational procedure is the [owner runbook](OWNER_RUNBOOK.md). For a new deployment, follow [Hardhat](../hardhat/README.md), complete ownership acceptance, and run the read-only readiness check before opening intake.
 

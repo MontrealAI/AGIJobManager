@@ -1,11 +1,11 @@
-# Common reverts and fixes — v0.9.6
+# Common reverts and fixes — v0.9.7
 
 Start with the network, deployment address, connected wallet, `usdcToken()`, current job state, both pause states, and deadlines. Check USDC balance/allowance and ETH for gas. The console's preview can explain a failure before you sign.
 
 | Action / error | Meaning and next step |
 | --- | --- |
 | Apply: `NotAuthorized` | Pass the agent allowlist, Merkle proof, or configured ENS route. Use your own wallet and the label only for ENS. See [proofs](merkle-proofs.md). |
-| Apply: `IneligibleAgentPayout` | Identity alone is insufficient: hold an eligible AGI-type NFT credential with a nonzero configured score. |
+| Apply: `IneligibleAgentPayout` | The job requires an NFT: verify jobAgentNftRequired(jobId) and hold an enabled AGI-type credential. If the registry is empty, the operator must configure it; changing the default does not change this job. |
 | Apply: `InvalidState` | Another agent is assigned or your active-job limit is reached. Check `getJobCore` and your existing assignments. |
 | Apply/vote: `Blacklisted` | Your wallet is blocked for that role. Contact the operator for review. |
 | Submit: `NotAuthorized` | Only the assigned agent can request completion. |
@@ -17,8 +17,9 @@ Start with the network, deployment address, connected wallet, `usdcToken()`, cur
 | Finalize: `InvalidState` | The job is disputed/terminal, lacks a completion request, or the relevant challenge/review window has not strictly elapsed. A valid call can also open a dispute instead of paying. |
 | Expire: `InvalidState` | The job is unassigned, terminal/disputed, already has a completion request, or its assignment deadline has not strictly elapsed. |
 | Dispute: `NotAuthorized` | Only this job's employer or assigned agent can post a manual dispute. |
-| Dispute: `InvalidState` | Completion must already have been requested; the job must remain unsettled/undisputed and within its completion review window. |
-| Resolve: `NotModerator` | The calling wallet must be explicitly listed as a moderator. Ownership alone is insufficient for `resolveDisputeWithCode`. |
+| Dispute: `InvalidState` | Completion must already have been requested; the job must remain unsettled/undisputed and within its displayed settlement cutoff, including any longer approval challenge. |
+| Moderator decision: `NotModerator` | The calling wallet must be explicitly listed as a moderator. Ownership alone is insufficient for `resolveDisputeWithCode`. |
+| Owner overdue-dispute decision: `Ownable: caller is not the owner` | Use the accepted owner wallet for `resolveStaleDispute`; moderator membership alone is insufficient. |
 | Resolve: `InvalidParameters` | Use numeric code `0`, `1`, or `2`; freeform reason text does not select the outcome. |
 | Resolve: `InvalidState` | No active dispute exists, or a stale-dispute owner call is too early. |
 | Cancel: `NotAuthorized` | Use the employer wallet that created the job. |
@@ -34,4 +35,4 @@ Start with the network, deployment address, connected wallet, `usdcToken()`, cur
 | Identity configuration: `ConfigLocked` | The owner has irreversibly locked the protected identity configuration. |
 | Ownership acceptance | Only `pendingOwner` may call `acceptOwnership`; proposing a transfer does not change `owner` immediately. |
 
-Use [roles](roles.md) and the [walkthrough](happy-path.md) to check the expected sequence. There are no current internal NFT marketplace, reward-pool contribution, or string-based dispute-resolution calls; use the v0.9.6 interface/ABI.
+Use [roles](roles.md) and the [walkthrough](happy-path.md) to check the expected sequence. There are no current internal NFT marketplace, reward-pool contribution, or string-based dispute-resolution calls; use the v0.9.7 interface/ABI.

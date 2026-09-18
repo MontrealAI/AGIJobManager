@@ -1,4 +1,4 @@
-# Merkle proofs — v0.9.6
+# Merkle proofs — v0.9.7
 
 Merkle proofs let the contract confirm your wallet is on an owner-managed allowlist without storing the full list on-chain. They are a preserved membership exception, not proof of an ENS name. Ordinary AGI Agent membership uses `agent.agi.eth` / `alpha.agent.agi.eth`; AGI Validator membership uses `club.agi.eth` / `alpha.club.agi.eth`.
 
@@ -11,7 +11,7 @@ The identity check succeeds if **any** of these role-specific routes succeeds:
 3. **ENS NameWrapper ownership or qualifying approval** for the subdomain label.
 4. **ENS resolver.addr** points to your wallet (fallback).
 
-Agents must **also** hold an eligible AGI-type NFT credential. Identity authorization does not bypass that separate requirement, blacklists, active-job limits, or USDC bond funding. Validators require their own validator authorization; agent and validator roots are separate.
+Agents must **also** hold an eligible AGI-type NFT credential **when the job's posting-time NFT policy requires one**. Identity authorization does not bypass that separate requirement, blacklists, active-job limits, or USDC bond funding. Validators require their own validator authorization; agent and validator roots are separate.
 
 > **Label‑only rule (important):** enter the **label only**, not the full ENS name.
 > - ✅ `helper`
