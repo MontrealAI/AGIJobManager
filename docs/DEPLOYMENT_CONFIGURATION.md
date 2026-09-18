@@ -1,4 +1,4 @@
-# Deployment configuration — v1.0.3
+# Deployment configuration — v1.0.4
 
 Start with the [Hardhat guide](../hardhat/README.md). This reference answers which file to edit, which command to run, and whether it sends a transaction. Ethereum mainnet is chain **1**; Sepolia is **11155111**. No production owner, payment recipients or manager address is supplied.
 
@@ -21,7 +21,7 @@ Setup creates only missing files. Existing files, directories and symlinks at th
 | `hardhat/reviewed-nft-policy.json` | Explicit required/optional choice and complete expected collection registry, including disabled entries; [examples](NFT_POLICY.md#hardhat-deployment-and-readiness) |
 | `hardhat/reviewed-identity.json` | Optional expected identity changes made after deployment; create only if needed, following the Hardhat guide |
 
-These operator files are ignored by git. Preserve deployment journals and reviewed configuration securely. The `.cjs` profile is executable JavaScript, so review it before any command loads it. Example files intentionally omit real recipients and owner. The NFT example has `agentNftRequired: false` and an empty registry, matching a fresh v1.0.3 manager. This is a valid optional NFT policy; readiness still checks it against the actual instance and requires all ownership, funding, identity and deployment checks to pass. No NFT-setting transaction is needed to retain the fresh default. To opt in, register reviewed collections, enable the requirement for future jobs and update the policy file. Existing reviewed files are preserved, so inspect them when updating an operator checkout.
+These operator files are ignored by git. Preserve deployment journals and reviewed configuration securely. The `.cjs` profile is executable JavaScript, so review it before any command loads it. Example files intentionally omit real recipients and owner. The NFT example has `agentNftRequired: false` and an empty registry, matching a fresh v1.0.4 manager. This is a valid optional NFT policy; readiness still checks it against the actual instance and requires all ownership, funding, identity and deployment checks to pass. No NFT-setting transaction is needed to retain the fresh default. To opt in, register reviewed collections, enable the requirement for future jobs and update the policy file. Existing reviewed files are preserved, so inspect them when updating an operator checkout.
 
 ## Environment and path rules
 

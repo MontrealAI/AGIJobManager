@@ -14,10 +14,11 @@ The 1.0 label identifies this software edition. It does not certify a deployed b
 
 ## Published download versus current source
 
-The v1.0.3 edition starts NFT admission disabled on fresh managers and aligns deployment checks, examples, guidance and tests with that default. Existing instances and job policies do not change on publication. The v1.0.1 naming policy and all prior published assets remain unchanged.
+The v1.0.4 edition clarifies publisher/operator responsibilities, legal-review scope and privacy, and prevents saved console acknowledgement from being restored. It preserves v1.0.3 contract behavior and the v1.0.1 ENS naming policy. Existing instances, jobs, agreements and prior published assets do not change.
 
 | Edition | Contents |
 | --- | --- |
+| [v1.0.4](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.4) | MIT-compatible publisher and independent-owner notices, deployment-specific terms template, legal/privacy guidance, synchronized source notices and fresh console acknowledgement |
 | [v1.0.3](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.3) | Disabled NFT-admission default on fresh construction, owner opt-in, aligned deployment/readiness setup and regression coverage |
 | [v1.0.2](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.2) | Non-overwriting private configuration setup, offline profile validation, explicit Hardhat environment, complete configuration reference and refreshed operator guides |
 | [v1.0.1](https://github.com/MontrealAI/AGIJobManager/releases/tag/v1.0.1) | Automatic fresh ENS namespace and `job-` prefix, same-manager preservation, wallet/deployment/completion context fixes, mobile corrections, combined free name + identity NFT onboarding, and the historical Genesis simulation |
@@ -34,7 +35,7 @@ Use the selected edition's assets and `SHA256SUMS.txt`. Its manifest identifies 
 | v0.9.5 or older manager | Keep its compatible interface for existing jobs; it lacks the exact-bond getter used by current voting |
 | Original-asset legacy manager | Preserve its original jobs, token, allowances and ENS namespace; the USDC release does not migrate them |
 
-The current console retains the v0.9.6 local-storage namespace. Stored addresses and drafts remain subject to live context checks; saved settings are not deployment verification. No upgrade transaction or escrow migration is part of publication.
+The current console retains the v0.9.6 configuration/draft namespace but never restores acknowledgement from saved state. Stored addresses and drafts remain subject to live context checks; saved settings are not deployment verification or legal acceptance. No upgrade transaction or escrow migration is part of publication. The MIT license is unchanged; new notices are not retroactive agreements or extra software-use conditions.
 
 ## What the contract cannot establish
 
