@@ -19,14 +19,14 @@ The accepted owner of a compatible older manager can call `setAgentNftRequired(f
 
 The initializer changes construction-time storage only. `createJob` still snapshots the default before assignment; `applyForJob` still uses the job snapshot; the setter remains owner-only; no collection mutation or payout function changes. The UI continues reading live manager and job state and blocks unknown policy reads. It does not assume that an older instance shares the new default.
 
-Local compilation with the qualified Solidity 0.8.37 profile produced an ABI and deployed runtime identical to the v1.0.2 artifact. Runtime remains 24,359 bytes. Creation bytecode changes; the deployment fixture's full manager initcode is 27,551 bytes and uses 5,973,040 gas. These are local fixture measurements, not a mainnet gas quote. Library sources, storage declarations and compiler settings are unchanged.
+Local compilation with the qualified Solidity 0.8.37 profile produced an ABI and deployed runtime identical to the v1.0.2 artifact. Runtime remains 24,359 bytes. Creation bytecode changes; the deployment fixture's full manager initcode is 27,551 bytes and uses 5,973,040 gas. These are local fixture measurements, not a mainnet gas quote. Library sources, storage ordering/types and compiler settings are unchanged.
 
 The deployment script checks the disabled policy at the manager's deployment block and records it in the receipt. A mismatching initial policy fails completion. Both NFT-policy examples use `false` and an empty registry. Setup preserves existing reviewed files; readiness still requires an explicit file and exact agreement with the complete on-chain registry.
 
 ## Regression and security evidence
 
 - `test/nftPolicy.test.js` exercises a full job with no registered collection or eligibility NFT, completion-NFT minting, owner opt-in, repeated toggles, immutable job policies, authorization, collateral, collection guards and identical payouts.
-- Required-mode fixtures explicitly enable the gate in the comprehensive, Merkle, payout-snapshot and mainnet-fork suites. Existing negative admission assertions remain in place.
+- Required-mode fixtures explicitly enable the gate in the comprehensive, Merkle, payout-snapshot and mainnet-fork suites. The historical Genesis simulation verifies disabled construction before opting in. Existing negative admission assertions remain in place.
 - Hardhat deployment and preflight tests assert the disabled construction state, receipt contents and rejection of an unexpected required state. The operator setup regression checks the generated policy while preserving existing configuration.
 - The cutover fixture verifies disabled construction before opting in, then checks required and optional jobs against actual mainnet USDC and ENS in an isolated fork. Its report is regenerated from this source.
 - The Slither review retains every finding disposition and detector configuration. Its manager hash changes for the reviewed initializer/comment; the root lockfile hash changes only for release version metadata. Security CI must reproduce the complete finding set, and fail on any new or missing finding, before publication.

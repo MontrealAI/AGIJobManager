@@ -143,7 +143,9 @@ try {
     challengePeriodAfterApproval: 86400n, disputeReviewPeriod: 1209600n,
     requiredValidatorApprovals: 3n, requiredValidatorDisapprovals: 3n, voteQuorum: 3n,
     validationRewardPercentage: 8n })) assert.equal(await manager[getter](), expected, getter);
+  assert.equal(await manager.agentNftRequired(), false, 'Fresh deployments start with NFT admission disabled');
   await send(manager.addAGIType(nft.target, 1));
+  await send(manager.setAgentNftRequired(true)); // This historical rehearsal explicitly opts into the NFT gate.
   await send(nft.mint(agent.address));
   const agentLabel = 'genesis00';
   const agentNode = E.namehash(`${agentLabel}.alpha.agent.agi.eth`);
@@ -194,7 +196,7 @@ try {
     assumptions: {
       budgetsUSDC: ['100', '88888'],
       price: 'Illustrations only; neither price converts AGIALPHA or values the historical art.',
-      identities: 'Mock wrapped names and enabled ERC-721; no agent/validator allowlist bypass. No live registrar expiry test.',
+      identities: 'Fresh NFT admission is disabled; the fixture explicitly enables it with a mock ERC-721 and wrapped names. No agent/validator allowlist bypass or live registrar expiry test.',
       participants: 'Historical public wallets impersonated locally. Wallet control and off-chain independence are not established.',
       recipients: 'Moderator and fee recipients are disposable test accounts, not nominated production wallets.',
       work: 'Historical metadata URIs used as references only. Quality, availability and arbitration judgments are scenario inputs.',
