@@ -48,7 +48,7 @@ Recipient addresses can rotate only while intake is paused and all four job escr
 - `createJob(string _jobSpecURI, uint256 _payout, uint256 _duration, string _details)`
 - `applyForJob(uint256 _jobId, string subdomain, bytes32[] proof)`
 
-The first successful eligible application assigns the job immediately. Checks include cost/duration bounds, identity authorization plus a separate eligible NFT credential, blacklist enforcement, active-job limits, and USDC bond funding. NFT scores do not increase payouts.
+The first successful eligible application assigns the job immediately. Checks include cost/duration bounds, identity authorization plus a separate eligible NFT credential when the job’s recorded policy requires one, blacklist enforcement, active-job limits, and USDC bond funding. NFT scores do not increase payouts.
 
 ### 2) Completion and voting
 - `requestJobCompletion(uint256 _jobId, string _jobCompletionURI)`
@@ -61,7 +61,7 @@ The first successful eligible application assigns the job immediately. Checks in
 - `cancelJob(uint256 _jobId)` handles pre-assignment cancellation.
 
 ### 4) Dispute resolution
-- `disputeJob(uint256 _jobId)` opens a bonded dispute after completion submission, within review, before settlement, for the employer or assigned agent.
+- `disputeJob(uint256 _jobId)` opens a bonded dispute after completion submission, through the displayed settlement cutoff, before settlement and while undisputed, for the employer or assigned agent.
 - `resolveDisputeWithCode(uint256 _jobId, uint8 resolutionCode, string reason)` moderator path: `0` note only, `1` agent win, `2` employer win. There is no current string-resolution API.
 - `resolveStaleDispute(uint256 _jobId, bool employerWins)` owner fallback after timeout.
 

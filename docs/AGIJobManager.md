@@ -120,7 +120,7 @@ The contract uses custom errors for gas‑efficient reverts. Common triggers:
 | `TransferFailed` | ERC‑20 transfer/transferFrom failed or returned false or amount mismatch. |
 | `ValidatorLimitReached` | Validator cap reached for a job. |
 | `InvalidValidatorThresholds` | Approval/disapproval thresholds exceed caps. |
-| `IneligibleAgentPayout` | Agent has no eligible NFT at apply time. |
+| `IneligibleAgentPayout` | Job requires an NFT and the agent has no enabled collection balance at application. |
 | `InsufficientWithdrawableBalance` | Withdrawal exceeds `withdrawableUSDC()`. |
 | `InsolventEscrowBalance` | Contract balance < locked totals. |
 | `ConfigLocked` | Identity configuration already locked. |

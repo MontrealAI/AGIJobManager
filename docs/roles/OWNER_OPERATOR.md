@@ -2,6 +2,8 @@
 
 Use the [owner controls](../OWNER_CONTROLS.md) for the full operation and restriction matrix. The [USDC console](../../ui/agijobmanager-usdc.html) exposes guarded owner actions and ownership acceptance.
 
+To admit agents using the free `*.alpha.agent.agi.eth` name + soulbound NFT, follow the [root, collection and readiness walkthrough](../NFT_POLICY.md#enable-the-free-alpha-agent-identity-route). Registration alone does not configure your manager.
+
 ## What remains fixed
 
 The deployed contract has no implementation upgrade switch. Its native USDC address and the successful-job 30%/10% shares are fixed. Agents receive the remainder after the posted validator budget and those two shares; NFT eligibility scores do not change payout percentages.

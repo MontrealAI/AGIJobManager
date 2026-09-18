@@ -41,7 +41,9 @@ Use Node 22.23.2 and the committed lockfiles. Install the root and Hardhat works
 npm ci
 npm --prefix hardhat ci
 npm test
-node scripts/release/verify-usdc-ui.mjs
+node scripts/ui/verify-usdc-console.mjs
+npx playwright install --with-deps chromium
+npm run test:ui:usdc
 npm run test:ui
 cd hardhat
 npm ci
@@ -51,6 +53,8 @@ npm run test:deployment
 npm run test:mainnet-fork
 CUTOVER_REPORT=../build/qualification/mainnet-cutover.json npm run test:cutover
 ```
+
+The commands above target current source. For the frozen v1.0.0 tag, use its recorded console verifier and qualification commands; it predates the primary-console browser runner. [Release versus source](V1_RELEASE_SCOPE.md#published-download-versus-current-source) identifies the difference. Browser wallet/RPC responses are mocked, with no signing or broadcast.
 
 The qualified fork fixture pins Ethereum block **25,997,388**, hash `0x1495b5decf70b7757b60b8d4ba10d14a7cdb4512f55c4ae5400d8a97b9deedf9`, and checks USDC implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` plus its runtime hash. Eight cases cover paused launch, exact default-bond settlement and real issuer pause/blocklist protected claims and recovery.
 

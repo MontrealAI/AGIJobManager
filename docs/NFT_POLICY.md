@@ -30,6 +30,29 @@ A fresh manager has **no registered collections**. Keeping the required default 
 
 Disabling the default does not waive the requirement for an older required job. If its credential becomes unavailable before assignment, the employer can cancel that unassigned job and post a replacement under newly reviewed terms. Assigned jobs can settle without holding the NFT. The manager cannot freeze an external NFT's ownership, upgrade authority or availability; review those collection risks separately.
 
+## Enable the free Alpha Agent Identity route
+
+Use this setup only after reviewing the intended manager and collection. It describes supported configuration, not a claim that a live manager is already configured.
+
+| Check | Required configuration |
+| --- | --- |
+| ENS integration | Reviewed Ethereum mainnet ENS registry and NameWrapper addresses |
+| Alpha-agent root | `alphaAgentRootNode()` equals the ENS namehash of `alpha.agent.agi.eth` |
+| Identity collection | Enable the verified [FreeTrialSubdomainRegistrarIdentity ERC-721 contract](https://etherscan.io/address/0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a#code), `0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a`, with a positive score |
+| Job NFT policy | Read `jobAgentNftRequired(jobId)` for existing jobs; `agentNftRequired()` is only the default for future postings |
+| Applying wallet | Pass ENS authorization, hold the enabled NFT when required, and meet the job, bond, capacity, blacklist and pause checks |
+
+1. Connect the **accepted owner** to the verified manager while intake is paused. Confirm all four escrow/bond counters are zero before changing roots or collections. Keep existing jobs on their normal settlement/refund paths.
+2. Read all four roots. If a correction is needed and `lockIdentityConfig()` is false, call `updateRootNodes(clubRootNode, agentRootNode, alphaClubRootNode, alphaAgentRootNode)` with all four reviewed namehashes in that exact order. Preserve the intended other roots. A namehash is a `bytes32` value, not the name text or a simple hash of the full string. If already correct, no root transaction is needed; if locked and incorrect, this setter cannot repair it.
+3. On the **manager**, call `addAGIType(0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a, 1)`. The `1` is an eligibility score, not a 1% payout. Read back the collection's `agiTypes(index)` entry and include it in the complete reviewed readiness policy below.
+4. If the intended policy requires NFTs, verify `agentNftRequired()` is true; otherwise the accepted owner can set it for future jobs. Existing jobs keep their posting-time requirement.
+5. Confirm the intended participant wallet’s ENS route, collection balance and `getHighestPayoutPercentage(wallet) > 0`. A positive score alone does not identify which collection qualified or prove complete eligibility. Complete the [launch checks](LAUNCH_CHECKLIST.md), including a separate rehearsal, before opening intake.
+6. After authorized activation, use a limited first job and simulate its application with the intended agent wallet and sufficient bond allowance before signing. Application simulation while intake is paused is expected to revert; do not bypass that guard.
+
+The NFT registry remains owner-maintainable after the ENS identity lock, subject to empty escrow/bond reserves. Root/registry configuration does not register a user's name: the user separately registers through the registrar, paying ETH gas. Agent credentials do not grant validator membership.
+
+**Trial expiry is not enforced by the NFT balance check.** An expired identity can remain unburned; the manager does not query registrar expiry. Separate status monitoring is an operational check, not an on-chain admission guarantee. A strict expiry-aware NFT gate would require a contract change and a separately qualified deployment. Existing assignments are not revoked merely because credentials expire; identity/NFT admission checks are not repeated at payment. See [registration and expiry details](guides/IDENTITY_AND_PROOFS.md#free-alpha-agent-name-and-identity-nft).
+
 ## Hardhat deployment and readiness
 
 The supported deployment script deploys and verifies eight linked libraries, including `NftEligibility`, and the manager. It starts intake paused, retains the required default and empty registry, and proposes the configured ownership handover. It does not choose production collections or silently turn eligibility off.
