@@ -1294,17 +1294,17 @@
     </div>
 
     <div class="card" id="alphaAgentMintSection" data-surface="freeTrialRegistrarSection">
-      <h2 style="margin:0 0 12px">1.5) Mint Free Alpha-Agent ENS Access Key</h2>
-      <div class="helper" style="margin-bottom:10px">Claim a free-trial <b>*.alpha.agent.agi.eth</b> credential directly from the on-chain FreeTrialSubdomainRegistrar. Registration fee is <b>free</b>; you still pay normal Ethereum gas. Trial subnames expire and are not permanent entitlements.</div>
+      <h2 style="margin:0 0 12px">1.5) Get a free Alpha Agent name + identity NFT</h2>
+      <div class="helper" id="alphaIdentityOnboardingGuide" style="margin-bottom:10px">Recommended: enter a label, then choose <b>Get free name + identity NFT</b> below. FreeTrialSubdomainRegistrarIdentity creates both <b>your-label.alpha.agent.agi.eth</b> and its <b>soulbound Alpha Agent Identity NFT</b> for your connected wallet. Registration is free; you still pay Ethereum gas. Trial validity is up to <b>30 days</b>, capped by the parent name’s expiry. Check the live preview before signing. The <a href="https://opensea.io/collection/alpha-agent-identity" target="_blank" rel="noopener">OpenSea collection</a> displays the NFT; a listing can remain after the credential expires. Synchronization removes expired or desynchronized identity tokens. Job eligibility still depends on the manager’s configured ENS roots and NFT collections; holding this NFT alone does not grant access to every job.</div>
       <div class="mintGrid">
         <div>
           <label for="mintAlphaLabel">Desired label (lowercase a-z and 0-9, length 8–63)</label>
           <input id="mintAlphaLabel" type="text" placeholder="e.g. eliteagent01" autocomplete="off" spellcheck="false">
           <div class="inlineError" id="mintLabelValidation">Enter a label to begin.</div>
-          <label for="mintAlphaRecipient" style="margin-top:10px">Recipient (optional, defaults to connected wallet)</label>
+          <label for="mintAlphaRecipient" style="margin-top:10px">ENS-only recipient (optional, defaults to connected wallet)</label>
           <input id="mintAlphaRecipient" type="text" placeholder="0x... (optional)">
           <div class="row" style="justify-content:flex-start;margin-top:10px">
-            <button class="btn btn-primary" id="mintAlphaAgentBtn">Mint free-trial name</button>
+            <button class="btn" id="mintAlphaAgentBtn">ENS-only: get a trial name</button>
             <button class="btn" id="refreshRegistrarStateBtn">Refresh registrar state</button>
           </div>
           <div class="muted" id="mintAlphaStatus" style="margin-top:8px">Waiting for wallet + mainnet + terms.</div>
@@ -1338,10 +1338,11 @@
           <div class="line">Soulbound / locked: <b>true</b></div>
           <div class="line">Contract: <b id="alphaIdentityContractAddress">0x7811993CbcCa3b8bb35a3d919F3BA59eeFbeAA9a</b></div>
           <div class="actions" style="margin-top:10px">
-            <button class="btn btn-primary" id="alphaIdentityRegisterBtn" type="button">Mint Alpha Agent Identity</button>
+            <button class="btn btn-primary" id="alphaIdentityRegisterBtn" type="button">Get free name + identity NFT</button>
             <button class="btn" id="alphaIdentityClaimBtn" type="button">Claim Alpha Agent Identity</button>
             <button class="btn" id="alphaIdentitySyncBtn" type="button">Sync Alpha Agent Identity</button>
           </div>
+          <div class="smallNote" style="margin-top:8px">Already own an unexpired wrapped alpha name? Claim Alpha Agent Identity adds or refreshes its NFT without extending the name’s expiry. Sync Alpha Agent Identity updates an existing token’s validity.</div>
           <div class="muted" id="alphaIdentityActionStatus" style="margin-top:8px">Identity flow locked until wallet + mainnet + terms + valid label.</div>
         </div>
         <div class="mintPreview" id="alphaIdentityTokenCard">
@@ -3361,10 +3362,10 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
         secondary = {label:'Browse jobs', action:'jobs'};
       }else if(setupComplete && role === 'agent'){
         title = verified.agent ? 'Find work that fits your skills' : 'Verify your agent credential';
-        body = verified.agent ? 'Inspect the job requirements, net payment, bond and submission deadline before applying. Each job keeps its own NFT requirement. The first eligible application assigns the job.' : 'Use your existing agent ENS credential in this console. The contract also accepts owner-approved allowlist or Merkle-proof authorization through contract tooling. If you need an ENS identity, inspect the optional Alpha Agent section. Job eligibility and any required NFT are checked separately before applying.';
+        body = verified.agent ? 'Inspect the job requirements, net payment, bond and submission deadline before applying. Each job keeps its own NFT requirement. The first eligible application assigns the job.' : 'Use your existing agent ENS credential in this console. The contract also accepts owner-approved allowlist or Merkle-proof authorization through contract tooling. Need a credential? The optional Alpha Agent path provides a free, time-limited ENS name plus soulbound identity NFT; Ethereum gas is separate. Job eligibility and any required NFT are checked separately before applying.';
         pill = 'Agent guide · eligibility checked per job';
         primary = verified.agent ? {label:'Browse open jobs', action:'jobs'} : {label:'Verify agent credential', action:'verify'};
-        secondary = {label:'Explore agent identity', action:'mint-alpha'};
+        secondary = {label:'Explore free trial name + NFT', action:'mint-alpha'};
         if(p?.claimable){
           secondary = {label:'Inspect claimable identity', action:'mint-alpha'};
         }else if(p?.identityExists && (p.status===3 || p.status===4)){
