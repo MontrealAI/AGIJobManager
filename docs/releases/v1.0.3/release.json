@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "repository": "MontrealAI/AGIJobManager",
+  "tag": "v1.0.3",
+  "name": "v1.0.3 \u2014 NFT eligibility starts disabled",
+  "releaseDate": "2026-09-18",
+  "sourceCommit": "bbc8f15fb2a1d6f39de75826cb676eb8f4ab804e",
+  "sourceTree": "27413e9bb455eb132521382f73d1a4b623b5378a",
+  "previousTag": "v1.0.2",
+  "primaryUI": "ui/agijobmanager-usdc.html",
+  "scope": "Fresh managers initialize NFT admission as disabled. Owner opt-in and posting-time job policies are preserved. Deployment checks, setup examples, registry, console guidance, documentation and regressions match the default. ABI, deployed runtime, library code, payouts and dependency resolutions remain unchanged; construction bytecode changes. Prior ENS namespace policy preserved. Software release only, no public-chain transactions.",
+  "unchangedPaths": [
+    "contracts/ens",
+    "contracts/legacy",
+    "contracts/periphery",
+    "contracts/test",
+    "contracts/utils",
+    "hardhat/deployments",
+    "migrations/snapshots",
+    "docs/releases/v0.4.0",
+    "docs/releases/v0.5.0",
+    "docs/releases/v0.6.0",
+    "docs/releases/v0.7.0",
+    "docs/releases/v0.8.0",
+    "docs/releases/v0.9.0",
+    "docs/releases/v0.9.1",
+    "docs/releases/v0.9.2",
+    "docs/releases/v0.9.3",
+    "docs/releases/v0.9.4",
+    "docs/releases/v0.9.5",
+    "docs/releases/v0.9.6",
+    "docs/releases/v0.9.7",
+    "docs/releases/v1.0.0",
+    "docs/releases/v1.0.1",
+    "docs/releases/v1.0.2"
+  ],
+  "evidenceDigests": {
+    "CHANGES.json": "9b258fb15ccf8bc9a4dd36a8d1b7f22865bc23c5f979f99d5aebc8b4cc0ff463",
+    "PREVIOUS_RELEASE.json": "218fc21b2d5d95d33e2970b976c2b90f5f7c261c5592759d79c99e4ee1f2c528",
+    "SOURCE_CI.json": "ec973544e28db0bc61b716f351bd888cb77c98c41507dc1359e863e85c198b9f"
+  },
+  "requiredSourceRuns": {
+    "ci": {
+      "workflow": "ci.yml",
+      "requiredJobs": [
+        "build (0)",
+        "build (1)",
+        "build (2)",
+        "build (3)"
+      ],
+      "id": 35374797053
+    },
+    "security": {
+      "workflow": "security-verification.yml",
+      "requiredJobs": [
+        "security-verification"
+      ],
+      "id": 35374797055
+    },
+    "ui": {
+      "workflow": "ui.yml",
+      "requiredJobs": [
+        "ui"
+      ],
+      "id": 35374797060
+    },
+    "fork": {
+      "workflow": "mainnet-fork.yml",
+      "requiredJobs": [
+        "mainnet-usdc"
+      ],
+      "id": 35374797159
+    },
+    "docs": {
+      "workflow": "docs.yml",
+      "requiredJobs": [
+        "docs"
+      ],
+      "id": 35374797038
+    }
+  },
+  "preservationCommit": "5f8df294fed80dd9deccd756ee9dfa343e1b5d65"
+}
