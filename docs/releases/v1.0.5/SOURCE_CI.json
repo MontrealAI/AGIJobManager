@@ -1,0 +1,33 @@
+{
+  "sourceCommit": "83b199a38428500b60e14d6fb983ebb33b175ad7",
+  "sourceTree": "3b820c824c0012ff7b9ed4cce6328f95b1959063",
+  "checkoutCommit": "83b199a38428500b60e14d6fb983ebb33b175ad7",
+  "policy": "All five workflows and every required job must succeed for the frozen source. Publication checks the full required job set and the exact checkout source marker in every actual job log.",
+  "runs": [
+    {
+      "id": 35391405534,
+      "workflow": "ci.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35391405534"
+    },
+    {
+      "id": 35391405597,
+      "workflow": "security-verification.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35391405597"
+    },
+    {
+      "id": 35391405577,
+      "workflow": "ui.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35391405577"
+    },
+    {
+      "id": 35391405541,
+      "workflow": "mainnet-fork.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35391405541"
+    },
+    {
+      "id": 35391405543,
+      "workflow": "docs.yml",
+      "url": "https://github.com/MontrealAI/AGIJobManager/actions/runs/35391405543"
+    }
+  ]
+}
