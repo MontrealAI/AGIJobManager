@@ -1,10 +1,12 @@
 # Scripts and Automation Reference
 
-> v0.9.7: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.7/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v0.9.7/docs/OWNER_CONTROLS.md) for live configuration.
+> v1.0.0: Operator scripts use ethers 6 and the compiled Hardhat artifacts. The post-deploy configuration script only writes to disposable local chains. Use [Hardhat](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.0/hardhat/README.md) for public deployments and the [owner console](https://github.com/MontrealAI/AGIJobManager/blob/v1.0.0/docs/OWNER_CONTROLS.md) for live configuration.
 
 This catalog documents operator and maintainer scripts across deployment, operations, security, docs, and UI maintenance.
 
 ## Script matrix
+
+For participant cost planning, run `npm run economics:check -- --example` or pass your scenario JSON path. This offline tool compares payouts and explicit costs without querying a chain or certifying profitability. See [economics](game-theory.md).
 
 | Script / Command | Domain | Purpose | Typical user | Notes |
 | --- | --- | --- | --- | --- |

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AGIJobManager · USDC v0.9.7</title>
+  <title>AGIJobManager · USDC v1.0.0</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -900,6 +900,13 @@
         <div class="row" style="align-items:flex-start;gap:16px">
           <div style="flex:1;min-width:280px">
             <div class="eyebrow">Mission Control</div>
+            <label for="missionRole">What would you like to do?</label>
+            <select id="missionRole" aria-describedby="missionRoleHelp">
+              <option value="employer">Buy work — employer</option>
+              <option value="agent">Do work — agent</option>
+              <option value="validator">Review work — validator</option>
+            </select>
+            <div class="smallNote" id="missionRoleHelp">Choose a guide. Your wallet and the contract determine which actions you can take.</div>
             <div class="missionTitle" id="missionNextActionTitle">Connect wallet</div>
             <div class="helper" id="missionNextActionBody">Connect your Ethereum mainnet wallet to unlock live protocol state, role verification, job posting, validation, and settlement flows.</div>
             <div class="missionPill" id="missionPosturePill">Write access locked</div>
@@ -907,6 +914,7 @@
               <button class="btn btn-primary" id="missionPrimaryBtn">Connect wallet</button>
               <button class="btn" id="missionSecondaryBtn">Open create job</button>
               <button class="btn" id="openCommandPaletteBtn">Command Palette</button>
+              <button class="btn" id="missionBuyerProtectionBtn">How is my payment protected?</button>
             </div>
           </div>
           <div style="flex:1;min-width:260px">
@@ -951,7 +959,7 @@
             <a href="#jobsSection">Jobs Table</a>
             <a href="#termsSection">Terms</a>
           </div>
-          <div class="smallNote" style="margin-top:10px">v0.9.7 · Compatible with verified v0.9.6 and v0.9.7 managers. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
+          <div class="smallNote" style="margin-top:10px">v1.0.0 · Compatible with verified v0.9.6/v0.9.7 managers and v1.0.0 deployments. USDC jobs: validators first, then 30% to wallet one, 10% to wallet two, and the remaining balance to the agent.</div>
         </div>
         <div class="callout warn" style="max-width:380px">
           <b>Operational note</b><br>
@@ -975,8 +983,8 @@
             <div class="body">
               <ul class="softList">
                 <li>Connect the wallet you want to use on Ethereum Mainnet.</li>
-                <li>Verify the ENS subdomain matching your role.</li>
-                <li>Read the contract-driven terms and accept them here.</li>
+                <li>Buyers can post without ENS membership. Agents and validators use their role credential or owner-approved allowlist/Merkle authorization; this console guides the ENS path.</li>
+                <li>Read the contract-driven terms and accept them here, then verify the manager address and USDC settlement settings.</li>
                 <li>Use the bond calculator and the economics charts before signing.</li>
               </ul>
             </div>
@@ -1171,9 +1179,9 @@
 
 
     <div class="card" id="usdcDeploymentSection">
-      <h2>USDC deployment · v0.9.7</h2>
+      <h2>USDC deployment · v1.0.0</h2>
       <p>Every payout, reward, bond and treasury amount uses native USDC with six decimal places. Ethereum transaction gas is paid in ETH.</p>
-      <p class="helper">Enter the verified Ethereum mainnet address of a compatible v0.9.6 or v0.9.7 USDC manager. Transactions remain disabled until the manager and its settlement token pass validation.</p>
+      <p class="helper">Enter the verified Ethereum mainnet address of a compatible v0.9.6, v0.9.7 or v1.0.0 USDC manager. Transactions remain disabled until the manager and its settlement token pass validation.</p>
       <label for="usdcManagerAddress">Deployed USDC AGIJobManager address</label>
       <input id="usdcManagerAddress" type="text" autocomplete="off" spellcheck="false" placeholder="0x… verified manager with getJobBonds">
       <button class="btn btn-primary" id="saveUsdcManagerBtn">Use this deployment</button>
@@ -1639,7 +1647,7 @@ Evaluation methodology"></textarea>
           <button class="btn btn-primary" id="createJobBtn" data-tx="1">Create Job</button>
         </div>
         <div id="jobCostPreview" class="hintBox" role="status" aria-live="polite" style="margin-top:12px">Enter a job cost to see the fee split.</div>
-        <details class="softCard" style="margin-top:12px">
+        <details class="softCard" id="buyerProtectionGuide" style="margin-top:12px">
           <summary><b>What if the agent does not deliver, or the work is poor?</b></summary>
           <ul class="smallNote">
             <li><b>No agent assigned:</b> cancel and recover your full escrow.</li>
@@ -2045,8 +2053,8 @@ Evaluation methodology"></textarea>
 
     <div class="card" id="termsSection">
       <h2>Terms &amp; Conditions</h2>
-      <p>Protocol terms reproduced from the v0.9.7 source. USDC issuer terms are separate.</p>
-      <div class="scrollTerms"><details class="term-block" open><summary>v0.9.7 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
+      <p>Protocol terms reproduced from the v1.0.0 source. USDC issuer terms are separate.</p>
+      <div class="scrollTerms"><details class="term-block" open><summary>v1.0.0 protocol terms</summary><div class="term-body" style="white-space:pre-wrap">[ A G I J O B M A N A G E R  ( A G I J O B S  N F T )  T E R M S  A N D  C O N D I T I O N S ]
 
 Published by: ALPHA.AGI.ETH
 Approval Authority: ALPHA.AGI.ETH
@@ -2302,9 +2310,9 @@ Canonical token addresses: https://developers.circle.com/stablecoins/usdc-contra
 Historical project-token sale disclosures do not describe v0.8.0 settlement and are
 preserved in previous Git tags.</div></details></div>
       <div class="hintBox" style="margin-top:12px">
-        <b>How job escrow refunds work in v0.9.7</b>
+        <b>How job escrow refunds work in v1.0.0</b>
         <p>The source terms above are reproduced verbatim. The current contract provides escrow refunds when its cancellation, non-delivery expiry, buyer-win or neutral arbitration-timeout conditions are met. A refund requires a successful transaction; elapsed time alone does not send money. Final settlement has no built-in chargeback. Gas and outside losses are not reimbursed.</p>
-        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v0.9.7, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
+        <p>The embedded v0.8.0 USDC notice describes an earlier release. In v1.0.0, a failed outgoing USDC payment remains reserved for its original recipient until a retry succeeds; other eligible recipients can still be paid. Incoming escrow and bond transfers can still fail. Inspect the work and use the displayed dispute deadline before authorizing final payment.</p>
       </div>
     </div>
 
@@ -2313,7 +2321,7 @@ preserved in previous Git tags.</div></details></div>
       <div class="muted">The full Terms &amp; Conditions are embedded above for easier reading. This footer keeps the public contact and external legal reference links handy.</div>
       <div style="margin-top:10px" class="muted">
         Contact: <a href="mailto:secretariat@montreal.ai">secretariat@montreal.ai</a><br>
-        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v0.9.7/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v0.9.7 terms</a>
+        Protocol source: <a href="https://github.com/MontrealAI/AGIJobManager/blob/v1.0.0/contracts/AGIJobManager.sol" target="_blank" rel="noopener">v1.0.0 terms</a>
       </div>
     </div>
 
@@ -2382,9 +2390,10 @@ preserved in previous Git tags.</div></details></div>
       if(!userAccount) createReasons.push('connect wallet');
       else if(!isMainnet) createReasons.push('switch to Ethereum Mainnet');
       if(userAccount && !hasAcceptedTerms) createReasons.push('accept Terms');
+      if(usdcDeploymentValidated !== true) createReasons.push('verify the manager deployment');
       const createMsg = createReasons.length
         ? `Create Job locked: ${createReasons.join(' · ')}.`
-        : 'Create Job ready. Best practice: use a canonical ipfs:// Job Spec URI and a concise on-chain details string.';
+        : 'Wallet setup complete. Review the live job limits, fee split and acceptance criteria before posting. Each transaction is checked again before signing.';
       if(el('createJobReadinessNote')) el('createJobReadinessNote').textContent = createMsg;
       const completionMsg = completionAssistantState.jobId == null
         ? 'Open an assigned job and click Request completion to use the assistant.'
@@ -3251,6 +3260,14 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(action === 'switch-mainnet') return requestMainnetSwitch();
       if(action === 'refresh') return refreshAll();
       if(action === 'terms') return scrollToId('termsSection');
+      if(action === 'deployment') return scrollToId('usdcDeploymentSection');
+      if(action === 'buyer-protection'){
+        const guide = el('buyerProtectionGuide');
+        if(guide) guide.open = true;
+        scrollToId('buyerProtectionGuide');
+        if(guide?.querySelector('summary')) guide.querySelector('summary').focus({preventScroll:true});
+        return;
+      }
       if(action === 'verify') return scrollToId('verifyEnsSection');
       if(action === 'mint-alpha') return scrollToId('alphaAgentMintSection');
       if(action === 'mint-alpha-identity') return scrollToId('alphaAgentMintSection');
@@ -3281,77 +3298,76 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       if(action === 'use-generated-uri') return useGeneratedUri();
       if(action === 'copy-job-dossier' && currentJobDetailId !== null) return copyJobReport();
     }
+    function selectedMissionRole(){
+      const role = el('missionRole')?.value;
+      return ['employer','agent','validator'].includes(role) ? role : 'employer';
+    }
+    function selectMissionRole(role){
+      const selected = ['employer','agent','validator'].includes(role) ? role : 'employer';
+      if(el('missionRole')) el('missionRole').value = selected;
+      document.querySelectorAll('.roleTab').forEach(button=>{
+        const active = button.dataset.role === selected;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('.rolePanel').forEach(panel=>panel.classList.toggle('active', panel.id === 'role-' + selected));
+      updateReadinessUI();
+    }
     function updateMissionControl(){
       const connected = !!userAccount;
+      const role = selectedMissionRole();
+      const setupComplete = connected && isMainnet && hasAcceptedTerms && usdcDeploymentValidated === true;
       if(el('missionWalletStatus')) el('missionWalletStatus').textContent = connected ? shortAddr(userAccount) : 'Not connected';
       if(el('missionNetworkStatus')) el('missionNetworkStatus').textContent = connected ? (isMainnet ? 'Ethereum Mainnet' : 'Wrong network') : '—';
       if(el('missionTermsStatus')) el('missionTermsStatus').textContent = hasAcceptedTerms ? 'Accepted' : 'Pending';
       if(el('missionAgentStatus')) el('missionAgentStatus').textContent = verified.agent ? `${verified.agent}${verified.agentAlpha ? ' · alpha' : ''}` : 'Unverified';
       if(el('missionValidatorStatus')) el('missionValidatorStatus').textContent = verified.club ? `${verified.club}${verified.clubAlpha ? ' · alpha' : ''}` : 'Unverified';
-      if(el('missionWriteStatus')) el('missionWriteStatus').textContent = isMainnet && hasAcceptedTerms ? 'Unlocked' : 'Locked';
+      if(el('missionWriteStatus')) el('missionWriteStatus').textContent = setupComplete ? 'Setup complete · actions checked individually' : 'Locked';
 
       let title = 'Connect wallet';
-      let body = 'Connect your Ethereum mainnet wallet to unlock live protocol state, role verification, job posting, validation, and settlement flows.';
+      let body = 'Connect the wallet you want to use. Job payments and bonds use USDC; Ethereum transaction gas requires ETH.';
       let pill = 'Write access locked';
       let primary = {label:'Connect wallet', action:'connect'};
-      let secondary = {label:'Command Palette', action:'command'};
+      let secondary = {label:'Read buyer protections', action:'buyer-protection'};
       const p = APP_STATE.identity?.preview;
       if(connected && !isMainnet){
         title = 'Switch to Ethereum Mainnet';
-        body = 'The UI is in read-only mode on the current network. Switch to chainId 1 to post jobs, apply, validate and finalize in USDC.';
+        body = 'Switch to Ethereum mainnet (chain 1) to use this USDC console. Review the manager address before approving funds.';
         pill = 'Network action required';
         primary = {label:'Switch network', action:'switch-mainnet'};
-        secondary = {label:'Command Palette', action:'command'};
-      }else if(connected && isMainnet && !hasAcceptedTerms){
+      }else if(connected && !hasAcceptedTerms){
         title = 'Read and accept the terms';
-        body = 'This interface intentionally keeps write actions locked until you confirm the embedded contract terms. That reduces accidental posting and signing.';
+        body = 'Read the embedded contract terms and the payment protections before accepting. Accepting these terms does not send a transaction.';
         pill = 'Terms review required';
         primary = {label:'Read Terms', action:'terms'};
-        secondary = {label:'Open Create Job', action:'create'};
-      }else if(connected && isMainnet && hasAcceptedTerms && p && p.claimable){
-        title = 'Claim your Alpha Agent Identity';
-        body = 'A wrapped alpha-agent ENS name is already present for this label and can be claimed into your soulbound identity credential now.';
-        pill = 'Identity claim available';
-        primary = {label:'Claim Alpha Agent Identity', action:'claim-alpha-identity'};
-        secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'};
-      }else if(connected && isMainnet && hasAcceptedTerms && p && p.identityExists && (p.status===3 || p.status===4)){
-        title = 'Repair Alpha Agent Identity state';
-        body = 'Your selected label indicates expired or desynced identity posture. Run sync to repair or clean up stale credential state.';
-        pill = 'Identity sync recommended';
-        primary = {label:'Sync Alpha Agent Identity', action:'sync-alpha-identity'};
-        secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'};
-      }else if(connected && isMainnet && hasAcceptedTerms && p && p.registrable){
-        title = 'Mint Alpha Agent Identity';
-        body = 'Use the recommended register(label) path to mint wrapped ENS + soulbound identity (gas only, no recipient override).';
-        pill = 'Identity register available';
-        primary = {label:'Mint Alpha Agent Identity', action:'mint-alpha-identity'};
-        secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'};
-      }else if(connected && isMainnet && hasAcceptedTerms && jobStats.completion > 0 && verified.club){
-        title = 'Review jobs waiting for validator attention';
-        body = `${jobStats.completion} job${jobStats.completion === 1 ? '' : 's'} currently show a live completion-review surface. Open the board, inspect the details modal, and vote only after independent evidence review.`;
-        pill = 'Validator attention available';
-        primary = {label:'Open Jobs', action:'jobs'};
-        secondary = {label:'Activity Concierge', action:'activity'};
-      }else if(connected && isMainnet && hasAcceptedTerms && jobStats.open > 0 && verified.agent){
-        title = 'Apply for a live job';
-        body = `${jobStats.open} open job${jobStats.open === 1 ? '' : 's'} are currently visible. If the fit is good and your bond exposure is acceptable, apply from the jobs table.`;
-        pill = 'Agent mode ready';
-        primary = {label:'Browse open jobs', action:'jobs'};
-        secondary = {label:'Command Palette', action:'command'};
-      }else if(connected && isMainnet && hasAcceptedTerms && !verified.agentAlpha){
-        title = 'Mint your alpha-agent ENS access key';
-        body = 'You can mint a free-trial *.alpha.agent.agi.eth identity now (gas only), then auto-verify it for agent readiness.';
-        pill = 'Alpha-agent identity recommended';
-        primary = {label:'Open alpha-agent section', action:'mint-alpha'};
-        secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'};
-      }else if(connected && isMainnet && hasAcceptedTerms){
-        title = 'System ready';
-        body = 'Wallet, network, and write-gating are in a good state. You can create a job, inspect live jobs, or use the command palette for faster navigation.';
-        pill = 'Ready for production use';
-        if(p && p.claimable){ primary = {label:'Claim Alpha Agent Identity', action:'claim-alpha-identity'}; secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'}; }
-        else if(p && p.identityExists && (p.status===3 || p.status===4)){ primary = {label:'Sync Alpha Agent Identity', action:'sync-alpha-identity'}; secondary = {label:'Open alpha-agent section', action:'mint-alpha'}; }
-        else if(p && p.registrable){ primary = {label:'Mint Alpha Agent Identity', action:'mint-alpha-identity'}; secondary = {label:'Open ENS-only alpha-agent path', action:'mint-alpha'}; } else if(!p){ primary = {label:'Open alpha-agent section', action:'mint-alpha'}; secondary = {label:'Refresh identity preview', action:'refresh-identity-preview'}; }
-        else { primary = {label:'Open Create Job', action:'create'}; secondary = {label:'Open Jobs', action:'jobs'}; }
+      }else if(connected && usdcDeploymentValidated !== true){
+        title = 'Verify the manager deployment';
+        body = 'Enter the verified manager address and check its settlement wallets. Posting and payment actions stay locked until the console checks the deployed manager and native USDC settlement token.';
+        pill = 'Deployment check required';
+        primary = {label:'Check manager address', action:'deployment'};
+      }else if(setupComplete && role === 'employer'){
+        title = 'Post a job or inspect your existing work';
+        body = 'You do not need an agent or validator ENS credential to buy work. Define measurable acceptance checks, inspect the fee split, and fund the job in USDC. Inspect delivered work before accepting it; dispute poor work before the displayed cutoff.';
+        pill = 'Buyer guide · each action checked before signing';
+        primary = {label:'Prepare a job', action:'create'};
+        secondary = {label:'Inspect jobs and deliveries', action:'jobs'};
+      }else if(setupComplete && role === 'validator'){
+        title = verified.club ? 'Inspect work before reviewing it' : 'Verify your reviewer credential';
+        body = verified.club ? 'Open a submitted job, compare its evidence with the acceptance criteria, and inspect the vote bond and reward budget before voting. Only independent reviewers may vote; eligibility is checked on-chain.' : 'This console guides validator ENS verification. The contract also accepts owner-approved allowlist or Merkle-proof authorization through contract tooling. Before voting, inspect the work, your bond exposure and the reward budget. Selecting this guide does not grant reviewer eligibility.';
+        pill = 'Validator guide · eligibility checked per job';
+        primary = verified.club ? {label:'Inspect submitted work', action:'jobs'} : {label:'Verify validator credential', action:'verify'};
+        secondary = {label:'Browse jobs', action:'jobs'};
+      }else if(setupComplete && role === 'agent'){
+        title = verified.agent ? 'Find work that fits your skills' : 'Verify your agent credential';
+        body = verified.agent ? 'Inspect the job requirements, net payment, bond and submission deadline before applying. Each job keeps its own NFT requirement. The first eligible application assigns the job.' : 'Use your existing agent ENS credential in this console. The contract also accepts owner-approved allowlist or Merkle-proof authorization through contract tooling. If you need an ENS identity, inspect the optional Alpha Agent section. Job eligibility and any required NFT are checked separately before applying.';
+        pill = 'Agent guide · eligibility checked per job';
+        primary = verified.agent ? {label:'Browse open jobs', action:'jobs'} : {label:'Verify agent credential', action:'verify'};
+        secondary = {label:'Explore agent identity', action:'mint-alpha'};
+        if(p?.claimable){
+          secondary = {label:'Inspect claimable identity', action:'mint-alpha'};
+        }else if(p?.identityExists && (p.status===3 || p.status===4)){
+          secondary = {label:'Inspect identity repair', action:'mint-alpha'};
+        }
       }
       if(el('missionNextActionTitle')) el('missionNextActionTitle').textContent = title;
       if(el('missionNextActionBody')) el('missionNextActionBody').textContent = body;
@@ -3775,20 +3791,18 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
     }
     function updateReadinessUI(){
       const connected = !!userAccount;
-      const roleReady = !!verified.agent || !!verified.club;
+      const selected = selectedMissionRole();
+      const roleReady = connected && (selected === 'employer' || (selected === 'agent' ? !!verified.agent : !!verified.club));
       if(el("readyWallet")) el("readyWallet").textContent = connected ? shortAddr(userAccount) : "Not connected";
-      if(el("readyNetwork")) el("readyNetwork").textContent = isMainnet ? "Mainnet" : "Wrong network";
+      if(el("readyNetwork")) el("readyNetwork").textContent = connected ? (isMainnet ? "Mainnet" : "Wrong network") : "—";
       if(el("readyTerms")) el("readyTerms").textContent = hasAcceptedTerms ? "Accepted" : "Not accepted";
-      let role = "View mode";
-      if(verified.agent && verified.club) role = "Agent + Validator";
-      else if(verified.agent) role = "Agent ready";
-      else if(verified.club) role = "Validator ready";
-      if(el("readyRole")) el("readyRole").textContent = role;
+      const role = selected === 'employer' ? 'Buyer · ENS not required' : selected === 'agent' ? (verified.agent ? 'Agent credential verified' : 'Verify agent credential') : (verified.club ? 'Validator credential verified' : 'Verify validator credential');
+      if(el("readyRole")) el("readyRole").textContent = connected ? role : "Connect wallet";
 
       setMeter("meterConnected","meterConnectedText", connected ? 100 : 0, connected ? "Ready" : "0%");
-      setMeter("meterMainnet","meterMainnetText", isMainnet ? 100 : 0, isMainnet ? "Ready" : "0%");
+      setMeter("meterMainnet","meterMainnetText", connected && isMainnet ? 100 : 0, connected && isMainnet ? "Ready" : "0%");
       setMeter("meterTerms","meterTermsText", hasAcceptedTerms ? 100 : 0, hasAcceptedTerms ? "Ready" : "0%");
-      setMeter("meterRole","meterRoleText", roleReady ? 100 : 0, roleReady ? "Ready" : "0%");
+      setMeter("meterRole","meterRoleText", roleReady ? 100 : 0, roleReady ? (selected === 'employer' ? "No ENS needed" : "Verified") : "Verify");
       updateMissionControl();
     }
     async function updateDynamicInsights(){
@@ -4624,7 +4638,7 @@ function abiHas(name){ return (x)=>x.type==='function' && x.name===name; }
       usdcDeploymentValidated = false;
       try {
         if(!web3 || Number(await web3.eth.getChainId()) !== 1) throw new Error('USDC console requires Ethereum mainnet.');
-        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.6 or v0.9.7 USDC manager address.');
+        if(!web3.utils.isAddress(AGI_JOB_MANAGER) || /^0x0{40}$/i.test(AGI_JOB_MANAGER)) throw new Error('Enter a verified v0.9.6, v0.9.7 or v1.0.0 USDC manager address.');
         if(!agiJobManager || String(agiJobManager.options.address).toLowerCase() !== AGI_JOB_MANAGER.toLowerCase()) agiJobManager = new web3.eth.Contract(AGIJobManagerABI, AGI_JOB_MANAGER);
         if(await web3.eth.getCode(AGI_JOB_MANAGER) === '0x') throw new Error('No manager contract exists at this address.');
         const tokenAddress = String(await agiJobManager.methods.usdcToken().call());
@@ -6960,6 +6974,8 @@ function normalizeIpfsToHttp(uri){
     function bind(){
       el("connectBtn").addEventListener("click", connectWallet);
       el("refreshBtn").addEventListener("click", refreshAll);
+      if(el('missionRole')) el('missionRole').addEventListener('change', event=>selectMissionRole(event.target.value));
+      if(el('missionBuyerProtectionBtn')) el('missionBuyerProtectionBtn').addEventListener('click', ()=>missionAction('buyer-protection'));
       if(el("missionPrimaryBtn")) el("missionPrimaryBtn").addEventListener("click", ()=>missionAction(el("missionPrimaryBtn").dataset.action));
       if(el("missionSecondaryBtn")) el("missionSecondaryBtn").addEventListener("click", ()=>missionAction(el("missionSecondaryBtn").dataset.action));
       if(el("openCommandPaletteBtn")) el("openCommandPaletteBtn").addEventListener("click", ()=>openCommandPalette());
@@ -7034,13 +7050,8 @@ function normalizeIpfsToHttp(uri){
         if(e.key === 'Enter'){ e.preventDefault(); executeCommandPalette(); }
       });
       document.querySelectorAll(".roleTab").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          document.querySelectorAll(".roleTab").forEach(x=>x.classList.remove("active"));
-          document.querySelectorAll(".rolePanel").forEach(x=>x.classList.remove("active"));
-          btn.classList.add("active");
-          const panel = document.getElementById("role-" + btn.dataset.role);
-          if(panel) panel.classList.add("active");
-        });
+        btn.setAttribute('aria-pressed', String(btn.dataset.role === selectedMissionRole()));
+        btn.addEventListener("click", ()=>selectMissionRole(btn.dataset.role));
       });
 
       document.querySelectorAll("[data-draft-packet-role]").forEach(btn=>{

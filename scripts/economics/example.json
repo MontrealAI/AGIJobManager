@@ -1,0 +1,14 @@
+{
+  "assumptionSource": "Hypothetical illustration: default rates, a 100 USDC one-day job with duration limit 10000000 seconds, three approving reviewers; agent cost 45 USDC and each reviewer cost 3 USDC are invented all-in estimates, not live quotes.",
+  "jobCostUSDC": "100",
+  "agentBondUSDC": "5.0432",
+  "reviewerBondUSDC": "15",
+  "disputeBondUSDC": "0",
+  "disputeInitiator": "none",
+  "rewardPercentage": 8,
+  "slashBps": 8000,
+  "approvals": 3,
+  "rejections": 0,
+  "agentCostUSDC": "45",
+  "reviewerCostUSDC": "3"
+}

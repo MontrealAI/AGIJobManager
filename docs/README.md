@@ -1,6 +1,6 @@
 # AGIJobManager Documentation Hub
 
-> **v0.9.7: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
+> **v1.0.0: [Start here](START_HERE.md)** for the download, participant journey and role-specific instructions. Native six-decimal USDC is the only settlement token. This release supplies no live manager; historical receipts are not current deployments. Read [mainnet readiness](MAINNET_READINESS.md) before launch.
 
 Institutional documentation for operators, integrators, contributors, and auditors.
 

@@ -1,4 +1,4 @@
-# FAQ — v0.9.7 (USDC console and Etherscan)
+# FAQ — v1.0.0 (USDC console and Etherscan)
 
 ## How is a successful job paid?
 

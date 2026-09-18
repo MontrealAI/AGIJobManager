@@ -1,6 +1,6 @@
-# bytecode and getters — v0.9.7
+# bytecode and getters — v1.0.0
 
-`getJobBonds(jobId)`, introduced in v0.9.6, returns outstanding `agentAmount`, per-reviewer `validatorAmount`, `validatorFixed`, and `disputeAmount`. A fixed zero bond differs from an unset bond. Settlement clears these fields; use transaction history for past deposits. v0.9.7 retains the v0.9.6 ABI and executable bytecode. The getter is absent from v0.9.5 and older managers. See [compatibility and verification](qualification/OPERATIONS_V097.md).
+`getJobBonds(jobId)`, introduced in v0.9.6, returns outstanding `agentAmount`, per-reviewer `validatorAmount`, `validatorFixed`, and `disputeAmount`. A fixed zero bond differs from an unset bond. Settlement clears these fields; use transaction history for past deposits. v1.0.0 retains the v0.9.6 ABI and executable bytecode. The getter is absent from v0.9.5 and older managers. See [compatibility and verification](qualification/OPERATIONS_V097.md).
 
 The authoritative current settlement rules are in [USDC payout distribution](USDC_PAYOUT_SPLIT.md). Successful jobs pay validators (8% default), then 30% and 10% of the original USDC job cost to two configured wallets, then the remaining amount to the agent. The validator reward percentage is fixed at posting; collateral is fixed at the first vote; NFT eligibility scores do not set payout shares. No successful-job cost remains in treasury.
 
@@ -11,4 +11,4 @@ The authoritative current settlement rules are in [USDC payout distribution](USD
 
 `setValidationRewardPercentage` accepts 1–60 and changes only newly posted jobs. The USDC address is immutable. Settlement wallets can be rotated only while intake is paused and all escrow and bonds are settled; see [owner controls](OWNER_CONTROLS.md). `withdrawUSDC` requires intake pause, unpaused settlement and surplus beyond all locked escrow and bonds. Incoming USDC funding must succeed exactly or the action reverts. Each outgoing payment is isolated: a failed transfer becomes a protected claim for its original recipient while other eligible payments can proceed. Include `lockedClaims` when checking withdrawable surplus; neither the owner nor a caller can redirect a claim.
 
-Previous detailed instructions that describe NFT-based payout shares or retained job-cost revenue are historical and remain in [v0.5.0](https://github.com/MontrealAI/AGIJobManager/tree/v0.5.0). Do not use them to configure v0.9.7.
+Previous detailed instructions that describe NFT-based payout shares or retained job-cost revenue are historical and remain in [v0.5.0](https://github.com/MontrealAI/AGIJobManager/tree/v0.5.0). Do not use them to configure v1.0.0.

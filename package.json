@@ -1,8 +1,8 @@
 {
   "name": "agijobmanager",
-  "version": "0.9.7",
+  "version": "1.0.0",
   "private": true,
-  "description": "Single-contract AGIJobManager",
+  "description": "USDC job escrow, bonded review and buyer recovery with fixed linked libraries",
   "scripts": {
     "build": "npm --prefix hardhat run compile && node scripts/export-contract-artifacts.js",
     "size": "node scripts/check-bytecode-size.js",
@@ -28,7 +28,8 @@
     "deploy:agijobmanager:prod": "npm --prefix hardhat run deploy:mainnet",
     "slither:extended": "bash scripts/security/run-slither-extended.sh",
     "test:shard": "node scripts/test-contract-shard.js",
-    "postinstall": "node scripts/security/patch-openzeppelin-compiler.cjs"
+    "postinstall": "node scripts/security/patch-openzeppelin-compiler.cjs",
+    "economics:check": "node scripts/economics/assess.cjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

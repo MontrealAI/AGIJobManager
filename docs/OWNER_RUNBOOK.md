@@ -1,4 +1,4 @@
-# Owner Runbook — v0.9.7
+# Owner Runbook — v1.0.0
 
 Use this runbook for configuration, ownership and incident decisions. Use the [Hardhat deployment guide](../hardhat/README.md) for public-network commands and the [owner controls guide](OWNER_CONTROLS.md) for the exact boundaries of each setting. Local rehearsals use the maintained Hardhat 3 test runtime; Truffle and Ganache are retired.
 
@@ -40,7 +40,7 @@ Before an ENS lock, confirm both new manager/helper pointers and root authority,
 
 ## 1) Deployment checklist
 
-1. Check out the immutable v0.9.7 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
+1. Check out the immutable v1.0.0 release and verify its checksums. Use Node 22.23.2 and the committed root and Hardhat lockfiles.
 2. Compile and qualify using the [Hardhat guide](../hardhat/README.md). Preserve the qualified Solidity compiler settings and Ethereum size limits; use the exact release compiler profile and linked artifacts for the public deployment build.
 3. Review all six constructor inputs: canonical USDC, base IPFS URL, two ENS addresses, four namespace roots, two Merkle roots, and **two distinct settlement wallets ordered 30% then 10%**. Confirm the intended final owner separately. Example addresses and roots are not a reviewed production configuration.
 4. Run a read-only deployment plan, rehearse on Sepolia and review the saved plan before any authorized mainnet broadcast. Review the eight library addresses and exact linked runtime code.
@@ -132,7 +132,7 @@ Before manager `lockIdentityConfiguration()` or ENSJobPages `lockConfiguration()
 
 ## 7) High-risk actions (operator warnings)
 
-USDC is immutable and the 30% / 10% shares are fixed in v0.9.7. Recipient addresses can change only with paused intake and zero live job escrow and bonds. Previously reserved payment claims keep their original beneficiaries; wallet rotation does not redirect them.
+USDC is immutable and the 30% / 10% shares are fixed in v1.0.0. Recipient addresses can change only with paused intake and zero live job escrow and bonds. Previously reserved payment claims keep their original beneficiaries; wallet rotation does not redirect them.
 
 Ownership uses proposal then acceptance. Administrative authority stays with the current owner until acceptance; `renounceOwnership()` is disabled. Verify the recipient independently before proposing a change.
 

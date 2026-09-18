@@ -1,4 +1,4 @@
-# Economics and operating limits — v0.9.7
+# Economics and operating limits — v1.0.0
 
 The contract provides escrow, bonded review, and a trusted arbitration backstop. It does not prove work quality or guarantee that honest behavior is always the most profitable choice.
 
@@ -54,11 +54,46 @@ The buyer gets **100% of the job escrow back**. Correct disapprovers receive the
 
 No-action arbitration timeout returns everyone's own funds without rewards or penalties. Agents and reviewers must account for that possible unpaid work when accepting a job.
 
+## Check whether participants can afford this job
+
+The console already previews the job split and exact bonds. The offline scenario tool adds a separate question: **after work, review, gas and capital costs, who can still afford to participate?** It performs no network calls and supplies no market prices or success probabilities.
+
+From the repository root, run the clearly labeled hypothetical example:
+
+```bash
+npm run economics:check -- --example
+```
+
+Copy [example.json](../scripts/economics/example.json), replace every assumption with your own figures, and run:
+
+```bash
+npm run economics:check -- path/to/my-job.json
+npm run economics:check -- path/to/my-job.json --json
+```
+
+Use the job's recorded reward percentage and actual posted bonds; for an unposted job, use the console's current bond preview and refresh before committing. `getJobBonds(jobId)` reports the recorded agent bond and whether the reviewer bond has been fixed by the first vote. Read the current slash setting from the same manager. The tool does not fetch or verify these values. Record the manager, chain, block/job reference or hypothetical source in `assumptionSource`.
+
+All USDC amounts must be quoted decimal strings with at most six decimal places; counts, the reward percentage and slash basis points are integers. Set `approvals` and `rejections` explicitly: reviewer rewards are shared only among voters matching the final outcome. Enter a single all-in `agentCostUSDC` and a per-voter `reviewerCostUSDC`, including effort, transaction gas converted using your own assumption, and any cost of locked capital. These estimates are applied consistently across the four counterfactuals; revise them for a different cost case. **Do not put returned bonds in the cost estimate:** the tool already subtracts each participant's own posted collateral when computing net income, so only forfeited collateral reduces that income. For a party-funded dispute, also supply its actual bond and initiator. Use `none` and `"0"` when no party bond is posted; automatic disputes can still exist in that case.
+
+For the bundled 100 USDC example, the assumed agent cost is 45 USDC and each reviewer's assumed cost is 3 USDC. Those costs are invented for illustration:
+
+| Outcome and vote assumption | Agent net after assumed cost | Each participating reviewer's net after assumed cost |
+| --- | --- | --- |
+| Agent wins; three approvals | +7.000002 USDC | −0.333334 USDC |
+| Buyer wins; change the example to three rejections | −50.0432 USDC, including the forfeited agent bond | −1.318934 USDC |
+| Neutral timeout; either vote pattern | −45 USDC | −3 USDC |
+
+This exposes a practical problem even when successful-job accounting balances: a 100 USDC job can fund the agent's assumed cost while underpaying the reviewers. Raising the shared reviewer percentage reduces the agent's base share; increasing the number of reviewers divides the pool further. Slashed collateral is uncertain compensation and should not be the operating budget for honest review. A returned 15 USDC reviewer bond is recovery of collateral, not 15 USDC of earnings.
+
+The report compares adjudicated/review agent wins, buyer wins, explicit buyer acceptance and unanswered-arbitration timeout. It checks integer-unit fund conservation, rounding, absent correct reviewers and bond losses, and marks acceptance as unmodeled when a party dispute bond is supplied. Acceptance always requires an undisputed submitted job on-chain; zero bond alone does not establish that condition. Agent-win calculations with no reviewers describe a possible adjudicated outcome, never automatic no-vote payment. Unassigned cancellation and no-submission expiry are outside the tool: **expiry forfeits the agent bond; neutral arbitration timeout returns it.**
+
+Treat the output as scenario analysis, not an eligibility check, live quote, guarantee of immediate payment, or certification that incentives are sound. A recorded payment can become a deferred claim. The tool does not value the work for the buyer, calculate buyer delay losses, establish reviewer independence, determine an adjudication, or verify quorum and deadlines. A positive margin cannot establish any of those things.
+
 ## Practical operating policy
 
 Use measurable acceptance criteria and accessible, content-addressed evidence. Separate large work into funded milestone jobs; there is no built-in partial settlement. Recruit enough genuinely independent reviewers before posting work, budget their gas and effort, and keep quorum within the participating group. Normal AGI Agent and Club ENS membership and the per-job NFT policy remain in force; treat allowlist/Merkle exceptions as explicit trusted governance decisions.
 
-Publish the fee split, all timers, collateral requirements, moderator availability and evidence process before users commit funds. Use a controlled canary and measured exposure limits, monitoring disputes, abstention, claim balances and time to payment. Owner pauses stop lifecycle clocks but can delay all exits indefinitely. A software release and fork rehearsal do not replace verification of the actual deployed wallets, owner and ENS control.
+Publish the fee split, all timers, collateral requirements, moderator availability and evidence process before users commit funds. Use a controlled canary and measured exposure limits, monitoring disputes, abstention, claim balances and time to payment. Owner settlement pauses stop lifecycle clocks and can delay all exits indefinitely; intake-only pauses do not stop those clocks. A software release and fork rehearsal do not replace verification of the actual deployed wallets, owner and ENS control.
 
 Before opening paid intake, establish who will inspect work and arbitrate conflicts, how quickly they will act, and how users can submit evidence. Check that the agent's net earnings can fund the promised work and that each reviewer's expected reward can cover review effort, gas and collateral risk. Use the [buyer job template](BUYER_JOB_TEMPLATE.md). If those participants are unavailable or the economics do not cover their costs, reduce the scope or defer posting; the contract cannot supply them.
 
