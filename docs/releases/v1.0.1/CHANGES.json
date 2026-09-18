@@ -1,0 +1,358 @@
+{
+  "sourceCommit": "becf9a30a59b9a6f26df06c7517047353bc91465",
+  "previousTag": "v1.0.0",
+  "changes": [
+    {
+      "status": "M",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/current-state-release.yml"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "config/usdc-deployment.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJOBMANAGER.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/BUYER_JOB_TEMPLATE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/BUYER_PROTECTION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DEPLOYMENT/ENS_JOB_PAGES_MAINNET_REPLACEMENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ENS/ENS_JOB_PAGES_OVERVIEW.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ENS_DEPLOYMENT_NAMESPACES.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/FAQ.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/LAUNCH_CHECKLIST.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/MAINNET_READINESS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/NFT_POLICY.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/QUICKSTART.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/REFERENCE/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/TESTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/USERS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/V1_ACCEPTANCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/V1_RELEASE_SCOPE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/contracts/AGIJobManager.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ens-job-pages.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/GENESIS_JOB_TODAY.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/artwork-inspection.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/decoded-receipt.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/deliverable-checks.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/historical-state-decoded.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/historical-state-raw.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/historical-transaction.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/job-completion.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/job-spec.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/legacy-abi.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/examples/genesis/evidence/manifest.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/game-theory.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/guides/IDENTITY_AND_PROOFS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/job-metadata.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/namespace/ENS_IDENTITY_GATING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/namespace/FAQ.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/qualification/mainnet-cutover.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.0/CHANGES.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.0/PREVIOUS_RELEASE.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.0/RELEASE_NOTES.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.0/SOURCE_CI.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.0/START_HERE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.0/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/releases/v1.0.0/release.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/AGENT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/roles/OWNER_OPERATOR.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/DEPLOYMENT_MAINNET.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/GENESIS_JOB_MAINNET_HTML_UI.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/STANDALONE_HTML_UIS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ui/VERSIONS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-guide/roles.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/.env.example"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/README.md"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/package.json"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/scripts/deploy-ens-job-pages.cjs"
+    },
+    {
+      "status": "M",
+      "path": "hardhat/test/deployment-preflight.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/economics/assess.cjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/package-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/publish-release.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/release/test-release-gates.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/security/slither-reviewed-findings.json"
+    },
+    {
+      "status": "A",
+      "path": "scripts/simulate-genesis-job.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/ui/run_usdc_console_test.js"
+    },
+    {
+      "status": "A",
+      "path": "scripts/ui/verify-usdc-console.mjs"
+    },
+    {
+      "status": "A",
+      "path": "test/ensDeploymentNamespaces.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/usdcBondQuotes.ui.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/usdcCompletionContext.ui.test.js"
+    },
+    {
+      "status": "A",
+      "path": "test/usdcDeploymentContext.ui.test.js"
+    },
+    {
+      "status": "M",
+      "path": "test/usdcEconomicsReadiness.test.js"
+    },
+    {
+      "status": "A",
+      "path": "ui-tests/usdc-console.spec.js"
+    },
+    {
+      "status": "M",
+      "path": "ui/README.md"
+    },
+    {
+      "status": "M",
+      "path": "ui/agijobmanager-usdc.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/dist-ipfs/agijobmanager.html"
+    },
+    {
+      "status": "M",
+      "path": "ui/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/package.json"
+    },
+    {
+      "status": "M",
+      "path": "ui/src/generated/deployments.ts"
+    }
+  ]
+}

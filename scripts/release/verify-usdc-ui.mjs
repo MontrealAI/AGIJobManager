@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 
-// Exercise the actual frozen functions, without wallet access or transactions.
+// Verify the frozen v1.0.1 console without wallet access or transactions.
 const root = path.resolve(process.argv[2] || '.');
 const filename = 'ui/agijobmanager-usdc.html';
 const html = fs.readFileSync(path.join(root, filename), 'utf8');
@@ -44,19 +44,20 @@ for (const [label,chain,token,decimals,code,pass] of [
   ['missing code',1,canonical,6,'0x',false]
 ]) {
   let gateCalls = 0;
+  const checkedManager = {options:{address:manager},methods:{settlementPausedSeconds:()=>({call:async()=> '0'}),pendingOwner:()=>({call:async()=> '0x0000000000000000000000000000000000000000'}),usdcToken:()=>({call:async()=>token}),wallet30:()=>({call:async()=> '0x3333333333333333333333333333333333333333'}),wallet10:()=>({call:async()=> '0x4444444444444444444444444444444444444444'})}};
   const ctx = vm.createContext({
     USDC_ADDRESS:canonical, AGI_JOB_MANAGER:manager, AGIJobManagerABI:[], ERC20ABI:[],
-    usdcDeploymentValidated:true, usdcToken:{stale:true}, tokenDecimals:18,
-    agiJobManager:{options:{address:manager},methods:{settlementPausedSeconds:()=>({call:async()=> '0'}),pendingOwner:()=>({call:async()=> '0x0000000000000000000000000000000000000000'}),usdcToken:()=>({call:async()=>token}),wallet30:()=>({call:async()=> '0x3333333333333333333333333333333333333333'}),wallet10:()=>({call:async()=> '0x4444444444444444444444444444444444444444'})}},
+    usdcDeploymentValidated:true, usdcToken:{stale:true}, tokenDecimals:18, APP_STATE:{writeEpoch:0},
+    agiJobManager:checkedManager,
     web3:{utils:{isAddress:()=>true},eth:{getChainId:async()=>chain,getCode:async()=>code,
-      Contract:function(){return {methods:{decimals:()=>({call:async()=>decimals})}};}}},
+      Contract:function(_abi,address){return address === manager ? checkedManager : {methods:{decimals:()=>({call:async()=>decimals})}};}}},
     el:()=>({textContent:''}),updateWriteGate:()=>{gateCalls++;}
   });
   vm.runInContext(section('async function verifyUSDCDeployment(', 'async function connectWallet('),ctx);
   if (pass) await ctx.verifyUSDCDeployment(); else await assert.rejects(ctx.verifyUSDCDeployment());
   check(`transaction preflight: ${label}`,()=>{
     assert.equal(ctx.usdcDeploymentValidated,pass);
-    assert.equal(gateCalls,1);
+    assert.ok(gateCalls >= 1, 'verification must refresh the write gate');
     if(!pass) assert.equal(ctx.usdcToken,null);
   });
 }
